@@ -1,0 +1,4 @@
+required gems:
+- mkdtemp
+- json
+- ferret

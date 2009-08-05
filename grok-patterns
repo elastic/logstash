@@ -1,0 +1,79 @@
+USERNAME [a-zA-Z0-9_-]+
+USER %{USERNAME}
+INT (?:[+-]?(?:[0-9]+))
+NUMBER (?:%{BASE10NUM})
+BASE10NUM (?<![0-9.+-])(?>[+-]?(?:(?:[0-9]+(?:\.[0-9]*)?)|(?:\.[0-9]+)))
+BASE16NUM (?<![0-9A-Fa-f])(?:[+-]?(?:0x)?(?:[0-9A-Fa-f]+))
+BASE16FLOAT \b(?<![0-9A-Fa-f.])(?:[+-]?(?:0x)?(?:(?:[0-9A-Fa-f]+(?:\.[0-9A-Fa-f]*)?)|(?:\.[0-9A-Fa-f]+)))\b
+
+POSITIVENUM \b[0-9]+\b
+WORD \w+
+NOTSPACE \S+
+DATA .*?
+GREEDYDATA .*
+# This was originally perl's Regex::Common $RE{quoted}, but it didn't work properly.
+#QUOTEDSTRING (?:(?<!\\)(?:"(?:(?:\\")*(?:[^\"][^"])*)")|(?:'(?:(?:\\")*[^"]*)')|(?:`(?:(?:\\")*[^"]*)`))
+QUOTEDSTRING (?:(?<!\\)(?:"(?:\\.|[^\\"])*")|(?:'(?:\\.|[^\\'])*')|(?:`(?:\\.|[^\\`])*`))
+
+# Networking
+MAC (?:%{CISCOMAC}|%{WINDOWSMAC}|%{COMMONMAC})
+CISCOMAC (?:(?:[A-Fa-f0-9]{4}\.){2}[A-Fa-f0-9]{4})
+WINDOWSMAC (?:(?:[A-Fa-f0-9]{2}-){5}[A-Fa-f0-9]{2})
+COMMONMAC (?:(?:[A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2})
+IP (?<![0-9])(?:(?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))(?![0-9])
+#HOSTNAME (?:[0-9A-Za-z](?:[-A-Za-z0-9]{0,61})(?:\.[A-Za-z0-9]{1,61})*?)
+HOSTNAME (?:[0-9A-z][0-9A-z-]{0,62})(?:\.(?:[0-9A-z][0-9A-z-]{0,62}))*\.?
+HOST %{HOSTNAME}
+IPORHOST (?:%{HOSTNAME}|%{IP})
+HOSTPORT (?:%{IPORHOST=~\.}:%{POSITIVENUM})
+
+# paths
+PATH (?:%{UNIXPATH}|%{WINPATH})
+UNIXPATH (?<![\w\\/])(?:/(?:[\w_@:.,-]+|\\.)*)+
+#UNIXPATH (?<![\w\/])(?:/[^\/\s?*]*)+
+LINUXTTY (?:/dev/pts/%{POSITIVENUM})
+BSDTTY (?:/dev/tty[pq][a-z0-9])
+TTY (?:%{BSDTTY}|%LINUXTTY)
+WINPATH (?:\\[^\\?*]*)+
+URIPROTO [A-z]+(\+[A-z+]+)?
+URIHOST %{IPORHOST}(?::%{PORT})?
+# uripath comes loosely from RFC1738, but mostly from what Firefox
+# doesn't turn into %XX
+URIPATH (?:/[A-z0-9$.+!*'(),~#%-]*)+
+URIPARAM \?(?:[A-z0-9]+(?:=(?:[^&]*))?(?:&(?:[A-z0-9]+(?:=(?:[^&]*))?)?)*)?
+URIPATHPARAM %{URIPATH}(?:%{URIPARAM})?
+URI %{URIPROTO}://(?:%{USER}(?::[^@]*)?@)?(?:%{URIHOST})?(?:%{URIPATH})?(?:%{URIPARAM})?
+
+# Months: January, Feb, 3, 03, 12, December
+MONTH \b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b
+MONTHNUM \b(?:0?[0-9]|1[0-2])\b
+MONTHDAY \b(?:(?:3[01]|[0-2]?[0-9]))\b
+
+# Days: Monday, Tue, Thu, etc...
+DAY (?:Mon(?:day)?|Tue(?:sday)?|Wed(?:nesday)?|Thu(?:rsday)?|Fri(?:day)?|Sat(?:urday)?|Sun(?:day)?)
+
+# Years?
+YEAR %{INT}
+# Time: HH:MM:SS
+#TIME \d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?
+# I'm still on the fence about using grok to perform the time match,
+# since it's probably slower.
+# TIME %{POSITIVENUM<24}:%{POSITIVENUM<60}(?::%{POSITIVENUM<60}(?:\.%{POSITIVENUM})?)?
+TIME (?!<[0-9])(?:2[0123]|[01][0-9]):(?:[0-5][0-9])(?::(?:[0-5][0-9])(?:\.[0-9]+)?)?(?![0-9])
+# datestamp is YYYY/MM/DD-HH:MM:SS.UUUU (or something like it)
+DATESTAMP %{INT}/%{INT}/%{INT}-%{INT}:%{INT}:%{INT}(\.%INT)?
+
+# Syslog Dates: Month Day HH:MM:SS
+SYSLOGDATE %{MONTH} +%{MONTHDAY} %{TIME}
+PROG (?:[A-z][\w-]+(?:\/[\w-]+)?)
+PID %{INT}
+SYSLOGPROG %{PROG}(?:\[%{PID}\])?
+SYSLOGFACILITY <%{INT:facility}.%{INT:priority}>
+HTTPDATE %{MONTHDAY}/%{MONTH}/%{YEAR}:%{TIME} %{INT:ZONE}
+
+# Shortcuts
+QS %{QUOTEDSTRING}
+
+# Log formats
+SYSLOGBASE %{SYSLOGDATE} (?:%{SYSLOGFACILITY} )?%{IPORHOST:logsource} %{SYSLOGPROG}:
+COMBINEDAPACHELOG %{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:httpversion}" %{NUMBER:response} (?:%{NUMBER:bytes}|-) "(?:%{URI:referrer}|-)" %{QS:agent}

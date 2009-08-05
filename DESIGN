@@ -1,0 +1,44 @@
+All logs have required attributes:
+  log:name
+  log:import_type
+
+And any optional attributes (can't start with 'log:'), i.e.:
+  type: glu
+  glu_component: sessionmanager
+  glu_version: 34012
+
+A "log" is basically defined as a set of key=value pairs that represent
+one "event". It is usually represented by a series of text followed by
+a new-line, with a column based "schema" (first element is date, second
+element is request type, etc). It may also be represented by some kind
+of already-encoded data, i.e. JSON or YAML. The already encoded data
+would have one set of key=value pairs per log line ("event").
+
+Logs can be imported in various formats:
+
+- plain-text log
+  + define grok pattern (or pick from a standard, i.e. common log)
+  + define human event output (defaults to @LINE)
+
+- json log
+  + define human event output (defaults to "key1=value1 key2=value2 ...")
+
+- etc. (YAML? XML?)
+
+Logs can have some defaults associated with them:
+  + possible sort keys (need to store them differently)
+  + which keys represent a date, and their strftime format
+  + some recommended options to "group by" (session ID, IP address, etc)
+
+Once a log is imported, we periodically calculate "metadata" and store it:
+  + all available keys to search on
+  + most popular keys (?)
+  + approximate number of lines (?)
+
+Based on a logs current size, we estimate how many more events need to be
+parsed before re-calculating the metadata. It's too expensive to calculate
+every time we add an event (and not worth it), so it's a background task
+kicked off periodically (say 5% of the size when it last kicked off, so
+as a log gets bigger and bigger we re-index the meta-data less and less,
+since we've probably seen all the variations). We always allow people to
+force a metadata recalculation.

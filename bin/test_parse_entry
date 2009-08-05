@@ -1,0 +1,14 @@
+#!/usr/bin/ruby
+
+require 'config'
+
+log = $logs[ARGV[0]]
+
+$stdin.each do |line|
+  res = log.parse_entry(line)
+  if res
+    puts log.parse_entry(line)["@LINE"]
+  else
+    $stderr.puts "** DID NOT MATCH: #{line}"
+  end
+end

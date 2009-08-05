@@ -1,0 +1,11 @@
+* Run index.commit fairly often. index.optimize via cron or something.
+
+* Experiment with :store => :compressed
+
+* Set :index (on Fields) to :yes_omit_norms (through FieldInfos)
+
+* Sort field should be untokenized
+
+* hits/time graph
+
+* investigate: http://assets1.github.com/mmangino/lucene_query/tree/master
