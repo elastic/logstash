@@ -25,10 +25,6 @@ class TextLog < Log
     super(config)
   end
 
-  def destroy
-    teardown_grok
-  end
-
   def parse_entry(raw_entry)
     if not @grok
       setup_grok
@@ -42,37 +38,33 @@ class TextLog < Log
     end
     return nil unless res
 
-    # rename 'FOO:bar' keys to just 'bar'
+    # We're parsing GROK output, and there are three kinds of outputs:
+    #  @FOO - meta output from grok. We only want @LINE.
+    #  QUOTEDSTRING:bar - matched pattern QUOTEDSTRING, var named bar, keep
+    #  DATA - matched pattern DATA, but no variable name, so we ditch it
     res.keys.each do |key|
-      next unless key =~ /^.+:(.+)$/
-      res[$1] = res[key]
-      res.delete(key)
+      if key =~ /^.+:(.+)$/
+        res[$1] = res[key]
+      end
+
+      # special exception for @LINE
+      if key != "@LINE"
+        res.delete(key)
+      end
     end
 
-    # extra keys from grok we don't need
-    res.delete("@MATCH")
-
-    fix_date(res)
-
-    return res
+    return fix_date(res)
   end
 
   private
   def setup_grok
-    #tmpd = Dir.mkdtemp("/tmp/grok.XXXXXXXX")
-    ## mkdtemp is busted on my work system?
+    # TODO: switch to ruby cgrok bindings from jls
     tmpd = "/tmp/grok.#{@config[:name]}.working"
     FileUtils.mkdir_p(tmpd)
     FileUtils.cp "grok-patterns", "#{tmpd}/grok-patterns"
     Dir.chdir(tmpd)
     File.open("grok.conf", "w") { |f| f.write grok_conf }
     @grok = IO.popen("/home/petef/bin/grok", "r+")
-  end
-
-  def teardown_grok
-    @grok.close
-    FileUtils.rm_r(Dir.pwd)
-    Dir.chdir("/")
   end
 
   def grok_conf
