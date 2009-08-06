@@ -15,11 +15,18 @@ if not log_name
 end
 
 sock = TCPSocket.new('127.0.0.1', 12345)
+size = 0
+start_t = Time.now.to_i
 File.open(log_path).each do |line|
   msg = {"log_name" => log_name,
          "raw_entry" => line,
          "source_host" => source_host,
         }
   sock.puts msg.to_json
+  size += line.length
 end
+end_t = Time.now.to_i
 sock.close
+
+size /= 1024  # kB
+puts "import rate: #{size/(end_t-start_t)} kB/s"
