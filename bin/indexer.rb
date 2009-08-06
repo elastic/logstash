@@ -34,8 +34,6 @@ sock.each do |line|
   entry = $logs[log_name].parse_entry(proto["raw_entry"])
   next unless entry # or do we stick it in a dummy entry w/just @LINE?
   
-  puts entry.inspect
-
   if not indexes.member?(log_name)
     if not File.exists?($logs[log_name].index_dir)
       field_infos = Index::FieldInfos.new(:store => :no,
@@ -48,6 +46,7 @@ sock.each do |line|
                               :store => :compressed,
                               :index => :untokenized)
       end
+      field_infos.create_index($logs[log_name].index_dir)
     end
     indexes[log_name] = Index::Index.new(:path => $logs[log_name].index_dir)
   end
