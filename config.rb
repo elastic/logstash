@@ -11,6 +11,15 @@ access_log = TextLog.new(:name => "access.log",
                          :date_format => "%d/%b/%Y:%H:%M:%S %z")
 $logs.register access_log
 
+apache = TextLog.new({ :name => "httpd-access",
+                       #:grok_pattern => "%{SYSLOGBASE} Accepted %{NOTSPACE:method} for %{DATA:user} from %{IPORHOST:client} port %{INT:port}",
+                       :grok_pattern => "%{COMBINEDAPACHELOG}",
+                       :date_key => "timestamp",
+                       :date_format => "%d/%b/%Y:%H:%M:%S %Z",
+});
+
+$logs.register apache
+
 glu_log_config = {:name => "glu",
                   :date_key => "timestamp",
                   :date_format => "%Y-%m-%dT%H:%M:%S",

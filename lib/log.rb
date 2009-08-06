@@ -41,7 +41,7 @@ class Log
   end
 
   def index_dir
-    return "/home/petef/logstash/indexes/#{@attrs["log:name"]}"
+    return "#{ENV["HOME"]}/logstash/indexes/#{@attrs["log:name"]}"
   end
 
   def fix_date(res)
@@ -59,6 +59,8 @@ class Log
     time ||= Time.now
     # TODO: switch to seconds since epoch
     res["@DATE"] = time.strftime("%Y%m%d%H%M%S")
+
+    return res
   end
 
   private

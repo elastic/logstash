@@ -5,6 +5,7 @@ require 'fileutils'
 require 'json'
 require 'lib/log'
 require 'time'
+require 'Grok'
 
 class TextLog < Log
   def initialize(config_params)
@@ -20,29 +21,43 @@ class TextLog < Log
     @date_key = config.delete(:date_key)
     @date_format = config.delete(:date_format)
 
-    @grok = nil
     @config = config
+
+    patterns = {}
+    File.open("../grok-patterns").each do |line|
+      line.chomp!
+      next if line =~ /^#/ or line =~ /^ *$/
+        name, pat = line.split(" ", 2)
+      next if !name or !pat
+      patterns[name] = pat
+    end
+
+    @grok = Grok.new
+    patterns.each { |k,v| @grok.add_pattern(k,v) }
+    @grok.compile(@grok_pattern)
+    
     super(config)
   end
 
   def parse_entry(raw_entry)
-    if not @grok
-      setup_grok
-    end
-    @grok.puts raw_entry
+    m = @grok.match(raw_entry)
 
     res = nil
-    while line = @grok.readline
-      break if line[0..2] == "EOM"
-      res = JSON.parse(line)
+    if m
+      res = m.captures
     end
     return nil unless res
+
 
     # We're parsing GROK output, and there are three kinds of outputs:
     #  @FOO - meta output from grok. We only want @LINE.
     #  QUOTEDSTRING:bar - matched pattern QUOTEDSTRING, var named bar, keep
     #  DATA - matched pattern DATA, but no variable name, so we ditch it
     res.keys.each do |key|
+      if res[key].length == 1
+        res[key] = res[key][0]
+      end
+
       if key =~ /^.+:(.+)$/
         res[$1] = res[key]
       end
@@ -52,6 +67,7 @@ class TextLog < Log
         res.delete(key)
       end
     end
+    #puts "OK: #{res.inspect}"
 
     return fix_date(res)
   end
@@ -60,11 +76,13 @@ class TextLog < Log
   def setup_grok
     # TODO: switch to ruby cgrok bindings from jls
     tmpd = "/tmp/grok.#{@config[:name]}.working"
-    FileUtils.mkdir_p(tmpd)
-    FileUtils.cp "grok-patterns", "#{tmpd}/grok-patterns"
-    Dir.chdir(tmpd)
-    File.open("grok.conf", "w") { |f| f.write grok_conf }
-    @grok = IO.popen("/home/petef/bin/grok", "r+")
+    #FileUtils.mkdir_p(tmpd)
+    #FileUtils.cp "grok-patterns", "#{tmpd}/grok-patterns"
+    #Dir.chdir(tmpd)
+    #File.open("grok.conf", "w") { |f| f.write grok_conf }
+    #@grok = IO.popen("/home/petef/bin/grok", "r+")
+    @grok = Grok.new
+    @grok.compile(@grok_pattern)
   end
 
   def grok_conf
