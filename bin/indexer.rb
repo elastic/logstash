@@ -7,6 +7,8 @@ require 'lib/log/text'
 require 'mkdtemp'
 require 'socket'
 
+require 'ruby-prof'
+
 require 'config'
 
 include Ferret
@@ -20,6 +22,7 @@ sock = serv.accept
 # Each line in the protocol is a JSON message, with the following fields:
 #  log_name ==> key in logs array
 #  raw_entry ==> raw entry to parse
+RubyProf.start
 sock.each do |line|
   proto = JSON.parse(line)
   pass = true
@@ -63,3 +66,7 @@ sock.each do |line|
 end
 
 indexes.values.each { |i| i.close }
+
+result = RubyProf.stop
+printer = RubyProf::GraphPrinter.new(result)
+printer.print(STDOUT, 0)
