@@ -34,14 +34,23 @@ module Logstash
   PROTOCOL_VERSION = 1
 
   class MessageStream
+    attr_reader :message_count
+
     def initialize
       @data = Hash.new
       @data["version"] = PROTOCOL_VERSION
       @data["messages"] = Array.new
+      @message_count = 0
     end
 
     def <<(message)
       @data["messages"] << message
+      @message_count += 1
+    end
+
+    def clear
+      @data["messages"] = []
+      @message_count = 0
     end
     
     def encode
@@ -100,6 +109,7 @@ module Logstash
     end
 
     def to_json(*args)
+      #puts "TO:JSON #{@data.inspect}"
       return @data.to_json(*args)
     end
 
