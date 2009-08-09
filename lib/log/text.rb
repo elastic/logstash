@@ -1,10 +1,9 @@
 #!/usr/bin/ruby
 
 require 'rubygems'
-require 'fileutils'
+require 'find'
 require 'json'
 require 'lib/log'
-require 'time'
 require 'Grok'
 
 class TextLog < Log
@@ -24,17 +23,14 @@ class TextLog < Log
     @config = config
     @home = ENV["LOGSTASH_HOME"] || "/opt/logstash"
 
-    patterns = {}
-    File.open("#{@home}/grok-patterns").each do |line|
-      line.chomp!
-      next if line =~ /^#/ or line =~ /^ *$/
-        name, pat = line.split(" ", 2)
-      next if !name or !pat
-      patterns[name] = pat
-    end
-
     @grok = Grok.new
-    patterns.each { |k,v| @grok.add_pattern(k,v) }
+    if not File.exists?("#{@home}/patterns")
+      throw StandardError.new("#{@home}/patterns directory does not exist")
+    end
+    Find.find("#{@home}/patterns") do |file|
+      next if FileTest.directory?(file)
+      @grok.add_patterns_from_file(file)
+    end
     @grok.compile(@grok_pattern)
     
     super(config)
@@ -49,62 +45,23 @@ class TextLog < Log
     end
     return nil unless res
 
-
-    # We're parsing GROK output, and there are three kinds of outputs:
-    #  @FOO - meta output from grok. We only want @LINE.
+    # We're parsing GROK captures, and there are two kinds of outputs:
     #  QUOTEDSTRING:bar - matched pattern QUOTEDSTRING, var named bar, keep
     #  DATA - matched pattern DATA, but no variable name, so we ditch it
     res.keys.each do |key|
-      if res[key].length == 1
-        res[key] = res[key][0]
-      end
-
       if key =~ /^.+:(.+)$/
-        res[$1] = res[key]
+        if res[key].length == 1
+          res[$1] = res[key][0]
+        else
+          res[$1] = res[key]
+        end
       end
-
-      # special exception for @LINE
-      if key != "@LINE"
-        res.delete(key)
-      end
+      res.delete(key)
     end
-    #puts "OK: #{res.inspect}"
+
+    # add meta @LINE to represent the original input
+    res["@LINE"] = raw_entry
 
     return fix_date(res)
-  end
-
-  private
-  def setup_grok
-    # TODO: switch to ruby cgrok bindings from jls
-    tmpd = "/tmp/grok.#{@config[:name]}.working"
-    #FileUtils.mkdir_p(tmpd)
-    #FileUtils.cp "grok-patterns", "#{tmpd}/grok-patterns"
-    #Dir.chdir(tmpd)
-    #File.open("grok.conf", "w") { |f| f.write grok_conf }
-    #@grok = IO.popen("/home/petef/bin/grok", "r+")
-    @grok = Grok.new
-    @grok.compile(@grok_pattern)
-  end
-
-  def grok_conf
-    conf = []
-    conf << "program {"
-    conf << "  load-patterns: \"grok-patterns\""
-    conf << "  file \"/dev/stdin\""
-    conf << "  match {"
-    conf << "    pattern: \"#{@grok_pattern}\""
-    conf << "    shell: \"stdout\""
-    conf << "    reaction: \"\%{@JSON}\""
-    conf << "    flush: yes"
-    conf << "  }"
-    conf << "  match {"
-    conf << "    pattern: \".?\""
-    conf << "    shell: \"stdout\""
-    conf << "    reaction: \"EOM\""
-    conf << "    flush: yes"
-    conf << "  }"
-    conf << "}"
-
-    return conf.join("\n") + "\n"
   end
 end

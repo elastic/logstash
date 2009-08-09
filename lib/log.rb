@@ -53,12 +53,11 @@ class Log
         time = DateTime.strptime(raw_date, @date_format)
       rescue ArgumentError
         # time didn't parse
-        time = Time.now
+        time = DateTime.now
       end
     end
-    time ||= Time.now
-    # TODO: switch to seconds since epoch
-    res["@DATE"] = time.strftime("%Y%m%d%H%M%S")
+    time ||= DateTime.now
+    res["@DATE"] = time.strftime("%s")
 
     return res
   end
