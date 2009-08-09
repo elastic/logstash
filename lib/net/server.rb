@@ -50,19 +50,21 @@ module Logstash
       begin
         have = @buffers[sock].length
 
+        # need at least 4 bytes (the length)
         if have < 4
           need = 4
         else
           need = @buffers[sock][0..3].unpack("N")[0] + 4
         end
 
+        # Read if buffer is not full enough.
         if have < need
-          @buffers[sock] += sock.read_nonblock(need - have)
+          @buffers[sock] += sock.read_nonblock(16384)
         end
 
-        if have >= need
-          client_streamready(@buffers[sock][4..need])
-          @buffers[sock] = (@buffers[sock][(need + 1)..-1] or "")
+        if have > 4 && have >= need
+          client_streamready(@buffers[sock][4..(need - 1)])
+          @buffers[sock] = (@buffers[sock][need .. -1] or "")
         end
       rescue EOFError, IOError
         remove(sock)
