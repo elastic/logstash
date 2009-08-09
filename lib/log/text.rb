@@ -22,9 +22,10 @@ class TextLog < Log
     @date_format = config.delete(:date_format)
 
     @config = config
+    @home = ENV["LOGSTASH_HOME"] || "/opt/logstash"
 
     patterns = {}
-    File.open("../grok-patterns").each do |line|
+    File.open("#{@home}/grok-patterns").each do |line|
       line.chomp!
       next if line =~ /^#/ or line =~ /^ *$/
         name, pat = line.split(" ", 2)
