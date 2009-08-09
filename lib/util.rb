@@ -8,7 +8,7 @@ module LogStash
             hash["#{k}/#{k2}"] = v2
           end
         elsif v.is_a?(Array)
-          hash[k] = v.inspect
+          # do nothing; ferret can handle this
         elsif not v.is_a?(String)
           hash[k] = v.to_s
         end
