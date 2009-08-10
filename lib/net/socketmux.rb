@@ -184,5 +184,5 @@ module LogStash; module Net
         @done = true
       end
     end
-  end # class MessageServer
+  end # class MessageSocketMux
 end; end # module LogStash::Net
