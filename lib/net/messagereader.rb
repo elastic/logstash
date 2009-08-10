@@ -10,12 +10,19 @@ module LogStash; module Net;
     end
 
     def read
-      @buffer += @sock.read_nonblock(READSIZE)
+      begin
+        #(1..5).each do
+        @buffer += @sock.readpartial(READSIZE)
+        #end
+      rescue Errno::EAGAIN
+        # breaking condition
+      end
     end
 
     def each(&block)
       read
       have = @buffer.length
+      puts "OK #{have}"
       if have < HEADERSIZE
         need = HEADERSIZE
       else

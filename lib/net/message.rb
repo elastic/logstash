@@ -71,7 +71,7 @@ module LogStash; module Net
 
     def sendto(sock)
       data = self.encode
-      #puts "Writing #{data.length} bytes to #{sock}"
+      puts "Writing #{data.length} bytes to #{sock}"
       #puts data.inspect
       sock.write([data.length, data].pack("NA*"))
       self.clear

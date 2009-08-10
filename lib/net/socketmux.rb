@@ -4,7 +4,7 @@ require 'time'
 require 'lib/net/message'
 require 'lib/net/messagereader'
 require 'set'
-require 'monitor'
+require 'thread'
 
 # TODO(sissel): Need to implement 'read_until' callbacks.
 # read_until(1000, bar) would call 'bar' when our buffer size is 1000 bytes
@@ -18,6 +18,7 @@ module LogStash; module Net
   # Acts as a client and a server.
   class MessageSocketMux
     def initialize
+      @lock = Mutex.new
       @count = 0
       @start = Time.now.to_f
 
@@ -34,7 +35,6 @@ module LogStash; module Net
       @msgstreams = Hash.new do
         |h,k| h[k] = LogStash::Net::MessageStream.new
       end
-      @msgstream_lock = Monitor.new
       @msgreaders = Hash.new do |h,k| 
         h[k] = LogStash::Net::MessageReader.new(k)
       end
@@ -61,8 +61,18 @@ module LogStash; module Net
     end
 
     def sendmsg(msg, sock=nil)
+      @lock.synchronize do
+        _sendmsg(msg, sock)
+      end
+    end
+
+    def _sendmsg(msg, sock=nil)
       if msg == nil
         raise "msg is nil"
+      end
+
+      if (msg.is_a?(RequestMessage) and msg.id == nil)
+        msg.generate_id!
       end
 
       sock = (sock or @receiver)
@@ -75,15 +85,16 @@ module LogStash; module Net
 
     def run
       while !@done
-        s_in, s_out, s_err = IO.select(@readers, @writers, nil, nil)
-
+        s_in, s_out, s_err = IO.select(@readers, @writers, nil, 1)
         if s_in
           handle_in(s_in)
         end
 
-        if s_out
-          handle_out(s_out)
-        end
+        @lock.synchronize do
+          if s_out
+            handle_out(s_out)
+          end
+        end # @lock
       end
     end
 
@@ -124,6 +135,7 @@ module LogStash; module Net
         ms = @msgstreams[sock]
         if ms.message_count > 0
           begin
+            puts "Sending #{ms.message_count} messages"
             ms.sendto(sock)
             @writers.delete(sock)
           rescue Errno::ECONNRESET, Errno::EPIPE
@@ -142,12 +154,12 @@ module LogStash; module Net
     def client_handle(sock)
       begin
         @msgreaders[sock].each do |msg|
-          message_handle(msg) do |reply|
-            # Send a reply for the msg.
-            sendmsg(reply, sock)
+          message_handle(msg) do |response|
+            # Send a response for the msg.
+            _sendmsg(response, sock)
           end
         end
-      rescue EOFError, IOError, Errno::ECONNRESET
+      rescue IOError, Errno::ECONNRESET => e
         remove(sock)
       end
     end
