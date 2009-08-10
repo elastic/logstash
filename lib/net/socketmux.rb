@@ -40,7 +40,7 @@ module LogStash; module Net
       ms = LogStash::Net::MessageStream.new
       ms << msg
       data = ms.encode
-      puts "Sending msg #{msg.class}: #{data.length}"
+      #puts "Sending msg #{msg.class}: #{data.length}"
       @sendbuffers[sock] += [data.length, data].pack("NA*")
     end
 
@@ -56,7 +56,7 @@ module LogStash; module Net
         if s_out
           s_out.each do |sock|
             if @sendbuffers[sock].length > 0
-              puts "Sending #{@sendbuffers[sock].length} bytes to #{sock}"
+              #puts "Sending #{@sendbuffers[sock].length} bytes to #{sock}"
               begin
                 sock.write(@sendbuffers[sock])
               rescue Errno::ECONNRESET
@@ -80,7 +80,7 @@ module LogStash; module Net
     def server_handle(sock)
       client = sock.accept_nonblock
       @socks << client
-      puts "New client: #{client}"
+      #puts "New client: #{client}"
     end
     
     # TODO(sissel): extrapolate the 'read chunks until we get a full message set'
@@ -104,7 +104,7 @@ module LogStash; module Net
         if have > 4 && have >= need
           reply = client_streamready(@recvbuffers[sock][4..(need - 1)])
           @recvbuffers[sock] = (@recvbuffers[sock][need .. -1] or "")
-          puts "Sending #{reply.class}"
+          #puts "Sending #{reply.class}"
           #sock.write(reply)
           reply.each do |msg|
             next if msg == nil
@@ -118,8 +118,8 @@ module LogStash; module Net
     end
       
     def client_streamready(data)
-      puts "ready: #{data.length}"
-      puts data.inspect
+      #puts "ready: #{data.length}"
+      #puts data.inspect
       responses = MessageStream.decode(data) do |msg|
         @count += 1
         msgtype = msg.class.name.split(":")[-1]
