@@ -28,10 +28,12 @@ module BindToHash
 
     # TODO(sissel): Ruby's JSON barfs if you try to encode upper ascii characters
     # as it assumes all strings are unicode.
-    (0 .. value.length - 1).each do |i|
-      break if !value[i]
-      if value[i] >= 128
-        value[i] = ""
+    if value.is_a?(String)
+      (0 .. value.length - 1).each do |i|
+        break if !value[i]
+        if value[i] >= 128
+          value[i] = ""
+        end
       end
     end
 
@@ -39,7 +41,7 @@ module BindToHash
   end
 end # modules BindToHash
 
-module LogStash
+module LogStash; module Net
   PROTOCOL_VERSION = 1
 
   class MessageStream
@@ -74,13 +76,14 @@ module LogStash
         # throw some kind of error
       end
 
+      responses = []
       data["messages"].each do |msgdata|
         msg = Message.new_from_data(msgdata)
-        yield msg
+        responses << (yield msg)
       end
+      return responses
     end
-
-  end
+  end # class MessageStream
 
   class Message
     extend BindToHash
@@ -89,6 +92,9 @@ module LogStash
     # Message ID sequence number
     @@translators = Array.new
     @@idseq = 0
+
+    # Message attributes
+    hashbind :id, "/id"
 
     # All message subclasses should register themselves here
     # This will allow Message.new_from_data to automatically return
@@ -121,8 +127,6 @@ module LogStash
       return @data.to_json(*args)
     end
 
-    hashbind :id, "/id"
-
   protected
     attr :data
   end # class Message
@@ -138,6 +142,7 @@ module LogStash
       @data["args"] = Hash.new
     end
 
+    # Message attributes
     hashbind :name, "/request"
     hashbind :args, "/args"
   end # class RequestMessage
@@ -148,6 +153,7 @@ module LogStash
       return data.has_key?("response")
     end
 
+    # Message attributes
     hashbind :name, "/response"
   end # class ResponseMessage
-end
+end; end # module LogStash::Net

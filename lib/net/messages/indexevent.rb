@@ -1,7 +1,7 @@
 
 require "lib/net/message"
 
-module LogStash
+module LogStash; module Net; module Messages
   class IndexEventRequest < RequestMessage
     Message.translators << self
     def self.can_process?(data)
@@ -14,6 +14,7 @@ module LogStash
       self.metadata = Hash.new
     end
 
+    # Message attributes
     hashbind :log_type, "/args/type"
     hashbind :log_data, "/args/message"
     hashbind :metadata, "/args/metadata"
@@ -30,7 +31,8 @@ module LogStash
       self.name = "IndexEvent"
     end
 
+    # Message attributes
     hashbind :code, "/args/code"
     hashbind :error, "/args/error"
   end # class IndexEventResponse
-end
+end; end; end # module LogStash::Net::Messages

@@ -1,17 +1,22 @@
 
 require 'rubygems'
 require 'lib/net/message'
-require 'lib/net/server'
+require 'lib/net/socketmux'
 require 'lib/net/messages/indexevent'
 
 module LogStash; module Net; module Servers
-  class Indexer < LogStash::Net::MessageServer
+  class Indexer < LogStash::Net::MessageSocketMux
     def initialize(addr="0.0.0.0", port=3001)
-      super(addr, port)
+      # 'super' is not the same as 'super()', and we want super().
+      super()
+      listen(addr, port)
     end
 
     def IndexEventRequestHandler(request)
-      puts "IER: #{request.inspect}"
+      response = LogStash::Net::Messages::IndexEventResponse.new
+      response.id = request.id
+      response.code = 0
+      return response
     end
   end # Indexer
 end; end; end # LogStash::Net::Server
