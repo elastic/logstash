@@ -33,6 +33,7 @@ module LogStash
           next if FileTest.directory?(file)
           pattern_files << file
         end
+        pattern_files.sort!
 
         # initialize groks for each pattern
         @groks = []
