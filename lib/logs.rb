@@ -12,16 +12,16 @@ module LogStash
         throw LogsException.new("#{log} is not a Log object")
       end
 
-      name = log.attrs["log:name"]
-      if @logs.keys.member?(name)
-        throw LogsException.new("#{name}: duplicate log:name")
+      log_type = log.attrs["log:type"]
+      if @logs.keys.member?(log_type)
+        throw LogsException.new("#{log_type}: duplicate log_type")
       end
 
-      @logs[name] = log
+      @logs[log_type] = log
     end
 
-    def [](name)
-      return @logs[name]
+    def [](log_type)
+      return @logs[log_type]
     end
   end # class Logs
 end # module LogStash

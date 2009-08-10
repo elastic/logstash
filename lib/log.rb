@@ -10,16 +10,15 @@ module LogStash
   end
 
   class Log
+    REQUIRED_KEYS = [:type, :encoding]
+    OPTIONAL_KEYS = [:attrs, :date_key, :date_format]
     attr_accessor :attrs
 
     def initialize(config)
-      required_keys = [:name, :import_type]
-      optional_keys = [:attrs, :entry_print_format, :index, :sort_keys,
-                       :recommended_group_by]
-      check_hash_keys(config, required_keys, optional_keys)
+      check_hash_keys(config, REQUIRED_KEYS, OPTIONAL_KEYS)
 
-      @attrs = {"log:name" => config[:name],
-                "log:import_type" => config[:import_type]}
+      @attrs = {"log:type" => config[:type],
+                "log:encoding" => config[:encoding]}
       if config[:attrs]
         if not config[:attrs].is_a?(Hash)
           throw LogException.new(":attrs must be a hash")
@@ -27,12 +26,14 @@ module LogStash
 
         config[:attrs].keys.each do |key|
           next unless key.to_s[0..3] == "log:"
-          throw LogException.new(":attrs keys must not begin with
-                                  log: (#{key})")
+          throw LogException.new("extra attrs must not begin with" +
+                                  " log: (#{key})")
         end
 
         @attrs.merge!(config[:attrs])
       end
+
+      @config = config
     end
 
     # passed a string that represents an "entry" in :import_type
@@ -46,11 +47,12 @@ module LogStash
 
     def fix_date(res)
       time = nil
-      if @date_key and res[@date_key]
-        raw_date = res[@date_key]
+      if @config[:date_key] and @config[:date_format] and \
+         res[@config[:date_key]]
+        raw_date = res[@config[:date_key]]
         time = nil
         begin
-          time = DateTime.strptime(raw_date, @date_format)
+          time = DateTime.strptime(raw_date, @config[:date_format])
         rescue ArgumentError
           # time didn't parse
           time = DateTime.now

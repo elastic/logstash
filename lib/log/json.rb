@@ -10,19 +10,14 @@ module LogStash
     class JsonLog < LogStash::Log
       def initialize(config_params)
         config = config_params.clone
-        required_keys = [:name, :line_format]
-        optional_keys = [:attrs, :entry_print_format, :index, :sort_keys,
-                         :recommended_group_by, :date_key, :date_format]
+        config[:encoding] = "json"
+
+        required_keys = REQUIRED_KEYS + [:line_format]
+        optional_keys = OPTIONAL_KEYS + []
         check_hash_keys(config, required_keys, optional_keys)
 
-        config[:import_type] = "text"
-        config[:entry_print_format] ||= "@LINE"
-        @grok_pattern = config.delete(:grok_pattern)
-        @date_key = config.delete(:date_key)
-        @date_format = config.delete(:date_format)
         @line_format = config.delete(:line_format)
 
-        @config = config
         super(config)
       end
 

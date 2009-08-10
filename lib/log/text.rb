@@ -11,41 +11,49 @@ module LogStash
     class TextLog < LogStash::Log
       def initialize(config_params)
         config = config_params.clone
-        required_keys = [:name, :grok_pattern]
-        optional_keys = [:attrs, :entry_print_format, :index, :sort_keys,
-                         :recommended_group_by, :date_key, :date_format]
+        config[:encoding] = "text"
+
+        required_keys = REQUIRED_KEYS + [:grok_patterns]
+        optional_keys = OPTIONAL_KEYS + []
         check_hash_keys(config, required_keys, optional_keys)
 
-        config[:import_type] = "text"
-        config[:entry_print_format] ||= "@LINE"
-        @grok_pattern = config.delete(:grok_pattern)
-        @date_key = config.delete(:date_key)
-        @date_format = config.delete(:date_format)
+        if not config[:grok_patterns].is_a?(Array)
+          throw LogException.new(":grok_patterns must be an array")
+        end
 
-        @config = config
+        @grok_patterns = config.delete(:grok_patterns)
         @home = ENV["LOGSTASH_HOME"] || "/opt/logstash"
 
-        @grok = Grok.new
         if not File.exists?("#{@home}/patterns")
-          throw StandardError.new("#{@home}/patterns directory does not exist")
+          throw StandardError.new("#{@home}/patterns/ does not exist")
         end
+
+        pattern_files = []
         Find.find("#{@home}/patterns") do |file|
           next if FileTest.directory?(file)
-          @grok.add_patterns_from_file(file)
+          pattern_files << file
         end
-        @grok.compile(@grok_pattern)
+
+        # initialize groks for each pattern
+        @groks = []
+        @grok_patterns.each do |pattern|
+          grok = Grok.new
+          pattern_files.each { |f| grok.add_patterns_from_file(f) }
+          grok.compile(pattern)
+          @groks << grok
+        end
         
         super(config)
       end
 
       def parse_entry(raw_entry)
-        m = @grok.match(raw_entry)
-
-        res = nil
-        if m
-          res = m.captures
+        match = nil
+        @groks.each do |grok|
+          match = grok.match(raw_entry)
+          break if match
         end
-        return nil unless res
+        return nil unless match
+        res = match.captures
 
         # We're parsing GROK captures, and there are two kinds of outputs:
         #  QUOTEDSTRING:bar - matched pattern QUOTEDSTRING, var named bar, keep
