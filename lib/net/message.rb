@@ -71,6 +71,8 @@ module LogStash; module Net
 
     def sendto(sock)
       data = self.encode
+      #puts "Writing #{data.length} bytes to #{sock}"
+      #puts data.inspect
       sock.write([data.length, data].pack("NA*"))
       self.clear
     end
@@ -97,7 +99,6 @@ module LogStash; module Net
 
     # Message ID sequence number
     @@translators = Array.new
-    @@idseq = 0
 
     # Message attributes
     hashbind :id, "/id"
@@ -111,8 +112,6 @@ module LogStash; module Net
 
     def initialize
       @data = Hash.new
-      data["id"] = @@idseq
-      @@idseq += 1
     end
 
     def self.new_from_data(data)
@@ -138,6 +137,8 @@ module LogStash; module Net
   end # class Message
 
   class RequestMessage < Message
+    @@idseq = 0
+
     Message.translators << self
     def self.can_process?(data)
       return data.has_key?("request")
@@ -146,6 +147,11 @@ module LogStash; module Net
     def initialize
       super
       @data["args"] = Hash.new
+    end
+
+    def generate_id!
+      @data["id"] = @@idseq
+      @@idseq += 1
     end
 
     # Message attributes

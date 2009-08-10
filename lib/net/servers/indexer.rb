@@ -16,6 +16,7 @@ module LogStash; module Net; module Servers
       response = LogStash::Net::Messages::IndexEventResponse.new
       response.id = request.id
       response.code = 0
+      puts response.inspect
       return response
     end
   end # Indexer
