@@ -164,7 +164,7 @@ module LogStash; module Net
     end
 
     def remove(sock)
-      puts "Removing #{sock}"
+      #puts "Removing #{sock}"
       @socks.delete(sock)
       @recvbuffers.delete(sock)
       @sendbuffers.delete(sock)
