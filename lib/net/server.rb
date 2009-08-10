@@ -7,12 +7,12 @@ require 'lib/net/messages/indexevent'
 # TODO(sissel): Need to implement 'read_until' callbacks.
 # read_until(1000, bar) would call 'bar' when our buffer size is 1000 bytes
 
-module Logstash
+module LogStash; module Net
   MAXMSGLEN = (1 << 20)
 
   class MessageServer
-    def initialize
-      @serversock = TCPServer.new(4044)
+    def initialize(addr="0.0.0.0", port=0)
+      @serversock = TCPServer.new(addr, port)
       @socks = [@serversock]
       @buffers = Hash.new { |h,k| h[k] = "" }
       @count = 0
@@ -74,11 +74,15 @@ module Logstash
     def client_streamready(data)
       MessageStream.decode(data) do |msg|
         @count += 1
-        #puts msg.inspect
-        if @count % 1000 == 0
-          duration = Time.now.to_f - @start
-          puts "%d finished @ %d/sec => %.1f secs" % [@count, duration, @count  / duration]
+        msgtype = msg.class.name.split(":")[-1]
+        handler = "#{msgtype}Handler"
+        if self.respond_to?(handler)
+          self.send(handler, msg)
         end
+        #if @count % 1000 == 0
+          #duration = Time.now.to_f - @start
+          #puts "%d finished @ %d/sec => %.1f secs" % [@count, duration, @count  / duration]
+        #end
       end
     end
 
@@ -93,4 +97,4 @@ module Logstash
       end
     end
   end # class MessageServer
-end
+end; end # module LogStash::Net

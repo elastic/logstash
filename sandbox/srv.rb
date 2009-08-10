@@ -3,7 +3,8 @@
 
 require "rubygems"
 require "lib/net/server"
+require "lib/net/servers/indexer"
 
-s = Logstash::MessageServer.new
+s = LogStash::Net::Servers::Indexer.new
 
 s.run

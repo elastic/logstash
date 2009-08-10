@@ -2,7 +2,7 @@ require 'rubygems'
 require 'socket'
 require 'time'
 
-module Logstash
+module LogStash
   class MessageServer
     def initialize
     end

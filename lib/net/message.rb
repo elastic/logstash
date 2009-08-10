@@ -26,11 +26,20 @@ module BindToHash
       data = data[k]
     end
 
+    # TODO(sissel): Ruby's JSON barfs if you try to encode upper ascii characters
+    # as it assumes all strings are unicode.
+    (0 .. value.length - 1).each do |i|
+      break if !value[i]
+      if value[i] >= 128
+        value[i] = ""
+      end
+    end
+
     data[elements[-1]] = value
   end
 end # modules BindToHash
 
-module Logstash
+module LogStash
   PROTOCOL_VERSION = 1
 
   class MessageStream
@@ -109,7 +118,6 @@ module Logstash
     end
 
     def to_json(*args)
-      #puts "TO:JSON #{@data.inspect}"
       return @data.to_json(*args)
     end
 

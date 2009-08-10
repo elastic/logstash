@@ -5,13 +5,13 @@ require "socket"
 require "lib/net/message"
 require "lib/net/messages/indexevent"
 
-out = TCPSocket.new("localhost", 4044)
+out = TCPSocket.new("localhost", 3001)
 
-ms = Logstash::MessageStream.new
+ms = LogStash::MessageStream.new
 File.open(ARGV[0]).each do |line|
-  ier = Logstash::IndexEventRequest.new
+  ier = LogStash::IndexEventRequest.new
   ier.log_type = "syslog"
-  #ier.log_data = line.chomp
+  ier.log_data = line[0..-2]
   ier.metadata["source_host"] = "snack.home"
   #puts ier.inspect
   ms << ier
@@ -20,7 +20,6 @@ File.open(ARGV[0]).each do |line|
     data = ms.encode
     encoded = [data.length, data].pack("NA*")
     out.write(encoded)
-
     ms.clear
   end
 end

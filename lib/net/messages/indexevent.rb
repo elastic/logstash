@@ -1,7 +1,7 @@
 
 require "lib/net/message"
 
-module Logstash
+module LogStash
   class IndexEventRequest < RequestMessage
     Message.translators << self
     def self.can_process?(data)
