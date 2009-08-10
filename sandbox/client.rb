@@ -35,7 +35,6 @@ def dumplog
     ier.log_type = "syslog"
     #ier.log_data = line[0..-2]
     ier.metadata["source_host"] = "snack.home"
-    #ier.generate_id!
     $me.sendmsg(ier)
     puts "Request; #{ier.inspect}"
     $ids << ier.id

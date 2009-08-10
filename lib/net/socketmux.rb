@@ -85,7 +85,10 @@ module LogStash; module Net
 
     def run
       while !@done
-        s_in, s_out, s_err = IO.select(@readers, @writers, nil, 1)
+        s_in, s_out, s_err = IO.select(@readers, @writers, nil, nil)
+        #puts "in: #{s_in.inspect}"
+        #puts "out: #{s_out.inspect}"
+
         if s_in
           handle_in(s_in)
         end
@@ -108,8 +111,7 @@ module LogStash; module Net
         @server_done = true
 
         # Stop accepting new connections.
-        @server.close_read
-        @readers.delete(@server)
+        remove_reader(@server)
       end
     end
 
@@ -117,13 +119,6 @@ module LogStash; module Net
       socks.each do |sock|
         if sock == @server
           server_handle(sock)
-        elsif sock == @receiver
-          client_handle(sock)
-
-          # only close the writer if we are done and have no messages left to send
-          if @msgstreams[sock].message_count == 0 and @receiver_done
-            sock.close_write rescue IOError
-          end
         else
           client_handle(sock)
         end
@@ -133,14 +128,23 @@ module LogStash; module Net
     def handle_out(socks)
       socks.each do |sock|
         ms = @msgstreams[sock]
-        if ms.message_count > 0
+        if ms.message_count == 0
+          #puts ms.inspect
+          if !@readers.include?(sock) or (@receiver_done and sock == @receiver)
+            remove_writer(sock)
+          end
+        else
+          # There are messages to send...
           begin
-            puts "Sending #{ms.message_count} messages"
-            ms.sendto(sock)
-            @writers.delete(sock)
-          rescue Errno::ECONNRESET, Errno::EPIPE
-            $stderr.puts "write error, dropping connection"
-            remove(sock)
+            #puts "Sending #{ms.message_count} messages"
+            encoded = ms.encode
+            data = [encoded.length, encoded].pack("NA*")
+            len = data.length
+            sock.write(data)
+            ms.clear
+          rescue Errno::ECONNRESET, Errno::EPIPE => e
+            $stderr.puts "write error, dropping connection (#{e})"
+            remove_writer(sock)
           end
         end
       end
@@ -159,8 +163,8 @@ module LogStash; module Net
             _sendmsg(response, sock)
           end
         end
-      rescue IOError, Errno::ECONNRESET => e
-        remove(sock)
+      rescue EOFError, IOError, Errno::ECONNRESET => e
+        remove_reader(sock)
       end
     end
 
@@ -180,20 +184,31 @@ module LogStash; module Net
       end
     end
       
-    def remove(sock)
+    def remove_writer(sock)
+      #puts "remove writer: #{caller[0]}"
       @writers.delete(sock)
+      @msgstreams.delete(sock)
+      @sendbuffers.delete(sock)
+      sock.close_write() rescue IOError
+      check_done
+    end
+
+    def remove_reader(sock)
+      #puts "remove reader: #{caller[0]}"
       @readers.delete(sock)
       @msgreaders.delete(sock)
-      @sendbuffers.delete(sock)
-      @msgstreams.delete(sock)
+      sock.close_read() rescue IOError
+      check_done
+    end
 
-      begin
-        sock.close
-      rescue IOError
-        # ignore 'close' errors
-      end
-
+    def remove(sock)
+      remove_writer(sock)
+      remove_reader(sock)
+    end
+    
+    def check_done
       @done = (@writers.length == 0 and @readers.length == 0)
     end
+
   end # class MessageSocketMux
 end; end # module LogStash::Net

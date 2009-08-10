@@ -11,18 +11,24 @@ module LogStash; module Net;
 
     def read
       begin
-        #(1..5).each do
-        @buffer += @sock.readpartial(READSIZE)
-        #end
+        @buffer += @sock.read_nonblock(READSIZE)
       rescue Errno::EAGAIN
-        # breaking condition
+        # ignore
       end
     end
 
     def each(&block)
-      read
+      begin
+        read
+      rescue EOFError => e
+        # Only reraise EOFError if we have nothing left in the buffer.
+        # If we have buffer left, it's not really an EOF.
+        if @buffer.length == 0
+          raise e
+        end
+      end
+
       have = @buffer.length
-      puts "OK #{have}"
       if have < HEADERSIZE
         need = HEADERSIZE
       else
