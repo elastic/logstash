@@ -7,7 +7,6 @@ include LogStash
 $logs = Logs.new
 
 # === define & register your logs below here
-#:grok_pattern => "%{SYSLOGBASE} Accepted %{NOTSPACE:method} for %{DATA:user} from %{IPORHOST:client} port %{INT:port}",
 log = Log::TextLog.new({:type => "httpd-access",
                         :grok_patterns => ["%{COMBINEDAPACHELOG}"],
                         :date_key => "timestamp",
@@ -24,6 +23,15 @@ $logs.register log
 
 log = Log::TextLog.new({:type => "netscreen",
                         :grok_patterns => ["%{NETSCREENSESSIONLOG}"],
+                        :date_key => "date",
+                        :date_format => "%b %e %H:%M:%S",
+})
+$logs.register log
+
+log = Log::TextLog.new({:type => "linux-syslog",
+                        :grok_patterns => ["%{SYSLOGPAMSESSION}",
+                                           "%{SYSLOGLINE}",
+                                          ],
                         :date_key => "date",
                         :date_format => "%b %e %H:%M:%S",
 })

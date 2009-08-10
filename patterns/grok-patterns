@@ -67,7 +67,7 @@ DATESTAMP %{INT}/%{INT}/%{INT}-%{INT}:%{INT}:%{INT}(\.%INT)?
 SYSLOGDATE %{MONTH} +%{MONTHDAY} %{TIME}
 PROG (?:[A-z][\w-]+(?:\/[\w-]+)?)
 PID %{INT}
-SYSLOGPROG %{PROG}(?:\[%{PID}\])?
+SYSLOGPROG %{PROG}(?:\[%{PID:pid}\])?
 SYSLOGFACILITY <%{INT:facility}.%{INT:priority}>
 HTTPDATE %{MONTHDAY}/%{MONTH}/%{YEAR}:%{TIME} %{INT:ZONE}
 
