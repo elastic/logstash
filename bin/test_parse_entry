@@ -1,13 +1,20 @@
 #!/usr/bin/ruby
 
-require 'config'
+home = ENV["LOGSTASH_HOME"] || "/opt/logstash"
+require "#{home}/config.rb"
 
-log = $logs[ARGV[0]]
+log_type = ARGV[0]
+log = $logs[log_type]
+if not log
+  $stderr.puts "invalid log_type=#{log_type} specified"
+  exit 1
+end
 
 $stdin.each do |line|
   res = log.parse_entry(line)
   if res
-    puts log.parse_entry(line)["@LINE"]
+    res.delete("@LINE")
+    puts res.inspect
   else
     $stderr.puts "** DID NOT MATCH: #{line}"
   end
