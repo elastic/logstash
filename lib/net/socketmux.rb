@@ -2,7 +2,6 @@ require 'rubygems'
 require 'socket'
 require 'time'
 require 'lib/net/message'
-require 'lib/net/messages/indexevent'
 
 # TODO(sissel): Need to implement 'read_until' callbacks.
 # read_until(1000, bar) would call 'bar' when our buffer size is 1000 bytes
