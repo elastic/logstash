@@ -69,6 +69,12 @@ module LogStash; module Net
       return jsonstr
     end
 
+    def sendto(sock)
+      data = self.encode
+      sock.write([data.length, data].pack("NA*"))
+      self.clear
+    end
+
     def self.decode(string, &block)
       data = JSON::parse(string)
       ms = MessageStream.new
