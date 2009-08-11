@@ -11,7 +11,9 @@ module LogStash; module Net;
 
     def read
       begin
-        @buffer += @sock.read_nonblock(READSIZE)
+        (1..5).each do
+          @buffer += @sock.read_nonblock(READSIZE)
+        end
       rescue Errno::EAGAIN
         # ignore
       end
@@ -28,20 +30,31 @@ module LogStash; module Net;
         end
       end
 
-      have = @buffer.length
-      if have < HEADERSIZE
-        need = HEADERSIZE
-      else
-        need = @buffer[0 .. (HEADERSIZE - 1)].unpack("N")[0] + HEADERSIZE
-      end
-
-      if have > HEADERSIZE and have >= need
-        data = @buffer[HEADERSIZE .. need - 1]
-        @buffer[0 .. need - 1] = ""
-        responses = MessageStream.decode(data) do |msg|
-          yield msg
+      done = false
+      x = 0
+      # Since we read 16K blocks, we may be given more than one message set
+      # so process until our buffer is exhausted.
+      while !done
+        have = @buffer.length
+        if have < HEADERSIZE
+          need = HEADERSIZE
+        else
+          need = @buffer[0 .. (HEADERSIZE - 1)].unpack("N")[0] + HEADERSIZE
         end
-      end
+
+        if have > HEADERSIZE and have >= need
+          x += 1
+          data = @buffer[HEADERSIZE .. need - 1]
+          @buffer[0 .. need - 1] = ""
+          responses = MessageStream.decode(data) do |msg|
+            yield msg
+          end
+        else
+          # Not enough buffer left to make up a full message,
+          # wait until next round.
+          done = true
+        end
+      end #loop
     end
   end # class MessageReader
 end; end # module LogStash::Net

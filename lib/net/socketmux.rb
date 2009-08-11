@@ -86,8 +86,6 @@ module LogStash; module Net
     def run
       while !@done
         s_in, s_out, s_err = IO.select(@readers, @writers, nil, nil)
-        #puts "in: #{s_in.inspect}"
-        #puts "out: #{s_out.inspect}"
 
         if s_in
           handle_in(s_in)
@@ -144,7 +142,8 @@ module LogStash; module Net
             ms.clear
           rescue Errno::ECONNRESET, Errno::EPIPE => e
             $stderr.puts "write error, dropping connection (#{e})"
-            remove_writer(sock)
+            #remove_writer(sock)
+            remove(sock)
           end
         end
       end
@@ -170,7 +169,7 @@ module LogStash; module Net
 
     def message_handle(msg)
       if msg.is_a?(ResponseMessage) and @ackwait.include?(msg.id)
-        @ackwait -= [msg.id]
+        @ackwait.delete(msg.id)
         #puts "ackwait #{@ackwait.length}"
       end
 
