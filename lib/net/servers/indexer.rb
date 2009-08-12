@@ -3,6 +3,7 @@ require 'rubygems'
 require 'lib/net/message'
 require 'lib/net/socketmux'
 require 'lib/net/messages/indexevent'
+require 'lib/net/messages/search'
 require 'lib/net/messages/ping'
 
 require 'ferret'
@@ -17,7 +18,7 @@ module LogStash; module Net; module Servers
       super()
       listen(addr, port)
       @indexes = Hash.new
-      @lines = Hash.new
+      @lines = Hash.new { |h,k| h[k] = 0 }
     end
 
     def IndexEventRequestHandler(request)
@@ -33,8 +34,8 @@ module LogStash; module Net; module Servers
         response.code = 0
         if not @indexes.member?(log_type)
           if not File.exists?($logs[log_type].index_dir)
-            field_infos = Index::FieldInfos.new(:store => :no,
-                                                :term_vector => :no)
+            field_infos = Ferret::Index::FieldInfos.new(:store => :no,
+                                                        :term_vector => :no)
             field_infos.add_field(:@LINE,
                                   :store => :compressed,
                                   :index => :no)
@@ -45,7 +46,7 @@ module LogStash; module Net; module Servers
             end
             field_infos.create_index($logs[log_type].index_dir)
           end
-          @indexes[log_type] = Index::Index.new(:path => $logs[log_type].index_dir)
+          @indexes[log_type] = Ferret::Index::Index.new(:path => $logs[log_type].index_dir)
         end
 
         entry["@LOG_TYPE"] = log_type
@@ -65,6 +66,28 @@ module LogStash; module Net; module Servers
       response = LogStash::Net::Messages::PingResponse.new
       response.id = request.id
       response.pingdata = request.pingdata
+      return response
+    end
+
+    def SearchRequestHandler(request)
+      response = LogStash::Net::Messages::SearchResponse.new
+      response.id = request.id
+      puts "Search for #{request.query.inspect}"
+
+      reader = Ferret::Index::IndexReader.new($logs[request.log_type].index_dir)
+      search = Ferret::Search::Searcher.new(reader)
+
+      puts reader.fields.join("\n")
+      qp = Ferret::QueryParser.new(:fields => reader.fields,
+                                           :tokenized_fields => reader.tokenized_fields,
+                                           :or_default => false)
+      query = qp.parse(request.query)
+      response.results = []
+      search.search_each(query, :limit => :all, :sort => "@DATE") do |docid, score|
+        #result =  "#{reader[docid][:@SOURCE_HOST]} | #{reader[docid][:@LOG_NAME]} | #{reader[docid][:@LINE]}"
+        result =  reader[docid][:@LINE]
+        response.results << result
+      end
       return response
     end
 
