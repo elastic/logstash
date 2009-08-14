@@ -1,7 +1,7 @@
 
 require 'rubygems'
+require 'lib/net/server'
 require 'lib/net/message'
-require 'lib/net/socketmux'
 require 'lib/net/messages/indexevent'
 require 'lib/net/messages/search'
 require 'lib/net/messages/ping'
@@ -12,7 +12,7 @@ require 'config'
 
 
 module LogStash; module Net; module Servers
-  class Indexer < LogStash::Net::MessageSocketMux
+  class Indexer < LogStash::Net::MessageServer
     def initialize(addr="0.0.0.0", port=3001)
       # 'super' is not the same as 'super()', and we want super().
       super()
@@ -29,7 +29,7 @@ module LogStash; module Net; module Servers
       entry = $logs[log_type].parse_entry(request.log_data)
       if !entry
         response.code = 1
-        response.error = "Entry was #{entry.inspect}"
+        response.error = "Entry was #{entry.inspect} (log parsing failed)"
       else
         response.code = 0
         if not @indexes.member?(log_type)

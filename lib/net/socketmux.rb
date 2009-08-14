@@ -1,27 +1,15 @@
-require 'rubygems'
-require 'socket'
-require 'time'
+require 'lib/net/common'
 require 'lib/net/message'
 require 'lib/net/messagereader'
 require 'set'
+require 'socket'
 require 'thread'
-
-# TODO(sissel): Need to implement 'read_until' callbacks.
-# read_until(1000, bar) would call 'bar' when our buffer size is 1000 bytes
+require 'time'
 
 module LogStash; module Net
-  MAXMSGLEN = (1 << 20)
-
-  # We don't actually wait on acks, yet.
-  ACKWAIT_MAX = 20
-
-  # Acts as a client and a server.
   class MessageSocketMux
     def initialize
-      @lock = Mutex.new
-      @count = 0
-      @start = Time.now.to_f
-
+      @writelock = Mutex.new
       @server = nil
       @receiver = nil
 
@@ -29,13 +17,14 @@ module LogStash; module Net
       @server_done = false
       @receiver_done = false
 
+      # Socket list for readers and writers
       @readers = []
       @writers = []
-      @sendbuffers = Hash.new { |h,k| h[k] = "" }
-      @msgstreams = Hash.new do
+
+      @msgoutstreams = Hash.new do
         |h,k| h[k] = LogStash::Net::MessageStream.new
       end
-      @msgreaders = Hash.new do |h,k| 
+      @msgreaders = Hash.new do |h,k|
         h[k] = LogStash::Net::MessageReader.new(k)
       end
 
@@ -55,48 +44,43 @@ module LogStash; module Net
       add_socket(@receiver)
     end
 
-    def add_socket(sock)
-      @readers << sock
-      @writers << sock
-    end
-
+    # Send a message. This method queues the message in the outbound
+    # message queue. To actually make the message get sent on the wire
+    # you need to call MessageSocketMux#sendrecv or MessageSocketMux#run
+    #
+    # If you are implementing a client, you can omit the 'sock' argument
+    # because it will automatically send to the server you connected to.
+    # If a socket is given, send to that specific socket. 
     def sendmsg(msg, sock=nil)
-      @lock.synchronize do
+      @writelock.synchronize do
         _sendmsg(msg, sock)
       end
     end
 
-    def _sendmsg(msg, sock=nil)
-      if msg == nil
-        raise "msg is nil"
-      end
-
-      if (msg.is_a?(RequestMessage) and msg.id == nil)
-        msg.generate_id!
-      end
-
-      sock = (sock or @receiver)
-      if !@writers.include?(sock)
-        @writers << sock
-      end
-      @msgstreams[sock] << msg
-      @ackwait << msg.id
-    end
-
+    # Run indefinitely.
+    # Ending conditions are when there are no sockets left open.
+    # If you want to terminate the server (#listen or #connect) then
+    # call MessageSocketMux#close
     def run
       while !@done
-        s_in, s_out, s_err = IO.select(@readers, @writers, nil, nil)
-
-        if s_in
-          handle_in(s_in)
-        end
-
-        @lock.synchronize do
-          if s_out
-            handle_out(s_out)
-          end
-        end # @lock
+        sendrecv(nil)
       end
+    end
+
+    # Wait for network data (input and output) for the given timeout
+    # If timeout is nil, we will wait until there is data.
+    # If timeout is a positive number, we will wait that number of seconds
+    #   or until there is data - whichever is first.
+    # If timeout is zero, we will not wait at all for data.
+    #
+    # Returns true if there was network data handled, false otherwise.
+    def sendrecv(timeout=nil)
+      s_in, s_out, s_err = IO.select(@readers, @writers, nil, timeout)
+      handle_in(s_in) if s_in
+      handle_out(s_out) if s_out
+
+      # Return true if we got data at all.
+      return (s_in != nil or s_out != nil)
     end
 
     def close
@@ -105,14 +89,75 @@ module LogStash; module Net
         # Don't close our writer yet. Wait until our outbound queue is empty.
       end
 
-      if @serer
+      if @server
         @server_done = true
-
         # Stop accepting new connections.
         remove_reader(@server)
       end
     end
 
+    private
+    def add_socket(sock)
+      @readers << sock
+      @writers << sock
+    end
+
+    private
+    def _sendmsg(msg, sock=nil)
+      if msg == nil
+        raise "msg is nil"
+      end
+
+      # Handle if 'msg' is actually an array of messages
+      if msg.is_a?(Array)
+        msg.each do |m|
+          _sendmsg(m, sock)
+        end
+        return
+      end
+
+      if msg.is_a?(RequestMessage) and msg.id == nil
+        msg.generate_id!
+      end
+
+      sock = (sock or @receiver)
+      if !@writers.include?(sock)
+        @writers << sock
+      end
+      @msgoutstreams[sock] << msg
+      @ackwait << msg.id
+    end # def _sendmsg
+
+    private
+    def remove_writer(sock)
+      puts "remove writer: #{caller[0]}"
+      @writers.delete(sock)
+      @msgoutstreams.delete(sock)
+      sock.close_write() rescue nil   # Ignore close errors
+      check_done
+    end # def remove_writer
+
+    private
+    def remove_reader(sock)
+      puts "remove reader: #{caller[0]}"
+      @readers.delete(sock)
+      @msgreaders.delete(sock)
+      sock.close_read() rescue nil   # Ignore close errors
+      check_done
+    end # def remove_reader
+
+    private
+    def remove(sock)
+      remove_writer(sock)
+      remove_reader(sock)
+    end; # def remove
+
+    private
+    def check_done
+      @done = (@writers.length == 0 and @readers.length == 0)
+    end # def check_done
+
+    private
     def handle_in(socks)
       socks.each do |sock|
         if sock == @server
@@ -120,53 +165,57 @@ module LogStash; module Net
         else
           client_handle(sock)
         end
-      end
-    end
+      end 
+    end # def handle_in
 
+    private
     def handle_out(socks)
-      socks.each do |sock|
-        ms = @msgstreams[sock]
-        if ms.message_count == 0
-          #puts ms.inspect
-          if !@readers.include?(sock) or (@receiver_done and sock == @receiver)
-            remove_writer(sock)
-          end
-        else
-          # There are messages to send...
-          begin
-            #puts "Sending #{ms.message_count} messages"
+      # Lock early in the event we have to handle lots of sockets or messages
+      # Locking too much causes slowdowns.
+      @writelock.synchronize do
+        socks.each do |sock|
+          ms = @msgoutstreams[sock]
+          if ms.message_count == 0
+            if @receiver_done and sock == @receiver
+              remove_writer(sock)
+            end
+          else
+            # There are messages to send...
             encoded = ms.encode
             data = [encoded.length, encoded].pack("NA*")
             len = data.length
-            sock.write(data)
+            begin
+              sock.write(data)
+            rescue Errno::ECONNRESET, Errno::EPIPE => e
+              $stderr.puts "write error, dropping connection (#{e})"
+              remove(sock)
+            end
             ms.clear
-          rescue Errno::ECONNRESET, Errno::EPIPE => e
-            $stderr.puts "write error, dropping connection (#{e})"
-            #remove_writer(sock)
-            remove(sock)
-          end
-        end
-      end
-    end
+          end # else / ms.message_count == 0
+        end # socks.each
+      end # @writelock.synchronize
+    end # def handle_out
 
+    private
     def server_handle(sock)
       client = sock.accept_nonblock
       add_socket(client)
-    end
-    
+    end # def server_handle
+
+    private
     def client_handle(sock)
       begin
         @msgreaders[sock].each do |msg|
           message_handle(msg) do |response|
-            # Send a response for the msg.
             _sendmsg(response, sock)
           end
         end
       rescue EOFError, IOError, Errno::ECONNRESET => e
         remove_reader(sock)
       end
-    end
+    end # def client_handle
 
+    private
     def message_handle(msg)
       if msg.is_a?(ResponseMessage) and @ackwait.include?(msg.id)
         @ackwait.delete(msg.id)
@@ -181,33 +230,6 @@ module LogStash; module Net
       else
         $stderr.puts "No handler for message class '#{msg.class.name}'"
       end
-    end
-      
-    def remove_writer(sock)
-      #puts "remove writer: #{caller[0]}"
-      @writers.delete(sock)
-      @msgstreams.delete(sock)
-      @sendbuffers.delete(sock)
-      sock.close_write() rescue IOError
-      check_done
-    end
-
-    def remove_reader(sock)
-      #puts "remove reader: #{caller[0]}"
-      @readers.delete(sock)
-      @msgreaders.delete(sock)
-      sock.close_read() rescue IOError
-      check_done
-    end
-
-    def remove(sock)
-      remove_writer(sock)
-      remove_reader(sock)
-    end
-    
-    def check_done
-      @done = (@writers.length == 0 and @readers.length == 0)
-    end
-
+    end # def message_handle
   end # class MessageSocketMux
 end; end # module LogStash::Net

@@ -34,5 +34,9 @@ module LogStash; module Net; module Messages
     # Message attributes
     hashbind :code, "/args/code"
     hashbind :error, "/args/error"
+
+    def success?
+      return self.code == 0
+    end
   end # class IndexEventResponse
 end; end; end # module LogStash::Net::Messages

@@ -4,7 +4,7 @@
 require 'rubygems'
 require "socket"
 require "lib/net/message"
-require "lib/net/socketmux"
+require "lib/net/client"
 require "lib/net/messages/indexevent"
 require "lib/net/messages/ping"
 require "set"
@@ -14,8 +14,9 @@ $lastid = nil
 $count = 0
 $time = 0
 $start = Time.now.to_f
+$ids = Hash.new
 
-class Client < LogStash::Net::MessageSocketMux
+class Client < LogStash::Net::MessageClient
   def gotresponse(msg)
     $count += 1
     $ids.delete(msg.id)
@@ -27,41 +28,51 @@ class Client < LogStash::Net::MessageSocketMux
   end
 
   def IndexEventResponseHandler(msg)
+    #puts "Response (have #{$count} / want: #{$ids.length} acks); #{msg.inspect}"
+    if !msg.success?
+      req = $ids[msg.id]
+      puts "FAIL: #{req.inspect}"
+    end
+    #if $ids.length < 5
+      #puts $ids.collect { |k,v| "#{k.inspect}: #{v.inspect}" }.join(", ")
+    #end
     gotresponse(msg)
-    puts "Response (have #{$count} / want: #{$ids.length} acks); #{msg.inspect}"
   end
 
   def PingResponseHandler(msg)
-    gotresponse(msg)
 
     now = Time.now.to_f()
     $time += (now - msg.pingdata)
     rate = $count / (now - $start)
 
     puts "\rK#{$time / $count} (#{rate})"
+    gotresponse(msg)
   end
 end
 
 $me = Client.new
 $me.connect("localhost", 3001)
-$ids = Set.new
 
 def dumplog
 
+  msgqueue = []
   File.open(ARGV[0]).each do |line|
-    msg = LogStash::Net::Messages::IndexEventRequest.new
-    msg.log_type = "linux-syslog"
-    msg.log_data = line[0..-2]
-    msg.metadata["source_host"] = "snack.home"
-    $me.sendmsg(msg)
-    $ids << msg.id
+    ier = LogStash::Net::Messages::IndexEventRequest.new
+    ier.log_type = "linux-syslog"
+    ier.log_data = line[0..-2]
+    ier.metadata["source_host"] = "snack.home"
 
-    msg = LogStash::Net::Messages::PingRequest.new
-    $me.sendmsg(msg)
-    $ids << msg.id
+    msgqueue << ier
 
-    # slow messages down
-    #sleep 1
+    #ping = LogStash::Net::Messages::PingRequest.new
+    #msgqueue << ping
+    if msgqueue.length > 20
+      $me.sendmsg(msgqueue)
+      msgqueue.each do |msg|
+        $ids[msg.id] = msg
+      end
+      msgqueue.clear
+    end
 
     # Exponential backoff.
     time = 0.2
@@ -74,6 +85,12 @@ def dumplog
       end
     end
   end
+
+    if msgqueue.length > 20
+      puts "Leftovers..."
+      $me.sendmsg(msgqueue)
+      msgqueue.clear
+    end
 
   $me.close()
   $done = true
