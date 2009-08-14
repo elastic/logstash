@@ -146,7 +146,7 @@ module LogStash; module Net
 
     def initialize
       super
-      @data["args"] = Hash.new
+      self.args = Hash.new
     end
 
     def generate_id!
@@ -167,5 +167,11 @@ module LogStash; module Net
 
     # Message attributes
     hashbind :name, "/response"
+
+    # Report the success of the request this response is for.
+    # Should be implemented by subclasses
+    def success?
+      raise NotImplementedError
+    end
   end # class ResponseMessage
 end; end # module LogStash::Net
