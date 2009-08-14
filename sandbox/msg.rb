@@ -5,18 +5,18 @@ require "rubygems"
 require "lib/net/message"
 require "lib/net/messages/indexevent"
 
-ms = LogStash::MessageStream.new
+ms = LogStash::Net::MessageStream.new
 (1 .. 3).each do |i|
-  x = LogStash::IndexEventRequest.new
+  x = LogStash::Net::Messages::IndexEventRequest.new
   x.log_type = "apache"
   ms << x
 end
 
-z = LogStash::IndexEventResponse.new
+z = LogStash::Net::Messages::IndexEventResponse.new
 z.id = 2
 
 ms << z
 
-LogStash::MessageStream.decode(ms.encode) do |msg|
+LogStash::Net::MessageStream.decode(ms.encode) do |msg|
   puts msg.inspect
 end

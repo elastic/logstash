@@ -2,3 +2,60 @@ required gems:
 - mkdtemp
 - json
 - ferret
+
+
+This code is not beta, not alpha, but like something unnamed where
+only three people in the world have gotten it to run. YMMV. Expect
+much debuggery.
+
+
+
+# Prereqs:
+These instructions assume you are on a relatively recent
+linux system, that you have a working (C) build environment,
+that you have ruby and rubygems installed.
+
+
+# Installation Instructions...
+You should have ruby and rubygems installed.
+After that install the following gems, via 'gem install gemname'
+
+required gems:
+- mkdtemp
+- json
+- ferret
+- ruby-prof
+
+
+You'll also need ruby-grok - see instructions below..
+
+# INSTALLING GROK
+Install grok ruby bindings
+http://code.google.com/p/semicomplete/source/browse/cgrok/ruby/INSTALL
+
+If you are on centos download and install a newer flex:
+ftp://mirrors.kernel.org/fedora/releases/9/Fedora/source/SRPMS/flex-2.5.35-1.fc9.src.rpm
+
+Install the following packages (centos: sudo yum install pkgname)
+pcre-devel, libevent-devel, gperf
+svn checkout http://semicomplete.googlecode.com/svn/cgrok
+cd cgrok
+make
+sudo make install
+cd ruby
+ruby extconf.rb
+make
+sudo make install
+
+Check your /etc/ld.so.conf, or /etc/ld.so.conf.d/* . 
+If not already set add /usr/local/lib
+
+# RUNNING INSTRUCTIONS
+Unpack into /opt/logstash, then cd into that directory
+
+ruby sandbox/srv.rb
+... in another window...
+ruby sandbox/client.rb /var/log/messages # loads messages into logstash
+# ^^ get "Entry was nil" ..
+ruby sandbox/searchclient.rb linux-syslog "search_string"
+

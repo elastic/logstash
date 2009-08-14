@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 #
-
+require 'rubygems'
 require "socket"
 require "lib/net/message"
 require "lib/net/socketmux"
