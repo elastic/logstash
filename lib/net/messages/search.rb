@@ -1,4 +1,3 @@
-
 require "lib/net/message"
 
 module LogStash; module Net; module Messages
