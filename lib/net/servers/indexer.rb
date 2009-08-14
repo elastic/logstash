@@ -62,14 +62,14 @@ module LogStash; module Net; module Servers
         end
 
       end
-      return response
+      yield response
     end
 
     def PingRequestHandler(request)
       response = LogStash::Net::Messages::PingResponse.new
       response.id = request.id
       response.pingdata = request.pingdata
-      return response
+      yield response
     end
 
     def SearchRequestHandler(request)
@@ -89,9 +89,11 @@ module LogStash; module Net; module Servers
       search.search_each(query, :limit => :all, 
                          :sort => "@DATE") do |docid, score|
         result =  reader[docid][:@LINE]
-        response.results << result
+        response = LogStash::Net::Messages::SearchResponse.new
+        response.id = request.id
+        response.results = [result]
+        yield response
       end
-      return response
     end
 
     # Special 'run' override because we want sync to disk once per minute.

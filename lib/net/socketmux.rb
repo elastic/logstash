@@ -269,8 +269,9 @@ module LogStash; module Net
       msgtype = msg.class.name.split(":")[-1]
       handler = "#{msgtype}Handler"
       if self.respond_to?(handler)
-        reply = self.send(handler, msg)
-        yield reply if reply != nil
+        self.send(handler, msg) do |reply|
+          yield reply if reply != nil
+        end
       else
         $stderr.puts "No handler for message class '#{msg.class.name}'"
       end

@@ -31,7 +31,7 @@ class Client < LogStash::Net::MessageSocketMux
     msg.results.each do |result|
       puts result
     end
-    gotresponse(msg)
+    #gotresponse(msg)
   end
 end
 
