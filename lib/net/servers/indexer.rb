@@ -13,6 +13,8 @@ require 'config'
 
 module LogStash; module Net; module Servers
   class Indexer < LogStash::Net::MessageServer
+    SYNCDELAY = 60
+
     def initialize(addr="0.0.0.0", port=3001)
       # 'super' is not the same as 'super()', and we want super().
       super()
@@ -24,6 +26,7 @@ module LogStash; module Net; module Servers
     def IndexEventRequestHandler(request)
       response = LogStash::Net::Messages::IndexEventResponse.new
       response.id = request.id
+      puts request.inspect
 
       log_type = request.log_type
       entry = $logs[log_type].parse_entry(request.log_data)
@@ -77,19 +80,44 @@ module LogStash; module Net; module Servers
       reader = Ferret::Index::IndexReader.new($logs[request.log_type].index_dir)
       search = Ferret::Search::Searcher.new(reader)
 
-      puts reader.fields.join("\n")
+      #puts reader.fields.join("\n")
       qp = Ferret::QueryParser.new(:fields => reader.fields,
-                                           :tokenized_fields => reader.tokenized_fields,
-                                           :or_default => false)
+                                   :tokenized_fields => reader.tokenized_fields,
+                                   :or_default => false)
       query = qp.parse(request.query)
       response.results = []
-      search.search_each(query, :limit => :all, :sort => "@DATE") do |docid, score|
-        #result =  "#{reader[docid][:@SOURCE_HOST]} | #{reader[docid][:@LOG_NAME]} | #{reader[docid][:@LINE]}"
+      search.search_each(query, :limit => :all, 
+                         :sort => "@DATE") do |docid, score|
         result =  reader[docid][:@LINE]
         response.results << result
       end
       return response
     end
+
+    # Special 'run' override because we want sync to disk once per minute.
+    def run
+      synctime = Time.now + SYNCDELAY
+      sleeptime = 1
+      loop do
+        active = sendrecv(sleeptime)
+        if !active
+          sleeptime *= 2
+          if sleeptime > SYNCDELAY
+            sleeptime = SYNCDELAY
+          end
+          puts "No activity, sleeping for #{sleeptime}"
+        end
+
+        if Time.now > synctime
+          synctime = Time.now + 60
+
+          @indexes.each do |log_type,index|
+            puts "Time's up. Syncing #{log_type}"
+            index.commit
+          end
+        end
+      end
+    end # def run
 
   end # Indexer
 end; end; end # LogStash::Net::Server

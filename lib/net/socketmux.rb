@@ -7,18 +7,30 @@ require 'thread'
 require 'time'
 
 module LogStash; module Net
+  class MessageClientConnectionReset < StandardError; end
+  class NoSocket < StandardError; end
+
   class MessageSocketMux
     def initialize
       @writelock = Mutex.new
       @server = nil
       @receiver = nil
 
+      # signal and signal observer are for allowing us to break
+      # out of the select() call whenever sendmsg() is invoked.
+      # sendmsg() puts a new writer on the list of @writers and we need
+      # to rerun the select() to pick that change up.
+      # We maybe should switch to EventMachine (like libevent) for
+      # doing this event handling nonsense for us.
+      @signal, @signal_observer = Socket::socketpair(Socket::PF_LOCAL,
+                                                     Socket::SOCK_DGRAM, 0)
+
       # server_done is unused right now
       @server_done = false
       @receiver_done = false
 
       # Socket list for readers and writers
-      @readers = []
+      @readers = [@signal_observer]
       @writers = []
 
       @msgoutstreams = Hash.new do
@@ -42,6 +54,7 @@ module LogStash; module Net
     def connect(addr="0.0.0.0", port=0)
       @receiver = TCPSocket.new(addr, port)
       add_socket(@receiver)
+      return true
     end
 
     # Send a message. This method queues the message in the outbound
@@ -75,9 +88,22 @@ module LogStash; module Net
     #
     # Returns true if there was network data handled, false otherwise.
     def sendrecv(timeout=nil)
-      s_in, s_out, s_err = IO.select(@readers, @writers, nil, timeout)
+      writers = @writers.select { |w| @msgoutstreams.has_key?(w) }
+      #puts "Writers: #{@writers}"
+      #puts "Readers: #{@readers}"
+      #puts "rcv: #{@receiver}"
+      had_receiver = @receiver != nil
+      s_in, s_out, s_err = IO.select(@readers, writers, nil, timeout)
+
       handle_in(s_in) if s_in
       handle_out(s_out) if s_out
+      sleep 1
+
+      # If we had a client (via connect()) before, but we don't now,
+      # raise an exception so the client can make a decision.
+      if (had_receiver and @receiver == nil)
+        raise MessageClientConnectionReset
+      end
 
       # Return true if we got data at all.
       return (s_in != nil or s_out != nil)
@@ -99,7 +125,7 @@ module LogStash; module Net
     private
     def add_socket(sock)
       @readers << sock
-      @writers << sock
+      #@writers << sock
     end
 
     private
@@ -121,10 +147,15 @@ module LogStash; module Net
       end
 
       sock = (sock or @receiver)
+      if sock == nil
+        raise NoSocket
+      end
       if !@writers.include?(sock)
         @writers << sock
+        @signal.write("x")
       end
       @msgoutstreams[sock] << msg
+      
       @ackwait << msg.id
     end # def _sendmsg
 
@@ -133,6 +164,7 @@ module LogStash; module Net
       puts "remove writer: #{caller[0]}"
       @writers.delete(sock)
       @msgoutstreams.delete(sock)
+      @receiver = nil if sock == @receiver
       sock.close_write() rescue nil   # Ignore close errors
       check_done
     end # def remove_writer
@@ -142,6 +174,7 @@ module LogStash; module Net
       puts "remove reader: #{caller[0]}"
       @readers.delete(sock)
       @msgreaders.delete(sock)
+      @receiver = nil if sock == @receiver
       sock.close_read() rescue nil   # Ignore close errors
       check_done
     end # def remove_reader
@@ -154,7 +187,8 @@ module LogStash; module Net
 
     private
     def check_done
-      @done = (@writers.length == 0 and @readers.length == 0)
+      @done = (@writers.length == 0 and @readers.length == 0 and
+               @receiver_done or @server_done)
     end # def check_done
 
     private
@@ -162,6 +196,9 @@ module LogStash; module Net
       socks.each do |sock|
         if sock == @server
           server_handle(sock)
+        elsif sock == @signal_observer
+          # clear signal
+          @signal_observer.readpartial(1)
         else
           client_handle(sock)
         end
@@ -185,12 +222,16 @@ module LogStash; module Net
             data = [encoded.length, encoded].pack("NA*")
             len = data.length
             begin
+              #puts "Writing #{data.length}"
               sock.write(data)
             rescue Errno::ECONNRESET, Errno::EPIPE => e
               $stderr.puts "write error, dropping connection (#{e})"
               remove(sock)
             end
             ms.clear
+            # We flushed, remove this writer from the list of things
+            # we care to write to, for now.
+            @writers.delete(sock)
           end # else / ms.message_count == 0
         end # socks.each
       end # @writelock.synchronize
@@ -212,6 +253,9 @@ module LogStash; module Net
         end
       rescue EOFError, IOError, Errno::ECONNRESET => e
         remove_reader(sock)
+        if sock == @receiver
+          raise MessageClientConnectionReset
+        end
       end
     end # def client_handle
 
