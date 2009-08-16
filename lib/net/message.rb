@@ -1,4 +1,5 @@
 require "json"
+require "lib/net/messagestream"
 
 module BindToHash
   def hashbind(method, key)
@@ -43,55 +44,6 @@ end # modules BindToHash
 
 module LogStash; module Net
   PROTOCOL_VERSION = 1
-
-  class MessageStream
-    attr_reader :message_count
-
-    def initialize
-      @data = Hash.new
-      @data["version"] = PROTOCOL_VERSION
-      @data["messages"] = Array.new
-      @message_count = 0
-    end
-
-    def <<(message)
-      @data["messages"] << message
-      @message_count += 1
-    end
-
-    def clear
-      @data["messages"] = []
-      @message_count = 0
-    end
-    
-    def encode
-      jsonstr = JSON::dump(@data)
-      return jsonstr
-    end
-
-    def sendto(sock)
-      data = self.encode
-      #puts "Writing #{data.length} bytes to #{sock}"
-      #puts data.inspect
-      sock.write([data.length, data].pack("NA*"))
-      self.clear
-    end
-
-    def self.decode(string, &block)
-      data = JSON::parse(string)
-      ms = MessageStream.new
-      if data["version"] != PROTOCOL_VERSION
-        # throw some kind of error
-      end
-
-      responses = []
-      data["messages"].each do |msgdata|
-        msg = Message.new_from_data(msgdata)
-        responses << (yield msg)
-      end
-      return responses
-    end
-  end # class MessageStream
 
   class Message
     extend BindToHash

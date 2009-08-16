@@ -1,5 +1,6 @@
 require 'lib/net/common'
 require 'lib/net/message'
+require 'lib/net/messagestream'
 require 'lib/net/messagereader'
 require 'set'
 require 'socket'
