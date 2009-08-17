@@ -23,8 +23,8 @@ class File; module Tail;
   class Since < File::Tail::Logfile
     attr_accessor :statefile
 
-    def initialize(statefile, *args)
-      @statefile = statefile
+    def initialize(*args)
+      @statefile = "#{ENV["HOME"]}/.rb_since"
       super(*args)
       load_state
     end
@@ -43,7 +43,11 @@ class File; module Tail;
     end
 
     def load_state
-      statefd = File.open(statefile, "r");
+      if !File.exist?(@statefile)
+        return Hash.new
+      end
+
+      statefd = File.open(@statefile, "r");
       lock_state(statefd) do
         data = (YAML::load(statefd.read()) or Hash.new)
         if data.has_key?(path)
@@ -59,7 +63,7 @@ class File; module Tail;
     end
 
     def save_state
-      statefd = File.open(statefile, "w+");
+      statefd = File.open(@statefile, "w+");
       lock_state(statefd) do
         # TODO(sissel): We should catch load/read exceptions
         data = (YAML::load(statefd.read()) or Hash.new)
@@ -80,7 +84,7 @@ class File; module Tail;
 end; end; # File::Tail
 
 if $0 == __FILE__
-  File::Tail::Since.new(statefile="/tmp/since.state", "/var/log/messages").tail do |line|
+  File::Tail::Since.new("/var/log/messages").tail do |line|
     puts line
   end
 end
