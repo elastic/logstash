@@ -2,16 +2,19 @@ require 'lib/net/common'
 
 module LogStash; module Net;
   READSIZE = 16384
-  HEADERSIZE = 4
+  HEADERSIZE = 8
 
-  class MessageReaderCorruptOrOversizeMessage < StandardError
-    attr_reader :size
-    def initialize(size)
-      @size = size
-      super("Corrupt or oversize message inbound - Size of '#{size}' is too " +
-            "large. Max length is #{MAXMSGLEN}")
+  class MessageReaderCorruptMessage < StandardError
+    attr_reader :expected_checksum
+    attr_reader :data
+
+    def initialize(checksum, data)
+      @expected_checksum = checksum
+      @data = data
+      super("Corrupt message read. Expected checksum #{checksum}, got " + 
+            "#{data.checksum} / #{data.inspect}")
     end # def initialize
-  end # class MessageReaderCorruptOrOversizeMessage
+  end # class MessageReaderCorruptMessage
 
   # This class will yield Message objects from a socket.
   class MessageReader
@@ -27,7 +30,7 @@ module LogStash; module Net;
       # so process until our buffer is exhausted.
       while ready?
         need = next_length
-        data = @buffer[HEADERSIZE .. need - 1]
+        length, checksum, data = @buffer.unpack("NNA#{need - HEADERSIZE}")
         @buffer[0 .. need - 1] = ""
         responses = MessageStream.decode(data) do |msg|
           yield msg
@@ -80,18 +83,23 @@ module LogStash; module Net;
       need = HEADERSIZE
       if have > HEADERSIZE
         need = next_length
+
+        if have >= need
+          length, checksum, data = @buffer.unpack("NNA#{need - HEADERSIZE}")
+          if data.checksum != checksum
+            puts @buffer.inspect[0..200]
+            raise MessageReaderCorruptMessage.new(checksum, data)
+          end
+          return true
+        end
       end
 
-      if need > MAXMSGLEN
-        raise MessageReaderCorruptOrOversizeMessage.new(need)
-      end
-
-      return (have > HEADERSIZE and have >= need)
+      return false
     end
 
     private
     def next_length
-      @buffer[0 .. (HEADERSIZE - 1)].unpack("N")[0] + HEADERSIZE
+      @buffer.unpack("N")[0] + HEADERSIZE
     end # def next_length
 
   end # class MessageReader

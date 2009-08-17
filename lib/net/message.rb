@@ -4,10 +4,8 @@ require "lib/net/messagestream"
 module BindToHash
   def hashbind(method, key)
     self.class_eval do
-      #puts "hashbind #{method}"
       define_method(method) { BindToHash.hashpath_get(@data, key) }
       define_method("#{method}=") { |v| BindToHash.hashpath_set(@data, key, v) }
-      #puts instance_method("#{method}=")
     end
   end
 

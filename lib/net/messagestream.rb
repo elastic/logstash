@@ -1,3 +1,5 @@
+require 'lib/net/common'
+
 module LogStash; module Net
   class MessageStream
 
@@ -16,7 +18,7 @@ module LogStash; module Net
     end
 
     def clear
-      @data["messages"] = []
+      @data["messages"] = Array.new
     end # def clear
 
     def encode
@@ -24,11 +26,15 @@ module LogStash; module Net
       return jsonstr
     end # def encode
 
-    def sendto(sock)
+    # unused for now
+    def _unused____sendto(sock)
       data = self.encode
-      #puts "Writing #{data.length} bytes to #{sock}"
-      #puts data.inspect
-      sock.write([data.length, data].pack("NA*"))
+      puts "Writing #{data.length} bytes to #{sock}"
+      bytestream = [data.length, data.checksum, data].pack("NNA*")
+      if bytestream.length < 100
+        puts bytestream.inspect
+      end
+      sock.write(bytestream)
       self.clear
     end # def sendto
 

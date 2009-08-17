@@ -90,15 +90,11 @@ module LogStash; module Net
     # Returns true if there was network data handled, false otherwise.
     def sendrecv(timeout=nil)
       writers = @writers.select { |w| @msgoutstreams.has_key?(w) }
-      #puts "Writers: #{@writers}"
-      #puts "Readers: #{@readers}"
-      #puts "rcv: #{@receiver}"
       had_receiver = @receiver != nil
       s_in, s_out, s_err = IO.select(@readers, writers, nil, timeout)
 
       handle_in(s_in) if s_in
       handle_out(s_out) if s_out
-      sleep 1
 
       # If we had a client (via connect()) before, but we don't now,
       # raise an exception so the client can make a decision.
@@ -199,7 +195,7 @@ module LogStash; module Net
           server_handle(sock)
         elsif sock == @signal_observer
           # clear signal
-          @signal_observer.readpartial(1)
+          @signal_observer.sysread(1)
         else
           client_handle(sock)
         end
@@ -220,16 +216,18 @@ module LogStash; module Net
           else
             # There are messages to send...
             encoded = ms.encode
-            data = [encoded.length, encoded].pack("NA*")
+            data = [encoded.length, encoded.checksum, encoded].pack("NNA*")
             len = data.length
             begin
-              #puts "Writing #{data.length}"
-              sock.write(data)
+              # TODO(sissel): use nonblocking writes and keep track of what
+              # data has been written successfully.
+              bytes = sock.write(data)
             rescue Errno::ECONNRESET, Errno::EPIPE => e
               $stderr.puts "write error, dropping connection (#{e})"
               remove(sock)
             end
             ms.clear
+
             # We flushed, remove this writer from the list of things
             # we care to write to, for now.
             @writers.delete(sock)
@@ -264,7 +262,6 @@ module LogStash; module Net
     def message_handle(msg)
       if msg.is_a?(ResponseMessage) and @ackwait.include?(msg.id)
         @ackwait.delete(msg.id)
-        #puts "ackwait #{@ackwait.length}"
       end
 
       msgtype = msg.class.name.split(":")[-1]
