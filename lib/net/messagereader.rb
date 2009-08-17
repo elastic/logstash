@@ -12,7 +12,7 @@ module LogStash; module Net;
       @expected_checksum = checksum
       @data = data
       super("Corrupt message read. Expected checksum #{checksum}, got " + 
-            "#{data.checksum} / #{data.inspect}")
+            "#{data.checksum}")
     end # def initialize
   end # class MessageReaderCorruptMessage
 
@@ -87,7 +87,6 @@ module LogStash; module Net;
         if have >= need
           length, checksum, data = @buffer.unpack("NNA#{need - HEADERSIZE}")
           if data.checksum != checksum
-            puts @buffer.inspect[0..200]
             raise MessageReaderCorruptMessage.new(checksum, data)
           end
           return true

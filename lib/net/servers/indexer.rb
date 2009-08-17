@@ -13,7 +13,7 @@ require 'config'
 
 module LogStash; module Net; module Servers
   class Indexer < LogStash::Net::MessageServer
-    SYNCDELAY = 60
+    SYNCDELAY = 10
 
     def initialize(addr="0.0.0.0", port=3001)
       # 'super' is not the same as 'super()', and we want super().
@@ -26,7 +26,6 @@ module LogStash; module Net; module Servers
     def IndexEventRequestHandler(request)
       response = LogStash::Net::Messages::IndexEventResponse.new
       response.id = request.id
-      puts request.inspect
 
       log_type = request.log_type
       entry = $logs[log_type].parse_entry(request.log_data)
@@ -63,17 +62,22 @@ module LogStash; module Net; module Servers
                                    :tokenized_fields => reader.tokenized_fields,
                                    :or_default => false)
       query = qp.parse(request.query)
+      results = []
       search.search_each(query, :limit => :all, 
                          :sort => "@DATE") do |docid, score|
         result =  reader[docid][:@LINE]
-        response = LogStash::Net::Messages::SearchResponse.new
-        response.id = request.id
-        response.results = [result]
-        yield response
+        results << result
+        if results.length > 10
+          response = LogStash::Net::Messages::SearchResponse.new
+          response.id = request.id
+          response.results = results
+          yield response
+          results = []
+        end
       end
       response = LogStash::Net::Messages::SearchResponse.new
       response.id = request.id
-      response.results = []
+      response.results = results
       response.finished = true
       yield response
     end

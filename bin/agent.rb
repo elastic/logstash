@@ -21,22 +21,30 @@ class Agent < LogStash::Net::MessageClient
     Thread.new do
       File::Tail::Since.new("/var/log/messages").tail do |line|
         line.chomp!
-        puts "Found line: #{line}"
-        index(line)
+        index("linux-syslog", line)
+      end
+    end
+
+    Thread.new do
+      File::Tail::Since.new("/b/access").tail do |line|
+        line.chomp!
+        index("httpd-access", line)
       end
     end
   end # def start_log_watcher
 
-  def index(string)
+  def index(type, string)
     ier = LogStash::Net::Messages::IndexEventRequest.new
-    ier.log_type = "linux-syslog"
+    ier.log_type = type
     ier.log_data = string
     ier.metadata["source_host"] = @hostname
 
     sent = false
     while !sent
       begin
-        puts "Trying to send: #{ier.inspect}"
+        $stdout.write(".")
+        $stdout.flush
+        #puts "Trying to send: #{ier.inspect}"
         sendmsg(ier)
         sent = true
       rescue LogStash::Net::NoSocket

@@ -43,7 +43,7 @@ module LogStash
     end
 
     def index_dir
-      return "#{@home}/var/indexes/#{@attrs["log:name"]}"
+      return "#{@home}/var/indexes/#{@attrs["log:type"]}"
     end
 
     def create_index

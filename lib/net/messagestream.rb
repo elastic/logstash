@@ -31,9 +31,6 @@ module LogStash; module Net
       data = self.encode
       puts "Writing #{data.length} bytes to #{sock}"
       bytestream = [data.length, data.checksum, data].pack("NNA*")
-      if bytestream.length < 100
-        puts bytestream.inspect
-      end
       sock.write(bytestream)
       self.clear
     end # def sendto
