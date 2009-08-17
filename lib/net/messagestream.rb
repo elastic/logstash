@@ -1,22 +1,22 @@
 module LogStash; module Net
   class MessageStream
-    attr_reader :message_count
 
     def initialize
       @data = Hash.new
       @data["version"] = PROTOCOL_VERSION
       @data["messages"] = Array.new
-      @message_count = 0
     end # def initialize
 
     def <<(message)
       @data["messages"] << message
-      @message_count += 1
     end # def <<
+
+    def message_count
+      return @data["messages"].length
+    end
 
     def clear
       @data["messages"] = []
-      @message_count = 0
     end # def clear
 
     def encode
