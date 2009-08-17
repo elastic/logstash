@@ -36,31 +36,11 @@ module LogStash; module Net; module Servers
       else
         response.code = 0
         if not @indexes.member?(log_type)
-          if not File.exists?($logs[log_type].index_dir)
-            field_infos = Ferret::Index::FieldInfos.new(:store => :no,
-                                                        :term_vector => :no)
-            field_infos.add_field(:@LINE,
-                                  :store => :compressed,
-                                  :index => :no)
-            [:@DATE, :@LOG_TYPE, :@SOURCE_HOST].each do |special|
-              field_infos.add_field(special,
-                                    :store => :compressed,
-                                    :index => :untokenized)
-            end
-            field_infos.create_index($logs[log_type].index_dir)
-          end
-          @indexes[log_type] = Ferret::Index::Index.new(:path => $logs[log_type].index_dir)
+          @indexes[log_type] = @logs[log_type].get_index
         end
 
         entry["@LOG_TYPE"] = log_type
         @indexes[log_type] << entry
-
-        @lines[log_type] += 1
-        if @lines[log_type] % 100 == 0
-          puts "COMMIT INDEX"
-          @indexes[log_type].commit
-        end
-
       end
       yield response
     end
@@ -111,12 +91,12 @@ module LogStash; module Net; module Servers
         end
 
         if Time.now > synctime
-          synctime = Time.now + 60
-
           @indexes.each do |log_type,index|
             puts "Time's up. Syncing #{log_type}"
             index.commit
           end
+
+          synctime = Time.now + 60
         end
       end
     end # def run

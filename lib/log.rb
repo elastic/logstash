@@ -17,6 +17,7 @@ module LogStash
     def initialize(config)
       check_hash_keys(config, REQUIRED_KEYS, OPTIONAL_KEYS)
 
+      @home = ENV["LOGSTASH_DIR"] || "/opt/logstash"
       @attrs = {"log:type" => config[:type],
                 "log:encoding" => config[:encoding]}
       if config[:attrs]
@@ -42,7 +43,28 @@ module LogStash
     end
 
     def index_dir
-      return "#{ENV["HOME"]}/logstash/indexes/#{@attrs["log:name"]}"
+      return "#{home}/var/indexes/#{@attrs["log:name"]}"
+    end
+
+    def create_index
+      return if File.exists?(index_dir)
+
+      field_info = Ferret::Index::FieldInfos.new(:store => :no,
+                                                 :term_vector => :no)
+      field_infos.add_field(:@LINE,
+                            :store => :compressed,
+                            :index => :no)
+      [:@DATE, :@LOG_TYPE, :@SOURCE_HOST].each do |special|
+        field_infos.add_field(special,
+                              :store => :compressed,
+                              :index => :untokenized)
+      end
+      field_infos.create_index(index_dir)
+    end
+
+    def get_index
+      create_index unless File.exists?(index_dir)
+      return Ferret::Index::Index.new(:path => index_dir)
     end
 
     def fix_date(res)
