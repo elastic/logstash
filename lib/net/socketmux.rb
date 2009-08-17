@@ -246,7 +246,7 @@ module LogStash; module Net
     def client_handle(sock)
       begin
         @msgreaders[sock].each do |msg|
-          message_handle(msg) do |response|
+          message_handle(msg, sock) do |response|
             _sendmsg(response, sock)
           end
         end
@@ -259,7 +259,7 @@ module LogStash; module Net
     end # def client_handle
 
     private
-    def message_handle(msg)
+    def message_handle(msg, sock)
       if msg.is_a?(ResponseMessage) and @ackwait.include?(msg.id)
         @ackwait.delete(msg.id)
       end
@@ -267,8 +267,11 @@ module LogStash; module Net
       msgtype = msg.class.name.split(":")[-1]
       handler = "#{msgtype}Handler"
       if self.respond_to?(handler)
-        self.send(handler, msg) do |reply|
-          yield reply if reply != nil
+        Thread.new do 
+          self.send(handler, msg) do |reply|
+            #yield reply if reply != nil
+            sendmsg(reply, sock)
+          end
         end
       else
         $stderr.puts "No handler for message class '#{msg.class.name}'"

@@ -21,11 +21,15 @@ module LogStash; module Net; module Servers
       listen(addr, port)
       @indexes = Hash.new
       @lines = Hash.new { |h,k| h[k] = 0 }
+      @indexcount = 0
     end
 
     def IndexEventRequestHandler(request)
       response = LogStash::Net::Messages::IndexEventResponse.new
       response.id = request.id
+      @indexcount += 1
+
+      print "\rK#{@indexcount}"
 
       log_type = request.log_type
       entry = $logs[log_type].parse_entry(request.log_data)
@@ -63,17 +67,26 @@ module LogStash; module Net; module Servers
                                    :or_default => false)
       query = qp.parse(request.query)
       results = []
-      search.search_each(query, :limit => :all, 
-                         :sort => "@DATE") do |docid, score|
-        result =  reader[docid][:@LINE]
-        results << result
-        if results.length > 10
-          response = LogStash::Net::Messages::SearchResponse.new
-          response.id = request.id
-          response.results = results
-          yield response
-          results = []
+      offset = 0
+      limit = 50
+
+      done = false
+      while !done
+        done = true
+        puts "Searching..."
+        search.search_each(query, :limit => limit, :offset => offset,
+                           :sort => "@DATE") do |docid, score|
+          done = false
+          result = reader[docid][:@LINE]
+          results << result
         end
+
+        response = LogStash::Net::Messages::SearchResponse.new
+        response.id = request.id
+        response.results = results
+        yield response
+        results = []
+        offset += limit
       end
       response = LogStash::Net::Messages::SearchResponse.new
       response.id = request.id
