@@ -30,5 +30,6 @@ module LogStash; module Net; module Messages
 
     # Message attributes
     hashbind :results, "/args/results"
+    hashbind :finished, "/args/finished"
   end # class SearchResponse
 end; end; end # module LogStash::Net::Messages

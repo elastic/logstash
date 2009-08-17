@@ -36,7 +36,7 @@ module LogStash; module Net; module Servers
       else
         response.code = 0
         if not @indexes.member?(log_type)
-          @indexes[log_type] = @logs[log_type].get_index
+          @indexes[log_type] = $logs[log_type].get_index
         end
 
         entry["@LOG_TYPE"] = log_type
@@ -53,19 +53,16 @@ module LogStash; module Net; module Servers
     end
 
     def SearchRequestHandler(request)
-      response = LogStash::Net::Messages::SearchResponse.new
-      response.id = request.id
       puts "Search for #{request.query.inspect}"
 
       reader = Ferret::Index::IndexReader.new($logs[request.log_type].index_dir)
       search = Ferret::Search::Searcher.new(reader)
 
-      #puts reader.fields.join("\n")
+      puts reader.fields.join("\n")
       qp = Ferret::QueryParser.new(:fields => reader.fields,
                                    :tokenized_fields => reader.tokenized_fields,
                                    :or_default => false)
       query = qp.parse(request.query)
-      response.results = []
       search.search_each(query, :limit => :all, 
                          :sort => "@DATE") do |docid, score|
         result =  reader[docid][:@LINE]
@@ -74,6 +71,11 @@ module LogStash; module Net; module Servers
         response.results = [result]
         yield response
       end
+      response = LogStash::Net::Messages::SearchResponse.new
+      response.id = request.id
+      response.results = []
+      response.finished = true
+      yield response
     end
 
     # Special 'run' override because we want sync to disk once per minute.

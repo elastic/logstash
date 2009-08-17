@@ -43,13 +43,13 @@ module LogStash
     end
 
     def index_dir
-      return "#{home}/var/indexes/#{@attrs["log:name"]}"
+      return "#{@home}/var/indexes/#{@attrs["log:name"]}"
     end
 
     def create_index
       return if File.exists?(index_dir)
 
-      field_info = Ferret::Index::FieldInfos.new(:store => :no,
+      field_infos = Ferret::Index::FieldInfos.new(:store => :no,
                                                  :term_vector => :no)
       field_infos.add_field(:@LINE,
                             :store => :compressed,

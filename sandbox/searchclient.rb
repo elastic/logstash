@@ -31,6 +31,9 @@ class Client < LogStash::Net::MessageSocketMux
     msg.results.each do |result|
       puts result
     end
+    if msg.finished
+      $done = true
+    end
     #gotresponse(msg)
   end
 end
@@ -47,7 +50,8 @@ msg = LogStash::Net::Messages::SearchRequest.new
 msg.log_type = ARGV[0]
 msg.query = ARGV[1]
 $me.sendmsg(msg)
-$done = true
 $me.close()
-$done = true
-$me.run
+
+while !$done
+  $me.sendrecv(10)
+end

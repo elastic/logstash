@@ -22,7 +22,7 @@ module LogStash
         end
 
         @grok_patterns = config.delete(:grok_patterns)
-        @home = ENV["LOGSTASH_HOME"] || "/opt/logstash"
+        @home = ENV["LOGSTASH_DIR"] || "/opt/logstash"
 
         if not File.exists?("#{@home}/patterns")
           throw StandardError.new("#{@home}/patterns/ does not exist")

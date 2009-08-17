@@ -3,6 +3,7 @@
 require 'rubygems'
 require 'lib/net/client'
 require 'lib/net/messages/indexevent'
+require 'lib/file/tail/since'
 require 'socket'
 
 
@@ -18,12 +19,10 @@ class Agent < LogStash::Net::MessageClient
 
   def start_log_watcher
     Thread.new do
-      IO.popen("tail -0f /var/log/messages", "r") do |fd|
-        fd.each do |line|
-          puts "Found line: #{line}"
-          line.chomp!
-          index(line)
-        end
+      File::Tail::Since.new("/var/log/messages").tail do |line|
+        line.chomp!
+        puts "Found line: #{line}"
+        index(line)
       end
     end
   end # def start_log_watcher
@@ -55,7 +54,6 @@ class Agent < LogStash::Net::MessageClient
 
   def run
     loop do
-      puts @done
       done = false
       while !done
         begin
