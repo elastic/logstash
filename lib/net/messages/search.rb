@@ -15,6 +15,8 @@ module LogStash; module Net; module Messages
     # Message attributes
     hashbind :query, "/args/query"
     hashbind :log_type, "/args/log_type"
+    hashbind :offset, "/args/offset"
+    hashbind :limit, "/args/limit"
   end # class SearchRequest
 
   class SearchResponse < ResponseMessage

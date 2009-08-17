@@ -67,13 +67,25 @@ module LogStash; module Net; module Servers
                                    :or_default => false)
       query = qp.parse(request.query)
       results = []
-      offset = 0
+      offset = (request.offset or 0)
+      total = request.limit
       limit = 50
 
       done = false
       while !done
         done = true
         puts "Searching..."
+
+        if total
+          limit = [total, limit].min
+          total -= limit
+
+          if limit <= 0
+            done = true
+            next
+          end
+        end
+
         search.search_each(query, :limit => limit, :offset => offset,
                            :sort => "@DATE") do |docid, score|
           done = false
