@@ -9,7 +9,7 @@ require 'socket'
 
 class Agent < LogStash::Net::MessageClient
   def initialize(host, port)
-    super()
+    super(host, port)
     @hostname = Socket.gethostname
     @host = host
     @port = port
@@ -45,7 +45,7 @@ class Agent < LogStash::Net::MessageClient
         $stdout.write(".")
         $stdout.flush
         #puts "Trying to send: #{ier.inspect}"
-        sendmsg(ier)
+        @connection.sendmsg(ier)
         sent = true
       rescue LogStash::Net::NoSocket
         # No client connection available, wait.
@@ -59,31 +59,6 @@ class Agent < LogStash::Net::MessageClient
     if msg.success?
     end
   end # def IndexEventResponseHandler
-
-  def run
-    loop do
-      done = false
-      while !done
-        begin
-          done = connect(@host, @port); 
-        rescue Errno::ECONNREFUSED => e
-          puts "Connection to #{@host}:#{@port} failed: #{e}"
-          puts "Sleeping for retry."
-          sleep 1
-        end
-      end
-      puts "Connection OK"
-
-      begin
-        loop do
-          sendrecv(nil)
-        end
-      rescue LogStash::Net::MessageClientConnectionReset
-        puts "Connection died, retrying..."
-      end
-    end
-  end # def run
-
 end
 
 
@@ -94,5 +69,8 @@ if $0 == __FILE__
   end
   host, port = ARGV[0].split(":")
   agent = Agent.new(host, port)
-  agent.run
+
+  agent.run do |i|
+    # nothing
+  end
 end

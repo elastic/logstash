@@ -1,9 +1,28 @@
-require 'lib/net/socketmux'
+require 'rubygems'
+require 'eventmachine'
+require 'lib/net/socket'
+require 'lib/net/messages/ping.rb'
 
 module LogStash; module Net
-  # The MessageClient class exists only as an alias
-  # to the MessageSocketMux. You should use the
-  # client class if you are implementing a client.
-  class MessageClient < MessageSocketMux
+  class MessageClient
+    attr_reader :connection
+
+    def initialize(host, port)
+      @host = host
+      @port = port
+    end
+
+    def run
+      EventMachine.run do
+        connect(@host, @port)
+      end
+    end
+
+    def connect(host, port)
+      @connection = EventMachine::connect(host, port, MessageSocket) do |m|
+        m.handler = self
+      end
+    end
+
   end # class MessageClient
 end; end # module LogStash::Net

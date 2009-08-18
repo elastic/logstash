@@ -17,8 +17,7 @@ module LogStash; module Net; module Servers
 
     def initialize(addr="0.0.0.0", port=3001)
       # 'super' is not the same as 'super()', and we want super().
-      super()
-      listen(addr, port)
+      super(addr, port)
       @indexes = Hash.new
       @lines = Hash.new { |h,k| h[k] = 0 }
       @indexcount = 0
@@ -29,7 +28,8 @@ module LogStash; module Net; module Servers
       response.id = request.id
       @indexcount += 1
 
-      print "\rK#{@indexcount}"
+      print "\rK#{@indexcount} (vs #{request.id})"
+      #puts "#{@indexcount} (id: #{request.id})"
 
       log_type = request.log_type
       entry = $logs[log_type].parse_entry(request.log_data)
@@ -108,7 +108,7 @@ module LogStash; module Net; module Servers
     end
 
     # Special 'run' override because we want sync to disk once per minute.
-    def run
+    def _run
       synctime = Time.now + SYNCDELAY
       sleeptime = 1
       loop do
