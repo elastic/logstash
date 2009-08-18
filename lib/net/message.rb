@@ -1,5 +1,5 @@
 require "json"
-require "lib/net/messagestream"
+#require "lib/net/messagestream"
 
 module BindToHash
   def hashbind(method, key)
