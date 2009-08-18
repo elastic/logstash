@@ -32,7 +32,7 @@ module LogStash; module Net
 
         name = msg.class.name.split(":")[-1]
         func = "#{name}Handler"
-        if @handler.respond_to?(func):
+        if @handler.respond_to?(func)
           #operation = lambda do 
             #@handler.send(func, msg) do |response|
               #sendmsg(response)

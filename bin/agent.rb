@@ -21,18 +21,19 @@ class Agent < LogStash::Net::MessageClient
   end # def initialize
 
   def start_log_watcher
-    Thread.new do
+    @t1 = Thread.new do
       File::Tail::Since.new("/var/log/messages").tail do |line|
         line.chomp!
         index("linux-syslog", line)
       end
     end
 
-    Thread.new do
+    @t2 = Thread.new do
       File::Tail::Since.new("/b/access").tail do |line|
         line.chomp!
         index("httpd-access", line)
       end
+        exit
     end
   end # def start_log_watcher
 

@@ -25,3 +25,11 @@ class String
 
   alias_method :checksum, :adler32
 end # class String
+
+# EventMachine uses ruby1.8 (not in 1.9) function Thread#kill!,
+# so let's fake it.
+class Thread
+  def kill!(*args)
+    kill
+  end
+end

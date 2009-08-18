@@ -30,7 +30,9 @@ module BindToHash
     if value.is_a?(String)
       (0 .. value.length - 1).each do |i|
         break if !value[i]
-        if value[i] >= 128
+        # ruby 1.9 String#[] returns a string, 1.8 returns an int
+        # force an int.
+        if value[i].to_i >= 128
           value[i] = ""
         end
       end
