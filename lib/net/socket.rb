@@ -33,15 +33,20 @@ module LogStash; module Net
         name = msg.class.name.split(":")[-1]
         func = "#{name}Handler"
         if @handler.respond_to?(func):
-          operation = lambda do 
-            @handler.send(func, msg) do |response|
-              sendmsg(response)
-            end
-          end
-          EventMachine.defer(operation, nil)
-          #@handler.send(func, msg) do |response|
-           #sendmsg(response)
+          #operation = lambda do 
+            #@handler.send(func, msg) do |response|
+              #sendmsg(response)
+            #end
           #end
+          #EventMachine.defer(operation, nil)
+          
+          # We actually get better performance if we don't defer processing
+          # to another thread. This should be done carefully, though, as
+          # blocking here will block the receiving thread for this socket
+          # (maybe for all of eventmachine?).
+          @handler.send(func, msg) do |response|
+            sendmsg(response)
+          end
         else
           $stderr.puts "#{@handler.class.name} does not support #{func}"
         end
@@ -50,7 +55,6 @@ module LogStash; module Net
       if len > 0
         puts "Removing #{len} bytes (#{count} packets)"
         @buffer[0 .. len - 1] = ""
-        sleep 1
       end
     end # def receive_data
 
