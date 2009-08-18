@@ -15,6 +15,7 @@ module LogStash; module Net
     def run
       EventMachine.run do
         listen(@host, @port)
+        yield self if block_given?
       end
     end
 

@@ -21,6 +21,7 @@ module LogStash; module Net; module Servers
       @indexes = Hash.new
       @lines = Hash.new { |h,k| h[k] = 0 }
       @indexcount = 0
+      @starttime = Time.now
     end
 
     def IndexEventRequestHandler(request)
@@ -28,8 +29,10 @@ module LogStash; module Net; module Servers
       response.id = request.id
       @indexcount += 1
 
-      print "\rK#{@indexcount} (vs #{request.id})"
-      #puts "#{@indexcount} (id: #{request.id})"
+      if @indexcount % 100 == 0
+        duration = (Time.now.to_f - @starttime.to_f)
+        puts "%.2f" % (@indexcount / duration)
+      end
 
       log_type = request.log_type
       entry = $logs[log_type].parse_entry(request.log_data)

@@ -40,7 +40,7 @@ module LogStash; module Net
           end
           EventMachine.defer(operation, nil)
           #@handler.send(func, msg) do |response|
-            #sendmsg(response)
+           #sendmsg(response)
           #end
         else
           $stderr.puts "#{@handler.class.name} does not support #{func}"
@@ -50,6 +50,7 @@ module LogStash; module Net
       if len > 0
         puts "Removing #{len} bytes (#{count} packets)"
         @buffer[0 .. len - 1] = ""
+        sleep 1
       end
     end # def receive_data
 

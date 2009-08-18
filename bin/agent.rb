@@ -14,6 +14,9 @@ class Agent < LogStash::Net::MessageClient
     @host = host
     @port = port
     @watcher = nil
+
+    # TODO(sissel): This should go into the network code
+    @needack = Hash.new
     start_log_watcher
   end # def initialize
 
@@ -39,25 +42,22 @@ class Agent < LogStash::Net::MessageClient
     ier.log_data = string
     ier.metadata["source_host"] = @hostname
 
-    sent = false
-    while !sent
-      begin
-        $stdout.write(".")
-        $stdout.flush
-        #puts "Trying to send: #{ier.inspect}"
-        @connection.sendmsg(ier)
-        sent = true
-      rescue LogStash::Net::NoSocket
-        # No client connection available, wait.
-        puts "No client connection available to send on, sleeping..."
-        sleep 1
-      end
+    #$stdout.write(".")
+    $stdout.flush
+    @connection.sendmsg(ier)
+    @needack[ier.id] = ier
+
+    sleeptime = 0.1
+    while @needack.length > 500
+      sleeptime = [sleeptime * 2, 5].min
+      $stderr.puts "Waiting for acks (#{sleeptime})... #{@needack.length}"
+      sleep(sleeptime)
     end
+
   end # def index
 
   def IndexEventResponseHandler(msg)
-    if msg.success?
-    end
+    @needack.delete(msg.id)
   end # def IndexEventResponseHandler
 end
 
