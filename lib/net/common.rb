@@ -1,4 +1,5 @@
 require 'zlib'
+require 'eventmachine'
 
 module LogStash; module Net;
   MAXMSGLEN = (1 << 20) # one megabyte message blocks
@@ -32,4 +33,8 @@ class Thread
   def kill!(*args)
     kill
   end
+end
+
+if ENV.has_key?("USE_EPOLL")
+  EventMachine.epoll
 end

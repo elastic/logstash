@@ -2,6 +2,8 @@ required gems:
 - mkdtemp
 - json
 - ferret
+- file-tail
+- eventmachine
 
 
 This code is not beta, not alpha, but like something unnamed where
