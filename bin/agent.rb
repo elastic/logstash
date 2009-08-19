@@ -44,7 +44,7 @@ class Agent < LogStash::Net::MessageClient
     ier.metadata["source_host"] = @hostname
 
     #$stdout.write(".")
-    $stdout.flush
+    #$stdout.flush
     @connection.sendmsg(ier)
     @needack[ier.id] = ier
 
