@@ -15,9 +15,9 @@ module LogStash; module Net; module Servers
   class Indexer < LogStash::Net::MessageServer
     SYNCDELAY = 10
 
-    def initialize(addr="0.0.0.0", port=3001)
+    def initialize(*args)
       # 'super' is not the same as 'super()', and we want super().
-      super(addr, port)
+      super(*args)
       @indexes = Hash.new
       @lines = Hash.new { |h,k| h[k] = 0 }
       @indexcount = 0

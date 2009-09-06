@@ -1,76 +1,78 @@
 require 'rubygems'
+require 'lib/net/stats'
 require 'lib/net/messagepacket'
-require 'eventmachine'
+#require 'eventmachine'
+require 'uuid'
+require 'stomp'
 
 module LogStash; module Net
   # The MessageClient class exists only as an alias
   # to the MessageSocketMux. You should use the
   # client class if you are implementing a client.
-  class MessageSocket < EventMachine::Connection
-    # connection init callback from EventMachine::Connection
-    def post_init
-      #set_comm_inactivity_timeout(30)
-      @buffer = ""
-    end
+  class MessageSocket
 
-    # data receiver callback from EventMachine::Connection
-    def receive_data(data)
-      @buffer += data
+    def initialize(username='', password='', host='localhost', port=61613)
+      @stomp = Stomp::Client.new(login=username, passcode=password,
+                                 host=host, port=port, reliable=true)
+      @id = UUID::generate
+      @stomp_options = {
+        "persistent" => true,
+        "client-id" => @id,
+        "ack" => "client", # require us to explicitly ack messages
+      }
 
-      len = 0
-      count = 0
-      MessagePacket.each(@buffer) do |packet|
-        len += packet.length
-        count += 1
-        obj = JSON::load(packet.content)
-        msg = Message.new_from_data(obj)
+      @handler = self
+      subscribe(@id)
+    end # def initialize
 
-        if !@handler
-          $stderr.puts "No message handler set. Can't handle #{msg.class.name}"
-          next
-        end
-
-        name = msg.class.name.split(":")[-1]
+    def subscribe(name)
+      puts "Subscribing to #{name}"
+      @stomp.subscribe("/queue/#{name}", @stomp_options) do |stompmsg|
+        obj = JSON::load(stompmsg.body)
+        message = Message.new_from_data(obj)
+        name = message.class.name.split(":")[-1]
         func = "#{name}Handler"
-        if @handler.respond_to?(func)
-          #operation = lambda do 
-            #@handler.send(func, msg) do |response|
-              #sendmsg(response)
-            #end
-          #end
-          #EventMachine.defer(operation, nil)
-          
-          # We actually get better performance if we don't defer processing
-          # to another thread. This should be done carefully, though, as
-          # blocking here will block the receiving thread for this socket
-          # (maybe for all of eventmachine?).
-          @handler.send(func, msg) do |response|
-            sendmsg(response)
+        puts stompmsg
+        if @handler.respond_to?(func) 
+          puts "Handler found"
+          @handler.send(func, message) do |response|
+            puts "response: #{response}"
+            sendmsg(stompmsg.headers["reply-to"], response)
           end
+
+          # We should allow the message handler to defer acking if they want
+          # For instance, if we want to index things, but only want to ack
+          # things once we actually flush to disk.
+          puts "Acking message: #{stompmsg}"
+          begin
+            @stomp.acknowledge stompmsg
+          rescue => e
+            puts e.inspect
+            raise e
+          end
+          puts "Ack done"
         else
           $stderr.puts "#{@handler.class.name} does not support #{func}"
-        end
-      end
+        end # if @handler.respond_to?(func)
+      end # @stomp.subscribe
+    end # def subscribe
 
-      if len > 0
-        puts "Removing #{len} bytes (#{count} packets)"
-        @buffer[0 .. len - 1] = ""
-      end
-    end # def receive_data
-
-    def sendmsg(msg)
-      if msg.is_a?(RequestMessage) and msg.id == nil
-        msg.generate_id!
-      end
-
-      data = msg.to_json
-      packet = MessagePacket.new(data)
-      #puts "Sending: #{packet.encode.inspect}"
-      send_data(packet.encode)
+    def run
+      @stomp.join
     end
 
-    def handler=(obj)
-      @handler = obj
+    def sendmsg(destination, msg)
+      data = msg.to_json
+      options = {
+        "persistent" => true,
+        "reply-to" => "/queue/#{@id}",
+        #"ack" => "client",
+      }
+      @stomp.send(destination, data, options)
+    end
+
+    def handler=(handler)
+      @handler = handler
     end
   end # class MessageSocket
 end; end # module LogStash::Net

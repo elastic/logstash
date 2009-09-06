@@ -25,19 +25,6 @@ module BindToHash
       data = data[k]
     end
 
-    # TODO(sissel): Ruby's JSON barfs if you try to encode upper ascii characters
-    # as it assumes all strings are unicode.
-    if value.is_a?(String)
-      (0 .. value.length - 1).each do |i|
-        break if !value[i]
-        # ruby 1.9 String#[] returns a string, 1.8 returns an int
-        # force an int.
-        if value[i].to_i >= 128
-          value[i] = ""
-        end
-      end
-    end
-
     data[elements[-1]] = value
   end
 end # modules BindToHash
