@@ -26,31 +26,24 @@ module LogStash; module Net
     end # def initialize
 
     def subscribe(name)
-      puts "Subscribing to #{name}"
+      #puts "Subscribing to #{name}"
       @stomp.subscribe("/queue/#{name}", @stomp_options) do |stompmsg|
         obj = JSON::load(stompmsg.body)
         message = Message.new_from_data(obj)
         name = message.class.name.split(":")[-1]
         func = "#{name}Handler"
-        puts stompmsg
+        #puts stompmsg
         if @handler.respond_to?(func) 
-          puts "Handler found"
+          #puts "Handler found"
           @handler.send(func, message) do |response|
-            puts "response: #{response}"
+            #puts "response: #{response}"
             sendmsg(stompmsg.headers["reply-to"], response)
           end
 
           # We should allow the message handler to defer acking if they want
           # For instance, if we want to index things, but only want to ack
           # things once we actually flush to disk.
-          puts "Acking message: #{stompmsg}"
-          begin
-            @stomp.acknowledge stompmsg
-          rescue => e
-            puts e.inspect
-            raise e
-          end
-          puts "Ack done"
+          @stomp.acknowledge stompmsg
         else
           $stderr.puts "#{@handler.class.name} does not support #{func}"
         end # if @handler.respond_to?(func)
@@ -66,13 +59,17 @@ module LogStash; module Net
       options = {
         "persistent" => true,
         "reply-to" => "/queue/#{@id}",
-        #"ack" => "client",
+        "ack" => "client",
       }
       @stomp.send(destination, data, options)
     end
 
     def handler=(handler)
       @handler = handler
+    end
+
+    def close
+      @stomp.close
     end
   end # class MessageSocket
 end; end # module LogStash::Net

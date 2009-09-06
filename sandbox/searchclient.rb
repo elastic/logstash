@@ -3,7 +3,7 @@
 require 'rubygems'
 require "socket"
 require "lib/net/message"
-require "lib/net/socketmux"
+require "lib/net/client"
 require "lib/net/messages/indexevent"
 require "lib/net/messages/search"
 require "lib/net/messages/ping"
@@ -15,43 +15,23 @@ $count = 0
 $time = 0
 $start = Time.now.to_f
 
-class Client < LogStash::Net::MessageSocketMux
-  def gotresponse(msg)
-    $count += 1
-    $ids.delete(msg.id)
-
-    if $done and $ids.length == 0
-      puts "All messages ACK'd (#{$lastid})"
-      exit(0)
-    end
-  end
-
+class Client < LogStash::Net::MessageClient
   def SearchResponseHandler(msg)
     #puts "Response (have #{$count} / want: #{$ids.length} acks); #{msg.inspect}"
     msg.results.each do |result|
       puts result
     end
     if msg.finished
-      $done = true
+      close
     end
-    #gotresponse(msg)
   end
 end
 
-$me = Client.new
-$me.connect("localhost", 3001)
-$ids = Set.new
+$me = Client.new(host="localhost", port=61613)
 
 msg = LogStash::Net::Messages::SearchRequest.new
 msg.log_type = ARGV[0]
 msg.query = ARGV[1]
+$me.sendmsg("/queue/logstash", msg)
 
-msg = LogStash::Net::Messages::SearchRequest.new
-msg.log_type = ARGV[0]
-msg.query = ARGV[1]
-$me.sendmsg(msg)
-$me.close()
-
-while !$done
-  $me.sendrecv(10)
-end
+$me.run

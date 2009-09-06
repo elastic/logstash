@@ -4,36 +4,39 @@ require 'rubygems'
 require 'lib/net/client'
 require 'lib/net/messages/indexevent'
 require 'lib/file/tail/since'
+require 'stomp'
 require 'socket'
 
 
 class Agent < LogStash::Net::MessageClient
   def initialize(host, port)
-    super(host, port)
+    super(username="", password="", host=host, port=port)
     @hostname = Socket.gethostname
-    @host = host
-    @port = port
-    @watcher = nil
-
-    # TODO(sissel): This should go into the network code
-    @needack = Hash.new
-    start_log_watcher
   end # def initialize
 
   def start_log_watcher
-    @t1 = Thread.new do
-      File::Tail::Since.new("/var/log/messages").tail do |line|
-        line.chomp!
-        index("linux-syslog", line)
-      end
-    end
+    #@t1 = Thread.new do
+      #File::Tail::Since.new("/var/log/messages").tail do |line|
+        #line.chomp!
+        #index("linux-syslog", line)
+      #end
+    ##end
 
     @t2 = Thread.new do
-      File::Tail::Since.new("/b/access").tail do |line|
-        line.chomp!
-        index("httpd-access", line)
+      #File::Tail::Since.new("/b/access.10").tail do |line|
+      begin
+        count = 0
+        File.open("/b/access.1k").readlines.each do |line|
+          line.chomp!
+          index("httpd-access", line)
+          count += 1
+          break if count >= 3
+        end
+      rescue => e
+        $stderr.puts e.inspect
+        $stderr.puts caller.join("\n")
+        raise e
       end
-        exit
     end
   end # def start_log_watcher
 
@@ -43,23 +46,19 @@ class Agent < LogStash::Net::MessageClient
     ier.log_data = string
     ier.metadata["source_host"] = @hostname
 
-    #$stdout.write(".")
-    #$stdout.flush
-    @connection.sendmsg(ier)
-    @needack[ier.id] = ier
-
-    sleeptime = 0.1
-    while @needack.length > 500
-      sleeptime = [sleeptime * 2, 5].min
-      $stderr.puts "Waiting for acks (#{sleeptime})... #{@needack.length}"
-      sleep(sleeptime)
-    end
-
+    puts "Sending: #{ier}"
+    sendmsg("/queue/logstash", ier)
   end # def index
 
   def IndexEventResponseHandler(msg)
-    @needack.delete(msg.id)
+    puts "OK"
   end # def IndexEventResponseHandler
+
+  def run
+    start_log_watcher
+    @t2.join
+    super
+  end
 end
 
 
@@ -70,8 +69,5 @@ if $0 == __FILE__
   end
   host, port = ARGV[0].split(":")
   agent = Agent.new(host, port)
-
-  agent.run do |i|
-    # nothing
-  end
+  agent.run
 end
