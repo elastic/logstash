@@ -5,7 +5,6 @@ require 'lib/net/message'
 require 'lib/net/messages/indexevent'
 require 'lib/net/messages/search'
 require 'lib/net/messages/ping'
-
 require 'ferret'
 require 'lib/log/text'
 require 'config'
@@ -22,6 +21,11 @@ module LogStash; module Net; module Servers
       @lines = Hash.new { |h,k| h[k] = 0 }
       @indexcount = 0
       @starttime = Time.now
+    end
+
+    def run
+      subscribe("logstash")
+      super
     end
 
     def IndexEventRequestHandler(request)

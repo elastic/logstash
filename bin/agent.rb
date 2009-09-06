@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+  #!/usr/bin/env ruby
 
 require 'rubygems'
 require 'lib/net/client'
@@ -12,6 +12,7 @@ class Agent < LogStash::Net::MessageClient
   def initialize(host, port)
     super(username="", password="", host=host, port=port)
     @hostname = Socket.gethostname
+    @msgs = []
   end # def initialize
 
   def start_log_watcher
@@ -30,14 +31,16 @@ class Agent < LogStash::Net::MessageClient
           line.chomp!
           index("httpd-access", line)
           count += 1
-          break if count >= 3
+          #break if count >= 3
         end
       rescue => e
         $stderr.puts e.inspect
         $stderr.puts caller.join("\n")
         raise e
       end
+      #close
     end
+    @t2.join
   end # def start_log_watcher
 
   def index(type, string)
@@ -51,12 +54,10 @@ class Agent < LogStash::Net::MessageClient
   end # def index
 
   def IndexEventResponseHandler(msg)
-    puts "OK"
   end # def IndexEventResponseHandler
 
   def run
     start_log_watcher
-    @t2.join
     super
   end
 end
