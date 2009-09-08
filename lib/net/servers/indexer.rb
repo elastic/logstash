@@ -9,10 +9,9 @@ require 'ferret'
 require 'lib/log/text'
 require 'config'
 
-
 module LogStash; module Net; module Servers
   class Indexer < LogStash::Net::MessageServer
-    SYNCDELAY = 10
+    SYNCDELAY = 3
 
     def initialize(*args)
       # 'super' is not the same as 'super()', and we want super().
@@ -21,11 +20,6 @@ module LogStash; module Net; module Servers
       @lines = Hash.new { |h,k| h[k] = 0 }
       @indexcount = 0
       @starttime = Time.now
-    end
-
-    def run
-      subscribe("logstash")
-      super
     end
 
     def IndexEventRequestHandler(request)
@@ -43,16 +37,24 @@ module LogStash; module Net; module Servers
       if !entry
         response.code = 1
         response.error = "Entry was #{entry.inspect} (log parsing failed)"
+        entry = {
+          "@NEEDSPARSING" => 1,
+          "@LINE" => request.log_data
+        }
       else
         response.code = 0
-        if not @indexes.member?(log_type)
-          @indexes[log_type] = $logs[log_type].get_index
-        end
-
-        entry["@LOG_TYPE"] = log_type
-        @indexes[log_type] << entry
       end
-      yield response
+
+      if not @indexes.member?(log_type)
+        @indexes[log_type] = $logs[log_type].get_index
+      end
+
+      entry["@LOG_TYPE"] = log_type
+      @indexes[log_type] << entry
+
+      if response.code != 0
+        yield response
+      end
     end
 
     def PingRequestHandler(request)
@@ -103,6 +105,7 @@ module LogStash; module Net; module Servers
         response = LogStash::Net::Messages::SearchResponse.new
         response.id = request.id
         response.results = results
+        response.finished = false
         yield response
         results = []
         offset += limit
@@ -115,29 +118,25 @@ module LogStash; module Net; module Servers
     end
 
     # Special 'run' override because we want sync to disk once per minute.
-    def _run
-      synctime = Time.now + SYNCDELAY
-      sleeptime = 1
-      loop do
-        active = sendrecv(sleeptime)
-        if !active
-          sleeptime *= 2
-          if sleeptime > SYNCDELAY
-            sleeptime = SYNCDELAY
-          end
-          puts "No activity, sleeping for #{sleeptime}"
-        end
+    def run
+      subscribe("logstash")
+      @syncer = Thread.new { syncer }
+      super
+    end # def run
 
+    def syncer
+      synctime = Time.now + SYNCDELAY
+      loop do
         if Time.now > synctime
           @indexes.each do |log_type,index|
             puts "Time's up. Syncing #{log_type}"
             index.commit
           end
 
-          synctime = Time.now + 60
+          synctime = Time.now + SYNCDELAY
         end
+        sleep(synctime - Time.now)
       end
-    end # def run
-
+    end # def syncer
   end # Indexer
 end; end; end # LogStash::Net::Server

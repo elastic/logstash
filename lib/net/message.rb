@@ -1,5 +1,6 @@
 require "json"
-#require "lib/net/messagestream"
+# vim macro to replace 'hashbind :foo, "bar"' with two methods.
+# yypkct:def lxf,sreturn @data[A]oenddef Jdt:xf,s(val)return @data[A] = valend
 
 module BindToHash
   def hashbind(method, key)
@@ -40,7 +41,13 @@ module LogStash; module Net
     @@translators = Array.new
 
     # Message attributes
-    hashbind :id, "/id"
+    def id
+      return @data["id"]
+    end
+
+    def id=(val)
+      return @data["id"] = val
+    end
 
     # All message subclasses should register themselves here
     # This will allow Message.new_from_data to automatically return
@@ -78,6 +85,11 @@ module LogStash; module Net
   class RequestMessage < Message
     @@idseq = 0
 
+    def initialize
+      super
+      generate_id!
+    end
+
     Message.translators << self
     def self.can_process?(data)
       return data.has_key?("request")
@@ -94,8 +106,21 @@ module LogStash; module Net
     end
 
     # Message attributes
-    hashbind :name, "/request"
-    hashbind :args, "/args"
+    def name
+      return @data["request"]
+    end
+
+    def name=(val)
+      return @data["request"] = val
+    end
+
+    def args
+      return @data["args"]
+    end
+
+    def args=(val)
+      return @data["args"] = val
+    end
   end # class RequestMessage
 
   class ResponseMessage < RequestMessage
@@ -105,7 +130,13 @@ module LogStash; module Net
     end
 
     # Message attributes
-    hashbind :name, "/response"
+    def name
+      return @data["response"]
+    end
+
+    def name=(val)
+      return @data["response"] = val
+    end
 
     # Report the success of the request this response is for.
     # Should be implemented by subclasses

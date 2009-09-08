@@ -5,11 +5,14 @@ require 'lib/net/messagepacket'
 require 'uuid'
 require 'stomp'
 
+USE_MARSHAL = false
+
 module LogStash; module Net
   # The MessageClient class exists only as an alias
   # to the MessageSocketMux. You should use the
   # client class if you are implementing a client.
   class MessageSocket
+    MAXBUF = 30
 
     def initialize(username='', password='', host='localhost', port=61613)
       @stomp = Stomp::Client.new(login=username, passcode=password,
@@ -34,15 +37,22 @@ module LogStash; module Net
     end # def subscribe
 
     def handle_message(stompmsg)
-      obj = JSON::load(stompmsg.body)
-      if !obj.is_a?(Array)
-        obj = [obj]
+      if USE_MARSHAL
+        obj = Marshal.load(stompmsg.body)
+      else
+        obj = JSON::load(stompmsg.body)
+        if !obj.is_a?(Array)
+          obj = [obj]
+        end
       end
 
       #puts "Got #{obj.length} items"
       obj.each do |item|
-        #puts item.inspect
-        message = Message.new_from_data(item)
+        if USE_MARSHAL
+          message = item
+        else
+          message = Message.new_from_data(item)
+        end
         name = message.class.name.split(":")[-1]
         func = "#{name}Handler"
         #puts stompmsg
@@ -83,7 +93,11 @@ module LogStash; module Net
       msgs = @outbuffer[destination]
       return if msgs.length == 0
 
-      data = msgs.to_json
+      if USE_MARSHAL
+        data = Marshal.dump(msgs)
+      else
+        data = msgs.to_json
+      end
       options = {
         "persistent" => true,
         "reply-to" => "/queue/#{@id}",
@@ -94,10 +108,13 @@ module LogStash; module Net
     end
 
     def sendmsg(destination, msg)
+      if msg.is_a?(RequestMessage)
+        msg.generate_id!
+      end
       #puts "Sending to #{destination}: #{msg}"
       @outbuffer[destination] << msg
 
-      if @outbuffer[destination].length > 10
+      if @outbuffer[destination].length > MAXBUF
         flushout(destination)
       end
     end

@@ -15,9 +15,28 @@ module LogStash; module Net; module Messages
     end
 
     # Message attributes
-    hashbind :log_type, "/args/type"
-    hashbind :log_data, "/args/message"
-    hashbind :metadata, "/args/metadata"
+    def log_type
+      return @data["args"]["type"]
+    end
+
+    def log_type=(val)
+      return @data["args"]["type"] = val
+    end
+    def log_data
+      return @data["args"]["message"]
+    end
+
+    def log_data=(val)
+      return @data["args"]["message"] = val
+    end
+
+    def metadata
+      return @data["args"]["metadata"]
+    end
+
+    def metadata=(val)
+      return @data["args"]["metadata"] = val
+    end
   end # class IndexEventRequest
 
   class IndexEventResponse < ResponseMessage

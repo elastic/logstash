@@ -17,30 +17,25 @@ class Agent < LogStash::Net::MessageClient
 
   def start_log_watcher
     #@t1 = Thread.new do
-      #File::Tail::Since.new("/var/log/messages").tail do |line|
+      #File::Tail::Since.new("/b/logs/auth.log.scorn").tail do |line|
         #line.chomp!
         #index("linux-syslog", line)
       #end
-    ##end
+    #end
 
     @t2 = Thread.new do
-      #File::Tail::Since.new("/b/access.10").tail do |line|
-      begin
+      File::Tail::Since.new("/b/access.10k").tail do |line|
         count = 0
-        File.open("/b/access.1k").readlines.each do |line|
-          line.chomp!
-          index("httpd-access", line)
-          count += 1
-          #break if count >= 3
+        line.chomp!
+        count += 1
+        if count % 1000 == 0
+          #sleep 1
+          puts count
         end
-      rescue => e
-        $stderr.puts e.inspect
-        $stderr.puts caller.join("\n")
-        raise e
+        index("httpd-access", line)
+        #break if count >= 1
       end
-      #close
     end
-    @t2.join
   end # def start_log_watcher
 
   def index(type, string)
@@ -49,11 +44,13 @@ class Agent < LogStash::Net::MessageClient
     ier.log_data = string
     ier.metadata["source_host"] = @hostname
 
-    puts "Sending: #{ier}"
+    #puts "Sending: #{ier}"
     sendmsg("/queue/logstash", ier)
   end # def index
 
   def IndexEventResponseHandler(msg)
+    return if msg.code == 0
+    puts msg.inspect
   end # def IndexEventResponseHandler
 
   def run
@@ -68,6 +65,7 @@ if $0 == __FILE__
     puts "Usage: #{$0} host:port"
     exit 1
   end
+  Thread::abort_on_exception = true
   host, port = ARGV[0].split(":")
   agent = Agent.new(host, port)
   agent.run
