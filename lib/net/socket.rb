@@ -71,6 +71,10 @@ module LogStash; module Net
         end # if @handler.respond_to?(func)
       end
       @stomp.acknowledge stompmsg
+
+      if @close # set by 'close' method
+        @stomp.close
+      end
     end # def handle_message
 
     def run
@@ -125,7 +129,7 @@ module LogStash; module Net
     end
 
     def close
-      @stomp.close
+      @close = true
     end
   end # class MessageSocket
 end; end # module LogStash::Net

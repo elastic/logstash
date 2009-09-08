@@ -4,6 +4,7 @@ require 'lib/net/server'
 require 'lib/net/message'
 require 'lib/net/messages/indexevent'
 require 'lib/net/messages/search'
+require 'lib/net/messages/searchhits'
 require 'lib/net/messages/ping'
 require 'ferret'
 require 'lib/log/text'
@@ -69,37 +70,43 @@ module LogStash; module Net; module Servers
 
       reader = Ferret::Index::IndexReader.new($logs[request.log_type].index_dir)
       search = Ferret::Search::Searcher.new(reader)
-
-      puts reader.fields.join("\n")
       qp = Ferret::QueryParser.new(:fields => reader.fields,
                                    :tokenized_fields => reader.tokenized_fields,
                                    :or_default => false)
       query = qp.parse(request.query)
-      results = []
       offset = (request.offset or 0)
       total = request.limit
-      limit = 50
+      max_limit = 50
+      results = []
+      limit = max_limit
+      # TODO(sissel): We need a way to say 'flush now' because this
+      # method will batch search results due to the likely efficiency
+      # in searching for batches of results.
 
       done = false
       while !done
         done = true
-        puts "Searching..."
 
         if total
-          limit = [total, limit].min
+          limit = [total, max_limit].min
           total -= limit
-
           if limit <= 0
             done = true
             next
           end
         end
 
+        count = 0
         search.search_each(query, :limit => limit, :offset => offset,
                            :sort => "@DATE") do |docid, score|
           done = false
           result = reader[docid][:@LINE]
+          count += 1
           results << result
+        end
+
+        if (total and count < limit)
+          done = true
         end
 
         response = LogStash::Net::Messages::SearchResponse.new
@@ -108,14 +115,36 @@ module LogStash; module Net; module Servers
         response.finished = false
         yield response
         results = []
-        offset += limit
+        offset += count
       end
+
       response = LogStash::Net::Messages::SearchResponse.new
       response.id = request.id
-      response.results = results
+      response.results = []
       response.finished = true
+      puts response.inspect
       yield response
-    end
+    end # def SearchRequestHandler
+
+    def SearchHitsRequestHandler(request)
+      puts "Search for #{request.query.inspect}"
+
+      reader = Ferret::Index::IndexReader.new($logs[request.log_type].index_dir)
+      search = Ferret::Search::Searcher.new(reader)
+      qp = Ferret::QueryParser.new(:fields => reader.fields,
+                                   :tokenized_fields => reader.tokenized_fields,
+                                   :or_default => false)
+      query = qp.parse(request.query)
+      offset = (request.offset or 0)
+
+      # search_each returns number of hits, even if we don't yield them.
+      hits = search.search_each(query, :limit => 1, :offset => offset,
+                                :sort => "@DATE") { |docid, score| }
+      response = LogStash::Net::Messages::SearchHitsResponse.new
+      response.id = request.id
+      response.hits = hits
+      yield response
+    end # def SearchHitsRequestHandler
 
     # Special 'run' override because we want sync to disk once per minute.
     def run
