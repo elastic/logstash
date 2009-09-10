@@ -1,11 +1,10 @@
 require 'rubygems'
 require 'lib/net/stats'
 require 'lib/net/messagepacket'
-#require 'eventmachine'
 require 'uuid'
 require 'stomp'
 
-USE_MARSHAL = false
+USE_MARSHAL = ENV.has_key?("USE_MARSHAL")
 
 module LogStash; module Net
   # The MessageClient class exists only as an alias
@@ -124,7 +123,7 @@ module LogStash; module Net
     end
 
     def handler=(handler)
-      puts "Setting handler to #{handler.class.name}"
+      #puts "Setting handler to #{handler.class.name}"
       @handler = handler
     end
 

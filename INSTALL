@@ -3,14 +3,11 @@ required gems:
 - json
 - ferret
 - file-tail
-- eventmachine
-
+- stomp
 
 This code is not beta, not alpha, but like something unnamed where
 only three people in the world have gotten it to run. YMMV. Expect
 much debuggery.
-
-
 
 # Prereqs:
 These instructions assume you are on a relatively recent

@@ -1,32 +1,24 @@
-require "json"
+require 'json'
+require 'set'
 # vim macro to replace 'hashbind :foo, "bar"' with two methods.
 # yypkct:def lxf,sreturn @data[A]oenddef Jdt:xf,s(val)return @data[A] = valend
 
 module BindToHash
   def hashbind(method, key)
-    self.class_eval do
-      define_method(method) { BindToHash.hashpath_get(@data, key) }
-      define_method("#{method}=") { |v| BindToHash.hashpath_set(@data, key, v) }
-    end
+    hashpath = BindToHash.genhashpath(key)
+    self.class_eval %(
+      def #{method}
+        return #{hashpath}
+      end
+      def #{method}=(val)
+        #{hashpath} = val
+      end
+    )
   end
 
-  def self.hashpath_get(data, key)
-    elements = key.split("/")
-    elements[0..-2].each do |k|
-      next if k == ""
-      data = data[k]
-    end
-    return data[elements[-1]]
-  end
-
-  def self.hashpath_set(data, key, value)
-    elements = key.split("/")
-    elements[0..-2].each do |k|
-      next if k == ""
-      data = data[k]
-    end
-
-    data[elements[-1]] = value
+  def self.genhashpath(key)
+    path = key.split("/").select { |x| x.length > 0 }.map { |x| "[#{x.inspect}]" }
+    return "@data#{path.join("")}"
   end
 end # modules BindToHash
 
@@ -37,8 +29,8 @@ module LogStash; module Net
     extend BindToHash
     attr_accessor :data
 
-    # Message ID sequence number
-    @@translators = Array.new
+    # list of class instances that can identify messages
+    @@translators = Hash.new
 
     # Message attributes
     def id
@@ -56,18 +48,29 @@ module LogStash; module Net
       return @@translators
     end
 
+    def self.register
+      name = self.name.split(":")[-1]
+      self.class_eval %(
+        def _name
+          return "#{name}"
+        end
+      )
+      puts "Register #{name}"
+      @@translators[name] = self
+    end
+
     def initialize
       @data = Hash.new
     end
 
     def self.new_from_data(data)
       obj = nil
-      @@translators.each do |klass|
-        if klass.can_process?(data)
-           obj = klass.new
-        end
-      end
-      if !obj
+      #@@translators.each do |translator|
+      name = data["type"]
+      if @@translators.has_key?(name)
+        obj = @@translators[name].new
+      else
+        $stderr.puts "No translator found for #{name} / #{data.inspect}"
         obj = Message.new
       end
       obj.data = data
@@ -87,17 +90,9 @@ module LogStash; module Net
 
     def initialize
       super
-      generate_id!
-    end
-
-    Message.translators << self
-    def self.can_process?(data)
-      return data.has_key?("request")
-    end
-
-    def initialize
-      super
       self.args = Hash.new
+      self.name = self._name
+      generate_id!
     end
 
     def generate_id!
@@ -107,36 +102,28 @@ module LogStash; module Net
 
     # Message attributes
     def name
-      return @data["request"]
+      return @data["type"]
     end
 
     def name=(val)
-      return @data["request"] = val
+      return @data["type"] = val
     end
 
     def args
+      #puts "args: #{@data["args"].inspect}"
       return @data["args"]
     end
 
     def args=(val)
+      #if val == nil
+        #puts caller.join("\n")
+      #end
       return @data["args"] = val
     end
   end # class RequestMessage
 
   class ResponseMessage < RequestMessage
-    Message.translators << self
-    def self.can_process?(data)
-      return data.has_key?("response")
-    end
-
-    # Message attributes
-    def name
-      return @data["response"]
-    end
-
-    def name=(val)
-      return @data["response"] = val
-    end
+    #Message.translators << self
 
     # Report the success of the request this response is for.
     # Should be implemented by subclasses

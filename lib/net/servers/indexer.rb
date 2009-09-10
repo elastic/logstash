@@ -5,6 +5,7 @@ require 'lib/net/message'
 require 'lib/net/messages/indexevent'
 require 'lib/net/messages/search'
 require 'lib/net/messages/searchhits'
+require 'lib/net/messages/quit'
 require 'lib/net/messages/ping'
 require 'ferret'
 require 'lib/log/text'
@@ -23,12 +24,17 @@ module LogStash; module Net; module Servers
       @starttime = Time.now
     end
 
+    def QuitRequestHandler(request)
+      puts "Got quit message, exiting..."
+      close
+    end
+
     def IndexEventRequestHandler(request)
       response = LogStash::Net::Messages::IndexEventResponse.new
       response.id = request.id
       @indexcount += 1
 
-      if @indexcount % 100 == 0
+      if @indexcount % 10 == 0
         duration = (Time.now.to_f - @starttime.to_f)
         puts "%.2f" % (@indexcount / duration)
       end

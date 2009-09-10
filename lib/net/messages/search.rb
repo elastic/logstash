@@ -2,15 +2,7 @@ require "lib/net/message"
 
 module LogStash; module Net; module Messages
   class SearchRequest < RequestMessage
-    Message.translators << self
-    def self.can_process?(data)
-      return (super(data) and data["request"] == "Search")
-    end
-
-    def initialize
-      super
-      self.name = "Search"
-    end
+    register
 
     # Message attributes
     hashbind :query, "/args/query"
@@ -20,18 +12,11 @@ module LogStash; module Net; module Messages
   end # class SearchRequest
 
   class SearchResponse < ResponseMessage
-    Message.translators << self
-    def self.can_process?(data)
-      return (super(data) and data["response"] == "Search")
-    end
-
-    def initialize
-      super
-      self.name = "Search"
-    end
+    register
 
     # Message attributes
     hashbind :results, "/args/results"
     hashbind :finished, "/args/finished"
+
   end # class SearchResponse
 end; end; end # module LogStash::Net::Messages

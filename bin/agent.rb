@@ -1,8 +1,9 @@
-  #!/usr/bin/env ruby
+#!/usr/bin/env ruby
 
 require 'rubygems'
 require 'lib/net/client'
 require 'lib/net/messages/indexevent'
+require 'lib/net/messages/quit'
 require 'lib/file/tail/since'
 require 'stomp'
 require 'socket'
@@ -16,26 +17,25 @@ class Agent < LogStash::Net::MessageClient
   end # def initialize
 
   def start_log_watcher
-    @t1 = Thread.new do
-      File::Tail::Since.new("/b/logs/auth.log.scorn").tail do |line|
-        line.chomp!
-        index("linux-syslog", line)
-      end
-    end
-
-    #@t2 = Thread.new do
-      #File::Tail::Since.new("/b/access.10k").tail do |line|
-        #count = 0
+    #@t1 = Thread.new do
+      #File::Tail::Since.new("/b/logs/auth.log.scorn").tail do |line|
         #line.chomp!
-        #count += 1
-        ##if count % 1000 == 0
-          ##sleep 1
-          #puts count
-        #end
-        #index("httpd-access", line)
-        ##break if count >= 1
+        #index("linux-syslog", line)
       #end
     #end
+
+    @t2 = Thread.new do
+      count = 0
+      #File::Tail::Since.new("/b/access.100").tail do |line|
+      File.open("/b/access.10k").each do |line|
+        line.chomp!
+        count += 1
+        index("httpd-access", line)
+        puts count
+        break if count >= 10
+      end
+      sendmsg("/queue/logstash", LogStash::Net::Messages::QuitRequest.new)
+    end
   end # def start_log_watcher
 
   def index(type, string)
@@ -49,8 +49,9 @@ class Agent < LogStash::Net::MessageClient
   end # def index
 
   def IndexEventResponseHandler(msg)
-    return if msg.code == 0
-    puts msg.inspect
+    if msg.code != 0
+      puts msg.inspect
+    end
   end # def IndexEventResponseHandler
 
   def run

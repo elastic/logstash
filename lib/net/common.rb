@@ -1,4 +1,5 @@
 require 'zlib'
+require 'rubygems'
 require 'eventmachine'
 
 module LogStash; module Net;
@@ -39,9 +40,7 @@ class String
         end
       end
     end
-
-  end
-
+  end # def strip_upper_ascii
 end # class String
 
 # EventMachine uses ruby1.8 (not in 1.9) function Thread#kill!,
@@ -49,7 +48,7 @@ end # class String
 class Thread
   def kill!(*args)
     kill
-  end
+  end # def kill!
 end
 
 if ENV.has_key?("USE_EPOLL")
