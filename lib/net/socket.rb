@@ -1,5 +1,4 @@
 require 'rubygems'
-require 'lib/net/stats'
 require 'lib/net/messagepacket'
 require 'uuid'
 require 'stomp'
