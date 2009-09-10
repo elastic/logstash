@@ -1,10 +1,3 @@
-required gems:
-- mkdtemp
-- json
-- ferret
-- file-tail
-- stomp
-
 This code is not beta, not alpha, but like something unnamed where
 only three people in the world have gotten it to run. YMMV. Expect
 much debuggery.
@@ -20,11 +13,13 @@ You should have ruby and rubygems installed.
 After that install the following gems, via 'gem install gemname'
 
 required gems:
+- ruby-prof
 - mkdtemp
 - json
 - ferret
-- ruby-prof
-
+- file-tail
+- stomp
+- uuid
 
 You'll also need ruby-grok - see instructions below..
 
@@ -50,11 +45,18 @@ Check your /etc/ld.so.conf, or /etc/ld.so.conf.d/* .
 If not already set add /usr/local/lib
 
 # RUNNING INSTRUCTIONS
-Unpack into /opt/logstash, then cd into that directory
+cd into /opt/logstash
+You'll need to start stompserver.. From the command line: 'stompserver'
+Next start logstashd via 'ruby bin/logstashd.rb'
+In another window start up the agent via 
+'ruby bin/agent.redhat.rb localhost:61613'
+This assumes your system is redhat derivative (fedora, centos, etc..)
+You should see a bunch of traffic as 'agent' loads log data.
 
-ruby sandbox/srv.rb
-... in another window...
-ruby sandbox/client.rb /var/log/messages # loads messages into logstash
-# ^^ get "Entry was nil" ..
-ruby sandbox/searchclient.rb linux-syslog "search_string"
+Now search via:
+ruby bin/search.rb linux-syslog '*alsa*'
+ruby bin/search.rb httpd-access '*favicon.ico*'
+
+Note: All files will need access to /var/tmp/ruby-uuid so run all scripts
+as the same user..
 
