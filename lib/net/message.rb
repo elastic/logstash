@@ -55,7 +55,7 @@ module LogStash; module Net
           return "#{name}"
         end
       )
-      puts "Register #{name}"
+      #puts "Register #{name}"
       @@translators[name] = self
     end
 
