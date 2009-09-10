@@ -73,7 +73,17 @@ module LogStash; module Net; module Servers
 
     def SearchRequestHandler(request)
       puts "Search for #{request.query.inspect}"
+      response = LogStash::Net::Messages::SearchResponse.new
+      response.id = request.id
 
+      if $logs[request.log_type].nil?
+        puts "invalid log type: #{request.log_type}"
+        response.results = []
+        response.finished = true
+        puts response.inspect
+        yield response
+        return
+      end
       reader = Ferret::Index::IndexReader.new($logs[request.log_type].index_dir)
       search = Ferret::Search::Searcher.new(reader)
       qp = Ferret::QueryParser.new(:fields => reader.fields,
@@ -114,18 +124,14 @@ module LogStash; module Net; module Servers
         if (total and count < limit)
           done = true
         end
-
-        response = LogStash::Net::Messages::SearchResponse.new
-        response.id = request.id
-        response.results = results
-        response.finished = false
-        yield response
+        part_response = LogStash::Net::Messages::SearchResponse.new
+        part_response.id = request.id
+        part_response.results = results
+        part_response.finished = false
+        yield part_response
         results = []
         offset += count
       end
-
-      response = LogStash::Net::Messages::SearchResponse.new
-      response.id = request.id
       response.results = []
       response.finished = true
       puts response.inspect
@@ -134,7 +140,14 @@ module LogStash; module Net; module Servers
 
     def SearchHitsRequestHandler(request)
       puts "Search for #{request.query.inspect}"
-
+      response = LogStash::Net::Messages::SearchHitsResponse.new
+      response.id = request.id
+      if $logs[request.log_type].nil?
+        puts "invalid log type: #{request.log_type}"
+        response.hits = 0
+        yield response
+        return 
+      end
       reader = Ferret::Index::IndexReader.new($logs[request.log_type].index_dir)
       search = Ferret::Search::Searcher.new(reader)
       qp = Ferret::QueryParser.new(:fields => reader.fields,
@@ -146,8 +159,6 @@ module LogStash; module Net; module Servers
       # search_each returns number of hits, even if we don't yield them.
       hits = search.search_each(query, :limit => 1, :offset => offset,
                                 :sort => "@DATE") { |docid, score| }
-      response = LogStash::Net::Messages::SearchHitsResponse.new
-      response.id = request.id
       response.hits = hits
       yield response
     end # def SearchHitsRequestHandler
