@@ -17,12 +17,13 @@ class Agent < LogStash::Net::MessageClient
   end # def initialize
 
   def start_log_watcher
-    #@t1 = Thread.new do
+    @t1 = Thread.new do
       #File::Tail::Since.new("/b/logs/auth.log.scorn").tail do |line|
-        #line.chomp!
-        #index("linux-syslog", line)
-      #end
-    #end
+      File.open("/b/logs/auth.log.scorn").each do |line|
+        line.chomp!
+        index("linux-syslog", line)
+      end
+    end
 
     @t2 = Thread.new do
       count = 0
@@ -32,7 +33,7 @@ class Agent < LogStash::Net::MessageClient
         count += 1
         index("httpd-access", line)
         puts count
-        break if count >= 10
+        #break if count >= 10
       end
       sendmsg("/queue/logstash", LogStash::Net::Messages::QuitRequest.new)
     end

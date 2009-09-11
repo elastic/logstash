@@ -7,17 +7,21 @@ require 'lib/net/messages/search'
 require 'lib/net/messages/searchhits'
 require 'lib/net/messages/quit'
 require 'lib/net/messages/ping'
+require 'lib/config/indexer.rb'
 require 'ferret'
 require 'lib/log/text'
-require 'config'
 
 module LogStash; module Net; module Servers
   class Indexer < LogStash::Net::MessageServer
     SYNCDELAY = 3
 
-    def initialize(*args)
+    def initialize(configfile)
+    #def initialize(*args)
       # 'super' is not the same as 'super()', and we want super().
-      super(*args)
+      @config = LogStash::Config::IndexerConfig.new(configfile)
+      super(username="", password="",
+            host="localhost", port=61613)
+            #host=@config.stomphost, port=@config.stompport)
       @indexes = Hash.new
       @lines = Hash.new { |h,k| h[k] = 0 }
       @indexcount = 0
@@ -34,13 +38,13 @@ module LogStash; module Net; module Servers
       response.id = request.id
       @indexcount += 1
 
-      if @indexcount % 10 == 0
+      if @indexcount % 100 == 0
         duration = (Time.now.to_f - @starttime.to_f)
-        puts "%.2f" % (@indexcount / duration)
+        puts "rate: %.2f/sec" % (@indexcount / duration)
       end
 
       log_type = request.log_type
-      entry = $logs[log_type].parse_entry(request.log_data)
+      entry = @config.logs[log_type].parse_entry(request.log_data)
       if !entry
         response.code = 1
         response.error = "Entry was #{entry.inspect} (log parsing failed)"
@@ -53,13 +57,15 @@ module LogStash; module Net; module Servers
       end
 
       if not @indexes.member?(log_type)
-        @indexes[log_type] = $logs[log_type].get_index
+        @indexes[log_type] = @config.logs[log_type].get_index
       end
 
       entry["@LOG_TYPE"] = log_type
+      #puts entry.inspect
       @indexes[log_type] << entry
 
-      if response.code != 0
+      # only dump a response if there was an error.
+      if response.success?
         yield response
       end
     end
@@ -76,15 +82,15 @@ module LogStash; module Net; module Servers
       response = LogStash::Net::Messages::SearchResponse.new
       response.id = request.id
 
-      if $logs[request.log_type].nil?
+      if @config.logs[request.log_type].nil?
         puts "invalid log type: #{request.log_type}"
         response.results = []
         response.finished = true
-        puts response.inspect
         yield response
         return
       end
-      reader = Ferret::Index::IndexReader.new($logs[request.log_type].index_dir)
+
+      reader = Ferret::Index::IndexReader.new(@config.logs[request.log_type].index_dir)
       search = Ferret::Search::Searcher.new(reader)
       qp = Ferret::QueryParser.new(:fields => reader.fields,
                                    :tokenized_fields => reader.tokenized_fields,
@@ -95,9 +101,6 @@ module LogStash; module Net; module Servers
       max_limit = 50
       results = []
       limit = max_limit
-      # TODO(sissel): We need a way to say 'flush now' because this
-      # method will batch search results due to the likely efficiency
-      # in searching for batches of results.
 
       done = false
       while !done
@@ -134,21 +137,21 @@ module LogStash; module Net; module Servers
       end
       response.results = []
       response.finished = true
-      puts response.inspect
       yield response
     end # def SearchRequestHandler
 
     def SearchHitsRequestHandler(request)
-      puts "Search for #{request.query.inspect}"
+      puts "Search for hits on #{request.query.inspect}"
       response = LogStash::Net::Messages::SearchHitsResponse.new
       response.id = request.id
-      if $logs[request.log_type].nil?
+      if @config.logs[request.log_type].nil?
         puts "invalid log type: #{request.log_type}"
         response.hits = 0
         yield response
         return 
       end
-      reader = Ferret::Index::IndexReader.new($logs[request.log_type].index_dir)
+
+      reader = Ferret::Index::IndexReader.new(@config.logs[request.log_type].index_dir)
       search = Ferret::Search::Searcher.new(reader)
       qp = Ferret::QueryParser.new(:fields => reader.fields,
                                    :tokenized_fields => reader.tokenized_fields,
@@ -174,7 +177,7 @@ module LogStash; module Net; module Servers
       synctime = Time.now + SYNCDELAY
       loop do
         if Time.now > synctime
-          @indexes.each do |log_type,index|
+          @indexes.each do |log_type, index|
             puts "Time's up. Syncing #{log_type}"
             index.commit
           end

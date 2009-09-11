@@ -11,13 +11,13 @@ module LogStash
 
   class Log
     REQUIRED_KEYS = [:type, :encoding]
-    OPTIONAL_KEYS = [:attrs, :date_key, :date_format]
+    OPTIONAL_KEYS = [:attrs, :date_key, :date_format, :logstash_dir]
     attr_accessor :attrs
 
     def initialize(config)
       check_hash_keys(config, REQUIRED_KEYS, OPTIONAL_KEYS)
 
-      @home = ENV["LOGSTASH_DIR"] || "/opt/logstash"
+      @home = config[:logstash_dir] || ENV["LOGSTASH_DIR"] || "/opt/logstash"
       @attrs = {"log:type" => config[:type],
                 "log:encoding" => config[:encoding]}
       if config[:attrs]

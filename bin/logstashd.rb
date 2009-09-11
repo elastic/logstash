@@ -3,24 +3,36 @@
 require 'rubygems'
 require 'lib/net/servers/indexer'
 
-if ENV.has_key?("PROFILE")
-  require 'ruby-prof'
-  RubyProf.start
 
-  #class String
-    #alias_method :orig_scan, :scan
-    #def scan(*args)
-      ##raise
-      #return orig_scan(*args)
+def main(args)
+  if ENV.has_key?("PROFILE")
+    require 'ruby-prof'
+    RubyProf.start
+
+    #class String
+      #alias_method :orig_scan, :scan
+      #def scan(*args)
+        ##raise
+        #return orig_scan(*args)
+      #end
     #end
-  #end
-end
-Thread::abort_on_exception = true
-s = LogStash::Net::Servers::Indexer.new(username='', password='', host="localhost")
-s.run
+  end
 
-if ENV.has_key?("PROFILE")
-  result = RubyProf.stop
-  printer = RubyProf::FlatPrinter.new(result)
-  printer.print(STDOUT, 0)
+  if args.length != 1
+    puts "Usage: #{$0} configfile"
+    return 1
+  end
+  Thread::abort_on_exception = true
+  s = LogStash::Net::Servers::Indexer.new(args[0])
+  s.run
+
+  if ENV.has_key?("PROFILE")
+    result = RubyProf.stop
+    printer = RubyProf::FlatPrinter.new(result)
+    printer.print(STDOUT, 0)
+  end
+
+  return 0
 end
+
+exit main(ARGV)

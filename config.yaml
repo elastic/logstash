@@ -1,0 +1,37 @@
+---
+stompserver: localhost:61613
+logstash_dir: /var/logstash
+#logstash_dir: /home/jls/projects/logstash
+
+log-types:
+  httpd-access:
+    type: text
+    patterns:
+    - %{COMBINEDAPACHELOG}
+    date:
+      key: timestamp
+      format: %d/%b/%Y:%H:%M:%S %Z
+
+  glu:
+    type: json
+    date:
+      key: timestamp
+      format: %Y-%m-%dT%H:%M:%S
+    display_format: "<%= entry['timestamp'] %> | <%= entry['level'] %> | <%= entry['context/sessionKey'] %> | <%= entry['sourceHostName'] %> | <%= entry['context/componentName'] %> | <%= entry['message'] %>"
+
+  linux-syslog:
+    type: text
+    date:
+      key: date
+      format: %b %e %H:%M:%S
+    patterns:
+    - %{SYSLOGPAMSESSION}
+    - %{SYSLOGLINE}
+
+  netscreen:
+    type: text
+    patterns:
+    - %{NETSCREENSESSIONLOG}
+    date:
+      key: date
+      format: %b %e %H:%M:%S
