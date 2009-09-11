@@ -61,7 +61,6 @@ module LogStash; module Net; module Servers
       end
 
       entry["@LOG_TYPE"] = log_type
-      #puts entry.inspect
       @indexes[log_type] << entry
 
       # only dump a response if there was an error.

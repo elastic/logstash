@@ -35,3 +35,11 @@ log-types:
     date:
       key: date
       format: %b %e %H:%M:%S
+
+  haproxy:
+    type: text
+    patterns:
+    - %{HAPROXYHTTP}
+    date:
+      key: date
+      format: %b %e %H:%M:%S

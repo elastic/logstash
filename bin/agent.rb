@@ -19,24 +19,25 @@ class Agent < LogStash::Net::MessageClient
   def start_log_watcher
     @t1 = Thread.new do
       #File::Tail::Since.new("/b/logs/auth.log.scorn").tail do |line|
-      File.open("/b/logs/auth.log.scorn").each do |line|
+      #File.open("/b/logs/auth.log.scorn").each do |line|
+      File.open("/b/haproxy").each do |line|
         line.chomp!
-        index("linux-syslog", line)
+        index("haproxy", line)
       end
     end
 
-    @t2 = Thread.new do
-      count = 0
-      #File::Tail::Since.new("/b/access.100").tail do |line|
-      File.open("/b/access.10k").each do |line|
-        line.chomp!
-        count += 1
-        index("httpd-access", line)
-        puts count
-        #break if count >= 10
-      end
-      sendmsg("/queue/logstash", LogStash::Net::Messages::QuitRequest.new)
-    end
+    #@t2 = Thread.new do
+      #count = 0
+      ##File::Tail::Since.new("/b/access.100").tail do |line|
+      #File.open("/b/access.10k").each do |line|
+        #line.chomp!
+        #count += 1
+        #index("httpd-access", line)
+        #puts count
+        ##break if count >= 10
+      #end
+      #sendmsg("/queue/logstash", LogStash::Net::Messages::QuitRequest.new)
+    #end
   end # def start_log_watcher
 
   def index(type, string)

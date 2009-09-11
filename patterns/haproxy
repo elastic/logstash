@@ -1,0 +1,5 @@
+HAPROXYDATE %{MONTHDAY}/%{MONTH}/%{YEAR}:%{TIME}.%{INT:milliseconds}
+HAPROXYTERMINATIONSTATE [CAPRIcs-][RQCHDLT-][NIDV-][NIPRD-]
+
+# parse an haproxy 'httplog' line
+HAPROXYHTTP %{SYSLOGDATE:date} %{IPORHOST:server} %{SYSLOGPROG}: %{IP:clientip}:%{INT:clientport} \[%{HAPROXYDATE:haproxydate}\] %{NOTSPACE:proxyname} %{NOTSPACE}/%{IPORHOST:backend} %{INT:time_request}/%{INT:time_queue}/%{INT:time_backend_connect}/%{INT:time_backend_response}/%{INT:time_duration} %{INT:response} %{INT:bytes} - - %{HAPROXYTERMINATIONSTATE:terminationstate} %{INT:actconn}/%{INT:feconn}/%{INT:beconn}/%{INT:srvconn} %{INT:srv_queue}/%{INT:backend_queue} "%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:version}"
