@@ -44,10 +44,14 @@ sudo make install
 Check your /etc/ld.so.conf, or /etc/ld.so.conf.d/* . 
 If not already set add /usr/local/lib
 
+# RUNNING PREREQUISITES
+You must have a STOMP-capable message broker running. StompServer works fine if
+you don't want to configure anything.
+
 # RUNNING INSTRUCTIONS
 cd into /opt/logstash
 You'll need to start stompserver.. From the command line: 'stompserver'
-Next start logstashd via 'ruby bin/logstashd.rb'
+Next start logstashd via 'ruby bin/logstashd.rb logstashd.yaml'
 In another window start up the agent via 
 'ruby bin/agent.redhat.rb localhost:61613'
 This assumes your system is redhat derivative (fedora, centos, etc..)
@@ -60,3 +64,8 @@ ruby bin/search.rb httpd-access '*favicon.ico*'
 Note: All files will need access to /var/tmp/ruby-uuid so run all scripts
 as the same user..
 
+# RUNNING THE WEB INTERFACE
+cd web
+Then run 'merb'
+
+This requires you have 'merb' installed.
