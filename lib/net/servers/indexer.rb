@@ -10,6 +10,7 @@ require 'lib/net/messages/ping'
 require 'lib/config/indexer.rb'
 require 'ferret'
 require 'lib/log/text'
+require 'pp'
 
 module LogStash; module Net; module Servers
   class Indexer < LogStash::Net::MessageServer
@@ -45,6 +46,7 @@ module LogStash; module Net; module Servers
 
       log_type = request.log_type
       entry = @config.logs[log_type].parse_entry(request.log_data)
+      #pp entry
       if !entry
         response.code = 1
         response.error = "Entry was #{entry.inspect} (log parsing failed)"
@@ -77,7 +79,7 @@ module LogStash; module Net; module Servers
     end
 
     def SearchRequestHandler(request)
-      puts "Search for #{request.query.inspect}"
+      puts "Search for #{request.query.inspect} in #{request.log_type}"
       response = LogStash::Net::Messages::SearchResponse.new
       response.id = request.id
 
@@ -91,6 +93,7 @@ module LogStash; module Net; module Servers
 
       reader = Ferret::Index::IndexReader.new(@config.logs[request.log_type].index_dir)
       search = Ferret::Search::Searcher.new(reader)
+      #puts reader.fields.join(", ")
       qp = Ferret::QueryParser.new(:fields => reader.fields,
                                    :tokenized_fields => reader.tokenized_fields,
                                    :or_default => false)
