@@ -1,0 +1,4 @@
+<%= form :action => url(:controller => "search", :action => "query") do %>
+  <%= text_field :name => "q", :label => "Query" %>
+  <%= submit "Search" %>
+<% end =%>

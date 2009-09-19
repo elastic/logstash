@@ -1,0 +1,12 @@
+<%= form :action => url(:controller => "search", :action => "query") do %>
+  <%= text_field :name => "q", :label => "Query", :value => escape_html(params[:q]) %>
+  <%= submit "Search" %>
+<% end =%>
+
+<hr>
+
+<h4>Hits: <%= @searchclient.hits %></h4>
+<hr> 
+<pre>
+<%=h @searchclient.results.join("\n") %>
+</pre>
