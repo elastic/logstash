@@ -1,16 +1,19 @@
 <%= form :action => url(:controller => "search", :action => "query"),
          :method => :get do %>
-  <%= text_field :name => "q", :label => "Query" %>
+<%= text_field :name => "q", :label => "Query", :value => escape_html(params[:q]), :size => 100 %>
+  <br/>
+  <%= text_field :name => "log_type", :label => "log type", :value => escape_html(params[:log_type]) %>
+  <br>
   <%= submit "Search" %>
 <% end =%>
 <hr>
 
-<h4>Results <%= params[:offset] %> - <%= params[:offset] + params[:limit] %> of <%= @searchclient.hits %> for <%= params[:q] %></h4>
+<h4>Results <%= params[:offset] %> - <%= params[:offset] + params[:limit] %> of <%= @searchclient.hits %> for <%=h params[:q] %></h4>
 <% if params[:offset] > 0 %>
-  <%= link_to "prev", url(:controller => "search", :action => "query", :q => params[:q], :offset => [0, params[:offset] - params[:limit]].max, :limit => params[:limit]) %>
+<%= link_to "prev", url(:controller => "search", :action => "query", :q => params[:q], :offset => [0, params[:offset] - params[:limit]].max, :limit => params[:limit]), :log_type => params[:log_type] %>
 <% end %>
 <% if params[:offset] + params[:limit] < @searchclient.hits %>
-<%= link_to "next", url(:controller => "search", :action => "query", :q => params[:q], :offset => [@searchclient.hits - params[:limit], params[:offset] + params[:limit]].min, :limit => params[:limit]) %>
+<%= link_to "next", url(:controller => "search", :action => "query", :q => params[:q], :offset => [@searchclient.hits - params[:limit], params[:offset] + params[:limit]].min, :limit => params[:limit], :log_type => params[:log_type]) %>
 <% end %>
 
 <pre>
