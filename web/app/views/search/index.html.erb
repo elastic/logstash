@@ -1,4 +1,5 @@
-<%= form :action => url(:controller => "search", :action => "query") do %>
+<%= form :action => url(:controller => "search", :action => "query"),
+         :method => :getvn do %>
   <%= text_field :name => "q", :label => "Query" %>
   <%= submit "Search" %>
 <% end =%>

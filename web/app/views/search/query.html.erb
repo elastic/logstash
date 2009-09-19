@@ -1,12 +1,18 @@
-<%= form :action => url(:controller => "search", :action => "query") do %>
-  <%= text_field :name => "q", :label => "Query", :value => escape_html(params[:q]) %>
+<%= form :action => url(:controller => "search", :action => "query"),
+         :method => :get do %>
+  <%= text_field :name => "q", :label => "Query" %>
   <%= submit "Search" %>
 <% end =%>
-
 <hr>
 
-<h4>Hits: <%= @searchclient.hits %></h4>
-<hr> 
+<h4>Results <%= params[:offset] %> - <%= params[:offset] + params[:limit] %> of <%= @searchclient.hits %> for <%= params[:q] %></h4>
+<% if params[:offset] > 0 %>
+  <%= link_to "prev", url(:controller => "search", :action => "query", :q => params[:q], :offset => [0, params[:offset] - params[:limit]].max, :limit => params[:limit]) %>
+<% end %>
+<% if params[:offset] + params[:limit] < @searchclient.hits %>
+<%= link_to "next", url(:controller => "search", :action => "query", :q => params[:q], :offset => [@searchclient.hits - params[:limit], params[:offset] + params[:limit]].min, :limit => params[:limit]) %>
+<% end %>
+
 <pre>
 <%=h @searchclient.results.join("\n") %>
 </pre>
