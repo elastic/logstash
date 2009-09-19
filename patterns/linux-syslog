@@ -1,2 +1,6 @@
 SYSLOGPAMSESSION %{SYSLOGBASE} (?=%{GREEDYDATA:message})%{WORD:pam_module}\(%{DATA:pam_caller}\): session %{WORD:pam_session_state} for user %{USERNAME:username}(?: by %{GREEDYDATA:pam_by})?
-SYSLOGLINE %{SYSLOGBASE} %{GREEDYDATA:message}
+
+CRON_ACTION [A-Z ]+
+CRONLOG %{SYSLOGBASE} \(%{USER:user}\) %{CRON_ACTION:action} \(%{DATA:message}\)
+
+#SYSLOGLINE %{SYSLOGBASE} %{GREEDYDATA:message}
