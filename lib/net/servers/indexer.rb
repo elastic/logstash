@@ -14,7 +14,7 @@ require 'pp'
 
 module LogStash; module Net; module Servers
   class Indexer < LogStash::Net::MessageServer
-    SYNCDELAY = 3
+    SYNCDELAY = 10
 
     def initialize(configfile)
     #def initialize(*args)
@@ -45,30 +45,12 @@ module LogStash; module Net; module Servers
       end
 
       log_type = request.log_type
-      entry = @config.logs[log_type].parse_entry(request.log_data)
-      #pp entry
-      if !entry
-        response.code = 1
-        response.error = "Entry was #{entry.inspect} (log parsing failed)"
-        entry = {
-          "@NEEDSPARSING" => 1,
-          "@LINE" => request.log_data
-        }
-      else
-        response.code = 0
-      end
 
       if not @indexes.member?(log_type)
         @indexes[log_type] = @config.logs[log_type].get_index
       end
 
-      entry["@LOG_TYPE"] = log_type
-      @indexes[log_type] << entry
-
-      # only dump a response if there was an error.
-      if response.success?
-        yield response
-      end
+      @indexes[log_type] << request.log_data
     end
 
     def PingRequestHandler(request)
@@ -170,7 +152,7 @@ module LogStash; module Net; module Servers
 
     # Special 'run' override because we want sync to disk once per minute.
     def run
-      subscribe("logstash")
+      subscribe("logstash-index")
       @syncer = Thread.new { syncer }
       super
     end # def run
@@ -181,7 +163,8 @@ module LogStash; module Net; module Servers
         if Time.now > synctime
           @indexes.each do |log_type, index|
             puts "Time's up. Syncing #{log_type}"
-            index.commit
+            index.flush
+            break;
           end
 
           synctime = Time.now + SYNCDELAY
