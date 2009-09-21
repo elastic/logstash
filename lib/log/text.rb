@@ -53,20 +53,17 @@ module LogStash
           break if match
         end
         return nil unless match
-        res = match.captures
+        res = Hash.new { |h,k| h[k] = Array.new }
 
         # We're parsing GROK captures, and there are two kinds of outputs:
         #  QUOTEDSTRING:bar - matched pattern QUOTEDSTRING, var named bar, keep
         #  DATA - matched pattern DATA, but no variable name, so we ditch it
-        res.keys.each do |key|
+        match.each_capture do |key, value|
           if key =~ /^.+:(.+)$/
-            if res[key].length == 1
-              res[$1] = res[key][0]
-            else
-              res[$1] = res[key]
-            end
+            res[$1] = value
+          else
+            res[key] = value
           end
-          res.delete(key)
         end
 
         # add meta @LINE to represent the original input
