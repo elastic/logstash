@@ -25,15 +25,15 @@ You'll also need ruby-grok - see instructions below..
 
 # INSTALLING GROK
 Install grok ruby bindings
-http://code.google.com/p/semicomplete/source/browse/cgrok/ruby/INSTALL
+http://code.google.com/p/semicomplete/source/browse/grok/ruby/INSTALL
 
 If you are on centos download and install a newer flex:
 ftp://mirrors.kernel.org/fedora/releases/9/Fedora/source/SRPMS/flex-2.5.35-1.fc9.src.rpm
 
 Install the following packages (centos: sudo yum install pkgname)
 pcre-devel, libevent-devel, gperf
-svn checkout http://semicomplete.googlecode.com/svn/cgrok
-cd cgrok
+svn checkout http://semicomplete.googlecode.com/svn/grok
+cd grok
 make
 sudo make install
 cd ruby
