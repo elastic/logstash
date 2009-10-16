@@ -43,14 +43,14 @@ class Search < Application
     msg = LogStash::Net::Messages::SearchHitsRequest.new
     msg.log_type = params[:log_type]
     msg.query = params[:q]
-    @searchclient.sendmsg("/queue/logstash", msg)
+    @searchclient.sendmsg("/queue/logstash-index", msg)
 
     msg = LogStash::Net::Messages::SearchRequest.new
     msg.log_type = (params[:log_type] or "linux-syslog")
     msg.query = params[:q]
     msg.offset = params[:offset]
     msg.limit = params[:limit]
-    @searchclient.sendmsg("/queue/logstash", msg)
+    @searchclient.sendmsg("/queue/logstash-index", msg)
 
     Timeout.timeout(10) do 
       @searchclient.run

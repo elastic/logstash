@@ -47,6 +47,7 @@ module LogStash; module Net; module Servers
       log_type = request.log_type
       entry = @config.logs[log_type].parse_entry(request.log_data)
       if !entry
+        puts "Failed parsing line: #{request.log_data}"
         response.code = 1
         response.error = "Entry was #{entry.inspect} (log parsing failed)"
         entry = {

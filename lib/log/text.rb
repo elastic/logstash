@@ -31,7 +31,10 @@ module LogStash
 
         pattern_files = []
         Find.find("#{@home}/patterns") do |file|
-          next if FileTest.directory?(file)
+          # ignore directories
+          next if File.directory?(file)
+          # ignore dotfiles
+          next if file.include?("/.")
           pattern_files << file
         end
 
@@ -40,7 +43,10 @@ module LogStash
         @grok_patterns.each do |pattern|
           grok = Grok.new
           pattern_files.each { |f| grok.add_patterns_from_file(f) }
+          #puts "Compiling #{pattern} / #{grok}"
           grok.compile(pattern)
+          #puts grok.expanded_pattern
+          #puts
           @groks << grok
         end
         

@@ -38,12 +38,12 @@ def main(args)
   msg = LogStash::Net::Messages::SearchHitsRequest.new
   msg.log_type = args[0]
   msg.query = args[1]
-  client.sendmsg("/queue/logstash", msg)
+  client.sendmsg("/queue/logstash-index", msg)
 
   msg = LogStash::Net::Messages::SearchRequest.new
   msg.log_type = args[0]
   msg.query = args[1]
-  client.sendmsg("/queue/logstash", msg)
+  client.sendmsg("/queue/logstash-index", msg)
 
   client.run
   return 0

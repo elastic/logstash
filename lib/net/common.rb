@@ -30,16 +30,16 @@ class String
   def strip_upper_ascii
     # Ruby's JSON barfs if you try to encode upper ascii characters
     # as it assumes all strings are unicode.
-    if value.is_a?(String) 
-      (0 .. value.length - 1).each do |i|
-        break if !value[i]
-        # ruby 1.9 String#[] returns a string, 1.8 returns an int
-        # force an int.
-        if value[i].to_i >= 128
-          value[i] = ""
-        end
+    newstr = self.dup
+    (0 .. newstr.length - 1).each do |i|
+      break if !newstr[i]
+      # ruby 1.9 String#[] returns a string, 1.8 returns an int
+      # force an int.
+      if newstr[i].to_i >= 128
+        newstr[i] = ""
       end
     end
+    return newstr
   end # def strip_upper_ascii
 end # class String
 

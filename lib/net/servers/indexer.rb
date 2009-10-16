@@ -50,6 +50,8 @@ module LogStash; module Net; module Servers
         @indexes[log_type] = @config.logs[log_type].get_index
       end
 
+      #puts request.log_data.inspect
+      #puts @indexes[log_type].class
       @indexes[log_type] << request.log_data
     end
 
@@ -122,6 +124,7 @@ module LogStash; module Net; module Servers
       response.results = []
       response.finished = true
       yield response
+      puts "Search done."
     end # def SearchRequestHandler
 
     def SearchHitsRequestHandler(request)
