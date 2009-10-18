@@ -1,6 +1,6 @@
 ---
 stompserver: localhost:61613
-logstash_dir: /var/logstash
+logstash_dir: /home/petef/logstash
 
 log-types:
   linux-syslog:
@@ -14,11 +14,11 @@ log-types:
 
   httpd-access:
     type: text
-    patterns:
-    - %{COMBINEDAPACHELOG}
     date:
       key: timestamp
       format: %d/%b/%Y:%H:%M:%S %Z
+    patterns:
+    - %{COMBINEDAPACHELOG}
 
   glu:
     type: json
@@ -27,19 +27,18 @@ log-types:
       format: %Y-%m-%dT%H:%M:%S
     display_format: "<%= entry['timestamp'] %> | <%= entry['level'] %> | <%= entry['context/sessionKey'] %> | <%= entry['sourceHostName'] %> | <%= entry['context/componentName'] %> | <%= entry['message'] %>"
 
-
   netscreen:
     type: text
-    patterns:
-    - %{NETSCREENSESSIONLOG}
     date:
       key: date
       format: %b %e %H:%M:%S
+    patterns:
+    - %{NETSCREENSESSIONLOG}
 
   haproxy:
     type: text
-    patterns:
-    - %{HAPROXYHTTP}
     date:
       key: date
       format: %b %e %H:%M:%S
+    patterns:
+    - %{HAPROXYHTTP}

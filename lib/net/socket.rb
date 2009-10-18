@@ -27,9 +27,9 @@ module LogStash; module Net
       subscribe(@id)
     end # def initialize
 
-    def subscribe(name)
+    def subscribe(name, type="queue")
       #puts "Subscribing to #{name}"
-      @stomp.subscribe("/queue/#{name}", @stomp_options) do |stompmsg|
+      @stomp.subscribe("/#{type}/#{name}", @stomp_options) do |stompmsg|
         handle_message(stompmsg)
       end # @stomp.subscribe
     end # def subscribe

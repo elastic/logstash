@@ -16,6 +16,7 @@ module LogStash; module Net; module Messages
 
     # Message attributes
     hashbind :results, "/args/results"
+    hashbind :indexer_id, "/args/indexer_id"
     hashbind :finished, "/args/finished"
 
   end # class SearchResponse

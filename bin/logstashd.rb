@@ -5,7 +5,7 @@ require 'lib/net/servers/indexer'
 
 def main(args)
   if args.length != 1
-    puts "Usage: #{$0} configfile"
+    $stderr.puts "Usage: #{$0} configfile"
     return 1
   end
   Thread::abort_on_exception = true

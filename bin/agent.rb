@@ -8,14 +8,11 @@ require 'lib/file/tail/since'
 require 'stomp'
 require 'socket'
 
-
 class Agent < LogStash::Net::MessageClient
   def initialize(config)
     host, port = config["server"].split(":")
     host ||= "localhost"
     port ||= 61613
-    puts host
-    puts port
     super(username="", password="", host=host, port=port)
     @hostname = Socket.gethostname
     @config = config
@@ -26,9 +23,7 @@ class Agent < LogStash::Net::MessageClient
     @config["sources"].each do |file, logtype|
       Thread.new do
         File::Tail::Since.new(file).tail do |line|
-          line.chomp!
-          #puts line
-          index(logtype, line)
+          index(logtype, line.chomp)
         end
       end
     end
@@ -58,8 +53,8 @@ class Agent < LogStash::Net::MessageClient
 end
 
 if $0 == __FILE__
-  if ARGV.length == 0
-    puts "Usage: #{$0} configfile"
+  if ARGV.length != 1
+    $stderr.puts "Usage: #{$0} configfile"
     exit 1
   end
   Thread::abort_on_exception = true

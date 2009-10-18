@@ -5,7 +5,7 @@ require 'lib/net/servers/parser'
 
 def main(args)
   if args.length != 1
-    puts "Usage: #{$0} configfile"
+    $stderr.puts "Usage: #{$0} configfile"
     return 1
   end
 
@@ -28,7 +28,9 @@ def main(args)
   return 0
 end
 
-procs = 4
+procs = ENV["PROCS"].to_i
+procs ||= 1
+
 if procs > 1
   children = []
   1.upto(procs) do |c|
@@ -41,7 +43,7 @@ if procs > 1
   while children.length > 0
     pid = Process.wait(children[0], 0)
     children.delete(pid)
-    puts "pid #{pid} died"
+    $stderr.puts "pid #{pid} died"
   end
 else
   exit main(ARGV)

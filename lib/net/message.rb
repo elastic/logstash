@@ -55,7 +55,6 @@ module LogStash; module Net
           return "#{name}"
         end
       )
-      #puts "Register #{name}"
       @@translators[name] = self
     end
 
@@ -110,14 +109,10 @@ module LogStash; module Net
     end
 
     def args
-      #puts "args: #{@data["args"].inspect}"
       return @data["args"]
     end
 
     def args=(val)
-      #if val == nil
-        #puts caller.join("\n")
-      #end
       return @data["args"] = val
     end
   end # class RequestMessage
