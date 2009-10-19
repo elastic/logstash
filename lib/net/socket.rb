@@ -1,7 +1,8 @@
 require 'rubygems'
+require 'amqp'
 require 'lib/net/messagepacket'
+require 'mq'
 require 'uuid'
-require 'stomp'
 
 USE_MARSHAL = ENV.has_key?("USE_MARSHAL")
 
@@ -13,38 +14,34 @@ module LogStash; module Net
     MAXBUF = 30
 
     def initialize(username='', password='', host='localhost', port=61613)
-      @stomp = Stomp::Client.new(login=username, passcode=password,
-                                 host=host, port=port, reliable=true)
       @id = UUID::generate
-      @stomp_options = {
-        "persistent" => true,
-        "client-id" => @id,
-        "ack" => "client", # require us to explicitly ack messages
-      }
-
+      @want_queues = []
+      @queues = []
+      @want_topics = []
+      @topics = []
       @handler = self
       @outbuffer = Hash.new { |h,k| h[k] = [] }
-      subscribe(@id)
+      @mq = nil
     end # def initialize
 
-    def subscribe(name, type="queue")
-      #puts "Subscribing to #{name}"
-      @stomp.subscribe("/#{type}/#{name}", @stomp_options) do |stompmsg|
-        handle_message(stompmsg)
-      end # @stomp.subscribe
+    def subscribe(name)
+      @want_queues << name 
     end # def subscribe
 
-    def handle_message(stompmsg)
+    def subscribe_topic(name)
+      @want_topics << name 
+    end # def subscribe_topic
+
+    def handle_message(hdr, msg_body)
       if USE_MARSHAL
-        obj = Marshal.load(stompmsg.body)
+        obj = Marshal.load(msg_body)
       else
-        obj = JSON::load(stompmsg.body)
+        obj = JSON::load(msg_body)
         if !obj.is_a?(Array)
           obj = [obj]
         end
       end
 
-      #puts "Got #{obj.length} items"
       obj.each do |item|
         if USE_MARSHAL
           message = item
@@ -53,12 +50,11 @@ module LogStash; module Net
         end
         name = message.class.name.split(":")[-1]
         func = "#{name}Handler"
-        #puts stompmsg
         if @handler.respond_to?(func) 
-          #puts "Handler found"
           @handler.send(func, message) do |response|
-            #puts "response: #{response}"
-            sendmsg(stompmsg.headers["reply-to"], response)
+            reply = message.replyto
+            puts "sending reply to #{reply}"
+            sendmsg(reply, response)
           end
 
           # We should allow the message handler to defer acking if they want
@@ -68,30 +64,56 @@ module LogStash; module Net
           $stderr.puts "#{@handler.class.name} does not support #{func}"
         end # if @handler.respond_to?(func)
       end
-      @stomp.acknowledge stompmsg
+      hdr.ack
 
       if @close # set by 'close' method
-        @stomp.close
+        # TODO: need a cleaner way to stop the event loop after our reply
+        # actually gets sent.
+        puts "found @close!"
+        EM.add_event_timer(1) { EM.stop_event_loop }
       end
     end # def handle_message
 
     def run
-      @flusher = Thread.new { flusher }
-      @stomp.join
-    end
-
-    def flusher
-      loop do
-        #puts @outbuffer.inspect
-        @outbuffer.each_key do |destination|
-          flushout(destination)
+      # Create connection to AMQP, and in turn, the main EventMachine loop.
+      AMQP.start(:host => "localhost") do
+        @mq = MQ.new
+        mq_q = @mq.queue(@id, :exclusive => true, :auto_delete => true)
+        mq_q.subscribe(:ack =>true) { |hdr, msg| handle_message(hdr, msg) }
+        handle_new_subscriptions
+        
+        EM.add_periodic_timer(5) { handle_new_subscriptions }
+        EM.add_periodic_timer(1) do
+          @outbuffer.each_key { |dest| flushout(dest) }
+          @outbuffer.clear
         end
-        @outbuffer.clear
-        sleep 1
-      end
-    end
+      end # AMQP.start
+    end # run
+
+    def handle_new_subscriptions
+      todo = @want_queues - @queues
+      todo.each do |queue|
+        #puts "Subscribing to queue #{queue}"
+        mq_q = @mq.queue(queue)
+        mq_q.subscribe(:ack =>true) { |hdr, msg| handle_message(hdr, msg) }
+        @queues << queue
+      end # todo.each
+
+      todo = @want_topics - @topics
+      todo.each do |topic|
+        #puts "Subscribing to topic #{topic}"
+        exchange = @mq.topic("amq.topic")
+        mq_q = @mq.queue("#{@id}-#{topic}").bind(exchange, :key => topic,
+                                                           :exclusive => true,
+                                                           :auto_delete => true)
+        mq_q.subscribe { |hdr, msg| handle_message(hdr, msg) }
+        @topics << topic
+      end # todo.each
+    end # handle_new_subscriptions
 
     def flushout(destination)
+      return unless @mq    # wait until we are connected
+
       msgs = @outbuffer[destination]
       return if msgs.length == 0
 
@@ -100,20 +122,27 @@ module LogStash; module Net
       else
         data = msgs.to_json
       end
-      options = {
-        "persistent" => true,
-        "reply-to" => "/queue/#{@id}",
-      }
-      #puts "Flushing: #{data[0..40]}..."
-      @stomp.send(destination, data, options)
+      @mq.queue(destination).publish(data, :persistent => true)
       msgs.clear
+    end
+
+    def sendmsg_topic(key, msg)
+      return unless @mq    # wait until we are connected
+
+      if USE_MARSHAL
+        data = Marshal.dump(msg)
+      else
+        data = msg.to_json
+      end
+
+      @mq.topic("amq.topic").publish(data, :key => key)
     end
 
     def sendmsg(destination, msg)
       if msg.is_a?(RequestMessage)
         msg.generate_id!
       end
-      #puts "Sending to #{destination}: #{msg}"
+      msg.replyto = @id
       @outbuffer[destination] << msg
 
       if @outbuffer[destination].length > MAXBUF
@@ -122,7 +151,6 @@ module LogStash; module Net
     end
 
     def handler=(handler)
-      #puts "Setting handler to #{handler.class.name}"
       @handler = handler
     end
 

@@ -56,16 +56,18 @@ class Client < LogStash::Net::MessageClient
 end
 
 def main(args)
-  client = Client.new(host="localhost", port=61613)
+  client = Client.new
 
   # Find out what indexers are out there
   msg = LogStash::Net::Messages::DirectoryRequest.new
-  client.sendmsg("/queue/logstash-directory", msg)
+  client.sendmsg("logstash-directory", msg)
+  puts "about to .run"
   client.run
+  puts "back from client.run"
   indexers = client.indexers
 
   # Send queries to each indexer and collect the results
-  client = Client.new(host="localhost", port=61613)
+  client = Client.new
   client.indexers = indexers
   hits_msg = LogStash::Net::Messages::SearchHitsRequest.new
   hits_msg.log_type = args[0]

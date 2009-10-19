@@ -1,5 +1,5 @@
 ---
-stompserver: localhost:61613
+mqhost: localhost
 logstash_dir: /home/petef/logstash
 
 log-types:

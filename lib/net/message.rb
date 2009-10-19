@@ -41,6 +41,14 @@ module LogStash; module Net
       return @data["id"] = val
     end
 
+    def replyto
+      return @data["reply-to"]
+    end
+
+    def replyto=(val)
+      return @data["reply-to"] = val
+    end
+
     # All message subclasses should register themselves here
     # This will allow Message.new_from_data to automatically return
     # the correct message instance.

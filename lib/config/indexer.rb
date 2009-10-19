@@ -3,23 +3,26 @@ require 'lib/logs'
 require 'lib/log/json'
 require 'lib/log/text'
 
-
-
 module LogStash::Config
   class IndexerConfig
     attr_reader :logs
     attr_reader :logstash_dir
+    attr_reader :mqhost
+    attr_reader :mqport
+    attr_reader :mquser
+    attr_reader :mqpass
+    attr_reader :mqvhost
 
     def initialize(file)
       obj = YAML::load(File.open(file).read())
 
-      @stompserver = obj["stompserver"]
+      @mqhost = obj["mqhost"] || "localhost"
+      @mqport = obj["mqport"] || 5672
+      @mquser = obj["mquser"] || "guest"
+      @mqpass = obj["mqpass"] || "guest"
+      @mqvhost = obj["mqvhost"] || "/"
       @logstash_dir = obj["logstash_dir"]
       @logs = LogStash::Logs.new
-
-      if @stompserver == nil
-        raise ArgumentError.new("stompserver is nil (#{file})")
-      end
 
       obj["log-types"].each do |log_type, data|
         log = nil
@@ -42,15 +45,6 @@ module LogStash::Config
 
         @logs.register(log)
       end
-    end
-
-    def stomphost
-      return @stompserver.split(":")[0]
-    end
-
-    def stompport
-      port = @stompserver.split(":")[1].to_i  
-      return (port == 0 ? 61613 : port)
     end
   end # class IndexerConfig
 end # module LogStash::Config
