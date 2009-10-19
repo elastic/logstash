@@ -69,8 +69,7 @@ module LogStash; module Net
       if @close # set by 'close' method
         # TODO: need a cleaner way to stop the event loop after our reply
         # actually gets sent.
-        puts "found @close!"
-        EM.add_event_timer(1) { EM.stop_event_loop }
+        EM.add_timer(1) { EM.stop_event_loop }
       end
     end # def handle_message
 
@@ -78,7 +77,7 @@ module LogStash; module Net
       # Create connection to AMQP, and in turn, the main EventMachine loop.
       AMQP.start(:host => "localhost") do
         @mq = MQ.new
-        mq_q = @mq.queue(@id, :exclusive => true, :auto_delete => true)
+        mq_q = @mq.queue(@id, :auto_delete => true)
         mq_q.subscribe(:ack =>true) { |hdr, msg| handle_message(hdr, msg) }
         handle_new_subscriptions
         
@@ -103,9 +102,9 @@ module LogStash; module Net
       todo.each do |topic|
         #puts "Subscribing to topic #{topic}"
         exchange = @mq.topic("amq.topic")
-        mq_q = @mq.queue("#{@id}-#{topic}").bind(exchange, :key => topic,
-                                                           :exclusive => true,
-                                                           :auto_delete => true)
+        mq_q = @mq.queue("#{@id}-#{topic}",
+                         :exclusive => true,
+                         :auto_delete => true).bind(exchange, :key => topic)
         mq_q.subscribe { |hdr, msg| handle_message(hdr, msg) }
         @topics << topic
       end # todo.each

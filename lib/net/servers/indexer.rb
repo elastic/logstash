@@ -156,7 +156,6 @@ module LogStash; module Net; module Servers
     end # def SearchHitsRequestHandler
 
     def BroadcastMessageHandler(request)
-      puts "Broadcast from indexer #{request.queue}"
       @indexers_mutex.synchronize do
         @indexers[request.queue] = Time.now
       end
@@ -165,7 +164,6 @@ module LogStash; module Net; module Servers
     def DirectoryRequestHandler(request)
       response = LogStash::Net::Messages::DirectoryResponse.new
       response.indexers = @indexers.keys
-      puts "got directory request!"
       yield response
     end
 
@@ -212,7 +210,6 @@ module LogStash; module Net; module Servers
       msg = LogStash::Net::Messages::BroadcastMessage.new
       msg.queue = @id
       loop do
-        puts "broadcasting"
         sendmsg_topic("logstash-broadcast", msg)
         sleep(BROADCAST_INTERVAL)
         @indexers_mutex.synchronize do
