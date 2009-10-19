@@ -96,15 +96,12 @@ module LogStash; module Net
         name = message.class.name.split(":")[-1]
         func = "#{name}Handler"
 
-        puts "Got message #{message.id}"
         if @message_operations.has_key?(message.id)
           operation = @message_operations[message.id]
           operation.call message
         elsif @handler.respond_to?(func) 
           @handler.send(func, message) do |response|
             reply = message.replyto
-            puts "sending reply to #{reply}"
-            puts "response id: #{response.id}"
             sendmsg(reply, response)
           end
 
@@ -178,7 +175,6 @@ module LogStash; module Net
     end
 
     def sendmsg(destination, msg, &callback)
-      puts "sendmsg; #{msg.id}"
       if (msg.is_a?(RequestMessage) and msg.id == nil)
         msg.generate_id!
       end
@@ -189,7 +185,6 @@ module LogStash; module Net
       end
 
       if block_given?
-        puts "Block given for  message #{msg.id}"
         op = Operation.new(callback)
         @message_operations[msg.id] = op
         return op
