@@ -17,12 +17,8 @@ module LogStash; module Net; module Servers
     SYNCDELAY = 10
 
     def initialize(configfile)
-    #def initialize(*args)
-      # 'super' is not the same as 'super()', and we want super().
       @config = LogStash::Config::IndexerConfig.new(configfile)
-      super(username="", password="",
-            host="localhost", port=61613)
-            #host=@config.stomphost, port=@config.stompport)
+      super()
       @indexes = Hash.new
       @lines = Hash.new { |h,k| h[k] = 0 }
       @indexcount = 0
@@ -66,7 +62,7 @@ module LogStash; module Net; module Servers
 
       # Now we have a hash for the log data, send it to the indexer
       request.log_data = entry
-      sendmsg("/queue/logstash-index", request)
+      sendmsg("logstash-index", request)
       #@indexes[log_type] << entry
     end
 

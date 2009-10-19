@@ -90,7 +90,7 @@ module LogStash; module Net
     def handle_new_subscriptions
       todo = @want_queues - @queues
       todo.each do |queue|
-        #puts "Subscribing to queue #{queue}"
+        puts "Subscribing to queue #{queue}"
         mq_q = @mq.queue(queue)
         mq_q.subscribe(:ack =>true) { |hdr, msg| handle_message(hdr, msg) }
         @queues << queue
@@ -98,7 +98,7 @@ module LogStash; module Net
 
       todo = @want_topics - @topics
       todo.each do |topic|
-        #puts "Subscribing to topic #{topic}"
+        puts "Subscribing to topic #{topic}"
         exchange = @mq.topic("amq.topic")
         mq_q = @mq.queue("#{@id}-#{topic}",
                          :exclusive => true,

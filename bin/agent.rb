@@ -37,7 +37,7 @@ class Agent < LogStash::Net::MessageClient
 
     puts "Indexing: #{string}"
 
-    sendmsg("/queue/logstash", ier)
+    sendmsg("logstash", ier)
   end # def index
 
   def IndexEventResponseHandler(msg)
