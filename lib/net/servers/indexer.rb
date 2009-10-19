@@ -189,6 +189,7 @@ module LogStash; module Net; module Servers
 
     def DirectoryRequestHandler(request)
       response = LogStash::Net::Messages::DirectoryResponse.new
+      response.id = request.id
       response.indexers = @indexers.keys
       yield response
     end
