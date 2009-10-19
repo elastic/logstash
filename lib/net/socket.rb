@@ -67,9 +67,7 @@ module LogStash; module Net
       hdr.ack
 
       if @close # set by 'close' method
-        # TODO: need a cleaner way to stop the event loop after our reply
-        # actually gets sent.
-        EM.add_timer(1) { EM.stop_event_loop }
+        EM.stop_event_loop
       end
     end # def handle_message
 
