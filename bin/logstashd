@@ -1,0 +1,121 @@
+#!/usr/bin/env ruby
+
+$: << File.join(File.dirname(__FILE__), "..")
+
+require 'rubygems'
+require 'lib/net/servers/indexer'
+require 'lib/net/servers/parser'
+require 'logger'
+require 'optparse'
+
+$progname = $0.split(File::SEPARATOR).last
+$version = "0.3"
+$logger = Logger.new(STDOUT)
+$logger.level = Logger::INFO
+$logger.progname = $progname
+$logger.datetime_format = "%Y-%m-%d %H:%M:%S"
+
+def main(args)
+  Thread::abort_on_exception = true
+
+  options = parse_options(args)
+  children = {}
+
+  if options[:indexer]
+    pid = fork do
+      indexer = LogStash::Net::Servers::Indexer.new(options[:config],
+                                                    $logger)
+      indexer.run
+      exit(0)
+    end
+    $logger.info "starting indexer (pid #{pid})"
+    children[pid] = :indexer
+  end
+
+  if options[:parsers] > 0
+    1.upto(options[:parsers]) do |i|
+      pid = fork do
+        parser = LogStash::Net::Servers::Parser.new(options[:config],
+                                                    $logger)
+        parser.run
+        exit(0)
+      end
+      $logger.info "starting parser #{i}/#{options[:parsers]} (pid #{pid})"
+      children[pid] = :parser
+    end
+  end
+
+  while children.keys.length > 0
+    pid = Process.wait(children.keys[0], 0)
+    $logger.warn "pid #{pid} died (#{children[pid]})"
+    children.delete(pid)
+  end
+
+  return 0
+end
+
+def parse_options(args)
+  options = {:indexer => true,
+             :parsers => 1,
+             :parserset => false,
+             :config => nil,
+            }
+
+  opts = OptionParser.new do |opts|
+    opts.banner = "Usage: logstashd [options] configfile"
+    opts.version = $version
+
+    opts.on("-d", "--debug", "Enable debug output") do |x|
+      $logger.level = Logger::DEBUG
+    end
+
+    opts.on("-I", "--disable-indexer",
+            "Disable indexer (default enabled)") do |x|
+      options[:indexer] = false
+    end
+
+    opts.on("-p", "--parsers COUNT", Integer,
+            "Number of parsers to run (default 1)") do |x|
+      raise(ArgumentError, "parser count must be >=0") if x < 0
+      options[:parsers] = x
+      if options[:parserset]
+        $stderr.puts "can only specify -p N or -P once"
+        exit(1)
+      end
+      options[:parserset] = true
+    end
+
+    opts.on("-P", "--disable-parser", "Disable parser") do |x|
+      options[:parsers] = 0
+      if options[:parserset]
+        $stderr.puts "can only specify -p N or -P once"
+        exit(1)
+      end
+      options[:parserset] = true
+    end
+
+    opts.on("-h", "--help", "Show this help message") do |x|
+      puts opts
+      exit(0)
+    end
+  end
+
+  begin
+    opts.parse!(args)
+  rescue
+    $stderr.puts "#{$progname}: #{$!}"
+    $stderr.puts opts
+    exit(1)
+  end
+
+  if ARGV.length != 1
+    $stderr.puts "#{$progname}: must specify exactly one config file"
+    $stderr.puts opts
+    exit(1)
+  end
+  options[:config] = args.shift
+
+  return options
+end
+
+exit main(ARGV)

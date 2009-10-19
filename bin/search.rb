@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 #
-require 'rubygems'
+require "rubygems"
 require "socket"
 require "lib/net/message"
 require "lib/net/client"
@@ -25,15 +25,14 @@ class SearchClient < LogStash::Net::MessageClient
   attr_reader :responding
   attr_reader :results
 
-  def initialize(opts={})
-    #@log_type = opts[:log_type]
-    #@query = opts[:query]
+  def initialize(config_file)
     @indexers = Array.new
     @responding = Array.new
     @hits = 0
     @results = []
     @result_mutex = Mutex.new
-    super(opts)
+    config = YAML::load(File.open(config_file).read)
+    super(config, "search")
     start
   end
 
@@ -87,8 +86,11 @@ class SearchClient < LogStash::Net::MessageClient
 end
 
 def main(args)
-  client = SearchClient.new()
-  client.search(args[0], args[1])
+  if ARGV.length != 3
+    $stderr.puts "Usage: search configfile log_type query"
+  end
+  client = SearchClient.new(args[0])
+  client.search(args[1], args[2])
 
   # Wait for the client to decide it's done.
   client.run

@@ -9,7 +9,6 @@ require 'lib/net/messages/logkeys'
 require 'lib/net/messages/logtypes'
 require 'lib/net/messages/search'
 require 'lib/net/messages/searchhits'
-require 'lib/net/messages/quit'
 require 'lib/net/messages/ping'
 require 'lib/config/indexer.rb'
 require 'ferret'
@@ -18,12 +17,15 @@ require 'pp'
 
 module LogStash; module Net; module Servers
   class Indexer < LogStash::Net::MessageServer
-    BROADCAST_INTERVAL = 5
+    BROADCAST_INTERVAL = 30
     SYNC_DELAY = 10
 
-    def initialize(configfile)
+    def initialize(configfile, logger)
+      @logger = logger
+      @logger.progname = "indexer"
       @config = LogStash::Config::IndexerConfig.new(configfile)
-      super() # PASSARGS
+
+      super(@config, @logger)
       @indexes = Hash.new
       @lines = Hash.new { |h,k| h[k] = 0 }
       @indexcount = 0
@@ -35,11 +37,6 @@ module LogStash; module Net; module Servers
       @qps = Hash.new
     end
 
-    def QuitRequestHandler(request)
-      $stderr.puts "Got quit message, exiting..."
-      close
-    end
-
     def IndexEventRequestHandler(request)
       response = LogStash::Net::Messages::IndexEventResponse.new
       response.id = request.id
@@ -47,21 +44,17 @@ module LogStash; module Net; module Servers
 
       if @indexcount % 100 == 0
         duration = (Time.now.to_f - @starttime.to_f)
-        puts "rate: %.2f/sec" % (@indexcount / duration)
+        @logger.debug "rate: %.2f/sec" % (@indexcount / duration)
       end
 
       log_type = request.log_type
 
-      if not @indexes.member?(log_type)
-        @indexes[log_type] = @config.logs[log_type].get_index
-      end
-
-      #puts request.log_data.inspect
-      #puts @indexes[log_type].class
+      @indexes[log_type] ||= @config.logs[log_type].get_index
       @indexes[log_type] << request.log_data
     end
 
     def PingRequestHandler(request)
+      @logger.debug "received PingRequest (#{request.pingdata})"
       response = LogStash::Net::Messages::PingResponse.new
       response.id = request.id
       response.pingdata = request.pingdata
@@ -69,14 +62,18 @@ module LogStash; module Net; module Servers
     end
 
     def LogTypesRequestHandler(request)
+      @logger.debug "received LogTypesRequest"
       response = LogStash::Net::Messages::LogTypesResponse.new
+      response.id = request.id
       response.types = @config.logs.types
       yield response
     end
 
     def LogKeysRequestHandler(request)
+      @logger.debug "received LogKeysRequest"
       reader, search, qp = get_ferret(request.log_type)
       response = LogStash::Net::Messages::LogKeysResponse.new
+      response.id = request.id
       response.keys = reader.fields
       response.log_type = request.log_type
       yield response
@@ -95,13 +92,15 @@ module LogStash; module Net; module Servers
     end
 
     def SearchRequestHandler(request)
-      puts "Search for #{request.query.inspect} in #{request.log_type}"
+      @logger.debug "received SearchRequest (#{request.query.inspect} in " \
+                    "#{request.log_type})"
       response = LogStash::Net::Messages::SearchResponse.new
       response.id = request.id
       response.indexer_id = @id
 
       if @config.logs[request.log_type].nil?
-        $stderr.puts "invalid log type: #{request.log_type}"
+        @logger.warn "SearchRequest received for invalid log_type: " \
+                     "#{request.log_type}"
         response.results = []
         response.finished = true
         yield response
@@ -152,25 +151,22 @@ module LogStash; module Net; module Servers
       response.results = []
       response.finished = true
       yield response
-      puts "Search done."
     end # def SearchRequestHandler
 
     def SearchHitsRequestHandler(request)
-      puts "Search for hits on #{request.query.inspect}"
+      @logger.debug "received SearchHitsRequest (#{request.query.inspect} in " \
+                    "#{request.log_type})"
       response = LogStash::Net::Messages::SearchHitsResponse.new
       response.id = request.id
       if @config.logs[request.log_type].nil?
-        puts "invalid log type: #{request.log_type}"
+        @logger.warn "SearchHitsRequest received for invalid log_type: " \
+                     "#{request.log_type}"
         response.hits = 0
         yield response
         return 
       end
 
-      reader = Ferret::Index::IndexReader.new(@config.logs[request.log_type].index_dir)
-      search = Ferret::Search::Searcher.new(reader)
-      qp = Ferret::QueryParser.new(:fields => reader.fields,
-                                   :tokenized_fields => reader.tokenized_fields,
-                                   :or_default => false)
+      reader, search, qp = get_ferret(request.log_type)
       query = qp.parse(request.query)
       offset = (request.offset or 0)
 
@@ -182,12 +178,14 @@ module LogStash; module Net; module Servers
     end # def SearchHitsRequestHandler
 
     def BroadcastMessageHandler(request)
+      @logger.debug "received BroadcastMessage (from #{request.queue})"
       @indexers_mutex.synchronize do
         @indexers[request.queue] = Time.now
       end
     end
 
     def DirectoryRequestHandler(request)
+      @logger.debug "received DirectoryRequest"
       response = LogStash::Net::Messages::DirectoryResponse.new
       response.id = request.id
       response.indexers = @indexers.keys
@@ -210,7 +208,6 @@ module LogStash; module Net; module Servers
         # answering directory requests.
 
         sleep(BROADCAST_INTERVAL + 5)
-        puts "Subscribing to logstash-directory"
         subscribe("logstash-directory")
       end
       super
@@ -222,9 +219,9 @@ module LogStash; module Net; module Servers
         if Time.now > synctime
           @indexes.each do |log_type, index|
             # TODO: only run flush if we need to
-            puts "Time's up. Syncing #{log_type}"
+            @logger.debug "Forcing a sync of #{log_type}"
             index.flush
-            break;
+            break
           end
 
           synctime = Time.now + SYNC_DELAY
@@ -243,7 +240,7 @@ module LogStash; module Net; module Servers
           cutoff = Time.now - (BROADCAST_INTERVAL * 2)
           @indexers.each do |queue, heartbeat|
             next if heartbeat > cutoff
-            $stderr.puts "dropping indexer #{queue}, last heartbeat at " \
+            @logger.warn "dropping indexer #{queue}, last heartbeat at " \
                          "#{Time.at(heartbeat)}"
             @indexers.delete(queue)
           end

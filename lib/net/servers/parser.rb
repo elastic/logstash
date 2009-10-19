@@ -5,7 +5,6 @@ require 'lib/net/message'
 require 'lib/net/messages/indexevent'
 require 'lib/net/messages/search'
 require 'lib/net/messages/searchhits'
-require 'lib/net/messages/quit'
 require 'lib/net/messages/ping'
 require 'lib/config/indexer.rb'
 require 'ferret'
@@ -16,34 +15,32 @@ module LogStash; module Net; module Servers
   class Parser < LogStash::Net::MessageServer
     SYNCDELAY = 10
 
-    def initialize(configfile)
+    def initialize(configfile, logger)
       @config = LogStash::Config::IndexerConfig.new(configfile)
-      super()
-      @indexes = Hash.new
+      @logger = logger
+      @logger.progname = "parser"
+      super(@config, @logger)
       @lines = Hash.new { |h,k| h[k] = 0 }
       @indexcount = 0
       @starttime = Time.now
     end
 
-    def QuitRequestHandler(request)
-      puts "Got quit message, exiting..."
-      close
-    end
-
     def IndexEventRequestHandler(request)
+      @logger.debug "received IndexEventRequest (for type " \
+                    "#{request.log_type}): #{request.log_data}"
       response = LogStash::Net::Messages::IndexEventResponse.new
       response.id = request.id
       @indexcount += 1
 
       if @indexcount % 100 == 0
         duration = (Time.now.to_f - @starttime.to_f)
-        puts "rate: %.2f/sec" % (@indexcount / duration)
+        @logger.debug "rate: %.2f/sec" % (@indexcount / duration)
       end
 
       log_type = request.log_type
       entry = @config.logs[log_type].parse_entry(request.log_data)
       if !entry
-        puts "Failed parsing line: #{request.log_data}"
+        @logger.warn "Failed parsing line: #{request.log_data}"
         response.code = 1
         response.error = "Entry was #{entry.inspect} (log parsing failed)"
         entry = {
@@ -53,20 +50,15 @@ module LogStash; module Net; module Servers
       else
         response.code = 0
       end
-
-      if not @indexes.member?(log_type)
-        @indexes[log_type] = @config.logs[log_type].get_index
-      end
-
       entry["@LOG_TYPE"] = log_type
 
       # Now we have a hash for the log data, send it to the indexer
       request.log_data = entry
       sendmsg("logstash-index", request)
-      #@indexes[log_type] << entry
     end
 
     def PingRequestHandler(request)
+      @logger.debug "received PingRequest (#{request.pingdata})"
       response = LogStash::Net::Messages::PingResponse.new
       response.id = request.id
       response.pingdata = request.pingdata

@@ -1,5 +1,5 @@
 ---
-server: "localhost:61613"
+mqhost: "localhost"
 sources:
   /var/log/messages: linux-syslog
   #/var/log/secure: linux-syslog

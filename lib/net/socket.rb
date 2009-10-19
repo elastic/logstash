@@ -38,8 +38,9 @@ module LogStash; module Net
   class MessageSocket
     MAXBUF = 30
 
-    def initialize(username='', password='', host='localhost', port=61613)
+    def initialize(config, logger)
       @id = UUID::generate
+      @config, @logger = config, logger
       @want_queues = []
       @queues = []
       @want_topics = []
@@ -54,8 +55,10 @@ module LogStash; module Net
     def start_amqp
       @amqpthread = Thread.new do 
         # Create connection to AMQP, and in turn, the main EventMachine loop.
+        # TODO: use @config
         AMQP.start(:host => "localhost") do
           @mq = MQ.new
+          @logger.info "Subscribing to main queue #{@id}"
           mq_q = @mq.queue(@id, :auto_delete => true)
           mq_q.subscribe(:ack =>true) { |hdr, msg| handle_message(hdr, msg) }
           handle_new_subscriptions
@@ -126,7 +129,7 @@ module LogStash; module Net
     def handle_new_subscriptions
       todo = @want_queues - @queues
       todo.each do |queue|
-        puts "Subscribing to queue #{queue}"
+        @logger.info "Subscribing to queue #{queue}"
         mq_q = @mq.queue(queue)
         mq_q.subscribe(:ack =>true) { |hdr, msg| handle_message(hdr, msg) }
         @queues << queue
@@ -134,7 +137,7 @@ module LogStash; module Net
 
       todo = @want_topics - @topics
       todo.each do |topic|
-        puts "Subscribing to topic #{topic}"
+        @logger.info "Subscribing to topic #{topic}"
         exchange = @mq.topic("amq.topic")
         mq_q = @mq.queue("#{@id}-#{topic}",
                          :exclusive => true,
