@@ -5,6 +5,7 @@ require 'lib/net/message'
 require 'lib/net/messages/broadcast'
 require 'lib/net/messages/directory'
 require 'lib/net/messages/indexevent'
+require 'lib/net/messages/logkeys'
 require 'lib/net/messages/logtypes'
 require 'lib/net/messages/search'
 require 'lib/net/messages/searchhits'
@@ -29,6 +30,9 @@ module LogStash; module Net; module Servers
       @starttime = Time.now
       @indexers = Hash.new
       @indexers_mutex = Mutex.new
+      @readers = Hash.new
+      @searchers = Hash.new
+      @qps = Hash.new
     end
 
     def QuitRequestHandler(request)
@@ -70,6 +74,25 @@ module LogStash; module Net; module Servers
       yield response
     end
 
+    def LogKeysRequestHandler(request)
+      reader, search, qp = get_ferret(request.log_type)
+      response = LogStash::Net::Messages::LogKeysResponse.new
+      response.keys = reader.fields
+      yield response
+    end
+
+    def get_ferret(log_type)
+      @readers[log_type] ||= Ferret::Index::IndexReader.new(
+                               @config.logs[log_type].index_dir)
+      reader = @readers[log_type]
+      @searchers[log_type] ||= Ferret::Search::Searcher.new(reader)
+      @qps[log_type] ||= Ferret::QueryParser.new(
+                           :fields => reader.fields,
+                           :tokenized_fields => reader.tokenized_fields,
+                           :or_default => false)
+      return @readers[log_type], @searchers[log_type], @qps[log_type]
+    end
+
     def SearchRequestHandler(request)
       puts "Search for #{request.query.inspect} in #{request.log_type}"
       response = LogStash::Net::Messages::SearchResponse.new
@@ -84,11 +107,7 @@ module LogStash; module Net; module Servers
         return
       end
 
-      reader = Ferret::Index::IndexReader.new(@config.logs[request.log_type].index_dir)
-      search = Ferret::Search::Searcher.new(reader)
-      qp = Ferret::QueryParser.new(:fields => reader.fields,
-                                   :tokenized_fields => reader.tokenized_fields,
-                                   :or_default => false)
+      reader, search, qp = get_ferret(request.log_type)
       query = qp.parse(request.query)
       offset = (request.offset or 0)
       total = request.limit
