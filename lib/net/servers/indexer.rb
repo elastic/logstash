@@ -5,6 +5,7 @@ require 'lib/net/message'
 require 'lib/net/messages/broadcast'
 require 'lib/net/messages/directory'
 require 'lib/net/messages/indexevent'
+require 'lib/net/messages/logtypes'
 require 'lib/net/messages/search'
 require 'lib/net/messages/searchhits'
 require 'lib/net/messages/quit'
@@ -60,6 +61,12 @@ module LogStash; module Net; module Servers
       response = LogStash::Net::Messages::PingResponse.new
       response.id = request.id
       response.pingdata = request.pingdata
+      yield response
+    end
+
+    def LogTypesRequestHandler(request)
+      response = LogStash::Net::Messages::LogTypesResponse.new
+      response.types = @config.logs.types
       yield response
     end
 

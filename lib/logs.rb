@@ -23,5 +23,9 @@ module LogStash
     def [](log_type)
       return @logs[log_type]
     end
+
+    def types
+      return @logs.keys
+    end
   end # class Logs
 end # module LogStash
