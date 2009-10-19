@@ -78,6 +78,7 @@ module LogStash; module Net; module Servers
       reader, search, qp = get_ferret(request.log_type)
       response = LogStash::Net::Messages::LogKeysResponse.new
       response.keys = reader.fields
+      response.log_type = request.log_type
       yield response
     end
 

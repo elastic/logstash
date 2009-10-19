@@ -11,6 +11,7 @@ module LogStash; module Net; module Messages
     register
 
     # Message attributes
+    hashbind :log_type, "/args/log_type"
     hashbind :types, "/args/types"
   end # class LogTypesResponse
 end; end; end # module LogStash::Net::Messages
