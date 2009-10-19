@@ -85,7 +85,7 @@ def main(args)
   # Collate & print results.
   puts "Hits: #{client.hits}"
   puts ""
-  puts client.results.join("\n")
+  puts client.results.sort_by { |r| r[0] }.collect { |r| r[1] }.join("\n")
 
   return 0
 end

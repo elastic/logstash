@@ -70,7 +70,7 @@ module LogStash; module Net; module Servers
       response.indexer_id = @id
 
       if @config.logs[request.log_type].nil?
-        puts "invalid log type: #{request.log_type}"
+        $stderr.puts "invalid log type: #{request.log_type}"
         response.results = []
         response.finished = true
         yield response
@@ -79,7 +79,6 @@ module LogStash; module Net; module Servers
 
       reader = Ferret::Index::IndexReader.new(@config.logs[request.log_type].index_dir)
       search = Ferret::Search::Searcher.new(reader)
-      #puts reader.fields.join(", ")
       qp = Ferret::QueryParser.new(:fields => reader.fields,
                                    :tokenized_fields => reader.tokenized_fields,
                                    :or_default => false)
@@ -109,7 +108,7 @@ module LogStash; module Net; module Servers
           done = false
           result = reader[docid][:@LINE]
           count += 1
-          results << result
+          results << [reader[docid][:@DATE], result]
         end
 
         if (total and count < limit)
