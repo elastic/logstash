@@ -25,9 +25,9 @@ class SearchClient < LogStash::Net::MessageClient
   attr_reader :responding
   attr_reader :results
 
-  def initialize(opts)
-    @log_type = opts[:log_type]
-    @query = opts[:query]
+  def initialize(opts={})
+    #@log_type = opts[:log_type]
+    #@query = opts[:query]
     @indexers = Array.new
     @responding = Array.new
     @hits = 0
@@ -40,8 +40,12 @@ class SearchClient < LogStash::Net::MessageClient
   def start
     # find our indexers
     msg = LogStash::Net::Messages::DirectoryRequest.new
-    sendmsg("logstash-directory", msg)
-    run
+    op = sendmsg("logstash-directory", msg) do |response|
+      DirectoryResponseHandler(response)
+      :finished
+    end
+
+    op.wait_until_finished
   end
 
   def SearchResponseHandler(msg)
@@ -65,13 +69,16 @@ class SearchClient < LogStash::Net::MessageClient
   end
 
   def DirectoryResponseHandler(msg)
-    hits_msg = LogStash::Net::Messages::SearchHitsRequest.new
-    hits_msg.log_type = @log_type
-    hits_msg.query = @query
-    search_msg = LogStash::Net::Messages::SearchRequest.new
-    search_msg.log_type = @log_type
-    search_msg.query = @query
     @indexers = msg.indexers
+  end
+
+  def search(log_type, query)
+    hits_msg = LogStash::Net::Messages::SearchHitsRequest.new
+    hits_msg.log_type = log_type
+    hits_msg.query = query
+    search_msg = LogStash::Net::Messages::SearchRequest.new
+    search_msg.log_type = log_type
+    search_msg.query = query
     @indexers.each do |i|
       sendmsg(i, hits_msg)
       sendmsg(i, search_msg)
@@ -80,7 +87,11 @@ class SearchClient < LogStash::Net::MessageClient
 end
 
 def main(args)
-  client = SearchClient.new(:log_type => args[0], :query => args[1])
+  client = SearchClient.new()
+  client.search(args[0], args[1])
+
+  # Wait for the client to decide it's done.
+  client.run
 
   # Collate & print results.
   puts "Hits: #{client.hits}"
