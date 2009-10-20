@@ -14,6 +14,7 @@
 # Defaults. Override in /etc/sysconfig/logstash-agent
 OPTIONS=""
 DEBUG=false
+DIR=/opt/logstash
 CONFIG=$DIR/etc/logstash-agent.yaml
 LOGFILE=/var/log/logstash-agent.log
 
