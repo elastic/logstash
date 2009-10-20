@@ -68,7 +68,7 @@ def parse_options(args)
             }
 
   opts = OptionParser.new do |opts|
-    opts.banner = "Usage: agent.rb [options] configfile"
+    opts.banner = "Usage: logstash-agent [options] configfile"
     opts.version = $version
 
     opts.on("-d", "--debug", "Enable debug output") do |x|
