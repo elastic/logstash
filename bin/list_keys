@@ -1,9 +1,0 @@
-#!/usr/bin/ruby
-
-require 'rubygems'
-require 'ferret'
-
-include Ferret
-
-i = Index::IndexReader.new(ARGV[0])
-puts i.fields.sort { |a, b| a.to_s <=> b.to_s }
