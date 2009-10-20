@@ -21,8 +21,17 @@ def main(args)
   options = parse_options(args)
   children = {}
 
+  if options[:daemonize]
+    fork and exit(0)
+  end
+
+  if options[:pidfile]
+    File.open(options[:pidfile], "w+") { |f| f.puts $$ }
+  end
+
   if options[:indexer]
     pid = fork do
+        $0 = "logstashd (indexer)"
       indexer = LogStash::Net::Servers::Indexer.new(options[:config],
                                                     $logger)
       indexer.run
@@ -35,6 +44,7 @@ def main(args)
   if options[:parsers] > 0
     1.upto(options[:parsers]) do |i|
       pid = fork do
+        $0 = "logstashd (parser)"
         parser = LogStash::Net::Servers::Parser.new(options[:config],
                                                     $logger)
         parser.run
@@ -45,10 +55,27 @@ def main(args)
     end
   end
 
+  Signal.trap("INT") do
+    children.keys.each { |pid| Process.kill("TERM", pid) rescue nil }
+    Process.waitall
+    exit(5)
+  end
+
+  Signal.trap("TERM") do
+    children.keys.each { |pid| Process.kill("TERM", pid) rescue nil }
+    Process.waitall
+    exit(5)
+  end
+
+  # We do this lame loop instead of "Process.waitall" because of a bug
+  # in ruby 1.8.5 related to handling SIGTERM.
   while children.keys.length > 0
-    pid = Process.wait(children.keys[0], 0)
-    $logger.warn "pid #{pid} died (#{children[pid]})"
-    children.delete(pid)
+    pid = Process.waitpid(-1, Process::WNOHANG)
+    if pid
+      $logger.warn "pid #{pid} died (#{children[pid]})"
+      children.delete(pid)
+    end
+    sleep(5)
   end
 
   return 0
@@ -59,6 +86,8 @@ def parse_options(args)
              :parsers => 1,
              :parserset => false,
              :config => nil,
+             :daemonize => true,
+             :pidfile => nil,
             }
 
   opts = OptionParser.new do |opts|
@@ -92,6 +121,14 @@ def parse_options(args)
         exit(1)
       end
       options[:parserset] = true
+    end
+
+    opts.on("--pidfile FILE", "Path to pidfile") do |x|
+      options[:pidfile] = x
+    end
+
+    opts.on("-f", "--foreground", "Do not daemonize") do |x|
+      options[:daemonize] = false
     end
 
     opts.on("-h", "--help", "Show this help message") do |x|
