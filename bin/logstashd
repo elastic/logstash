@@ -57,7 +57,7 @@ def main(args)
 
   pidfile = nil
   if options[:pidfile]
-    pidfile = File.open(options[:pidfile], "w+") 
+    pidfile = File.open(options[:pidfile], IO::RDWR | IO::CREAT) 
     gotlock = pidfile.flock(File::LOCK_EX | File::LOCK_NB)
     if !gotlock
       owner = pidfile.read()
