@@ -1,6 +1,6 @@
 ---
 mqhost: localhost
-logstash_dir: /home/petef/logstash
+logstash_dir: /var/logstash
 
 log-types:
   linux-syslog:
