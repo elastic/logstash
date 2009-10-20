@@ -86,13 +86,16 @@ def main(args)
   end
 
   $0 = "logstashd (supervisor)"
+  dying = false
   Signal.trap("INT") do
     children.keys.each { |pid| Process.kill("TERM", pid) rescue nil }
     Process.waitall
+    File.unlink(config[:pidfile])
     exit(5)
   end
 
   Signal.trap("TERM") do
+    dying = true
     children.keys.each { |pid| Process.kill("TERM", pid) rescue nil }
     Process.waitall
     exit(5)
@@ -102,9 +105,10 @@ def main(args)
   # in ruby 1.8.5 related to handling SIGTERM.
   while children.keys.length > 0
     pid = Process.waitpid(-1, Process::WNOHANG)
-    if pid
-      $logger.warn "pid #{pid} died (#{children[pid]})"
-      children.delete(pid)
+    if pid and !dying
+      $logger.fatal "pid #{pid} died unexpectedly (#{children[pid]}), " \
+                    "initiating shutdown"
+      Process.kill("TERM", $$)
     end
     sleep(5)
   end
