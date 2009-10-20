@@ -13,8 +13,8 @@ module LogStash; module Config
       super(file)
       obj = YAML::load(File.open(file).read())
 
-      @logstash_dir = obj["logstash_dir"]
-      @pattern_dir = obj["pattern_dir"]
+      @logstash_dir = obj["logstash_dir"] || "/var/logstash"
+      @pattern_dir = obj["pattern_dir"] || "/opt/logstash/patterns"
       @logs = LogStash::Logs.new
 
       obj["log-types"].each do |log_type, data|
