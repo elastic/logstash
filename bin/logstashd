@@ -173,14 +173,14 @@ def parse_options(args)
   end
 
   begin
-    opts.parse!(args)
+    opts.order!(args)
   rescue
     $stderr.puts "#{$progname}: #{$!}"
     $stderr.puts opts
     exit(1)
   end
 
-  if ARGV.length != 1
+  if args.length != 1
     $stderr.puts "#{$progname}: must specify exactly one config file"
     $stderr.puts opts
     exit(1)

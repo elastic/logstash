@@ -1,65 +1,109 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
-require 'lib/net/client'
-require 'lib/net/messages/indexevent'
-require 'lib/net/messages/quit'
-require 'lib/file/tail/since'
-require 'stomp'
-require 'socket'
+$: << File.join(File.dirname(__FILE__), "..")
 
-class Agent < LogStash::Net::MessageClient
-  def initialize(config)
-    host, port = config["server"].split(":")
-    host ||= "localhost"
-    port ||= 61613
-    super(username="", password="", host=host, port=port)
-    @hostname = Socket.gethostname
-    @config = config
-    @msgs = []
-  end # def initialize
+require 'lib/net/clients/agent'
+require 'logger'
+require 'optparse'
 
-  def start_log_watcher
-    @config["sources"].each do |file, logtype|
-      Thread.new do
-        File::Tail::Since.new(file).tail do |line|
-          index(logtype, line.chomp)
+$progname = $0.split(File::SEPARATOR).last
+$version = "0.3"
+$logger = Logger.new(STDOUT)
+$logger.level = Logger::INFO
+$logger.progname = $progname
+$logger.datetime_format = "%Y-%m-%d %H:%M:%S"
+
+def main(args)
+  Thread::abort_on_exception = true
+
+  options = parse_options(args)
+
+  if options[:logfile]
+    logfd = File.open(options[:logfile], "a")
+    $stdout.reopen(logfd)
+    $stderr.reopen(logfd)
+  else
+    # Require a logfile for daemonization
+    if options[:daemonize]
+      $stderr.puts "Daemonizing requires you specify a logfile (--logfile), " \
+                   "none was given"
+      return 1
+    end
+  end
+
+  if options[:daemonize]
+    fork and exit(0)
+
+    # Copied mostly from  Daemons.daemonize, but since the ruby 1.8 'daemons'
+    # and gem 'daemons' have api variances, let's do it ourselves since nobody
+    # agrees.
+
+    trap("SIGHUP", "IGNORE")
+    ObjectSpace.each_object(IO) do |io|
+      # closing STDIN is ok, but keep STDOUT and STDERR
+      # close everything else
+      next if [STDOUT, STDERR].include?(io)
+      begin
+        unless io.closed?
+          io.close
         end
+      rescue ::Exception
       end
     end
-  end # def start_log_watcher
-
-  def index(type, string)
-    ier = LogStash::Net::Messages::IndexEventRequest.new
-    ier.log_type = type
-    ier.log_data = string.strip_upper_ascii
-    ier.metadata["source_host"] = @hostname
-
-    puts "Indexing: #{string}"
-
-    sendmsg("logstash", ier)
-  end # def index
-
-  def IndexEventResponseHandler(msg)
-    if msg.code != 0
-      puts msg.inspect
-    end
-  end # def IndexEventResponseHandler
-
-  def run
-    start_log_watcher
-    super
   end
-end
 
-if $0 == __FILE__
-  if ARGV.length != 1
-    $stderr.puts "Usage: #{$0} configfile"
-    exit 1
+  if options[:pidfile]
+    File.open(options[:pidfile], "w+") { |f| f.puts $$ }
   end
-  Thread::abort_on_exception = true
-  configfile = ARGV[0]
-  config = YAML.load(File.open(configfile).read())
-  agent = Agent.new(config)
+
+  agent = LogStash::Net::Clients::Agent.new(options[:config], $logger)
   agent.run
 end
+
+def parse_options(args)
+  options = {:daemonize => true,
+             :logfile => nil,
+             :pidfile => nil,
+             :config => nil,
+            }
+
+  opts = OptionParser.new do |opts|
+    opts.banner = "Usage: agent.rb [options] configfile"
+    opts.version = $version
+
+    opts.on("-d", "--debug", "Enable debug output") do |x|
+      $logger.level = Logger::DEBUG
+    end
+
+    opts.on("--pidfile FILE", "Path to pidfile") do |x|
+      options[:pidfile] = x
+    end
+
+    opts.on("-f", "--foreground", "Do not daemonize") do |x|
+      options[:daemonize] = false
+    end
+
+    opts.on("-l FILE", "--logfile FILE", "File path to put logs") do |x|
+      options[:logfile] = x
+    end
+  end
+
+  begin
+    opts.order!(args)
+  rescue
+    $stderr.puts "#{$progname}: #{$!}"
+    $stderr.puts opts
+    exit(1)
+  end
+
+  if args.length != 1
+    $stderr.puts "#{$progname}: must specify exactly one config file"
+    $stderr.puts opts
+    exit(1)
+  end
+  options[:config] = args.shift
+
+  return options  
+end
+
+exit main(ARGV)
