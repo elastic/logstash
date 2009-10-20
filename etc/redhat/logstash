@@ -14,11 +14,12 @@
 # Defaults. Override in /etc/sysconfig/logstash
 USER=logstash
 OPTIONS=""
-DIR=/opt/logstash
 INDEX=true
 PARSERS=1
 DEBUG=false
+DIR=/opt/logstash
 CONFIG=$DIR/etc/logstashd.yaml
+LOGFILE=/var/logstash/logstashd.log
 
 if [ -f /etc/sysconfig/logstash ]; then 
 	. /etc/sysconfig/logstash
@@ -40,6 +41,7 @@ start () {
 	fi
 	OPTIONS="$OPTIONS -p $PARSERS"
         OPTIONS="$OPTIONS --pidfile /var/run/logstash/logstashd.pid"
+        OPTIONS="$OPTIONS --logfile $LOGFILE"
         OPTIONS="$OPTIONS $CONFIG"
 
 	daemon --user $USER --pidfile /var/run/logstash/logstashd.pid \
