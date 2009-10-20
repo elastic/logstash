@@ -1,0 +1,7 @@
+# LogStash agent configuration
+
+# Path to config file
+CONFIG=/opt/logstash/etc/logstash-agent.yaml
+
+# Set to true for very verbose debugging output
+DEBUG=false
