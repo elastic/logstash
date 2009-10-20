@@ -55,8 +55,21 @@ def main(args)
     end
   end
 
+  pidfile = nil
   if options[:pidfile]
-    File.open(options[:pidfile], "w+") { |f| f.puts $$ }
+    pidfile = File.open(options[:pidfile], "r+") 
+    gotlock = pidfile.flock(File::LOCK_EX | File::LOCK_NB)
+    if !gotlock
+      owner = pidfile.read()
+      if owner.length == 0
+        owner = "unknown"
+      end
+      $stderr.puts "Failed to get lock on #{options[:pidfile]}; owned by #{owner}"
+      exit(1)
+    end
+    pidfile.truncate(0)
+    pidfile.puts $$
+    pidfile.flush
   end
 
   if options[:indexer]
@@ -90,6 +103,7 @@ def main(args)
   Signal.trap("INT") do
     children.keys.each { |pid| Process.kill("TERM", pid) rescue nil }
     Process.waitall
+    pidfile.close 
     File.unlink(config[:pidfile])
     exit(5)
   end
@@ -98,6 +112,8 @@ def main(args)
     dying = true
     children.keys.each { |pid| Process.kill("TERM", pid) rescue nil }
     Process.waitall
+    pidfile.close 
+    File.unlink(config[:pidfile])
     exit(5)
   end
 
