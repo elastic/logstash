@@ -21,8 +21,38 @@ def main(args)
   options = parse_options(args)
   children = {}
 
+  if options[:logfile]
+    logfd = File.open(options[:logfile], "a")
+    $stdout.reopen(logfd)
+    $stderr.reopen(logfd)
+  else 
+    # Require a logfile for daemonization
+    if options[:daemonize]
+      $stderr.puts "Daemonizing requires you specify a logfile (--logfile), " \
+                   "none was given"
+      return 1
+    end
+  end
+
   if options[:daemonize]
     fork and exit(0)
+
+    # Copied mostly from  Daemons.daemonize, but since the ruby 1.8 'daemons' 
+    # and gem 'daemons' have api variances, let's do it ourselves since nobody
+    # agrees.
+
+    trap("SIGHUP", "IGNORE")
+    ObjectSpace.each_object(IO) do |io|
+      # closing STDIN is ok, but keep STDOUT and STDERR
+      # close everything else
+      next if [STDOUT, STDERR].include?(io)
+      begin
+        unless io.closed?
+          io.close
+        end
+      rescue ::Exception
+      end
+    end
   end
 
   if options[:pidfile]
@@ -55,6 +85,7 @@ def main(args)
     end
   end
 
+  $0 = "logstashd (supervisor)"
   Signal.trap("INT") do
     children.keys.each { |pid| Process.kill("TERM", pid) rescue nil }
     Process.waitall
@@ -134,6 +165,10 @@ def parse_options(args)
     opts.on("-h", "--help", "Show this help message") do |x|
       puts opts
       exit(0)
+    end
+
+    opts.on("-l FILE", "--logfile FILE", "File path to put logs") do |x|
+      options[:logfile] = x
     end
   end
 
