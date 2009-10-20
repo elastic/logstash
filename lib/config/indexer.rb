@@ -7,12 +7,14 @@ module LogStash; module Config
   class IndexerConfig < BaseConfig
     attr_reader :logs
     attr_reader :logstash_dir
+    attr_reader :pattern_dir
 
     def initialize(file)
       super(file)
       obj = YAML::load(File.open(file).read())
 
       @logstash_dir = obj["logstash_dir"]
+      @pattern_dir = obj["pattern_dir"]
       @logs = LogStash::Logs.new
 
       obj["log-types"].each do |log_type, data|
@@ -21,6 +23,7 @@ module LogStash; module Config
                       :date_key => data["date"]["key"],
                       :date_format => data["date"]["format"],
                       :logstash_dir => @logstash_dir,
+                      :pattern_dir => @pattern_dir,
                      }
 
         case data["type"]

@@ -11,7 +11,8 @@ module LogStash
 
   class Log
     REQUIRED_KEYS = [:type, :encoding]
-    OPTIONAL_KEYS = [:attrs, :date_key, :date_format, :logstash_dir]
+    OPTIONAL_KEYS = [:attrs, :date_key, :date_format, :logstash_dir,
+                     :pattern_dir]
     attr_accessor :attrs
 
     def initialize(config)
