@@ -18,6 +18,7 @@ module LogStash
       check_hash_keys(config, REQUIRED_KEYS, OPTIONAL_KEYS)
 
       @home = config[:logstash_dir] || ENV["LOGSTASH_DIR"] || "/opt/logstash"
+      @pattern_dir = config[:pattern_dir] || @home
       @attrs = {"log:type" => config[:type],
                 "log:encoding" => config[:encoding]}
       if config[:attrs]

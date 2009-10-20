@@ -25,12 +25,12 @@ module LogStash
 
         super(config)
 
-        if not File.exists?("#{@home}/patterns")
-          throw StandardError.new("#{@home}/patterns/ does not exist")
+        if not File.exists?("#{@pattern_dir}/patterns")
+          throw StandardError.new("#{@pattern_dir}/patterns/ does not exist")
         end
 
         pattern_files = []
-        Find.find("#{@home}/patterns") do |file|
+        Find.find("#{@pattern_dir}/patterns") do |file|
           # ignore directories
           next if File.directory?(file)
           # ignore dotfiles

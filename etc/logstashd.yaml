@@ -1,6 +1,7 @@
 ---
 mqhost: localhost
 logstash_dir: /var/logstash
+pattern_dir: /opt/logstash/patterns
 
 log-types:
   linux-syslog:
