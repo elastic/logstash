@@ -76,13 +76,13 @@ case "$1" in
 	stop
 	;;
   status)
-	status logstashd
+	status -p /var/run/logstash/logstashd.pid logstashd
 	;;
   restart|reload|force-reload)
 	restart
 	;;
   condrestart)
-	[ -f /var/lock/subsys/memcached ] && restart || :
+	[ -f /var/lock/subsys/logstashd ] && restart || :
 	;;
   *)
 	echo $"Usage: $0 {start|stop|status|restart|reload|force-reload|condrestart}"
