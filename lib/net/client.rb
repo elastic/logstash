@@ -1,8 +1,6 @@
 require 'rubygems'
 require 'lib/net/socket'
-require 'lib/net/messages/ping.rb'
 require 'logger'
-require 'stomp'
 require 'uuid'
 
 module LogStash; module Net
