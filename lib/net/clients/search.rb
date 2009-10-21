@@ -66,12 +66,20 @@ module LogStash::Net::Clients
     end
 
     def search(options)
+      query = options[:query]
+      # Also skip things that need parsing when searching, by default.
+      if !query.include?("@NEEDSPARSING")
+        query = "(#{query}) AND -@NEEDSPARSING:1"
+      end
+
+      puts "Query: #{query}"
+
       hits_msg = LogStash::Net::Messages::SearchHitsRequest.new
       hits_msg.log_type = options[:log_type]
-      hits_msg.query = options[:query]
+      hits_msg.query = query
       search_msg = LogStash::Net::Messages::SearchRequest.new
       search_msg.log_type = options[:log_type]
-      search_msg.query = options[:query]
+      search_msg.query = query
       search_msg.limit = options[:limit]
       search_msg.offset = options[:offset]
       hits = 0

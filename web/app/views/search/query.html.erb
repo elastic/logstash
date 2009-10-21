@@ -17,5 +17,5 @@
 <% end %>
 
 <pre>
-<%=h @results.sort_by { |r| r[0] }.collect { |r| r[1] }.join("\n") %>
+<%=h @results.sort_by { |r| r[0] == nil ? 0 : r[0] }.collect { |r| r[1] }.join("\n") %>
 </pre>
