@@ -7,7 +7,7 @@ require 'lib/program'
 require 'logger'
 require 'optparse'
 
-$progname = $0.split(File::SEPARATOR).last
+$progname = File.basename($0)
 $version = "0.3"
 $logger = Logger.new(STDOUT)
 $logger.level = Logger::INFO
