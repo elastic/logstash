@@ -107,7 +107,14 @@ module LogStash; module Net; module Servers
         return
       end
 
-      reader, search, qp = get_ferret(request.log_type)
+      begin
+        reader, search, qp = get_ferret(request.log_type)
+      rescue
+        response.results = []
+        response.finished = true
+        yield response
+        return
+      end
       query = qp.parse(request.query)
       offset = (request.offset or 0)
       total = request.limit
@@ -166,7 +173,13 @@ module LogStash; module Net; module Servers
         return 
       end
 
-      reader, search, qp = get_ferret(request.log_type)
+      begin
+        reader, search, qp = get_ferret(request.log_type)
+      rescue
+        response.hits = 0
+        yield response
+        return
+      end
       query = qp.parse(request.query)
       offset = (request.offset or 0)
 

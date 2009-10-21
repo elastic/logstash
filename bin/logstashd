@@ -56,8 +56,6 @@ class LogStash::Daemon < LogStash::Program
       @children.keys.each { |pid| Process.kill("TERM", pid) rescue nil }
     end
 
-    puts "Children: #{@children.inspect}"
-
     # We do this lame loop instead of "Process.waitall" because of a bug
     # in ruby 1.8.5 related to handling SIGTERM.
     
@@ -69,7 +67,7 @@ class LogStash::Daemon < LogStash::Program
         pid = Process.waitpid(-1, 0)
       end
 
-      if pid and dying?
+      if pid and !dying?
         $logger.fatal "pid #{pid} died unexpectedly (#{@children[pid]}), " \
                       "initiating shutdown"
         Process.kill("TERM", $$)

@@ -62,6 +62,9 @@ module LogStash
                               :index => :untokenized)
       end
       field_infos.create_index(index_dir)
+    rescue
+      $logger.fatal "error creating index for #{@config[:type]}: #{$!}"
+      exit(4)
     end
 
     def get_index
