@@ -89,6 +89,7 @@ rm -rf $RPM_BUILD_ROOT
 %{logstash_dir}/lib/net/socket.rb
 %{logstash_dir}/lib/net/messages
 %{logstash_dir}/lib/net.rb
+%{logstash_dir}/lib/program.rb
 %{logstash_dir}/lib/util.rb
 
 %files server
