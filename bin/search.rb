@@ -4,6 +4,7 @@ require "rubygems"
 require "socket"
 require "lib/net/message"
 require "lib/net/client"
+require "lib/config/base"
 require "lib/net/messages/directory"
 require "lib/net/messages/indexevent"
 require "lib/net/messages/search"
@@ -31,7 +32,7 @@ class SearchClient < LogStash::Net::MessageClient
     @hits = 0
     @results = []
     @result_mutex = Mutex.new
-    config = YAML::load(File.open(config_file).read)
+    config = LogStash::Config::BaseConfig.new(config_file)
     super(config, "search")
     start
   end
@@ -78,6 +79,7 @@ class SearchClient < LogStash::Net::MessageClient
     search_msg = LogStash::Net::Messages::SearchRequest.new
     search_msg.log_type = log_type
     search_msg.query = query
+    search_msg.limit = 100
     @indexers.each do |i|
       sendmsg(i, hits_msg)
       sendmsg(i, search_msg)
