@@ -6,9 +6,24 @@ require 'uuid'
 
 USE_MARSHAL = ENV.has_key?("USE_MARSHAL")
 
+# http://github.com/tmm1/amqp/issues/#issue/3
+# This is our (lame) hack to at least notify the user that something is
+# wrong.
+module AMQP
+  module Client
+    alias :original_reconnect :reconnect 
+    def reconnect(*args)
+      $logger.warn "reconnecting to broker (bad MQ settings?)"
+
+      # some rate limiting
+      sleep(5)
+
+      original_reconnect(*args)
+    end
+  end
+end
 
 module LogStash; module Net
-
   class Operation
     def initialize(callback)
       @mutex = Mutex.new
@@ -55,8 +70,13 @@ module LogStash; module Net
     def start_amqp
       @amqpthread = Thread.new do 
         # Create connection to AMQP, and in turn, the main EventMachine loop.
-        # TODO: use @config
-        AMQP.start(:host => "localhost") do
+        amqp_config = {:host => @config.mqhost,
+                       :port => @config.mqport,
+                       :user => @config.mquser,
+                       :pass => @config.mqpass,
+                       :vhost => @config.mqvhost,
+                      }
+        AMQP.start(amqp_config) do
           @mq = MQ.new
           @logger.info "Subscribing to main queue #{@id}"
           mq_q = @mq.queue(@id, :auto_delete => true)
