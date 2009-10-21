@@ -12,19 +12,19 @@ def main(args)
     $stderr.puts "Usage: search configfile log_type query"
   end
   client = LogStash::Net::Clients::Search.new(args[0])
-  client.search({
+  hits, results = client.search({
     :log_type => args[1],
     :query => args[2],
     :limit => 100,
   })
 
   # Wait for the client to decide it's done.
-  client.run
+  #client.run
 
   # Collate & print results.
-  puts "Hits: #{client.hits}"
+  puts "Hits: #{hits}"
   puts ""
-  puts client.results.sort_by { |r| r[0] }.collect { |r| r[1] }.join("\n")
+  puts results.sort_by { |r| r[0] }.collect { |r| r[1] }.join("\n")
 
   return 0
 end

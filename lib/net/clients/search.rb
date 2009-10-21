@@ -74,10 +74,27 @@ module LogStash::Net::Clients
       search_msg.query = options[:query]
       search_msg.limit = options[:limit]
       search_msg.offset = options[:offset]
+      hits = 0
+      results = []
+      ops = []
       @indexers.each do |i|
-        sendmsg(i, hits_msg)
-        sendmsg(i, search_msg)
+        ops << sendmsg(i, hits_msg) do |msg|
+          hits += msg.hits
+          :finished
+        end
+        ops << sendmsg(i, search_msg) do |msg|
+          msg.results.each do |result|
+            results << result
+          end
+          :finished if msg.finished
+        end
       end
+
+      ops.each do |op|
+        op.wait_until_finished
+      end
+
+      return [hits, results]
     end
 end; end # class LogStash::Net::Clients::Search
 

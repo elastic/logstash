@@ -16,10 +16,10 @@ class Search < Application
 
     @search = LogStash::Net::Clients::Search.new("/home/jls/projects/logstash/logstashd.yaml")
     params[:query] = params[:q]
-    @search.search(params)
 
     Timeout.timeout(10) do 
-      @search.run
+      @hits, @results = @search.search(params)
+      #@search.run
       render
     end
   end
