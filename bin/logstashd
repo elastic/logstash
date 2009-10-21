@@ -101,19 +101,18 @@ def main(args)
   $0 = "logstashd (supervisor)"
   dying = false
   Signal.trap("INT") do
-    children.keys.each { |pid| Process.kill("TERM", pid) rescue nil }
-    Process.waitall
-    pidfile.close 
-    File.unlink(config[:pidfile])
-    exit(5)
+    Process.kill("TERM", $$)
   end
 
   Signal.trap("TERM") do
     dying = true
+    $logger.warn "received SIGTERM, shutting down"
     children.keys.each { |pid| Process.kill("TERM", pid) rescue nil }
     Process.waitall
-    pidfile.close 
-    File.unlink(config[:pidfile])
+    if pidfile
+      pidfile.close
+      File.unlink(options[:pidfile])
+    end
     exit(5)
   end
 
