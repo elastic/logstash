@@ -109,7 +109,8 @@ module LogStash; module Net; module Servers
 
       begin
         reader, search, qp = get_ferret(request.log_type)
-      rescue
+      rescue Ferret::FileNotFoundError => e
+        $logger.warn "get_ferret failed: #{e.inspect}"
         response.results = []
         response.finished = true
         yield response
@@ -175,7 +176,8 @@ module LogStash; module Net; module Servers
 
       begin
         reader, search, qp = get_ferret(request.log_type)
-      rescue
+      rescue Ferret::FileNotFoundError => e
+        $logger.warn "get_ferret failed: #{e.inspect}"
         response.hits = 0
         yield response
         return
