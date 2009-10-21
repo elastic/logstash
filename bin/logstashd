@@ -62,11 +62,21 @@ class LogStash::Daemon < LogStash::Program
     # in ruby 1.8.5 related to handling SIGTERM.
     
     while @children.keys.length > 0
-      pid = Process.waitpid(-1, 0)
-      if pid and !dying?
+      # Ruby 1.8.5 has a bug with signal and syscall handlers.
+      if RUBY_VERSION == "1.8.5"
+        pid = Process.waitpid(-1, Process::WNOHANG)
+      else
+        pid = Process.waitpid(-1, 0)
+      end
+
+      if pid and dying?
         $logger.fatal "pid #{pid} died unexpectedly (#{@children[pid]}), " \
                       "initiating shutdown"
         Process.kill("TERM", $$)
+      end
+
+      if RUBY_VERSION == "1.8.5"
+        sleep(5)
       end
     end
 
