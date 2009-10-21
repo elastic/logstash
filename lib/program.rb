@@ -27,12 +27,6 @@ module LogStash
     end # def run
 
     def termination_handler(&block)
-      puts "Block: #{block.inspect}"
-      puts "Block: #{block.inspect}"
-      puts "Block: #{block.inspect}"
-      puts "Block: #{block.inspect}"
-      puts "Block: #{block.inspect}"
-
       @termination_callback = block
       Signal.trap("INT") do
         Process.kill("TERM", $$)
@@ -60,8 +54,8 @@ module LogStash
       else
         # Require a logfile for daemonization
         if @daemonize
-          $stderr.puts "Daemonizing requires you specify a logfile"
-          return 1
+          $stderr.puts "Daemonizing requires you specify a logfile."
+          raise InvalidArgument("daemonize is true, but no logfile is specified")
         end
       end
     end # def redirect_io
@@ -87,12 +81,12 @@ module LogStash
 
     def daemonize
       fork and exit(0)
+      Process.setsid
 
       # Copied mostly from  Daemons.daemonize, but since the ruby 1.8 'daemons'
       # and gem 'daemons' have api variances, let's do it ourselves since nobody
       # agrees.
       trap("SIGHUP", "IGNORE")
-      Process.setsid
       ObjectSpace.each_object(IO) do |io|
         # closing STDIN is ok, but keep STDOUT and STDERR
         # close everything else
