@@ -20,6 +20,11 @@ required gems:
 - amqp
 - uuid
 
+The web app requires the following gems:
+- merb-core
+- merb-assets
+- merb-helpers
+
 You'll also need ruby-grok - see instructions below..
 
 # INSTALLING GROK

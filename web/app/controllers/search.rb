@@ -14,7 +14,7 @@ class Search < Application
     params[:limit] = (params[:limit] ? params[:limit].to_i : 20) rescue 20
     params[:log_type] = (params[:log_type] or "linux-syslog")
 
-    @search = LogStash::Net::Clients::Search.new("/home/jls/projects/logstash/logstashd.yaml")
+    @search = LogStash::Net::Clients::Search.new("/opt/logstash/etc/logstashd.yaml")
     params[:query] = params[:q]
 
     Timeout.timeout(10) do 

@@ -2,6 +2,8 @@
  
 # Specify a specific version of a dependency
 # dependency "RedCloth", "> 3.0"
+dependency "merb-helpers", ">= 1.0.12"
+dependency "merb-assets", ">= 1.0.12"
 
 #  use_orm :none
 use_test :rspec
