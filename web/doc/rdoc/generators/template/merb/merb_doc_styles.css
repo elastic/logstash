@@ -1,0 +1,492 @@
+html, body {
+	padding:10px 0px 0px 5px;
+	margin: 0px;
+	font-family: "Lucida Grande", "Lucida Sans Unicode", sans-serif;
+	font-size: 14px;
+}
+
+body {
+  background: #000000 url(http://merbivore.com/img/header_waves.gif) repeat-x scroll center top;
+}
+
+td, p {
+  background: #FFF;
+  color: #000;
+  margin: 0px;
+  font-size: small;
+  line-height: 17px;
+  margin-bottom 12px;
+}
+
+#floater {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+#floater strong {
+  color: white;
+}
+
+#floater a {
+  color: black;
+}
+
+#floater a:hover {
+  background-color: transparent;
+}
+
+
+/*holds the whole searching/drill down stuff */
+#listFrame{
+	float:left;
+	padding: 2px;
+	width: 350px;
+	background-color: #868686;
+	border: 1px solid #999;
+	border-right: none;
+}
+
+#browserBar{
+	height: 25px;
+	padding:11px 0px 0px 0px;
+	margin:0px;
+	background-color: #868686;	
+  border-top: 1px solid #999;
+	color: white;
+}
+
+#browserBar a{
+	text-decoration: none;
+}
+
+.button{
+	text-decoration: none;
+	padding:3px 8px 3px 8px;
+	border: 1px solid #66a;
+	background-color: #ccf;
+	color: #66a;
+}
+
+.buttonInactive{
+	text-decoration: none;
+	padding:3px 8px 3px 8px;
+	border: 1px solid #999;
+	background-color: #ccc;
+	color: #999;
+}
+
+.miniButton{
+	text-decoration: none;
+	padding:3px 2px 3px 2px;
+	border: 1px solid #66a;
+	background-color: #ccf;
+	color: #66a;
+}
+
+.miniButtonInactive{
+	text-decoration: none;
+	padding:3px 2px 3px 2px;
+	border: 1px solid #999;
+	background-color: #ccc;
+	color: #999;
+}
+
+#blowOutListBox{
+	position: absolute;
+	top: 63px;
+	left: 399px;
+	border: 1px solid #999;
+	padding: 0px;
+	margin: 0px;
+	z-index: 1000;
+	background-color: #ccf;
+	color: #66a;
+}
+
+#blowOutListBox ul{
+	list-style-type:none;
+	padding: 0px;
+	margin: 0px;
+}
+
+#blowOutListBox ul li{
+	padding: 3px;
+	margin: 0px;
+	line-height: 1.1em;
+	
+}
+
+#blowOutListBox ul li a{
+	text-decoration: none;
+	padding: 3px;
+}
+#blowOutListBox ul li a:hover{
+	background-color: #ddf;
+}
+
+/*holds the content for browsing etc... also is the target of method/class/file name clicks */
+#rdocContent{
+	height: 600px;
+	background-color: #fff;
+	border: 1px solid #999;
+	border-left: 0px;
+	padding:5px;
+	overflow: auto;
+}
+
+/*the grouping for methods,files,class,all... i.e. the tabs */
+ul#groupType{
+	list-style-type: none;
+	padding: 0px;
+	padding-left: 5px;
+	margin: 0px;
+}
+
+ul#groupType li{
+  color: white;
+	display:inline;
+	padding: 5px 5px 0px 5px;
+	cursor: pointer;
+}
+
+ul#groupType li#loadingStatus{
+	margin: 3px;
+	border: 0px;
+	padding: 3px 3px 6px 3px;
+	color: #666;
+}
+
+ul#groupType li.activeLi{
+  border: 1px solid #999;
+	border-bottom: 0px;
+	background-color: #868686;
+	font-weight: bold;
+	padding-bottom: 1px;
+}
+
+#listSearch{
+	height: 25px;
+	padding: 3px;
+}
+
+#listSearch input[type=text]{
+	width: 340px;
+	font-size: 1.2em;
+}
+
+#listScroller{
+	width: 342px;
+	height: 700px;
+	margin: 3px;
+	background-color: #fcfcfc;
+	border: 1px solid #999;
+	overflow: auto;
+}
+
+#listScroller ul{
+	width: 500px;
+	padding:0px;
+	margin:0px;
+	list-style: none;
+}
+
+#listScroller li{
+	padding: 0px;
+	margin: 0px;
+	display: block;
+	line-height: 1.1em;
+}
+
+a, h1 a, h2 a, .sectiontitle a, #listScroller a{
+  color: #11B716;
+  font-weight: bold;
+  text-decoration: none;
+	padding: 0px 1px 1px 1px;
+	margin: 3px;
+	font-weight: bold;
+}
+
+a:hover, h1 a:hover, h2 a:hover, .sectiontitle a:hover, #listScroller a:hover{
+	background-color: #22D716;
+	color: black;
+}
+
+#browserBar a, .banner a {
+  color: #D7FF00;
+}
+
+#browserBar a:hover, .banner a:hover {
+  background-color: #D7FF00;
+  color: #000;
+}
+
+#listScroller a.activeA {
+	background-color: #22D716;
+	color: black ;
+	border: 1px solid #ccc;
+	padding: 0px 1px 1px 1px; 
+}
+
+#listScroller small{
+	color: #999;
+}
+
+.activeTitle{
+  font-family: monospace;
+  font-size: large;
+  border-bottom: 1px dashed black;
+  margin-bottom: 0.3em;
+  padding-bottom: 0.1em;
+  background-color: #ffc;
+}
+
+.activeMethod{
+  margin-left: 1em;
+  margin-right: 1em;
+  margin-bottom: 1em;
+}
+
+
+.activeMethod .title {
+  font-family: monospace;
+  font-size: large;
+  border-bottom: 1px dashed black;
+  margin-bottom: 0.3em;
+  padding-bottom: 0.1em;
+  background-color: #ffa;
+}
+
+.activeMethod .description, .activeMethod .sourcecode {
+  margin-left: 1em;
+}
+
+.activeMethod .sourcecode p.source-link {
+  text-indent: 0em;
+  margin-top: 0.5em;
+}
+
+.activeMethod .aka {
+  margin-top: 0.3em;
+  margin-left: 1em;
+  font-style: italic;
+  text-indent: 2em;
+}
+
+#content {
+  margin: 0.5em;
+}
+
+#description p {
+  margin-bottom: 0.5em;
+}
+
+.sectiontitle {
+  color: black;
+  font-size: 28px;
+  margin: 20px 0px;
+  border-bottom: 2px solid #CCCCCC;
+  
+/*  margin-top: 1em;
+  margin-bottom: 1em;
+  padding: 0.5em;
+  padding-left: 2em;
+  background: #005;
+  color: #FFF;
+  font-weight: bold;
+  border: 1px dotted black;*/
+}
+
+.attr-rw {
+  padding-left: 1em;
+  padding-right: 1em;
+  text-align: center;
+  color: #7AAD00;
+}
+
+.attr-name {
+  font-weight: bold;
+}
+
+.attr-desc {
+}
+
+.attr-value {
+  font-family: monospace;
+}
+
+.file-title-prefix {
+  font-size: large;
+}
+
+.file-title {
+  font-size: large;
+  font-weight: bold;
+  background: #005;
+  color: #FFF;
+}
+
+.banner {
+  background: #888;
+  color: #FFF;
+/*  border: 1px solid black;*/
+  padding: 1em;
+}
+
+.banner td {
+  background: transparent;
+  color: #FFF;
+}
+
+.dyn-source {
+  display: none;
+  color: #000;
+  border: 0px;
+  border-left: 1px dotted #CCC;
+  border-top: 1px dotted #CCC;
+  margin: 0em;
+  padding: 0em;
+}
+
+.dyn-source .cmt {
+  color: #7AAD00;
+  font-style: italic;
+}
+
+.dyn-source .kw {
+  color: #11B716;
+  font-weight: bold;
+}
+
+.method {
+  margin-left: 1em;
+  margin-right: 1em;
+  margin-bottom: 2em;
+}
+
+.description pre, .description td {
+  font-family:"Courier",serif;
+}
+pre, .description pre {
+  font-size: 12px;
+  line-height: 18px;
+  color: white;
+  padding: 12px;
+  background: #222;
+  overflow: auto;
+}
+
+h2.title, .method .title {
+  color: #7AAD00;
+  font-size: 22px;
+  margin: 10px 0px;
+  
+/*  font-size: large;
+  border-bottom: 1px dashed black;
+  margin: 0.3em;
+  padding: 0.2em;
+*/}
+
+.method .description, .method .sourcecode {
+  margin-left: 1em;
+}
+
+.description p, .sourcecode p {
+  margin-bottom: 0.5em;
+}
+
+.method .sourcecode p.source-link {
+  text-indent: 0em;
+  margin-top: 0.5em;
+}
+
+.method .aka {
+  margin-top: 0.3em;
+  margin-left: 1em;
+  font-style: italic;
+  text-indent: 2em;
+}
+
+h1 {
+  padding: 1em;
+  font-size: x-large;
+}
+
+h2 {
+  padding: 0.5em 1em 0.5em 1em;
+  font-size: large;
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+  color: white;
+  background-color: #868686;
+}
+
+h3, h4, h5, h6 {
+  padding: 0.2em 1em 0.2em 1em;
+  font-weight: bold;
+}
+
+h4 {
+  margin-bottom: 2px;
+}
+
+.sourcecode > pre {
+  padding: 0px;
+  margin: 0px;
+  border: 1px dotted black;
+  background: #FFE;
+}
+
+/* ============= */
+/* = home page = */
+/* ============= */
+
+body#home {
+  margin: 0;
+  padding: 0;
+}
+
+#content {
+  margin: 0 auto;
+  width: 800px;
+}
+
+#content h1.home {
+  background-color: transparent;
+  border:0pt none;
+  color:#FFFFFF;
+  font-size:36px;
+  margin:20px 0px;
+  padding: 0;
+  text-align:center;
+}
+
+#content #documentation-links h2.title {
+  background-color: transparent;
+}
+
+#documentation-links {
+  background-color : white;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+}
+
+#documentation-links p {
+  margin: 22px;
+}
+
+body#home #footer {
+  background:#444444 none repeat scroll 0%;
+  clear:both;
+}
+
+#footer p {
+  background-color: transparent;
+  color:#999999;
+  margin:0 auto;
+  padding:12px;
+  text-align:center;
+  width: 800px;
+}
