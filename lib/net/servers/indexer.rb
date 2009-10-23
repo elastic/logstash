@@ -80,15 +80,20 @@ module LogStash; module Net; module Servers
     end
 
     def get_ferret(log_type)
-      @readers[log_type] ||= Ferret::Index::IndexReader.new(
-                               @config.logs[log_type].index_dir)
-      reader = @readers[log_type]
-      @searchers[log_type] ||= Ferret::Search::Searcher.new(reader)
+      #@readers[log_type] ||= Ferret::Index::IndexReader.new(
+                               #@config.logs[log_type].index_dir)
+      #reader = @readers[log_type]
+      #@searchers[log_type] ||= Ferret::Search::Searcher.new(reader)
+      
+      # open the index every time otherwise we get stale results.
+      reader = Ferret::Index::IndexReader.new(@config.logs[log_type].index_dir)
+      searcher = Ferret::Search::Searcher.new(reader)
       @qps[log_type] ||= Ferret::QueryParser.new(
                            :fields => reader.fields,
                            :tokenized_fields => reader.tokenized_fields,
                            :or_default => false)
-      return @readers[log_type], @searchers[log_type], @qps[log_type]
+      #return @readers[log_type], @searchers[log_type], @qps[log_type]
+      return reader, searcher, @qps[log_type]
     end
 
     def SearchRequestHandler(request)
