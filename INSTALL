@@ -13,12 +13,11 @@ You should have ruby and rubygems installed.
 After that install the following gems, via 'gem install gemname'
 
 required gems:
-- ruby-prof
 - mkdtemp
 - json
 - ferret
 - file-tail
-- stomp
+- amqp
 - uuid
 
 You'll also need ruby-grok - see instructions below..
