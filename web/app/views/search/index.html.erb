@@ -1,8 +1,0 @@
-<%= form :action => url(:controller => "search", :action => "query"),
-         :method => :get do %>
-<%= text_field :name => "q", :label => "Query", :value => escape_html(params[:q]), :size => 100 %>
-  <br/>
-  <%= text_field :name => "log_type", :label => "log type", :value => params[:log_type] %>
-  <br>
-  <%= submit "Search" %>
-<% end =%>
