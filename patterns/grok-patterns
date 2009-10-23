@@ -65,7 +65,7 @@ DATESTAMP %{INT}/%{INT}/%{INT}-%{INT}:%{INT}:%{INT}(\.%INT)?
 
 # Syslog Dates: Month Day HH:MM:SS
 SYSLOGDATE %{MONTH} +%{MONTHDAY} %{TIME}
-PROG (?:[A-z][\w-]+(?:\/[\w-]+)?)
+PROG (?:[A-z][\w._-]+(?:\/[\w._-]+)?)
 PID %{INT}
 SYSLOGPROG %{PROG}(?:\[%{PID:pid}\])?
 SYSLOGFACILITY <%{INT:facility}.%{INT:priority}>
