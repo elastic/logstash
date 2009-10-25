@@ -32,6 +32,7 @@ module LogStash; module Net; module Clients
       ier.metadata["source_host"] = @hostname
 
       @logger.debug "Indexing #{type}: #{string}"
+      ier.want_buffer(true)
       sendmsg("logstash", ier)
     end # def index
 

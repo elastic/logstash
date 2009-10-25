@@ -41,6 +41,14 @@ module LogStash; module Net
       return Time.now.to_f - timestamp
     end
 
+    def buffer?
+      return @buffer
+    end
+
+    def want_buffer(want_buffer=true)
+      @buffer = want_buffer
+    end
+
     # All message subclasses should register themselves here
     # This will allow Message.new_from_data to automatically return
     # the correct message instance.
@@ -60,6 +68,7 @@ module LogStash; module Net
 
     def initialize
       @data = Hash.new
+      want_buffer(false)
     end
 
     def self.new_from_data(data)
