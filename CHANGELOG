@@ -1,0 +1,4 @@
+0.3.3 (Oct 24 2009)
+  * Add support for nonbuffered message sending (so search/directory requests,
+    for example, can be served asap, waiting for the next flushout)
+  * Fix bug where if pattern_dir was a symlink, it wouldn't be followed.
