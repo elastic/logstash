@@ -16,4 +16,27 @@ module LogStash
       return hash
     end
   end
+
+  class StopWatch
+    def initialize
+      start
+    end # def initialize
+
+    def start
+      @start = Time.now
+    end # def start
+
+    def duration
+      return Time.now - @start
+    end # def duration
+
+    def to_s(precision=-1)
+      # precision is for numbers, and '.' isn't a number, so pad for '.' if we
+      # want >0 precision
+      precision += 1 if precision > 0
+      return duration.to_s[0 .. precision]
+    end # def to_s
+  end # class StopWatch
 end
+
+
