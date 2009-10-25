@@ -23,9 +23,17 @@ class File; module Tail;
   class Since < File::Tail::Logfile
     attr_accessor :statefile
 
-    def initialize(*args)
-      @statefile = "#{ENV["HOME"]}/.rb_since"
-      super(*args)
+    def initialize(filename)
+      super(filename)
+      statename = "#{Process.uid}.#{filename.gsub(File::SEPARATOR, ",")}"
+      @dir = "/var/run/rb_since/"
+      if !File.writable?(@dir) 
+        @dir = "#{ENV["HOME"]}/.rb_since_d"
+        if !File.exists?(@dir)
+          Dir.mkdir(@dir)
+        end
+      end
+      @statefile = "#{@dir}/#{statename}"
       load_state
     end
 
