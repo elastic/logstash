@@ -10,18 +10,25 @@
 
 <h4>Results <%= params[:offset] %> - <%= params[:offset] + params[:limit] %> of <%= @hits %> for <%=h params[:q] %></h4>
 <% if params[:offset] > 0 %>
-<%= link_to "prev", url(:controller => "search", :action => "query",
-                        :q => params[:q],
-                        :offset => [0, params[:offset] - params[:limit]].max,
-                        :limit => params[:limit],
-                        :log_type => params[:log_type]) %>
+  <%= link_to "first", url(:controller => "search", :action => "query",
+                            :q => params[:q],
+                            :offset => 0,
+                            :limit => params[:limit],
+                            :log_type => params[:log_type]) %> |
+  <%= link_to "prev", url(:controller => "search", :action => "query",
+                          :q => params[:q],
+                          :offset => [0, params[:offset] - params[:limit]].max,
+                          :limit => params[:limit],
+                          :log_type => params[:log_type]) %>
 <% end %>
+|
 <% if params[:offset] + params[:limit] < @hits %>
   <%= link_to "next", url(:controller => "search", :action => "query",
                           :q => params[:q],
                           :offset => [@hits - params[:limit], params[:offset] + params[:limit]].min,
                           :limit => params[:limit],
                           :log_type => params[:log_type]) %>
+                          |
   <%= link_to "last", url(:controller => "search", :action => "query",
                           :q => params[:q],
                           :offset => @hits - params[:limit],
