@@ -4,8 +4,7 @@ require 'lib/net/messagepacket'
 require 'mq'
 require 'uuid'
 
-USE_MARSHAL = ENV.has_key?("USE_MARSHAL")
-
+BUFFER_DELAY_MESSAGES = false
 # http://github.com/tmm1/amqp/issues/#issue/3
 # This is our (lame) hack to at least notify the user that something is
 # wrong.
@@ -24,6 +23,11 @@ module AMQP
 end
 
 module LogStash; module Net
+
+  # A single message operation
+  # * Takes a callback to call when a message is received
+  # * Allows you to wait for the operation to complete.
+  # * An operation is 'complete' when the callback returns :finished
   class Operation
     def initialize(callback)
       @mutex = Mutex.new
@@ -47,9 +51,7 @@ module LogStash; module Net
     end # def wait_until_finished
   end # def Operation
 
-  # The MessageClient class exists only as an alias
-  # to the MessageSocketMux. You should use the
-  # client class if you are implementing a client.
+  # TODO: document this class
   class MessageSocket
     MAXBUF = 30
 
@@ -61,13 +63,23 @@ module LogStash; module Net
       @want_topics = []
       @topics = []
       @handler = self
-      @outbuffer = Hash.new { |h,k| h[k] = [] }
+      if BUFFER_DELAY_MESSAGES
+        @outbuffer = Hash.new { |h,k| h[k] = [] }
+      end
       @mq = nil
       @message_operations = Hash.new
-      start_amqp
+      @startuplock = Mutex.new
+
+      @mutex = Mutex.new
+      @cv = ConditionVariable.new
+      start_amqp(@mutex, @cv)
+      @mutex.synchronize do
+        @logger.debug "Waiting for @mq ..."
+        @cv.wait(@mutex)
+      end
     end # def initialize
 
-    def start_amqp
+    def start_amqp(mutex, condvar)
       @amqpthread = Thread.new do 
         # Create connection to AMQP, and in turn, the main EventMachine loop.
         amqp_config = {:host => @config.mqhost,
@@ -77,16 +89,24 @@ module LogStash; module Net
                        :vhost => @config.mqvhost,
                       }
         AMQP.start(amqp_config) do
-          @mq = MQ.new
-          @logger.info "Subscribing to main queue #{@id}"
-          mq_q = @mq.queue(@id, :auto_delete => true)
-          mq_q.subscribe(:ack =>true) { |hdr, msg| handle_message(hdr, msg) }
-          handle_new_subscriptions
+          mutex.synchronize do
+            @mq = MQ.new
+            # Notify the main calling thread (MessageSocket#initialize) that
+            # we can continue
+            mq_q = @mq.queue(@id, :auto_delete => true)
+            mq_q.subscribe(:ack =>true) { |hdr, msg| handle_message(hdr, msg) }
+            handle_new_subscriptions
+
+            @logger.info "Subscribing to main queue #{@id}"
+            condvar.signal
+          end
           
           EM.add_periodic_timer(5) { handle_new_subscriptions }
-          EM.add_periodic_timer(1) do
-            @outbuffer.each_key { |dest| flushout(dest) }
-            @outbuffer.clear
+          if BUFFER_DELAY_MESSAGES
+            EM.add_periodic_timer(1) do
+              @outbuffer.each_key { |dest| flushout(dest) }
+              @outbuffer.clear
+            end
           end
         end # AMQP.start
       end
@@ -101,21 +121,13 @@ module LogStash; module Net
     end # def subscribe_topic
 
     def handle_message(hdr, msg_body)
-      if USE_MARSHAL
-        obj = Marshal.load(msg_body)
-      else
-        obj = JSON::load(msg_body)
-        if !obj.is_a?(Array)
-          obj = [obj]
-        end
+      obj = JSON::load(msg_body)
+      if !obj.is_a?(Array)
+        obj = [obj]
       end
 
       obj.each do |item|
-        if USE_MARSHAL
-          message = item
-        else
-          message = Message.new_from_data(item)
-        end
+        message = Message.new_from_data(item)
         name = message.class.name.split(":")[-1]
         func = "#{name}Handler"
 
@@ -170,14 +182,12 @@ module LogStash; module Net
     def flushout(destination)
       return unless @mq    # wait until we are connected
 
-      msgs = @outbuffer[destination]
-      return if msgs.length == 0
-
-      if USE_MARSHAL
-        data = Marshal.dump(msgs)
-      else
-        data = msgs.to_json
+      if BUFFER_DELAY_MESSAGES
+        msgs = @outbuffer[destination]
+        return if msgs.length == 0
       end
+
+      data = msgs.to_json
       @mq.queue(destination).publish(data, :persistent => true)
       msgs.clear
     end
@@ -187,24 +197,27 @@ module LogStash; module Net
       if (msg.is_a?(RequestMessage) and msg.id == nil)
         msg.generate_id!
       end
+      msg.timestamp = Time.now.to_f
 
-      if USE_MARSHAL
-        data = Marshal.dump(msg)
-      else
-        data = msg.to_json
-      end
-
+      data = msg.to_json
       @mq.topic("amq.topic").publish(data, :key => key)
     end
 
     def sendmsg(destination, msg, &callback)
+      return unless @mq    # wait until we are connected
       if (msg.is_a?(RequestMessage) and msg.id == nil)
         msg.generate_id!
       end
+      msg.timestamp = Time.now.to_f
       msg.replyto = @id
-      @outbuffer[destination] << msg
-      if @outbuffer[destination].length > MAXBUF
-        flushout(destination)
+
+      if BUFFER_DELAY_MESSAGES
+        @outbuffer[destination] << msg
+        if @outbuffer[destination].length > MAXBUF
+          flushout(destination)
+        end
+      else
+        @mq.queue(destination).publish([msg].to_json, :persistent => true)
       end
 
       if block_given?

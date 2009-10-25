@@ -33,20 +33,12 @@ module LogStash; module Net
     @@translators = Hash.new
 
     # Message attributes
-    def id
-      return @data["id"]
-    end
+    hashbind :id, "id"
+    hashbind :replyto, "reply-to"
+    hashbind :timestamp, "timestamp"
 
-    def id=(val)
-      return @data["id"] = val
-    end
-
-    def replyto
-      return @data["reply-to"]
-    end
-
-    def replyto=(val)
-      return @data["reply-to"] = val
+    def age
+      return Time.now.to_f - timestamp
     end
 
     # All message subclasses should register themselves here

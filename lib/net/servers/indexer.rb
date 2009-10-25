@@ -11,13 +11,16 @@ require 'lib/net/messages/search'
 require 'lib/net/messages/searchhits'
 require 'lib/net/messages/ping'
 require 'lib/config/indexer.rb'
+require 'lib/util'
 require 'ferret'
 require 'lib/log/text'
 require 'pp'
 
 module LogStash; module Net; module Servers
   class Indexer < LogStash::Net::MessageServer
-    BROADCAST_INTERVAL = 30
+    # Default broadcast interval is 30, but for debugging/testing, sometimes
+    # it's nice to set it lower.
+    BROADCAST_INTERVAL = (ENV["BROADCAST_INTERVAL"] or 30).to_i
     SYNC_DELAY = 10
 
     def initialize(configfile, logger)
@@ -80,10 +83,6 @@ module LogStash; module Net; module Servers
     end
 
     def get_ferret(log_type)
-      #@readers[log_type] ||= Ferret::Index::IndexReader.new(
-                               #@config.logs[log_type].index_dir)
-      #reader = @readers[log_type]
-      #@searchers[log_type] ||= Ferret::Search::Searcher.new(reader)
       
       # open the index every time otherwise we get stale results.
       reader = Ferret::Index::IndexReader.new(@config.logs[log_type].index_dir)
@@ -99,6 +98,8 @@ module LogStash; module Net; module Servers
     def SearchRequestHandler(request)
       @logger.debug "received SearchRequest (#{request.query.inspect} in " \
                     "#{request.log_type})"
+      @logger.debug "message age is #{request.age} seconds"
+      stopwatch = LogStash::StopWatch.new
       response = LogStash::Net::Messages::SearchResponse.new
       response.id = request.id
       response.indexer_id = @id
@@ -164,6 +165,8 @@ module LogStash; module Net; module Servers
       response.results = []
       response.finished = true
       yield response
+
+      @logger.info "SearchRequest for '#{request.query}' took #{stopwatch.to_s(4)}"
     end # def SearchRequestHandler
 
     def SearchHitsRequestHandler(request)
@@ -241,7 +244,6 @@ module LogStash; module Net; module Servers
             # TODO: only run flush if we need to
             @logger.debug "Forcing a sync of #{log_type}"
             index.flush
-            break
           end
 
           synctime = Time.now + SYNC_DELAY

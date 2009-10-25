@@ -72,7 +72,7 @@ module LogStash::Net::Clients
         query = "(#{query}) AND -@NEEDSPARSING:1"
       end
 
-      puts "Query: #{query}"
+      @logger.info "Query: #{query}"
 
       hits_msg = LogStash::Net::Messages::SearchHitsRequest.new
       hits_msg.log_type = options[:log_type]
@@ -87,10 +87,12 @@ module LogStash::Net::Clients
       ops = []
       @indexers.each do |i|
         ops << sendmsg(i, hits_msg) do |msg|
+          @logger.debug "Got #{msg.class} with age #{msg.age}"
           hits += msg.hits
           :finished
         end
         ops << sendmsg(i, search_msg) do |msg|
+          @logger.debug "Got #{msg.class} with age #{msg.age}"
           msg.results.each do |result|
             results << result
           end
