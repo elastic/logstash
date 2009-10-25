@@ -22,6 +22,11 @@
                           :offset => [@hits - params[:limit], params[:offset] + params[:limit]].min,
                           :limit => params[:limit],
                           :log_type => params[:log_type]) %>
+  <%= link_to "last", url(:controller => "search", :action => "query",
+                          :q => params[:q],
+                          :offset => @hits - params[:limit],
+                          :limit => params[:limit],
+                          :log_type => params[:log_type]) %>
 <% end %>
 
 <pre>
