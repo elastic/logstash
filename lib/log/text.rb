@@ -25,8 +25,12 @@ module LogStash
 
         super(config)
 
-        if not File.exists?("#{@pattern_dir}")
+        if not File.exists?(@pattern_dir)
           throw StandardError.new("#{@pattern_dir} does not exist")
+        end
+
+        if File.symlink?(@pattern_dir)
+          @pattern_dir = File.readlink(@pattern_dir)
         end
 
         pattern_files = []
@@ -46,7 +50,6 @@ module LogStash
           #puts "Compiling #{pattern} / #{grok}"
           grok.compile(pattern)
           #puts grok.expanded_pattern
-          #puts
           @groks << grok
         end
         
