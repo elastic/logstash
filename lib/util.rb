@@ -1,9 +1,9 @@
 
 class TrackingMutex < Mutex
   def synchronize(&blk)
-    puts "Enter #{self} @ #{Thread.current} + #{caller[0]}"
+    #puts "Enter #{self} @ #{Thread.current} + #{caller[0]}"
     super { blk.call }
-    puts "Exit #{self} @ #{Thread.current} + #{caller[0]}"
+    #puts "Exit #{self} @ #{Thread.current} + #{caller[0]}"
   end
 end
 
@@ -48,7 +48,7 @@ module LogStash
   end # class StopWatch
 
   class SlidingWindowSet
-    def initialize(window_size = 2)
+    def initialize(window_size = 100)
       @want = Set.new
       @lock = TrackingMutex.new
       @cv = ConditionVariable.new
@@ -59,6 +59,7 @@ module LogStash
       @lock.synchronize do
         if @want.length >= @window_size
           $stderr.puts "sliding window closed (#{@want.length} vs #{@window_size})"
+          $stderr.puts "blocking now while sending #{val}"
           @cv.wait(@lock)
           $stderr.puts "sliding window reopend (#{@want.length} vs #{@window_size})"
         end
@@ -71,7 +72,7 @@ module LogStash
         $stderr.puts "Deleting #{val}"
         @want.delete(val)
         if @want.length < @window_size
-          @cv.notify
+          @cv.signal
         end
       end
     end

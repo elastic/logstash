@@ -1,8 +1,10 @@
 require 'rubygems'
 require 'amqp'
 require 'lib/net/messagepacket'
+require 'lib/util'
 require 'mq'
 require 'uuid'
+require 'thread'
 
 # http://github.com/tmm1/amqp/issues/#issue/3
 # This is our (lame) hack to at least notify the user that something is
@@ -62,7 +64,9 @@ module LogStash; module Net
       @want_topics = []
       @topics = []
       @handler = self
+      @receive_queue = Queue.new
       @outbuffer = Hash.new { |h,k| h[k] = [] }
+      @slidingwindow = LogStash::SlidingWindowSet.new
       @mq = nil
       @message_operations = Hash.new
       @startuplock = Mutex.new
@@ -74,6 +78,8 @@ module LogStash; module Net
         @logger.debug "Waiting for @mq ..."
         @cv.wait(@mutex)
       end
+
+      start_receiver
     end # def initialize
 
     def start_amqp(mutex, condvar)
@@ -95,7 +101,8 @@ module LogStash; module Net
 
           @logger.info "Subscribing to main queue #{@id}"
           mq_q = @mq.queue(@id, :auto_delete => true)
-          mq_q.subscribe(:ack =>true) { |hdr, msg| handle_message(hdr, msg) }
+          #mq_q.subscribe(:ack =>true) { |hdr, msg| handle_message(hdr, msg) }
+          mq_q.subscribe(:ack =>true) { |hdr, msg| @receive_queue << [hdr, msg] }
           handle_new_subscriptions
           
           EM.add_periodic_timer(5) { handle_new_subscriptions }
@@ -106,6 +113,15 @@ module LogStash; module Net
         end # AMQP.start
       end
     end # def start_amqp
+
+    def start_receiver
+      Thread.new do 
+        while true
+          header, message = @receive_queue.pop
+          handle_message(header, message)
+        end
+      end
+    end # def start_receiver
 
     def subscribe(name)
       @want_queues << name 
@@ -123,6 +139,10 @@ module LogStash; module Net
 
       obj.each do |item|
         message = Message.new_from_data(item)
+        if @slidingwindow.include?(message.id)
+          puts "Removing ack for #{message.id}"
+          @slidingwindow.delete(message.id)
+        end
         name = message.class.name.split(":")[-1]
         func = "#{name}Handler"
 
@@ -158,7 +178,7 @@ module LogStash; module Net
       todo.each do |queue|
         @logger.info "Subscribing to queue #{queue}"
         mq_q = @mq.queue(queue, :durable => true)
-        mq_q.subscribe(:ack => true) { |hdr, msg| handle_message(hdr, msg) }
+        mq_q.subscribe(:ack => true) { |hdr, msg| @receive_queue << [hdr, msg] }
         @queues << queue
       end # todo.each
 
@@ -169,7 +189,7 @@ module LogStash; module Net
         mq_q = @mq.queue("#{@id}-#{topic}",
                          :exclusive => true,
                          :auto_delete => true).bind(exchange, :key => topic)
-        mq_q.subscribe { |hdr, msg| handle_message(hdr, msg) }
+        mq_q.subscribe { |hdr, msg| @receive_queue << [hdr, msg] }
         @topics << topic
       end # todo.each
     end # handle_new_subscriptions
@@ -202,6 +222,11 @@ module LogStash; module Net
       end
       msg.timestamp = Time.now.to_f
       msg.replyto = @id
+
+      if (msg.is_a?(RequestMessage) and !msg.is_a?(ResponseMessage))
+        $logger.info "Tracking #{msg.class.name}##{msg.id}"
+        @slidingwindow << msg.id
+      end
 
       if msg.buffer?
         @outbuffer[destination] << msg
