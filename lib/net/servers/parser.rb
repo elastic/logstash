@@ -50,6 +50,7 @@ module LogStash; module Net; module Servers
       else
         response.code = 0
       end
+      yield response
       entry["@LOG_TYPE"] = log_type
 
       # Now we have a hash for the log data, send it to the indexer
