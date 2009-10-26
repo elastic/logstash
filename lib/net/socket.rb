@@ -157,8 +157,8 @@ module LogStash; module Net
       todo = @want_queues - @queues
       todo.each do |queue|
         @logger.info "Subscribing to queue #{queue}"
-        mq_q = @mq.queue(queue)
-        mq_q.subscribe(:ack =>true) { |hdr, msg| handle_message(hdr, msg) }
+        mq_q = @mq.queue(queue, :durable => true)
+        mq_q.subscribe(:ack => true) { |hdr, msg| handle_message(hdr, msg) }
         @queues << queue
       end # todo.each
 
@@ -180,7 +180,7 @@ module LogStash; module Net
       msgs = @outbuffer[destination]
       return if msgs.length == 0
       data = msgs.to_json
-      @mq.queue(destination).publish(data, :persistent => true)
+      @mq.queue(destination, :durable => true).publish(data, :persistent => true)
       msgs.clear
     end
 
@@ -209,7 +209,7 @@ module LogStash; module Net
           flushout(destination)
         end
       else
-        @mq.queue(destination).publish([msg].to_json, :persistent => true)
+        @mq.queue(destination, :durable => true).publish([msg].to_json, :persistent => true)
       end
 
       if block_given?
