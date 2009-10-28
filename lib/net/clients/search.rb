@@ -106,5 +106,52 @@ module LogStash::Net::Clients
 
       return [hits, results]
     end
+
+    def searchhits(log_type, queries)
+      if !queries.is_a?(Array)
+        queries = [queries]
+      end
+
+
+      hits = Hash.new { |h,k| h[k] = 0 }
+      ops = []
+
+      queries.each do |query|
+        options = {
+          :query => query,
+          :log_type => log_type,
+        }
+
+        # Also skip things that need parsing when searching, by default.
+        if !query.include?("@NEEDSPARSING")
+          realquery = "(#{query}) AND -@NEEDSPARSING:1"
+        else
+          realquery = query
+        end
+
+        @logger.info "Query: #{realquery}"
+
+        hits_msg = LogStash::Net::Messages::SearchHitsRequest.new
+        hits_msg.log_type = options[:log_type]
+        hits_msg.query = realquery
+        @indexers.each do |i|
+          ops << sendmsg(i, hits_msg) do |msg|
+            @logger.debug "Got #{msg.class} with age #{msg.age} (query: #{query})"
+            hits[query] += msg.hits
+            @logger.debug "Hits: #{msg.hits}"
+            :finished
+          end
+        end
+      end
+
+      remaining = ops.length
+      ops.each do |op|
+        op.wait_until_finished
+        remaining -=1 
+        @logger.debug "Waiting for #{remaining} operations"
+      end
+
+      return hits
+    end
 end; end # class LogStash::Net::Clients::Search
 

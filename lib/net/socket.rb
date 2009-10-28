@@ -34,22 +34,30 @@ module LogStash; module Net
       @mutex = Mutex.new
       @callback = callback
       @cv = ConditionVariable.new
+      @finished = false
     end # def initialize
 
     def call(*args)
       @mutex.synchronize do
         ret = @callback.call(*args)
         if ret == :finished
+          @finished = true
           @cv.signal
+        else
+          return ret
         end
       end
     end # def call
 
     def wait_until_finished
       @mutex.synchronize do
-        @cv.wait(@mutex)
+        @cv.wait(@mutex) if !finished?
       end
     end # def wait_until_finished
+
+    def finished?
+      return @finished
+    end
   end # def Operation
 
   # TODO: document this class
@@ -66,7 +74,7 @@ module LogStash; module Net
       @handler = self
       @receive_queue = Queue.new
       @outbuffer = Hash.new { |h,k| h[k] = [] }
-      @slidingwindow = LogStash::SlidingWindowSet.new
+      #@slidingwindow = LogStash::SlidingWindowSet.new
       @mq = nil
       @message_operations = Hash.new
       @startuplock = Mutex.new
@@ -139,10 +147,10 @@ module LogStash; module Net
 
       obj.each do |item|
         message = Message.new_from_data(item)
-        if @slidingwindow.include?(message.id)
-          puts "Removing ack for #{message.id}"
-          @slidingwindow.delete(message.id)
-        end
+        #if @slidingwindow.include?(message.id)
+          #puts "Removing ack for #{message.id}"
+          #@slidingwindow.delete(message.id)
+        #end
         name = message.class.name.split(":")[-1]
         func = "#{name}Handler"
 
@@ -224,8 +232,8 @@ module LogStash; module Net
       msg.replyto = @id
 
       if (msg.is_a?(RequestMessage) and !msg.is_a?(ResponseMessage))
-        $logger.info "Tracking #{msg.class.name}##{msg.id}"
-        @slidingwindow << msg.id
+        @logger.info "Tracking #{msg.class.name}##{msg.id}"
+        #@slidingwindow << msg.id
       end
 
       if msg.buffer?

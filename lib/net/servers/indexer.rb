@@ -185,7 +185,7 @@ module LogStash; module Net; module Servers
       begin
         reader, search, qp = get_ferret(request.log_type)
       rescue Ferret::FileNotFoundError => e
-        $logger.warn "get_ferret failed: #{e.inspect}"
+        @logger.warn "get_ferret failed: #{e.inspect}"
         response.hits = 0
         yield response
         return
@@ -194,8 +194,8 @@ module LogStash; module Net; module Servers
       offset = (request.offset or 0)
 
       # search_each returns number of hits, even if we don't yield them.
-      hits = search.search_each(query, :limit => 1, :offset => offset,
-                                :sort => "@DATE") { |docid, score| }
+      hits = search.search_each(query, :limit => 1, :offset => offset) { |docid, score| }
+      
       response.hits = hits
       yield response
     end # def SearchHitsRequestHandler
