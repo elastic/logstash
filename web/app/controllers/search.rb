@@ -18,12 +18,13 @@ class Search < Application
 
     Timeout.timeout(10) do 
       @hits, @results = $search.search(params)
+      @graphdata = _graphpoints
       render
     end
   end
 
-  def graphpoints
-    provides :json
+  def _graphpoints
+    #provides :json
     params[:log_type] = (params[:log_type] or "linux-syslog")
     orig_query = params[:q]
 
@@ -61,7 +62,7 @@ class Search < Application
         @data[entry[:time].to_i * 1000] = entry[:hits]
       end
       @data = @data.to_a
-      render
     end
+    return @data
   end
 end

@@ -8,6 +8,8 @@
 <% end =%>
 <hr>
 
+<div id="visual" style="width:850px;height:200px;"></div>
+
 <h4>Results <%= params[:offset] %> - <%= params[:offset] + params[:limit] %> of <%= @hits %> for <%=h params[:q] %></h4>
 <% if params[:offset] > 0 %>
   <%= link_to "first", url(:controller => "search", :action => "query",
@@ -39,3 +41,21 @@
 <pre>
 <%=h @results.sort_by { |r| r[0] == nil ? 0 : r[0] }.collect { |r| r[1] }.join("\n") %>
 </pre>
+
+<script id="source">
+$(function () {
+  var graphdata = <%= @graphdata.to_json %>;
+
+  $.plot($("#visual"), 
+         [
+           { data: graphdata,
+             bars: {
+               show: true,
+               barWidth: 3600000,
+             }
+           }
+         ], 
+         { xaxis: { mode: "time" } }
+        );
+});
+</script>
