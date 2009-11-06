@@ -55,6 +55,7 @@ module LogStash; module Net; module Servers
 
       @indexes[log_type] ||= @config.logs[log_type].get_index
       @indexes[log_type] << request.log_data
+      response.code = 0
       yield response
     end
 
