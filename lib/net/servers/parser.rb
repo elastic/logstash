@@ -1,25 +1,25 @@
 
 require 'rubygems'
-require 'lib/net/server'
-require 'lib/net/message'
+require 'ferret'
+require 'lib/config/indexer.rb'
+require 'lib/log/text'
 require 'lib/net/messages/indexevent'
+require 'lib/net/messages/ping'
 require 'lib/net/messages/search'
 require 'lib/net/messages/searchhits'
-require 'lib/net/messages/ping'
-require 'lib/config/indexer.rb'
-require 'ferret'
-require 'lib/log/text'
+require 'mqrpc'
 require 'pp'
 
 module LogStash; module Net; module Servers
-  class Parser < LogStash::Net::MessageServer
+  class Parser < MQRPC::Agent
     SYNCDELAY = 10
 
     def initialize(configfile, logger)
       @config = LogStash::Config::IndexerConfig.new(configfile)
       @logger = logger
       @logger.progname = "parser"
-      super(@config, @logger)
+      MQRPC::logger = @logger
+      super(@config)
       @lines = Hash.new { |h,k| h[k] = 0 }
       @indexcount = 0
       @starttime = Time.now
@@ -28,8 +28,7 @@ module LogStash; module Net; module Servers
     def IndexEventRequestHandler(request)
       @logger.debug "received IndexEventRequest (for type " \
                     "#{request.log_type}): #{request.log_data}"
-      response = LogStash::Net::Messages::IndexEventResponse.new
-      response.id = request.id
+      response = LogStash::Net::Messages::IndexEventResponse.new(request)
       @indexcount += 1
 
       if @indexcount % 100 == 0
@@ -58,10 +57,14 @@ module LogStash; module Net; module Servers
       sendmsg("logstash-index", request)
     end
 
+    def IndexEventResponseHandler(response)
+      # This message comes from the indexer, we don't need to really
+      # do anything with it.
+    end
+
     def PingRequestHandler(request)
       @logger.debug "received PingRequest (#{request.pingdata})"
-      response = LogStash::Net::Messages::PingResponse.new
-      response.id = request.id
+      response = LogStash::Net::Messages::PingResponse.new(request)
       response.pingdata = request.pingdata
       yield response
     end

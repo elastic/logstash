@@ -1,14 +1,15 @@
 require 'lib/config/agent'
-require 'lib/net/client'
+require 'lib/net/common'
 require 'lib/net/messages/indexevent'
 require 'lib/file/tail/since'
 require 'socket'
 
 module LogStash; module Net; module Clients
-  class Agent < LogStash::Net::MessageClient
+  class Agent < MQRPC::Agent
     def initialize(configfile, logger)
       @config = LogStash::Config::AgentConfig.new(configfile)
-      super(@config, nil)
+      MQRPC::logger = logger
+      super(@config)
       @hostname = Socket.gethostname
       @msgs = []
       @logger = logger
