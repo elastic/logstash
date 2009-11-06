@@ -52,6 +52,9 @@ module LogStash; module Net; module Servers
       yield response
       entry["@LOG_TYPE"] = log_type
 
+      # Make a new ID for this request before we forward it.
+      request.generate_id!
+
       # Now we have a hash for the log data, send it to the indexer
       request.log_data = entry
       sendmsg("logstash-index", request)
