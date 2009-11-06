@@ -1,4 +1,3 @@
-
 require 'rubygems'
 require 'ferret'
 require 'lib/config/indexer.rb'
@@ -23,6 +22,25 @@ module LogStash; module Net; module Servers
       @lines = Hash.new { |h,k| h[k] = 0 }
       @indexcount = 0
       @starttime = Time.now
+      #@indexerqueue = SizedQueue.new(MQRPC::Agent::MAXMESSAGEWAIT)
+      @indexerqueue = Queue.new
+
+      start_indexer_forwarder
+    end
+
+    def start_indexer_forwarder
+      Thread.new do
+
+        # TODO(sissel): If the queue exceeds a certain size,
+        # we should unsubscribe from the 'logstash' queue to indicate
+        # we cannot handle any more capacity at this time. Once the
+        # queue shrinks, we can re-subscribe.
+        while true do
+          request = @indexerqueue.pop
+          sendmsg("logstash-index", request)
+          
+        end
+      end
     end
 
     def IndexEventRequestHandler(request)
@@ -57,7 +75,9 @@ module LogStash; module Net; module Servers
 
       # Now we have a hash for the log data, send it to the indexer
       request.log_data = entry
-      sendmsg("logstash-index", request)
+
+      # Push our message onto the queue
+      @indexerqueue << request
     end
 
     def IndexEventResponseHandler(response)
