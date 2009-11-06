@@ -1,24 +1,16 @@
-
-require "lib/net/message"
+require "mqrpc"
 
 module LogStash; module Net; module Messages
-  class PingRequest < RequestMessage
-    register
+  class PingRequest < MQRPC::RequestMessage
+    argument :pingdata
 
     def initialize
       super
       self.pingdata = Time.now.to_f
     end
-
-    # Message attributes
-    hashbind :pingdata, "/args/pingdata"
-
   end # class PingRequest
 
-  class PingResponse < ResponseMessage
-    register
-
-    # Message attributes
-    hashbind :pingdata, "/args/pingdata"
+  class PingResponse < MQRPC::ResponseMessage
+    argument :pingdata
   end # class PingResponse
 end; end; end # module LogStash::Net::Messages

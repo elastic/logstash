@@ -1,26 +1,20 @@
-
-require "lib/net/message"
+require "mqrpc"
 
 module LogStash; module Net; module Messages
-  class IndexEventRequest < RequestMessage
-    register
+  class IndexEventRequest < MQRPC::RequestMessage
+    argument :log_type
+    argument :log_data
+    argument :metadata
 
     def initialize
       super
       self.metadata = Hash.new
     end
-
-    hashbind :log_type, "/args/type"
-    hashbind :log_data, "/args/message"
-    hashbind :metadata, "/args/metadata"
   end # class IndexEventRequest
 
-  class IndexEventResponse < ResponseMessage
-    register
-
-    # Message attributes
-    hashbind :code, "/args/code"
-    hashbind :error, "/args/error"
+  class IndexEventResponse < MQRPC::ResponseMessage
+    argument :code
+    argument :error
 
     def success?
       return self.code == 0

@@ -1,17 +1,11 @@
-require "lib/net/message"
+require "mqrpc"
 
 module LogStash; module Net; module Messages
-  class LogKeysRequest < RequestMessage
-    register
-
-    # Message attributes
-    hashbind :log_type, "/args/log_type"
+  class LogKeysRequest < MQRPC::RequestMessage
+    argument :log_type
   end # class LogKeysRequest
 
-  class LogKeysResponse < ResponseMessage
-    register
-
-    # Message attributes
-    hashbind :keys, "/args/keys"
+  class LogKeysResponse < MQRPC::ResponseMessage
+    argument :keys
   end # class LogKeysResponse
 end; end; end # module LogStash::Net::Messages

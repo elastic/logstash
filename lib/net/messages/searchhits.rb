@@ -1,20 +1,14 @@
-require "lib/net/message"
+require "mqrpc"
 
 module LogStash; module Net; module Messages
-  class SearchHitsRequest < RequestMessage
-    register
-
-    # Message attributes
-    hashbind :query, "/args/query"
-    hashbind :log_type, "/args/log_type"
-    hashbind :offset, "/args/offset"
-    hashbind :limit, "/args/limit"
+  class SearchHitsRequest < MQRPC::RequestMessage
+    argument :query
+    argument :log_type
+    argument :offset
+    argument :limit
   end # class SearchHitsRequest
 
-  class SearchHitsResponse < ResponseMessage
-    register
-
-    # Message attributes
-    hashbind :hits, "/args/hits"
+  class SearchHitsResponse < MQRPC::ResponseMessage
+    argument :hits
   end # class SearchHitsResponse
 end; end; end # module LogStash::Net::Messages

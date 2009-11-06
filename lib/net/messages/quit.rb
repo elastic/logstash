@@ -1,12 +1,11 @@
-
-require "lib/net/message"
+require "mqrpc"
 
 module LogStash; module Net; module Messages
-  class QuitRequest < RequestMessage
-    register
+  class QuitRequest < MQRPC::RequestMessage
+    # No attributes
   end # class QuitRequest
 
-  class QuitResponse < ResponseMessage
-    register
+  class QuitResponse < MQRPC::ResponseMessage
+    # No attributes
   end # class QuitResponse
 end; end; end # module LogStash::Net::Messages

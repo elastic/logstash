@@ -1,16 +1,11 @@
-require "lib/net/message"
+require "mqrpc"
 
 module LogStash; module Net; module Messages
-  class DirectoryRequest < RequestMessage
-    register
-
+  class DirectoryRequest < MQRPC::RequestMessage
     # No message attributes
-  end # class SearchRequest
+  end # class DirectoryRequest
 
-  class DirectoryResponse < ResponseMessage
-    register
-
-    # Message attributes
-    hashbind :indexers, "/args/results"
-  end # class SearchResponse
+  class DirectoryResponse < MQRPC::ResponseMessage
+    argument :indexers
+  end # class DirectoryResponse
 end; end; end # module LogStash::Net::Messages
