@@ -1,3 +1,6 @@
+0.3.5 (Nov 7 2009)
+  * MQ RPC broken into it's own library (gem)
+
 0.3.4 (Oct 29 2009)
   * Add graph view to the query results page. Shows bar graph of hits for every
     hour in recent 24 hours against the current query.

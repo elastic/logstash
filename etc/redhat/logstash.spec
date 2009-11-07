@@ -1,7 +1,7 @@
 %define logstash_dir /opt/logstash
 
 Name:		logstash
-Version:	0.3.4
+Version:	0.3.5
 Release:	1
 License:	BSD
 URL:		http://code.google.com/p/logstash
@@ -62,6 +62,7 @@ LogStash web query interface.
 %install
 rm -rf %{buildroot}
 %{__mkdir_p} %{buildroot}%{logstash_dir}
+%{__mkdir_p} %{buildroot}%{logstash_dir}/docs
 %{__mkdir_p} %{buildroot}/etc/init.d
 %{__mkdir_p} %{buildroot}/etc/sysconfig
 %{__mkdir_p} %{buildroot}/var/logstash
@@ -72,6 +73,11 @@ install -c etc/redhat/logstash-agent %{buildroot}/etc/init.d/logstash-agent
 install -c etc/redhat/logstash.sysconfig %{buildroot}/etc/sysconfig/logstash
 install -c etc/redhat/logstash-agent.sysconfig \
         %{buildroot}/etc/sysconfig/logstash-agent
+install -c docs/AgentConfiguration.wiki %{buildroot}%{logstash_dir}/docs/
+install -c docs/Design.wiki %{buildroot}%{logstash_dir}/docs/
+install -c docs/NetworkDesign.wiki %{buildroot}%{logstash_dir}/docs/
+install -c docs/Scaling.wiki %{buildroot}%{logstash_dir}/docs/
+install -c docs/ServerConfiguration.wiki %{buildroot}%{logstash_dir}/docs/
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -81,13 +87,8 @@ rm -rf $RPM_BUILD_ROOT
 %{logstash_dir}/lib/config
 %{logstash_dir}/lib/log.rb
 %{logstash_dir}/lib/logs.rb
-%{logstash_dir}/lib/net/client.rb
 %{logstash_dir}/lib/net/clients
 %{logstash_dir}/lib/net/common.rb
-%{logstash_dir}/lib/net/messagepacket.rb
-%{logstash_dir}/lib/net/message.rb
-%{logstash_dir}/lib/net/server.rb
-%{logstash_dir}/lib/net/socket.rb
 %{logstash_dir}/lib/net/messages
 %{logstash_dir}/lib/net.rb
 %{logstash_dir}/lib/program.rb
@@ -101,6 +102,10 @@ rm -rf $RPM_BUILD_ROOT
 %{logstash_dir}/bin/list_log_types.rb
 %{logstash_dir}/bin/logstashd
 %{logstash_dir}/bin/search.rb
+%{logstash_dir}/docs/Design.wiki
+%{logstash_dir}/docs/NetworkDesign.wiki
+%{logstash_dir}/docs/Scaling.wiki
+%{logstash_dir}/docs/ServerConfiguration.wiki
 %{logstash_dir}/lib/log
 %{logstash_dir}/lib/net/servers
 %{logstash_dir}/patterns
@@ -113,6 +118,7 @@ rm -rf $RPM_BUILD_ROOT
 /etc/init.d/logstash-agent
 %config(noreplace) /etc/sysconfig/logstash-agent
 %{logstash_dir}/bin/logstash-agent
+%{logstash_dir}/docs/AgentConfiguration.wiki
 %{logstash_dir}/lib/net/clients/agent.rb
 %{logstash_dir}/lib/file/tail/since.rb
 %config(noreplace) %{logstash_dir}/etc/logstash-agent.yaml
