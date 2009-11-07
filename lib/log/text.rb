@@ -52,8 +52,7 @@ module LogStash
           #puts grok.expanded_pattern
           @groks << grok
         end
-        
-      end
+      end # def initialize
 
       def parse_entry(raw_entry)
         match = nil
@@ -79,7 +78,7 @@ module LogStash
         res["@LINE"] = raw_entry
 
         return fix_date(res)
-      end
+      end # def parse_entry
     end # class TextLog
-  end
-end # module LogStash::Log
+  end # class Log
+end # module LogStash
