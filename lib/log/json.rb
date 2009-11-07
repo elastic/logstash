@@ -36,6 +36,7 @@ module LogStash
         return erb.result(binding)
       end
 
+      private
       def collapse(hash)
         hash.each do |k, v|
           if v.is_a?(Hash)
