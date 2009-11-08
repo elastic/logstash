@@ -232,7 +232,12 @@ module LogStash; module Net; module Servers
           @indexes.each do |log_type, index|
             # TODO: only run flush if we need to
             @logger.debug "Forcing a sync of #{log_type}"
-            index.flush
+            begin
+              index.flush
+            rescue EOFError
+              @logger.fatal "#{log_type}'s index is corrupt: #{$!}."
+              exit(2)
+            end
           end
 
           synctime = Time.now + SYNC_DELAY
