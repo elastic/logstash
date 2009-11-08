@@ -2,7 +2,6 @@
 #
 require 'rubygems'
 require "socket"
-require "lib/net/message"
 require "lib/net/client"
 require "lib/net/messages/logtypes"
 

@@ -1,7 +1,6 @@
 #!/usr/bin/ruby
 #
 require "rubygems"
-require "lib/net/message"
 require "lib/net/client"
 require "lib/config/base"
 require "lib/net/messages/directory"
