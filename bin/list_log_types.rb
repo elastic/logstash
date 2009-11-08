@@ -2,12 +2,12 @@
 #
 require 'rubygems'
 require "socket"
-require "lib/net/client"
-require "lib/net/messages/logtypes"
+require 'lib/net/messages/logtypes'
+require 'mqprc'
 
 Thread::abort_on_exception = true
 
-class LogTypesClient < LogStash::Net::MessageClient
+class LogTypesClient < MQPRC::Agent
   attr_reader :types
 
   def initialize(opts)

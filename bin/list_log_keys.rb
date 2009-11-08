@@ -1,13 +1,13 @@
 #!/usr/bin/ruby
 #
 require 'rubygems'
-require "socket"
-require "lib/net/client"
-require "lib/net/messages/logkeys"
+require 'socket'
+require 'lib/net/messages/logkeys'
+require 'mqrpc'
 
 Thread::abort_on_exception = true
 
-class LogKeysClient < LogStash::Net::MessageClient
+class LogKeysClient < MQRPC::Agent
   attr_reader :keys
 
   def initialize(opts)

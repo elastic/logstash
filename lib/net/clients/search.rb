@@ -1,7 +1,6 @@
 #!/usr/bin/ruby
 #
 require "rubygems"
-require "lib/net/client"
 require "lib/config/base"
 require "lib/net/messages/directory"
 require "lib/net/messages/indexevent"
@@ -12,7 +11,7 @@ require "set"
 
 
 module LogStash::Net::Clients
-  class Search < LogStash::Net::MessageClient
+  class Search < MQRPC::Agent
     attr_accessor :indexers
     attr_reader :hits
     attr_reader :responding
@@ -25,7 +24,7 @@ module LogStash::Net::Clients
       @results = []
       @result_mutex = Mutex.new
       config = LogStash::Config::BaseConfig.new(config_file)
-      super(config, "search")
+      super(config)
       start
     end
 
