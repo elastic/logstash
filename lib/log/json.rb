@@ -23,8 +23,11 @@ module LogStash
       end
 
       def parse_entry(raw_entry)
-        # need to add @LINE
-        res = LogStash::Util::collapse(JSON.parse(raw_entry))
+        begin
+          res = LogStash::Util::collapse(JSON.parse(raw_entry))
+        rescue JSON::ParserError
+          raise LogParseError.new("Invalid JSON: #{$!}: #{raw_entry}")
+        end
         res["@LINE"] = template(@line_format, res)
         fix_date(res)
 

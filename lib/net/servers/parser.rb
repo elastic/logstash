@@ -55,11 +55,19 @@ module LogStash; module Net; module Servers
       end
 
       log_type = request.log_type
-      entry = @config.logs[log_type].parse_entry(request.log_data)
+      entry = nil
+      reason = "unknown; parse_entry returned without an exception"
+      begin
+        entry = @config.logs[log_type].parse_entry(request.log_data)
+      rescue LogStash::Log::LogParseError
+        reason = $!
+      end
+
       if !entry
-        @logger.warn "Failed parsing line: #{request.log_data}"
+        @logger.warn "Failed parsing line: #{reason}: #{request.log_data}"
         response.code = 1
-        response.error = "Entry was #{entry.inspect} (log parsing failed)"
+        response.error = "Entry was #{entry.inspect} (log parsing " \
+                         "failed: #{reason})"
         entry = {
           "@NEEDSPARSING" => 1,
           "@LINE" => request.log_data

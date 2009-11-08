@@ -15,6 +15,8 @@ module LogStash
                      :pattern_dir]
     attr_accessor :attrs
 
+    LogParseError = Class.new(StandardError)
+
     def initialize(config)
       check_hash_keys(config, REQUIRED_KEYS, OPTIONAL_KEYS)
 
