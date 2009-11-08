@@ -18,10 +18,15 @@ module LogStash; module Net; module Clients
     def start_log_watcher
       @config.sources.each do |file, logtype|
         Thread.new do
+          while not File.exists?(file) do
+            @logger.debug "#{file} does not exist, sleeping 60 seconds"
+            sleep(60)
+          end
           @logger.info "Watching #{file} (type #{logtype})"
           File::Tail::Since.new(file).tail do |line|
             index(logtype, line.chomp)
           end
+          raise "File::Tail::Since croaked for #{file}!"
         end
       end
     end # def start_log_watcher
