@@ -35,7 +35,7 @@ module LogStash
       Signal.trap("TERM") do
         dying
         $logger.warn "received SIGTERM, shutting down"
-        @termination_handler.call if @termination_handler
+        @termination_callback.call if @termination_callback
         Process.waitall
         if @pidfile_fd
           @pidfile_fd.close
