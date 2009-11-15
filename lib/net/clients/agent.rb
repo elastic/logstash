@@ -12,23 +12,31 @@ module LogStash; module Net; module Clients
       super(@config)
       @hostname = Socket.gethostname
       @msgs = []
+      @log_threads = {}
       @logger = logger
     end # def initialize
 
-    def start_log_watcher
-      @config.sources.each do |file, logtype|
-        Thread.new do
-          while not File.exists?(file) do
-            @logger.debug "#{file} does not exist, sleeping 60 seconds"
-            sleep(60)
-          end
-          @logger.info "Watching #{file} (type #{logtype})"
-          File::Tail::Since.new(file).tail do |line|
-            index(logtype, line.chomp)
-          end
-          raise "File::Tail::Since croaked for #{file}!"
-        end
-      end
+    def log_watcher
+      loop do
+        @logger.debug "Starting log_watcher loop"
+        @config.sources.each do |file, logtype|
+          next if @log_threads.member?(file)
+
+          Dir.glob(file).each do |path|
+            next if @log_threads.member?(path)
+            next if File.directory?(path)
+            @log_threads[path] = Thread.new do
+              @logger.info "Watching #{path} (type #{logtype})"
+              File::Tail::Since.new(path).tail do |line|
+                index(logtype, line.chomp)
+              end
+              raise "File::Tail::Since croaked for #{file}!"
+            end # Thread
+          end # Dir.glob
+        end # @config.sources.each
+
+        sleep 60  # only check for new logs every minute
+      end # loop
     end # def start_log_watcher
 
     def index(type, string)
@@ -49,7 +57,7 @@ module LogStash; module Net; module Clients
     end # def IndexEventResponseHandler
 
     def run
-      start_log_watcher
+      Thread.new { log_watcher }
       super
     end
   end
