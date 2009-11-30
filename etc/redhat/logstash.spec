@@ -1,7 +1,7 @@
 %define logstash_dir /opt/logstash
 
 Name:		logstash
-Version:	0.3.5
+Version:	0.3.6
 Release:	1
 License:	BSD
 URL:		http://code.google.com/p/logstash
