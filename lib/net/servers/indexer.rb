@@ -250,7 +250,7 @@ module LogStash; module Net; module Servers
       msg = LogStash::Net::Messages::BroadcastMessage.new
       msg.queue = @id
       loop do
-        @logger.info "Sending #{msg.class}"
+        @logger.debug "Sending #{msg.class}"
         sendmsg_topic("logstash-broadcast", msg)
         sleep(BROADCAST_INTERVAL)
         @indexers_mutex.synchronize do
