@@ -55,7 +55,7 @@ module LogStash
         # Require a logfile for daemonization
         if @daemonize
           $stderr.puts "Daemonizing requires you specify a logfile."
-          raise InvalidArgument("daemonize is true, but no logfile is specified")
+          raise ArgumentError.new("daemonize is true, but no logfile is specified")
         end
       end
     end # def redirect_io
