@@ -18,7 +18,7 @@ require 'pp'
 
 module LogStash; module Net; module Servers
   class Indexer < MQRPC::Agent
-    include MQRPC::Functions::Ping
+    #include MQRPC::Functions::Ping
     # Default broadcast interval is 30, but for debugging/testing, sometimes
     # it's nice to set it lower.
     BROADCAST_INTERVAL = (ENV["BROADCAST_INTERVAL"] or 30).to_i
