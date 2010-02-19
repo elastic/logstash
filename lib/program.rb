@@ -17,9 +17,9 @@ module LogStash
 
     def run
       Thread::abort_on_exception = true
+      grab_pidfile if @pidfile
       redirect_io
       daemonize if @daemonize
-      grab_pidfile if @pidfile
       termination_handler do
         puts "Default termination signal handler being invoked."
       end
