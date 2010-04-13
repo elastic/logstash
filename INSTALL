@@ -16,8 +16,8 @@ required gems:
 - mkdtemp
 - json
 - ferret
-- file-tail
 - amqp
+- eventmachine-tail
 - uuid
 
 The web app requires the following gems:
