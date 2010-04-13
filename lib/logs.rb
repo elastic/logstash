@@ -27,5 +27,12 @@ module LogStash
     def types
       return @logs.keys
     end
+
+    def each
+      @logs.each do |k,v|
+        yield k,v
+      end
+    end # def each
+
   end # class Logs
 end # module LogStash

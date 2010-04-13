@@ -2,7 +2,8 @@
 
 $: << File.join(File.dirname(__FILE__), "..")
 
-require 'lib/net/clients/agent'
+require 'rubygems'
+require 'lib/programs/agent'
 require 'lib/program'
 require 'logger'
 require 'optparse'
@@ -14,18 +15,10 @@ $logger.level = Logger::INFO
 $logger.progname = $progname
 $logger.datetime_format = "%Y-%m-%d %H:%M:%S"
 
-class Agent < LogStash::Program
-  def run
-    super
-    agent = LogStash::Net::Clients::Agent.new(@options[:config], $logger)
-    agent.run
-  end
-end
-
 def main(args)
   options = parse_options(args)
-  Agent.new(options).run
-end
+  return LogStash::Programs::Agent.new(options).run
+end # def main
 
 def parse_options(args)
   options = {:daemonize => true,
@@ -71,6 +64,6 @@ def parse_options(args)
   options[:config] = args.shift
 
   return options  
-end
+end # def parse_options
 
 exit main(ARGV)

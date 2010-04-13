@@ -1,0 +1,44 @@
+---
+logstash_dir: /c/logstash
+pattern_dir: /c/logstash/patterns
+
+log-types:
+  linux-syslog:
+    type: text
+    date:
+      key: date
+      format: %b %e %H:%M:%S
+    patterns:
+    - %{SYSLOGPAMSESSION}
+    - %{SYSLOGLINE}
+
+  httpd-access:
+    type: text
+    date:
+      key: timestamp
+      format: %d/%b/%Y:%H:%M:%S %Z
+    patterns:
+    - %{COMBINEDAPACHELOG}
+
+  glu:
+    type: json
+    date:
+      key: timestamp
+      format: %Y-%m-%dT%H:%M:%S
+    display_format: "<%= entry['timestamp'] %> | <%= entry['level'] %> | <%= entry['context/sessionKey'] %> | <%= entry['sourceHostName'] %> | <%= entry['context/componentName'] %> | <%= entry['message'] %>"
+
+  netscreen:
+    type: text
+    date:
+      key: date
+      format: %b %e %H:%M:%S
+    patterns:
+    - %{NETSCREENSESSIONLOG}
+
+  haproxy:
+    type: text
+    date:
+      key: date
+      format: %b %e %H:%M:%S
+    patterns:
+    - %{HAPROXYHTTP}

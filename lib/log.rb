@@ -1,6 +1,6 @@
-require 'rubygems'
 require 'date'
 require 'json'
+require 'ferret'
 
 module LogStash
   class LogException < StandardError

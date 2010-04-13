@@ -1,8 +1,4 @@
-require 'rubygems'
-#require 'lib/util'
-
 module LogStash
-
   class Program
     class PidFileLockFailed < StandardError
     end # class LogStash::Program::PidFileLockFailed 
