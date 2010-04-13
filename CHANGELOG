@@ -1,3 +1,7 @@
+0.3.7 (Apr 13 2010)
+  * Rewrite Agent to for local use only while I fix the code for proper
+    EventMachine usage.
+
 0.3.6 (Nov 30 2009)
   * Agent now handles log file globs
   * Use MQRPC's SizedThreadSafeHash
