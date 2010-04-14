@@ -2,6 +2,7 @@
 watch:
 - /var/log/messages
 - /var/log/*.log
+- /b/logs/*
 
 logstash_dir: /c/logstash
 pattern_dir: /c/logstash/patterns

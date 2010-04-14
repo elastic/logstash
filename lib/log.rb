@@ -88,7 +88,7 @@ module LogStash
         end
       end
       time ||= DateTime.now
-      res["@DATE"] = time.strftime("%s")
+      res["@DATE"] = time.strftime("%s").to_i
 
       return res
     end
