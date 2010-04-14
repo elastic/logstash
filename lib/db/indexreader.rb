@@ -32,9 +32,11 @@ module LogStash; module DB;
       query = TokyoCabinet::TDBQRY.new(@tdb)
       conditions.each do |key, value|
         #query.addcond(key, TokyoCabinet::TDBQRY::QCSTREQ, value)
-        query.addcond(key, TokyoCabinet::TDBQRY::QCSTRINC, value)
+        #query.addcond(key, TokyoCabinet::TDBQRY::QCSTRINC, value)
+        query.addcond(key, TokyoCabinet::TDBQRY::QCFTSAND, value)
       end
-      query.setorder("@DATE", TDBQRY::QONUMASC);
+      query.setorder("@DATE", TokyoCabinet::TDBQRY::QONUMASC);
+      query.setlimit(10)
       results = query.search
       results.each do |key|
         data = @tdb.get(key)
@@ -55,6 +57,8 @@ if __FILE__ == $0
 
   ap query
   i.search(query) do |key, value|
-    ap [key, value["@DATE"], value["@LINE"]]
+    #ap [key, value["@DATE"], value["@LINE"]]
+    #puts value["@LINE"]
+    ap value
   end
 end
