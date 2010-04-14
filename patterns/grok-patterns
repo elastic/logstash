@@ -64,7 +64,7 @@ DATESTAMP %{INT}/%{INT}/%{INT}-%{INT}:%{INT}:%{INT}(\.%{INT})?
 # Syslog Dates: Month Day HH:MM:SS
 SYSLOGDATE %{MONTH} +%{MONTHDAY} %{TIME}
 PROG (?:[A-z][\w._-]+(?:\/[\w._-]+)?)
-SYSLOGPROG %{PROG}(?:\[%{POSITIVENUM:pid}\])?
+SYSLOGPROG %{PROG:progname}(?:\[%{POSITIVENUM:pid}\])?
 SYSLOGFACILITY <%{POSITIVENUM:facility}.%{POSITIVENUM:priority}>
 HTTPDATE %{MONTHDAY}/%{MONTH}/%{YEAR}:%{TIME} %{INT:ZONE}
 
