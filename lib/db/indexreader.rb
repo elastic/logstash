@@ -58,7 +58,7 @@ if __FILE__ == $0
   ap query
   i.search(query) do |key, value|
     #ap [key, value["@DATE"], value["@LINE"]]
-    #puts value["@LINE"]
-    ap value
+    puts value["@LINE"]
+    #ap value
   end
 end
