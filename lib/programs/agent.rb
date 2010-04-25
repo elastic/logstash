@@ -7,8 +7,10 @@ require 'ap'
 require 'socket' # for Socket.gethostname
 require 'eventmachine'
 require 'eventmachine-tail'
+require 'em-http'
 
-        AMOUNT = 500
+PROGRESS_AMOUNT = 500
+
 class GrokReader < EventMachine::FileTail
   def initialize(path, agent)
     super(path)
@@ -80,17 +82,30 @@ module LogStash; module Programs;
 
     private
     def index(name, entry)
-      logstash_index(name, entry)
+      #logstash_index(name, entry)
+      elastic_index(name, entry)
     end
 
     def logstash_index(name, entry)
       @index.index(entry)
       @count += 1
-      if @count % AMOUNT == 0
+      if @count % PROGRESS_AMOUNT == 0
         #flush_indexes
         #puts "match #{name} in #{path}: #{line}"
-        puts "count: #{@count} #{AMOUNT / (Time.now - @start)}"
+        puts "count: #{@count} #{PROGRESS_AMOUNT / (Time.now - @start)}"
         @start = Time.now
+      end
+    end
+
+    def elastic_index(name, entry)
+      http = EventMachine::HttpRequest.new("http://localhost:9200/logstash/#{name}")
+      req = http.post :body => entry.to_json
+      @count += 1
+      puts "count: #{@count} #{PROGRESS_AMOUNT / (Time.now - @start)}"
+      req.callback do
+        if @count % PROGRESS_AMOUNT == 0
+          @start = Time.now
+        end
       end
     end
 
@@ -98,7 +113,7 @@ module LogStash; module Programs;
       @indexes[name] << entry
       @needs_flushing << name
         @count += 1
-        if @count % AMOUNT == 0
+        if @count % PROGRESS_AMOUNT == 0
           #flush_indexes
           #puts "match #{name} in #{path}: #{line}"
           puts "count: #{@count} #{AMOUNT / (Time.now - @start)}"
