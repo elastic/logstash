@@ -15,17 +15,21 @@ class Search < Application
     params[:offset] = (params[:offset] ? params[:offset].to_i : 0) rescue 0
     params[:limit] = (params[:limit] ? params[:limit].to_i : 100) rescue 100
 
-    q[:from] = params[:offset]
-    q[:size] = params[:limit]
-    q[:log_type] = params[:log_type]
-    q[:base] = "logstash"
-    q[:q] = params[:q]
+    options = {}
+    options[:from] = params[:offset]
+    options[:size] = params[:limit]
+    options[:sort] = "@DATE"
+    q[:query_string] = {
+      :default_field => "@LINE",
+      :query => params[:q]
+    }
+
+    options[:query] = q
 
     search = ElasticSearch.new("localhost:9200")
 
     Timeout.timeout(10) do 
-      #@hits, @results = $search.search(params)
-      results = search.query(q)
+      results = search.query(options)
       @hits = results.hits
       @results = results.results
       @graphdata = _graphpoints(search, q)
@@ -47,28 +51,28 @@ class Search < Application
     @points = []
     # correct for timezone date offset
     Timeout.timeout(20) do 
-      queries = {}
+      queries = []
       while starttime + day > curtime
         endtime = curtime + increment - 1
-        querygen = "@DATE:[#{curtime} #{endtime}] AND (#{orig_query})"
-        puts "Query: #{querygen}"
-        queries[querygen] = {
-          :time => curtime,
-          :query => querygen,
+        querygen = [query.clone]
+        querygen << { 
+          :range => {
+            "@DATE" => {
+              :from => curtime,
+              :to => endtime,
+            }
+          }
         }
+
+        queries << { :bool => { :must => querygen } }
         curtime += increment
       end
 
-      queries.each do |genquery, data|
-        hitq = query.clone
-        hitq[:q] = genquery
-        count = search.count(hitq)
-        queries[genquery][:hits] = count
-      end
-
       @data = Hash.new
-      queries.each do |query, entry|
-        @data[entry[:time].to_i * 1000] = entry[:hits]
+      queries.each do |genquery|
+        count = search.count(genquery)
+        puts count
+        @data[genquery[:bool][:must][1][:range]["@DATE"][:from].to_i * 1000] = count
       end
       @data = @data.to_a
     end

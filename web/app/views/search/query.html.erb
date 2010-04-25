@@ -39,7 +39,9 @@
 <% end %>
 
 <pre>
-<%=h @results.collect { |v| v["_source"]["@LINE"] }.join("\n") %>
+<% @results.each do |result| -%>
+ <%=h result["_source"]["@DATE"] %> | <%=h result["_source"]["@LINE"] %>
+<% end -%>
 </pre>
 
 <script id="source">

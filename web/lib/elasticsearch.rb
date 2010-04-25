@@ -2,6 +2,7 @@
 require "rubygems"
 require "uri"
 require "json"
+require "ap"
 require "logger"
 require "httpclient"
 
@@ -12,27 +13,27 @@ class ElasticSearch
     @logger = Logger.new(STDERR)
   end
 
-  def _get(query, what)
-    index = URI.escape("#{query[:base]}/#{query[:log_type]}")
-    uri = "http://#{@host}/#{index}/_#{what}?"
-    params = query.collect { |k,v| "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}" }.join("&")
-    uri += "#{params}"
+  def _get(params, what, path = "")
+    path.gsub!(/\/+$/, "")
+    uri = URI.escape("http://#{@host}#{path}/_#{what}")
     @logger.info("URL for #{what}: #{uri}")
-    response = @http.get(uri)
+    @logger.info("Body: #{params.to_json}");
+    # ElasticSearch uses "GET" with body, so we can't call .get() here.
+    response = @http.request(:get, uri, query = nil, body = params.to_json)
 
     if response.status != 200
-      p JSON.parse(response.content)
+      ap JSON.parse(response.content)
       raise "Search failure (http code #{response.code})"
     end
     return JSON.parse(response.content)
   end
 
-  def query(query)
-    return ElasticSearch::SearchResults.new(_get(query, "search"))
+  def query(query, path = "")
+    return ElasticSearch::SearchResults.new(_get(query, "search", path))
   end # def query
 
-  def count( query)
-    return _get(query, "count")["count"]
+  def count(query, path = "")
+    return _get(query, "count", path)["count"]
   end
 end
 
@@ -49,5 +50,17 @@ end
 if __FILE__ == $0
   require "ap"
   es = ElasticSearch.new("localhost:9200")
-  ap es.query(:base => "logstash", :log_type => "linux-syslog", :q => "progname:etl-cron").results
+  #ap es.query( { :query => { :field => { :progname => "etl-cron"} } }).results
+  #ap es.query( { :query => { :field => { :@DATE => 1272164175} } }).results
+  ap es.query( 
+      { :query => 
+        {"bool" => {"must" => [{"query_string" => {"query" => ARGV[0],"default_field" => "@LINE"}},{"range" => {"@DATE" => {"to" => Time.now.to_i,"from" => Time.now.to_i - 600}}}]}}
+      }
+  )
 end
+      #:bool => { :must => [
+        #{ :range => { :@DATE => { :from => 1272164175, :to => 1272164176,} } },
+        ##{ :field => { :progname => "etl-cron" } },
+        #{ :query_string => { :query => "progname:etl-cron", :default_field => "@LINE" } },
+      #] },
+    #} 
