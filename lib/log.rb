@@ -1,6 +1,6 @@
 require 'date'
 require 'json'
-require 'ferret'
+#require 'ferret'
 
 module LogStash
   class LogException < StandardError
@@ -12,7 +12,7 @@ module LogStash
   class Log
     REQUIRED_KEYS = [:type, :encoding]
     OPTIONAL_KEYS = [:attrs, :date_key, :date_format, :logstash_dir,
-                     :pattern_dir]
+                     :pattern_dir, :elasticsearch_host]
     attr_accessor :attrs
 
     LogParseError = Class.new(StandardError)
@@ -70,8 +70,16 @@ module LogStash
     end
 
     def get_index
-      create_index unless File.exists?(index_dir)
-      return Ferret::Index::Index.new(:path => index_dir)
+      #create_index unless File.exists?(index_dir)
+      #return Ferret::Index::Index.new(:path => index_dir)
+      #http = EventMachine::HttpRequest.new("http://localhost:9200/logstash/#{@config[:type]}")
+      #req = http.post :body => entry.to_json
+    end
+
+    def index(entry)
+      #$logger.debug("Logging #{entry}")
+      http = EventMachine::HttpRequest.new("http://#{@config[:elasticsearch_host]}/logstash/#{@config[:type]}")
+      req = http.post :body => entry.to_json
     end
 
     def fix_date(res)

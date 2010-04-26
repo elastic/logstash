@@ -34,6 +34,7 @@ module LogStash; module Config
                         :date_format => log_data["date"]["format"],
                         :logstash_dir => @logstash_dir,
                         :pattern_dir => @pattern_dir,
+                        :elasticsearch_host => @elasticsearch_host,
                        }
 
           log = nil

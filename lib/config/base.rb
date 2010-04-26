@@ -3,9 +3,13 @@ require 'yaml'
 
 module LogStash; module Config
   # Base config class. All configs need to know how to get to a broker.
+  attr_reader :elasticsearch_host
+
   class BaseConfig
     def initialize(file)
       obj = YAML::load(::File.open(file).read())
+      @elasticsearch_host = obj["elasticsearch_host"] || "localhost:9200"
+
       @mqhost = obj["mqhost"] || "localhost"
       @mqport = obj["mqport"] || 5672
       @mquser = obj["mquser"] || "guest"

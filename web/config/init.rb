@@ -24,5 +24,7 @@ end
  
 Merb::BootLoader.after_app_loads do
   # This will get executed after your app's classes have been loaded.
-  #$search = LogStash::Net::Clients::Search.new("/opt/logstash/etc/logstashd.yaml")
+  $: << "../"
+  require "lib/net/clients/elasticsearch"
+  $search = LogStash::Net::Clients::ElasticSearch.new("/opt/logstash/etc/logstashd.yaml")
 end

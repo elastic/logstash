@@ -33,8 +33,7 @@ module LogStash; module Programs;
       super(options)
       @config = LogStash::Config::AgentConfig.new(options[:config])
       @config.merge!(options)
-      #@indexes = Hash.new { |h,k| h[k] = @config.logs[k].get_index }
-      @index = LogStash::DB::Index.new(@config.logstash_dir + "/index.tct")
+      @indexes = Hash.new { |h,k| h[k] = @config.logs[k] }
 
       @hostname = Socket.gethostname
       @needs_flushing = Set.new
@@ -82,8 +81,9 @@ module LogStash; module Programs;
 
     private
     def index(name, entry)
+      @indexes[name].index(entry)
       #logstash_index(name, entry)
-      elastic_index(name, entry)
+      #elastic_index(name, entry)
     end
 
     def logstash_index(name, entry)
@@ -112,13 +112,13 @@ module LogStash; module Programs;
     def ferret_index(name, entry)
       @indexes[name] << entry
       @needs_flushing << name
-        @count += 1
-        if @count % PROGRESS_AMOUNT == 0
-          #flush_indexes
-          #puts "match #{name} in #{path}: #{line}"
-          puts "count: #{@count} #{AMOUNT / (Time.now - @start)}"
-          @start = Time.now
-        end
+      @count += 1
+      if @count % PROGRESS_AMOUNT == 0
+        #flush_indexes
+        #puts "match #{name} in #{path}: #{line}"
+        puts "count: #{@count} #{AMOUNT / (Time.now - @start)}"
+        @start = Time.now
+      end
     end
 
     private

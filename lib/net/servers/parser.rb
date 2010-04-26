@@ -1,5 +1,4 @@
 require 'rubygems'
-require 'ferret'
 #require 'net/http'
 #require 'curb'
 require 'em-http'

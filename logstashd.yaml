@@ -1,6 +1,7 @@
 ---
 logstash_dir: /c/logstash
 pattern_dir: /c/logstash/patterns
+elasticsearch_host: localhost;9200
 
 log-types:
   linux-syslog:
