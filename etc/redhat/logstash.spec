@@ -1,7 +1,7 @@
 %define logstash_dir /opt/logstash
 
 Name:		logstash
-Version:	0.3.6
+Version:	0
 Release:	1
 License:	BSD
 URL:		http://code.google.com/p/logstash
@@ -93,6 +93,9 @@ rm -rf $RPM_BUILD_ROOT
 %{logstash_dir}/lib/net.rb
 %{logstash_dir}/lib/program.rb
 %{logstash_dir}/lib/util.rb
+%{logstash_dir}/lib/db/index.rb
+%{logstash_dir}/lib/db/indexreader.rb
+%{logstash_dir}/lib/programs/agent.rb
 
 %files server
 %defattr(-, root, root, 0755)
