@@ -86,6 +86,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root, 0755)
 %{logstash_dir}/lib/config
 %{logstash_dir}/lib/log.rb
+%{logstash_dir}/lib/log/json.rb
+%{logstash_dir}/lib/log/text.rb
 %{logstash_dir}/lib/logs.rb
 %{logstash_dir}/lib/net/clients
 %{logstash_dir}/lib/net/common.rb

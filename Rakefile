@@ -1,12 +1,18 @@
 require 'tempfile'
 
+MAJOR=0
+def mkversion
+  rev = %x{svn info | awk '/^Revision:/ { print $NF }'}.split("\n").first.chomp
+  return "#{MAJOR}.#{rev}"
+end
+
 task :tar do
   version = ENV["VERSION"]
-  version ||= Time.now.strftime "%Y%m%d%H%M%S"
+  version ||= mkversion
   outdir = ENV["OUTDIR"]
   outdir ||= "/tmp"
   sh "rm -rf /tmp/logstash-build/"
-  sh "mkdir -p /tmp/logstasth-build/logstash-#{version}"
+  sh "mkdir -p /tmp/logstash-build"
   sh "svn export https://logstash.googlecode.com/svn/trunk " \
      "/tmp/logstash-build/logstash-#{version}"
   sh "svn export https://logstash.googlecode.com/svn/wiki " \
@@ -25,6 +31,7 @@ task :tar do
       end
     end
   end
+  sh "sed -i -e 's/^Version:.*/Version: #{version}/' /tmp/logstash-build/logstash-#{version}/etc/redhat/logstash.spec"
   sh "cd /tmp/logstash-build && " \
      "tar -czf #{outdir}/logstash-#{version}.tar.gz logstash-#{version}"
 end
