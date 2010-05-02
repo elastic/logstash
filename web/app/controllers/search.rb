@@ -1,8 +1,9 @@
 
-#$: << ".."
-#require "lib/net/clients/search"
+$: << ".."
+require "lib/net/clients/search"
 require "timeout"
-require "elasticsearch"
+require "ap"
+#require "elasticsearch"
 
 class Search < Application
   def index
@@ -18,15 +19,15 @@ class Search < Application
     options = {}
     options[:from] = params[:offset]
     options[:size] = params[:limit]
-    options[:sort] = "@DATE"
+    options[:sort] = [ "@DATE" ]
     q[:query_string] = {
       :default_field => "@LINE",
-      :query => params[:q]
+      :query => params[:q],
     }
 
     options[:query] = q
 
-    search = ElasticSearch.new("localhost:9200")
+    search = LogStash::Net::Clients::ElasticSearch.new("/opt/logstash/etc/logstashd.yaml")
 
     Timeout.timeout(10) do 
       results = search.query(options)
@@ -44,26 +45,25 @@ class Search < Application
     day = 60 * 60 * 24
     hour = 60 * 60
 
-    starttime = (Time.now - day).to_i + Time.now.gmt_offset
+    starttime = (Time.now - day).to_i # + Time.now.gmt_offset
     starttime = starttime - (starttime % hour)
-    increment = 60 * 60
+    increment = (params[:graphstep] or 60 * 60).to_i
     curtime = starttime
     @points = []
     # correct for timezone date offset
     Timeout.timeout(20) do 
       queries = []
-      while starttime + day > curtime
+      while starttime + day + 3600 > curtime
         endtime = curtime + increment - 1
         querygen = [query.clone]
         querygen << { 
           :range => {
             "@DATE" => {
-              :from => curtime,
               :to => endtime,
+              :from => curtime,
             }
           }
         }
-
         queries << { :bool => { :must => querygen } }
         curtime += increment
       end
@@ -72,6 +72,7 @@ class Search < Application
       queries.each do |genquery|
         count = search.count(genquery)
         puts count
+        p genquery
         @data[genquery[:bool][:must][1][:range]["@DATE"][:from].to_i * 1000] = count
       end
       @data = @data.to_a

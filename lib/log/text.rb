@@ -67,6 +67,7 @@ module LogStash
         #  QUOTEDSTRING:bar - matched pattern QUOTEDSTRING, var named bar, keep
         #  DATA - matched pattern DATA, but no variable name, so we ditch it
         match.each_capture do |key, value|
+          next if value == nil or value == ""
           if key =~ /^.+:(.+)$/
             res[$1] = value
           else
