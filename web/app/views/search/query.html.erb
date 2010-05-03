@@ -10,7 +10,7 @@
 
 <div id="visual" style="width:850px;height:200px;"></div>
 
-<h4>Results <%= params[:offset] %> - <%= params[:offset] + params[:limit] %> of <%= @hits %> for <%=h params[:q] %></h4>
+<h4>Results <%= params[:offset] %> - <%= [@hits,params[:offset] + params[:limit]].min %> of <%= @hits %> for <%=h params[:q] %></h4>
 <% if params[:offset] > 0 %>
   <%= link_to "first", url(:controller => "search", :action => "query",
                             :q => params[:q],
@@ -40,7 +40,7 @@
 
 <pre>
 <% @results.each do |result| -%>
- <%=h result["_source"]["@DATE"] %> | <%=h result["_source"]["@LINE"] %>
+ <%=h Time.at(result["_source"]["@DATE"]) %> | <%=h result["_source"]["@LINE"] %>
 <% end -%>
 </pre>
 
