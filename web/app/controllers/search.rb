@@ -28,6 +28,28 @@ class Search < Application
     options[:query] = q
 
     search = LogStash::Net::Clients::ElasticSearch.new("/opt/logstash/etc/logstashd.yaml")
+    params[:graphperiod] ||= 60 * 60 * 24
+    params[:graphstep] ||= 60 * 60
+    params[:graphstep] = params[:graphstep].to_i
+    params[:graphperiod] = params[:graphperiod].to_i
+
+    if params[:graphperiod] > 60 * 60 * 24 * 7 * 2
+      @readable_timeperiod = params[:graphperiod] / (60 * 60 * 24 * 7)
+      @readable_timeunit = "week"
+    elsif params[:graphperiod] >= 60 * 60 * 24 * 3
+      @readable_timeperiod = params[:graphperiod] / (60 * 60 * 24)
+      @readable_timeunit = "day"
+    elsif params[:graphperiod] > 60 * 60 * 3
+      @readable_timeperiod = params[:graphperiod] / (60 * 60)
+      @readable_timeunit = "hour"
+    else
+      @readable_timeperiod = params[:graphperiod] / (60)
+      @readable_timeunit = "minute"
+    end
+
+    if @readable_timeperiod != 1
+      @readable_timeunit = "#{@readable_timeunit}s"
+    end
 
     Timeout.timeout(10) do 
       results = search.query(options)
@@ -42,18 +64,18 @@ class Search < Application
     #provides :json
     orig_query = query[:q]
 
-    day = 60 * 60 * 24
-    hour = 60 * 60
+    graph_period = params[:graphperiod].to_i
+    increment = params[:graphstep].to_i
+    start_mod = 60 * 60
 
-    starttime = (Time.now - day).to_i # + Time.now.gmt_offset
-    starttime = starttime - (starttime % hour)
-    increment = (params[:graphstep] or 60 * 60).to_i
+    starttime = (Time.now - graph_period).to_i # + Time.now.gmt_offset
+    starttime = starttime - (starttime % start_mod)
     curtime = starttime
     @points = []
     # correct for timezone date offset
     Timeout.timeout(20) do 
       queries = []
-      while starttime + day + 3600 > curtime
+      while starttime + graph_period + 3600 > curtime
         endtime = curtime + increment - 1
         querygen = [query.clone]
         querygen << { 
@@ -73,7 +95,8 @@ class Search < Application
         count = search.count(genquery)
         puts count
         p genquery
-        @data[genquery[:bool][:must][1][:range]["@DATE"][:from].to_i * 1000] = count
+        time = genquery[:bool][:must][1][:range]["@DATE"][:from].to_i + Time.now.gmtoff 
+        @data[time * 1000] = count
       end
       @data = @data.to_a
     end

@@ -2,7 +2,7 @@ body {
   font-family: Arial, Verdana, sans-serif;
   font-size: 12px;
   background-color: #fff;
-  margin: 5px;
+  margin: 0px;
 }
 * {
   margin: 0px;
@@ -117,4 +117,59 @@ a:hover {
 }
 #main-container ul {
   margin-left: 3.0em;
+}
+
+.searchBar {
+  border-top: 2px solid black;
+  border-bottom: 1px solid grey;
+  background-color: #CCE8CF;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+.searchBar label {
+  font-weight: bold;
+  padding-left: 1em;
+}
+
+#content {
+  margin-left: 1em;
+  margin-top: 2em;
+}
+
+.searchBar form {
+  display: inline
+}
+
+.logstash-logo {
+  float:right;
+  text-align: center;
+  font-weight: bold;
+  font-size: 120%;
+  padding-right: 1em;
+  padding-left: 1em;
+  border-left: 2px solid black;
+}
+
+#portal .searchBar {
+  border: 2px solid black;
+  width: 50%;
+  margin-top: 5em;
+  font-size: 2em;
+}
+
+#portal .searchBar input[type="text"] {
+  top: 0px;
+  width: 20em;
+}
+
+#portal .logstash-logo {
+  float: none;
+  position: relative;
+  top: -2em;
+  border: 0;
+}
+
+pre .datestamp {
+  color: grey;
 }

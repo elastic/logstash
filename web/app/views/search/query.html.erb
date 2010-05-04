@@ -1,14 +1,10 @@
-<%= form :action => url(:controller => "search", :action => "query"),
-         :method => :get do %>
-<%= text_field :name => "q", :label => "Query", :value => escape_html(params[:q]), :size => 100 %>
-  <br/>
-  <%= text_field :name => "log_type", :label => "log type", :value => escape_html(params[:log_type]) %>
-  <br>
-  <%= submit "Search" %>
-<% end =%>
-<hr>
+<%= partial :searchform %>
 
+<div id="content">
+<h4>Result counts over the past <%= @readable_timeperiod %> <%= @readable_timeunit %> for '<%=h params[:q] %>'</h4>
 <div id="visual" style="width:850px;height:200px;"></div>
+
+<hr style="margin: 2em; width: 70%">
 
 <h4>Results <%= params[:offset] %> - <%= [@hits,params[:offset] + params[:limit]].min %> of <%= @hits %> for <%=h params[:q] %></h4>
 <% if params[:offset] > 0 %>
@@ -23,7 +19,7 @@
                           :limit => params[:limit],
                           :log_type => params[:log_type]) %>
 <% end %>
-|
+<%= "|" if @hits > params[:limit] %>
 <% if params[:offset] + params[:limit] < @hits %>
   <%= link_to "next", url(:controller => "search", :action => "query",
                           :q => params[:q],
@@ -40,7 +36,7 @@
 
 <pre>
 <% @results.each do |result| -%>
- <%=h Time.at(result["_source"]["@DATE"]) %> | <%=h result["_source"]["@LINE"] %>
+ (<span class="datestamp"><%=h Time.at(result["_source"]["@DATE"]).strftime("%Y/%m/%d %H:%M:%S") %></span>) <%=h result["_source"]["@LINE"] %>
 <% end -%>
 </pre>
 
@@ -48,7 +44,7 @@
 $(function () {
   var graphdata = <%= @graphdata.to_json %>;
 
-  $.plot($("#visual"), 
+  var plot = $.plot($("#visual"), 
          [
            { data: graphdata,
              bars: {
@@ -59,5 +55,32 @@ $(function () {
          ], 
          { xaxis: { mode: "time" } }
         );
-});
+
+  var nowpoint = plot.pointOffset( { x: <%= (Time.now.to_i + Time.now.gmtoff) * 1000 %>, y: 1 } );
+  var note = $("<div>").css("position", "absolute")
+    .css("left", nowpoint.left)
+    .css("top", "10px")
+    .css("height", "170px")
+    .css("border-left", "1px dashed grey")
+    //.css("border-bottom", "1px solid grey")
+    //.css("border-top", "1px solid grey")
+    //.css("text-align", "center")
+    //.css("margin-left", ".5em")
+    //.css("font-weight", "bold")
+    //.css("text-align", "top")
+    //.css("white-space", "nowrap")
+    //.css("-webkit-transform", "rotate(90deg)")
+    //.css("-webkit-transform-origin", "0 0")
+    //.css("-moz-transform", "rotate(90deg)")
+    //.css("-moz-transform-origin", "0 0")
+    //.html("<%= Time.now.strftime("%b, %d %Y %H:%M:%S") %>");
+  $("#visual").append(note) 
+  //var ctx = plot.getCanvas().getContext("2d");
+  //ctx.moveTo(nowpoint.left, 0);
+  //console.log(plot)
+  //ctx.lineTo(nowpoint.left, nowpoint.top);
+  //ctx.strokeStyle = "#88FF00";
+  //ctx.stroke();
+}); 
 </script>
+</div>
