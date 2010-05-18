@@ -96,7 +96,14 @@ module LogStash
         end
       end
       time ||= DateTime.now
+      # Store times in UTC, so subtract 
       res["@DATE"] = time.strftime("%s").to_i
+
+      # Assume local timezone if the date format for this log doesn't
+      # include a timezone offset
+      if !@config[:date_format].include?("%Z")
+        res["@DATE"] -= Time.now.gmtoff
+      end
 
       return res
     end
