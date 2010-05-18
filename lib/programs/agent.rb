@@ -123,10 +123,11 @@ module LogStash; module Programs;
 
     private
     def setup_watches
-      handler = EventMachine::FileGlobWatchTail.new(GrokReader, self)
+      #handler = EventMachine::FileGlobWatchTail.new(GrokReader, self)
       @config.watched_paths.each do |path|
         $logger.warn("Watching #{path}")
-        EventMachine::FileGlobWatch.new(path, handler)
+        EventMachine::FileGlobWatchTail.new(path, GrokReader, interval=60,
+                                        exclude=[], agent=self)
       end
     end
 
