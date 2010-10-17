@@ -2,6 +2,7 @@
   All messages are arbitrary hashes now (encoding on wire is json)
 
   * Document it. 
+  * Move 'Agent' to LogStash::Agent
 
   * Add inspectabilty to agents (Some kind of RPC to query status)
   
