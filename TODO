@@ -1,11 +1,11 @@
-* Run index.commit fairly often. index.optimize via cron or something.
+- TODO: finish refactor work. Document new agent model of input+filter+output.
+  All messages are arbitrary hashes now (encoding on wire is json)
 
-* Experiment with :store => :compressed
+  * Document it. 
 
-* Set :index (on Fields) to :yes_omit_norms (through FieldInfos)
-
-* Sort field should be untokenized
-
-* hits/time graph
-
-* investigate: http://assets1.github.com/mmangino/lucene_query/tree/master
+  * Add inspectabilty to agents (Some kind of RPC to query status)
+  
+  Write examples:
+  * log monitor agent (react/alert to messages over amqp, for example)
+  * write storage agent (mongodb, elasticsearch, etc)
+  * web frontend using websockets for real-time search through a browser
