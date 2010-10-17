@@ -59,15 +59,24 @@ class LogStash::Components::Agent
   end # def run
 
   protected
+  def filter(event)
+    @filters.each do |f|
+      # TODO(sissel): Add ability for a filter to cancel/drop a message
+      f.filter(event)
+    end
+  end # def filter
+
+  protected
+  def output(event)
+    @outputs.each do |o|
+      o.receive(event)
+    end # each output
+  end # def output
+
+  protected
   # Process a message
   def receive(event)
-    @filters.each do |filter|
-      # TODO(sissel): Add ability for a filter to cancel/drop a message
-      filter.filter(event)
-    end
-
-    @outputs.each do |output|
-      output.receive(event)
-    end # each output
+    filter(event)
+    output(event)
   end # def input
 end # class LogStash::Components::Agent
