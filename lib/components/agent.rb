@@ -1,29 +1,19 @@
-
 require "eventmachine"
 require "eventmachine-tail"
-
-class Reader < EventMachine::FileTail
-  def initialize(path, agent)
-    super(path)
-    @agent = agent
-    @buffer = BufferedTokenizer.new  # From eventmachine
-  end
-
-  def receive_data(data)
-    # TODO(sissel): Support multiline log data
-    @buffer.extract(data).each do |line|
-      # Package it up into an event object before passing it along.
-      @agent.process(path, line)
-    end
-  end # def receive_data
-end # class Reader
+require "logstash/namespace"
+require "logstash/inputs"
+require "logstash/outputs"
+require "logstash/filters"
 
 # Collect logs, ship them out.
-module LogStash; module Components; class Agent
+class LogStash::Components::Agent
   attr_reader :config
 
   def initialize(config)
     @config = config
+    @outputs = []
+    @inputs = []
+    @filters = []
     # Config should have:
     # - list of logs to monitor
     #   - log config
@@ -33,15 +23,51 @@ module LogStash; module Components; class Agent
   # Register any event handlers with EventMachine
   # Technically, this agent could listen for anything (files, sockets, amqp,
   # stomp, etc).
+  protected
   def register
-    @config["logs"].each do |path|
-      EventMachine::FileGlobWatchTail.new(path, Reader, interval=60,
-                                          exclude=[], agent=self)
-    end # each log
+    # Register input and output stuff
+    if @config.include?("input")
+      @config["input"].each do |url|
+        input = LogStash::Inputs.from_url(url) { |event| receive(event) }
+        input.register
+        @inputs << input
+      end # each input
+    end
+
+    if @config.include?("filter")
+      @config["filter"].each do |name|
+        filter = LogStash::Filters.from_name(name)
+        filter.register
+        @filters << filter
+      end # each filter
+    end
+
+    if @config.include?("output")
+      @config["output"].each do |url|
+        output = LogStash::Outputs.from_url(url)
+        output.register
+        @outputs << output
+      end # each output
+    end
   end # def register
 
+  public
+  def run
+    EventMachine.run do
+      self.register
+    end # EventMachine.run
+  end # def run
+
+  protected
   # Process a message
-  def process(source, message)
-    puts "#{source}: #{message}"
-  end # def process
-end; end; end; # class LogStash::Components::Agent
+  def receive(event)
+    @filters.each do |filter|
+      # TODO(sissel): Add ability for a filter to cancel/drop a message
+      filter.filter(event)
+    end
+
+    @outputs.each do |output|
+      output.receive(event)
+    end # each output
+  end # def input
+end # class LogStash::Components::Agent

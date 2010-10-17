@@ -4,14 +4,31 @@ require "rubygems"
 require "eventmachine"
 require "lib/components/agent"
 
-config = {
-  "logs" => [
-    "/var/log/messages",
-  ],
-}
+case ARGV[0]
+when "client"
+  config = {
+    "input" => [
+      "/var/log/messages",
+      "/var/log/apache2/access.log",
+    ],
+    "output" => [
+      "amqp://localhost/topic/testing",
+    ],
+  }
+when "server"
+  config = {
+    "input" => [
+      "amqp://localhost/topic/testing",
+    ],
+    "filter" => [
+      "grok",
+    ],
+    "output" => [
+      "stdout:///",
+      "amqp://localhost/topic/parsed",
+    ],
+  }
+end
 
 agent = LogStash::Components::Agent.new(config)
-
-EventMachine.run do
-  agent.register
-end
+agent.run
