@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require "rubygems"
+require "eventmachine"
+require "lib/components/agent"
+
+config = {
+  "logs" => [
+    "/var/log/messages",
+  ],
+}
+
+agent = LogStash::Components::Agent.new(config)
+
+EventMachine.run do
+  agent.register
+end
