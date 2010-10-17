@@ -13,6 +13,7 @@ when "client"
     ],
     "output" => [
       "amqp://localhost/topic/testing",
+      "websocket:///",
     ],
   }
 when "server"
