@@ -30,21 +30,25 @@ module LogStash; class Event
 
   def [](key)
     return @data[key]
-  end
+  end # def []
 
   def []=(key, value)
     @data[key] = value
-  end
+  end # def []=
 
   def timestamp
     @data[:received_timestamp] or @data["received_timestamp"]
-  end
+  end # def timestamp
 
   def source
     @data[:source] or @data["source"]
-  end
+  end # def source
 
   def message
     @data[:message] or @data["message"]
-  end
+  end # def message
+
+  def to_hash
+    return @data
+  end # def to_hash
 end; end # class LogStash::Event
