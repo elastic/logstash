@@ -35,3 +35,13 @@ task :tar do
   sh "cd /tmp/logstash-build && " \
      "tar -czf #{outdir}/logstash-#{version}.tar.gz logstash-#{version}"
 end
+
+task :package do
+  system("gem build logstash.gemspec")
+end
+
+task :publish do
+  latest_gem = %x{ls -t logstash*.gem}.split("\n").first
+  system("gem push #{latest_gem}")
+end
+

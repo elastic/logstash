@@ -1,9 +1,0 @@
----
-mqhost: "localhost"
-sources:
-  /var/log/messages: linux-syslog
-  #/var/log/secure: linux-syslog
-  #/var/log/auth.log: linux-syslog
-  #/var/log/cron: linux-syslog
-  #/var/log/httpd/access_log: httpd-apache-access
-  #/var/log/httpd/error_log: httpd-apache-error

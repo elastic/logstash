@@ -1,0 +1,5 @@
+# Example config that reads parsed logs from AMQP and dumps results into mongodb
+inputs:
+  - amqp://localhost/topic/parsedlogs
+outputs:
+  - mongodb://localhost/parsedlogs

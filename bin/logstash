@@ -3,50 +3,56 @@
 require "rubygems"
 require "eventmachine"
 require "logstash/agent"
+require "yaml"
+require "optparse"
 
-case ARGV[0]
-when "client"
-  config = {
-    "input" => [
-      "/var/log/messages",
-      "/var/log/apache2/access.log",
-    ],
-    "output" => [
-      "amqp://localhost/topic/testing",
-      "websocket:///",
-      "mongodb://localhost/testdb",
-    ],
-  }
-when "server"
-  config = {
-    "input" => [
-      "amqp://localhost/topic/testing",
-    ],
-    "filter" => [
-      "grok",
-    ],
-    "output" => [
-      "stdout:///",
-      "amqp://localhost/topic/parsed",
-    ],
-  }
-when "standalone"
-  config = {
-    "input" => [
-      "/var/log/messages",
-      "/var/log/apache2/access.log",
-    ],
-    "filter" => [
-      "grok",
-    ],
-    "output" => [
-      "mongodb://localhost/testdb",
-    ],
-  }
-else
-  puts "Don't know what you want me to do."
+Settings = Struct.new(:config_file, :daemonize)
+
+settings = Settings.new
+settings.daemonize = false
+settings.config_file = nil
+
+opts = OptionParser.new do |opts|
+  opts.banner = "Usage; #{$0} [options]"
+
+  opts.on("-f CONFIGFILE", "--config CONFIGFILE",
+          "Load the logstash config from a specific file") do |arg|
+    settings.config_file = arg
+  end
+
+  #opts.on("-d", "--daemonize", "Daemonize (default is run in foreground)") do 
+    #settings.daemonize = true
+  #end
+end
+
+opts.parse!(ARGV)
+
+# TODO(sissel): put the config management stuff in LogStash::Agent
+if settings.config_file == "" or settings.config_file == nil
+  $stderr.puts "No config file given. (missing -f or --config flag?)"
   exit 1
 end
+
+if !File.exist?(settings.config_file)
+  $stderr.puts "Config file '#{settings.config_file}' does not exist."
+  exit 1
+end
+
+begin
+  config = YAML::load_file(settings.config_file)
+rescue => e
+  $stderr.puts "Loading config file '#{settings.config_file}' failed: #{e}"
+  exit 1
+end
+
+#config = nil
+#confignames = []
+#YAML::load_documents(file) do |doc|
+  #confignames << doc["configname"]
+  #if doc["configname"] == ARGV[0]
+    #config = doc
+  #end
+#end
 
 agent = LogStash::Agent.new(config)
 agent.run

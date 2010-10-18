@@ -1,0 +1,8 @@
+# Example config that reads parsed logs from AMQP and prints to stdout
+inputs:
+  - amqp://localhost/topic/parsedlogs
+#filters:
+  #field:
+  #- progname.include?("tester")
+outputs:
+  - stdout:///

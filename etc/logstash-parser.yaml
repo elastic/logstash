@@ -1,0 +1,20 @@
+# Example config that parses rawlogs with grok and puts them on another AMQP topic
+inputs:
+  - amqp://localhost/topic/rawlogs
+outputs:
+  - amqp://localhost/topic/parsedlogs
+  - stdout:///
+filters:
+  grok:
+    linux-syslog: # for logs tagged 'linux-syslog'
+      timestamp: 
+        key: date
+        format: %b %e %H:%M:%S
+      patterns:
+      - %{SYSLOGLINE}
+    apache-access: # for logs tagged 'apache-error'
+      timestamp:
+        key: timestamp
+        format: %d/%b/%Y:%H:%M:%S %Z
+      patterns:
+      - %{COMBINEDAPACHELOG}
