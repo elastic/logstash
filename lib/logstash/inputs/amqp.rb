@@ -34,11 +34,12 @@ class LogStash::Inputs::Amqp
     @target = @mq.queue(UUIDTools::UUID.timestamp_create)
     case @type
       when "fanout"
-        @target.bind(MQ.fanout(@url.path, :durable => true))
+        #@target.bind(MQ.fanout(@url.path, :durable => true))
+        @target.bind(MQ.fanout(@url.path))
       when "direct"
-        @target.bind(MQ.direct(@url.path, :durable => true))
+        @target.bind(MQ.direct(@url.path))
       when "topic"
-        @target.bind(MQ.topic(@url.path, :durable => true))
+        @target.bind(MQ.topic(@url.path))
     end # case @type
 
     @target.subscribe(:ack => true) do |header, message|
