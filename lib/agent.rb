@@ -6,7 +6,7 @@ require "logstash/outputs"
 require "logstash/filters"
 
 # Collect logs, ship them out.
-class LogStash::Components::Agent
+class LogStash::Agent
   attr_reader :config
 
   def initialize(config)

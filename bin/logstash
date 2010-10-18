@@ -2,7 +2,7 @@
 
 require "rubygems"
 require "eventmachine"
-require "lib/components/agent"
+require "logstash/agent"
 
 case ARGV[0]
 when "client"
@@ -14,6 +14,7 @@ when "client"
     "output" => [
       "amqp://localhost/topic/testing",
       "websocket:///",
+      "mongodb://localhost/testdb",
     ],
   }
 when "server"
@@ -29,7 +30,23 @@ when "server"
       "amqp://localhost/topic/parsed",
     ],
   }
+when "standalone"
+  config = {
+    "input" => [
+      "/var/log/messages",
+      "/var/log/apache2/access.log",
+    ],
+    "filter" => [
+      "grok",
+    ],
+    "output" => [
+      "mongodb://localhost/testdb",
+    ],
+  }
+else
+  puts "Don't know what you want me to do."
+  exit 1
 end
 
-agent = LogStash::Components::Agent.new(config)
+agent = LogStash::Agent.new(config)
 agent.run

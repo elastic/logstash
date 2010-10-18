@@ -4,11 +4,10 @@
 # % logger -t "pantscon" "naughty host 14.33.24.55 $RANDOM"
 
 require "rubygems"
-require "eventmachine"
-require "lib/components/agent"
+require "logstash/agent"
 require "ap"
 
-class MyAgent < LogStash::Components::Agent
+class MyAgent < LogStash::Agent
   def receive(event)
     filter(event)  # Invoke any filters
 
