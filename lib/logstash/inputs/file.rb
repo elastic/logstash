@@ -2,11 +2,17 @@ require "logstash/namespace"
 require "logstash/event"
 require "eventmachine-tail"
 require "uri"
+require "socket" # for Socket.gethostname
 
 class LogStash::Inputs::File
   def initialize(url, config={}, &block)
     @url = url
     @url = URI.parse(url) if url.is_a? String
+
+    # Hack the hostname into the url.
+    # This works since file:// urls don't generally have a host in it.
+    @url.host = Socket.gethostname
+
     @config = config
     @callback = block
     @tags = []
