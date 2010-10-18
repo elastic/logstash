@@ -25,25 +25,51 @@ class LogStash::Agent
   # stomp, etc).
   protected
   def register
+    # TODO(sissel): warn when no inputs and no outputs are defined.
+    # TODO(sissel): Refactor this madness into a config lib
+
     # Register input and output stuff
-    if @config.include?("input")
-      @config["input"].each do |url|
-        input = LogStash::Inputs.from_url(url) { |event| receive(event) }
-        input.register
-        @inputs << input
+    if @config.include?("inputs")
+      inputs = @config["inputs"]
+      inputs.each do |value|
+        # If 'url' is an array, then inputs is a hash and the key is a tag
+        if inputs.is_a?(Hash)
+          tag, urls = value
+        else
+          tag = nil
+          urls = value
+        end
+
+        # url could be a string or an array.
+        urls = [urls] if !urls.is_a?(Array)
+
+        urls.each do |url|
+          input = LogStash::Inputs.from_url(url) { |event| receive(event) }
+          input.tag(tag) if tag
+          input.register
+          @inputs << input
+        end
       end # each input
     end
 
-    if @config.include?("filter")
-      @config["filter"].each do |name|
-        filter = LogStash::Filters.from_name(name)
+    if @config.include?("filters")
+      filters = @config["filters"]
+      filters.each do |value|
+        # If value is an array, then "filters" is a hash.
+        if filters.is_a?(Hash)
+          name, filterconfig  = value
+        else
+          name = value
+          filterconfig = {}
+        end
+        filter = LogStash::Filters.from_name(name, filterconfig)
         filter.register
         @filters << filter
       end # each filter
     end
 
-    if @config.include?("output")
-      @config["output"].each do |url|
+    if @config.include?("outputs")
+      @config["outputs"].each do |url|
         output = LogStash::Outputs.from_url(url)
         output.register
         @outputs << output
@@ -63,6 +89,9 @@ class LogStash::Agent
     @filters.each do |f|
       # TODO(sissel): Add ability for a filter to cancel/drop a message
       f.filter(event)
+      if event.cancelled?
+        break
+      end
     end
   end # def filter
 
@@ -77,6 +106,9 @@ class LogStash::Agent
   # Process a message
   def receive(event)
     filter(event)
-    output(event)
+
+    if !event.cancelled?
+      output(event)
+    end
   end # def input
 end # class LogStash::Components::Agent

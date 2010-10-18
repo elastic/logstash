@@ -4,6 +4,7 @@ require "logstash/time"
 # General event type. Will expand this in the future.
 module LogStash; class Event
   def initialize(data)
+    @cancelled = false
     @data = data
     if !@data.include?(:received_timestamp)
       @data[:received_timestamp] = LogStash::Time.now.utc.to_iso8601
@@ -16,6 +17,14 @@ module LogStash; class Event
 
   def to_json
     return @data.to_json
+  end
+
+  def cancel
+    @cancelled = true
+  end
+
+  def cancelled?
+    return @cancelled
   end
 
   def to_s
@@ -51,4 +60,8 @@ module LogStash; class Event
   def to_hash
     return @data
   end # def to_hash
+
+  def include?(key)
+    return @data.include?(key)
+  end
 end; end # class LogStash::Event

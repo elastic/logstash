@@ -48,7 +48,19 @@ class LogStash::Inputs::Amqp
     end
   end # def register
 
+  # TODO(sissel): Refactor this into a general 'input' class
+  # tag this input
+  public
+  def tag(newtag)
+    @tags << newtag
+  end
+
   def receive(event)
+    if !event.include?("tags")
+      event["tags"] = @tags 
+    else
+      event["tags"] << @tags
+    end
     @callback.call(event)
   end # def event
 end # class LogStash::Inputs::Amqp

@@ -9,17 +9,28 @@ class LogStash::Inputs::File
     @url = URI.parse(url) if url.is_a? String
     @config = config
     @callback = block
+    @tags = []
   end
 
+  public
   def register
     EventMachine::FileGlobWatchTail.new(@url.path, Reader, interval=60,
                                         exclude=[], receiver=self)
   end
 
+  # TODO(sissel): Refactor this into a general 'input' class
+  # tag this input
+  public
+  def tag(newtag)
+    @tags << newtag
+  end
+
+  public
   def receive(event)
     event = LogStash::Event.new({
       :source => @url.to_s,
       :message => event,
+      :tags => @tags,
     })
     @callback.call(event)
   end # def event
