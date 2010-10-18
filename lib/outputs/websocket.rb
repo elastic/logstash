@@ -17,9 +17,7 @@ class LogStash::Outputs::Websocket
     port = (@url.port or 3000)
     EventMachine::WebSocket.start(:host => host, :port => port) do |ws|
       ws.onopen do
-        puts "Open"
         sid = @channel.subscribe do |msg| 
-          puts "Sending: #{msg}"
           ws.send msg
         end
         ws.onclose do
