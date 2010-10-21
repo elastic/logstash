@@ -1,0 +1,21 @@
+%K Escape
+1GdGi
+tail -f is nice, but it doesn't scale.
+
+Plus, the output is just a stream of text. Aren't logs really messages?
+
+Enter logstash. 
+
+logstash gives you a pipe metaphor similar to the unix model.  Stuff goes in; stuff gets modified; stuff goes out. Think: sed.
+
+Powershell built on the unix pipe model by allowing you to pipe objects instead of just text. (If you haven't seen powershell yet, go check it out, it is awesome)
+
+Let's take that piped object model and apply it to logs, events, and the network.
+
+* Input from files, processes, etc. 
+* Parse it and package it into an object.
+* Ship it to anything willing to listen.
+
+If we provide a framework for doing this, you can easily ship logs to message queues, databases, archive servers, web browsers, etc. 
+
+Let's show a bit of logstash.
