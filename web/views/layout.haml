@@ -1,0 +1,11 @@
+!!! 5
+%html
+  %head
+    %title= @title || "Default title" 
+    %link{ :rel => "stylesheet", :href => "/style.css", :type => "text/css" }
+%body
+  #header
+    =haml :header, :layout => false
+  #content
+    =yield
+  #footer
