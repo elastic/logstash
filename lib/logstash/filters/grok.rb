@@ -39,12 +39,16 @@ class LogStash::Filters::Grok
       #pattern = @grok.discover(message)
       #@grok.compile(pattern)
       #match = @grok.match(message)
+      puts "No known tag for #{event.source} / #{event["tags"]}"
+      puts event.to_hash.inspect
     end
 
     if match
       match.each_capture do |key, value|
         if key.include?(":")
           key = key.split(":")[1]
+        else
+          next
         end
 
         if event[key].is_a?(String)

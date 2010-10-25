@@ -14,6 +14,7 @@ module LogStash; class Time < ::Time
     else
       tz = self.strftime("%z")
     end
-    return self.strftime("%Y-%m-%d %H:%M:%S") + ".#{self.tv_usec}#{tz}"
+    # zero-pad tv_usec so the time string is sortable.
+    return "%s.%06d%s" % [self.strftime("%Y-%m-%dT%H:%M:%S"), self.tv_usec, tz]
   end
 end; end # class LogStash::Time

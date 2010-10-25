@@ -15,12 +15,14 @@ class LogStash::Outputs::Elasticsearch
     # Authentication?
     @httpurl = @url.clone
     @httpurl.scheme = "http"
+    @http = EventMachine::HttpRequest.new(@httpurl.to_s)
   end # def register
 
   def receive(event)
-    http = EventMachine::HttpRequest.new(@httpurl.to_s).post :body => event.to_json
-    http.errback do
-      $stderr.puts "Request to index to #{url.to_s} failed. Event was #{event.to_s}"
+    #http = EventMachine::HttpRequest.new(@httpurl.to_s).post :body => event.to_json
+    req = @http.post :body => event.to_json
+    req.errback do
+      $stderr.puts "Request to index to #{@httpurl.to_s} failed. Event was #{event.to_s}"
     end
   end # def event
 end # class LogStash::Outputs::Websocket

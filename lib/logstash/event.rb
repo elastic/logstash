@@ -6,8 +6,8 @@ module LogStash; class Event
   def initialize(data)
     @cancelled = false
     @data = data
-    if !@data.include?(:received_timestamp)
-      @data[:received_timestamp] = LogStash::Time.now.utc.to_iso8601
+    if !@data.include?("received_timestamp")
+      @data["received_timestamp"] = LogStash::Time.now.utc.to_iso8601
     end
   end # def initialize
 
@@ -46,7 +46,7 @@ module LogStash; class Event
   end # def []=
 
   def timestamp
-    @data[:received_timestamp] or @data["received_timestamp"]
+    @data["received_timestamp"]
   end # def timestamp
 
   def source
