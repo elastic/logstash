@@ -1,3 +1,17 @@
-- @hits.each do |hit|
-  %pre
-    = hit["_source"].inspect
+#searchheader
+  %form.search{ :action => "/search" }
+    %label{ :for => "q" } Query: 
+    %input.query{ :id => "query", :type => "text", :name => "q", :value => params[:q],
+                  :size => 60 }
+    %input{ :id => "searchbutton", :type => "submit" }
+
+- if @error
+  #error 
+    %strong A search error occurred:
+    =@error
+#ssquery{ :style => "display: none;", :"data-query" => params[:q] }
+#inspector{ :style => "display: none;" }
+  The following fields are known for the log you selected. Click on any link to
+  append it to your search.
+  %ul
+=haml :"search/ajax", :layout => false

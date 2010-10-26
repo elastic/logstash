@@ -1,3 +1,5 @@
+$lightgrey = #d8d8d8
+$darkgrey = #adadad
 body
   margin: 0
   padding: 0
@@ -11,3 +13,28 @@ body
   .logo
     font-size: 130%
     font-weight: bold
+
+#content
+  margin: 2em
+#content ul.results
+  font-family: monospace
+#content li.event
+  padding-bottom: 3px
+#content li.selected
+  background-color: #FCE69D !important
+#content li.event:nth-child(2n)
+  background-color: #E3F6CE
+#content li.event:nth-child(2n+1)
+  background-color: #F5FBEF
+#content li.event:hover
+  background-color: lightgreen
+#error
+  background-color: pink
+  border: 1px solid red
+  padding: 3px
+#error h1
+  font-size: 130%
+  padding: 0
+  margin: 0
+#inspector
+  font-size: 70%

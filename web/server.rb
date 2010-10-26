@@ -18,6 +18,7 @@ class LogStashWeb < Sinatra::Base
   register Sinatra::Async
   set :haml, :format => :html5
   set :logging, true
+  set :public, "./public"
 
   aget '/style.css' do
     headers "Content-Type" => "text/css; charset=utf8"
@@ -29,30 +30,50 @@ class LogStashWeb < Sinatra::Base
   end # '/'
 
   aget '/search' do
+    if params[:q] and params[:q] != ""
+      search :results
+    else
+      @hits = []
+      body haml :"search/results"
+    end
+  end
+
+  apost '/search/ajax' do
+    search :ajax
+  end
+
+  def search(type)
     http = EventMachine::HttpRequest.new("http://localhost:9200/_search")
+    params[:offset] ||= 0
+    params[:count] ||= 20
+
     esreq = {
       "sort" => [
-        { "received_timestamp" => "desc" }
+        { "timestamp" => "desc" }
       ],
       "query" => {
         "query_string" => { 
            "query" => params[:q]
         }
       },
+      "from" => params[:offset],
+      "size" => params[:count],
     }
     req = http.get :body => esreq.to_json
     req.callback do
-      headers req.response_header
+      #headers req.response_header
       data = JSON.parse(req.response)
-      p data
+      if req.response_header.status != 200
+        @error = data["error"]
+      end
       @hits = data["hits"]["hits"] rescue []
-      body haml :"search/results"
+      body haml :"search/#{type.to_s}", :layout => !request.xhr?
     end
     req.errback do 
-      body "Failed."
+      body "Failed. #{req.response}"
     end
-  end # '/search'
-end
+  end # def search
+end # class LogStashWeb
 
       #Sass::Plugin::Rack.new( \
 Rack::Handler::Thin.run(
