@@ -60,7 +60,7 @@ class LogStash::Inputs::Amqp
     if !event.include?("tags")
       event["tags"] = @tags 
     else
-      event["tags"] << @tags
+      event["tags"] |= @tags # set union
     end
     @callback.call(event)
   end # def event
