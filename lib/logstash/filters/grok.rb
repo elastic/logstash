@@ -44,20 +44,19 @@ class LogStash::Filters::Grok
     end
 
     if match
+      event["fields"] = {}
       match.each_capture do |key, value|
         if key.include?(":")
           key = key.split(":")[1]
-        else
-          next
         end
 
-        if event[key].is_a?(String)
-          event[key] = [event[key]]
-        elsif event[key] == nil
-          event[key] = []
+        if event["fields"][key].is_a?(String)
+          event["fields"][key] = [event["fields"][key]]
+        elsif event["fields"][key] == nil
+          event["fields"][key] = []
         end
 
-        event[key] << value
+        event["fields"][key] << value
       end
     else
       event["PARSEFAILURE"] = 1
