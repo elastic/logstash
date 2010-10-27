@@ -28,12 +28,6 @@ module LogStash; class Event
   end
 
   def to_s
-    #require "ap" rescue nil
-    #if @data.respond_to?(:awesome_inspect)
-      #return "#{timestamp} #{source}: #{@data.awesome_inspect}"
-    #else
-      #return "#{timestamp} #{source}: #{@data.inspect}"
-    #end
     return "#{timestamp} #{source}: #{message}"
   end # def to_s
 
