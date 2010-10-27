@@ -4,6 +4,7 @@ require "logstash/namespace"
 require "logstash/inputs"
 require "logstash/outputs"
 require "logstash/filters"
+require "logstash/logging"
 
 # TODO(sissel): Make our own logger.
 require "logger"
@@ -11,11 +12,10 @@ require "logger"
 # Collect logs, ship them out.
 class LogStash::Agent
   attr_reader :config
+  include LogStash::Logging
 
   def initialize(config)
-    @logger = Logger.new(STDERR)
-    # $DEBUG is set when invoked with 'ruby -d'
-    @logger.level = $DEBUG ? Logger::WARN : Logger::DEBUG
+    init_logging
 
     @config = config
     @outputs = []
