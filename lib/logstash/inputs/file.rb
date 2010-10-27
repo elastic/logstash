@@ -6,6 +6,9 @@ require "socket" # for Socket.gethostname
 
 class LogStash::Inputs::File
   def initialize(url, config={}, &block)
+    @logger = Logger.new(STDERR)
+    @logger.level = $DEBUG ? Logger::WARN : Logger::DEBUG
+
     @url = url
     @url = URI.parse(url) if url.is_a? String
 
@@ -28,6 +31,7 @@ class LogStash::Inputs::File
   # tag this input
   public
   def tag(newtag)
+    @logger.debug("Adding tag #{newtag} to #{@url}")
     @tags << newtag
   end
 
