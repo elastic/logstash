@@ -5,11 +5,18 @@ require "logstash/inputs"
 require "logstash/outputs"
 require "logstash/filters"
 
+# TODO(sissel): Make our own logger.
+require "logger"
+
 # Collect logs, ship them out.
 class LogStash::Agent
   attr_reader :config
 
   def initialize(config)
+    @logger = Logger.new(STDERR)
+    # $DEBUG is set when invoked with 'ruby -d'
+    @logger.level = $DEBUG ? Logger::WARN : Logger::DEBUG
+
     @config = config
     @outputs = []
     @inputs = []
@@ -44,6 +51,7 @@ class LogStash::Agent
         urls = [urls] if !urls.is_a?(Array)
 
         urls.each do |url|
+          @logger.debug("Using input #{url} with tag #{tag}")
           input = LogStash::Inputs.from_url(url) { |event| receive(event) }
           input.tag(tag) if tag
           input.register
@@ -62,6 +70,7 @@ class LogStash::Agent
           name = value
           filterconfig = {}
         end
+        @logger.debug("Using filter #{name}")
         filter = LogStash::Filters.from_name(name, filterconfig)
         filter.register
         @filters << filter
@@ -70,6 +79,7 @@ class LogStash::Agent
 
     if @config.include?("outputs")
       @config["outputs"].each do |url|
+        @logger.debug("Using output #{url}")
         output = LogStash::Outputs.from_url(url)
         output.register
         @outputs << output
