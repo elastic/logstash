@@ -16,19 +16,20 @@ inputs:
   apache-error:
   - /var/log/apache2/error.log
 filters:
-  grok:
+- grok:
     linux-syslog: # for logs tagged 'linux-syslog'
-      timestamp:
-        key: date
-        format: %b %e %H:%M:%S
       patterns:
       - %{SYSLOGLINE}
     apache-access: # for logs tagged 'apache-error'
-      timestamp:
-        key: timestamp
-        format: %d/%b/%Y:%H:%M:%S %Z
       patterns:
       - %{COMBINEDAPACHELOG}
+- date:
+    linux-syslog:  # for logs tagged 'linux-syslog'
+      # Look for a field 'timestamp' with this format, parse and it for the timestamp
+      # This field comes from the SYSLOGLINE pattern
+      timestamp: %b %e %H:%M:%S
+    apache-access:
+      timestamp: "%d/%b/%Y:%H:%M:%S %Z"
 outputs:
 # For this demo, we'll write to websockets...
 - stdout:///
