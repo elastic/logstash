@@ -6,16 +6,12 @@ require "logstash/outputs"
 require "logstash/filters"
 require "logstash/logging"
 
-# TODO(sissel): Make our own logger.
-require "logger"
-
 # Collect logs, ship them out.
 class LogStash::Agent
   attr_reader :config
-  include LogStash::Logging
 
   def initialize(config)
-    init_logging
+    @logger = LogStash::Logger.new(STDERR)
 
     @config = config
     @outputs = []
@@ -62,16 +58,10 @@ class LogStash::Agent
 
     if @config.include?("filters")
       filters = @config["filters"]
-      filters.each do |value|
-        # If value is an array, then "filters" is a hash.
-        if filters.is_a?(Hash)
-          name, filterconfig  = value
-        else
-          name = value
-          filterconfig = {}
-        end
-        @logger.debug("Using filter #{name}")
-        filter = LogStash::Filters.from_name(name, filterconfig)
+      filters.collect { |x| x.to_a[0] }.each do |filter|
+        name, value = filter
+        @logger.debug("Using filter #{name} => #{value.inspect}")
+        filter = LogStash::Filters.from_name(name, value)
         filter.register
         @filters << filter
       end # each filter

@@ -61,8 +61,5 @@ class LogStash::Filters::Grok
     else
       event["PARSEFAILURE"] = 1
     end
-    
-    # TODO(sissel): Flatten single-entry arrays into a single value?
-    return event
   end
 end # class LogStash::Filters::Grok
