@@ -1,10 +1,12 @@
 require "logstash/namespace"
+require "logstash/logging"
 
 gem "jls-grok", ">=0.2.3071"
 require "grok" # rubygem 'jls-grok'
 
 class LogStash::Filters::Grok
   def initialize(config = {})
+    @logger = LogStash::Logger.new(STDERR)
     @config = config
     @grokpiles = {}
   end # def initialize
@@ -12,6 +14,7 @@ class LogStash::Filters::Grok
   def register
     # TODO(sissel): Make patterns files come from the config
     @config.each do |tag, tagconfig|
+      @logger.debug("Grok tag #{tag}")
       pile = Grok::Pile.new
       pile.add_patterns_from_file("patterns/grok-patterns")
       pile.add_patterns_from_file("patterns/linux-syslog")
@@ -27,39 +30,41 @@ class LogStash::Filters::Grok
     message = event.message
     match = false
 
-    if event.include?("tags")
-      event["tags"].each do |tag|
+    if !event.tags.empty?
+      event.tags.each do |tag|
+        @logger.info @grokpiles.keys
         if @grokpiles.include?(tag)
           pile = @grokpiles[tag]
           grok, match = pile.match(message)
           break if match
         end # @grokpiles.include?(tag)
-      end # event["tags"].each
+      end # event.tags.each
     else 
       #pattern = @grok.discover(message)
       #@grok.compile(pattern)
       #match = @grok.match(message)
-      puts "No known tag for #{event.source} / #{event["tags"]}"
-      puts event.to_hash.inspect
+      @logger.info("No known tag for #{event.source} (tags: #{event.tags.inspect})")
+      @logger.debug(event.to_hash)
     end
 
     if match
-      event["fields"] = {}
       match.each_capture do |key, value|
         if key.include?(":")
           key = key.split(":")[1]
         end
 
-        if event["fields"][key].is_a?(String)
-          event["fields"][key] = [event["fields"][key]]
-        elsif event["fields"][key] == nil
-          event["fields"][key] = []
+        if event.fields[key].is_a?(String)
+          event.fields[key] = [event.fields[key]]
+        elsif event.fields[key] == nil
+          event.fields[key] = []
         end
 
-        event["fields"][key] << value
+        event.fields[key] << value
       end
     else
-      event["PARSEFAILURE"] = 1
+      # Tag this event if we can't parse it. We can use this later to
+      # reparse+reindex logs if we improve the patterns given .
+      event.tags << "grokparsefailure"
     end
-  end
+  end # def filter
 end # class LogStash::Filters::Grok

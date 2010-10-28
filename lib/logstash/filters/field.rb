@@ -21,10 +21,9 @@ class LogStash::Filters::Field
 
     @config.each do |condition|
       if data.instance_eval(condition)
-        return event
+        return # This event is OK, matches the condition.
       end
     end
     event.cancel
-    return event
   end
 end # class LogStash::Filters::Grok

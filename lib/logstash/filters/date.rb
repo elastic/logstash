@@ -11,10 +11,12 @@ class LogStash::Filters::Date
   #
   # filters:
   #   date:
-  #     tagname1:
+  #     <tagname>:
   #       <fieldname>: <format>
-  #     tagname2:
+  #     <tagname2>
   #       <fieldname>: <format>
+  #
+  # The format is whatever is supported by Ruby's DateTime.strptime
   def initialize(config = {})
     @config = config
     @tags = Hash.new { |h,k| h[k] = [] }
@@ -28,23 +30,23 @@ class LogStash::Filters::Date
   end # def register
 
   def filter(event)
-    return unless event.include?("tags")
-    event["tags"].each do |tag|
+    # TODO(sissel): crazy deep nesting here, refactor/redesign.
+    return if event.tags.empty?
+    event.tags.each do |tag|
       next unless @tags.include?(tag)
       @tags[tag].each do |tagconfig|
         tagconfig.each do |field, format|
-          #if event.include?(field) or (event["fields"].include?(field) rescue false)
-            #value = (event[field] or event["fields"][field])
-          if (event["fields"].include?(field) rescue false)
-            fieldvalue = event["fields"][field]
+          # TODO(sissel): check event.message, too.
+          if (event.fields.include?(field) rescue false)
+            fieldvalue = event.fields[field]
             #fieldvalue = [fieldvalue] if fieldvalue.is_a?(String)
             @logger.info fieldvalue
             fieldvalue.each do |value|
               #value = event["fields"][field]
               begin
                 time = DateTime.strptime(value, format)
-                event["timestamp"] = LogStash::Time.to_iso8601(time)
-                @logger.debug "Parsed #{value.inspect} as #{event["timestamp"]}"
+                event.timestamp = LogStash::Time.to_iso8601(time)
+                @logger.debug "Parsed #{value.inspect} as #{event.timestamp}"
               rescue => e
                 @logger.warn "Failed parsing date #{value.inspect} from field #{field} with format #{format.inspect}. Exception: #{e}"
               end
@@ -52,6 +54,6 @@ class LogStash::Filters::Date
           end # if this event has a field we expect to be a timestamp
         end # tagconfig.each
       end # @tags[tag].each
-    end # event["tags"].each
+    end # event.tags.each
   end # def filter
 end # class LogStash::Filters::Date

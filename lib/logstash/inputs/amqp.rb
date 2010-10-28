@@ -57,11 +57,7 @@ class LogStash::Inputs::Amqp
   end
 
   def receive(event)
-    if !event.include?("tags")
-      event["tags"] = @tags 
-    else
-      event["tags"] |= @tags # set union
-    end
+    event.tags |= @tags # set union
     @callback.call(event)
   end # def event
 end # class LogStash::Inputs::Amqp

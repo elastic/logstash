@@ -5,7 +5,12 @@ require "logstash/time"
 module LogStash; class Event
   def initialize(data)
     @cancelled = false
-    @data = data
+    @data = {
+      "source" => "unknown",
+      "tags" => [],
+      "fields" => {},
+    }.merge(data)
+
     if !@data.include?("timestamp")
       @data["timestamp"] = LogStash::Time.now.utc.to_iso8601
     end
@@ -14,10 +19,6 @@ module LogStash; class Event
   def self.from_json(json)
     return Event.new(JSON.parse(json))
   end # def self.from_json
-
-  def to_json
-    return @data.to_json
-  end
 
   def cancel
     @cancelled = true
@@ -31,31 +32,22 @@ module LogStash; class Event
     return "#{timestamp} #{source}: #{message}"
   end # def to_s
 
-  def [](key)
-    return @data[key]
-  end # def []
+  def timestamp; @data["timestamp"]; end # def timestamp
+  def timestamp=(val); @data["timestamp"] = val; end # def timestamp=
+  def source; @data["source"]; end # def source
+  def source=(val); @data["source"] = val; end # def source=
+  def message; @data["message"]; end # def message
+  def message=; @data["message"] = val; end # def message=
+  def tags; @data["tags"]; end # def tags
 
-  def []=(key, value)
-    @data[key] = value
-  end # def []=
+  # field-related access
+  def [](key); fields[key] end # def []
+  def []=(key, value); fields[key] = value end # def []=
+  def fields; return @data["fields"] end # def fields
+  
+  def to_json; return @data.to_json end # def to_json
 
-  def timestamp
-    @data["timestamp"]
-  end # def timestamp
+  def to_hash; return @data end # def to_hash
 
-  def source
-    @data["source"]
-  end # def source
-
-  def message
-    @data["message"]
-  end # def message
-
-  def to_hash
-    return @data
-  end # def to_hash
-
-  def include?(key)
-    return @data.include?(key)
-  end
+  def include?(key); return @data.include?(key) end
 end; end # class LogStash::Event
