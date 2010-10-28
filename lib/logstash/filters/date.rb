@@ -39,8 +39,7 @@ class LogStash::Filters::Date
           # TODO(sissel): check event.message, too.
           if (event.fields.include?(field) rescue false)
             fieldvalue = event.fields[field]
-            #fieldvalue = [fieldvalue] if fieldvalue.is_a?(String)
-            @logger.info fieldvalue
+            fieldvalue = [fieldvalue] if fieldvalue.is_a?(String)
             fieldvalue.each do |value|
               #value = event["fields"][field]
               begin

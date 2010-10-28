@@ -14,7 +14,7 @@ class LogStash::Filters::Grok
   def register
     # TODO(sissel): Make patterns files come from the config
     @config.each do |tag, tagconfig|
-      @logger.debug("Grok tag #{tag}")
+      @logger.debug("Registering tag with grok: #{tag}")
       pile = Grok::Pile.new
       pile.add_patterns_from_file("patterns/grok-patterns")
       pile.add_patterns_from_file("patterns/linux-syslog")
@@ -32,7 +32,6 @@ class LogStash::Filters::Grok
 
     if !event.tags.empty?
       event.tags.each do |tag|
-        @logger.info @grokpiles.keys
         if @grokpiles.include?(tag)
           pile = @grokpiles[tag]
           grok, match = pile.match(message)

@@ -7,7 +7,6 @@ require "socket" # for Socket.gethostname
 class LogStash::Inputs::File
   def initialize(url, config={}, &block)
     @logger = Logger.new(STDERR)
-    @logger.level = $DEBUG ? Logger::DEBUG : Logger::WARN
 
     @url = url
     @url = URI.parse(url) if url.is_a? String
