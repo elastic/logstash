@@ -52,6 +52,11 @@ class LogStash::Filters::Grok
         if key.include?(":")
           key = key.split(":")[1]
         end
+        if event.message == value
+          # Skip patterns that match the entire line
+          @logger.debug("Skipping capture '#{key}' since it matches the whole line.")
+          next
+        end
 
         if event.fields[key].is_a?(String)
           event.fields[key] = [event.fields[key]]
