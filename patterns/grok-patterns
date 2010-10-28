@@ -33,7 +33,7 @@ BSDTTY (?:/dev/tty[pq][a-z0-9])
 TTY (?:%{BSDTTY}|%{LINUXTTY})
 WINPATH (?:[A-Za-z]+:|\\)(?:\\[^\\?*]*)+
 URIPROTO [A-Za-z]+(\+[A-Za-z+]+)?
-URIHOST %{IPORHOST}(?::%{POSINT:port})?
+URIHOST %{IPORHOST}(?::%{POSINT})?
 # uripath comes loosely from RFC1738, but mostly from what Firefox
 # doesn't turn into %XX
 URIPATH (?:/[A-Za-z0-9$.+!*'(),~:#%_-]*)+
