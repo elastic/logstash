@@ -12,6 +12,7 @@
 #ssquery{ :style => "display: none;", :"data-query" => params[:q] }
 #inspector{ :style => "display: none;" }
   The following fields are known for the log you selected. Click on any link to
-  append it to your search.
+  append it to your search. If you shift+click, the field will be added to the
+  search as an exclude rather than include.
   %ul
 =haml :"search/ajax", :layout => false
