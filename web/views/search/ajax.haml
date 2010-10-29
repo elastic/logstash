@@ -2,7 +2,7 @@
   %ul.results
     - @hits.reverse.each do |hit|
       %li.event{ :"data-full" => hit.to_json }
-        = hit["_source"]["message"]
+        &= hit["_source"]["message"]
     - if @hits.length == 0 
       - if !params[:q]
         No query given. How about <a href="#*">this?</a>
