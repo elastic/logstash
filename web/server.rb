@@ -26,7 +26,7 @@ class LogStashWeb < Sinatra::Base
   end
 
   aget '/' do
-    body haml :"main/index"
+    redirect "/search"
   end # '/'
 
   aget '/search' do
