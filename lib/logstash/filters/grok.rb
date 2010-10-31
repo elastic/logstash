@@ -12,15 +12,15 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   def register
     # TODO(sissel): Make patterns files come from the config
-    @config.each do |tag, tagconfig|
-      @logger.debug("Registering tag with grok: #{tag}")
+    @config.each do |type, typeconfig|
+      @logger.debug("Registering type with grok: #{type}")
       pile = Grok::Pile.new
       pile.add_patterns_from_file("patterns/grok-patterns")
       pile.add_patterns_from_file("patterns/linux-syslog")
-      tagconfig["patterns"].each do |pattern|
+      typeconfig["patterns"].each do |pattern|
         pile.compile(pattern)
       end
-      @grokpiles[tag] = pile
+      @grokpiles[type] = pile
     end # @config.each
   end # def register
 
@@ -29,20 +29,14 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     message = event.message
     match = false
 
-    if !event.tags.empty?
-      event.tags.each do |tag|
-        if @grokpiles.include?(tag)
-          pile = @grokpiles[tag]
-          grok, match = pile.match(message)
-          break if match
-        end # @grokpiles.include?(tag)
-      end # event.tags.each
-    else 
+    if event.type
+      if @grokpiles.include?(event.type)
+        pile = @grokpiles[event.type]
+        grok, match = pile.match(message)
+      end # @grokpiles.include?(event.type)
       # TODO(2.0): support grok pattern discovery
-      #pattern = @grok.discover(message)
-      #@grok.compile(pattern)
-      #match = @grok.match(message)
-      @logger.info("No known tag for #{event.source} (tags: #{event.tags.inspect})")
+    else
+      @logger.info("Unknown type for #{event.source} (type: #{event.type})")
       @logger.debug(event.to_hash)
     end
 

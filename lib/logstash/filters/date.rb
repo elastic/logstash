@@ -10,48 +10,45 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #
   # filters:
   #   date:
-  #     <tagname>:
+  #     <type>:
   #       <fieldname>: <format>
-  #     <tagname2>
+  #     <type>
   #       <fieldname>: <format>
   #
   # The format is whatever is supported by Ruby's DateTime.strptime
   def initialize(config = {})
     super
 
-    @tags = Hash.new { |h,k| h[k] = [] }
+    @types = Hash.new { |h,k| h[k] = [] }
   end # def initialize
 
   def register
-    @config.each do |tag, tagconfig|
-      @tags[tag] << tagconfig
+    @config.each do |type, typeconfig|
+      @logger.debug "Setting type #{type.inspect} to the config #{typeconfig.inspect}"
+      raise "date filter type \"#{type}\" defined more than once" unless @types[type].empty?
+      @types[type] = typeconfig
     end # @config.each
   end # def register
 
   def filter(event)
-    # TODO(sissel): crazy deep nesting here, refactor/redesign.
-    return if event.tags.empty?
-    event.tags.each do |tag|
-      next unless @tags.include?(tag)
-      @tags[tag].each do |tagconfig|
-        tagconfig.each do |field, format|
-          # TODO(sissel): check event.message, too.
-          if (event.fields.include?(field) rescue false)
-            fieldvalue = event.fields[field]
-            fieldvalue = [fieldvalue] if fieldvalue.is_a?(String)
-            fieldvalue.each do |value|
-              #value = event["fields"][field]
-              begin
-                time = DateTime.strptime(value, format)
-                event.timestamp = LogStash::Time.to_iso8601(time)
-                @logger.debug "Parsed #{value.inspect} as #{event.timestamp}"
-              rescue => e
-                @logger.warn "Failed parsing date #{value.inspect} from field #{field} with format #{format.inspect}. Exception: #{e}"
-              end
-            end # fieldvalue.each 
-          end # if this event has a field we expect to be a timestamp
-        end # tagconfig.each
-      end # @tags[tag].each
-    end # event.tags.each
+    @logger.debug "DATE FILTER: received event of type #{event.type}"
+    return unless @types.member?(event.type)
+    @types[event.type].each do |field, format|
+      @logger.debug "DATE FILTER: type #{event.type}, looking for field #{field.inspect} with format #{format.inspect}"
+      # TODO(sissel): check event.message, too.
+      if event.fields.member?(field)
+        fieldvalue = event.fields[field]
+        fieldvalue = [fieldvalue] if fieldvalue.is_a?(String)
+        fieldvalue.each do |value|
+          begin
+            time = DateTime.strptime(value, format)
+            event.timestamp = LogStash::Time.to_iso8601(time)
+            @logger.debug "Parsed #{value.inspect} as #{event.timestamp}"
+          rescue
+            @logger.warn "Failed parsing date #{value.inspect} from field #{field} with format #{format.inspect}: #{$!}"
+          end
+        end # fieldvalue.each 
+      end # if this event has a field we expect to be a timestamp
+    end # @types[event.type].each
   end # def filter
 end # class LogStash::Filters::Date

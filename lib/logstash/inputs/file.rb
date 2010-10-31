@@ -3,7 +3,7 @@ require "eventmachine-tail"
 require "socket" # for Socket.gethostname
 
 class LogStash::Inputs::File < LogStash::Inputs::Base
-  def initialize(url, config={}, &block)
+  def initialize(url, type, config={}, &block)
     super
 
     # Hack the hostname into the url.
@@ -20,6 +20,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     event = LogStash::Event.new({
       "@source" => @url.to_s,
       "@message" => event,
+      "@type" => @type,
       "@tags" => @tags.clone,
     })
     @callback.call(event)

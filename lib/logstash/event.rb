@@ -7,6 +7,7 @@ module LogStash; class Event
     @cancelled = false
     @data = {
       "@source" => "unknown",
+      "@type" => nil,
       "@tags" => [],
       "@fields" => {},
     }.merge(data)
@@ -38,6 +39,8 @@ module LogStash; class Event
   def source=(val); @data["@source"] = val; end # def source=
   def message; @data["@message"]; end # def message
   def message=; @data["@message"] = val; end # def message=
+  def type; @data["@type"]; end # def type
+  def type=(val); @data["@type"] = val; end # def type=
   def tags; @data["@tags"]; end # def tags
 
   # field-related access

@@ -35,21 +35,19 @@ class LogStash::Agent
     if @config.include?("inputs")
       inputs = @config["inputs"]
       inputs.each do |value|
-        # If 'url' is an array, then inputs is a hash and the key is a tag
+        # If 'url' is an array, then inputs is a hash and the key is the type
         if inputs.is_a?(Hash)
-          tag, urls = value
+          type, urls = value
         else
-          tag = nil
-          urls = value
+          raise "config error, no type for url #{urls.inspect}"
         end
 
         # url could be a string or an array.
         urls = [urls] if !urls.is_a?(Array)
 
         urls.each do |url|
-          @logger.debug("Using input #{url} with tag #{tag}")
-          input = LogStash::Inputs.from_url(url) { |event| receive(event) }
-          input.tag(tag) if tag
+          @logger.debug("Using input #{url} of type #{type}")
+          input = LogStash::Inputs.from_url(url, type) { |event| receive(event) }
           input.register
           @inputs << input
         end

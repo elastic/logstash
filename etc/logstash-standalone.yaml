@@ -5,29 +5,29 @@
 #
 inputs:
 # Give a list of inputs. Tag them for easy query/filter later.
-  linux-syslog: # this is the 'linux-syslog' tag
+  linux-syslog: # this is the 'linux-syslog' type
   - /var/log/messages # watch /var/log/messages (uses eventmachine-tail)
   - /var/log/kern.log
   - /var/log/auth.log
   - /var/log/user.log
-  apache-access: # similar, different tag.
+  apache-access: # similar, different type.
   - /var/log/apache2/access.log
   - /b/access
   apache-error:
   - /var/log/apache2/error.log
 filters:
 - grok:
-    linux-syslog: # for logs tagged 'linux-syslog'
+    linux-syslog: # for logs of type 'linux-syslog'
       patterns:
       - %{SYSLOGLINE}
-    apache-access: # for logs tagged 'apache-error'
+    apache-access: # for logs of type 'apache-error'
       patterns:
       - %{COMBINEDAPACHELOG}
 - date:
-    linux-syslog:  # for logs tagged 'linux-syslog'
+    linux-syslog:  # for logs of type 'linux-syslog'
       # Look for a field 'timestamp' with this format, parse and it for the timestamp
       # This field comes from the SYSLOGLINE pattern
-      timestamp: %b %e %H:%M:%S
+      timestamp: "%b %e %H:%M:%S"
     apache-access:
       timestamp: "%d/%b/%Y:%H:%M:%S %Z"
 outputs:

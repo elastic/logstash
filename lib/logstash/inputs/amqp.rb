@@ -4,21 +4,21 @@ require "mq" # rubygem 'amqp'
 require "uuidtools" # rubygem 'uuidtools'
 
 class LogStash::Inputs::Amqp < LogStash::Inputs::Base
-  TYPES = [ "fanout", "queue", "topic" ]
+  MQTYPES = [ "fanout", "queue", "topic" ]
 
-  def initialize(url, config={}, &block)
+  def initialize(url, type, config={}, &block)
     super
 
     @mq = nil
 
     # Handle path /<type>/<name>
-    unused, @type, @name = @url.path.split("/", 3)
-    if @type == nil or @name == nil
-      raise "amqp urls must have a path of /<type>/name where <type> is #{TYPES.join(", ")}"
+    unused, @mqtype, @name = @url.path.split("/", 3)
+    if @mqtype == nil or @name == nil
+      raise "amqp urls must have a path of /<type>/name where <type> is #{MQTYPES.join(", ")}"
     end
 
-    if !TYPES.include?(@type)
-      raise "Invalid type '#{@type}' must be one of #{TYPES.JOIN(", ")}"
+    if !MQTYPES.include?(@mqtype)
+      raise "Invalid type '#{@mqtype}' must be one of #{MQTYPES.JOIN(", ")}"
     end
   end
 
@@ -28,7 +28,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     @target = nil
 
     @target = @mq.queue(UUIDTools::UUID.timestamp_create)
-    case @type
+    case @mqtype
       when "fanout"
         #@target.bind(MQ.fanout(@url.path, :durable => true))
         @target.bind(MQ.fanout(@url.path))
@@ -36,7 +36,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
         @target.bind(MQ.direct(@url.path))
       when "topic"
         @target.bind(MQ.topic(@url.path))
-    end # case @type
+    end # case @mqtype
 
     @target.subscribe(:ack => true) do |header, message|
       event = LogStash::Event.from_json(message)

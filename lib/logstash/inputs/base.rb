@@ -4,12 +4,13 @@ require "logstash/logging"
 require "uri"
 
 class LogStash::Inputs::Base
-  def initialize(url, config={}, &block)
+  def initialize(url, type, config={}, &block)
     @logger = LogStash::Logger.new(STDERR)
     @url = url
     @url = URI.parse(url) if url.is_a? String
     @config = config
     @callback = block
+    @type = type
     @tags = []
   end
 
@@ -22,6 +23,7 @@ class LogStash::Inputs::Base
   end
 
   def receive(event)
+    event.type = @type
     event.tags |= @tags # set union
     @callback.call(event)
   end
