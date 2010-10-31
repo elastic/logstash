@@ -37,9 +37,9 @@ class LogStash::Inputs::File
   public
   def receive(event)
     event = LogStash::Event.new({
-      "source" => @url.to_s,
-      "message" => event,
-      "tags" => @tags.clone,
+      "@source" => @url.to_s,
+      "@message" => event,
+      "@tags" => @tags.clone,
     })
     @callback.call(event)
   end # def event

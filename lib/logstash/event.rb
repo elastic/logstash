@@ -6,13 +6,13 @@ module LogStash; class Event
   def initialize(data)
     @cancelled = false
     @data = {
-      "source" => "unknown",
-      "tags" => [],
+      "@source" => "unknown",
+      "@tags" => [],
       "fields" => {},
     }.merge(data)
 
-    if !@data.include?("timestamp")
-      @data["timestamp"] = LogStash::Time.now.utc.to_iso8601
+    if !timestamp
+      timestamp = LogStash::Time.now.utc.to_iso8601
     end
   end # def initialize
 
@@ -32,13 +32,13 @@ module LogStash; class Event
     return "#{timestamp} #{source}: #{message}"
   end # def to_s
 
-  def timestamp; @data["timestamp"]; end # def timestamp
-  def timestamp=(val); @data["timestamp"] = val; end # def timestamp=
-  def source; @data["source"]; end # def source
-  def source=(val); @data["source"] = val; end # def source=
-  def message; @data["message"]; end # def message
-  def message=; @data["message"] = val; end # def message=
-  def tags; @data["tags"]; end # def tags
+  def timestamp; @data["@timestamp"]; end # def timestamp
+  def timestamp=(val); @data["@timestamp"] = val; end # def timestamp=
+  def source; @data["@source"]; end # def source
+  def source=(val); @data["@source"] = val; end # def source=
+  def message; @data["@message"]; end # def message
+  def message=; @data["@message"] = val; end # def message=
+  def tags; @data["@tags"]; end # def tags
 
   # field-related access
   def [](key); fields[key] end # def []
