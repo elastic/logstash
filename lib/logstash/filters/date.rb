@@ -1,8 +1,7 @@
-require "logstash/namespace"
+require "logstash/filters/base"
 require "logstash/time"
-require "logstash/logging"
 
-class LogStash::Filters::Date
+class LogStash::Filters::Date < LogStash::Filters::Base
   # The 'date' filter will take a value from your event and use it as the
   # event timestamp. This is useful for parsing logs generated on remote
   # servers or for importing old logs.
@@ -18,9 +17,9 @@ class LogStash::Filters::Date
   #
   # The format is whatever is supported by Ruby's DateTime.strptime
   def initialize(config = {})
-    @config = config
+    super
+
     @tags = Hash.new { |h,k| h[k] = [] }
-    @logger = LogStash::Logger.new(STDERR)
   end # def initialize
 
   def register

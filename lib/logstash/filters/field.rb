@@ -1,7 +1,7 @@
-require "logstash/namespace"
+require "logstash/filters/base"
 require "ostruct"
 
-class LogStash::Filters::Field
+class LogStash::Filters::Field < LogStash::Filters::Base
   class EvalSpace < OpenStruct
     def get_binding
       return binding
@@ -9,7 +9,7 @@ class LogStash::Filters::Field
   end
 
   def initialize(config = {})
-    @config = config
+    super
   end # def initialize
 
   def register
@@ -26,4 +26,4 @@ class LogStash::Filters::Field
     end
     event.cancel
   end
-end # class LogStash::Filters::Grok
+end # class LogStash::Filters::Field

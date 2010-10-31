@@ -1,12 +1,8 @@
-require "logstash/namespace"
-require "logstash/event"
-require "uri"
+require "logstash/outputs/base"
 
-class LogStash::Outputs::Stdout
+class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   def initialize(url, config={}, &block)
-    @url = url
-    @url = URI.parse(url) if url.is_a? String
-    @config = config
+    super
   end
 
   def register

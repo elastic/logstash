@@ -1,17 +1,12 @@
-require "logstash/namespace"
-require "logstash/event"
-require "uri"
+require "logstash/outputs/base"
 require "em-websocket" # rubygem 'em-websocket'
 
-class LogStash::Outputs::Websocket
+class LogStash::Outputs::Websocket < LogStash::Outputs::Base
   def initialize(url, config={}, &block)
-    @url = url
-    @url = URI.parse(url) if url.is_a? String
-    @config = config
+    super
   end
 
   def register
-    puts "register"
     @channel = EventMachine::Channel.new
     host = (@url.host or "0.0.0.0")
     port = (@url.port or 3000)

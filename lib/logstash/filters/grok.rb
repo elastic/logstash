@@ -1,13 +1,12 @@
-require "logstash/namespace"
-require "logstash/logging"
+require "logstash/filters/base"
 
 gem "jls-grok", ">=0.2.3071"
 require "grok" # rubygem 'jls-grok'
 
-class LogStash::Filters::Grok
+class LogStash::Filters::Grok < LogStash::Filters::Base
   def initialize(config = {})
-    @logger = LogStash::Logger.new(STDERR)
-    @config = config
+    super
+
     @grokpiles = {}
   end # def initialize
 
@@ -39,6 +38,7 @@ class LogStash::Filters::Grok
         end # @grokpiles.include?(tag)
       end # event.tags.each
     else 
+      # TODO(2.0): support grok pattern discovery
       #pattern = @grok.discover(message)
       #@grok.compile(pattern)
       #match = @grok.match(message)
@@ -68,7 +68,7 @@ class LogStash::Filters::Grok
     else
       # Tag this event if we can't parse it. We can use this later to
       # reparse+reindex logs if we improve the patterns given .
-      event.tags << "grokparsefailure"
+      event.tags << "_grokparsefailure"
     end
   end # def filter
 end # class LogStash::Filters::Grok

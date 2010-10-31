@@ -3,8 +3,8 @@
 require "rubygems"
 require "eventmachine"
 require "logstash/agent"
-require "yaml"
 require "optparse"
+require "yaml"
 
 Settings = Struct.new(:config_file, :daemonize)
 

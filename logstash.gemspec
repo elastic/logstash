@@ -13,6 +13,8 @@ Gem::Specification.new do |spec|
   spec.description = "None yet"
   spec.add_dependency("eventmachine-tail")
   spec.add_dependency("jls-grok", ">= 0.2.3071")
+  spec.add_dependency("awesome_print")
+  spec.add_dependency("json")
 
   # TODO: In the future, make these optional
   # for websocket://

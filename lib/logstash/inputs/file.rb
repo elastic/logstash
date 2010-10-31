@@ -1,40 +1,21 @@
-require "logstash/namespace"
-require "logstash/event"
+require "logstash/inputs/base"
 require "eventmachine-tail"
-require "uri"
 require "socket" # for Socket.gethostname
 
-class LogStash::Inputs::File
+class LogStash::Inputs::File < LogStash::Inputs::Base
   def initialize(url, config={}, &block)
-    @logger = Logger.new(STDERR)
-
-    @url = url
-    @url = URI.parse(url) if url.is_a? String
+    super
 
     # Hack the hostname into the url.
     # This works since file:// urls don't generally have a host in it.
     @url.host = Socket.gethostname
-
-    @config = config
-    @callback = block
-    @tags = []
   end
 
-  public
   def register
     EventMachine::FileGlobWatchTail.new(@url.path, Reader, interval=60,
                                         exclude=[], receiver=self)
   end
 
-  # TODO(sissel): Refactor this into a general 'input' class
-  # tag this input
-  public
-  def tag(newtag)
-    @logger.debug("Adding tag #{newtag} to #{@url}")
-    @tags << newtag
-  end
-
-  public
   def receive(event)
     event = LogStash::Event.new({
       "@source" => @url.to_s,
@@ -44,7 +25,6 @@ class LogStash::Inputs::File
     @callback.call(event)
   end # def event
 
-  private
   class Reader < EventMachine::FileTail
     def initialize(path, receiver)
       super(path)
@@ -53,7 +33,7 @@ class LogStash::Inputs::File
     end
 
     def receive_data(data)
-      # TODO(sissel): Support multiline log data
+      # TODO(2.0): Support multiline log data
       @buffer.extract(data).each do |line|
         @receiver.receive(line)
       end

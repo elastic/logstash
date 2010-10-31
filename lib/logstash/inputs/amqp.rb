@@ -1,18 +1,14 @@
-require "logstash/namespace"
-require "logstash/event"
-require "uri"
+require "logstash/inputs/base"
 require "amqp" # rubygem 'amqp'
 require "mq" # rubygem 'amqp'
 require "uuidtools" # rubygem 'uuidtools'
 
-class LogStash::Inputs::Amqp
+class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   TYPES = [ "fanout", "queue", "topic" ]
 
   def initialize(url, config={}, &block)
-    @url = url
-    @url = URI.parse(url) if url.is_a? String
-    @config = config
-    @callback = block
+    super
+
     @mq = nil
 
     # Handle path /<type>/<name>
@@ -22,7 +18,7 @@ class LogStash::Inputs::Amqp
     end
 
     if !TYPES.include?(@type)
-      raise "Invalid type '#{@type}' must be one 'fanout' or 'queue'"
+      raise "Invalid type '#{@type}' must be one of #{TYPES.JOIN(", ")}"
     end
   end
 
@@ -48,16 +44,4 @@ class LogStash::Inputs::Amqp
       header.ack
     end
   end # def register
-
-  # TODO(sissel): Refactor this into a general 'input' class
-  # tag this input
-  public
-  def tag(newtag)
-    @tags << newtag
-  end
-
-  def receive(event)
-    event.tags |= @tags # set union
-    @callback.call(event)
-  end # def event
 end # class LogStash::Inputs::Amqp

@@ -1,16 +1,11 @@
-require "logstash/namespace"
-require "logstash/event"
-require "uri"
+require "logstash/outputs/base"
 require "amqp" # rubygem 'amqp'
 require "mq" # rubygem 'amqp'
 
-class LogStash::Outputs::Amqp
+class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   TYPES = [ "fanout", "queue", "topic" ]
   def initialize(url, config={}, &block)
-    @url = url
-    @url = URI.parse(url) if url.is_a? String
-    @config = config
-    @mq = nil
+    super
 
     # Handle path /<type>/<name>
     unused, @type, @name = @url.path.split("/", 3)

@@ -1,13 +1,9 @@
-require "logstash/namespace"
-require "logstash/event"
-require "uri"
+require "logstash/outputs/base"
 require "em-mongo"
 
-class LogStash::Outputs::Mongodb
+class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   def initialize(url, config={}, &block)
-    @url = url
-    @url = URI.parse(url) if url.is_a? String
-    @config = config
+    super
   end
 
   def register
@@ -18,7 +14,6 @@ class LogStash::Outputs::Mongodb
   end # def register
 
   def receive(event)
-    puts "Got: #{event}"
     @mongodb.collection("events").insert(event.to_hash)
   end # def event
-end # class LogStash::Outputs::Websocket
+end # class LogStash::Outputs::Mongodb

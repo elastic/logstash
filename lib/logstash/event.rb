@@ -8,11 +8,11 @@ module LogStash; class Event
     @data = {
       "@source" => "unknown",
       "@tags" => [],
-      "fields" => {},
+      "@fields" => {},
     }.merge(data)
 
-    if !timestamp
-      timestamp = LogStash::Time.now.utc.to_iso8601
+    if !@data.include?("@timestamp")
+      @data["@timestamp"] = LogStash::Time.now.utc.to_iso8601
     end
   end # def initialize
 
@@ -41,9 +41,9 @@ module LogStash; class Event
   def tags; @data["@tags"]; end # def tags
 
   # field-related access
-  def [](key); fields[key] end # def []
-  def []=(key, value); fields[key] = value end # def []=
-  def fields; return @data["fields"] end # def fields
+  def [](key); @data["@fields"][key] end # def []
+  def []=(key, value); @data["@fields"][key] = value end # def []=
+  def fields; return @data["@fields"] end # def fields
   
   def to_json; return @data.to_json end # def to_json
 
