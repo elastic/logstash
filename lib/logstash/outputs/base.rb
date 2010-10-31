@@ -10,10 +10,10 @@ class LogStash::Outputs::Base
   end
 
   def register
-    throw "#{self.class}#register must be overidden"
+    raise "#{self.class}#register must be overidden"
   end # def register
 
   def receive(event)
-    throw "#{self.class}#receive must be overidden"
+    raise "#{self.class}#receive must be overidden"
   end
 end # class LogStash::Outputs::Base

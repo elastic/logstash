@@ -14,7 +14,7 @@ class LogStash::Inputs::Base
   end
 
   def register
-    throw "#{self.class}#register must be overidden"
+    raise "#{self.class}#register must be overidden"
   end
 
   def tag(newtag)

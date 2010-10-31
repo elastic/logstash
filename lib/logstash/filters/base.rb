@@ -8,10 +8,10 @@ class LogStash::Filters::Base
   end # def initialize
 
   def register
-    throw "#{self.class}#register must be overidden"
+    raise "#{self.class}#register must be overidden"
   end # def register
 
   def filter(event)
-    throw "#{self.class}#filter must be overidden"
+    raise "#{self.class}#filter must be overidden"
   end # def filter
 end # class LogStash::Filters::Base
