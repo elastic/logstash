@@ -11,9 +11,10 @@ Settings = Struct.new(:config_file, :daemonize)
 settings = Settings.new
 settings.daemonize = false
 settings.config_file = nil
+progname = File.basename($0)
 
 opts = OptionParser.new do |opts|
-  opts.banner = "Usage; #{$0} [options]"
+  opts.banner = "Usage: #{progname} [options]"
 
   opts.on("-f CONFIGFILE", "--config CONFIGFILE",
           "Load the logstash config from a specific file") do |arg|
@@ -25,17 +26,21 @@ opts = OptionParser.new do |opts|
   #end
 end
 
-opts.parse!(ARGV)
+begin
+  opts.parse!
+  if settings.config_file == "" or settings.config_file == nil
+    raise "No config file given. (missing -f or --config flag?)"
+  end
 
-# TODO(sissel): put the config management stuff in LogStash::Agent
-if settings.config_file == "" or settings.config_file == nil
-  $stderr.puts "No config file given. (missing -f or --config flag?)"
-  exit 1
+rescue
+  $stderr.puts "#{progname}: #{$!}"
+  $stderr.puts opts
+  exit(1)
 end
 
+# TODO(sissel): put the config management stuff in LogStash::Agent
 if !File.exist?(settings.config_file)
   $stderr.puts "Config file '#{settings.config_file}' does not exist."
-  exit 1
 end
 
 begin
@@ -44,15 +49,6 @@ rescue => e
   $stderr.puts "Loading config file '#{settings.config_file}' failed: #{e}"
   exit 1
 end
-
-#config = nil
-#confignames = []
-#YAML::load_documents(file) do |doc|
-  #confignames << doc["configname"]
-  #if doc["configname"] == ARGV[0]
-    #config = doc
-  #end
-#end
 
 agent = LogStash::Agent.new(config)
 agent.run
