@@ -27,6 +27,7 @@ class LogStash::Outputs::Websocket < LogStash::Outputs::Base
 
   def receive(event)
     # Only publish the event to websockets if there are subscribers
+    # TODO(sissel): send a patch to eventmachine to fix this.
     if @subscribers > 0
       @channel.push event.to_json
     end
