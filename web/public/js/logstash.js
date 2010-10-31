@@ -41,26 +41,36 @@
           "</a>" +
         "</li>");
 
+      /* TODO(sissel): recurse through the data */
       var fields = new Array();
-      for (var i in data._source.fields) {
-        var value = data._source.fields[i];
+      for (var i in data._source["@fields"]) {
+        var value = data._source["@fields"][i]
         if (/^[, ]*$/.test(value)) {
-          continue;
+          continue; /* Skip empty data fields */
         }
         fields.push( { type: "field", field: i, value: value })
       }
+
       for (var i in data._source) {
-        if (i == "fields") {
-          continue;
+        if (i == "@fields") continue;
+        var value = data._source[i]
+        if (i.charAt(0) == "@") { /* metadata */
+          fields.push( { type: "metadata", field: i, value: value });
+        } else { /* data */
+          if (/^[, ]*$/.test(value)) {
+            continue; /* Skip empty data fields */
+          }
+          fields.push( { type: "field", field: i, value: value })
         }
-        fields.push( { type: "metadata", field: i, value: data._source[i] })
       }
+
       for (var i in data) {
         if (i == "_source") {
-          continue;
+          continue; /* already processed this one */
         }
         fields.push( { type: "metadata", field: i, value: data[i] })
       }
+
       fields.sort(function(a, b) {
         if (a.type+a.field < b.type+b.field) { return -1; }
         if (a.type+a.field > b.type+b.field) { return 1; }

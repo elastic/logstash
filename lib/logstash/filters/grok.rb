@@ -18,7 +18,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       pile.add_patterns_from_file("patterns/grok-patterns")
       pile.add_patterns_from_file("patterns/linux-syslog")
       typeconfig["patterns"].each do |pattern|
-        pile.compile(pattern)
+        groks = pile.compile(pattern)
+        @logger.debug(["Compiled pattern", pattern, groks[-1].expanded_pattern])
       end
       @grokpiles[type] = pile
     end # @config.each
@@ -64,5 +65,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       # reparse+reindex logs if we improve the patterns given .
       event.tags << "_grokparsefailure"
     end
+
+    @logger.debug(["Event now: ", event.to_hash])
   end # def filter
 end # class LogStash::Filters::Grok

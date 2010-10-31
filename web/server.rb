@@ -30,6 +30,7 @@ class LogStashWeb < Sinatra::Base
   end # '/'
 
   aget '/search' do
+    headers({"Content-Type" => "text/html" })
     if params[:q] and params[:q] != ""
       search :results
     else
@@ -39,6 +40,7 @@ class LogStashWeb < Sinatra::Base
   end
 
   apost '/search/ajax' do
+    headers({"Content-Type" => "text/html" })
     search :ajax
   end
 
@@ -47,9 +49,10 @@ class LogStashWeb < Sinatra::Base
     params[:offset] ||= 0
     params[:count] ||= 20
 
+    puts "Query: #{params[:q]}"
     esreq = {
       "sort" => [
-        { "timestamp" => "desc" }
+        { "@timestamp" => "desc" }
       ],
       "query" => {
         "query_string" => { 
