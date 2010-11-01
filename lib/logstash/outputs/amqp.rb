@@ -1,5 +1,6 @@
 require "logstash/outputs/base"
 require "amqp" # rubygem 'amqp'
+require "cgi"
 require "mq" # rubygem 'amqp'
 
 class LogStash::Outputs::Amqp < LogStash::Outputs::Base
@@ -25,15 +26,23 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
     case @type
       when "fanout"
-        @target = @mq.fanout(@url.path)
-      when "direct"
-        @target = @mq.direct(@url.path)
+        @target = @mq.fanout(@name)
+      when "queue"
+        @target = @mq.queue(@name, :durable => @urlopts["durable"] ? true : false)
       when "topic"
-        @target = @mq.topic(@url.path)
+        @target = @mq.topic(@name)
     end # case @type
   end # def register
 
   def receive(event)
     @target.publish(event.to_json)
-  end # def event
+  end # def receive
+
+  def receive_raw(raw)
+    if @target == nil
+      raise "had trouble registering AMQP URL #{@url.to_s}, @target is nil"
+    end
+
+    @target.publish(raw)
+  end # def receive_raw
 end # class LogStash::Outputs::Amqp
