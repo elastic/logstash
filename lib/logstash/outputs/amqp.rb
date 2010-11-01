@@ -1,6 +1,5 @@
 require "logstash/outputs/base"
 require "amqp" # rubygem 'amqp'
-require "cgi"
 require "mq" # rubygem 'amqp'
 
 class LogStash::Outputs::Amqp < LogStash::Outputs::Base

@@ -1,6 +1,7 @@
 require "logstash/namespace"
 require "logstash/event"
 require "logstash/logging"
+require "cgi"
 require "uri"
 
 class LogStash::Outputs::Base
