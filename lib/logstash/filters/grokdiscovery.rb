@@ -18,10 +18,9 @@ class LogStash::Filters::Grokdiscovery < LogStash::Filters::Base
       Dir.glob("patterns/*").each do |path|
         @grok.add_patterns_from_file(path)
       end
-      typeconfig.each do |type, fields|
-        @discover_fields[type] = fields
-        @logger.debug("Enabling discovery", { :type => type, :fields => fields })
-      end
+      @discover_fields[type] = typeconfig
+      @logger.debug(["Enabling discovery", { :type => type, :fields => typeconfig }])
+      @logger.warn(@discover_fields)
     end # @config.each
   end # def register
 
@@ -31,20 +30,26 @@ class LogStash::Filters::Grokdiscovery < LogStash::Filters::Base
     match = false
 
     if event.type and @discover_fields.include?(event.type)
-
       discover = @discover_fields[event.type] & event.fields.keys
       discover.each do |field|
         value = event.fields[field]
-        pattern = @grok.discover(value)
-        @grok.compile(pattern)
-        match = @grok.match(value)
-        if match
-          event.fields.merge(match.captures) do |key, oldval, newval|
-            oldval + newval # should both be arrays...
+        value = [value] if value.is_a?(String)
+
+        value.each do |v| 
+          pattern = @grok.discover(v)
+          @logger.warn("Trying #{v} => #{pattern}")
+          @grok.compile(pattern)
+          match = @grok.match(v)
+          if match
+            @logger.warn(["Match", match.captures])
+            event.fields.merge!(match.captures) do |key, oldval, newval|
+              @logger.warn(["Merging #{key}", oldval, newval])
+              oldval + newval # should both be arrays...
+            end
+          else
+            @logger.warn(["Discovery produced something not matchable?", { :input => v }])
           end
-        else
-          @logger.warn(["Discovery produced something not matchable?", { :input => value }])
-        end
+        end # value.each
       end # discover.each
     else
       @logger.info("Unknown type for #{event.source} (type: #{event.type})")
