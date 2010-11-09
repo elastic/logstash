@@ -40,12 +40,16 @@ class LogStash::Filters::Date < LogStash::Filters::Base
         fieldvalue = event.fields[field]
         fieldvalue = [fieldvalue] if fieldvalue.is_a?(String)
         fieldvalue.each do |value|
-          begin
-            time = DateTime.strptime(value, format)
-            event.timestamp = LogStash::Time.to_iso8601(time)
-            @logger.debug "Parsed #{value.inspect} as #{event.timestamp}"
-          rescue
-            @logger.warn "Failed parsing date #{value.inspect} from field #{field} with format #{format.inspect}: #{$!}"
+          if format == "ISO8601"
+            event.timestamp = value
+          else
+            begin
+              time = DateTime.strptime(value, format)
+              event.timestamp = LogStash::Time.to_iso8601(time)
+              @logger.debug "Parsed #{value.inspect} as #{event.timestamp}"
+            rescue
+              @logger.warn "Failed parsing date #{value.inspect} from field #{field} with format #{format.inspect}: #{$!}"
+            end
           end
         end # fieldvalue.each 
       end # if this event has a field we expect to be a timestamp
