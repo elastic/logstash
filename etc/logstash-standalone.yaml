@@ -23,16 +23,22 @@ filters:
     apache-access: # for logs of type 'apache-error'
       patterns:
       - %{COMBINEDAPACHELOG}
+- grokdiscovery:
+    linux-syslog:
+    - message
+    - DATA
+    - GREEDYDATA
 - date:
     linux-syslog:  # for logs of type 'linux-syslog'
       # Look for a field 'timestamp' with this format, parse and it for the timestamp
       # This field comes from the SYSLOGLINE pattern
       timestamp: "%b %e %H:%M:%S"
+      timestamp8601: ISO8601
     apache-access:
       timestamp: "%d/%b/%Y:%H:%M:%S %Z"
 outputs:
 - stdout:///
-#- elasticsearch://localhost:9200/logs/all
+- elasticsearch://localhost:9200/logs/all
 # But we could write to mongodb, too.
 #  - mongodb://localhost/parsedlogs
 # And also write to an AMQP topic
