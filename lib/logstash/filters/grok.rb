@@ -15,8 +15,9 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     @config.each do |type, typeconfig|
       @logger.debug("Registering type with grok: #{type}")
       pile = Grok::Pile.new
-      pile.add_patterns_from_file("patterns/grok-patterns")
-      pile.add_patterns_from_file("patterns/linux-syslog")
+      Dir.glob("patterns/*").each do |path|
+        pile.add_patterns_from_file(path)
+      end
       typeconfig["patterns"].each do |pattern|
         groks = pile.compile(pattern)
         @logger.debug(["Compiled pattern", pattern, groks[-1].expanded_pattern])
