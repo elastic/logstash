@@ -1,14 +1,31 @@
 require "logstash/namespace"
 require "logger"
-require "ap"
 
 class LogStash::Logger < Logger
+  # Try to load awesome_print, if it fails, log it later
+  # but otherwise we should continue to operate as normal.
+  begin 
+    require "ap"
+    @@have_awesome_print = true
+  rescue LoadError => e
+    @@have_awesome_print = false
+    @@notify_awesome_print_load_failed = e
+  end
+
   def initialize(*args)
     super(*args)
     @formatter = LogStash::Logger::Formatter.new
 
     # Set default loglevel to WARN unless $DEBUG is set (run with 'ruby -d')
-    self.send(:level=, $DEBUG ? Logger::DEBUG: Logger::WARN)
+    self.send(:level=, $DEBUG ? Logger::DEBUG: Logger::INFO)
+
+    if !@@have_awesome_print && @@notify_awesome_print_load_failed
+      info [ "Failed: require 'ap' (aka awesome_print); some " \
+             "logging features may be disabled", 
+             @@notify_awesome_print_load_failed ]
+      @@notify_awesome_print_load_failed = nil
+    end
+
     @formatter.progname = self.send(:progname=, File.basename($0))
     info("Using formatter: #{@formatter}")
   end # def initialize
@@ -51,7 +68,11 @@ class LogStash::Logger::Formatter < Logger::Formatter
     if object.is_a?(String)
       super(severity, timestamp, who, object)
     else
-      super(severity, timestamp, who, object.awesome_inspect)
+      if object.respond_to?(:awesome_inspect)
+        super(severity, timestamp, who, object.awesome_inspect)
+      else
+        super(severity, timestamp, who, object.inspect)
+      end
     end
   end # def call
 end # class LogStash::Logger::Formatter
