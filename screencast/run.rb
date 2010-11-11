@@ -2,7 +2,6 @@
 #
 
 require "rubygems"
-require "ap"
 
 #if ENV["DISPLAY"] != ":1" 
   #puts "$DISPLAY is wrong."
