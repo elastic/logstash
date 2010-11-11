@@ -9,7 +9,6 @@ require "rack"
 require "sinatra/async"
 #require "haml"
 require "erb"
-require "ap"
 #require"sass/plugin/rack"
 
 class EventMachine::ConnectionError < RuntimeError; end
