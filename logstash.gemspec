@@ -12,16 +12,25 @@ Gem::Specification.new do |spec|
   spec.summary = "logstash - log and event management"
   spec.description = "None yet"
   spec.add_dependency("eventmachine-tail")
-  spec.add_dependency("jls-grok", ">= 0.2.3071")
-  spec.add_dependency("awesome_print")
   spec.add_dependency("json")
+  #spec.add_dependency("awesome_print")
+
+  # For the 'grok' filter
+  #spec.add_dependency("jls-grok", ">= 0.2.3071")
 
   # TODO: In the future, make these optional
   # for websocket://
-  spec.add_dependency("em-websocket")
+  #spec.add_dependency("em-websocket")
+
   # For amqp://
-  spec.add_dependency("amqp")
-  spec.add_dependency("uuidtools")
+  #spec.add_dependency("amqp")
+  #spec.add_dependency("uuidtools")
+  #
+  
+  # For the web interface
+  #spec.add_dependency("async_sinatra")
+  #spec.add_dependency("rack")
+  #spec.add_dependency("haml")
 
   spec.files = files
   spec.require_paths << "lib"
