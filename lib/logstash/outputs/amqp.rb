@@ -34,6 +34,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   end # def register
 
   def receive(event)
+    @logger.debug(["Sending event", { :url => @url, :event => event }])
     @target.publish(event.to_json)
   end # def receive
 
