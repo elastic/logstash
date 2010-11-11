@@ -38,10 +38,11 @@ module LogStash; class Event
   def source; @data["@source"]; end # def source
   def source=(val); @data["@source"] = val; end # def source=
   def message; @data["@message"]; end # def message
-  def message=; @data["@message"] = val; end # def message=
+  def message=(val); @data["@message"] = val; end # def message=
   def type; @data["@type"]; end # def type
   def type=(val); @data["@type"] = val; end # def type=
   def tags; @data["@tags"]; end # def tags
+  def tags=(val); @data["@tags"] = val; end # def tags=
 
   # field-related access
   def [](key); @data["@fields"][key] end # def []
