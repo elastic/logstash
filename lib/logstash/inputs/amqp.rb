@@ -31,11 +31,11 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     case @mqtype
       when "fanout"
         #@target.bind(MQ.fanout(@url.path, :durable => true))
-        @target.bind(MQ.fanout(@url.path))
+        @target.bind(MQ.fanout(@name))
       when "direct"
-        @target.bind(MQ.direct(@url.path))
+        @target.bind(MQ.direct(@name))
       when "topic"
-        @target.bind(MQ.topic(@url.path))
+        @target.bind(MQ.topic(@name))
     end # case @mqtype
 
     @target.subscribe(:ack => true) do |header, message|
