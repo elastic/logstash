@@ -23,6 +23,7 @@ class LogStash::Inputs::Base
   end
 
   def receive(event)
+    @logger.debug(["Got event", { :url => @url, :event => event }])
     event.type = @type
     event.tags |= @tags # set union
     @callback.call(event)

@@ -23,6 +23,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       "@type" => @type,
       "@tags" => @tags.clone,
     })
+    @logger.debug(["Got event", event])
     @callback.call(event)
   end # def event
 
