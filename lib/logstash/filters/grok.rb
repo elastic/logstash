@@ -33,6 +33,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
     if event.type
       if @grokpiles.include?(event.type)
+        @logger.debug(["Running grok filter", event])
         pile = @grokpiles[event.type]
         grok, match = pile.match(message)
       end # @grokpiles.include?(event.type)
