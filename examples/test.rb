@@ -5,7 +5,6 @@
 
 require "rubygems"
 require "logstash/agent"
-require "ap"
 
 class MyAgent < LogStash::Agent
   def receive(event)
