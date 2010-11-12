@@ -24,7 +24,8 @@ class LogStash::Inputs::Base
 
   def receive(event)
     @logger.debug(["Got event", { :url => @url, :event => event }])
-    event.type = @type
+    # Only override the type if it doesn't have one
+    event.type = @type if !event.type 
     event.tags |= @tags # set union
     @callback.call(event)
   end
