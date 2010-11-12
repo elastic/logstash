@@ -17,8 +17,9 @@ class LogStash::Logger < Logger
     @formatter = LogStash::Logger::Formatter.new
 
     # Set default loglevel to WARN unless $DEBUG is set (run with 'ruby -d')
-    self.send(:level=, $DEBUG ? Logger::DEBUG: Logger::INFO)
+    self.level = $DEBUG ? Logger::DEBUG: Logger::INFO
 
+    # Conditional support for awesome_print
     if !@@have_awesome_print && @@notify_awesome_print_load_failed
       info [ "Failed: require 'ap' (aka awesome_print); some " \
              "logging features may be disabled", 
@@ -65,9 +66,12 @@ class LogStash::Logger::Formatter < Logger::Formatter
       who = "#{file}:#{line}##{method}"
     end
 
+    # Log like normal if we got a string.
     if object.is_a?(String)
       super(severity, timestamp, who, object)
     else
+      # If we logged an object, use .awesome_inspect (or just .inspect)
+      # to stringify it for higher sanity logging.
       if object.respond_to?(:awesome_inspect)
         super(severity, timestamp, who, object.awesome_inspect)
       else
