@@ -77,7 +77,6 @@ class LogStashWeb < Sinatra::Base
   end # def search
 end # class LogStashWeb
 
-      #Sass::Plugin::Rack.new( \
 Rack::Handler::Thin.run(
   Rack::CommonLogger.new( \
     Rack::ShowExceptions.new( \
