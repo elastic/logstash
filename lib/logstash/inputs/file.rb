@@ -16,9 +16,12 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
                                         exclude=[], receiver=self)
   end
 
-  def receive(event)
+  def receive(filetail, event)
+    url = @url.clone
+    url.path = filetail.path
+    @logger.debug(["original url", { :originalurl => @url, :newurl => url }])
     event = LogStash::Event.new({
-      "@source" => @url.to_s,
+      "@source" => url.to_s,
       "@message" => event,
       "@type" => @type,
       "@tags" => @tags.clone,
@@ -37,7 +40,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     def receive_data(data)
       # TODO(2.0): Support multiline log data
       @buffer.extract(data).each do |line|
-        @receiver.receive(line)
+        @receiver.receive(self, line)
       end
     end # def receive_data
   end # class Reader
