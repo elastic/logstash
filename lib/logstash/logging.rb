@@ -28,7 +28,6 @@ class LogStash::Logger < Logger
     end
 
     @formatter.progname = self.progname = File.basename($0)
-    info("Using formatter: #{@formatter}")
   end # def initialize
 
   def level=(level)
