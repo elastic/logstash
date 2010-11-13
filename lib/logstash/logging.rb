@@ -27,7 +27,7 @@ class LogStash::Logger < Logger
       @@notify_awesome_print_load_failed = nil
     end
 
-    @formatter.progname = self.send(:progname=, File.basename($0))
+    @formatter.progname = self.progname = File.basename($0)
     info("Using formatter: #{@formatter}")
   end # def initialize
 
@@ -56,7 +56,8 @@ class LogStash::Logger::Formatter < Logger::Formatter
       # This only works if you use the severity methods
       path, line, method = caller[3].split(/(?::in `|:|')/)
       # Trim RUBYLIB path from 'file' if we can
-      whence = $:.select { |p| path.start_with?(p) }[0]
+      #whence = $:.select { |p| path.start_with?(p) }[0]
+      whence = $:.detect { |p| path.start_with?(p) }
       if !whence
         # We get here if the path is not in $:
         file = path
