@@ -6,7 +6,7 @@
 
   var search = function(query) {
     params.q = query;
-    document.location.hash = JSON.stringify(params);
+    document.location.hash = escape(JSON.stringify(params));
     $("#results").load("/search/ajax", params);
     $("#query").val(params.q);
   };
@@ -14,7 +14,7 @@
   $().ready(function() {
     if (location.hash.length > 1) {
       try {
-        params = JSON.parse(location.hash.substring(1));
+        params = JSON.parse(unescape(location.hash.substring(1)));
       } catch (e) {
         // Do nothing 
       }
@@ -22,7 +22,7 @@
     }
 
     $(window).hashchange(function() {
-      params = JSON.parse(location.hash.substring(1));
+      params = JSON.parse(unescape(location.hash.substring(1)));
       query = params.q
       if (query != $("#query").val()) {
         scroll(0, 0); 
