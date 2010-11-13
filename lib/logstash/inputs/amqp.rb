@@ -23,6 +23,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   end
 
   def register
+    @logger.info("Registering #{@url}")
     @amqp = AMQP.connect(:host => @url.host)
     @mq = MQ.new(@amqp)
     @target = nil
@@ -31,11 +32,11 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     case @mqtype
       when "fanout"
         #@target.bind(MQ.fanout(@url.path, :durable => true))
-        @target.bind(MQ.fanout(@name))
+        @target.bind(@mq.fanout(@name))
       when "direct"
-        @target.bind(MQ.direct(@name))
+        @target.bind(@mq.direct(@name))
       when "topic"
-        @target.bind(MQ.topic(@name))
+        @target.bind(@mq.topic(@name))
     end # case @mqtype
 
     @target.subscribe(:ack => true) do |header, message|
