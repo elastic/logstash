@@ -4,6 +4,6 @@
       %li.event{ :"data-full" => hit.to_json }&= hit["_source"]["@message"]
     - if @hits.length == 0 
       - if !params[:q]
-        No query given. How about <a href="#*">this?</a>
+        No query given. How about <a href="?q=*" class="querychanger">this?</a>
       - else
         No results for query '#{params[:q]}' 

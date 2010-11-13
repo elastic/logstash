@@ -1,21 +1,43 @@
 (function() {
+  var params = { 
+    offset: 0,
+    count: 50
+  };
+
   var search = function(query) {
-    document.location.hash = query
-    $("#results").load("/search/ajax", { q: query })
-    $("#query").val(query)
+    params.q = query;
+    document.location.hash = JSON.stringify(params);
+    $("#results").load("/search/ajax", params);
+    $("#query").val(params.q);
   };
 
   $().ready(function() {
     if (location.hash.length > 1) {
-      search(location.hash.substring(1));
+      try {
+        params = JSON.parse(location.hash.substring(1));
+      } catch (e) {
+        // Do nothing 
+      }
+      search(params.q);
     }
 
     $(window).hashchange(function() {
-      query = location.hash.substring(1)
+      params = JSON.parse(location.hash.substring(1));
+      query = params.q
       if (query != $("#query").val()) {
         scroll(0, 0); 
         search(query);
       }
+    });
+
+    $("a.querychanger").live("click", function() {
+      var href = $(this).attr("href");
+      var re = new RegExp("[&?]q=([^&]+)");
+      var match = re.exec(href);
+      if (match) {
+        search(match[1]);
+      }
+      return false;
     });
 
     $("ul.results li.event").live("click", function() {
@@ -97,11 +119,15 @@
       var query = $("#query");
       var newcondition = unescape(field) + ":" + unescape(value);
 
+      var newquery = query.val();
+      if (newquery.length != 0) {
+        newquery += " AND ";
+      }
       if (ev.shiftKey) {
         // Shift-click will make a "and not" condition
-        query.val(query.val() + " AND -" + newcondition)
+        query.val(newquery + "-" + newcondition)
       } else {
-        query.val(query.val() + " AND " + newcondition)
+        query.val(newquery + newcondition)
       }
       search(query.val())
       return false;
