@@ -40,7 +40,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
                                  "bulk_timeout" => "10ms",
                                 },
                      }
-      @logger.debug "ElasticSearch using river with config #{river_config.awesome_inspect}"
+      @logger.debug(["ElasticSearch using river", river_config])
       http_setup = EventMachine::HttpRequest.new(em_url.to_s)
       req = http_setup.put :body => river_config.to_json
       req.errback do
