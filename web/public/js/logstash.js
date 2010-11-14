@@ -13,6 +13,12 @@
       $("#query").val(logstash.params.q);
     }, /* search */
 
+    appendquery: function(query) {
+      var newquery = $("#query").val();
+      newquery += " " + query;
+      logstash.search(newquery.trim());
+    }, /* appendquery */
+
     plot: function(data) {
       var target = $("#visual");
       var plot = $.plot(target,
@@ -29,18 +35,29 @@
         }
       );
 
-      //target.bind("plothover", function(e, pos, item) {
-        //console.log(item);
-      //})
       target.bind("plotclick", function(e, pos, item) {
         if (item) {
-          //console.log(item);
-          start = item.datapoint[0];
-          end = start + 3600000;
-          console.log(start, end);
+          start = logstash.ms_to_iso8601(item.datapoint[0]);
+          end = logstash.ms_to_iso8601(item.datapoint[0] + 3600000);
+
+          logstash.appendquery("@timestamp:[" + start + " TO " + end + "]");
         }
       });
     }, /* plot */
+
+    ms_to_iso8601: function(milliseconds) {
+      /* From: 
+       * https://developer.mozilla.org/en/JavaScript/Reference/global_objects/date#Example.3a_ISO_8601_formatted_dates
+       */
+      var d = new Date(milliseconds);
+      function pad(n){return n<10 ? '0'+n : n}
+      return d.getUTCFullYear()+'-'
+        + pad(d.getUTCMonth()+1)+'-'
+        + pad(d.getUTCDate())+'T'
+        + pad(d.getUTCHours())+':'
+        + pad(d.getUTCMinutes())+':'
+        + pad(d.getUTCSeconds())+'Z'
+    },
   }; /* logstash */
 
   window.logstash = logstash;
@@ -91,7 +108,7 @@
       var template = $.template("inspector",
         "<li>" +
           "<b>(${type}) ${field}</b>:" +
-          "<a href='/search?q=" + query + " AND ${escape(field)}:${$item.sanitize(value)}'" +
+          "<a href='/search?q=" + query + " ${escape(field)}:${$item.sanitize(value)}'" +
           "   data-field='${escape(field)}' data-value='${$item.sanitize(value)}'>" +
             "${value}" +
           "</a>" +
@@ -154,14 +171,11 @@
       var newcondition = unescape(field) + ":" + unescape(value);
 
       var newquery = query.val();
-      if (newquery.length != 0) {
-        newquery += " AND ";
-      }
       if (ev.shiftKey) {
         // Shift-click will make a "and not" condition
-        query.val(newquery + "-" + newcondition)
+        query.val(newquery + " -" + newcondition)
       } else {
-        query.val(newquery + newcondition)
+        query.val(newquery + " " + newcondition)
       }
       logstash.search(query.val())
       return false;

@@ -1,4 +1,7 @@
 #results
+  - if (params[:q].strip.length > 0 rescue false)
+    %h1
+      Search results for '#{params[:q]}'
   - if @graphpoints
     #visual
     :javascript
