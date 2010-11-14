@@ -58,7 +58,7 @@ class LogStash::Web::ElasticSearch
           value = [value] if value.is_a?(String)
           next unless value.is_a?(Array)
           value.each do |v|
-            v.gsub!(/[^ ]+\.loggly\.net/) { |match| Digest::MD5.hexdigest(match)[0..6] + ".example.com" }
+            v.gsub!(/[^ ]+\.loggly\.net/) { |match| "loggly-" + Digest::MD5.hexdigest(match)[0..6]  + ".example.com"}
           end # value.each
         end # hit._source.@fields.each
       end # data.hits.hits.each
