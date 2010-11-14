@@ -2,6 +2,7 @@
 require "em-http-request"
 require "logstash/namespace"
 require "logstash/logging"
+require "logstash/event"
 
 module LogStash::Web; end
 class LogStash::Web::ElasticSearch
@@ -43,6 +44,25 @@ class LogStash::Web::ElasticSearch
       #headers req.response_header
       data = JSON.parse(req.response)
       data["duration"] = Time.now - start_time
+
+      # TODO(sissel): Plugin-ify this (Search filters!)
+      require "digest/md5"
+      data["hits"]["hits"].each do |hit|
+        event = LogStash::Event.new(hit["_source"])
+        event.to_hash.each do |key, value|
+          next unless value.is_a?(String)
+          value.gsub!(/[^ ]+\.loggly\.net/) { |match| "loggly-" + Digest::MD5.hexdigest(match)[0..6]  + ".example.com"}
+        end
+
+        event.fields.each do |key, value|
+          value = [value] if value.is_a?(String)
+          next unless value.is_a?(Array)
+          value.each do |v|
+            v.gsub!(/[^ ]+\.loggly\.net/) { |match| Digest::MD5.hexdigest(match)[0..6] + ".example.com" }
+          end # value.each
+        end # hit._source.@fields.each
+      end # data.hits.hits.each
+
       @logger.info(["Got search results", 
                    { :query => params[:q], :duration => data["duration"]}])
       @logger.info(data)
