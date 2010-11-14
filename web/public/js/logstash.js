@@ -1,32 +1,66 @@
 (function() {
-  var params = { 
-    offset: 0,
-    count: 50
-  };
 
-  var search = function(query) {
-    params.q = query;
-    document.location.hash = escape(JSON.stringify(params));
-    $("#results").load("/search/ajax", params);
-    $("#query").val(params.q);
-  };
+  var logstash = {
+    params: { 
+      offset: 0,
+      count: 50,
+    },
+
+    search: function(query) {
+      logstash.params.q = query;
+      document.location.hash = escape(JSON.stringify(logstash.params));
+      $("#results").load("/search/ajax", logstash.params);
+      $("#query").val(logstash.params.q);
+    }, /* search */
+
+    plot: function(data) {
+      var target = $("#visual");
+      var plot = $.plot(target,
+        [ {  /* data */
+            data: data,
+            bars: { 
+              show: true,
+              barWidth: 3600000,
+            }
+        } ],
+        { /* options */
+          xaxis: { mode: "time" },
+          grid: { hoverable: true, clickable: true },
+        }
+      );
+
+      //target.bind("plothover", function(e, pos, item) {
+        //console.log(item);
+      //})
+      target.bind("plotclick", function(e, pos, item) {
+        if (item) {
+          //console.log(item);
+          start = item.datapoint[0];
+          end = start + 3600000;
+          console.log(start, end);
+        }
+      });
+    }, /* plot */
+  }; /* logstash */
+
+  window.logstash = logstash;
 
   $().ready(function() {
     if (location.hash.length > 1) {
       try {
-        params = JSON.parse(unescape(location.hash.substring(1)));
+        logstash.params = JSON.parse(unescape(location.hash.substring(1)));
       } catch (e) {
         // Do nothing 
       }
-      search(params.q);
+      logstash.search(logstash.params.q);
     }
 
     $(window).hashchange(function() {
-      params = JSON.parse(unescape(location.hash.substring(1)));
-      query = params.q
+      logstash.params = JSON.parse(unescape(location.hash.substring(1)));
+      query = logstash.params.q
       if (query != $("#query").val()) {
         scroll(0, 0); 
-        search(query);
+        logstash.search(query);
       }
     });
 
@@ -35,7 +69,7 @@
       var re = new RegExp("[&?]q=([^&]+)");
       var match = re.exec(href);
       if (match) {
-        search(match[1]);
+        logstash.search(match[1]);
       }
       return false;
     });
@@ -129,14 +163,14 @@
       } else {
         query.val(newquery + newcondition)
       }
-      search(query.val())
+      logstash.search(query.val())
       return false;
     });
 
     $("#searchbutton").bind("click submit", function(ev) {
       var query = $("#query").val().replace(/^\s+|\s+$/g, "")
       /* Search now, we pressed the submit button */
-      search(query)
+      logstash.search(query)
       return false;
     });
   }); /* $().ready */
