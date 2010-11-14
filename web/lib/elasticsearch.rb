@@ -21,7 +21,8 @@ class LogStash::Web::ElasticSearch
       ],
       "query" => {
         "query_string" => { 
-           "query" => params[:q]
+           "query" => params[:q],
+           "default_operator" => "AND"
         } # query_string
       }, # query
       "facets" => {
@@ -44,6 +45,7 @@ class LogStash::Web::ElasticSearch
       data["duration"] = Time.now - start_time
       @logger.info(["Got search results", 
                    { :query => params[:q], :duration => data["duration"]}])
+      @logger.info(data)
       if req.response_header.status != 200
         @error = data["error"]
       end
