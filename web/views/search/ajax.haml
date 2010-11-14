@@ -1,4 +1,11 @@
 #results
+  - if @graphpoints
+    #visual
+    :javascript
+      $(function() {
+        var graphdata = #{@graphpoints.to_json};
+        window.logstash.plot(graphdata);
+      });
   %ul.results
     - @hits.reverse.each do |hit|
       %li.event{ :"data-full" => hit.to_json }&= hit["_source"]["@message"]
