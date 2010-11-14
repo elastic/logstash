@@ -45,7 +45,10 @@ class LogStashWeb < Sinatra::Base
     headers({"Content-Type" => "text/html" })
     elasticsearch.search(params) do |@results|
       @hits = (@results["hits"]["hits"] rescue [])
-      @facets = (@results["facets"] or {})
+      @graphpoints = []
+      @results["facets"]["by_hour"]["entries"].each do |entry|
+        @graphpoints << [entry["key"], entry["count"]]
+      end
       body haml :"search/ajax", :layout => !request.xhr?
     end
   end
