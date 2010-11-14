@@ -9,6 +9,15 @@
         var graphdata = #{@graphpoints.to_json};
         window.logstash.plot(graphdata);
       });
+  - if @total and @result_start and @result_end
+    %small
+      %strong
+        Results #{@result_start} - #{@result_end} of #{@total}
+      |
+      %a
+        prev
+      %a
+        next
   %ul.results
     - @hits.reverse.each do |hit|
       %li.event{ :"data-full" => hit.to_json }&= hit["_source"]["@message"]
