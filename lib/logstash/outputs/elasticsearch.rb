@@ -64,7 +64,8 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
   def receive_river(event)
     # bulk format; see http://www.elasticsearch.com/docs/elasticsearch/river/rabbitmq/
     index_message = {"index" => {"_index" => @es_index, "_type" => @es_type}}.to_json + "\n"
-    index_message += {@es_type => event.to_hash}.to_json + "\n"
+    #index_message += {@es_type => event.to_hash}.to_json + "\n"
+    index_message += event.to_hash.to_json + "\n"
     @mq.receive_raw(index_message)
   end # def receive_river
 end # class LogStash::Outputs::Websocket
