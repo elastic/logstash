@@ -34,5 +34,5 @@ filters:
       epochtime: %s
 outputs:
 - stdout:///
-- elasticsearch://localhost:9200/logstash/all
-#- "elasticsearch://localhost:9200/logstash/all?method=river&type=rabbitmq&host=activemq&user=guest&pass=guest&vhost=/&queue=es"
+#- elasticsearch://localhost:9200/logstash/all
+- "elasticsearch://localhost:9200/logstash/all_river?method=river&type=rabbitmq&host=activemq&user=guest&pass=guest&vhost=/&queue=es"
