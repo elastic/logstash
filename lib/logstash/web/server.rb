@@ -46,8 +46,8 @@ class LogStash::Web::Server < Sinatra::Base
 
   apost '/search/ajax' do
     headers({"Content-Type" => "text/html" })
-    params[:count] = (params[:count] or 50).to_i
-    params[:offset] = (params[:offset] or 0).to_i
+    count = params["count"] = (params["count"] or 50).to_i
+    offset = params["offset"] = (params["offset"] or 0).to_i
     elasticsearch.search(params) do |@results|
       @hits = (@results["hits"]["hits"] rescue [])
       @total = (@results["hits"]["total"] rescue 0)
@@ -56,17 +56,30 @@ class LogStash::Web::Server < Sinatra::Base
         @graphpoints << [entry["key"], entry["count"]]
       end
 
-      if params[:count] and params[:offset]
-        if @total > (params[:count] + params[:offset])
-          @result_end = params[:count] + params[:offset]
+      if count and offset
+        if @total > (count + offset)
+          @result_end = (count + offset)
         else 
           @result_end = @total
         end
-        @result_start = params[:offset]
+        @result_start = offset
       end
+
+      if count + offset < @total
+        next_params = params.clone
+        next_params["offset"] = [offset + count, @total - count].min
+        @next_href = "?" +  next_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
+      end
+
+      if offset - count > 0
+        prev_params = params.clone
+        prev_params["offset"] = [offset - count, 0].max
+        @prev_href = "?" +  prev_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
+      end
+
       body haml :"search/ajax", :layout => !request.xhr?
-    end
-  end
+    end # elasticsearch.search
+  end # apost '/search/ajax'
 
 end # class LogStashWeb
 

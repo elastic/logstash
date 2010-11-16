@@ -14,10 +14,14 @@
       %strong
         Results #{@result_start} - #{@result_end} of #{@total}
       |
-      %a
-        prev
-      %a
-        next
+      - if @prev_href
+        %a.pager{ :href => @prev_href } 
+          prev
+        - if @next_href
+          |
+      - if @next_href
+        %a.pager{ :href => @next_href }
+          next
   %ul.results
     - @hits.reverse.each do |hit|
       %li.event{ :"data-full" => hit.to_json }&= hit["_source"]["@message"]
