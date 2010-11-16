@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.name = "logstash"
   spec.version = "0.1.#{rev}"
   spec.summary = "logstash - log and event management"
-  spec.description = "None yet"
+  spec.description = "scalable log and event management (search, archive, pipeline)"
   spec.add_dependency("eventmachine-tail")
   spec.add_dependency("json")
   #spec.add_dependency("awesome_print")
