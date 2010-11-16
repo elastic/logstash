@@ -15,6 +15,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency("json")
   #spec.add_dependency("awesome_print")
 
+  # For http requests (elasticsearch, etc)
+  spec.add_dependency("em-http-request")
+
   # For the 'grok' filter
   #spec.add_dependency("jls-grok", ">= 0.2.3071")
 
