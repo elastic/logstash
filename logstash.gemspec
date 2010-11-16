@@ -20,17 +20,16 @@ Gem::Specification.new do |spec|
 
   # TODO: In the future, make these optional
   # for websocket://
-  #spec.add_dependency("em-websocket")
+  spec.add_dependency("em-websocket")
 
   # For amqp://
-  #spec.add_dependency("amqp")
-  #spec.add_dependency("uuidtools")
-  #
+  spec.add_dependency("amqp")
+  spec.add_dependency("uuidtools")
   
   # For the web interface
-  #spec.add_dependency("async_sinatra")
-  #spec.add_dependency("rack")
-  #spec.add_dependency("haml")
+  spec.add_dependency("async_sinatra")
+  spec.add_dependency("rack")
+  spec.add_dependency("haml")
 
   spec.files = files
   spec.require_paths << "lib"
