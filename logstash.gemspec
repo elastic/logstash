@@ -35,6 +35,7 @@ Gem::Specification.new do |spec|
   spec.require_paths << "lib"
   spec.bindir = "bin"
   spec.executables << "logstash"
+  spec.executables << "logstash-web"
 
   spec.author = "Jordan Sissel"
   spec.email = "jls@semicomplete.com"
