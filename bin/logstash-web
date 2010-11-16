@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+$: << File.dirname($0) + "/../lib"
+
+require "rubygems"
+require "logstash/web/server"

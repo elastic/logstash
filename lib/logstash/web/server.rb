@@ -2,6 +2,7 @@
 ##rackup -Ilib:../lib -s thin
 
 $:.unshift("%s/../lib" % File.dirname(__FILE__))
+$:.unshift(File.dirname(__FILE__))
 
 require "rubygems"
 require "json"
@@ -9,14 +10,15 @@ require "eventmachine"
 require "rack"
 require "sinatra/async"
 require "lib/elasticsearch"
+require "logstash/namespace"
 
 class EventMachine::ConnectionError < RuntimeError; end
 
-class LogStashWeb < Sinatra::Base
+class LogStash::Web::Server < Sinatra::Base
   register Sinatra::Async
   set :haml, :format => :html5
   set :logging, true
-  set :public, "./public"
+  set :public, "#{File.dirname(__FILE__)}/public"
   elasticsearch = LogStash::Web::ElasticSearch.new
 
   aget '/style.css' do
@@ -70,5 +72,5 @@ end # class LogStashWeb
 Rack::Handler::Thin.run(
   Rack::CommonLogger.new( \
     Rack::ShowExceptions.new( \
-      LogStashWeb.new)),
+      LogStash::Web::Server.new)),
   :Port => 9292)
