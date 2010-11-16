@@ -32,6 +32,7 @@ Gem::Specification.new do |spec|
   # For the web interface
   spec.add_dependency("async_sinatra")
   spec.add_dependency("rack")
+  spec.add_dependency("thin")
   spec.add_dependency("haml")
 
   spec.files = files
