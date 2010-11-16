@@ -19,6 +19,7 @@ class LogStash::Web::Server < Sinatra::Base
   set :haml, :format => :html5
   set :logging, true
   set :public, "#{File.dirname(__FILE__)}/public"
+  set :views, "#{File.dirname(__FILE__)}/views"
   elasticsearch = LogStash::Web::ElasticSearch.new
 
   aget '/style.css' do
