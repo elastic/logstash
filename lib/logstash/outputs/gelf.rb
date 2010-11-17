@@ -32,4 +32,4 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     gelf.add_additional "@timestamp", event.timestamp
     gelf.send
   end # def event
-end # class LogStash::Outputs::Stdout
+end # class LogStash::Outputs::Gelf
