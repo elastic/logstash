@@ -65,7 +65,7 @@ class LogStash::Web::ElasticSearch
 
       @logger.info(["Got search results", 
                    { :query => params[:q], :duration => data["duration"]}])
-      @logger.info(data)
+      #@logger.info(data)
       if req.response_header.status != 200
         @error = data["error"]
       end

@@ -71,7 +71,7 @@ class LogStash::Web::Server < Sinatra::Base
         @next_href = "?" +  next_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
       end
 
-      if offset - count > 0
+      if offset > 0
         prev_params = params.clone
         prev_params["offset"] = [offset - count, 0].max
         @prev_href = "?" +  prev_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
