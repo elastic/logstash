@@ -25,6 +25,11 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     source = URI.parse(event.source)
     gelf.host = source.host
     gelf.file = source.path
+
+    event.fields.each do |name, value|
+      gelf.add_additional name, value
+    end
+    gelf.add_additional "@timestamp", event.timestamp
     gelf.send
   end # def event
 end # class LogStash::Outputs::Stdout
