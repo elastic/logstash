@@ -22,7 +22,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
     # This comes from RFC3164, mostly.
     @@syslog_re ||= \
-      /<([0-9]{1,3})> ([A-z]{3} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}) (\S+) (.*)/
+      /<([0-9]{1,3})>([A-z]{3} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}) (\S+) (.*)/
       #<priority       timestamp          Mmm dd hh:mm:ss             host  msg
   end # def register
 
@@ -72,7 +72,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
       event.message = match[4]
     else
-      @logger.info("NOT SYSLOG")
+      @logger.info(["NOT SYSLOG", event.message])
       url.host = Socket.gethostname if url.host == "127.0.0.1"
 
       # RFC3164 says unknown messages get pri=13
@@ -83,9 +83,9 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       event.fields["severity"] = 5   # 13 & 7 == 5
       event.fields["facility"] = 1   # 13 >> 3 == 1
 
-      # TODO(sissel): ? Ignore RFC3164 and use ISO8601 timestamps (RFC5424?)
-      event.message = "<13> #{Time.now.strftime("%b %d %H:%M:%S")} " \
-                      "#{url.host} #{event.message}"
+      # Don't need to modify the message, here.
+      # event.message = ...
+
       event.source = url.to_s
     end
   end # def syslog_relay
