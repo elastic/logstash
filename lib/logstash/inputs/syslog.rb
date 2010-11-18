@@ -68,7 +68,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       # At least the hostname is simple...
       url.host = match[3]
       url.port = nil
-      event.source = url.to_s
+      event.source = url
 
       event.message = match[4]
     else
@@ -86,7 +86,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       # Don't need to modify the message, here.
       # event.message = ...
 
-      event.source = url.to_s
+      event.source = url
     end
   end # def syslog_relay
 

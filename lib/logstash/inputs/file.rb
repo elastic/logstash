@@ -21,7 +21,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     url.path = filetail.path
     @logger.debug(["original url", { :originalurl => @url, :newurl => url }])
     event = LogStash::Event.new({
-      "@source" => url.to_s,
+      "@source" => url,
       "@message" => event,
       "@type" => @type,
       "@tags" => @tags.clone,

@@ -1,5 +1,6 @@
 require "json"
 require "logstash/time"
+require "uri"
 
 # General event type. Will expand this in the future.
 module LogStash; class Event
@@ -35,12 +36,24 @@ module LogStash; class Event
 
   def timestamp; @data["@timestamp"]; end # def timestamp
   def timestamp=(val); @data["@timestamp"] = val; end # def timestamp=
+
   def source; @data["@source"]; end # def source
-  def source=(val); @data["@source"] = val; end # def source=
+  def source=(val) 
+    if val.is_a?(URI)
+      @data["@source"] = val.to_s
+      @data["@host"] = val.host
+      @data["@path"] = val.path
+    else
+      @data["@source"] = val
+    end
+  end # def source=
+
   def message; @data["@message"]; end # def message
   def message=(val); @data["@message"] = val; end # def message=
+
   def type; @data["@type"]; end # def type
   def type=(val); @data["@type"] = val; end # def type=
+
   def tags; @data["@tags"]; end # def tags
   def tags=(val); @data["@tags"] = val; end # def tags=
 
