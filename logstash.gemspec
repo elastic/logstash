@@ -5,10 +5,10 @@ Gem::Specification.new do |spec|
     files += Dir["#{dir}/**/*"]
   end
 
-  rev = %x{svn info}.split("\n").grep(/Revision:/).first.split(" ").last.to_i
-  #rev = Time.now.strftime("%Y%m%d%H%M%S")
+  #rev = %x{svn info}.split("\n").grep(/Revision:/).first.split(" ").last.to_i
+  rev = Time.now.strftime("%Y%m%d%H%M%S")
   spec.name = "logstash"
-  spec.version = "0.1.#{rev}"
+  spec.version = "0.2.#{rev}"
   spec.summary = "logstash - log and event management"
   spec.description = "scalable log and event management (search, archive, pipeline)"
   spec.add_dependency("eventmachine-tail")
