@@ -39,7 +39,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
       @receiver = receiver
       @url = url;
       @buffer = BufferedTokenizer.new  # From eventmachine
-    end
+    end # def initialize
 
     def receive_data(data)
       @buffer.extract(data).each do |line|
