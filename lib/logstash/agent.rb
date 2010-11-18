@@ -30,6 +30,10 @@ class LogStash::Agent
   def register
     # TODO(sissel): warn when no inputs and no outputs are defined.
     # TODO(sissel): Refactor this madness into a config lib
+    
+    if (["inputs", "outputs"] & @config.keys).length == 0
+      $stderr.puts "No inputs or no outputs configured. This probably isn't what you want."
+    end
 
     # Register input and output stuff
     if @config.include?("inputs")
