@@ -14,7 +14,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   def register
     EventMachine::FileGlobWatchTail.new(@url.path, Reader, interval=60,
                                         exclude=[], receiver=self)
-  end
+  end # def register
 
   def receive(filetail, event)
     url = @url.clone
@@ -28,7 +28,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     })
     @logger.debug(["Got event", event])
     @callback.call(event)
-  end # def event
+  end # def receive
 
   class Reader < EventMachine::FileTail
     def initialize(path, receiver)
