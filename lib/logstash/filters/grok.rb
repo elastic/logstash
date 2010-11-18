@@ -15,7 +15,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     @config.each do |type, typeconfig|
       @logger.debug("Registering type with grok: #{type}")
       pile = Grok::Pile.new
-      Dir.glob("patterns/*").each do |path|
+      patterndir = "#{File.dirname(__FILE__)}/../../../patterns/*"
+      Dir.glob(patterndir).each do |path|
         pile.add_patterns_from_file(path)
       end
       typeconfig["patterns"].each do |pattern|
