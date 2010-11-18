@@ -41,8 +41,8 @@ module LogStash; class Event
   def source=(val) 
     if val.is_a?(URI)
       @data["@source"] = val.to_s
-      @data["@host"] = val.host
-      @data["@path"] = val.path
+      @data["@source_host"] = val.host
+      @data["@source_path"] = val.path
     else
       @data["@source"] = val
     end
