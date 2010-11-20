@@ -66,5 +66,9 @@ module LogStash; class Event
 
   def to_hash; return @data end # def to_hash
 
+  def overwrite(event)
+    @data = event.to_hash
+  end
+
   def include?(key); return @data.include?(key) end
 end; end # class LogStash::Event
