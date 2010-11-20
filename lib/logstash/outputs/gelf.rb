@@ -29,7 +29,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     event.fields.each do |name, value|
       gelf.add_additional name, value
     end
-    gelf.add_additional "@timestamp", event.timestamp
+    gelf.add_additional "event_timestamp", event.timestamp
     gelf.send
   end # def event
 end # class LogStash::Outputs::Gelf
