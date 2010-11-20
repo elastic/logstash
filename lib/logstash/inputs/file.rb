@@ -12,6 +12,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   end
 
   def register
+    @logger.info("Registering #{@url}")
     EventMachine::FileGlobWatchTail.new(@url.path, Reader, interval=60,
                                         exclude=[], receiver=self)
   end # def register
