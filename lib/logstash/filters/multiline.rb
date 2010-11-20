@@ -61,13 +61,19 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
       @types[type] = typeconfig
 
       if !typeconfig.include?("pattern")
-        @logger.fatal("'multiline' filter config for type #{type} is missing 'pattern' setting", typeconfig)
+        @logger.fatal(["'multiline' filter config for type #{type} is missing"
+                       " 'pattern' setting", typeconfig])
       end
+
       if !typeconfig.include?("what")
-        @logger.fatal("'multiline' filter config for type #{type} is missing 'what' setting", typeconfig)
+        @logger.fatal(["'multiline' filter config for type #{type} is missing"
+                       " 'what' setting", typeconfig])
       end
+
       if !["next", "previous"].include?(typeconfig["what"])
-        @logger.fatal("'multiline' filter config for type #{type} has invalid 'what' value. Must be 'next' or 'previous'", typeconfig)
+        @logger.fatal(["'multiline' filter config for type #{type} has invalid"
+                       " 'what' value. Must be 'next' or 'previous'",
+                       typeconfig])
       end
 
       begin
@@ -83,17 +89,27 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     return unless @types.member?(event.type)
     @types[event.type].each do |typeconfig|
       match = typeconfig["pattern"].match(event.message)
-      pending = @pending[event.source]
+      key = [event.source, event.type]
+      pending = @pending[key]
 
       case typeconfig["what"]
       when "prev"
         if match
           # previous previous line is part of this event.
           # append it to the event and cancel it
+          pending.append(event)
+          event.cancel
         else
           # this line is not part of the previous event
           # if we have a pending event, it's done, send it.
           # put the current event into pending
+          if pending
+            tmp = event.to_hash
+            event.overwrite(pending)
+            @pending[key]  = Event.new(tmp)
+          else
+            @pending[event.source]
+          end
         end
       when "next"
         if match
@@ -104,10 +120,9 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
           # and send it. otherwise, this is a new message and not part of
           # multiline, send it.
         end
+      else
+        @logger.warn(["Unknown multiline 'what' value.", typeconfig])
       end
-          
-
-
     end # @types[event.type].each
   end # def filter
 end # class LogStash::Filters::Date
