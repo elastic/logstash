@@ -82,21 +82,22 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
         @logger.fatal(["Invalid pattern for multiline filter on type '#{type}'",
                       typeconfig, e])
       end
+
     end # @config.each
   end # def register
 
   def filter(event)
     return unless @types.member?(event.type)
     typeconfig = @types[event.type]
-    #@types[event.type].each do |key, value|
-    #puts "#{event.type}: " + typeconfig.inspect
     match = typeconfig["pattern"].match(event.message)
     key = [event.source, event.type]
     pending = @pending[key]
 
+    @logger.info(["Reg: ", typeconfig["pattern"], event.message, match])
     case typeconfig["what"]
     when "previous"
       if match
+        event.tags |= ["multiline"]
         # previous previous line is part of this event.
         # append it to the event and cancel it
         if pending
@@ -120,6 +121,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
       end # if/else match
     when "next"
       if match
+        event.tags |= ["multiline"]
         # this line is part of a multiline event, the next
         # line will be part, too, put it into pending.
         if pending
