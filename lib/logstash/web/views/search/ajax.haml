@@ -35,4 +35,5 @@
       - @hits.reverse.each do |hit|
         %tr.event
           %td.timestamp&= hit["_source"]["@timestamp"]
-          %td.message{ :"data-full" => hit.to_json }&= hit["_source"]["@message"]
+          %td.message{ :"data-full" => hit.to_json }
+            %pre&= hit["_source"]["@message"]
