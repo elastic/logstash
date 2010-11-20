@@ -11,6 +11,8 @@ inputs:
   - /var/log/apache2/access.log
   apache-error:
   - /var/log/apache2/error.log
+  testing:
+  - /tmp/logstashtest.log
 filters:
 - grok:
     linux-syslog: # for logs of type 'linux-syslog'
@@ -22,6 +24,12 @@ filters:
     nagios:
       patterns:
       - %{NAGIOSLOGLINE}
+    loggly:
+      patterns:
+      - %{JAVASTACKTRACEPART}
+    testing:
+      patterns:
+      - %{JAVASTACKTRACEPART}
 - date:
     linux-syslog:  # for logs of type 'linux-syslog'
       # Look for a field 'timestamp' with this format, parse and it for the timestamp
@@ -32,6 +40,13 @@ filters:
       timestamp: "%d/%b/%Y:%H:%M:%S %Z"
     nagios:
       epochtime: %s
+- multiline:
+    supervisorlogs:
+      pattern: ^\s
+      what: previous
+    testing:
+      pattern: ^\s
+      what: previous
 outputs:
 - stdout:///
 #- elasticsearch://localhost:9200/logstash/all
