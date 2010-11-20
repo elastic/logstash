@@ -46,6 +46,7 @@ class LogStash::Web::ElasticSearch
       data["duration"] = Time.now - start_time
 
       # TODO(sissel): Plugin-ify this (Search filters!)
+      #  Search anonymization
       #require "digest/md5"
       #data["hits"]["hits"].each do |hit|
       [].each do |hit|
