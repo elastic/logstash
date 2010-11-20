@@ -61,18 +61,18 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
       @types[type] = typeconfig
 
       if !typeconfig.include?("pattern")
-        @logger.fatal(["'multiline' filter config for type #{type} is missing"
+        @logger.fatal(["'multiline' filter config for type #{type} is missing" \
                        " 'pattern' setting", typeconfig])
       end
 
       if !typeconfig.include?("what")
-        @logger.fatal(["'multiline' filter config for type #{type} is missing"
+        @logger.fatal(["'multiline' filter config for type #{type} is missing" \
                        " 'what' setting", typeconfig])
       end
 
       if !["next", "previous"].include?(typeconfig["what"])
-        @logger.fatal(["'multiline' filter config for type #{type} has invalid"
-                       " 'what' value. Must be 'next' or 'previous'",
+        @logger.fatal(["'multiline' filter config for type #{type} has " \
+                       "invalid 'what' value. Must be 'next' or 'previous'",
                        typeconfig])
       end
 
@@ -87,42 +87,70 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   def filter(event)
     return unless @types.member?(event.type)
-    @types[event.type].each do |typeconfig|
-      match = typeconfig["pattern"].match(event.message)
-      key = [event.source, event.type]
-      pending = @pending[key]
+    typeconfig = @types[event.type]
+    #@types[event.type].each do |key, value|
+    #puts "#{event.type}: " + typeconfig.inspect
+    match = typeconfig["pattern"].match(event.message)
+    key = [event.source, event.type]
+    pending = @pending[key]
 
-      case typeconfig["what"]
-      when "prev"
-        if match
-          # previous previous line is part of this event.
-          # append it to the event and cancel it
+    case typeconfig["what"]
+    when "previous"
+      if match
+        # previous previous line is part of this event.
+        # append it to the event and cancel it
+        if pending
           pending.append(event)
-          event.cancel
         else
-          # this line is not part of the previous event
-          # if we have a pending event, it's done, send it.
-          # put the current event into pending
-          if pending
-            tmp = event.to_hash
-            event.overwrite(pending)
-            @pending[key]  = Event.new(tmp)
-          else
-            @pending[event.source]
-          end
+          @pending[key] = event
         end
-      when "next"
-        if match
-          # this line is part of a multiline event, the next
-          # line will be part, too, put it into pending.
-        else
-          # if we have something in pending, join it with this message
-          # and send it. otherwise, this is a new message and not part of
-          # multiline, send it.
-        end
+        event.cancel
       else
-        @logger.warn(["Unknown multiline 'what' value.", typeconfig])
-      end
-    end # @types[event.type].each
+        # this line is not part of the previous event
+        # if we have a pending event, it's done, send it.
+        # put the current event into pending
+        if pending
+          tmp = event.to_hash
+          event.overwrite(pending)
+          @pending[key] = LogStash::Event.new(tmp)
+        else
+          @pending[key] = event
+          event.cancel
+        end # if/else pending
+      end # if/else match
+    when "next"
+      if match
+        # this line is part of a multiline event, the next
+        # line will be part, too, put it into pending.
+        if pending
+          pending.append(event)
+        else
+          @pending[key] = event
+        end
+        event.cancel
+      else
+        # if we have something in pending, join it with this message
+        # and send it. otherwise, this is a new message and not part of
+        # multiline, send it.
+        if pending
+          pending.append(event)
+          event.overwrite(pending.to_hash)
+          @pending.delete(key)
+        end
+      end # if/else match
+    else
+      @logger.warn(["Unknown multiline 'what' value.", typeconfig])
+    end # case typeconfig["what"]
+    #end # @types[event.type].each
   end # def filter
+
+  # flush any pending messages
+  def flush(source, type)
+    key = [source, type]
+    if @pending[key]
+      event = @pending[key]
+      @pending.delete(key)
+    end
+    return event
+  end
 end # class LogStash::Filters::Date

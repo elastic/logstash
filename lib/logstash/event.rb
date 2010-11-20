@@ -71,4 +71,19 @@ module LogStash; class Event
   end
 
   def include?(key); return @data.include?(key) end
+
+  # Append an event to this one.
+  def append(event)
+    self.message += "\n" + event.message 
+    self.tags |= event.tags
+
+    # Append all fields
+    event.fields.each do |name, value|
+      if event.fields.include?(name)
+        event.fields[name] |= value
+      else
+        event.fields[name] = value
+      end
+    end # event.fields.each
+  end
 end; end # class LogStash::Event
