@@ -22,9 +22,8 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     gelf.short_message = (event.fields["message"] or event.message)
     gelf.full_message = (event.message)
     gelf.level = 1
-    source = URI.parse(event.source)
-    gelf.host = source.host
-    gelf.file = source.path
+    gelf.host = event["@source_host"]
+    gelf.file = event["@source_path"]
 
     event.fields.each do |name, value|
       gelf.add_additional name, value

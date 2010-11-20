@@ -20,18 +20,22 @@ body
   margin-left: 2em
   margin-right: 2em
   margin-top: 1em
-#content ul.results
+#content table.results
   font-family: monospace
-#content li.event
+#content td.event
   padding-bottom: 3px
   white-space: pre-wrap
-#content li.selected
+#content td.timestamp
+  white-space: nowrap
+  font-size: 85%
+  text-align: top
+#content tr.selected
   background-color: #FCE69D !important
-#content li.event:nth-child(2n)
+#content tr.event:nth-child(2n)
   background-color: #E3F6CE
-#content li.event:nth-child(2n+1)
+#content tr.event:nth-child(2n+1)
   background-color: #F5FBEF
-#content li.event:hover
+#content tr.event:hover
   background-color: lightgreen
 #error
   background-color: pink

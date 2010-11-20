@@ -22,11 +22,16 @@
       - if @next_href
         %a.pager{ :href => @next_href }
           next
-  %ul.results
+  %table.results
+    %tr
+      %th timestamp
+      %th event
     - @hits.reverse.each do |hit|
-      %li.event{ :"data-full" => hit.to_json }&= hit["_source"]["@message"]
-    - if @hits.length == 0 
-      - if !params[:q]
-        No query given. How about <a href="?q=*" class="querychanger">this?</a>
-      - else
-        No results for query '#{params[:q]}' 
+      %tr.event
+        %td.timestamp&= hit["_source"]["@timestamp"]
+        %td.message{ :"data-full" => hit.to_json }&= hit["_source"]["@message"]
+  - if @hits.length == 0 
+    - if !params[:q]
+      No query given. How about <a href="?q=*" class="querychanger">this?</a>
+    - else
+      No results for query '#{params[:q]}' 

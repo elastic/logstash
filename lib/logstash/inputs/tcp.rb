@@ -24,11 +24,11 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
     url.port = port
     @logger.debug(["original url", { :originalurl => @url, :newurl => url }])
     event = LogStash::Event.new({
-      "@source" => url,
       "@message" => event,
       "@type" => @type,
       "@tags" => @tags.clone,
     })
+    event.source = url
     @logger.debug(["Got event", event])
     @callback.call(event)
   end # def receive
