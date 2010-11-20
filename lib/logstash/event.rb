@@ -79,10 +79,12 @@ module LogStash; class Event
 
     # Append all fields
     event.fields.each do |name, value|
-      if event.fields.include?(name)
-        event.fields[name] |= value
+      if self.fields.include?(name)
+        puts "Merging field #{name}"
+        self.fields[name] |= value
       else
-        event.fields[name] = value
+        puts "Setting field #{name}"
+        self.fields[name] = value
       end
     end # event.fields.each
   end
