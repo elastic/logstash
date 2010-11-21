@@ -7,7 +7,7 @@ class LogStash::Outputs::Internal < LogStash::Outputs::Base
   end
 
   def register
-    # nothing to do
+    @logger.info("Registering output #{@url}")
   end # def register
 
   def receive(event)

@@ -18,6 +18,9 @@ class LogStash::Logger < Logger
 
     # Set default loglevel to WARN unless $DEBUG is set (run with 'ruby -d')
     self.level = $DEBUG ? Logger::DEBUG: Logger::INFO
+    if ENV["LOGSTASH_DEBUG"]
+      self.level = Logger::DEBUG
+    end
 
     # Conditional support for awesome_print
     if !@@have_awesome_print && @@notify_awesome_print_load_failed

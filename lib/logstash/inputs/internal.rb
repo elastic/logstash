@@ -15,7 +15,7 @@ class LogStash::Inputs::Internal < LogStash::Inputs::Base
   end
 
   def register
-    @logger.info("Registering #{@url}")
+    @logger.info("Registering input #{@url}")
     @channel.subscribe do |event|
       receive(event)
     end

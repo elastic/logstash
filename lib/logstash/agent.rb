@@ -9,6 +9,9 @@ require "logstash/logging"
 # Collect logs, ship them out.
 class LogStash::Agent
   attr_reader :config
+  attr_reader :inputs
+  attr_reader :outputs
+  attr_reader :filters
 
   def initialize(config)
     @logger = LogStash::Logger.new(STDERR)
@@ -26,7 +29,7 @@ class LogStash::Agent
   # Register any event handlers with EventMachine
   # Technically, this agent could listen for anything (files, sockets, amqp,
   # stomp, etc).
-  protected
+  public
   def register
     # TODO(sissel): warn when no inputs and no outputs are defined.
     # TODO(sissel): Refactor this madness into a config lib
@@ -80,11 +83,19 @@ class LogStash::Agent
   end # def register
 
   public
-  def run
+  def run(&block)
     EventMachine.run do
       self.register
+      yield if block_given?
     end # EventMachine.run
   end # def run
+
+  public
+  def stop
+    # TODO(sissel): Stop inputs, fluch outputs, wait for finish,
+    # then stop the event loop
+    EventMachine.stop_event_loop
+  end
 
   protected
   def filter(event)
