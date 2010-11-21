@@ -75,7 +75,7 @@ class LogStash::Web::ElasticSearch
     end
     req.errback do 
       @logger.warn(["Query failed", params, req.response])
-      yield :failure
+      yield({ "error" => req.response })
     end
   end # def search
 end

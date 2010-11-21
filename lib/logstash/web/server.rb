@@ -49,11 +49,21 @@ class LogStash::Web::Server < Sinatra::Base
     count = params["count"] = (params["count"] or 50).to_i
     offset = params["offset"] = (params["offset"] or 0).to_i
     elasticsearch.search(params) do |@results|
+      #p instance_variables
+      if @results.include?("error")
+        body haml :"search/error", :layout => !request.xhr?
+        next
+      end
+
       @hits = (@results["hits"]["hits"] rescue [])
       @total = (@results["hits"]["total"] rescue 0)
       @graphpoints = []
-      @results["facets"]["by_hour"]["entries"].each do |entry|
-        @graphpoints << [entry["key"], entry["count"]]
+      begin
+        @results["facets"]["by_hour"]["entries"].each do |entry|
+          @graphpoints << [entry["key"], entry["count"]]
+        end
+      rescue => e
+        puts e
       end
 
       if count and offset
