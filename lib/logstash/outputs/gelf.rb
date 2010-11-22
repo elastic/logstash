@@ -26,6 +26,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     gelf.file = event["@source_path"]
 
     event.fields.each do |name, value|
+      next if value == nil or value.empty?
       gelf.add_additional name, value
     end
     gelf.add_additional "@timestamp", event.timestamp
