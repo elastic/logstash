@@ -66,5 +66,26 @@ module LogStash; class Event
 
   def to_hash; return @data end # def to_hash
 
+  def overwrite(event)
+    @data = event.to_hash
+  end
+
   def include?(key); return @data.include?(key) end
+
+  # Append an event to this one.
+  def append(event)
+    self.message += "\n" + event.message 
+    self.tags |= event.tags
+
+    # Append all fields
+    event.fields.each do |name, value|
+      if self.fields.include?(name)
+        puts "Merging field #{name}"
+        self.fields[name] |= value
+      else
+        puts "Setting field #{name}"
+        self.fields[name] = value
+      end
+    end # event.fields.each
+  end
 end; end # class LogStash::Event

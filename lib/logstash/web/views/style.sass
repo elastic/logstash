@@ -22,13 +22,18 @@ body
   margin-top: 1em
 #content table.results
   font-family: monospace
-#content td.event
+#content td.message
+  vertical-align: top
+  padding: 1px
   padding-bottom: 3px
-  white-space: pre-wrap
+  pre
+    white-space: pre-wrap
+    margin: 0
 #content td.timestamp
   white-space: nowrap
-  font-size: 85%
-  text-align: top
+  padding: 1px
+  //font-size: 85%
+  vertical-align: top
 #content tr.selected
   background-color: #FCE69D !important
 #content tr.event:nth-child(2n)
@@ -41,6 +46,8 @@ body
   background-color: pink
   border: 1px solid red
   padding: 3px
+  pre
+    white-space: pre-wrap
 #error h1
   font-size: 130%
   padding: 0

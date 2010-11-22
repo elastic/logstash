@@ -46,8 +46,10 @@ class LogStash::Web::ElasticSearch
       data["duration"] = Time.now - start_time
 
       # TODO(sissel): Plugin-ify this (Search filters!)
-      require "digest/md5"
-      data["hits"]["hits"].each do |hit|
+      #  Search anonymization
+      #require "digest/md5"
+      #data["hits"]["hits"].each do |hit|
+      [].each do |hit|
         event = LogStash::Event.new(hit["_source"])
         event.to_hash.each do |key, value|
           next unless value.is_a?(String)
@@ -73,7 +75,7 @@ class LogStash::Web::ElasticSearch
     end
     req.errback do 
       @logger.warn(["Query failed", params, req.response])
-      yield :failure
+      yield({ "error" => req.response })
     end
   end # def search
 end

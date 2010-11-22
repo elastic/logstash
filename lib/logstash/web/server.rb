@@ -49,11 +49,21 @@ class LogStash::Web::Server < Sinatra::Base
     count = params["count"] = (params["count"] or 50).to_i
     offset = params["offset"] = (params["offset"] or 0).to_i
     elasticsearch.search(params) do |@results|
+      #p instance_variables
+      if @results.include?("error")
+        body haml :"search/error", :layout => !request.xhr?
+        next
+      end
+
       @hits = (@results["hits"]["hits"] rescue [])
       @total = (@results["hits"]["total"] rescue 0)
       @graphpoints = []
-      @results["facets"]["by_hour"]["entries"].each do |entry|
-        @graphpoints << [entry["key"], entry["count"]]
+      begin
+        @results["facets"]["by_hour"]["entries"].each do |entry|
+          @graphpoints << [entry["key"], entry["count"]]
+        end
+      rescue => e
+        puts e
       end
 
       if count and offset
@@ -69,12 +79,21 @@ class LogStash::Web::Server < Sinatra::Base
         next_params = params.clone
         next_params["offset"] = [offset + count, @total - count].min
         @next_href = "?" +  next_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
+        last_params = next_params.clone
+        last_params["offset"] = @total - offset
+        @last_href = "?" +  last_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
       end
 
       if offset > 0
         prev_params = params.clone
         prev_params["offset"] = [offset - count, 0].max
         @prev_href = "?" +  prev_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
+
+        if prev_params["offset"] > 0
+          first_params = prev_params.clone
+          first_params["offset"] = 0
+          @first_href = "?" +  first_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
+        end
       end
 
       body haml :"search/ajax", :layout => !request.xhr?

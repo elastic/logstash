@@ -23,7 +23,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   end
 
   def register
-    @logger.info("Registering #{@url}")
+    @logger.info("Registering input #{@url}")
     @amqp = AMQP.connect(:host => @url.host)
     @mq = MQ.new(@amqp)
     @target = nil
