@@ -1,3 +1,4 @@
+require "logstash/namespace"
 
 # Provide our own Time wrapper for ISO8601 support
 # Example:
@@ -6,7 +7,7 @@
 #
 #   >> LogStash::Time.now.utc.to_iso8601
 #   => "2010-10-17 07:25:26.788704Z"
-module LogStash; class Time < ::Time
+class LogStash::Time < ::Time
   ISO8601 = "%Y-%m-%dT%H:%M:%S"
 
   # Return a string that is this time in ISO8601 format.
@@ -24,4 +25,4 @@ module LogStash; class Time < ::Time
       raise "Can't convert object of type #{obj.class} (#{obj}) to iso8601."
     end
   end
-end; end # class LogStash::Time
+end # class LogStash::Time
