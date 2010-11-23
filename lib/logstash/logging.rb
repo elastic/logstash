@@ -22,15 +22,18 @@ class LogStash::Logger < Logger
       self.level = Logger::DEBUG
     end
 
+    @formatter.progname = self.progname = File.basename($0)
+
     # Conditional support for awesome_print
     if !@@have_awesome_print && @@notify_awesome_print_load_failed
-      info [ "Failed: require 'ap' (aka awesome_print); some " \
-             "logging features may be disabled", 
-             @@notify_awesome_print_load_failed ]
+      debug [ "awesome_print not found, falling back to Object#inspect." \
+              "If you want prettier log output, run 'gem install "\
+              "awesome_print'", 
+              { :exception @@notify_awesome_print_load_failed }]
+
+      # Only show this once.
       @@notify_awesome_print_load_failed = nil
     end
-
-    @formatter.progname = self.progname = File.basename($0)
   end # def initialize
 
   def level=(level)
