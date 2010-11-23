@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+    <script src="../js/jquery.tmpl.min.js"></script>
+    <style type="text/css">
+      #radiator {
+        margin-top: 1em;
+        padding-left:10px;
+        padding-right:10px;
+        font-size: 120%;
+        border-top: 1px solid black;
+        width: 100%;
+      }
+
+      #radiator .entry:nth-child(2n) {
+        background-color: #C4FFC6;
+      }
+
+      #radiator .timestamp {
+        white-space: nowrap;
+        text-align: left;
+        vertical-align: top;
+        font-family: monospace;
+        font-size: 75%;
+        padding-right: 1em;
+        width: 14em;
+        border-right: 1px solid grey;
+      }
+
+      #radiator .message {
+        font-family: monospace;
+        //text-indent: -2em;
+        //padding-left: 3em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1> logstash information radiator </h1>
+
+    New log data will be streamed here in real-time as logstash
+    receives it.
+
+    <table id="radiator"></table>
+
+    <script id="message-template" type="text/x-jquery-tmpl"><![CDATA[
+      <tr>
+          <td class="timestamp">${received_timestamp}</td>
+          <td class="message">${message}</td>
+      </tr>
+    ]]></script>
+
+    <script>
+      $(document).ready(function() {
+        var ws = new WebSocket("ws://snack.home:3000");
+        ws.onmessage = function(event) {
+          eval("var data = " + event.data);
+          //var el = $("<div></div>")
+          //el.html(data.message)
+          var el = $("#message-template").tmpl(data);
+          el.addClass("message")
+            .css("display", "none")
+            .appendTo($("#radiator"))
+            .fadeIn()
+            .delay(10000)
+            .fadeOut(2000, function() {
+              $(this).remove();
+            });
+        }
+      });
+    </script>
+  </body>
+</html>
