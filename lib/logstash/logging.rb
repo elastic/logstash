@@ -30,7 +30,7 @@ class LogStash::Logger < Logger
       debug [ "awesome_print not found, falling back to Object#inspect." \
               "If you want prettier log output, run 'gem install "\
               "awesome_print'", 
-              { :exception @@notify_awesome_print_load_failed }]
+              { :exception => @@notify_awesome_print_load_failed }]
 
       # Only show this once.
       @@notify_awesome_print_load_failed = nil
