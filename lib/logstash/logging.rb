@@ -1,4 +1,5 @@
 require "logstash/namespace"
+require "logstash/ruby_fixes"
 require "logger"
 
 class LogStash::Logger < Logger
