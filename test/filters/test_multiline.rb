@@ -1,0 +1,97 @@
+require "test/unit"
+require "logstash"
+require "logstash/filters"
+require "logstash/event"
+
+class TestFilterMultiline < Test::Unit::TestCase
+  def setup
+    @filter = LogStash::Filters.from_name("multiline", {})
+  end
+
+  def test_name(name)
+    @typename = name
+  end
+
+  def config(cfg)
+    @filter.add_config(@typename, cfg)
+    @filter.register
+  end
+
+  def test_with_next
+    test_name "with next"
+    config "pattern" => "\.\.\.$", "what" => "next"
+
+    inputs = [
+      "hello world ...",
+      "and more!",
+      "one",
+      "two...",
+      "two again",
+    ]
+
+    expected_outputs = [
+      "hello world ...\nand more!",
+      "one",
+      "two...\ntwo again",
+    ]
+         
+    outputs = []
+
+    inputs.each do |input|
+      event = LogStash::Event.new
+      event.type = @typename
+      event.message = input
+      @filter.filter(event)
+      if !event.cancelled?
+        outputs << event
+      end
+    end
+
+    assert_equal(expected_outputs.length, outputs.length,
+                 "Incorrect number of output events")
+    expected_outputs.zip(outputs).each do |expected, actual|
+      assert_equal(expected, actual)
+    end
+  end # def test_with_next
+  
+  def test_with_previous
+    test_name "with previous"
+    config "pattern" => "^\\s", "what" => "previous"
+
+    inputs = [
+      "hello world ...",
+      "   and more!",
+      "one",
+      "two",
+      "   two 1",
+      "   two 2",
+      "   two 3",
+      "three",
+    ]
+
+    expected_outputs = [
+      "hello world ...\n   and more!",
+      "one",
+      "two\n   two 1\n   two 2\n   two3",
+      "three"
+    ]
+         
+    outputs = []
+
+    inputs.each do |input|
+      event = LogStash::Event.new
+      event.type = @typename
+      event.message = input
+      @filter.filter(event)
+      if !event.cancelled?
+        outputs << event
+      end
+    end
+
+    assert_equal(expected_outputs.length, outputs.length,
+                 "Incorrect number of output events")
+    expected_outputs.zip(outputs).each do |expected, actual|
+      assert_equal(expected, actual)
+    end
+  end
+end
