@@ -14,4 +14,12 @@ class LogStash::Filters::Base
   def filter(event)
     raise "#{self.class}#filter must be overidden"
   end # def filter
+
+  def add_config(type, typeconfig)
+    if @config.include?(type)
+      @config[type].merge!(typeconfig)
+    else
+      @config[type] = typeconfig
+    end
+  end
 end # class LogStash::Filters::Base

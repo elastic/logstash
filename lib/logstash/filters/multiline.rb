@@ -93,7 +93,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     key = [event.source, event.type]
     pending = @pending[key]
 
-    @logger.info(["Reg: ", typeconfig["pattern"], event.message, match])
+    @logger.debug(["Reg: ", typeconfig["pattern"], event.message, match])
     case typeconfig["what"]
     when "previous"
       if match

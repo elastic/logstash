@@ -19,7 +19,7 @@ class TestFilterMultiline < Test::Unit::TestCase
 
   def test_with_next
     test_name "with next"
-    config "pattern" => "\.\.\.$", "what" => "next"
+    config "pattern" => "\\.\\.\\.$", "what" => "next"
 
     inputs = [
       "hello world ...",
@@ -43,7 +43,7 @@ class TestFilterMultiline < Test::Unit::TestCase
       event.message = input
       @filter.filter(event)
       if !event.cancelled?
-        outputs << event
+        outputs << event.message
       end
     end
 
@@ -72,7 +72,7 @@ class TestFilterMultiline < Test::Unit::TestCase
     expected_outputs = [
       "hello world ...\n   and more!",
       "one",
-      "two\n   two 1\n   two 2\n   two3",
+      "two\n   two 1\n   two 2\n   two 3",
       "three"
     ]
          
@@ -84,8 +84,12 @@ class TestFilterMultiline < Test::Unit::TestCase
       event.message = input
       @filter.filter(event)
       if !event.cancelled?
-        outputs << event
+        outputs << event.message
       end
+    end
+    last = @filter.flush("unknown", @typename)
+    if last
+      outputs << last.message
     end
 
     assert_equal(expected_outputs.length, outputs.length,
