@@ -45,19 +45,20 @@
 
     <script id="message-template" type="text/x-jquery-tmpl"><![CDATA[
       <tr>
-          <td class="timestamp">${received_timestamp}</td>
-          <td class="message">${message}</td>
+          <td class="timestamp">${$item.data["@timestamp"]}</td>
+          <td class="message">${$item.data["@message"]}</td>
       </tr>
     ]]></script>
 
     <script>
       $(document).ready(function() {
-        var ws = new WebSocket("ws://snack.home:3000");
+        var ws = new WebSocket("ws://" + document.location.hostname + ":3232");
+        ws.onopen = function(event) {
+          //console.log(["WebSocket open", ws])
+        };
         ws.onmessage = function(event) {
           eval("var data = " + event.data);
-          //var el = $("<div></div>")
-          //el.html(data.message)
-          var el = $("#message-template").tmpl(data);
+          var el = $("#message-template").tmpl(data, { "message": data["@message"], "timestamp": data["@timestamp"] });
           el.addClass("message")
             .css("display", "none")
             .appendTo($("#radiator"))
@@ -66,7 +67,7 @@
             .fadeOut(2000, function() {
               $(this).remove();
             });
-        }
+        };
       });
     </script>
   </body>
