@@ -4,7 +4,7 @@ require "uri"
 
 # General event type. Will expand this in the future.
 module LogStash; class Event
-  def initialize(data)
+  def initialize(data=Hash.new)
     @cancelled = false
     @data = {
       "@source" => "unknown",

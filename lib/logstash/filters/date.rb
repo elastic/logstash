@@ -22,6 +22,14 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     @types = Hash.new { |h,k| h[k] = [] }
   end # def initialize
 
+  def add_config(type, typeconfig)
+    if @config.include?(type)
+      @config[type].merge!(typeconfig)
+    else
+      @config[type] = typeconfig
+    end
+  end
+
   def register
     @config.each do |type, typeconfig|
       @logger.debug "Setting type #{type.inspect} to the config #{typeconfig.inspect}"
