@@ -20,7 +20,9 @@ class LogStash::Time < ::Time
   def self.to_iso8601(obj)
     if obj.is_a?(DateTime)
       tz = obj.offset == 0 ? "Z" : obj.strftime("%z")
-      return "%s.%06d%s" % [obj.strftime(ISO8601), obj.sec_fraction.to_f, tz]
+      # DateTime#sec_fraction is fractional seconds "of a day"
+      sec_fraction = (obj.sec_fraction.to_f * 86400 * 1000000)
+      return "%s.%06d%s" % [obj.strftime(ISO8601), sec_fraction, tz]
     else
       raise "Can't convert object of type #{obj.class} (#{obj}) to iso8601."
     end
