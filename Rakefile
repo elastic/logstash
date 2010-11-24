@@ -13,6 +13,6 @@ task :publish do
 end
 
 task :test do
-    system("cd test; ruby alltests.rb")
+    system("cd test; ruby run.rb")
 end
 
