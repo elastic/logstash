@@ -1,10 +1,10 @@
 require "eventmachine"
 require "eventmachine-tail"
-require "logstash/namespace"
-require "logstash/inputs"
-require "logstash/outputs"
 require "logstash/filters"
+require "logstash/inputs"
 require "logstash/logging"
+require "logstash/namespace"
+require "logstash/outputs"
 
 # Collect logs, ship them out.
 class LogStash::Agent
@@ -80,6 +80,9 @@ class LogStash::Agent
         @outputs << output
       end # each output
     end
+
+    # Register any signal handlers
+    sighandler
   end # def register
 
   public
@@ -124,4 +127,33 @@ class LogStash::Agent
       output(event)
     end
   end # def input
+
+  public
+  def sighandler
+    @sigchannel = EventMachine::Channel.new
+    Signal.trap("USR1") do
+      @sigchannel.push(:USR1)
+    end
+
+    @sigchannel.subscribe do |msg|
+      case msg
+      when :USR1
+        counts = Hash.new { |h,k| h[k] = 0 }
+        ObjectSpace.each_object do |obj|
+          counts[obj.class] += 1
+        end
+
+        @logger.info("SIGUSR1 received. Dumping state")
+        @logger.info("#{self.class.name} config")
+        @logger.info(["  Inputs:", @inputs])
+        @logger.info(["  Filters:", @filters])
+        @logger.info(["  Outputs:", @outputs])
+
+        @logger.info("Dumping counts of objects by class")
+        counts.sort { |a,b| a[1] <=> b[1] or a[0] <=> b[0] }.each do |key, value|
+          @logger.info("Class: [#{value}] #{key}")
+        end
+      end
+    end
+  end
 end # class LogStash::Components::Agent
