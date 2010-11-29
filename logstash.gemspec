@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   files = []
-  dirs = %w{lib examples etc patterns}
+  dirs = %w{lib examples etc patterns test}
   dirs.each do |dir|
     files += Dir["#{dir}/**/*"]
   end
