@@ -1,4 +1,5 @@
 require "logstash/namespace"
+require "date" # for DateTime
 
 # Provide our own Time wrapper for ISO8601 support
 # Example:
