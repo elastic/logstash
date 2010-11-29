@@ -49,8 +49,8 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             end
             event.timestamp = LogStash::Time.to_iso8601(time)
             @logger.debug "Parsed #{value.inspect} as #{event.timestamp}"
-          rescue
-            @logger.warn "Failed parsing date #{value.inspect} from field #{field} with format #{format.inspect}: #{$!}"
+          rescue => e
+            @logger.warn "Failed parsing date #{value.inspect} from field #{field} with format #{format.inspect}: #{e}"
           end
         end # fieldvalue.each 
       end # if this event has a field we expect to be a timestamp
