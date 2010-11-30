@@ -40,6 +40,7 @@ Gem::Specification.new do |spec|
   spec.bindir = "bin"
   spec.executables << "logstash"
   spec.executables << "logstash-web"
+  spec.executables << "logstash-test"
 
   spec.author = "Jordan Sissel"
   spec.email = "jls@semicomplete.com"
