@@ -26,8 +26,8 @@ Gem::Specification.new do |spec|
   #spec.add_dependency("em-websocket")
 
   # For amqp://
-  #spec.add_dependency("amqp")
-  #spec.add_dependency("uuidtools")
+  spec.add_dependency("amqp")
+  spec.add_dependency("uuidtools")
   
   # For the web interface
   #spec.add_dependency("async_sinatra")
