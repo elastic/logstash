@@ -1,5 +1,4 @@
-Usage:
+See the docs online:
 
-bin/logstash client    # Will watch /var/log/messages and push to amqp
-bin/logstash server    # Watch amqp messages; parse and send to another topic
-examples/test.rb       # Watch parsed messages on amqp, reacts to specific ones
+* http://code.google.com/p/logstash/wiki/GettingStartedCentralized
+* http://code.google.com/p/logstash/wiki/GettingStartedStandalone
