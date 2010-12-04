@@ -21,7 +21,7 @@ filters:
           - nagios
           - test
       - match:
-          message: r/foo.*bar/i
+          message: (?i)foo.*bar
           program: test
         add_fields:
           nagios_alert: foo_alert

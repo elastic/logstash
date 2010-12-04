@@ -67,7 +67,7 @@ class TestFilterGrep < Test::Unit::TestCase
 
   def test_single_match_regexp
     test_name "single_match_regexp"
-    config [{"match" => {"str" => /test.*foo/i}}]
+    config [{"match" => {"str" => "(?i)test.*foo"}}]
 
     event = LogStash::Event.new
     event.type = @typename
@@ -78,7 +78,7 @@ class TestFilterGrep < Test::Unit::TestCase
 
   def test_single_match_regexp_drop
     test_name "single_match_regexp_drop"
-    config [{"match" => {"str" => /test.*foo/}}]
+    config [{"match" => {"str" => "test.*foo"}}]
 
     event = LogStash::Event.new
     event.type = @typename
