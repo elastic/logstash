@@ -1,6 +1,24 @@
-Rather than write a style guide, please follow by examples you see in the code.
-If you send me a patch, I will not reject it for style reasons (but I will fix
-it before it gets committed) 
+# Style Guide 
+
+Rather than write a full style guide, please follow by examples you see in the
+code.  If you send me a patch, I will not reject it for style reasons (but I
+will fix it before it gets committed) 
+
+
+## Logging
+
+We support logging structured data, so please do that.
+
+Rather than this:
+
+    @logger.info("Some error occured in request #{request} on input #{input} from client #{ip}")
+
+Do this:
+    
+    @logger.info(["Some error occured in this request", { :request => request, :input => input, :client => ip}])
+
+
+## Code Style
 
 * indentation: 2 spaces
 * between methods: 1 line
