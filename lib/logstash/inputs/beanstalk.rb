@@ -19,14 +19,15 @@ class LogStash::Inputs::Beanstalk < LogStash::Inputs::Base
     @beanstalk.each_job do |job|
       begin
         event = LogStash::Event.from_json(job.body)
-        receive(event)
-        @beanstalk.delete(job)
       rescue => e
         @logger.warn(["Trouble parsing beanstalk job",
                      {:error => e.message, :body => job.body,
                       :backtrace => e.backtrace}])
         @beanstalk.bury(job, 0)
       end
+
+      receive(event)
+      @beanstalk.delete(job)
     end # @beanstalk.each_job
   end # def register
 end # class LogStash::Inputs::Beanstalk
