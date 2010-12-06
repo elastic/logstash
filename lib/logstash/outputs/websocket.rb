@@ -9,10 +9,10 @@ class LogStash::Outputs::Websocket < LogStash::Outputs::Base
   def register
     @channel = EventMachine::Channel.new
     @subscribers = 0
-    host = (@url.host or "0.0.0.0")
-    port = (@url.port or 3000)
+    @url.host = (@url.host or "0.0.0.0")
+    @url.port = (@url.port or 3232)
     @logger.info("Registering websocket on #{@url}")
-    EventMachine::WebSocket.start(:host => host, :port => port) do |ws|
+    EventMachine::WebSocket.start(:host => @url.host, :port => @url.port) do |ws|
       ws.onopen do
         @subscribers += 1
         @logger.info("New #{self.class.name} connection")
