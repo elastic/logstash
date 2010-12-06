@@ -1,0 +1,7 @@
+--- 
+inputs:
+  stomp:
+    - stomp://logs:password@localhost:6163/topic/logs
+outputs:
+- stdout:///
+
