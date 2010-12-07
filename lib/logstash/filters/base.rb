@@ -2,6 +2,7 @@ require "logstash/namespace"
 require "logstash/logging"
 
 class LogStash::Filters::Base
+  attr_accessor :logger
   def initialize(config = {})
     @logger = LogStash::Logger.new(STDERR)
     @config = config

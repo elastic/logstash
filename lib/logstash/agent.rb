@@ -14,7 +14,7 @@ class LogStash::Agent
   attr_reader :filters
 
   def initialize(config)
-    @logger = LogStash::Logger.new(STDERR)
+    log_to(STDERR)
 
     @config = config
     @outputs = []
@@ -25,6 +25,11 @@ class LogStash::Agent
     #   - log config
     # - where to ship to
   end # def initialize
+
+  public
+  def log_to(target)
+    @logger = LogStash::Logger.new(target)
+  end # def log_to
 
   # Register any event handlers with EventMachine
   # Technically, this agent could listen for anything (files, sockets, amqp,
@@ -55,6 +60,7 @@ class LogStash::Agent
         urls.each do |url|
           @logger.debug("Using input #{url} of type #{type}")
           input = LogStash::Inputs.from_url(url, type) { |event| receive(event) }
+          input.logger = @logger
           input.register
           @inputs << input
         end
@@ -67,6 +73,7 @@ class LogStash::Agent
         name, value = filter
         @logger.debug("Using filter #{name} => #{value.inspect}")
         filter = LogStash::Filters.from_name(name, value)
+        filter.logger = @logger
         filter.register
         @filters << filter
       end # each filter
@@ -76,6 +83,7 @@ class LogStash::Agent
       @config["outputs"].each do |url|
         @logger.debug("Using output #{url}")
         output = LogStash::Outputs.from_url(url)
+        output.logger = @logger
         output.register
         @outputs << output
       end # each output
@@ -135,6 +143,10 @@ class LogStash::Agent
       @sigchannel.push(:USR1)
     end
 
+    Signal.trap("INT") do
+      @sigchannel.push(:INT)
+    end
+
     @sigchannel.subscribe do |msg|
       case msg
       when :USR1
@@ -153,7 +165,12 @@ class LogStash::Agent
         counts.sort { |a,b| a[1] <=> b[1] or a[0] <=> b[0] }.each do |key, value|
           @logger.info("Class: [#{value}] #{key}")
         end
-      end
-    end
-  end
+      when :INT
+        @logger.warn("SIGINT received. Shutting down.")
+        EventMachine::stop_event_loop
+        # TODO(sissel): Should have input/output/filter register shutdown
+        # hooks.
+      end # case msg
+    end # @sigchannel.subscribe
+  end # def sighandler
 end # class LogStash::Components::Agent

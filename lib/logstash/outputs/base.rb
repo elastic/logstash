@@ -5,6 +5,7 @@ require "cgi"
 require "uri"
 
 class LogStash::Outputs::Base
+  attr_accessor :logger
   def initialize(url, config={}, &block)
     @url = url
     @url = URI.parse(url) if url.is_a? String

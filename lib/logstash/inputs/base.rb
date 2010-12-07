@@ -4,6 +4,7 @@ require "logstash/logging"
 require "uri"
 
 class LogStash::Inputs::Base
+  attr_accessor :logger
   def initialize(url, type, config={}, &block)
     @logger = LogStash::Logger.new(STDERR)
     @url = url

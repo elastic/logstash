@@ -8,7 +8,7 @@ require "logstash/agent"
 require "optparse"
 require "yaml"
 
-Settings = Struct.new(:config_file, :daemonize)
+Settings = Struct.new(:config_file, :daemonize, :logfile)
 
 settings = Settings.new
 settings.daemonize = false
@@ -23,9 +23,19 @@ opts = OptionParser.new do |opts|
     settings.config_file = arg
   end
 
-  #opts.on("-d", "--daemonize", "Daemonize (default is run in foreground)") do 
-    #settings.daemonize = true
-  #end
+  opts.on("-d", "--daemonize", "Daemonize (default is run in foreground)") do 
+    settings.daemonize = true
+    begin
+      require "daemons"
+    rescue LoadError => e
+      $stderr.puts "Could not load library 'daemons'. Is the 'daemons' rubygem installed?"
+      exit 1
+    end
+  end
+
+  opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
+    settings.logfile = path
+  end
 end
 
 begin
@@ -33,7 +43,6 @@ begin
   if settings.config_file == "" or settings.config_file == nil
     raise "No config file given. (missing -f or --config flag?)"
   end
-
 rescue
   $stderr.puts "#{progname}: #{$!}"
   $stderr.puts opts
@@ -52,5 +61,15 @@ rescue => e
   exit 1
 end
 
+if settings.daemonize
+  if Process.fork == nil
+    Process.setsid 
+  else
+    exit(0)
+  end
+end
 agent = LogStash::Agent.new(config)
-agent.run
+if settings.logfile
+  agent.log_to(settings.logfile)
+end
+agent.run 
