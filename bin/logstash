@@ -8,11 +8,12 @@ require "logstash/agent"
 require "optparse"
 require "yaml"
 
-Settings = Struct.new(:config_file, :daemonize, :logfile)
+Settings = Struct.new(:config_file, :daemonize, :logfile, :verbose)
 
 settings = Settings.new
 settings.daemonize = false
 settings.config_file = nil
+settings.verbose = 0
 progname = File.basename($0)
 
 opts = OptionParser.new do |opts|
@@ -29,6 +30,10 @@ opts = OptionParser.new do |opts|
 
   opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
     settings.logfile = path
+  end
+
+  opts.on("-v", "Increase verbosity (not yet used)") do
+    settings.verbose += 1
   end
 end
 
@@ -62,6 +67,7 @@ if settings.daemonize
     exit(0)
   end
 end
+
 agent = LogStash::Agent.new(config)
 if settings.logfile
   agent.log_to(settings.logfile)
