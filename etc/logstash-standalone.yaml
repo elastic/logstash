@@ -38,7 +38,7 @@ filters:
       timestamp: "%d/%b/%Y:%H:%M:%S %Z"
 outputs:
 - stdout:///
-#- elasticsearch://localhost:9200/logs/all
+- elasticsearch://localhost:9200/logs/all
 # But we could write to mongodb, too.
 #  - mongodb://localhost/parsedlogs
 # And also write to an AMQP topic
