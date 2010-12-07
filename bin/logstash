@@ -25,12 +25,6 @@ opts = OptionParser.new do |opts|
 
   opts.on("-d", "--daemonize", "Daemonize (default is run in foreground)") do 
     settings.daemonize = true
-    begin
-      require "daemons"
-    rescue LoadError => e
-      $stderr.puts "Could not load library 'daemons'. Is the 'daemons' rubygem installed?"
-      exit 1
-    end
   end
 
   opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
