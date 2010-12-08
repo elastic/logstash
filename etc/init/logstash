@@ -9,19 +9,40 @@
 logstash_bin="/usr/bin/logstash"
 logstash_conf="/etc/logstash/logstash.yaml"
 logstash_log="/var/log/logstash/logstash.log"
-NICE_LEVEL="19"
+NICE_LEVEL="-n 19"
+
+find_logstash_process () {
+    PIDTEMP=`ps ux | grep ruby | grep logstash | awk '{ print $2 }'`
+    # Pid not found
+    if [ "x$PIDTEMP" = "x" ]; then
+        PID=-1
+    else
+        PID=$PIDTEMP
+    fi
+}
+
+start () {
+    LOG_DIR=`dirname ${logstash_log}`
+    if [ ! -d $LOG_DIR ]; then
+      echo "Log dir ${LOG_DIR} doesn't exist. Creating"
+      mkdir $LOG_DIR
+    fi
+    nice ${NICE_LEVEL} ${logstash_bin} -d -f ${logstash_conf} -l ${logstash_log}
+}
+
+stop () {
+    find_logstash_process
+    if [ $PID -ne -1 ]; then
+        kill $PID
+    fi
+}
 
 case $1 in
 start)
-        LOG_DIR=`dirname ${logstash_log}`
-        if [ ! -d $LOG_DIR ]; then
-          echo "Log dir ${LOG_DIR} doesn't exist. Creating"
-          mkdir $LOG_DIR
-        fi
-        nice -n ${NICE_LEVEL} ${logstash_bin} -d -f ${logstash_conf} -l ${logstash_log}
+        start
         ;;
 stop)
-        pkill -u root logstash
+        stop
         exit 0
         ;;
 reload)
@@ -33,8 +54,12 @@ restart)
         start
         ;;
 status)
-        pgrep logstash  >&/dev/null
-        exit $?
+        find_logstash_process
+	if [ $PID -gt 0 ]; then
+            exit 0
+        else
+            exit 1
+	fi 
         ;;
 *)
         echo $"Usage: $0 {start|stop|restart|reload|status}"
