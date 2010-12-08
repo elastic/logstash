@@ -40,6 +40,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
         fieldvalue = event.fields[field]
         fieldvalue = [fieldvalue] if fieldvalue.is_a?(String)
         fieldvalue.each do |value|
+          next if value == ""
           begin
             case format
               when "ISO8601"

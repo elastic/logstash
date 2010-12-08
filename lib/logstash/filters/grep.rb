@@ -33,6 +33,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
     config = @config[event.type]
     if not config
       @logger.debug("grep: skipping type #{event.type} from #{event.source}")
+      event.cancel
       return
     end
 
@@ -54,6 +55,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
           next unless re.match(value)
           @logger.debug("grep matched on field #{field}")
           match_count += 1
+          break
         end
       end # match["match"].each
 
