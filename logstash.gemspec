@@ -11,6 +11,8 @@ Gem::Specification.new do |spec|
   spec.version = "0.2.#{rev}"
   spec.summary = "logstash - log and event management"
   spec.description = "scalable log and event management (search, archive, pipeline)"
+  spec.license = "Apache License (2.0)"
+
   spec.add_dependency("eventmachine-tail")
   spec.add_dependency("json")
   #spec.add_dependency("awesome_print")
@@ -28,12 +30,15 @@ Gem::Specification.new do |spec|
   # For amqp://
   spec.add_dependency("amqp")
   spec.add_dependency("uuidtools")
-  
+
   # For the web interface
   spec.add_dependency("async_sinatra")
   spec.add_dependency("rack")
   spec.add_dependency("thin")
   spec.add_dependency("haml")
+
+  # For beanstalk://
+  #spec.add_dependency("em-jack")
 
   spec.files = files
   spec.require_paths << "lib"
@@ -42,8 +47,8 @@ Gem::Specification.new do |spec|
   spec.executables << "logstash-web"
   spec.executables << "logstash-test"
 
-  spec.author = "Jordan Sissel"
-  spec.email = "jls@semicomplete.com"
+  spec.authors = ["Jordan Sissel", "Pete Fritchman"]
+  spec.email = ["jls@semicomplete.com", "petef@databits.net"]
   spec.homepage = "http://code.google.com/p/logstash/"
 end
 

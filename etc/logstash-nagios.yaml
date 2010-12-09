@@ -1,0 +1,19 @@
+--- 
+configname: nagios
+# Example config that filters already-parsed logs (grok filter at least) for
+# certain patterns and sends the results to Nagios.
+inputs:
+  all:
+  - amqp:///topic/parsedlogs
+filters:
+- grep:
+    java:
+      - match:
+          JAVASTACKTRACEPART: .*
+        add_fields:
+          nagios_host: localhost
+          nagios_service: Java Exceptions
+          nagios_annotation: "Java exception"
+outputs:
+- stdout:///
+- nagios:///var/lib/nagios3/rw/nagios.cmd
