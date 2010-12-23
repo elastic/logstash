@@ -1,35 +1,30 @@
 #!/usr/bin/env ruby
 require 'rubygems'
-$:.unshift File.dirname(__FILE__) + "/../../lib"
+$:.unshift File.dirname(__FILE__) + "/../../../lib"
+$:.unshift File.dirname(__FILE__) + "/../../"
 require "test/unit"
-require "logstash"
-require "logstash/filters"
-require "logstash/event"
 require "tempfile"
-require "socket"
+require "logstash/testcase"
+require "logstash/agent"
 
 
 # TODO(sissel): refactor this so we can more easily specify tests.
-class TestInputFile < Test::Unit::TestCase
+class TestInputFile < LogStash::TestCase
   def em_setup
     @tmpfile = Tempfile.new(self.class.name)
-    @type = "default"
-    @hostname = Socket.gethostname
 
-    config = YAML.load <<-"YAML"
-    inputs:
-      #{@type}:
-        - file://#{@tmpfile.path}
-    outputs:
-      - internal:///
-    YAML
+    config = {
+      "inputs" => {
+        @type => [
+          "file://#{@tmpfile.path}"
+        ],
+      },
+      "outputs" => [
+        "internal:///"
+      ]
+    } # config
 
-    @output = EventMachine::Channel.new
-    @agent = LogStash::Agent.new(config)
-    @agent.register
-    @agent.outputs[0].callback do |event|
-      @output.push(event)
-    end
+    super(config)
   end
 
   def test_simple
@@ -51,8 +46,8 @@ class TestInputFile < Test::Unit::TestCase
 
       # Write to the file periodically
       timer = EM::PeriodicTimer.new(0.2) do
-        a = data.shift((rand * 3).to_i + 1).join("\n")
-        @tmpfile.puts a
+        out = data.shift((rand * 3).to_i + 1).join("\n")
+        @tmpfile.puts out
         @tmpfile.flush
         timer.cancel if data.length == 0
       end
