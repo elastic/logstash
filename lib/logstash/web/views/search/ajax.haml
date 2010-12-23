@@ -31,9 +31,9 @@
           last
   - if @hits.length == 0 
     - if !params[:q]
-      No query given. How about <a href="?q=*" class="querychanger">this?</a>
+      %h3#querystatus No query given. How about <a href="?q=*" class="querychanger">this?</a>
     - else
-      No results for query '#{params[:q]}' 
+      %h3#querystatus No results for query '#{params[:q]}' 
   - else
     %table.results
       %tr

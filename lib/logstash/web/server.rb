@@ -32,17 +32,51 @@ class LogStash::Web::Server < Sinatra::Base
   end # '/'
 
   aget '/search' do
-    headers({"Content-Type" => "text/html" })
+    result_callback = proc do 
+      status 500 if @error
+
+      params[:format] ||= "html"
+      case params[:format]
+      when "html"
+        headers({"Content-Type" => "text/html" })
+        body haml :"search/results", :layout => !request.xhr?
+      when "text"
+        headers({"Content-Type" => "text/plain" })
+        body erb :"search/results.txt", :layout => false
+      when "txt"
+        headers({"Content-Type" => "text/plain" })
+        body erb :"search/results.txt", :layout => false
+      when "json"
+        headers({"Content-Type" => "text/plain" })
+        hits = @hits.collect { |h| h["_source"] }
+        response = {
+          "hits" => hits,
+          "facets" => (@results["facets"] rescue nil),
+        }
+
+        response["error"] = @error if @error
+        body response.to_json
+      end # case params[:format]
+    end # proc result_callback
+
+    # We'll still do a search query here even though most users
+    # have javascript enabled, we need to show the results in
+    # case a user doesn't have javascript.
     if params[:q] and params[:q] != ""
       elasticsearch.search(params) do |@results|
         @hits = (@results["hits"]["hits"] rescue [])
-        body haml :"search/results", :layout => !request.xhr?
+        begin
+          result_callback.call
+        rescue => e
+          puts e
+        end
       end
     else
+      #@error = "No query given."
       @hits = []
-      body haml :"search/results", :layout => !request.xhr?
+      result_callback.call
     end
-  end
+  end # aget '/search'
 
   apost '/search/ajax' do
     headers({"Content-Type" => "text/html" })
