@@ -99,8 +99,41 @@ class LogStash::Web::Server < Sinatra::Base
       body haml :"search/ajax", :layout => !request.xhr?
     end # elasticsearch.search
   end # apost '/search/ajax'
-
 end # class LogStashWeb
+
+require "optparse"
+
+Settings = Struct.new(:daemonize, :logfile)
+settings = Settings.new
+progname = File.basename($0)
+
+opts = OptionParser.new do |opts|
+  opts.banner = "Usage: #{progname} [options]"
+
+  opts.on("-d", "--daemonize", "Daemonize (default is run in foreground)") do 
+    settings.daemonize = true
+  end
+
+  opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
+    settings.logfile = path
+  end
+end
+
+opts.parse!
+
+if settings.daemonize
+  if Process.fork == nil
+    Process.setsid 
+  else
+    exit(0)
+  end
+end
+
+if settings.logfile
+  logfile = File.open(settings.logfile, "w")
+  STDOUT.reopen(logfile)
+  STDERR.reopen(logfile)
+end
 
 Rack::Handler::Thin.run(
   Rack::CommonLogger.new( \
