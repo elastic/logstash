@@ -106,6 +106,7 @@ class LogStash::Agent
     # TODO(sissel): Stop inputs, fluch outputs, wait for finish,
     # then stop the event loop
     EventMachine.stop_event_loop
+    $EVENTMACHINE_STOPPING = true
   end
 
   protected

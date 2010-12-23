@@ -25,6 +25,12 @@ class LogStash::Stomp
     end # def connection_completed
 
     def unbind
+      if $EVENTMACHINE_STOPPING
+        @logger.debug(["Connection to stomp broker died (probably since we are exiting)",
+                      { :url => @url }])
+        return
+      end
+                    
       @logger.error(["Connection to stomp broker died, retrying.", { :url => @url }])
       @ready = false
       EventMachine::Timer.new(1) do
