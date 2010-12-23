@@ -22,8 +22,7 @@ class TestInputSyslog < LogStash::TestCase
     1.upto(30) do
       begin
         # Grab a a random port to listen on.
-        #@port = (rand * 30000 + 20000).to_i
-        @port = 12345
+        @port = (rand * 30000 + 20000).to_i
         config["inputs"][@type] = ["syslog://127.0.0.1:#{@port}"]
         super(config)
         done = true
