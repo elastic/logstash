@@ -5,29 +5,42 @@ class LogStash::Stomp
   class Handler < EventMachine::Connection
     include EM::Protocols::Stomp
 
+    attr_accessor :should_subscribe
+    attr_accessor :ready
+
     def initialize(*args)
       super
 
       @input = args[0]
       @logger = args[1]
       @url = args[2]
+      @should_subscribe = true
+      @ready = false
     end # def initialize
 
     def connection_completed
       @logger.debug("Connected")
       connect :login => @url.user, :passcode => @url.password
+      @ready = true
     end # def connection_completed
 
     def unbind
-      @logger.error(["Error when connecting to stomp broker", { :url => @url }])
+      @logger.error(["Connection to stomp broker died, retrying.", { :url => @url }])
+      @ready = false
+      EventMachine::Timer.new(1) do
+        reconnect(@url.host, @url.port)
+      end
     end # def unbind
 
     def receive_msg(message)
       @logger.debug(["receiving message", { :msg => message }])
       if message.command == "CONNECTED"
-        @logger.debug(["subscribing to", { :path => @url.path }])
-        subscribe @url.path
-        return
+        if @should_subscribe
+          @logger.debug(["subscribing to", { :path => @url.path }])
+          subscribe @url.path
+          return
+        end
+        @ready = true
       end
     end # def receive_msg
   end # class Handler
