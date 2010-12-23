@@ -6,6 +6,9 @@ require "logstash/agent"
 require "logstash/stomp/handler"
 require "logstash/logging"
 
+# TODO(sissel): Add tests coverage for authenticated stomp sessions
+# TODO(sissel): What about queue vs fanout vs topic?
+
 class TestInputStomp < LogStash::TestCase
   def em_setup
     @flags ||= ["-d"]
