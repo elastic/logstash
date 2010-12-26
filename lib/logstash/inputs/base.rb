@@ -13,6 +13,14 @@ class LogStash::Inputs::Base
     @callback = block
     @type = type
     @tags = []
+
+    @urlopts = {}
+    if @url.query
+      @urlopts = CGI.parse(@url.query)
+      @urlopts.each do |k, v|
+        @urlopts[k] = v.last if v.is_a?(Array)
+      end
+    end
   end
 
   def register
