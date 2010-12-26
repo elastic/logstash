@@ -11,16 +11,16 @@ require "logstash/logging"
 
 class TestInputStomp < LogStash::TestCase
   def em_setup
-    @flags ||= ["-d"]
+    @flags ||= []
+
+    # Run stompserver in debug mode if desired.
+    @flags << "-d" if $DEBUG
+
     # Launch stomp server on a random port
     stomp_done = false
-    #1.upto(30) do
-    stomp_done = true
     @stomp_pid = nil
-    @port = 61613
-    while false 
-      #@port = (rand * 30000 + 20000).to_i
-      @port = 61613
+    1.upto(30) do
+      @port = (rand * 30000 + 20000).to_i
       @stomp_pid = Process.fork do
         args = ["-p", @port.to_s, *@flags]
         exec("stompserver", "stompserver", *args)
@@ -64,7 +64,7 @@ class TestInputStomp < LogStash::TestCase
     @stomp.should_subscribe = false
   end # def em_setup
 
-  def test_foo
+  def test_stomp_basic
     inputs = [
       LogStash::Event.new("@message" => "hello world", "@type" => @type),
       LogStash::Event.new("@message" => "one two three", "@type" => @type),
@@ -98,7 +98,7 @@ class TestInputStomp < LogStash::TestCase
         @stomp.send @queue, event.to_json
       end
     end
-  end
+  end # def test_stomp_basic
 
   def teardown
     if @stomp_pid
