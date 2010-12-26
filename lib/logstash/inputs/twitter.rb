@@ -21,8 +21,12 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
           tweet = JSON.parse(line)
           next if !tweet
 
-          event = LogStash::Event.new
-          event.message = tweet["text"]
+          event = LogStash::Event.new({
+            "@message" => tweet["text"],
+            "@type" => @type,
+            "@tags" => @tags.clone,
+          })
+
           event.fields.merge!(
             "user" => (tweet["user"]["screen_name"] rescue nil),
             "client" => (tweet["user"]["source"] rescue nil),
