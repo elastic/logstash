@@ -23,16 +23,15 @@ required gems:
 - uuid
 
 For the web interface:
-- async_synatra
+- async_sinatra
 - haml
 - sass
-
-If you are on centos download and install a newer flex:
-ftp://mirrors.kernel.org/fedora/releases/9/Fedora/source/SRPMS/flex-2.5.35-1.fc9.src.rpm
 
 # For 'jls-grok' you will need grok installed.
   Install the following packages (centos: sudo yum install pkgname)
   pcre-devel, libevent-devel, gperf
+  If you are on centos download and install a newer flex:
+    ftp://mirrors.kernel.org/fedora/releases/9/Fedora/source/SRPMS/flex-2.5.35-1.fc9.src.rpm
 
 # TODO(sissel): use a grok release
 svn checkout http://semicomplete.googlecode.com/svn/grok
