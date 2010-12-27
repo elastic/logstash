@@ -60,9 +60,7 @@ def check_libraries
 end
 
 def run_tests
-  require "logstash/test_syntax"
-  require "logstash/filters/test_date"
-  require "logstash/filters/test_multiline"
+  require "#{File.dirname(__FILE__)}/../test/run"
   return Test::Unit::AutoRunner.run
 end
 
