@@ -59,14 +59,15 @@
         ws.onmessage = function(event) {
           eval("var data = " + event.data);
           var el = $("#message-template").tmpl(data, { "message": data["@message"], "timestamp": data["@timestamp"] });
+            //.css("display", "none")
+            //.fadeIn()
           el.addClass("message")
-            .css("display", "none")
             .appendTo($("#radiator"))
-            .fadeIn()
             .delay(10000)
-            .fadeOut(2000, function() {
+            .hide(2000, function() {
               $(this).remove();
             });
+            //.fadeOut(2000, function() {
         };
       });
     </script>
