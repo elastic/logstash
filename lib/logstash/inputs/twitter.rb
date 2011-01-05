@@ -49,7 +49,7 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
       req.errback do
         @logger.warn(["Error occurred, not sure what, seriously. Reconnecting!", { :url => @url }])
 
-        EventMachine::Timer.new(5) do
+        EventMachine::Timer.new(15) do
           connect.call
         end
       end # req.errback
