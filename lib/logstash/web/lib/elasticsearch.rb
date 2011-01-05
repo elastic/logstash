@@ -37,7 +37,8 @@ class LogStash::Web::ElasticSearch
       "from" => params[:offset],
       "size" => params[:count],
     }
-    #@logger.info(["ElasticSearch Query", esreq])
+
+    @logger.info("ElasticSearch Query: #{esreq.to_json}")
     start_time = Time.now
     req = http.get :body => esreq.to_json
     req.callback do
@@ -69,12 +70,12 @@ class LogStash::Web::ElasticSearch
                    { :query => params[:q], :duration => data["duration"]}])
       #@logger.info(data)
       if req.response_header.status != 200
-        @error = data["error"]
+        @error = data["error"] || req.inspect
       end
       yield data
     end
     req.errback do 
-      @logger.warn(["Query failed", params, req.response])
+      @logger.warn(["Query failed", params, req, req.response])
       yield({ "error" => req.response })
     end
   end # def search
