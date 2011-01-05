@@ -61,7 +61,9 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
           event.fields[key] = []
         end
 
-        event.fields[key] << value
+        if value && !value.empty?
+          event.fields[key] << value
+        end
       end
     else
       # Tag this event if we can't parse it. We can use this later to
