@@ -20,7 +20,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   def register
     @logger.info("Registering output #{@url}")
-    @amqp = AMQP.connect(:host => @url.host)
+    @amqp = AMQP.connect(:host => @url.host, :port => (@url.port or 5672))
     @mq = MQ.new(@amqp)
     @target = nil
 
