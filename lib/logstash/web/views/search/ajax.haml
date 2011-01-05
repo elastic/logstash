@@ -31,7 +31,7 @@
           last
   - if @hits.length == 0 
     - if !params[:q]
-      %h3#querystatus No query given. How about <a href="?q=*" class="querychanger">this?</a>
+      %h3#querystatus No query given. How about <a href="?q=* @timestamp:[#{(Time.now + 24*60*60).strftime("%Y-%m-%d")} TO #{(Time.now - 7*24*60*60).strftime("%Y-%m-%d")}]" class="querychanger">this?</a>
     - else
       %h3#querystatus No results for query '#{params[:q]}' 
   - else
