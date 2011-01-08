@@ -15,6 +15,45 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     defaults = {"method" => "http"}
     params = defaults.merge(@urlopts)
 
+    # Describe this index to elasticsearch
+    indexmap = {
+      # The name of the index
+      "settings": { 
+        @httpurl.path.split("/")[-1] => {
+          "properties" => {
+            "@source" => { "type" => "string" },
+            "@source_host" => { "type" => "string" },
+            "@source_path" => { "type" => "string" },
+            "@timestamp" => { "type" => "date" },
+            "@tags" => { "type" => "string" },
+            "@message" => { "type" => "string" },
+
+            # TODO(sissel): Hack for now until this bug is resolved:
+            # https://github.com/elasticsearch/elasticsearch/issues/issue/604
+            "@fields" => { 
+              "type": "object"
+              "properties" => {
+                "HOSTNAME" => { "type" => "string" },
+              },
+            }, # "@fields"
+          }, # "properties"
+        }, # index map for this index type.
+      }, # "settings"
+    } # ES Index
+
+    indexurl = @httpurl.to_s + "/_mapping"
+    indexmap_http = EventMachine::HttpRequest.new(indexurl)
+    indexmap_req = indexmap_http.put :body => indexmap.to_json
+    indexmap_req.callback do
+      @logger.info(["Done configuring index", indexurl, indexmap])
+      ready(params)
+    end
+    indexmap_req.errback do
+      @logger.warn(["Failure configuring index", @httpurl.to_s, indexmap])
+    end
+  end # def register
+
+  def ready(params)
     case params["method"]
     when "http"
       @logger.debug "ElasticSearch using http with URL #{@httpurl.to_s}"
@@ -50,7 +89,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
       end
     else raise "unknown elasticsearch method #{params["method"].inspect}"
     end
-  end # def register
+  end # def ready
 
   def receive(event)
     @callback.call(event)

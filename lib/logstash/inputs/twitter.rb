@@ -18,7 +18,13 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
       req.stream do |chunk|
         buffer.extract(chunk).each do |line|
-          tweet = JSON.parse(line)
+          begin
+            tweet = JSON.parse(line)
+          rescue JSON::ParserError => e
+            @logger.warn("Invalid JSON, aborting connection: #{line}")
+            req.errback
+            next
+          end
           next if !tweet
 
           event = LogStash::Event.new({
@@ -49,7 +55,9 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
       req.errback do
         @logger.warn(["Error occurred, not sure what, seriously. Reconnecting!", { :url => @url }])
 
-        EventMachine::Timer.new(15) do
+        req.close_connection() rescue nil
+
+        EventMachine::Timer.new(60) do
           connect.call
         end
       end # req.errback
