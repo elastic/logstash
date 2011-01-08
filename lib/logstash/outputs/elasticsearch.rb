@@ -6,19 +6,21 @@ require "logstash/outputs/base"
 class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
   public
   def register
+    @pending = []
     # Port?
     # Authentication?
-    @httpurl = @url.clone
-    @httpurl.scheme = "http"
+    @esurl = @url.clone
+    @esurl.scheme = "http"
+    @esurl.path = "/" + @url.path.split("/")[1]
     defaults = {"method" => "http"}
     params = defaults.merge(@urlopts)
 
     # Describe this index to elasticsearch
     indexmap = {
       # The name of the index
-      "settings": { 
-        @httpurl.path.split("/")[-1] => {
-          "properties" => {
+      "settings" => { 
+        @url.path.split("/")[-1] => {
+          "mappings" => {
             "@source" => { "type" => "string" },
             "@source_host" => { "type" => "string" },
             "@source_path" => { "type" => "string" },
@@ -29,7 +31,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
             # TODO(sissel): Hack for now until this bug is resolved:
             # https://github.com/elasticsearch/elasticsearch/issues/issue/604
             "@fields" => { 
-              "type": "object"
+              "type" => "object",
               "properties" => {
                 "HOSTNAME" => { "type" => "string" },
               },
@@ -39,7 +41,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
       }, # "settings"
     } # ES Index
 
-    indexurl = @httpurl.to_s + "/_mapping"
+    indexurl = @esurl.to_s
     indexmap_http = EventMachine::HttpRequest.new(indexurl)
     indexmap_req = indexmap_http.put :body => indexmap.to_json
     indexmap_req.callback do
@@ -47,7 +49,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
       ready(params)
     end
     indexmap_req.errback do
-      @logger.warn(["Failure configuring index", @httpurl.to_s, indexmap])
+      @logger.warn(["Failure configuring index", @esurl.to_s, indexmap])
     end
   end # def register
 
@@ -55,8 +57,8 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
   def ready(params)
     case params["method"]
     when "http"
-      @logger.debug "ElasticSearch using http with URL #{@httpurl.to_s}"
-      @http = EventMachine::HttpRequest.new(@httpurl.to_s)
+      @logger.debug "ElasticSearch using http with URL #{@url.to_s}"
+      @http = EventMachine::HttpRequest.new(@url.to_s)
       @callback = self.method(:receive_http)
     when "river"
       params["port"] ||= 5672
@@ -64,8 +66,8 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
       @mq = LogStash::Outputs::Amqp.new(mq_url.to_s)
       @mq.register
       @callback = self.method(:receive_river)
-      em_url = URI.parse("http://#{@httpurl.host}:#{@httpurl.port}/_river/logstash#{@httpurl.path.tr("/", "_")}/_meta")
-      unused, @es_index, @es_type = @httpurl.path.split("/", 3)
+      em_url = URI.parse("http://#{@url.host}:#{@url.port}/_river/logstash#{@url.path.tr("/", "_")}/_meta")
+      unused, @es_index, @es_type = @url.path.split("/", 3)
 
       river_config = {"type" => params["type"],
                       params["type"] => {"host" => params["host"],
@@ -86,20 +88,31 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
       req.errback do
         @logger.warn "Error setting up river: #{req.response}"
       end
+      @callback = self.method(:receive_river)
     else raise "unknown elasticsearch method #{params["method"].inspect}"
+    end
+
+    pending = @pending
+    @pending = []
+    pending.each do |event|
+      receive(event)
     end
   end # def ready
 
   public
   def receive(event)
-    @callback.call(event)
+    if @callback
+      @callback.call(event)
+    else
+      @pending << event
+    end
   end # def receive
 
   public
   def receive_http(event, tries=5)
     req = @http.post :body => event.to_json
     req.errback do
-      $stderr.puts "Request to index to #{@httpurl.to_s} failed (will retry, #{tries} tries left). Event was #{event.to_s}"
+      $stderr.puts "Request to index to #{@url.to_s} failed (will retry, #{tries} tries left). Event was #{event.to_s}"
       EventMachine::add_timer(2) do
         receive_http(event, tries - 1)
       end
