@@ -1,11 +1,12 @@
-
-require "logstash/inputs/base"
 require "eventmachine-tail"
+require "logstash/inputs/base"
+require "logstash/namespace"
 require "socket" # for Socket.gethostname
 
 class LogStash::Inputs::Internal < LogStash::Inputs::Base
   attr_reader :channel
 
+  public
   def initialize(url, type, config={}, &block)
     super
 
@@ -14,6 +15,7 @@ class LogStash::Inputs::Internal < LogStash::Inputs::Base
     @channel = EventMachine::Channel.new
   end
 
+  public
   def register
     @logger.info("Registering input #{@url}")
     @channel.subscribe do |event|
@@ -21,6 +23,7 @@ class LogStash::Inputs::Internal < LogStash::Inputs::Base
     end
   end # def register
 
+  public
   def receive(event)
     if !event.is_a?(LogStash::Event)
       event = LogStash::Event.new({

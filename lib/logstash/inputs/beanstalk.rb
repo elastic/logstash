@@ -1,15 +1,18 @@
-require "logstash/inputs/base"
 require "em-jack"
+require "logstash/inputs/base"
+require "logstash/namespace"
 
 class LogStash::Inputs::Beanstalk < LogStash::Inputs::Base
+  public
   def initialize(url, type, config={}, &block)
     super
 
     if @url.path == "" or @url.path == "/"
       raise "must specify a tube for beanstalk output"
     end
-  end
+  end # def initialize
 
+  public
   def register
     tube = @url.path[1..-1] # Skip leading '/'
     port = @url.port || 11300

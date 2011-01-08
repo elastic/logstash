@@ -4,6 +4,7 @@
 # 
 
 require "logstash/filters/base"
+require "logstash/namespace"
 
 class LogStash::Filters::Multiline < LogStash::Filters::Base
   # The 'date' filter will take a value from your event and use it as the
@@ -46,6 +47,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   #       pattern: /\\$/
   #       what: next
   #
+  public
   def initialize(config = {})
     super
 
@@ -53,6 +55,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     @pending = Hash.new
   end # def initialize
 
+  public
   def register
     @config.each do |type, typeconfig|
       # typeconfig will be a hash containing 'pattern' and 'what'
@@ -82,10 +85,10 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
         @logger.fatal(["Invalid pattern for multiline filter on type '#{type}'",
                       typeconfig, e])
       end
-
     end # @config.each
   end # def register
 
+  public
   def filter(event)
     return unless @types.member?(event.type)
     typeconfig = @types[event.type]
@@ -147,6 +150,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   end # def filter
 
   # flush any pending messages
+  public
   def flush(source, type)
     key = [source, type]
     if @pending[key]
@@ -154,5 +158,5 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
       @pending.delete(key)
     end
     return event
-  end
+  end # def flush
 end # class LogStash::Filters::Date

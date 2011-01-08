@@ -1,4 +1,3 @@
-
 module LogStash
   module Inputs; end
   module Outputs; end

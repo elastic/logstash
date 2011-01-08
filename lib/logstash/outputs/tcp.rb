@@ -1,10 +1,8 @@
 require "logstash/outputs/base"
+require "logstash/namespace"
 
 class LogStash::Outputs::Tcp < LogStash::Outputs::Base
-  def initialize(url, config={}, &block)
-    super
-  end
-
+  public
   def register
     # TODO(sissel): Write generic validation methods
     if !@url.host or !@url.port
@@ -16,6 +14,7 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
     @connection = EventMachine::connect(@url.host, @url.port)
   end # def register
 
+  public
   def receive(event)
     @connection.send_data(event.to_hash.to_json)
     @connection.send_data("\n")

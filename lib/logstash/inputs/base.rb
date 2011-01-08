@@ -5,6 +5,8 @@ require "uri"
 
 class LogStash::Inputs::Base
   attr_accessor :logger
+
+  public
   def initialize(url, type, config={}, &block)
     @logger = LogStash::Logger.new(STDERR)
     @url = url
@@ -21,21 +23,24 @@ class LogStash::Inputs::Base
         @urlopts[k] = v.last if v.is_a?(Array)
       end
     end
-  end
+  end # def initialize
 
+  public
   def register
     raise "#{self.class}#register must be overidden"
-  end
+  end # def register
 
+  public
   def tag(newtag)
     @tags << newtag
-  end
+  end # def tag
 
+  public
   def receive(event)
     @logger.debug(["Got event", { :url => @url, :event => event }])
     # Only override the type if it doesn't have one
     event.type = @type if !event.type 
     event.tags |= @tags # set union
     @callback.call(event)
-  end
+  end # def receive
 end # class LogStash::Inputs::Base

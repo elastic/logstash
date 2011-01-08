@@ -1,11 +1,12 @@
-require "logstash/inputs/base"
-require "eventmachine-tail"
-require "socket" # for Socket.gethostname
 require "date"
+require "eventmachine-tail"
+require "logstash/inputs/base"
+require "logstash/namespace"
 require "logstash/time" # should really use the filters/date.rb bits
-
+require "socket" # for Socket.gethostname
 
 class LogStash::Inputs::Syslog < LogStash::Inputs::Base
+  public
   def register
     if !@url.host or !@url.port
       @logger.fatal("No host or port given in #{self.class}: #{@url}")
@@ -26,6 +27,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       #<priority       timestamp          Mmm dd hh:mm:ss             host  msg
   end # def register
 
+  public
   def receive(host, port, message)
     url = @url.clone
     url.host = host
@@ -48,6 +50,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   # If the message cannot be recognized (see @@syslog_re), we'll
   # treat it like the whole event.message is correct and try to fill
   # the missing pieces (host, priority, etc)
+  public
   def syslog_relay(event, url)
     match = @@syslog_re.match(event.message)
     if match
@@ -90,6 +93,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     end
   end # def syslog_relay
 
+  private
   class TCPInput < EventMachine::Connection
     def initialize(receiver, logger)
       @logger = logger
@@ -107,6 +111,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     end # def receive_data
   end # class TCPInput
 
+  private
   class UDPInput < EventMachine::Connection
     def initialize(receiver, logger)
       @logger = logger
@@ -120,4 +125,4 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       @receiver.receive(host, port, data.chomp)
     end # def receive_data
   end # class UDPInput
-end # class LogStash::Inputs::Tcp
+end # class LogStash::Inputs::Syslog

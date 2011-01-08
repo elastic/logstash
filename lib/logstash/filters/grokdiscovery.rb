@@ -1,15 +1,17 @@
 require "logstash/filters/base"
-
+require "logstash/namespace"
 gem "jls-grok", ">=0.2.3071"
 require "grok" # rubygem 'jls-grok'
 
 class LogStash::Filters::Grokdiscovery < LogStash::Filters::Base
+  public
   def initialize(config = {})
     super
 
     @discover_fields = {}
   end # def initialize
 
+  public
   def register
     # TODO(sissel): Make patterns files come from the config
     @config.each do |type, typeconfig|
@@ -24,6 +26,7 @@ class LogStash::Filters::Grokdiscovery < LogStash::Filters::Base
     end # @config.each
   end # def register
 
+  public
   def filter(event)
     # parse it with grok
     message = event.message

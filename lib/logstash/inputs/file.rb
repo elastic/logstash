@@ -1,22 +1,26 @@
-require "logstash/inputs/base"
 require "eventmachine-tail"
+require "logstash/inputs/base"
+require "logstash/namespace"
 require "socket" # for Socket.gethostname
 
 class LogStash::Inputs::File < LogStash::Inputs::Base
+  public
   def initialize(url, type, config={}, &block)
     super
 
     # Hack the hostname into the url.
     # This works since file:// urls don't generally have a host in it.
     @url.host = Socket.gethostname
-  end
+  end # def initialize
 
+  public
   def register
     @logger.info("Registering #{@url}")
     EventMachine::FileGlobWatchTail.new(@url.path, Reader, interval=60,
                                         exclude=[], receiver=self)
   end # def register
 
+  public
   def receive(filetail, event)
     url = @url.clone
     url.path = filetail.path
@@ -31,6 +35,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     @callback.call(event)
   end # def receive
 
+  private
   class Reader < EventMachine::FileTail
     def initialize(path, receiver)
       super(path)

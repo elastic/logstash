@@ -1,4 +1,5 @@
 require "logstash/filters/base"
+require "logstash/namespace"
 require "logstash/time"
 
 class LogStash::Filters::Date < LogStash::Filters::Base
@@ -16,12 +17,14 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #       <fieldname>: <format>
   #
   # The format is whatever is supported by Ruby's DateTime.strptime
+  public
   def initialize(config = {})
     super
 
     @types = Hash.new { |h,k| h[k] = [] }
   end # def initialize
 
+  public
   def register
     @config.each do |type, typeconfig|
       @logger.debug "Setting type #{type.inspect} to the config #{typeconfig.inspect}"
@@ -30,6 +33,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     end # @config.each
   end # def register
 
+  public
   def filter(event)
     @logger.debug "DATE FILTER: received event of type #{event.type}"
     return unless @types.member?(event.type)

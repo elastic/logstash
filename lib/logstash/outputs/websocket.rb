@@ -1,11 +1,9 @@
-require "logstash/outputs/base"
 require "em-websocket" # rubygem 'em-websocket'
+require "logstash/namespace"
+require "logstash/outputs/base"
 
 class LogStash::Outputs::Websocket < LogStash::Outputs::Base
-  def initialize(url, config={}, &block)
-    super
-  end
-
+  public
   def register
     @channel = EventMachine::Channel.new
     @subscribers = 0
@@ -27,6 +25,7 @@ class LogStash::Outputs::Websocket < LogStash::Outputs::Base
     end
   end # def register
 
+  public
   def receive(event)
     # Only publish the event to websockets if there are subscribers
     # TODO(sissel): send a patch to eventmachine to fix this.
@@ -34,5 +33,5 @@ class LogStash::Outputs::Websocket < LogStash::Outputs::Base
       @logger.info("Sending event to websocket.")
       @channel.push event.to_json
     end
-  end # def event
+  end # def receive
 end # class LogStash::Outputs::Websocket

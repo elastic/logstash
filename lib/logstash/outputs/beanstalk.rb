@@ -1,7 +1,9 @@
 require "logstash/outputs/base"
+require "logstash/namespace"
 require "em-jack"
 
 class LogStash::Outputs::Beanstalk < LogStash::Outputs::Base
+  public
   def initialize(url, config={}, &block)
     super
 
@@ -11,6 +13,7 @@ class LogStash::Outputs::Beanstalk < LogStash::Outputs::Base
     end
   end
 
+  public
   def register
     tube = @url.path[1..-1] # Skip leading '/'
     port = @url.port || 11300
@@ -19,6 +22,7 @@ class LogStash::Outputs::Beanstalk < LogStash::Outputs::Base
                                         :tube => tube)
   end # def register
 
+  public
   def receive(event)
     @beanstalk.put(event.to_json, :ttr => @ttr)
   end # def receive

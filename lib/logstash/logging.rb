@@ -4,7 +4,7 @@ require "logger"
 
 class LogStash::Logger < Logger
   # Try to load awesome_print, if it fails, log it later
-  # but otherwise we should continue to operate as normal.
+  # but otherwise we will continue to operate as normal.
   begin 
     require "ap"
     @@have_awesome_print = true
@@ -13,6 +13,7 @@ class LogStash::Logger < Logger
     @@notify_awesome_print_load_failed = e
   end
 
+  public
   def initialize(*args)
     super(*args)
     @formatter = LogStash::Logger::Formatter.new
@@ -37,6 +38,7 @@ class LogStash::Logger < Logger
     end
   end # def initialize
 
+  public
   def level=(level)
     super(level)
     @formatter.level = level
@@ -48,6 +50,7 @@ class LogStash::Logger::Formatter < Logger::Formatter
   attr_accessor :level
   attr_accessor :progname
 
+  public
   def call(severity, timestamp, who, object)
     # override progname to be the caller if the log level threshold is DEBUG
     # We only do this if the logger level is DEBUG because inspecting the

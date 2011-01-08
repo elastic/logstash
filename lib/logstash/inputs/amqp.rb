@@ -1,11 +1,13 @@
-require "logstash/inputs/base"
 require "amqp" # rubygem 'amqp'
+require "logstash/inputs/base"
+require "logstash/namespace"
 require "mq" # rubygem 'amqp'
 require "uuidtools" # rubygem 'uuidtools'
 
 class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   MQTYPES = [ "fanout", "queue", "topic" ]
 
+  public
   def initialize(url, type, config={}, &block)
     super
 
@@ -20,8 +22,9 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     if !MQTYPES.include?(@mqtype)
       raise "Invalid type '#{@mqtype}' must be one of #{MQTYPES.JOIN(", ")}"
     end
-  end
+  end # def initialize
 
+  public
   def register
     @logger.info("Registering input #{@url}")
     @amqp = AMQP.connect(:host => @url.host)

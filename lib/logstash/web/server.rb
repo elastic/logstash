@@ -4,13 +4,13 @@
 $:.unshift("%s/../lib" % File.dirname(__FILE__))
 $:.unshift(File.dirname(__FILE__))
 
-require "rubygems"
-require "json"
 require "eventmachine"
-require "rack"
-require "sinatra/async"
+require "json"
 require "lib/elasticsearch"
 require "logstash/namespace"
+require "rack"
+require "rubygems"
+require "sinatra/async"
 
 class EventMachine::ConnectionError < RuntimeError; end
 
@@ -25,7 +25,7 @@ class LogStash::Web::Server < Sinatra::Base
   aget '/style.css' do
     headers "Content-Type" => "text/css; charset=utf8"
     body sass :style
-  end
+  end # /style.css
 
   aget '/' do
     redirect "/search"
@@ -70,7 +70,7 @@ class LogStash::Web::Server < Sinatra::Base
         rescue => e
           puts e
         end
-      end
+      end # elasticsearch.search
     else
       #@error = "No query given."
       @hits = []
@@ -133,10 +133,9 @@ class LogStash::Web::Server < Sinatra::Base
       body haml :"search/ajax", :layout => !request.xhr?
     end # elasticsearch.search
   end # apost '/search/ajax'
-end # class LogStashWeb
+end # class LogStash::Web::Server
 
 require "optparse"
-
 Settings = Struct.new(:daemonize, :logfile)
 settings = Settings.new
 progname = File.basename($0)

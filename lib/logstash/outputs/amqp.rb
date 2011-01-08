@@ -1,9 +1,12 @@
-require "logstash/outputs/base"
 require "amqp" # rubygem 'amqp'
+require "logstash/outputs/base"
+require "logstash/namespace"
 require "mq" # rubygem 'amqp'
 
 class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "queue", "topic" ]
+
+  public
   def initialize(url, config={}, &block)
     super
 
@@ -18,6 +21,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     end
   end # def initialize
 
+  public
   def register
     @logger.info("Registering output #{@url}")
     @amqp = AMQP.connect(:host => @url.host, :port => (@url.port or 5672))
@@ -34,11 +38,14 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     end # case @mqtype
   end # def register
 
+  public
   def receive(event)
     @logger.debug(["Sending event", { :url => @url, :event => event }])
     @target.publish(event.to_json)
   end # def receive
 
+  # This is used by the ElasticSearch AMQP/River output.
+  public
   def receive_raw(raw)
     if @target == nil
       raise "had trouble registering AMQP URL #{@url.to_s}, @target is nil"

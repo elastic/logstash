@@ -1,4 +1,5 @@
 require "logstash/filters/base"
+require "logstash/namespace"
 require "ostruct"
 
 class LogStash::Filters::Field < LogStash::Filters::Base
@@ -8,14 +9,12 @@ class LogStash::Filters::Field < LogStash::Filters::Base
     end
   end
 
-  def initialize(config = {})
-    super
-  end # def initialize
-
+  public
   def register
     # nothing to do
   end # def register
 
+  public
   def filter(event)
     data = EvalSpace.new(event.to_hash)
 
@@ -25,5 +24,5 @@ class LogStash::Filters::Field < LogStash::Filters::Base
       end
     end
     event.cancel
-  end
+  end # def filter
 end # class LogStash::Filters::Field

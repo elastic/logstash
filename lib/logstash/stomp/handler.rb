@@ -1,3 +1,5 @@
+require "logstash/namespace"
+
 # Base of Stomp Handler
 # it handles connecting and subscribing to the stomp broker which
 # is used in both stomp input and output
@@ -8,6 +10,7 @@ class LogStash::Stomp
     attr_accessor :should_subscribe
     attr_accessor :ready
 
+    public
     def initialize(*args)
       super
 
@@ -18,12 +21,14 @@ class LogStash::Stomp
       @ready = false
     end # def initialize
 
+    public
     def connection_completed
       @logger.debug("Connected")
       connect :login => @url.user, :passcode => @url.password
       @ready = true
     end # def connection_completed
 
+    public
     def unbind
       if $EVENTMACHINE_STOPPING
         @logger.debug(["Connection to stomp broker died (probably since we are exiting)",
@@ -38,6 +43,7 @@ class LogStash::Stomp
       end
     end # def unbind
 
+    public
     def receive_msg(message)
       @logger.debug(["receiving message", { :msg => message }])
       if message.command == "CONNECTED"

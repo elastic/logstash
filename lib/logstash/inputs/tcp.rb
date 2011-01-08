@@ -1,12 +1,15 @@
-require "logstash/inputs/base"
 require "eventmachine-tail"
+require "logstash/inputs/base"
+require "logstash/namespace"
 require "socket" # for Socket.gethostname
 
 class LogStash::Inputs::Tcp < LogStash::Inputs::Base
+  public
   def initialize(url, type, config={}, &block)
     super
-  end
+  end # def initialize
 
+  public
   def register
     if !@url.host or !@url.port
       @logger.fatal("No host or port given in #{self.class}: #{@url}")
@@ -16,8 +19,9 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
     @logger.info("Starting tcp listener for #{@url}")
     EventMachine::start_server(@url.host, @url.port, TCPInput, @url, self, @logger)
-  end
+  end # def register
 
+  public
   def receive(host, port, event)
     url = @url.clone
     url.host = host
@@ -33,6 +37,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
     @callback.call(event)
   end # def receive
 
+  private
   class TCPInput < EventMachine::Connection
     def initialize(url, receiver, logger)
       @logger = logger

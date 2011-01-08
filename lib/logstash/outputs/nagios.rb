@@ -1,9 +1,11 @@
+require "logstash/namespace"
 require "logstash/outputs/base"
 
 class LogStash::Outputs::Nagios < LogStash::Outputs::Base
   NAGIOS_CRITICAL = 2
   NAGIOS_WARN = 1
 
+  public
   def initialize(url, config={}, &block)
     super
 
@@ -12,12 +14,14 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
     else
       @cmdfile = @url.path
     end
-  end
+  end # def initialize
 
+  public
   def register
     # nothing to do
   end # def register
 
+  public
   def receive(event)
     if !File.exists?(@cmdfile)
       @logger.warn(["Skipping nagios output; command file is missing",
@@ -68,5 +72,5 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
                    {"error" => $!, "cmdfile" => @cmdfile,
                     "missed_event" => event}])
     end
-  end # def event
+  end # def receive
 end # class LogStash::Outputs::Nagios

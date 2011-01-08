@@ -1,13 +1,22 @@
-require "logstash/inputs/base"
-require "em-http-request"
 require "cgi"
+require "em-http-request"
+require "logstash/inputs/base"
+require "logstash/namespace"
 
+# TODO(sissel): This could use some refactoring.
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
+  public
   def register
     api_url = "https://stream.twitter.com/1/statuses/filter.json"
     @http = EventMachine::HttpRequest.new(api_url)
     @logger.info(["Registering input", { :url => @url, :api_url => api_url, :params => @urlopts }])
     source = "twitter://...#{@url.path}?#{@url.query}"
+
+    if @url.user.nil? or @user.password.nil?
+      message = "User and password missing for twitter input #{@url.to_s}")
+      @logger.error(message)
+      raise message
+    end
 
     req = nil
     connect = proc do

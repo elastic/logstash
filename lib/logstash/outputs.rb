@@ -1,8 +1,8 @@
-
 require "logstash/namespace"
 require "uri"
 
 module LogStash::Outputs
+  public
   def self.from_url(url, &block)
     uri = URI.parse(url)
     # TODO(sissel): Add error handling

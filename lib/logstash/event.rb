@@ -1,9 +1,11 @@
 require "json"
 require "logstash/time"
+require "logstash/namespace"
 require "uri"
 
 # General event type. Will expand this in the future.
-module LogStash; class Event
+class LogStash::Event
+  public
   def initialize(data=Hash.new)
     @cancelled = false
     @data = {
@@ -18,25 +20,31 @@ module LogStash; class Event
     end
   end # def initialize
 
+  public
   def self.from_json(json)
-    return Event.new(JSON.parse(json))
+    return LogStash::Event.new(JSON.parse(json))
   end # def self.from_json
 
+  public
   def cancel
     @cancelled = true
   end
 
+  public
   def cancelled?
     return @cancelled
   end
 
+  public
   def to_s
     return "#{timestamp} #{source}: #{message}"
   end # def to_s
 
+  public
   def timestamp; @data["@timestamp"]; end # def timestamp
   def timestamp=(val); @data["@timestamp"] = val; end # def timestamp=
 
+  public
   def source; @data["@source"]; end # def source
   def source=(val) 
     if val.is_a?(URI)
@@ -48,31 +56,38 @@ module LogStash; class Event
     end
   end # def source=
 
+  public
   def message; @data["@message"]; end # def message
   def message=(val); @data["@message"] = val; end # def message=
 
+  public
   def type; @data["@type"]; end # def type
   def type=(val); @data["@type"] = val; end # def type=
 
+  public
   def tags; @data["@tags"]; end # def tags
   def tags=(val); @data["@tags"] = val; end # def tags=
 
   # field-related access
+  public
   def [](key); @data["@fields"][key] end # def []
   def []=(key, value); @data["@fields"][key] = value end # def []=
   def fields; return @data["@fields"] end # def fields
   
+  public
   def to_json; return @data.to_json end # def to_json
-
   def to_hash; return @data end # def to_hash
 
+  public
   def overwrite(event)
     @data = event.to_hash
   end
 
+  public
   def include?(key); return @data.include?(key) end
 
   # Append an event to this one.
+  public
   def append(event)
     self.message += "\n" + event.message 
     self.tags |= event.tags
@@ -87,5 +102,5 @@ module LogStash; class Event
         self.fields[name] = value
       end
     end # event.fields.each
-  end
-end; end # class LogStash::Event
+  end # def append
+end # class LogStash::Event

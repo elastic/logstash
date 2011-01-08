@@ -1,12 +1,10 @@
-require "logstash/outputs/base"
-require "logstash/outputs/amqp"
 require "em-http-request"
+require "logstash/namespace"
+require "logstash/outputs/amqp"
+require "logstash/outputs/base"
 
 class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
-  def initialize(url, config={}, &block)
-    super
-  end
-
+  public
   def register
     # Port?
     # Authentication?
@@ -53,6 +51,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     end
   end # def register
 
+  public
   def ready(params)
     case params["method"]
     when "http"
@@ -91,10 +90,12 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     end
   end # def ready
 
+  public
   def receive(event)
     @callback.call(event)
   end # def receive
 
+  public
   def receive_http(event, tries=5)
     req = @http.post :body => event.to_json
     req.errback do
@@ -105,6 +106,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     end
   end # def receive_http
 
+  public
   def receive_river(event)
     # bulk format; see http://www.elasticsearch.com/docs/elasticsearch/river/rabbitmq/
     index_message = {"index" => {"_index" => @es_index, "_type" => @es_type}}.to_json + "\n"
@@ -112,4 +114,4 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     index_message += event.to_hash.to_json + "\n"
     @mq.receive_raw(index_message)
   end # def receive_river
-end # class LogStash::Outputs::Websocket
+end # class LogStash::Outputs::Elasticsearch

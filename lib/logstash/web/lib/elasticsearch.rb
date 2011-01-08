@@ -5,11 +5,14 @@ require "logstash/logging"
 require "logstash/event"
 
 module LogStash::Web; end
+
 class LogStash::Web::ElasticSearch
+  public
   def initialize
     @logger = LogStash::Logger.new(STDOUT)
   end
 
+  public
   def search(params)
     http = EventMachine::HttpRequest.new("http://localhost:9200/_search")
     params[:offset] ||= 0
@@ -79,4 +82,4 @@ class LogStash::Web::ElasticSearch
       yield({ "error" => req.response })
     end
   end # def search
-end
+end # class LogStash::Web::ElasticSearch

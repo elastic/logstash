@@ -1,7 +1,7 @@
-
 require "logstash/namespace"
 
 module LogStash::Filters
+  public
   def self.from_name(name, *args)
     # TODO(sissel): Add error handling
     # TODO(sissel): Allow plugin paths

@@ -1,12 +1,15 @@
 require "logstash/filters/base"
+require "logstash/namespace"
 
 class LogStash::Filters::Grep < LogStash::Filters::Base
+  public
   def initialize(config = {})
     super
 
     @config = config
   end # def initialize
 
+  public
   def register
     @config.each do |type, matches|
       if ! matches.is_a?(Array)
@@ -29,6 +32,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
     end # @config.each
   end # def register
 
+  public
   def filter(event)
     config = @config[event.type]
     if not config

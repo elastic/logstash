@@ -1,11 +1,13 @@
-require "logstash/namespace"
+require "cgi"
 require "logstash/event"
 require "logstash/logging"
-require "cgi"
+require "logstash/namespace"
 require "uri"
 
 class LogStash::Outputs::Base
   attr_accessor :logger
+
+  public
   def initialize(url, config={}, &block)
     @url = url
     @url = URI.parse(url) if url.is_a? String
@@ -20,11 +22,13 @@ class LogStash::Outputs::Base
     end
   end
 
+  public
   def register
     raise "#{self.class}#register must be overidden"
   end # def register
 
+  public
   def receive(event)
     raise "#{self.class}#receive must be overidden"
-  end
+  end # def receive
 end # class LogStash::Outputs::Base

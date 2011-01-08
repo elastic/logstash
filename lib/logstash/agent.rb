@@ -13,6 +13,7 @@ class LogStash::Agent
   attr_reader :outputs
   attr_reader :filters
 
+  public
   def initialize(config)
     log_to(STDERR)
 
@@ -44,28 +45,26 @@ class LogStash::Agent
     end
 
     # Register input and output stuff
-    if @config.include?("inputs")
-      inputs = @config["inputs"]
-      inputs.each do |value|
-        # If 'url' is an array, then inputs is a hash and the key is the type
-        if inputs.is_a?(Hash)
-          type, urls = value
-        else
-          raise "config error, no type for url #{urls.inspect}"
-        end
+    inputs = @config["inputs"]
+    inputs.each do |value|
+      # If 'url' is an array, then inputs is a hash and the key is the type
+      if inputs.is_a?(Hash)
+        type, urls = value
+      else
+        raise "config error, no type for url #{urls.inspect}"
+      end
 
-        # url could be a string or an array.
-        urls = [urls] if !urls.is_a?(Array)
+      # url could be a string or an array.
+      urls = [urls] if !urls.is_a?(Array)
 
-        urls.each do |url|
-          @logger.debug("Using input #{url} of type #{type}")
-          input = LogStash::Inputs.from_url(url, type) { |event| receive(event) }
-          input.logger = @logger
-          input.register
-          @inputs << input
-        end
-      end # each input
-    end
+      urls.each do |url|
+        @logger.debug("Using input #{url} of type #{type}")
+        input = LogStash::Inputs.from_url(url, type) { |event| receive(event) }
+        input.logger = @logger
+        input.register
+        @inputs << input
+      end
+    end # each input
 
     if @config.include?("filters")
       filters = @config["filters"]
@@ -77,20 +76,18 @@ class LogStash::Agent
         filter.register
         @filters << filter
       end # each filter
-    end
+    end # if we have filters
 
-    if @config.include?("outputs")
-      @config["outputs"].each do |url|
-        @logger.debug("Using output #{url}")
-        output = LogStash::Outputs.from_url(url)
-        output.logger = @logger
-        output.register
-        @outputs << output
-      end # each output
-    end
+    @config["outputs"].each do |url|
+      @logger.debug("Using output #{url}")
+      output = LogStash::Outputs.from_url(url)
+      output.logger = @logger
+      output.register
+      @outputs << output
+    end # each output
 
     # Register any signal handlers
-    sighandler
+    register_signal_handler
   end # def register
 
   public
@@ -109,16 +106,13 @@ class LogStash::Agent
 
     # EventMachine has no default way to indicate a 'stopping' state.
     $EVENTMACHINE_STOPPING = true
-  end
+  end # def stop
 
   protected
   def filter(event)
     @filters.each do |f|
-      # TODO(sissel): Add ability for a filter to cancel/drop a message
       f.filter(event)
-      if event.cancelled?
-        break
-      end
+      break if event.cancelled?
     end
   end # def filter
 
@@ -140,7 +134,7 @@ class LogStash::Agent
   end # def input
 
   public
-  def sighandler
+  def register_signal_handler
     @sigchannel = EventMachine::Channel.new
     Signal.trap("USR1") do
       @sigchannel.push(:USR1)
@@ -175,5 +169,5 @@ class LogStash::Agent
         # hooks.
       end # case msg
     end # @sigchannel.subscribe
-  end # def sighandler
-end # class LogStash::Components::Agent
+  end # def register_signal_handler
+end # class LogStash::Agent

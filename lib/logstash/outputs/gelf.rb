@@ -4,18 +4,17 @@
 # This class doesn't currently use 'eventmachine'-style code, so it may
 # block things. Whatever, we can fix that later ;)
 
-require "gelf"
+require "gelf" # rubygem 'gelf'
+require "logstash/namespace"
 require "logstash/outputs/base"
 
 class LogStash::Outputs::Gelf < LogStash::Outputs::Base
-  def initialize(url, config={}, &block)
-    super
-  end
-
+  public
   def register
     # nothing to do
   end # def register
 
+  public
   def receive(event)
     # TODO(sissel): Use Gelf::Message instead
     gelf = Gelf.new(@url.host, (@url.port or 12201))
@@ -31,5 +30,5 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     end
     gelf.add_additional "event_timestamp", event.timestamp
     gelf.send
-  end # def event
+  end # def receive
 end # class LogStash::Outputs::Gelf
