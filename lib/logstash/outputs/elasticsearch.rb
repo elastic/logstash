@@ -92,12 +92,13 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     else raise "unknown elasticsearch method #{params["method"].inspect}"
     end
 
-    @callback.call(LogStash::Event.new({
+    receive(LogStash::Event.new({
       "@source" => "@logstashinit",
       "@type" => "@none",
+      "@message" => "Starting logstash output to elasticsearch",
       "@fields" => {
         "HOSTNAME" => Socket.gethostname
-      }
+      },
     }))
 
     pending = @pending
