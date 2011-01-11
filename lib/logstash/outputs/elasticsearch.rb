@@ -88,6 +88,14 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
       end
     else raise "unknown elasticsearch method #{params["method"].inspect}"
     end
+
+    @callback.call(LogStash::Event.new({
+      "@source" => "@logstashinit",
+      "@type" => "@none",
+      "@fields" => {
+        "HOSTNAME" => Socket.gethostname
+      }
+    }))
   end # def ready
 
   public
