@@ -1,6 +1,28 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
+# Grep filter.
+#
+# Useful for:
+# * Dropping events
+# * Tagging events
+# * Adding static fields
+#
+# Events not matched ar dropped. If 'negate' is set to true (defaults false), then
+# matching events are dropped.
+#
+# Config:
+# - grep:
+#   <type>:
+#     - match:
+#         <field>: <regexp>
+#       negate: true/false
+#       add_fields:
+#         <field>: <value>
+#       add_tags:
+#         - tag1
+#         - tag2
+#
 class LogStash::Filters::Grep < LogStash::Filters::Base
   public
   def initialize(config = {})
@@ -41,7 +63,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       return
     end
 
-    @logger.debug(["Running grep filter", event, config])
+    @logger.debug(["Running grep filter", event.to_hash, config])
     matched = false
     config.each do |match|
       if ! match["match"]
@@ -55,9 +77,18 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       match["match"].each do |field, re|
         next unless event[field]
 
+        if event[field].empty? and match["negate"] == true
+          match_count += 1
+        end
         event[field].each do |value|
-          next unless re.match(value)
-          @logger.debug("grep matched on field #{field}")
+          if match["negate"] == true
+            @logger.debug("want negate match")
+            next if re.match(value)
+            @logger.debug(["grep not-matched (negate requsted)", { field => value }])
+          else
+            next unless re.match(value)
+            @logger.debug(["grep matched", { field => value }])
+          end
           match_count += 1
           break
         end
@@ -81,6 +112,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
             @logger.debug("grep: adding tag #{tag}")
           end
         end # if match["add_tags"]
+
       else
         @logger.debug("match block failed " \
                       "(#{match_count}/#{match["match"].length} matches)")
