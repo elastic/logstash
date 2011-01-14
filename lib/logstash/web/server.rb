@@ -63,7 +63,8 @@ class LogStash::Web::Server < Sinatra::Base
     # have javascript enabled, we need to show the results in
     # case a user doesn't have javascript.
     if params[:q] and params[:q] != ""
-      elasticsearch.search(params) do |@results|
+      elasticsearch.search(params) do |results|
+        @results = results
         @hits = (@results["hits"]["hits"] rescue [])
         begin
           result_callback.call
@@ -82,8 +83,8 @@ class LogStash::Web::Server < Sinatra::Base
     headers({"Content-Type" => "text/html" })
     count = params["count"] = (params["count"] or 50).to_i
     offset = params["offset"] = (params["offset"] or 0).to_i
-    elasticsearch.search(params) do |@results|
-      #p instance_variables
+    elasticsearch.search(params) do |results|
+      @results = results
       if @results.include?("error")
         body haml :"search/error", :layout => !request.xhr?
         next
