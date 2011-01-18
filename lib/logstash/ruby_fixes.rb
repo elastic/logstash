@@ -8,3 +8,5 @@ if !String.instance_methods.include?("start_with?")
     end
   end
 end
+
+require "logstash/rubyfixes/regexp_union_takes_array"
