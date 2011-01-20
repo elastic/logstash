@@ -1,4 +1,6 @@
-$:.unshift File.dirname(__FILE__) + "/../../lib"
+require "rubygems"
+$:.unshift File.dirname(__FILE__) + "/../../../lib"
+$:.unshift File.dirname(__FILE__) + "/../../"
 
 require "test/unit"
 require "logstash"
