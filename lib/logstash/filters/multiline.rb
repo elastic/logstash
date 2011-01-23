@@ -97,6 +97,9 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     pending = @pending[key]
 
     @logger.debug(["Reg: ", typeconfig["pattern"], event.message, match])
+    # Add negate option
+    match = match and !typeconfig["negate"] || !match and typeconfig["negate"]
+
     case typeconfig["what"]
     when "previous"
       if match
