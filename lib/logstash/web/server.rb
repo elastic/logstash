@@ -32,7 +32,7 @@ class LogStash::Web::Server < Sinatra::Base
   end # '/'
 
   aget '/search' do
-    result_callback = proc do 
+    result_callback = proc do
       status 500 if @error
 
       params[:format] ||= "html"
@@ -104,7 +104,7 @@ class LogStash::Web::Server < Sinatra::Base
       if count and offset
         if @total > (count + offset)
           @result_end = (count + offset)
-        else 
+        else
           @result_end = @total
         end
         @result_start = offset
@@ -137,19 +137,31 @@ class LogStash::Web::Server < Sinatra::Base
 end # class LogStash::Web::Server
 
 require "optparse"
-Settings = Struct.new(:daemonize, :logfile)
+Settings = Struct.new(:daemonize, :logfile, :host, :port)
 settings = Settings.new
+
+settings.host      = "0.0.0.0"
+settings.port      = 9292
+
 progname = File.basename($0)
 
 opts = OptionParser.new do |opts|
   opts.banner = "Usage: #{progname} [options]"
 
-  opts.on("-d", "--daemonize", "Daemonize (default is run in foreground)") do 
+  opts.on("-d", "--daemonize", "Daemonize (default is run in foreground).") do
     settings.daemonize = true
   end
 
   opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
     settings.logfile = path
+  end
+
+  opts.on("-H", "--host HOST", "Host on which to start webserver. Default is 0.0.0.0.") do |host|
+    settings.host = host
+  end
+
+  opts.on("-p", "--port PORT", "Port on which to start webserver. Default is 9292.") do |port|
+    settings.port = port.to_i
   end
 end
 
@@ -157,7 +169,7 @@ opts.parse!
 
 if settings.daemonize
   if Process.fork == nil
-    Process.setsid 
+    Process.setsid
   else
     exit(0)
   end
@@ -168,7 +180,7 @@ if settings.logfile
   STDOUT.reopen(logfile)
   STDERR.reopen(logfile)
 elsif settings.daemonize
-  # Write to /dev/null if 
+  # Write to /dev/null if
   devnull = File.open("/dev/null", "w")
   STDOUT.reopen(devnull)
   STDERR.reopen(devnull)
@@ -178,4 +190,4 @@ Rack::Handler::Thin.run(
   Rack::CommonLogger.new( \
     Rack::ShowExceptions.new( \
       LogStash::Web::Server.new)),
-  :Port => 9292)
+  :Port => settings.port, :Host => settings.host)
