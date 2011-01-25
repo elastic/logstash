@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency("em-websocket")
 
   # For amqp://
-  spec.add_dependency("amqp")
+  spec.add_dependency("amqp", "~> 0.6.5") # amqp 0.7.0 is incompatible for now.
   spec.add_dependency("uuidtools")
 
   # For the web interface
