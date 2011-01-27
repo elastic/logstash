@@ -80,7 +80,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
           next
         end
 
-        if event[field] == nil and match["negate"] == true
+        if event[field].nil? and match["negate"] == true
           match_count += 1
         end
         event[field].each do |value|

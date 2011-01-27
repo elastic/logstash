@@ -101,4 +101,94 @@ class TestFilterMultiline < Test::Unit::TestCase
       assert_equal(expected, actual)
     end
   end
+
+  def test_with_negate_true
+    @logger = LogStash::Logger.new(STDERR)
+    test_name "with negate true"
+    config "pattern" => "^\\S", "what" => "previous", "negate" => true
+
+    inputs = [
+      "hello world ...",
+      "   and more!",
+      "one",
+      "two",
+      "   two 1",
+      "   two 2",
+      "   two 3",
+      "three",
+    ]
+
+    expected_outputs = [
+      "hello world ...\n   and more!",
+      "one",
+      "two\n   two 1\n   two 2\n   two 3",
+      "three"
+    ]
+
+    outputs = []
+
+    inputs.each do |input|
+      event = LogStash::Event.new
+      event.type = @typename
+      event.message = input
+      @filter.filter(event)
+      if !event.cancelled?
+        outputs << event.message
+      end
+    end
+    last = @filter.flush("unknown", @typename)
+    if last
+      outputs << last.message
+    end
+    assert_equal(expected_outputs.length, outputs.length,
+                 "Incorrect number of output events")
+    expected_outputs.zip(outputs).each do |expected, actual|
+      assert_equal(expected, actual)
+    end
+  end
+
+  def test_with_negate_false
+    @logger = LogStash::Logger.new(STDERR)
+    test_name "with negate true"
+    config "pattern" => "^\\s", "what" => "previous", "negate" => false
+
+    inputs = [
+      "hello world ...",
+      "   and more!",
+      "one",
+      "two",
+      "   two 1",
+      "   two 2",
+      "   two 3",
+      "three",
+    ]
+
+    expected_outputs = [
+      "hello world ...\n   and more!",
+      "one",
+      "two\n   two 1\n   two 2\n   two 3",
+      "three"
+    ]
+
+    outputs = []
+
+    inputs.each do |input|
+      event = LogStash::Event.new
+      event.type = @typename
+      event.message = input
+      @filter.filter(event)
+      if !event.cancelled?
+        outputs << event.message
+      end
+    end
+    last = @filter.flush("unknown", @typename)
+    if last
+      outputs << last.message
+    end
+    assert_equal(expected_outputs.length, outputs.length,
+                 "Incorrect number of output events")
+    expected_outputs.zip(outputs).each do |expected, actual|
+      assert_equal(expected, actual)
+    end
+  end
 end
