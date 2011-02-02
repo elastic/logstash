@@ -50,6 +50,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     end
     indexmap_req.errback do
       @logger.warn(["Failure configuring index", @esurl.to_s, indexmap])
+      raise "Failure configuring index: #{@esurl.to_s}"
     end
   end # def register
 
@@ -124,6 +125,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     req.errback do
       $stderr.puts "Request to index to #{@url.to_s} failed (will retry, #{tries} tries left). Event was #{event.to_s}"
       EventMachine::add_timer(2) do
+        # TODO(sissel): Actually abort if we retry too many times.
         receive_http(event, tries - 1)
       end
     end
