@@ -83,7 +83,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
         if event[field].nil? and match["negate"] == true
           match_count += 1
         end
-        event[field].each do |value|
+        (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |value|
           if match["negate"] == true
             @logger.debug("want negate match")
             next if re.match(value)
