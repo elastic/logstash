@@ -22,6 +22,16 @@ class TestOutputElasticSearch < LogStash::TestCase
     es_setup = proc do
       tries -= 1
       begin
+        # TODO(sissel): This will never actually fire an exception if ES isn't up.
+        # because output/elasticsearch does things async, the exception
+        # is tossed up much later.
+        #
+        # We'll need a way to attach exception handlers to input/output/filter/agent
+        # in order to make them better testable?
+        # Also, an agent "ready" callback would make this kind of setup easier
+        # to manage and could also be used in non-testing for sending a "Go" signal
+        # if we wanted such a thing.
+        #
         em_setup
         puts "ElasticSearch is ready"
         return
