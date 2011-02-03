@@ -67,7 +67,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
     matched = false
     config.each do |match|
       if ! match["match"]
-        @logging.debug(["Skipping match object, no match key", match])
+        @logger.debug(["Skipping match object, no match key", match])
         next
       end
 
@@ -75,9 +75,12 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       # apply any fields/tags.
       match_count = 0
       match["match"].each do |field, re|
-        next unless event[field]
+        if ! event[field]
+          @logger.debug(["Skipping match object, field not present", field, event, event[field]])
+          next
+        end
 
-        if event[field].empty? and match["negate"] == true
+        if event[field].nil? and match["negate"] == true
           match_count += 1
         end
         (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |value|
@@ -86,6 +89,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
             next if re.match(value)
             @logger.debug(["grep not-matched (negate requsted)", { field => value }])
           else
+            @logger.debug(["trying regex", re, value])
             next unless re.match(value)
             @logger.debug(["grep matched", { field => value }])
           end

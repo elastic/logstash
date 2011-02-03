@@ -17,6 +17,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   # - multiline:
   #     <type>:
   #       pattern: <regexp>
+  #       negate: true
   #       what: next
   #     <type>
   #        pattern: <regexp>
@@ -27,6 +28,10 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   #
   # The 'what' must be "previous" or "next" and indicates the relation
   # to the multi-line event.
+  #
+  # The 'negate' can be "true" or "false" (defaults false). If true, a 
+  # message not matching the pattern will constitute a match of the multiline
+  # filter and the what will be applied. (vice-versa is also true)
   #
   # For example, java stack traces are multiline and usually have the message
   # starting at the far-left, then each subsequent line indented. Do this:
@@ -96,7 +101,10 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     key = [event.source, event.type]
     pending = @pending[key]
 
-    @logger.debug(["Reg: ", typeconfig["pattern"], event.message, match])
+    @logger.debug(["Reg: ", typeconfig["pattern"], event.message, match, typeconfig["negate"]])
+    # Add negate option
+    match = (match and !typeconfig["negate"]) || (!match and typeconfig["negate"])
+
     case typeconfig["what"]
     when "previous"
       if match

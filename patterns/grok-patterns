@@ -7,6 +7,7 @@ BASE16NUM (?<![0-9A-Fa-f])(?:[+-]?(?:0x)?(?:[0-9A-Fa-f]+))
 BASE16FLOAT \b(?<![0-9A-Fa-f.])(?:[+-]?(?:0x)?(?:(?:[0-9A-Fa-f]+(?:\.[0-9A-Fa-f]*)?)|(?:\.[0-9A-Fa-f]+)))\b
 
 POSINT \b(?:[0-9]+)\b
+TWODIGITINT [0-9]{2}
 WORD \b\w+\b
 NOTSPACE \S+
 DATA .*?
@@ -88,3 +89,10 @@ QS %{QUOTEDSTRING}
 # Log formats
 SYSLOGBASE %{SYSLOGTIMESTAMP:timestamp} (?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource} %{SYSLOGPROG}:
 COMBINEDAPACHELOG %{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:httpversion}" %{NUMBER:response} (?:%{NUMBER:bytes}|-) "(?:%{URI:referrer}|-)" %{QS:agent}
+
+#
+# Custom formats
+# Add additional custom patterns below
+DATESTAMP_RAILS %{DAY} %{MONTH} %{MONTHDAY} %{TIME} (?:%{INT:ZONE} )?%{YEAR}
+DATESTAMP_MYSQL %{TWODIGITINT:year}%{TWODIGITINT:month}%{TWODIGITINT:day}\s+%{TIME}
+
