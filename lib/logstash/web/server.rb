@@ -137,10 +137,10 @@ class LogStash::Web::Server < Sinatra::Base
 end # class LogStash::Web::Server
 
 require "optparse"
-Settings = Struct.new(:daemonize, :logfile, :host, :port)
+Settings = Struct.new(:daemonize, :logfile, :address, :port)
 settings = Settings.new
 
-settings.host      = "0.0.0.0"
+settings.address      = "0.0.0.0"
 settings.port      = 9292
 
 progname = File.basename($0)
@@ -156,8 +156,8 @@ opts = OptionParser.new do |opts|
     settings.logfile = path
   end
 
-  opts.on("-H", "--host HOST", "Host on which to start webserver. Default is 0.0.0.0.") do |host|
-    settings.host = host
+  opts.on("-a", "--address ADDRESS", "Address on which to start webserver. Default is 0.0.0.0.") do |address|
+    settings.address = address
   end
 
   opts.on("-p", "--port PORT", "Port on which to start webserver. Default is 9292.") do |port|
@@ -190,4 +190,4 @@ Rack::Handler::Thin.run(
   Rack::CommonLogger.new( \
     Rack::ShowExceptions.new( \
       LogStash::Web::Server.new)),
-  :Port => settings.port, :Host => settings.host)
+  :Port => settings.port, :Host => settings.address)
