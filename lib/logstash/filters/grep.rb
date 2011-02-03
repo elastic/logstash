@@ -105,14 +105,14 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
         if match["add_fields"]
           match["add_fields"].each do |field, value|
             event[field] ||= []
-            event[field] << value
+            event[field] << event.sprintf(value)
             @logger.debug("grep: adding #{value} to field #{field}")
           end
         end # if match["add_fields"]
 
         if match["add_tags"]
           match["add_tags"].each do |tag|
-            event.tags << tag
+            event.tags << event.sprintf(tag)
             @logger.debug("grep: adding tag #{tag}")
           end
         end # if match["add_tags"]

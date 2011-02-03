@@ -102,6 +102,19 @@ class TestFilterGrep < Test::Unit::TestCase
     assert_equal(["new_value"], event["new_field"])
   end # def test_add_fields
 
+  def test_add_fields_with_format
+    test_name "add_fields"
+    config [{"match" => {"str" => "test"},
+             "add_fields" => {"new_field" => "${@type}"}},
+           ]
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event["str"] = "test"
+    @filter.filter(event)
+    assert_equal([event.type], event["new_field"])
+  end # def test_add_fields
+
   def test_add_fields_multiple_match
     test_name "add_fields_multiple_match"
     config [{"match" => {"str" => "test"},
@@ -129,5 +142,19 @@ class TestFilterGrep < Test::Unit::TestCase
     event["str"] = "test"
     @filter.filter(event)
     assert_equal(["tag", "new_tag"], event.tags)
+  end # def test_add_tags
+
+  def test_add_tags_with_format
+    test_name "add_tags"
+    config [{"match" => {"str" => "test"},
+             "add_tags" => ["${str}"]},
+           ]
+
+    event = LogStash::Event.new
+    event.tags << "tag"
+    event.type = @typename
+    event["str"] = "test"
+    @filter.filter(event)
+    assert_equal(["tag", event["str"]], event.tags)
   end # def test_add_tags
 end # TestFilterGrep

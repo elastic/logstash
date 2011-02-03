@@ -80,6 +80,10 @@ class LogStash::Event
     end
   end # def []
   
+  # TODO(sissel): the semantics of [] and []= are now different in that
+  # []= only allows you to assign to only fields (not metadata), but
+  # [] allows you to read fields and metadata.
+  # We should fix this. Metadata is really a namespace issue, anyway.
   def []=(key, value); @data["@fields"][key] = value end # def []=
   def fields; return @data["@fields"] end # def fields
   
@@ -112,4 +116,29 @@ class LogStash::Event
       end
     end # event.fields.each
   end # def append
+
+  # sprintf. This could use a better method name.
+  # The idea is to take an event and convert it to a string based on 
+  # any format values, delimited by ${foo} where 'foo' is a field or
+  # metadata member.
+  #
+  # For example, if the event has @type == "foo" and @source == "bar"
+  # then this string:
+  #   "type is ${@type} and source is #{@source}"
+  # will return
+  #   "type is foo and source is bar"
+  #
+  # If a ${name} value does not exist, then no substitution occurs.
+  #
+  # TODO(sissel): It is not clear what the value of a field that 
+  # is an array (or hash?) should be. Join by comma? Something else?
+  public
+  def sprintf(format)
+    result = format.gsub(/\$\{[@A-Za-z0-9_-]+\}/) do |match|
+      name = match[2..-2] # trim '${' and '}'
+      value = (self[name] or match)
+    end
+    #$stderr.puts "sprintf(#{format.inspect}) => #{result.inspect}"
+    return result
+  end # def sprintf
 end # class LogStash::Event
