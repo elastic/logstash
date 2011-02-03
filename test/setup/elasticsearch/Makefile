@@ -6,10 +6,13 @@ elasticsearch-%:
 	$(MAKE) $@.zip
 	unzip $@.zip
 
+init-elasticsearch-%:
+	$(MAKE) elasticsearch-$*
+	cd elasticsearch-$*; bin/plugin install river-rabbitmq
+
 run-elasticsearch-%:
 	$(MAKE) elasticsearch-$*
 	cd elasticsearch-$*; \
-	bin/plugin install river-rabbitmq; \
 	bin/elasticsearch -f
 
 wipe-elasticsearch-%:
