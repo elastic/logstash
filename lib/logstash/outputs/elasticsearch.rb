@@ -62,8 +62,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
       @callback = self.method(:receive_http)
     when "river"
       params["port"] ||= 5672
-      auth = "#{params["user"] or "guest"}:#{params["pass"] or "guest"}"
-      mq_url = URI::parse("amqp://#{auth}@#{params["host"]}:#{params["port"]}/queue/#{params["queue"]}?durable=1")
+      mq_url = URI::parse("amqp://#{params["host"]}:#{params["port"]}/queue/#{params["queue"]}?durable=1")
       @mq = LogStash::Outputs::Amqp.new(mq_url.to_s)
       @mq.register
       @callback = self.method(:receive_river)

@@ -24,13 +24,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   public
   def register
     @logger.info("Registering output #{@url}")
-    amqpsettings = {
-      :host => @url.host,
-      :port => (@url.port or 5672),
-    }
-    amqpsettings[:user] = @url.user if @url.user
-    amqpsettings[:pass] = @url.password if @url.password
-    @amqp = AMQP.connect(amqpsettings)
+    @amqp = AMQP.connect(:host => @url.host, :port => (@url.port or 5672))
     @mq = MQ.new(@amqp)
     @target = nil
 
