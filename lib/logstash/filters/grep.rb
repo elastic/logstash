@@ -75,7 +75,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       # apply any fields/tags.
       match_count = 0
       match["match"].each do |field, re|
-        if ! event[field]
+        if !event[field]
           @logger.debug(["Skipping match object, field not present", field, event, event[field]])
           next
         end

@@ -73,10 +73,10 @@ class LogStash::Event
   def [](key)
     # If the key isn't in fields and it starts with an "@" sign, get it out of data instead of fields
     if ! @data["@fields"].has_key?(key) and key.slice(0,1) == "@"
-      @data[key]
+      return @data[key]
     # Exists in @fields (returns value) or doesn't start with "@" (return null)
     else
-      @data["@fields"][key]
+      return @data["@fields"][key]
     end
   end # def []
   
