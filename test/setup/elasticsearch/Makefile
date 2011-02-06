@@ -17,7 +17,7 @@ run-elasticsearch-%:
 
 wipe-elasticsearch-%:
 	$(MAKE) elasticsearch-$*
-	rm -rf elasticsearch-$*/{work,data}
+	rm -rf elasticsearch-$*/work elasticsearch-$*/data
 
 remove-elasticsearch-%:
 	rm -rf elasticsearch-$* elasticsearch-$*.zip

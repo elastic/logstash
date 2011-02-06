@@ -141,4 +141,14 @@ class LogStash::Event
     #$stderr.puts "sprintf(#{format.inspect}) => #{result.inspect}"
     return result
   end # def sprintf
+
+  public
+  def ==(other)
+    puts "#{self.class.name}#==(#{other.inspect})"
+    if !other.is_a?(self.class)
+      return false
+    end
+
+    return other.to_hash == self.to_hash
+  end # def ==
 end # class LogStash::Event

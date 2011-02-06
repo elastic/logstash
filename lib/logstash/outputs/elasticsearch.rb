@@ -94,17 +94,18 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     else raise "unknown elasticsearch method #{params["method"].inspect}"
     end
 
-    receive(LogStash::Event.new({
-      "@source" => "@logstashinit",
-      "@type" => "@none",
-      "@message" => "Starting logstash output to elasticsearch",
-      "@fields" => {
-        "HOSTNAME" => Socket.gethostname
-      },
-    }))
+    #receive(LogStash::Event.new({
+      #"@source" => "@logstashinit",
+      #"@type" => "@none",
+      #"@message" => "Starting logstash output to elasticsearch",
+      #"@fields" => {
+        #"HOSTNAME" => Socket.gethostname
+      #},
+    #}))
 
     pending = @pending
     @pending = []
+    @logger.info("Flushing #{pending.size} events")
     pending.each do |event|
       receive(event)
     end
@@ -123,7 +124,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
   def receive_http(event, tries=5)
     req = @http.post :body => event.to_json
     req.errback do
-      $stderr.puts "Request to index to #{@url.to_s} failed (will retry, #{tries} tries left). Event was #{event.to_s}"
+      @logger.warn("Request to index to #{@url.to_s} failed (will retry, #{tries} tries left). Event was #{event.to_s}")
       EventMachine::add_timer(2) do
         # TODO(sissel): Actually abort if we retry too many times.
         receive_http(event, tries - 1)
