@@ -33,7 +33,9 @@ rvm "$ruby@$gemset" gem install --no-ri --no-rdoc logstash-*.gem
 # stompserver says it wants 'hoe >= 1.1.1' and the latest 'hoe' requires
 # some bullshit version of rubygems that nobody will have, so install
 # an older one.
-rvm "$ruby@$gemset" gem install --no-ri --no-rdoc hoe -v "1.1.1"
+rvm "$ruby@$gemset" gem update --system
 rvm "$ruby@$gemset" gem install --no-ri --no-rdoc stompserver
+
+echo "Running tests now..."
 rvm "$ruby@$gemset" exec logstash-test
 
