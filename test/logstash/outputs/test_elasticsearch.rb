@@ -20,32 +20,41 @@ class TestOutputElasticSearch < LogStash::TestCase
     version = self.class::ELASTICSEARCH_VERSION
     system("make -C #{File.dirname(__FILE__)}/../../setup/elasticsearch/ init-elasticsearch-#{version} wipe-elasticsearch-#{version} #{$DEBUG ? "" : "> /dev/null 2>&1"}")
 
-    # TODO(sissel): Make sure port 9200 is unused?
-    teardown if @es_pid
-    @es_pid = Process.fork do
-      Process.setsid
-      puts "Starting ElasticSearch #{version}"
-      if !$DEBUG
-        $stdout.reopen("/dev/null", "w")
-        $stderr.reopen("/dev/null", "w")
-        $stdin.reopen("/dev/null", "r")
-      end
-      exec("make", "-C", "#{File.dirname(__FILE__)}/../../setup/elasticsearch/", "run-elasticsearch-#{version}")
-      $stderr.puts "Something went wrong starting up elasticsearch?"
-      exit 1
-    end
 
-    # Wait for elasticsearch to be ready.
     1.upto(30) do
-      begin
-        Net::HTTP.get(URI.parse("http://localhost:9200/_status"))
-        puts "ElasticSearch is ready..."
-        return
-      rescue => e
-        puts "ElasticSearch not yet ready... sleeping."
-        sleep 2
+      # Pick a random port
+      teardown if @es_pid
+      @port = (rand * 30000 + 20000).to_i
+      @es_pid = Process.fork do
+        Process.setsid
+        puts "Starting ElasticSearch #{version}"
+        if !$DEBUG
+          $stdout.reopen("/dev/null", "w")
+          $stderr.reopen("/dev/null", "w")
+          $stdin.reopen("/dev/null", "r")
+        end
+        ENV["ESFLAGS"] = "-Des.http.port=#{@port} -Des.es.transport.tcp.port=0"
+        exec("make", "-C", "#{File.dirname(__FILE__)}/../../setup/elasticsearch/", "run-elasticsearch-#{version}")
+        $stderr.puts "Something went wrong starting up elasticsearch?"
+        exit 1
       end
-    end
+
+      # Wait for elasticsearch to be ready.
+      1.upto(30) do
+        begin
+          Net::HTTP.get(URI.parse("http://localhost:#{@port}/_status"))
+          puts "ElasticSearch is ready..."
+          return
+        rescue => e
+          # TODO(sissel): Need to waitpid to see if ES has died and
+          # should immediately retry if it has.
+          puts "ElasticSearch not yet ready... sleeping."
+          sleep 2
+        end
+      end
+
+      puts "ES did not start properly, trying again."
+    end # try a few times to launch ES on a random port.
 
     raise "ElasticSearch failed to start or was otherwise not running properly?"
   end

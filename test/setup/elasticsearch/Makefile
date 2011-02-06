@@ -13,7 +13,7 @@ init-elasticsearch-%:
 run-elasticsearch-%:
 	$(MAKE) elasticsearch-$*
 	cd elasticsearch-$*; \
-	bin/elasticsearch -f
+	bin/elasticsearch -f $(ESFLAGS)
 
 wipe-elasticsearch-%:
 	$(MAKE) elasticsearch-$*

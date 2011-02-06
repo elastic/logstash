@@ -17,7 +17,7 @@ rvm rvmrc trust logstash
 git pull origin master
 git checkout master
 
-ruby="ruby-1.8.7"
+ruby="${1=:ruby-1.8.7}"
 gemset="logstash-testing"
 
 if ! rvm list | grep "$ruby" ; then
