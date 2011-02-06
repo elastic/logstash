@@ -77,9 +77,10 @@ class TestOutputElasticSearch < LogStash::TestCase
       em_setup
 
       events = []
+      myfile = File.basename(__FILE__)
       1.upto(5).each do |i|
         events << LogStash::Event.new("@message" => "just another log rollin' #{i}",
-                                      "@source" => "logstash tests in #{__FILE__}")
+                                      "@source" => "logstash tests in #{myfile}")
       end
 
       # TODO(sissel): Need a way to hook when the agent is ready?

@@ -14,8 +14,6 @@ fi
 
 . "$rvm"
 rvm rvmrc trust logstash
-cd logstash
-
 git pull origin master
 git checkout master
 
@@ -31,6 +29,11 @@ rvm gemset create $gemset
 rvm "$ruby@$gemset" gem uninstall -ax logstash || true
 rvm "$ruby@$gemset" gem build logstash.gemspec
 rvm "$ruby@$gemset" gem install --no-ri --no-rdoc logstash-*.gem
+
+# stompserver says it wants 'hoe >= 1.1.1' and the latest 'hoe' requires
+# some bullshit version of rubygems that nobody will have, so install
+# an older one.
+rvm "$ruby@$gemset" gem install --no-ri --no-rdoc hoe -v "1.1.1"
 rvm "$ruby@$gemset" gem install --no-ri --no-rdoc stompserver
 rvm "$ruby@$gemset" exec logstash-test
 

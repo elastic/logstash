@@ -24,8 +24,13 @@ class TestInputStomp < LogStash::TestCase
       @port = (rand * 30000 + 20000).to_i
       @stomp_pid = Process.fork do
         args = ["-p", @port.to_s, *@flags]
-        exec("stompserver", "stompserver", *args)
-        $stderr.puts("$!")
+        stompbin = Gem.bin_path('stompserver', 'stompserver')
+        exec("/proc/$$/exe", "ruby", "-rubygems", stompbin, *args)
+        #$0 = "stompserver"
+        #ARGV.clear
+        #ARGV.unshift *args
+        #gem 'stompserver'
+        $stderr.puts($!)
         exit 1
       end
       
