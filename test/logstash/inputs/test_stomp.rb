@@ -24,12 +24,15 @@ class TestInputStomp < LogStash::TestCase
       @port = (rand * 30000 + 20000).to_i
       @stomp_pid = Process.fork do
         args = ["-p", @port.to_s, *@flags]
-        stompbin = Gem.bin_path('stompserver', 'stompserver')
-        exec("/proc/$$/exe", "ruby", "-rubygems", stompbin, *args)
-        #$0 = "stompserver"
-        #ARGV.clear
-        #ARGV.unshift *args
-        #gem 'stompserver'
+
+        # Ask rubygems where stmpserver is
+        stompserver = Gem.bin_path('stompserver', 'stompserver')
+
+        # Run this ruby. This makes things work better if we're run under a strange
+        # environment like rvm or gems installed to ~/.gems.
+        ruby = File.readlink("/proc/self/exe")
+        cmd = [ruby, "-rubygems", stompserver, *args]
+        exec(*cmd)
         $stderr.puts($!)
         exit 1
       end
