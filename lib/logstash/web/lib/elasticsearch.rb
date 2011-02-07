@@ -8,13 +8,14 @@ module LogStash::Web; end
 
 class LogStash::Web::ElasticSearch
   public
-  def initialize
+  def initialize(settings)
+    @port = (settings[:port] || 9200).to_i
     @logger = LogStash::Logger.new(STDOUT)
   end
 
   public
   def search(params)
-    http = EventMachine::HttpRequest.new("http://localhost:9200/_search")
+    http = EventMachine::HttpRequest.new("http://localhost:#{@port}/_search")
     params[:offset] ||= 0
     params[:count] ||= 20
 

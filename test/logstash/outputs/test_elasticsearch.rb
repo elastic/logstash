@@ -57,12 +57,12 @@ class TestOutputElasticSearch < LogStash::TestCase
     end # try a few times to launch ES on a random port.
 
     raise "ElasticSearch failed to start or was otherwise not running properly?"
-  end
+  end # def start_elasticsearch
 
   def teardown
     # Kill the whole process group for elasticsearch
     Process.kill("KILL", -1 * @es_pid) if !@es_pid.nil?
-  end
+  end # def teardown
 
   def em_setup
     start_elasticsearch
@@ -74,7 +74,7 @@ class TestOutputElasticSearch < LogStash::TestCase
         ]
       },
       "outputs" => [
-        "elasticsearch://localhost:9200/logstashtesting/logs"
+        "elasticsearch://localhost:#{@port}/logstashtesting/logs"
       ]
     }
 
@@ -101,7 +101,7 @@ class TestOutputElasticSearch < LogStash::TestCase
 
       tries = 30 
       EventMachine.add_periodic_timer(0.2) do
-        es = LogStash::Web::ElasticSearch.new
+        es = LogStash::Web::ElasticSearch.new(:port => @port)
         es.search(:q => "*", :count => 5, :offset => 0) do |results|
           hits = (results["hits"]["hits"] rescue [])
           if events.size == hits.size
