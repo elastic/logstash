@@ -14,21 +14,23 @@ fi
 
 . "$rvm"
 rvm rvmrc trust logstash
-git pull origin master
-git checkout master
+
+if [ "$1" = "" ] ; then
+  set -- "ruby-1.8.7"
+fi
 
 ruby="$1"
-: ${ruby:=ruby-1.8.7}
 gemset="logstash-testing"
-
-if ! rvm list | grep "$ruby" ; then
-  rvm install "$ruby"
-fi
 
 run() {
   echo "$@"
   "$@"
 }
+
+if ! run rvm list | grep "$ruby" ; then
+  run rvm install "$ruby"
+fi
+
 
 rm -f *.gem
 rvm gemset create $gemset
