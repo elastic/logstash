@@ -33,7 +33,7 @@ fi
 
 
 rm -f *.gem
-rvm gemset create $gemset
+rvm --with-rubies "$ruby" gemset create $gemset
 run rvm "$ruby@$gemset" gem uninstall -ax logstash || true
 run rvm "$ruby@$gemset" gem build logstash.gemspec
 run rvm "$ruby@$gemset" gem install --no-ri --no-rdoc logstash-*.gem
