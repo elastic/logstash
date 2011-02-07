@@ -33,7 +33,7 @@ class TestOutputElasticSearch < LogStash::TestCase
           $stderr.reopen("/dev/null", "w")
           $stdin.reopen("/dev/null", "r")
         end
-        ENV["ESFLAGS"] = "-Des.http.port=#{@port} -Des.es.transport.tcp.port=0"
+        ENV["ESFLAGS"] = "-Des.http.port=#{@port} -Des.transport.tcp.port=0 -Des.cluster.name=logstash-test-#{$$}"
         exec("make", "-C", "#{File.dirname(__FILE__)}/../../setup/elasticsearch/", "run-elasticsearch-#{version}")
         $stderr.puts "Something went wrong starting up elasticsearch?"
         exit 1
@@ -108,11 +108,11 @@ class TestOutputElasticSearch < LogStash::TestCase
             puts "Found #{hits.size} events, ready to verify!"
             expected = events.clone
             assert_equal(events.size, hits.size)
+            events.each { |e| p :expect => e }
             hits.each do |hit|
               event = LogStash::Event.new(hit["_source"])
-              events.each { |e| p :expect => e }
-              #p :got => event
-              assert(expected.include?(event), "Found event in results that was not expected: #{event.inspect}")
+              p :got => event
+              assert(expected.include?(event), "Found event in results that was not expected: #{event.inspect}\n\nExpected: #{events.map{ |a| a.inspect }.join("\n")}")
             end
             EventMachine.stop_event_loop
             next # break out

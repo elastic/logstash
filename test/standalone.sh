@@ -17,25 +17,30 @@ rvm rvmrc trust logstash
 git pull origin master
 git checkout master
 
-ruby="${1=:ruby-1.8.7}"
+ruby="$1"
+: ${ruby:=ruby-1.8.7}
 gemset="logstash-testing"
 
 if ! rvm list | grep "$ruby" ; then
   rvm install "$ruby"
 fi
 
+run() {
+  echo "$@"
+  "$@"
+}
+
 rm -f *.gem
 rvm gemset create $gemset
-rvm "$ruby@$gemset" gem uninstall -ax logstash || true
-rvm "$ruby@$gemset" gem build logstash.gemspec
-rvm "$ruby@$gemset" gem install --no-ri --no-rdoc logstash-*.gem
+run rvm "$ruby@$gemset" gem uninstall -ax logstash || true
+run rvm "$ruby@$gemset" gem build logstash.gemspec
+run rvm "$ruby@$gemset" gem install --no-ri --no-rdoc logstash-*.gem
 
 # stompserver says it wants 'hoe >= 1.1.1' and the latest 'hoe' requires
-# some bullshit version of rubygems that nobody will have, so install
-# an older one.
-rvm "$ruby@$gemset" gem update --system
-rvm "$ruby@$gemset" gem install --no-ri --no-rdoc stompserver
+# rubygems >1.4, so, upgrade I guess... I hate ruby sometimes.
+run rvm "$ruby@$gemset" gem update --system
+run rvm "$ruby@$gemset" gem install --no-ri --no-rdoc stompserver
 
 echo "Running tests now..."
-rvm "$ruby@$gemset" exec logstash-test
+run rvm "$ruby@$gemset" exec logstash-test
 
