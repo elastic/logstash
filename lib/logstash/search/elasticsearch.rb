@@ -48,7 +48,8 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
       result.duration = Time.now - start_time
 
       @logger.info(["Got search results", 
-                   { :query => query.query_string, :duration => data["duration"]}])
+                   { :query => query.query_string, :duration => data["duration"],
+                     :data => data }])
       if req.response_header.status != 200
         result.error_message = data["error"] || req.inspect
         @error = data["error"] || req.inspect
