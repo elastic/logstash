@@ -1,7 +1,6 @@
 
 require "logstash/namespace"
 require "logstash/logging"
-require "logstash/search/facetresult/entry"
 
 class LogStash::Search::FacetResult
   # Array of LogStash::Search::FacetResult::Entry
@@ -22,5 +21,5 @@ class LogStash::Search::FacetResult
   def error?
     return !@error_message.nil?
   end
-end # class LogStash::Search::Result
+end # class LogStash::Search::FacetResult
 

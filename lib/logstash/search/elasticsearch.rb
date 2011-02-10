@@ -7,6 +7,7 @@ require "logstash/search/base"
 require "logstash/search/query"
 require "logstash/search/result"
 require "logstash/search/facetresult"
+require "logstash/search/facetresult/histogram"
  
 class LogStash::Search::ElasticSearch < LogStash::Search::Base
   public
@@ -106,7 +107,7 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
       "from" => 0,
       "size" => 0,
       "facets" => {
-        "histo1" => { 
+        "amazingpants" => { # just a name for this histogram...
           "histogram" => histogram_settings,
         },
       },
@@ -128,26 +129,22 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
         @error = data["error"] || req.inspect
       end
 
-      # We want to yield a list of LogStash::Event objects.
-      result.facets = data["facets"]
-      data["facets"].each do |facetname, facetdata|
-        histogram_result = {}
-        facetdata["entries"].each do |entry|
-          # entry is a hash of keys 'total', 'mean', 'count', and 'key'
-          histogram_result[entry["key"]] = entry["count"]
-        end
-        result.facets[facetname] = histogram_result
-      end
+      data["facets"]["amazingpants"]["entries"].each do |entry|
+        # entry is a hash of keys 'total', 'mean', 'count', and 'key'
+        hist_entry = LogStash::Search::FacetResult::Histogram.new
+        hist_entry.key = entry["key"]
+        hist_entry.count = entry["count"]
+        result.results << hist_entry
+      end # for each histogram result
       yield result
-    end
+    end # request callback
 
     req.errback do 
       @logger.warn(["Query failed", query, req, req.response])
       result.duration = Time.now - start_time
       result.error_message = req.response
-      #yield result
-
-      yield({ "error" => req.response })
+      yield result
+      #yield({ "error" => req.response })
     end
   end
 
@@ -173,5 +170,4 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
       end # hit._source.@fields.each
     end # data.hits.hits.each
   end # def anonymize
-
 end # class LogStash::Search::ElasticSearch
