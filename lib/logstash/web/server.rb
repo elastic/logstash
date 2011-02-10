@@ -6,13 +6,15 @@ $:.unshift(File.dirname(__FILE__))
 
 require "eventmachine"
 require "json"
-require "lib/elasticsearch"
+require "logstash/search/elasticsearch"
+require "logstash/search/query"
 require "logstash/namespace"
 require "rack"
 require "rubygems"
 require "sinatra/async"
 
 class EventMachine::ConnectionError < RuntimeError; end
+module LogStash::Web; end
 
 class LogStash::Web::Server < Sinatra::Base
   register Sinatra::Async
@@ -20,7 +22,19 @@ class LogStash::Web::Server < Sinatra::Base
   set :logging, true
   set :public, "#{File.dirname(__FILE__)}/public"
   set :views, "#{File.dirname(__FILE__)}/views"
-  elasticsearch = LogStash::Web::ElasticSearch.new
+
+  use Rack::CommonLogger
+  #use Rack::ShowExceptions
+
+  def initialize(settings={})
+    super
+    # TODO(sissel): Support alternate backends
+    backend_url = URI.parse(settings.backend_url)
+    @backend = LogStash::Search::ElasticSearch.new(
+      :host => backend_url.host,
+      :port => backend_url.port
+    )
+  end
 
   aget '/style.css' do
     headers "Content-Type" => "text/css; charset=utf8"
@@ -32,8 +46,11 @@ class LogStash::Web::Server < Sinatra::Base
   end # '/'
 
   aget '/search' do
-    result_callback = proc do
+    result_callback = proc do |results|
       status 500 if @error
+      @results = results
+
+      p :got => results
 
       params[:format] ||= "html"
       case params[:format]
@@ -48,6 +65,7 @@ class LogStash::Web::Server < Sinatra::Base
         body erb :"search/results.txt", :layout => false
       when "json"
         headers({"Content-Type" => "text/plain" })
+        # TODO(sissel): issue/30 - needs refactoring here.
         hits = @hits.collect { |h| h["_source"] }
         response = {
           "hits" => hits,
@@ -63,19 +81,26 @@ class LogStash::Web::Server < Sinatra::Base
     # have javascript enabled, we need to show the results in
     # case a user doesn't have javascript.
     if params[:q] and params[:q] != ""
-      elasticsearch.search(params) do |results|
-        @results = results
-        @hits = (@results["hits"]["hits"] rescue [])
+      query = LogStash::Search::Query.new(
+        :query_string => params[:q],
+        :offset => params[:offset],
+        :count => params[:count]
+      )
+
+      @backend.search(query) do |results|
+        p :got => results
         begin
-          result_callback.call
+          result_callback.call results
         rescue => e
-          puts e
+          p :exception => e
         end
-      end # elasticsearch.search
+      end # @backend.search
     else
-      #@error = "No query given."
-      @hits = []
-      result_callback.call
+      results = LogStash::Search::Result.new(
+        :events => [],
+        :error_mesage => "No query given"
+      )
+      result_callback.call results
     end
   end # aget '/search'
 
@@ -83,23 +108,34 @@ class LogStash::Web::Server < Sinatra::Base
     headers({"Content-Type" => "text/html" })
     count = params["count"] = (params["count"] or 50).to_i
     offset = params["offset"] = (params["offset"] or 0).to_i
-    elasticsearch.search(params) do |results|
+
+    query = LogStash::Search::Query.new(
+      :query_string => params[:q],
+      :offset => offset,
+      :count => count
+    )
+
+    @backend.search(query) do |results|
       @results = results
-      if @results.include?("error")
+      if @results.error?
         body haml :"search/error", :layout => !request.xhr?
         next
       end
 
-      @hits = (@results["hits"]["hits"] rescue [])
-      @total = (@results["hits"]["total"] rescue 0)
-      @graphpoints = []
-      begin
-        @results["facets"]["by_hour"]["entries"].each do |entry|
-          @graphpoints << [entry["key"], entry["count"]]
-        end
-      rescue => e
-        puts e
-      end
+      @events = @results.events
+      @total = (@results.total rescue 0)
+      count = @results.events.size
+
+      # TODO(sissel): move this to a facet query
+      #@graphpoints = []
+      #begin
+        #@results["facets"]["by_hour"]["entries"].each do |entry|
+          #@graphpoints << [entry["key"], entry["count"]]
+        #end
+      #rescue => e
+        #p :exception => e
+        #puts e.backtrace.join("\n")
+      #end
 
       if count and offset
         if @total > (count + offset)
@@ -132,16 +168,22 @@ class LogStash::Web::Server < Sinatra::Base
       end
 
       body haml :"search/ajax", :layout => !request.xhr?
-    end # elasticsearch.search
+    end # @backend.search
   end # apost '/search/ajax'
+
+  aget '/*' do
+    status 404 if @error
+    body "Invalid path."
+  end # aget /*
 end # class LogStash::Web::Server
 
 require "optparse"
-Settings = Struct.new(:daemonize, :logfile, :address, :port)
+Settings = Struct.new(:daemonize, :logfile, :address, :port, :backend_url)
 settings = Settings.new
 
-settings.address      = "0.0.0.0"
-settings.port      = 9292
+settings.address = "0.0.0.0"
+settings.port = 9292
+settings.backend_url = "elasticsearch://localhost:9200/"
 
 progname = File.basename($0)
 
@@ -162,6 +204,11 @@ opts = OptionParser.new do |opts|
 
   opts.on("-p", "--port PORT", "Port on which to start webserver. Default is 9292.") do |port|
     settings.port = port.to_i
+  end
+
+  opts.on("-b", "--backend URL",
+          "The backend URL to use. Default is elasticserach://localhost:9200/") do |url|
+    settings.backend_url = url
   end
 end
 
@@ -189,5 +236,10 @@ end
 Rack::Handler::Thin.run(
   Rack::CommonLogger.new( \
     Rack::ShowExceptions.new( \
-      LogStash::Web::Server.new)),
+      LogStash::Web::Server.new(settings))),
   :Port => settings.port, :Host => settings.address)
+#Rack::Handler::Thin.run(
+  #LogStash::Web::Server.new(settings),
+  #:Port => settings.port,
+  #:Host => settings.address
+#)

@@ -9,7 +9,7 @@ require "logstash/search/result"
  
 class LogStash::Search::ElasticSearch < LogStash::Search::Base
   public
-  def initialize(settings)
+  def initialize(settings={})
     @host = (settings[:host] || "localhost")
     @port = (settings[:port] || 9200).to_i
     @logger = LogStash::Logger.new(STDOUT)
@@ -17,6 +17,7 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
 
   public
   def search(query)
+    raise "No block given for search call." if !block_given?
     if query.is_a?(String)
       query = LogStash::Search::Query.parse(query)
     end
@@ -49,7 +50,7 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
 
       @logger.info(["Got search results", 
                    { :query => query.query_string, :duration => data["duration"],
-                     :data => data }])
+                     :results => data["hits"]["hits"].size }])
       if req.response_header.status != 200
         result.error_message = data["error"] || req.inspect
         @error = data["error"] || req.inspect
@@ -59,6 +60,11 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
       data["hits"]["hits"].each do |hit|
         result.events << LogStash::Event.new(hit["_source"])
       end
+
+      # Total hits this search could find if not limited
+      result.total = data["hits"]["total"]
+      result.offset = query.offset
+
       yield result
     end
 
