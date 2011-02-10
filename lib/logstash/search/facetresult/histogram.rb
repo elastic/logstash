@@ -1,4 +1,5 @@
 
+require "json"
 require "logstash/search/facetresult/entry"
 
 class LogStash::Search::FacetResult::Histogram < LogStash::Search::FacetResult::Entry
@@ -7,4 +8,13 @@ class LogStash::Search::FacetResult::Histogram < LogStash::Search::FacetResult::
   attr_accessor :mean
   attr_accessor :total
   attr_accessor :count
+
+  def to_json
+    return {
+      "key" => @key,
+      "mean" => @mean,
+      "total" => @total,
+      "count" => @count,
+    }.to_json
+  end
 end

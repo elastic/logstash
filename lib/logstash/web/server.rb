@@ -98,16 +98,17 @@ class LogStash::Web::Server < Sinatra::Base
     else
       results = LogStash::Search::Result.new(
         :events => [],
-        :error_mesage => "No query given"
+        :error_message => "No query given"
       )
       result_callback.call results
     end
   end # aget '/search'
 
-  apost '/search/ajax' do
+  aget '/api/search' do
     headers({"Content-Type" => "text/html" })
     count = params["count"] = (params["count"] or 50).to_i
     offset = params["offset"] = (params["offset"] or 0).to_i
+    format = (params[:format] or "json")
 
     query = LogStash::Search::Query.new(
       :query_string => params[:q],
@@ -125,17 +126,6 @@ class LogStash::Web::Server < Sinatra::Base
       @events = @results.events
       @total = (@results.total rescue 0)
       count = @results.events.size
-
-      # TODO(sissel): move this to a facet query
-      #@graphpoints = []
-      #begin
-        #@results["facets"]["by_hour"]["entries"].each do |entry|
-          #@graphpoints << [entry["key"], entry["count"]]
-        #end
-      #rescue => e
-        #p :exception => e
-        #puts e.backtrace.join("\n")
-      #end
 
       if count and offset
         if @total > (count + offset)
@@ -169,7 +159,31 @@ class LogStash::Web::Server < Sinatra::Base
 
       body haml :"search/ajax", :layout => !request.xhr?
     end # @backend.search
-  end # apost '/search/ajax'
+  end # apost '/api/search'
+
+  aget '/api/histogram' do
+    headers({"Content-Type" => "text/plain" })
+    format = (params[:format] or "json")
+    field = (params[:field] or "@timestamp")
+    interval = (params[:interval] or 3600 * 1000)
+    @backend.histogram(params[:q], field, interval) do |results|
+      @results = results
+      if @results.error?
+        status 500
+        body({ "error" => @results.error_message }.to_json)
+        next
+      end
+
+      begin
+        p results.results.class
+        a = results.results.to_json
+      rescue => e
+        p e
+        raise e
+      end
+      body a
+    end # @backend.search
+  end # apost '/api/search'
 
   aget '/*' do
     status 404 if @error
