@@ -1,10 +1,11 @@
 
 require "logstash/namespace"
 require "logstash/logging"
+require "logstash/search/facetresult/entry"
 
 class LogStash::Search::FacetResult
-  # Array of LogStash::Event of results
-  attr_accessor :facets
+  # Array of LogStash::Search::FacetResult::Entry
+  attr_accessor :results
 
   # How long this query took, in seconds (or fractions of).
   attr_accessor :duration
@@ -13,7 +14,7 @@ class LogStash::Search::FacetResult
   attr_accessor :error_message
 
   def initialize(settings={})
-    @facets = {} # TODO(sissel): need something better?
+    @results = []
     @duration = nil
     @error_message = nil
   end
