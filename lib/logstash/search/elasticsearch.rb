@@ -6,6 +6,7 @@ require "logstash/event"
 require "logstash/search/base"
 require "logstash/search/query"
 require "logstash/search/result"
+require "logstash/search/facetresult"
  
 class LogStash::Search::ElasticSearch < LogStash::Search::Base
   public
@@ -79,7 +80,75 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
   end # def search
 
   def histogram(query, field, interval=nil)
-    # TODO(sissel): implement
+    if query.is_a?(String)
+      query = LogStash::Search::Query.parse(query)
+    end
+
+    # TODO(sissel): only search a specific index?
+    http = EventMachine::HttpRequest.new("http://#{@host}:#{@port}/_search")
+
+    @logger.info(["Query", query])
+    histogram_settings = {
+      "field" => field
+    }
+
+    if !interval.nil? && interval.is_a?(Numeric)
+      histogram_settings["interval"] = interval
+    end
+
+    esreq = {
+      "query" => {
+        "query_string" => { 
+           "query" => query.query_string,
+           "default_operator" => "AND"
+        } # query_string
+      }, # query
+      "from" => 0,
+      "size" => 0,
+      "facets" => {
+        "histo1" => { 
+          "histogram" => histogram_settings,
+        },
+      },
+    } # elasticsearch request
+
+    @logger.info("ElasticSearch Facet Query: #{esreq.to_json}")
+    start_time = Time.now
+    req = http.get :body => esreq.to_json
+    result = LogStash::Search::FacetResult.new
+    req.callback do
+      data = JSON.parse(req.response)
+      result.duration = Time.now - start_time
+
+      @logger.info(["Got search results", 
+                   { :query => query.query_string, :duration => data["duration"],
+                     :results => data["hits"]["hits"].size }])
+      if req.response_header.status != 200
+        result.error_message = data["error"] || req.inspect
+        @error = data["error"] || req.inspect
+      end
+
+      # We want to yield a list of LogStash::Event objects.
+      result.facets = data["facets"]
+      data["facets"].each do |facetname, facetdata|
+        histogram_result = {}
+        facetdata["entries"].each do |entry|
+          # entry is a hash of keys 'total', 'mean', 'count', and 'key'
+          histogram_result[entry["key"]] = entry["count"]
+        end
+        result.facets[facetname] = histogram_result
+      end
+      yield result
+    end
+
+    req.errback do 
+      @logger.warn(["Query failed", query, req, req.response])
+      result.duration = Time.now - start_time
+      result.error_message = req.response
+      #yield result
+
+      yield({ "error" => req.response })
+    end
   end
 
   def anonymize
@@ -105,4 +174,4 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
     end # data.hits.hits.each
   end # def anonymize
 
-end # class LogStash::Web::ElasticSearch
+end # class LogStash::Search::ElasticSearch
