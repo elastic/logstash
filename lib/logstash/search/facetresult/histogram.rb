@@ -9,7 +9,8 @@ class LogStash::Search::FacetResult::Histogram < LogStash::Search::FacetResult::
   attr_accessor :total
   attr_accessor :count
 
-  def to_json
+  def to_json(*args)
+    p :to_json => args
     return {
       "key" => @key,
       "mean" => @mean,
