@@ -48,4 +48,5 @@
         %tr.event
           %td.timestamp&= event.timestamp
           %td.message{ :"data-full" => event.to_json }
-            %pre&= event.message
+            %a{:href => "#"}
+              %pre&= event.message
