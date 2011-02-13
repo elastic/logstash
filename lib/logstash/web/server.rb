@@ -1,4 +1,7 @@
 #!/usr/bin/env ruby
+# I don't want folks to have to learn to use yet another tool (rackup)
+# just to launch logstash-web. So let's work like a standard ruby
+# executable.
 ##rackup -Ilib:../lib -s thin
 
 $:.unshift("%s/../lib" % File.dirname(__FILE__))
@@ -12,12 +15,15 @@ require "logstash/namespace"
 require "rack"
 require "rubygems"
 require "sinatra/async"
+require "logstash/web/helpers/require_param"
 
 class EventMachine::ConnectionError < RuntimeError; end
 module LogStash::Web; end
 
 class LogStash::Web::Server < Sinatra::Base
   register Sinatra::Async
+  helpers Sinatra::RequireParam # logstash/web/helpers/require_param
+
   set :haml, :format => :html5
   set :logging, true
   set :public, "#{File.dirname(__FILE__)}/public"
@@ -69,7 +75,6 @@ class LogStash::Web::Server < Sinatra::Base
         hits = @hits.collect { |h| h["_source"] }
         response = {
           "hits" => hits,
-          "facets" => (@results["facets"] rescue nil),
         }
 
         response["error"] = @error if @error
@@ -104,7 +109,16 @@ class LogStash::Web::Server < Sinatra::Base
     end
   end # aget '/search'
 
+  apost '/api/search' do
+    api_search
+  end # apost /api/search
+
   aget '/api/search' do
+    api_search
+  end # aget /api/search
+
+  def api_search
+
     headers({"Content-Type" => "text/html" })
     count = params["count"] = (params["count"] or 50).to_i
     offset = params["offset"] = (params["offset"] or 0).to_i
@@ -119,7 +133,26 @@ class LogStash::Web::Server < Sinatra::Base
     @backend.search(query) do |results|
       @results = results
       if @results.error?
-        body haml :"search/error", :layout => !request.xhr?
+        status 500
+        case format
+        when "html"
+          headers({"Content-Type" => "text/html" })
+          body haml :"search/error", :layout => !request.xhr?
+        when "text"
+          headers({"Content-Type" => "text/plain" })
+          body erb :"search/error.txt", :layout => false
+        when "txt"
+          headers({"Content-Type" => "text/plain" })
+          body erb :"search/error.txt", :layout => false
+        when "json"
+          headers({"Content-Type" => "text/plain" })
+          # TODO(sissel): issue/30 - needs refactoring here.
+          if @results.error?
+            body({ "error" => @results.error_message }.to_json)
+          else
+            body @results.to_json
+          end
+        end # case params[:format]
         next
       end
 
@@ -157,17 +190,34 @@ class LogStash::Web::Server < Sinatra::Base
         end
       end
 
-      body haml :"search/ajax", :layout => !request.xhr?
+      case format
+      when "html"
+        headers({"Content-Type" => "text/html" })
+        body haml :"search/ajax", :layout => !request.xhr?
+      when "text"
+        headers({"Content-Type" => "text/plain" })
+        body erb :"search/results.txt", :layout => false
+      when "txt"
+        headers({"Content-Type" => "text/plain" })
+        body erb :"search/results.txt", :layout => false
+      when "json"
+        headers({"Content-Type" => "text/plain" })
+        # TODO(sissel): issue/30 - needs refactoring here.
+        response = @results
+        body response.to_json
+      end # case params[:format]
     end # @backend.search
-  end # apost '/api/search'
+  end # def api_search
 
   aget '/api/histogram' do
     headers({"Content-Type" => "text/plain" })
-    if params[:q].nil?
+    missing = require_param(:q)
+    if !missing.empty?
       status 500
-      body({ "error" => "No query given (missing 'q' parameter)" }.to_json)
+      body({ "error" => "Missing requiremed parameters",
+             "missing" => missing }.to_json)
       next
-    end
+    end # if !missing.empty?
     format = (params[:format] or "json")
     field = (params[:field] or "@timestamp")
     interval = (params[:interval] or 3600 * 1000)
@@ -260,8 +310,3 @@ Rack::Handler::Thin.run(
     Rack::ShowExceptions.new( \
       LogStash::Web::Server.new(settings))),
   :Port => settings.port, :Host => settings.address)
-#Rack::Handler::Thin.run(
-  #LogStash::Web::Server.new(settings),
-  #:Port => settings.port,
-  #:Host => settings.address
-#)

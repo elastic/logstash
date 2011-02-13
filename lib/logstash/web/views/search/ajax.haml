@@ -2,13 +2,6 @@
   - if (params[:q].strip.length > 0 rescue false)
     %h1
       Search results for '#{params[:q]}'
-  - if @graphpoints
-    #visual
-    :javascript
-      $(function() {
-        var graphdata = #{@graphpoints.to_json};
-        window.logstash.plot(graphdata);
-      });
   - if @total and @result_start and @result_end
     %small
       %strong
