@@ -2,6 +2,7 @@
   - if (params[:q].strip.length > 0 rescue false)
     %h1
       Search results for '#{params[:q]}'
+    #querytime= "(query time: %.3f seconds)" % @results.duration
   - if @total and @result_start and @result_end
     %small
       %strong
