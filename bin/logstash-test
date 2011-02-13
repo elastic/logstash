@@ -36,6 +36,8 @@ def check_libraries
             "needed for websocket output")
   results << check_lib("rack", "rack", true,
             "needed for logstash-web")
+  results << check_lib("thin", "thin", true,
+            "needed for logstash-web")
   results << check_lib("amqp", "amqp", true,
             "needed for AMQP input and output")
   results << check_lib("sinatra/async", "async_sinatra", true,
@@ -45,6 +47,8 @@ def check_libraries
   results << check_lib("ap", "awesome_print", true,
             "improve logstash debug logging output")
   results << check_lib("eventmachine", "eventmachine", false,
+            "required for logstash to function")
+  results << check_lib("json", "json", false,
             "required for logstash to function")
 
   missing_required = results.count { |r| !r[:optional] and !r[:found] }
@@ -66,6 +70,8 @@ end
 
 def main(args)
   report_ruby_version
+  # TODO(sissel): Add a way to call out specific things to test, like
+  # logstash-web, elasticsearch, mongodb, syslog, etc.
   if !check_libraries
     puts "Library check failed."
     return 1
