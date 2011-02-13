@@ -2,7 +2,6 @@
   - if (params[:q].strip.length > 0 rescue false)
     %h1
       Search results for '#{params[:q]}'
-    #querytime= "(query time: %.3f seconds)" % @results.duration
   - if @total and @result_start and @result_end
     %small
       %strong
@@ -10,19 +9,28 @@
       |
       - if @first_href
         %a.pager{ :href => @first_href } first
-        |
+      - else
+        %span.unavailable first
+      |
       - if @prev_href
         %a.pager{ :href => @prev_href } 
           prev
-        - if @next_href
-          |
+      - else
+        %span.unavailable prev
+      |
       - if @next_href
         %a.pager{ :href => @next_href }
           next
+      - else
+        %span.unavailable next
+      |
       - if @last_href
-        |
         %a.pager{ :href => @last_href }
           last
+      - else
+        %span.unavailable last
+      |
+      %span#querytime= "(%.3f seconds)" % @results.duration
   - if @results.events.length == 0 
     - if !params[:q]
       / We default to a '+2 days' in the future  to capture 'today at 00:00'
