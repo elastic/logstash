@@ -50,16 +50,26 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
       data = JSON.parse(req.response)
       result.duration = Time.now - start_time
 
+      hits = data["hits"]["hits"] rescue nil
+
+      if hits.nil? or !data["error"].nil?
+        # Use the error message if any, otherwise, return the whole
+        # data object as json as the error message for debugging later.
+        result.error_message = (data["error"] rescue false) || data.to_json
+        yield result
+        next
+      end
+
       @logger.info(["Got search results", 
                    { :query => query.query_string, :duration => data["duration"],
-                     :results => data["hits"]["hits"].size }])
+                     :result_count => hits.size }])
       if req.response_header.status != 200
         result.error_message = data["error"] || req.inspect
         @error = data["error"] || req.inspect
       end
 
       # We want to yield a list of LogStash::Event objects.
-      data["hits"]["hits"].each do |hit|
+      hits.each do |hit|
         result.events << LogStash::Event.new(hit["_source"])
       end
 
