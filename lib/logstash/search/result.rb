@@ -26,5 +26,14 @@ class LogStash::Search::Result
   def error?
     return !@error_message.nil?
   end
+
+  def to_json
+    return {
+      "events" => @events,
+      "duration" => @duration,
+      "offset" => @offset,
+      "total" => @total,
+    }.to_json
+  end # def to_json
 end # class LogStash::Search::Result
 
