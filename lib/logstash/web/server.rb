@@ -231,9 +231,10 @@ class LogStash::Web::Server < Sinatra::Base
              "missing" => missing }.to_json)
       next
     end # if !missing.empty?
-    format = (params[:format] or "json")
-    field = (params[:field] or "@timestamp")
-    interval = (params[:interval] or 3600 * 1000)
+
+    format = (params[:format] or "json")            # default json
+    field = (params[:field] or "@timestamp")        # default @timestamp
+    interval = (params[:interval] or 3600000).to_i  # default 1 hour
     @backend.histogram(params[:q], field, interval) do |results|
       @results = results
       if @results.error?
