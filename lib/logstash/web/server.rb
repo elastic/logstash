@@ -184,7 +184,7 @@ class LogStash::Web::Server < Sinatra::Base
         next_params["offset"] = [offset + count, @total - count].min
         @next_href = "?" +  next_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
         last_params = next_params.clone
-        last_params["offset"] = @total - offset
+        last_params["offset"] = @total - count
         @last_href = "?" +  last_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
       end
 
@@ -193,11 +193,11 @@ class LogStash::Web::Server < Sinatra::Base
         prev_params["offset"] = [offset - count, 0].max
         @prev_href = "?" +  prev_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
 
-        if prev_params["offset"] > 0
+        #if prev_params["offset"] > 0
           first_params = prev_params.clone
           first_params["offset"] = 0
           @first_href = "?" +  first_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
-        end
+        #end
       end
 
       # TODO(sissel): make a helper function taht goes hash -> cgi querystring
