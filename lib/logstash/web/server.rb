@@ -200,6 +200,9 @@ class LogStash::Web::Server < Sinatra::Base
         end
       end
 
+      # TODO(sissel): make a helper function taht goes hash -> cgi querystring
+      @refresh_href = "?" +  params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
+
       case format
       when "html"
         headers({"Content-Type" => "text/html" })

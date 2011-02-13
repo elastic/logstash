@@ -30,6 +30,9 @@
       - else
         %span.unavailable last
       |
+      %a.pager{ :href => @refresh_href }
+        refresh
+      |
       %span#querytime= "(%.3f seconds)" % @results.duration
   - if @results.events.length == 0 
     - if !params[:q]
