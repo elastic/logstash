@@ -122,14 +122,22 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
       result.duration = Time.now - start_time
 
       @logger.info(["Got search results", 
-                   { :query => query.query_string, :duration => data["duration"],
-                     :results => data["hits"]["hits"].size }])
+                   { :query => query.query_string, :duration => data["duration"] }])
       if req.response_header.status != 200
         result.error_message = data["error"] || req.inspect
         @error = data["error"] || req.inspect
       end
 
-      data["facets"]["amazingpants"]["entries"].each do |entry|
+      entries = data["facets"]["amazingpants"]["entries"] rescue nil
+
+      if entries.nil? or !data["error"].nil?
+        # Use the error message if any, otherwise, return the whole
+        # data object as json as the error message for debugging later.
+        result.error_message = (data["error"] rescue false) || data.to_json
+        yield result
+        next
+      end
+      entries.each do |entry|
         # entry is a hash of keys 'total', 'mean', 'count', and 'key'
         hist_entry = LogStash::Search::FacetResult::Histogram.new
         hist_entry.key = entry["key"]

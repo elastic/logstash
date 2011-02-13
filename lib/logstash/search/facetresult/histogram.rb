@@ -9,8 +9,8 @@ class LogStash::Search::FacetResult::Histogram < LogStash::Search::FacetResult::
   attr_accessor :total
   attr_accessor :count
 
+  # sometimes a parent call to to_json calls us with args?
   def to_json(*args)
-    p :to_json => args
     return {
       "key" => @key,
       "mean" => @mean,

@@ -163,6 +163,11 @@ class LogStash::Web::Server < Sinatra::Base
 
   aget '/api/histogram' do
     headers({"Content-Type" => "text/plain" })
+    if params[:q].nil?
+      status 500
+      body({ "error" => "No query given (missing 'q' parameter)" }.to_json)
+      next
+    end
     format = (params[:format] or "json")
     field = (params[:field] or "@timestamp")
     interval = (params[:interval] or 3600 * 1000)
@@ -175,15 +180,18 @@ class LogStash::Web::Server < Sinatra::Base
       end
 
       begin
-        p results.results.class
         a = results.results.to_json
       rescue => e
+        status 500
+        body e.inspect
+        p :exception => e
         p e
         raise e
       end
+      status 200
       body a
     end # @backend.search
-  end # apost '/api/search'
+  end # aget '/api/histogram'
 
   aget '/*' do
     status 404 if @error
