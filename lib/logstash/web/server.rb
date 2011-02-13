@@ -36,12 +36,22 @@ class LogStash::Web::Server < Sinatra::Base
     super
     # TODO(sissel): Support alternate backends
     backend_url = URI.parse(settings.backend_url)
-    @backend = LogStash::Search::ElasticSearch.new(
-      :host => backend_url.host,
-      :port => backend_url.port
-    )
-  end
 
+    case backend_url.scheme 
+      when "elasticsearch"
+        @backend = LogStash::Search::ElasticSearch.new(
+          :host => backend_url.host,
+          :port => backend_url.port
+        )
+      when "twitter"
+        require "logstash/search/twitter"
+        @backend = LogStash::Search::Twitter.new(
+          :host => backend_url.host,
+          :port => backend_url.port
+        )
+    end # backend_url.scheme
+  end # def initialize
+ 
   aget '/style.css' do
     headers "Content-Type" => "text/css; charset=utf8"
     body sass :style
