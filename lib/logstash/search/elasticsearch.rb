@@ -17,6 +17,7 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
     @logger = LogStash::Logger.new(STDOUT)
   end
 
+  # See LogStash::Search;:Base#search
   public
   def search(query)
     raise "No block given for search call." if !block_given?
@@ -90,6 +91,8 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
     end
   end # def search
 
+  # See LogStash::Search;:Base#histogram
+  public
   def histogram(query, field, interval=nil)
     if query.is_a?(String)
       query = LogStash::Search::Query.parse(query)
@@ -166,7 +169,9 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
     end
   end
 
-  def anonymize
+  # Not used. Needs refactoring elsewhere.
+  private
+  def __anonymize
     # TODO(sissel): Plugin-ify this (Search filters!)
     # TODO(sissel): Implement
     #  Search anonymization
@@ -187,5 +192,5 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
         end # value.each
       end # hit._source.@fields.each
     end # data.hits.hits.each
-  end # def anonymize
+  end # def __anonymize
 end # class LogStash::Search::ElasticSearch
