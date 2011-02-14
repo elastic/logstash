@@ -2,34 +2,39 @@
   - if (params[:q].strip.length > 0 rescue false)
     %h1
       Search results for '#{params[:q]}'
-  - if @graphpoints
-    #visual
-    :javascript
-      $(function() {
-        var graphdata = #{@graphpoints.to_json};
-        window.logstash.plot(graphdata);
-      });
   - if @total and @result_start and @result_end
     %small
       %strong
-        Results #{@result_start} - #{@result_end} of #{@total}
+        Results #{@result_start} - #{@result_end} of #{@results.total}
       |
       - if @first_href
         %a.pager{ :href => @first_href } first
-        |
+      - else
+        %span.unavailable first
+      |
       - if @prev_href
         %a.pager{ :href => @prev_href } 
           prev
-        - if @next_href
-          |
+      - else
+        %span.unavailable prev
+      |
       - if @next_href
         %a.pager{ :href => @next_href }
           next
+      - else
+        %span.unavailable next
+      |
       - if @last_href
-        |
         %a.pager{ :href => @last_href }
           last
-  - if @hits.length == 0 
+      - else
+        %span.unavailable last
+      |
+      %a.pager{ :href => @refresh_href }
+        refresh
+      |
+      %span#querytime= "(%.3f seconds)" % @results.duration
+  - if @results.events.length == 0 
     - if !params[:q]
       / We default to a '+2 days' in the future  to capture 'today at 00:00'
       / plus tomorrow, inclusive, in case you are 23 hours behind the international
@@ -42,8 +47,9 @@
       %tr
         %th timestamp
         %th event
-      - @hits.reverse.each do |hit|
+      - @results.events.reverse.each do |event|
         %tr.event
-          %td.timestamp&= hit["_source"]["@timestamp"]
-          %td.message{ :"data-full" => hit.to_json }
-            %pre&= hit["_source"]["@message"]
+          %td.timestamp&= event.timestamp
+          %td.message{ :"data-full" => event.to_json }
+            %a{:href => "#"}
+              %pre&= event.message

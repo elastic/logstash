@@ -41,6 +41,9 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
       }, # "settings"
     } # ES Index
 
+    #puts :waiting
+    puts @esurl.to_s
+    #sleep 10
     indexurl = @esurl.to_s
     indexmap_http = EventMachine::HttpRequest.new(indexurl)
     indexmap_req = indexmap_http.put :body => indexmap.to_json
@@ -49,8 +52,12 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
       ready(params)
     end
     indexmap_req.errback do
-      @logger.warn(["Failure configuring index", @esurl.to_s, indexmap])
+      @logger.warn(["Failure configuring index (http failed to connect?)",
+                    @esurl.to_s, indexmap])
+      @logger.warn([indexmap_req])
+      #sleep 30
       raise "Failure configuring index: #{@esurl.to_s}"
+      
     end
   end # def register
 

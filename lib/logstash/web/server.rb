@@ -1,4 +1,7 @@
 #!/usr/bin/env ruby
+# I don't want folks to have to learn to use yet another tool (rackup)
+# just to launch logstash-web. So let's work like a standard ruby
+# executable.
 ##rackup -Ilib:../lib -s thin
 
 $:.unshift("%s/../lib" % File.dirname(__FILE__))
@@ -6,22 +9,49 @@ $:.unshift(File.dirname(__FILE__))
 
 require "eventmachine"
 require "json"
-require "lib/elasticsearch"
+require "logstash/search/elasticsearch"
+require "logstash/search/query"
 require "logstash/namespace"
 require "rack"
 require "rubygems"
 require "sinatra/async"
+require "logstash/web/helpers/require_param"
 
 class EventMachine::ConnectionError < RuntimeError; end
+module LogStash::Web; end
 
 class LogStash::Web::Server < Sinatra::Base
   register Sinatra::Async
+  helpers Sinatra::RequireParam # logstash/web/helpers/require_param
+
   set :haml, :format => :html5
   set :logging, true
   set :public, "#{File.dirname(__FILE__)}/public"
   set :views, "#{File.dirname(__FILE__)}/views"
-  elasticsearch = LogStash::Web::ElasticSearch.new
 
+  use Rack::CommonLogger
+  #use Rack::ShowExceptions
+
+  def initialize(settings={})
+    super
+    # TODO(sissel): Support alternate backends
+    backend_url = URI.parse(settings.backend_url)
+
+    case backend_url.scheme 
+      when "elasticsearch"
+        @backend = LogStash::Search::ElasticSearch.new(
+          :host => backend_url.host,
+          :port => backend_url.port
+        )
+      when "twitter"
+        require "logstash/search/twitter"
+        @backend = LogStash::Search::Twitter.new(
+          :host => backend_url.host,
+          :port => backend_url.port
+        )
+    end # backend_url.scheme
+  end # def initialize
+ 
   aget '/style.css' do
     headers "Content-Type" => "text/css; charset=utf8"
     body sass :style
@@ -32,8 +62,11 @@ class LogStash::Web::Server < Sinatra::Base
   end # '/'
 
   aget '/search' do
-    result_callback = proc do
+    result_callback = proc do |results|
       status 500 if @error
+      @results = results
+
+      p :got => results
 
       params[:format] ||= "html"
       case params[:format]
@@ -48,10 +81,10 @@ class LogStash::Web::Server < Sinatra::Base
         body erb :"search/results.txt", :layout => false
       when "json"
         headers({"Content-Type" => "text/plain" })
+        # TODO(sissel): issue/30 - needs refactoring here.
         hits = @hits.collect { |h| h["_source"] }
         response = {
           "hits" => hits,
-          "facets" => (@results["facets"] rescue nil),
         }
 
         response["error"] = @error if @error
@@ -63,43 +96,79 @@ class LogStash::Web::Server < Sinatra::Base
     # have javascript enabled, we need to show the results in
     # case a user doesn't have javascript.
     if params[:q] and params[:q] != ""
-      elasticsearch.search(params) do |results|
-        @results = results
-        @hits = (@results["hits"]["hits"] rescue [])
+      query = LogStash::Search::Query.new(
+        :query_string => params[:q],
+        :offset => params[:offset],
+        :count => params[:count]
+      )
+
+      @backend.search(query) do |results|
+        p :got => results
         begin
-          result_callback.call
+          result_callback.call results
         rescue => e
-          puts e
+          p :exception => e
         end
-      end # elasticsearch.search
+      end # @backend.search
     else
-      #@error = "No query given."
-      @hits = []
-      result_callback.call
+      results = LogStash::Search::Result.new(
+        :events => [],
+        :error_message => "No query given"
+      )
+      result_callback.call results
     end
   end # aget '/search'
 
-  apost '/search/ajax' do
+  apost '/api/search' do
+    api_search
+  end # apost /api/search
+
+  aget '/api/search' do
+    api_search
+  end # aget /api/search
+
+  def api_search
+
     headers({"Content-Type" => "text/html" })
     count = params["count"] = (params["count"] or 50).to_i
     offset = params["offset"] = (params["offset"] or 0).to_i
-    elasticsearch.search(params) do |results|
+    format = (params[:format] or "json")
+
+    query = LogStash::Search::Query.new(
+      :query_string => params[:q],
+      :offset => offset,
+      :count => count
+    )
+
+    @backend.search(query) do |results|
       @results = results
-      if @results.include?("error")
-        body haml :"search/error", :layout => !request.xhr?
+      if @results.error?
+        status 500
+        case format
+        when "html"
+          headers({"Content-Type" => "text/html" })
+          body haml :"search/error", :layout => !request.xhr?
+        when "text"
+          headers({"Content-Type" => "text/plain" })
+          body erb :"search/error.txt", :layout => false
+        when "txt"
+          headers({"Content-Type" => "text/plain" })
+          body erb :"search/error.txt", :layout => false
+        when "json"
+          headers({"Content-Type" => "text/plain" })
+          # TODO(sissel): issue/30 - needs refactoring here.
+          if @results.error?
+            body({ "error" => @results.error_message }.to_json)
+          else
+            body @results.to_json
+          end
+        end # case params[:format]
         next
       end
 
-      @hits = (@results["hits"]["hits"] rescue [])
-      @total = (@results["hits"]["total"] rescue 0)
-      @graphpoints = []
-      begin
-        @results["facets"]["by_hour"]["entries"].each do |entry|
-          @graphpoints << [entry["key"], entry["count"]]
-        end
-      rescue => e
-        puts e
-      end
+      @events = @results.events
+      @total = (@results.total rescue 0)
+      count = @results.events.size
 
       if count and offset
         if @total > (count + offset)
@@ -115,7 +184,7 @@ class LogStash::Web::Server < Sinatra::Base
         next_params["offset"] = [offset + count, @total - count].min
         @next_href = "?" +  next_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
         last_params = next_params.clone
-        last_params["offset"] = @total - offset
+        last_params["offset"] = @total - count
         @last_href = "?" +  last_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
       end
 
@@ -124,24 +193,83 @@ class LogStash::Web::Server < Sinatra::Base
         prev_params["offset"] = [offset - count, 0].max
         @prev_href = "?" +  prev_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
 
-        if prev_params["offset"] > 0
+        #if prev_params["offset"] > 0
           first_params = prev_params.clone
           first_params["offset"] = 0
           @first_href = "?" +  first_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
-        end
+        #end
       end
 
-      body haml :"search/ajax", :layout => !request.xhr?
-    end # elasticsearch.search
-  end # apost '/search/ajax'
+      # TODO(sissel): make a helper function taht goes hash -> cgi querystring
+      @refresh_href = "?" +  params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
+
+      case format
+      when "html"
+        headers({"Content-Type" => "text/html" })
+        body haml :"search/ajax", :layout => !request.xhr?
+      when "text"
+        headers({"Content-Type" => "text/plain" })
+        body erb :"search/results.txt", :layout => false
+      when "txt"
+        headers({"Content-Type" => "text/plain" })
+        body erb :"search/results.txt", :layout => false
+      when "json"
+        headers({"Content-Type" => "text/plain" })
+        # TODO(sissel): issue/30 - needs refactoring here.
+        response = @results
+        body response.to_json
+      end # case params[:format]
+    end # @backend.search
+  end # def api_search
+
+  aget '/api/histogram' do
+    headers({"Content-Type" => "text/plain" })
+    missing = require_param(:q)
+    if !missing.empty?
+      status 500
+      body({ "error" => "Missing requiremed parameters",
+             "missing" => missing }.to_json)
+      next
+    end # if !missing.empty?
+
+    format = (params[:format] or "json")            # default json
+    field = (params[:field] or "@timestamp")        # default @timestamp
+    interval = (params[:interval] or 3600000).to_i  # default 1 hour
+    @backend.histogram(params[:q], field, interval) do |results|
+      @results = results
+      if @results.error?
+        status 500
+        body({ "error" => @results.error_message }.to_json)
+        next
+      end
+
+      begin
+        a = results.results.to_json
+      rescue => e
+        status 500
+        body e.inspect
+        p :exception => e
+        p e
+        raise e
+      end
+      status 200
+      body a
+    end # @backend.search
+  end # aget '/api/histogram'
+
+  aget '/*' do
+    status 404 if @error
+    body "Invalid path."
+  end # aget /*
 end # class LogStash::Web::Server
 
 require "optparse"
-Settings = Struct.new(:daemonize, :logfile, :address, :port)
+Settings = Struct.new(:daemonize, :logfile, :address, :port, :backend_url)
 settings = Settings.new
 
-settings.address      = "0.0.0.0"
-settings.port      = 9292
+settings.address = "0.0.0.0"
+settings.port = 9292
+settings.backend_url = "elasticsearch://localhost:9200/"
 
 progname = File.basename($0)
 
@@ -162,6 +290,11 @@ opts = OptionParser.new do |opts|
 
   opts.on("-p", "--port PORT", "Port on which to start webserver. Default is 9292.") do |port|
     settings.port = port.to_i
+  end
+
+  opts.on("-b", "--backend URL",
+          "The backend URL to use. Default is elasticserach://localhost:9200/") do |url|
+    settings.backend_url = url
   end
 end
 
@@ -189,5 +322,5 @@ end
 Rack::Handler::Thin.run(
   Rack::CommonLogger.new( \
     Rack::ShowExceptions.new( \
-      LogStash::Web::Server.new)),
+      LogStash::Web::Server.new(settings))),
   :Port => settings.port, :Host => settings.address)
