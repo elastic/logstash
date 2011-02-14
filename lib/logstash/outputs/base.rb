@@ -8,10 +8,9 @@ class LogStash::Outputs::Base
   attr_accessor :logger
 
   public
-  def initialize(url, config={}, &block)
+  def initialize(url)
     @url = url
     @url = URI.parse(url) if url.is_a? String
-    @config = config
     @logger = LogStash::Logger.new(STDOUT)
     @urlopts = {}
     if @url.query

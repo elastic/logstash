@@ -7,22 +7,24 @@ class LogStash::Inputs::Base
   attr_accessor :logger
 
   public
-  def initialize(url, type, config={}, &block)
+  def initialize(configs, output_queue)
     @logger = LogStash::Logger.new(STDERR)
-    @url = url
-    @url = URI.parse(url) if url.is_a? String
-    @config = config
-    @callback = block
-    @type = type
-    @tags = []
+    @configs = configs
+    @output_queue = output_queue
+    #@url = url
+    #@url = URI.parse(url) if url.is_a? String
+    #@config = config
+    #@callback = block
+    #@type = type
+    #@tags = []
 
-    @urlopts = {}
-    if @url.query
-      @urlopts = CGI.parse(@url.query)
-      @urlopts.each do |k, v|
-        @urlopts[k] = v.last if v.is_a?(Array)
-      end
-    end
+    #@urlopts = {}
+    #if @url.query
+    #  @urlopts = CGI.parse(@url.query)
+    #  @urlopts.each do |k, v|
+    #    @urlopts[k] = v.last if v.is_a?(Array)
+    #  end
+    #end
   end # def initialize
 
   public
