@@ -3,6 +3,10 @@ inputs:
   linux-syslog:
   - file:///var/log/messages
 filters:
+- grok:
+    linux-syslog:
+      patterns:
+      - %{SYSLOGLINE}
 - grep:
     linux-syslog:
       - match:
@@ -10,4 +14,4 @@ filters:
         add_fields:
           filter_test: hello world
 outputs:
-  - stdout:///
+  - stdout:///debug

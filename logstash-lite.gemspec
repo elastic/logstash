@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
   #spec.add_dependency("em-http-request")
 
   # For the 'grok' filter
-  #spec.add_dependency("jls-grok", ">= 0.2.3071")
+  #spec.add_dependency("jls-grok", ">= 0.3.3209")
 
   # TODO: In the future, make these optional
   # for websocket://

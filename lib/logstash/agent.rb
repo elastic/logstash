@@ -78,11 +78,10 @@ class LogStash::Agent
       3.times do |n|
         @threads["worker/filter/#{n}"] = Thread.new do
           JThread.currentThread().setName("worker/filter/#{n}")
-          puts "top of worker/filter/#{n} thread"
           filters = []
 
-          @config["filters"].collect { |x| x.to_a[0] }.each do |filter|
-            name, value = filter
+          @config["filters"].collect { |x| x.to_a[0] }.each do |filter_config|
+            name, value = filter_config
             @logger.info("Using filter #{name} => #{value.inspect}")
             filter = LogStash::Filters.from_name(name, value)
             filter.logger = @logger

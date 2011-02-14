@@ -108,10 +108,8 @@ class LogStash::Event
     # Append all fields
     event.fields.each do |name, value|
       if self.fields.include?(name)
-        puts "Merging field #{name}"
         self.fields[name] |= value
       else
-        puts "Setting field #{name}"
         self.fields[name] = value
       end
     end # event.fields.each

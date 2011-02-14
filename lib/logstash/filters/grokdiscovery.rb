@@ -1,6 +1,6 @@
 require "logstash/filters/base"
 require "logstash/namespace"
-gem "jls-grok", ">=0.2.3071"
+gem "jls-grok", ">=0.3.3209"
 require "grok" # rubygem 'jls-grok'
 
 class LogStash::Filters::Grokdiscovery < LogStash::Filters::Base
