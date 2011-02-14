@@ -1,53 +1,66 @@
-require "eventmachine-tail"
+require "file/tail"
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket" # for Socket.gethostname
 
 class LogStash::Inputs::File < LogStash::Inputs::Base
   public
-  def initialize(url, type, config={}, &block)
+  def initialize(configs, output_queue)
     super
 
-    # Hack the hostname into the url.
-    # This works since file:// urls don't generally have a host in it.
-    @url.host = Socket.gethostname
+    @output_queue = output_queue
+    @file_threads = {}
   end # def initialize
 
   public
-  def register
-    @logger.info("Registering #{@url}")
-    EventMachine::FileGlobWatchTail.new(@url.path, Reader, interval=60,
-                                        exclude=[], receiver=self)
-  end # def register
-
-  public
-  def receive(filetail, event)
-    url = @url.clone
-    url.path = filetail.path
-    @logger.debug(["original url", { :originalurl => @url, :newurl => url }])
-    event = LogStash::Event.new({
-      "@message" => event,
-      "@type" => @type,
-      "@tags" => @tags.clone,
-    })
-    event.source = url
-    @logger.debug(["Got event", event])
-    @callback.call(event)
-  end # def receive
-
-  private
-  class Reader < EventMachine::FileTail
-    def initialize(path, receiver)
-      super(path)
-      @receiver = receiver
-      @buffer = BufferedTokenizer.new  # From eventmachine
+  def run
+    @configs.each do |type, url|
+      glob = url.path
+      if File.exists?(glob)
+        files = [glob]
+      else
+        files = Dir.glob(glob)
+      end
+      files.each do |file|
+        @file_threads[file] = Thread.new do
+          JThread.currentThread().setName("inputs/file/reader:#{file}")
+          watch(file, url, type, [type])
+        end
+      end
     end
 
-    def receive_data(data)
-      # TODO(2.0): Support multiline log data
-      @buffer.extract(data).each do |line|
-        @receiver.receive(self, line)
-      end
-    end # def receive_data
-  end # class Reader
+    # http://jira.codehaus.org/browse/JRUBY-891
+    # NOTE(petef): IO::Select is broken in jruby, so we start a
+    # thread per file for now.
+    while sleep 5
+      # foo
+    end
+
+    #event = LogStash::Event.new({
+    #  "@message" => event,
+    #  "@type" => @type,
+    #  "@tags" => @tags.clone,
+    #})
+    #event.source = url
+    #@logger.debug(["Got event", event])
+    #@callback.call(event)
+  end # def run
+
+  private
+  def watch(file, source_url, type, tags)
+    File.open(file, "r") do |f|
+      f.extend(File::Tail)
+      f.interval = 5
+      f.backward(0)
+      f.tail do |line|
+        e = LogStash::Event.new({
+          "@message" => line,
+          "@type" => type,
+          "@tags" => tags,
+        })
+        e.source = source_url.to_s
+        @output_queue.push(e)
+      end # f.tail
+    end # File.open
+  end
 end # class LogStash::Inputs::File
