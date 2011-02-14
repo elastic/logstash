@@ -1,9 +1,8 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env jruby
 
 $: << File.dirname($0) + "/../lib"
 
 require "rubygems"
-require "eventmachine"
 require "logstash/agent"
 require "optparse"
 require "yaml"
