@@ -6,6 +6,10 @@ require "mq" # rubygem 'amqp'
 class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "queue", "topic" ]
 
+  config :host => :string
+  config :queue_type => :string
+  config :queue_name => :string
+
   public
   def initialize(url, config={}, &block)
     super

@@ -2,10 +2,16 @@ require "cgi"
 require "logstash/event"
 require "logstash/logging"
 require "logstash/namespace"
+require "logstash/config"
 require "uri"
 
 class LogStash::Outputs::Base
+  include LogStash::Config
+
   attr_accessor :logger
+
+  dsl_name "outputs"
+  dsl_parent nil
 
   public
   def initialize(url)
