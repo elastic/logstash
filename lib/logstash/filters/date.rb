@@ -3,6 +3,12 @@ require "logstash/namespace"
 require "logstash/time"
 
 class LogStash::Filters::Date < LogStash::Filters::Base
+
+  # Config for date is:
+  #   fieldname: dateformat
+  #   Allow arbitrary keys for this config.
+  config /[A-Za-z0-9_-]+/ => :string
+
   # The 'date' filter will take a value from your event and use it as the
   # event timestamp. This is useful for parsing logs generated on remote
   # servers or for importing old logs.
