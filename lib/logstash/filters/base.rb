@@ -1,8 +1,14 @@
 require "logstash/namespace"
 require "logstash/logging"
+require "logstash/config"
 
 class LogStash::Filters::Base
+  include LogStash::Config
+
   attr_accessor :logger
+
+  dsl_name "filters"
+  dsl_parent nil
 
   public
   def initialize(config = {})
