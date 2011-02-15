@@ -8,9 +8,11 @@ class LogStash::Inputs::Base
   include LogStash::Config
   attr_accessor :logger
 
+  dsl_name "input"
+  dsl_parent nil
   # Define the basic config
-  config "path" => :string #LogStash::Config::Path
-  config "tag" => :string #LogStash::Config::Array
+  dsl_config "path" => :string #LogStash::Config::Path
+  dsl_config "tag" => :string #LogStash::Config::Array
 
   public
   def initialize(configs, output_queue)
