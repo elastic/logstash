@@ -32,7 +32,6 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       :vhost => (@vhost or "/"),
       :host => @url.host,
       :port => (@url.port or 5672),
-      :logging => true
     }
     amqpsettings[:user] = @url.user if @url.user
     amqpsettings[:pass] = @url.password if @url.password
