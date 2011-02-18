@@ -35,7 +35,7 @@ require "ap" # TODO(sissel): Remove this.
 
     # Parse escapes.
     token.gsub(/\\./) { |m| return m[1,1] }
-    puts "quotedstring: #{token}"
+    #puts "quotedstring: #{token}"
     @stack << token
   }
 
@@ -51,7 +51,6 @@ require "ap" # TODO(sissel): Remove this.
     @stack.pop # pop :array_init
 
     @stack << @array
-    #puts "array: #{@array.join(",")}"
   }
 
   action parameter_init {
@@ -73,24 +72,29 @@ require "ap" # TODO(sissel): Remove this.
   }
 
   action component_init {
-    puts "current component: " + @stack.last
+    #puts "current component: " + @stack.last
     @components = []
   }
 
   action component {
     name = @stack.pop
-    ap name => @components
-    #ap @stack
+    @config ||= Hash.new { |h,k| h[k] = [] }
+    @config[name] += @components
+  }
+
+  action config_ready {
+    p "OK"
+    ap @config
   }
     
   ws = ([ \t\n])** ;
-  quoted_string = ( ( "\"" ( ( (any - [\\"\n]) | "\\" any )* ) "\"" ) |
-                    ( "'" ( ( (any - [\\'\n]) | "\\" any )* ) "'" ) )
-                  >mark %stack_quoted_string ;
-
   # TODO(sissel): Support floating point values?
-  numeric = ( ("+" | "-")?  [0-9] [0-9]** ) >mark %stack_numeric;
-  naked_string = ( [A-Za-z_] [A-Za-z0-9_]** ) >mark %stack_string ;
+  numeric = ( ("+" | "-")?  [0-9] :>> [0-9]** ) >mark %stack_numeric;
+  quoted_string = ( 
+    ( "\"" ( ( (any - [\\"\n]) | "\\" any )* ) "\"" ) |
+    ( "'" ( ( (any - [\\'\n]) | "\\" any )* ) "'" ) 
+  ) >mark %stack_quoted_string ;
+  naked_string = ( [A-Za-z_] :>> [A-Za-z0-9_]* ) >mark %stack_string ;
   string = ( quoted_string | naked_string ) ;
 
   array = ( "[" ws string ws ("," ws string ws)* "]" ) >array_init %array_push;
@@ -120,18 +124,19 @@ require "ap" # TODO(sissel): Remove this.
     ws "}"
   ) %component ;
 
-  statement = (ws component )* ;
+  config = (ws component)** ;
 
-  main := statement
-          0 @{ puts "Failed" }
+  main := config 
           $err { 
             # Compute line and column of the cursor (p)
             puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
+            # TODO(sissel): Note what we were expecting?
           } ;
 }%%
 
 class LogStash::Config::Parser
   attr_accessor :eof
+  attr_accessor :config
 
   def initialize
     # BEGIN RAGEL DATA
@@ -158,12 +163,16 @@ class LogStash::Config::Parser
       # END RAGEL EXEC
     rescue => e
       # Compute line and column of the cursor (p)
-      $stderr.puts "Exception at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
+      #$stderr.puts "Exception at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
       raise e
     end
 
+    final_state = %%{ write first_final ; }%%
+    if cs < final_state
+      puts "FAILURE PARSING (state; %s vs expected %s)" % [cs, final_state]
+    end
     return cs
-  end
+  end # def parse
 
   def line(str, pos)
     return str[0 .. pos].count("\n") + 1
@@ -176,7 +185,10 @@ class LogStash::Config::Parser
 end # class LogStash::Config::Parser
 
 def parse(string)
-  puts "result %s" % LogStash::Config::Parser.new.parse(string)
+  cfgparser = LogStash::Config::Parser.new
+  result = cfgparser.parse(string)
+  puts "result %s" % result
+  ap cfgparser.config
 end
 
 parse(File.open(ARGV[0]).read)
