@@ -1,6 +1,5 @@
 require "rubygems"
 require "logstash/namespace"
-require "ap" # TODO(sissel): Remove this.
 
 %%{
   machine logstash_config;
@@ -82,11 +81,6 @@ require "ap" # TODO(sissel): Remove this.
     @config[name] += @components
   }
 
-  action config_ready {
-    p "OK"
-    ap @config
-  }
-    
   ws = ([ \t\n])** ;
   # TODO(sissel): Support floating point values?
   numeric = ( ("+" | "-")?  [0-9] :>> [0-9]** ) >mark %stack_numeric;
@@ -134,7 +128,7 @@ require "ap" # TODO(sissel): Remove this.
           } ;
 }%%
 
-class LogStash::Config::Parser
+class LogStash::Config::Grammar
   attr_accessor :eof
   attr_accessor :config
 
@@ -163,14 +157,9 @@ class LogStash::Config::Parser
       # END RAGEL EXEC
     rescue => e
       # Compute line and column of the cursor (p)
-      #$stderr.puts "Exception at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
       raise e
     end
 
-    final_state = %%{ write first_final ; }%%
-    if cs < final_state
-      puts "FAILURE PARSING (state; %s vs expected %s)" % [cs, final_state]
-    end
     return cs
   end # def parse
 
@@ -181,14 +170,13 @@ class LogStash::Config::Parser
   def column(str, pos)
     return str[0 .. pos].split("\n").last.length
   end
+end # class LogStash::Config::Grammar
 
-end # class LogStash::Config::Parser
+#def parse(string)
+  #cfgparser = LogStash::Config::Grammar.new
+  #result = cfgparser.parse(string)
+  #puts "result %s" % result
+  #ap cfgparser.config
+#end
 
-def parse(string)
-  cfgparser = LogStash::Config::Parser.new
-  result = cfgparser.parse(string)
-  puts "result %s" % result
-  ap cfgparser.config
-end
-
-parse(File.open(ARGV[0]).read)
+#parse(File.open(ARGV[0]).read)

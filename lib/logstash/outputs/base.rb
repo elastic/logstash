@@ -2,15 +2,15 @@ require "cgi"
 require "logstash/event"
 require "logstash/logging"
 require "logstash/namespace"
-require "logstash/config"
+require "logstash/config/mixin"
 require "uri"
 
 class LogStash::Outputs::Base
-  include LogStash::Config
+  include LogStash::Config::Mixin
 
   attr_accessor :logger
 
-  dsl_name "outputs"
+  config_name "outputs"
   dsl_parent nil
 
   public
