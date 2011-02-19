@@ -41,8 +41,6 @@ class LogStash::Config::File
 end #  class LogStash::Config::Parser
 
 #agent = LogStash::Agent.new({})
-#require "logstash/inputs/base"
-#require "logstash/inputs/amqp"
 cfg = LogStash::Config::File.new(ARGV[0])
 cfg.parse
 registry = LogStash::Config::Registry::registry
