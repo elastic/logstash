@@ -1,4 +1,4 @@
 .*.swp
 *.gem
 local
-test/setup
+test/setup/elasticsearch/elasticsearch-*
