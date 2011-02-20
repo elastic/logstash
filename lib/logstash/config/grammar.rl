@@ -81,7 +81,10 @@ require "logstash/namespace"
     @config[name] += @components
   }
 
-  ws = ([ \t\n])** ;
+  comment = "#" (any - "\n")* ;
+  ws = ([ \t\n] | comment)** ;
+  #ws = ([ \t\n])** ;
+
   # TODO(sissel): Support floating point values?
   numeric = ( ("+" | "-")?  [0-9] :>> [0-9]** ) >mark %stack_numeric;
   quoted_string = ( 
@@ -106,9 +109,13 @@ require "logstash/namespace"
   # }
 
   component_implementation = (
-    naked_string ws "{" ws
-      parameters
-    ws "}"
+    (
+      naked_string ws "{" ws
+        parameters
+      ws "}"
+    ) | ( 
+      naked_string ws "{" ws "}" 
+    )
   ) %component_implementation ; 
 
   component = (

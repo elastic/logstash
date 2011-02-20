@@ -5,6 +5,9 @@ require "logstash/namespace"
 
 # TODO(sissel): This could use some refactoring.
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
+
+  config_name "twitter"
+
   public
   def register
     api_url = "https://stream.twitter.com/1/statuses/filter.json"

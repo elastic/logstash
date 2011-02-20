@@ -3,6 +3,9 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 
 class LogStash::Inputs::Beanstalk < LogStash::Inputs::Base
+
+  config_name "beanstalk"
+
   public
   def initialize(url, type, config={}, &block)
     super
