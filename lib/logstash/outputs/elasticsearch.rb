@@ -6,6 +6,7 @@ require "logstash/outputs/base"
 class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
 
   # http://host/index/type
+  config_name "elasticsearch"
   config :host => :string
   config :index => :string
   config :type => :string  

@@ -3,6 +3,9 @@ require "logstash/namespace"
 require "em-jack"
 
 class LogStash::Outputs::Beanstalk < LogStash::Outputs::Base
+
+  config_name "beanstalk"
+
   public
   def initialize(url, config={}, &block)
     super

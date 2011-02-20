@@ -23,7 +23,7 @@ require "logstash/config/registry"
 module LogStash::Config::Mixin
   # This method is called when someone does 'include LogStash::Config'
   def self.included(base)
-    puts "Configurable class #{base.name}"
+    #puts "Configurable class #{base.name}"
     #
     # Add the DSL methods to the 'base' given.
     base.extend(LogStash::Config::Mixin::DSL)

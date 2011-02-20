@@ -8,6 +8,7 @@ require "logstash/namespace"
 
 class LogStash::Filters::Multiline < LogStash::Filters::Base
 
+  config_name "multiline"
   config :pattern => :string
   config :negate => :boolean
   config :what => ["previous", "next"]

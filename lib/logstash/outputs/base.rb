@@ -10,7 +10,7 @@ class LogStash::Outputs::Base
 
   attr_accessor :logger
 
-  config_name "outputs"
+  config_name "output"
 
   public
   def initialize(url)

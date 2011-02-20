@@ -39,8 +39,10 @@ class LogStash::Config::File
   def tryload(parent, child)
     child = child.downcase if child.is_a? String
     begin
-      p "Trying to load logstash/#{parent}s/#{child}" => \
-        (require "logstash/#{parent}s/#{child}")
+      loaded = (require "logstash/#{parent}s/#{child}")
+      #if loaded
+        #puts "Loading logstash/#{parent}s/#{child}"
+      #end
     rescue => e
       if child == :base
         $stderr.puts "Failure loading base class '#{parent}': #{e.inspect}"

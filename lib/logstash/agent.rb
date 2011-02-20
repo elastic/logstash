@@ -38,12 +38,14 @@ class LogStash::Agent
   public
   def run
     # Load the config file
-    p @settings.config_file
     config = LogStash::Config::File.new(@settings.config_file)
     config.parse do |plugin|
-      ap plugin
+      # 'plugin' is a has containing:
+      #   :type => the base class of the plugin (LogStash::Inputs::Base, etc)
+      #   :plugin => the class of the plugin (LogStash::Inputs::File, etc)
+      #   :parameters => hash of key-value parameters from the config.
+      p plugin[:plugin].name
     end
-    exit
     
     if @config["inputs"].length == 0 or @config["outputs"].length == 0
       raise "Must have both inputs and outputs configured."

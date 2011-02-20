@@ -3,6 +3,9 @@ require "logstash/namespace"
 require "em-mongo"
 
 class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
+
+  config_name "mongodb"
+
   public
   def register
     # TODO(sissel): Port?

@@ -5,6 +5,7 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
   NAGIOS_CRITICAL = 2
   NAGIOS_WARN = 1
 
+  config_name "nagios"
   config :commandfile => :string
  
   public

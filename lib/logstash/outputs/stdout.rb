@@ -3,6 +3,7 @@ require "logstash/namespace"
 
 class LogStash::Outputs::Stdout < LogStash::Outputs::Base
 
+  config_name "stdout"
   config :debug => :boolean
 
   public
