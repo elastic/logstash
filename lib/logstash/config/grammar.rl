@@ -60,7 +60,11 @@ require "logstash/namespace"
     value = @stack.pop
     name = @stack.pop
     #puts "parameter: #{name} => #{value}"
-    @parameters[name] << value
+    if value.is_a?(Array)
+      @parameters[name] += value
+    else
+      @parameters[name] << value
+    end
   }
 
   action plugin {
