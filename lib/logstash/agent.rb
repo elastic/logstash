@@ -44,8 +44,27 @@ class LogStash::Agent
       #   :type => the base class of the plugin (LogStash::Inputs::Base, etc)
       #   :plugin => the class of the plugin (LogStash::Inputs::File, etc)
       #   :parameters => hash of key-value parameters from the config.
-      p plugin[:plugin].name
-    end
+      type = plugin[:type].config_name  # "input" or "filter" etc...
+      klass = plugin[:plugin]
+
+      # Create a new instance of a plugin, called like:
+      # -> LogStash::Inputs::File.new( params )
+      instance = klass.new(plugin[:parameters])
+
+      case type
+        when "input"
+          @inputs << instance
+        when "filter"
+          @filters << instance
+        when "output"
+          @outputs << instance
+        else
+          @logger.error("Unknown config type '#{type}'")
+          exit 1
+      end # case type
+    end # config.parse
+
+    exit 0
     
     if @config["inputs"].length == 0 or @config["outputs"].length == 0
       raise "Must have both inputs and outputs configured."

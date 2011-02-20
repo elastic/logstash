@@ -11,28 +11,32 @@ class LogStash::Inputs::Base
   config_name "input"
 
   # Define the basic config
-  config "path" => :string #LogStash::Config::Path
-  config "tag" => :string #LogStash::Config::Array
+  config :tag => (lambda do |value|
+    p :tag => value
+    re = /^[A-Za-z0-9_]+$/
+    value.each do |v|
+      if v !~ re
+        return [false, "Tag '#{v}' does not match #{re}"]
+      end # check 'v'
+    end # value.each 
+    return true
+  end) # config :tag
+
+  config :type => (lambda do |value|
+    if value.size > 1
+      return [false, "Type must be a single value, got #{value.inspect}, expected (for example) only #{value[0,1].inspect}"]
+    end
+    return true
+  end) # config :type
 
   public
-  def initialize(configs, output_queue)
+  def initialize(params)
     @logger = LogStash::Logger.new(STDERR)
-    @configs = configs
-    @output_queue = output_queue
-    #@url = url
-    #@url = URI.parse(url) if url.is_a? String
-    #@config = config
-    #@callback = block
-    #@type = type
-    #@tags = []
-
-    #@urlopts = {}
-    #if @url.query
-    #  @urlopts = CGI.parse(@url.query)
-    #  @urlopts.each do |k, v|
-    #    @urlopts[k] = v.last if v.is_a?(Array)
-    #  end
-    #end
+    #@output_queue = output_queue
+    if !self.class.validate(params)
+      @logger.error "Config validation failed."
+      exit 1
+    end
   end # def initialize
 
   public

@@ -76,7 +76,7 @@ require "logstash/namespace"
   }
 
   action component_init {
-    puts "current component: " + @stack.last
+    #puts "current component: " + @stack.last
     @components = []
   }
 
@@ -84,7 +84,7 @@ require "logstash/namespace"
     name = @stack.pop
     @config ||= Hash.new { |h,k| h[k] = [] }
     @config[name] += @components
-    puts "Config component: #{name}"
+    #puts "Config component: #{name}"
   }
 
   comment = "#" (any - [\n])* >mark %{ e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" };
@@ -139,7 +139,7 @@ require "logstash/namespace"
   main := config %{ puts "END" }
           $err { 
             # Compute line and column of the cursor (p)
-            puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
+            $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           } ;
 }%%
