@@ -7,8 +7,8 @@ require "grok" # rubygem 'jls-grok'
 class LogStash::Filters::Grok < LogStash::Filters::Base
 
   config_name "grok"
-  config :pattern => :string
-  config :patterns_dir => :path
+  config :pattern => :array
+  config :patterns_dir => :array
   config :drop_if_match => :boolean  # googlecode/issue/26
          
   public

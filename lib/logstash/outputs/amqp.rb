@@ -9,23 +9,17 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   config_name "amqp"
   config :host => :string
-  config :queue_type => :string
-  config :queue_name => :string
+  config :exchange_type => :string
+  config :name => :string
+  config :vhost => :string
 
   public
-  def initialize(url, config={}, &block)
+  def initialize(params)
     super
 
-    # Handle path /<vhost>/<type>/<name> or /<type>/<name>
-    # vhost allowed to contain slashes
-    if @url.path =~ %r{^/((.*)/)?([^/]+)/([^/]+)}
-      unused, @vhost, @mqtype, @name = $~.captures
-    else
-      raise "amqp urls must have a path of /<type>/name or /vhost/<type>/name where <type> is #{MQTYPES.join(", ")}"
-    end
-
-    if !MQTYPES.include?(@mqtype)
-      raise "Invalid type '#{@mqtype}' must be one of #{MQTYPES.join(", ")}"
+    p @exchange_type => MQTYPES
+    if !MQTYPES.include?(@exchange_type)
+      raise "Invalid exchange_type, #{@exchange_type.inspect}, must be one of #{MQTYPES.join(", ")}"
     end
   end # def initialize
 
@@ -41,19 +35,19 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     amqpsettings[:user] = @url.user if @url.user
     amqpsettings[:pass] = @url.password if @url.password
     amqpsettings[:logging] = query_args.include? "debug"
-    @logger.debug("Connecting with AMQP settings #{amqpsettings.inspect} to set up #{@mqtype.inspect} queue #{@name.inspect}")
+    @logger.debug("Connecting with AMQP settings #{amqpsettings.inspect} to set up #{@exchange_type.inspect} queue #{@name.inspect}")
     @amqp = AMQP.connect(amqpsettings)
     @mq = MQ.new(@amqp)
     @target = nil
 
-    case @mqtype
+    case @exchange_type
       when "fanout"
         @target = @mq.fanout(@name)
       when "queue"
         @target = @mq.queue(@name, :durable => @urlopts["durable"] ? true : false)
       when "topic"
         @target = @mq.topic(@name)
-    end # case @mqtype
+    end # case @exchange_type
   end # def register
 
   public

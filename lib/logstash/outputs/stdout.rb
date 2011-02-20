@@ -10,10 +10,6 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   def initialize(*args)
     super
 
-    @opts = {}
-    if @url.path != "/"
-      @opts = @url.path[1..-1].split(",")
-    end
   end # def register
 
   public
@@ -27,6 +23,6 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
 
   public
   def debug?
-    return @opts.member?("debug")
+    return @debug
   end
 end # class LogStash::Outputs::Stdout

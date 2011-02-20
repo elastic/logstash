@@ -7,8 +7,9 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   config_name "stomp"
 
   public
-  def initialize(url, config={}, &block)
+  def initialize(params)
     super
+    raise "issue/17: needs refactor to support configfile"
     @logger.debug(["Connecting", { :url => @url }])
   end # def initialize
 

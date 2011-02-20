@@ -5,9 +5,10 @@ require "em-jack"
 class LogStash::Outputs::Beanstalk < LogStash::Outputs::Base
 
   config_name "beanstalk"
+  config :ttr => :number
 
   public
-  def initialize(url, config={}, &block)
+  def initialize(params)
     super
 
     @ttr = @urlopts["ttr"] || 300;

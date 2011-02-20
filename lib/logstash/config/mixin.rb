@@ -109,10 +109,14 @@ module LogStash::Config::Mixin
         @config.find do |config_key, config_val|
           if (config_key.is_a?(Regexp) && key =~ config_key) \
              || (config_key.is_a?(String) && key == config_key)
-            success, message = validate_value(value, config_val)
-            if !success
-              @logger.error("Failed #{@plugin_name}/#{key}: #{message}")
+            success, result = validate_value(value, config_val)
+            if success
+              params[key] = result
+            else
+              @logger.error("Failed #{@plugin_name}/#{key}: #{result}")
             end
+
+            p "Result: #{key} #{result.inspect} / #{success}"
             is_valid &&= success
           end
         end # config.each
@@ -121,18 +125,69 @@ module LogStash::Config::Mixin
       return is_valid
     end # def validate_check_parameter_values
 
+    def validator_find(key)
+      @config.each do |config_key, config_val|
+        if (config_key.is_a?(Regexp) && key =~ config_key) \
+           || (config_key.is_a?(String) && key == config_key)
+          return config_val
+        end
+      end # @config.each
+      return nil
+    end
+
     def validate_value(value, validator)
       # Validator comes from the 'config' pieces of plugins.
       # They look like this
       #   config :mykey => lambda do |value| ... end
       # (see LogStash::Inputs::File for example)
+      result = nil
+
       if validator.nil?
         return true
       elsif validator.is_a?(Proc)
         return validator.call(value)
+      elsif validator.is_a?(Array)
+        if value.size > 1
+          return false, "Expected one of #{validator.inspect}, got #{value.inspect}"
+        end
+
+        if !validator.include?(value.first)
+          return false, "Expected one of #{validator.inspect}, got #{value.inspect}"
+        end
+        result = value.first
+      elsif validator.is_a?(Symbol)
+        # TODO(sissel): Factor this out into a coersion method?
+        case validator
+          when :string
+            if value.size > 1 # only one value wanted
+              return false, "Expected string, got #{value.inspect}"
+            end
+            result = value.first
+          when :number
+            if value.size > 1 # only one value wanted
+              return false, "Expected number, got #{value.inspect}"
+            end
+            if value != value.to_i.to_s # Try convert to number
+              return false, "Expected number, got #{value.inspect}"
+            end
+            result = value.first.to_i
+          when :boolean
+            if value.size > 1 # only one value wanted
+              return false, "Expected boolean, got #{value.inspect}"
+            end
+
+            if value.first !~ /^(true|false)$/
+              return false, "Expected boolean 'true' or 'false', got #{value.inspect}"
+            end
+
+            result = (value == "true")
+        end # case validator
       else
         return false, "Unknown validator #{validator.class}"
       end
+
+      # Return the validator for later use, like with type coercion.
+      return true, result
     end # def validate_value
   end # module LogStash::Config::DSL
 end # module LogStash::Config

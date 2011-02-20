@@ -8,8 +8,9 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   config_name "tcp"
 
   public
-  def initialize(url, type, config={}, &block)
+  def initialize(params)
     super
+    raise "issue/17: needs refactor to support configfile"
   end # def initialize
 
   public

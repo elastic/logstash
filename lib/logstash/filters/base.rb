@@ -8,11 +8,15 @@ class LogStash::Filters::Base
   attr_accessor :logger
 
   config_name "filter"
+  config :type => :string
 
   public
-  def initialize(config = {})
+  def initialize(params)
     @logger = LogStash::Logger.new(STDERR)
-    @config = config
+    if !self.class.validate(params)
+      @logger.error "Config validation failed."
+      exit 1
+    end
   end # def initialize
 
   public

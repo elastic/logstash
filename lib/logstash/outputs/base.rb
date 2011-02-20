@@ -13,16 +13,18 @@ class LogStash::Outputs::Base
   config_name "output"
 
   public
-  def initialize(url)
-    @url = url
-    @url = URI.parse(url) if url.is_a? String
+  def initialize(params)
     @logger = LogStash::Logger.new(STDOUT)
-    @urlopts = {}
-    if @url.query
-      @urlopts = CGI.parse(@url.query)
-      @urlopts.each do |k, v|
-        @urlopts[k] = v.last if v.is_a?(Array)
-      end
+    if !self.class.validate(params)
+      @logger.error "Config validation failed."
+      exit 1
+    end
+
+    params.each do |key, value|
+      validator = self.class.validator_find(key)
+      #value = params[key]
+      @logger.info("Setting: @#{key} = #{value.inspect}")
+      self.instance_variable_set("@#{key}", value)
     end
   end
 
