@@ -5,10 +5,12 @@ require "logstash/namespace"
 class LogStash::Inputs::Beanstalk < LogStash::Inputs::Base
 
   config_name "beanstalk"
+  config :tube => nil   # TODO(sissel): needs validation?
 
   public
-  def initialize(url, type, config={}, &block)
+  def initialize(params)
     super
+    raise "issue/17: needs refactor to support configfile"
 
     if @url.path == "" or @url.path == "/"
       raise "must specify a tube for beanstalk output"

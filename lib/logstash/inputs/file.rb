@@ -6,12 +6,13 @@ require "socket" # for Socket.gethostname
 class LogStash::Inputs::File < LogStash::Inputs::Base
 
   config_name "file"
-  config :path => :string
+  config :path => nil # no validation on path, it can be anything.
 
   public
-  def initialize(configs, output_queue)
+  def initialize(params)
     super
 
+    #@output_queue = output_queue
     @file_threads = {}
   end # def initialize
 

@@ -3,6 +3,10 @@ require "logstash/namespace"
 require "ostruct"
 
 class LogStash::Filters::Field < LogStash::Filters::Base
+
+  # TODO(sissel): Finish this.
+  config_name "field"
+
   class EvalSpace < OpenStruct
     def get_binding
       return binding

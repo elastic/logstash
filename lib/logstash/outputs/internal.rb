@@ -2,6 +2,9 @@ require "logstash/namespace"
 require "logstash/outputs/base"
 
 class LogStash::Outputs::Internal < LogStash::Outputs::Base
+
+  config_name "internal"
+
   public
   def initialize(url, config={}, &block)
     super

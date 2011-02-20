@@ -5,6 +5,8 @@ require "logstash/stomp/handler"
 class LogStash::Outputs::Stomp < LogStash::Outputs::Base
   attr_reader :url
 
+  config_name "stomp"
+
   public
   def initialize(url, config={}, &block)
     super

@@ -8,11 +8,12 @@ class LogStash::Filters::Base
   attr_accessor :logger
 
   config_name "filter"
+  config :type => :string
 
   public
-  def initialize(config = {})
+  def initialize(params)
     @logger = LogStash::Logger.new(STDERR)
-    @config = config
+    config_init(params)
   end # def initialize
 
   public

@@ -9,6 +9,9 @@ require "logstash/namespace"
 require "logstash/outputs/base"
 
 class LogStash::Outputs::Gelf < LogStash::Outputs::Base
+
+  config_name "gelf"
+
   public
   def register
     # nothing to do

@@ -24,6 +24,9 @@ require "logstash/namespace"
 #         - tag2
 #
 class LogStash::Filters::Grep < LogStash::Filters::Base
+
+  config_name "grep"
+
   public
   def initialize(config = {})
     super

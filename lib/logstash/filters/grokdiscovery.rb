@@ -4,6 +4,9 @@ gem "jls-grok", ">=0.3.3209"
 require "grok" # rubygem 'jls-grok'
 
 class LogStash::Filters::Grokdiscovery < LogStash::Filters::Base
+
+  config_name "grokdiscovery"
+
   public
   def initialize(config = {})
     super

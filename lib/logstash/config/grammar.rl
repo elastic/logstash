@@ -33,7 +33,7 @@ require "logstash/namespace"
     token = string[startpos + 1 ... endpos - 1] # Skip quotations
 
     # Parse escapes.
-    token.gsub(/\\./) { |m| return m[1,1] }
+    token.gsub(/\\./) { |m| m[1,1] }
     #puts "quotedstring: #{token}"
     @stack << token
   }
@@ -60,14 +60,19 @@ require "logstash/namespace"
     value = @stack.pop
     name = @stack.pop
     #puts "parameter: #{name} => #{value}"
-    @parameters[name] << value
+    if value.is_a?(Array)
+      @parameters[name] += value
+    else
+      @parameters[name] << value
+    end
   }
 
-  action component_implementation {
+  action plugin {
     @components ||= []
     name = @stack.pop
     #@components << { :name => name, :parameters => @parameters }
     @components << { name => @parameters }
+    @parameters = {}
   }
 
   action component_init {
@@ -79,20 +84,24 @@ require "logstash/namespace"
     name = @stack.pop
     @config ||= Hash.new { |h,k| h[k] = [] }
     @config[name] += @components
+    #puts "Config component: #{name}"
   }
 
-  comment = "#" (any - "\n")* ;
+  comment = "#" (any - [\n])* >mark %{ e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" };
   ws = ([ \t\n] | comment)** ;
   #ws = ([ \t\n])** ;
 
   # TODO(sissel): Support floating point values?
   numeric = ( ("+" | "-")?  [0-9] :>> [0-9]** ) >mark %stack_numeric;
   quoted_string = ( 
-    ( "\"" ( ( (any - [\\"\n]) | "\\" any )* ) "\"" ) |
-    ( "'" ( ( (any - [\\'\n]) | "\\" any )* ) "'" ) 
+    ( "\"" ( ( (any - [\\"\n]) | "\\" any )* ) "\"" )
+    | ( "'" ( ( (any - [\\'\n]) | "\\" any )* ) "'" ) 
   ) >mark %stack_quoted_string ;
   naked_string = ( [A-Za-z_] :>> [A-Za-z0-9_]* ) >mark %stack_string ;
   string = ( quoted_string | naked_string ) ;
+
+  # TODO(sissel): allow use of this.
+  regexp_literal = ( "/" ( ( (any - [\\'\n]) | "\\" any )* ) "/" )  ;
 
   array = ( "[" ws string ws ("," ws string ws)* "]" ) >array_init %array_push;
   parameter_value = ( numeric | string | array );
@@ -101,14 +110,14 @@ require "logstash/namespace"
 
   # Statement:
   # component {
-  #   component_implementation_name {
+  #   plugin_name {
   #     bar => ...
   #     baz => ...
   #   }
   #   ...
   # }
 
-  component_implementation = (
+  plugin = (
     (
       naked_string ws "{" ws
         parameters
@@ -116,21 +125,21 @@ require "logstash/namespace"
     ) | ( 
       naked_string ws "{" ws "}" 
     )
-  ) %component_implementation ; 
+  ) %plugin ; 
 
   component = (
     naked_string ws "{"
       >component_init
-      ( ws component_implementation )**
+      ( ws plugin )**
     ws "}"
   ) %component ;
 
-  config = (ws component)** ;
+  config = (ws component? )** ;
 
-  main := config 
+  main := config %{ puts "END" }
           $err { 
             # Compute line and column of the cursor (p)
-            puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
+            $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           } ;
 }%%
@@ -167,6 +176,10 @@ class LogStash::Config::Grammar
       raise e
     end
 
+    if cs < self.logstash_config_first_final
+      $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
+      raise "Invalid Configuration. Check syntax of config file."
+    end
     return cs
   end # def parse
 

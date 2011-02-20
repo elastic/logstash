@@ -9,6 +9,10 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
   config_name "syslog"
 
+  # The address to listen on
+  config :address => nil # TODO(sissel): needs validation
+  config :port => nil # TODO(sissel): needs validation
+
   public
   def register
     if !@url.host or !@url.port

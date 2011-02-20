@@ -9,8 +9,9 @@ class LogStash::Inputs::Internal < LogStash::Inputs::Base
   config_name "internal"
 
   public
-  def initialize(url, type, config={}, &block)
+  def initialize(params)
     super
+    raise "issue/17: needs refactor to support configfile"
 
     # Default host to the machine's hostname if it's not set
     @url.host ||= Socket.gethostname

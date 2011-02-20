@@ -6,12 +6,13 @@ require "grok" # rubygem 'jls-grok'
 
 class LogStash::Filters::Grok < LogStash::Filters::Base
 
-  config :pattern => :string
-  config :patterns_dir => :path
+  config_name "grok"
+  config :pattern => nil
+  config :patterns_dir => nil
   config :drop_if_match => :boolean  # googlecode/issue/26
          
   public
-  def initialize(config = {})
+  def initialize(params)
     super
 
     @grokpiles = {}
