@@ -6,6 +6,8 @@ require "socket" # for Socket.gethostname
 class LogStash::Inputs::Internal < LogStash::Inputs::Base
   attr_reader :channel
 
+  config_name "internal"
+
   public
   def initialize(url, type, config={}, &block)
     super

@@ -6,6 +6,9 @@ require "logstash/time" # should really use the filters/date.rb bits
 require "socket" # for Socket.gethostname
 
 class LogStash::Inputs::Syslog < LogStash::Inputs::Base
+
+  config_name "syslog"
+
   public
   def register
     if !@url.host or !@url.port

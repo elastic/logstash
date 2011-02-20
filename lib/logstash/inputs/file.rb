@@ -6,7 +6,7 @@ require "socket" # for Socket.gethostname
 class LogStash::Inputs::File < LogStash::Inputs::Base
 
   config_name "file"
-  #dsl_parent LogStash::Inputs::Base
+  config :path => :string
 
   public
   def initialize(configs, output_queue)

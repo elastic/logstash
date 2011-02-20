@@ -4,6 +4,9 @@ require "logstash/namespace"
 require "socket" # for Socket.gethostname
 
 class LogStash::Inputs::Tcp < LogStash::Inputs::Base
+
+  config_name "tcp"
+
   public
   def initialize(url, type, config={}, &block)
     super

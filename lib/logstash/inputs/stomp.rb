@@ -3,6 +3,9 @@ require "logstash/namespace"
 require "logstash/stomp/handler"
 
 class LogStash::Inputs::Stomp < LogStash::Inputs::Base
+
+  config_name "stomp"
+
   public
   def initialize(url, config={}, &block)
     super

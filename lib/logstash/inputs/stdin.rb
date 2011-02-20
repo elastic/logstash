@@ -4,6 +4,9 @@ require "logstash/namespace"
 require "socket" # for Socket.gethostname
 
 class LogStash::Inputs::Stdin < LogStash::Inputs::Base
+
+  config_name "stdin"
+
   public
   def register
     EventMachine::attach($stdin, InputHandler, self)
