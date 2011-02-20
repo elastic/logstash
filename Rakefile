@@ -1,6 +1,7 @@
 require 'tempfile'
 
 task :package do
+  system("make -C lib/logstash/config grammar.rl")
   system("gem build logstash.gemspec")
   system("gem build logstash-lite.gemspec")
 end
