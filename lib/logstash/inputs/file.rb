@@ -12,7 +12,6 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   def initialize(configs, output_queue)
     super
 
-    @output_queue = output_queue
     @file_threads = {}
   end # def initialize
 
@@ -33,21 +32,10 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       end
     end
 
-    # http://jira.codehaus.org/browse/JRUBY-891
-    # NOTE(petef): IO::Select is broken in jruby, so we start a
-    # thread per file for now.
+    # TODO(petef): glob watcher in this thread
     while sleep 5
       # foo
     end
-
-    #event = LogStash::Event.new({
-    #  "@message" => event,
-    #  "@type" => @type,
-    #  "@tags" => @tags.clone,
-    #})
-    #event.source = url
-    #@logger.debug(["Got event", event])
-    #@callback.call(event)
   end # def run
 
   private
