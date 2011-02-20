@@ -30,6 +30,20 @@ module LogStash::Config::Mixin
     base.extend(LogStash::Config::Mixin::DSL)
   end
 
+  def config_init(params)
+    if !self.class.validate(params)
+      @logger.error "Config validation failed."
+      exit 1
+    end
+
+    params.each do |key, value|
+      validator = self.class.validator_find(key)
+      #value = params[key]
+      @logger.info("config #{self.class.name}/@#{key} = #{value.inspect}")
+      self.instance_variable_set("@#{key}", value)
+    end
+  end # def config_init
+
   module DSL
 
     # If name is given, set the name and return it.
@@ -92,7 +106,7 @@ module LogStash::Config::Mixin
 
       if invalid_params.size > 0
         invalid_params.each do |name|
-          @logger.error("Invalid parameter in #{@plugin_name}: #{name}")
+          @logger.error("Unknown setting '#{name}' for #{@plugin_name}")
         end
         return false
       end # if invalid_params.size > 0
@@ -110,13 +124,13 @@ module LogStash::Config::Mixin
           if (config_key.is_a?(Regexp) && key =~ config_key) \
              || (config_key.is_a?(String) && key == config_key)
             success, result = validate_value(value, config_val)
-            if success
-              params[key] = result
+            if success 
+              params[key] = result if !result.nil?
             else
-              @logger.error("Failed #{@plugin_name}/#{key}: #{result}")
+              @logger.error("Failed config #{@plugin_name}/#{key}: #{result} (#{value.inspect}")
             end
 
-            p "Result: #{key} #{result.inspect} / #{success}"
+            #puts "Result: #{key} / #{result.inspect} / #{success}"
             is_valid &&= success
           end
         end # config.each

@@ -4,7 +4,7 @@ require "logstash/time"
 
 class LogStash::Filters::Date < LogStash::Filters::Base
 
-  config_name "filter"
+  config_name "date"
 
   # Config for date is:
   #   fieldname: dateformat

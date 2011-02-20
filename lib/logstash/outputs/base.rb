@@ -15,17 +15,7 @@ class LogStash::Outputs::Base
   public
   def initialize(params)
     @logger = LogStash::Logger.new(STDOUT)
-    if !self.class.validate(params)
-      @logger.error "Config validation failed."
-      exit 1
-    end
-
-    params.each do |key, value|
-      validator = self.class.validator_find(key)
-      #value = params[key]
-      @logger.info("Setting: @#{key} = #{value.inspect}")
-      self.instance_variable_set("@#{key}", value)
-    end
+    config_init(params)
   end
 
   public

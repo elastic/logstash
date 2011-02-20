@@ -13,10 +13,7 @@ class LogStash::Filters::Base
   public
   def initialize(params)
     @logger = LogStash::Logger.new(STDERR)
-    if !self.class.validate(params)
-      @logger.error "Config validation failed."
-      exit 1
-    end
+    config_init(params)
   end # def initialize
 
   public

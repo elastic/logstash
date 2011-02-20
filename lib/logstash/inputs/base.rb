@@ -9,10 +9,9 @@ class LogStash::Inputs::Base
   attr_accessor :logger
 
   config_name "input"
+  config :type => :string
 
-  # Define the basic config
   config :tag => (lambda do |value|
-    p :tag => value
     re = /^[A-Za-z0-9_]+$/
     value.each do |v|
       if v !~ re
@@ -22,21 +21,11 @@ class LogStash::Inputs::Base
     return true
   end) # config :tag
 
-  config :type => (lambda do |value|
-    if value.size > 1
-      return [false, "Type must be a single value, got #{value.inspect}, expected (for example) only #{value[0,1].inspect}"]
-    end
-    return true
-  end) # config :type
 
   public
   def initialize(params)
     @logger = LogStash::Logger.new(STDERR)
-    #@output_queue = output_queue
-    if !self.class.validate(params)
-      @logger.error "Config validation failed."
-      exit 1
-    end
+    config_init(params)
   end # def initialize
 
   public
