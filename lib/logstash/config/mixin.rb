@@ -22,6 +22,8 @@ require "logstash/logging"
 #
 # TODO(sissel): This is not yet fully designed.
 module LogStash::Config::Mixin
+  attr_accessor :config
+
   # This method is called when someone does 'include LogStash::Config'
   def self.included(base)
     #puts "Configurable class #{base.name}"
@@ -31,6 +33,8 @@ module LogStash::Config::Mixin
   end
 
   def config_init(params)
+    # Validation will modify the values inside params if necessary.
+    # For example: converting a string to a number, etc.
     if !self.class.validate(params)
       @logger.error "Config validation failed."
       exit 1
@@ -38,10 +42,14 @@ module LogStash::Config::Mixin
 
     params.each do |key, value|
       validator = self.class.validator_find(key)
-      #value = params[key]
       @logger.info("config #{self.class.name}/@#{key} = #{value.inspect}")
+
+      # set @foo
+      #ivar = "@#{key}"
       self.instance_variable_set("@#{key}", value)
     end
+
+    @config = params
   end # def config_init
 
   module DSL
