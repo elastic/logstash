@@ -49,6 +49,7 @@ module LogStash::Config::Mixin
     end # def config
 
     def dsl_gen
+      # TODO(sissel): Deprecated.
       puts "#{@dsl_parent.config_name} { #parent" if @dsl_parent
       config = []
       config << "#{@config_name} { #node"

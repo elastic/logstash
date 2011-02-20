@@ -5,7 +5,7 @@ $: << File.dirname($0) + "/../lib"
 require "rubygems"
 require "logstash/agent"
 require "optparse"
-require "yaml"
+#require "yaml"
 
 Settings = Struct.new(:config_file, :daemonize, :logfile, :verbose)
 
@@ -52,12 +52,12 @@ if !File.exist?(settings.config_file)
   $stderr.puts "Config file '#{settings.config_file}' does not exist."
 end
 
-begin
-  config = YAML::load_file(settings.config_file)
-rescue => e
-  $stderr.puts "Loading config file '#{settings.config_file}' failed: #{e}"
-  exit 1
-end
+#begin
+  #config = YAML::load_file(settings.config_file)
+#rescue => e
+  #$stderr.puts "Loading config file '#{settings.config_file}' failed: #{e}"
+  ##exit 1
+#end
 
 if settings.daemonize
   if Process.fork == nil
@@ -78,8 +78,5 @@ elsif settings.daemonize
   STDERR.reopen(devnull)
 end
 
-agent = LogStash::Agent.new(config)
-#if settings.logfile
-  #agent.log_to(settings.logfile)
-#end
+agent = LogStash::Agent.new(settings)
 agent.run 

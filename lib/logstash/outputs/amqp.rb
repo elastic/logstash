@@ -7,6 +7,7 @@ require "cgi"
 class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "queue", "topic" ]
 
+  config_name "amqp"
   config :host => :string
   config :queue_type => :string
   config :queue_name => :string

@@ -4,6 +4,7 @@ require "logstash/logging"
 require "logstash/multiqueue"
 require "logstash/namespace"
 require "logstash/outputs"
+require "logstash/config/file"
 require "java"
 require "uri"
 
@@ -17,18 +18,14 @@ class LogStash::Agent
   attr_reader :filters
 
   public
-  def initialize(config)
+  def initialize(settings)
     log_to(STDERR)
 
-    @config = config
+    @settings = settings
     @threads = {}
     @outputs = []
     @inputs = []
     @filters = []
-    # Config should have:
-    # - list of logs to monitor
-    #   - log config
-    # - where to ship to
 
     Thread::abort_on_exception = true
   end # def initialize
@@ -40,6 +37,14 @@ class LogStash::Agent
 
   public
   def run
+    # Load the config file
+    p @settings.config_file
+    config = LogStash::Config::File.new(@settings.config_file)
+    config.parse do |plugin|
+      ap plugin
+    end
+    exit
+    
     if @config["inputs"].length == 0 or @config["outputs"].length == 0
       raise "Must have both inputs and outputs configured."
     end
@@ -171,6 +176,7 @@ class LogStash::Agent
     end
 
     @sigchannel.subscribe do |msg|
+      # TODO(sissel): Make this a function.
       case msg
       when :USR1
         counts = Hash.new { |h,k| h[k] = 0 }

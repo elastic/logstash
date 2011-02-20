@@ -11,7 +11,6 @@ class LogStash::Outputs::Base
   attr_accessor :logger
 
   config_name "outputs"
-  dsl_parent nil
 
   public
   def initialize(url)
