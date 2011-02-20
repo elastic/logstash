@@ -5,6 +5,11 @@ gem "jls-grok", ">=0.3.3209"
 require "grok" # rubygem 'jls-grok'
 
 class LogStash::Filters::Grok < LogStash::Filters::Base
+
+  config :pattern => :string
+  config :patterns_dir => :path
+  config :drop_if_match => :boolean  # googlecode/issue/26
+         
   public
   def initialize(config = {})
     super

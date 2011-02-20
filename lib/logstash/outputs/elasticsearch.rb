@@ -4,6 +4,13 @@ require "logstash/outputs/amqp"
 require "logstash/outputs/base"
 
 class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
+
+  # http://host/index/type
+  config :host => :string
+  config :index => :string
+  config :type => :string  
+  # TODO(sissel): Config for river?
+
   public
   def register
     @pending = []

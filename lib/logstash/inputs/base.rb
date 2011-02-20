@@ -1,10 +1,18 @@
 require "logstash/namespace"
 require "logstash/event"
 require "logstash/logging"
+require "logstash/config/mixin"
 require "uri"
 
 class LogStash::Inputs::Base
+  include LogStash::Config::Mixin
   attr_accessor :logger
+
+  config_name "input"
+
+  # Define the basic config
+  config "path" => :string #LogStash::Config::Path
+  config "tag" => :string #LogStash::Config::Array
 
   public
   def initialize(configs, output_queue)

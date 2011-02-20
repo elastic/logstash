@@ -3,10 +3,13 @@ inputs:
   linux-syslog:
   - file:///var/log/messages
 filters:
+<<<<<<< HEAD
 - grok:
     linux-syslog:
       patterns:
       - %{SYSLOGLINE}
+=======
+>>>>>>> origin/issue/17
 - grep:
     linux-syslog:
       - match:
@@ -14,4 +17,8 @@ filters:
         add_fields:
           filter_test: hello world
 outputs:
+<<<<<<< HEAD
   - stdout:///debug
+=======
+  - stdout:///
+>>>>>>> origin/issue/17

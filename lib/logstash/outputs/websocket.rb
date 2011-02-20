@@ -3,6 +3,8 @@ require "logstash/namespace"
 require "logstash/outputs/base"
 
 class LogStash::Outputs::Websocket < LogStash::Outputs::Base
+  config :address => :string
+
   public
   def register
     @channel = EventMachine::Channel.new

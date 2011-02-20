@@ -1,8 +1,13 @@
 require "logstash/namespace"
 require "logstash/logging"
+require "logstash/config/mixin"
 
 class LogStash::Filters::Base
+  include LogStash::Config::Mixin
+
   attr_accessor :logger
+
+  config_name "filter"
 
   public
   def initialize(config = {})

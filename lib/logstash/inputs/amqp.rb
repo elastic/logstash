@@ -8,6 +8,9 @@ require "cgi"
 class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   MQTYPES = [ "fanout", "queue", "topic" ]
 
+  config_name "amqp"
+  config "pantscon" => :string #LogStash::Config::Path
+
   public
   def initialize(url, type, config={}, &block)
     super
