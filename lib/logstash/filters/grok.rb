@@ -51,6 +51,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     end
 
     if match
+      filter_matched(event)
       match.each_capture do |key, value|
         if key.include?(":")
           key = key.split(":")[1]

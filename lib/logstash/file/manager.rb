@@ -78,7 +78,7 @@ class LogStash::File::Manager
         e = LogStash::Event.new({
           "@message" => line,
           "@type" => config["type"],
-          "@tags" => config["tag"],
+          "@tags" => config["tag"].dup,
         })
         e.source = "file://#{@hostname}/#{path}"
         @output_queue << e.dup
