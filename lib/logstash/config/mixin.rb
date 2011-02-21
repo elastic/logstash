@@ -41,7 +41,6 @@ module LogStash::Config::Mixin
     end
 
     params.each do |key, value|
-      validator = self.class.validator_find(key)
       @logger.info("config #{self.class.name}/@#{key} = #{value.inspect}")
 
       # set @foo

@@ -28,8 +28,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       @pile.add_patterns_from_file(path)
     end
 
-    # TODO(petef, sissel): should not need .flatten here
-    @pattern.flatten.each do |pattern|
+    @pattern.each do |pattern|
       groks = @pile.compile(pattern)
       @logger.debug(["Compiled pattern", pattern, groks[-1].expanded_pattern])
     end
