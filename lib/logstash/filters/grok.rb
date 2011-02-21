@@ -51,7 +51,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     end
 
     if match
-      filter_matched(event)
       match.each_capture do |key, value|
         if key.include?(":")
           key = key.split(":")[1]
@@ -72,6 +71,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
           event.fields[key] << value
         end
       end
+      filter_matched(event)
     else
       # Tag this event if we can't parse it. We can use this later to
       # reparse+reindex logs if we improve the patterns given .

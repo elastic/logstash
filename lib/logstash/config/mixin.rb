@@ -178,7 +178,18 @@ module LogStash::Config::Mixin
         result = value.first
       elsif validator.is_a?(Symbol)
         # TODO(sissel): Factor this out into a coersion method?
+        # TODO(sissel): Document this stuff.
         case validator
+          when :hash
+            if value.size % 2 == 1
+              return false, "This field must contain an even number of items, got #{value.size}"
+            end
+            # Use Hash[] (works in 1.8.7, anyway) to coerce into a hash.
+            p "HASH HASH HASH"
+            p "HASH HASH HASH"
+            p "HASH HASH HASH"
+            p value
+            result = Hash[*value]
           when :string
             if value.size > 1 # only one value wanted
               return false, "Expected string, got #{value.inspect}"
