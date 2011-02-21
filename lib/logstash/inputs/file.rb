@@ -13,6 +13,11 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   config :path => nil # no validation on path, it can be anything.
 
   public
+  def register
+    # nothing
+  end # def register
+
+  public
   def run(queue)
     @@filemanager_lock.synchronize do
       if not @@filemanager
@@ -24,5 +29,5 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     end
 
     @@filemanager.watch(@path, @config)
-  end
+  end # def run
 end # class LogStash::Inputs::File

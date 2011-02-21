@@ -80,8 +80,11 @@ class LogStash::Agent
     # Start inputs
     @inputs.each do |input|
       @logger.info(["Starting input", input])
-      input.logger = @logger
-      @threads[input] = Thread.new { input.run(queue) }
+      @threads[input] = Thread.new do
+        input.logger = @logger
+        input.register
+        input.run(queue)
+      end
     end
 
     # Create N filter-worker threads
@@ -121,8 +124,8 @@ class LogStash::Agent
 
       @threads["outputs/#{output}"] = Thread.new do
         JThread.currentThread().setName("output/#{output}")
-        output.register
         output.logger = @logger
+        output.register
 
         while event = queue.pop do
           output.receive(event)
