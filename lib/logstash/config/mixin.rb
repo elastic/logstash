@@ -135,7 +135,7 @@ module LogStash::Config::Mixin
             if success 
               params[key] = result if !result.nil?
             else
-              @logger.error("Failed config #{@plugin_name}/#{key}: #{result} (#{value.inspect}")
+              @logger.error("Failed config #{@plugin_name}/#{key}: #{result} (#{value.inspect})")
             end
 
             #puts "Result: #{key} / #{result.inspect} / #{success}"
@@ -202,7 +202,7 @@ module LogStash::Config::Mixin
               return false, "Expected boolean 'true' or 'false', got #{value.inspect}"
             end
 
-            result = (value == "true")
+            result = (value.first == "true")
         end # case validator
       else
         return false, "Unknown validator #{validator.class}"
