@@ -45,6 +45,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
               "@tags" => [@type],
             })
             e.source = "tcp://#{@host}:#{@port}/client/#{peer}"
+            @logger.debug(["Received message from #{peer}"], e)
             output_queue << e
           end # loop do
         rescue
