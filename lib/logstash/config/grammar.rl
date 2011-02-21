@@ -53,7 +53,7 @@ require "logstash/namespace"
   }
 
   action parameter_init {
-    @parameters = Hash.new { |h,k| h[k] = [] }
+    # nothing
   }
 
   action parameter {
@@ -78,6 +78,7 @@ require "logstash/namespace"
   action component_init {
     #puts "current component: " + @stack.last
     @components = []
+    @parameters = Hash.new { |h,k| h[k] = [] }
   }
 
   action component {
