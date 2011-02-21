@@ -72,11 +72,10 @@ require "logstash/namespace"
     name = @stack.pop
     #@components << { :name => name, :parameters => @parameters }
     @components << { name => @parameters }
-    @parameters = {}
+    @parameters = Hash.new { |h,k| h[k] = [] }
   }
 
   action component_init {
-    #puts "current component: " + @stack.last
     @components = []
     @parameters = Hash.new { |h,k| h[k] = [] }
   }

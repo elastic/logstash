@@ -4,7 +4,7 @@ require "rubygems"
 require "logstash/namespace"
 
 
-# line 146 "grammar.rl"
+# line 145 "grammar.rl"
 
 
 class LogStash::Config::Grammar
@@ -246,7 +246,7 @@ end
 self.logstash_config_en_main = 53;
 
 
-# line 155 "grammar.rl"
+# line 154 "grammar.rl"
     # END RAGEL DATA
 
     @tokenstack = Array.new
@@ -268,7 +268,7 @@ begin
 	cs = logstash_config_start
 end
 
-# line 169 "grammar.rl"
+# line 168 "grammar.rl"
     # END RAGEL INIT
 
     begin 
@@ -441,18 +441,17 @@ when 8 then
     name = @stack.pop
     #@components << { :name => name, :parameters => @parameters }
     @components << { name => @parameters }
-    @parameters = {}
+    @parameters = Hash.new { |h,k| h[k] = [] }
   		end
 when 9 then
 # line 78 "grammar.rl"
 		begin
 
-    #puts "current component: " + @stack.last
     @components = []
     @parameters = Hash.new { |h,k| h[k] = [] }
   		end
 when 10 then
-# line 84 "grammar.rl"
+# line 83 "grammar.rl"
 		begin
 
     name = @stack.pop
@@ -461,18 +460,18 @@ when 10 then
     #puts "Config component: #{name}"
   		end
 when 11 then
-# line 91 "grammar.rl"
+# line 90 "grammar.rl"
 		begin
  e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" 		end
 when 13 then
-# line 141 "grammar.rl"
+# line 140 "grammar.rl"
 		begin
  
             # Compute line and column of the cursor (p)
             $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           		end
-# line 476 "grammar.rb"
+# line 475 "grammar.rb"
 			end # action switch
 		end
 	end
@@ -508,7 +507,7 @@ when 0 then
     #puts "Mark: #{self.line(string, p)}##{self.column(string, p)}"
   		end
 when 10 then
-# line 84 "grammar.rl"
+# line 83 "grammar.rl"
 		begin
 
     name = @stack.pop
@@ -517,22 +516,22 @@ when 10 then
     #puts "Config component: #{name}"
   		end
 when 11 then
-# line 91 "grammar.rl"
+# line 90 "grammar.rl"
 		begin
  e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" 		end
 when 12 then
-# line 140 "grammar.rl"
+# line 139 "grammar.rl"
 		begin
  puts "END" 		end
 when 13 then
-# line 141 "grammar.rl"
+# line 140 "grammar.rl"
 		begin
  
             # Compute line and column of the cursor (p)
             $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           		end
-# line 536 "grammar.rb"
+# line 535 "grammar.rb"
 		end # eof action switch
 	end
 	if _trigger_goto
@@ -546,7 +545,7 @@ end
 	end
 	end
 
-# line 174 "grammar.rl"
+# line 173 "grammar.rl"
       # END RAGEL EXEC
     rescue => e
       # Compute line and column of the cursor (p)
