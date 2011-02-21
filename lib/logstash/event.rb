@@ -37,8 +37,27 @@ class LogStash::Event
 
   public
   def to_s
-    return "#{timestamp} #{source}: #{message}"
+    return self.format("%{@timestamp} %{@source}: %{@message}"
   end # def to_s
+
+  # Return a string with this event's data formatted into it
+  # Format strings are
+  # %{key} where 'key' is a field in the event. @source and friends are valid,
+  # too.
+  public
+  def format(formatstring)
+    return formatstring.gsub(/%\{[^}]+\}/) do |tok|
+      key = tok[2 ... -1]
+      value = self[key]
+      if value.nil?
+        tok # leave the %{foo} if this field does not exist in this event.
+      elsif value.is_a?(Array)
+        value.join(",") # Join by ',' if value is an rray
+      else
+        value # otherwise return the value
+      end
+    end
+  end # def format
 
   public
   def timestamp; @data["@timestamp"]; end # def timestamp
