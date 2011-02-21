@@ -41,10 +41,6 @@ class LogStash::Filters::Base
   # matches the filter's conditions (right type, etc)
   private
   def filter_matched(event)
-    @logger.info "FILTER MATCHED"
-    @logger.info :addtag => @add_tag
-    @logger.info :addfield => @add_field
-
     if @add_tag
       @add_tag.each { |tag| event.tags << tag }
     end

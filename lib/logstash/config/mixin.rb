@@ -185,10 +185,6 @@ module LogStash::Config::Mixin
               return false, "This field must contain an even number of items, got #{value.size}"
             end
             # Use Hash[] (works in 1.8.7, anyway) to coerce into a hash.
-            p "HASH HASH HASH"
-            p "HASH HASH HASH"
-            p "HASH HASH HASH"
-            p value
             result = Hash[*value]
           when :string
             if value.size > 1 # only one value wanted
