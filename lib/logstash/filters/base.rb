@@ -10,7 +10,7 @@ class LogStash::Filters::Base
   config_name "filter"
   config :type => :string
   config :add_tag => nil
-  config :add_field => nil
+  config :add_field => :hash
 
   public
   def initialize(params)
@@ -45,16 +45,11 @@ class LogStash::Filters::Base
       @add_tag.each { |tag| event.tags << tag }
     end
     if @add_field
-      if @add_field.length % 2 != 0
-        @logger.warn("filter #{self.class}: add_field must be an even amount of fields [key1, val1, key2, val2, ...]")
-      else
-        combos = @add_field.length / 2
-        0.upto(combos - 1) do |i|
-          field, value = @add_field[2*i], @add_field[2*i+1]
-          event[field] ||= []
-          event[field] << value
-        end # 0.upto(combos)
-      end # if @add_field.length % 2
+      @add_field.each do |field, value|
+        @logger.info "Adding field: #{field} => #{event.sprintf(value)}"
+        event[field] ||= []
+        event[field] << event.sprintf(value)
+      end # @add_field.each
     end # if @add_field
   end # def filter_matched
 end # class LogStash::Filters::Base
