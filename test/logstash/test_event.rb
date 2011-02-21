@@ -20,7 +20,11 @@ class TestEvent < Test::Unit::TestCase
     event["test"] = "test"
 
     ["@type", "@message", "@source", "test"].each do |name|
-      assert_equal(event[name], event.sprintf("${#{name}}"))
+      assert_equal(event[name], event.sprintf("%{#{name}}"))
     end
-  end # def test_single_match
+
+    event.fields["foo"] = ["one", "two", "three"]
+
+    assert_equal(event.fields["foo"].join(","), event.sprintf("%{foo}"))
+  end # def test_sprintf
 end # TestEvent

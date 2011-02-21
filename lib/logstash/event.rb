@@ -37,27 +37,8 @@ class LogStash::Event
 
   public
   def to_s
-    return self.format("%{@timestamp} %{@source}: %{@message}"
+    return self.sprintf("%{@timestamp} %{@source}: %{@message}")
   end # def to_s
-
-  # Return a string with this event's data formatted into it
-  # Format strings are
-  # %{key} where 'key' is a field in the event. @source and friends are valid,
-  # too.
-  public
-  def format(formatstring)
-    return formatstring.gsub(/%\{[^}]+\}/) do |tok|
-      key = tok[2 ... -1]
-      value = self[key]
-      if value.nil?
-        tok # leave the %{foo} if this field does not exist in this event.
-      elsif value.is_a?(Array)
-        value.join(",") # Join by ',' if value is an rray
-      else
-        value # otherwise return the value
-      end
-    end
-  end # def format
 
   public
   def timestamp; @data["@timestamp"]; end # def timestamp
@@ -136,27 +117,33 @@ class LogStash::Event
 
   # sprintf. This could use a better method name.
   # The idea is to take an event and convert it to a string based on 
-  # any format values, delimited by ${foo} where 'foo' is a field or
+  # any format values, delimited by %{foo} where 'foo' is a field or
   # metadata member.
   #
   # For example, if the event has @type == "foo" and @source == "bar"
   # then this string:
-  #   "type is ${@type} and source is #{@source}"
+  #   "type is %{@type} and source is %{@source}"
   # will return
   #   "type is foo and source is bar"
   #
-  # If a ${name} value does not exist, then no substitution occurs.
+  # If a %{name} value is an array, then we will join by ','
+  # If a %{name} value does not exist, then no substitution occurs.
   #
   # TODO(sissel): It is not clear what the value of a field that 
   # is an array (or hash?) should be. Join by comma? Something else?
   public
   def sprintf(format)
-    result = format.gsub(/\$\{[@A-Za-z0-9_-]+\}/) do |match|
-      name = match[2..-2] # trim '${' and '}'
-      value = (self[name] or match)
+    return format.gsub(/%\{[^}]+\}/) do |tok|
+      key = tok[2 ... -1]
+      value = self[key]
+      if value.nil?
+        tok # leave the %{foo} if this field does not exist in this event.
+      elsif value.is_a?(Array)
+        value.join(",") # Join by ',' if value is an rray
+      else
+        value # otherwise return the value
+      end
     end
-    #$stderr.puts "sprintf(#{format.inspect}) => #{result.inspect}"
-    return result
   end # def sprintf
 
   public
