@@ -41,7 +41,6 @@ class LogStash::File::Manager
     JThread.currentThread().setName("filemanager")
     begin
       while true
-        @logger.info("top")
         @watching.each do |path, config|
           next if @file_threads[path]
 
@@ -81,7 +80,7 @@ class LogStash::File::Manager
           "@tags" => config["tag"].dup,
         })
         e.source = "file://#{@hostname}/#{path}"
-        @output_queue << e.dup
+        @output_queue << e
       end # f.tail
     end # File.open
   end

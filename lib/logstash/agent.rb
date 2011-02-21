@@ -110,6 +110,7 @@ class LogStash::Agent
               end
             end # filters.each
 
+            @logger.debug(["Event finished filtering", event])
             output_queue.push(event) unless event.cancelled?
           end # event pop
         end # Thread.new
