@@ -1,3 +1,4 @@
+require "ap"
 require "logstash/outputs/base"
 require "logstash/namespace"
 
@@ -7,22 +8,23 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   config :debug => :boolean
 
   public
-  def initialize(*args)
+  def initialize(params)
     super
 
-  end # def register
+    #@debug ||= false
+  end
+
+  public
+  def register
+    # nothing to do
+  end
 
   public
   def receive(event)
-    if debug?
+    if @debug
       ap event
     else
       puts event
     end
   end # def event
-
-  public
-  def debug?
-    return @debug
-  end
 end # class LogStash::Outputs::Stdout

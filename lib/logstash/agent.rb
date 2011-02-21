@@ -16,6 +16,7 @@ class LogStash::Agent
   attr_reader :inputs
   attr_reader :outputs
   attr_reader :filters
+  attr_accessor :logger
 
   public
   def initialize(settings)
@@ -37,6 +38,8 @@ class LogStash::Agent
 
   public
   def run
+    JThread.currentThread().setName("agent")
+
     # Load the config file
     config = LogStash::Config::File.new(@settings.config_file)
     config.parse do |plugin|
@@ -50,6 +53,7 @@ class LogStash::Agent
       # Create a new instance of a plugin, called like:
       # -> LogStash::Inputs::File.new( params )
       instance = klass.new(plugin[:parameters])
+      instance.logger = @logger
 
       case type
         when "input"
@@ -64,55 +68,31 @@ class LogStash::Agent
       end # case type
     end # config.parse
 
-    exit 0
-    
-    if @config["inputs"].length == 0 or @config["outputs"].length == 0
+    if @inputs.length == 0 or @outputs.length == 0
       raise "Must have both inputs and outputs configured."
     end
 
-    # XXX we should use a SizedQueue here (w/config params for size)
+    # NOTE(petef) we should use a SizedQueue here (w/config params for size)
     filter_queue = Queue.new
     output_queue = MultiQueue.new
 
-    # Register input and output stuff
-    input_configs = Hash.new { |h, k| h[k] = Hash.new { |h2, k2| h2[k2] = [] } }
-    @config["inputs"].each do |url_type, urls|
-      # url could be a string or an array.
-      urls = [urls] if !urls.is_a?(Array)
-      urls.each do |url_str|
-        url = URI.parse(url_str)
-        input_type = url.scheme
-        input_configs[input_type][url_type] = url
-      end
-    end # each input
-
-    input_configs.each do |input_type, config|
-      if @config.include?("filters")
-        queue = filter_queue
-      else
-        queue = output_queue
-      end
-      input = LogStash::Inputs.from_name(input_type, config, queue)
-      @threads["input/#{input_type}"] = Thread.new do
-        JThread.currentThread().setName("input/#{input_type}")
-        input.run
-      end
+    queue = @filters.length > 0 ? filter_queue : output_queue
+    # Start inputs
+    @inputs.each do |input|
+      @logger.info(["Starting input", input])
+      input.logger = @logger
+      @threads[input] = Thread.new { input.run(queue) }
     end
 
     # Create N filter-worker threads
-    if @config.include?("filters")
+    if @filters.length > 0
       3.times do |n|
-        @threads["worker/filter/#{n}"] = Thread.new do
-          JThread.currentThread().setName("worker/filter/#{n}")
-          filters = []
-
-          @config["filters"].collect { |x| x.to_a[0] }.each do |filter_config|
-            name, value = filter_config
-            @logger.info("Using filter #{name} => #{value.inspect}")
-            filter = LogStash::Filters.from_name(name, value)
+        @logger.info("Starting filter worker thread #{n}")
+        @threads["filter|worker|#{n}"] = Thread.new do
+          JThread.currentThread().setName("filter|worker|#{n}")
+          @filters.each do |filter|
             filter.logger = @logger
             filter.register
-            filters << filter
           end
 
           while event = filter_queue.pop
@@ -129,26 +109,31 @@ class LogStash::Agent
 
             output_queue.push(event) unless event.cancelled?
           end # event pop
-        end # Thread
+        end # Thread.new
       end # N.times
-    end # if @config.include?("filters")
+    end # if @filters.length > 0
+
 
     # Create output threads
-    @config["outputs"].each do |url|
+    @outputs.each do |output|
       queue = Queue.new
-      @threads["outputs/#{url}"] = Thread.new do
-        JThread.currentThread().setName("output:#{url}")
-        output = LogStash::Outputs.from_url(url)
-        while event = queue.pop
+      output_queue.add_queue(queue)
+
+      @threads["outputs/#{output}"] = Thread.new do
+        JThread.currentThread().setName("output/#{output}")
+        output.register
+        output.logger = @logger
+
+        while event = queue.pop do
           output.receive(event)
         end
-      end # Thread
-      output_queue.add_queue(queue)
-    end
+      end # Thread.new
+    end # @outputs.each
 
-    # Register any signal handlers
-    #register_signal_handler
 
+#    # Register any signal handlers
+#    #register_signal_handler
+#
     while sleep 5
     end
   end # def register

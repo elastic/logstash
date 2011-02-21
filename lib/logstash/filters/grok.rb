@@ -10,30 +10,33 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   config :pattern => nil
   config :patterns_dir => nil
   config :drop_if_match => :boolean  # googlecode/issue/26
-         
+
+  @@grokpiles = Hash.new { |h, k| h[k] = [] }
+  @@grokpiles_lock = Mutex.new
+
   public
   def initialize(params)
     super
-
-    @grokpiles = {}
   end # def initialize
 
   public
   def register
-    # TODO(sissel): Make patterns files come from the config
-    @config.each do |type, typeconfig|
-      @logger.debug("Registering type with grok: #{type}")
-      pile = Grok::Pile.new
-      patterndir = "#{File.dirname(__FILE__)}/../../../patterns/*"
-      Dir.glob(patterndir).each do |path|
-        pile.add_patterns_from_file(path)
-      end
-      typeconfig["patterns"].each do |pattern|
-        groks = pile.compile(pattern)
-        @logger.debug(["Compiled pattern", pattern, groks[-1].expanded_pattern])
-      end
-      @grokpiles[type] = pile
-    end # @config.each
+    # TODO(2.0): support grok pattern discovery
+    @patterns_dir ||= "#{File.dirname(__FILE__)}/../../../patterns/*"
+    @pile = Grok::Pile.new
+    Dir.glob(@patterns_dir).each do |path|
+      @pile.add_patterns_from_file(path)
+    end
+
+    # TODO(petef, sissel): should not need .flatten here
+    @pattern.flatten.each do |pattern|
+      groks = @pile.compile(pattern)
+      @logger.debug(["Compiled pattern", pattern, groks[-1].expanded_pattern])
+    end
+
+    @@grokpiles_lock.synchronize do
+      @@grokpiles[@type] << @pile
+    end
   end # def register
 
   public
@@ -42,16 +45,10 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     message = event.message
     match = false
 
-    if event.type
-      if @grokpiles.include?(event.type)
-        @logger.debug(["Running grok filter", event])
-        pile = @grokpiles[event.type]
-        grok, match = pile.match(message)
-      end # @grokpiles.include?(event.type)
-      # TODO(2.0): support grok pattern discovery
-    else
-      @logger.info("Unknown type for #{event.source} (type: #{event.type})")
-      @logger.debug(event.to_hash)
+    @logger.debug(["Running grok filter", event])
+    @@grokpiles[event.type].each do |pile|
+      grok, match = @pile.match(message)
+      break if match
     end
 
     if match

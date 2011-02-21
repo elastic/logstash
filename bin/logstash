@@ -31,7 +31,7 @@ opts = OptionParser.new do |opts|
     settings.logfile = path
   end
 
-  opts.on("-v", "Increase verbosity (not yet used)") do
+  opts.on("-v", "Increase verbosity") do
     settings.verbose += 1
   end
 end
@@ -79,4 +79,7 @@ elsif settings.daemonize
 end
 
 agent = LogStash::Agent.new(settings)
-agent.run 
+if settings.verbose > 0
+  agent.logger.level = Logger::DEBUG
+end
+agent.run
