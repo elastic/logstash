@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   #rev = %x{svn info}.split("\n").grep(/Revision:/).first.split(" ").last.to_i
   rev = Time.now.strftime("%Y%m%d%H%M%S")
   spec.name = "logstash-lite"
-  spec.version = "0.2.#{rev}"
+  spec.version = "0.3.#{rev}"
   spec.summary = "logstash - log and event management (lite install, no dependencies)"
   spec.description = "scalable log and event management (search, archive, pipeline)"
   spec.license = "Apache License (2.0)"
