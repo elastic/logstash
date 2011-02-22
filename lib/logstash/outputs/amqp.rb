@@ -47,7 +47,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       when "fanout"
         @target = @bunny.exchange(@name, :type => :fanout)
       when "queue"
-        @target = @bunny.queue(@name, :durable => @durable)
+        @target = @bunny.exchange(@name, :type => :direct)
       when "topic"
         @target = @bunny.exchange(@name, :type => :topic)
     end # case @exchange_type
