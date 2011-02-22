@@ -28,7 +28,9 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   public
   def run(output_queue)
     loop do
+      # Start a new thread for each connection.
       Thread.start(@server.accept) do |s|
+        # TODO(sissel): put this block in its own method.
         peer = "#{s.peeraddr[3]}:#{s.peeraddr[1]}"
         @logger.debug("Accepted connection from #{peer} on #{@host}:#{@port}")
         begin
