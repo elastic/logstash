@@ -76,16 +76,16 @@ class LogStash::Agent
     filter_queue = Queue.new
     output_queue = MultiQueue.new
 
-    queue = @filters.length > 0 ? filter_queue : output_queue
+    input_target = @filters.length > 0 ? filter_queue : output_queue
     # Start inputs
     @inputs.each do |input|
       @logger.info(["Starting input", input])
-      @threads[input] = Thread.new do
+      @threads[input] = Thread.new(input_target) do |input_target|
         input.logger = @logger
         input.register
-        input.run(queue)
-      end
-    end
+        input.run(input_target)
+      end # new thread for thsi input
+    end # @inputs.each
 
     # Create N filter-worker threads
     if @filters.length > 0
