@@ -78,7 +78,7 @@ class LogStash::Agent
     # NOTE(petef) we should use a SizedQueue here (w/config params for size)
     #filter_queue = Queue.new
     filter_queue = SizedQueue.new(10)
-    output_queue = MultiQueue.new
+    output_queue = LogStash::MultiQueue.new
 
     input_target = @filters.length > 0 ? filter_queue : output_queue
     # Start inputs
@@ -126,14 +126,19 @@ class LogStash::Agent
     @outputs.each do |output|
       queue = SizedQueue.new(10)
       output_queue.add_queue(queue)
+      @threads["outputs/#{output.to_s}"] = Thread.new(queue) do |queue|
+        begin
+          JThread.currentThread().setName("output/#{output.to_s}")
+          output.logger = @logger
+          output.register
 
-      @threads["outputs/#{output}"] = Thread.new do
-        JThread.currentThread().setName("output/#{output}")
-        output.logger = @logger
-        output.register
-
-        while event = queue.pop do
-          output.receive(event)
+          while event = queue.pop do
+            @logger.debug("Sending event to #{output.to_s}")
+            output.receive(event)
+          end
+        rescue Exception => e
+          @logger.warn(["Output #{output.to_s} thread exception", e])
+          retry
         end
       end # Thread.new
     end # @outputs.each

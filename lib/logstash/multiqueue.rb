@@ -1,15 +1,19 @@
-class MultiQueue
+require "logstash/namespace"
+
+class LogStash::MultiQueue
   public
   def initialize(*queues)
     @mutex = Mutex.new
     @queues = queues
-  end
+  end # def initialize
 
   # Push an object to all queues.
   public
   def push(object)
+    puts "*** Pushing object into MultiQueue: #{object}"
     @queues.each { |q| q.push(object) }
-  end
+  end # def push
+  alias :<< :push
 
   alias_method :<<, :push
 
@@ -19,5 +23,10 @@ class MultiQueue
     @mutex.synchronize do
       @queues << queue
     end
-  end
+  end # def add_queue
+
+  public
+  def size
+    return @queues.collect { |q| q.size }
+  end # def size
 end

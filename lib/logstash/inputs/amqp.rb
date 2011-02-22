@@ -1,25 +1,11 @@
 require "bunny" # rubygem 'bunny'
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "mq" # rubygem 'amqp'
-#require "uuidtools" # rubygem 'uuidtools'
-require "cgi"
-require "uri"
 
 class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   MQTYPES = [ "fanout", "queue", "topic" ]
 
   config_name "amqp"
-  #config "host" => (lambda do |value|
-    ## Use URI to validate.
-    #u = URI.parse("dummy:///")
-    #begin
-      #u.host = value
-    #rescue => e
-      #return false, "Invalid hostname #{value.inspect}"
-    #end
-    #return true
-  #) # config "host"
 
   config :host => :string
   config :user => :string

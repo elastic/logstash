@@ -80,6 +80,7 @@ class LogStash::File::Manager
           "@tags" => config["tag"].dup,
         })
         e.source = "file://#{@hostname}/#{path}"
+        @logger.debug(["New event from file input", path, e])
         @output_queue << e
       end # f.tail
     end # File.open
