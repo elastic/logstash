@@ -69,8 +69,15 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   def run(queue)
     loop do
       @queue.subscribe do |data|
-        @logger.info(:amqp_input => data)
-      end
-    end
+        begin
+          obj = JSON.parse(data[:payload])
+        rescue => e
+          @logger.error(["json parse error", { :exception => e }])
+          raise e
+        end
+
+        queue << LogStash::Event.new(obj)
+      end # @queue.subscribe
+    end # loop
   end # def run
 end # class LogStash::Inputs::Amqp
