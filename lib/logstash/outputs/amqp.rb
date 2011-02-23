@@ -5,11 +5,14 @@ require "mq" # rubygem 'amqp'
 require "cgi"
 
 class LogStash::Outputs::Amqp < LogStash::Outputs::Base
-  MQTYPES = [ "fanout", "queue", "topic" ]
+  MQTYPES = [ "fanout", "direct", "topic" ]
 
   public
   def initialize(url, config={}, &block)
     super
+
+    @mq = nil
+    @bulk_prefix = nil
 
     # Handle path /<vhost>/<type>/<name> or /<type>/<name>
     # vhost allowed to contain slashes
@@ -36,25 +39,35 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     amqpsettings[:user] = @url.user if @url.user
     amqpsettings[:pass] = @url.password if @url.password
     amqpsettings[:logging] = query_args.include? "debug"
-    @logger.debug("Connecting with AMQP settings #{amqpsettings.inspect} to set up #{@mqtype.inspect} queue #{@name.inspect}")
+    @logger.debug("Connecting with AMQP settings #{amqpsettings.inspect} to set up #{@mqtype.inspect} exchange #{@name.inspect}")
     @amqp = AMQP.connect(amqpsettings)
     @mq = MQ.new(@amqp)
     @target = nil
 
+    if @urlopts.include? "es_index" and @urlopts.include? "es_type"
+      @bulk_prefix = { "index" => { "_index" => @urlopts["es_index"], "_type" => @urlopts["es_type"] } }.to_json + "\n"
+      @logger.debug "Preparing ElasticSearch bulk API header for injection: #{@bulk_prefix.inspect}"
+    end
+
+    @durable = @urlopts["durable"] ? true : false
     case @mqtype
       when "fanout"
-        @target = @mq.fanout(@name)
-      when "queue"
-        @target = @mq.queue(@name, :durable => @urlopts["durable"] ? true : false)
+        @target = @mq.fanout(@name, :durable => @durable)
+      when "direct"
+        @target = @mq.direct(@name, :durable => @durable)
       when "topic"
-        @target = @mq.topic(@name)
+        @target = @mq.topic(@name, :durable => @durable)
     end # case @mqtype
   end # def register
 
   public
   def receive(event)
     @logger.debug(["Sending event", { :url => @url, :event => event }])
-    @target.publish(event.to_json)
+    if @bulk_prefix
+      @target.publish(@bulk_prefix + event.to_json + "\n")
+    else
+      @target.publish(event.to_json)
+    end
   end # def receive
 
   # This is used by the ElasticSearch AMQP/River output.
