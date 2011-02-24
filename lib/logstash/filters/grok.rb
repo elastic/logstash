@@ -52,9 +52,21 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
     if match
       match.each_capture do |key, value|
+        match_type = nil
         if key.include?(":")
-          key = key.split(":")[1]
+          name, key, match_type = key.split(":")
         end
+
+        # http://code.google.com/p/logstash/issues/detail?id=45
+        # Permit typing of captures by giving an additional colon and a type,
+        # like: %{FOO:name:int} for int coercion.
+        case match_type
+          when "int"
+            value = value.to_i
+          when "float"
+            value = value.to_f
+        end
+
         if event.message == value
           # Skip patterns that match the entire line
           @logger.debug("Skipping capture '#{key}' since it matches the whole line.")
@@ -67,7 +79,9 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
           event.fields[key] = []
         end
 
-        if value && !value.empty?
+        # If value is not nil, or responds to empty and is not empty, add the
+        # value to the event.
+        if !value.nil? && (!value.empty? rescue true)
           event.fields[key] << value
         end
       end
