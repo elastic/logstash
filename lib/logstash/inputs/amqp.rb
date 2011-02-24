@@ -6,7 +6,7 @@ require "uuidtools" # rubygem 'uuidtools'
 require "cgi"
 
 class LogStash::Inputs::Amqp < LogStash::Inputs::Base
-  MQTYPES = [ "fanout", "queue", "topic" ]
+  MQTYPES = [ "fanout", "direct", "topic" ]
 
   public
   def initialize(url, type, config={}, &block)
@@ -39,20 +39,22 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     amqpsettings[:user] = @url.user if @url.user
     amqpsettings[:pass] = @url.password if @url.password
     amqpsettings[:logging] = query_args.include? "debug"
-    @logger.debug("Connecting with AMQP settings #{amqpsettings.inspect} to set up #{@mqtype.inspect} queue #{@name.inspect}")
+    queue_name = ((@urlopts["queue"].nil? or @urlopts["queue"].empty?) ? "logstash-#{@name}" : @urlopts["queue"])
+    @logger.debug("Connecting with AMQP settings #{amqpsettings.inspect} to set up #{@mqtype.inspect} queue #{queue_name} on exchange #{@name.inspect}")
     @amqp = AMQP.connect(amqpsettings)
     @mq = MQ.new(@amqp)
     @target = nil
 
-    @target = @mq.queue(UUIDTools::UUID.timestamp_create)
+    @durable_exchange = @urlopts["durable_exchange"] ? true : false
+    @durable_queue = @urlopts["durable_queue"] ? true : false
+    @target = @mq.queue(queue_name, :durable => @durable_queue)
     case @mqtype
       when "fanout"
-        #@target.bind(MQ.fanout(@url.path, :durable => true))
-        @target.bind(@mq.fanout(@name))
+        @target.bind(@mq.fanout(@name, :durable => @durable_exchange))
       when "direct"
-        @target.bind(@mq.direct(@name))
+        @target.bind(@mq.direct(@name, :durable => @durable_exchange))
       when "topic"
-        @target.bind(@mq.topic(@name))
+        @target.bind(@mq.topic(@name, :durable => @durable_exchange))
     end # case @mqtype
 
     @target.subscribe(:ack => true) do |header, message|
