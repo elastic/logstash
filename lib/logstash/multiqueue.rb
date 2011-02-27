@@ -1,8 +1,10 @@
 require "logstash/namespace"
+require "logstash/logging"
 
 class LogStash::MultiQueue
   public
   def initialize(*queues)
+    @logger = LogStash::Logger.new(STDOUT)
     @mutex = Mutex.new
     @queues = queues
   end # def initialize
@@ -10,7 +12,7 @@ class LogStash::MultiQueue
   # Push an object to all queues.
   public
   def push(object)
-    puts "*** Pushing object into MultiQueue: #{object}"
+    @logger.info "*** Pushing object into MultiQueue: #{object}"
     @queues.each { |q| q.push(object) }
   end # def push
   alias :<< :push
