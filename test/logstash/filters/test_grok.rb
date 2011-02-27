@@ -83,7 +83,7 @@ class TestFilterGrok < Test::Unit::TestCase
 
     duration = Time.now - start
     max_duration = 10
-    puts "filters/grok speed test; #{iterations} iterations: #{duration} seconds (#{iterations / duration} per sec)"
+    puts "filters/grok speed test; #{iterations} iterations: #{duration} seconds (#{"%.3f" % (iterations / duration)} per sec)"
     assert(duration < max_duration, "Should be able to do #{iterations} grok parses in less than #{max_duration} seconds, got #{duration} seconds")
   end # test_formats
 end
