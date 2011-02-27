@@ -10,7 +10,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   config_name "syslog"
 
   # TCP listen configuration
-  config :host, :validate => :ipaddr
+  config :host, :validate => :string
   config :port, :validate => :number
 
   public

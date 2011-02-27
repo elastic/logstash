@@ -7,7 +7,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
   config_name "tcp"
 
-  config :host, :validate => :ipaddr
+  config :host, :validate => :string
   config :port, :validate => :number, :required => true
   config :data_timeout, :validate => :number
 
