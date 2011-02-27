@@ -47,7 +47,7 @@ module LogStash::Config::Mixin
     end
 
     params.each do |key, value|
-      @logger.info("config #{self.class.name}/@#{key} = #{value.inspect}")
+      @logger.debug("config #{self.class.name}/@#{key} = #{value.inspect}")
 
       # set @foo
       #ivar = "@#{key}"
