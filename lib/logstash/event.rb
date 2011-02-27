@@ -148,7 +148,7 @@ class LogStash::Event
 
   public
   def ==(other)
-    puts "#{self.class.name}#==(#{other.inspect})"
+    #puts "#{self.class.name}#==(#{other.inspect})"
     if !other.is_a?(self.class)
       return false
     end
