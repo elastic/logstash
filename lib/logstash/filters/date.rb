@@ -46,9 +46,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     @config.each do |fieldname, value|
       next if fieldname == "type"
 
-      @logger.debug "Adding type #{@type} with date config: #{fieldname} => #{value}"
-      @parsers[fieldname] << {
-        :parser  => org.joda.time.format.DateTimeFormat.forPattern(value).withOffsetParsed(),
+      case value
+      when "ISO8601"
+        p "Using iso8601 parser"
+        parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser()
+        missing = []
+      else
+        parser = org.joda.time.format.DateTimeFormat.forPattern(value)
 
         # Joda's time parser doesn't assume 'current time' for unparsed values.
         # That is, if you parse with format "mmm dd HH:MM:SS" (no year) then
@@ -56,7 +60,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
         # current year. This sucks, so try and keep track of fields that
         # are not specified so we can inject them later. (jordansissel)
         # LOGSTASH-34
-        :missing => DATEPATTERNS.reject { |p| value.include?(p) }
+        missing = DATEPATTERNS.reject { |p| value.include?(p) }
+      end
+
+      @logger.debug "Adding type #{@type} with date config: #{fieldname} => #{value}"
+      @parsers[fieldname] << {
+        :parser => parser.withOffsetParsed,
+        :missing => missing
       }
 
 
@@ -86,7 +96,8 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             parser = parserconfig[:parser]
             missing = parserconfig[:missing]
             @logger.info :Missing => missing
-            time = parser.parseMutableDateTime(value)
+            p :parser => parser
+            time = parser.parseDateTime(value)
             break # TODO(sissel): do something else
           end # fieldparsers.each
 
@@ -96,16 +107,21 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             missing.each do |t|
               case t
               when "y"
-                time.setYear(now.year)
+                time = time.withYear(now.year)
               when "S"
-                time.setMillisOfSecond(now.usec / 1000)
-              when "Z"
-                # TODO(sissel): Implement
-                # time.setZone( some DateTimeZone class? )
+                # TODO(sissel): Old behavior was to default to fractional sec == 0
+                #time.setMillisOfSecond(now.usec / 1000)
+                time = time.withMillisOfSecond(0)
+              #when "Z"
+                # Ruby 'time.gmt_offset' is in seconds.
+                # timezone is missing, so let's add in our localtime offset.
+                #time = time.plusSeconds(now.gmt_offset)
+                # TODO(sissel): not clear if we need to do this...
               end # case t
             end
           end
           @logger.info :JodaTime => time.to_s
+          time = time.withZone(org.joda.time.DateTimeZone.forID("UTC"))
           event.timestamp = time.to_s 
           #event.timestamp = LogStash::Time.to_iso8601(time)
           @logger.debug "Parsed #{value.inspect} as #{event.timestamp}"
