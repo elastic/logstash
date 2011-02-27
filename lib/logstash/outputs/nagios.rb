@@ -6,8 +6,8 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
   NAGIOS_WARN = 1
 
   config_name "nagios"
-  config :commandfile => :string
- 
+  config :commandfile, :validate => :string
+
   public
   def initialize(url, config={}, &block)
     super

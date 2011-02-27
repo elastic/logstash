@@ -8,9 +8,9 @@ class LogStash::Filters::Base
   attr_accessor :logger
 
   config_name "filter"
-  config :type => :string
-  config :add_tag => nil
-  config :add_field => :hash
+  config :type, :validate => :string
+  config :add_tag
+  config :add_field, :validate => :hash
 
   public
   def initialize(params)

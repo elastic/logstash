@@ -61,15 +61,13 @@ module LogStash::Config::Mixin
       return @config_name
     end
 
-    # If config is given, add this config.
-    # If no config given (nil), return the current config hash
-    def config(cfg=nil)
-      # cfg should be hash with one entry of { "key" => "val" }
+    def config(name, opts={})
       @config ||= Hash.new
-      key, value = cfg.to_a.first
-      key = key.to_s if key.is_a?(Symbol)
-      @config[key] = value
-      return @config
+      @required ||= Array.new
+
+      name = name.to_s if name.is_a?(Symbol)
+      @config[name] = opts[:validate] # ok if this is nil
+      @required << name if opts[:required] == true
     end # def config
 
     # This is called whenever someone subclasses a class that has this mixin.
@@ -80,7 +78,6 @@ module LogStash::Config::Mixin
       subconfig = Hash.new
       if !@config.nil?
         @config.each do |key, val|
-          puts "#{self}: Sharing config '#{key}' with subclass #{subclass}"
           subconfig[key] = val
         end
       end
@@ -93,6 +90,7 @@ module LogStash::Config::Mixin
       is_valid = true
 
       is_valid &&= validate_check_invalid_parameter_names(params)
+      is_valid &&= validate_check_required_parameter_names(params)
       is_valid &&= validate_check_parameter_values(params)
 
       return is_valid
@@ -100,9 +98,9 @@ module LogStash::Config::Mixin
 
     def validate_check_invalid_parameter_names(params)
       invalid_params = params.keys
-      # Filter out parametrs that match regexp keys.
+      # Filter out parameters that match regexp keys.
       # These are defined in plugins like this:
-      #   config /foo.*/ => ... 
+      #   config /foo.*/ => ...
       @config.each_key do |config_key|
         if config_key.is_a?(Regexp)
           invalid_params.reject! { |k| k =~ config_key }
@@ -119,6 +117,24 @@ module LogStash::Config::Mixin
       end # if invalid_params.size > 0
       return true
     end # def validate_check_invalid_parameter_names
+
+    def validate_check_required_parameter_names(params)
+      @required ||= Array.new
+      is_valid = true
+
+      @required.each do |config_key|
+        if config_key.is_a?(Regexp)
+          next if params.keys.select { |k| k =~ config_key }.length > 0
+        elsif config_key.is_a?(String)
+          next if params.keys.member?(config_key)
+        end
+        @logger.error("Missing required parameter '#{config_key}' for " \
+                      "#{@plugin_name}")
+        is_valid = false
+      end
+
+      return is_valid
+    end
 
     def validate_check_parameter_values(params)
       # Filter out parametrs that match regexp keys.
@@ -207,8 +223,23 @@ module LogStash::Config::Mixin
             if value.first !~ /^(true|false)$/
               return false, "Expected boolean 'true' or 'false', got #{value.inspect}"
             end
-
             result = (value.first == "true")
+          when :ipaddr
+            if value.size > 1 # only one value wanted
+              return false, "Expected IPaddr, got #{value.inspect}"
+            end
+
+            octets = value.split(".")
+            if octets.length != 4
+              return false, "Expected IPaddr, got #{value.inspect}"
+            end
+            octest.each do |o|
+              if o.to_i < 0 or o.to_i > 255
+                return false, "Expected IPaddr, got #{value.inspect}"
+              end
+            end
+            result = value.first
+
         end # case validator
       else
         return false, "Unknown validator #{validator.class}"

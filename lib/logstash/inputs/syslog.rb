@@ -9,9 +9,16 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
   config_name "syslog"
 
-  # The address to listen on
-  config :address => nil # TODO(sissel): needs validation
-  config :port => nil # TODO(sissel): needs validation
+  # TCP listen configuration
+  config :host, :validate => :ipaddr
+  config :port, :validate => :number
+
+  public
+  def initialize(params)
+    super
+
+    @host ||= "0.0.0.0"
+  end
 
   public
   def register

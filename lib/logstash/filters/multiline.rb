@@ -9,9 +9,9 @@ require "logstash/namespace"
 class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   config_name "multiline"
-  config :pattern => :string
-  config :negate => :boolean
-  config :what => ["previous", "next"]
+  config :pattern, :validate => :string
+  config :negate, :validate => :boolean
+  config :what, :validate => ["previous", "next"]
 
   # The 'date' filter will take a value from your event and use it as the
   # event timestamp. This is useful for parsing logs generated on remote

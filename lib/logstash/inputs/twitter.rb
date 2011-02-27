@@ -7,7 +7,7 @@ require "logstash/namespace"
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
   config_name "twitter"
-  config :query => nil # TODO(sissel): Validation?
+  config :query # TODO(sissel): Validation?
 
   public
   def register

@@ -7,14 +7,14 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
   config_name "amqp"
 
-  config :host => :string
-  config :user => :string
-  config :pass => :string
-  config :exchange_type => :string
-  config :name => :string
-  config :vhost => :string
-  config :durable => :boolean
-  config :debug => :boolean
+  config :host, :validate => :string
+  config :user, :validate => :string
+  config :pass, :validate => :string
+  config :exchange_type, :validate => :string
+  config :name, :validate => :string
+  config :vhost, :validate => :string
+  config :durable, :validate => :boolean
+  config :debug, :validate => :boolean
 
 
   public

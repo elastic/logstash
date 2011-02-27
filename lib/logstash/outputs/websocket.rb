@@ -3,7 +3,7 @@ require "logstash/namespace"
 require "logstash/outputs/base"
 
 class LogStash::Outputs::Websocket < LogStash::Outputs::Base
-  config :address => :string
+  config :address, :validate => :string
 
   public
   def register

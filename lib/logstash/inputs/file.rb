@@ -10,7 +10,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   @@filemanager_lock = Mutex.new
 
   config_name "file"
-  config :path => nil # no validation on path, it can be anything.
+  config :path # no validation on path, it can be anything.
 
   public
   def register

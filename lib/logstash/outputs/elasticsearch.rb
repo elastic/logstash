@@ -7,9 +7,9 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
 
   # http://host/index/type
   config_name "elasticsearch"
-  config :host => :string
-  config :index => :string
-  config :type => :string  
+  config :host, :validate => :string
+  config :index, :validate => :string
+  config :type, :validate => :string
   # TODO(sissel): Config for river?
 
   public

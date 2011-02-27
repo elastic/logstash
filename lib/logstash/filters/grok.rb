@@ -7,9 +7,9 @@ require "grok" # rubygem 'jls-grok'
 class LogStash::Filters::Grok < LogStash::Filters::Base
 
   config_name "grok"
-  config :pattern => nil
-  config :patterns_dir => nil
-  config :drop_if_match => :boolean  # googlecode/issue/26
+  config :pattern
+  config :patterns_dir
+  config :drop_if_match, :validate => :boolean  # googlecode/issue/26
 
   @@grokpiles = Hash.new { |h, k| h[k] = [] }
   @@grokpiles_lock = Mutex.new

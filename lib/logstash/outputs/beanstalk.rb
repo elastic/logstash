@@ -5,7 +5,7 @@ require "em-jack"
 class LogStash::Outputs::Beanstalk < LogStash::Outputs::Base
 
   config_name "beanstalk"
-  config :ttr => :number
+  config :ttr, :validate => :number
 
   public
   def initialize(params)

@@ -5,7 +5,7 @@ require "logstash/namespace"
 class LogStash::Outputs::Stdout < LogStash::Outputs::Base
 
   config_name "stdout"
-  config :debug => :boolean
+  config :debug, :validate => :boolean
 
   public
   def initialize(params)

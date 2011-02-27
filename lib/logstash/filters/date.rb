@@ -10,7 +10,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # Config for date is:
   #   fieldname: dateformat
   #   Allow arbitrary keys for this config.
-  config /[A-Za-z0-9_-]+/ => :string
+  config /[A-Za-z0-9_-]+/, :validate => :string
 
   # LOGSTASH-34
   DATEPATTERNS = %w{ y d H m s S Z }

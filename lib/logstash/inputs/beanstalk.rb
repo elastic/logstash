@@ -5,7 +5,7 @@ require "logstash/namespace"
 class LogStash::Inputs::Beanstalk < LogStash::Inputs::Base
 
   config_name "beanstalk"
-  config :tube => nil   # TODO(sissel): needs validation?
+  config :tube # TODO(sissel): needs validation?
 
   public
   def initialize(params)
