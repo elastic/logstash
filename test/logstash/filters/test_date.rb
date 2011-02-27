@@ -9,11 +9,14 @@ require "logstash/filters"
 require "logstash/filters/date"
 require "logstash/event"
 
-ENV["TZ"] = "PST8PDT"
 $tz = Time.now.strftime("%z")
 $TZ = $tz[0..2] + ":" + $tz[3..-1]
 
 class TestFilterDate < Test::Unit::TestCase
+
+  def setup
+    ENV["TZ"] = "PST8PDT"
+  end
 
   def test_name(name)
     @typename = name.gsub(/[ ]/, "_")
