@@ -12,7 +12,7 @@ class LogStash::MultiQueue
   # Push an object to all queues.
   public
   def push(object)
-    @logger.info "*** Pushing object into MultiQueue: #{object}"
+    #@logger.info "*** Pushing object into MultiQueue: #{object}"
     @queues.each { |q| q.push(object) }
   end # def push
   alias :<< :push
