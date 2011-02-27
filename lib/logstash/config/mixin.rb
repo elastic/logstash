@@ -24,6 +24,12 @@ require "logstash/logging"
 module LogStash::Config::Mixin
   attr_accessor :config
 
+  CONFIGSORT = {
+    Symbol => 0,
+    String => 0,
+    Regexp => 100,
+  }
+
   # This method is called when someone does 'include LogStash::Config'
   def self.included(base)
     #puts "Configurable class #{base.name}"
@@ -64,6 +70,7 @@ module LogStash::Config::Mixin
     def config(name, opts={})
       @config ||= Hash.new
       @required ||= Array.new
+      # TODO(sissel): verify 'name' is of type String, Symbol, or Regexp
 
       name = name.to_s if name.is_a?(Symbol)
       @config[name] = opts[:validate] # ok if this is nil
@@ -142,20 +149,34 @@ module LogStash::Config::Mixin
       #   config /foo.*/ => ... 
       is_valid = true
 
-      params.each do |key, value|
-        @config.find do |config_key, config_val|
-          if (config_key.is_a?(Regexp) && key =~ config_key) \
-             || (config_key.is_a?(String) && key == config_key)
-            success, result = validate_value(value, config_val)
-            if success 
-              params[key] = result if !result.nil?
-            else
-              @logger.error("Failed config #{@plugin_name}/#{key}: #{result} (#{value.inspect})")
-            end
+      # string/symbols are first, then regexes.
+      config_keys = @config.keys.sort do |a,b|
+        CONFIGSORT[a.class] <=> CONFIGSORT[b.class] 
+      end
+      #puts "Key order: #{config_keys.inspect}"
+      #puts @config.keys.inspect
 
-            #puts "Result: #{key} / #{result.inspect} / #{success}"
-            is_valid &&= success
+      params.each do |key, value|
+        config_keys.each do |config_key|
+          #puts
+          #puts "Candidate: #{key.inspect} / #{value.inspect}"
+          #puts "Config: #{config_key} / #{config_val} "
+          next unless (config_key.is_a?(Regexp) && key =~ config_key) \
+                      || (config_key.is_a?(String) && key == config_key)
+          config_val = @config[config_key]
+          #puts "  Key matches."
+          success, result = validate_value(value, config_val)
+          if success 
+            # Accept coerced value if success
+            # Used for converting values in the config to proper objects.
+            params[key] = result if !result.nil?
+          else
+            @logger.error("Failed config #{@plugin_name}/#{key}: #{result} (#{value.inspect})")
           end
+          #puts "Result: #{key} / #{result.inspect} / #{success}"
+          is_valid &&= success
+
+          break # done with this param key
         end # config.each
       end # params.each
 
