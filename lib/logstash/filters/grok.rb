@@ -1,7 +1,7 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
-gem "jls-grok", ">=0.3.3209"
+gem "jls-grok", ">=0.4.3"
 require "grok" # rubygem 'jls-grok'
 
 class LogStash::Filters::Grok < LogStash::Filters::Base
@@ -21,7 +21,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   public
   def register
-    # TODO(2.0): support grok pattern discovery
     @patterns_dir ||= "#{File.dirname(__FILE__)}/../../../patterns/*"
     @pile = Grok::Pile.new
     Dir.glob(@patterns_dir).each do |path|
