@@ -73,7 +73,6 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   public
   def register
     @logger.debug "Setting type #{@type.inspect} to the config #{@config.inspect}"
-    raise "type \"#{@type}\" defined more than once" unless @types[type].empty?
 
     begin
       @pattern = Regexp.new(@pattern)
