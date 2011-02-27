@@ -22,9 +22,9 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   public
   def receive(event)
     if @debug
-      ap event
+      ap event.to_hash
     else
-      puts event
+      puts event.to_s
     end
   end # def event
 end # class LogStash::Outputs::Stdout
