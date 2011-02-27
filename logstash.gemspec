@@ -13,22 +13,27 @@ Gem::Specification.new do |spec|
   spec.description = "scalable log and event management (search, archive, pipeline)"
   spec.license = "Apache License (2.0)"
 
-  spec.add_dependency("eventmachine-tail")
+  #spec.add_dependency("eventmachine-tail") # TODO(sissel): remove, not for jruby
   spec.add_dependency("json")
+
+  # New for our JRuby stuff
+  spec.add_dependency("file-tail")
+  spec.add_dependency("jruby-elasticsearch", ">= 0.0.2")
+
   #spec.add_dependency("awesome_print")
 
   # For http requests (elasticsearch, etc)
-  spec.add_dependency("em-http-request")
+  #spec.add_dependency("em-http-request")  # TODO(sissel): remove, not for jruby
 
   # For the 'grok' filter
   #spec.add_dependency("jls-grok", ">= 0.3.3209")
 
   # TODO: In the future, make these optional
   # for websocket://
-  spec.add_dependency("em-websocket")
+  #spec.add_dependency("em-websocket")  # TODO(sissel): remove, not for jruby
 
   # For amqp://
-  #spec.add_dependency("amqp", "~> 0.6.5") # amqp 0.7.0 is incompatible for now.
+  #spec.add_dependency("amqp", "~> 0.6.5") # TODO(sissel): remove, not for jruby
   spec.add_dependency("bunny")
   spec.add_dependency("uuidtools")
 
