@@ -116,9 +116,9 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     # help performance if we allow folks to specify a specific ID.
     req = @client.index(index, type, event.to_hash)
     req.on(:success) do |response|
-      @logger.info(["Successfully indexed", event.to_hash])
+      @logger.debug(["Successfully indexed", event.to_hash])
     end.on(:failure) do |exception|
-      @logger.error(["Failed to index an event", exception, event.to_hash])
+      @logger.debug(["Failed to index an event", exception, event.to_hash])
     end
     req.execute
   end # def receive_native
