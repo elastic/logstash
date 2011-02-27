@@ -242,8 +242,9 @@ module LogStash::Config::Mixin
             end
 
             if value.first !~ /^(true|false)$/
-              return false, "Expected boolean 'true' or 'false', got #{value.inspect}"
+              return false, "Expected boolean 'true' or 'false', got #{value.first.inspect}"
             end
+
             result = (value.first == "true")
           when :ipaddr
             if value.size > 1 # only one value wanted
