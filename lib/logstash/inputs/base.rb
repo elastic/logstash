@@ -11,7 +11,7 @@ class LogStash::Inputs::Base
   config_name "input"
   config :type => :string
 
-  config :tag => (lambda do |value|
+  config :tags => (lambda do |value|
     re = /^[A-Za-z0-9_]+$/
     value.each do |v|
       if v !~ re
@@ -26,6 +26,8 @@ class LogStash::Inputs::Base
   def initialize(params)
     @logger = LogStash::Logger.new(STDERR)
     config_init(params)
+
+    @tags ||= []
   end # def initialize
 
   public
@@ -37,13 +39,4 @@ class LogStash::Inputs::Base
   def tag(newtag)
     @tags << newtag
   end # def tag
-
-  public
-  def receive(event)
-    @logger.debug(["Got event", { :url => @url, :event => event }])
-    # Only override the type if it doesn't have one
-    event.type = @type if !event.type 
-    event.tags |= @tags # set union
-    @callback.call(event)
-  end # def receive
 end # class LogStash::Inputs::Base
