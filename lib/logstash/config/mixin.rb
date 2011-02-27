@@ -57,7 +57,7 @@ module LogStash::Config::Mixin
     # If no name given (nil), return the current name.
     def config_name(name=nil)
       @config_name = name if !name.nil?
-      LogStash::Config::Registry.registry[name] = self
+      LogStash::Config::Registry.registry[@config_name] = self
       return @config_name
     end
 
