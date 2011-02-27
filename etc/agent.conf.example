@@ -20,7 +20,6 @@ filter {
 
 output {
   stdout {
-    debug => true
   }
 
   elasticsearch { 
