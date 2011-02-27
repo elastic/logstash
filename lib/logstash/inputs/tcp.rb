@@ -44,7 +44,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
             e = LogStash::Event.new({
               "@message" => buf,
               "@type" => @type,
-              "@tags" => [@type],
+              "@tags" => @tags.clone,
             })
             e.source = "tcp://#{@host}:#{@port}/client/#{peer}"
             @logger.debug(["Received message from #{peer}"], e)
@@ -63,5 +63,5 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         end # begin
       end # Thread.start
     end # loop (outer)
-  end # def receive
+  end # def run
 end # class LogStash::Inputs::Tcp
