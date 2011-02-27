@@ -87,4 +87,26 @@ class TestFilterDate < Test::Unit::TestCase
       assert_equal(output, event.timestamp)
     end
   end # test_formats
+
+  def test_speed
+    test_name "speed test"
+    config "field1" => "MMM dd HH:mm:ss"
+    iterations = 50000
+
+    start = Time.now
+    gmt_now = start + start.gmt_offset
+    year = gmt_now.year
+    input = "Nov 24 01:29:01" 
+    output = "#{year}-11-24T09:29:01.000Z",
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event.fields["field1"] = input
+    1.upto(50000).each do
+      @filter.filter(event)
+    end
+    duration = Time.now - start
+    puts "filters/date speed test; #{iterations} iterations: #{duration} seconds"
+    assert(duration < 8, "Should be able to do #{iterations} date parses in less than 8 seconds, got #{duration} seconds")
+  end # test_formats
 end

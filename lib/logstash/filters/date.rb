@@ -13,7 +13,8 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   config /[A-Za-z0-9_-]+/, :validate => :string
 
   # LOGSTASH-34
-  DATEPATTERNS = %w{ y d H m s S Z }
+  DATEPATTERNS = %w{ y d H m s S } 
+  # Z
 
   # The 'date' filter will take a value from your event and use it as the
   # event timestamp. This is useful for parsing logs generated on remote
@@ -95,8 +96,8 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           fieldparsers.each do |parserconfig|
             parser = parserconfig[:parser]
             missing = parserconfig[:missing]
-            @logger.info :Missing => missing
-            p :parser => parser
+            #@logger.info :Missing => missing
+            #p :parser => parser
             time = parser.parseDateTime(value)
             break # TODO(sissel): do something else
           end # fieldparsers.each
@@ -120,7 +121,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
               end # case t
             end
           end
-          @logger.info :JodaTime => time.to_s
+          #@logger.info :JodaTime => time.to_s
           time = time.withZone(org.joda.time.DateTimeZone.forID("UTC"))
           event.timestamp = time.to_s 
           #event.timestamp = LogStash::Time.to_iso8601(time)
