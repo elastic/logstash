@@ -9,9 +9,9 @@ require "logstash/namespace"
 class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   config_name "multiline"
-  config :pattern, :validate => :string
+  config :pattern, :validate => :string, :require => true
+  config :what, :validate => ["previous", "next"], :require => true
   config :negate, :validate => :boolean
-  config :what, :validate => ["previous", "next"]
 
   # The 'date' filter will take a value from your event and use it as the
   # event timestamp. This is useful for parsing logs generated on remote
@@ -19,15 +19,14 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   #
   # The config looks like this:
   #
-  # filters:
-  # - multiline:
-  #     <type>:
-  #       pattern: <regexp>
-  #       negate: true
-  #       what: next
-  #     <type>
-  #        pattern: <regexp>
-  #        what: previous
+  # filters {
+  #   multiline {
+  #     type => "type"
+  #     pattern => "pattern, a regexp"
+  #     negate => boolean
+  #     what => "previous" or "next"
+  #   }
+  # }
   # 
   # The 'regexp' should match what you believe to be an indicator that
   # the field is part of a multi-line event
@@ -42,25 +41,30 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   # For example, java stack traces are multiline and usually have the message
   # starting at the far-left, then each subsequent line indented. Do this:
   # 
-  # filters:
-  # - multiline:
-  #     somefiletype:
-  #       pattern: /^\s/
-  #       what: previous
+  # filters {
+  #   multiline {
+  #     type => "somefiletype"
+  #     pattern => "^\\s"
+  #     what => "previous"
+  #   }
+  # }
   #
   # This says that any line starting with whitespace belongs to the previous line.
   #
   # Another example is C line continuations (backslash). Here's how to do that:
   #
-  # filters:
-  # - multiline:
-  #     somefiletype:
-  #       pattern: /\\$/
-  #       what: next
+  # filters {
+  #   multiline {
+  #     type => "somefiletype "
+  #     pattern => "\\$"
+  #     what => "next"
+  #   }
+  # }
   #
   public
   def initialize(config = {})
     super
+    #@negate = config.include?("negate") ? config["negate"] : false
 
     @types = Hash.new { |h,k| h[k] = [] }
     @pending = Hash.new
@@ -68,50 +72,31 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   public
   def register
-    @config.each do |type, typeconfig|
-      # typeconfig will be a hash containing 'pattern' and 'what'
-      @logger.debug "Setting type #{type.inspect} to the config #{typeconfig.inspect}"
-      raise "type \"#{type}\" defined more than once" unless @types[type].empty?
-      @types[type] = typeconfig
+    @logger.debug "Setting type #{@type.inspect} to the config #{@config.inspect}"
+    raise "type \"#{@type}\" defined more than once" unless @types[type].empty?
 
-      if !typeconfig.include?("pattern")
-        @logger.fatal(["'multiline' filter config for type #{type} is missing" \
-                       " 'pattern' setting", typeconfig])
-      end
-
-      if !typeconfig.include?("what")
-        @logger.fatal(["'multiline' filter config for type #{type} is missing" \
-                       " 'what' setting", typeconfig])
-      end
-
-      if !["next", "previous"].include?(typeconfig["what"])
-        @logger.fatal(["'multiline' filter config for type #{type} has " \
-                       "invalid 'what' value. Must be 'next' or 'previous'",
-                       typeconfig])
-      end
-
-      begin
-        typeconfig["pattern"] = Regexp.new(typeconfig["pattern"])
-      rescue RegexpError => e
-        @logger.fatal(["Invalid pattern for multiline filter on type '#{type}'",
-                      typeconfig, e])
-      end
-    end # @config.each
+    begin
+      @pattern = Regexp.new(@pattern)
+    rescue RegexpError => e
+      @logger.fatal(["Invalid pattern for multiline filter on type '#{@type}'",
+                    @pattern, e])
+    end
   end # def register
 
   public
   def filter(event)
-    return unless @types.member?(event.type)
-    typeconfig = @types[event.type]
-    match = typeconfig["pattern"].match(event.message)
+    return unless event.type == @type
+
+    match = @pattern.match(event.message)
     key = [event.source, event.type]
     pending = @pending[key]
 
-    @logger.debug(["Reg: ", typeconfig["pattern"], event.message, match, typeconfig["negate"]])
-    # Add negate option
-    match = (match and !typeconfig["negate"]) || (!match and typeconfig["negate"])
+    @logger.debug(["Reg: ", @pattern, event.message, { :match => match, :negate => @negate }])
 
-    case typeconfig["what"]
+    # Add negate option
+    match = (match and !@negate) || (!match and @negate)
+
+    case @what
     when "previous"
       if match
         event.tags |= ["multiline"]
@@ -158,9 +143,8 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
         end
       end # if/else match
     else
-      @logger.warn(["Unknown multiline 'what' value.", typeconfig])
-    end # case typeconfig["what"]
-    #end # @types[event.type].each
+      @logger.warn(["Unknown multiline 'what' value.", { :what => @what }])
+    end # case @what
   end # def filter
 
   # flush any pending messages

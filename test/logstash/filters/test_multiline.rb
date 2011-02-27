@@ -4,6 +4,7 @@ $:.unshift File.dirname(__FILE__) + "/../../"
 require "test/unit"
 require "logstash"
 require "logstash/filters"
+require "logstash/filters/multiline"
 require "logstash/event"
 
 class TestFilterMultiline < Test::Unit::TestCase
@@ -16,7 +17,14 @@ class TestFilterMultiline < Test::Unit::TestCase
   end
 
   def config(cfg)
-    @filter.add_config(@typename, cfg)
+    cfg["type"] = @typename
+    cfg.each_key do |key|
+      if !cfg[key].is_a?(Array)
+        cfg[key] = [cfg[key]]
+      end
+    end
+
+    @filter = LogStash::Filters::Multiline.new(cfg)
     @filter.register
   end
 
@@ -105,7 +113,7 @@ class TestFilterMultiline < Test::Unit::TestCase
   def test_with_negate_true
     @logger = LogStash::Logger.new(STDERR)
     test_name "with negate true"
-    config "pattern" => "^\\S", "what" => "previous", "negate" => true
+    config "pattern" => "^\\S", "what" => "previous", "negate" => "true"
 
     inputs = [
       "hello world ...",
@@ -150,7 +158,7 @@ class TestFilterMultiline < Test::Unit::TestCase
   def test_with_negate_false
     @logger = LogStash::Logger.new(STDERR)
     test_name "with negate true"
-    config "pattern" => "^\\s", "what" => "previous", "negate" => false
+    config "pattern" => "^\\s", "what" => "previous", "negate" => "false"
 
     inputs = [
       "hello world ...",
