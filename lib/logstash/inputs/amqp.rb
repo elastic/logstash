@@ -3,7 +3,7 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 
 class LogStash::Inputs::Amqp < LogStash::Inputs::Base
-  MQTYPES = [ "fanout", "queue", "topic" ]
+  MQTYPES = [ "fanout", "direct", "topic" ]
 
   config_name "amqp"
 
@@ -15,7 +15,6 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   config :vhost, :validate => :string
   config :durable, :validate => :boolean
   config :debug, :validate => :boolean
-
 
   public
   def initialize(params)

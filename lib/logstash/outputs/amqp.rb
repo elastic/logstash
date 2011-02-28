@@ -3,7 +3,7 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 
 class LogStash::Outputs::Amqp < LogStash::Outputs::Base
-  MQTYPES = [ "fanout", "queue", "topic" ]
+  MQTYPES = [ "fanout", "direct", "topic" ]
 
   config_name "amqp"
   config :host, :validate => :string
@@ -46,7 +46,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     case @exchange_type
       when "fanout"
         @target = @bunny.exchange(@name, :type => :fanout)
-      when "queue"
+      when "direct"
         @target = @bunny.exchange(@name, :type => :direct)
       when "topic"
         @target = @bunny.exchange(@name, :type => :topic)
