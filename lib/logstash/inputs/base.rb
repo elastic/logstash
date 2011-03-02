@@ -8,7 +8,7 @@ class LogStash::Inputs::Base
   attr_accessor :logger
 
   config_name "input"
-  config :type, :validate => :string
+  config :type, :validate => :string, :required => true
 
   config :tags, :validate => (lambda do |value|
     re = /^[A-Za-z0-9_]+$/
