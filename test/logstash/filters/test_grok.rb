@@ -57,7 +57,7 @@ class TestFilterGrok < Test::Unit::TestCase
   end # def test_grok_normal
 
   def test_speed
-    test_name "groknormal"
+    test_name "grokspeed"
     config "pattern" => [ "%{SYSLOGLINE}" ]
 
     iterations = 5000
@@ -86,4 +86,34 @@ class TestFilterGrok < Test::Unit::TestCase
     puts "filters/grok speed test; #{iterations} iterations: #{duration} seconds (#{"%.3f" % (iterations / duration)} per sec)"
     assert(duration < max_duration, "Should be able to do #{iterations} grok parses in less than #{max_duration} seconds, got #{duration} seconds")
   end # test_formats
+
+  def test_grok_type_hinting_int
+    test_name "groktypehinting_int"
+    config "pattern" => [ "%{NUMBER:foo:int}" ]
+    
+    event = LogStash::Event.new
+    event.type = @typename
+
+    expect = 12345
+    event.message = "#{expect}"
+
+    @filter.filter(event)
+    assert_equal(expect.class, event.fields["foo"].first.class, "Expected field 'foo' to be of type #{expect.class.name} but got #{event.fields["foo"].first.class.name}")
+    assert_equal([expect], event.fields["foo"], "Expected field 'foo' to be [#{expect.inspect}], is #{event.fields["expect"].inspect}")
+  end # def test_grok_type_hinting_int
+
+  def test_grok_type_hinting_float
+    test_name "groktypehinting_float"
+    config "pattern" => [ "%{NUMBER:foo:float}" ]
+    
+    event = LogStash::Event.new
+    event.type = @typename
+
+    expect = 3.1415
+    event.message = "#{expect}"
+
+    @filter.filter(event)
+    assert_equal(expect.class, event.fields["foo"].first.class, "Expected field 'foo' to be of type #{expect.class.name} but got #{event.fields["foo"].first.class.name}")
+    assert_equal([expect], event.fields["foo"], "Expected field 'foo' to be [#{expect.inspect}], is #{event.fields["expect"].inspect}")
+  end # def test_grok_type_hinting_float
 end
