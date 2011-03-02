@@ -1,5 +1,4 @@
 require "logstash/namespace"
-require "logstash/ruby_fixes"
 require "uri"
 
 module LogStash::Inputs
