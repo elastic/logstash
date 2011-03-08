@@ -8,6 +8,7 @@ require "logstash/loadlibs"
 require "logstash/filters"
 require "logstash/filters/date"
 require "logstash/event"
+require "timeout"
 
 $tz = Time.now.strftime("%z")
 $TZ = $tz[0..2] + ":" + $tz[3..-1]
@@ -26,7 +27,7 @@ class TestFilterDate < Test::Unit::TestCase
     cfg["type"] = @typename
     cfg.each_key do |key|
       if cfg[key].is_a?(String)
-        cfg[key] = cfg[key].to_a
+        cfg[key] = [cfg[key]]
       end
     end
 
@@ -103,14 +104,17 @@ class TestFilterDate < Test::Unit::TestCase
     event.type = @typename
     event.fields["field1"] = input
     check_interval = 1500
-    1.upto(50000).each do |i|
-      @filter.filter(event)
-      if i % check_interval == 0
-        assert_equal(event.timestamp, output)
-      end
-    end
-    duration = Time.now - start
     max_duration = 10
+    Timeout.timeout(max_duration * 2) do 
+      1.upto(50000).each do |i|
+        @filter.filter(event)
+        if i % check_interval == 0
+          assert_equal(event.timestamp, output)
+        end
+      end
+    end # Timeout.timeout
+
+    duration = Time.now - start
     puts "filters/date speed test; #{iterations} iterations: #{duration} seconds (#{iterations / duration} per sec)"
     assert(duration < 10, "Should be able to do #{iterations} date parses in less than #{max_duration} seconds, got #{duration} seconds")
   end # test_formats
