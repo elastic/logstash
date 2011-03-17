@@ -9,11 +9,9 @@ require "logstash/filters"
 require "logstash/filters/date"
 require "logstash/event"
 
-$tz = Time.now.strftime("%z")
-$TZ = $tz[0..2] + ":" + $tz[3..-1]
-
 class TestFilterDate < Test::Unit::TestCase
 
+  # These tests assume a given timezone.
   def setup
     ENV["TZ"] = "PST8PDT"
   end
@@ -39,8 +37,8 @@ class TestFilterDate < Test::Unit::TestCase
     config "field1" => "ISO8601"
 
     times = {
-      "2001-01-01T00:00:00#{$TZ}"        => "2001-01-01T08:00:00.000Z",
-      "1974-03-02T04:09:09#{$TZ}"        => "1974-03-02T12:09:09.000Z",
+      "2001-01-01T00:00:00-0800"         => "2001-01-01T08:00:00.000Z",
+      "1974-03-02T04:09:09-0800"         => "1974-03-02T12:09:09.000Z",
       "2010-05-03T08:18:18+00:00"        => "2010-05-03T08:18:18.000Z",
       "2004-07-04T12:27:27-00:00"        => "2004-07-04T12:27:27.000Z",
       "2001-09-05T16:36:36+0000"         => "2001-09-05T16:36:36.000Z",

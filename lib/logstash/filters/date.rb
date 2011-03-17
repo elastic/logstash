@@ -50,7 +50,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
       case value
       when "ISO8601"
         p "Using iso8601 parser"
-        parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser()
+        parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser
         missing = []
       else
         parser = org.joda.time.format.DateTimeFormat.forPattern(value)
