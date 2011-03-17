@@ -14,7 +14,6 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
   # LOGSTASH-34
   DATEPATTERNS = %w{ y d H m s S } 
-  # Z
 
   # The 'date' filter will take a value from your event and use it as the
   # event timestamp. This is useful for parsing logs generated on remote
@@ -49,7 +48,6 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
       case value
       when "ISO8601"
-        p "Using iso8601 parser"
         parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser
         missing = []
       else
