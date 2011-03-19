@@ -16,7 +16,7 @@ fi
 rvm rvmrc trust logstash
 
 if [ "$1" = "" ] ; then
-  set -- "ruby-1.8.7"
+  set -- "jruby-1.6.0"
 fi
 
 ruby="$1"
@@ -34,15 +34,16 @@ fi
 
 rm -f *.gem
 rvm --with-rubies "$ruby" gemset create $gemset
-run rvm "$ruby@$gemset" gem uninstall -ax logstash || true
-run rvm "$ruby@$gemset" gem build logstash.gemspec
-run rvm "$ruby@$gemset" gem install --no-ri --no-rdoc logstash-*.gem
 
 # stompserver says it wants 'hoe >= 1.1.1' and the latest 'hoe' requires
 # rubygems >1.4, so, upgrade I guess... I hate ruby sometimes.
 run rvm "$ruby@$gemset" gem update --system
 run rvm "$ruby@$gemset" gem install --no-ri --no-rdoc stompserver
 
+run rvm "$ruby@$gemset" gem uninstall -ax logstash || true
+rm *.gem
+run rvm "$ruby@$gemset" gem build logstash.gemspec
+run rvm "$ruby@$gemset" gem install --no-ri --no-rdoc logstash-*.gem
+
 echo "Running tests now..."
 run rvm "$ruby@$gemset" exec logstash-test
-
