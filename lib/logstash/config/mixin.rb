@@ -9,8 +9,12 @@ require "logstash/logging"
 # The idea is that you can do this:
 #
 # class Foo < LogStash::Config
+#   # Add config file settings
 #   config "path" => ...
 #   config "tag" => ...
+#
+#   # Add global flags (becomes --foo-bar)
+#   flag "bar" => ...
 # end
 #
 # And the config file should let you do:
@@ -20,7 +24,6 @@ require "logstash/logging"
 #   "tag" => ...
 # }
 #
-# TODO(sissel): This is not yet fully designed.
 module LogStash::Config::Mixin
   attr_accessor :config
 
@@ -32,8 +35,6 @@ module LogStash::Config::Mixin
 
   # This method is called when someone does 'include LogStash::Config'
   def self.included(base)
-    #puts "Configurable class #{base.name}"
-    #
     # Add the DSL methods to the 'base' given.
     base.extend(LogStash::Config::Mixin::DSL)
   end
@@ -67,6 +68,7 @@ module LogStash::Config::Mixin
       return @config_name
     end
 
+    # Define a new configuration setting
     def config(name, opts={})
       @config ||= Hash.new
       @required ||= Array.new
@@ -76,6 +78,13 @@ module LogStash::Config::Mixin
       @config[name] = opts[:validate] # ok if this is nil
       @required << name if opts[:required] == true
     end # def config
+
+    def flag(name, opts={})
+      @flags ||= Hash.new
+
+      name = name.to_s if name.is_a?(Symbol)
+      @flags[name] = opts[:validate] # ok if this is nil
+    end
 
     # This is called whenever someone subclasses a class that has this mixin.
     def inherited(subclass)
@@ -255,7 +264,7 @@ module LogStash::Config::Mixin
             if octets.length != 4
               return false, "Expected IPaddr, got #{value.inspect}"
             end
-            octest.each do |o|
+            octets.each do |o|
               if o.to_i < 0 or o.to_i > 255
                 return false, "Expected IPaddr, got #{value.inspect}"
               end
