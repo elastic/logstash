@@ -21,11 +21,20 @@ class LogStash::Agent
   attr_reader :filters
   attr_accessor :logger
 
+  # flags
+  attr_reader :config_file
+  attr_reader :daemonize
+  attr_reader :logfile
+  attr_reader :verbose
+
   public
-  def initialize(settings)
+  def initialize
     log_to(STDERR)
 
-    @settings = settings
+    # flag/config defaults
+    @verbose = 0
+    @daemonize = false
+
     @threads = {}
     @outputs = []
     @inputs = []
@@ -40,11 +49,80 @@ class LogStash::Agent
   end # def log_to
 
   public
+  def argv=(argv)
+    @argv = argv
+  end
+
+  private
+  def options(opts)
+    opts.on("-f CONFIGFILE", "--config CONFIGFILE",
+            "Load the logstash config from a specific file") do |arg|
+      @config_file = arg
+    end
+
+    opts.on("-d", "--daemonize", "Daemonize (default is run in foreground)") do 
+      @daemonize = true
+    end
+
+    opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
+      @logfile = path
+    end
+
+    opts.on("-v", "Increase verbosity") do
+      @verbose += 1
+    end
+  end
+
+  # Parse options.
+  private
+  def parse_options
+    @opts = OptionParser.new
+    options(@opts)
+    # TODO(sissel): Go through all inputs, filters, and outputs to get the flags.
+    @opts.parse!(@argv)
+  end # def parse_options
+
+  private
+  def configure
+    if @config_file.nil? || @config_file.empty?
+      @logger.fatal "No config file given. (missing -f or --config flag?)"
+      @logger.fatal @opts.help
+      raise "Configuration problem"
+    end
+
+    if !File.exist?(@config_file)
+      @logger.fatal "Config file '#{@config_file}' does not exist."
+      raise "Configuration problem"
+    end
+
+    if @daemonize
+      @logger.fatal "Can't daemonize, no support yet in JRuby."
+      raise "Can't daemonize, no fork in JRuby."
+    end
+
+    if @logfile
+      logfile = File.open(settings.logfile, "w")
+      STDOUT.reopen(logfile)
+      STDERR.reopen(logfile)
+    elsif @daemonize
+      devnull = File.open("/dev/null", "w")
+      STDOUT.reopen(devnull)
+      STDERR.reopen(devnull)
+    end
+
+    if @verbose > 0
+      @logger.level = Logger::DEBUG
+    end
+  end # def configure
+
+  public
   def run
     JThread.currentThread().setName("agent")
+    parse_options
+    configure
 
     # Load the config file
-    config = LogStash::Config::File.new(@settings.config_file)
+    config = LogStash::Config::File.new(@config_file)
     config.parse do |plugin|
       # 'plugin' is a has containing:
       #   :type => the base class of the plugin (LogStash::Inputs::Base, etc)
