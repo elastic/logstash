@@ -1,13 +1,16 @@
-require "file/tail"
+require "filewatch/tail" # rubygem 'filewatch'
 require "logstash/namespace"
 require "set"
 require "socket" # for Socket.gethostname
+
+require "eventmachine" # for BufferedTokenizer
 
 class LogStash::File::Manager
   attr_accessor :logger
 
   public
   def initialize(output_queue)
+    @tail = FileWatch::Tail.new
     @watching = Hash.new
     @watching_lock = Mutex.new
     @file_threads = {}
@@ -26,63 +29,54 @@ class LogStash::File::Manager
   public
   def watch(paths, config)
     @watching_lock.synchronize do
-      paths.each do |p|
-        if @watching[p]
-          raise ValueError, "cannot watch the same path #{p} more than once"
+      paths.each do |path|
+        if @watching[path]
+          raise ValueError, "cannot watch the same path #{path} more than once"
+        end
+        @logger.debug(["watching file", {:path => path}])
+
+        @watching[path] = config
+
+        # TODO(sissel): inputs/base should do this.
+        config["tag"] ||= []
+        if !config["tag"].member?(config["type"])
+          config["tag"] << config["type"]
         end
 
-        @watching[p] = config
+        # TODO(sissel): Need to support file rotation, globs, etc
+        begin
+          @tail.watch(path, :modify)
+          # TODO(sissel): Make FileWatch emit real exceptions
+        rescue RuntimeError
+          @logger.info("Failed to start watch on #{path.inspect}")
+          # Ignore.
+        end
       end
     end
   end
 
   private
   def watcher
-    JThread.currentThread().setName("filemanager")
+    JThread.currentThread().setName(self.class.name)
+    @buffers = Hash.new { |h,k| h[k] = BufferedTokenizer.new }
     begin
-      while true
-        @watching.each do |path, config|
-          next if @file_threads[path]
-
-          files = Dir.glob(path)
-          files.each do |g_path|
-            next if @file_threads[g_path]
-            @file_threads[g_path] = Thread.new { file_watch(g_path, config) }
-          end
+      @tail.subscribe do |path, data|
+        config = @watching[path]
+        @buffers[path].extract(data).each do |line|
+          e = LogStash::Event.new({
+            "@message" => line,
+            "@type" => config["type"],
+            "@tags" => config["tag"].dup,
+          })
+          e.source = "file://#{@hostname}/#{path}"
+          @logger.debug(["New event from file input", path, e])
+          @output_queue << e
         end
-
-        sleep(@file_threads.length > 0 ? 30 : 5)
       end
     rescue Exception => e
       @logger.warn(["Exception in #{self.class} thread, retrying", e])
+      sleep 0.3
       retry
     end
-  end
-
-  private
-  def file_watch(path, config)
-    JThread.currentThread().setName("input|file|file:#{path}")
-    @logger.debug(["watching file", {:path => path}])
-
-    config["tag"] ||= []
-    if !config["tag"].member?(config["type"])
-      config["tag"] << config["type"]
-    end
-
-    File.open(path, "r") do |f|
-      f.extend(File::Tail)
-      f.interval = 5
-      f.backward(0)
-      f.tail do |line|
-        e = LogStash::Event.new({
-          "@message" => line,
-          "@type" => config["type"],
-          "@tags" => config["tag"].dup,
-        })
-        e.source = "file://#{@hostname}/#{path}"
-        @logger.debug(["New event from file input", path, e])
-        @output_queue << e
-      end # f.tail
-    end # File.open
-  end
+  end # def watcher
 end # class LogStash::File::Manager

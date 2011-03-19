@@ -1,4 +1,3 @@
-require "file/tail"
 require "logstash/file/manager"
 require "logstash/inputs/base"
 require "logstash/namespace"
