@@ -17,7 +17,7 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
     source = "twitter://...#{@url.path}?#{@url.query}"
 
     if @url.user.nil? or @user.password.nil?
-      message = "User and password missing for twitter input #{@url.to_s}")
+      message = "User and password missing for twitter input #{@url.to_s}"
       @logger.error(message)
       raise message
     end
