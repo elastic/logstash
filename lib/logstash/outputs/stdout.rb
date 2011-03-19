@@ -1,4 +1,3 @@
-require "ap" 
 require "logstash/outputs/base"
 require "logstash/namespace"
 
@@ -6,7 +5,7 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   begin
     require "ap"
     HAVE_AWESOME_PRINT = true
-  rescue => e
+  rescue LoadError
     HAVE_AWESOME_PRINT = false
   end
 
