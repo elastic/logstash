@@ -117,7 +117,7 @@ class LogStash::Agent
 
   public
   def run
-    JThread.currentThread().setName("agent")
+    JThread.currentThread().setName(self.class.name)
     parse_options
     configure
 
