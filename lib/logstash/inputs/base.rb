@@ -20,7 +20,6 @@ class LogStash::Inputs::Base
     return true
   end) # config :tag
 
-
   public
   def initialize(params)
     @logger = LogStash::Logger.new(STDERR)
