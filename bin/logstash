@@ -5,7 +5,6 @@ $: << File.dirname($0) + "/../lib"
 require "rubygems"
 require "logstash/agent"
 require "optparse"
-#require "yaml"
 
 Settings = Struct.new(:config_file, :daemonize, :logfile, :verbose)
 
