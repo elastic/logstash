@@ -134,14 +134,22 @@ class LogStash::Event
   public
   def sprintf(format)
     return format.gsub(/%\{[^}]+\}/) do |tok|
+      # Take the inside of the %{ ... }
       key = tok[2 ... -1]
-      value = self[key]
-      if value.nil?
-        tok # leave the %{foo} if this field does not exist in this event.
-      elsif value.is_a?(Array)
-        value.join(",") # Join by ',' if value is an rray
-      else
-        value # otherwise return the value
+
+      if key[0,1] == "+"
+        # Use a time format.
+        # TODO(sissel): http://code.google.com/p/logstash/issues/detail?id=38
+      else 
+        # Use an event field.
+        value = self[key]
+        if value.nil?
+          tok # leave the %{foo} if this field does not exist in this event.
+        elsif value.is_a?(Array)
+          value.join(",") # Join by ',' if value is an rray
+        else
+          value # otherwise return the value
+        end
       end
     end
   end # def sprintf
