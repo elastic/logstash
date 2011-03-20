@@ -1,5 +1,3 @@
-This code is not beta, not alpha, but like something unnamed where
-only three people in the world are using it. YMMV. Expect much debuggery.
 If you have questions/complaints/bugs, please email
 logstash-users@googlegroups.com.
 
@@ -13,14 +11,13 @@ You should have ruby and rubygems installed.
 After that install the following gems, via 'gem install gemname'
 
 required gems:
+- bunny
+- filewatch
+- jls-grok >= 0.4.3
 - json
-- jls-grok           # for grok filter support
-- amqp               # for amqp://
-- em-http-request    # for elasticsearch://
-- eventmachine-tail  # for file://
-- em-websocket       # for websocket://
-- mkdtemp
-- uuid
+- stomp
+- stompserver
+- uuidtools
 
 For the web interface:
 - async_sinatra
@@ -33,14 +30,11 @@ For the web interface:
   If you are on centos download and install a newer flex:
     ftp://mirrors.kernel.org/fedora/releases/9/Fedora/source/SRPMS/flex-2.5.35-1.fc9.src.rpm
 
-# TODO(sissel): use a grok release
-svn checkout http://semicomplete.googlecode.com/svn/grok
-cd grok
-make
-sudo make install
+  You'll need grok >= 1.20110308
+  https://github.com/jordansissel/grok/tarball/1.20110308.1
 
 # On Linux:
-Check your /etc/ld.so.conf, or /etc/ld.so.conf.d/* . 
-If not already set add /usr/local/lib and run 'ldconfig' as root to update the
-library cache list.
+  Check your /etc/ld.so.conf, or /etc/ld.so.conf.d/* . 
+  If not already set add /usr/local/lib and run 'ldconfig' as root to update the
+  library cache list.
 
