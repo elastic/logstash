@@ -7,8 +7,10 @@ Dir["/home/jls/build/elasticsearch-0.15.0//lib/*.jar"].each do |jar|
   require jar
 end
 
-gem "jruby-elasticsearch", ">= 0.0.3"
-require "jruby-elasticsearch"
+jarpath = File.join(File.dirname(__FILE__), "../../../vendor/**/*.jar")
+Dir[jarpath].each do |jar|
+    require jar
+end
 
 
 class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
@@ -22,6 +24,9 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
 
   public
   def register
+    gem "jruby-elasticsearch", ">= 0.0.3"
+    require "jruby-elasticsearch"
+
     @pending = []
     @callback = self.method(:receive_native)
     # TODO(sissel): host/port? etc?
