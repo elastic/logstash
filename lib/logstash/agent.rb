@@ -5,6 +5,7 @@ require "logstash/multiqueue"
 require "logstash/namespace"
 require "logstash/outputs"
 require "logstash/config/file"
+require "optparse"
 require "java"
 require "uri"
 
@@ -40,6 +41,13 @@ class LogStash::Agent
     @inputs = []
     @filters = []
 
+    @plugin_paths = []
+
+    # Add logstash's plugin path (plugin paths must contain inputs, outputs, filters)
+    @plugin_paths += File.dirname(__FILE__)
+
+    # TODO(sissel): Other default plugin paths?
+
     Thread::abort_on_exception = true
   end # def initialize
 
@@ -71,15 +79,54 @@ class LogStash::Agent
     opts.on("-v", "Increase verbosity") do
       @verbose += 1
     end
+
+    opts.on("-p PLUGIN_PATH", "--plugin_path PLUGIN_PATH",
+            "A colon-delimited path to find plugins in.") do |path|
+      @plugin_paths += p unless @plugin_paths.include?(p)
+    end
   end
 
   # Parse options.
   private
   def parse_options
     @opts = OptionParser.new
+   
+    # Step one is to add agent flags.
     options(@opts)
+    
+    # Apply agent flags, save unknown options for plugins to parse later.
+    @remaining_args = @opts.permute(@argv)
+
+    # At this point, we should load any plugin-specific flags.
+    # These are 'unknown' flags that begin --<plugin>-flag
+    # Put any plugin paths into the ruby library path for requiring later.
+    @plugin_paths.each do |p|
+      @logger.info "Adding #{p.inspect} to $:"
+      $:.unshift p
+    end
+
+    # Load any plugins that we have flags for.
+    # TODO(sissel): The --<plugin> flag support currently will load
+    # any matching plugins input, output, or filter. This means, for example,
+    # that the 'amqp' input *and* output plugin will be loaded if you pass
+    # --amqp-foo flag. This might cause confusion, but it seems reasonable for
+    # now that any same-named component will have the same flags.
+    remaining_args.each do |arg|
+      next unless arg =~ /^--[A-z]/ # skip things that don't look like flags
+      name = arg.split("-")[2] 
+      %w{inputs outputs filters}.each do |component|
+        @plugin_paths.each do |path|
+          plugin = File.join(path, component, name)
+          if File.file?(plugin)
+            @logger.info("Loading plugin #{plugin}")
+            require plugin
+          end # if File.file?(plugin)
+        end # @plugin_paths.each
+      end # %{inputs outputs filters}.each
+    end # remaining_args.each 
+
     # TODO(sissel): Go through all inputs, filters, and outputs to get the flags.
-    @opts.parse!(@argv)
+    logger.info("remaining_args" => remaining_args)
   end # def parse_options
 
   private
