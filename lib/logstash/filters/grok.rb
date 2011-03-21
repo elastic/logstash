@@ -11,6 +11,15 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   config :patterns_dir
   config :drop_if_match, :validate => :boolean  # googlecode/issue/26
 
+  class << self
+    attr_reader :patterns_dir
+  end
+
+  flag("--patterns-path PATH", "Colon-delimited path of patterns to load") do |val|
+    @patterns_dir ||= ["#{File.dirname(__FILE__)}/../../../patterns/*"]
+    @patterns_dir += val.split(":")
+  end
+
   @@grokpiles = Hash.new { |h, k| h[k] = [] }
   @@grokpiles_lock = Mutex.new
 
@@ -21,10 +30,16 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   public
   def register
-    @patterns_dir ||= "#{File.dirname(__FILE__)}/../../../patterns/*"
     @pile = Grok::Pile.new
-    Dir.glob(@patterns_dir).each do |path|
-      @pile.add_patterns_from_file(path)
+    self.class.patterns_dir.each do |path|
+      if File.directory?(path)
+        path = File.join(path, "*")
+      end
+
+      Dir.glob(path).each do |file|
+        @logger.info("Grok loading patterns from #{file}")
+        @pile.add_patterns_from_file(file)
+      end
     end
 
     @pattern.each do |pattern|

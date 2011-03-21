@@ -59,7 +59,7 @@ module LogStash::Config::Mixin
   end # def config_init
 
   module DSL
-
+    attr_accessor :flags
     # If name is given, set the name and return it.
     # If no name given (nil), return the current name.
     def config_name(name=nil)
@@ -79,11 +79,24 @@ module LogStash::Config::Mixin
       @required << name if opts[:required] == true
     end # def config
 
-    def flag(name, opts={})
-      @flags ||= Hash.new
+    def flag(*args, &block)
+      @flags ||= []
 
-      name = name.to_s if name.is_a?(Symbol)
-      @flags[name] = opts[:validate] # ok if this is nil
+      @flags << {
+        :args => args,
+        :block => block
+      }
+    end
+
+    def options(opts)
+      # add any options from this class
+      prefix = self.name.split("::").last.downcase
+      @flags.each do |flag|
+        flagpart = flag[:args].first.gsub(/^--/,"")
+        # TODO(sissel): logger things here could help debugging.
+
+        opts.on("--#{prefix}-#{flagpart}", *flag[:args][1..-1], &flag[:block])
+      end
     end
 
     # This is called whenever someone subclasses a class that has this mixin.

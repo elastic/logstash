@@ -44,7 +44,7 @@ class LogStash::Agent
     @plugin_paths = []
 
     # Add logstash's plugin path (plugin paths must contain inputs, outputs, filters)
-    @plugin_paths += File.dirname(__FILE__)
+    @plugin_paths << File.dirname(__FILE__)
 
     # TODO(sissel): Other default plugin paths?
 
@@ -80,30 +80,43 @@ class LogStash::Agent
       @verbose += 1
     end
 
-    opts.on("-p PLUGIN_PATH", "--plugin_path PLUGIN_PATH",
+    opts.on("-p PLUGIN_PATH", "--pluginpath PLUGIN_PATH",
             "A colon-delimited path to find plugins in.") do |path|
-      @plugin_paths += p unless @plugin_paths.include?(p)
+      path.split(":").each do |p|
+        @plugin_paths << p unless @plugin_paths.include?(p)
+      end
     end
-  end
+  end # def options
 
   # Parse options.
   private
   def parse_options
     @opts = OptionParser.new
-   
+
     # Step one is to add agent flags.
     options(@opts)
-    
-    # Apply agent flags, save unknown options for plugins to parse later.
-    @remaining_args = @opts.permute(@argv)
+
+    # TODO(sissel): Check for plugin_path flags, add them to @plugin_paths.
+    @argv.each_with_index do |arg, index|
+      next unless arg =~ /^(?:-p|--pluginpath)(?:=(.*))?$/
+      path = $1
+      if path.nil?
+        path = @argv[index + 1]
+      end
+
+      @plugin_paths += path.split(":")
+    end # @argv.each
 
     # At this point, we should load any plugin-specific flags.
     # These are 'unknown' flags that begin --<plugin>-flag
     # Put any plugin paths into the ruby library path for requiring later.
     @plugin_paths.each do |p|
-      @logger.info "Adding #{p.inspect} to $:"
+      @logger.info "Adding #{p.inspect} to ruby load path"
       $:.unshift p
     end
+
+    # TODO(sissel): Go through all inputs, filters, and outputs to get the flags.
+    # Add plugin flags to @opts
 
     # Load any plugins that we have flags for.
     # TODO(sissel): The --<plugin> flag support currently will load
@@ -111,22 +124,50 @@ class LogStash::Agent
     # that the 'amqp' input *and* output plugin will be loaded if you pass
     # --amqp-foo flag. This might cause confusion, but it seems reasonable for
     # now that any same-named component will have the same flags.
-    remaining_args.each do |arg|
-      next unless arg =~ /^--[A-z]/ # skip things that don't look like flags
-      name = arg.split("-")[2] 
+    plugins = []
+    @argv.each do |arg|
+      # skip things that don't look like plugin flags
+      next unless arg =~ /^--[A-z0-9]+-/ 
+      name = arg.split("-")[2]  # pull the plugin name out
+
+      # Try to load any plugin by that name
       %w{inputs outputs filters}.each do |component|
         @plugin_paths.each do |path|
-          plugin = File.join(path, component, name)
+          plugin = File.join(path, component, name) + ".rb"
+          @logger.debug("Flag #{arg} found; trying to load #{plugin}")
           if File.file?(plugin)
             @logger.info("Loading plugin #{plugin}")
             require plugin
+            [LogStash::Inputs, LogStash::Filters, LogStash::Outputs].each do |c|
+              # If we get flag --foo-bar, check for LogStash::Inputs::Foo
+              # and add any options to our option parser.
+              klass_name = name.capitalize
+              if c.const_defined?(klass_name)
+                @logger.info("Found plugin class #{c}::#{klass_name})")
+                klass = c.const_get(klass_name)
+                # See LogStash::Config::Mixin::DSL#options
+                klass.options(@opts)
+                plugins << klass
+              end # c.const_defined?
+            end # each component type (input/filter/outputs)
           end # if File.file?(plugin)
         end # @plugin_paths.each
       end # %{inputs outputs filters}.each
-    end # remaining_args.each 
 
-    # TODO(sissel): Go through all inputs, filters, and outputs to get the flags.
-    logger.info("remaining_args" => remaining_args)
+      #if !found
+        #@logger.fatal("Flag #{arg.inspect} requires plugin #{name}, but no plugin found.")
+        #return false
+      #end
+    end # @remaining_args.each 
+   
+    begin
+      @opts.parse!(@argv)
+    rescue OptionParser::InvalidOption => e
+      @logger.info e
+      raise e
+    end
+ 
+    return true
   end # def parse_options
 
   private
@@ -165,7 +206,12 @@ class LogStash::Agent
   public
   def run
     JThread.currentThread().setName(self.class.name)
-    parse_options
+    ok = parse_options
+    if !ok
+      raise "Option parsing failed. See error log."
+    end
+
+
     configure
 
     # Load the config file
@@ -252,10 +298,10 @@ class LogStash::Agent
       queue = SizedQueue.new(10)
       output_queue.add_queue(queue)
       @threads["outputs/#{output.to_s}"] = Thread.new(queue) do |queue|
+        output.register
         begin
           JThread.currentThread().setName("output/#{output.to_s}")
           output.logger = @logger
-          output.register
 
           while event = queue.pop do
             @logger.debug("Sending event to #{output.to_s}")
