@@ -1,3 +1,5 @@
+$: << File.join(File.dirname(__FILE__), "..", "..", "vendor", "bundle")
+
 module LogStash
   module Inputs; end
   module Outputs; end
