@@ -1,4 +1,7 @@
 .*.swp
 *.gem
+*.class
+*.tar.gz
+*.jar
 local
 test/setup/elasticsearch/elasticsearch-*
