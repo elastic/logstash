@@ -361,6 +361,7 @@ when 0 then
     @tokenstack.push(p)
     #puts "Mark: #{self.line(string, p)}##{self.column(string, p)}"
   		end
+# line 7 "grammar.rl"
 when 1 then
 # line 12 "grammar.rl"
 		begin
@@ -373,6 +374,7 @@ when 1 then
     #puts [startpos, endpos].join(",")
     @stack << token.to_i
   		end
+# line 12 "grammar.rl"
 when 2 then
 # line 22 "grammar.rl"
 		begin
@@ -383,6 +385,7 @@ when 2 then
     #puts "string: #{token}"
     @stack << token
   		end
+# line 22 "grammar.rl"
 when 3 then
 # line 30 "grammar.rl"
 		begin
@@ -396,6 +399,7 @@ when 3 then
     #puts "quotedstring: #{token}"
     @stack << token
   		end
+# line 30 "grammar.rl"
 when 4 then
 # line 41 "grammar.rl"
 		begin
@@ -403,6 +407,7 @@ when 4 then
     @array = []
     @stack << :array_init
   		end
+# line 41 "grammar.rl"
 when 5 then
 # line 46 "grammar.rl"
 		begin
@@ -414,12 +419,14 @@ when 5 then
 
     @stack << @array
   		end
+# line 46 "grammar.rl"
 when 6 then
 # line 55 "grammar.rl"
 		begin
 
     # nothing
   		end
+# line 55 "grammar.rl"
 when 7 then
 # line 59 "grammar.rl"
 		begin
@@ -433,6 +440,7 @@ when 7 then
       @parameters[name] << value
     end
   		end
+# line 59 "grammar.rl"
 when 8 then
 # line 70 "grammar.rl"
 		begin
@@ -443,6 +451,7 @@ when 8 then
     @components << { name => @parameters }
     @parameters = Hash.new { |h,k| h[k] = [] }
   		end
+# line 70 "grammar.rl"
 when 9 then
 # line 78 "grammar.rl"
 		begin
@@ -450,6 +459,7 @@ when 9 then
     @components = []
     @parameters = Hash.new { |h,k| h[k] = [] }
   		end
+# line 78 "grammar.rl"
 when 10 then
 # line 83 "grammar.rl"
 		begin
@@ -459,10 +469,12 @@ when 10 then
     @config[name] += @components
     #puts "Config component: #{name}"
   		end
+# line 83 "grammar.rl"
 when 11 then
 # line 90 "grammar.rl"
 		begin
  e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" 		end
+# line 90 "grammar.rl"
 when 13 then
 # line 140 "grammar.rl"
 		begin
@@ -471,7 +483,8 @@ when 13 then
             $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           		end
-# line 475 "grammar.rb"
+# line 140 "grammar.rl"
+# line 488 "grammar.rb"
 			end # action switch
 		end
 	end
@@ -506,6 +519,7 @@ when 0 then
     @tokenstack.push(p)
     #puts "Mark: #{self.line(string, p)}##{self.column(string, p)}"
   		end
+# line 7 "grammar.rl"
 when 10 then
 # line 83 "grammar.rl"
 		begin
@@ -515,14 +529,17 @@ when 10 then
     @config[name] += @components
     #puts "Config component: #{name}"
   		end
+# line 83 "grammar.rl"
 when 11 then
 # line 90 "grammar.rl"
 		begin
  e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" 		end
+# line 90 "grammar.rl"
 when 12 then
 # line 139 "grammar.rl"
 		begin
  puts "END" 		end
+# line 139 "grammar.rl"
 when 13 then
 # line 140 "grammar.rl"
 		begin
@@ -531,7 +548,8 @@ when 13 then
             $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           		end
-# line 535 "grammar.rb"
+# line 140 "grammar.rl"
+# line 553 "grammar.rb"
 		end # eof action switch
 	end
 	if _trigger_goto
