@@ -373,3 +373,9 @@ class LogStash::Agent
     end # SIGUSR1
   end # def register_signal_handler
 end # class LogStash::Agent
+
+if __FILE__ == $0
+  agent = LogStash::Agent.new
+  agent.argv = ARGV
+  agent.run
+end
