@@ -24,10 +24,12 @@ task :compile => "lib/logstash/config/grammar.rb" do |t|
     #puts "Compilation FAILED: #{status} error(s) encountered"
     #exit status
   #end
-  sh "rm -r lib/net"
+
+  #mkdir_p "build"
+  sh "rm -rf lib/net"
   Dir.chdir("lib") do
-    args = [ "-p", "net" ]
-    args += Dir.glob("**/*.rb")
+    args = Dir.glob("**/*.rb")
+    #sh "jrubyc", "-d", "../build" *args
     sh "jrubyc", *args
   end
 end
@@ -93,7 +95,7 @@ namespace :package do
     sh "gem build logstash.gemspec"
   end
 
-  monolith_deps = [ "vendor:jruby", "vendor:gems", "vendor:elasticsearch" ]
+  monolith_deps = [ "vendor:jruby", "vendor:gems", "vendor:elasticsearch", "compile" ]
 
   namespace :monolith do
     task :tar => monolith_deps do
@@ -115,9 +117,9 @@ namespace :package do
       end
 
       # We compile stuff to lib/net/logstash/...
-      Dir.glob("lib/net/**/*.class").each do |file|
-        #target = File.join("build-jar", file.gsub("lib/", ""))
-        target = File.join("build-jar", file)
+      Dir.glob("lib/**/*.class").each do |file|
+        target = File.join("build-jar", file.gsub("lib/", ""))
+        #target = File.join("build-jar", file)
         mkdir_p File.dirname(target)
         puts "=> Copying #{file} => #{target}"
         File.copy(file, target)
