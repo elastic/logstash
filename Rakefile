@@ -1,6 +1,8 @@
 require 'tempfile'
 require 'ftools'
 
+LOGSTASH_VERSION = "0.9.1"
+
 # Compile config grammar (ragel -> ruby)
 file "lib/logstash/config/grammar.rb" => ["lib/logstash/config/grammar.rl"] do
   sh "make -C lib/logstash/config grammar.rb"
@@ -124,6 +126,8 @@ namespace :package do
         puts "=> Copying #{file} => #{target}"
         File.copy(file, target)
       end
+
+      sh "jar -cf logstash-#{LOGSTASH_VERSION}.jar -C build-jar ."
     end # package:monolith:jar
   end # monolith
 end # package
