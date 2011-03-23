@@ -12,11 +12,11 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   config :drop_if_match, :validate => :boolean  # googlecode/issue/26
 
   class << self
-    attr_reader :patterns_dir
+    attr_accessor :patterns_dir
   end
 
+  self.patterns_dir = ["#{File.dirname(__FILE__)}/../../../patterns/*"]
   flag("--patterns-path PATH", "Colon-delimited path of patterns to load") do |val|
-    @patterns_dir ||= ["#{File.dirname(__FILE__)}/../../../patterns/*"]
     @patterns_dir += val.split(":")
   end
 
@@ -31,6 +31,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   public
   def register
     @pile = Grok::Pile.new
+    @logger.info("Grok patterns paths: #{self.class.patterns_dir.inspect}")
     self.class.patterns_dir.each do |path|
       if File.directory?(path)
         path = File.join(path, "*")

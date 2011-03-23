@@ -18,22 +18,23 @@ task :compile => "lib/logstash/config/grammar.rb" do |t|
   #
   #     org/jruby/util/JavaNameMangler.java:105:in `mangleFilenameForClasspath'
   #     org/jruby/util/JavaNameMangler.java:32:in `mangleFilenameForClasspath'
-  #require 'jruby/jrubyc'
+  require 'jruby/jrubyc'
   #args = [ "-p", "net.logstash" ]
-  #args += Dir.glob("**/*.rb")
-  #status = JRuby::Compiler::compile_argv(args)
-  #if (status != 0)
-    #puts "Compilation FAILED: #{status} error(s) encountered"
-    #exit status
-  #end
+  args = ["-d", "build"]
+  args += Dir.glob("**/*.rb")
+  status = JRuby::Compiler::compile_argv(args)
+  if (status != 0)
+    puts "Compilation FAILED: #{status} error(s) encountered"
+    exit status
+  end
 
   #mkdir_p "build"
-  sh "rm -rf lib/net"
-  Dir.chdir("lib") do
-    args = Dir.glob("**/*.rb")
-    #sh "jrubyc", "-d", "../build" *args
-    sh "jrubyc", *args
-  end
+  #sh "rm -rf lib/net"
+  #Dir.chdir("lib") do
+    #args = Dir.glob("**/*.rb")
+    ##sh "jrubyc", "-d", "../build" *args
+    #sh "jrubyc", *args
+  #end
 end
 
 VERSIONS = {
@@ -127,7 +128,10 @@ namespace :package do
         File.copy(file, target)
       end
 
-      sh "jar -cf logstash-#{LOGSTASH_VERSION}.jar -C build-jar ."
+      output = "logstash-#{LOGSTASH_VERSION}.jar"
+      sh "jar -cfe #{output} logstash.agent -C build-jar ."
+      sh "jar -uf #{output} patterns/"
+      sh "jar -i #{output}"
     end # package:monolith:jar
   end # monolith
 end # package

@@ -1,3 +1,6 @@
+#TODO(sissel): Maybe this will help jruby jar issues?
+#$: << File.join(File.dirname(__FILE__), "../"
+
 require "logstash/filters"
 require "logstash/inputs"
 require "logstash/logging"
