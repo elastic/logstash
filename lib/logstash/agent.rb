@@ -201,8 +201,13 @@ class LogStash::Agent
       STDERR.reopen(devnull)
     end
 
-    if @verbose > 0
+    if @verbose > 2
       @logger.level = Logger::DEBUG
+    elsif @verbose == 1
+      @logger.level = Logger::INFO
+    else
+      # Default log level
+      @logger.level = Logger::WARN
     end
   end # def configure
 

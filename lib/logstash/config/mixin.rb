@@ -115,7 +115,7 @@ module LogStash::Config::Mixin
 
     def validate(params)
       @plugin_name = [ancestors[1].config_name, config_name].join("/")
-      @logger = LogStash::Logger.new(STDERR)
+      @logger = LogStash::Logger.new(STDOUT)
       is_valid = true
 
       is_valid &&= validate_check_invalid_parameter_names(params)
