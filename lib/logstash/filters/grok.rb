@@ -127,13 +127,11 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   def add_patterns_from_file(file)
     # Check if the file path is a jar, if so, we'll have to read it ourselves
     # since libgrok won't know what to do with it.
-    @logger.info "Patterns file: #{file}"
     if file =~ /file:\/.*\.jar!.*/
-
       File.new(file).each do |line|
         next if line =~ /^(?:\s*#|\s*$)/
         name, pattern = line.split(/\s+/, 2)
-        @logger.debug "Found pattern: #{name} from #{file}"
+        @logger.debug "Adding pattern '#{name}' from file #{file}"
         @pile.add_pattern(name, pattern)
       end
     else
