@@ -1,18 +1,17 @@
 #TODO(sissel): Maybe this will help jruby jar issues?
 #$: << File.join(File.dirname(__FILE__), "../"
 
+require "java"
+require "logstash/config/file"
 require "logstash/filters"
 require "logstash/inputs"
 require "logstash/logging"
 require "logstash/multiqueue"
 require "logstash/namespace"
 require "logstash/outputs"
-require "logstash/config/file"
+require "logstash/util"
 require "optparse"
-require "java"
 require "uri"
-
-JThread = java.lang.Thread
 
 # TODO(sissel): only enable this if we are in debug mode.
 # JRuby.objectspace=true
@@ -201,19 +200,22 @@ class LogStash::Agent
       STDERR.reopen(devnull)
     end
 
-    if @verbose > 2
+    if @verbose >= 3  # Uber debugging.
       @logger.level = Logger::DEBUG
-    elsif @verbose == 1
+      $DEBUG = true
+    elsif @verbose == 2 # logstash debug logs
+      @logger.level = Logger::DEBUG
+    elsif @verbose == 1 # logstash info logs
       @logger.level = Logger::INFO
-    else
-      # Default log level
+    else # Default log level
       @logger.level = Logger::WARN
     end
   end # def configure
 
   public
   def run
-    JThread.currentThread().setName(self.class.name)
+    LogStash::Util::set_thread_name(self.class.name)
+
     ok = parse_options
     if !ok
       raise "Option parsing failed. See error log."
@@ -275,7 +277,7 @@ class LogStash::Agent
       1.times do |n|
         @logger.info("Starting filter worker thread #{n}")
         @threads["filter|worker|#{n}"] = Thread.new do
-          JThread.currentThread().setName("filter|worker|#{n}")
+          LogStash::Util::set_thread_name("filter|worker|#{n}")
           @filters.each do |filter|
             filter.logger = @logger
             filter.register
@@ -308,7 +310,7 @@ class LogStash::Agent
       @threads["outputs/#{output.to_s}"] = Thread.new(queue) do |queue|
         output.register
         begin
-          JThread.currentThread().setName("output/#{output.to_s}")
+          LogStash::Util::set_thread_name("output/#{output.to_s}")
           output.logger = @logger
 
           while event = queue.pop do
