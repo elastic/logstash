@@ -1,5 +1,7 @@
 require "filewatch/tail" # rubygem 'filewatch'
 require "logstash/namespace"
+require "logstash/logging"
+require "logstash/util"
 require "set"
 require "socket" # for Socket.gethostname
 
@@ -16,7 +18,7 @@ class LogStash::File::Manager
     @file_threads = {}
     @main_thread = nil
     @output_queue = nil
-    @logger = Logger.new(STDOUT)
+    @logger = LogStash::Logger.new(STDOUT)
     @hostname = Socket.gethostname
   end # def initialize
 
@@ -57,7 +59,7 @@ class LogStash::File::Manager
 
   private
   def watcher
-    JThread.currentThread().setName(self.class.name)
+    LogStash::Util::set_thread_name(self.class.name)
     @buffers = Hash.new { |h,k| h[k] = BufferedTokenizer.new }
     begin
       @tail.subscribe do |path, data|

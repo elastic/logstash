@@ -14,7 +14,7 @@ class LogStash::Filters::Base
 
   public
   def initialize(params)
-    @logger = LogStash::Logger.new(STDERR)
+    @logger = LogStash::Logger.new(STDOUT)
     config_init(params)
   end # def initialize
 

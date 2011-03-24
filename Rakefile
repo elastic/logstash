@@ -8,33 +8,32 @@ file "lib/logstash/config/grammar.rb" => ["lib/logstash/config/grammar.rl"] do
   sh "make -C lib/logstash/config grammar.rb"
 end
 
-task :compile => "lib/logstash/config/grammar.rb" do |t|
-  # Taken from 'jrubyc' 
-  #  Currently this code is commented out because jruby emits this:
-  #     Failure during compilation of file logstash/web/helpers/require_param.rb:
-  #       java.lang.RuntimeException: java.io.FileNotFoundException: File path
-  #       /home/jls/projects/logstash/logstash/web/helpers/require_param.rb
-  #       does not start with parent path /home/jls/projects/logstash/lib
-  #
-  #     org/jruby/util/JavaNameMangler.java:105:in `mangleFilenameForClasspath'
-  #     org/jruby/util/JavaNameMangler.java:32:in `mangleFilenameForClasspath'
-  require 'jruby/jrubyc'
-  #args = [ "-p", "net.logstash" ]
-  args = ["-d", "build"]
-  args += Dir.glob("**/*.rb")
-  status = JRuby::Compiler::compile_argv(args)
-  if (status != 0)
-    puts "Compilation FAILED: #{status} error(s) encountered"
-    exit status
-  end
+# Taken from 'jrubyc' 
+#  Currently this code is commented out because jruby emits this:
+#     Failure during compilation of file logstash/web/helpers/require_param.rb:
+#       java.lang.RuntimeException: java.io.FileNotFoundException: File path
+#       /home/jls/projects/logstash/logstash/web/helpers/require_param.rb
+#       does not start with parent path /home/jls/projects/logstash/lib
+#
+#     org/jruby/util/JavaNameMangler.java:105:in `mangleFilenameForClasspath'
+#     org/jruby/util/JavaNameMangler.java:32:in `mangleFilenameForClasspath'
+#require 'jruby/jrubyc'
+##args = [ "-p", "net.logstash" ]
+#args = ["-d", "build"]
+#args += Dir.glob("**/*.rb")
+#status = JRuby::Compiler::compile_argv(args)
+#if (status != 0)
+  #puts "Compilation FAILED: #{status} error(s) encountered"
+  #exit status
+#end
 
-  #mkdir_p "build"
-  #sh "rm -rf lib/net"
-  #Dir.chdir("lib") do
-    #args = Dir.glob("**/*.rb")
-    ##sh "jrubyc", "-d", "../build" *args
-    #sh "jrubyc", *args
-  #end
+task :compile => "lib/logstash/config/grammar.rb" do |t|
+  mkdir_p "build"
+  sh "rm -rf lib/net"
+  Dir.chdir("lib") do
+    args = Dir.glob("**/*.rb")
+    sh "jrubyc", "-t", "../build", *args
+  end
 end
 
 VERSIONS = {
@@ -45,7 +44,7 @@ VERSIONS = {
 
 namespace :vendor do
   file "vendor/jar" do |t|
-    mkdir_p mkdir(t.name)
+    mkdir_p t.name
   end
 
   # Download jruby.jar
@@ -119,14 +118,23 @@ namespace :package do
         end
       end
 
-      # We compile stuff to lib/net/logstash/...
-      Dir.glob("lib/**/*.class").each do |file|
-        target = File.join("build-jar", file.gsub("lib/", ""))
-        #target = File.join("build-jar", file)
+      # We compile stuff to build/...
+      Dir.glob("build/**/*.class").each do |file|
+        target = File.join("build-jar", file.gsub("build/", ""))
         mkdir_p File.dirname(target)
         puts "=> Copying #{file} => #{target}"
         File.copy(file, target)
       end
+
+      # Copy gems to the root of the build-jar dir
+      # TODO(sissel): Figure out how to package the gems. Maybe see how warbler
+      # does it.
+      #Dir.glob("vendor/bundle/jruby/1.8/gems/**/*") do |file|
+        #target = File.join("build-jar", file.gsub("build/", ""))
+        #mkdir_p File.dirname(target)
+        #puts "=> Copying #{file} => #{target}"
+        #File.copy(file, target)
+      #end
 
       output = "logstash-#{LOGSTASH_VERSION}.jar"
       sh "jar -cfe #{output} logstash.agent -C build-jar ."
