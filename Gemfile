@@ -4,6 +4,7 @@ source :rubygems
 gem "bunny"
 gem "filewatch"
 gem "jls-grok", ">= 0.4.3"
+gem "jruby-elasticsearch"
 gem "json"
 #gem "rack"
 gem "stomp"
