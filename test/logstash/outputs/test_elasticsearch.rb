@@ -2,59 +2,74 @@ require "rubygems"
 $:.unshift File.dirname(__FILE__) + "/../../../lib"
 $:.unshift File.dirname(__FILE__) + "/../../"
 
+require "logstash/loadlibs"
 require "logstash/testcase"
 require "logstash/agent"
 require "logstash/logging"
 require "logstash/search/elasticsearch"
 require "logstash/search/query"
 
+require "spoon" # rubygem 'spoon' - implements posix_spawn via FFI
+
 # For checking elasticsearch health
-require "net/http"
-require "uri"
-require "json"
+#require "net/http"
+#require "uri"
+#require "json"
+
+module LibC
+  extend FFI::Library
+  ffi_lib FFI::Library:LIBC
+
+  posix_spawn
+
 
 class TestOutputElasticSearch < LogStash::TestCase
   ELASTICSEARCH_VERSION = "0.14.4"
+
+  def setup
+    start_elasticsearch
+    @output = LogStash::Outputs::ElasticSearch.new({
+      :host => "localhost",
+      :index => "test",
+      :type => "foo",
+      :cluster => @cluster_name,
+    })
+    @output.register
+  end # def setup
 
   def start_elasticsearch
     # install
     version = self.class::ELASTICSEARCH_VERSION
     system("make -C #{File.dirname(__FILE__)}/../../setup/elasticsearch/ init-elasticsearch-#{version} wipe-elasticsearch-#{version} #{$DEBUG ? "" : "> /dev/null 2>&1"}")
 
-
     1.upto(30) do
       # Pick a random port
       teardown if @es_pid
-      @port = (rand * 30000 + 20000).to_i
-      @es_pid = Process.fork do
-        Process.setsid
-        puts "Starting ElasticSearch #{version}"
-        if !$DEBUG
-          $stdout.reopen("/dev/null", "w")
-          $stderr.reopen("/dev/null", "w")
-          $stdin.reopen("/dev/null", "r")
-        end
-        ENV["ESFLAGS"] = "-Des.http.port=#{@port} -Des.transport.tcp.port=0 -Des.cluster.name=logstash-test-#{$$}"
-        exec("make", "-C", "#{File.dirname(__FILE__)}/../../setup/elasticsearch/", "run-elasticsearch-#{version}")
-        $stderr.puts "Something went wrong starting up elasticsearch?"
-        exit 1
-      end
+      @port_http = (rand * 30000 + 20000).to_i
+      @port_tcp = (rand * 30000 + 20000).to_i
+      @cluster_name = "logstash-test-#{$$}"
+      puts "Starting ElasticSearch #{version}"
+      ENV["ESFLAGS"] = "-Des.http.port=#{@port_http} -Des.transport.tcp.port=#{@port_tcp} -Des.cluster.name=#{@cluster_name}"
+      @es_pid = Spoon.spawnp("make", "-C", "#{File.dirname(__FILE__)}/../../setup/elasticsearch/", "run-elasticsearch-#{version}")
+
+      # Assume it's up and happy
+      return
 
       # Wait for elasticsearch to be ready.
-      1.upto(30) do
-        begin
-          Net::HTTP.get(URI.parse("http://localhost:#{@port}/_status"))
-          puts "ElasticSearch is ready..."
-          return
-        rescue => e
-          # TODO(sissel): Need to waitpid to see if ES has died and
-          # should immediately retry if it has.
-          puts "ElasticSearch not yet ready... sleeping."
-          sleep 2
-        end
-      end
+      #1.upto(30) do
+        #begin
+          #Net::HTTP.get(URI.parse("http://localhost:#{@port}/_status"))
+          #puts "ElasticSearch is ready..."
+          #return
+        #rescue => e
+          ## TODO(sissel): Need to waitpid to see if ES has died and
+          ## should immediately retry if it has.
+          #puts "ElasticSearch not yet ready... sleeping."
+          #sleep 2
+        #end
+      #end
 
-      puts "ES did not start properly, trying again."
+      #puts "ES did not start properly, trying again."
     end # try a few times to launch ES on a random port.
 
     raise "ElasticSearch failed to start or was otherwise not running properly?"
@@ -65,74 +80,48 @@ class TestOutputElasticSearch < LogStash::TestCase
     Process.kill("KILL", -1 * @es_pid) if !@es_pid.nil?
   end # def teardown
 
-  def em_setup
-    start_elasticsearch
-
-    config = {
-      "inputs" => {
-        @type => [
-          "internal:///"
-        ]
-      },
-      "outputs" => [
-        "elasticsearch://localhost:#{@port}/logstashtesting/logs"
-      ]
-    }
-
-    super(config)
-  end # def em_setup
-
   def test_elasticsearch_basic
-    EventMachine::run do
-      em_setup
+    events = []
+    myfile = File.basename(__FILE__)
+    1.upto(5).each do |i|
+      events << LogStash::Event.new("@message" => "just another log rollin' #{i}",
+                                    "@source" => "logstash tests in #{myfile}")
+    end
 
-      # TODO(sissel): I think em-http-request may cross signals somehow
-      # if there are multiple requests to the same host/port?
-      # Confusing. If we don't sleep here, then the setup fails and blows
-      # a fail to configure exception.
-      EventMachine::add_timer(3) do
+    # TODO(sissel): Need a way to hook when the agent is ready?
+    EventMachine.next_tick do
+      events.each do |e|
+        @outputs.receive
+      end
+    end # next_tick, push our events
 
-        events = []
-        myfile = File.basename(__FILE__)
-        1.upto(5).each do |i|
-          events << LogStash::Event.new("@message" => "just another log rollin' #{i}",
-                                        "@source" => "logstash tests in #{myfile}")
-        end
-
-        # TODO(sissel): Need a way to hook when the agent is ready?
-        EventMachine.next_tick do
-          events.each do |e|
-            @input.push e
+    tries = 30 
+    loop do
+      es = LogStash::Search::ElasticSearch.new(:cluster_name => @cluster_name)
+      query = LogStash::Search::Query.new(:query_string => "*", :count => 5)
+      es.search(query) do |result|
+        if events.size == result.events.size
+          puts "Found #{result.events.size} events, ready to verify!"
+          expected = events.clone
+          assert_equal(events.size, result.events.size)
+          events.each { |e| p :expect => e }
+          result.events.each do |event|
+            p :got => event
+            assert(expected.include?(event), "Found event in results that was not expected: #{event.inspect}\n\nExpected: #{events.map{ |a| a.inspect }.join("\n")}")
           end
-        end # next_tick, push our events
+          EventMachine.stop_event_loop
+          next # break out
+        else
+          tries -= 1
+          if tries <= 0
+            assert(false, "Gave up trying to query elasticsearch. Maybe we aren't indexing properly?")
+            EventMachine.stop_event_loop
+          end
+        end # if events.size == hits.size
+      end # es.search
 
-        tries = 30 
-        EventMachine.add_periodic_timer(0.2) do
-          es = LogStash::Search::ElasticSearch.new(:port => @port, :host => "localhost")
-          query = LogStash::Search::Query.new(:query_string => "*", :count => 5)
-          es.search(query) do |result|
-            if events.size == result.events.size
-              puts "Found #{result.events.size} events, ready to verify!"
-              expected = events.clone
-              assert_equal(events.size, result.events.size)
-              events.each { |e| p :expect => e }
-              result.events.each do |event|
-                p :got => event
-                assert(expected.include?(event), "Found event in results that was not expected: #{event.inspect}\n\nExpected: #{events.map{ |a| a.inspect }.join("\n")}")
-              end
-              EventMachine.stop_event_loop
-              next # break out
-            else
-              tries -= 1
-              if tries <= 0
-                assert(false, "Gave up trying to query elasticsearch. Maybe we aren't indexing properly?")
-                EventMachine.stop_event_loop
-              end
-            end # if events.size == hits.size
-          end # es.search
-        end # add_periodic_timer(0.2) / query elasticsearch
-      end # sleep for 3 seconds before going to allow the registration to work.
-    end # EventMachine::run
+      sleep 0.2
+    end # loop
   end # def test_elasticsearch_basic
 end # class TestOutputElasticSearch
 

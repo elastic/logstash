@@ -20,6 +20,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
   config :host, :validate => :string
   config :index, :validate => :string
   config :type, :validate => :string
+  config :cluster, :validate => :string
   # TODO(sissel): Config for river?
 
   public
@@ -30,7 +31,8 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     @pending = []
     @callback = self.method(:receive_native)
     # TODO(sissel): host/port? etc?
-    @client = ElasticSearch::Client.new
+    #:host => @host, :port => @port,
+    @client = ElasticSearch::Client.new(:cluster => @cluster)
   end # def register
 
   # TODO(sissel): Needs migration to  jrubyland

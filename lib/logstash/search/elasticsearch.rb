@@ -1,5 +1,5 @@
 
-require "em-http-request"
+require "jruby-elasticsearch"
 require "logstash/namespace"
 require "logstash/logging"
 require "logstash/event"
@@ -14,160 +14,106 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
   def initialize(settings={})
     @host = (settings[:host] || "localhost")
     @port = (settings[:port] || 9200).to_i
+    @cluster = (settings[:cluster] || nil)
     @logger = LogStash::Logger.new(STDOUT)
+    @client = ElasticSearch::Client.new(:host => @host, :port => @port, :cluster => @cluster)
   end
 
   # See LogStash::Search;:Base#search
   public
-  def search(query)
+  def search(q)
     raise "No block given for search call." if !block_given?
-    if query.is_a?(String)
-      query = LogStash::Search::Query.parse(query)
+    if q.is_a?(String)
+      q = LogStash::Search::Query.parse(q)
     end
 
-    # TODO(sissel): only search a specific index?
-    http = EventMachine::HttpRequest.new("http://#{@host}:#{@port}/_search")
+    searchreq = @client.search do
+      sort("@timestamp", :desc)
+      query(q.query_string, :and)
+      offset(q.offset)
+      limit(q.count)
+    end
 
-    @logger.info(["Query", query])
-    esreq = {
-      "sort" => [
-        { "@timestamp" => "desc" }
-      ],
-      "query" => {
-        "query_string" => { 
-           "query" => query.query_string,
-           "default_operator" => "AND"
-        } # query_string
-      }, # query
-      "from" => query.offset,
-      "size" => query.count
-    } # elasticsearch request
-
-    @logger.info("ElasticSearch Query: #{esreq.to_json}")
+    @logger.info("ElasticSearch search: #{q.query_string}")
     start_time = Time.now
-    req = http.get :body => esreq.to_json
-    result = LogStash::Search::Result.new
-    req.callback do
-      data = JSON.parse(req.response)
+    searchreq.execute do |response|
+      result = LogStash::Search::Result.new
       result.duration = Time.now - start_time
 
-      hits = data["hits"]["hits"] rescue nil
+      hits = response.hits rescue nil
 
-      if hits.nil? or !data["error"].nil?
-        # Use the error message if any, otherwise, return the whole
-        # data object as json as the error message for debugging later.
-        result.error_message = (data["error"] rescue false) || data.to_json
+      if hits.nil? 
+        # return the whole object object as json as the error message for
+        # debugging later.
+        result.error_message = response
         yield result
-        next
+        next # breaks from this callback
       end
 
       @logger.info(["Got search results", 
-                   { :query => query.query_string, :duration => data["duration"],
-                     :result_count => hits.size }])
-      if req.response_header.status != 200
-        result.error_message = data["error"] || req.inspect
-        @error = data["error"] || req.inspect
-      end
+                   { :query => q.query_string, :duration => response.took.to_s,
+                     :result_count => hits.totalHits}])
 
       # We want to yield a list of LogStash::Event objects.
       hits.each do |hit|
-        result.events << LogStash::Event.new(hit["_source"])
+        result.events << LogStash::Event.new(hit.source)
       end
 
       # Total hits this search could find if not limited
-      result.total = data["hits"]["total"]
-      result.offset = query.offset
+      result.total = result.totalHits
+      result.offset = q.offset
 
       yield result
-    end
-
-    req.errback do 
-      @logger.warn(["Query failed", query, req, req.response])
-      result.duration = Time.now - start_time
-      result.error_message = req.response
-      #yield result
-
-      yield({ "error" => req.response })
     end
   end # def search
 
   # See LogStash::Search;:Base#histogram
   public
-  def histogram(query, field, interval=nil)
-    if query.is_a?(String)
-      query = LogStash::Search::Query.parse(query)
+  def histogram(q, field, interval=nil)
+    raise "No block given for search call." if !block_given?
+    if q.is_a?(String)
+      q = LogStash::Search::Query.parse(q)
     end
 
-    # TODO(sissel): only search a specific index?
-    http = EventMachine::HttpRequest.new("http://#{@host}:#{@port}/_search")
-
-    @logger.info(["Query", query])
-    histogram_settings = {
-      "field" => field
-    }
-
-    if !interval.nil? && interval.is_a?(Numeric)
-      histogram_settings["interval"] = interval
+    name = "happyhisto"
+    searchreq = @client.search do
+      query(q.query_string, :and)
+      histogram(field, interval, name)
+      limit(0)
     end
 
-    esreq = {
-      "query" => {
-        "query_string" => { 
-           "query" => query.query_string,
-           "default_operator" => "AND"
-        } # query_string
-      }, # query
-      "from" => 0,
-      "size" => 0,
-      "facets" => {
-        "amazingpants" => { # just a name for this histogram...
-          "histogram" => histogram_settings,
-        },
-      },
-    } # elasticsearch request
-
-    @logger.info("ElasticSearch Facet Query: #{esreq.to_json}")
+    @logger.info("ElasticSearch Facet Query: #{q.query_string}")
     start_time = Time.now
-    req = http.get :body => esreq.to_json
-    result = LogStash::Search::FacetResult.new
-    req.callback do
-      data = JSON.parse(req.response)
+    searchreq.execute do |response|
+      result = LogStash::Search::FacetResult.new
       result.duration = Time.now - start_time
 
       @logger.info(["Got search results", 
-                   { :query => query.query_string, :duration => data["duration"] }])
-      if req.response_header.status != 200
-        result.error_message = data["error"] || req.inspect
-        @error = data["error"] || req.inspect
-      end
+                   { :query => q.query_string, :duration => response.took.to_s }])
+      # TODO(sissel): Check for error.
 
-      entries = data["facets"]["amazingpants"]["entries"] rescue nil
+      entries = response.facets.facet(name).entries
 
-      if entries.nil? or !data["error"].nil?
-        # Use the error message if any, otherwise, return the whole
-        # data object as json as the error message for debugging later.
-        result.error_message = (data["error"] rescue false) || data.to_json
+      if entries.nil?
+        # return the whole response object as the error message for debugging
+        # later.
+        result.error_message = response
         yield result
         next
       end
+
       entries.each do |entry|
         # entry is a hash of keys 'total', 'mean', 'count', and 'key'
         hist_entry = LogStash::Search::FacetResult::Histogram.new
-        hist_entry.key = entry["key"]
-        hist_entry.count = entry["count"]
+        hist_entry.key = entry.key
+        hist_entry.count = entry.count
+        hist_entry.mean = entry.mean
+        hist_entry.total = entry.total
         result.results << hist_entry
       end # for each histogram result
       yield result
     end # request callback
-
-    req.errback do 
-      @logger.warn(["Query failed", query, req, req.response])
-      result.duration = Time.now - start_time
-      result.error_message = req.response
-      yield result
-      #yield({ "error" => req.response })
-    end
-  end
+  end # def histogram
 
   # Not used. Needs refactoring elsewhere.
   private
