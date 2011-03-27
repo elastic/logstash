@@ -6,33 +6,24 @@ require "logstash/loadlibs"
 require "logstash/testcase"
 require "logstash/agent"
 require "logstash/logging"
+require "logstash/outputs/elasticsearch"
 require "logstash/search/elasticsearch"
 require "logstash/search/query"
 
 require "spoon" # rubygem 'spoon' - implements posix_spawn via FFI
 
-# For checking elasticsearch health
-#require "net/http"
-#require "uri"
-#require "json"
-
-module LibC
-  extend FFI::Library
-  ffi_lib FFI::Library:LIBC
-
-  posix_spawn
-
-
 class TestOutputElasticSearch < LogStash::TestCase
-  ELASTICSEARCH_VERSION = "0.14.4"
+  ELASTICSEARCH_VERSION = "0.15.2"
 
   def setup
-    start_elasticsearch
-    @output = LogStash::Outputs::ElasticSearch.new({
-      :host => "localhost",
-      :index => "test",
-      :type => "foo",
-      :cluster => @cluster_name,
+    #start_elasticsearch
+    @cluster_name = "logstash-test-1234"
+
+    @output = LogStash::Outputs::Elasticsearch.new({
+      "host" => ["localhost"],
+      "index" => ["test"],
+      "type" => ["foo"],
+      "cluster" => [@cluster_name],
     })
     @output.register
   end # def setup
@@ -78,6 +69,7 @@ class TestOutputElasticSearch < LogStash::TestCase
   def teardown
     # Kill the whole process group for elasticsearch
     Process.kill("KILL", -1 * @es_pid) if !@es_pid.nil?
+    Process.kill("KILL", @es_pid) if !@es_pid.nil?
   end # def teardown
 
   def test_elasticsearch_basic
@@ -89,17 +81,20 @@ class TestOutputElasticSearch < LogStash::TestCase
     end
 
     # TODO(sissel): Need a way to hook when the agent is ready?
-    EventMachine.next_tick do
-      events.each do |e|
-        @outputs.receive
-      end
-    end # next_tick, push our events
+    events.each do |e|
+      puts "Pushing event: #{e}"
+      @output.receive(e)
+    end
 
     tries = 30 
+    puts "Starting search client..."
+    es = LogStash::Search::ElasticSearch.new(:cluster_name => @cluster_name)
+    puts "Done"
     loop do
-      es = LogStash::Search::ElasticSearch.new(:cluster_name => @cluster_name)
+      puts "Tries left: #{tries}"
       query = LogStash::Search::Query.new(:query_string => "*", :count => 5)
       es.search(query) do |result|
+        p :result => result
         if events.size == result.events.size
           puts "Found #{result.events.size} events, ready to verify!"
           expected = events.clone

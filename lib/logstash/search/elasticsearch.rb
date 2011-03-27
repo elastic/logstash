@@ -21,7 +21,7 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
 
   # See LogStash::Search;:Base#search
   public
-  def search(q)
+  def search(q, blocking=false)
     raise "No block given for search call." if !block_given?
     if q.is_a?(String)
       q = LogStash::Search::Query.parse(q)
