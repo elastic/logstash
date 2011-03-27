@@ -126,19 +126,18 @@ namespace :package do
         File.copy(file, target)
       end
 
-      # Copy gems to the root of the build-jar dir
-      # TODO(sissel): Figure out how to package the gems. Maybe see how warbler
-      # does it.
-      #Dir.glob("vendor/bundle/jruby/1.8/gems/**/*") do |file|
-        #target = File.join("build-jar", file.gsub("build/", ""))
-        #mkdir_p File.dirname(target)
-        #puts "=> Copying #{file} => #{target}"
-        #File.copy(file, target)
-      #end
-
       output = "logstash-#{LOGSTASH_VERSION}.jar"
       sh "jar -cfe #{output} logstash.agent -C build-jar ."
+
+      # Learned how to do this mostly from here:
+      # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
+      # Add bundled gems to the jar
+      sh "jar uf #{output} -C vendor/bundle/jruby/1.8 ."
+
+      # Add grok patterns
       sh "jar -uf #{output} patterns/"
+
+      # Build jar index
       sh "jar -i #{output}"
     end # package:monolith:jar
   end # monolith
