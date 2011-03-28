@@ -319,6 +319,8 @@ class LogStash::Agent
           end
         rescue Exception => e
           @logger.warn(["Output #{output.to_s} thread exception", e])
+          @logger.debug(["Output #{output.to_s} thread exception backtrace",
+                         e.backtrace])
           retry
         end
       end # Thread.new
