@@ -21,7 +21,7 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
 
   # See LogStash::Search;:Base#search
   public
-  def search(q)
+  def search(q, async=false)
     raise "No block given for search call." if !block_given?
     if q.is_a?(String)
       q = LogStash::Search::Query.parse(q)
@@ -36,36 +36,70 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
 
     @logger.info("ElasticSearch search: #{q.query_string}")
     start_time = Time.now
-    searchreq.execute do |response|
-      result = LogStash::Search::Result.new
-      result.duration = Time.now - start_time
 
-      hits = response.hits rescue nil
+    # TODO(sissel): Dedup this into a method.
+    if async
+      searcreq.execute do |response|
+        result = search_response_to_result(response)
+        result.offset = q.offset
+        result.duration = Time.now - start_time
+        @logger.debug(["Got search results (async)", 
+                     { :query => q.query_string, :duration => response.took.to_s,
+                       :result_count => result.total }])
 
-      if hits.nil? 
-        # return the whole object object as json as the error message for
-        # debugging later.
-        result.error_message = response
         yield result
-        next # breaks from this callback
       end
-
-      @logger.info(["Got search results", 
-                   { :query => q.query_string, :duration => response.took.to_s,
-                     :result_count => hits.totalHits}])
-
-      # We want to yield a list of LogStash::Event objects.
-      hits.each do |hit|
-        result.events << LogStash::Event.new(hit.source)
-      end
-
-      # Total hits this search could find if not limited
-      result.total = result.totalHits
+      return
+    else # not async
+      response = searchreq.execute!
+      result = search_response_to_result(response)
       result.offset = q.offset
+      result.duration = Time.now - start_time
+      @logger.info(["Got search results (in blocking mode)", 
+                   { :query => q.query_string, :duration => response.took.to_s,
+                     :result_count => result.total }])
 
-      yield result
-    end
+      if block_given?
+        yield result
+      else
+        return result
+      end
+    end # if async
+    return
   end # def search
+
+  private
+  def search_response_to_result(response)
+    result = LogStash::Search::Result.new
+
+    hits = response.hits rescue nil
+
+    if hits.nil? 
+      # return the whole object object as json as the error message for
+      # debugging later.
+      result.error_message = response
+      yield result
+      next # breaks from this callback
+    end
+
+    # We want to yield a list of LogStash::Event objects.
+    hits.each do |hit|
+      data = hit.getSource
+      # TODO(sissel): this conversion is only necessary because
+      # LogStash::Event#== invokes == on the data hash, and in in the
+      # test suite, we'll have a ruby array of tags compared against
+      # a java.util.ArrayList, which always fails.
+      # Possible fixes: 
+      #   - make Event#== smarter
+      #   - or, convert in the test (not as awesome)
+      data["@tags"] = data["@tags"].to_a # convert java ArrayList to Ruby
+      result.events << LogStash::Event.new(data)
+    end
+
+    # Total hits this search could find if not limited
+    result.total = hits.totalHits
+    return result
+  end # def search_response_to_result
 
   # See LogStash::Search;:Base#histogram
   public
@@ -88,7 +122,7 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
       result = LogStash::Search::FacetResult.new
       result.duration = Time.now - start_time
 
-      @logger.info(["Got search results", 
+      @logger.debug(["Got search results", 
                    { :query => q.query_string, :duration => response.took.to_s }])
       # TODO(sissel): Check for error.
 
