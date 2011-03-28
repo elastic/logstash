@@ -1,41 +1,43 @@
-require "em-jack"
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "beanstalk-client"
 
 class LogStash::Inputs::Beanstalk < LogStash::Inputs::Base
 
   config_name "beanstalk"
+  config :host, :validate => :string, :required => true
+  config :port, :validate => :number
   config :tube, :validate => :string, :required => true
 
   public
   def initialize(params)
     super
-    raise "issue/17: needs refactor to support configfile"
 
-    if @url.path == "" or @url.path == "/"
-      raise "must specify a tube for beanstalk output"
-    end
+    @port ||= 11300
   end # def initialize
 
   public
   def register
-    tube = @url.path[1..-1] # Skip leading '/'
-    port = @url.port || 11300
-    @beanstalk = EMJack::Connection.new(:host => @url.host,
-                                        :port => port,
-                                        :tube => tube)
-    @beanstalk.each_job do |job|
+    # TODO(petef): support pools of beanstalkd servers
+    # TODO(petef): check for errors
+    @beanstalk = Beanstalk::Pool.new(["#{@host}:#{@port}"])
+    @beanstalk.watch(@tube)
+  end # def register
+
+  public
+  def run(output_queue)
+    loop do
+      job = @beanstalk.reserve
       begin
         event = LogStash::Event.from_json(job.body)
       rescue => e
         @logger.warn(["Trouble parsing beanstalk job",
                      {:error => e.message, :body => job.body,
                       :backtrace => e.backtrace}])
-        @beanstalk.bury(job, 0)
+        job.bury(job, 0)
       end
-
-      receive(event)
-      @beanstalk.delete(job)
-    end # @beanstalk.each_job
-  end # def register
+      output_queue << event
+      job.delete
+    end
+  end # def run
 end # class LogStash::Inputs::Beanstalk

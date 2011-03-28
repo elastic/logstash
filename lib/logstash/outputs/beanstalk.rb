@@ -1,33 +1,37 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
-require "em-jack"
+require "beanstalk-client"
 
 class LogStash::Outputs::Beanstalk < LogStash::Outputs::Base
 
   config_name "beanstalk"
+  config :host, :validate => :string, :required => true
+  config :port, :validate => :number
+  config :tube, :validate => :string, :required => true
+  config :priority, :validate => :number
+  config :delay, :validate => :number
   config :ttr, :validate => :number
 
   public
   def initialize(params)
     super
 
-    @ttr = @urlopts["ttr"] || 300;
-    if @url.path == "" or @url.path == "/"
-      raise "must specify a tube for beanstalk output"
-    end
+    @port ||= 11300
+    @priority ||= 65536
+    @delay ||= 0
+    @ttr ||= 300
   end
 
   public
   def register
-    tube = @url.path[1..-1] # Skip leading '/'
-    port = @url.port || 11300
-    @beanstalk = EMJack::Connection.new(:host => @url.host,
-                                        :port => port,
-                                        :tube => tube)
+    # TODO(petef): support pools of beanstalkd servers
+    # TODO(petef): check for errors
+    @beanstalk = Beanstalk::Pool.new(["#{@host}:#{@port}"])
+    @beanstalk.use(@tube)
   end # def register
 
   public
   def receive(event)
-    @beanstalk.put(event.to_json, :ttr => @ttr)
-  end # def receive
+    @beanstalk.put(event.to_json, @priority, @delay, @ttr)
+  end # def register
 end # class LogStash::Outputs::Beanstalk
