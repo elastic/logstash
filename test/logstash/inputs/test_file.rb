@@ -2,54 +2,82 @@
 require 'rubygems'
 $:.unshift File.dirname(__FILE__) + "/../../../lib"
 $:.unshift File.dirname(__FILE__) + "/../../"
+
 require "test/unit"
 require "tempfile"
-require "logstash/testcase"
+require "thread"
+require "logstash/loadlibs"
 require "logstash/agent"
+require "logstash/logging"
+require "logstash/util"
+require "socket"
 
-
-# TODO(sissel): refactor this so we can more easily specify tests.
-class TestInputFile < LogStash::TestCase
-  def em_setup
+class TestInputFile < Test::Unit::TestCase
+  def setup
     @tmpfile = Tempfile.new(self.class.name)
+    @hostname = Socket.gethostname
+    @type = "logstash-test"
 
-    config = {
-      "inputs" => {
-        @type => [
-          "file://#{@tmpfile.path}"
-        ],
-      },
-      "outputs" => [
-        "internal:///"
-      ]
-    } # config
+    @agent = LogStash::Agent.new
+    config = LogStash::Config::File.new(path=nil, string=<<-CONFIG)
+      input {
+        file {
+          path => "#{@tmpfile.path}"
+          type => "#{@type}"
+        }
+      }
 
-    super(config)
-  end
+      output {
+        internal { }
+      }
+    CONFIG
+    
+    waitqueue = Queue.new
+
+    Thread.new do
+      @agent.run_with_config(config) do
+        waitqueue << :ready
+      end
+    end
+
+    # Wait for the agent to be ready.
+    waitqueue.pop
+    @output = @agent.outputs.first
+  end # def setup
 
   def test_simple
     data = [ "hello", "world", "hello world 1 2 3 4", "1", "2", "3", "4", "5" ]
     remaining = data.size
-    EventMachine.run do
-      em_setup
-      expect_data = data.clone
-      @output.subscribe do |event|
-        expect_message = expect_data.shift
-        assert_equal(expect_message, event.message)
-        assert_equal("file://#{@hostname}#{@tmpfile.path}", event.source)
-        assert_equal(@type, event.type, "type")
-        assert_equal([], event.tags, "tags should be empty")
+    expect_data = data.clone
 
-        # Done testing if we run out of data.
-        @agent.stop if expect_data.size == 0
-      end
+    queue = Queue.new
+    @output.subscribe do |event|
+      queue << event
+    end
 
-      # Write to the file periodically
-      timer = EM::PeriodicTimer.new(0.2) do
+    # Write to the file periodically
+    Thread.new do
+      LogStash::Util.set_thread_name("#{__FILE__} - periodic writer")
+      loop do
         out = data.shift((rand * 3).to_i + 1).join("\n")
         @tmpfile.puts out
         @tmpfile.flush
-        timer.cancel if data.length == 0
+        break if data.length == 0
+      end # loop
+    end # timer thread
+
+    loop do
+      event = queue.pop
+      expect_message = expect_data.shift
+      assert_equal(expect_message, event.message)
+      assert_equal("file://#{@hostname}#{@tmpfile.path}", event.source)
+      assert_equal(@type, event.type, "type")
+      assert_equal([], event.tags, "tags should be empty")
+
+      # Done testing if we run out of data.
+      if expect_data.size == 0
+        @agent.stop 
+        break
       end
     end
   end # def test_simple

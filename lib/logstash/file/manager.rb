@@ -41,9 +41,9 @@ class LogStash::File::Manager
 
         # TODO(sissel): inputs/base should do this.
         config["tag"] ||= []
-        if !config["tag"].member?(config["type"])
-          config["tag"] << config["type"]
-        end
+        #if !config["tag"].member?(config["type"])
+          #config["tag"] << config["type"]
+        #end
 
         # TODO(sissel): Need to support file rotation, globs, etc
         begin
@@ -70,7 +70,7 @@ class LogStash::File::Manager
             "@type" => config["type"],
             "@tags" => config["tag"].dup,
           })
-          e.source = "file://#{@hostname}/#{path}"
+          e.source = "file://#{@hostname}#{path}"
           @logger.debug(["New event from file input", path, e])
           @output_queue << e
         end

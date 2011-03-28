@@ -5,14 +5,25 @@ require "logstash/agent"
 
 class LogStash::Config::File
   public
-  def initialize(file)
-    @file = file
-  end
+  def initialize(path=nil, string=nil)
+    @path = path
+    @string = string
+
+    if (path.nil? and string.nil?) or (!path.nil? and !string.nil?)
+       raise "Must give path or string, not both or neither"
+    end
+  end # def initialize
 
   public
   def parse
     grammar = LogStash::Config::Grammar.new
-    grammar.parse(File.new(@file).read)
+
+    if @string.nil?
+      grammar.parse(File.new(@path).read)
+    else
+      grammar.parse(@string)
+    end
+
     @config = grammar.config
     
     registry = LogStash::Config::Registry::registry
