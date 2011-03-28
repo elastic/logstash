@@ -221,11 +221,15 @@ class LogStash::Agent
       raise "Option parsing failed. See error log."
     end
 
-
     configure
 
     # Load the config file
     config = LogStash::Config::File.new(@config_file)
+
+    run_with_config(config)
+  end # def run
+
+  def run_with_config(config)
     config.parse do |plugin|
       # 'plugin' is a has containing:
       #   :type => the base class of the plugin (LogStash::Inputs::Base, etc)
@@ -323,6 +327,10 @@ class LogStash::Agent
         end
       end # Thread.new
     end # @outputs.each
+
+    # yield to a block in case someone's waiting for us to be done setting up
+    # like tests, etc.
+    yield if block_given?
 
     while sleep 5
     end
