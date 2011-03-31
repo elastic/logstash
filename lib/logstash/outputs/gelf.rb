@@ -20,18 +20,19 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   public
   def receive(event)
     # TODO(sissel): Use Gelf::Message instead
-    gelf = Gelf.new(@url.host, (@url.port or 12201))
-    gelf.short_message = (event.fields["message"] or event.message)
-    gelf.full_message = (event.message)
-    gelf.level = 1
-    gelf.host = event["@source_host"]
-    gelf.file = event["@source_path"]
+    gelf = GELF::Notifier.new(@url.host, (@url.port or 12201))
+    m = Hash.new
+    m["short_message"] = (event.fields["message"] or event.message)
+    m["full_message"] = (event.message)
+    m["host"] = event["@source_host"]
+    m["file"] = event["@source_path"]
+    m["level"] = 1
 
     event.fields.each do |name, value|
       next if value == nil or value.empty?
-      gelf.add_additional name, value
+      m["#{name}"] = value
     end
-    gelf.add_additional "event_timestamp", event.timestamp
-    gelf.send
+    m["timestamp"] = event.timestamp
+    gelf.notify(m)
   end # def receive
 end # class LogStash::Outputs::Gelf
