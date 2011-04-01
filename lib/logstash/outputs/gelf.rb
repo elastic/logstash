@@ -11,16 +11,34 @@ require "logstash/outputs/base"
 class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   config_name "gelf"
+  config :host, :validate => :string, :required => true
+  config :port, :validate => :number
+  config :chunksize, :validate => :number
+  config :level, :validate => :number
+  config :facility, :validate => :string
+
+  public
+  def initialize(params)
+    super
+
+    @port ||= 12201
+    @chunksize ||= 1420
+    @level ||= 1
+    @facility ||= 'logstash-gelf'
+
+  end
 
   public
   def register
-    # nothing to do
+    option_hash = Hash.new
+    option_hash['level'] = @level
+    option_hash['facility'] = @facility
+
+    @gelf = GELF::Notifier.new(@host, @port, @chunksize, option_hash)
   end # def register
 
   public
   def receive(event)
-    # TODO(sissel): Use Gelf::Message instead
-    gelf = GELF::Notifier.new(@url.host, (@url.port or 12201))
     m = Hash.new
     m["short_message"] = (event.fields["message"] or event.message)
     m["full_message"] = (event.message)
@@ -33,6 +51,6 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
       m["#{name}"] = value
     end
     m["timestamp"] = event.timestamp
-    gelf.notify(m)
+    @gelf.notify(m)
   end # def receive
 end # class LogStash::Outputs::Gelf
