@@ -7,21 +7,21 @@
 $:.unshift("%s/../lib" % File.dirname(__FILE__))
 $:.unshift(File.dirname(__FILE__))
 
-require "eventmachine"
+require "rubygems"
 require "json"
 require "logstash/search/elasticsearch"
 require "logstash/search/query"
 require "logstash/namespace"
 require "rack"
+require "mizuno"
 require "rubygems"
-require "sinatra/async"
+require "sinatra/base"
 require "logstash/web/helpers/require_param"
 
-class EventMachine::ConnectionError < RuntimeError; end
 module LogStash::Web; end
 
 class LogStash::Web::Server < Sinatra::Base
-  register Sinatra::Async
+  #register Sinatra::Async
   helpers Sinatra::RequireParam # logstash/web/helpers/require_param
 
   set :haml, :format => :html5
@@ -52,16 +52,16 @@ class LogStash::Web::Server < Sinatra::Base
     end # backend_url.scheme
   end # def initialize
  
-  aget '/style.css' do
+  get '/style.css' do
     headers "Content-Type" => "text/css; charset=utf8"
     body sass :style
   end # /style.css
 
-  aget '/' do
+  get '/' do
     redirect "/search"
   end # '/'
 
-  aget '/search' do
+  get '/search' do
     result_callback = proc do |results|
       status 500 if @error
       @results = results
@@ -117,18 +117,17 @@ class LogStash::Web::Server < Sinatra::Base
       )
       result_callback.call results
     end
-  end # aget '/search'
+  end # get '/search'
 
-  apost '/api/search' do
+  post '/api/search' do
     api_search
-  end # apost /api/search
+  end # post /api/search
 
-  aget '/api/search' do
+  get '/api/search' do
     api_search
-  end # aget /api/search
+  end # get /api/search
 
   def api_search
-
     headers({"Content-Type" => "text/html" })
     count = params["count"] = (params["count"] or 50).to_i
     offset = params["offset"] = (params["offset"] or 0).to_i
@@ -217,12 +216,13 @@ class LogStash::Web::Server < Sinatra::Base
         headers({"Content-Type" => "text/plain" })
         # TODO(sissel): issue/30 - needs refactoring here.
         response = @results
+        p response.to_hash
         body response.to_json
       end # case params[:format]
     end # @backend.search
   end # def api_search
 
-  aget '/api/histogram' do
+  get '/api/histogram' do
     headers({"Content-Type" => "text/plain" })
     missing = require_param(:q)
     if !missing.empty?
@@ -255,12 +255,12 @@ class LogStash::Web::Server < Sinatra::Base
       status 200
       body a
     end # @backend.search
-  end # aget '/api/histogram'
+  end # get '/api/histogram'
 
-  aget '/*' do
+  get '/*' do
     status 404 if @error
     body "Invalid path."
-  end # aget /*
+  end # get /*
 end # class LogStash::Web::Server
 
 require "optparse"
@@ -319,7 +319,8 @@ elsif settings.daemonize
   STDERR.reopen(devnull)
 end
 
-Rack::Handler::Thin.run(
+#Rack::Handler::Thin.run(
+Mizuno::HttpServer.run(
   Rack::CommonLogger.new( \
     Rack::ShowExceptions.new( \
       LogStash::Web::Server.new(settings))),
