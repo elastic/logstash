@@ -1,4 +1,3 @@
-require "eventmachine-tail"
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket" # for Socket.gethostname
