@@ -272,6 +272,7 @@ class LogStash::Agent
     @inputs.each do |input|
       @logger.info(["Starting input", input])
       @threads[input] = Thread.new(input_target) do |input_target|
+        LogStash::Util::set_thread_name("input|#{input.inspect}")
         input.logger = @logger
         input.register
         ready_queue << input
