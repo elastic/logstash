@@ -42,15 +42,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     @bunny = Bunny.new(amqpsettings)
     @bunny.start
 
-    @target = nil
-    case @exchange_type
-      when "fanout"
-        @target = @bunny.exchange(@name, :type => :fanout)
-      when "direct"
-        @target = @bunny.exchange(@name, :type => :direct)
-      when "topic"
-        @target = @bunny.exchange(@name, :type => :topic)
-    end # case @exchange_type
+    @target = @bunny.exchange9@name, :type => @exchange_type.to_sym, :durable => @durable)
   end # def register
 
   public
