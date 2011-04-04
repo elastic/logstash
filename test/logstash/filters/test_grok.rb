@@ -56,6 +56,18 @@ class TestFilterGrok < Test::Unit::TestCase
     assert_equal(event.fields["pid"], [pid], "Expected field 'pid' to be ['#{pid.inspect}'], is #{event.fields["pid"].inspect}")
   end # def test_grok_normal
 
+  def test_grok_multiple_message
+    test_name "groknormal"
+    config "pattern" => [ "(?:hello|world) %{NUMBER}" ]
+    
+    event = LogStash::Event.new
+    event.type = @typename
+    event.message = [ "hello 12345", "world 23456" ]
+
+    @filter.filter(event)
+    assert_equal(event.fields["NUMBER"].sort, ["12345", "23456"])
+  end # def test_grok_multiple_message
+
   def test_speed
     test_name "grokspeed"
     config "pattern" => [ "%{SYSLOGLINE}" ]
