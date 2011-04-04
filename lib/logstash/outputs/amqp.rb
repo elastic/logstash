@@ -8,7 +8,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   config_name "amqp"
   config :host, :validate => :string
   config :user, :validate => :string
-  config :pass, :validate => :string
+  config :password, :validate => :string
   config :exchange_type, :validate => :string
   config :name, :validate => :string
   config :vhost, :validate => :string
@@ -36,7 +36,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       :port => (@port or 5672),
     }
     amqpsettings[:user] = @user if @user
-    amqpsettings[:pass] = @pass if @pass
+    amqpsettings[:pass] = @password if @password
     amqpsettings[:logging] = @debug
     @logger.debug(["Connecting to AMQP", amqpsettings, @exchange_type, @name])
     @bunny = Bunny.new(amqpsettings)

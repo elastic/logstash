@@ -10,7 +10,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   config :host, :validate => :string, :required => true
   config :port, :validate => :number
   config :user, :validate => :string, :required => true
-  config :pass, :validate => :string, :required => true
+  config :password, :validate => :string, :required => true
   config :exchange_type, :validate => :string, :required => true
   config :name, :validate => :string, :required => true
   config :vhost, :validate => :string
