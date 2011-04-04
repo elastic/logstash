@@ -8,9 +8,10 @@ gem "jruby-elasticsearch", "~> 0.0.6"
 gem "stomp" # for stomp protocol
 gem "json"
 
-#gem "async_sinatra"
-#gem "rack"
-#gem "thin"
+gem "rack"
+gem "mizuno"
+gem "sinatra"
+gem "haml"
 
 # For testing/dev
 group :development do
