@@ -1,28 +1,32 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
-require "logstash/stomp/handler"
 
 class LogStash::Outputs::Stomp < LogStash::Outputs::Base
-  attr_reader :url
-
   config_name "stomp"
+  config :host, :validate => :string
+  config :port, :validate => :number
+  config :user, :validate => :string
+  config :password, :validate => :string
+  config :destination, :validate => :string
+  config :debug, :validate => :boolean
 
   public
-  def initialize(url, config={}, &block)
+  def initialize(params)
     super
 
-    @logger.debug(["Initialize", { :url => @url }])
+    @debug ||= false
+    @port ||= 61613
   end # def initialize
 
   public
   def register
-    @logger.info(["Registering output", { :url => @url }])
-    @connection = EventMachine::connect(@url.host, @url.port, LogStash::Stomp::Handler, self, @logger, @url)
+    require "stomp"
+    @client = Stomp::Client.new(@user, @password, @host, @port)
   end # def register
 
   public
   def receive(event)
-    @logger.debug(["Sending event", { :url => @url, :event => event }])
-    @connection.send(@url.path, event.to_json)
+    @logger.debug(["stomp sending event", { :host => @host, :event => event }])
+    @client.publish(@destination, event.to_json)
   end # def receive
 end # class LogStash::Outputs::Stomp
