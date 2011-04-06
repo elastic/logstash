@@ -27,29 +27,31 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
 
   config_name "grep"
   config :negate, :validate => :boolean
+  config :match, :validate => :hash
+  config :add_fields, :validate => :hash
+  config :add_tags, :validate => :array
 
   # Config for grep is:
   #   fieldname: pattern
   #   Allow arbitrary keys for this config.
   config /[A-Za-z0-9_-]+/, :validate => :string
 
+
   public
-  def initialize(config = {})
+  def initialize(params)
     super
 
-    @config = config
+    @add_fields ||= {}
+    @add_tags ||= []
   end # def initialize
 
   public
   def register
     @patterns = Hash.new { |h,k| h[k] = [] }
-    @config.each do |field, value|
-      # TODO(sissel): Find a better way to only include config parameters
-      # matching our little regexp friend.
-      next if ["negate", "add_field", "add_tag", "type"].include?(field)
-      re = Regexp.new(value)
+    @match.each do |field, pattern|
+      re = Regexp.new(pattern)
       @patterns[field] << re
-      @logger.debug(["grep: #{@type}/#{field}", value, re])
+      @logger.debug(["grep: #{@type}/#{field}", pattern, re])
     end # @config.each
   end # def register
 
@@ -101,20 +103,16 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
         matched = true
         @logger.debug("matched all fields (#{match_count})")
 
-        if !@add_field.nil? and !@add_field.empty?
-          @add_field.each do |field, value|
-            event[field] ||= []
-            event[field] << event.sprintf(value)
-            @logger.debug("grep: adding #{value} to field #{field}")
-          end
-        end # if @add_field config is set
+        @add_fields.each do |field, value|
+          event[field] ||= []
+          event[field] << event.sprintf(value)
+          @logger.debug("grep: adding #{value} to field #{field}")
+        end
 
-        if !@add_tags.nil? and !@add_tags.empty?
-          @add_tags.each do |tag|
-            event.tags << event.sprintf(tag)
-            @logger.debug("grep: adding tag #{tag}")
-          end
-        end # if @add_tags config is set
+        @add_tags.each do |tag|
+          event.tags << event.sprintf(tag)
+          @logger.debug("grep: adding tag #{tag}")
+        end
       else
         @logger.debug("match block failed " \
                       "(#{match_count}/#{match_want} matches)")
