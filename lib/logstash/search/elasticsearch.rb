@@ -85,9 +85,8 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
       @logger.warn(["Query failed", query, req, req.response])
       result.duration = Time.now - start_time
       result.error_message = req.response
-      #yield result
 
-      yield({ "error" => req.response })
+      yield result
     end
   end # def search
 
