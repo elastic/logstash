@@ -9,14 +9,10 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
   config :commandfile, :validate => :string
 
   public
-  def initialize(url, config={}, &block)
+  def initialize(params)
     super
 
-    if @url.path == "" or @url.path == "/"
-      @cmdfile = "/var/lib/nagios3/rw/nagios.cmd"
-    else
-      @cmdfile = @url.path
-    end
+    @commandfile ||= "/var/lib/nagios3/rw/nagios.cmd"
   end # def initialize
 
   public
@@ -26,9 +22,9 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
 
   public
   def receive(event)
-    if !File.exists?(@cmdfile)
+    if !File.exists?(@commandfile)
       @logger.warn(["Skipping nagios output; command file is missing",
-                   {"cmdfile" => @cmdfile, "missed_event" => event}])
+                   {"commandfile" => @commandfile, "missed_event" => event}])
       return
     end
 
@@ -65,14 +61,14 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
     # In the multi-line case, escape the newlines for the nagios command file
     cmd += event.message.gsub("\n", "\\n")
 
-    @logger.debug({"cmdfile" => @cmdfile, "nagios_command" => cmd})
+    @logger.debug({"commandfile" => @commandfile, "nagios_command" => cmd})
     begin
-      File.open(@cmdfile, "a") do |f|
+      File.open(@commandfile, "a") do |f|
         f.puts cmd
       end
     rescue
       @logger.warn(["Skipping nagios output; error writing to command file",
-                   {"error" => $!, "cmdfile" => @cmdfile,
+                   {"error" => $!, "commandfile" => @commandfile,
                     "missed_event" => event}])
     end
   end # def receive
