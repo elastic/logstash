@@ -63,8 +63,9 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
 
     @logger.debug({"commandfile" => @commandfile, "nagios_command" => cmd})
     begin
-      File.open(@commandfile, "a") do |f|
-        f.puts cmd
+      File.open(@commandfile, "r+") do |f|
+        f.puts(cmd)
+        f.flush
       end
     rescue
       @logger.warn(["Skipping nagios output; error writing to command file",
