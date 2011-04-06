@@ -2,7 +2,6 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require "tweetstream" # rubygem 'tweetstream'
 
-# TODO(sissel): This could use some refactoring.
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
   config_name "twitter"
