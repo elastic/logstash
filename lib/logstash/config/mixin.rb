@@ -2,6 +2,7 @@
 require "logstash/namespace"
 require "logstash/config/registry"
 require "logstash/logging"
+require "logstash/util/password"
 
 # This module is meant as a mixin to classes wishing to be configurable from
 # config files
@@ -245,6 +246,8 @@ module LogStash::Config::Mixin
             end
             # Use Hash[] (works in 1.8.7, anyway) to coerce into a hash.
             result = Hash[*value]
+          when :array
+            result = value
           when :string
             if value.size > 1 # only one value wanted
               return false, "Expected string, got #{value.inspect}"
@@ -283,7 +286,12 @@ module LogStash::Config::Mixin
               end
             end
             result = value.first
+          when :password
+            if value.size > 1
+              return false, "Expected password (one value), got #{value.size} values?"
+            end
 
+            result = ::LogStash::Util::Password.new(value.first)
         end # case validator
       else
         return false, "Unknown validator #{validator.class}"
