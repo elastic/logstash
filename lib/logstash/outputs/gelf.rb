@@ -43,6 +43,6 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
       m["#{name}"] = value
     end
     m["timestamp"] = event.timestamp
-    @gelf.notify(m)
+    @gelf.notify!(m)
   end # def receive
 end # class LogStash::Outputs::Gelf
