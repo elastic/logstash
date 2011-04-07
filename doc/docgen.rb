@@ -109,17 +109,17 @@ class LogStashConfigDocGenerator
     # TODO(sissel): include description of this plugin, maybe use
     # rdoc to pull this?
     @settings.sort { |a,b| a.first.to_s <=> b.first.to_s }.each do |name, config|
+      required = config[:required] ? " (*REQUIRED*)" : ""
       if name.is_a?(Regexp)
-        puts "## /#{name}/ (any config setting matching this regex)"
+        puts "## /#{name}/ #{required}"
       else
-        puts "## #{name}"
+        puts "## #{name} #{required}"
       end
       puts
-      puts config[:description]
+      puts "* Value type is #{config[:validate] or "string"}"
+      puts "* Default is #{config[:default].inspect}" if config.include?(:default)
       puts
-      puts "* Value expected is: #{config[:validate] or "string"}"
-      puts "* This is a required setting" if config[:required]
-      puts "* Default value is: #{config[:default]}" if config.include?(:default)
+      puts config[:description]
       puts 
     end
   end # def generate
