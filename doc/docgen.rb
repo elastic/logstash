@@ -1,9 +1,13 @@
 require "rubygems"
 
+# TODO(sissel): Currently this doc generator doesn't follow ancestry, so
+# LogStash::Input::Amqp inherits Base, but we don't parse the base file.
+# We need this, though.
+
 $: << File.join(File.dirname(__FILE__), "..", "lib")
 
 class LogStashConfigDocGenerator
-  COMMENT_RE = /^ *#(.*)/
+  COMMENT_RE = /^ *#(?: (.*)| *$)/
 
   def initialize
     @rules = {
@@ -40,11 +44,11 @@ class LogStashConfigDocGenerator
         end
       end # RULES.each
     end # string.split("\n").each
-  end
-
+  end # def parse
+ 
   def add_comment(comment)
     @comments << comment
-  end
+  end # def add_comment
 
   def add_config(code)
     # call the code, which calls 'config' in this class.
@@ -74,6 +78,9 @@ class LogStashConfigDocGenerator
   end # def clear_comments
 
   def generate(file)
+    require "logstash/inputs/base"
+    require "logstash/filters/base"
+    require "logstash/outputs/base"
     string = File.new(file).read
     parse(string)
     require file
@@ -101,18 +108,22 @@ class LogStashConfigDocGenerator
 
     # TODO(sissel): include description of this plugin, maybe use
     # rdoc to pull this?
-    @settings.each do |name, config|
-      puts "## #{name}"
+    @settings.sort { |a,b| a.first.to_s <=> b.first.to_s }.each do |name, config|
+      if name.is_a?(Regexp)
+        puts "## /#{name}/ (any config setting matching this regex)"
+      else
+        puts "## #{name}"
+      end
       puts
       puts config[:description]
       puts
-      puts " * Value expected is: #{config[:validate] or "string"}"
-      puts " * This is a required setting" if config[:required]
-      puts " * Default value is: #{config[:default]}" if config.include?(:default)
+      puts "* Value expected is: #{config[:validate] or "string"}"
+      puts "* This is a required setting" if config[:required]
+      puts "* Default value is: #{config[:default]}" if config.include?(:default)
       puts 
     end
-  end
-end
+  end # def generate
+end # class LogStashConfigDocGenerator
 
 if __FILE__ == $0
   gen = LogStashConfigDocGenerator.new
