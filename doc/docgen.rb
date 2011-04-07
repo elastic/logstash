@@ -77,9 +77,39 @@ class LogStashConfigDocGenerator
     string = File.new(file).read
     parse(string)
     require file
-    puts LogStash::Config::Registry.registry[@name]
-    @settings.each do |name, description|
-      p name => description
+    klass = LogStash::Config::Registry.registry[@name]
+    if klass.ancestors.include?(LogStash::Inputs::Base)
+      section = "inputs"
+    elsif klass.ancestors.include?(LogStash::Filters::Base)
+      section = "filters"
+    elsif klass.ancestors.include?(LogStash::Outputs::Base)
+      section = "outputs"
+    end
+
+    # TODO(sissel): probably should use ERB for this.
+    puts "# " + LogStash::Config::Registry.registry[@name].to_s
+    puts
+    puts "Usage example:"
+    puts 
+    puts [
+      "#{section} {",
+      "  #{@name} {",
+      "    # ... settings ...",
+      "  }",
+      "}",
+    ].map { |l| "    #{l}" }.join("\n")
+
+    # TODO(sissel): include description of this plugin, maybe use
+    # rdoc to pull this?
+    @settings.each do |name, config|
+      puts "## #{name}"
+      puts
+      puts config[:description]
+      puts
+      puts " * Value expected is: #{config[:validate] or "string"}"
+      puts " * This is a required setting" if config[:required]
+      puts " * Default value is: #{config[:default]}" if config.include?(:default)
+      puts 
     end
   end
 end
