@@ -48,12 +48,20 @@ module LogStash::Config::Mixin
       exit 1
     end
 
+    # Set defaults from 'config :foo, :default => somevalue'
+    self.class.get_config.each do |name, opts|
+      next if params.include?(name.to_s)
+      if opts.include?(:default) and (name.is_a?(Symbol) or name.is_a?(String))
+        params[name.to_s] = opts[:default]
+      end
+    end
+
     params.each do |key, value|
       @logger.debug("config #{self.class.name}/@#{key} = #{value.inspect}")
 
       # set @foo
       #ivar = "@#{key}"
-      self.instance_variable_set("@#{key}", value)
+      instance_variable_set("@#{key}", value)
     end
 
     @config = params
@@ -61,6 +69,7 @@ module LogStash::Config::Mixin
 
   module DSL
     attr_accessor :flags
+
     # If name is given, set the name and return it.
     # If no name given (nil), return the current name.
     def config_name(name=nil)
@@ -72,14 +81,17 @@ module LogStash::Config::Mixin
     # Define a new configuration setting
     def config(name, opts={})
       @config ||= Hash.new
-      @required ||= Array.new
       # TODO(sissel): verify 'name' is of type String, Symbol, or Regexp
 
       name = name.to_s if name.is_a?(Symbol)
-      @config[name] = opts[:validate] # ok if this is nil
-      @required << name if opts[:required] == true
+      @config[name] = opts  # ok if this is empty
     end # def config
 
+    def get_config
+      return @config
+    end # def get_config
+
+    # Define a flag 
     def flag(*args, &block)
       @flags ||= []
 
@@ -87,7 +99,7 @@ module LogStash::Config::Mixin
         :args => args,
         :block => block
       }
-    end
+    end # def flag
 
     def options(opts)
       # add any options from this class
@@ -98,7 +110,7 @@ module LogStash::Config::Mixin
 
         opts.on("--#{prefix}-#{flagpart}", *flag[:args][1..-1], &flag[:block])
       end
-    end
+    end # def options
 
     # This is called whenever someone subclasses a class that has this mixin.
     def inherited(subclass)
@@ -149,10 +161,11 @@ module LogStash::Config::Mixin
     end # def validate_check_invalid_parameter_names
 
     def validate_check_required_parameter_names(params)
-      @required ||= Array.new
       is_valid = true
 
-      @required.each do |config_key|
+      @config.each do |config_key, config|
+        next unless config[:required]
+
         if config_key.is_a?(Regexp)
           next if params.keys.select { |k| k =~ config_key }.length > 0
         elsif config_key.is_a?(String)
@@ -186,7 +199,7 @@ module LogStash::Config::Mixin
           #puts "Config: #{config_key} / #{config_val} "
           next unless (config_key.is_a?(Regexp) && key =~ config_key) \
                       || (config_key.is_a?(String) && key == config_key)
-          config_val = @config[config_key]
+          config_val = @config[config_key][:validate]
           #puts "  Key matches."
           success, result = validate_value(value, config_val)
           if success 
