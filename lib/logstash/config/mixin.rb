@@ -56,6 +56,7 @@ module LogStash::Config::Mixin
       end
     end
 
+    # set instance variables like '@foo'  for each config value given.
     params.each do |key, value|
       @logger.debug("config #{self.class.name}/@#{key} = #{value.inspect}")
 
