@@ -1,15 +1,23 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 require "logstash/time"
-require "java"
 
 class LogStash::Filters::Date < LogStash::Filters::Base
 
   config_name "date"
 
   # Config for date is:
-  #   fieldname: dateformat
-  #   Allow arbitrary keys for this config.
+  #   fieldname => dateformat
+  #
+  # The date formats allowed are the string 'ISO8601' or whatever is supported
+  # by Joda; generally: [java.text.SimpleDateFormat][dateformats]
+  #
+  # For example, if you have a field 'logdate' and with a value that looks like 'Aug 13 2010 00:03:44'
+  # you would use this configuration:
+  #
+  #     logdate => "MMM dd yyyy HH:mm:ss"
+  #
+  # [dateformats]: http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html
   config /[A-Za-z0-9_-]+/, :validate => :string
 
   # LOGSTASH-34
@@ -42,7 +50,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
   public
   def register
-    #@formatter = org.joda.time.format.DateTimeFormat.forPattern
+    require "java"
     @config.each do |fieldname, value|
       next if fieldname == "type"
 

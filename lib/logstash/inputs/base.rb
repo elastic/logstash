@@ -8,6 +8,8 @@ class LogStash::Inputs::Base
   attr_accessor :logger
 
   config_name "input"
+
+  # Label this input with a type.
   config :type, :validate => :string, :required => true
 
   config :tags, :validate => (lambda do |value|
