@@ -1,32 +1,29 @@
-# GELF output
-# http://www.graylog2.org/about/gelf
-#
-# This class doesn't currently use 'eventmachine'-style code, so it may
-# block things. Whatever, we can fix that later ;)
-
 require "gelf" # rubygem 'gelf'
 require "logstash/namespace"
 require "logstash/outputs/base"
 
+# GELF output. This is most useful if you want to use logstash
+# to output events to graylog2.
+#
+# http://www.graylog2.org/about/gelf
 class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   config_name "gelf"
+  
+  # graylog2 server address
   config :host, :validate => :string, :required => true
-  config :port, :validate => :number
-  config :chunksize, :validate => :number
-  config :level, :validate => :number
-  config :facility, :validate => :string
 
-  public
-  def initialize(params)
-    super
+  # graylog2 server port
+  config :port, :validate => :number, :default => 12201
 
-    @port ||= 12201
-    @chunksize ||= 1420
-    @level ||= 1
-    @facility ||= 'logstash-gelf'
+  # The GELF chunksize
+  config :chunksize, :validate => :number, :default => 1420
 
-  end
+  # The GELF message level
+  config :level, :validate => :number, :default => 1
+
+  # The GELF facility.
+  config :facility, :validate => :string, :default => "logstash-gelf"
 
   public
   def register

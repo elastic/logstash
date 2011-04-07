@@ -6,17 +6,18 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
 
   config_name "mongodb"
 
+  # your mongdob host
   config :host, :validate => :string, :required => true
-  config :port, :validate => :number
+
+  # the mongodb port
+  config :port, :validate => :number, :default => Mongo::Connection::DEFAULT_PORT
+
+  # The database to use
   config :database, :validate => :string, :required => true
+
+  # The collection to use. This value can use %{foo} values to dynamically
+  # select a collection based on data in th eevent.
   config :collection, :validate => :string, :required => true
-
-  public
-  def initialize(params)
-    super
-
-    @port ||= Mongo::Connection::DEFAULT_PORT
-  end
 
   public
   def register
@@ -27,6 +28,6 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
 
   public
   def receive(event)
-    @mongodb.collection(@collection).insert(event.to_hash)
+    @mongodb.collection(event.sprintf(@collection)).insert(event.to_hash)
   end # def receive
 end # class LogStash::Outputs::Mongodb

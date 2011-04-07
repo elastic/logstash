@@ -10,6 +10,8 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   end
 
   config_name "stdout"
+
+  # Enable debugging. Tries to pretty-print the entire event object.
   config :debug, :validate => :boolean
 
   public

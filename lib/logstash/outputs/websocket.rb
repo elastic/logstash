@@ -2,8 +2,14 @@ require "em-websocket" # rubygem 'em-websocket'
 require "logstash/namespace"
 require "logstash/outputs/base"
 
+# TODO(sissel): THIS IS NOT SUPPORTED IN JRUBY YET
 class LogStash::Outputs::Websocket < LogStash::Outputs::Base
-  config :address, :validate => :string
+
+  # The address to serve websocket data from
+  config :host, :validate => :string, :default => "0.0.0.0"
+
+  # The port to serve websocket data from
+  config :port, :validate => :number, :default => 3232
 
   public
   def register

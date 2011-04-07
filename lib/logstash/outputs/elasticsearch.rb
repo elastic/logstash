@@ -3,24 +3,33 @@ require "logstash/outputs/base"
 
 # TODO(sissel): find a better way of declaring where the elasticsearch
 # libraries are
-Dir["/home/jls/build/elasticsearch-0.15.0//lib/*.jar"].each do |jar|
-  require jar
-end
-
+# TODO(sissel): can skip this step if we're running from a jar.
 jarpath = File.join(File.dirname(__FILE__), "../../../vendor/**/*.jar")
 Dir[jarpath].each do |jar|
     require jar
 end
 
-
+# TODO(sissel): Remove old cruft from pre-jruby
+# TODO(sissel): Support river again?
 class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
 
   # http://host/index/type
   config_name "elasticsearch"
+
+  # ElasticSearch server name. This is optional if your server is discoverable.
   config :host, :validate => :string
-  config :index, :validate => :string
-  config :type, :validate => :string
+
+  # The index to write events to. This can be dynamic using the %{foo} syntax.
+  config :index, :validate => :string, :default => "logstash"
+
+  # The type to write events to. Generally you should try to write only similar
+  # events to the same 'type'. String expansion '%{foo}' works here.
+  config :type, :validate => :string, :default => "%{@type}"
+
+  # The name of your cluster if you set it on the ElasticSearch side. Useful
+  # for discovery.
   config :cluster, :validate => :string
+
   # TODO(sissel): Config for river?
 
   public

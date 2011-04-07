@@ -1,19 +1,51 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
 
+# The nagios output is used for sending passive check results to nagios via the
+# nagios command file. 
+#
+# For this output to work, your event must have the following fields:
+#   "nagios_host"
+#   "nagios_service"
+#
+# This field is supported, but optional:
+#   "nagios_annotation"
+#
+# The easiest way to use this output is with the grep filter.
+# Presumably, you only want certain events matching a given pattern
+# to send events to nagios. So use grep to match and also to add the required
+# fields.
+#
+#     filters {
+#       grep {
+#         type => "linux-syslog"
+#         match => [ "@message", "(error|ERROR|CRITICAL)" ]
+#         add_tag => [ "nagios-update" ]
+#         add_fields => [
+#           "nagios_host", "%{@source_host}",
+#           "nagios_service", "the name of your nagios service check"
+#         ]
+#      }
+#    }
+#    
+#    outputs {
+#      nagios { 
+#        # only process events with this tag
+#        tags => "nagios-update"
+#      }
+#    }
 class LogStash::Outputs::Nagios < LogStash::Outputs::Base
   NAGIOS_CRITICAL = 2
   NAGIOS_WARN = 1
 
   config_name "nagios"
-  config :commandfile, :validate => :string
 
-  public
-  def initialize(params)
-    super
+  # The path to your nagios command file
+  config :commandfile, :validate => :string, :default => "/var/lib/nagios3/rw/nagios.cmd"
 
-    @commandfile ||= "/var/lib/nagios3/rw/nagios.cmd"
-  end # def initialize
+  # Only handle events with any of these tags. Optional.
+  # If not specified, will process all events.
+  config :tags, :validate => :array, :default => []
 
   public
   def register
@@ -22,6 +54,13 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
 
   public
   def receive(event)
+    if !@tags.empty?
+      if (event.tags - @tags).size == 0
+        # Skip events that have no tags in common with what we were configured
+        return
+      end
+    end
+
     if !File.exists?(@commandfile)
       @logger.warn(["Skipping nagios output; command file is missing",
                    {"commandfile" => @commandfile, "missed_event" => event}])
@@ -65,7 +104,7 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
     begin
       File.open(@commandfile, "r+") do |f|
         f.puts(cmd)
-        f.flush
+        f.flush # TODO(sissel): probably don't need this.
       end
     rescue
       @logger.warn(["Skipping nagios output; error writing to command file",
