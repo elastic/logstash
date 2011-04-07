@@ -2,6 +2,22 @@ require "logstash/filters/base"
 require "logstash/namespace"
 require "logstash/time"
 
+# The date filter is used for parsing dates from fields and using that
+# date or timestamp as the timestamp for the event.
+#
+# For example, syslog events usually have timestamps like this:
+#   "Apr  7 09:32:01"
+#
+# You would use the date format "MMM dd HH:mm:ss" to parse this.
+#
+# The date filter is especially important for sorting events and for
+# backfilling old data. If you don't get the date correct in your
+# event, then searching for them later will likely sort out of order.
+#
+# In the absense of this filter, logstash will choose a timestamp based on the
+# first time it sees the event (at input time), if the timestamp is not already
+# set in the event. For example, with file input, the timestamp is set to the
+# time of reading.
 class LogStash::Filters::Date < LogStash::Filters::Base
 
   config_name "date"
@@ -138,5 +154,9 @@ class LogStash::Filters::Date < LogStash::Filters::Base
         end # begin
       end # fieldvalue.each 
     end # @parsers.each
+
+    if !event.cancelled?
+      filter_matched(event)
+    end
   end # def filter
 end # class LogStash::Filters::Date

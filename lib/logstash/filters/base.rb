@@ -8,9 +8,36 @@ class LogStash::Filters::Base
   attr_accessor :logger
 
   config_name "filter"
+
+  # The type to act on. A filter 
   config :type, :validate => :string
-  config :add_tag
-  config :add_field, :validate => :hash
+
+  # If this filter is successful, add arbitrary tags to the event.
+  # Tags can be dynamic and include parts of the event using the %{field}
+  # syntax. Example:
+  #
+  #     filters {
+  #       myfilter {
+  #         add_tag => [ "foo_%{somefield}" ]
+  #       }
+  #     }
+  #
+  # If the event has field "somefield" == "hello" this filter, on success,
+  # would add a tag "foo_hello"
+  config :add_tag, :validate => :array, :default => []
+
+  # If this filter is successful, add any arbitrary fields to this event.
+  # Example:
+  #
+  #     filters {
+  #       myfilter {
+  #         add_field => [ "sample", "Hello world, from %{@source}" ]
+  #       }
+  #     }
+  #
+  #  On success, myfilter will then add field 'sample' with the value above
+  #  and the %{@source} piece replaced with that value from the event.
+  config :add_field, :validate => :hash, :default => {}
 
   public
   def initialize(params)
@@ -28,28 +55,19 @@ class LogStash::Filters::Base
     raise "#{self.class}#filter must be overidden"
   end # def filter
 
-  public
-  def add_config(type, typeconfig)
-    if @config.include?(type)
-      @config[type].merge!(typeconfig)
-    else
-      @config[type] = typeconfig
-    end
-  end # def add_config
-
-  # a filter instance should call filter_matches from filter if the event
+  # a filter instance should call filter_matched from filter if the event
   # matches the filter's conditions (right type, etc)
-  private
+  protected
   def filter_matched(event)
-    if @add_tag
-      @add_tag.each { |tag| event.tags << tag }
+    @add_fields.each do |field, value|
+      event[field] ||= []
+      event[field] << event.sprintf(value)
+      @logger.debug("grep: adding #{value} to field #{field}")
     end
-    if @add_field
-      @add_field.each do |field, value|
-        @logger.info "Adding field: #{field} => #{event.sprintf(value)}"
-        event[field] ||= []
-        event[field] << event.sprintf(value)
-      end # @add_field.each
-    end # if @add_field
+
+    @add_tags.each do |tag|
+      event.tags << event.sprintf(tag)
+      @logger.debug("grep: adding tag #{tag}")
+    end
   end # def filter_matched
 end # class LogStash::Filters::Base

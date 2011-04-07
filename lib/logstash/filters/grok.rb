@@ -4,12 +4,29 @@ require "logstash/namespace"
 gem "jls-grok", ">=0.4.3"
 require "grok" # rubygem 'jls-grok'
 
+# Parse arbitrary text and structure it.
+#
+# Use grok 
 class LogStash::Filters::Grok < LogStash::Filters::Base
-
   config_name "grok"
-  config :pattern
-  config :patterns_dir
-  config :drop_if_match, :validate => :boolean  # googlecode/issue/26
+
+  # Specify a pattern to parse with.
+  # Multiple patterns is fine. First match breaks.
+  config :pattern, :validate => :array, :required => true
+
+  # Specify a path to a directory with grok pattern files in it
+  # Pattern files are plain text with format:
+  #   NAME PATTERN
+  #
+  # For example:
+  #   NUMBER \d+
+  config :patterns_dir, :validate => :array
+
+  # Drop if matched. Note, this feature may not stay. It is preferable to combine
+  # grok + grep filters to do parsing + dropping.
+  #
+  # requested in: googlecode/issue/26
+  config :drop_if_match, :validate => :boolean, :default => false
 
   class << self
     attr_accessor :patterns_dir
@@ -22,17 +39,13 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     self.patterns_dir = ["#{File.dirname(__FILE__)}/../../../patterns/*"]
   end
 
+  # This flag becomes "--grok-patterns-path"
   flag("--patterns-path PATH", "Colon-delimited path of patterns to load") do |val|
     @patterns_dir += val.split(":")
   end
 
   @@grokpiles = Hash.new { |h, k| h[k] = [] }
   @@grokpiles_lock = Mutex.new
-
-  public
-  def initialize(params)
-    super
-  end # def initialize
 
   public
   def register
@@ -127,6 +140,9 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       end
     end # message.each
 
+    if !event.cancelled?
+      filter_matched(event)
+    end
     @logger.debug(["Event now: ", event.to_hash])
   end # def filter
 

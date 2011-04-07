@@ -26,29 +26,30 @@ require "logstash/namespace"
 class LogStash::Filters::Grep < LogStash::Filters::Base
 
   config_name "grep"
-  config :negate, :validate => :boolean
-  config :match, :validate => :hash
-  config :add_fields, :validate => :hash
-  config :add_tags, :validate => :array
+
+  # Negate the match. Similar to 'grep -v'
+  #
+  # If this is set to true, then any positive matches will result in the
+  # event being cancelled and dropped. Non-matching will be allowed
+  # through.
+  config :negate, :validate => :boolean, :default => false
+
+  # A hash of matches of field => value
+  config :match, :validate => :hash, :default => {}
 
   # Config for grep is:
   #   fieldname: pattern
   #   Allow arbitrary keys for this config.
   config /[A-Za-z0-9_-]+/, :validate => :string
 
-
-  public
-  def initialize(params)
-    super
-
-    @add_fields ||= {}
-    @add_tags ||= []
-  end # def initialize
-
   public
   def register
     @patterns = Hash.new { |h,k| h[k] = [] }
-    @match.each do |field, pattern|
+      # TODO(sissel): 
+    @match.merge(@config).each do |field, pattern|
+      # Skip :negate and :match
+      next if field.is_a?(Symbol) 
+
       re = Regexp.new(pattern)
       @patterns[field] << re
       @logger.debug(["grep: #{@type}/#{field}", pattern, re])
@@ -102,17 +103,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       if match_count == match_want
         matched = true
         @logger.debug("matched all fields (#{match_count})")
-
-        @add_fields.each do |field, value|
-          event[field] ||= []
-          event[field] << event.sprintf(value)
-          @logger.debug("grep: adding #{value} to field #{field}")
-        end
-
-        @add_tags.each do |tag|
-          event.tags << event.sprintf(tag)
-          @logger.debug("grep: adding tag #{tag}")
-        end
+        filter_matched(event)
       else
         @logger.debug("match block failed " \
                       "(#{match_count}/#{match_want} matches)")
@@ -120,12 +111,16 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       end # match["match"].each
     end # config.each
 
-    if not matched
+    if not matched || event.cancelled?
       @logger.debug("grep: dropping event, no matches")
       event.cancel
       return
     end
 
     @logger.debug(["Event after grep filter", event.to_hash])
+
+    if !event.cancelled?
+      filter_matched(event)
+    end
   end # def filter
 end # class LogStash::Filters::Grep
