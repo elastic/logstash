@@ -4,6 +4,7 @@ require "rubygems"
 # LogStash::Input::Amqp inherits Base, but we don't parse the base file.
 # We need this, though.
 
+$: << Dir.pwd
 $: << File.join(File.dirname(__FILE__), "..", "lib")
 
 class LogStashConfigDocGenerator
