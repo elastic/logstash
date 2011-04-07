@@ -6,34 +6,45 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
 
   config_name "amqp"
-  config :host, :validate => :string
-  config :user, :validate => :string
-  config :password, :validate => :string
-  config :exchange_type, :validate => :string
-  config :name, :validate => :string
-  config :vhost, :validate => :string
-  config :durable, :validate => :boolean
-  config :debug, :validate => :boolean
 
-  public
-  def initialize(params)
-    super
+  # Your amqp server address
+  config :host, :validate => :string, :required => true, :default => "localhost"
 
-    @debug ||= false
-    @durable ||= false
+  # The AMQP port to connect on
+  config :port, :validate => :number, :default => 5672
 
-    if !MQTYPES.include?(@exchange_type)
-      raise "Invalid exchange_type, #{@exchange_type.inspect}, must be one of #{MQTYPES.join(", ")}"
-    end
-  end # def initialize
+  # Your amqp username
+  config :user, :validate => :string, :required => true, :default => "guest"
+
+  # Your amqp password
+  config :password, :validate => :string, :required => true, :default => "guest"
+
+  # The exchange type (fanout, topic, direct)
+  config :exchange_type, :validate => :string, :required => true
+
+  # The name of the exchange
+  config :name, :validate => :string, :required => true
+
+  # The vhost to use
+  config :vhost, :validate => :string, :default => "/"
+
+  # Is this exchange durable?
+  config :durable, :validate => :boolean, :default => false
+
+  # Enable or disable debugging
+  config :debug, :validate => :boolean, :default => false
 
   public
   def register
+    if !MQTYPES.include?(@exchange_type)
+      raise "Invalid exchange_type, #{@exchange_type.inspect}, must be one of #{MQTYPES.join(", ")}"
+    end
+
     @logger.info("Registering output #{to_s}")
     amqpsettings = {
-      :vhost => (@vhost or "/"),
+      :vhost => @vhost,
       :host => @host,
-      :port => (@port or 5672),
+      :port => @port
     }
     amqpsettings[:user] = @user if @user
     amqpsettings[:pass] = @password if @password
@@ -42,7 +53,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     @bunny = Bunny.new(amqpsettings)
     @bunny.start
 
-    @target = @bunny.exchange9@name, :type => @exchange_type.to_sym, :durable => @durable)
+    @target = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
   end # def register
 
   public
