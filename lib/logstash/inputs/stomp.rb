@@ -1,26 +1,34 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 
-# TODO(sissel): This class doesn't work yet in JRuby. Haven't debugged it much.
+# TODO(sissel): This class doesn't work yet in JRuby. Google for
+# 'execution expired stomp jruby' and you'll find the ticket.
 
+# Stream events from a STOMP broker.
+#
+# TODO(sissel): Include info on where to learn about STOMP
 class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   config_name "stomp"
+
+  # The address of the STOMP server.
   config :host, :validate => :string
-  config :port, :validate => :number
-  config :user, :validate => :string
-  config :password, :validate => :string
+
+  # The port to connet to on your STOMP server.
+  config :port, :validate => :number, :default => 61613
+
+  # The username to authenticate with.
+  config :user, :validate => :string, :default => ""
+
+  # The password to authenticate with.
+  config :password, :validate => :password, :default => ""
+
+  # The destination to read events from.
+  #
+  # Example: "/topic/logstash"
   config :destination, :validate => :string
-  config :debug, :validate => :boolean
 
-  public
-  def initialize(params)
-    super
-
-    @debug ||= false
-    @port ||= 61613
-    @user ||= ''
-    @password ||= ''
-  end # def initialize
+  # Enable debugging output?
+  config :debug, :validate => :boolean, :default => false
 
   public
   def register

@@ -7,15 +7,8 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
   config_name "twitter"
   config :user, :validate => :string, :required => true
   config :password, :validate => :password, :required => true
-  config :debug, :validate => :boolean
 
   config :keywords, :validate => :array, :required => true
-
-  public
-  def initialize(params)
-    super
-    @debug ||= false
-  end # def initialize
 
   def register
     # nothing to do

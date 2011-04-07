@@ -12,6 +12,14 @@ class LogStash::Inputs::Base
   # Label this input with a type.
   config :type, :validate => :string, :required => true
 
+  # Set this to true to enable debugging on an input.
+  config :debug, :validate => :boolean, :default => false
+
+  # Add any number of arbitrary tags to your event.
+  #
+  # This can help with processing later.
+  # TODO(sissel): do we really care what the value of this field is?
+  #   can we just validate as an array of strings and call it done?
   config :tags, :validate => (lambda do |value|
     re = /^[A-Za-z0-9_]+$/
     value.each do |v|

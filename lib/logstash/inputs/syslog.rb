@@ -4,21 +4,20 @@ require "logstash/namespace"
 require "logstash/time" # should really use the filters/date.rb bits
 require "socket"
 
+# Read syslog messages as events over the network.
+#
+# This input is a good choice if you already use syslog today.
+# It is also a good choice if you want to receive logs from
+# appliances and network devices where you cannot run your own
+# log collector.
 class LogStash::Inputs::Syslog < LogStash::Inputs::Base
-
   config_name "syslog"
 
-  # TCP listen configuration
-  config :host, :validate => :string
-  config :port, :validate => :number
+  # The address to listen on
+  config :host, :validate => :string, :default => "0.0.0.0"
 
-  public
-  def initialize(params)
-    super
-
-    @host ||= "0.0.0.0"
-    @port ||= 514
-  end
+  # The port to listen on
+  config :port, :validate => :number, :default => 514
 
   public
   def register

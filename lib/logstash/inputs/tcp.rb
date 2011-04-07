@@ -3,21 +3,23 @@ require "logstash/namespace"
 require "socket"
 require "timeout"
 
+# Read events over a TCP socket.
+#
+# Like stdin and file inputs, each event is assumed to be one line of text.
 class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
   config_name "tcp"
 
-  config :host, :validate => :string
+  # The address to listen on
+  config :host, :validate => :string, :default => "0.0.0.0"
+  
+  # the port to listen on
   config :port, :validate => :number, :required => true
-  config :data_timeout, :validate => :number
 
-  public
-  def initialize(params)
-    super
-
-    @host ||= "0.0.0.0"
-    @data_timeout ||= 5
-  end
+  # Read timeout in seconds. If a particular tcp connection is
+  # idle for more than this timeout period, we will assume 
+  # it is dead and close it.
+  config :data_timeout, :validate => :number, :default => 5
 
   public
   def register
@@ -38,6 +40,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
             buf = nil
             # NOTE(petef): the timeout only hits after the line is read
             # or socket dies
+            # TODO(sissel): Why do we have a timeout here? What's the point?
             Timeout::timeout(@data_timeout) do
               buf = s.readline
             end

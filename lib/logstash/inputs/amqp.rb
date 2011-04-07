@@ -1,12 +1,16 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 
+# Pull events from an AMQP exchange.
+#
+# 
+# TODO(sissel): Document where to learn more about AMQP and brokers.
 class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
 
   config_name "amqp"
 
-  # The host to connect to
+  # Your amqp server address
   config :host, :validate => :string, :required => true, :default => "localhost"
 
   # The AMQP port to connect on
