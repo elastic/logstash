@@ -1,4 +1,5 @@
 
+$: << File.join(File.dirname(__FILE__), "../")
 command = ARGV.shift
 
 case command

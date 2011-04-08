@@ -127,7 +127,7 @@ namespace :package do
       end
 
       output = "logstash-#{LOGSTASH_VERSION}.jar"
-      sh "jar -cfe #{output} logstash.agent -C build-jar ."
+      sh "jar -cfe #{output} logstash.runner -C build-jar ."
 
       # Learned how to do this mostly from here:
       # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
