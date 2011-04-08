@@ -67,8 +67,9 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   public
   def register
     require "java"
-    @config.each do |fieldname, value|
-      next if fieldname == "type"
+    # TODO(sissel): Need a way of capturing regexp configs better.
+    @config.each do |field, value|
+      next if ["add_tag", "add_field", "type"].include?(field)
 
       case value
       when "ISO8601"
@@ -86,8 +87,8 @@ class LogStash::Filters::Date < LogStash::Filters::Base
         missing = DATEPATTERNS.reject { |p| value.include?(p) }
       end
 
-      @logger.debug "Adding type #{@type} with date config: #{fieldname} => #{value}"
-      @parsers[fieldname] << {
+      @logger.debug "Adding type #{@type} with date config: #{field} => #{value}"
+      @parsers[field] << {
         :parser => parser.withOffsetParsed,
         :missing => missing
       }

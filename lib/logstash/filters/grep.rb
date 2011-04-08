@@ -1,28 +1,10 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
-# Grep filter.
+# Grep filter. Useful for dropping events you don't want to pass.
 #
-# Useful for:
-# * Dropping events
-# * Tagging events
-# * Adding static fields
-#
-# Events not matched ar dropped. If 'negate' is set to true (defaults false), then
-# matching events are dropped.
-#
-# Config:
-# - grep:
-#   <type>:
-#     - match:
-#         <field>: <regexp>
-#       negate: true/false
-#       add_fields:
-#         <field>: <value>
-#       add_tags:
-#         - tag1
-#         - tag2
-#
+# Events not matched are dropped. If 'negate' is set to true (defaults false),
+# then matching events are dropped.
 class LogStash::Filters::Grep < LogStash::Filters::Base
 
   config_name "grep"
@@ -47,8 +29,8 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
     @patterns = Hash.new { |h,k| h[k] = [] }
       # TODO(sissel): 
     @match.merge(@config).each do |field, pattern|
-      # Skip :negate and :match
-      next if field.is_a?(Symbol) 
+      # Skip known config names
+      next if ["add_tag", "add_field", "type", "negate", "match"].include?(field)
 
       re = Regexp.new(pattern)
       @patterns[field] << re
@@ -103,7 +85,6 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       if match_count == match_want
         matched = true
         @logger.debug("matched all fields (#{match_count})")
-        filter_matched(event)
       else
         @logger.debug("match block failed " \
                       "(#{match_count}/#{match_want} matches)")

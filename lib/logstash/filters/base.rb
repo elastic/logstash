@@ -18,7 +18,7 @@ class LogStash::Filters::Base
   #
   #     filters {
   #       myfilter {
-  #         add_tag => [ "foo_%{somefield}" ]
+  #         add_tags => [ "foo_%{somefield}" ]
   #       }
   #     }
   #
@@ -31,7 +31,7 @@ class LogStash::Filters::Base
   #
   #     filters {
   #       myfilter {
-  #         add_field => [ "sample", "Hello world, from %{@source}" ]
+  #         add_fields => [ "sample", "Hello world, from %{@source}" ]
   #       }
   #     }
   #
@@ -59,15 +59,16 @@ class LogStash::Filters::Base
   # matches the filter's conditions (right type, etc)
   protected
   def filter_matched(event)
-    @add_fields.each do |field, value|
+    (@add_field or {}).each do |field, value|
       event[field] ||= []
       event[field] << event.sprintf(value)
-      @logger.debug("grep: adding #{value} to field #{field}")
+      @logger.debug("filters/#{self.class.name}: adding #{value} to field #{field}")
     end
 
-    @add_tags.each do |tag|
+    (@add_tag or []).each do |tag|
+      @logger.debug("filters/#{self.class.name}: adding tag #{tag}")
       event.tags << event.sprintf(tag)
-      @logger.debug("grep: adding tag #{tag}")
+      #event.tags |= [ event.sprintf(tag) ]
     end
   end # def filter_matched
 end # class LogStash::Filters::Base

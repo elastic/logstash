@@ -12,11 +12,11 @@ require "logstash/event"
 class TestFilterGrep < Test::Unit::TestCase
   def setup
     @filter = LogStash::Filters.from_name("grep", {})
-  end
+  end # def setup
 
   def test_name(name)
     @typename = name
-  end
+  end # def test_name
 
   def config(cfg)
     cfg["type"] = @typename
@@ -28,7 +28,7 @@ class TestFilterGrep < Test::Unit::TestCase
 
     @filter = LogStash::Filters::Grep.new(cfg)
     @filter.register
-  end
+  end # def config
 
   def test_single_match
     test_name "single_match"
@@ -140,7 +140,7 @@ class TestFilterGrep < Test::Unit::TestCase
   def test_add_tags
     test_name "add_tags"
     config "str" => "test",
-           "add_tags" => ["new_tag"]
+           "add_tag" => ["new_tag"]
 
     event = LogStash::Event.new
     event.tags << "tag"
@@ -151,9 +151,9 @@ class TestFilterGrep < Test::Unit::TestCase
   end # def test_add_tags
 
   def test_add_tags_with_format
-    test_name "add_tags"
+    test_name "add_tags_with_format"
     config "str" => "test",
-           "add_tags" => ["%{str}"]
+           "add_tag" => ["%{str}"]
 
     event = LogStash::Event.new
     event.tags << "tag"
