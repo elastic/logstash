@@ -1,0 +1,49 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    bunny (0.6.0)
+    daemons (1.1.2)
+    eventmachine (0.12.10-java)
+    ffi (0.6.3-java)
+    filewatch (0.1.2)
+    haml (3.0.25)
+    hoe (2.9.4)
+      rake (>= 0.8.7)
+    jls-grok (0.4.6)
+      ffi (~> 0.6.3)
+    jruby-elasticsearch (0.0.6)
+    json (1.5.1-java)
+    mizuno (0.4.0)
+      rack (>= 1.0.0)
+    rack (1.2.2)
+    rake (0.8.7)
+    sinatra (1.2.2)
+      rack (~> 1.1)
+      tilt (>= 1.2.2, < 2.0)
+    spoon (0.0.1)
+    stomp (1.1.8)
+    stompserver (0.9.9)
+      daemons (>= 1.0.2)
+      eventmachine (>= 0.7.2)
+      hoe (>= 1.1.1)
+      hoe (>= 1.3.0)
+    tilt (1.2.2)
+    uuidtools (2.1.2)
+
+PLATFORMS
+  java
+
+DEPENDENCIES
+  bunny
+  filewatch
+  haml
+  jls-grok (~> 0.4.3)
+  jruby-elasticsearch (~> 0.0.6)
+  json
+  mizuno
+  rack
+  sinatra
+  spoon
+  stomp
+  stompserver
+  uuidtools
