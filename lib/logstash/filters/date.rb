@@ -25,6 +25,9 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # Config for date is:
   #   fieldname => dateformat
   #
+  # The same field can be specified multiple times (or multiple dateformats for
+  # the same field) do try different time formats; first success wins.
+  #
   # The date formats allowed are the string 'ISO8601' or whatever is supported
   # by Joda; generally: [java.text.SimpleDateFormat][dateformats]
   #
@@ -34,7 +37,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #     logdate => "MMM dd yyyy HH:mm:ss"
   #
   # [dateformats]: http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html
-  config /[A-Za-z0-9_-]+/, :validate => :string
+  config /[A-Za-z0-9_-]+/, :validate => :array
 
   # LOGSTASH-34
   DATEPATTERNS = %w{ y d H m s S } 
@@ -71,29 +74,30 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     @config.each do |field, value|
       next if ["add_tag", "add_field", "type"].include?(field)
 
-      case value
-      when "ISO8601"
-        parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser
-        missing = []
-      else
-        parser = org.joda.time.format.DateTimeFormat.forPattern(value)
+      # values here are an array of format strings for the given field.
+      value.each do |format|
+        case format
+        when "ISO8601"
+          parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser
+          missing = []
+        else
+          parser = org.joda.time.format.DateTimeFormat.forPattern(format)
 
-        # Joda's time parser doesn't assume 'current time' for unparsed values.
-        # That is, if you parse with format "mmm dd HH:MM:SS" (no year) then
-        # the year is assumed to be unix epoch year, 1970, rather than
-        # current year. This sucks, so try and keep track of fields that
-        # are not specified so we can inject them later. (jordansissel)
-        # LOGSTASH-34
-        missing = DATEPATTERNS.reject { |p| value.include?(p) }
-      end
+          # Joda's time parser doesn't assume 'current time' for unparsed values.
+          # That is, if you parse with format "mmm dd HH:MM:SS" (no year) then
+          # the year is assumed to be unix epoch year, 1970, rather than
+          # current year. This sucks, so try and keep track of fields that
+          # are not specified so we can inject them later. (jordansissel)
+          # LOGSTASH-34
+          missing = DATEPATTERNS.reject { |p| format.include?(p) }
+        end
 
-      @logger.debug "Adding type #{@type} with date config: #{field} => #{value}"
-      @parsers[field] << {
-        :parser => parser.withOffsetParsed,
-        :missing => missing
-      }
-
-
+        @logger.debug "Adding type #{@type} with date config: #{field} => #{format}"
+        @parsers[field] << {
+          :parser => parser.withOffsetParsed,
+          :missing => missing
+        }
+      end # value.each
     end # @config.each
   end # def register
 
@@ -116,14 +120,24 @@ class LogStash::Filters::Date < LogStash::Filters::Base
         begin
           time = nil
           missing = []
+          success = false
           fieldparsers.each do |parserconfig|
             parser = parserconfig[:parser]
             missing = parserconfig[:missing]
             #@logger.info :Missing => missing
             #p :parser => parser
-            time = parser.parseDateTime(value)
-            break # TODO(sissel): do something else
+            begin
+              time = parser.parseDateTime(value)
+              success = true
+              break # success
+            rescue => e
+              last_exception = e
+            end
           end # fieldparsers.each
+
+          if !success
+            raise last_exception
+          end
 
           # Perform workaround for LOGSTASH-34
           if !missing.empty?
@@ -151,7 +165,9 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           @logger.debug "Parsed #{value.inspect} as #{event.timestamp}"
         rescue => e
           @logger.warn "Failed parsing date #{value.inspect} from field #{field}: #{e}"
-          raise e
+          # Raising here will bubble all the way up and cause an exit.
+          # TODO(sissel): Maybe we shouldn't raise?
+          #raise e
         end # begin
       end # fieldvalue.each 
     end # @parsers.each
