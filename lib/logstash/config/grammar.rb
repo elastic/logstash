@@ -1,10 +1,9 @@
 
 # line 1 "grammar.rl"
-require "rubygems"
 require "logstash/namespace"
 
 
-# line 145 "grammar.rl"
+# line 144 "grammar.rl"
 
 
 class LogStash::Config::Grammar
@@ -14,7 +13,7 @@ class LogStash::Config::Grammar
   def initialize
     # BEGIN RAGEL DATA
     
-# line 18 "grammar.rb"
+# line 17 "grammar.rb"
 class << self
 	attr_accessor :_logstash_config_actions
 	private :_logstash_config_actions, :_logstash_config_actions=
@@ -246,7 +245,7 @@ end
 self.logstash_config_en_main = 53;
 
 
-# line 154 "grammar.rl"
+# line 153 "grammar.rl"
     # END RAGEL DATA
 
     @tokenstack = Array.new
@@ -261,20 +260,20 @@ self.logstash_config_en_main = 53;
 
     # BEGIN RAGEL INIT
     
-# line 265 "grammar.rb"
+# line 264 "grammar.rb"
 begin
 	p ||= 0
 	pe ||= data.length
 	cs = logstash_config_start
 end
 
-# line 168 "grammar.rl"
+# line 167 "grammar.rl"
     # END RAGEL INIT
 
     begin 
       # BEGIN RAGEL EXEC 
       
-# line 278 "grammar.rb"
+# line 277 "grammar.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	_goto_level = 0
@@ -355,15 +354,14 @@ begin
 			_acts += 1
 			case _logstash_config_actions[_acts - 1]
 when 0 then
-# line 7 "grammar.rl"
+# line 6 "grammar.rl"
 		begin
 
     @tokenstack.push(p)
     #puts "Mark: #{self.line(string, p)}##{self.column(string, p)}"
   		end
-# line 7 "grammar.rl"
 when 1 then
-# line 12 "grammar.rl"
+# line 11 "grammar.rl"
 		begin
 
     startpos = @tokenstack.pop
@@ -374,9 +372,8 @@ when 1 then
     #puts [startpos, endpos].join(",")
     @stack << token.to_i
   		end
-# line 12 "grammar.rl"
 when 2 then
-# line 22 "grammar.rl"
+# line 21 "grammar.rl"
 		begin
 
     startpos = @tokenstack.pop
@@ -385,9 +382,8 @@ when 2 then
     #puts "string: #{token}"
     @stack << token
   		end
-# line 22 "grammar.rl"
 when 3 then
-# line 30 "grammar.rl"
+# line 29 "grammar.rl"
 		begin
 
     startpos = @tokenstack.pop
@@ -399,17 +395,15 @@ when 3 then
     #puts "quotedstring: #{token}"
     @stack << token
   		end
-# line 30 "grammar.rl"
 when 4 then
-# line 41 "grammar.rl"
+# line 40 "grammar.rl"
 		begin
 
     @array = []
     @stack << :array_init
   		end
-# line 41 "grammar.rl"
 when 5 then
-# line 46 "grammar.rl"
+# line 45 "grammar.rl"
 		begin
 
     while @stack.last != :array_init
@@ -419,16 +413,14 @@ when 5 then
 
     @stack << @array
   		end
-# line 46 "grammar.rl"
 when 6 then
-# line 55 "grammar.rl"
+# line 54 "grammar.rl"
 		begin
 
     # nothing
   		end
-# line 55 "grammar.rl"
 when 7 then
-# line 59 "grammar.rl"
+# line 58 "grammar.rl"
 		begin
 
     value = @stack.pop
@@ -440,9 +432,8 @@ when 7 then
       @parameters[name] << value
     end
   		end
-# line 59 "grammar.rl"
 when 8 then
-# line 70 "grammar.rl"
+# line 69 "grammar.rl"
 		begin
 
     @components ||= []
@@ -451,17 +442,15 @@ when 8 then
     @components << { name => @parameters }
     @parameters = Hash.new { |h,k| h[k] = [] }
   		end
-# line 70 "grammar.rl"
 when 9 then
-# line 78 "grammar.rl"
+# line 77 "grammar.rl"
 		begin
 
     @components = []
     @parameters = Hash.new { |h,k| h[k] = [] }
   		end
-# line 78 "grammar.rl"
 when 10 then
-# line 83 "grammar.rl"
+# line 82 "grammar.rl"
 		begin
 
     name = @stack.pop
@@ -469,22 +458,19 @@ when 10 then
     @config[name] += @components
     #puts "Config component: #{name}"
   		end
-# line 83 "grammar.rl"
 when 11 then
-# line 90 "grammar.rl"
+# line 89 "grammar.rl"
 		begin
  e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" 		end
-# line 90 "grammar.rl"
 when 13 then
-# line 140 "grammar.rl"
+# line 139 "grammar.rl"
 		begin
  
             # Compute line and column of the cursor (p)
             $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           		end
-# line 140 "grammar.rl"
-# line 488 "grammar.rb"
+# line 474 "grammar.rb"
 			end # action switch
 		end
 	end
@@ -513,15 +499,14 @@ when 13 then
 		__acts += 1
 		case _logstash_config_actions[__acts - 1]
 when 0 then
-# line 7 "grammar.rl"
+# line 6 "grammar.rl"
 		begin
 
     @tokenstack.push(p)
     #puts "Mark: #{self.line(string, p)}##{self.column(string, p)}"
   		end
-# line 7 "grammar.rl"
 when 10 then
-# line 83 "grammar.rl"
+# line 82 "grammar.rl"
 		begin
 
     name = @stack.pop
@@ -529,27 +514,23 @@ when 10 then
     @config[name] += @components
     #puts "Config component: #{name}"
   		end
-# line 83 "grammar.rl"
 when 11 then
-# line 90 "grammar.rl"
+# line 89 "grammar.rl"
 		begin
  e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" 		end
-# line 90 "grammar.rl"
 when 12 then
-# line 139 "grammar.rl"
+# line 138 "grammar.rl"
 		begin
  puts "END" 		end
-# line 139 "grammar.rl"
 when 13 then
-# line 140 "grammar.rl"
+# line 139 "grammar.rl"
 		begin
  
             # Compute line and column of the cursor (p)
             $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           		end
-# line 140 "grammar.rl"
-# line 553 "grammar.rb"
+# line 534 "grammar.rb"
 		end # eof action switch
 	end
 	if _trigger_goto
@@ -563,7 +544,7 @@ end
 	end
 	end
 
-# line 173 "grammar.rl"
+# line 172 "grammar.rl"
       # END RAGEL EXEC
     rescue => e
       # Compute line and column of the cursor (p)

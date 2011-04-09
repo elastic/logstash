@@ -7,16 +7,14 @@
 $:.unshift("%s/../lib" % File.dirname(__FILE__))
 $:.unshift(File.dirname(__FILE__))
 
-require "rubygems"
-require "json"
 require "logstash/search/elasticsearch"
 require "logstash/search/query"
 require "logstash/namespace"
-require "rack"
-require "mizuno"
-require "rubygems"
-require "sinatra/base"
 require "logstash/web/helpers/require_param"
+require "json" # gem json
+require "rack" # gem rack
+require "mizuno" # gem mizuno
+require "sinatra/base" # gem sinatra
 
 module LogStash::Web; end
 
