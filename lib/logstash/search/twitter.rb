@@ -7,6 +7,8 @@ require "logstash/search/query"
 require "logstash/search/result"
 require "logstash/search/facetresult"
 require "logstash/search/facetresult/histogram"
+
+# TODO(sissel): This won't work anymore (we don't use EM right now)
  
 class LogStash::Search::Twitter < LogStash::Search::Base
   public
