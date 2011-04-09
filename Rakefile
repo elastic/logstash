@@ -34,6 +34,14 @@ task :compile => "lib/logstash/config/grammar.rb" do |t|
     args = Dir.glob("**/*.rb")
     sh "jrubyc", "-t", "../build", *args
   end
+  Dir.chdir("test") do
+    args = Dir.glob("**/*.rb")
+    sh "jrubyc", "-t", "../build", *args
+  end
+end
+
+task :jar => [ "package:monolith:jar" ] do |t|
+  # Nothing
 end
 
 VERSIONS = {
@@ -88,7 +96,7 @@ namespace :vendor do
 
   task :gems => "vendor/jar" do
     puts "=> Installing gems to vendor/bundle/..."
-    sh "bundle install --deployment"
+    sh "bundle install --path #{File.join("vendor", "bundle")}"
   end
 end # vendor namespace
 
@@ -110,8 +118,8 @@ namespace :package do
     task :jar => monolith_deps do
       mkdir_p "build-jar"
 
-      # Unpack all the 3rdparty jars
-      Dir.glob("vendor/jar/**/*.jar").each do |jar|
+      # Unpack all the 3rdparty jars and any jars in gems
+      Dir.glob("vendor/{bundle,jar}/**/*.jar").each do |jar|
         puts "=> Unpacking #{jar} into build-jar/"
         Dir.chdir("build-jar") do 
           sh "jar xf ../#{jar}"
@@ -119,32 +127,59 @@ namespace :package do
       end
 
       # We compile stuff to build/...
-      Dir.glob("build/**/*.class").each do |file|
-        target = File.join("build-jar", file.gsub("build/", ""))
-        mkdir_p File.dirname(target)
-        puts "=> Copying #{file} => #{target}"
-        File.copy(file, target)
+      # TODO(sissel): Could probably just use 'jar uf' for this?
+      #Dir.glob("build/**/*.class").each do |file|
+        #target = File.join("build-jar", file.gsub("build/", ""))
+        #mkdir_p File.dirname(target)
+        #puts "=> Copying #{file} => #{target}"
+        #File.copy(file, target)
+      #end
+
+      # Purge any extra files we don't need in META-INF (like manifests and
+      # jar signatures)
+      ["INDEX.LIST", "MANIFEST.MF", "ECLIPSEF.RSA", "ECLIPSEF.SF"].each do |file|
+        File.delete(File.join("build-jar", "META-INF", file)) rescue nil
       end
+      #FileUtils.rm_r(File.join("build-jar", "META-INF")) rescue nil
 
       output = "logstash-#{LOGSTASH_VERSION}.jar"
-      sh "jar -cfe #{output} logstash.runner -C build-jar ."
+      sh "jar cfe #{output} logstash.runner -C build-jar ."
+
+      jar_update_args = []
 
       # Learned how to do this mostly from here:
       # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
+      #
       # Add bundled gems to the jar
-      sh "jar uf #{output} -C vendor/bundle/jruby/1.8 ."
+      # Skip the 'cache' dir which is just the original .gem files
+      gem_dirs = %w{bin doc gems specifications}
+      gem_root = File.join(%w{vendor bundle jruby 1.8})
+      # for each dir, build args: -C vendor/bundle/jruby/1.8 bin, etc
+      gem_jar_args = gem_dirs.collect { |dir| ["-C", gem_root, dir ] }.flatten
+      jar_update_args += gem_jar_args
+
+      # Add compiled our compiled ruby code
+      jar_update_args += %w{ -C build . }
+
+      # Add web stuff
+      jar_update_args += %w{ -C lib logstash/web/public }
+      jar_update_args += %w{ -C lib logstash/web/views }
+
+      # Add test code
+      #jar_update_args += %w{ -C test logstsah }
 
       # Add grok patterns
-      sh "jar -uf #{output} patterns/"
+      jar_update_args << "patterns"
 
-      # Build jar index
-      sh "jar -i #{output}"
-    end # package:monolith:jar
-  end # monolith
-end # package
+      # Update with other files and also build an index.
+      sh "jar uf #{output} #{jar_update_args.join(" ")}"
+      sh "jar i #{output}"
+    end # task package:monolith:jar
+  end # namespace monolith
+end # namespace package
 
 task :test do
-  sh "cd test; ruby run.rb"
+  sh "cd test; ruby logstash_test_runner.rb"
 end
 
 
