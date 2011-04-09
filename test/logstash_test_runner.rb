@@ -19,8 +19,17 @@ use "logstash/filters/test_date"
 use "logstash/filters/test_grep"
 use "logstash/filters/test_multiline"
 use "logstash/filters/test_grok"
-use "logstash/outputs/test_elasticsearch"
+
+if __FILE__ =~ /^file:.*\.jar/
+  puts "Skipping elasticsearch tests since we're running from a jar."
+  skip "logstash/outputs/test_elasticsearch"
+else
+  use "logstash/outputs/test_elasticsearch"
+end
 
 skip "logstash/inputs/test_file"
 skip "logstash/inputs/test_syslog"
 skip "logstash/inputs/test_stomp"
+
+Test::Unit::AutoRunner.run
+
