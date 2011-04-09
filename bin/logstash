@@ -2,6 +2,7 @@
 
 $: << File.dirname($0) + "/../lib"
 
+require "rubygems"
 require "logstash/agent"
 
 agent = LogStash::Agent.new
