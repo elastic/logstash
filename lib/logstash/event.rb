@@ -91,7 +91,7 @@ class LogStash::Event
   def fields; return @data["@fields"] end # def fields
   
   public
-  def to_json; return @data.to_json end # def to_json
+  def to_json(*args); return @data.to_json(*args) end # def to_json
   def to_hash; return @data end # def to_hash
 
   public
