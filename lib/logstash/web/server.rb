@@ -28,7 +28,7 @@ class LogStash::Web::Server < Sinatra::Base
   set :views, "#{File.dirname(__FILE__)}/views"
 
   use Rack::CommonLogger
-  #use Rack::ShowExceptions
+  use Rack::ShowExceptions
 
   def initialize(settings={})
     super
@@ -154,11 +154,7 @@ class LogStash::Web::Server < Sinatra::Base
         when "json"
           headers({"Content-Type" => "text/plain" })
           # TODO(sissel): issue/30 - needs refactoring here.
-          if @results.error?
-            body({ "error" => @results.error_message }.to_json)
-          else
-            body @results.to_json
-          end
+          body({ "error" => @results.error_message }.to_json)
         end # case params[:format]
         next
       end
@@ -212,10 +208,13 @@ class LogStash::Web::Server < Sinatra::Base
         body erb :"search/results.txt", :layout => false
       when "json"
         headers({"Content-Type" => "text/plain" })
-        # TODO(sissel): issue/30 - needs refactoring here.
-        response = @results
-        p response.to_hash
-        body response.to_json
+        pretty = params.has_key?("pretty")
+        if pretty
+          #ap :fields => @results.events.first.fields
+          body JSON.pretty_generate(@results.to_hash)
+        else
+          body @results.to_json
+        end
       end # case params[:format]
     end # @backend.search
   end # def api_search
@@ -319,7 +318,7 @@ end
 
 #Rack::Handler::Thin.run(
 Mizuno::HttpServer.run(
-  Rack::CommonLogger.new( \
-    Rack::ShowExceptions.new( \
-      LogStash::Web::Server.new(settings))),
+  #Rack::CommonLogger.new( \
+    #Rack::ShowExceptions.new( \
+      LogStash::Web::Server.new(settings),
   :Port => settings.port, :Host => settings.address)
