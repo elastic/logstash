@@ -210,7 +210,6 @@ class LogStash::Web::Server < Sinatra::Base
         headers({"Content-Type" => "text/plain" })
         pretty = params.has_key?("pretty")
         if pretty
-          #ap :fields => @results.events.first.fields
           body JSON.pretty_generate(@results.to_hash)
         else
           body @results.to_json
