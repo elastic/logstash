@@ -22,9 +22,11 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   public
   def register
     # This comes from RFC3164, mostly.
+    # Optional fields (priority, host) are because some syslog implementations
+    # don't send these under some circumstances.
     @@syslog_re ||= \
-      /<([0-9]{1,3})>([A-z]{3} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}) (\S+) (.*)/
-      #<priority       timestamp          Mmm dd hh:mm:ss             host  msg
+      /(?:<([0-9]{1,3})>)?([A-z]{3} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}) (?:(\S+[^:]) )?(.*)/
+      #<priority>      timestamp          Mmm dd hh:mm:ss             host  msg
   end # def register
 
   public
@@ -67,9 +69,14 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
         "@type" => @type,
         "@tags" => @tags.clone,
       })
-      source = URI.parse("syslog://#{client[3]}")
+      source_base = URI::Generic.new("syslog", nil, client[3], nil, nil, nil, nil, nil, nil, nil)
       syslog_relay(event, source)
       output_queue << event
+    end
+  ensure
+    if s
+      s.close_read
+      s.close_write
     end
   end # def udp_listener
 
@@ -83,7 +90,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
         ip, port = s.peeraddr[3], s.peeraddr[1]
         @logger.warn("got connection from #{ip}:#{port}")
         LogStash::Util::set_thread_name("input|syslog|tcp|#{ip}:#{port}}")
-        source_base = URI.parse("syslog://#{ip}")
+        source_base = URI::Generic.new("syslog", nil, ip, nil, nil, nil, nil, nil, nil, nil)
         s.each do |line|
           event = LogStash::Event.new({
             "@message" => line.chomp,
@@ -96,6 +103,8 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
         end
       end
     end
+  ensure
+    s.close if s
   end # def tcp_listener
 
   # Following RFC3164 where sane, we'll try to parse a received message
@@ -110,7 +119,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       # match[1,2,3,4] = {pri, timestamp, hostname, message}
       # Per RFC3164, priority = (facility * 8) + severity
       #                       = (facility << 3) & (severity)
-      priority = match[1].to_i
+      priority = match[1].to_i rescue 13
       severity = priority & 7   # 7 is 111 (3 bits)
       facility = priority >> 3
       event.fields["priority"] = priority
@@ -121,8 +130,9 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       event.timestamp = LogStash::Time.to_iso8601(
         DateTime.strptime(match[2], "%b %d %H:%M:%S"))
 
-      # At least the hostname is simple...
-      url.host = match[3]
+      # Hostname is optional, use if present in message, otherwise use source
+      # address of message.
+      url.host = match[3] if match[3]
       url.port = nil
       event.source = url
 
