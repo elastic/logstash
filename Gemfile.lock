@@ -5,7 +5,8 @@ GEM
     daemons (1.1.2)
     eventmachine (0.12.10-java)
     ffi (0.6.3-java)
-    filewatch (0.1.2)
+    filewatch (0.2.1)
+      ffi
     haml (3.0.25)
     hoe (2.9.4)
       rake (>= 0.8.7)
@@ -35,7 +36,7 @@ PLATFORMS
 
 DEPENDENCIES
   bunny
-  filewatch
+  filewatch (~> 0.2.1)
   haml
   jls-grok (~> 0.4.3)
   jruby-elasticsearch (~> 0.0.6)
