@@ -1,11 +1,11 @@
+require "filewatch/buftok" # rubygem 'filewatch' - for BufferedTokenizer
 require "filewatch/tailglob" # rubygem 'filewatch'
-require "logstash/namespace"
 require "logstash/logging"
+require "logstash/namespace"
 require "logstash/util"
 require "set"
 require "socket" # for Socket.gethostname
 
-require "eventmachine" # for BufferedTokenizer
 
 class LogStash::File::Manager
   attr_accessor :logger
@@ -50,7 +50,11 @@ class LogStash::File::Manager
           if config.include?("exclude")
             tailconf[:exclude] = config["exclude"]
           end
-          @tail.tail(path, tailconf) 
+
+          # Register a @tail callback for new paths
+          @tail.tail(path, tailconf) do |fullpath|
+            @watching[path] = config
+          end
           # TODO(sissel): Make FileWatch emit real exceptions
         rescue RuntimeError
           @logger.info("Failed to start watch on #{path.inspect}")
