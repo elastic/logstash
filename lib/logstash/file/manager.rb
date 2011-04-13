@@ -8,7 +8,7 @@ require "socket" # for Socket.gethostname
 
 
 class LogStash::File::Manager
-  attr_accessor :logger
+  attr_reader :logger
 
   public
   def initialize(output_queue)
@@ -18,10 +18,16 @@ class LogStash::File::Manager
     @file_threads = {}
     @main_thread = nil
     @output_queue = nil
-    @logger = LogStash::Logger.new(STDOUT)
     @hostname = Socket.gethostname
 
+    self.logger = LogStash::Logger.new(STDOUT)
   end # def initialize
+
+  public
+  def logger=(logger)
+    @logger = logger
+    @tail.logger = logger
+  end # def logger=
 
   public
   def run(queue)
@@ -53,7 +59,8 @@ class LogStash::File::Manager
 
           # Register a @tail callback for new paths
           @tail.tail(path, tailconf) do |fullpath|
-            @watching[path] = config
+            @logger.info("New file found: #{fullpath}")
+            @watching[fullpath] = config
           end
           # TODO(sissel): Make FileWatch emit real exceptions
         rescue RuntimeError
@@ -76,6 +83,7 @@ class LogStash::File::Manager
         # Maybe extend @tail.tail to accept a extra args that it will
         # pass to subscribe's callback?
         config = @watching[path]
+        @logger.debug(["Event from tail", { :path => path, :config => config }])
         @buffers[path].extract(data).each do |line|
           e = LogStash::Event.new({
             "@message" => line,
