@@ -1,4 +1,4 @@
-require "filewatch/tail" # rubygem 'filewatch'
+require "filewatch/tailglob" # rubygem 'filewatch'
 require "logstash/namespace"
 require "logstash/logging"
 require "logstash/util"
@@ -12,7 +12,7 @@ class LogStash::File::Manager
 
   public
   def initialize(output_queue)
-    @tail = FileWatch::Tail.new
+    @tail = FileWatch::TailGlob.new
     @watching = Hash.new
     @watching_lock = Mutex.new
     @file_threads = {}
@@ -20,6 +20,7 @@ class LogStash::File::Manager
     @output_queue = nil
     @logger = LogStash::Logger.new(STDOUT)
     @hostname = Socket.gethostname
+
   end # def initialize
 
   public
@@ -35,9 +36,7 @@ class LogStash::File::Manager
         if @watching[path]
           raise ValueError, "cannot watch the same path #{path} more than once"
         end
-        @logger.debug(["watching file", {:path => path}])
-
-        @watching[path] = config
+        @logger.debug(["watching file", {:path => path, :config => config}])
 
         # TODO(sissel): inputs/base should do this.
         config["tag"] ||= []
@@ -47,7 +46,11 @@ class LogStash::File::Manager
 
         # TODO(sissel): Need to support file rotation, globs, etc
         begin
-          @tail.watch(path, :modify)
+          tailconf = { }
+          if config.include?("exclude")
+            tailconf[:exclude] = config["exclude"]
+          end
+          @tail.tail(path, tailconf) 
           # TODO(sissel): Make FileWatch emit real exceptions
         rescue RuntimeError
           @logger.info("Failed to start watch on #{path.inspect}")
@@ -63,6 +66,11 @@ class LogStash::File::Manager
     @buffers = Hash.new { |h,k| h[k] = BufferedTokenizer.new }
     begin
       @tail.subscribe do |path, data|
+        # TODO(sissel): 'path' might not be watched since we could
+        # be watching a glob.
+        #
+        # Maybe extend @tail.tail to accept a extra args that it will
+        # pass to subscribe's callback?
         config = @watching[path]
         @buffers[path].extract(data).each do |line|
           e = LogStash::Event.new({
@@ -76,7 +84,7 @@ class LogStash::File::Manager
         end
       end
     rescue Exception => e
-      @logger.warn(["Exception in #{self.class} thread, retrying", e])
+      @logger.warn(["Exception in #{self.class} thread, retrying", e, e.backtrace])
       sleep 0.3
       retry
     end

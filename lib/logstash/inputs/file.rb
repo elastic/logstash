@@ -17,8 +17,17 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
   # The path to the file to use as an input.
   # You can use globs here, such as "/var/log/*.log"
+  config :path, :validate => :array, :required => true
+
+  # Exclusions. Globs are valid here, too.
+  # For example, if you have
   #
-  config :path, :required => true
+  #     path => "/var/log/*"
+  #
+  # you might want to exclude gzipped files:
+  #
+  #     exclude => "*.gz"
+  config :exclude, :validate => :array
 
   public
   def register
