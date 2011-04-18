@@ -24,7 +24,6 @@ class LogStash::Web::Server < Sinatra::Base
 
   set :haml, :format => :html5
   set :logging, true
-  set :public, "#{File.dirname(__FILE__)}/public"
   set :views, "#{File.dirname(__FILE__)}/views"
 
   use Rack::CommonLogger
@@ -50,6 +49,37 @@ class LogStash::Web::Server < Sinatra::Base
     end # backend_url.scheme
   end # def initialize
  
+  # Mizuno can't serve static files from a jar
+  # https://github.com/matadon/mizuno/issues/9
+  #if __FILE__ =~ /^file:.+!.+$/
+    get '/js/*' do static_file end
+    get '/css/*' do static_file end
+    get '/media/*' do static_file end
+    get '/ws/*' do static_file end
+  #else
+    ## If here, we aren't running from a jar; safe to serve files
+    ## through the normal public handler.
+    #set :public, "#{File.dirname(__FILE__)}/public"
+  #end
+
+  def static_file
+    # request.path_info is the full path of the request.
+    path = File.join(File.dirname(__FILE__), "public", *request.path_info.split("/"))
+    if File.exists?(path)
+      ext = path.split(".").last
+      case ext
+        when "js"; headers "Content-Type" => "application/javascript"
+        when "css"; headers "Content-Type" => "text/css"
+        when "jpg"; headers "Content-Type" => "image/jpeg"
+        when "jpeg"; headers "Content-Type" => "image/jpeg"
+        when "png"; headers "Content-Type" => "image/png"
+        when "gif"; headers "Content-Type" => "image/gif"
+      end
+
+      body File.new(path, "r").read
+    end
+  end # def static_file
+
   get '/style.css' do
     headers "Content-Type" => "text/css; charset=utf8"
     body sass :style
