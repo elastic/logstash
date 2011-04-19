@@ -2,6 +2,7 @@ GEM
   remote: http://rubygems.org/
   specs:
     awesome_print (0.3.2)
+    bson (1.3.0-java)
     bunny (0.6.0)
     daemons (1.1.2)
     eventmachine (0.12.10-java)
@@ -17,6 +18,8 @@ GEM
     json (1.5.1-java)
     mizuno (0.4.0)
       rack (>= 1.0.0)
+    mongo (1.3.0)
+      bson (>= 1.3.0)
     rack (1.2.2)
     rake (0.8.7)
     sinatra (1.2.2)
@@ -44,6 +47,7 @@ DEPENDENCIES
   jruby-elasticsearch (~> 0.0.7)
   json
   mizuno
+  mongo
   rack
   sinatra
   spoon
