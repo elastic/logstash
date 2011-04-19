@@ -20,7 +20,9 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
   config :host, :validate => :string
 
   # The index to write events to. This can be dynamic using the %{foo} syntax.
-  config :index, :validate => :string, :default => "logstash"
+  # The default value will partition your indeces by day so you can more easily
+  # delete old data or only search specific date ranges.
+  config :index, :validate => :string, :default => "logstash-%{+YYYY.MM.dd}"
 
   # The type to write events to. Generally you should try to write only similar
   # events to the same 'type'. String expansion '%{foo}' works here.
@@ -29,6 +31,15 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
   # The name of your cluster if you set it on the ElasticSearch side. Useful
   # for discovery.
   config :cluster, :validate => :string
+
+  # The name/address of the host to use for ElasticSearch unicast discovery
+  # This is only required if the normal multicast/cluster discovery stuff won't
+  # work in your environment.
+  config :address, :validate => :string
+
+  # The port for ElasticSearch transport to use. This is *not* the ElasticSearch
+  # REST API port (normally 9200).
+  config :port, :validate => :number, :default => 9300
 
   # TODO(sissel): Config for river?
 
@@ -39,9 +50,8 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
 
     @pending = []
     @callback = self.method(:receive_native)
-    # TODO(sissel): host/port? etc?
-    #:host => @host, :port => @port,
-    @client = ElasticSearch::Client.new(:cluster => @cluster)
+    @client = ElasticSearch::Client.new(:cluster => @cluster,
+                                        :host => @address, :port => @port)
   end # def register
 
   # TODO(sissel): Needs migration to  jrubyland
