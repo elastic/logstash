@@ -53,7 +53,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     @pending = []
     @callback = self.method(:receive_native)
     @client = ElasticSearch::Client.new(:cluster => @cluster,
-                                        :address => @address, :port => @port)
+                                        :host => @address, :port => @port)
   end # def register
 
   # TODO(sissel): Needs migration to  jrubyland
