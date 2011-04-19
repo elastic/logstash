@@ -7,4 +7,5 @@ module LogStash
   module Search; end
   module Config; end
   module File; end
+  module Web; end
 end # module LogStash
