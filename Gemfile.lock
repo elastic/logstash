@@ -1,6 +1,7 @@
 GEM
   remote: http://rubygems.org/
   specs:
+    awesome_print (0.3.2)
     bunny (0.6.0)
     daemons (1.1.2)
     eventmachine (0.12.10-java)
@@ -12,7 +13,7 @@ GEM
       rake (>= 0.8.7)
     jls-grok (0.4.6)
       ffi (~> 0.6.3)
-    jruby-elasticsearch (0.0.6)
+    jruby-elasticsearch (0.0.7)
     json (1.5.1-java)
     mizuno (0.4.0)
       rack (>= 1.0.0)
@@ -35,11 +36,12 @@ PLATFORMS
   java
 
 DEPENDENCIES
+  awesome_print
   bunny
   filewatch (~> 0.2.3)
   haml
   jls-grok (~> 0.4.3)
-  jruby-elasticsearch (~> 0.0.6)
+  jruby-elasticsearch (~> 0.0.7)
   json
   mizuno
   rack
