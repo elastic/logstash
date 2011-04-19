@@ -89,10 +89,19 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
       # LogStash::Event#== invokes == on the data hash, and in in the
       # test suite, we'll have a ruby array of tags compared against
       # a java.util.ArrayList, which always fails.
+      # We also need this for #to_json to function properly.
       # Possible fixes: 
       #   - make Event#== smarter
       #   - or, convert in the test (not as awesome)
       data["@tags"] = data["@tags"].to_a # convert java ArrayList to Ruby
+      # Convert @fields to a ruby hash of array (so we can json it later)
+      # Prior to this conversion, it is a java.util.Map, etc, which does not
+      # to_json properly
+      fields = {}
+      data["@fields"].each do |key, value|
+        fields[key] = value.to_a
+      end
+      data["@fields"] = fields
       result.events << LogStash::Event.new(data)
     end
 
