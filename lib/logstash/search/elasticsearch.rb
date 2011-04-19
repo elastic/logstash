@@ -12,8 +12,8 @@ require "logstash/search/facetresult/histogram"
 class LogStash::Search::ElasticSearch < LogStash::Search::Base
   public
   def initialize(settings={})
-    @host = (settings[:host] || "localhost")
-    @port = (settings[:port] || 9200).to_i
+    @host = (settings[:host] || nil)
+    @port = (settings[:port] || 9300).to_i
     @cluster = (settings[:cluster] || nil)
     @logger = LogStash::Logger.new(STDOUT)
     @client = ElasticSearch::Client.new(:host => @host, :port => @port, :cluster => @cluster)
