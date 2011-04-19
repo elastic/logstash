@@ -60,6 +60,8 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #
   # The format is whatever is supported by Joda; generally:
   # http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html
+  #
+  # TODO(sissel): Support 'seconds since epoch' parsing (nagios uses this)
   public
   def initialize(config = {})
     super
