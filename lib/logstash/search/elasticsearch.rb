@@ -103,8 +103,8 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
 
   # See LogStash::Search;:Base#histogram
   public
-  def histogram(q, field, interval=nil)
-    raise "No block given for search call." if !block_given?
+  def histogram(q, field, interval=nil, async=false)
+    raise "No block given for search call." if async && !block_given?
     if q.is_a?(String)
       q = LogStash::Search::Query.parse(q)
     end
@@ -113,16 +113,17 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
     searchreq = @client.search do
       query(q.query_string, :and)
       histogram(field, interval, name)
-      limit(0)
+      limit(10)
     end
 
     @logger.info("ElasticSearch Facet Query: #{q.query_string}")
     start_time = Time.now
-    searchreq.execute do |response|
+
+    process = lambda do |response|
       result = LogStash::Search::FacetResult.new
       result.duration = Time.now - start_time
 
-      @logger.debug(["Got search results", 
+      @logger.info(["Got search results", 
                    { :query => q.query_string, :duration => response.took.to_s }])
       # TODO(sissel): Check for error.
 
@@ -132,8 +133,7 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
         # return the whole response object as the error message for debugging
         # later.
         result.error_message = response
-        yield result
-        next
+        return result
       end
 
       entries.each do |entry|
@@ -143,10 +143,20 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
         hist_entry.count = entry.count
         hist_entry.mean = entry.mean
         hist_entry.total = entry.total
+        p :histo => hist_entry
         result.results << hist_entry
       end # for each histogram result
-      yield result
-    end # request callback
+      return result
+    end # lambda 'process'
+
+    if async
+      searchreq.execute do |response|
+        yield process.call(response)
+      end # request callback
+    else 
+      # async == false
+      return process.call(searchreq.execute!)
+    end # if async
   end # def histogram
 
   # Not used. Needs refactoring elsewhere.
