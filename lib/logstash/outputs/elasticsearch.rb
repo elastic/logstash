@@ -48,6 +48,8 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     gem "jruby-elasticsearch", ">= 0.0.3"
     require "jruby-elasticsearch"
 
+    @logger.info(:message => "New ElasticSearch output", :cluster => @cluster,
+                 :host => @host, :port => @port)
     @pending = []
     @callback = self.method(:receive_native)
     @client = ElasticSearch::Client.new(:cluster => @cluster,
