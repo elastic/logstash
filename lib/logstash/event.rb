@@ -7,6 +7,8 @@ require "uri"
 class LogStash::Event
   public
   def initialize(data=Hash.new)
+    @@date_parser ||= org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
+
     @cancelled = false
     @data = {
       "@source" => "unknown",
@@ -141,8 +143,10 @@ class LogStash::Event
       key = tok[2 ... -1]
 
       if key[0,1] == "+"
-        # Use a time format.
-        # TODO(sissel): http://code.google.com/p/logstash/issues/detail?id=38
+        # Parse event.timestamp with  
+        datetime = @@date_parser.parseDateTime(self.timestamp)
+        format = key[1 .. -1]
+        datetime.toString(format) # return requested time format
       else 
         # Use an event field.
         value = self[key]
