@@ -16,6 +16,7 @@ require "rack" # gem rack
 require "mizuno" # gem mizuno
 require "sinatra/base" # gem sinatra
 
+
 class LogStash::Web::Server < Sinatra::Base
   mime_type :html, "text/html"
   mime_type :txt, "text/plain"
@@ -24,6 +25,10 @@ class LogStash::Web::Server < Sinatra::Base
   mime_type :gif, "image/gif"
   mime_type :jpg, "image/jpeg"
   mime_type :png, "image/png"
+
+  require "logstash/web/controllers/api_v1"
+  require "logstash/web/controllers/static_files"
+  require "logstash/web/controllers/search"
 
   #register Sinatra::Async
   helpers Sinatra::RequireParam # logstash/web/helpers/require_param
@@ -40,11 +45,11 @@ class LogStash::Web::Server < Sinatra::Base
   # instances variables like @backend, etc.
   #
   # Load anything in controllers/
-  Dir.glob(File.join(File.dirname(__FILE__), "controllers", "**", "*")).each do |path|
-    puts "Loading #{path}"
-    # TODO(sissel): This is pretty shitty.
-    eval(File.new(path).read, binding, path)
-  end
+  #Dir.glob(File.join(File.dirname(__FILE__), "controllers", "**", "*")).each do |path|
+    #puts "Loading #{path}"
+    ## TODO(sissel): This is pretty shitty.
+    #eval(File.new(path).read, binding, path)
+  #end
 
   def initialize(settings={})
     super
