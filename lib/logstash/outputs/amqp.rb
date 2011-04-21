@@ -8,16 +8,16 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   config_name "amqp"
 
   # Your amqp server address
-  config :host, :validate => :string, :required => true, :default => "localhost"
+  config :host, :validate => :string, :required => true
 
   # The AMQP port to connect on
   config :port, :validate => :number, :default => 5672
 
   # Your amqp username
-  config :user, :validate => :string, :required => true, :default => "guest"
+  config :user, :validate => :string, :default => "guest"
 
   # Your amqp password
-  config :password, :validate => :string, :required => true, :default => "guest"
+  config :password, :validate => :password, :default => "guest"
 
   # The exchange type (fanout, topic, direct)
   config :exchange_type, :validate => :string, :required => true
