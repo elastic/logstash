@@ -3,7 +3,7 @@
 require "logstash/namespace"
 
 
-# line 144 "grammar.rl"
+# line 145 "grammar.rl"
 
 
 class LogStash::Config::Grammar
@@ -21,14 +21,13 @@ end
 self._logstash_config_actions = [
 	0, 1, 0, 1, 2, 1, 3, 1, 
 	4, 1, 8, 1, 9, 1, 10, 1, 
-	11, 1, 12, 1, 13, 2, 0, 11, 
-	2, 1, 7, 2, 2, 7, 2, 2, 
-	9, 2, 3, 7, 2, 5, 7, 2, 
-	6, 0, 2, 8, 0, 2, 10, 0, 
-	2, 10, 12, 2, 11, 12, 3, 0, 
-	11, 12, 3, 1, 7, 0, 3, 2, 
-	7, 0, 3, 3, 7, 0, 3, 5, 
-	7, 0
+	11, 1, 12, 2, 0, 11, 2, 1, 
+	7, 2, 2, 7, 2, 2, 9, 2, 
+	3, 7, 2, 5, 7, 2, 6, 0, 
+	2, 8, 0, 2, 10, 0, 2, 10, 
+	11, 3, 1, 7, 0, 3, 2, 7, 
+	0, 3, 3, 7, 0, 3, 5, 7, 
+	0
 ]
 
 class << self
@@ -176,39 +175,39 @@ class << self
 	private :_logstash_config_trans_actions, :_logstash_config_trans_actions=
 end
 self._logstash_config_trans_actions = [
-	3, 3, 0, 30, 3, 0, 0, 0, 
-	19, 0, 0, 11, 0, 19, 21, 1, 
-	15, 0, 0, 0, 1, 0, 0, 1, 
-	1, 19, 21, 1, 15, 0, 3, 3, 
-	0, 3, 3, 0, 0, 0, 19, 0, 
-	0, 0, 0, 19, 21, 1, 15, 0, 
-	0, 39, 0, 39, 39, 0, 0, 39, 
-	39, 19, 19, 0, 0, 0, 5, 5, 
-	5, 5, 19, 0, 0, 0, 0, 19, 
-	21, 1, 15, 0, 0, 19, 0, 1, 
+	3, 3, 0, 28, 3, 0, 0, 0, 
+	17, 0, 0, 11, 0, 17, 1, 1, 
+	0, 0, 0, 0, 1, 0, 0, 1, 
+	1, 17, 1, 1, 0, 0, 3, 3, 
+	0, 3, 3, 0, 0, 0, 17, 0, 
+	0, 0, 0, 17, 1, 1, 0, 0, 
+	0, 37, 0, 37, 37, 0, 0, 37, 
+	37, 17, 17, 0, 0, 0, 5, 5, 
+	5, 5, 17, 0, 0, 0, 0, 17, 
+	1, 1, 0, 0, 0, 17, 0, 1, 
 	0, 1, 1, 1, 7, 1, 0, 1, 
-	1, 1, 19, 19, 0, 0, 0, 33, 
-	66, 33, 66, 66, 33, 33, 66, 66, 
-	19, 0, 1, 0, 1, 1, 0, 0, 
-	1, 1, 19, 21, 1, 15, 0, 19, 
+	1, 1, 17, 17, 0, 0, 0, 31, 
+	57, 31, 57, 57, 31, 31, 57, 57, 
+	17, 0, 1, 0, 1, 1, 0, 0, 
+	1, 1, 17, 1, 1, 0, 0, 17, 
 	0, 0, 0, 0, 3, 3, 3, 0, 
-	3, 0, 0, 0, 19, 9, 9, 42, 
-	9, 9, 42, 42, 19, 0, 21, 1, 
-	15, 0, 19, 0, 0, 0, 0, 0, 
-	19, 24, 58, 24, 58, 58, 24, 24, 
-	0, 58, 58, 19, 27, 62, 27, 62, 
-	0, 27, 27, 0, 0, 0, 19, 0, 
-	1, 0, 1, 1, 0, 1, 1, 19, 
-	19, 0, 0, 0, 5, 5, 5, 5, 
-	5, 19, 0, 0, 0, 0, 0, 19, 
-	21, 1, 15, 0, 36, 70, 36, 70, 
-	70, 36, 36, 70, 70, 19, 0, 21, 
-	1, 15, 0, 19, 0, 0, 0, 0, 
+	3, 0, 0, 0, 17, 9, 9, 40, 
+	9, 9, 40, 40, 17, 0, 1, 1, 
+	0, 0, 17, 0, 0, 0, 0, 0, 
+	17, 22, 49, 22, 49, 49, 22, 22, 
+	0, 49, 49, 17, 25, 53, 25, 53, 
+	0, 25, 25, 0, 0, 0, 17, 0, 
+	1, 0, 1, 1, 0, 1, 1, 17, 
+	17, 0, 0, 0, 5, 5, 5, 5, 
+	5, 17, 0, 0, 0, 0, 0, 17, 
+	1, 1, 0, 0, 34, 61, 34, 61, 
+	61, 34, 34, 61, 61, 17, 0, 1, 
+	1, 0, 0, 17, 0, 0, 0, 0, 
 	3, 3, 3, 3, 0, 3, 0, 0, 
-	0, 19, 0, 21, 1, 15, 0, 0, 
-	0, 1, 0, 1, 1, 19, 21, 1, 
-	15, 0, 13, 13, 45, 13, 45, 45, 
-	19, 0
+	0, 17, 0, 1, 1, 0, 0, 0, 
+	0, 1, 0, 1, 1, 17, 1, 1, 
+	0, 0, 13, 13, 43, 13, 43, 43, 
+	17, 0
 ]
 
 class << self
@@ -216,14 +215,14 @@ class << self
 	private :_logstash_config_eof_actions, :_logstash_config_eof_actions=
 end
 self._logstash_config_eof_actions = [
-	0, 19, 19, 19, 19, 19, 19, 19, 
-	19, 19, 19, 19, 19, 19, 19, 19, 
-	19, 19, 19, 19, 19, 19, 19, 19, 
-	19, 19, 19, 19, 19, 19, 19, 19, 
-	19, 19, 19, 19, 19, 19, 19, 19, 
-	19, 19, 19, 19, 19, 19, 19, 19, 
-	19, 19, 19, 19, 19, 17, 54, 51, 
-	48
+	0, 17, 17, 17, 17, 17, 17, 17, 
+	17, 17, 17, 17, 17, 17, 17, 17, 
+	17, 17, 17, 17, 17, 17, 17, 17, 
+	17, 17, 17, 17, 17, 17, 17, 17, 
+	17, 17, 17, 17, 17, 17, 17, 17, 
+	17, 17, 17, 17, 17, 17, 17, 17, 
+	17, 17, 17, 17, 17, 15, 19, 15, 
+	46
 ]
 
 class << self
@@ -245,7 +244,7 @@ end
 self.logstash_config_en_main = 53;
 
 
-# line 153 "grammar.rl"
+# line 154 "grammar.rl"
     # END RAGEL DATA
 
     @tokenstack = Array.new
@@ -260,20 +259,20 @@ self.logstash_config_en_main = 53;
 
     # BEGIN RAGEL INIT
     
-# line 264 "grammar.rb"
+# line 263 "grammar.rb"
 begin
 	p ||= 0
 	pe ||= data.length
 	cs = logstash_config_start
 end
 
-# line 167 "grammar.rl"
+# line 168 "grammar.rl"
     # END RAGEL INIT
 
     begin 
       # BEGIN RAGEL EXEC 
       
-# line 277 "grammar.rb"
+# line 276 "grammar.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	_goto_level = 0
@@ -458,19 +457,15 @@ when 10 then
     @config[name] += @components
     #puts "Config component: #{name}"
   		end
-when 11 then
-# line 89 "grammar.rl"
-		begin
- e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" 		end
-when 13 then
-# line 139 "grammar.rl"
+when 12 then
+# line 140 "grammar.rl"
 		begin
  
             # Compute line and column of the cursor (p)
             $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           		end
-# line 474 "grammar.rb"
+# line 469 "grammar.rb"
 			end # action switch
 		end
 	end
@@ -515,22 +510,18 @@ when 10 then
     #puts "Config component: #{name}"
   		end
 when 11 then
-# line 89 "grammar.rl"
-		begin
- e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" 		end
-when 12 then
-# line 138 "grammar.rl"
+# line 139 "grammar.rl"
 		begin
  puts "END" 		end
-when 13 then
-# line 139 "grammar.rl"
+when 12 then
+# line 140 "grammar.rl"
 		begin
  
             # Compute line and column of the cursor (p)
             $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           		end
-# line 534 "grammar.rb"
+# line 525 "grammar.rb"
 		end # eof action switch
 	end
 	if _trigger_goto
@@ -544,7 +535,7 @@ end
 	end
 	end
 
-# line 172 "grammar.rl"
+# line 173 "grammar.rl"
       # END RAGEL EXEC
     rescue => e
       # Compute line and column of the cursor (p)
