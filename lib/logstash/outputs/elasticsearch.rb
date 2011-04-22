@@ -102,6 +102,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
           "exchange" => amqp_exchange_name,
           "exchange_durable" => amqp_exchange_durable ? "true" : "false",
           "exchange_type" => amqp_exchange_type,
+          "routing_key" => "",
         },
         "index" => {
           "bulk_size" => 100,
