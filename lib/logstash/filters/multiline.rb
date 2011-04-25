@@ -16,14 +16,14 @@ require "logstash/namespace"
 # TODO(sissel): Document any issues?
 # The config looks like this:
 #
-# filters {
-#   multiline {
-#     type => "type"
-#     pattern => "pattern, a regexp"
-#     negate => boolean
-#     what => "previous" or "next"
-#   }
-# }
+#     filters {
+#       multiline {
+#         type => "type"
+#         pattern => "pattern, a regexp"
+#         negate => boolean
+#         what => "previous" or "next"
+#       }
+#     }
 # 
 # The 'regexp' should match what you believe to be an indicator that
 # the field is part of a multi-line event
@@ -38,26 +38,26 @@ require "logstash/namespace"
 # For example, java stack traces are multiline and usually have the message
 # starting at the far-left, then each subsequent line indented. Do this:
 # 
-# filters {
-#   multiline {
-#     type => "somefiletype"
-#     pattern => "^\\s"
-#     what => "previous"
-#   }
-# }
-#
+#     filters {
+#       multiline {
+#         type => "somefiletype"
+#         pattern => "^\\s"
+#         what => "previous"
+#       }
+#     }
+#     
 # This says that any line starting with whitespace belongs to the previous line.
 #
 # Another example is C line continuations (backslash). Here's how to do that:
 #
-# filters {
-#   multiline {
-#     type => "somefiletype "
-#     pattern => "\\$"
-#     what => "next"
-#   }
-# }
-#
+#     filters {
+#       multiline {
+#         type => "somefiletype "
+#         pattern => "\\$"
+#         what => "next"
+#       }
+#     }
+#     
 class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   config_name "multiline"
