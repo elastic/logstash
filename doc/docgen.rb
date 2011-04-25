@@ -19,12 +19,16 @@ class LogStashConfigDocGenerator
         lambda { |m| set_class_description },
       /^ *config .*/ => lambda { |m| add_config(m[0]) },
       /^ *config_name .*/ => lambda { |m| set_config_name(m[0]) },
+      /^ *flag .*/ => lambda { |m| add_flag(m[0]) },
       /^ *(class|def|module) / => lambda { |m| clear_comments },
     }
   end
 
   def parse(string)
     buffer = ""
+    @comments = []
+    @settings = {}
+    @flags = {}
     string.split("\n").each do |line|
       # Join long lines
       if line =~ COMMENT_RE
@@ -66,6 +70,14 @@ class LogStashConfigDocGenerator
     clear_comments
   end # def add_config
 
+  def add_flag(code)
+    # call the code, which calls 'config' in this class.
+    # This will let us align comments with config options.
+    name, opts = eval(code)
+    @flags[name] = opts.merge(:description => @comments.join("\n"))
+    clear_comments
+  end # def add_config
+
   def set_config_name(code)
     name = eval(code)
     @name = name
@@ -73,6 +85,11 @@ class LogStashConfigDocGenerator
 
   # pretend to be the config DSL and just get the name
   def config(name, opts={})
+    return name, opts
+  end # def config
+
+  # Pretend to support the flag DSL
+  def flag(name, opts={})
     return name, opts
   end # def config
 
