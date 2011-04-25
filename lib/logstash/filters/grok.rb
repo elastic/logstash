@@ -140,9 +140,9 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       end
     end # message.each
 
-    if !event.cancelled?
-      filter_matched(event)
-    end
+    #if !event.cancelled?
+      #filter_matched(event)
+    #end
     @logger.debug(["Event now: ", event.to_hash])
   end # def filter
 
