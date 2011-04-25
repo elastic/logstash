@@ -1,0 +1,31 @@
+# <%= name %>
+
+Usage example:
+
+    <%= section %> {
+     <%= name %> {
+<% sorted_settings.each do |setting_name, config| -%>
+<%   annotation = "#{config[:validate]}"
+     annotation += " (required)" if config[:required]
+     annotation += ", default: #{config[:default].inspect}" if config[:default]
+-%>
+        <%= setting_name %> => ... # <%= annotation %>
+<% end -%>
+      }
+    }
+
+## Setting information
+
+<% sorted_settings.each do |setting_name, config| -%>
+### <%= setting_name %><%= " (required setting)" if config[:required] %>
+
+* Value type is <%= config[:validate] or "string" %>
+<% if config[:default] -%>
+* Default value is <%= config[:default].inspect %>
+<% else -%>
+* There is no default value for this setting.
+<% end -%>
+
+<%= config[:description] %>
+
+<% end -%>
