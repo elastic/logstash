@@ -25,10 +25,6 @@ class LogStashConfigDocGenerator
 
   def parse(string)
     buffer = ""
-    @comments = []
-    @settings = {}
-    @class_description = ""
-
     string.split("\n").each do |line|
       # Join long lines
       if line =~ COMMENT_RE
@@ -95,6 +91,14 @@ class LogStashConfigDocGenerator
     require "logstash/outputs/base"
     require file
 
+    @comments = []
+    @settings = {}
+    @class_description = ""
+
+    # parse base first
+    parse(File.new(File.join(File.dirname(file), "base.rb"), "r").read)
+
+    # Now parse the real library
     code = File.new(file).read
     parse(code)
 
