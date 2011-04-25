@@ -1,9 +1,6 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
-gem "jls-grok", ">=0.4.3"
-require "grok" # rubygem 'jls-grok'
-
 # Parse arbitrary text and structure it.
 #
 # Use grok 
@@ -49,6 +46,9 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   public
   def register
+    gem "jls-grok", ">=0.4.3"
+    require "grok" # rubygem 'jls-grok'
+
     @pile = Grok::Pile.new
     @logger.info("Grok patterns paths: #{self.class.patterns_dir.inspect}")
     self.class.patterns_dir.each do |path|
