@@ -1,5 +1,11 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "net/http"
+require "json"
+#require "net/https"
+
+# TODO(sissel): put buftok in logstash, too
+require "filewatch/buftok"
 
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
@@ -15,42 +21,80 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
   config :keywords, :validate => :array, :required => true
 
   def register
-    require "tweetstream" # rubygem 'tweetstream'
+    #require "tweetstream" # rubygem 'tweetstream'
   end
 
   public
   def run(queue)
     loop do
-      stream = TweetStream::Client.new(@user, @password.value)
-      stream.track(*@keywords) do |status|
-        ap :status => status
-        @logger.debug("Got twitter status from @#{status[:user][:screen_name]}")
+      #stream = TweetStream::Client.new(@user, @password.value)
+      #stream.track(*@keywords) do |status|
+      track(*@keywords) do |status|
+        @logger.debug :status => status
+        #@logger.debug("Got twitter status from @#{status[:user][:screen_name]}")
+        @logger.info("Got twitter status from @#{status["user"]["screen_name"]}")
         event = LogStash::Event.new(
-          "@message" => status[:text],
+          #"@message" => status[:text],
+          "@message" => status["text"],
           "@type" => @type,
           "@tags" => @tags.clone
         )
 
         event.fields.merge!(
-          "user" => (status[:user][:screen_name] rescue nil), 
-          "client" => (status[:source] rescue nil),
-          "retweeted" => (status[:retweeted] rescue nil)
+          #"user" => (status[:user][:screen_name] rescue nil), 
+          "user" => (status["user"]["screen_name"] rescue nil), 
+          #"client" => (status[:source] rescue nil),
+          "client" => (status["source"] rescue nil),
+          #"retweeted" => (status[:retweeted] rescue nil)
+          "retweeted" => (status["retweeted"] rescue nil)
         )
 
-        event.fields["in-reply-to"] = status[:in_reply_to_status_id] if status[:in_reply_to_status_id]
+        #event.fields["in-reply-to"] = status[:in_reply_to_status_id] if status[:in_reply_to_status_id]
+        event.fields["in-reply-to"] = status["in_reply_to_status_id"] if status["in_reply_to_status_id"]
 
-        urls = status[:entities][:urls] rescue []
+        #urls = status[:entities][:urls] rescue []
+        urls = status["entities"]["urls"] rescue []
         if urls.size > 0
           event.fields["urls"] = urls.collect { |u| u["url"] }
         end
 
-        event.source = source
+        event.source = "http://twitter.com/#{event.fields["user"]}/status/#{status["id"]}"
         @logger.debug(["Got event", event])
         queue << event
       end # stream.track
 
       # Some closure or error occured, sleep and try again.
+      @logger.warn("An error occured? Retrying twitter in 30 seconds")
       sleep 30
-    end
-  end
+    end # loop
+  end # def run
+
+  private
+  def track(*keywords)
+    uri = URI.parse("http://stream.twitter.com/1/statuses/filter.json")
+    #params = {
+      #"track" => keywords
+    #}
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    #http.use_ssl = true
+    request = Net::HTTP::Post.new(uri.path)
+    request.body = "track=#{keywords.join(",")}"
+    request.basic_auth @user, @password.value
+    buffer = BufferedTokenizer.new("\r\n")
+    http.request(request) do |response|
+      response.read_body do |chunk|
+        #@logger.info("Twitter: #{chunk.inspect}")
+        buffer.extract(chunk).each do |line|
+          @logger.info("Twitter line: #{line.inspect}")
+          begin 
+            status = JSON.parse(line)
+            yield status
+          rescue => e
+            @logger.error e
+          end
+        end # buffer.extract
+      end # response.read_body
+    end # http.request
+  end # def track
 end # class LogStash::Inputs::Twitter
