@@ -1,9 +1,10 @@
-require "em-websocket" # rubygem 'em-websocket'
 require "logstash/namespace"
 require "logstash/outputs/base"
 
 # TODO(sissel): THIS IS NOT SUPPORTED IN JRUBY YET
 class LogStash::Outputs::Websocket < LogStash::Outputs::Base
+
+  config_name "websocket"
 
   # The address to serve websocket data from
   config :host, :validate => :string, :default => "0.0.0.0"
@@ -13,6 +14,7 @@ class LogStash::Outputs::Websocket < LogStash::Outputs::Base
 
   public
   def register
+    require "em-websocket" # rubygem 'em-websocket'
     @channel = EventMachine::Channel.new
     @subscribers = 0
     @url.host = (@url.host or "0.0.0.0")

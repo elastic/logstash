@@ -1,6 +1,5 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
-require "mongo"
 
 class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
 
@@ -10,7 +9,7 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   config :host, :validate => :string, :required => true
 
   # the mongodb port
-  config :port, :validate => :number, :default => Mongo::Connection::DEFAULT_PORT
+  config :port, :validate => :number, :default => 27017
 
   # The database to use
   config :database, :validate => :string, :required => true
@@ -21,6 +20,7 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
 
   public
   def register
+    require "mongo"
     # TODO(petef): support authentication
     # TODO(petef): check for errors
     @mongodb = Mongo::Connection.new(@host, @port).db(@database)

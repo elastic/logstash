@@ -1,6 +1,5 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "tweetstream" # rubygem 'tweetstream'
 
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
@@ -16,7 +15,7 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
   config :keywords, :validate => :array, :required => true
 
   def register
-    # nothing to do
+    require "tweetstream" # rubygem 'tweetstream'
   end
 
   public

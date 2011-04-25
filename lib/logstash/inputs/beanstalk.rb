@@ -1,6 +1,5 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "beanstalk-client"
 
 # Pull events from a beanstalk tube.
 #
@@ -20,6 +19,7 @@ class LogStash::Inputs::Beanstalk < LogStash::Inputs::Base
 
   public
   def register
+    require "beanstalk-client"
     # TODO(petef): support pools of beanstalkd servers
     # TODO(petef): check for errors
     @beanstalk = Beanstalk::Pool.new(["#{@host}:#{@port}"])

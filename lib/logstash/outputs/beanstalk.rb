@@ -1,6 +1,5 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
-require "beanstalk-client"
 
 class LogStash::Outputs::Beanstalk < LogStash::Outputs::Base
 
@@ -27,6 +26,7 @@ class LogStash::Outputs::Beanstalk < LogStash::Outputs::Base
 
   public
   def register
+    require "beanstalk-client"
     # TODO(petef): support pools of beanstalkd servers
     # TODO(petef): check for errors
     @beanstalk = Beanstalk::Pool.new(["#{@host}:#{@port}"])
