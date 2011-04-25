@@ -1,4 +1,6 @@
 require "rubygems"
+require "erb"
+require "optparse"
 
 # TODO(sissel): Currently this doc generator doesn't follow ancestry, so
 # LogStash::Input::Amqp inherits Base, but we don't parse the base file.
@@ -78,13 +80,20 @@ class LogStashConfigDocGenerator
     @comments.clear
   end # def clear_comments
 
-  def generate(file)
+  def generate(file, settings)
     require "logstash/inputs/base"
     require "logstash/filters/base"
     require "logstash/outputs/base"
     string = File.new(file).read
     parse(string)
     require file
+    puts "Generating docs for #{file}"
+
+    if @name.nil?
+      $stderr.puts "Missing 'config_name' setting in #{file}?"
+      return nil
+    end
+
     klass = LogStash::Config::Registry.registry[@name]
     if klass.ancestors.include?(LogStash::Inputs::Base)
       section = "inputs"
@@ -94,6 +103,27 @@ class LogStashConfigDocGenerator
       section = "outputs"
     end
 
+    template_file = File.join(File.dirname(__FILE__), "docs.markdown.erb")
+    template = ERB.new(File.new(template_file).read, nil, "-")
+
+    sorted_settings = @settings.sort { |a,b| a.first.to_s <=> b.first.to_s }
+    klassname = LogStash::Config::Registry.registry[@name].to_s
+    name = @name
+
+    if settings[:output]
+      dir = File.join(settings[:output], section)
+      path = File.join(dir, "#{name}.markdown")
+      Dir.mkdir(settings[:output]) if !File.directory?(settings[:output])
+      Dir.mkdir(dir) if !File.directory?(dir)
+      File.open(path, "w") do |out|
+        out.puts(template.result(binding))
+      end
+    else 
+      puts template.result(binding)
+    end
+  end # def generate
+
+  def foo(file)
     # TODO(sissel): probably should use ERB for this.
     puts "# " + LogStash::Config::Registry.registry[@name].to_s
     puts
@@ -127,6 +157,18 @@ class LogStashConfigDocGenerator
 end # class LogStashConfigDocGenerator
 
 if __FILE__ == $0
-  gen = LogStashConfigDocGenerator.new
-  gen.generate(ARGV[0])
+  opts = OptionParser.new
+  settings = {}
+  opts.on("-o DIR", "--output DIR", 
+          "Directory to output to; optional. If not specified,"\
+          "we write to stdout.") do |val|
+    settings[:output] = val
+  end
+
+  args = opts.parse(ARGV)
+
+  args.each do |arg|
+    gen = LogStashConfigDocGenerator.new
+    gen.generate(arg, settings)
+  end
 end
