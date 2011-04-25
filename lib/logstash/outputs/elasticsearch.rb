@@ -27,7 +27,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
   # The name/address of the host to use for ElasticSearch unicast discovery
   # This is only required if the normal multicast/cluster discovery stuff won't
   # work in your environment.
-  config :address, :validate => :string
+  config :host, :validate => :string
 
   # The port for ElasticSearch transport to use. This is *not* the ElasticSearch
   # REST API port (normally 9200).
@@ -49,11 +49,11 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     require "jruby-elasticsearch"
 
     @logger.info(:message => "New ElasticSearch output", :cluster => @cluster,
-                 :host => @address, :port => @port)
+                 :host => @host, :port => @port)
     @pending = []
     @callback = self.method(:receive_native)
     @client = ElasticSearch::Client.new(:cluster => @cluster,
-                                        :host => @address, :port => @port)
+                                        :host => @host, :port => @port)
   end # def register
 
   # TODO(sissel): Needs migration to  jrubyland

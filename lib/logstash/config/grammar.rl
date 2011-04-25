@@ -86,7 +86,8 @@ require "logstash/namespace"
     #puts "Config component: #{name}"
   }
 
-  comment = "#" (any - [\n])* >mark %{ e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" };
+  #%{ e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" };
+  comment = "#" (any - [\n])* >mark ; 
   ws = ([ \t\n] | comment)** ;
   #ws = ([ \t\n])** ;
 
