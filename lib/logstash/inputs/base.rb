@@ -18,8 +18,6 @@ class LogStash::Inputs::Base
   # Add any number of arbitrary tags to your event.
   #
   # This can help with processing later.
-  # TODO(sissel): do we really care what the value of this field is?
-  #   can we just validate as an array of strings and call it done?
   config :tags, :validate => :array
 
   #config :tags, :validate => (lambda do |value|
