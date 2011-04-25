@@ -1,9 +1,7 @@
 require 'tempfile'
 require 'ftools'
 
-LOGSTASH_VERSION = "0.9.1"
-
-# Compile config grammar (ragel -> ruby)
+LOGSTASH_VERSION = "0.9.1" # Compile config grammar (ragel -> ruby)
 file "lib/logstash/config/grammar.rb" => ["lib/logstash/config/grammar.rl"] do
   sh "make -C lib/logstash/config grammar.rb"
 end
@@ -180,6 +178,10 @@ end # namespace package
 
 task :test do
   sh "cd test; ruby logstash_test_runner.rb"
+end
+
+task :docgen do
+  sh "find lib/logstash/{inputs,filters,outputs}/ -type f -not -name 'base.rb' -a -name '*.rb'| xargs ruby doc/docgen.rb -o ../logstash-docs/"
 end
 
 
