@@ -1,4 +1,3 @@
-require "bunny" # rubygem 'bunny'
 require "logstash/outputs/base"
 require "logstash/namespace"
 
@@ -36,6 +35,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   public
   def register
+    require "bunny" # rubygem 'bunny'
     if !MQTYPES.include?(@exchange_type)
       raise "Invalid exchange_type, #{@exchange_type.inspect}, must be one of #{MQTYPES.join(", ")}"
     end
