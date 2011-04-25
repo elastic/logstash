@@ -4,9 +4,6 @@ require "net/http"
 require "json"
 #require "net/https"
 
-# TODO(sissel): put buftok in logstash, too
-require "filewatch/buftok"
-
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
   config_name "twitter"
@@ -21,6 +18,8 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
   config :keywords, :validate => :array, :required => true
 
   def register
+    # TODO(sissel): put buftok in logstash, too
+    require "filewatch/buftok"
     #require "tweetstream" # rubygem 'tweetstream'
   end
 

@@ -20,15 +20,17 @@ class LogStash::Inputs::Base
   # This can help with processing later.
   # TODO(sissel): do we really care what the value of this field is?
   #   can we just validate as an array of strings and call it done?
-  config :tags, :validate => (lambda do |value|
-    re = /^[A-Za-z0-9_]+$/
-    value.each do |v|
-      if v !~ re
-        return [false, "Tag '#{v}' does not match #{re}"]
-      end # check 'v'
-    end # value.each 
-    return true
-  end) # config :tag
+  config :tags, :validate => :array
+
+  #config :tags, :validate => (lambda do |value|
+    #re = /^[A-Za-z0-9_]+$/
+    #value.each do |v|
+      #if v !~ re
+        #return [false, "Tag '#{v}' does not match #{re}"]
+      #end # check 'v'
+    #end # value.each 
+    #return true
+  #end) # config :tag
 
   public
   def initialize(params)
