@@ -1,6 +1,10 @@
 # <%= name %>
 
-Usage example:
+<%= description %>
+
+## Synopsis
+
+This is what it might look like in your config file:
 
     <%= section %> {
      <%= name %> {
@@ -14,7 +18,7 @@ Usage example:
       }
     }
 
-## Setting information
+## Details
 
 <% sorted_settings.each do |setting_name, config| -%>
 ### <%= setting_name %><%= " (required setting)" if config[:required] %>

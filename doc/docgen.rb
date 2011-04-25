@@ -15,6 +15,8 @@ class LogStashConfigDocGenerator
   def initialize
     @rules = {
       COMMENT_RE => lambda { |m| add_comment(m[1]) },
+      /^ *class.*< *LogStash::(?:Outputs|Filters|Inputs)::Base/ => \
+        lambda { |m| set_class_description },
       /^ *config .*/ => lambda { |m| add_config(m[0]) },
       /^ *config_name .*/ => lambda { |m| set_config_name(m[0]) },
       /^ *(class|def|module) / => lambda { |m| clear_comments },
@@ -25,6 +27,8 @@ class LogStashConfigDocGenerator
     buffer = ""
     @comments = []
     @settings = {}
+    @class_description = ""
+
     string.split("\n").each do |line|
       # Join long lines
       if line =~ COMMENT_RE
@@ -48,6 +52,11 @@ class LogStashConfigDocGenerator
       end # RULES.each
     end # string.split("\n").each
   end # def parse
+
+  def set_class_description
+    @class_description = @comments.join("\n")
+    clear_comments
+  end # def set_class_description
  
   def add_comment(comment)
     @comments << comment
@@ -84,9 +93,11 @@ class LogStashConfigDocGenerator
     require "logstash/inputs/base"
     require "logstash/filters/base"
     require "logstash/outputs/base"
-    string = File.new(file).read
-    parse(string)
     require file
+
+    code = File.new(file).read
+    parse(code)
+
     puts "Generating docs for #{file}"
 
     if @name.nil?
@@ -106,6 +117,7 @@ class LogStashConfigDocGenerator
     template_file = File.join(File.dirname(__FILE__), "docs.markdown.erb")
     template = ERB.new(File.new(template_file).read, nil, "-")
 
+    description = @class_description
     sorted_settings = @settings.sort { |a,b| a.first.to_s <=> b.first.to_s }
     klassname = LogStash::Config::Registry.registry[@name].to_s
     name = @name
