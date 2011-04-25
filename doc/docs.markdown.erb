@@ -1,3 +1,7 @@
+---
+title: logstash docs for <%= section %>/<%= name %>
+layout: default
+---
 # <%= name %>
 
 <%= description %>
@@ -7,7 +11,7 @@
 This is what it might look like in your config file:
 
     <%= section %> {
-     <%= name %> {
+      <%= name %> {
 <% sorted_settings.each do |setting_name, config| -%>
 <%   annotation = "#{config[:validate]}"
      annotation += " (required)" if config[:required]
