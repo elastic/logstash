@@ -23,19 +23,24 @@ Example:
 
 Each input is documented here:
 
-<https://github.com/logstash/logstash-docs/tree/gh-pages/inputs>
+<inputs>
 
 ## Filters
 
+For each event, filters are applied in order of appearance in the config file.
+
+For example, pulling a timestamp out of a syslog event, you'll want to use
+grok to pull out the time string, first, then use a date filter to 
+
 Each filter is documented here:
 
-<https://github.com/logstash/logstash-docs/tree/gh-pages/filters>
+<filters>
 
 ## Outputs
 
 Each output is documented here:
 
-<https://github.com/logstash/logstash-docs/tree/gh-pages/outputs>
+<outputs>
 
 ## Full examples
 
