@@ -180,12 +180,38 @@ task :test do
   sh "cd test; ruby logstash_test_runner.rb"
 end
 
-task :docgen do
+task :docs => [:docgen, :doccopy, :docindex ] do
+end
+
+task :require_output_env do
+  if ENV["output"].nil?
+    raise "No output variable set. Run like: 'rake docs output=path/to/output'"
+  end
+end
+
+task :doccopy => [:require_output_env] do
+  if ENV["output"].nil?
+    raise "No output variable set. Run like: 'rake docs output=path/to/output'"
+  end
+
+  Dir.glob("docs/**/*").each do |doc|
+    dir = File.join(ENV["output"], File.dirname(doc).gsub(/docs\/?/, ""))
+    mkdir_p dir
+    puts "Copy #{doc} => #{dir}"
+    cp(doc, dir)
+  end
+end
+
+task :docindex => [:require_output_env] do
+  sh "sh docs/generate_index.sh #{ENV["output"]} > #{ENV["output"]}/index.md"
+end
+
+task :docgen => [:require_output_env] do
   if ENV["output"].nil?
     raise "No output variable set. Run like: 'rake docgen output=path/to/output'"
-  else
-    sh "find lib/logstash/inputs lib/logstash/filters lib/logstash/outputs  -type f -not -name 'base.rb' -a -name '*.rb'| xargs ruby docs/docgen.rb -o #{ENV["output"]}"
   end
+
+  sh "find lib/logstash/inputs lib/logstash/filters lib/logstash/outputs  -type f -not -name 'base.rb' -a -name '*.rb'| xargs ruby docs/docgen.rb -o #{ENV["output"]}"
 end
 
 
