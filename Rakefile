@@ -150,7 +150,7 @@ namespace :package do
       #
       # Add bundled gems to the jar
       # Skip the 'cache' dir which is just the original .gem files
-      gem_dirs = %w{bin doc gems specifications}
+      gem_dirs = %w{bin docs gems specifications}
       gem_root = File.join(%w{vendor bundle jruby 1.8})
       # for each dir, build args: -C vendor/bundle/jruby/1.8 bin, etc
       gem_jar_args = gem_dirs.collect { |dir| ["-C", gem_root, dir ] }.flatten
@@ -181,7 +181,11 @@ task :test do
 end
 
 task :docgen do
-  sh "find lib/logstash/{inputs,filters,outputs}/ -type f -not -name 'base.rb' -a -name '*.rb'| xargs ruby doc/docgen.rb -o ../logstash-docs/"
+  if ENV["output"].nil?
+    raise "No output variable set. Run like: 'rake docgen output=path/to/output'"
+  else
+    sh "find lib/logstash/inputs lib/logstash/filters lib/logstash/outputs  -type f -not -name 'base.rb' -a -name '*.rb'| xargs ruby docs/docgen.rb -o #{ENV["output"]}"
+  end
 end
 
 
