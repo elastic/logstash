@@ -1,3 +1,7 @@
+---
+title: Configuration Language - logstash
+layout: default
+---
 # LogStash Config Language
 
 The logstash config language aims to be simple.
