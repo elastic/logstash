@@ -9,6 +9,8 @@ GEM
     ffi (0.6.3-java)
     filewatch (0.2.5)
       ffi
+    gelf (1.1.3)
+      json
     haml (3.0.25)
     hoe (2.9.4)
       rake (>= 0.8.7)
@@ -42,6 +44,7 @@ DEPENDENCIES
   awesome_print
   bunny
   filewatch (~> 0.2.3)
+  gelf
   haml
   jls-grok (~> 0.4.3)
   jruby-elasticsearch (~> 0.0.7)
