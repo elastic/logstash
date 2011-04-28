@@ -17,6 +17,8 @@ gem "haml"
 # TODO(sissel): Put this into a group that's only used for monolith packaging
 gem "mongo" # outputs/mongodb
 
+gem "gelf" # outputs/gelf
+
 # For testing/dev
 group :development do
   gem "stompserver"
