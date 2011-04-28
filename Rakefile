@@ -150,7 +150,7 @@ namespace :package do
       #
       # Add bundled gems to the jar
       # Skip the 'cache' dir which is just the original .gem files
-      gem_dirs = %w{bin doc gems specifications}
+      gem_dirs = %w{bin docs gems specifications}
       gem_root = File.join(%w{vendor bundle jruby 1.8})
       # for each dir, build args: -C vendor/bundle/jruby/1.8 bin, etc
       gem_jar_args = gem_dirs.collect { |dir| ["-C", gem_root, dir ] }.flatten
@@ -180,8 +180,38 @@ task :test do
   sh "cd test; ruby logstash_test_runner.rb"
 end
 
-task :docgen do
-  sh "find lib/logstash/{inputs,filters,outputs}/ -type f -not -name 'base.rb' -a -name '*.rb'| xargs ruby doc/docgen.rb -o ../logstash-docs/"
+task :docs => [:docgen, :doccopy, :docindex ] do
+end
+
+task :require_output_env do
+  if ENV["output"].nil?
+    raise "No output variable set. Run like: 'rake docs output=path/to/output'"
+  end
+end
+
+task :doccopy => [:require_output_env] do
+  if ENV["output"].nil?
+    raise "No output variable set. Run like: 'rake docs output=path/to/output'"
+  end
+
+  Dir.glob("docs/**/*").each do |doc|
+    dir = File.join(ENV["output"], File.dirname(doc).gsub(/docs\/?/, ""))
+    mkdir_p dir
+    puts "Copy #{doc} => #{dir}"
+    cp(doc, dir)
+  end
+end
+
+task :docindex => [:require_output_env] do
+  sh "sh docs/generate_index.sh #{ENV["output"]} > #{ENV["output"]}/index.md"
+end
+
+task :docgen => [:require_output_env] do
+  if ENV["output"].nil?
+    raise "No output variable set. Run like: 'rake docgen output=path/to/output'"
+  end
+
+  sh "find lib/logstash/inputs lib/logstash/filters lib/logstash/outputs  -type f -not -name 'base.rb' -a -name '*.rb'| xargs ruby docs/docgen.rb -o #{ENV["output"]}"
 end
 
 
