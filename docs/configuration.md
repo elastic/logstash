@@ -1,6 +1,6 @@
 ---
 title: Configuration Language - logstash
-layout: default
+layout: content_right
 ---
 # LogStash Config Language
 
