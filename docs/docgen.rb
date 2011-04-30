@@ -137,7 +137,7 @@ class LogStashConfigDocGenerator
       section = "outputs"
     end
 
-    template_file = File.join(File.dirname(__FILE__), "docs.markdown.erb")
+    template_file = File.join(File.dirname(__FILE__), "docs.html.erb")
     template = ERB.new(File.new(template_file).read, nil, "-")
 
     description = @class_description
@@ -147,7 +147,7 @@ class LogStashConfigDocGenerator
 
     if settings[:output]
       dir = File.join(settings[:output], section)
-      path = File.join(dir, "#{name}.markdown")
+      path = File.join(dir, "#{name}.html")
       Dir.mkdir(settings[:output]) if !File.directory?(settings[:output])
       Dir.mkdir(dir) if !File.directory?(dir)
       File.open(path, "w") do |out|

@@ -10,9 +10,9 @@ end
 
 basedir = ARGV[0]
 docs = {
-  "inputs" => Dir.glob(File.join(basedir, "inputs/*.markdown")),
-  "filters" => Dir.glob(File.join(basedir, "filters/*.markdown")),
-  "outputs" => Dir.glob(File.join(basedir, "outputs/*.markdown")),
+  "inputs" => Dir.glob(File.join(basedir, "inputs/*.html")),
+  "filters" => Dir.glob(File.join(basedir, "filters/*.html")),
+  "outputs" => Dir.glob(File.join(basedir, "outputs/*.html")),
 }
 
 template_path = File.join(File.dirname(__FILE__), "index.html.erb")
