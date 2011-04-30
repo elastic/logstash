@@ -1,0 +1,53 @@
+---
+title: logstash docs for <%= section %>/<%= name %>
+layout: content_right
+---
+<h2><%= name %></h2>
+
+<%= description %>
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>
+<%= section %> {
+  <%= name %> {
+<% sorted_settings.each do |setting_name, config| -%>
+<%   annotation = "#{config[:validate]}"
+ annotation += " (required)" if config[:required]
+ annotation += ", default: #{config[:default].inspect}" if config[:default]
+-%>
+    <a href="#setting_<%= setting_name %>"><%= setting_name %></a> => ... # <%= annotation %>
+<% end -%>
+  }
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<% sorted_settings.each do |setting_name, config| -%>
+<h4> 
+  <a name="setting_<%= setting_name %>">
+    <%= setting_name %><%= " (required setting)" if config[:required] %>
+</a>
+</h4>
+
+<ul>
+<% if config[:validate].is_a?(Symbol) -%>
+  <li> Value type is <%= config[:validate] %> </li>
+<% elsif config[:validate].nil? -%>
+  <li> Value type is string </li>
+<% elsif config[:validate].is_a?(Array) -%>
+  <li> Value can be any of: <%= config[:validate].map(&:inspect).join(", ") %> </li>
+<% end -%>
+<% if config[:default] -%>
+  <li> Default value is <%= config[:default].inspect %> </li>
+<% else -%>
+  <li> There is no default value for this setting. </li>
+<% end -%>
+</ul>
+
+<%= config[:description] %>
+
+<% end -%>
