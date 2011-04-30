@@ -27,7 +27,13 @@ This is what it might look like in your config file:
 <% sorted_settings.each do |setting_name, config| -%>
 ### <%= setting_name %><%= " (required setting)" if config[:required] %>
 
-* Value type is <%= config[:validate] or "string" %>
+<% if config[:validate].is_a?(Symbol) -%>
+* Value type is <%= config[:validate] %>
+<% elsif config[:validate].nil? -%>
+* Value type is string
+<% elsif config[:validate].is_a?(Array) -%>
+* Value can be any of: <%= config[:validate].map(&:inspect).join(", ") %>
+<% end -%>
 <% if config[:default] -%>
 * Default value is <%= config[:default].inspect %>
 <% else -%>

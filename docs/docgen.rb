@@ -5,6 +5,8 @@ require "optparse"
 # TODO(sissel): Currently this doc generator doesn't follow ancestry, so
 # LogStash::Input::Amqp inherits Base, but we don't parse the base file.
 # We need this, though.
+#
+# TODO(sissel): Convert this to use ERB, not random bits of 'puts'
 
 $: << Dir.pwd
 $: << File.join(File.dirname(__FILE__), "..", "lib")
@@ -156,37 +158,6 @@ class LogStashConfigDocGenerator
     end
   end # def generate
 
-  def foo(file)
-    # TODO(sissel): probably should use ERB for this.
-    puts "# " + LogStash::Config::Registry.registry[@name].to_s
-    puts
-    puts "Usage example:"
-    puts 
-    puts [
-      "#{section} {",
-      "  #{@name} {",
-      "    # ... settings ...",
-      "  }",
-      "}",
-    ].map { |l| "    #{l}" }.join("\n")
-
-    # TODO(sissel): include description of this plugin, maybe use
-    # rdoc to pull this?
-    @settings.sort { |a,b| a.first.to_s <=> b.first.to_s }.each do |name, config|
-      required = config[:required] ? " (*REQUIRED*)" : ""
-      if name.is_a?(Regexp)
-        puts "## /#{name}/ #{required}"
-      else
-        puts "## #{name} #{required}"
-      end
-      puts
-      puts "* Value type is #{config[:validate] or "string"}"
-      puts "* Default is #{config[:default].inspect}" if config.include?(:default)
-      puts
-      puts config[:description]
-      puts 
-    end
-  end # def generate
 end # class LogStashConfigDocGenerator
 
 if __FILE__ == $0
