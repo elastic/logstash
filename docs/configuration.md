@@ -29,4 +29,4 @@ For a given event, are applied in the order of appearance in the config file.
 
 ## Further reading
 
-For more information, see (the plugin docs index)[index]
+For more information, see [the plugin docs index](index)
