@@ -1,0 +1,21 @@
+---
+title: logstash docs index
+layout: content_right
+---
+<div id="doc_index_container">
+  <h2>docs</h2>
+<% docs.each do |type, paths| -%>
+  <div class="doc_index_section">
+    <h3><%= type %></h3>
+    <ul>
+<% paths.each do |path| -%>
+<%   name = File.basename(path).gsub(".markdown", "") -%>
+      <li>
+      <a href="<%= "#{type}/#{name}" %>"><%= name %></a>
+      </li>
+<% end -%>
+    </ul>
+  </div>
+<% end -%>
+</div>
+<div class="clear"></div>

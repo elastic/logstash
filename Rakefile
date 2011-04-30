@@ -203,7 +203,7 @@ task :doccopy => [:require_output_env] do
 end
 
 task :docindex => [:require_output_env] do
-  sh "sh docs/generate_index.sh #{ENV["output"]} > #{ENV["output"]}/index.md"
+  sh "ruby docs/generate_index.rb #{ENV["output"]} > #{ENV["output"]}/index.html"
 end
 
 task :docgen => [:require_output_env] do
