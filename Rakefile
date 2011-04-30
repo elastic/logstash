@@ -151,7 +151,7 @@ namespace :package do
       #
       # Add bundled gems to the jar
       # Skip the 'cache' dir which is just the original .gem files
-      gem_dirs = %w{bin docs gems specifications}
+      gem_dirs = %w{bin doc gems specifications}
       gem_root = File.join(%w{vendor bundle jruby 1.8})
       # for each dir, build args: -C vendor/bundle/jruby/1.8 bin, etc
       gem_jar_args = gem_dirs.collect { |dir| ["-C", gem_root, dir ] }.flatten
