@@ -44,7 +44,8 @@ end
 
 VERSIONS = {
   :jruby => "1.6.0", # Any of CPL1.0/GPL2.0/LGPL2.1 ? Confusing, but OK.
-  :elasticsearch => "0.15.2", # Apache 2.0 license
+  #:elasticsearch => "0.15.2", # Apache 2.0 license
+  :elasticsearch => "0.16.0", # Apache 2.0 license
   :joda => "1.6.2",  # Apache 2.0 license
 }
 
