@@ -9,7 +9,7 @@ layout: content_right
     <h3><%= type %></h3>
     <ul>
 <% paths.each do |path| -%>
-<%   name = File.basename(path).gsub(".markdown", "") -%>
+<%   name = File.basename(path).gsub(".html", "") -%>
       <li>
       <a href="<%= "#{type}/#{name}" %>"><%= name %></a>
       </li>

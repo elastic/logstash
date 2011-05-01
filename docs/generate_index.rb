@@ -8,11 +8,17 @@ if ARGV.size != 1
   exit 1
 end
 
+def plugins(glob)
+  files = Dir.glob(glob)
+  names = files.collect { |f| File.basename(f).gsub(".html", "") }
+  return names.sort
+end # def plugins
+
 basedir = ARGV[0]
 docs = {
-  "inputs" => Dir.glob(File.join(basedir, "inputs/*.html")),
-  "filters" => Dir.glob(File.join(basedir, "filters/*.html")),
-  "outputs" => Dir.glob(File.join(basedir, "outputs/*.html")),
+  "inputs" => plugins(File.join(basedir, "inputs/*.html")),
+  "filters" => plugins(File.join(basedir, "filters/*.html")),
+  "outputs" => plugins(File.join(basedir, "outputs/*.html")),
 }
 
 template_path = File.join(File.dirname(__FILE__), "index.html.erb")
