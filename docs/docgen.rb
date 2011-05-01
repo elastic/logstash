@@ -1,6 +1,7 @@
 require "rubygems"
 require "erb"
 require "optparse"
+require "bluecloth" # for markdown parsing
 
 # TODO(sissel): Currently this doc generator doesn't follow ancestry, so
 # LogStash::Input::Amqp inherits Base, but we don't parse the base file.
@@ -17,7 +18,7 @@ class LogStashConfigDocGenerator
   def initialize
     @rules = {
       COMMENT_RE => lambda { |m| add_comment(m[1]) },
-      /^ *class.*< *LogStash::(?:Outputs|Filters|Inputs)::Base/ => \
+      /^ *class.*< *LogStash::(Outputs|Filters|Inputs)::Base/ => \
         lambda { |m| set_class_description },
       /^ *config .*/ => lambda { |m| add_config(m[0]) },
       /^ *config_name .*/ => lambda { |m| set_config_name(m[0]) },
@@ -140,7 +141,9 @@ class LogStashConfigDocGenerator
     template_file = File.join(File.dirname(__FILE__), "docs.html.erb")
     template = ERB.new(File.new(template_file).read, nil, "-")
 
-    description = @class_description
+    # descriptions are assumed to be markdown
+    description = BlueCloth.new(@class_description).to_html
+
     sorted_settings = @settings.sort { |a,b| a.first.to_s <=> b.first.to_s }
     klassname = LogStash::Config::Registry.registry[@name].to_s
     name = @name
