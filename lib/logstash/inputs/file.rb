@@ -1,6 +1,7 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket" # for Socket.gethostname
+require "thread" # for Mutex
 
 # Stream events from files.
 #
@@ -11,7 +12,7 @@ require "socket" # for Socket.gethostname
 # is detected and handled by this input.
 class LogStash::Inputs::File < LogStash::Inputs::Base
   @@filemanager = nil
-  @@filemanager_lock = Mutex.new
+  @@filemanager_lock = ::Mutex.new
 
   config_name "file"
 

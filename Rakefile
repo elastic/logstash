@@ -177,22 +177,23 @@ namespace :package do
   end # namespace monolith
 
   task :jar => [ "vendor:jruby", "vendor:gems", "compile" ] do
-    mkdir_p "build-jar-thin"
+    builddir = "build-jar-thin"
+    mkdir_p builddir
 
     # Unpack jruby
     Dir.glob("vendor/jar/jruby-complete-1.6.0.jar").each do |jar|
-      puts "=> Unpacking #{jar} into build-jar/"
-      Dir.chdir("build-jar") do 
+      puts "=> Unpacking #{jar} into #{builddir}/"
+      Dir.chdir(builddir) do 
         sh "jar xf ../#{jar}"
       end
     end
 
     ["INDEX.LIST", "MANIFEST.MF", "ECLIPSEF.RSA", "ECLIPSEF.SF"].each do |file|
-      File.delete(File.join("build-jar", "META-INF", file)) rescue nil
+      File.delete(File.join(builddir, "META-INF", file)) rescue nil
     end
 
     output = "logstash-#{LOGSTASH_VERSION}.jar"
-    sh "jar cfe #{output} logstash.runner -C build-jar ."
+    sh "jar cfe #{output} logstash.runner -C #{builddir} ."
 
     jar_update_args = []
 
