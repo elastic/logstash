@@ -1,8 +1,16 @@
 Gem::Specification.new do |spec|
   files = []
-  dirs = %w{lib examples etc patterns test}
-  dirs.each do |dir|
-    files += Dir["#{dir}/**/*"]
+  paths = %w{lib examples etc patterns}
+  paths << "test/logstash/"
+  paths << "test/logstash_test_runner.rb"
+  paths << "test/standalone.sh"
+  paths << "test/setup/elasticsearch/Makefile"
+  paths.each do |path|
+    if File.file?(path)
+      files << path
+    else
+      files += Dir["#{path}/**/*"]
+    end
   end
 
   #rev = %x{svn info}.split("\n").grep(/Revision:/).first.split(" ").last.to_i
