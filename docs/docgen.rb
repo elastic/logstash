@@ -25,13 +25,13 @@ class LogStashConfigDocGenerator
       /^ *flag[( ].*/ => lambda { |m| add_flag(m[0]) },
       /^ *(class|def|module) / => lambda { |m| clear_comments },
     }
+    @comments = []
+    @settings = {}
+    @flags = {}
   end
 
   def parse(string)
     buffer = ""
-    @comments = []
-    @settings = {}
-    @flags = {}
     string.split("\n").each do |line|
       # Join long lines
       if line =~ COMMENT_RE
