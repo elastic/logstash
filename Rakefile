@@ -141,7 +141,7 @@ namespace :package do
       end
       #FileUtils.rm_r(File.join("build-jar", "META-INF")) rescue nil
 
-      output = "logstash-#{LOGSTASH_VERSION}.jar"
+      output = "logstash-#{LOGSTASH_VERSION}-monolithic.jar"
       sh "jar cfe #{output} logstash.runner -C build-jar ."
 
       jar_update_args = []
@@ -175,6 +175,55 @@ namespace :package do
       sh "jar i #{output}"
     end # task package:monolith:jar
   end # namespace monolith
+
+  task :jar => [ "vendor:jruby", "vendor:gems", "compile" ] do
+    mkdir_p "build-jar-thin"
+
+    # Unpack jruby
+    Dir.glob("vendor/jar/jruby-complete-1.6.0.jar").each do |jar|
+      puts "=> Unpacking #{jar} into build-jar/"
+      Dir.chdir("build-jar") do 
+        sh "jar xf ../#{jar}"
+      end
+    end
+
+    ["INDEX.LIST", "MANIFEST.MF", "ECLIPSEF.RSA", "ECLIPSEF.SF"].each do |file|
+      File.delete(File.join("build-jar", "META-INF", file)) rescue nil
+    end
+
+    output = "logstash-#{LOGSTASH_VERSION}.jar"
+    sh "jar cfe #{output} logstash.runner -C build-jar ."
+
+    jar_update_args = []
+
+    # Learned how to do this mostly from here:
+    # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
+    #
+    # Add bundled gems to the jar
+    # Skip the 'cache' dir which is just the original .gem files
+    gem_dirs = %w{bin doc gems specifications}
+    gem_root = File.join(%w{vendor bundle jruby 1.8})
+    # for each dir, build args: -C vendor/bundle/jruby/1.8 bin, etc
+    gem_jar_args = gem_dirs.collect { |dir| ["-C", gem_root, dir ] }.flatten
+    jar_update_args += gem_jar_args
+
+    # Add compiled our compiled ruby code
+    jar_update_args += %w{ -C build . }
+
+    # Add web stuff
+    jar_update_args += %w{ -C lib logstash/web/public }
+    jar_update_args += %w{ -C lib logstash/web/views }
+
+    # Add test code
+    #jar_update_args += %w{ -C test logstsah }
+
+    # Add grok patterns
+    jar_update_args << "patterns"
+
+    # Update with other files and also build an index.
+    sh "jar uf #{output} #{jar_update_args.join(" ")}"
+    sh "jar i #{output}"
+  end # task package:jar
 end # namespace package
 
 task :test do
