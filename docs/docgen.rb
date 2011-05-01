@@ -22,7 +22,7 @@ class LogStashConfigDocGenerator
         lambda { |m| set_class_description },
       /^ *config .*/ => lambda { |m| add_config(m[0]) },
       /^ *config_name .*/ => lambda { |m| set_config_name(m[0]) },
-      /^ *flag .*/ => lambda { |m| add_flag(m[0]) },
+      /^ *flag[( ].*/ => lambda { |m| add_flag(m[0]) },
       /^ *(class|def|module) / => lambda { |m| clear_comments },
     }
   end
@@ -69,15 +69,20 @@ class LogStashConfigDocGenerator
     # call the code, which calls 'config' in this class.
     # This will let us align comments with config options.
     name, opts = eval(code)
-    @settings[name] = opts.merge(:description => @comments.join("\n"))
+
+    description = BlueCloth.new(@comments.join("\n")).to_html
+    @settings[name] = opts.merge(:description => description)
     clear_comments
   end # def add_config
 
   def add_flag(code)
     # call the code, which calls 'config' in this class.
     # This will let us align comments with config options.
-    name, opts = eval(code)
-    @flags[name] = opts.merge(:description => @comments.join("\n"))
+    p :code => code
+    fixed_code = code.gsub(/ do .*/, "")
+    p :fixedcode => fixed_code
+    name, description = eval(fixed_code)
+    @flags[name] = description
     clear_comments
   end # def add_config
 
@@ -92,8 +97,10 @@ class LogStashConfigDocGenerator
   end # def config
 
   # Pretend to support the flag DSL
-  def flag(name, opts={})
-    return name, opts
+  def flag(*args, &block)
+    name = args.first
+    description = args.last
+    return name, description
   end # def config
 
   # pretend to be the config dsl's 'config_name' method

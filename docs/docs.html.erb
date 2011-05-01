@@ -6,6 +6,21 @@ layout: content_right
 
 <%= description %>
 
+<% if !@flags.empty? -%>
+<h3> Flags </h3>
+
+This plugin provides the following flags:
+
+<dl>
+<% @flags.each do |flag, description| -%>
+<%# Prefix flag with plugin name. %>
+  <dt> <%= flag.gsub(/^--/, "--#{name}") %> </dt>
+  <dd> <%= description %> </dd>
+<% end -%>
+</dl>
+
+<% end -%>
+
 <h3> Synopsis </h3>
 
 This is what it might look like in your config file:
