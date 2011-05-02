@@ -1,4 +1,5 @@
 .*.swp
 *.gem
 local
+Gemfile.lock
 
