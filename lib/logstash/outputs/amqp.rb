@@ -75,7 +75,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       begin
         @target.publish(event.to_json)
         break;
-      rescue Bunny::ServerDownError => e
+      rescue *[Bunny::ServerDownError, Errno::ECONNRESET] => e
         @logger.error("AMQP connection error, will reconnect: #{e}")
         connect
         retry
