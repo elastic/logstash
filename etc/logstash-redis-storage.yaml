@@ -1,0 +1,6 @@
+# Example config that reads logs from messages and dumps results into redis
+inputs:
+  linux-syslog:
+  - /var/log/messages
+outputs:
+  - redis://localhost/0/logqueue

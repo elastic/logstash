@@ -1,0 +1,7 @@
+# Example that pulls logs from redis and dumps them to stdout
+inputs:
+  redis:
+    - redis://localhost/0/logqueue
+outputs:
+- stdout:///
+
