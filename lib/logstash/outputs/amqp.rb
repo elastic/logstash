@@ -41,6 +41,11 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     end
 
     @logger.info("Registering output #{to_s}")
+    connect
+  end # def register
+
+  public
+  def connect
     amqpsettings = {
       :vhost => @vhost,
       :host => @host,
@@ -49,17 +54,33 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     amqpsettings[:user] = @user if @user
     amqpsettings[:pass] = @password if @password
     amqpsettings[:logging] = @debug
-    @logger.debug(["Connecting to AMQP", amqpsettings, @exchange_type, @name])
-    @bunny = Bunny.new(amqpsettings)
-    @bunny.start
-
+    loop do
+      @logger.debug(["Connecting to AMQP", amqpsettings, @exchange_type, @name])
+      @bunny = Bunny.new(amqpsettings)
+      begin
+        @bunny.start
+        break # success
+      rescue Bunny::ServerDownError => e
+        @logger.error("AMQP connection error, will reconnect: #{e}")
+        sleep(1)
+      end
+    end # loop
     @target = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
-  end # def register
+  end # def connect
 
   public
   def receive(event)
-    @logger.debug(["Sending event", { :destination => to_s, :event => event }])
-    @target.publish(event.to_json)
+    loop do
+      @logger.debug(["Sending event", { :destination => to_s, :event => event }])
+      begin
+        @target.publish(event.to_json)
+        break;
+      rescue Bunny::ServerDownError => e
+        @logger.error("AMQP connection error, will reconnect: #{e}")
+        connect
+        retry
+      end
+    end # loop do
   end # def receive
 
   # This is used by the ElasticSearch AMQP/River output.
