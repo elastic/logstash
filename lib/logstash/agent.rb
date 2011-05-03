@@ -367,6 +367,7 @@ class LogStash::Agent
 
   protected
   def output(event)
+    # TODO(sissel): write to a multiqueue and do 1 thread per output?
     @outputs.each do |o|
       o.receive(event)
     end # each output
