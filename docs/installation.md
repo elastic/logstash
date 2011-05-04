@@ -22,11 +22,11 @@ CLASSPATH environment variable to include any elasticsearch jar files.
 
 ### web interface
 
-    java -jar ~/projects/logstash/logstash-0.9.1.jar web
+    java -jar logstash-0.9.1.jar web
 
 ### agent 
 
-    java -jar ~/projects/logstash/logstash-0.9.1.jar agent -f youragent.conf
+    java -jar logstash-0.9.1.jar agent -f youragent.conf
 
 ## 'gem install logstash'
 
