@@ -48,7 +48,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #
   # The config looks like this:
   #
-  # filters {
+  # filter {
   #   date {
   #     type => "typename"
   #     fielname => fieldformat

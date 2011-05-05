@@ -16,7 +16,7 @@ require "logstash/outputs/base"
 # to send events to nagios. So use grep to match and also to add the required
 # fields.
 #
-#     filters {
+#     filter {
 #       grep {
 #         type => "linux-syslog"
 #         match => [ "@message", "(error|ERROR|CRITICAL)" ]
@@ -28,7 +28,7 @@ require "logstash/outputs/base"
 #      }
 #    }
 #    
-#    outputs {
+#    output{
 #      nagios { 
 #        # only process events with this tag
 #        tags => "nagios-update"

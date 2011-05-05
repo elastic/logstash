@@ -16,7 +16,7 @@ require "logstash/namespace"
 # TODO(sissel): Document any issues?
 # The config looks like this:
 #
-#     filters {
+#     filter {
 #       multiline {
 #         type => "type"
 #         pattern => "pattern, a regexp"
@@ -38,7 +38,7 @@ require "logstash/namespace"
 # For example, java stack traces are multiline and usually have the message
 # starting at the far-left, then each subsequent line indented. Do this:
 # 
-#     filters {
+#     filter {
 #       multiline {
 #         type => "somefiletype"
 #         pattern => "^\\s"
@@ -50,7 +50,7 @@ require "logstash/namespace"
 #
 # Another example is C line continuations (backslash). Here's how to do that:
 #
-#     filters {
+#     filter {
 #       multiline {
 #         type => "somefiletype "
 #         pattern => "\\$"

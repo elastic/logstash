@@ -16,7 +16,7 @@ class LogStash::Filters::Base
   # Tags can be dynamic and include parts of the event using the %{field}
   # syntax. Example:
   #
-  #     filters {
+  #     filter {
   #       myfilter {
   #         add_tags => [ "foo_%{somefield}" ]
   #       }
@@ -29,7 +29,7 @@ class LogStash::Filters::Base
   # If this filter is successful, add any arbitrary fields to this event.
   # Example:
   #
-  #     filters {
+  #     filter {
   #       myfilter {
   #         add_fields => [ "sample", "Hello world, from %{@source}" ]
   #       }

@@ -70,12 +70,12 @@ class LogStash::Config::File
 
     # First level is the components
     # Like:
-    #   inputs {
+    #   input {
     #     ...
     #   }
     @config.each do |type, plugin_config_array|
       # plugin_config_array has arrays of each component config:
-      # inputs {
+      # input {
       #   amqp { ... }
       #   file { ... }
       #   file { ... }
