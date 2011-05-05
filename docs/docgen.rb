@@ -138,11 +138,11 @@ class LogStashConfigDocGenerator
 
     klass = LogStash::Config::Registry.registry[@name]
     if klass.ancestors.include?(LogStash::Inputs::Base)
-      section = "inputs"
+      section = "input"
     elsif klass.ancestors.include?(LogStash::Filters::Base)
-      section = "filters"
+      section = "filter"
     elsif klass.ancestors.include?(LogStash::Outputs::Base)
-      section = "outputs"
+      section = "output"
     end
 
     template_file = File.join(File.dirname(__FILE__), "docs.html.erb")
