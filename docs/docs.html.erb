@@ -28,10 +28,14 @@ This is what it might look like in your config file:
 <pre><code>
 <%= section %> {
   <%= name %> {
-<% sorted_settings.each do |setting_name, config| -%>
-<%   annotation = "#{config[:validate]}"
- annotation += " (required)" if config[:required]
- annotation += ", default: #{config[:default].inspect}" if config[:default]
+<% sorted_settings.each do |setting_name, config|
+     if config[:validate].is_a?(Array) 
+       annotation = "#{config[:validate].inspect}"
+     else 
+       annotation = "#{config[:validate]}"
+     end
+     annotation += " (required)" if config[:required]
+     annotation += ", default: #{config[:default].inspect}" if config[:default]
 -%>
     <a href="#setting_<%= setting_name %>"><%= setting_name %></a> => ... # <%= annotation %>
 <% end -%>
