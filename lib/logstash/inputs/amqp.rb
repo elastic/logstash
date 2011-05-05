@@ -23,7 +23,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   config :password, :validate => :password, :default => "guest"
 
   # The exchange type (fanout, topic, direct)
-  config :exchange_type, :validate => :string, :required => true
+  config :exchange_type, :validate => [ "fanout", "direct", "topic"], :required => true
 
   # The name of the exchange
   config :name, :validate => :string, :required => true
