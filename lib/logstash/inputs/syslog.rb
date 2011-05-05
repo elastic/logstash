@@ -25,7 +25,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     # Optional fields (priority, host) are because some syslog implementations
     # don't send these under some circumstances.
     @@syslog_re ||= \
-      /(?:<([0-9]{1,3})>)?([A-z]{3} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}) (?:(\S+[^:]) )?(.*)/
+      /(?:<([0-9]{1,3})>)?([A-z]{3}  ?[0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2}) (?:(\S+[^:]) )?(.*)/
       #<priority>      timestamp          Mmm dd hh:mm:ss             host  msg
   end # def register
 
