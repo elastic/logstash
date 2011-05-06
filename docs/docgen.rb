@@ -156,7 +156,7 @@ class LogStashConfigDocGenerator
     name = @name
 
     if settings[:output]
-      dir = File.join(settings[:output], section)
+      dir = File.join(settings[:output], section + "s")
       path = File.join(dir, "#{name}.html")
       Dir.mkdir(settings[:output]) if !File.directory?(settings[:output])
       Dir.mkdir(dir) if !File.directory?(dir)
