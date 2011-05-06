@@ -22,8 +22,13 @@ The logstash agent has the following flags (also try using the '--help' flag)
 
 ## Web UI
 
-    -l, --log FILE                   Log to a given path. Default is stdout.
-    -a, --address ADDRESS            Address on which to start webserver. Default is 0.0.0.0.
-    -p, --port PORT                  Port on which to start webserver. Default is 9292.
-    -b, --backend URL                The backend URL to use. Default is elasticserach://localhost:9200/
-
+<dl>
+<dt> --log FILE </dt>
+<dd> Log to a given path. Default is stdout. </dd>
+<dt> --address ADDRESS </dt>
+<dd> Address on which to start webserver. Default is 0.0.0.0. </dd>
+<dt> --port PORT </dt>
+<dd> Port on which to start webserver. Default is 9292. </dd>
+<dt> --backend URL </dt>
+<dd> The backend URL to use. Default is elasticserach://localhost:9200/ </dd>
+</dl>
