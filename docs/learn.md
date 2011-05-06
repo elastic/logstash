@@ -14,7 +14,9 @@ For an overview of logstash and why you would use it, you should watch the
 presentation I gave at CarolinaCon 2011: 
 [video here](http://carolinacon.blip.tv/file/5105901/). This presentation covers
 logstash, how you can use it, some alternatives, logging best practices,
-parsing tools, etc.
+parsing tools, etc. Video also below:
+
+<embed src="http://blip.tv/play/gvE9grjcdQI" type="application/x-shockwave-flash" width="480" height="296" allowscriptaccess="always" allowfullscreen="true"></embed>
 
 The slides are available online here: [slides](http://goo.gl/68c62). The slides
 include speaker notes (click 'actions' then 'speaker notes').
