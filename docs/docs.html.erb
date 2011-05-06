@@ -14,7 +14,7 @@ This plugin provides the following flags:
 <dl>
 <% @flags.each do |flag, description| -%>
 <%# Prefix flag with plugin name. %>
-  <dt> <%= flag.gsub(/^--/, "--#{name}") %> </dt>
+  <dt> <%= flag.gsub(/^--/, "--#{name}-") %> </dt>
   <dd> <%= description %> </dd>
 <% end -%>
 </dl>
