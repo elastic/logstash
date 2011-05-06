@@ -1,6 +1,6 @@
 ---
 title: Getting Started (Standalone server) - logstash
-layout: default
+layout: content_right
 ---
 # Getting started with logstash (standalone server example)
 

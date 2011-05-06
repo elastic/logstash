@@ -1,6 +1,6 @@
 ---
 title: Getting Started (Centralized Server) - logstash
-layout: default
+layout: content_right
 ---
 
 # Getting Started
