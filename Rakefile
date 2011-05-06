@@ -1,7 +1,9 @@
 require 'tempfile'
 require 'ftools' # fails in 1.9.2
 
-LOGSTASH_VERSION = "0.9.1" # Compile config grammar (ragel -> ruby)
+LOGSTASH_VERSION = "1.0.0" 
+
+# Compile config grammar (ragel -> ruby)
 file "lib/logstash/config/grammar.rb" => ["lib/logstash/config/grammar.rl"] do
   sh "make -C lib/logstash/config grammar.rb"
 end
