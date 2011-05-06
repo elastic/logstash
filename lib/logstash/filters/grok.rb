@@ -15,6 +15,7 @@ require "logstash/namespace"
 # <https://github.com/jordansissel/grok/blob/master/INSTALL>o
 #
 # Key dependencies:
+#
 # * libtokyocabinet > 1.4.6
 # * libpcre >= 7.6
 # * libevent >= 1.3 (though older versions may worK)
