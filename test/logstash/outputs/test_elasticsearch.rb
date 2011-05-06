@@ -13,7 +13,7 @@ require "logstash/search/query"
 require "spoon" # rubygem 'spoon' - implements posix_spawn via FFI
 
 class TestOutputElasticSearch < Test::Unit::TestCase
-  ELASTICSEARCH_VERSION = "0.15.2"
+  ELASTICSEARCH_VERSION = "0.16.0"
 
   def setup
     start_elasticsearch
