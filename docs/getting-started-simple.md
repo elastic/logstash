@@ -22,8 +22,6 @@ Steps:
 If you have problems, feel free to email the users list
 (logstash-users@googlegroups.com) or join IRC (#logstash on irc.freenode.org)
 
-<div class="clear"></div>
-
 ## ElasticSearch
 
 Requirements: Java. I have only tested with sun java.
