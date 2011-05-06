@@ -19,6 +19,16 @@ parsing tools, etc.
 The slides are available online here: [slides](http://goo.gl/68c62). The slides
 include speaker notes (click 'actions' then 'speaker notes').
 
+## Getting Help
+
+There's [documentation](.) here on this site. If that isn't sufficient, you can
+email the mailing list (logstash-users@googlegroups.com). Further, there is also
+an IRC channel - #logstash on irc.freenode.org.
+
+If you find a bug or have a feature request, file them
+[here](http://logstash.jira.com/). (Honestly though, if you prefer email or irc
+for such things, that works for me, too.)
+
 ## What's next?
 
 Try the [standalone logstash guide](getting-started-simple) for a simple
