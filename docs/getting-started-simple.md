@@ -14,13 +14,15 @@ indexer) if you want, but this example shows simply a standalone configuration.
 
 Steps:
 
-* Download and run elasticsearch </li>
-* Download and run logstash </li>
+* Download and run elasticsearch
+* Download and run logstash
 
 ## Problems?
 
 If you have problems, feel free to email the users list
 (logstash-users@googlegroups.com) or join IRC (#logstash on irc.freenode.org)
+
+<div class="clear"></div>
 
 ## ElasticSearch
 
