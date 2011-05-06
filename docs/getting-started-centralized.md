@@ -35,14 +35,13 @@ Requirements: java
 
 Paste this in your shell for easy downloadings.
 
-{{{
-ES_PACKAGE=elasticsearch-0.16.0.zip
-ES_DIR=${ES_PACKAGE%%.zip}
-if [ ! -d "$ES_DIR" ] ; then
-  wget --no-check-certificate http://github.com/downloads/elasticsearch/elasticsearch/$ES_PACKAGE
-  unzip $ES_PACKAGE
-fi
-}}}
+    ES_PACKAGE=elasticsearch-0.16.0.zip
+    ES_DIR=${ES_PACKAGE%%.zip}
+    SITE=http://github.com/downloads/elasticsearch/elasticsearch
+    if [ ! -d "$ES_DIR" ] ; then
+      wget --no-check-certificate $SITE/$ES_PACKAGE
+      unzip $ES_PACKAGE
+    fi
 
 Otherwise - Download and unpack the elasticsearch yourself; you'll want version
 0.16.0 or newer. It's written in Java and requires Java (uses Lucene on the
