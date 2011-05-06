@@ -19,3 +19,11 @@ The logstash agent has the following flags (also try using the '--help' flag)
 <dt> --pluginpath PLUGIN_PATH </dt>
 <dd> A colon-delimted path to find other logstash plugins in </dd>
 </dl>
+
+## Web UI
+
+    -l, --log FILE                   Log to a given path. Default is stdout.
+    -a, --address ADDRESS            Address on which to start webserver. Default is 0.0.0.0.
+    -p, --port PORT                  Port on which to start webserver. Default is 9292.
+    -b, --backend URL                The backend URL to use. Default is elasticserach://localhost:9200/
+
