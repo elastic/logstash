@@ -28,6 +28,14 @@ end
   #exit status
 #end
 
+task :clean do
+  sh "rm -rf .bundle"
+  sh "rm -rf build-jar-thin"
+  sh "rm -rf build-jar"
+  sh "rm -rf build"
+  sh "rm -rf vendor"
+end
+
 task :compile => "lib/logstash/config/grammar.rb" do |t|
   mkdir_p "build"
   sh "rm -rf lib/net"
