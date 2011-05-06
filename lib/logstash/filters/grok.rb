@@ -2,8 +2,25 @@ require "logstash/filters/base"
 require "logstash/namespace"
 
 # Parse arbitrary text and structure it.
+# Grok is currently the best way in logstash to parse crappy unstructured log
+# data (like syslog or apache logs) into something structured and queryable.
 #
-# Use grok 
+# This filter requires you have libgrok installed.
+#
+# You can find libgrok here: 
+# <http://code.google.com/p/semicomplete/wiki/Grok>
+#
+# Compile/install notes can be found in the INSTALL file of the
+# grok tarball, or here: 
+# <https://github.com/jordansissel/grok/blob/master/INSTALL>o
+#
+# Key dependencies:
+# * libtokyocabinet > 1.4.6
+# * libpcre >= 7.6
+# * libevent >= 1.3 (though older versions may worK)
+#
+# Note:
+# CentOS 5 ships with an ancient version of pcre that does not work with grok.
 class LogStash::Filters::Grok < LogStash::Filters::Base
   config_name "grok"
 
@@ -12,11 +29,18 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   config :pattern, :validate => :array, :required => true
 
   # Specify a path to a directory with grok pattern files in it
+  #
+  # logstash ships by default with a bunch of patterns, so you don't
+  # necessarily need to define this yourself unless you are adding additional
+  # patterns.
+  #
   # Pattern files are plain text with format:
-  #   NAME PATTERN
+  # 
+  #     NAME PATTERN
   #
   # For example:
-  #   NUMBER \d+
+  #
+  #     NUMBER \d+
   config :patterns_dir, :validate => :array
 
   # Drop if matched. Note, this feature may not stay. It is preferable to combine
