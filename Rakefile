@@ -1,6 +1,7 @@
 require 'tempfile'
 require 'ftools' # fails in 1.9.2
 
+# TODO(sissel): load the gemspec and parse the version from it instead.
 LOGSTASH_VERSION = "1.0.0" 
 
 # Compile config grammar (ragel -> ruby)
