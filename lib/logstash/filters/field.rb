@@ -2,6 +2,7 @@ require "logstash/filters/base"
 require "logstash/namespace"
 require "ostruct"
 
+# THIS IS NOT SUPPORTED YET.
 class LogStash::Filters::Field < LogStash::Filters::Base
 
   # TODO(sissel): Finish this.
