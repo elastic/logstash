@@ -276,12 +276,8 @@ task :docgen => [:require_output_env] do
   sh "find lib/logstash/inputs lib/logstash/filters lib/logstash/outputs  -type f -not -name 'base.rb' -a -name '*.rb'| xargs ruby docs/docgen.rb -o #{ENV["output"]}"
 end
 
-
-# No publishing until 1.0! :)
-#task :publish do
-  #latest_gem = %x{ls -t logstash-[0-9]*.gem}.split("\n").first
-  #sh "gem push #{latest_gem}"
-  #latest_lite_gem = %x{ls -t logstash-lite*.gem}.split("\n").first
-  #sh "gem push #{latest_lite_gem}"
-#end
+task :publish do
+  latest_gem = %x{ls -t logstash-[0-9]*.gem}.split("\n").first
+  sh "gem push #{latest_gem}"
+end
 
