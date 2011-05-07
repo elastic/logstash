@@ -117,8 +117,11 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
     messages.each do |message|
       @logger.debug(["Running grok filter", event])
+
       @@grokpiles[event.type].each do |pile|
+        @logger.debug(["Trying pattern", pile])
         grok, match = @pile.match(message)
+        @logger.debug(["Result", { :grok => grok, :match => match }])
         break if match
       end
 
@@ -178,8 +181,12 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     if file =~ /file:\/.*\.jar!.*/
       File.new(file).each do |line|
         next if line =~ /^(?:\s*#|\s*$)/
-        name, pattern = line.split(/\s+/, 2)
+        # In some cases I have seen 'file.each' yield lines with newlines at
+        # the end. I don't know if this is a bug or intentional, but we need
+        # to chomp it.
+        name, pattern = line.chomp.split(/\s+/, 2)
         @logger.debug "Adding pattern '#{name}' from file #{file}"
+        @logger.debug name => pattern
         @pile.add_pattern(name, pattern)
       end
     else
