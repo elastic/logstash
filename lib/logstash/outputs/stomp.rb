@@ -29,7 +29,7 @@ class LogStash::Outputs::Stomp < LogStash::Outputs::Base
   public
   def register
     require "stomp"
-    @client = Stomp::Client.new(@user, @password, @host, @port)
+    @client = Stomp::Client.new(@user, @password.value, @host, @port)
   end # def register
 
   public

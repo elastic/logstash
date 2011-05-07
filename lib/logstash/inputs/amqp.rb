@@ -56,7 +56,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
       :port => (@port or 5672),
     }
     @amqpsettings[:user] = @user if @user
-    @amqpsettings[:pass] = @password if @password
+    @amqpsettings[:pass] = @password.value if @password
     @amqpsettings[:logging] = @debug
   end # def register
 

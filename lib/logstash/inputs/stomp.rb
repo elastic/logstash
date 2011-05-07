@@ -40,7 +40,7 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
     end
 
     begin
-      @client = Stomp::Client.new(@user, @password, @host, @port)
+      @client = Stomp::Client.new(@user, @password.value, @host, @port)
     rescue Errno::ECONNREFUSED
       @logger.error("Connection refused to #{@host}:#{@port}...")
       # TODO(sissel): Retry?

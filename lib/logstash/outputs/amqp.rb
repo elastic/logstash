@@ -52,7 +52,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       :port => @port
     }
     amqpsettings[:user] = @user if @user
-    amqpsettings[:pass] = @password if @password
+    amqpsettings[:pass] = @password.value if @password
     amqpsettings[:logging] = @debug
     loop do
       @logger.debug(["Connecting to AMQP", amqpsettings, @exchange_type, @name])
