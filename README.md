@@ -7,3 +7,9 @@ It is fully free and fully open source. The license is New BSD, meaning you are 
 For more info, see <http://logstash.net/>
 
 File bugs here: <http://logstash.jira.com>
+
+## Contributing
+
+If you're going to send me patches, I prefer pull requests on github. However, I will also accept normal patches.
+
+If you want to request a new feature, file it on jira: <http://logstash.jira.com>
