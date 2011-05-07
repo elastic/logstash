@@ -14,8 +14,8 @@ GEM
     haml (3.0.25)
     hoe (2.9.4)
       rake (>= 0.8.7)
-    jls-grok (0.4.6)
-      ffi (~> 0.6.3)
+    jls-grok (0.4.7)
+      ffi (>= 0.6.3)
     jruby-elasticsearch (0.0.7)
     json (1.5.1-java)
     mizuno (0.4.0)
@@ -46,7 +46,7 @@ DEPENDENCIES
   filewatch (~> 0.2.3)
   gelf
   haml
-  jls-grok (~> 0.4.3)
+  jls-grok (~> 0.4.7)
   jruby-elasticsearch (~> 0.0.7)
   json
   mizuno
