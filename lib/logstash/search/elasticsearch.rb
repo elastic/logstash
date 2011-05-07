@@ -148,11 +148,21 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
       entries.each do |entry|
         # entry is a hash of keys 'total', 'mean', 'count', and 'key'
         hist_entry = LogStash::Search::FacetResult::Histogram.new
+
+        # Sometimes the values here can be Float::NAN ?
+        # TODO(sissel): Dig into this.
+        #@logger.debug(:entry => entry)
         hist_entry.key = entry.key
         hist_entry.count = entry.count
-        hist_entry.mean = entry.mean
-        hist_entry.total = entry.total
-        p :histo => hist_entry
+        
+        hist_entry.mean = entry.mean.nan? ? 0 : entry.mean
+        hist_entry.total = entry.total.nan? ? 0 : entry.total
+
+        #@logger.debug(:original => { 
+          #:key => entry.key, :count => entry.count.class,
+          #:mean => entry.mean.class, :total => entry.total.class 
+        #})
+        #@logger.debug(:histo => hist_entry)
         result.results << hist_entry
       end # for each histogram result
       return result
