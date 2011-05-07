@@ -45,7 +45,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "gelf" # outputs/gelf
 
   # For the 'grok' filter
-  spec.add_dependency("jls-grok", ">= 0.3.3209")
+  spec.add_dependency("jls-grok", "~> 0.4.7")
 
   spec.add_dependency("bunny")
   spec.add_dependency("uuidtools")
@@ -62,6 +62,6 @@ Gem::Specification.new do |spec|
 
   spec.authors = ["Jordan Sissel", "Pete Fritchman"]
   spec.email = ["jls@semicomplete.com", "petef@databits.net"]
-  spec.homepage = "http://code.google.com/p/logstash/"
+  spec.homepage = "http://logstash.net/"
 end
 
