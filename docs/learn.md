@@ -31,6 +31,14 @@ If you find a bug or have a feature request, file them
 on <http://logstash.jira.com/>. (Honestly though, if you prefer email or irc
 for such things, that works for me, too.)
 
+## Download it
+
+logstash releases come in a few flavors.
+
+* [Monolithic jar](https://github.com/downloads/logstash/releases/logstash-1.0.0-monolithic.jar)
+* [rubygem](https://github.com/downloads/logstash/releases/logstash-1.0.0.gem)
+* [`gem install logstash`](http://rubygems.org/gems/logstash)
+
 ## What's next?
 
 Try the [standalone logstash guide](getting-started-simple) for a simple
