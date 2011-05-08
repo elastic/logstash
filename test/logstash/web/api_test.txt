@@ -1,0 +1,11 @@
+
+# Should emit pretty
+  http://localhost:9292/api/search?q=*&pretty=true
+  http://localhost:9292/api/histogram?q=*&pretty=true
+
+# Should be normal json
+  http://localhost:9292/api/search?q=*
+  http://localhost:9292/api/histogram?q=*
+
+# Should be plain text
+  http://localhost:9292/api/search.txt?q=*
