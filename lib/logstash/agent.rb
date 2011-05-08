@@ -389,10 +389,10 @@ class LogStash::Agent
     # by default.
     Signal.trap("USR2") do
       # TODO(sissel): Make this a function.
-      counts = Hash.new { |h,k| h[k] = 0 }
-      ObjectSpace.each_object do |obj|
-        counts[obj.class] += 1
-      end
+      #counts = Hash.new { |h,k| h[k] = 0 }
+      #ObjectSpace.each_object do |obj|
+        #counts[obj.class] += 1
+      #end
 
       @logger.info("SIGUSR1 received. Dumping state")
       @logger.info("#{self.class.name} config")
@@ -400,10 +400,10 @@ class LogStash::Agent
       @logger.info(["  Filters:", @filters])
       @logger.info(["  Outputs:", @outputs])
 
-      @logger.info("Dumping counts of objects by class")
-      counts.sort { |a,b| a[1] <=> b[1] or a[0] <=> b[0] }.each do |key, value|
-        @logger.info("Class: [#{value}] #{key}")
-      end
+      #@logger.info("Dumping counts of objects by class")
+      #counts.sort { |a,b| a[1] <=> b[1] or a[0] <=> b[0] }.each do |key, value|
+        #@logger.info("Class: [#{value}] #{key}")
+      #end
     end # SIGUSR1
   end # def register_signal_handler
 end # class LogStash::Agent
