@@ -123,6 +123,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           time = nil
           missing = []
           success = false
+          last_exception = RuntimeError.new "Unknown"
           fieldparsers.each do |parserconfig|
             parser = parserconfig[:parser]
             missing = parserconfig[:missing]
