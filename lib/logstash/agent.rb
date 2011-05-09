@@ -276,7 +276,7 @@ class LogStash::Agent
         input.logger = @logger
         input.register
         ready_queue << input
-        input.run
+        input.run(input_target)
       end # new thread for thsi input
     end # @inputs.each
 
