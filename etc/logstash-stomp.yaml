@@ -1,7 +1,0 @@
---- 
-inputs:
-  tail-syslog:
-  - /var/log/syslog
-outputs:
-- stomp://logs:password@localhost:6163/topic/logs
-
