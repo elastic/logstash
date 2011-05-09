@@ -2,6 +2,9 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require "redis"
 
+# read events from a redis using BLPOP
+#
+# For more information about redis, see <http://redis.io/>
 class LogStash::Inputs::Redis < LogStash::Inputs::Base
 
   config_name "redis"

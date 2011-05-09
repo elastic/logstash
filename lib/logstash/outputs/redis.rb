@@ -2,6 +2,9 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 require 'eventmachine'
 
+# send events to a redis databse using RPUSH
+#
+# For more information about redis, see <http://redis.io/>
 class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   config_name "redis"
