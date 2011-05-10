@@ -16,6 +16,7 @@ gem "haml"
 
 # TODO(sissel): Put this into a group that's only used for monolith packaging
 gem "mongo" # outputs/mongodb
+gem "redis" # outputs/redis
 
 gem "gelf" # outputs/gelf
 
