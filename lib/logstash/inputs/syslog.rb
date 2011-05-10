@@ -59,39 +59,45 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   private
   def udp_listener(output_queue)
     @logger.info("Starting syslog udp listener on #{@host}:#{@port}")
-    s = UDPSocket.new
-    s.bind(@host, @port)
+    server = UDPSocket.new(Socket::AF_INET)
+    server.bind(@host, @port)
 
     loop do
-      line, client = s.recvfrom(1024)
-      event = LogStash::Event.new({
-        "@message" => line.chomp,
-        "@type" => @type,
-        "@tags" => @tags.clone,
-      })
-      source_base = URI::Generic.new("syslog", nil, client[3], nil, nil, nil, nil, nil, nil, nil)
-      syslog_relay(event, source)
+      line, client = server.recvfrom(9000)
+      p :client => client
+      p :line => line
+      begin
+        event = LogStash::Event.new({
+          "@message" => line.chomp,
+          "@type" => @type,
+          "@tags" => @tags.clone,
+        })
+        source = URI::Generic.new("syslog", nil, client[3], nil, nil, nil, nil, nil, nil, nil)
+        syslog_relay(event, source)
+      rescue => e
+        p :exception => e
+      end
       output_queue << event
     end
   ensure
-    if s
-      s.close_read
-      s.close_write
+    if server
+      server.close_read
+      server.close_write
     end
   end # def udp_listener
 
   private
   def tcp_listener(output_queue)
     @logger.info("Starting syslog tcp listener on #{@host}:#{@port}")
-    s = TCPServer.new(@host, @port)
+    server = TCPServer.new(@host, @port)
 
     loop do
-      Thread.new(s.accept) do |s|
-        ip, port = s.peeraddr[3], s.peeraddr[1]
+      Thread.new(server.accept) do |client|
+        ip, port = client.peeraddr[3], client.peeraddr[1]
         @logger.warn("got connection from #{ip}:#{port}")
         LogStash::Util::set_thread_name("input|syslog|tcp|#{ip}:#{port}}")
         source_base = URI::Generic.new("syslog", nil, ip, nil, nil, nil, nil, nil, nil, nil)
-        s.each do |line|
+        client.each do |line|
           event = LogStash::Event.new({
             "@message" => line.chomp,
             "@type" => @type,
@@ -104,7 +110,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       end
     end
   ensure
-    s.close if s
+    server.close if server
   end # def tcp_listener
 
   # Following RFC3164 where sane, we'll try to parse a received message
