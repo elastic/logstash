@@ -1,6 +1,5 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "redis"
 
 # read events from a redis using BLPOP
 #
