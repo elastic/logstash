@@ -9,23 +9,23 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   config_name "redis"
   
-  # name is used for logging in case there are multiple instances
+  # Name is used for logging in case there are multiple instances.
   config :name, :validate => :string, :default => 'default'
 
-  # the hostname of your redis server
+  # The hostname of your redis server.  Hostname is 127.0.0.1 by default.
   config :host, :validate => :string
 
-  # the port to connect on (optional)
+  # The port to connect on.  Port is 6379 by default.
   config :port, :validate => :number
 
-  # The redis database number
+  # The redis database number.  Db is 0 by default.
   config :db, :validate => :number
 
-  # Timeout of some kind? This isn't really documented in the Redis rubygem
-  # docs...
+  # Redis initial connection timeout in seconds.  Timeout is 5 seconds by
+  # default.
   config :timeout, :validate => :number
 
-  # Password to authenticate with
+  # Password to authenticate with.  There is no authentication by default.
   config :password, :validate => :password
 
   # The name of the redis queue (we'll use RPUSH on this). Dynamic names are
