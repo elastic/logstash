@@ -129,6 +129,10 @@ namespace :package do
 
       # Unpack all the 3rdparty jars and any jars in gems
       Dir.glob("vendor/{bundle,jar}/**/*.jar").each do |jar|
+        if jar =~ /sigar.*\.jar$/
+          puts "=> Skipping #{jar} (sigar not needed)"
+          next
+        end
         puts "=> Unpacking #{jar} into build-jar/"
         Dir.chdir("build-jar") do 
           sh "jar xf ../#{jar}"
