@@ -33,6 +33,9 @@ CLASSPATH environment variable to include any elasticsearch jar files.
 Using this method to download logstash will install all ruby dependencies.
 
 * You must have jruby already
+* If you use elasticsearch, you'll have to it and its jars add that to the java
+  classpath. ( See below for web interface notes 
+* If you use grok, you'll need libgrok installed.
 
 ### web interface
 
@@ -47,3 +50,6 @@ Using this method to download logstash will install all ruby dependencies.
 ### agent
 
     % logstash -f youragent.conf
+
+    # Or if you need elasticsearch:
+    % CLASSPATH=elasticsearch-0.16.0/lib/*.jar logstash -f youragent.conf
