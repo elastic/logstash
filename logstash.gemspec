@@ -1,3 +1,5 @@
+require File.join(File.dirname(__FILE__), "VERSION")  # For LOGSTASH_VERSION
+
 Gem::Specification.new do |spec|
   files = []
   paths = %w{lib examples etc patterns}
@@ -16,7 +18,7 @@ Gem::Specification.new do |spec|
   #rev = %x{svn info}.split("\n").grep(/Revision:/).first.split(" ").last.to_i
   rev = Time.now.strftime("%Y%m%d%H%M%S")
   spec.name = "logstash"
-  spec.version = "1.0.4"
+  spec.version = LOGSTASH_VERSION
   spec.summary = "logstash - log and event management"
   spec.description = "scalable log and event management (search, archive, pipeline)"
   spec.license = "Apache License (2.0)"
