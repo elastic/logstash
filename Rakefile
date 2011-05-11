@@ -133,6 +133,7 @@ namespace :package do
           puts "=> Skipping #{jar} (sigar not needed)"
           next
         end
+
         puts "=> Unpacking #{jar} into build-jar/"
         Dir.chdir("build-jar") do 
           sh "jar xf ../#{jar}"
