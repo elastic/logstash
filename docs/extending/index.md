@@ -6,8 +6,6 @@ layout: content_right
 
 You can add your own input, output, or filter plugins to logstash.
 
-DOCS - TBD
-
 If you're looking to extend logstash today, please look at the existing plugins.
 
 Good examples include:
@@ -38,3 +36,9 @@ Outputs have two methods: register and receive.
 
 * 'register' is called per plugin instantiation. Do any of your initialization here.
 * 'receive' is called when an event gets pushed to your output
+
+## Example: new filter
+
+Learn by example how to [add a new filter to logstash](extending/example-add-a-new-filter)
+
+
