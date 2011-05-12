@@ -67,7 +67,7 @@ The config file looks like this:
     filter {
       foo {
         type => "foo"
-        message => "hello world 12345"
+        message => "Hello world!"
       }
     }
     output {
@@ -104,10 +104,10 @@ command.
 
     % java -jar logstash-1.0.5-monolithic.jar agent -f example.conf
     the quick brown fox   
-    2011-05-12T01:05:09.495000Z stdin://snack.home/: hello world 12345
+    2011-05-12T01:05:09.495000Z stdin://snack.home/: Hello world!
 
 The output is the standard logstash stdout output, but in this case our "the
-quick brown fox" message was replaced with "hello world 12345"
+quick brown fox" message was replaced with "Hello world!"
 
 All done! :)
 
