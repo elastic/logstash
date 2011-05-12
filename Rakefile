@@ -29,8 +29,8 @@ end
 
 task :clean do
   sh "rm -rf .bundle"
-  sh "rm -rf build-jar-thin"
-  sh "rm -rf build-jar"
+  #sh "rm -rf build-jar-thin"
+  #sh "rm -rf build-jar"
   sh "rm -rf build"
   sh "rm -rf vendor"
 end
@@ -125,7 +125,8 @@ namespace :package do
     end # package:monolith:tar
 
     task :jar => monolith_deps do
-      mkdir_p "build-jar"
+      builddir = "build/monolith-jar"
+      mkdir_p builddir
 
       # Unpack all the 3rdparty jars and any jars in gems
       Dir.glob("vendor/{bundle,jar}/**/*.jar").each do |jar|
@@ -134,9 +135,10 @@ namespace :package do
           next
         end
 
-        puts "=> Unpacking #{jar} into build-jar/"
-        Dir.chdir("build-jar") do 
-          sh "jar xf ../#{jar}"
+        puts "=> Unpacking #{jar} into #{builddir}/"
+        relative_path = File.join(builddir.split(File::SEPARATOR).collect { |a| ".." })
+        Dir.chdir(builddir) do 
+          sh "jar xf #{relative_path}/#{jar}"
         end
       end
 
@@ -152,12 +154,11 @@ namespace :package do
       # Purge any extra files we don't need in META-INF (like manifests and
       # jar signatures)
       ["INDEX.LIST", "MANIFEST.MF", "ECLIPSEF.RSA", "ECLIPSEF.SF"].each do |file|
-        File.delete(File.join("build-jar", "META-INF", file)) rescue nil
+        File.delete(File.join(builddir, "META-INF", file)) rescue nil
       end
-      #FileUtils.rm_r(File.join("build-jar", "META-INF")) rescue nil
 
       output = "logstash-#{LOGSTASH_VERSION}-monolithic.jar"
-      sh "jar cfe #{output} logstash.runner -C build-jar ."
+      sh "jar cfe #{output} logstash.runner -C #{builddir} ."
 
       jar_update_args = []
 
@@ -169,7 +170,7 @@ namespace :package do
       gem_dirs = %w{bin doc gems specifications}
       gem_root = File.join(%w{vendor bundle jruby 1.8})
       # for each dir, build args: -C vendor/bundle/jruby/1.8 bin, etc
-      gem_jar_args = gem_dirs.collect { |dir| ["-C", gem_root, dir ] }.flatten
+      gem_jar_args = gem_dirs.collect { |d| ["-C", gem_root, d ] }.flatten
       jar_update_args += gem_jar_args
 
       # Add compiled our compiled ruby code
@@ -192,14 +193,15 @@ namespace :package do
   end # namespace monolith
 
   task :jar => [ "vendor:jruby", "vendor:gems", "compile" ] do
-    builddir = "build-jar-thin"
+    builddir = "build/thin-jar"
     mkdir_p builddir
 
     # Unpack jruby
+    relative_path = File.join(builddir.split(File::SEPARATOR).collect { |a| ".." })
     Dir.glob("vendor/jar/jruby-complete-1.6.0.jar").each do |jar|
       puts "=> Unpacking #{jar} into #{builddir}/"
       Dir.chdir(builddir) do 
-        sh "jar xf ../#{jar}"
+        sh "jar xf #{relative_path}/#{jar}"
       end
     end
 
