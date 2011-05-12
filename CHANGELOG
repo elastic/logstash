@@ -1,4 +1,9 @@
-1.0.??? (May 11, 2011)
+1.0.7 ( ????? )
+  @ TODO: logstash-web needs to support elasticsearch cluster name
+  @ TODO: GELF 'dynamic' level/facility? (LOGSTASH-83)
+  @ TODO: Catch input exceptions and handle them sanely (LOGSTASH-84)
+
+1.0.6 (May 11, 2011)
   * Remove 'sigar' from monolithic jar packaging. This removes a boatload of
     unnecessary warning messages on startup whenever you use elasticsearch
     output or logstash-web.
