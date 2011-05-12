@@ -1,3 +1,9 @@
+1.0.??? (May 11, 2011)
+  * Remove 'sigar' from monolithic jar packaging. This removes a boatload of
+    unnecessary warning messages on startup whenever you use elasticsearch
+    output or logstash-web.
+    Issue: https://logstash.jira.com/browse/LOGSTASH-79
+
 1.0.5 (May 10, 2011)
   * fix queues when durable is set to true
 
@@ -10,6 +16,7 @@
 
 1.0.1 (May 7, 2011)
   * Fix password auth for amqp and stomp (Reported by Luke Macken)
+  * Fix default elasticsearch target for logstash-web (Reported by Donald Gordon)
 
 1.0.0 (May 6, 2011)
   * First major release.
