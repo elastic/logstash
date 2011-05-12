@@ -36,15 +36,28 @@ task :clean do
 end
 
 task :compile => "lib/logstash/config/grammar.rb" do |t|
-  mkdir_p "build"
-  sh "rm -rf lib/net"
+  target = "build/ruby"
+  mkdir_p target if !File.directory?(target)
+  #sh "rm -rf lib/net"
   Dir.chdir("lib") do
-    args = Dir.glob("**/*.rb")
-    sh "jrubyc", "-t", "../build", *args
+    rel_target = File.join("..", target)
+    sh "jrubyc", "-t", rel_target, "logstash/runner"
+    files = Dir.glob("**/*.rb")
+    files.each do |file|
+      d = File.join(rel_target, File.dirname(file))
+      mkdir_p d if !File.directory?(d)
+      cp file, File.join(d, File.basename(file))
+    end
   end
+
   Dir.chdir("test") do
-    args = Dir.glob("**/*.rb")
-    sh "jrubyc", "-t", "../build", *args
+    rel_target = File.join("..", target)
+    files = Dir.glob("**/*.rb")
+    files.each do |file|
+      d = File.join(rel_target, File.dirname(file))
+      mkdir_p d if !File.directory?(d)
+      cp file, File.join(d, File.basename(file))
+    end
   end
 end
 
@@ -61,7 +74,7 @@ VERSIONS = {
 
 namespace :vendor do
   file "vendor/jar" do |t|
-    mkdir_p t.name
+    mkdir_p t.name if !File.directory?(t.name)
   end
 
   # Download jruby.jar
@@ -126,7 +139,7 @@ namespace :package do
 
     task :jar => monolith_deps do
       builddir = "build/monolith-jar"
-      mkdir_p builddir
+      mkdir_p builddir if !File.directory?(builddir)
 
       # Unpack all the 3rdparty jars and any jars in gems
       Dir.glob("vendor/{bundle,jar}/**/*.jar").each do |jar|
@@ -174,7 +187,7 @@ namespace :package do
       jar_update_args += gem_jar_args
 
       # Add compiled our compiled ruby code
-      jar_update_args += %w{ -C build . }
+      jar_update_args += %w{ -C build/ruby . }
 
       # Add web stuff
       jar_update_args += %w{ -C lib logstash/web/public }
@@ -194,7 +207,7 @@ namespace :package do
 
   task :jar => [ "vendor:jruby", "vendor:gems", "compile" ] do
     builddir = "build/thin-jar"
-    mkdir_p builddir
+    mkdir_p builddir if !File.directory?(builddir)
 
     # Unpack jruby
     relative_path = File.join(builddir.split(File::SEPARATOR).collect { |a| ".." })
@@ -264,7 +277,7 @@ task :doccopy => [:require_output_env] do
 
   Dir.glob("docs/**/*").each do |doc|
     dir = File.join(ENV["output"], File.dirname(doc).gsub(/docs\/?/, ""))
-    mkdir_p dir
+    mkdir_p dir if !File.directory?(dir)
     if File.directory?(doc)
       mkdir_p doc
     else
