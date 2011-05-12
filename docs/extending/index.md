@@ -39,6 +39,6 @@ Outputs have two methods: register and receive.
 
 ## Example: new filter
 
-Learn by example how to [add a new filter to logstash](extending/example-add-a-new-filter)
+Learn by example how to [add a new filter to logstash](example-add-a-new-filter)
 
 
