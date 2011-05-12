@@ -36,6 +36,8 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   public
   def receive(event)
+    # We have to make our own hash here because GELF expects a hash
+    # with a specific format.
     m = Hash.new
     m["short_message"] = (event.fields["message"] or event.message)
     m["full_message"] = (event.message)
