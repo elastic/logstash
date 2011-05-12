@@ -262,8 +262,12 @@ task :doccopy => [:require_output_env] do
   Dir.glob("docs/**/*").each do |doc|
     dir = File.join(ENV["output"], File.dirname(doc).gsub(/docs\/?/, ""))
     mkdir_p dir
-    puts "Copy #{doc} => #{dir}"
-    cp(doc, dir)
+    if File.directory?(doc)
+      mkdir_p doc
+    else
+      puts "Copy #{doc} => #{dir}"
+      cp(doc, dir)
+    end
   end
 end
 
