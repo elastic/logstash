@@ -14,10 +14,9 @@ logstash](.) overview.
 Let's write a 'hello world' filter. This filter will replace the 'message' in
 the event with "Hello world!"
 
-First, logstash expects plugins in a certain directory structure.
-'logstash/<type>/<thing>.rb'
+First, logstash expects plugins in a certain directory structure: logstash/TYPE/PLUGIN_NAME.rb
 
-So let's mkdir:
+Since we're creating a filter, let's mkdir this:
 
     mkdir -p logstash/filters/
     cd logstash/filters
