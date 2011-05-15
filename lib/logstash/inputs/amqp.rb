@@ -31,8 +31,8 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   # The vhost to use
   config :vhost, :validate => :string, :default => "/"
 
-  # Is this exchange durable?
-  config :durable, :validate => :boolean, :default => false
+  # Is this exchange durable? (aka; Should it survive a broker restart?)
+  config :durable, :validate => :boolean, :default => true
 
   # Enable or disable debugging
   config :debug, :validate => :boolean, :default => false

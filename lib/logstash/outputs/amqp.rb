@@ -27,8 +27,12 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   # The vhost to use
   config :vhost, :validate => :string, :default => "/"
 
-  # Is this exchange durable?
-  config :durable, :validate => :boolean, :default => false
+  # Is this exchange durable? (aka; Should it survive a broker restart?)
+  config :durable, :validate => :boolean, :default => true
+
+  # Should messages persist to disk on the AMQP broker until they are read by a
+  # consumer?
+  config :persistent, :validate => :boolean, :default => true
 
   # Enable or disable debugging
   config :debug, :validate => :boolean, :default => false
@@ -73,7 +77,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     loop do
       @logger.debug(["Sending event", { :destination => to_s, :event => event }])
       begin
-        @target.publish(event.to_json)
+        @target.publish(event.to_json, :persistent => @persistent)
         break;
       rescue *[Bunny::ServerDownError, Errno::ECONNRESET] => e
         @logger.error("AMQP connection error, will reconnect: #{e}")
