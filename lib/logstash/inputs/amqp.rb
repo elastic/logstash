@@ -68,7 +68,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
       begin
         @bunny.start
 
-        @queue = @bunny.queue(@name)
+        @queue = @bunny.queue(@name, :durable => @durable)
         exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
         @queue.bind(exchange)
 
