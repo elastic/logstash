@@ -1,9 +1,27 @@
+1.0.7 ( ????? )
+  @ TODO: logstash-web needs to support elasticsearch cluster name
+  @ TODO: GELF 'dynamic' level/facility? (LOGSTASH-83)
+  @ TODO: Catch input exceptions and handle them sanely (LOGSTASH-84)
+
+1.0.6 (May 11, 2011)
+  * Remove 'sigar' from monolithic jar packaging. This removes a boatload of
+    unnecessary warning messages on startup whenever you use elasticsearch
+    output or logstash-web.
+    Issue: https://logstash.jira.com/browse/LOGSTASH-79
+
+1.0.5 (May 10, 2011)
+  * fix queues when durable is set to true
+
+1.0.4 (May 9, 2011)
+  * Fix bugs in syslog input
+
 1.0.2 (May 8, 2011)
   * Fix default-value handling for configs when the validation type is
     'password'
 
 1.0.1 (May 7, 2011)
   * Fix password auth for amqp and stomp (Reported by Luke Macken)
+  * Fix default elasticsearch target for logstash-web (Reported by Donald Gordon)
 
 1.0.0 (May 6, 2011)
   * First major release.
