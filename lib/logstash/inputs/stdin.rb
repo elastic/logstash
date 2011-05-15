@@ -20,7 +20,7 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
       event = LogStash::Event.new
       begin
         event.message = $stdin.readline.chomp
-      rescue EOFError => e
+      rescue *[EOFError, IOError] => e
         @logger.info("Got EOF from stdin input. Ending")
         finished
         return
@@ -32,4 +32,9 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
       queue << event
     end # loop
   end # def run
+
+  public
+  def teardown
+    $stdin.close
+  end # def teardown
 end # class LogStash::Inputs::Stdin
