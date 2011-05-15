@@ -1,7 +1,12 @@
 1.0.7 ( ????? )
-  @ TODO: logstash-web needs to support elasticsearch cluster name
-  @ TODO: GELF 'dynamic' level/facility? (LOGSTASH-83)
+  - logstash 'web' now allows you to specify the elasticsearch clustername;
+    --backend elasticsearch://[host[:port]]/[clustername]
+  - GELF output now supports dynamic strings for level and facility
+    https://logstash.jira.com/browse/LOGSTASH-83
   @ TODO: Catch input exceptions and handle them sanely (LOGSTASH-84)
+  - 'amqp' output supports persistent messages over AMQP, now. Tunable.
+    https://logstash.jira.com/browse/LOGSTASH-81
+  - redis input and output are now supported. (Contributed by dokipen)
 
 1.0.6 (May 11, 2011)
   * Remove 'sigar' from monolithic jar packaging. This removes a boatload of

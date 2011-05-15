@@ -1,11 +1,12 @@
 require "cgi"
 require "logstash/event"
 require "logstash/logging"
+require "logstash/plugin"
 require "logstash/namespace"
 require "logstash/config/mixin"
 require "uri"
 
-class LogStash::Outputs::Base
+class LogStash::Outputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
 
   attr_accessor :logger

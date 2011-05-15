@@ -53,7 +53,7 @@ module LogStash::Config::Mixin
       next if params.include?(name.to_s)
       if opts.include?(:default) and (name.is_a?(Symbol) or name.is_a?(String))
         if opts[:validate] == :password
-          @logger.info("Converting default value in #{self.class.name} (#{name}) to password object")
+          @logger.debug("Converting default value in #{self.class.name} (#{name}) to password object")
           params[name.to_s] = ::LogStash::Util::Password.new(opts[:default])
         else
           params[name.to_s] = opts[:default]
