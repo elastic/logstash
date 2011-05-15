@@ -4,6 +4,7 @@
 require "java"
 require "logstash/config/file"
 require "logstash/filters"
+require "logstash/filterworker"
 require "logstash/inputs"
 require "logstash/logging"
 require "logstash/multiqueue"
@@ -11,6 +12,7 @@ require "logstash/namespace"
 require "logstash/outputs"
 require "logstash/util"
 require "optparse"
+require "thread"
 require "uri"
 
 # TODO(sissel): only enable this if we are in debug mode.
@@ -38,7 +40,8 @@ class LogStash::Agent
     @verbose = 0
     @daemonize = false
 
-    @threads = {}
+    @plugins = {}
+    @plugins_mutex = Mutex.new
     @outputs = []
     @inputs = []
     @filters = []
@@ -51,6 +54,7 @@ class LogStash::Agent
     # TODO(sissel): Other default plugin paths?
 
     Thread::abort_on_exception = true
+    @is_shutting_down = false
   end # def initialize
 
   public
@@ -261,52 +265,34 @@ class LogStash::Agent
     end
 
     # NOTE(petef) we should use a SizedQueue here (w/config params for size)
-    #filter_queue = Queue.new
     filter_queue = SizedQueue.new(10)
     output_queue = LogStash::MultiQueue.new
 
-    ready_queue = Queue.new
+    @ready_queue = Queue.new
 
+    # inputs should write directly to output queue if there are no filters.
     input_target = @filters.length > 0 ? filter_queue : output_queue
     # Start inputs
     @inputs.each do |input|
       @logger.info(["Starting input", input])
-      @threads[input] = Thread.new(input_target) do |input_target|
-        LogStash::Util::set_thread_name("input|#{input.inspect}")
-        input.logger = @logger
-        input.register
-        ready_queue << input
-        input.run(input_target)
-      end # new thread for thsi input
+      @plugins[input] = Thread.new(input, input_target) do |*args|
+        run_input(*args)
+      end
     end # @inputs.each
 
     # Create N filter-worker threads
     if @filters.length > 0
       1.times do |n|
-        @logger.info("Starting filter worker thread #{n}")
-        @threads["filter|worker|#{n}"] = Thread.new do
-          LogStash::Util::set_thread_name("filter|worker|#{n}")
-          @filters.each do |filter|
-            filter.logger = @logger
-            filter.register
+        # TODO(sissel): facter this out into a 'filterworker' that  accepts
+        # 'shutdown'
+        # Start a filter worker
+        filterworker = LogStash::FilterWorker.new(@filters, filter_queue,
+                                                  output_queue)
+        filterworker.logger = @logger
+        @plugins[filterworker] = \
+          Thread.new(filterworker, n, output_queue) do |*args|
+            run_filter(*args)
           end
-
-          while event = filter_queue.pop
-            filters.each do |filter|
-              filter.filter(event)
-              if event.cancelled?
-                @logger.debug({:message => "Event cancelled",
-                               :event => event,
-                               :filter => filter.class,
-                })
-                break
-              end
-            end # filters.each
-
-            @logger.debug(["Event finished filtering", event])
-            output_queue.push(event) unless event.cancelled?
-          end # event pop
-        end # Thread.new
       end # N.times
     end # if @filters.length > 0
 
@@ -315,30 +301,14 @@ class LogStash::Agent
     @outputs.each do |output|
       queue = SizedQueue.new(10)
       output_queue.add_queue(queue)
-      @threads["outputs/#{output.to_s}"] = Thread.new(queue) do |queue|
-        output.register
-        ready_queue << output
-        begin
-          LogStash::Util::set_thread_name("output/#{output.to_s}")
-          output.logger = @logger
-
-          while event = queue.pop do
-            @logger.debug("Sending event to #{output.to_s}")
-            output.receive(event)
-          end
-        rescue Exception => e
-          @logger.warn(["Output #{output.to_s} thread exception", e])
-          @logger.debug(["Output #{output.to_s} thread exception backtrace",
-                         e.backtrace])
-          # TODO(sissel): should we abort after too many failures?
-          retry
-        end # begin/rescue
-      end # Thread.new
+      @plugins[output] = Thread.new(output, queue) do |*args|
+        run_output(*args)
+      end
     end # @outputs.each
 
     # Wait for all inputs and outputs to be registered.
     wait_count = outputs.size + inputs.size
-    while wait_count > 0 and ready_queue.pop 
+    while wait_count > 0 and @ready_queue.pop 
       wait_count -= 1
     end
 
@@ -383,6 +353,38 @@ class LogStash::Agent
     end
   end # def input
 
+  # Shutdown the agent.
+  protected
+  def shutdown
+    return if @is_shutting_down
+
+    @is_shutting_down = true
+    Thread.new do
+      LogStash::Util::set_thread_name("logstash shutdown process")
+
+      finished_queue = Queue.new
+      # Tell everything to shutdown.
+      @plugins.each do |plugin, thread|
+        plugin.shutdown(finished_queue)
+      end
+
+      # Now wait until the queues we were given are empty.
+      #@logger.info(@plugins)
+      loop do
+        @logger.info("Waiting for plugins to finish.")
+        remaining = @plugins.select { |plugin, thread| plugin.running? }
+        break if remaining.size == 0
+
+        plugin = finished_queue.pop
+        @logger.info("#{plugin.to_s} finished, waiting on #{remaining.size} plugins")
+      end # loop
+
+      # When we get here, all inputs have finished, all messages are done
+      @logger.info("Shutdown complete")
+      java.lang.System.exit(0)
+    end
+  end # def shutdown
+
   public
   def register_signal_handler
     # TODO(sissel): This doesn't work well in jruby since ObjectSpace is disabled
@@ -406,6 +408,90 @@ class LogStash::Agent
       #end
     end # SIGUSR1
   end # def register_signal_handler
+
+  private
+  def run_input(input, queue)
+    LogStash::Util::set_thread_name("input|#{input.to_s}")
+    input.logger = @logger
+    input.register
+
+    @ready_queue << input
+    done = false
+
+    while !done
+      begin
+        input.run(queue)
+        done = true
+      rescue => e
+        @logger.warn(["Input #{input.to_s} thread exception", e])
+        @logger.debug(["Input #{input.to_s} thread exception backtrace",
+                       e.backtrace])
+        @logger.error("Restarting input #{input.to_s} due to exception")
+        retry # This jumps to the top of this proc (to the start of 'do'
+      end
+    end
+
+    # If we get here, the plugin finished, check if we need to shutdown.
+    shutdown_if_none_running(LogStash::Inputs::Base, queue)
+  end # def run_input
+
+  # Run a filter thread
+  public
+  def run_filter(filterworker, index, output_queue)
+    LogStash::Util::set_thread_name("filter|worker|#{index}")
+    filterworker.run
+
+    # If we get here, the plugin finished, check if we need to shutdown.
+    shutdown_if_none_running(LogStash::FilterWorker, output_queue)
+  end # def run_filter
+
+  # TODO(sissel): Factor this into an 'outputworker'
+  def run_output(output, queue)
+    LogStash::Util::set_thread_name("output|#{output.to_s}")
+    output.register
+    output.logger = @logger
+    @ready_queue << output
+
+    # TODO(sissel): We need a 'reset' or 'restart' method to call on errors
+
+    begin
+      while event = queue.pop do
+        @logger.debug("Sending event to #{output.to_s}")
+        output.receive(event)
+      end
+    rescue Exception => e
+      @logger.warn(["Output #{output.to_s} thread exception", e])
+      @logger.debug(["Output #{output.to_s} thread exception backtrace",
+                     e.backtrace])
+      # TODO(sissel): should we abort after too many failures?
+      retry
+    end # begin/rescue
+ 
+    # If we get here, the plugin finished, check if we need to shutdown.
+    shutdown_if_none_running(LogStash::Outputs::Base)
+  end # def run_output
+
+  def shutdown_if_none_running(pluginclass, queue=nil)
+    # Send shutdown signal if all inputs are done.
+    @plugins_mutex.synchronize do
+
+      # Look for plugins of type 'pluginclass' (or a subclass)
+      # If none are running, start the shutdown sequence and
+      # send the 'shutdown' event down the pipeline.
+      remaining = @plugins.count do |plugin, thread|
+        plugin.is_a?(pluginclass) and plugin.running?
+      end
+      @logger.info("#{pluginclass} still running: #{remaining}")
+
+      if remaining == 0
+        @logger.info("All #{pluginclass} finished. Shutting down.")
+        
+        # Send 'shutdown' to the filters.
+        queue << LogStash::SHUTDOWN if !queue.nil?
+        shutdown
+      end # if remaining == 0
+    end # @plugins_mutex.synchronize
+  end # def shutdown_if_none_running
 end # class LogStash::Agent
 
 if __FILE__ == $0

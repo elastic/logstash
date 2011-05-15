@@ -74,6 +74,11 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   public
   def receive(event)
+    if event == LogStash::SHUTDOWN
+      finished
+      return
+    end
+
     loop do
       @logger.debug(["Sending event", { :destination => to_s, :event => event }])
       begin
