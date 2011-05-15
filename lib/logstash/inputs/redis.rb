@@ -11,19 +11,19 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   # Name is used for logging in case there are multiple instances.
   config :name, :validate => :string, :default => "default"
 
-  # The hostname of your redis server.  Default hostname is 127.0.0.1.
-  config :host, :validate => :string
+  # The hostname of your redis server.
+  config :host, :validate => :string, :default => "127.0.0.1"
 
-  # The port to connect on.  The default port is 6379.
-  config :port, :validate => :number
+  # The port to connect on.
+  config :port, :validate => :number, :default => 6379
 
-  # The redis database number.  Db is 0 by default.
-  config :db, :validate => :number
+  # The redis database number.
+  config :db, :validate => :number, :default => 0
 
-  # Initial connection timeout in seconds.  Default timeout is 5 seconds.
-  config :timeout, :validate => :number
+  # Initial connection timeout in seconds.
+  config :timeout, :validate => :number, :default => 5
 
-  # Password to authenticate with.  There is no authentication by default.
+  # Password to authenticate with. There is no authentication by default.
   config :password, :validate => :password
 
   # The name of the redis queue (we'll use BLPOP against this).
