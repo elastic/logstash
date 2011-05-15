@@ -1,6 +1,7 @@
 
 require "logstash/namespace"
 require "logstash/logging"
+require "logstash/plugin"
 require "logstash/event"
 
 class LogStash::Search::Base
