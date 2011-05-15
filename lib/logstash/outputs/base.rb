@@ -28,4 +28,14 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def receive(event)
     raise "#{self.class}#receive must be overidden"
   end # def receive
+
+  public
+  def handle(event)
+    if event == LogStash::SHUTDOWN
+      finished
+      return
+    end
+
+    receive(event)
+  end # def handle
 end # class LogStash::Outputs::Base

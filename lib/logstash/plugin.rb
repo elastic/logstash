@@ -12,6 +12,7 @@ class LogStash::Plugin
     # By default, shutdown is assumed a no-op for all plugins.
     # If you need to take special efforts to shutdown (like waiting for
     # an operation to complete, etc)
+    teardown
     @logger.info("Got shutdown signal for #{self}")
 
     @shutdown_queue = queue
@@ -36,6 +37,13 @@ class LogStash::Plugin
       @plugin_state = :finished
     end
   end # def finished
+
+  # Subclasses should implement this teardown method if you need to perform any
+  # special tasks during shutdown (like flushing, etc.)
+  public
+  def teardown
+    # nothing by default
+  end
 
   public
   def finished?
