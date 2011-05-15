@@ -1,11 +1,12 @@
 require "cgi"
 require "logstash/event"
 require "logstash/logging"
+require "logstash/plugin"
 require "logstash/namespace"
 require "logstash/config/mixin"
 require "uri"
 
-class LogStash::Outputs::Base
+class LogStash::Outputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
 
   attr_accessor :logger
@@ -27,4 +28,14 @@ class LogStash::Outputs::Base
   def receive(event)
     raise "#{self.class}#receive must be overidden"
   end # def receive
+
+  public
+  def handle(event)
+    if event == LogStash::SHUTDOWN
+      finished
+      return
+    end
+
+    receive(event)
+  end # def handle
 end # class LogStash::Outputs::Base
