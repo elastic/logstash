@@ -1,9 +1,10 @@
 require "logstash/namespace"
 require "logstash/event"
+require "logstash/plugin"
 require "logstash/logging"
 require "logstash/config/mixin"
 
-class LogStash::Inputs::Base
+class LogStash::Inputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
   attr_accessor :logger
 

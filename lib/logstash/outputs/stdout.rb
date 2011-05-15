@@ -28,6 +28,11 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
 
   public
   def receive(event)
+    if event == LogStash::SHUTDOWN
+      finished
+      return
+    end
+
     if @debug
       if HAVE_AWESOME_PRINT
         ap event.to_hash

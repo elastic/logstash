@@ -60,9 +60,11 @@ class LogStash::Web::Server < Sinatra::Base
       when "elasticsearch"
         # if host is nil, it will 
         # TODO(sissel): Support 'cluster' name?
+        cluster_name = (backend_url.path != "/" ? backend_url.path[1..-1] : nil)
         @backend = LogStash::Search::ElasticSearch.new(
           :host => backend_url.host,
-          :port => backend_url.port
+          :port => backend_url.port,
+          :cluster => cluster_name
         )
       when "twitter"
         require "logstash/search/twitter"
@@ -118,7 +120,9 @@ opts = OptionParser.new do |opts|
   end
 
   opts.on("-b", "--backend URL",
-          "The backend URL to use. Default is elasticserach:/// (assumes multicast discovery)") do |url|
+          "The backend URL to use. Default is elasticserach:/// (assumes " \
+          "multicast discovery); You can specify " \
+          "elasticsearch://[host][:port]/[clustername]") do |url|
     settings.backend_url = url
   end
 end
