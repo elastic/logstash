@@ -18,20 +18,43 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # The GELF chunksize
   config :chunksize, :validate => :number, :default => 1420
 
-  # The GELF message level
-  config :level, :validate => :number, :default => 1
+  # The GELF message level. Dynamic values like %{level} are permitted here;
+  # useful if you want to parse the 'log level' from an event and use that
+  # as the gelf level/severity.
+  #
+  # Values here can be integers [0..7] inclusive or any of 
+  # "debug", "info", "warn", "error", "fatal", "unknown" (case insensitive).
+  # Single-character versions of these are also valid, "d", "i", "w", "e", "f",
+  # "u"
+  config :level, :validate => :string, :default => "INFO"
 
-  # The GELF facility.
+  # The GELF facility. Dynamic values like %{foo} are permitted here; this
+  # is useful if you need to use a value from the event as the facility name.
   config :facility, :validate => :string, :default => "logstash-gelf"
 
   public
   def register
     require "gelf" # rubygem 'gelf'
     option_hash = Hash.new
-    option_hash['level'] = @level
-    option_hash['facility'] = @facility
+    #option_hash['level'] = @level
+    #option_hash['facility'] = @facility
 
-    @gelf = GELF::Notifier.new(@host, @port, @chunksize, option_hash)
+    #@gelf = GELF::Notifier.new(@host, @port, @chunksize, option_hash)
+    @gelf = GELF::Notifier.new(@host, @port, @chunksize)
+
+    # This sets the 'log level' of gelf; since we're forwarding messages, we'll
+    # want to forward *all* messages, so set level to 0 so all messages get
+    # shipped
+    @gelf.level = 0
+
+    @level_map = {
+      "debug" => 7, "d" => 7,
+      "info" => 6, "i" => 6,
+      "warn" => 5, "w" => 5,
+      "error" => 4, "e" => 4,
+      "fatal" => 3, "f" => 3,
+      "unknown" => 1, "u" => 1,
+    }
   end # def register
 
   public
@@ -43,13 +66,18 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     m["full_message"] = (event.message)
     m["host"] = event["@source_host"]
     m["file"] = event["@source_path"]
-    m["level"] = 1
 
     event.fields.each do |name, value|
       next if value == nil or value.empty?
       m["#{name}"] = value
     end
+
+    # Allow 'INFO' 'I' or number. for 'level'
+    level = event.sprintf(@level.to_s)
+    m["level"] = (@level_map[level.downcase] || level).to_i
+    m["facility"] = event.sprintf(@facility)
     m["timestamp"] = event.timestamp
+
     @gelf.notify!(m)
   end # def receive
 end # class LogStash::Outputs::Gelf
