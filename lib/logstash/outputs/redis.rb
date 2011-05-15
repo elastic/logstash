@@ -8,9 +8,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   config_name "redis"
   
-  # Name is used for logging in case there are multiple instances.
-  config :name, :validate => :string, :default => 'default'
-
   # The hostname of your redis server.
   config :host, :validate => :string, :default => "127.0.0.1"
 
@@ -26,15 +23,13 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # Password to authenticate with.  There is no authentication by default.
   config :password, :validate => :password
 
-  # The name of a redis list (we'll use RPUSH on this). Dynamic names are
-  # valid here, for example "logstash-%{@type}".  You must specify a list
-  # or channel or both.
-  config :list, :validate => :string
+  # The name of a redis list or channel. Dynamic names are
+  # valid here, for example "logstash-%{@type}".
+  config :key, :validate => :string, :required => true
 
-  # The name of a redis channel (we'll use PUBLISH on this). Dynamic names are
-  # valid here, for example "logstash-%{@type}".  You must specify a list
-  # or channel or both.
-  config :channel, :validate => :string
+  # Either list or channel.  If redis_type is list, then we will RPUSH to key.
+  # If redis_type is channel, then we will PUBLISH to key.
+  config :data_type, :validate => [ "list", "channel" ], :required => true
 
   # Maximum number of retries on a read before we give up.
   config :retries, :validate => :number, :default => 5
@@ -42,10 +37,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   def register
     require 'redis'
     @redis = nil
-
-    unless @list or @channel
-      raise "Must specify redis list or channel"
-    end # unless @list or @channel
   end # def register
 
   def connect
@@ -58,26 +49,31 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     )
   end # def connect
 
+  # A string used to identify a redis instance in log messages
+  def identity
+    "redis://#{@password}@#{@host}:#{@port}/#{@db} #{@data_type}:#{@key}"
+  end
+
+
   def receive(event, tries=@retries)
     if tries <= 0
-      @logger.error "Fatal error, failed to log #{event.to_s} to redis #{@name}"
-      raise "Failed to log to redis #{@name}"
+      @logger.error "Fatal error, failed to log #{event.to_s} to #{identity}"
+      raise RuntimeError, "Failed to log to #{identity} after #{@retries} tries"
     end
 
     begin
       @redis ||= connect
-      tx = @list and @channel
-      @redis.multi if tx
-      @redis.rpush event.sprintf(@list), event.to_json if @list
-      @redis.publish event.sprintf(@channel), event.to_json if @channel
-      @redis.exec if tx
+      if @data_type == 'list'
+        @redis.rpush event.sprintf(@list), event.to_json if @list
+      else
+        @redis.publish event.sprintf(@channel), event.to_json if @channel
+      end
     rescue => e
       # TODO(sissel): Be specific in the exceptions we rescue.
       # Drop the redis connection to be picked up later during a retry.
       @redis = nil
-      @logger.warn("Failed to log #{event.to_s} to redis #{@name}. "+
-                   "Will retry #{tries} times.")
-      @logger.warn($!)
+      @logger.warn(["Failed to log #{event.to_s} to #{identity}. " +
+                   "Will retry #{retries} times.", $!])
       @logger.debug(["Backtrace", e.backtrace])
       Thread.new do
         sleep 1
