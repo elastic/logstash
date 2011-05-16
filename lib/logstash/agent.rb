@@ -364,24 +364,41 @@ class LogStash::Agent
 
     @is_shutting_down = true
     Thread.new do
+      @logger.info("Starting shutdown sequence")
       LogStash::Util::set_thread_name("logstash shutdown process")
+      # TODO(sissel): Make this a flag
+      force_shutdown_time = Time.now + 10
 
       finished_queue = Queue.new
       # Tell everything to shutdown.
+      @logger.debug(@plugins.keys.collect(&:to_s))
       @plugins.each do |plugin, thread|
+        @logger.debug("Telling to shutdown: #{plugin.to_s}")
         plugin.shutdown(finished_queue)
       end
 
       # Now wait until the queues we were given are empty.
       #@logger.debug(@plugins)
-      loop do
-        @logger.debug("Waiting for plugins to finish.")
-        remaining = @plugins.select { |plugin, thread| plugin.running? }
-        break if remaining.size == 0
+      remaining = @plugins.select { |plugin, thread| plugin.running? }
+      while remaining.size > 0
+        if (Time.now > force_shutdown_time)
+          @logger.warn("Time to quit, even if some plugins aren't finished yet.")
+          @logger.warn("Stuck plugins? #{remaining.map(&:first).join(", ")}")
+          break
+        end
 
-        plugin = finished_queue.pop
-        @logger.debug("#{plugin.to_s} finished, waiting on #{remaining.size} plugins")
-      end # loop
+        @logger.debug("Waiting for plugins to finish.")
+        plugin = finished_queue.pop(non_block=true) rescue nil
+
+        if plugin.nil?
+          sleep(1)
+        else
+          remaining = @plugins.select { |plugin, thread| plugin.running? }
+          @logger.debug("#{plugin.to_s} finished, waiting on " \
+                        "#{remaining.size} plugins; " \
+                        "#{remaining.map(&:first).join(", ")}")
+        end
+      end # while remaining.size > 0
 
       # When we get here, all inputs have finished, all messages are done
       @logger.info("Shutdown complete")
@@ -413,13 +430,15 @@ class LogStash::Agent
     #end # SIGUSR1
 
     Signal.trap("INT") do
+      @logger.warn("SIGINT received, shutting down.")
       shutdown
     end
 
     Signal.trap("TERM") do
+      @logger.warn("SIGTERM received, shutting down.")
       shutdown
     end
-  end # def register_signal_handler
+  end # def register_signal_handlers
 
   private
   def run_input(input, queue)
