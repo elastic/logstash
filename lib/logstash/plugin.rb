@@ -55,4 +55,9 @@ class LogStash::Plugin
     return @plugin_state != :finished
   end # def finished?
 
+  public
+  def terminating?
+    return @plugin_state == :terminating
+  end # def terminating?
+
 end # class LogStash::Plugin

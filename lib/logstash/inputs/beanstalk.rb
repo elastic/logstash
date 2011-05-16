@@ -42,4 +42,9 @@ class LogStash::Inputs::Beanstalk < LogStash::Inputs::Base
       job.delete
     end
   end # def run
+
+  public
+  def teardown
+    @beanstalk.close rescue nil
+  end # def teardown
 end # class LogStash::Inputs::Beanstalk

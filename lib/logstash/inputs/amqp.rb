@@ -61,33 +61,37 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   end # def register
 
   def run(queue)
-    loop do
-      @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up #{@mqtype.inspect} queue #{@name.inspect}")
-      @bunny = Bunny.new(@amqpsettings)
+    @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up #{@mqtype.inspect} queue #{@name.inspect}")
+    @bunny = Bunny.new(@amqpsettings)
 
-      begin
-        @bunny.start
+    begin
+      return if terminating?
+      @bunny.start
 
-        @queue = @bunny.queue(@name, :durable => @durable)
-        exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
-        @queue.bind(exchange)
+      @queue = @bunny.queue(@name, :durable => @durable)
+      exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
+      @queue.bind(exchange)
 
-        @queue.subscribe do |data|
-          begin
-            obj = JSON.parse(data[:payload])
-          rescue => e
-            @logger.error(["json parse error", { :exception => e }])
-            raise e
-          end
+      @queue.subscribe do |data|
+        begin
+          obj = JSON.parse(data[:payload])
+        rescue => e
+          @logger.error(["json parse error", { :exception => e }])
+          raise e
+        end
 
-          queue << LogStash::Event.new(obj)
-        end # @queue.subscribe
-      rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
-        @logger.error("AMQP connection error, will reconnect: #{e}")
-        # Sleep for a bit before retrying.
-        # TODO(sissel): Write 'backoff' method?
-        sleep(1)
-      end # begin/rescue
-    end # loop
+        queue << LogStash::Event.new(obj)
+      end # @queue.subscribe
+    rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
+      @logger.error("AMQP connection error, will reconnect: #{e}")
+      # Sleep for a bit before retrying.
+      # TODO(sissel): Write 'backoff' method?
+      sleep(1)
+      retry
+    end # begin/rescue
   end # def run
+
+  def teardown
+    @bunny.close if @bunny
+  end # def teardown
 end # class LogStash::Inputs::Amqp
