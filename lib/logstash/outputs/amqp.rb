@@ -58,33 +58,39 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     amqpsettings[:user] = @user if @user
     amqpsettings[:pass] = @password.value if @password
     amqpsettings[:logging] = @debug
-    loop do
+
+    begin
       @logger.debug(["Connecting to AMQP", amqpsettings, @exchange_type, @name])
       @bunny = Bunny.new(amqpsettings)
-      begin
-        @bunny.start
-        break # success
-      rescue Bunny::ServerDownError => e
+      @bunny.start
+      break # success
+    rescue Bunny::ServerDownError => e
+      if terminating?
+        return
+      else
         @logger.error("AMQP connection error, will reconnect: #{e}")
         sleep(1)
+        retry
       end
-    end # loop
+    end
     @target = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
   end # def connect
 
   public
   def receive(event)
-    loop do
-      @logger.debug(["Sending event", { :destination => to_s, :event => event }])
-      begin
+    @logger.debug(["Sending event", { :destination => to_s, :event => event }])
+    begin
+      if @target
         @target.publish(event.to_json, :persistent => @persistent)
         break;
-      rescue *[Bunny::ServerDownError, Errno::ECONNRESET] => e
-        @logger.error("AMQP connection error, will reconnect: #{e}")
-        connect
-        retry
+      else
+        @logger.warn("Tried to send message, but not connected to amqp yet.")
       end
-    end # loop do
+    rescue *[Bunny::ServerDownError, Errno::ECONNRESET] => e
+      @logger.error("AMQP connection error, will reconnect: #{e}")
+      connect
+      retry
+    end
   end # def receive
 
   # This is used by the ElasticSearch AMQP/River output.
@@ -98,8 +104,10 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@name}"
   end
 
-  public
-  def teardown
-    @bunny.close_connection
-  end # def teardown
+  #public
+  #def teardown
+    #@bunny.close rescue nil
+    #@bunny = nil
+    #@target = nil
+  #end # def teardown
 end # class LogStash::Outputs::Amqp

@@ -1,24 +1,24 @@
 source :rubygems
 
-gem "bunny" # for amqp support
-gem "uuidtools" # for naming amqp queues
-gem "filewatch", "~> 0.2.3"  # for file tailing
-gem "jls-grok", "~> 0.4.7" # for grok filter
-gem "jruby-elasticsearch", "~> 0.0.7"
-gem "stomp" # for stomp protocol
-gem "json"
-gem "awesome_print"
+gem "bunny" # for amqp support, MIT-style license
+gem "uuidtools" # for naming amqp queues, License ???
+gem "filewatch", "~> 0.2.3"  # for file tailing, BSD License
+gem "jls-grok", "~> 0.4.7" # for grok filter, BSD License
+gem "jruby-elasticsearch", "~> 0.0.7", BSD License
+gem "stomp" # for stomp protocol, Apache 2.0 License
+gem "json" # Ruby license
+gem "awesome_print" # MIT License
 
-gem "rack"
-gem "mizuno"
-gem "sinatra"
-gem "haml"
+gem "rack" # License: MIT
+gem "mizuno" # License: Apache 2.0
+gem "sinatra" # License: MIT-style
+gem "haml" # License: MIT
 
 # TODO(sissel): Put this into a group that's only used for monolith packaging
-gem "mongo" # outputs/mongodb
-gem "redis" # outputs/redis
-
-gem "gelf" # outputs/gelf
+gem "mongo" # outputs/mongodb, License: Apache 2.0
+gem "redis" # outputs/redis, License: MIT-style
+gem "beanstalk-client" # for beanstalk support, License: GPL3
+gem "gelf" # outputs/gelf, # License: MIT-style
 
 # For testing/dev
 group :development do
