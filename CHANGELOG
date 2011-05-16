@@ -6,12 +6,11 @@
   - 'amqp' output supports persistent messages over AMQP, now. Tunable.
     https://logstash.jira.com/browse/LOGSTASH-81
   - Redis input and output are now supported. (Contributed by dokipen)
-  - Add shutdown processing. Shutdown sequence will start if SIGINT or SIGTERM
-    are received or if all inputs finish (like stdin). The shutdown sequence
-    always starts the inputs. The sequence progresses using the same pipeline
-    as the inputs/filters/outputs, so all in-flight events should finish
-    getting processed before the final shutdown event makes it's way to the
-    outputs.
+  - Add shutdown processing. Shutdown starts when all inputs finish (like
+    stdin). The shutdown sequence always starts the inputs. The sequence
+    progresses using the same pipeline as the inputs/filters/outputs, so all
+    in-flight events should finish getting processed before the final shutdown
+    event makes it's way to the outputs.
   - Add retries to unhandled input exceptions (LOGSTASH-84)
 
 1.0.6 (May 11, 2011)
