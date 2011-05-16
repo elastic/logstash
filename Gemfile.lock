@@ -2,7 +2,6 @@ GEM
   remote: http://rubygems.org/
   specs:
     awesome_print (0.3.2)
-    beanstalk-client (1.1.0)
     bson (1.3.0-java)
     bunny (0.6.0)
     daemons (1.1.2)
@@ -44,7 +43,6 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
-  beanstalk-client
   bunny
   filewatch (~> 0.2.3)
   gelf

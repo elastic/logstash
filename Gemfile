@@ -17,7 +17,6 @@ gem "haml" # License: MIT
 # TODO(sissel): Put this into a group that's only used for monolith packaging
 gem "mongo" # outputs/mongodb, License: Apache 2.0
 gem "redis" # outputs/redis, License: MIT-style
-gem "beanstalk-client" # for beanstalk support, License: GPL3
 gem "gelf" # outputs/gelf, # License: MIT-style
 
 # For testing/dev

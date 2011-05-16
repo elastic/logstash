@@ -1,3 +1,8 @@
+1.0.8 (???)
+  - Remove beanstalk support becasue the library (beanstalk-client) is GPL3. I
+    am not a lawyer, but I'm not waiting around to have someone complain about
+    license incompatibilities.
+
 1.0.7 (May 16, 2011)
   - logstash 'web' now allows you to specify the elasticsearch clustername;
     --backend elasticsearch://[host[:port]]/[clustername]
