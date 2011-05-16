@@ -429,15 +429,15 @@ class LogStash::Agent
       ##end
     #end # SIGUSR1
 
-    Signal.trap("INT") do
-      @logger.warn("SIGINT received, shutting down.")
-      shutdown
-    end
+    #Signal.trap("INT") do
+      #@logger.warn("SIGINT received, shutting down.")
+      #shutdown
+    #end
 
-    Signal.trap("TERM") do
-      @logger.warn("SIGTERM received, shutting down.")
-      shutdown
-    end
+    #Signal.trap("TERM") do
+      #@logger.warn("SIGTERM received, shutting down.")
+      #shutdown
+    #end
   end # def register_signal_handlers
 
   private
