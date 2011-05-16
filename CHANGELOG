@@ -1,4 +1,4 @@
-1.0.7 ( ????? )
+1.0.7 (May 16, 2011)
   - logstash 'web' now allows you to specify the elasticsearch clustername;
     --backend elasticsearch://[host[:port]]/[clustername]
   - GELF output now supports dynamic strings for level and facility
@@ -7,10 +7,9 @@
     https://logstash.jira.com/browse/LOGSTASH-81
   - Redis input and output are now supported. (Contributed by dokipen)
   - Add shutdown processing. Shutdown starts when all inputs finish (like
-    stdin). The shutdown sequence always starts the inputs. The sequence
-    progresses using the same pipeline as the inputs/filters/outputs, so all
-    in-flight events should finish getting processed before the final shutdown
-    event makes it's way to the outputs.
+    stdin) The sequence progresses using the same pipeline as the
+    inputs/filters/outputs, so all in-flight events should finish getting
+    processed before the final shutdown event makes it's way to the outputs.  
   - Add retries to unhandled input exceptions (LOGSTASH-84)
 
 1.0.6 (May 11, 2011)
