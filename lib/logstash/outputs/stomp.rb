@@ -8,7 +8,7 @@ class LogStash::Outputs::Stomp < LogStash::Outputs::Base
   # The address of the STOMP server.
   config :host, :validate => :string
 
-  # The port to connet to on your STOMP server.
+  # The port to connect to on your STOMP server.
   config :port, :validate => :number, :default => 61613
 
   # The username to authenticate with.
