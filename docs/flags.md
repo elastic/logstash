@@ -30,5 +30,5 @@ The logstash agent has the following flags (also try using the '--help' flag)
 <dt> --port PORT </dt>
 <dd> Port on which to start webserver. Default is 9292. </dd>
 <dt> --backend URL </dt>
-<dd> The backend URL to use. Default is elasticserach://localhost:9200/ </dd>
+<dd> The backend URL to use. Default is elasticsearch://localhost:9200/ </dd>
 </dl>
