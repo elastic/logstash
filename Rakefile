@@ -41,7 +41,7 @@ task :compile => "lib/logstash/config/grammar.rb" do |t|
   #sh "rm -rf lib/net"
   Dir.chdir("lib") do
     rel_target = File.join("..", target)
-    sh "jrubyc", "-t", rel_target, "logstash/runner"
+    sh "jrubyc", "-t", rel_target, "logstash/runner.rb"
     files = Dir.glob("**/*.rb")
     files.each do |file|
       d = File.join(rel_target, File.dirname(file))
@@ -157,12 +157,12 @@ namespace :package do
 
       # We compile stuff to build/...
       # TODO(sissel): Could probably just use 'jar uf' for this?
-      #Dir.glob("build/**/*.class").each do |file|
-        #target = File.join("build-jar", file.gsub("build/", ""))
-        #mkdir_p File.dirname(target)
-        #puts "=> Copying #{file} => #{target}"
-        #File.copy(file, target)
-      #end
+      Dir.glob("build/ruby/**/*.class").each do |file|
+        target = File.join(builddir, file.gsub("build/ruby/", ""))
+        mkdir_p File.dirname(target)
+        puts "=> Copying #{file} => #{target}"
+        File.copy(file, target)
+      end
 
       # Purge any extra files we don't need in META-INF (like manifests and
       # jar signatures)
