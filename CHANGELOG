@@ -1,7 +1,8 @@
-1.0.8 (???)
+1.0.8 (May 17, 2011)
   - Remove beanstalk support becasue the library (beanstalk-client) is GPL3. I
     am not a lawyer, but I'm not waiting around to have someone complain about
     license incompatibilities.
+  - fix bug in jar build
 
 1.0.7 (May 16, 2011)
   - logstash 'web' now allows you to specify the elasticsearch clustername;
