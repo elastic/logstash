@@ -1,5 +1,9 @@
+1.0.9 (May 18, 2011)
+  - Fix crash bug caused by refactoring that left 'break' calls in code
+    that no longer used loops.
+
 1.0.8 (May 17, 2011)
-  - Remove beanstalk support becasue the library (beanstalk-client) is GPL3. I
+  - Remove beanstalk support because the library (beanstalk-client) is GPL3. I
     am not a lawyer, but I'm not waiting around to have someone complain about
     license incompatibilities.
   - fix bug in jar build
