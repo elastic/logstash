@@ -15,7 +15,7 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   config :database, :validate => :string, :required => true
 
   # The collection to use. This value can use %{foo} values to dynamically
-  # select a collection based on data in th eevent.
+  # select a collection based on data in the event.
   config :collection, :validate => :string, :required => true
 
   public

@@ -80,7 +80,7 @@ The above would internally be represented as this hash: `{ "field1" =>
 
 Why this syntax? Well frankly it was easier than adding additional grammar to
 the config language. Logstash may support ruby- or json-like hash syntax in the
-future, but not otday.
+future, but not today.
 
 ## Further reading
 
