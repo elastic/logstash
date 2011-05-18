@@ -63,7 +63,6 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       @logger.debug(["Connecting to AMQP", amqpsettings, @exchange_type, @name])
       @bunny = Bunny.new(amqpsettings)
       @bunny.start
-      break # success
     rescue Bunny::ServerDownError => e
       if terminating?
         return
@@ -82,7 +81,6 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     begin
       if @target
         @target.publish(event.to_json, :persistent => @persistent)
-        break;
       else
         @logger.warn("Tried to send message, but not connected to amqp yet.")
       end
