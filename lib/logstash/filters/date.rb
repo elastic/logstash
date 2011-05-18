@@ -14,7 +14,7 @@ require "logstash/time"
 # backfilling old data. If you don't get the date correct in your
 # event, then searching for them later will likely sort out of order.
 #
-# In the absense of this filter, logstash will choose a timestamp based on the
+# In the absence of this filter, logstash will choose a timestamp based on the
 # first time it sees the event (at input time), if the timestamp is not already
 # set in the event. For example, with file input, the timestamp is set to the
 # time of reading.
