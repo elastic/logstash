@@ -1,5 +1,7 @@
 1.0.10 (????)
   - Fix tcp input bug (LOGSTASH-88)
+  - Grok patterns_dir (filter config) and --grok-patterns-dir (cmdline opt)
+    are now working.
 
 1.0.9 (May 18, 2011)
   - Fix crash bug caused by refactoring that left 'break' calls in code
