@@ -73,15 +73,14 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     require "grok" # rubygem 'jls-grok'
 
     @pile = Grok::Pile.new
-    if @patterns_dir
-      @@patterns_path += @patterns_dir
-    end
-    @logger.info("Grok patterns path: #{@@patterns_path.to_a.join(":")}")
-    @@patterns_path.each do |path|
+    @patterns_dir ||= []
+    @patterns_dir += @@patterns_path.to_a
+    @logger.info("Grok patterns path: #{@patterns_dir.join(":")}")
+    @patterns_dir.each do |path|
       # Can't read relative paths from jars, try to normalize away '../'
       while path =~ /file:\/.*\.jar!.*\/\.\.\//
         # replace /foo/bar/../baz => /foo/baz
-        path.gsub!(/[^\/]+\/\.\.\//, "")
+        path = path.gsub(/[^\/]+\/\.\.\//, "")
         @logger.debug "In-jar path to read: #{path}"
       end
 
