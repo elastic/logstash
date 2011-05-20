@@ -1,5 +1,6 @@
 require "logstash/filters/base"
 require "logstash/namespace"
+require "set"
 
 # Parse arbitrary text and structure it.
 # Grok is currently the best way in logstash to parse crappy unstructured log
@@ -50,20 +51,17 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # requested in: googlecode/issue/26
   config :drop_if_match, :validate => :boolean, :default => false
 
-  class << self
-    attr_accessor :patterns_dir
-  end
-
   # Detect if we are running from a jarfile, pick the right path.
+  @@patterns_path ||= Set.new
   if __FILE__ =~ /file:\/.*\.jar!.*/
-    self.patterns_dir = ["#{File.dirname(__FILE__)}/../../patterns/*"]
+    @@patterns_path += ["#{File.dirname(__FILE__)}/../../patterns/*"]
   else
-    self.patterns_dir = ["#{File.dirname(__FILE__)}/../../../patterns/*"]
+    @@patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
   end
 
   # This flag becomes "--grok-patterns-path"
   flag("--patterns-path PATH", "Colon-delimited path of patterns to load") do |val|
-    @patterns_dir += val.split(":")
+    @@patterns_path += val.split(":")
   end
 
   @@grokpiles = Hash.new { |h, k| h[k] = [] }
@@ -75,12 +73,14 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     require "grok" # rubygem 'jls-grok'
 
     @pile = Grok::Pile.new
-    @logger.info("Grok patterns paths: #{self.class.patterns_dir.inspect}")
-    self.class.patterns_dir.each do |path|
+    @patterns_dir ||= []
+    @patterns_dir += @@patterns_path.to_a
+    @logger.info("Grok patterns path: #{@patterns_dir.join(":")}")
+    @patterns_dir.each do |path|
       # Can't read relative paths from jars, try to normalize away '../'
       while path =~ /file:\/.*\.jar!.*\/\.\.\//
         # replace /foo/bar/../baz => /foo/baz
-        path.gsub!(/[^\/]+\/\.\.\//, "")
+        path = path.gsub(/[^\/]+\/\.\.\//, "")
         @logger.debug "In-jar path to read: #{path}"
       end
 
