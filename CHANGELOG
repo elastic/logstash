@@ -1,5 +1,11 @@
 1.0.10 (????)
-  ...
+  - Fix tcp input bug (LOGSTASH-88) that would drop connections.
+  - Grok patterns_dir (filter config) and --grok-patterns-dir (cmdline opt)
+    are now working.
+  - GELF output now properly sends extra fields from the log event (prefixed
+    with a "_") and sets timestamp to seconds-since-epoch (millisecond
+    precision and time zone information is lost, but this is the format GELF
+    asks for).
 
 1.0.9 (May 18, 2011)
   - Fix crash bug caused by refactoring that left 'break' calls in code

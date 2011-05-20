@@ -69,15 +69,17 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
     event.fields.each do |name, value|
       next if value == nil or value.empty?
-      m["#{name}"] = value
+      name = "_id" if name == "id"  # "_id" is reserved, so use "__id"
+      m["_#{name}"] = (value.length == 1) ? value.first : value
     end
 
     # Allow 'INFO' 'I' or number. for 'level'
     level = event.sprintf(@level.to_s)
     m["level"] = (@level_map[level.downcase] || level).to_i
     m["facility"] = event.sprintf(@facility)
-    m["timestamp"] = event.timestamp
+    m["timestamp"] = event.unix_timestamp.to_i
 
+    @logger.debug(["Sending GELF event", m])
     @gelf.notify!(m)
   end # def receive
 end # class LogStash::Outputs::Gelf

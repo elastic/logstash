@@ -46,6 +46,11 @@ class LogStash::Event
   def timestamp; @data["@timestamp"]; end # def timestamp
   def timestamp=(val); @data["@timestamp"] = val; end # def timestamp=
 
+  def unix_timestamp
+    time = @@date_parser.parseDateTime(timestamp)
+    return time.getMillis.to_f / 1000
+  end
+
   public
   def source; @data["@source"]; end # def source
   def source=(val) 

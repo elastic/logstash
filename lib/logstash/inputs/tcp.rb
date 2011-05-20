@@ -50,11 +50,11 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
               "@tags" => @tags.clone,
             })
             e.source = "tcp://#{@host}:#{@port}/client/#{peer}"
-            @logger.debug(["Received message from #{peer}"], e)
+            @logger.debug(["Received message from #{peer}", e])
             output_queue << e
           end # loop do
         rescue
-          @logger.debug("Closing connection with #{peer}")
+          @logger.debug(["Closing connection with #{peer}", $!])
         rescue Timeout::Error
           @logger.debug("Closing connection with #{peer} after read timeout")
         end # begin
