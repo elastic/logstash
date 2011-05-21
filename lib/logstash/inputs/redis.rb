@@ -32,11 +32,21 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   # Maximum number of retries on a read before we give up.
   config :retries, :validate => :number, :default => 5
 
+  public
+  def initialize(params)
+    super
+
+    @format ||= ["json_event"]
+  end # def initialize
+
+  public
   def register
     require 'redis'
     @redis = nil
-  end
+    @redis_url = "redis://#{@password}@#{@host}:#{@port}/#{@db}"
+  end # def register
 
+  private
   def connect
     Redis.new(
       :host => @host,
@@ -45,8 +55,9 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
       :db => @db,
       :password => @password
     )
-  end
+  end # def connect
 
+  public
   def run(output_queue)
     retries = @retries
     loop do
@@ -54,20 +65,19 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
         @redis ||= connect
         response = @redis.blpop @queue, 0
         retries = @retries
-        begin
-          output_queue << LogStash::Event.new(JSON.parse(response[1]))
-        rescue # parse or event creation error
-          @logger.error "failed to create event with '#{response[1]}'"
-          @logger.error $!
+        e = to_event(response[1], @redis_url)
+        if e
+          output_queue << e
         end
       rescue # redis error
-        raise RuntimeError.new "Redis connection failed too many times" if retries <= 0
+        if retries <= 0
+          raise RuntimeError, "Redis connection failed too many times"
+        end
         @redis = nil
-        @logger.warn "Failed to get event from redis #{@name}. "+
-                     "Will retry #{retries} times."
-        @logger.warn $!
+        @logger.warn(["Failed to get event from redis #{@name}. " +
+                      "Will retry #{retries} times.", $!])
         retries -= 1
-        sleep 1
+        sleep(1)
       end
     end # loop
   end # def run

@@ -6,6 +6,11 @@
     with a "_") and sets timestamp to seconds-since-epoch (millisecond
     precision and time zone information is lost, but this is the format GELF
     asks for).
+  - Inputs support specifying the format of input data (see "format" and
+    "message_format" input config parameters).
+  - Grok filter no longer incorrectly tags _grokparsefailure when more than
+    one grok filter is enabled (for multiple types) or when an event has
+    no grok configuration for it's type.
 
 1.0.9 (May 18, 2011)
   - Fix crash bug caused by refactoring that left 'break' calls in code

@@ -14,6 +14,7 @@ class LogStash::File::Manager
   def initialize(output_queue)
     @tail = FileWatch::TailGlob.new
     @watching = Hash.new
+    @to_event = Hash.new
     @watching_lock = Mutex.new
     @file_threads = {}
     @main_thread = nil
@@ -36,11 +37,11 @@ class LogStash::File::Manager
   end
 
   public
-  def watch(paths, config)
+  def watch(paths, config, to_event)
     @watching_lock.synchronize do
       paths.each do |path|
         if @watching[path]
-          raise ValueError, "cannot watch the same path #{path} more than once"
+          raise "cannot watch the same path #{path} more than once"
         end
         @logger.debug(["watching file", {:path => path, :config => config}])
 
@@ -61,6 +62,7 @@ class LogStash::File::Manager
           @tail.tail(path, tailconf) do |fullpath|
             @logger.info("New file found: #{fullpath}")
             @watching[fullpath] = config
+            @to_event[fullpath] = to_event
           end
           # TODO(sissel): Make FileWatch emit real exceptions
         rescue RuntimeError
@@ -83,16 +85,13 @@ class LogStash::File::Manager
         # Maybe extend @tail.tail to accept a extra args that it will
         # pass to subscribe's callback?
         config = @watching[path]
+        to_event = @to_event[path]
         @logger.debug(["Event from tail", { :path => path, :config => config }])
         @buffers[path].extract(data).each do |line|
-          e = LogStash::Event.new({
-            "@message" => line,
-            "@type" => config["type"],
-            "@tags" => config["tag"].dup,
-          })
-          e.source = "file://#{@hostname}#{path}"
-          @logger.debug(["New event from file input", path, e])
-          @output_queue << e
+          e = to_event.call(line, "file://#{@hostname}#{path}")
+          if e
+            @output_queue << e
+          end
         end
       end
     rescue Exception => e

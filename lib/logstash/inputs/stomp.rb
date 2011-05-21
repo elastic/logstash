@@ -25,33 +25,37 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   # The destination to read events from.
   #
   # Example: "/topic/logstash"
-  config :destination, :validate => :string
+  config :destination, :validate => :string, :required => true
 
   # Enable debugging output?
   config :debug, :validate => :boolean, :default => false
 
   public
+  def initialize(params)
+    super
+
+    @format ||= "json_event"
+  end
+
+  public
   def register
     require "stomp"
 
-    if @destination == "" or @destination.nil?
-      @logger.error("No destination path given for stomp")
-      return
-    end
-
     begin
       @client = Stomp::Client.new(@user, @password.value, @host, @port)
-    rescue Errno::ECONNREFUSED
+      @stomp_url = "stomp://#{@user}:#{@password}@#{@host}:#{@port}/#{@destination}"
+    rescue Errno::ECONNREFUSED => e
       @logger.error("Connection refused to #{@host}:#{@port}...")
-      # TODO(sissel): Retry?
+      raise e
     end
   end # def register
 
   def run(queue)
     @client.subscribe(@destination) do |msg|
-      @logger.debug(["Got message from stomp", { :msg => msg }])
-      #event = LogStash::Event.from_json(message.body)
-      #queue << event
+      e = to_event(message.body, @stomp_url)
+      if e
+        queue << e
+      end
     end
   end # def run
 end # class LogStash::Inputs::Stomp

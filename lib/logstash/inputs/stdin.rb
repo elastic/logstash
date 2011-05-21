@@ -17,19 +17,10 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
 
   def run(queue)
     loop do
-      event = LogStash::Event.new
-      begin
-        event.message = $stdin.readline.chomp
-      rescue *[EOFError, IOError] => e
-        @logger.info("Got EOF from stdin input. Ending")
-        finished
-        return
+      e = to_event($stdin.readline.chomp, "stdin://#{@host}/")
+      if e
+        queue << e
       end
-      event.type = @type
-      event.tags = @tags.clone rescue []
-      event.source = "stdin://#{@host}/"
-      @logger.debug(["Got event", event])
-      queue << event
     end # loop
   end # def run
 
