@@ -26,6 +26,11 @@ class LogStash::Inputs::Base < LogStash::Plugin
     end
   end) # config :format
 
+  # If format is "json", an event sprintf string to build what
+  # the display @message should be (defaults to the raw JSON).
+  # sprintf format strings look like %{fieldname} or %{@metadata}.
+  config :message_format, :validate => :string
+
   # Add any number of arbitrary tags to your event.
   #
   # This can help with processing later.
@@ -72,8 +77,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
     when "plain":
       event.message = raw
     when "json":
-      # TODO(petef): format string to generate @message
-      event.message = "RAW JSON: #{raw}"
       begin
         fields = JSON.parse(raw)
         fields.each { |k, v| event[k] = v }
@@ -83,6 +86,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
                       :source => source,
                      })
         return nil
+      end
+
+      if @message_format
+        event.message = event.sprintf(@message_format)
+      else
+        event.message = raw
       end
     when "json_event":
       begin
