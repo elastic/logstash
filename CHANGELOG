@@ -11,6 +11,9 @@
   - Grok filter no longer incorrectly tags _grokparsefailure when more than
     one grok filter is enabled (for multiple types) or when an event has
     no grok configuration for it's type.
+  - Fix bug where an invalid HTTP Referer: would break grok parsing of the
+    log line (used to expect %{URI}). Since Referer: is not sanitized in
+    the HTTP layer, we cannot assume it will be a well formed %{URI}.
 
 1.0.9 (May 18, 2011)
   - Fix crash bug caused by refactoring that left 'break' calls in code
