@@ -80,7 +80,12 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     @logger.debug(["Sending event", { :destination => to_s, :event => event }])
     begin
       if @target
-        @target.publish(event.to_json, :persistent => @persistent)
+        begin
+          @target.publish(event.to_json, :persistent => @persistent)
+        rescue JSON::GeneratorError
+          @logger.warn(["Trouble converting event to JSON", $!, event.to_hash])
+          return
+        end
       else
         @logger.warn("Tried to send message, but not connected to amqp yet.")
       end
