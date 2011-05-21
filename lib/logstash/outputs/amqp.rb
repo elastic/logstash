@@ -63,7 +63,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       @logger.debug(["Connecting to AMQP", amqpsettings, @exchange_type, @name])
       @bunny = Bunny.new(amqpsettings)
       @bunny.start
-    rescue Bunny::ServerDownError => e
+    rescue => e
       if terminating?
         return
       else
