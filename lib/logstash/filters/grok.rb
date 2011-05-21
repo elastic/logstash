@@ -109,6 +109,16 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     # parse it with grok
     match = false
 
+    # Only filter events we are configured for
+    if event.type != @type
+      return
+    end
+
+    if @@grokpiles[event.type].length == 0
+      @logger.debug("Skipping grok for event type=#{event.type} (no grokpiles defined)")
+      return
+    end
+
     if !event.message.is_a?(Array)
       messages = [event.message]
     else
@@ -119,7 +129,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       @logger.debug(["Running grok filter", event])
 
       @@grokpiles[event.type].each do |pile|
-        @logger.debug(["Trying pattern", pile])
+        @logger.debug(["Trying pattern for type #{event.type}", pile])
         grok, match = @pile.match(message)
         @logger.debug(["Result", { :grok => grok, :match => match }])
         break if match
