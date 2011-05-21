@@ -41,6 +41,8 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   def initialize(params)
     super
 
+    @format ||= ["json_event"]
+
     if !MQTYPES.include?(@exchange_type)
       raise "Invalid type '#{@exchange_type}' must be one of #{MQTYPES.join(", ")}"
     end
@@ -50,14 +52,21 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   def register
     @logger.info("Registering input #{@url}")
     require "bunny" # rubygem 'bunny'
+    @vhost ||= "/"
+    @port ||= 5672
     @amqpsettings = {
-      :vhost => (@vhost or "/"),
+      :vhost => @vhost,
       :host => @host,
-      :port => (@port or 5672),
+      :port => @port,
     }
     @amqpsettings[:user] = @user if @user
     @amqpsettings[:pass] = @password.value if @password
     @amqpsettings[:logging] = @debug
+    @amqpurl = "amqp://"
+    if @user or @password
+      @amqpurl += "#{@user}:#{@password}@"
+    end
+    @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@name}"
   end # def register
 
   def run(queue)
@@ -73,14 +82,10 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
       @queue.bind(exchange)
 
       @queue.subscribe do |data|
-        begin
-          obj = JSON.parse(data[:payload])
-        rescue => e
-          @logger.error(["json parse error", { :exception => e }])
-          raise e
+        e = to_event(data[:payload], @amqpurl)
+        if e
+          queue << e
         end
-
-        queue << LogStash::Event.new(obj)
       end # @queue.subscribe
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
       @logger.error("AMQP connection error, will reconnect: #{e}")

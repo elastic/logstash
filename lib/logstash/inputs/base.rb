@@ -16,6 +16,16 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # Set this to true to enable debugging on an input.
   config :debug, :validate => :boolean, :default => false
 
+  # The format of input data (plain, json, json_event)
+  config :format, :validate => (lambda do |value|
+    valid_formats = ["plain", "json", "json_event"]
+    if value.length != 1
+      false
+    else
+      valid_formats.member?(value.first)
+    end
+  end) # config :format
+
   # Add any number of arbitrary tags to your event.
   #
   # This can help with processing later.
@@ -48,4 +58,47 @@ class LogStash::Inputs::Base < LogStash::Plugin
   def tag(newtag)
     @tags << newtag
   end # def tag
+
+  protected
+  def to_event(raw, source)
+    @format ||= ["plain"]
+
+    event = LogStash::Event.new
+    event.type = @type
+    event.tags = @tags.clone rescue []
+    event.source = source
+
+    case @format.first
+    when "plain":
+      event.message = raw
+    when "json":
+      # TODO(petef): format string to generate @message
+      event.message = "RAW JSON: #{raw}"
+      begin
+        fields = JSON.parse(raw)
+        fields.each { |k, v| event[k] = v }
+      rescue
+        @logger.warn({:message => "Trouble parsing json input",
+                      :input => raw,
+                      :source => source,
+                     })
+        return nil
+      end
+    when "json_event":
+      begin
+        event = LogStash::Event.from_json(raw)
+      rescue
+        @logger.warn({:message => "Trouble parsing json_event input",
+                      :input => raw,
+                      :source => source,
+                     })
+        return nil
+      end
+    else
+      raise "unknown event format #{@format.first}, this should never happen"
+    end
+
+    logger.debug(["Received new event", {:source => source, :event => event}])
+    return event
+  end
 end # class LogStash::Inputs::Base
