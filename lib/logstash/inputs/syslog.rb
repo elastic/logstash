@@ -20,6 +20,14 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   config :port, :validate => :number, :default => 514
 
   public
+  def initialize(params)
+    super
+
+    # force "plain" format. others don't make sense here.
+    @format = ["plain"]
+  end # def initialize
+
+  public
   def register
     # This comes from RFC3164, mostly.
     # Optional fields (priority, host) are because some syslog implementations
@@ -64,20 +72,13 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
     loop do
       line, client = server.recvfrom(9000)
-      p :client => client
-      p :line => line
-      begin
-        event = LogStash::Event.new({
-          "@message" => line.chomp,
-          "@type" => @type,
-          "@tags" => @tags.clone,
-        })
-        source = URI::Generic.new("syslog", nil, client[3], nil, nil, nil, nil, nil, nil, nil)
-        syslog_relay(event, source)
-      rescue => e
-        p :exception => e
+      source = URI::Generic.new("syslog", nil, client[3], nil, nil, nil, nil,
+                                nil, nil, nil)
+      e = to_event(line.chomp, source.to_s)
+      if e
+        syslog_relay(e, source)
+        output_queue << e
       end
-      output_queue << event
     end
   ensure
     if server
@@ -96,19 +97,18 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
         ip, port = client.peeraddr[3], client.peeraddr[1]
         @logger.warn("got connection from #{ip}:#{port}")
         LogStash::Util::set_thread_name("input|syslog|tcp|#{ip}:#{port}}")
-        source_base = URI::Generic.new("syslog", nil, ip, nil, nil, nil, nil, nil, nil, nil)
+        source_base = URI::Generic.new("syslog", nil, ip, nil, nil, nil, nil,
+                                        nil, nil, nil)
         client.each do |line|
-          event = LogStash::Event.new({
-            "@message" => line.chomp,
-            "@type" => @type,
-            "@tags" => @tags.clone,
-          })
-          source = source_base.dup
-          syslog_relay(event, source)
-          output_queue << event
-        end
-      end
-    end
+          e = to_event(line.chomp, source_base.to_s)
+          if e
+            source = source_base.dup
+            syslog_relay(e, source)
+            output_queue << e
+          end # e
+        end # client.each
+      end # Thread.new
+    end # loop do
   ensure
     server.close if server
   end # def tcp_listener
