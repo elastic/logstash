@@ -17,6 +17,15 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
   # Any keywords to track in the twitter stream
   config :keywords, :validate => :array, :required => true
 
+  public
+  def initialize(params)
+    super
+
+    # Force format to plain. Other values don't make any sense here.
+    @format = ["plain"]
+  end # def initialize
+
+  public
   def register
     # TODO(sissel): put buftok in logstash, too
     require "filewatch/buftok"
@@ -32,34 +41,23 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
         @logger.debug :status => status
         #@logger.debug("Got twitter status from @#{status[:user][:screen_name]}")
         @logger.info("Got twitter status from @#{status["user"]["screen_name"]}")
-        event = LogStash::Event.new(
-          #"@message" => status[:text],
-          "@message" => status["text"],
-          "@type" => @type,
-          "@tags" => @tags.clone
-        )
+        e = to_event(status["text"], "http://twitter.com/#{status["user"]["screen_name"]}/status/#{status["id"]}")
+        next unless e
 
-        event.fields.merge!(
-          #"user" => (status[:user][:screen_name] rescue nil), 
-          "user" => (status["user"]["screen_name"] rescue nil), 
-          #"client" => (status[:source] rescue nil),
+        e.fields.merge!(
+          "user" => (status["user"]["screen_name"] rescue nil),
           "client" => (status["source"] rescue nil),
-          #"retweeted" => (status[:retweeted] rescue nil)
           "retweeted" => (status["retweeted"] rescue nil)
         )
 
-        #event.fields["in-reply-to"] = status[:in_reply_to_status_id] if status[:in_reply_to_status_id]
-        event.fields["in-reply-to"] = status["in_reply_to_status_id"] if status["in_reply_to_status_id"]
+        e.fields["in-reply-to"] = status["in_reply_to_status_id"] if status["in_reply_to_status_id"]
 
-        #urls = status[:entities][:urls] rescue []
         urls = status["entities"]["urls"] rescue []
         if urls.size > 0
-          event.fields["urls"] = urls.collect { |u| u["url"] }
+          e.fields["urls"] = urls.collect { |u| u["url"] }
         end
 
-        event.source = "http://twitter.com/#{event.fields["user"]}/status/#{status["id"]}"
-        @logger.debug(["Got event", event])
-        queue << event
+        queue << e
       end # stream.track
 
       # Some closure or error occured, sleep and try again.

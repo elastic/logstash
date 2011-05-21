@@ -46,6 +46,6 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       end
     end
 
-    @@filemanager.watch(@path, @config)
+    @@filemanager.watch(@path, @config, method(:to_event))
   end # def run
 end # class LogStash::Inputs::File
