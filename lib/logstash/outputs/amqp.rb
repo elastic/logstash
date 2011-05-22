@@ -68,6 +68,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
         return
       else
         @logger.error("AMQP connection error, will reconnect: #{e}")
+        @logger.debug(["Backtrace", e.backtrace])
         sleep(1)
         retry
       end

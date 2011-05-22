@@ -89,6 +89,7 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
             yield status
           rescue => e
             @logger.error e
+            @logger.debug(["Backtrace", e.backtrace])
           end
         end # buffer.extract
       end # response.read_body
