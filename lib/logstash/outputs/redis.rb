@@ -1,6 +1,5 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
-require 'eventmachine'
 
 # send events to a redis databse using RPUSH
 #
