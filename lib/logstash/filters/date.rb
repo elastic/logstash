@@ -168,6 +168,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           @logger.debug "Parsed #{value.inspect} as #{event.timestamp}"
         rescue => e
           @logger.warn "Failed parsing date #{value.inspect} from field #{field}: #{e}"
+          @logger.debug(["Backtrace", e.backtrace])
           # Raising here will bubble all the way up and cause an exit.
           # TODO(sissel): Maybe we shouldn't raise?
           #raise e
