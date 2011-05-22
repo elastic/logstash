@@ -1,17 +1,17 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 
-# TODO(sissel): This class doesn't work yet in JRuby. Google for
-# 'execution expired stomp jruby' and you'll find the ticket.
+# TODO(sissel): This class doesn't work yet in JRuby.
+# http://jira.codehaus.org/browse/JRUBY-4941
 
 # Stream events from a STOMP broker.
 #
-# TODO(sissel): Include info on where to learn about STOMP
+# http://stomp.codehaus.org/
 class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   config_name "stomp"
 
   # The address of the STOMP server.
-  config :host, :validate => :string
+  config :host, :validate => :string, :default => "localhost"
 
   # The port to connet to on your STOMP server.
   config :port, :validate => :number, :default => 61613
@@ -35,27 +35,27 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
     super
 
     @format ||= "json_event"
+    raise "Stomp input currently not supported. See " +
+          "http://jira.codehaus.org/browse/JRUBY-4941 and " +
+          "https://logstash.jira.com/browse/LOGSTASH-8"
   end
 
   public
   def register
     require "stomp"
 
-    begin
-      @client = Stomp::Client.new(@user, @password.value, @host, @port)
-      @stomp_url = "stomp://#{@user}:#{@password}@#{@host}:#{@port}/#{@destination}"
-    rescue Errno::ECONNREFUSED => e
-      @logger.error("Connection refused to #{@host}:#{@port}...")
-      raise e
-    end
+    @client = Stomp::Client.new(@user, @password.value, @host, @port)
+    @stomp_url = "stomp://#{@user}:#{@password}@#{@host}:#{@port}/#{@destination}"
   end # def register
 
-  def run(queue)
+  def run(output_queue)
     @client.subscribe(@destination) do |msg|
       e = to_event(message.body, @stomp_url)
       if e
-        queue << e
+        output_queue << e
       end
     end
+
+    raise "disconnected from stomp server"
   end # def run
 end # class LogStash::Inputs::Stomp
