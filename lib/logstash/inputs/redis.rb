@@ -69,13 +69,14 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
         if e
           output_queue << e
         end
-      rescue # redis error
+      rescue => e # redis error
+        @logger.warn(["Failed to get event from redis #{@name}. " +
+                      "Will retry #{retries} times.", $!])
+        @logger.debug(["Backtrace", e.backtrace])
         if retries <= 0
           raise RuntimeError, "Redis connection failed too many times"
         end
         @redis = nil
-        @logger.warn(["Failed to get event from redis #{@name}. " +
-                      "Will retry #{retries} times.", $!])
         retries -= 1
         sleep(1)
       end
