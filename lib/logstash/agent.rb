@@ -458,9 +458,12 @@ class LogStash::Agent
         @logger.debug(["Input #{input.to_s} thread exception backtrace",
                        e.backtrace])
         @logger.error("Restarting input #{input.to_s} due to exception")
+        sleep(1)
         retry # This jumps to the top of this proc (to the start of 'do'
       end
     end
+
+    @logger.warn("Input #{input.to_s} shutting down")
 
     # If we get here, the plugin finished, check if we need to shutdown.
     shutdown_if_none_running(LogStash::Inputs::Base, queue)
@@ -471,6 +474,8 @@ class LogStash::Agent
   def run_filter(filterworker, index, output_queue)
     LogStash::Util::set_thread_name("filter|worker|#{index}")
     filterworker.run
+
+    @logger.warn("Filter worker ##{index} shutting down")
 
     # If we get here, the plugin finished, check if we need to shutdown.
     shutdown_if_none_running(LogStash::FilterWorker, output_queue)
@@ -495,9 +500,12 @@ class LogStash::Agent
       @logger.debug(["Output #{output.to_s} thread exception backtrace",
                      e.backtrace])
       # TODO(sissel): should we abort after too many failures?
+      sleep(1)
       retry
     end # begin/rescue
  
+    @logger.warn("Output #{input.to_s} shutting down")
+
     # If we get here, the plugin finished, check if we need to shutdown.
     shutdown_if_none_running(LogStash::Outputs::Base)
   end # def run_output
