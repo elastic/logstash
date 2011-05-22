@@ -49,8 +49,9 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
               output_queue << e
             end
           end # loop do
-        rescue
+        rescue => e
           @logger.debug(["Closing connection with #{peer}", $!])
+          @logger.debug(["Backtrace", e.backtrace])
         rescue Timeout::Error
           @logger.debug("Closing connection with #{peer} after read timeout")
         end # begin

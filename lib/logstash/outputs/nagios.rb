@@ -106,10 +106,11 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
         f.puts(cmd)
         f.flush # TODO(sissel): probably don't need this.
       end
-    rescue
+    rescue => e
       @logger.warn(["Skipping nagios output; error writing to command file",
                    {"error" => $!, "commandfile" => @commandfile,
                     "missed_event" => event}])
+      @logger.debug(["Backtrace", e.backtrace])
     end
   end # def receive
 end # class LogStash::Outputs::Nagios

@@ -80,11 +80,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
       begin
         fields = JSON.parse(raw)
         fields.each { |k, v| event[k] = v }
-      rescue
+      rescue => e
         @logger.warn({:message => "Trouble parsing json input",
                       :input => raw,
                       :source => source,
                      })
+        @logger.debug(["Backtrace", e.backtrace])
         return nil
       end
 
@@ -96,11 +97,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
     when "json_event":
       begin
         event = LogStash::Event.from_json(raw)
-      rescue
+      rescue => e
         @logger.warn({:message => "Trouble parsing json_event input",
                       :input => raw,
                       :source => source,
                      })
+        @logger.debug(["Backtrace", e.backtrace])
         return nil
       end
     else

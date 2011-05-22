@@ -44,8 +44,9 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       LogStash::Util::set_thread_name("input|syslog|udp")
       begin
         udp_listener(output_queue)
-      rescue
+      rescue => e
         @logger.warn("syslog udp listener died: #{$!}")
+        @logger.debug(["Backtrace", e.backtrace])
         sleep(5)
         retry
       end # begin
@@ -56,8 +57,9 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       LogStash::Util::set_thread_name("input|syslog|tcp")
       begin
         tcp_listener(output_queue)
-      rescue
+      rescue => e
         @logger.warn("syslog tcp listener died: #{$!}")
+        @logger.debug(["Backtrace", e.backtrace])
         sleep(5)
         retry
       end # begin
