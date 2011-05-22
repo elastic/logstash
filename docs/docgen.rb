@@ -66,6 +66,9 @@ class LogStashConfigDocGenerator
   end # def add_comment
 
   def add_config(code)
+    # trim off any possible multiline lamdas for a :validate
+    code.sub!(/, *:validate => \(lambda.*$/, '')
+
     # call the code, which calls 'config' in this class.
     # This will let us align comments with config options.
     name, opts = eval(code)
@@ -84,7 +87,7 @@ class LogStashConfigDocGenerator
     name, description = eval(fixed_code)
     @flags[name] = description
     clear_comments
-  end # def add_config
+  end # def add_flag
 
   def set_config_name(code)
     name = eval(code)
