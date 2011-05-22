@@ -12,6 +12,8 @@ require "bluecloth" # for markdown parsing
 $: << Dir.pwd
 $: << File.join(File.dirname(__FILE__), "..", "lib")
 
+require File.join(File.dirname(__FILE__), "..", "VERSION")
+
 class LogStashConfigDocGenerator
   COMMENT_RE = /^ *#(?: (.*)| *$)/
 
