@@ -42,7 +42,6 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
   def filter(event)
     if event.type != @type
       @logger.debug("grep: skipping type #{event.type} from #{event.source}")
-      event.cancel
       return
     end
 
