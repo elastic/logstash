@@ -51,7 +51,7 @@ module LogStash::Config::Mixin
     # warn about deprecated variable use
     params.each do |name, value|
       opts = self.class.get_config[name]
-      if opts[:deprecated]
+      if opts && opts[:deprecated]
         @logger.warn("Deprecated config item #{name.inspect} set " +
                      "in #{self.class.name}")
       end
