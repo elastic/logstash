@@ -274,7 +274,7 @@ task :doccopy => [:require_output_env] do
   if ENV["output"].nil?
     raise "No output variable set. Run like: 'rake docs output=path/to/output'"
   end
-  output = ENV["output"].gsub!("VERSION", LOGSTASH_VERSION)
+  output = ENV["output"].gsub("VERSION", LOGSTASH_VERSION)
 
   Dir.glob("docs/**/*").each do |doc|
     dir = File.join(output, File.dirname(doc).gsub(/docs\/?/, ""))
@@ -289,7 +289,7 @@ task :doccopy => [:require_output_env] do
 end
 
 task :docindex => [:require_output_env] do
-  output = ENV["output"].gsub!("VERSION", LOGSTASH_VERSION)
+  output = ENV["output"].gsub("VERSION", LOGSTASH_VERSION)
   sh "ruby docs/generate_index.rb #{ENV["output"]} > #{output}/index.html"
 end
 
@@ -297,7 +297,7 @@ task :docgen => [:require_output_env] do
   if ENV["output"].nil?
     raise "No output variable set. Run like: 'rake docgen output=path/to/output'"
   end
-  output = ENV["output"].gsub!("VERSION", LOGSTASH_VERSION)
+  output = ENV["output"].gsub("VERSION", LOGSTASH_VERSION)
 
   sh "find lib/logstash/inputs lib/logstash/filters lib/logstash/outputs  -type f -not -name 'base.rb' -a -name '*.rb'| xargs ruby docs/docgen.rb -o #{output}"
 end
