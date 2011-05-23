@@ -1,5 +1,5 @@
-require 'tempfile'
-require 'ftools' # fails in 1.9.2
+require "tempfile"
+require "ftools" # fails in 1.9.2
 
 require File.join(File.dirname(__FILE__), "VERSION")  # For LOGSTASH_VERSION
   
@@ -274,9 +274,10 @@ task :doccopy => [:require_output_env] do
   if ENV["output"].nil?
     raise "No output variable set. Run like: 'rake docs output=path/to/output'"
   end
+  output = ENV["output"].gsub!("VERSION", LOGSTASH_VERSION)
 
   Dir.glob("docs/**/*").each do |doc|
-    dir = File.join(ENV["output"], File.dirname(doc).gsub(/docs\/?/, ""))
+    dir = File.join(output, File.dirname(doc).gsub(/docs\/?/, ""))
     mkdir_p dir if !File.directory?(dir)
     if File.directory?(doc)
       mkdir_p doc
@@ -288,15 +289,17 @@ task :doccopy => [:require_output_env] do
 end
 
 task :docindex => [:require_output_env] do
-  sh "ruby docs/generate_index.rb #{ENV["output"]} > #{ENV["output"]}/index.html"
+  output = ENV["output"].gsub!("VERSION", LOGSTASH_VERSION)
+  sh "ruby docs/generate_index.rb #{ENV["output"]} > #{output}/index.html"
 end
 
 task :docgen => [:require_output_env] do
   if ENV["output"].nil?
     raise "No output variable set. Run like: 'rake docgen output=path/to/output'"
   end
+  output = ENV["output"].gsub!("VERSION", LOGSTASH_VERSION)
 
-  sh "find lib/logstash/inputs lib/logstash/filters lib/logstash/outputs  -type f -not -name 'base.rb' -a -name '*.rb'| xargs ruby docs/docgen.rb -o #{ENV["output"]}"
+  sh "find lib/logstash/inputs lib/logstash/filters lib/logstash/outputs  -type f -not -name 'base.rb' -a -name '*.rb'| xargs ruby docs/docgen.rb -o #{output}"
 end
 
 task :publish do
@@ -304,3 +307,15 @@ task :publish do
   sh "gem push #{latest_gem}"
 end
 
+task :release do
+  docs_dir = File.join(File.dirname(__FILE__), "..", "logstash.github.com",
+                       "docs", LOGSTASH_VERSION)
+  ENV["output"] = docs_dir
+  sh "git tag v#{LOGSTASH_VERSION}"
+  #Rake::Task["docs"].invoke
+  Rake::Task["package:gem"].invoke
+  Rake::Task["package:monolith:jar"].invoke
+
+  puts "Run the following under ruby 1.8.7 (require bluecloth)"
+  puts "> rake docs output=#{docs_dir}"
+end
