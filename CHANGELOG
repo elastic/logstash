@@ -1,4 +1,4 @@
-1.0.10 (????)
+1.0.10 (May 23, 2011)
   - Fix tcp input bug (LOGSTASH-88) that would drop connections.
   - Grok patterns_dir (filter config) and --grok-patterns-dir (cmdline opt)
     are now working.
