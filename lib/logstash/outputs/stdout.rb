@@ -23,11 +23,6 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   end) # config :debug_format
 
   public
-  def initialize(params)
-    super
-  end
-
-  public
   def register
     @print_method = method(:ap) rescue method(:p)
   end
