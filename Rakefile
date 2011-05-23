@@ -311,10 +311,13 @@ task :release do
   docs_dir = File.join(File.dirname(__FILE__), "..", "logstash.github.com",
                        "docs", LOGSTASH_VERSION)
   ENV["output"] = docs_dir
+  sh "sed -i -Re 's/1.0.[0-9]/#{LOGSTASH_VERSION}/'"
   sh "git tag v#{LOGSTASH_VERSION}"
   #Rake::Task["docs"].invoke
   Rake::Task["package:gem"].invoke
   Rake::Task["package:monolith:jar"].invoke
+
+  puts "Packaging complete."
 
   puts "Run the following under ruby 1.8.7 (require bluecloth)"
   puts "> rake docs output=#{docs_dir}"
