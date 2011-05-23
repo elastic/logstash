@@ -23,23 +23,25 @@ right? ;)
 # building a release.
 
 * Make sure all tests pass
-** rake ???
+** rake test
 * Update VERSION.rb
-* Update docs/learn.md
+* Update docs/learn.md (fix download links)
 * Ensure CHANGELOG is up-to-date
-* git tag v$VERSION
+* git tag v$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 * git push origin master
+* git push --tags
 * Build binaries
 ** rake package:gem
 ** rake package:monolith:jar
-** rake package:monolith:tar
-* rake docs output=../logstash.github.com/docs/$VERSION
-** Note: you will need to use c-ruby for this
+* rake docs output=../logstash.github.com/docs/VERSION
+** Note: you will need to use c-ruby for this (ruby 1.8.7, etc)
+** You'll need 'bluecloth' rubygem installed.
 * cd ../logstash.github.com
 ** git add docs/$VERSION
 ** git commit -m "version $VERSION docs" && git push origin master
 * Publish binaries
 ** Stage binaries at <tt>carrera.databits.net:/home/jls/s/files/logstash/
-** rake gem:publish
+** rake publish
 * Update #logstash IRC /topic
-* Send announcement email to logstash-users@, include relevant download URLs & changelog (see past emails for a template)
+* Send announcement email to logstash-users@, include relevant download URLs &
+  changelog (see past emails for a template)
