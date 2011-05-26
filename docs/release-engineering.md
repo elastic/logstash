@@ -19,3 +19,29 @@ I do not suspect the 'x' (currently 1) will change frequently. It should only ch
 if there are major, backwards-incompatible changes made to logstash, and I'm
 trying to not make those changes, so logstash should forever be at 1.y,z,
 right? ;)
+
+# building a release.
+
+* Make sure all tests pass
+** rake test
+* Update VERSION.rb
+* Update docs/learn.md (fix download links)
+* Ensure CHANGELOG is up-to-date
+* git tag v$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
+* git push origin master
+* git push --tags
+* Build binaries
+** rake package:gem
+** rake package:monolith:jar
+* rake docs output=../logstash.github.com/docs/VERSION
+** Note: you will need to use c-ruby for this (ruby 1.8.7, etc)
+** You'll need 'bluecloth' rubygem installed.
+* cd ../logstash.github.com
+** git add docs/$VERSION
+** git commit -m "version $VERSION docs" && git push origin master
+* Publish binaries
+** Stage binaries at <tt>carrera.databits.net:/home/jls/s/files/logstash/
+** rake publish
+* Update #logstash IRC /topic
+* Send announcement email to logstash-users@, include relevant download URLs &
+  changelog (see past emails for a template)

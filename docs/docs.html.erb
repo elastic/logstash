@@ -29,6 +29,7 @@ This is what it might look like in your config file:
 <%= section %> {
   <%= name %> {
 <% sorted_settings.each do |setting_name, config|
+     next if config[:deprecated]
      if config[:validate].is_a?(Array) 
        annotation = "#{config[:validate].inspect}"
      else 
@@ -49,10 +50,14 @@ This is what it might look like in your config file:
 <h4> 
   <a name="setting_<%= setting_name %>">
     <%= setting_name %><%= " (required setting)" if config[:required] %>
+    <%= " <strong>DEPRECATED</strong>" if config[:deprecated] %>
 </a>
 </h4>
 
 <ul>
+<% if config[:deprecated] -%>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+<% end -%>
 <% if config[:validate].is_a?(Symbol) -%>
   <li> Value type is <%= config[:validate] %> </li>
 <% elsif config[:validate].nil? -%>
@@ -73,4 +78,4 @@ This is what it might look like in your config file:
 
 <hr>
 
-This is documentation from <a href="https://github.com/logstash/logstash/blob/master/<%= file %>"><%= file %>
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v<%= LOGSTASH_VERSION %>/<%= file %>"><%= file %>

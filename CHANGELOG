@@ -1,4 +1,36 @@
-1.0.7 ( ????? )
+1.0.11 (???)
+  - Fix bug in grep filter that would drop/cancel events if you had more
+    than one event type flowing through filters and didn't have a grep
+    filter defined for each type.
+
+1.0.10 (May 23, 2011)
+  - Fix tcp input bug (LOGSTASH-88) that would drop connections.
+  - Grok patterns_dir (filter config) and --grok-patterns-dir (cmdline opt)
+    are now working.
+  - GELF output now properly sends extra fields from the log event (prefixed
+    with a "_") and sets timestamp to seconds-since-epoch (millisecond
+    precision and time zone information is lost, but this is the format GELF
+    asks for).
+  - Inputs support specifying the format of input data (see "format" and
+    "message_format" input config parameters).
+  - Grok filter no longer incorrectly tags _grokparsefailure when more than
+    one grok filter is enabled (for multiple types) or when an event has
+    no grok configuration for it's type.
+  - Fix bug where an invalid HTTP Referer: would break grok parsing of the
+    log line (used to expect %{URI}). Since Referer: is not sanitized in
+    the HTTP layer, we cannot assume it will be a well formed %{URI}.
+
+1.0.9 (May 18, 2011)
+  - Fix crash bug caused by refactoring that left 'break' calls in code
+    that no longer used loops.
+
+1.0.8 (May 17, 2011)
+  - Remove beanstalk support because the library (beanstalk-client) is GPL3. I
+    am not a lawyer, but I'm not waiting around to have someone complain about
+    license incompatibilities.
+  - fix bug in jar build
+
+1.0.7 (May 16, 2011)
   - logstash 'web' now allows you to specify the elasticsearch clustername;
     --backend elasticsearch://[host[:port]]/[clustername]
   - GELF output now supports dynamic strings for level and facility
@@ -7,10 +39,9 @@
     https://logstash.jira.com/browse/LOGSTASH-81
   - Redis input and output are now supported. (Contributed by dokipen)
   - Add shutdown processing. Shutdown starts when all inputs finish (like
-    stdin). The shutdown sequence always starts the inputs. The sequence
-    progresses using the same pipeline as the inputs/filters/outputs, so all
-    in-flight events should finish getting processed before the final shutdown
-    event makes it's way to the outputs.
+    stdin) The sequence progresses using the same pipeline as the
+    inputs/filters/outputs, so all in-flight events should finish getting
+    processed before the final shutdown event makes it's way to the outputs.  
   - Add retries to unhandled input exceptions (LOGSTASH-84)
 
 1.0.6 (May 11, 2011)

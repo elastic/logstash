@@ -36,8 +36,9 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
       connect unless @socket
       @socket.write(event.to_hash.to_json)
       @socket.write("\n")
-    rescue
+    rescue => e
       @logger.warn(["tcp output exception", @host, @port, $!])
+      @logger.debug(["backtrace", e.backtrace])
       @socket = nil
     end
   end # def receive
