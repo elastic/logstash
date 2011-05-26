@@ -71,16 +71,17 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       @redis.rpush event.sprintf(@list), event.to_json if @list
       @redis.publish event.sprintf(@channel), event.to_json if @channel
       @redis.exec if tx
-    rescue
+    rescue => e
       # TODO(sissel): Be specific in the exceptions we rescue.
       # Drop the redis connection to be picked up later during a retry.
       @redis = nil
-      @logger.warn "Failed to log #{event.to_s} to redis #{@name}. "+
-                   "Will retry #{tries} times."
-      @logger.warn $!
+      @logger.warn("Failed to log #{event.to_s} to redis #{@name}. "+
+                   "Will retry #{tries} times.")
+      @logger.warn($!)
+      @logger.debug(["Backtrace", e.backtrace])
       Thread.new do
         sleep 1
-        receive event, tries - 1
+        receive(event, tries - 1)
       end
     end
   end # def receive

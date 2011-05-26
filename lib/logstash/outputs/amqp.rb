@@ -63,12 +63,12 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       @logger.debug(["Connecting to AMQP", amqpsettings, @exchange_type, @name])
       @bunny = Bunny.new(amqpsettings)
       @bunny.start
-      break # success
-    rescue Bunny::ServerDownError => e
+    rescue => e
       if terminating?
         return
       else
         @logger.error("AMQP connection error, will reconnect: #{e}")
+        @logger.debug(["Backtrace", e.backtrace])
         sleep(1)
         retry
       end
@@ -81,8 +81,12 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     @logger.debug(["Sending event", { :destination => to_s, :event => event }])
     begin
       if @target
-        @target.publish(event.to_json, :persistent => @persistent)
-        break;
+        begin
+          @target.publish(event.to_json, :persistent => @persistent)
+        rescue JSON::GeneratorError
+          @logger.warn(["Trouble converting event to JSON", $!, event.to_hash])
+          return
+        end
       else
         @logger.warn("Tried to send message, but not connected to amqp yet.")
       end

@@ -14,7 +14,7 @@ require "logstash/time"
 # backfilling old data. If you don't get the date correct in your
 # event, then searching for them later will likely sort out of order.
 #
-# In the absense of this filter, logstash will choose a timestamp based on the
+# In the absence of this filter, logstash will choose a timestamp based on the
 # first time it sees the event (at input time), if the timestamp is not already
 # set in the event. For example, with file input, the timestamp is set to the
 # time of reading.
@@ -168,6 +168,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           @logger.debug "Parsed #{value.inspect} as #{event.timestamp}"
         rescue => e
           @logger.warn "Failed parsing date #{value.inspect} from field #{field}: #{e}"
+          @logger.debug(["Backtrace", e.backtrace])
           # Raising here will bubble all the way up and cause an exit.
           # TODO(sissel): Maybe we shouldn't raise?
           #raise e

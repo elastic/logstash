@@ -3,10 +3,8 @@ require "logstash/namespace"
 
 class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   begin
-    require "ap"
-    HAVE_AWESOME_PRINT = true
+     require "ap"
   rescue LoadError
-    HAVE_AWESOME_PRINT = false
   end
 
   config_name "stdout"
@@ -14,16 +12,19 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   # Enable debugging. Tries to pretty-print the entire event object.
   config :debug, :validate => :boolean
 
-  public
-  def initialize(params)
-    super
-
-    #@debug ||= false
-  end
+  # Debug output format: ruby (default), json
+  config :debug_format, :default => ["ruby"], :validate => (lambda do |value|
+    valid_formats = ["ruby", "json"]
+    if value.length != 1
+      false
+    else
+      valid_formats.member?(value.first)
+    end
+  end) # config :debug_format
 
   public
   def register
-    # nothing to do
+    @print_method = method(:ap) rescue method(:p)
   end
 
   public
@@ -34,10 +35,13 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
     end
 
     if @debug
-      if HAVE_AWESOME_PRINT
-        ap event.to_hash
+      case @debug_format.first
+      when "ruby":
+        @print_method.call(event.to_hash)
+      when "json":
+        puts event.to_json
       else
-        p event.to_hash
+        raise "unknown debug_format #{@debug_format}, this should never happen"
       end
     else
       puts event.to_s

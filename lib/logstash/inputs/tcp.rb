@@ -44,17 +44,14 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
             Timeout::timeout(@data_timeout) do
               buf = s.readline
             end
-            e = LogStash::Event.new({
-              "@message" => buf,
-              "@type" => @type,
-              "@tags" => @tags.clone,
-            })
-            e.source = "tcp://#{@host}:#{@port}/client/#{peer}"
-            @logger.debug(["Received message from #{peer}"], e)
-            output_queue << e
+            e = self.to_event(buf, "tcp://#{@host}:#{@port}/client/#{peer}")
+            if e
+              output_queue << e
+            end
           end # loop do
-        rescue
-          @logger.debug("Closing connection with #{peer}")
+        rescue => e
+          @logger.debug(["Closing connection with #{peer}", $!])
+          @logger.debug(["Backtrace", e.backtrace])
         rescue Timeout::Error
           @logger.debug("Closing connection with #{peer} after read timeout")
         end # begin
