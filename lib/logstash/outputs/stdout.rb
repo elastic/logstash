@@ -36,12 +36,12 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
 
     if @debug
       case @debug_format.first
-      when "ruby":
-        @print_method.call(event.to_hash)
-      when "json":
-        puts event.to_json
-      else
-        raise "unknown debug_format #{@debug_format}, this should never happen"
+        when "ruby"
+          @print_method.call(event.to_hash)
+        when "json"
+          puts event.to_json
+        else
+          raise "unknown debug_format #{@debug_format}, this should never happen"
       end
     else
       puts event.to_s
