@@ -31,9 +31,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # If redis_type is channel, then we will PUBLISH to key.
   config :data_type, :validate => [ "list", "channel" ], :required => true
 
-  # Maximum number of retries on a read before we give up.
-  config :retries, :validate => :number, :default => 5
-
   def register
     require 'redis'
     @redis = nil
@@ -55,12 +52,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   end
 
 
-  def receive(event, tries=@retries)
-    if tries <= 0
-      @logger.error "Fatal error, failed to log #{event.to_s} to #{identity}"
-      raise RuntimeError, "Failed to log to #{identity} after #{@retries} tries"
-    end
-
+  def receive(event)
     begin
       @redis ||= connect
       if @data_type == 'list'
@@ -69,16 +61,8 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
         @redis.publish event.sprintf(@key), event.to_json
       end
     rescue => e
-      # TODO(sissel): Be specific in the exceptions we rescue.
-      # Drop the redis connection to be picked up later during a retry.
-      @redis = nil
-      @logger.warn(["Failed to log #{event.to_s} to #{identity}. " +
-                   "Will retry #{retries} times.", $!])
-      @logger.debug(["Backtrace", e.backtrace])
-      Thread.new do
-        sleep 1
-        receive(event, tries - 1)
-      end
+      @logger.warn(["Failed to log #{event.to_s} to #{identity}.", e])
+      raise e
     end
   end # def receive
 end

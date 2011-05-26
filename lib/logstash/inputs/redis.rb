@@ -31,9 +31,6 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   # key.  If redis_type is channel, then we will SUBSCRIBE to the key.
   config :data_type, :validate => [ "list", "channel" ], :required => true
 
-  # Maximum number of retries on a read before we give up.
-  config :retries, :validate => :number, :default => 5
-
   public
   def initialize(params)
     super
@@ -80,7 +77,6 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   private
   def list_listener redis, output_queue
     response = redis.blpop @key, 0
-    yield
     queue_event response[1], output_queue
   end
 
@@ -89,7 +85,6 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
     redis.subscribe @key do |on|
       on.subscribe do |ch, count|
         @logger.info "Subscribed to #{ch} (#{count})"
-        yield
       end
 
       on.message do |ch, message|
@@ -103,30 +98,17 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   end
 
   # Since both listeners have the same basic loop, we've abstracted the outer
-  # loop.  The only problem is that we need to reset retries on a successful
-  # connection, even though the listener might not return (ever).  So we've
-  # implement an "onsuccess" callback as a yield.
+  # loop.  
   private 
   def listener_loop listener, output_queue
     loop do
-      retries = @retries
       begin
         # we need seperate instances of redis for each listener
         @redis ||= connect
-        self.send listener, @redis, output_queue do
-          retries = @retries
-        end
+        self.send listener, @redis, output_queue
       rescue => e # redis error
-        @logger.warn(["Failed to get event from redis #{@name}. " +
-                     "Will retry #{retries} times.", e])
-        @logger.debug(["Backtrace", e.backtrace])
-        if retries <= 0
-          raise RuntimeError, "Redis connection failed too many times"
-        end
-        @redis = nil
-        retries -= 1
-        sleep(1)
-        retry
+        @logger.warn(["Failed to get event from redis #{@name}. ", e])
+        raise e
       end
     end # loop
   end # listener_loop
