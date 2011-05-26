@@ -1,3 +1,8 @@
+1.0.11 (???)
+  - Fix bug in grep filter that would drop/cancel events if you had more
+    than one event type flowing through filters and didn't have a grep
+    filter defined for each type.
+
 1.0.10 (May 23, 2011)
   - Fix tcp input bug (LOGSTASH-88) that would drop connections.
   - Grok patterns_dir (filter config) and --grok-patterns-dir (cmdline opt)
