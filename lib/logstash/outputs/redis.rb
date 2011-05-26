@@ -64,9 +64,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     begin
       @redis ||= connect
       if @data_type == 'list'
-        @redis.rpush event.sprintf(@list), event.to_json if @list
+        @redis.rpush event.sprintf(@key), event.to_json
       else
-        @redis.publish event.sprintf(@channel), event.to_json if @channel
+        @redis.publish event.sprintf(@key), event.to_json
       end
     rescue => e
       # TODO(sissel): Be specific in the exceptions we rescue.
