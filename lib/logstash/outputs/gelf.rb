@@ -62,7 +62,13 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     # We have to make our own hash here because GELF expects a hash
     # with a specific format.
     m = Hash.new
-    m["short_message"] = (event.fields["message"] or event.message)
+    if event.fields["message"]
+      v = event.fields["message"]
+      m["short_message"] = (v.is_a?(array) && v.length == 1) ? v.first : v
+    else
+      m["short_message"] = event.message
+    end
+
     m["full_message"] = (event.message)
     m["host"] = event["@source_host"]
     m["file"] = event["@source_path"]
