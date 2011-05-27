@@ -51,6 +51,9 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # requested in: googlecode/issue/26
   config :drop_if_match, :validate => :boolean, :default => false
 
+  # If true, only store named captures from grok.
+  config :named_captures_only, :validate => :boolean, :default => false
+
   # Detect if we are running from a jarfile, pick the right path.
   @@patterns_path ||= Set.new
   if __FILE__ =~ /file:\/.*\.jar!.*/
@@ -155,6 +158,11 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
           if event.message == value
             # Skip patterns that match the entire line
             @logger.debug("Skipping capture '#{key}' since it matches the whole line.")
+            next
+          end
+
+          if @named_captures_only && key.upcase == key
+            @logger.debug("Skipping capture '#{key}' since it is not a named capture and named_captures_only is true.")
             next
           end
 
