@@ -64,7 +64,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     m = Hash.new
     if event.fields["message"]
       v = event.fields["message"]
-      m["short_message"] = (v.is_a?(array) && v.length == 1) ? v.first : v
+      m["short_message"] = (v.is_a?(Array) && v.length == 1) ? v.first : v
     else
       m["short_message"] = event.message
     end
