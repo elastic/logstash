@@ -55,7 +55,15 @@ Short example:
           # If it seems unreasonable, wrap and indent 4 spaces.
           some_really_long_function_call_blah_blah_blah(arg1,
               arg2, arg3, arg4)
+
+          case foo
+            when "bar"
+              puts "Hello world"
+            when /testing/
+              puts "testing
+            else
+              puts "I got nothin'"
+          end # case foo
             
         end # def somefunc
       end # class Foo
-

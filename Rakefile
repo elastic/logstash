@@ -290,7 +290,7 @@ end
 
 task :docindex => [:require_output_env] do
   output = ENV["output"].gsub("VERSION", LOGSTASH_VERSION)
-  sh "ruby docs/generate_index.rb #{ENV["output"]} > #{output}/index.html"
+  sh "ruby docs/generate_index.rb #{output} > #{output}/index.html"
 end
 
 task :docgen => [:require_output_env] do
