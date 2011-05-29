@@ -68,11 +68,11 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
 
         (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |value|
           if @negate
-            @logger.debug("want negate match")
+            @logger.debug(["want negate match", re, value])
             next if re.match(value)
             @logger.debug(["grep not-matched (negate requsted)", { field => value }])
           else
-            @logger.debug(["trying regex", re, value])
+            @logger.debug(["want match", re, value])
             next unless re.match(value)
             @logger.debug(["grep matched", { field => value }])
           end
