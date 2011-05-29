@@ -74,9 +74,9 @@ class LogStash::Inputs::Base < LogStash::Plugin
     event.source = source
 
     case @format.first
-    when "plain":
+    when "plain"
       event.message = raw
-    when "json":
+    when "json"
       begin
         fields = JSON.parse(raw)
         fields.each { |k, v| event[k] = v }
@@ -94,7 +94,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
       else
         event.message = raw
       end
-    when "json_event":
+    when "json_event"
       begin
         event = LogStash::Event.from_json(raw)
       rescue => e
