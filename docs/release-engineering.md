@@ -37,10 +37,11 @@ right? ;)
 ** Note: you will need to use c-ruby for this (ruby 1.8.7, etc)
 ** You'll need 'bluecloth' rubygem installed.
 * cd ../logstash.github.com
-** git add docs/$VERSION
+** edit docs/latest.html index.html _layouts/*
+** git add docs/$VERSION docs/latest.html index.html _layouts/*
 ** git commit -m "version $VERSION docs" && git push origin master
 * Publish binaries
-** Stage binaries at <tt>carrera.databits.net:/home/jls/s/files/logstash/
+** Stage binaries at <tt>carrera.databits.net:/home/jls/s/files/logstash/</tt>
 ** rake publish
 * Update #logstash IRC /topic
 * Send announcement email to logstash-users@, include relevant download URLs &
