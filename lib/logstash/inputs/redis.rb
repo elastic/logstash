@@ -7,6 +7,11 @@ require "logstash/namespace"
 class LogStash::Inputs::Redis < LogStash::Inputs::Base
 
   config_name "redis"
+
+  # Name is used for logging in case there are multiple instances.
+  # TODO: remove
+  config :name, :validate => :string, :default => "default", 
+    :deprecated => true
   
   # The hostname of your redis server.
   config :host, :validate => :string, :default => "127.0.0.1"
@@ -23,13 +28,19 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   # Password to authenticate with. There is no authentication by default.
   config :password, :validate => :password
 
+  # The name of the redis queue (we'll use BLPOP against this).
+  # TODO: remove
+  config :queue, :validate => :string, :deprecated => true
+
   # The name of a redis list or channel. Dynamic names are
   # valid here, for example "logstash-%{@type}".
-  config :key, :validate => :string, :required => true
+  # TODO: change required to true
+  config :key, :validate => :string, :required => false
 
   # Either list or channel.  If redis_type is list, then we will BLPOP the 
   # key.  If redis_type is channel, then we will SUBSCRIBE to the key.
-  config :data_type, :validate => [ "list", "channel" ], :required => true
+  # TODO: change required to true
+  config :data_type, :validate => [ "list", "channel" ], :required => false
 
   public
   def initialize(params)
@@ -43,13 +54,32 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
     require 'redis'
     @redis = nil
     @redis_url = "redis://#{@password}@#{@host}:#{@port}/#{@db}"
+
+    # TODO remove after setting key and data_type to true
+    if @queue
+      if @key or @data_type
+        raise RuntimeError.new(
+          "Cannot specify queue parameter and key or data_type"
+        )
+      end
+      @key = @queue
+      @data_type = 'list'
+    end
+
+    if not @key or not @data_type
+      raise RuntimeError.new(
+        "Must define queue, or key and data_type parameters"
+      )
+    end
+    # end TODO
+    
     @logger.info "Registering redis #{identity}"
   end # def register
 
   # A string used to identify a redis instance in log messages
   private
   def identity
-    "#{@redis_url} #{@data_type}:#{@key}"
+    @name || "#{@redis_url} #{@data_type}:#{@key}"
   end
 
   private
