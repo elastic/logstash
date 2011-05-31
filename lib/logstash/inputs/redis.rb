@@ -32,8 +32,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   # TODO: remove
   config :queue, :validate => :string, :deprecated => true
 
-  # The name of a redis list or channel. Dynamic names are
-  # valid here, for example "logstash-%{@type}".
+  # The name of a redis list or channel.
   # TODO: change required to true
   config :key, :validate => :string, :required => false
 
@@ -96,8 +95,8 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   private
   def queue_event msg, output_queue
     begin
-      e = LogStash::Event.new(JSON.parse(msg))
-      output_queue << e if e
+      event = to_event msg, identity
+      output_queue << event if event
     rescue => e # parse or event creation error
       @logger.error(["Failed to create event with '#{msg}'", e])
       @logger.debug(["Backtrace",  e.backtrace])
