@@ -15,8 +15,11 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
     @host = (settings[:host] || nil)
     @port = (settings[:port] || 9300).to_i
     @cluster = (settings[:cluster] || nil)
+    @bind_host = (settings[:bind_host] || nil)
     @logger = LogStash::Logger.new(STDOUT)
-    @client = ElasticSearch::Client.new(:host => @host, :port => @port, :cluster => @cluster)
+    @client = ElasticSearch::Client.new(:host => @host, :port => @port, 
+                                        :cluster => @cluster, 
+                                        :bind_host => @bind_host)
   end
 
   # See LogStash::Search;:Base#search
