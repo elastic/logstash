@@ -132,7 +132,6 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   def listener_loop listener, output_queue
     loop do
       begin
-        # we need seperate instances of redis for each listener
         @redis ||= connect
         self.send listener, @redis, output_queue
       rescue => e # redis error
