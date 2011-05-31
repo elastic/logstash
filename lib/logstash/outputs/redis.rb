@@ -69,4 +69,13 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       raise e
     end
   end # def receive
+
+  public
+  def teardown
+    if @data_type == 'channel' and @redis
+      @redis.quit
+      @redis = nil
+    end
+  end
+
 end
