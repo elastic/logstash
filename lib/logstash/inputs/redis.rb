@@ -126,6 +126,8 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   def teardown
     if @data_type == 'channel' and @redis
       @redis.unsubscribe
+      @redis.quit
+      @redis = nil
     end
   end
 end # class LogStash::Inputs::Redis
