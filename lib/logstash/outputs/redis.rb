@@ -31,11 +31,13 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # If redis_type is channel, then we will PUBLISH to key.
   config :data_type, :validate => [ "list", "channel" ], :required => true
 
+  public
   def register
     require 'redis'
     @redis = nil
   end # def register
 
+  private
   def connect
     Redis.new(
       :host => @host,
@@ -47,11 +49,13 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   end # def connect
 
   # A string used to identify a redis instance in log messages
+  private
   def identity
     "redis://#{@password}@#{@host}:#{@port}/#{@db} #{@data_type}:#{@key}"
   end
 
 
+  public
   def receive(event)
     begin
       @redis ||= connect
