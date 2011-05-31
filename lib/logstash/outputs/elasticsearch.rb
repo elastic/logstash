@@ -33,6 +33,9 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
   # REST API port (normally 9200).
   config :port, :validate => :number, :default => 9300
 
+  # The name/address of the host to bind to for ElasticSearch clustering
+  config :bind_host, :validate => :string
+
   # TODO(sissel): Config for river?
 
   public
@@ -53,7 +56,8 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     @pending = []
     @callback = self.method(:receive_native)
     @client = ElasticSearch::Client.new(:cluster => @cluster,
-                                        :host => @host, :port => @port)
+                                        :host => @host, :port => @port,
+                                        :bind_host => @bind_host)
   end # def register
 
   # TODO(sissel): Needs migration to  jrubyland
