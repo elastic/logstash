@@ -14,6 +14,9 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   # The database to use
   config :database, :validate => :string, :required => true
 
+  config :user, :validate => :string, :required => false
+  config :password, :validate => :password, :required => false
+
   # The collection to use. This value can use %{foo} values to dynamically
   # select a collection based on data in the event.
   config :collection, :validate => :string, :required => true
@@ -21,9 +24,16 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   public
   def register
     require "mongo"
-    # TODO(petef): support authentication
     # TODO(petef): check for errors
-    @mongodb = Mongo::Connection.new(@host, @port).db(@database)
+    db = Mongo::Connection.new(@host, @port).db(@database)
+    auth = true
+    if @user then
+      auth = db.authenticate(@user, @password.value) if @user
+    end
+    if not auth then
+      raise RuntimeError, "MongoDB authentication failure"
+    end
+    @mongodb = db
   end # def register
 
   public
