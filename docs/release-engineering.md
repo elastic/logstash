@@ -41,7 +41,7 @@ right? ;)
 ** git add docs/$VERSION docs/latest.html index.html _layouts/*
 ** git commit -m "version $VERSION docs" && git push origin master
 * Publish binaries
-** Stage binaries at <tt>carrera.databits.net:/home/jls/s/files/logstash/</tt>
+** Stage binaries at `carrera.databits.net:/home/jls/s/files/logstash/`
 ** rake publish
 * Update #logstash IRC /topic
 * Send announcement email to logstash-users@, include relevant download URLs &
