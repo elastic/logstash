@@ -36,6 +36,9 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
   # The name/address of the host to bind to for ElasticSearch clustering
   config :bind_host, :validate => :string
 
+  # Run the elasticsearch server embedded 
+  config :embedded, :validate => :boolean, :default => false
+
   # TODO(sissel): Config for river?
 
   public
@@ -48,6 +51,19 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
         require jar
     end
 
+    if @embedded
+      %w(host cluster bind_host).each do |name|
+        if instance_variable_get("@#{name}")
+          @logger.error("outputs/elasticsearch: You cannot specify " \
+                        "'embedded => true' and also set '#{name}'")
+          raise "Invalid configuration detected. Please fix."
+        end
+      end
+
+      # Start elasticsearch local.
+      start_local_elasticsearch
+    end
+
     gem "jruby-elasticsearch", ">= 0.0.3"
     require "jruby-elasticsearch"
 
@@ -55,10 +71,31 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
                  :host => @host, :port => @port)
     @pending = []
     @callback = self.method(:receive_native)
-    @client = ElasticSearch::Client.new(:cluster => @cluster,
-                                        :host => @host, :port => @port,
-                                        :bind_host => @bind_host)
+    options = {
+      :cluster => @cluster,
+      :host => @host,
+      :port => @port,
+      :bind_host => @bind_host,
+    }
+
+    if (@embedded)
+      options[:type] = :local
+    else
+      options[:type] = :node
+      # TODO(sissel): Support 'transport client'
+    end
+
+    @client = ElasticSearch::Client.new(options)
   end # def register
+
+  protected
+  def start_local_elasticsearch
+    @logger.info("Starting embedded ElasticSearch local node.")
+    builder = org.elasticsearch.node.NodeBuilder.nodeBuilder
+    builder.local(true)
+    @embedded_elasticsearch = builder.node
+    @embedded_elasticsearch.start
+  end # def start_local_elasticsearch
 
   # TODO(sissel): Needs migration to  jrubyland
   public
