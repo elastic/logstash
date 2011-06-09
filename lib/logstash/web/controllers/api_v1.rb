@@ -123,7 +123,7 @@ class LogStash::Web::Server < Sinatra::Base
 
     results = @backend.histogram(params[:q], field, interval, async=false)
 
-    p :results => results
+    #p :results => results
     if results.error?
       status 500
       body({ "error" => results.error_message }.to_json)
@@ -132,7 +132,7 @@ class LogStash::Web::Server < Sinatra::Base
 
     begin
       json = results.results.to_json
-      p :json => json
+      #p :json => json
       content_type :json
       status 200
       body json

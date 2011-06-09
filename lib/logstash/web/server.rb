@@ -80,7 +80,7 @@ class LogStash::Web::Server < Sinatra::Base
           options[:type] = query.to_sym
         end
 
-        p :web_es_config => options
+        #p :web_es_config => options
         @backend = LogStash::Search::ElasticSearch.new(options)
       when "twitter"
         require "logstash/search/twitter"
