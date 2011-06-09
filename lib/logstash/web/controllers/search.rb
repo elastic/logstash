@@ -5,7 +5,7 @@ class LogStash::Web::Server < Sinatra::Base
       status 500 if @error
       @results = results
 
-      p :got => results
+      #p :got => results
 
       params[:format] ||= "html"
       case params[:format]
@@ -42,7 +42,7 @@ class LogStash::Web::Server < Sinatra::Base
       )
 
       @backend.search(query) do |results|
-        p :got => results
+        #p :got => results
         begin
           result_callback.call results
         rescue => e

@@ -15,7 +15,7 @@ class LogStash::Web::Server < Sinatra::Base
   def static_file
     # request.path_info is the full path of the request.
     path = File.join(File.dirname(__FILE__), "..", "public", *request.path_info.split("/"))
-    p :static => path
+    #p :static => path
     if File.exists?(path)
       ext = path.split(".").last
       case ext

@@ -9,9 +9,9 @@ class LogStash::Web::Runner
   def run(args)
     jarpath = File.join(File.dirname(__FILE__), "..", "..", "..", "vendor", 
                         "**", "*.jar")
-    p :jarpath => jarpath
+    #p :jarpath => jarpath
     Dir[jarpath].each do |jar|
-      p :jar => jar
+      #p :jar => jar
       require jar
     end
 
