@@ -68,7 +68,7 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
     require "jruby-elasticsearch"
 
     @logger.info(:message => "New ElasticSearch output", :cluster => @cluster,
-                 :host => @host, :port => @port)
+                 :host => @host, :port => @port, :embedded => @embedded)
     @pending = []
     @callback = self.method(:receive_native)
     options = {
