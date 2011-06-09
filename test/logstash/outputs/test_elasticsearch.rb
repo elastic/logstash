@@ -16,14 +16,15 @@ class TestOutputElasticSearch < Test::Unit::TestCase
   ELASTICSEARCH_VERSION = "0.16.0"
 
   def setup
-    start_elasticsearch
+    #start_elasticsearch
     #@cluster = "logstash-test-1234"
 
     @output = LogStash::Outputs::Elasticsearch.new({
-      "host" => ["localhost"],
-      "index" => ["test"],
+      #"host" => ["localhost"],
+      #"index" => ["test"],
       "type" => ["foo"],
-      "cluster" => [@cluster],
+      "embedded" => ["true"],
+      #"cluster" => [@cluster],
     })
     @output.register
   end # def setup
@@ -63,12 +64,14 @@ class TestOutputElasticSearch < Test::Unit::TestCase
 
   def teardown
     # Kill the whole process group for elasticsearch
-    Process.kill("KILL", -1 * @es_pid) rescue nil
-    Process.kill("KILL", @es_pid) rescue nil
+    #Process.kill("KILL", -1 * @es_pid) rescue nil
+    #Process.kill("KILL", @es_pid) rescue nil
 
     # TODO(sissel): Until I fix the way elasticsearch server is run,
     # we'll use pkill...
-    system("pkill -9 -f 'java.*#{@clusterflags}.*Bootstrap'")
+    #system("pkill -9 -f 'java.*#{@clusterflags}.*Bootstrap'")
+    #
+    @output.teardown
   end # def teardown
 
   def test_elasticsearch_basic

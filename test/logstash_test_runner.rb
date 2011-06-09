@@ -13,12 +13,12 @@ def use(path)
   require path
 end
 
-use "logstash/test_syntax"
-use "logstash/test_event"
-use "logstash/filters/test_date"
-use "logstash/filters/test_grep"
-use "logstash/filters/test_multiline"
-use "logstash/filters/test_grok"
+#use "logstash/test_syntax"
+#use "logstash/test_event"
+#use "logstash/filters/test_date"
+#use "logstash/filters/test_grep"
+#use "logstash/filters/test_multiline"
+#use "logstash/filters/test_grok"
 
 if __FILE__ =~ /^file:.*\.jar/
   puts "Skipping elasticsearch tests since we're running from a jar."
