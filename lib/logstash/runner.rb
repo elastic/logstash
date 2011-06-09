@@ -2,36 +2,55 @@ require "rubygems"
 require "logstash/namespace"
 
 class LogStash::Runner
-  def self.main(args)
+  def main(args)
     $: << File.join(File.dirname(__FILE__), "../")
-    command = args.shift
 
+    @runners = []
+    while !args.empty?
+      p :args => args
+      args = run(args)
+    end
+
+    @runners.each { |r| r.wait }
+  end # def self.main
+
+  def run(args)
+    command = args.shift
     commands = {
-      "agent" => proc do
+      "agent" => lambda do
         require "logstash/agent"
         agent = LogStash::Agent.new
-        agent.argv = args
-        agent.run
+        @runners << agent
+        return agent.run(args)
       end,
-      "web" => proc do
-        require "logstash/web/server"
+      "web" => lambda do
+        require "logstash/web/runner"
+        web = LogStash::Web::Runner.new
+        @runners << web
+        return web.run(args)
       end,
-      "test" => proc do
+      "test" => lambda do
         require "logstash_test_runner"
       end
-    }
+    } # commands
 
     if commands.include?(command)
-      commands[command].call
+      args = commands[command].call
     else
-      $stderr.puts "No such command #{command.inspect}"
+      if command.nil?
+        $stderr.puts "No command given"
+      else
+        $stderr.puts "No such command #{command.inspect}"
+      end
       $stderr.puts "Available commands:"
       $stderr.puts commands.keys.map { |s| "  #{s}" }.join("\n")
       exit 1
     end
-  end # def self.main
+
+    return args
+  end # def self.run
 end # class LogStash::Runner
 
 if $0 == __FILE__
-  LogStash::Runner.main(ARGV)
+  LogStash::Runner.new.main(ARGV)
 end

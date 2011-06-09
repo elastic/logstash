@@ -3,8 +3,12 @@
 $: << File.dirname($0) + "/../lib"
 
 require "rubygems"
-require "logstash/agent"
+require "logstash/runner"
 
-agent = LogStash::Agent.new
-agent.argv = ARGV
-agent.run
+# If the first argument is a flag, assume agent.
+if ARGV[0] =~ /^-/
+  ARGV.unshift("agent")
+end
+
+p :bin => ARGV
+LogStash::Runner.new.main(ARGV)
