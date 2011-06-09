@@ -62,11 +62,6 @@ class LogStash::Agent
     @logger = LogStash::Logger.new(target)
   end # def log_to
 
-  public
-  def argv=(argv)
-    @argv = argv
-  end
-
   private
   def options(opts)
     opts.on("-f CONFIGFILE", "--config CONFIGFILE",
@@ -96,22 +91,22 @@ class LogStash::Agent
 
   # Parse options.
   private
-  def parse_options
+  def parse_options(args)
     @opts = OptionParser.new
 
     # Step one is to add agent flags.
     options(@opts)
 
     # TODO(sissel): Check for plugin_path flags, add them to @plugin_paths.
-    @argv.each_with_index do |arg, index|
+    args.each_with_index do |arg, index|
       next unless arg =~ /^(?:-p|--pluginpath)(?:=(.*))?$/
       path = $1
       if path.nil?
-        path = @argv[index + 1]
+        path = args[index + 1]
       end
 
       @plugin_paths += path.split(":")
-    end # @argv.each
+    end # args.each
 
     # At this point, we should load any plugin-specific flags.
     # These are 'unknown' flags that begin --<plugin>-flag
@@ -131,7 +126,7 @@ class LogStash::Agent
     # --amqp-foo flag. This might cause confusion, but it seems reasonable for
     # now that any same-named component will have the same flags.
     plugins = []
-    @argv.each do |arg|
+    args.each do |arg|
       # skip things that don't look like plugin flags
       next unless arg =~ /^--[A-z0-9]+-/ 
       name = arg.split("-")[2]  # pull the plugin name out
@@ -167,13 +162,13 @@ class LogStash::Agent
     end # @remaining_args.each 
    
     begin
-      @opts.parse!(@argv)
+      remainder = @opts.parse(args)
     rescue OptionParser::InvalidOption => e
       @logger.info e
       raise e
     end
  
-    return true
+    return remainder
   end # def parse_options
 
   private
@@ -217,12 +212,12 @@ class LogStash::Agent
   end # def configure
 
   public
-  def run(&block)
+  def run(args, &block)
     LogStash::Util::set_thread_name(self.class.name)
     register_signal_handlers
 
-    ok = parse_options
-    if !ok
+    remaining = parse_options(args)
+    if remaining == false
       raise "Option parsing failed. See error log."
     end
 
@@ -231,9 +226,19 @@ class LogStash::Agent
     # Load the config file
     config = LogStash::Config::File.new(@config_file)
 
-    run_with_config(config, &block)
+    @thread = Thread.new do
+      run_with_config(config, &block)
+    end
+
+    return remaining
   end # def run
 
+  public
+  def wait
+    @thread.join
+  end
+
+  public
   def run_with_config(config)
     config.parse do |plugin|
       # 'plugin' is a has containing:
