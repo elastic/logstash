@@ -19,6 +19,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   # Read timeout in seconds. If a particular tcp connection is
   # idle for more than this timeout period, we will assume 
   # it is dead and close it.
+  # If you never want to timeout, use -1.
   config :data_timeout, :validate => :number, :default => 5
 
   public
@@ -41,8 +42,12 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
             # NOTE(petef): the timeout only hits after the line is read
             # or socket dies
             # TODO(sissel): Why do we have a timeout here? What's the point?
-            Timeout::timeout(@data_timeout) do
+            if @data_timeout == -1
               buf = s.readline
+            else
+              Timeout::timeout(@data_timeout) do
+                buf = s.readline
+              end
             end
             e = self.to_event(buf, "tcp://#{@host}:#{@port}/client/#{peer}")
             if e
