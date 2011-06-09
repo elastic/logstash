@@ -1,7 +1,35 @@
 1.0.11 (???)
-  - Fix bug in grep filter that would drop/cancel events if you had more
-    than one event type flowing through filters and didn't have a grep
+  - deprecated: The redis 'name' and 'queue' options for both input and output
+    are now deprecated. They will be removed in a future version.
+  - feature: The redis input and output now supports both lists and channels.
+  - feature: Refactor runner to allow you to run multiple things in a single
+    process.  You can end each instance with '--' flag. For example, to run one
+    agent and one web instance:
+      % java -jar logstash-blah.jar agent -f myconfig -- web 
+  - feature: Add 'embedded' option to the elasticsearch output:
+      elasticsearch { embedded => true }
+    Default is false. If true, logstash will run an elasticsearch server
+    in the same process as logstash. This is really useful if you are just
+    starting out or only need one one elasticsearch server.
+  - feature: Added a logstash web backend feature for elasticsearch that tells
+    logstash to use the 'local' (in process) elasticsearch:
+      --backend elasticsearch:///?local
+  - feature: Added 'named_captures_only' option to grok filter. This will have
+    logstash only keep the captures you give names to - for example %{NUMBER}
+    won't be kept, but %{NUMBER:bytes} will be.
+  - feature: Add 'bind_host' option to elasticsearch output. This lets you choose the
+    address ElasticSearch client uses to bind to - useful if you have a
+    multihomed server.
+  - feature: The mongodb output now supports authentication
+  - bugfix: Fix bug in GELF output that caused the gelf short_message to be set as an
+    array if it came from a grok value. The short_message field should only 
+    now be a string properly.
+  - bugfix: Fix bug in grep filter that would drop/cancel events if you had
+    more than one event type flowing through filters and didn't have a grep
     filter defined for each type.
+  - misc: Updated gem dependencies (tests still pass)
+  - misc: With the above two points, you can now run a single logstash process
+    that includes elasticsearch server, logstash agent, and logstash web.
 
 1.0.10 (May 23, 2011)
   - Fix tcp input bug (LOGSTASH-88) that would drop connections.
