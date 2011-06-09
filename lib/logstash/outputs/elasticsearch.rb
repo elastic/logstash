@@ -36,7 +36,10 @@ class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
   # The name/address of the host to bind to for ElasticSearch clustering
   config :bind_host, :validate => :string
 
-  # Run the elasticsearch server embedded 
+  # Run the elasticsearch server embedded in this process.
+  # This option is useful if you want to run a single logstash process that
+  # handles log processing and indexing; it saves you from needing to run
+  # a separate elasticsearch process.
   config :embedded, :validate => :boolean, :default => false
 
   # TODO(sissel): Config for river?
