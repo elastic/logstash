@@ -14,7 +14,6 @@ indexer) if you want, but this example shows simply a standalone configuration.
 
 Steps:
 
-* Download and run elasticsearch
 * Download and run logstash
 
 ## Problems?
@@ -22,29 +21,7 @@ Steps:
 If you have problems, feel free to email the users list
 (logstash-users@googlegroups.com) or join IRC (#logstash on irc.freenode.org)
 
-## ElasticSearch
-
-Requirements: Java. I have only tested with sun java.
-
-Use this shell scriptlet to help download and unpack elasticsearch:
-
-    ES_PACKAGE=elasticsearch-0.16.0.zip
-    ES_DIR=${ES_PACKAGE%%.zip}
-    if [ ! -d "$ES_DIR" ] ; then
-      wget --no-check-certificate http://github.com/downloads/elasticsearch/elasticsearch/$ES_PACKAGE
-      unzip $ES_PACKAGE
-    fi
-
-Otherwise: Download and unpack the elasticsearch yourself; you'll want version
-0.16.0 or newer. It's written in Java and requires Java (uses Lucene on the
-backend; if you want to know more read the <a href="http://elasticsearch.org">elasticsearch docs</a>).
-
-To start the service, run bin/elasticsearch. If you want to run it in the
-foreground, use `bin/elasticsearch -f`
-
 ## logstash
-
-Once you have elasticsearch running, you're ready to configure logstash.
 
 You should download the logstash 'monolithic' jar. This package includes most
 of the dependencies for logstash in it and helps you get started quicker.
@@ -83,10 +60,11 @@ grouped by type and two outputs.
       # logstash.
       stdout { }
 
-      # This elasticsearch output will try to autodiscover a near-by
-      # elasticsearch cluster using multicast discovery.
-      # If multicast doesn't work, you'll need to set a 'host' setting.
-      elasticsearch { }
+      # This will use elasticsearch to store your logs.
+      # The 'embedded' option will cause logstash to run the elasticsearch
+      # server in the same process, so you don't have to worry about
+      # how to download, configure, or run elasticsearch!
+      elasticsearch { embedded => true }
     }
 
 Put this in a file called "mylogstash.conf"
