@@ -1,4 +1,7 @@
-1.0.11 (???)
+1.0.12 (Jun 9, 2011)
+  - clean up some excess debugging output 
+
+1.0.11 (Jun 9, 2011)
   - deprecated: The redis 'name' and 'queue' options for both input and output
     are now deprecated. They will be removed in a future version.
   - feature: The redis input and output now supports both lists and channels.
