@@ -33,7 +33,7 @@ right? ;)
 * Build binaries
 ** rake package:gem
 ** rake package:monolith:jar
-* rake docs output=../logstash.github.com/docs/VERSION
+* rake docs output=../logstash.github.com/docs/$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 ** Note: you will need to use c-ruby for this (ruby 1.8.7, etc)
 ** You'll need 'bluecloth' rubygem installed.
 * cd ../logstash.github.com
