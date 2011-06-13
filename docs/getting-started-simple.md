@@ -69,15 +69,9 @@ grouped by type and two outputs.
 
 Put this in a file called "mylogstash.conf"
 
-Now run 
+Now run it all:
 
-    java -jar logstash-1.0-monolithic.jar agent -f mylogstash.conf
-
-## the web interface
-
-To run the logstash web ui, run this:
-
-    java -jar logstash-1.0-monolithic.jar web
+    java -jar logstash-1.0-monolithic.jar agent -f mylogstash.conf -- web --backend elasticsearch:///?local
 
 Point your browser at <http://yourserver:9292> and start searching!
 
