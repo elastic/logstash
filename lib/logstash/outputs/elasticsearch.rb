@@ -1,8 +1,13 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
 
-# TODO(sissel): Remove old cruft from pre-jruby
-# TODO(sissel): Support river again?
+# This output lets you store logs in elasticsearch and is the most recommended
+# output for logstash. If you plan on using the logstash web interface, you'll
+# need to use this output.
+#
+#   *NOTE*: You must use the same version of elasticsearch server that logstash
+#   uses for it's client. Currently we use elasticsearch 0.16.0
+#
 class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
 
   # http://host/index/type
