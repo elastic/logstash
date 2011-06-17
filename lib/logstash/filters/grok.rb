@@ -13,7 +13,7 @@ require "set"
 #
 # Compile/install notes can be found in the INSTALL file of the
 # grok tarball, or here: 
-# <https://github.com/jordansissel/grok/blob/master/INSTALL>o
+# <https://github.com/jordansissel/grok/blob/master/INSTALL>
 #
 # Key dependencies:
 #
