@@ -67,7 +67,15 @@ class LogStash::Agent
     opts.on("-f CONFIGFILE", "--config CONFIGFILE",
             "Load the logstash config from a specific file") do |arg|
       @config_file = arg
-    end
+    end # -f / --config
+
+    opts.on("-e CONFIGSTRING",
+            "Use the given string as the configuration data. Same syntax as " \
+            "the config file. If not input is specified, " \
+            "'stdin { type => stdin }' is default. If no output is " \
+            "specified, 'stdout { debug => true }}' is default.") do |arg|
+      @config_string = arg
+    end # -e
 
     opts.on("-d", "--daemonize", "Daemonize (default is run in foreground)") do 
       @daemonize = true
@@ -173,13 +181,16 @@ class LogStash::Agent
 
   private
   def configure
-    if @config_file.nil? || @config_file.empty?
+    if @config_file && @config_string
+      @logger.fatal "Can't use -f and -e at the same time"
+      raise "Configuration problem"
+    elsif (@config_file.nil? || @config_file.empty?) && @config_string.nil?
       @logger.fatal "No config file given. (missing -f or --config flag?)"
       @logger.fatal @opts.help
       raise "Configuration problem"
     end
 
-    if !File.exist?(@config_file)
+    if @config_file and !File.exist?(@config_file)
       @logger.fatal "Config file '#{@config_file}' does not exist."
       raise "Configuration problem"
     end
@@ -224,7 +235,11 @@ class LogStash::Agent
     configure
 
     # Load the config file
-    config = LogStash::Config::File.new(@config_file)
+    if @config_file
+      config = LogStash::Config::File.new(@config_file, nil)
+    elsif @config_string
+      config = LogStash::Config::File.new(nil, @config_string)
+    end
 
     @thread = Thread.new do
       run_with_config(config, &block)
@@ -265,6 +280,26 @@ class LogStash::Agent
           exit 1
       end # case type
     end # config.parse
+
+    # If we are given a config string (run usually with 'agent -e "some config string"')
+    # then set up some defaults.
+    if @config_string
+      require "logstash/inputs/stdin"
+      require "logstash/outputs/stdout"
+
+      # set defaults if necessary
+      
+      # All filters default to 'stdin' type
+      @filters.each do |filter|
+        filter.type = "stdin" if filter.type.nil?
+      end
+      
+      # If no inputs are specified, use stdin by default.
+      @inputs = [LogStash::Inputs::Stdin.new("type" => [ "stdin" ])] if @inputs.length == 0
+
+      # If no outputs are specified, use stdout in debug mode.
+      @outputs = [LogStash::Outputs::Stdout.new("debug" => [ "true" ])] if @outputs.length == 0
+    end
 
     if @inputs.length == 0 or @outputs.length == 0
       raise "Must have both inputs and outputs configured."
