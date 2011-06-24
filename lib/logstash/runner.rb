@@ -7,7 +7,7 @@ class LogStash::Runner
 
     @runners = []
     while !args.empty?
-      p :args => args
+      #p :args => args
       args = run(args)
     end
 

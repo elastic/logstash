@@ -10,5 +10,4 @@ if ARGV[0] =~ /^-/
   ARGV.unshift("agent")
 end
 
-p :bin => ARGV
 LogStash::Runner.new.main(ARGV)

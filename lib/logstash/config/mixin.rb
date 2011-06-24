@@ -77,6 +77,8 @@ module LogStash::Config::Mixin
       # set @foo
       #ivar = "@#{key}"
       instance_variable_set("@#{key}", value)
+      #define_method(key.to_sym) { value }
+      #define_method("#{key}=".to_sym) { |v| instance_variable_set("@#{key}", v) }
     end
 
     @config = params
@@ -100,6 +102,11 @@ module LogStash::Config::Mixin
 
       name = name.to_s if name.is_a?(Symbol)
       @config[name] = opts  # ok if this is empty
+
+      if name.is_a?(String)
+        define_method(name) { instance_variable_get("@#{name}") }
+        define_method("#{name}=") { |v| instance_variable_set("@#{name}", v) }
+      end
     end # def config
 
     def get_config

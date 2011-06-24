@@ -27,7 +27,7 @@ class LogStash::Config::File
     @config = grammar.config
     
     registry = LogStash::Config::Registry::registry
-    self.each do |o|
+    each do |o|
       # Load the base class for the type given (like inputs/base, or filters/base)
       # TODO(sissel): Error handling
       tryload o[:type], :base
