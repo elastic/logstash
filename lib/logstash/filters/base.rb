@@ -19,7 +19,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   #
   #     filter {
   #       myfilter {
-  #         add_tags => [ "foo_%{somefield}" ]
+  #         add_tag => [ "foo_%{somefield}" ]
   #       }
   #     }
   #
@@ -32,7 +32,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   #
   #     filter {
   #       myfilter {
-  #         add_fields => [ "sample", "Hello world, from %{@source}" ]
+  #         add_field => [ "sample", "Hello world, from %{@source}" ]
   #       }
   #     }
   #
