@@ -35,7 +35,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       re = Regexp.new(pattern)
       @patterns[field] << re
       @logger.debug(["grep: #{@type}/#{field}", pattern, re])
-    end # @config.each
+    end # @match.merge.each
   end # def register
 
   public
@@ -89,7 +89,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
                       "(#{match_count}/#{match_want} matches)")
         event.cancel
       end # match["match"].each
-    end # config.each
+    end # @patterns.each
 
     if not matched || event.cancelled?
       @logger.debug("grep: dropping event, no matches")
