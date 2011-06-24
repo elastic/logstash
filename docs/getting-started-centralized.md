@@ -71,14 +71,14 @@ If you want/need to configure RabbitMQ, seek the rabbitmq docs.
 
 == grok ==
 
-Site for download and install docs: http://code.google.com/p/semicomplete/wiki/Grok
+Site for download and install docs: <http://code.google.com/p/semicomplete/wiki/Grok>
 
 You'll need to install grok. If you're on Ubuntu 10.04 64bit, you can use this
 [ubuntu package
 http://code.google.com/p/semicomplete/downloads/detail?name=grok_1.20101030.3088_amd64.deb&can=2&q=]
 
-See http://code.google.com/p/semicomplete/source/browse/grok/INSTALL for
-further installation instructions and dependency information
+See <https://github.com/jordansissel/grok/blob/master/INSTALL> for further
+installation instructions and dependency information
 
 Note: On some systems, you may need to symlink libgrok.so to libgrok.so.1 (wherever
 you installed grok to).
