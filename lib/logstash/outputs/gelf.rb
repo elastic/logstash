@@ -74,9 +74,18 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     m["file"] = event["@source_path"]
 
     event.fields.each do |name, value|
-      next if value == nil or value.empty?
+      next if value == nil
       name = "_id" if name == "id"  # "_id" is reserved, so use "__id"
-      m["_#{name}"] = (value.length == 1) ? value.first : value
+      if !value.nil?
+        if value.is_a?(Array)
+          # collapse single-element arrays, otherwise leave as array
+          m["_#{name}"] = (value.length == 1) ? value.first : value
+        else
+          # Non array values should be presented as-is
+          # https://logstash.jira.com/browse/LOGSTASH-113
+          m["_#{name}"] = value
+        end
+      end
     end
 
     # Allow 'INFO' 'I' or number. for 'level'
