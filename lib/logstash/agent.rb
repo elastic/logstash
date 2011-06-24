@@ -193,7 +193,8 @@ class LogStash::Agent
       raise "Configuration problem"
     end
 
-    if @config_path and !File.exist?(@config_path)
+    #if @config_path and !File.exist?(@config_path)
+    if @config_path and Dir.glob(@config_path).length == 0
       @logger.fatal "Config file '#{@config_path}' does not exist."
       raise "Configuration problem"
     end
@@ -244,15 +245,17 @@ class LogStash::Agent
       if File.directory?(@config_path)
         @logger.debug("Loading '#{@config_path}' as directory")
         paths = Dir.glob(File.join(@config_path, "*")).sort
-        concatconfig = []
-        paths.each do |path|
-          concatconfig << File.new(path).read
-        end
-        config = LogStash::Config::File.new(nil, concatconfig.join("\n"))
       else
-        # Not a directory, load it as a file.
-        config = LogStash::Config::File.new(@config_path, nil)
+        # Get a list of files matching a glob. If the user specified a single
+        # file, then this will only have one match and we are still happy.
+        paths = Dir.glob(@config_path)
       end
+
+      concatconfig = []
+      paths.each do |path|
+        concatconfig << File.new(path).read
+      end
+      config = LogStash::Config::File.new(nil, concatconfig.join("\n"))
     elsif @config_string
       # Given a config string by the user (via the '-e' flag)
       config = LogStash::Config::File.new(nil, @config_string)
