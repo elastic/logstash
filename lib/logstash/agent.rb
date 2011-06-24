@@ -27,7 +27,7 @@ class LogStash::Agent
   attr_accessor :logger
 
   # flags
-  attr_reader :config_file
+  attr_reader :config_path
   attr_reader :daemonize
   attr_reader :logfile
   attr_reader :verbose
@@ -64,9 +64,12 @@ class LogStash::Agent
 
   private
   def options(opts)
-    opts.on("-f CONFIGFILE", "--config CONFIGFILE",
-            "Load the logstash config from a specific file") do |arg|
-      @config_file = arg
+    opts.on("-f CONFIGPATH", "--config CONFIGPATH",
+            "Load the logstash config from a specific file or directory. " \
+            "If a direcory is given instead of a file, all files in that " \
+            "directory will be concatonated in lexicographical order and " \
+            "then parsed as a single config file.") do |arg|
+      @config_path = arg
     end # -f / --config
 
     opts.on("-e CONFIGSTRING",
@@ -181,17 +184,17 @@ class LogStash::Agent
 
   private
   def configure
-    if @config_file && @config_string
+    if @config_path && @config_string
       @logger.fatal "Can't use -f and -e at the same time"
       raise "Configuration problem"
-    elsif (@config_file.nil? || @config_file.empty?) && @config_string.nil?
+    elsif (@config_path.nil? || @config_path.empty?) && @config_string.nil?
       @logger.fatal "No config file given. (missing -f or --config flag?)"
       @logger.fatal @opts.help
       raise "Configuration problem"
     end
 
-    if @config_file and !File.exist?(@config_file)
-      @logger.fatal "Config file '#{@config_file}' does not exist."
+    if @config_path and !File.exist?(@config_path)
+      @logger.fatal "Config file '#{@config_path}' does not exist."
       raise "Configuration problem"
     end
 
@@ -235,9 +238,23 @@ class LogStash::Agent
     configure
 
     # Load the config file
-    if @config_file
-      config = LogStash::Config::File.new(@config_file, nil)
+    if @config_path
+      # Support directory of config files.
+      # https://logstash.jira.com/browse/LOGSTASH-106
+      if File.directory?(@config_path)
+        @logger.debug("Loading '#{@config_path}' as directory")
+        paths = Dir.glob(File.join(@config_path, "*")).sort
+        concatconfig = []
+        paths.each do |path|
+          concatconfig << File.new(path).read
+        end
+        config = LogStash::Config::File.new(nil, concatconfig.join("\n"))
+      else
+        # Not a directory, load it as a file.
+        config = LogStash::Config::File.new(@config_path, nil)
+      end
     elsif @config_string
+      # Given a config string by the user (via the '-e' flag)
       config = LogStash::Config::File.new(nil, @config_string)
     end
 
