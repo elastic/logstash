@@ -67,3 +67,17 @@ Short example:
             
         end # def somefunc
       end # class Foo
+
+## Specific cases
+
+### Hash synatx
+
+Use of the "hash colon" syntax (ruby 1.9) is not accepted: { foo: "bar" }
+
+### String#[]
+
+String#[] with one numeric argument must not be used due to bugs between ruby
+versions.
+
+* Do not use this: "foo"[0]
+* Use this: "foo"[0,1]
