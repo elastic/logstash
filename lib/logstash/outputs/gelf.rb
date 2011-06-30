@@ -18,7 +18,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # The GELF chunksize
   config :chunksize, :validate => :number, :default => 1420
 
-  config :sender, :validate => :string
+  config :sender, :validate => :string, :default => "%{@source_host}"
 
   # The GELF message level. Dynamic values like %{level} are permitted here;
   # useful if you want to parse the 'log level' from an event and use that
@@ -73,7 +73,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
     m["full_message"] = (event.message)
     
-    m["host"] = @sender.nil? ? event["@source_host"] : event.sprintf(@sender)
+    m["host"] = event.sprintf(@sender)
     m["file"] = event["@source_path"]
 
     event.fields.each do |name, value|
