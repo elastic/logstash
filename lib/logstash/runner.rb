@@ -1,4 +1,6 @@
 require "rubygems"
+$: << File.join(File.dirname(__FILE__), "..")
+$: << File.join(File.dirname(__FILE__), "..", "..", "test")
 require "logstash/namespace"
 
 class LogStash::Runner
@@ -11,7 +13,11 @@ class LogStash::Runner
       args = run(args)
     end
 
-    @runners.each { |r| r.wait }
+    status = []
+    @runners.each { |r| status << r.wait }
+
+    # Avoid running test/unit's at_exit crap
+    java.lang.System.exit(status.first)
   end # def self.main
 
   def run(args)
@@ -30,7 +36,10 @@ class LogStash::Runner
         return web.run(args)
       end,
       "test" => lambda do
-        require "logstash_test_runner"
+        require "logstash/test"
+        test = LogStash::Test.new
+        @runners << test
+        return test.run(args)
       end
     } # commands
 
@@ -48,7 +57,7 @@ class LogStash::Runner
     end
 
     return args
-  end # def self.run
+  end # def run
 end # class LogStash::Runner
 
 if $0 == __FILE__
