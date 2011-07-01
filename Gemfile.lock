@@ -45,7 +45,7 @@ PLATFORMS
 DEPENDENCIES
   awesome_print
   bunny
-  filewatch (~> 0.2.3)
+  filewatch (~> 0.2.5)
   gelf
   haml
   jls-grok (~> 0.4.7)
