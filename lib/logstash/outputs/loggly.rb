@@ -5,19 +5,25 @@ require "uri"
 # TODO(sissel): Move to something that performs better than net/http
 require "net/http"
 
+# Got a loggly account? Use logstash to ship logs to Loggly!
+#
+# This is most useful so you can use logstash to parse and structure
+# your logs and ship structured, json events to your account at Loggly.
+#
+# To use this, you'll need to use a Loggly input with type 'http'
+# and 'json logging' enabled.
 class LogStash::Outputs::Loggly < LogStash::Outputs::Base
   config_name "loggly"
 
   # The hostname to send logs to. This should target the loggly http input
   # server which is usually "logs.loggly.com"
-  #config :url, :validate => :string, :default => "https://logs.loggly.com/"
   config :host, :validate => :string, :default => "logs.loggly.com"
 
   # The loggly http input key to send to.
   # This is usually visible in the Loggly 'Inputs' page as something like this
   #     https://logs.hoover.loggly.net/inputs/abcdef12-3456-7890-abcd-ef0123456789
   #                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  #                                                   ^       key        ^
+  #                                           \---------->   key   <-------------/
   #
   config :key, :validate => :string, :required => true
 

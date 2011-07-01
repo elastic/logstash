@@ -1,6 +1,11 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
+# Push events to an AMQP exchange.
+#
+# AMQP is a messaging system. It requires you to run an AMQP server or 'broker'
+# Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and 
+# [QPid](http://qpid.apache.org/)
 class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
 
