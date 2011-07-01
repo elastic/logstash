@@ -271,7 +271,8 @@ class LogStash::Agent
   public
   def wait
     @thread.join
-  end
+    return 0
+  end # def wait
 
   public
   def run_with_config(config)

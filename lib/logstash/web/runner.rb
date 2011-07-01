@@ -92,6 +92,7 @@ class LogStash::Web::Runner
   public
   def wait
     @thread.join
+    return 0
   end # def wait
 end # class LogStash::Web::Runner
  
