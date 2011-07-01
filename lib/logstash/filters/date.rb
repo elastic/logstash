@@ -6,7 +6,7 @@ require "logstash/time"
 # date or timestamp as the timestamp for the event.
 #
 # For example, syslog events usually have timestamps like this:
-#   "Apr  7 09:32:01"
+#   "Apr 17 09:32:01"
 #
 # You would use the date format "MMM dd HH:mm:ss" to parse this.
 #

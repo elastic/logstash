@@ -16,7 +16,8 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
   # through.
   config :negate, :validate => :boolean, :default => false
 
-  # A hash of matches of field => value
+  # A hash of matches of field => regexp
+  # Normal regular expressions are supported here.
   config :match, :validate => :hash, :default => {}
 
   # Config for grep is:
