@@ -14,7 +14,7 @@ require "logstash/outputs/base"
 #
 # The easiest way to use this output is with the grep filter.
 # Presumably, you only want certain events matching a given pattern
-# to send events to zabbix. So use grep to match and also to add the required
+# to send events to zabbix, so use grep to match and also to add the required
 # fields.
 #
 #     filter {
@@ -50,8 +50,8 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
  
   config_name "zabbix"
  
-  config :zabbix_server, :validate => :string, :default => "localhost"
-  config :zabbix_port,   :validate => :string, :default => "10051"
+  config :host, :validate => :string, :default => "localhost"
+  config :port, :validate => :number, :default => 10051
   config :zabbix_sender, :validate => :string, :default => "/usr/local/bin/zabbix_sender"
  
   # Only handle events with any of these tags. Optional.
@@ -92,11 +92,11 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
       return
     end
  
-    temp = event.message
-    temp = temp.gsub("\n", "\\n")
-    temp = temp.gsub(/"/, "\\\"")
+    zmsg = event.message
+    zmsg = zmsg.gsub("\n", "\\n")
+    zmsg = zmsg.gsub(/"/, "\\\"")
  
-    cmd = "#{@zabbix_sender} -z #{@zabbix_server} -p #{@zabbix_port} -s #{host} -k #{item} -o \"#{temp}\" 2>/dev/null >/dev/null"
+    cmd = "#{@zabbix_sender} -z #{@host} -p #{@port} -s #{host} -k #{item} -o \"#{zmsg}\" 2>/dev/null >/dev/null"
  
     @logger.debug({"zabbix_sender_command" => cmd})
     begin
