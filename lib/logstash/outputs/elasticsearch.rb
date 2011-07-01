@@ -11,7 +11,6 @@ require "logstash/outputs/base"
 # You can learn more about elasticseasrch at <http://elasticsearch.org>
 class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
 
-  # http://host/index/type
   config_name "elasticsearch"
 
   # ElasticSearch server name. This is optional if your server is discoverable.

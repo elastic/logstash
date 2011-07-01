@@ -1,6 +1,8 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
 
+# This output is only used for internal logstash testing and
+# is not useful for general deployment.
 class LogStash::Outputs::Internal < LogStash::Outputs::Base
   config_name "internal"
 
