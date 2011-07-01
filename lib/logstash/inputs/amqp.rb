@@ -3,8 +3,9 @@ require "logstash/namespace"
 
 # Pull events from an AMQP exchange.
 #
-# 
-# TODO(sissel): Document where to learn more about AMQP and brokers.
+# AMQP is a messaging system. It requires you to run an AMQP server or 'broker'
+# Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and 
+# [QPid](http://qpid.apache.org/)
 class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
 

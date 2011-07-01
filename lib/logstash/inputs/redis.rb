@@ -1,7 +1,8 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 
-# Read events from a redis using BLPOP
+# Read events from a redis. Supports both redis channels and also redis lists
+# (using BLPOP)
 #
 # For more information about redis, see <http://redis.io/>
 class LogStash::Inputs::Redis < LogStash::Inputs::Base

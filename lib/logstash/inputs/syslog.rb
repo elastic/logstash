@@ -10,13 +10,16 @@ require "socket"
 # It is also a good choice if you want to receive logs from
 # appliances and network devices where you cannot run your own
 # log collector.
+#
+# Note: this input will start listeners on both TCP and UDP
 class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   config_name "syslog"
 
   # The address to listen on
   config :host, :validate => :string, :default => "0.0.0.0"
 
-  # The port to listen on
+  # The port to listen on. Remember that ports less than 1024 (privileged
+  # ports) may require root to use.
   config :port, :validate => :number, :default => 514
 
   public
