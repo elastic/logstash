@@ -20,6 +20,7 @@
   - feature: added new feature to libgrok that allows you to define patterns
     in-line, like "%{FOO=\d+}" defines 'FOO' match \d+ and captures as such.
     To use this new feature, you must upgrade libgrok to at least 1.20110630
+    Issue: https://logstash.jira.com/browse/LOGSTASH-94
   - feature: grok filter now supports 'break_on_match' defaulting to true
     (this was the original behavior). If you set it to false, it will attempt
     to match all patterns and create new fields as normal. If left default
@@ -29,6 +30,11 @@
     or this: grok { fieldname => "pattern" }
     The older 'pattern' attribute still means the same thing, and is equivalent
     to this: grok { match => [ "@message", "pattern" ] }
+    Issue: https://logstash.jira.com/browse/LOGSTASH-101
+  - feature: elasticsearch - when embedded is true, you can now set the
+    'embedded_http_port' to configure which port the embedded elasticsearch
+    server listens on. This is only valid for the embedded elasticsearch
+    configuration. https://logstash.jira.com/browse/LOGSTASH-117
   - bugfix: Fix bug in gelf output when a fields were not arrays but numbers.
     Issue: https://logstash.jira.com/browse/LOGSTASH-113
   - bugfix: Fix a bug in syslog udp input due to misfeatures in Ruby's URI 
