@@ -4,6 +4,7 @@ require "net/http"
 require "json"
 #require "net/https"
 
+# Read events from the twitter streaming api.
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
   config_name "twitter"

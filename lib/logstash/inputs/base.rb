@@ -11,6 +11,13 @@ class LogStash::Inputs::Base < LogStash::Plugin
   config_name "input"
 
   # Label this input with a type.
+  # Types are used mainly for filter activation.
+  #
+  # If you create an input with type "foobar", then only filters
+  # which also have type "foobar" will act on them.
+  #
+  # The type is also stored as part of the event itself, so you
+  # can also use the type to search for in the web interface.
   config :type, :validate => :string, :required => true
 
   # Set this to true to enable debugging on an input.
