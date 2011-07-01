@@ -6,7 +6,8 @@ require "logstash/namespace"
 require "logstash/loadlibs"
 
 class LogStash::Test
-  def check_lib(lib, provider, optional=true, message=nil)
+  def check_lib(lib, provider, is=:optional, message=nil)
+    optional = (is == :optional)
     begin
       require lib
       puts "+ Found #{optional ? "optional" : "required"} library '#{lib}'"
@@ -26,29 +27,29 @@ class LogStash::Test
   def check_libraries
     results = [
       # main agent
-      check_lib("grok", "jls-grok", true, "needed for the grok filter."),
-      check_lib("bunny", "bunny", true, "needed for AMQP input and output"),
-      check_lib("uuidtools", "uuidtools", true,
+      check_lib("grok", "jls-grok", :optional, "needed for the grok filter."),
+      check_lib("bunny", "bunny", :optional, "needed for AMQP input and output"),
+      check_lib("uuidtools", "uuidtools", :required,
                 "needed for AMQP input and output"),
-      check_lib("ap", "awesome_print", true, "improve debug logging output"),
-      check_lib("json", "json", false, "required for logstash to function"),
-      check_lib("filewatch/tailglob", "filewatch", false,
+      check_lib("ap", "awesome_print", :optional, "improve debug logging output"),
+      check_lib("json", "json", :required, "required for logstash to function"),
+      check_lib("filewatch/tailglob", "filewatch", :optional,
                 "required for file input"),
-      check_lib("jruby-elasticsearch", "jruby-elasticsearch", false,
+      check_lib("jruby-elasticsearch", "jruby-elasticsearch", :optional,
                 "required for elasticsearch output and for logstash web"),
-      check_lib("stomp", "stomp", false,
+      check_lib("stomp", "stomp", :optional,
                 "required for stomp input and output"),
-      check_lib("mongo", "mongo", false, "required for mongo output"),
-      check_lib("redis", "redis", false,
+      check_lib("mongo", "mongo", :optional, "required for mongo output"),
+      check_lib("redis", "redis", :optional,
                 "required for stomp input and output"),
-      check_lib("gelf", "gelf", false, "required for gelf (graylog2) output"),
+      check_lib("gelf", "gelf", :optional, "required for gelf (graylog2) output"),
 
       # logstash web
-      check_lib("mizuno", "mizuno", true, "needed for logstash web"),
-      check_lib("rack", "rack", true, "needed for logstash web"),
-      check_lib("sinatra", "sinatra", true, "needed for logstash web"),
-      check_lib("sass", "sass", true, "needed for logstash web"),
-      check_lib("haml", "haml", true, "needed for logstash web"),
+      check_lib("mizuno", "mizuno", :required, "needed for logstash web"),
+      check_lib("rack", "rack", :required, "needed for logstash web"),
+      check_lib("sinatra", "sinatra", :required, "needed for logstash web"),
+      check_lib("sass", "sass", :required, "needed for logstash web"),
+      check_lib("haml", "haml", :required, "needed for logstash web"),
     ]
 
     missing_required = results.count { |r| !r[:optional] and !r[:found] }
