@@ -65,7 +65,11 @@ module LogStash::Config::Mixin
           @logger.debug("Converting default value in #{self.class.name} (#{name}) to password object")
           params[name.to_s] = ::LogStash::Util::Password.new(opts[:default])
         else
-          params[name.to_s] = opts[:default]
+          default = opts[:default]
+          if default.is_a?(Array) or default.is_a?(Hash)
+            default = default.clone
+          end
+          params[name.to_s] = default
         end
       end
     end
