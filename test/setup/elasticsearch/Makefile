@@ -4,7 +4,8 @@ elasticsearch-%.zip:
 
 elasticsearch-%:
 	$(MAKE) $@.zip
-	unzip $@.zip
+	#unzip $@.zip
+	jar xf $@.xip
 
 init-elasticsearch-%:
 	$(MAKE) elasticsearch-$*
