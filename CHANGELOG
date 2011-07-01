@@ -1,3 +1,43 @@
+1.0.13 (Jul 1, 2011)
+  - feature: new output plugin "loggly" which lets you ship logs to loggly.com
+  - feature: new output plugin "zabbix" - similar to the nagios output, but
+    works with the Zabbix monitoring system. Contributed by Johan at
+    Mach Technology.
+  - feature: New agent '-e' flag which lets you specify a config in a string.
+    If you specify no 'input' plugins, default is stdin { type => stdin }
+    If you specify no 'output' plugins, default is stdout { debug => true }
+    This is intended to be used for hacking with or debugging filters, but
+    you can specify an entire config here if you choose.
+  - feature: Agent '-f' flag now supports directories and globs. If you specify
+    a directory, all files in that directory will be loaded as a single config.
+    If you specify a glob, all files matching that glob will be loaded as a
+    single config.
+  - feature: gelf output now allows you to override the 'sender'. This defaults
+    to the source host originating the event, but can be set to anything now.
+    It supports dynamic values, so you can use fields from your event as the
+    sender. Contributed by John Vincent
+    Issue: https://github.com/logstash/logstash/pull/30
+  - feature: added new feature to libgrok that allows you to define patterns
+    in-line, like "%{FOO=\d+}" defines 'FOO' match \d+ and captures as such.
+    To use this new feature, you must upgrade libgrok to at least 1.20110630
+  - feature: grok filter now supports 'break_on_match' defaulting to true
+    (this was the original behavior). If you set it to false, it will attempt
+    to match all patterns and create new fields as normal. If left default
+    (true), it will break after the first successful match.
+  - feature: grok filter now supports parsing any field. You can do either of
+    these: grok { match => [ "fieldname", "pattern" ] }
+    or this: grok { fieldname => "pattern" }
+    The older 'pattern' attribute still means the same thing, and is equivalent
+    to this: grok { match => [ "@message", "pattern" ] }
+  - bugfix: Fix bug in gelf output when a fields were not arrays but numbers.
+    Issue: https://logstash.jira.com/browse/LOGSTASH-113
+  - bugfix: Fix a bug in syslog udp input due to misfeatures in Ruby's URI 
+    class. https://logstash.jira.com/browse/LOGSTASH-115
+  - misc: jquery and jquery ui now ship with logstash; previously they were
+    loaded externally
+  - testing: fixed some bugs in the elasticsearch test itself, all green now.
+  - testing: fixed logstash-test to now run properly
+
 1.0.12 (Jun 9, 2011)
   - misc: clean up some excess debugging output 
   - feature: for tcp input, allow 'data_timeout => -1' to mean "never time out"
