@@ -33,8 +33,10 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   config_name "grok"
 
   # Specify a pattern to parse with. This will match the '@message' field.
+  #
+  # If you want to match other fields than @message, use the 'match' setting.
   # Multiple patterns is fine. First match breaks.
-  config :pattern, :validate => :array, :deprecated => true
+  config :pattern, :validate => :array
 
   # Specify a path to a directory with grok pattern files in it
   # A hash of matches of field => value
@@ -113,8 +115,10 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     end
 
     @patterns = Hash.new { |h,k| h[k] = [] }
+    
+    @logger.info(:match => @match)
 
-    @match["@message"] = []
+    @match["@message"] ||= []
     @match["@message"] += @pattern if @pattern # the config 'pattern' value (array)
 
     # TODO(sissel): Hash.merge  actually overrides, not merges arrays. 
@@ -128,6 +132,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
         @patterns[field] = Grok::Pile.new 
         add_patterns_from_files(@patternfiles, @patterns[field])
       end
+      @logger.info(["Grok compile", { :field => field, :patterns => patterns }])
       patterns.each do |pattern|
         @logger.debug(["regexp: #{@type}/#{field}", pattern])
         @patterns[field].compile(pattern)
