@@ -15,9 +15,13 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # graylog2 server port
   config :port, :validate => :number, :default => 12201
 
-  # The GELF chunksize
+  # The GELF chunksize. You usually don't need to change this.
   config :chunksize, :validate => :number, :default => 1420
 
+  # Allow overriding of the gelf 'sender' field. This is useful if you
+  # want to use something other than the event's source host as the
+  # "sender" of an event. A common case for this is using the application name
+  # instead of the hostname.
   config :sender, :validate => :string, :default => "%{@source_host}"
 
   # The GELF message level. Dynamic values like %{level} are permitted here;
