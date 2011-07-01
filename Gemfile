@@ -23,5 +23,5 @@ gem "gelf" # outputs/gelf, # License: MIT-style
 # For testing/dev
 group :development do
   gem "stompserver"
-  gem "spoon"
+  #gem "spoon"
 end
