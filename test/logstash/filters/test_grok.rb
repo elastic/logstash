@@ -11,6 +11,11 @@ require "logstash/event"
 
 class TestFilterGrok < Test::Unit::TestCase
 
+  def setup
+    @typename = nil
+    @filter = nil
+  end
+
   def test_name(name)
     @typename = name.gsub(/[ ]/, "_")
   end
@@ -23,9 +28,10 @@ class TestFilterGrok < Test::Unit::TestCase
       end
     end
 
+    p :config => cfg
+    p :filter => @filter
     @filter = LogStash::Filters::Grok.new(cfg)
-    p :config => cfg, :id => @filter.object_id
-    p :fizzle => @filter.pattern
+
     @filter.register
     #p :newfilter => @filter
   end
@@ -133,7 +139,7 @@ class TestFilterGrok < Test::Unit::TestCase
 
     @filter.filter(event)
     assert_equal(expect.class, event.fields["foo"].first.class, "Expected field 'foo' to be of type #{expect.class.name} but got #{event.fields["foo"].first.class.name}")
-    assert_equal([expect], event.fields["foo"], "Expected field 'foo' to be [#{expect.inspect}], is #{event.fields["expect"].inspect}")
+    assert_equal([expect], event.fields["foo"], "Expected field 'foo' to be [#{expect.inspect}], is #{event.fields["foo"].inspect}")
   end # def test_grok_type_hinting_float
 
   def test_grok_inline_define
@@ -148,7 +154,7 @@ class TestFilterGrok < Test::Unit::TestCase
 
     @filter.filter(event)
     assert_equal(expect.class, event.fields["FIZZLE"].first.class, "Expected field 'FIZZLE' to be of type #{expect.class.name} but got #{event.fields["FIZZLE"].first.class.name}")
-    assert_equal([expect], event.fields["FIZZLE"], "Expected field 'FIZZLE' to be [#{expect.inspect}], is #{event.fields["expect"].inspect}")
+    assert_equal([expect], event.fields["FIZZLE"], "Expected field 'FIZZLE' to be [#{expect.inspect}], is #{event.fields["FIZZLE"].inspect}")
   end # def test_grok_type_hinting_float
 
   def test_grok_field_name_attribute
@@ -163,6 +169,30 @@ class TestFilterGrok < Test::Unit::TestCase
 
     @filter.filter(event)
     assert_equal(expect.class, event.fields["FIZZLE"].first.class, "Expected field 'FIZZLE' to be of type #{expect.class.name} but got #{event.fields["FIZZLE"].first.class.name}")
-    assert_equal([expect], event.fields["FIZZLE"], "Expected field 'FIZZLE' to be [#{expect.inspect}], is #{event.fields["expect"].inspect}")
-  end # def test_grok_type_hinting_float
-end
+    assert_equal([expect], event.fields["FIZZLE"], "Expected field 'FIZZLE' to be [#{expect.inspect}], is #{event.fields["FIZZLE"].inspect}")
+  end # def test_grok_field_name_attribute
+
+  def test_grok_field_name_and_pattern_coexisting
+    test_name "grok_field_name_attribute"
+    config "rum" => [ "%{FIZZLE=\\d+}" ], "pattern" => "%{WORD}", "break_on_match" => "false"
+    
+    event = LogStash::Event.new
+    event.type = @typename
+
+    expect = "1234"
+    event.fields["rum"] = "hello #{expect}"
+    event.message = "something fizzle"
+
+    @filter.filter(event)
+    assert_equal(expect.class, event.fields["FIZZLE"].first.class,
+                 "Expected field 'FIZZLE' to be of type #{expect.class.name} " \
+                 "but got #{event.fields["FIZZLE"].first.class.name}")
+    assert_equal([expect], event.fields["FIZZLE"],
+                 "Expected field 'FIZZLE' to be [#{expect.inspect}], is " \
+                 "#{event.fields["FIZZLE"].inspect}")
+
+    assert_equal(["something"], event.fields["WORD"],
+                 "Expected field 'WORD' to be ['something'], is " \
+                 "#{event.fields["WORD"].inspect}")
+  end # def test_grok_field_name_attribute
+end # class TestFilterGrok

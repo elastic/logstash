@@ -35,7 +35,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # Specify a pattern to parse with. This will match the '@message' field.
   #
   # If you want to match other fields than @message, use the 'match' setting.
-  # Multiple patterns is fine. First match breaks.
+  # Multiple patterns is fine.
   config :pattern, :validate => :array
 
   # Specify a path to a directory with grok pattern files in it
@@ -71,6 +71,11 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   #
   # requested in: googlecode/issue/26
   config :drop_if_match, :validate => :boolean, :default => false
+
+  # Break on first match. The first successful match by grok will result in the
+  # filter being finished. If you want grok to try all patterns (maybe you are
+  # parsing different things), then set this to false.
+  config :break_on_match, :validate => :boolean, :default => true
 
   # If true, only store named captures from grok.
   config :named_captures_only, :validate => :boolean, :default => false
@@ -127,7 +132,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     @match.merge(@config).each do |field, patterns|
       # Skip known config names
       next if ["add_tag", "add_field", "type", "match", "patterns_dir",
-               "drop_if_match", "named_captures_only", "pattern" ].include?(field)
+               "drop_if_match", "named_captures_only", "pattern",
+               "break_on_match" ].include?(field)
       if !@patterns.include?(field)
         @patterns[field] = Grok::Pile.new 
         add_patterns_from_files(@patternfiles, @patterns[field])
@@ -156,18 +162,21 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     end
 
     @logger.debug(["Running grok filter", event])
+    done = false
     @patterns.each do |field, pile|
+      break if done
       if !event[field]
         @logger.debug(["Skipping match object, field not present", field,
                       event, event[field]])
         next
       end
 
-      @logger.debug(["Trying pattern for type #{event.type}", pile])
+      @logger.debug(["Trying pattern for type #{event.type}", { :pile => pile, :field => field }])
       (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |fieldvalue|
         grok, match = pile.match(fieldvalue)
         next unless match
         matched = true
+        done = true if @break_on_match
 
         match.each_capture do |key, value|
           type_coerce = nil
