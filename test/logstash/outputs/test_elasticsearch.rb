@@ -17,24 +17,31 @@ class TestOutputElasticSearch < Test::Unit::TestCase
   ELASTICSEARCH_VERSION = "0.16.0"
 
   def setup
-    @tmpdir = Dir.mktmpdir
-    Dir.chdir(@tmpdir) do
-      @output = LogStash::Outputs::Elasticsearch.new({
-        "type" => ["foo"],
-        "embedded" => ["true"],
-      })
-      @output.register
-    end
+    # TODO(sissel): elasticsearch somehow picks the old pwd when doing this,
+    # not sure why
+    #@tmpdir = Dir.mktmpdir
+    #puts "Using tempdir: #{@tmpdir}"
+    #@pwd = Dir.pwd
+    #Dir.chdir(@tmpdir)
+    #puts "Dir: #{Dir.pwd}"
+    FileUtils.rm_r("data") if File.exists?("data")
+    @output = LogStash::Outputs::Elasticsearch.new({
+      "type" => ["foo"],
+      "embedded" => ["true"],
+    })
+    @output.register
   end # def setup
 
   def teardown
     @output.teardown
-    if @tmpdir !~ /^\/tmp/
-      $stderr.puts("Tempdir is '#{@tmpdir}' - not in /tmp, I won't " \
-                   "remove in case it's not safe.")
-    else
-      FileUtils.rm_r(@tmpdir)
-    end
+    FileUtils.rm_r("data") if File.exists?("data")
+    #Dir.chdir(@pwd)
+    #if @tmpdir !~ /^\/tmp/
+      #$stderr.puts("Tempdir is '#{@tmpdir}' - not in /tmp, I won't " \
+                   #"remove in case it's not safe.")
+    #else
+      #FileUtils.rm_r(@tmpdir)
+    #end
   end # def teardown
 
   def test_elasticsearch_basic
