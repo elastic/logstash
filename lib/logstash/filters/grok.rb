@@ -26,7 +26,6 @@ require "set"
 # * Int/float coercion requires >= 1.20110223.*
 # * In-line pattern definitions >= 1.20110630.*
 #
-#
 # Note:
 # CentOS 5 ships with an ancient version of pcre that does not work with grok.
 class LogStash::Filters::Grok < LogStash::Filters::Base
