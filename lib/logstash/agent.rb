@@ -35,6 +35,9 @@ class LogStash::Agent
   public
   def initialize
     log_to(STDERR)
+    @config_path = nil
+    @config_string = nil
+    @logfile = nil
 
     # flag/config defaults
     @verbose = 0
@@ -238,6 +241,7 @@ class LogStash::Agent
 
     configure
 
+    p :config_string => @config_string
     # Load the config file
     if @config_path
       # Support directory of config files.
@@ -256,7 +260,7 @@ class LogStash::Agent
         concatconfig << File.new(path).read
       end
       config = LogStash::Config::File.new(nil, concatconfig.join("\n"))
-    elsif @config_string
+    else # @config_string
       # Given a config string by the user (via the '-e' flag)
       config = LogStash::Config::File.new(nil, @config_string)
     end
@@ -283,6 +287,7 @@ class LogStash::Agent
       #   :parameters => hash of key-value parameters from the config.
       type = plugin[:type].config_name  # "input" or "filter" etc...
       klass = plugin[:plugin]
+      p :plugin => plugin
 
       # Create a new instance of a plugin, called like:
       # -> LogStash::Inputs::File.new( params )

@@ -7,5 +7,5 @@ if [ -z "$1" ] ; then
   exit 1
 fi
 
-output='output { elasticsearch { embedded => true } }'
+output='output { elasticsearch { embedded => true } } '
 "$@" agent -e "$output"
