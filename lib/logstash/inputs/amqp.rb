@@ -71,10 +71,9 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   end # def register
 
   def run(queue)
-    @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up #{@mqtype.inspect} queue #{@name.inspect}")
-    @bunny = Bunny.new(@amqpsettings)
-
     begin
+      @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up #{@mqtype.inspect} queue #{@name.inspect}")
+      @bunny = Bunny.new(@amqpsettings)
       return if terminating?
       @bunny.start
 
