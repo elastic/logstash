@@ -59,10 +59,10 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       :vhost => @vhost,
       :host => @host,
       :port => @port
+      :logging => @debug,
     }
     amqpsettings[:user] = @user if @user
     amqpsettings[:pass] = @password.value if @password
-    amqpsettings[:logging] = @debug
 
     begin
       @logger.debug(["Connecting to AMQP", amqpsettings, @exchange_type, @name])
@@ -72,7 +72,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       if terminating?
         return
       else
-        @logger.error("AMQP connection error, will reconnect: #{e}")
+        @logger.error("AMQP connection error (during connect), will reconnect: #{e}")
         @logger.debug(["Backtrace", e.backtrace])
         sleep(1)
         retry
@@ -96,7 +96,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
         @logger.warn("Tried to send message, but not connected to amqp yet.")
       end
     rescue *[Bunny::ServerDownError, Errno::ECONNRESET] => e
-      @logger.error("AMQP connection error, will reconnect: #{e}")
+      @logger.error("AMQP connection error (during publish), will reconnect: #{e}")
       connect
       retry
     end
