@@ -241,7 +241,6 @@ class LogStash::Agent
 
     configure
 
-    p :config_string => @config_string
     # Load the config file
     if @config_path
       # Support directory of config files.
@@ -287,7 +286,6 @@ class LogStash::Agent
       #   :parameters => hash of key-value parameters from the config.
       type = plugin[:type].config_name  # "input" or "filter" etc...
       klass = plugin[:plugin]
-      p :plugin => plugin
 
       # Create a new instance of a plugin, called like:
       # -> LogStash::Inputs::File.new( params )
