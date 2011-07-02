@@ -58,7 +58,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     amqpsettings = {
       :vhost => @vhost,
       :host => @host,
-      :port => @port
+      :port => @port,
       :logging => @debug,
     }
     amqpsettings[:user] = @user if @user
