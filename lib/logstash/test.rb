@@ -65,8 +65,7 @@ class LogStash::Test
   end
 
   def run_tests
-    require File.join(File.dirname(__FILE__), 
-                      *%w{.. .. test logstash_test_runner})
+    require "logstash_test_runner"
     return Test::Unit::AutoRunner.run
   end # def run_tests
 
