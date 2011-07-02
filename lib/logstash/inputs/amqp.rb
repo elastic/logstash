@@ -65,7 +65,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     @amqpsettings[:logging] = @debug
     @amqpurl = "amqp://"
     if @user or @password
-      @amqpurl += "#{@user}:#{@password}@"
+      @amqpurl += "#{@user}:xxxxxx@"
     end
     @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@name}"
   end # def register
