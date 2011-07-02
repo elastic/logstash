@@ -12,7 +12,7 @@ interface.
 logstash can be run on multiple servers (collect from many servers to a single
 indexer) if you want, but this example shows simply a standalone configuration.
 
-Steps:
+Steps detailed in this guide:
 
 * Download and run logstash
 
@@ -75,3 +75,10 @@ Now run it all:
 
 Point your browser at <http://yourserver:9292> and start searching!
 
+## Futher reading
+
+Want to know more about the configuration language? Check out the
+[configuration](configuration) documentation.
+
+You may have logs on many servers you want to centralize through logstash. To
+learn how to do that, [read this](getting-started-centralized)

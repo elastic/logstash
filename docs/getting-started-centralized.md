@@ -83,6 +83,8 @@ installation instructions and dependency information
 Note: On some systems, you may need to symlink libgrok.so to libgrok.so.1 (wherever
 you installed grok to).
 
+Note: On some 64bit linux systems, you'll need to install libgrok to /usr/lib64.
+
 Note: If you get segfaults from grok, it's likely becuase you are missing a
 correct dependency. Make sure you have the recent-enough versionf of libpcre
 and tokyocabinet (see above grok/INSTALL url)
@@ -104,7 +106,7 @@ Download the monolithic logstash release package. By 'monolithic' I mean the
 package contains all required dependencies to save you time chasing down
 requirements.
 
-    TODO(sissel): PUT DOWNLOAD LINK
+You can download the latest release on the [front page](/)
 
 Since we're doing a centralized configuration, you'll have two main logstash
 agent roles: a shipper and an indexer. You will ship logs from all servers to a
