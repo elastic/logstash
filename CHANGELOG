@@ -35,6 +35,7 @@
     'embedded_http_port' to configure which port the embedded elasticsearch
     server listens on. This is only valid for the embedded elasticsearch
     configuration. https://logstash.jira.com/browse/LOGSTASH-117
+  - bugfix: amqp input now reconnects properly when the amqp broker restarts.
   - bugfix: Fix bug in gelf output when a fields were not arrays but numbers.
     Issue: https://logstash.jira.com/browse/LOGSTASH-113
   - bugfix: Fix a bug in syslog udp input due to misfeatures in Ruby's URI 
