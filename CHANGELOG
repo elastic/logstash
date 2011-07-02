@@ -1,4 +1,4 @@
-1.0.13 (Jul 1, 2011)
+1.0.14 (Jul 1, 2011)
   - feature: new output plugin "loggly" which lets you ship logs to loggly.com
   - feature: new output plugin "zabbix" - similar to the nagios output, but
     works with the Zabbix monitoring system. Contributed by Johan at
