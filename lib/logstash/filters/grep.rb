@@ -16,6 +16,10 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
   # through.
   config :negate, :validate => :boolean, :default => false
 
+  # Drop messages in case of no match
+  # If this is set to false, no messages will be dropped/cancelled at all
+  config :drop, :validate => :boolean, :default => true
+
   # A hash of matches of field => value
   config :match, :validate => :hash, :default => {}
 
@@ -30,7 +34,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       # TODO(sissel): 
     @match.merge(@config).each do |field, pattern|
       # Skip known config names
-      next if ["add_tag", "add_field", "type", "negate", "match"].include?(field)
+      next if ["add_tag", "add_field", "type", "negate", "drop", "match"].include?(field)
 
       re = Regexp.new(pattern)
       @patterns[field] << re
@@ -87,13 +91,15 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       else
         @logger.debug("match block failed " \
                       "(#{match_count}/#{match_want} matches)")
-        event.cancel
+        event.cancel if @drop
       end # match["match"].each
     end # config.each
 
     if not matched || event.cancelled?
-      @logger.debug("grep: dropping event, no matches")
-      event.cancel
+      if @drop
+        @logger.debug("grep: dropping event, no matches")
+        event.cancel
+      end
       return
     end
 
