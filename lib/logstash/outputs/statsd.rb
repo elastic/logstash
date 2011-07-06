@@ -20,18 +20,20 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # Dots will be replaced with underscores
   config :sender, :validate => :string, :default => "%{@source_host}"
 
-  # The type of metric to send (count, increment, decrement, timing)
-  config :metric_type, :validate => :string, :default => "increment"
+  # An increment metric. metric names as array.
+  config :increment, :validate => :array, :default => []
 
-  # The name of the metric. Sent as is to statsd.
-  # Note that graphite uses dots as delimiters
-  config :metric_name, :validate => :string, :default => "%{@source_path}"
+  # A decrement metric. metric names as array. 
+  config :decrement, :validate => :array, :default => []
+
+  # A timing metric. metric_name => duration as hash
+  config :timing, :validate => :hash, :default => {}
+
+  # A count metric. metric_name => count as hash
+  config :count, :validate => :hash, :default => {}
 
   # The sample rate for the metric
   config :sample_rate, :validate => :number, :default => 1
-
-  # The 'value' for count and timing
-  config :metric_value, :validate => :number, :default => ""
 
   # The final metric sent to statsd will look like the following (assuming defaults)
   # logstash.sender.file_name
@@ -49,20 +51,26 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   def receive(event)
     @client.namespace = event.sprintf(@namespace)
     @sender = event.sprintf(@sender)
-    @metric_name = event.sprintf(@metric_name)
-    @sender = @sender.gsub('::','.').gsub(RESERVED_CHARACTERS_REGEX, '_')
-    @metric_name = @metric_name.gsub('::','.').gsub(RESERVED_CHARACTERS_REGEX, '_')
-    @stat = "#{@sender}.#{@metric_name}"
-    @logger.debug(["statsd sending event", { :host => @host, :event => event, :sender => @sender, :stat => @stat, :metric_type => @metric_type }])
-    case @metric_type
-    when "increment"
-      @client.increment(@stat)
-    when "decrement"
-      @client.decrement(@stat)
-    when "count"
-      @client.count(@stat, @metric_value)
-    when "timing"
-      @client.timing(@stat, @metric_value)
+    @increment.each do |metric|
+      metric = event.sprintf(metric)
+      @client.increment(build_stat(metric), @sample_rate)
+    end
+    @decrement.each do |metric|
+      @client.decrement(build_stat(event.sprintf(metric)), @sample_rate)
+    end
+    @count.each do |metric, val|
+      @client.count(build_stat(event.sprintf(metric)), val, @sample_rate)
+    end
+    @timing.each do |metric, val|
+      @client.timing(build_stat(event.sprintf(metric)), val, @sample_rate)
     end
   end # def receive
+
+  def build_stat(metric, sender=@sender)
+    sender = sender.gsub('::','.').gsub(RESERVED_CHARACTERS_REGEX, '_')
+    metric = metric.gsub('::','.').gsub(RESERVED_CHARACTERS_REGEX, '_')
+    @logger.debug("Formatted sender: #{sender}")
+    @logger.debug("Formatted metric: #{metric}")
+    "#{sender}.#{metric}"
+  end
 end # class LogStash::Outputs::Statsd
