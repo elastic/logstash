@@ -45,6 +45,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "mongo" # outputs/mongodb
   spec.add_dependency "gelf" # outputs/gelf
+  spec.add_dependency "statsd-ruby" # outputs/statsd
 
   # For the 'grok' filter
   spec.add_dependency("jls-grok", "~> 0.4.7")

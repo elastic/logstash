@@ -19,6 +19,7 @@ gem "sass" # License: MIT
 gem "mongo" # outputs/mongodb, License: Apache 2.0
 gem "redis" # outputs/redis, License: MIT-style
 gem "gelf" # outputs/gelf, # License: MIT-style
+gem "statsd-ruby", "~> 0.3.0" # outputs/statsd, # License: As-Is
 
 # For testing/dev
 group :development do
