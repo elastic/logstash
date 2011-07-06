@@ -52,8 +52,7 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
     @client.namespace = event.sprintf(@namespace)
     @sender = event.sprintf(@sender)
     @increment.each do |metric|
-      metric = event.sprintf(metric)
-      @client.increment(build_stat(metric), @sample_rate)
+      @client.increment(build_stat(event.sprintf(metric)), @sample_rate)
     end
     @decrement.each do |metric|
       @client.decrement(build_stat(event.sprintf(metric)), @sample_rate)
