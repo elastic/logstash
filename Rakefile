@@ -66,7 +66,7 @@ task :jar => [ "package:monolith:jar" ] do |t|
 end
 
 VERSIONS = {
-  :jruby => "1.6.0", # Any of CPL1.0/GPL2.0/LGPL2.1 ? Confusing, but OK.
+  :jruby => "1.6.3", # Any of CPL1.0/GPL2.0/LGPL2.1 ? Confusing, but OK.
   :elasticsearch => "0.16.0", # Apache 2.0 license
 
   # TODO(sissel): We may not need joda since JRuby ships with it.
@@ -212,7 +212,7 @@ namespace :package do
 
     # Unpack jruby
     relative_path = File.join(builddir.split(File::SEPARATOR).collect { |a| ".." })
-    Dir.glob("vendor/jar/jruby-complete-1.6.0.jar").each do |jar|
+    Dir.glob("vendor/jar/jruby-complete-1.6.3.jar").each do |jar|
       puts "=> Unpacking #{jar} into #{builddir}/"
       Dir.chdir(builddir) do 
         sh "jar xf #{relative_path}/#{jar}"
