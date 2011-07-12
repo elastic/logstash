@@ -34,7 +34,7 @@ class LogStashConfigDocGenerator
 
   def parse(string)
     buffer = ""
-    string.split("\n").each do |line|
+    string.split(/\r\n|\n/).each do |line|
       # Join long lines
       if line =~ COMMENT_RE
         # nothing
