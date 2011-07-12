@@ -5,8 +5,9 @@ require "logstash/outputs/base"
 # zabbix_sender executable.
 #
 # For this output to work, your event must have the following fields:
-#   "zabbix_host"    (the host configured in Zabbix)
-#   "zabbix_item"    (the item key on the host in Zabbix)
+#
+# * "zabbix_host"    (the host configured in Zabbix)
+# * "zabbix_item"    (the item key on the host in Zabbix)
 #
 # In Zabbix, create your host with the same name (no spaces in the name of 
 # the host supported) and create your item with the specified key as a
