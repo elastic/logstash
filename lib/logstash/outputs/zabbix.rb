@@ -1,7 +1,7 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
  
-# The zabbix output is used for sending item data to zavvux via the
+# The zabbix output is used for sending item data to zabbux via the
 # zabbix_sender executable.
 #
 # For this output to work, your event must have the following fields:
