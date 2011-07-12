@@ -18,35 +18,35 @@ require "logstash/outputs/base"
 # to send events to zabbix, so use grep to match and also to add the required
 # fields.
 #
-#     filter {
-#       grep {
-#         type => "linux-syslog"
-#         match => [ "@message", "(error|ERROR|CRITICAL)" ]
-#         add_tag => [ "zabbix-sender" ]
-#         add_fields => [
-#           "zabbix_host", "%{@source_host}",
-#           "zabbix_item", "item.key"
-#         ]
-#      }
-#    }
-#
-#    output{
-#      zabbix {
-#        # only process events with this tag
-#        tags => "zabbix-sender"
-#
-#        # specify the hostname or ip of your zabbix server
-#        # (defaults to localhost)
-#        zabbix_server => "localhost"
-#
-#        # specify the port to connect to (default 10051)
-#        zabbix_port => "10051"
-#
-#        # specify the path to zabbix_sender
-#        # (defaults to "/usr/local/bin/zabbix_sender")
-#        zabbix_sender => "/usr/local/bin/zabbix_sender"
-#      }
-#    }
+#      filter {
+#        grep {
+#          type => "linux-syslog"
+#          match => [ "@message", "(error|ERROR|CRITICAL)" ]
+#          add_tag => [ "zabbix-sender" ]
+#          add_fields => [
+#            "zabbix_host", "%{@source_host}",
+#            "zabbix_item", "item.key"
+#          ]
+#       }
+#     }
+#      
+#     output {
+#       zabbix {
+#         # only process events with this tag
+#         tags => "zabbix-sender"
+#  
+#         # specify the hostname or ip of your zabbix server
+#         # (defaults to localhost)
+#         zabbix_server => "localhost"
+#  
+#         # specify the port to connect to (default 10051)
+#         zabbix_port => "10051"
+#  
+#         # specify the path to zabbix_sender
+#         # (defaults to "/usr/local/bin/zabbix_sender")
+#         zabbix_sender => "/usr/local/bin/zabbix_sender"
+#       }
+#     }
 class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
  
   config_name "zabbix"
