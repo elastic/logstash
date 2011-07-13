@@ -87,13 +87,11 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         end # Thread.start
       end # loop (outer)
     else
-      Thread.start do
-        loop do
-          socket = TCPSocket.new(@host, @port)
-          socket.instance_eval { class << self; include SocketPeer end }
-          @logger.debug("Opened connection to #{socket.peer}")
-          handle_socket(socket, output_queue, "tcp://#{socket.peer}/server")
-        end
+      loop do
+        socket = TCPSocket.new(@host, @port)
+        socket.instance_eval { class << self; include SocketPeer end }
+        @logger.debug("Opened connection to #{socket.peer}")
+        handle_socket(socket, output_queue, "tcp://#{socket.peer}/server")
       end
     end
   end # def run
