@@ -29,6 +29,7 @@ GEM
     sinatra (1.2.6)
       rack (~> 1.1)
       tilt (>= 1.2.2, < 2.0)
+    statsd-ruby (0.3.0)
     stomp (1.1.8)
     stompserver (0.9.9)
       daemons (>= 1.0.2)
@@ -56,6 +57,7 @@ DEPENDENCIES
   redis
   sass
   sinatra
+  statsd-ruby (~> 0.3.0)
   stomp
   stompserver
   uuidtools
