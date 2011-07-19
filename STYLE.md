@@ -25,6 +25,7 @@ Do this:
 * sort your requires
 * long lines should wrap at 80 characters. If you wrap at an operator (or, +,
   etc) start the next line with that operator.
+* parentheses on function definitions/calls
 * explicit is better than implicit
 
 The point is consistency and documentation. If you see inconsistencies, let me
