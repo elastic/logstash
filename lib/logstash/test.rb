@@ -43,6 +43,7 @@ class LogStash::Test
       check_lib("redis", "redis", :optional,
                 "required for stomp input and output"),
       check_lib("gelf", "gelf", :optional, "required for gelf (graylog2) output"),
+      check_lib("statsd", "statsd-ruby", :optional, "required for statsd output"),
 
       # logstash web
       check_lib("mizuno", "mizuno", :required, "needed for logstash web"),
