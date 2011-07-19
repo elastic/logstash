@@ -6,6 +6,9 @@
     so if you are still using elasticsearch server 0.16.0 - you need to upgrade
     before the elasticsearch output will work. If you are using the 'embedded'
     elasticsearch feature of logstash, you do not need to make any changes.
+  - feature: new output plugin "statsd" which lets you increment or record
+    timings from your logs to a statsd agent
+  - feature: new redis 'pattern_channel' input support for PSUB
 
 1.0.14 (Jul 1, 2011)
   - feature: new output plugin "loggly" which lets you ship logs to loggly.com
