@@ -95,7 +95,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   end # def connect
 
   private
-  def queue_event msg, output_queue
+  def queue_event(msg, output_queue)
     begin
       event = to_event msg, identity
       output_queue << event if event
@@ -106,13 +106,13 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   end
   
   private
-  def list_listener redis, output_queue
+  def list_listener(redis, output_queue)
     response = redis.blpop @key, 0
     queue_event response[1], output_queue
   end
 
   private
-  def channel_listener redis, output_queue
+  def channel_listener(redis, output_queue)
     redis.subscribe @key do |on|
       on.subscribe do |ch, count|
         @logger.info "Subscribed to #{ch} (#{count})"
@@ -129,7 +129,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   end
 
   private
-  def pattern_channel_listener redis, output_queue
+  def pattern_channel_listener(redis, output_queue)
     redis.psubscribe @key do |on|
       on.psubscribe do |ch, count|
         @logger.info "Subscribed to #{ch} (#{count})"
@@ -146,9 +146,9 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   end
 
   # Since both listeners have the same basic loop, we've abstracted the outer
-  # loop.  
-  private 
-  def listener_loop listener, output_queue
+  # loop.
+  private
+  def listener_loop(listener, output_queue)
     loop do
       begin
         @redis ||= connect
