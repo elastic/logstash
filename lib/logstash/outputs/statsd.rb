@@ -6,9 +6,8 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   RESERVED_CHARACTERS_REGEX = /[\.\:\|\@]/
   config_name "statsd"
 
-  
   # The address of the Statsd server.
-  config :host, :validate => :string
+  config :host, :validate => :string, :default => "localhost"
 
   # The port to connect to on your statsd server.
   config :port, :validate => :number, :default => 8125
@@ -23,7 +22,7 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # An increment metric. metric names as array.
   config :increment, :validate => :array, :default => []
 
-  # A decrement metric. metric names as array. 
+  # A decrement metric. metric names as array.
   config :decrement, :validate => :array, :default => []
 
   # A timing metric. metric_name => duration as hash
