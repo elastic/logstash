@@ -147,11 +147,16 @@ class LogStash::Event
       # Take the inside of the %{ ... }
       key = tok[2 ... -1]
 
-      if key[0,1] == "+"
-        # Parse event.timestamp with  
+      if key == "+%s"
+        # Got %{+%s}, support for unix epoch time
+        datetime = @@date_parser.parseDateTime(self.timestamp)
+        (datetime.getMillis / 1000).to_i
+      elsif key[0,1] == "+"
+        # We got a %{+TIMEFORMAT} so use joda to format it.
         datetime = @@date_parser.parseDateTime(self.timestamp)
         format = key[1 .. -1]
         datetime.toString(format) # return requested time format
+        p :datetime => datetime.class
       else 
         # Use an event field.
         value = self[key]
