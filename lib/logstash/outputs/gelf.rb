@@ -32,11 +32,14 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # "debug", "info", "warn", "error", "fatal", "unknown" (case insensitive).
   # Single-character versions of these are also valid, "d", "i", "w", "e", "f",
   # "u"
-  config :level, :validate => :string, :default => "INFO"
+  config :level, :validate => :array, :default => [ "%{severity}", "INFO" ]
 
   # The GELF facility. Dynamic values like %{foo} are permitted here; this
   # is useful if you need to use a value from the event as the facility name.
-  config :facility, :validate => :string, :default => "logstash-gelf"
+  config :facility, :validate => :array, :default => [ "%{facility}" , "logstash-gelf" ]
+
+  # Ship metadata within event object?
+  config :ship_metadata, :validate => :boolean, :default => true
 
   public
   def register
@@ -61,6 +64,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
       "fatal" => 3, "f" => 3,
       "unknown" => 1, "u" => 1,
     }
+
   end # def register
 
   public
@@ -80,26 +84,55 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     m["host"] = event.sprintf(@sender)
     m["file"] = event["@source_path"]
 
-    event.fields.each do |name, value|
-      next if value == nil
-      name = "_id" if name == "id"  # "_id" is reserved, so use "__id"
-      if !value.nil?
-        if value.is_a?(Array)
-          # collapse single-element arrays, otherwise leave as array
-          m["_#{name}"] = (value.length == 1) ? value.first : value
-        else
-          # Non array values should be presented as-is
-          # https://logstash.jira.com/browse/LOGSTASH-113
-          m["_#{name}"] = value
+    if @ship_metadata
+        event.fields.each do |name, value|
+          next if value == nil
+          name = "_id" if name == "id"  # "_id" is reserved, so use "__id"
+          if !value.nil?
+            if value.is_a?(Array)
+              # collapse single-element arrays, otherwise leave as array
+              m["_#{name}"] = (value.length == 1) ? value.first : value
+            else
+              # Non array values should be presented as-is
+              # https://logstash.jira.com/browse/LOGSTASH-113
+              m["_#{name}"] = value
+            end
+          end
         end
-      end
     end
 
     # Allow 'INFO' 'I' or number. for 'level'
-    level = event.sprintf(@level.to_s)
-    m["level"] = (@level_map[level.downcase] || level).to_i
-    m["facility"] = event.sprintf(@facility)
     m["timestamp"] = event.unix_timestamp.to_i
+
+    # Probe facility array levels
+    if @facility.is_a?(Array)
+        @facility.each do |value|
+            parsed_value = event.sprintf(value)
+            next if parsed_value == nil
+            if !parsed_value.nil?
+                m["facility"] = parsed_value
+                break
+            end
+        end
+    else
+        m["facility"] = event.sprintf(@facility)
+    end
+    
+    # Probe severity array levels
+    if @level.is_a?(Array)
+        @level.each do |value|
+            parsed_value = event.sprintf(value).to_i
+            next if parsed_value == nil
+            next if !parsed_value.is_a?(Integer)
+            if !parsed_value.nil?
+                m["level"] = parsed_value
+                break
+            end
+        end
+    else
+        level = event.sprintf(@level.to_s)
+        m["level"] = (@level_map[level.downcase] || level).to_i
+    end
 
     @logger.debug(["Sending GELF event", m])
     @gelf.notify!(m)
