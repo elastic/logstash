@@ -135,20 +135,21 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     end
     
     # Probe severity array levels
+    level = nil
     if @level.is_a?(Array)
         @level.each do |value|
-            parsed_value = event.sprintf(value).to_i
+            parsed_value = event.sprintf(value)
             next if parsed_value == nil
-            next if !parsed_value.is_a?(Integer)
             if !parsed_value.nil?
-                m["level"] = parsed_value
+                level = parsed_value
                 break
             end
         end
     else
         level = event.sprintf(@level.to_s)
-        m["level"] = (@level_map[level.downcase] || level).to_i
     end
+
+    m["level"] = (@level_map[level.downcase] || level).to_i
 
     @logger.debug(["Sending GELF event", m])
     @gelf.notify!(m)
