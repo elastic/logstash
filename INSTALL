@@ -24,6 +24,9 @@ For the web interface:
 - haml
 - sass
 
+For ganglia reporting:
+- gmetric
+
 # For 'jls-grok' you will need grok installed.
   Install the following packages (centos: sudo yum install pkgname)
   pcre-devel, libevent-devel, gperf
