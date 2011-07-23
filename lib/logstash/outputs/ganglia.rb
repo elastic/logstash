@@ -24,28 +24,28 @@ class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
   # Gmetric type
   config :type, :validate => :string, :default => "uint8"
 
-  # Gmetric units for metric
+  # Gmetric units for metric, such as "kb/sec" or "ms" or whatever unit
+  # this metric uses.
   config :units, :validate => :string, :default => ""
 
-  # Timing values, can be left alone
+  # Maximum time in seconds between gmetric calls for this metric.
   config :tmax, :validate => :number, :default => 60
+
+  # Lifetime in seconds of this metric
   config :dmax, :validate => :number, :default => 300
 
   def register
     # No register action required, stateless
   end # def register
 
-  def connect
-    # No "connect" action required, stateless
-  end # def connect
-
   public
   def receive(event)
+    # gmetric only takes integer values, so convert it to int.
     Ganglia::GMetric.send(@host, @port, {
-      :name => @metric,
+      :name => event.sprintf(@metric),
       :units => @units,
       :type => @type,
-      :value => @value,
+      :value => event.sprintf(@value).to_i,
       :tmax => @tmax,
       :dmax => @dmax
     })
