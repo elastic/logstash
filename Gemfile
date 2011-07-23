@@ -20,6 +20,7 @@ gem "mongo" # outputs/mongodb, License: Apache 2.0
 gem "redis" # outputs/redis, License: MIT-style
 gem "gelf" # outputs/gelf, # License: MIT-style
 gem "statsd-ruby", "~> 0.3.0" # outputs/statsd, # License: As-Is
+gem "gmetric", "~> 0.1.3" # outputs/ganglia, # License: MIT
 
 # For testing/dev
 group :development do

@@ -12,6 +12,8 @@
   - feature: new redis 'pattern_channel' input support for PSUBSCRIBE
   - feature: new output plugin "graphite" for taking metrics from events and
     shipping them off to your graphite/carbon server.
+  - feature: new output plugin "ganglia" for shipping metrics to ganglia
+    gmond server.
 
 1.0.14 (Jul 1, 2011)
   - feature: new output plugin "loggly" which lets you ship logs to loggly.com
