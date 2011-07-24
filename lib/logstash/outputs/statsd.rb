@@ -1,6 +1,8 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
+# TODO(sissel): Document what statsd is and where to learn about it
+# Also document an example.
 class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # Regex stolen from statsd code
   RESERVED_CHARACTERS_REGEX = /[\.\:\|\@]/
@@ -70,18 +72,20 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
       @client.decrement(build_stat(event.sprintf(metric)), @sample_rate)
     end
     @count.each do |metric, val|
-      @client.count(build_stat(event.sprintf(metric)), val, @sample_rate)
+      @client.count(build_stat(event.sprintf(metric)), 
+                    event.sprintf(val).to_f, @sample_rate)
     end
     @timing.each do |metric, val|
-      @client.timing(build_stat(event.sprintf(metric)), val, @sample_rate)
+      @client.timing(build_stat(event.sprintf(metric)),
+                     event.sprintf(val).to_f, @sample_rate)
     end
   end # def receive
 
   def build_stat(metric, sender=@sender)
-    sender = sender.gsub('::','.').gsub(RESERVED_CHARACTERS_REGEX, '_')
+    sender = sender.gsub('::','.').gsub(RESERVED_CHARACTERS_REGEX, '_').gsub(".", "_")
     metric = metric.gsub('::','.').gsub(RESERVED_CHARACTERS_REGEX, '_')
     @logger.debug("Formatted sender: #{sender}")
     @logger.debug("Formatted metric: #{metric}")
-    "#{sender}.#{metric}"
+    return "#{sender}.#{metric}"
   end
 end # class LogStash::Outputs::Statsd
