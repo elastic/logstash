@@ -1,45 +1,109 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
+require "thread"
 
-# This output writes each event in json format to 
-# the specified host:port over tcp.
+
+# Write events over a TCP socket.
 #
 # Each event json is separated by a newline.
+#
+# Can either accept connections from clients or connect to a server,
+# depending on `mode`.
 class LogStash::Outputs::Tcp < LogStash::Outputs::Base
 
   config_name "tcp"
 
-  # The host to connect to
+  # When mode is `server`, the address to listen on.
+  # When mode is `client`, the address to connect to.
   config :host, :validate => :string, :required => true
 
-  # The port to connect to
+  # When mode is `server`, the port to listen on.
+  # When mode is `client`, the port to connect to.
   config :port, :validate => :number, :required => true
 
-  public
-  def initialize(params)
-    super
-  end # def initialize
+  # Mode to operate in. `server` listens for client connections,
+  # `client` connects to a server.
+  config :mode, :validate => ["server", "client"], :default => "client"
+
+  class Client
+    public
+    def initialize(socket, logger)
+      @socket = socket
+      @logger = logger
+      @queue  = Queue.new
+    end
+
+    public
+    def run
+      loop do
+        begin
+          @socket.write(@queue.pop)
+        rescue => e
+          @logger.warn(["tcp output exception", @socket, $!])
+          @logger.debug(["backtrace", e.backtrace])
+          break
+        end
+      end
+    end # def run
+
+    public
+    def write(msg)
+      @queue.push(msg)
+    end # def write
+  end # class Client
 
   public
   def register
-    @socket = nil
+    if server?
+      @logger.info("Starting tcp output listener on #{@host}:#{@port}")
+      @server_socket = TCPServer.new(@host, @port)
+      @client_threads = []
+
+      @accept_thread = Thread.new(@server_socket) do |server_socket|
+        loop do
+          client_thread = Thread.start(server_socket.accept) do |client_socket|
+            client = Client.new(client_socket, @logger)
+            Thread.current[:client] = client
+            client.run
+          end
+          @client_threads << client_thread
+        end
+      end
+    else
+      @client_socket = nil
+    end
   end # def register
 
   private
   def connect
-    @socket = TCPSocket.new(@host, @port)
-  end
+    @client_socket = TCPSocket.new(@host, @port)
+  end # def connect
+
+  private
+  def server?
+    @mode == "server"
+  end # def server?
 
   public
   def receive(event)
-    begin
-      connect unless @socket
-      @socket.write(event.to_hash.to_json)
-      @socket.write("\n")
-    rescue => e
-      @logger.warn(["tcp output exception", @host, @port, $!])
-      @logger.debug(["backtrace", e.backtrace])
-      @socket = nil
+    wire_event = event.to_hash.to_json + "\n"
+
+    if server?
+      @client_threads.each do |client_thread|
+        client_thread[:client].write(wire_event)
+      end
+
+      @client_threads.reject! {|t| !t.alive? }
+    else
+      begin
+        connect unless @client_socket
+        @client_socket.write(event.to_hash.to_json)
+        @client_socket.write("\n")
+      rescue => e
+        @logger.warn(["tcp output exception", @host, @port, $!])
+        @logger.debug(["backtrace", e.backtrace])
+        @client_socket = nil
+      end
     end
   end # def receive
 end # class LogStash::Outputs::Tcp
