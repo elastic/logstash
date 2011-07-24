@@ -1,4 +1,5 @@
 1.0.?? (???????????)
+  - TODO(sissel): Document tcp input/output changes from pull/33
   - IMPORTANT: Upgraded to ElasticSearch 0.17.0 - this brings a number of bug
     fixes including an OOM error caused during high index rates in some
     conditions.  NOTE: You *must* use same main version of elasticsearch as
