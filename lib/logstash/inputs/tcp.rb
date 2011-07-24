@@ -49,7 +49,6 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
                 buf = s.readline
               end
             end
-            buf.chomp!
             e = self.to_event(buf, "tcp://#{@host}:#{@port}/client/#{peer}")
             if e
               output_queue << e
