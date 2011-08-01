@@ -25,15 +25,15 @@ require "logstash/outputs/base"
 #           "nagios_host", "%{@source_host}",
 #           "nagios_service", "the name of your nagios service check"
 #         ]
-#      }
-#    }
+#       }
+#     }
 #    
-#    output{
-#      nagios { 
-#        # only process events with this tag
-#        tags => "nagios-update"
-#      }
-#    }
+#     output{
+#       nagios { 
+#         # only process events with this tag
+#         tags => "nagios-update"
+#       }
+#     }
 class LogStash::Outputs::Nagios < LogStash::Outputs::Base
   NAGIOS_CRITICAL = 2
   NAGIOS_WARN = 1
