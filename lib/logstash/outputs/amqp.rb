@@ -1,6 +1,6 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
-require "socket"
+
 # Push events to an AMQP exchange.
 #
 # AMQP is a messaging system. It requires you to run an AMQP server or 'broker'
