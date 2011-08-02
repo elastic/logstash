@@ -47,6 +47,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "gelf" # outputs/gelf
   spec.add_dependency "statsd-ruby" # outputs/statsd
   spec.add_dependency "gmetric" # outputs/ganglia
+  spec.add_dependency "xmpp4r" # outputs/xmpp
 
   # For the 'grok' filter
   spec.add_dependency("jls-grok", "~> 0.4.7")
