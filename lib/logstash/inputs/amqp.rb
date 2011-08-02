@@ -41,6 +41,12 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   # Enable or disable debugging
   config :debug, :validate => :boolean, :default => false
 
+  # Enable or disable SSL
+  config :ssl, :validate => :boolean, :default => false
+
+  # Validate SSL certificate
+  config :verify_ssl, :validate => :boolean, :default => false
+
   public
   def initialize(params)
     super
@@ -66,6 +72,8 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     @amqpsettings[:user] = @user if @user
     @amqpsettings[:pass] = @password.value if @password
     @amqpsettings[:logging] = @debug
+    @amqpsettings[:ssl] = @ssl if @ssl
+    @amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
     @amqpurl = "amqp://"
     if @user or @password
       @amqpurl += "#{@user}:xxxxxx@"
