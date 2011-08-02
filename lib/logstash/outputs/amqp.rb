@@ -42,6 +42,12 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   # Enable or disable debugging
   config :debug, :validate => :boolean, :default => false
 
+  # Enable or disable SSL
+  config :ssl, :validate => :boolean, :default => false
+
+  # Validate SSL certificate
+  config :verify_ssl, :validate => :boolean, :default => false
+
   public
   def register
     require "bunny" # rubygem 'bunny'
@@ -63,6 +69,8 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     }
     amqpsettings[:user] = @user if @user
     amqpsettings[:pass] = @password.value if @password
+    amqpsettings[:ssl] = @ssl if @ssl
+    amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
 
     begin
       @logger.debug(["Connecting to AMQP", amqpsettings, @exchange_type, @name])
