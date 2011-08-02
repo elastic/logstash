@@ -7,11 +7,7 @@ require "logstash/namespace"
 # Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and 
 # [QPid](http://qpid.apache.org/)
 class LogStash::Outputs::Amqp < LogStash::Outputs::Base
-  MQTYPES = [ "fanout", "direct", "topic" ]
-  KEY_VARS = {
-    :hostname => Socket.gethostname,
-    :type =>  ''
-  }
+  MQTYPES = [ "fanout", "direct", "topic" ]  
 
   config_name "amqp"
 
