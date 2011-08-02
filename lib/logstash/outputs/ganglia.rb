@@ -41,11 +41,21 @@ class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
   public
   def receive(event)
     # gmetric only takes integer values, so convert it to int.
+    case @type
+      when "string"
+        localvalue = event.sprintf(@value)
+      when "float"
+        localvalue = event.sprintf(@value).to_f
+      when "double"
+        localvalue = event.sprintf(@value).to_f
+      else # int8|uint8|int16|uint16|int32|uint32
+        localvalue = event.sprintf(@value).to_i
+    end
     Ganglia::GMetric.send(@host, @port, {
       :name => event.sprintf(@metric),
       :units => @units,
       :type => @type,
-      :value => event.sprintf(@value).to_i,
+      :value => localvalue,
       :tmax => @tmax,
       :dmax => @dmax
     })
