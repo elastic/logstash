@@ -28,6 +28,9 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
   # The name of the exchange
   config :name, :validate => :string, :required => true
+  
+  # The routing key to bind to
+  config :key, :validate => :string
 
   # The vhost to use
   config :vhost, :validate => :string, :default => "/"
@@ -87,8 +90,8 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
       @queue = @bunny.queue(@name, :durable => @durable)
       exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
-      @queue.bind(exchange)
-
+      @queue.bind(exchange, :key => @key)
+      
       @queue.subscribe do |data|
         e = to_event(data[:payload], @amqpurl)
         if e
