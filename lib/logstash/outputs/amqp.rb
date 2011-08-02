@@ -28,6 +28,9 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   # The name of the exchange
   config :name, :validate => :string, :required => true
+  
+  # Key to route to
+  config :key, :validate => :string
 
   # The vhost to use
   config :vhost, :validate => :string, :default => "/"
@@ -91,11 +94,12 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   public
   def receive(event)
-    @logger.debug(["Sending event", { :destination => to_s, :event => event }])
+    key = event.sprintf(@key)
+    @logger.debug(["Sending event", { :destination => to_s, :event => event, :key => key }])
     begin
       if @target
         begin
-          @target.publish(event.to_json, :persistent => @persistent)
+          @target.publish(event.to_json, :persistent => @persistent, :key => key)
         rescue JSON::GeneratorError
           @logger.warn(["Trouble converting event to JSON", $!, event.to_hash])
           return
