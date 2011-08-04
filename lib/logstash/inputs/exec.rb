@@ -21,14 +21,14 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
   
   public
   def register
-    #require "eventmffachine"
+    @logger.info(["Registering Exec Input", {:type => @type, :exec => @exec, :period => @period}])
   end # def register
 
   public
   def run(queue)
     while(1)
       out = IO.popen(@exec)
-      e = to_event(out.readlines, @exec)
+      e = to_event(out.read, @exec)
       queue << e
       sleep @period
     end
