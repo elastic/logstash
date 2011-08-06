@@ -8,8 +8,6 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
 
   config_name "exec"
   
-  config :type, :validate => :string, :required => true
-
   # Set this to true to enable debugging on an input.
   config :debug, :validate => :boolean, :default => false
   
