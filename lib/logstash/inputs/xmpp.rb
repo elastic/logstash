@@ -24,12 +24,12 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
       if @room
         require 'xmpp4r/muc/helper/simplemucclient'
         @muc = Jabber::MUC::SimpleMUCClient.new(@cl)
+        @muc.join("#{@room}")
       end
     end # def register
 
     def run(queue)
       if @room
-        @muc.join("#{@room}")
         @muc.on_message { |time,from,body|
           e = to_event(body, from)
           if e
