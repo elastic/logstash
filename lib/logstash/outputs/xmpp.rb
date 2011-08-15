@@ -1,37 +1,49 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
-require "xmpp4r"
 
 # This output allows you to pull metrics from your logs and ship them to
 # XMPP/Jabber.
-class LogStash::Outputs::Xmpp< LogStash::Outputs::Base
+class LogStash::Outputs::Xmpp < LogStash::Outputs::Base
   config_name "xmpp"
 
   # Connection information for server
   config :resource, :validate => :string, :required => true
-  config :password, :validate => :string, :required => true
+
+  # The xmpp password for the JID.
+  config :password, :validate => :password, :required => :true
+
+  # The targets to send messages to (users, chat rooms, etc)
   config :targets, :validate => :array, :required => true
+
+  # The xmpp server to connect to. This is optional. If you omit this setting,
+  # the host on the JID is used. (foo.com for user@foo.com)
+  config :host, :validate => :string
 
   # The message to send. This supports dynamic strings like %{@source_host}
   config :message, :validate => :string, :required => true
 
+  public
   def register
+    require "xmpp4r"
     @client = connect
   end # def register
 
+  public
   def connect
-    client = Client.new(JID::new(@resource))
-    client.connect
-    client.auth(@password)
+    Jabber::debug = true
+    client = Jabber::Client.new(Jabber::JID.new(@resource))
+    client.connect(@host)
+    client.auth(@password.value)
+    return client
   end # def connect
 
   public
   def receive(event)
-    t = event.sprintf(@message)
+    string_message = event.sprintf(@message)
     @targets.each do |target|
-      msg = Message::new("#{target}", t)
-      msg.type=:chat
+      msg = Jabber::Message.new(target, string_message)
+      msg.type = :chat
       @client.send(msg)
-    end
+    end # @targets.each
   end # def receive
 end # class LogStash::Outputs::Xmpp
