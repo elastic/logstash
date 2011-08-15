@@ -81,10 +81,7 @@ class LogStash::Web::Server < Sinatra::Base
       when "html"
         content_type :html
         body haml :"search/ajax", :layout => !request.xhr?
-      when "text"
-        content_type :txt
-        body erb :"search/results.txt", :layout => false
-      when "txt"
+      when "text", "txt"
         content_type :txt
         body erb :"search/results.txt", :layout => false
       when "json"
@@ -99,13 +96,48 @@ class LogStash::Web::Server < Sinatra::Base
     end # @backend.search
   end # def api_search
 
+  def report_error(exception)
+    format = (params[:format] or "json")
+    status 500
+
+    case format
+    when "html"
+      content_type :html
+      body haml :"search/error", :layout => !request.xhr?
+    when "text", "txt"
+      content_type :txt
+      body erb :"search/error.txt", :layout => false
+    when "json"
+      content_type :json
+      pretty = params.has_key?("pretty")
+      data = { 
+        "message" => exception.inspect,
+        "error" => exception.class,
+        "backtrace" => exception.backtrace
+      }
+      if pretty
+        body JSON.pretty_generate(data)
+      else
+        body data.to_json
+      end
+    end # case format
+  end # def error
+
   # TODO(sissel): Update these to all be /api/v1
   post '/api/search' do
-    api_search
+    begin
+      api_search
+    rescue => e
+      report_error(e)
+    end
   end # post /api/search
 
   get '/api/search' do
-    api_search
+    begin
+      api_search
+    rescue => e
+      report_error(e)
+    end
   end # get /api/search
 
   get '/api/histogram' do
