@@ -361,7 +361,6 @@ class LogStash::Agent
       end # N.times
     end # if @filters.length > 0
 
-
     # Create output threads
     @outputs.each do |output|
       queue = SizedQueue.new(10)
@@ -391,35 +390,6 @@ class LogStash::Agent
     # TODO(petef): Stop inputs, fluch outputs, wait for finish,
     # then stop the event loop
   end # def stop
-
-  # TODO(sissel): Is this method even used anymore?
-  protected
-  def filter(event)
-    @filters.each do |f|
-      f.filter(event)
-      break if event.cancelled?
-    end
-  end # def filter
-
-  # TODO(sissel): Is this method even used anymore?
-  protected
-  def output(event)
-    # TODO(sissel): write to a multiqueue and do 1 thread per output?
-    @outputs.each do |o|
-      o.handle(event)
-    end # each output
-  end # def output
-
-  # TODO(sissel): Is this method even used anymore?
-  protected
-  # Process a message
-  def receive(event)
-    filter(event)
-
-    if !event.cancelled?
-      output(event)
-    end
-  end # def input
 
   # Shutdown the agent.
   protected
@@ -523,7 +493,7 @@ class LogStash::Agent
                        e.backtrace])
         @logger.error("Restarting input #{input.to_s} due to exception")
         sleep(1)
-        retry # This jumps to the top of this proc (to the start of 'do'
+        retry # This jumps to the top of this proc (to the start of 'do')
       end
     end
 
