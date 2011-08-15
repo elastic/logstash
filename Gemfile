@@ -21,7 +21,7 @@ gem "redis" # outputs/redis, License: MIT-style
 gem "gelf" # outputs/gelf, # License: MIT-style
 gem "statsd-ruby", "~> 0.3.0" # outputs/statsd, # License: As-Is
 gem "gmetric", "~> 0.1.3" # outputs/ganglia, # License: MIT
-gem "xmpp4r", "~> 0.1.3" # outputs/xmpp, # License: As-Is
+gem "xmpp4r", "~> 0.5" # outputs/xmpp, # License: As-Is
 
 # For testing/dev
 group :development do
