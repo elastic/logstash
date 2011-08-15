@@ -120,6 +120,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
           source = "syslog://#{ip}/"
         end
 
+        begin
         client.each do |line|
           e = to_event(line.chomp, source)
           if e
@@ -127,6 +128,8 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
             output_queue << e
           end # e
         end # client.each
+        rescue Errno::ECONNRESET
+        end
       end # Thread.new
     end # loop do
   ensure
