@@ -67,9 +67,9 @@ end
 
 VERSIONS = {
   :jruby => "1.6.3", # Any of CPL1.0/GPL2.0/LGPL2.1 ? Confusing, but OK.
-  :elasticsearch => "0.17.0", # Apache 2.0 license
+  :elasticsearch => "0.17.6", # Apache 2.0 license
 
-  # TODO(sissel): We may not need joda since JRuby ships with it.
+  # We don't need to include joda ourselves, JRuby ships with it :)
   #:joda => "1.6.2",  # Apache 2.0 license
 }
 
