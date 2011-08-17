@@ -92,6 +92,8 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         # Start a new thread for each connection.
         Thread.start(@server_socket.accept) do |s|
           # TODO(sissel): put this block in its own method.
+
+          # monkeypatch a 'peer' method onto the socket.
           s.instance_eval { class << self; include SocketPeer end }
           @logger.debug("Accepted connection from #{s.peer} on #{@host}:#{@port}")
           handle_socket(s, output_queue, "tcp://#{@host}:#{@port}/client/#{s.peer}")
