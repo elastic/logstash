@@ -54,7 +54,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   end # def register
 
   public
-  def filter(event)
+  def filter(event, input_queue)
     raise "#{self.class}#filter must be overidden"
   end # def filter
 

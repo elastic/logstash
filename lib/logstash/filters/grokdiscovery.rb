@@ -65,5 +65,7 @@ class LogStash::Filters::Grokdiscovery < LogStash::Filters::Base
       @logger.debug(event.to_hash)
     end
     @logger.debug(["Event now: ", event.to_hash])
+
+    filter_matched(event) if !event.cancelled?
   end # def filter
 end # class LogStash::Filters::Grokdiscovery

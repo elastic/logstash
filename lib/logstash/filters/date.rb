@@ -176,8 +176,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
       end # fieldvalue.each 
     end # @parsers.each
 
-    if !event.cancelled?
-      filter_matched(event)
-    end
+    filter_matched(event) if !event.cancelled?
+    return event
   end # def filter
 end # class LogStash::Filters::Date
