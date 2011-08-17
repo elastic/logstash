@@ -6,3 +6,7 @@ $: << File.dirname($0) + "/../test"
 require "rubygems"
 require "logstash/loadlibs"
 require "logstash/web/server"
+require "logstash/runner"
+
+ARGV.unshift("web")
+LogStash::Runner.new.main(ARGV)
