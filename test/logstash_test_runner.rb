@@ -20,12 +20,7 @@ use "logstash/filters/test_grep"
 use "logstash/filters/test_multiline"
 use "logstash/filters/test_grok"
 
-if __FILE__ =~ /^file:.*\.jar/
-  puts "Skipping elasticsearch tests since we're running from a jar."
-  skip "logstash/outputs/test_elasticsearch"
-else
-  use "logstash/outputs/test_elasticsearch"
-end
+use "logstash/outputs/test_elasticsearch"
 
 skip "logstash/inputs/test_file"
 skip "logstash/inputs/test_syslog"
