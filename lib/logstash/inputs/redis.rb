@@ -10,9 +10,8 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   config_name "redis"
 
   # Name is used for logging in case there are multiple instances.
-  # TODO: remove
-  config :name, :validate => :string, :default => "default", 
-    :deprecated => true
+  # This feature has no real function and will be removed in future versions.
+  config :name, :validate => :string, :default => "default", :deprecated => true
   
   # The hostname of your redis server.
   config :host, :validate => :string, :default => "127.0.0.1"
@@ -30,7 +29,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   config :password, :validate => :password
 
   # The name of the redis queue (we'll use BLPOP against this).
-  # TODO: remove
+  # TODO: remove soon.
   config :queue, :validate => :string, :deprecated => true
 
   # The name of a redis list or channel.
@@ -78,6 +77,8 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   end # def register
 
   # A string used to identify a redis instance in log messages
+  # TODO(sissel): Use instance variables for this once the @name config
+  # option is removed.
   private
   def identity
     @name || "#{@redis_url} #{@data_type}:#{@key}"
