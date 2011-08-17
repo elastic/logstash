@@ -100,8 +100,6 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
 
     @logger.debug(["Event after grep filter", event.to_hash])
 
-    if !event.cancelled?
-      filter_matched(event)
-    end
+    filter_matched(event) if !event.cancelled?
   end # def filter
 end # class LogStash::Filters::Grep

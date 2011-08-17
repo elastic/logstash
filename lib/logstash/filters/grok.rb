@@ -234,6 +234,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     end
 
     @logger.debug(["Event now: ", event.to_hash])
+    filter_matched(event) if !event.cancelled?
   end # def filter
 
   private

@@ -158,6 +158,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     if !event.cancelled?
       filter_matched(event)
     end
+    filter_matched(event) if !event.cancelled?
   end # def filter
 
   # flush any pending messages
