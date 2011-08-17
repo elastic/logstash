@@ -15,10 +15,8 @@
     shipping them off to your graphite/carbon server.
   - feature: new output plugin "ganglia" for shipping metrics to ganglia
     gmond server.
-  - feature: new output plugin "xmpp" for shipping events over a jabber/xmpp
-    service.
-  - feature: new input plugin "xmpp" for receiving events over a jabber/xmpp
-    service.
+  - feature: new output plugin "xmpp" for shipping events over jabber/xmpp
+  - feature: new input plugin "xmpp" for receiving events over jabber/xmpp
   - feature: amqp input now supports routing keys.
     https://logstash.jira.com/browse/LOGSTASH-122
   - feature: amqp output now supports setting routing key dynamically.
