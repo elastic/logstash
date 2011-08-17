@@ -1,5 +1,6 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "socket" # for Socket.gethostname
 
 # Run command line tools and cature output as an event.
 #
@@ -26,28 +27,34 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
   
   public
   def register
-    @logger.info(["Registering Exec Input", {:type => @type, :exec => @exec, :period => @period}])
+    @logger.info(["Registering Exec Input", {:type => @type,
+                 :command => @command, :interval => @interval}])
   end # def register
 
   public
   def run(queue)
     loop do
       start = Time.now
-      @logger.info("Running: #{@command}") if @debug
+      @logger.info(["Running exec", { :command => @command }]) if @debug
       out = IO.popen(@command)
       # out.read will block until the process finishes.
-      e = to_event(out.read, @command)
+      e = to_event(out.read, "exec://#{Socket.gethostname}/")
+      e["command"] = @command
       queue << e
+
       duration = Time.now - start
-      @logger.info("Command '#{@command}' took #{duration} seconds") if @debug
+      if @debug
+        @logger.info(["Command completed",
+                     { :command => @command, :duration => duration } ])
+      end
 
       # Sleep for the remainder of the interval, or 0 if the duration ran
       # longer than the interval.
       sleeptime = [0, @interval - duration].max
       if sleeptime == 0
-        @logger.warn("Execution of '#{@command}' ran longer than the interval."
-                     " Took #{duration} seconds, but interval is #{@interval}."
-                     " Not sleeping...")
+        @logger.warn(["Execution ran longer than the interval. Skipping sleep...",
+                      { :command => @command, :duration => duration,
+                        :interval => @interval }])
       else
         sleep(sleeptime)
       end
