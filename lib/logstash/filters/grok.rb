@@ -89,6 +89,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   # This flag becomes "--grok-patterns-path"
   flag("--patterns-path PATH", "Colon-delimited path of patterns to load") do |val|
+    #@logger.info("Adding patterns path: #{val}")
     @@patterns_path += val.split(":")
   end
 
@@ -113,7 +114,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       end
 
       Dir.glob(path).each do |file|
-        #@logger.info("Grok loading patterns from #{file}")
+        @logger.info("Grok loading patterns from #{file}")
         @patternfiles << file
       end
     end
