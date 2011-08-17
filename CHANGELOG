@@ -27,6 +27,9 @@
     https://logstash.jira.com/browse/LOGSTASH-131
   - feature: new input plugin "exec" for taking events from executed commands
     like shell scripts or other tools.
+  - feature: new filter plugin "split" for splitting one event into multiple.
+    It was written primarily for the new "exec" input to allow you to split
+    the output of a single command run by line into multiple events.
   - misc: upgraded jar releases to use JRuby 1.6.3
 
 1.0.14 (Jul 1, 2011)
