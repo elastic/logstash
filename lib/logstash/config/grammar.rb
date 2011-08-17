@@ -255,24 +255,29 @@ self.logstash_config_en_main = 53;
   end
 
   def parse(string)
+    # TODO(sissel): Due to a bug in my parser, we need one trailing whitespace
+    # at the end of the string. I'll fix this later.
+    string += "\n"
+
     data = string.unpack("c*")
+
 
     # BEGIN RAGEL INIT
     
-# line 263 "grammar.rb"
+# line 268 "grammar.rb"
 begin
 	p ||= 0
 	pe ||= data.length
 	cs = logstash_config_start
 end
 
-# line 168 "grammar.rl"
+# line 173 "grammar.rl"
     # END RAGEL INIT
 
     begin 
       # BEGIN RAGEL EXEC 
       
-# line 276 "grammar.rb"
+# line 281 "grammar.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	_goto_level = 0
@@ -465,7 +470,7 @@ when 12 then
             $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           		end
-# line 469 "grammar.rb"
+# line 474 "grammar.rb"
 			end # action switch
 		end
 	end
@@ -521,7 +526,7 @@ when 12 then
             $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           		end
-# line 525 "grammar.rb"
+# line 530 "grammar.rb"
 		end # eof action switch
 	end
 	if _trigger_goto
@@ -535,7 +540,7 @@ end
 	end
 	end
 
-# line 173 "grammar.rl"
+# line 178 "grammar.rl"
       # END RAGEL EXEC
     rescue => e
       # Compute line and column of the cursor (p)
