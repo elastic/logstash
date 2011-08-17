@@ -263,6 +263,7 @@ class LogStash::Agent
       # Given a config string by the user (via the '-e' flag)
       config = LogStash::Config::File.new(nil, @config_string)
     end
+    config.logger = @logger
 
     @thread = Thread.new do
       run_with_config(config, &block)
