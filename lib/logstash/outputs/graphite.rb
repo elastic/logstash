@@ -8,9 +8,6 @@ require "socket"
 # An example use case: At loggly, some of our applications emit aggregated
 # stats in the logs every 10 seconds. Using the grok filter and this output,
 # I can capture the metric values from the logs and emit them to graphite.
-#
-# TODO(sissel): Figure out how to manage multiple metrics coming from the same
-# event.
 class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   config_name "graphite"
 
@@ -20,34 +17,52 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   # The port to connect on your graphite server.
   config :port, :validate => :number, :default => 2003
 
-  # The metric to use. This supports dynamic strings like %{@source_host}
-  # TODO(sissel): This should probably be an array.
-  config :metric, :validate => :string, :required => true
-
-  # The value to use. This supports dynamic strings like %{bytes}
-  # It will be coerced to a floating point value. Values which cannot be
+  # The metric(s) to use. This supports dynamic strings like %{@source_host}
+  # for metric names and also for values. This is a hash field with key 
+  # of the metric name, value of the metric value. Example:
+  # [ "%{@source_host}/uptime", %{uptime_1m} " ]
+  #
+  # The value will be coerced to a floating point value. Values which cannot be
   # coerced will zero (0)
-  config :value, :validate => :string, :required => true
+  config :metrics, :validate => :hash, :required => true
 
   def register
-    # TODO(sissel): Retry on failure.
-    @socket = connect
+    connect
   end # def register
 
   def connect
     # TODO(sissel): Test error cases. Catch exceptions. Find fortune and glory.
-    socket = TCPSocket.new(@host, @port)
+    begin
+      @socket = TCPSocket.new(@host, @port)
+    rescue Errno::ECONNREFUSED => e
+      @logger.warn(["Connection refused to graphite server, sleeping...",
+                   { :host => @host, :port => @port }])
+      sleep(2)
+      retry
+    end
   end # def connect
 
   public
   def receive(event)
     # Graphite message format: metric value timestamp\n
-    message = [event.sprintf(@metric), event.sprintf(@value).to_f,
-               event.sprintf("%{+%s}")].join(" ")
-    # TODO(sissel): Test error cases. Catch exceptions. Find fortune and glory.
-    @socket.puts(message)
+    
+    # Catch exceptions like ECONNRESET and friends, reconnect on failure.
+    @metrics.each do |metric, value|
+      message = [event.sprintf(metric), event.sprintf(value).to_f,
+                 event.sprintf("%{+%s}")].join(" ")
+      # TODO(sissel): Test error cases. Catch exceptions. Find fortune and glory.
+      begin
+        @socket.puts(message)
+      rescue Errno::EPIPE, Errno::ECONNRESET => e
+        @logger.warn(["Connection to graphite server died",
+                     { :exception => e, :host => @host, :port => @port }])
+        sleep(2)
+        connect
+      end
 
-    # TODO(sissel): retry on failure TODO(sissel): Make 'retry on failure'
-    # tunable; sometimes it's OK to drop metrics.
+      # TODO(sissel): resend on failure 
+      # TODO(sissel): Make 'resend on failure' tunable; sometimes it's OK to
+      # drop metrics.
+    end # @metrics.each
   end # def receive
 end # class LogStash::Outputs::Statsd
