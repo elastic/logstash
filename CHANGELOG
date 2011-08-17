@@ -29,6 +29,9 @@
     It was written primarily for the new "exec" input to allow you to split
     the output of a single command run by line into multiple events.
   - misc: upgraded jar releases to use JRuby 1.6.3
+  - bugfix: syslog input shouldn't crash anymore on weird network behaviors
+    like portscanning, etc.
+    https://logstash.jira.com/browse/LOGSTASH-130
 
 1.0.14 (Jul 1, 2011)
   - feature: new output plugin "loggly" which lets you ship logs to loggly.com
