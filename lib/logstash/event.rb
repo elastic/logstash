@@ -38,6 +38,7 @@ class LogStash::Event
     return @cancelled
   end # def cancelled?
 
+  # Create a deep-ish copy of this event.
   public
   def clone
     newdata = @data.clone
