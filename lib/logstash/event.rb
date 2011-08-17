@@ -173,7 +173,6 @@ class LogStash::Event
         datetime = @@date_parser.parseDateTime(self.timestamp)
         format = key[1 .. -1]
         datetime.toString(format) # return requested time format
-        p :datetime => datetime.class
       else 
         # Use an event field.
         value = self[key]
