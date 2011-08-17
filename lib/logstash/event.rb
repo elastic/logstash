@@ -40,7 +40,12 @@ class LogStash::Event
 
   public
   def clone
-    return LogStash::Event.new(@data.clone)
+    newdata = @data.clone
+    newdata["@fields"] = {}
+    fields.each do |k,v|
+      newdata["@fields"][k] = v.clone
+    end
+    return LogStash::Event.new(newdata)
   end # def clone
 
   public
