@@ -4,6 +4,7 @@ require "logstash/plugin"
 require "logstash/logging"
 require "logstash/config/mixin"
 
+# This is the base class for logstash inputs.
 class LogStash::Inputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
   attr_accessor :logger
@@ -24,17 +25,10 @@ class LogStash::Inputs::Base < LogStash::Plugin
   config :debug, :validate => :boolean, :default => false
 
   # The format of input data (plain, json, json_event)
-  config :format, :validate => (lambda do |value|
-    valid_formats = ["plain", "json", "json_event"]
-    if value.length != 1
-      false
-    else
-      valid_formats.member?(value.first)
-    end
-  end) # config :format
+  config :format, :validate => ["plain", "json", "json_event"]
 
   # If format is "json", an event sprintf string to build what
-  # the display @message should be (defaults to the raw JSON).
+  # the display @message should be given (defaults to the raw JSON).
   # sprintf format strings look like %{fieldname} or %{@metadata}.
   config :message_format, :validate => :string
 
