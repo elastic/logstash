@@ -7,7 +7,6 @@
     need to upgrade your server before the elasticsearch output will work. 
     If you are using the 'embedded' elasticsearch feature of logstash, you do
     not need to make any changes.
-  - news: upgraded to JRuby 1.6.3
   - feature: new output plugin "statsd" which lets you increment or record
     timings from your logs to a statsd agent
   - feature: new redis 'pattern_channel' input support for PSUBSCRIBE
@@ -17,12 +16,17 @@
     gmond server.
   - feature: new output plugin "xmpp" for shipping events over a jabber/xmpp
     service.
+  - feature: new input plugin "xmpp" for receiving events over a jabber/xmpp
+    service.
   - feature: amqp input now supports routing keys.
     https://logstash.jira.com/browse/LOGSTASH-122
   - feature: amqp output now supports setting routing key dynamically.
     https://logstash.jira.com/browse/LOGSTASH-122
   - feature: amqp input/output both now support SSL.
     https://logstash.jira.com/browse/LOGSTASH-131
+  - feature: new input plugin "exec" for taking events from executed commands
+    like shell scripts or other tools.
+  - misc: upgraded jar releases to use JRuby 1.6.3
 
 1.0.14 (Jul 1, 2011)
   - feature: new output plugin "loggly" which lets you ship logs to loggly.com
