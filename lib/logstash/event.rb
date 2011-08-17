@@ -3,7 +3,8 @@ require "logstash/time"
 require "logstash/namespace"
 require "uri"
 
-# General event type. Will expand this in the future.
+# General event type. 
+# Basically a light wrapper on top of a hash.
 class LogStash::Event
   public
   def initialize(data=Hash.new)
@@ -30,12 +31,17 @@ class LogStash::Event
   public
   def cancel
     @cancelled = true
-  end
+  end # def cancel
 
   public
   def cancelled?
     return @cancelled
-  end
+  end # def cancelled?
+
+  public
+  def clone
+    return LogStash::Event.new(@data.clone)
+  end # def clone
 
   public
   def to_s
@@ -46,6 +52,7 @@ class LogStash::Event
   def timestamp; @data["@timestamp"]; end # def timestamp
   def timestamp=(val); @data["@timestamp"] = val; end # def timestamp=
 
+  public
   def unix_timestamp
     time = @@date_parser.parseDateTime(timestamp)
     return time.getMillis.to_f / 1000
@@ -90,11 +97,15 @@ class LogStash::Event
     end
   end # def []
   
-  # TODO(sissel): the semantics of [] and []= are now different in that
-  # []= only allows you to assign to only fields (not metadata), but
-  # [] allows you to read fields and metadata.
-  # We should fix this. Metadata is really a namespace issue, anyway.
-  def []=(key, value); @data["@fields"][key] = value end # def []=
+  public
+  def []=(key, value)
+    if @data.has_key?(key)
+      @data[key] = value
+    else
+      @data["@fields"][key] = value
+    end
+  end # def []=
+
   def fields; return @data["@fields"] end # def fields
   
   public
