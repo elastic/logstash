@@ -6,7 +6,7 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
   config_name "xmpp"
 
   # The user or resource ID, like foo@example.com.
-  config :identity, :validate => :string, :required => :true
+  config :user, :validate => :string, :required => :true
 
   # The xmpp password for the JID.
   config :password, :validate => :password, :required => :true
@@ -28,7 +28,7 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
     require 'xmpp4r' # xmpp4r gem
     Jabber::debug = true if @debug
 
-    @client = Jabber::Client.new(Jabber::JID.new(@identity))
+    @client = Jabber::Client.new(Jabber::JID.new(@user))
     @client.connect(@host) # it is ok if host is nil
     @client.auth(@password.value)
     @client.send(Jabber::Presence.new.set_type(:available))
