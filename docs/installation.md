@@ -7,18 +7,12 @@ layout: content_right
 There are a few ways to install logstash:
 
 * standalone runnable jar file  (monolithic)
-* normal runnable jar (ruby deps + jruby included, no elasticsearch)
 * gem install logstash
 
 ## 'standalone runnable jar'
 
 This jar is the normal runnable jar with elasticsearch libs included. To use
 it, use it the same way as documented below for 'normal runnable jar'
-
-## 'normal runnable jar'
-
-If you want to include elasticsearch, you'll need to download it and set the
-CLASSPATH environment variable to include any elasticsearch jar files.
 
 ### web interface
 
