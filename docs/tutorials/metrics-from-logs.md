@@ -25,12 +25,12 @@ apache logs: [SampleLogster.py](https://github.com/etsy/logster/blob/master/pars
 
 The above code is roughly 50 lines of python and only solves one specific
 problem in only apache logs: count http response codes by major number (1xx,
-2xx, 3xx, etc. (To be completely fair, you could shrink the code required for
-a Logster parser, but size is not strictly the point, here)
+2xx, 3xx, etc). To be completely fair, you could shrink the code required for
+a Logster parser, but size is not strictly the point, here.
 
 ## Keep it simple
 
-Logstash can do the above simpler and without much coding skill:
+Logstash can do more than the above, simpler, and without much coding skill:
 
     input {
       file { path => "/var/log/apache/access.log" }
