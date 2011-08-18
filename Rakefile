@@ -284,7 +284,8 @@ task :doccopy => [:require_output_env] do
       mkdir_p doc
     else
       puts "Copy #{doc} => #{dir}"
-      cp(doc, dir)
+      system("sed -re 's/%VERSION%/#{LOGSTASH_VERSION}/' #{doc} > #{dir}/#{File.basename(doc)}")
+      #cp(doc, dir)
     end
   end
 end
