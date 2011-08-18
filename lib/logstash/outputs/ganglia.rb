@@ -28,10 +28,10 @@ class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
   config :units, :validate => :string, :default => ""
 
   # Maximum time in seconds between gmetric calls for this metric.
-  config :tmax, :validate => :number, :default => 60
+  config :max_interval, :validate => :number, :default => 60
 
   # Lifetime in seconds of this metric
-  config :dmax, :validate => :number, :default => 300
+  config :lifetime, :validate => :number, :default => 300
 
   def register
     require "gmetric"
