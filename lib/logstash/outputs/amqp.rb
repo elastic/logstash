@@ -30,7 +30,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   config :name, :validate => :string, :required => true
   
   # Key to route to
-  config :key, :validate => :string#, :default => ""
+  config :key, :validate => :string
 
   # The vhost to use
   config :vhost, :validate => :string, :default => "/"
