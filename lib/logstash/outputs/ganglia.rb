@@ -20,8 +20,9 @@ class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
   # coerced will zero (0)
   config :value, :validate => :string, :required => true
 
-  # Gmetric type
-  config :type, :validate => :string, :default => "uint8"
+  # The type of value for this metric.
+  config :type, :validate => %w{string int8 uint8 int16 uint16 int32 uint32 float double},
+    :default => "uint8"
 
   # Gmetric units for metric, such as "kb/sec" or "ms" or whatever unit
   # this metric uses.
