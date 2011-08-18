@@ -34,11 +34,11 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   public
   def register
     # This comes from RFC3164, mostly.
-    # Optional fields (priority, host) are because some syslog implementations
+    # Optional fields (priority, host, timestamp) are because some syslog implementations
     # don't send these under some circumstances.
     @@syslog_re ||= \
-      /(?:<([0-9]{1,3})>)?([A-z]{3}  ?[0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2}) (?:(\S*[^ :]) )?(.*)/
-      #   <priority>      timestamp    Mmm dd hh:mm:ss                           host        msg
+      /(?:<([0-9]{1,3})>)?(?:([A-z]{3}  ?[0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2}) )?(?:(\S*[^ :]) )?(.*)/
+      #   <priority>      timestamp     Mmm dd hh:mm:ss                           host        msg
     
     @tcp_clients = []
   end # def register
@@ -161,8 +161,10 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       host = match[3]
 
       # TODO(sissel): Use the date filter, somehow.
-      event.timestamp = LogStash::Time.to_iso8601(
-        DateTime.strptime(match[2], "%b %d %H:%M:%S"))
+      if !match[2].nil?
+        event.timestamp = LogStash::Time.to_iso8601(
+          DateTime.strptime(match[2], "%b %d %H:%M:%S"))
+      end
 
       # Hostname is optional, use if present in message, otherwise use source
       # address of message.
