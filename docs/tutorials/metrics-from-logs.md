@@ -33,11 +33,17 @@ a Logster parser, but size is not strictly the point, here.
 Logstash can do more than the above, simpler, and without much coding skill:
 
     input {
-      file { path => "/var/log/apache/access.log" }
+      file { 
+        path => "/var/log/apache/access.log" 
+        type => "apache-access"
+      }
     }
 
     filter {
-      grok { pattern => "%{COMBINEDAPACHELOG}" }
+      grok { 
+        type => "apache-access"
+        pattern => "%{COMBINEDAPACHELOG}" 
+      }
     }
 
     output {
