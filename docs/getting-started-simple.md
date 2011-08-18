@@ -71,7 +71,7 @@ Put this in a file called "mylogstash.conf"
 
 Now run it all:
 
-    java -jar logstash-1.0-monolithic.jar agent -f mylogstash.conf -- web --backend elasticsearch:///?local
+    java -jar logstash-%VERSION%-monolithic.jar agent -f mylogstash.conf -- web --backend elasticsearch:///?local
 
 Point your browser at <http://yourserver:9292> and start searching!
 

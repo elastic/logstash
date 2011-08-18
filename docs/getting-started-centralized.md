@@ -90,7 +90,7 @@ correct dependency. Make sure you have the recent-enough versionf of libpcre
 and tokyocabinet (see above grok/INSTALL url)
 
 (This next step can be skipped if you are using a logstash jar release
-(logstash-X.Y.jar, etc) Once you have grok installed, you need to install the
+(logstash-%VERSION%.jar, etc) Once you have grok installed, you need to install the
 'jls-grok' rubygem, which you can do by running:
 
 {{{
@@ -152,7 +152,7 @@ Here's a good sample config:
 
 Put this in a file and call it 'myshipper.conf' (or anything, really), and run: 
 
-    java -jar logstash-1.0-monolithic.jar agent -f myshipper.conf
+    java -jar logstash-%VERSION%-monolithic.jar agent -f myshipper.conf
 
 This should start tailing the file inputs specified above and ships them out
 over amqp. If you included the 'stdout' output you will see events written to
@@ -230,7 +230,7 @@ Run this on the same server as your elasticsearch server.
 To run the logstash web server, just run the jar with 'web' as the first
 argument. 
 
-    % java -jar logstash-1.0-monolithic.jar web
+    % java -jar logstash-%VERSION%-monolithic.jar web
     >> Thin web server (v1.2.7 codename No Hup)
     >> Maximum connections set to 1024
     >> Listening on 0.0.0.0:9292, CTRL+C to stop
@@ -241,4 +241,4 @@ logs!
 Note: If your elasticsearch server is not discoverable with multicast, you can
 specify the host explicitly using the --backend flag:
 
-    % java -jar logstash-1.0-monolithic.jar web --backend elasticsearch://myserver/
+    % java -jar logstash-%VERSION%-monolithic.jar web --backend elasticsearch://myserver/

@@ -16,11 +16,11 @@ it, use it the same way as documented below for 'normal runnable jar'
 
 ### web interface
 
-    java -jar logstash-0.9.1.jar web
+    java -jar logstash-%VERSION%-monolithic.jar web
 
 ### agent 
 
-    java -jar logstash-0.9.1.jar agent -f youragent.conf
+    java -jar logstash-%VERSION%-monolithic.jar agent -f youragent.conf
 
 ## 'gem install logstash'
 
