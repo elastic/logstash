@@ -30,7 +30,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   config :name, :validate => :string, :required => true
   
   # Key to route to
-  config :key, :validate => :string, :default => ""
+  config :key, :validate => :string#, :default => ""
 
   # The vhost to use
   config :vhost, :validate => :string, :default => "/"
@@ -94,7 +94,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   public
   def receive(event)
-    key = event.sprintf(@key)
+    key = event.sprintf(@key) if @key
     @logger.debug(["Sending event", { :destination => to_s, :event => event, :key => key }])
     begin
       if @target
