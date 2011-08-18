@@ -1,22 +1,24 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-# This output allows you to pull metrics from your logs and ship them to
-# XMPP/Jabber.
+# This output allows you ship events over XMPP/Jabber.
+#
+# This plugin can be used for posting events to humans over XMPP, or you can
+# use it for PubSub or general message passing for logstash to logstash.
 class LogStash::Outputs::Xmpp < LogStash::Outputs::Base
   config_name "xmpp"
 
   # The user or resource ID, like foo@example.com.
   config :user, :validate => :string, :required => :true
 
-  # The xmpp password for the JID.
+  # The xmpp password for the user/identity.
   config :password, :validate => :password, :required => :true
 
   # The targets to send messages to (users, chat rooms, etc)
   config :targets, :validate => :array, :required => true
 
   # The xmpp server to connect to. This is optional. If you omit this setting,
-  # the host on the JID is used. (foo.com for user@foo.com)
+  # the host on the user/identity is used. (foo.com for user@foo.com)
   config :host, :validate => :string
 
   # The message to send. This supports dynamic strings like %{@source_host}
