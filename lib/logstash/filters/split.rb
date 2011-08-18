@@ -14,9 +14,6 @@ class LogStash::Filters::Split < LogStash::Filters::Base
 
   config_name "split"
 
-  # [dateformats]: http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html
-  config /[A-Za-z0-9_-]+/, :validate => :array
-
   # The string to split on. This is usually a line terminator, but can be any
   # string.
   config :terminator, :validate => :string, :default => "\n"
