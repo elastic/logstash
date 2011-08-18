@@ -25,12 +25,7 @@ right? ;)
 * Make sure all tests pass (rake test)
   * rake test
 * Update VERSION.rb
-  * set this: VERSION=$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
-* Fix version links in the docs
-  * sed -i -re "s/logstash-[0-9]\.[0-9]\.[0-9]+(rc.)?/logstash-$VERSION/" docs/**/*.md
-  * sed -i -re "s@logstash/versions/[0-9]\.[0-9]\.[0-9]+(rc.)?@logstash/versions/$VERSION@" docs/**/*.md
-  * sed -i -re "s@gem install logstash -v [0-9]\.[0-9]\.[0-9]+(rc.)?@gem install logstash -v $VERSION@" docs/**/*.md
-  * Verify diff and commit.
+  * VERSION=$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 * Ensure CHANGELOG is up-to-date
 * git tag v$VERSION
 * git push origin master
