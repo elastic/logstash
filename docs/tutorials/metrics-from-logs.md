@@ -41,7 +41,10 @@ Logstash can do the above simpler and without much coding skill:
     }
 
     output {
-      statsd { increment => "apache.response.%{response}" }
+      statsd { 
+        # Count one hit every event by response
+        increment => "apache.response.%{response}" 
+      }
     }
 
 The above uses grok to parse fields out of apache logs and using the statsd
@@ -50,9 +53,11 @@ are parsing apache logs fully, we can trivially add additional metrics:
 
     output {
       statsd {
-        increment => [
-          "apache.response.%{response}",
-          "apache.bytes.%{bytes}",
+        # Count one hit every event by response
+        increment => "apache.response.%{response}"
+
+        # Use the 'bytes' field from the apache log as the count value.
+        count => [ "apache.bytes", "%{bytes}" ]
         ]
       }
     }
