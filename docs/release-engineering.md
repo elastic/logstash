@@ -22,24 +22,25 @@ right? ;)
 
 # building a release.
 
-* Make sure all tests pass
-** rake test
+* Make sure all tests pass (rake test)
+  * rake test
 * Update VERSION.rb
-* Update docs/learn.md (fix download links)
+* Fix version links in the docs
+  * VERSION=$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION'); sed -i -re 's/logstash-[0-9]\.[0-9]\.[0-9]+(rc.)?/logstash-'$VERSION'/' docs/**/*.md
 * Ensure CHANGELOG is up-to-date
 * git tag v$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 * git push origin master
 * git push --tags
 * Build binaries
-** rake package:gem
-** rake package:monolith:jar
+  * rake package:gem
+  * rake package:monolith:jar
 * rake docs output=../logstash.github.com/docs/$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
-** Note: you will need to use c-ruby for this (ruby 1.8.7, etc)
-** You'll need 'bluecloth' rubygem installed.
+  * Note: you will need to use c-ruby for this (ruby 1.8.7, etc)
+  * You'll need 'bluecloth' rubygem installed.
 * cd ../logstash.github.com
-** edit docs/latest.html index.html _layouts/*
-** git add docs/$VERSION docs/latest.html index.html _layouts/*
-** git commit -m "version $VERSION docs" && git push origin master
+  * edit docs/latest.html index.html _layouts/*
+  * git add docs/$VERSION docs/latest.html index.html _layouts/*
+  * git commit -m "version $VERSION docs" && git push origin master
 * Publish binaries
 ** Stage binaries at `carrera.databits.net:/home/jls/s/files/logstash/`
 ** rake publish
