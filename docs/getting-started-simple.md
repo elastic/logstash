@@ -23,7 +23,7 @@ If you have problems, feel free to email the users list
 
 ## logstash
 
-You should download the logstash 'monolithic' jar. This package includes most
+You should download the logstash 'monolithic' jar - if you haven't yet, [download it now](http://semicomplete.com/files/logstash/logstash-%VERSION%-monolithic.jar). This package includes most
 of the dependencies for logstash in it and helps you get started quicker.
 
 The configuration of any logstash agent consists of specifying inputs, filters,
