@@ -7,7 +7,7 @@ class LogStash::Outputs::Xmpp < LogStash::Outputs::Base
   config_name "xmpp"
 
   # The user or resource ID, like foo@example.com.
-  config :identity, :validate => :string, :required => :true
+  config :user, :validate => :string, :required => :true
 
   # The xmpp password for the JID.
   config :password, :validate => :password, :required => :true
@@ -31,7 +31,7 @@ class LogStash::Outputs::Xmpp < LogStash::Outputs::Base
   public
   def connect
     Jabber::debug = true
-    client = Jabber::Client.new(Jabber::JID.new(@identity))
+    client = Jabber::Client.new(Jabber::JID.new(@user))
     client.connect(@host)
     client.auth(@password.value)
     return client
