@@ -1,3 +1,7 @@
+1.0.16 (Aug 18, 2011)
+  - Fix elasticsearch client problem with 1.0.15 - jruby-elasticsearch gem
+    version required is now 0.0.10 (to work with elasticsearch 0.17.6)
+
 1.0.15 (Aug 18, 2011)
   - IMPORTANT: Upgraded to ElasticSearch 0.17.6 - this brings a number of bug
     fixes including an OOM error caused during high index rates in some
