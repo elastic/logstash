@@ -11,8 +11,8 @@ There are a few ways to install logstash:
 
 ## 'standalone runnable jar'
 
-This jar is the normal runnable jar with elasticsearch libs included. To use
-it, use it the same way as documented below for 'normal runnable jar'
+This jar is a runnable jar with elasticsearch and most other dependencies
+included. To use it, do the following:
 
 ### web interface
 
@@ -22,13 +22,21 @@ it, use it the same way as documented below for 'normal runnable jar'
 
     java -jar logstash-%VERSION%-monolithic.jar agent -f youragent.conf
 
+### Combined
+
+You can run both the agent and web interface (or any number of separate agents)
+in the same java process. Just use '--' indicate the start of a new command
+line:
+
+    java -jar logstash-%VERSION%-monolithic.jar agent -f myagent.conf -- web
+
 ## 'gem install logstash'
 
 Using this method to download logstash will install all ruby dependencies.
 
-* You must have jruby already
-* If you use elasticsearch, you'll have to it and its jars add that to the java
-  classpath. ( See below for web interface notes 
+* You must have JRuby already
+* If you use elasticsearch, you'll have to add that to the java classpath.
+  (See below for web interface notes)
 * If you use grok, you'll need libgrok installed.
 
 ### web interface
