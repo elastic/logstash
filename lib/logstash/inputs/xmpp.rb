@@ -1,6 +1,11 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 
+# This input allows you to receive events over XMPP/Jabber.
+#
+# This plugin can be used for accepting events from humans or applications
+# XMPP, or you can use it for PubSub or general message passing for logstash to
+# logstash.
 class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
   
   config_name "xmpp"
@@ -8,7 +13,7 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
   # The user or resource ID, like foo@example.com.
   config :user, :validate => :string, :required => :true
 
-  # The xmpp password for the JID.
+  # The xmpp password for the user/identity.
   config :password, :validate => :password, :required => :true
 
   # if muc/multi-user-chat required, give the name of the room that
@@ -16,7 +21,7 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
   config :rooms, :validate => :array
 
   # The xmpp server to connect to. This is optional. If you omit this setting,
-  # the host on the JID is used. (foo.com for user@foo.com)
+  # the host on the user/identity is used. (foo.com for user@foo.com)
   config :host, :validate => :string
 
   # Set to true to enable greater debugging in XMPP. Useful for debugging
