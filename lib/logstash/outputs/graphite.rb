@@ -20,7 +20,8 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   # The metric(s) to use. This supports dynamic strings like %{@source_host}
   # for metric names and also for values. This is a hash field with key 
   # of the metric name, value of the metric value. Example:
-  # [ "%{@source_host}/uptime", %{uptime_1m} " ]
+  #
+  #     [ "%{@source_host}/uptime", %{uptime_1m} " ]
   #
   # The value will be coerced to a floating point value. Values which cannot be
   # coerced will zero (0)
