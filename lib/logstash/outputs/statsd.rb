@@ -1,11 +1,24 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-# TODO(sissel): Document what statsd is and where to learn about it
-# Also document an example.
+# statsd is a server for aggregating counters and other metrics to ship to
+# graphite.
+#
+# The general idea is that you send statsd count or latency data and every few
+# seconds it will emit the aggregated values to graphite (aggregates like
+# average, max, stddev, etc)
+#
+# You can learn about statsd here:
+#
+# * <http://codeascraft.etsy.com/2011/02/15/measure-anything-measure-everything/>
+# * <https://github.com/etsy/statsd>
+#
+# A simple example usage of this is to count HTTP hits by response code; to learn
+# more about that, check out the 
+# [log metrics tutorial](../../tutorials/metrics-from-logs)
 class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # Regex stolen from statsd code
-  RESERVED_CHARACTERS_REGEX = /[\.\:\|\@]/
+  RESERVED_CHARACTERS_REGEX = /[\:\|\@]/
   config_name "statsd"
 
   # The address of the Statsd server.
