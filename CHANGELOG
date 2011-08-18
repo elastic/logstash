@@ -1,5 +1,4 @@
-1.0.15 (???????????)
-  - TODO(sissel): Document tcp input/output changes from pull/33
+1.0.15 (Aug 18, 2011)
   - IMPORTANT: Upgraded to ElasticSearch 0.17.6 - this brings a number of bug
     fixes including an OOM error caused during high index rates in some
     conditions.
@@ -8,6 +7,8 @@
     your server before the elasticsearch output will work. If you are using
     the 'embedded' elasticsearch feature of logstash, you do not need to make
     any changes.
+  - feature: tcp input and output plugins can now operate in either client
+    (connect) or server (listen) modes.
   - feature: new output plugin "statsd" which lets you increment or record
     timings from your logs to a statsd agent
   - feature: new redis 'pattern_channel' input support for PSUBSCRIBE
