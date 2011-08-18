@@ -25,25 +25,29 @@ right? ;)
 * Make sure all tests pass (rake test)
   * rake test
 * Update VERSION.rb
+  * set this: VERSION=$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 * Fix version links in the docs
-  * VERSION=$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION'); sed -i -re 's/logstash-[0-9]\.[0-9]\.[0-9]+(rc.)?/logstash-'$VERSION'/' docs/**/*.md
+  * sed -i -re "s/logstash-[0-9]\.[0-9]\.[0-9]+(rc.)?/logstash-$VERSION/" docs/**/*.md
+  * sed -i -re "s@logstash/versions/[0-9]\.[0-9]\.[0-9]+(rc.)?@logstash/versions/$VERSION@" docs/**/*.md
+  * sed -i -re "s@gem install logstash -v [0-9]\.[0-9]\.[0-9]+(rc.)?@gem install logstash -v $VERSION@" docs/**/*.md
+  * Verify diff and commit.
 * Ensure CHANGELOG is up-to-date
-* git tag v$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
+* git tag v$VERSION
 * git push origin master
 * git push --tags
 * Build binaries
   * rake package:gem
   * rake package:monolith:jar
-* rake docs output=../logstash.github.com/docs/$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
+* rake docs output=../logstash.github.com/docs/$VERSION
   * Note: you will need to use c-ruby for this (ruby 1.8.7, etc)
   * You'll need 'bluecloth' rubygem installed.
 * cd ../logstash.github.com
-  * edit docs/latest.html index.html _layouts/*
+  * make clean update VERSION=$VERSION
   * git add docs/$VERSION docs/latest.html index.html _layouts/*
   * git commit -m "version $VERSION docs" && git push origin master
 * Publish binaries
-** Stage binaries at `carrera.databits.net:/home/jls/s/files/logstash/`
-** rake publish
+  * Stage binaries at `carrera.databits.net:/home/jls/s/files/logstash/`
+  * rake publish
 * Update #logstash IRC /topic
 * Send announcement email to logstash-users@, include relevant download URLs &
   changelog (see past emails for a template)
