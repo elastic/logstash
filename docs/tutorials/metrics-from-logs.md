@@ -11,23 +11,26 @@ Apache logs give you the http response code and bytes sent - that's useful in a
 graph. Metrics occur in logs so frequently there are piles of tools available to
 help process them.
 
-Logstash can help.
+Logstash can help (and even replace some tools you might already be using).
 
-## Keep it simple.
+## Example: Replacing Etsy's Logster
 
-[Etsy](https://github.com/etsy] has some excellent open source tools. One of
+[Etsy](https://github.com/etsy) has some excellent open source tools. One of
 them, [logster](https://github.com/etsy/logster), is meant to help you pull
 metrics from logs and ship them to [graphite](http://graphite.wikidot.com/) so
 you can make pretty graphs of those metrics.
 
 One sample logster parser is one that pulls http response codes out of your
-apache logs: (SampleLogster.py)[https://github.com/etsy/logster/blob/master/parsers/SampleLogster.py]
+apache logs: [SampleLogster.py](https://github.com/etsy/logster/blob/master/parsers/SampleLogster.py)
 
 The above code is roughly 50 lines of python and only solves one specific
-problem in only apache logs (count http response codes by major number (1xx,
-2xx, 3xx, etc).
+problem in only apache logs: count http response codes by major number (1xx,
+2xx, 3xx, etc. (To be completely fair, you could shrink the code required for
+a Logster parser, but size is not strictly the point, here)
 
-Logstash can do this simpler:
+## Keep it simple
+
+Logstash can do the above simpler and without much coding skill:
 
     input {
       file { path => "/var/log/apache/access.log" }
@@ -54,7 +57,21 @@ are parsing apache logs fully, we can trivially add additional metrics:
       }
     }
 
-Now adding additional metrics is just one more line in your logstash config file.
+Now adding additional metrics is just one more line in your logstash config
+file. BTW, the 'statsd' output writes to another Etsy tool,
+[statsd](https://github.com/etsy/statsd), which helps build counters/latency
+data and ship it to graphite for graphing.
+
+Using the logstash config above and a bunch of apache access requests, you might end up
+with a graph that looks like this:
 
 ![apache response codes graphed with graphite, fed data with logstash](media/frontend-response-codes.png)
 
+The point made above is not "logstash is better than Logster" - the point is
+that logstash is a general-purpose log management and pipelining tool and that
+while you can centralize logs with logstash, you can read, modify, and write
+them to and from just about anywhere.
+
+## A full use case
+
+TODO(sissel): include sample logs, show custom grok format, output to statsd and/or graphite.
