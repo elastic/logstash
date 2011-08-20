@@ -1,6 +1,5 @@
 require "rubygems"
-$:.unshift File.dirname(__FILE__) + "/../../../lib"
-$:.unshift File.dirname(__FILE__) + "/../../"
+require File.join(File.dirname(__FILE__), "..", "minitest")
 
 require "logstash/loadlibs"
 require "logstash/testcase"
@@ -11,40 +10,23 @@ require "logstash/search/elasticsearch"
 require "logstash/search/query"
 
 require "tmpdir"
-#require "spoon" # rubygem 'spoon' - implements posix_spawn via FFI
 
-class TestOutputElasticSearch < Test::Unit::TestCase
-  ELASTICSEARCH_VERSION = "0.16.0"
-
-  def setup
-    # TODO(sissel): elasticsearch somehow picks the old pwd when doing this,
-    # not sure why
-    #@tmpdir = Dir.mktmpdir
-    #puts "Using tempdir: #{@tmpdir}"
-    #@pwd = Dir.pwd
-    #Dir.chdir(@tmpdir)
-    #puts "Dir: #{Dir.pwd}"
+describe LogStash::Outputs::ElasticSearch do
+  before do
     FileUtils.rm_r("data") if File.exists?("data")
-    @output = LogStash::Outputs::Elasticsearch.new({
+    @output = LogStash::Outputs::ElasticSearch.new({
       "type" => ["foo"],
       "embedded" => ["true"],
     })
     @output.register
-  end # def setup
+  end # before
 
-  def teardown
+  after do
     @output.teardown
     FileUtils.rm_r("data") if File.exists?("data")
-    #Dir.chdir(@pwd)
-    #if @tmpdir !~ /^\/tmp/
-      #$stderr.puts("Tempdir is '#{@tmpdir}' - not in /tmp, I won't " \
-                   #"remove in case it's not safe.")
-    #else
-      #FileUtils.rm_r(@tmpdir)
-    #end
-  end # def teardown
+  end # after
 
-  def test_elasticsearch_basic
+  test "elasticsearch basic output" do
     events = []
     myfile = File.basename(__FILE__)
     1.upto(5).each do |i|
@@ -90,13 +72,5 @@ class TestOutputElasticSearch < Test::Unit::TestCase
 
       sleep 0.2
     end # while tries > 0
-  end # def test_elasticsearch_basic
-end # class TestOutputElasticSearch
-
-#class TestOutputElasticSearch0_15_1 < TestOutputElasticSearch
-  #ELASTICSEARCH_VERSION = self.name[/[0-9_]+/].gsub("_", ".")
-#end # class TestOutputElasticSearch0_15_1
-
-#class TestOutputElasticSearch0_13_1 < TestOutputElasticSearch
-  #ELASTICSEARCH_VERSION = self.name[/[0-9_]+/].gsub("_", ".")
-#end # class TestOutputElasticSearch0_13_1
+  end # test_elasticsearch_basic
+end # testing for LogStash::Outputs::ElasticSearch
