@@ -65,9 +65,10 @@ class LogStash::Test
     return true
   end
 
-  def run_tests
+  def run_tests(args)
     require "logstash_test_runner"
-    return Test::Unit::AutoRunner.run
+    return MiniTest::Unit.new.run(args)
+    #return Test::Unit::AutoRunner.run
   end # def run_tests
 
   def run(args)
@@ -81,7 +82,7 @@ class LogStash::Test
         @success = false
       end
 
-      if !run_tests
+      if !run_tests(args)
         puts "Test suite failed."
         @success = false
       end

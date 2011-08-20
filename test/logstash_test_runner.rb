@@ -25,5 +25,3 @@ use "logstash/outputs/test_elasticsearch"
 skip "logstash/inputs/test_file"
 skip "logstash/inputs/test_syslog"
 skip "logstash/inputs/test_stomp"
-
-#Test::Unit::AutoRunner.run
