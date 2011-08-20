@@ -195,4 +195,30 @@ class TestFilterGrok < Test::Unit::TestCase
                  "Expected field 'WORD' to be ['something'], is " \
                  "#{event.fields["WORD"].inspect}")
   end # def test_grok_field_name_attribute
+
+  def test_add_fields
+    test_name "add_field"
+    config "str" => "test",
+           "add_field" => ["new_field", "new_value"]
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event["str"] = "test"
+    @filter.filter(event)
+    assert_equal(["new_value"], event["new_field"])
+  end # def test_add_fields
+
+  def test_add_fields_does_not_occur_if_match_failed
+    test_name "add_field"
+    config "str" => "test",
+           "add_field" => ["new_field", "new_value"]
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event["str"] = "fizzle"
+    @filter.filter(event)
+    assert_equal(nil, event["new_field"],
+                "Grok should not add fields on failed matches")
+  end # def test_add_fields
+
 end # class TestFilterGrok
