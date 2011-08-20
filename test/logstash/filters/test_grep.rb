@@ -22,7 +22,7 @@ class TestFilterGrep < Test::Unit::TestCase
     cfg["type"] = @typename
     cfg.each_key do |key|
       if cfg[key].is_a?(String)
-        cfg[key] = cfg[key].to_a
+        cfg[key] = [cfg[key]]
       end
     end
 
