@@ -2,29 +2,27 @@ require "rubygems"
 $:.unshift File.dirname(__FILE__) + "/../../lib"
 $:.unshift File.dirname(__FILE__) + "/../"
 
-require "test/unit"
+require "minitest/spec"
 require "logstash"
 require "logstash/event"
 
-class TestEvent < Test::Unit::TestCase
-  def test_name(name)
-    @typename = name
+describe LogStash::Event do
+  before do
+    @event = LogStash::Event.new
+    @event.type = "sprintf"
+    @event.message = "hello world"
+    @event.source = "/home/foo"
   end
 
-  def test_sprintf
-    test_name "sprintf"
-    event = LogStash::Event.new
-    event.type = @typename
-    event.message = "hello world"
-    event.source = "/home/foo"
-    event["test"] = "test"
-
+  it "must have a functional sprintf method" do
+    @event["test"] = "test"
     ["@type", "@message", "@source", "test"].each do |name|
-      assert_equal(event[name], event.sprintf("%{#{name}}"))
+      assert_equal(@event[name], @event.sprintf("%{#{name}}"))
     end
+  end
 
-    event.fields["foo"] = ["one", "two", "three"]
-
-    assert_equal(event.fields["foo"].join(","), event.sprintf("%{foo}"))
-  end # def test_sprintf
-end # TestEvent
+  it "on sprintf, join array fields by ','" do
+    @event.fields["foo"] = ["one", "two", "three"]
+    assert_equal(@event.fields["foo"].join(","), @event.sprintf("%{foo}"))
+  end # sprintf testing
+end # describe LogStash::Event
