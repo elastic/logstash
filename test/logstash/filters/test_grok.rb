@@ -1,23 +1,16 @@
 require "rubygems"
-$:.unshift File.dirname(__FILE__) + "/../../../lib"
-$:.unshift File.dirname(__FILE__) + "/../../"
+require File.join(File.dirname(__FILE__), "..", "minitest")
 
-require "test/unit"
 require "logstash"
 require "logstash/loadlibs"
 require "logstash/filters"
 require "logstash/filters/grok"
 require "logstash/event"
 
-class TestFilterGrok < Test::Unit::TestCase
-
-  def setup
-    @typename = nil
+describe LogStash::Filters::Grok do
+  before do
+    @typename = "groktest"
     @filter = nil
-  end
-
-  def test_name(name)
-    @typename = name.gsub(/[ ]/, "_")
   end
 
   def config(cfg)
@@ -28,16 +21,13 @@ class TestFilterGrok < Test::Unit::TestCase
       end
     end
 
-    p :config => cfg
-    p :filter => @filter
+    #p :config => cfg
+    #p :filter => @filter
     @filter = LogStash::Filters::Grok.new(cfg)
-
     @filter.register
-    #p :newfilter => @filter
   end
 
-  def test_grok_normal
-    test_name "groknormal"
+  test "normal grok" do
     config "pattern" => [ "%{SYSLOGLINE}" ]
     
     event = LogStash::Event.new
@@ -54,19 +44,27 @@ class TestFilterGrok < Test::Unit::TestCase
 
     @filter.filter(event)
     assert_equal(event.fields["logsource"], [logsource], 
-                 "Expected field 'logsource' to be [#{logsource.inspect}], is #{event.fields["logsource"].inspect}")
+                 "Expected field 'logsource' to be [#{logsource.inspect}], " \
+                 "is #{event.fields["logsource"].inspect}")
 
-    assert_equal(event.fields["timestamp"], [timestamp], "Expected field 'timestamp' to be [#{timestamp.inspect}], is #{event.fields["timestamp"].inspect}")
+    assert_equal(event.fields["timestamp"], [timestamp],
+                 "Expected field 'timestamp' to be [#{timestamp.inspect}], " \
+                 "is #{event.fields["timestamp"].inspect}")
 
-    assert_equal(event.fields["message"], [message], "Expected field 'message' to be ['#{message.inspect}'], is #{event.fields["message"].inspect}")
+    assert_equal(event.fields["message"], [message], 
+                 "Expected field 'message' to be ['#{message.inspect}'], " \
+                 "is #{event.fields["message"].inspect}")
 
-    assert_equal(event.fields["program"], [program], "Expected field 'program' to be ['#{program.inspect}'], is #{event.fields["program"].inspect}")
+    assert_equal(event.fields["program"], [program], 
+                 "Expected field 'program' to be ['#{program.inspect}'], " \
+                 "is #{event.fields["program"].inspect}")
 
-    assert_equal(event.fields["pid"], [pid], "Expected field 'pid' to be ['#{pid.inspect}'], is #{event.fields["pid"].inspect}")
-  end # def test_grok_normal
+    assert_equal(event.fields["pid"], [pid], 
+                 "Expected field 'pid' to be ['#{pid.inspect}'], " \
+                 "is #{event.fields["pid"].inspect}")
+  end # test normal
 
-  def test_grok_multiple_message
-    test_name "groknormal"
+  test "parsing an event with multiple messages (array of strings)" do
     config "pattern" => [ "(?:hello|world) %{NUMBER}" ]
     
     event = LogStash::Event.new
@@ -75,16 +73,15 @@ class TestFilterGrok < Test::Unit::TestCase
 
     @filter.filter(event)
     assert_equal(event.fields["NUMBER"].sort, ["12345", "23456"])
-  end # def test_grok_multiple_message
+  end # parsing event with multiple messages
 
-  def test_speed
-    test_name "grokspeed"
+  test "performance" do
     config "pattern" => [ "%{SYSLOGLINE}" ]
+    puts "Doing performance test"
 
-    iterations = 5000
+    iterations = 50000
 
     start = Time.now
-
     event = LogStash::Event.new
     event.type = @typename
 
@@ -96,20 +93,22 @@ class TestFilterGrok < Test::Unit::TestCase
 
     event.message = "#{timestamp} #{logsource} #{program}[#{pid}]: #{message}"
 
-    check_interval = 1500
+    check_interval = 997
     1.upto(iterations).each do |i|
       event.fields.clear
       @filter.filter(event)
     end
 
     duration = Time.now - start
-    max_duration = 10
-    puts "filters/grok speed test; #{iterations} iterations: #{duration} seconds (#{"%.3f" % (iterations / duration)} per sec)"
-    assert(duration < max_duration, "Should be able to do #{iterations} grok parses in less than #{max_duration} seconds, got #{duration} seconds")
-  end # test_formats
+    max_duration = 20
+    puts "filters/grok speed test; #{iterations} iterations: #{duration} " \
+         "seconds (#{"%.3f" % (iterations / duration)} per sec)"
+    assert(duration < max_duration, 
+           "Should be able to do #{iterations} grok parses in less " \
+           "than #{max_duration} seconds, got #{duration} seconds")
+  end # performance test
 
-  def test_grok_type_hinting_int
-    test_name "groktypehinting_int"
+  test "grok pattern type coercion to integer" do
     config "pattern" => [ "%{NUMBER:foo:int}" ]
     
     event = LogStash::Event.new
@@ -125,10 +124,9 @@ class TestFilterGrok < Test::Unit::TestCase
     assert_equal([expect], event.fields["foo"],
                  "Expected field 'foo' to be [#{expect.inspect}], is " \
                  "#{event.fields["expect"].inspect}")
-  end # def test_grok_type_hinting_int
+  end # test int type coercion
 
-  def test_grok_type_hinting_float
-    test_name "groktypehinting_float"
+  test "pattern type coercion to float" do
     config "pattern" => [ "%{NUMBER:foo:float}" ]
     
     event = LogStash::Event.new
@@ -138,12 +136,15 @@ class TestFilterGrok < Test::Unit::TestCase
     event.message = "#{expect}"
 
     @filter.filter(event)
-    assert_equal(expect.class, event.fields["foo"].first.class, "Expected field 'foo' to be of type #{expect.class.name} but got #{event.fields["foo"].first.class.name}")
-    assert_equal([expect], event.fields["foo"], "Expected field 'foo' to be [#{expect.inspect}], is #{event.fields["foo"].inspect}")
-  end # def test_grok_type_hinting_float
+    assert_equal(expect.class, event.fields["foo"].first.class,
+                 "Expected field 'foo' to be of type #{expect.class.name} " \
+                 "but got #{event.fields["foo"].first.class.name}")
+    assert_equal([expect], event.fields["foo"],
+                 "Expected field 'foo' to be [#{expect.inspect}], " \
+                 "is #{event.fields["foo"].inspect}")
+  end # test float coercion
 
-  def test_grok_inline_define
-    test_name "grok_inline_define"
+  test "in-line pattern definitions" do
     config "pattern" => [ "%{FIZZLE=\\d+}" ]
     
     event = LogStash::Event.new
@@ -153,12 +154,15 @@ class TestFilterGrok < Test::Unit::TestCase
     event.message = "hello #{expect}"
 
     @filter.filter(event)
-    assert_equal(expect.class, event.fields["FIZZLE"].first.class, "Expected field 'FIZZLE' to be of type #{expect.class.name} but got #{event.fields["FIZZLE"].first.class.name}")
-    assert_equal([expect], event.fields["FIZZLE"], "Expected field 'FIZZLE' to be [#{expect.inspect}], is #{event.fields["FIZZLE"].inspect}")
-  end # def test_grok_type_hinting_float
+    assert_equal(expect.class, event.fields["FIZZLE"].first.class,
+                 "Expected field 'FIZZLE' to be of type #{expect.class.name} " \
+                 "but got #{event.fields["FIZZLE"].first.class.name}")
+    assert_equal([expect], event.fields["FIZZLE"],
+                 "Expected field 'FIZZLE' to be [#{expect.inspect}], " \
+                 "is #{event.fields["FIZZLE"].inspect}")
+  end # test in-line definitions
 
-  def test_grok_field_name_attribute
-    test_name "grok_field_name_attribute"
+  test "processing fields other than the @message" do
     config "rum" => [ "%{FIZZLE=\\d+}" ]
     
     event = LogStash::Event.new
@@ -168,12 +172,15 @@ class TestFilterGrok < Test::Unit::TestCase
     event.fields["rum"] = "hello #{expect}"
 
     @filter.filter(event)
-    assert_equal(expect.class, event.fields["FIZZLE"].first.class, "Expected field 'FIZZLE' to be of type #{expect.class.name} but got #{event.fields["FIZZLE"].first.class.name}")
-    assert_equal([expect], event.fields["FIZZLE"], "Expected field 'FIZZLE' to be [#{expect.inspect}], is #{event.fields["FIZZLE"].inspect}")
-  end # def test_grok_field_name_attribute
+    assert_equal(expect.class, event.fields["FIZZLE"].first.class,
+                 "Expected field 'FIZZLE' to be of type #{expect.class.name}, " \
+                 "but got #{event.fields["FIZZLE"].first.class.name}")
+    assert_equal([expect], event.fields["FIZZLE"],
+                 "Expected field 'FIZZLE' to be [#{expect.inspect}], " \
+                 "is #{event.fields["FIZZLE"].inspect}")
+  end # test processing custom fields
 
-  def test_grok_field_name_and_pattern_coexisting
-    test_name "grok_field_name_attribute"
+  test "parsing custom fields and default @message" do
     config "rum" => [ "%{FIZZLE=\\d+}" ], "pattern" => "%{WORD}", "break_on_match" => "false"
     
     event = LogStash::Event.new
@@ -190,9 +197,8 @@ class TestFilterGrok < Test::Unit::TestCase
     assert_equal([expect], event.fields["FIZZLE"],
                  "Expected field 'FIZZLE' to be [#{expect.inspect}], is " \
                  "#{event.fields["FIZZLE"].inspect}")
-
     assert_equal(["something"], event.fields["WORD"],
                  "Expected field 'WORD' to be ['something'], is " \
                  "#{event.fields["WORD"].inspect}")
-  end # def test_grok_field_name_attribute
-end # class TestFilterGrok
+  end # parsing custom fields + default @message
+end # testing LogStash::Filters::Grok
