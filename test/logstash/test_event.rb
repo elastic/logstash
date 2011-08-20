@@ -1,10 +1,4 @@
-require "rubygems"
-$:.unshift File.dirname(__FILE__) + "/../../lib"
-$:.unshift File.dirname(__FILE__) + "/../"
-
-require "minitest/spec"
-require "minitest/autorun" if $0 == __FILE__
-require "logstash"
+require File.join(File.dirname(__FILE__), "minitest")
 require "logstash/event"
 
 describe LogStash::Event do
@@ -15,14 +9,16 @@ describe LogStash::Event do
     @event.source = "/home/foo"
   end
 
-  it "must have a functional sprintf method" do
+  test "sprintf method should work" do
     @event["test"] = "test"
     ["@type", "@message", "@source", "test"].each do |name|
       assert_equal(@event[name], @event.sprintf("%{#{name}}"))
+      assert_equal("hello " + @event[name] + " world", 
+                   @event.sprintf("hello %{#{name}} world"))
     end
   end
 
-  it "on sprintf, join array fields by ','" do
+  test "sprintf should join array fields by comma" do
     @event.fields["foo"] = ["one", "two", "three"]
     assert_equal(@event.fields["foo"].join(","), @event.sprintf("%{foo}"))
   end # sprintf testing
