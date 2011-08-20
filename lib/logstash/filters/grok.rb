@@ -134,6 +134,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       next if ["add_tag", "add_field", "type", "match", "patterns_dir",
                "drop_if_match", "named_captures_only", "pattern",
                "break_on_match" ].include?(field)
+      patterns = [patterns] if patterns.is_a?(String)
+
       if !@patterns.include?(field)
         @patterns[field] = Grok::Pile.new 
         add_patterns_from_files(@patternfiles, @patterns[field])
