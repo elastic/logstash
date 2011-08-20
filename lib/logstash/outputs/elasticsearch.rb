@@ -9,7 +9,7 @@ require "logstash/outputs/base"
 #   uses for it's client. Currently we use elasticsearch 0.16.0
 #
 # You can learn more about elasticseasrch at <http://elasticsearch.org>
-class LogStash::Outputs::Elasticsearch < LogStash::Outputs::Base
+class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   config_name "elasticsearch"
 
