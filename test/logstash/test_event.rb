@@ -3,6 +3,7 @@ $:.unshift File.dirname(__FILE__) + "/../../lib"
 $:.unshift File.dirname(__FILE__) + "/../"
 
 require "minitest/spec"
+require "minitest/autorun" if $0 == __FILE__
 require "logstash"
 require "logstash/event"
 
