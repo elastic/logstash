@@ -9,6 +9,7 @@ gem "stomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license
 gem "awesome_print" # MIT License
 
+gem "minitest" # License: Ruby
 gem "rack" # License: MIT
 gem "mizuno" # License: Apache 2.0
 gem "sinatra" # License: MIT-style
