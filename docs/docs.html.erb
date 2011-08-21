@@ -35,6 +35,10 @@ This is what it might look like in your config file:
      else 
        annotation = "#{config[:validate]}"
      end
+
+     if setting_name.is_a?(Regexp)
+       setting_name = "/" + setting_name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
+     end
      annotation += " (required)" if config[:required]
      annotation += ", default: #{config[:default].inspect}" if config[:default]
 -%>
@@ -47,6 +51,14 @@ This is what it might look like in your config file:
 <h3> Details </h3>
 
 <% sorted_settings.each do |setting_name, config| -%>
+<%
+     if setting_name.is_a?(Regexp)
+       setting_name = "/" + setting_name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
+       is_regexp = true
+     else
+       is_regexp = false
+     end
+-%>
 <h4> 
   <a name="setting_<%= setting_name %>">
     <%= setting_name %><%= " (required setting)" if config[:required] %>
@@ -57,6 +69,9 @@ This is what it might look like in your config file:
 <ul>
 <% if config[:deprecated] -%>
   <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+<% end -%>
+<% if is_regexp -%>
+  <li> The configuration attribute name here is anything that matches the above regular expression. </li>
 <% end -%>
 <% if config[:validate].is_a?(Symbol) -%>
   <li> Value type is <%= config[:validate] %> </li>
@@ -78,4 +93,4 @@ This is what it might look like in your config file:
 
 <hr>
 
-This is documentation from <a href="https://github.com/logstash/logstash/blob/v<%= LOGSTASH_VERSION %>/<%= file %>"><%= file %>
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v<%= LOGSTASH_VERSION %>/<%= file %>"><%= file %></a>
