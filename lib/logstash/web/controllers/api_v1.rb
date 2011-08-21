@@ -22,6 +22,8 @@ class LogStash::Web::Server < Sinatra::Base
       @results = results
       if @results.error?
         status 500
+        @error_message = (@results.error_message or "Error, but not sure what?")
+
         case format
         when "html"
           content_type :html
@@ -99,6 +101,8 @@ class LogStash::Web::Server < Sinatra::Base
   def report_error(exception)
     format = (params[:format] or "json")
     status 500
+
+    @error_message = exception
 
     case format
     when "html"
