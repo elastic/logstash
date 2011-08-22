@@ -23,11 +23,12 @@ public class logstash {
   }
 
   public void run(String[] args) {
+    final String script_path = "logstash/runner.rb";
     ClassLoader loader = this.getClass().getClassLoader();
-    InputStream script = loader.getResourceAsStream("logstash/runner.rb");
+    InputStream script = loader.getResourceAsStream(script_path);
     //container.runScriptlet(PathType.RELATIVE, "logstash/runner.rb");
     this.container.setArgv(args);
-    this.container.runScriptlet(script, "logstash/runner.rb");
+    this.container.runScriptlet(script, script_path);
   }
 }
 
