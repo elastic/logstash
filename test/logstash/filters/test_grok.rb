@@ -203,7 +203,6 @@ describe LogStash::Filters::Grok do
   end # def test_grok_field_name_attribute
 
   test "adding fields on match" do
-    test_name "add_field"
     config "str" => "test",
            "add_field" => ["new_field", "new_value"]
 
@@ -215,7 +214,6 @@ describe LogStash::Filters::Grok do
   end # adding fields on match
 
   test "should not add fields if match fails" do
-    test_name "add_field"
     config "str" => "test",
            "add_field" => ["new_field", "new_value"]
 
