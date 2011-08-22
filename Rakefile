@@ -131,12 +131,6 @@ namespace :package do
   monolith_deps = [ "vendor:jruby", "vendor:gems", "vendor:elasticsearch", "compile" ]
 
   namespace :monolith do
-    task :tar => monolith_deps do
-      paths = %w{ bin CHANGELOG CONTRIBUTORS etc examples Gemfile Gemfile.lock
-                  INSTALL lib LICENSE patterns Rakefile README.md STYLE.md test
-                  TODO USAGE vendor/bundle vendor/jar }
-      sh "tar -zcf logstash-monolithic-someversion.tar.gz #{paths.join(" ")}"
-    end # package:monolith:tar
 
     task :jar => monolith_deps do
       builddir = "build/monolith-jar"
