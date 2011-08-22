@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "bunny" # for amqp support
   spec.add_dependency "uuidtools" # for naming amqp queues
   spec.add_dependency "filewatch", "~> 0.2.3"  # for file tailing
-  spec.add_dependency "jls-grok", "~> 0.4.7" # for grok filter
+  spec.add_dependency "jls-grok", "~> 0.5.2" # for grok filter
   spec.add_dependency "jruby-elasticsearch", "~> 0.0.7"
   spec.add_dependency "stomp" # for stomp protocol
   spec.add_dependency "json"
