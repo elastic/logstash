@@ -2,10 +2,16 @@ require "rubygems"
 $: << File.join(File.dirname(__FILE__), "..")
 $: << File.join(File.dirname(__FILE__), "..", "..", "test")
 require "logstash/namespace"
+require "java"
 
 class LogStash::Runner
   def main(args)
     $: << File.join(File.dirname(__FILE__), "../")
+
+    if args.empty?
+      $stderr.puts "No arguments given."
+      java.lang.System.exit(1)
+    end
 
     @runners = []
     while !args.empty?
