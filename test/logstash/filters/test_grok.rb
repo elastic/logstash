@@ -200,5 +200,30 @@ describe LogStash::Filters::Grok do
     assert_equal(["something"], event.fields["WORD"],
                  "Expected field 'WORD' to be ['something'], is " \
                  "#{event.fields["WORD"].inspect}")
-  end # parsing custom fields + default @message
-end # testing LogStash::Filters::Grok
+  end # def test_grok_field_name_attribute
+
+  test "adding fields on match" do
+    test_name "add_field"
+    config "str" => "test",
+           "add_field" => ["new_field", "new_value"]
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event["str"] = "test"
+    @filter.filter(event)
+    assert_equal(["new_value"], event["new_field"])
+  end # adding fields on match
+
+  test "should not add fields if match fails" do
+    test_name "add_field"
+    config "str" => "test",
+           "add_field" => ["new_field", "new_value"]
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event["str"] = "fizzle"
+    @filter.filter(event)
+    assert_equal(nil, event["new_field"],
+                "Grok should not add fields on failed matches")
+  end # should not add fields if match fails
+end # tests for LogStash::Filters::Grok

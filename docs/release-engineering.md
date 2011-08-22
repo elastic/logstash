@@ -23,13 +23,12 @@ right? ;)
 # building a release.
 
 * Make sure all tests pass (rake test)
-  * rake test
+  * ruby bin/logstash test
+  * java -jar logstash-x.y.z-monolithic.jar test
 * Update VERSION.rb
   * VERSION=$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 * Ensure CHANGELOG is up-to-date
-* git tag v$VERSION
-* git push origin master
-* git push --tags
+* git tag v$VERSION; git push origin master; git push --tags
 * Build binaries
   * rake package:gem
   * rake package:monolith:jar

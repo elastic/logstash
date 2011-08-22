@@ -1,3 +1,17 @@
+1.0.17 (Aug 12, 2011)
+  - Bugs fixed
+    - [LOGSTASH-147] - grok filter incorrectly adding fields when a match failed
+    - [LOGSTASH-151] - Fix bug in routing keys on AMQP 
+    - [LOGSTASH-156] - amqp issue with 1.0.16?
+
+  - Improvement
+    - [LOGSTASH-148] - AMQP input should allow queue name to be specified separately from exchange name
+    - [LOGSTASH-157] - Plugin doc generator should make regexp config names more readable
+
+  - New Feature
+    - [LOGSTASH-153] - syslog input: make timestamp an optional field
+    - [LOGSTASH-154] - Make error reporting show up in the web UI
+
 1.0.16 (Aug 18, 2011)
   - Fix elasticsearch client problem with 1.0.15 - jruby-elasticsearch gem
     version required is now 0.0.10 (to work with elasticsearch 0.17.6)

@@ -28,6 +28,9 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
   # The name of the exchange
   config :name, :validate => :string, :required => true
+
+  # The name of the queue. If not set, defaults to the same name as the exchange.
+  config :queue_name, :validate => :string
   
   # The routing key to bind to
   config :key, :validate => :string
@@ -37,6 +40,10 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
   # Is this exchange durable? (aka; Should it survive a broker restart?)
   config :durable, :validate => :boolean, :default => true
+
+  # Is this queue durable? (aka; Should it survive a broker restart?).
+  # If you omit this setting, the 'durable' property will be used as default.
+  config :queue_durable, :validate => :boolean
 
   # Enable or disable debugging
   config :debug, :validate => :boolean, :default => false
@@ -79,6 +86,14 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
       @amqpurl += "#{@user}:xxxxxx@"
     end
     @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@name}"
+
+    if @queue_name.nil?
+      @queue_name = @name
+    end
+
+    if @queue_durable.nil?
+      @queue_durable = @durable
+    end
   end # def register
 
   def run(queue)
@@ -88,7 +103,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
       return if terminating?
       @bunny.start
 
-      @queue = @bunny.queue(@name, :durable => @durable)
+      @queue = @bunny.queue(@queue_name, :durable => @queue_durable)
       exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
       @queue.bind(exchange, :key => @key)
       
