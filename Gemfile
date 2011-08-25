@@ -8,6 +8,7 @@ gem "jruby-elasticsearch", "~> 0.0.10" # BSD License
 gem "stomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license
 gem "awesome_print" # MIT License
+gem "jruby-openssl" # For enabling SSL support, CPL/GPL 2.0
 
 gem "rack" # License: MIT
 gem "mizuno" # License: Apache 2.0
