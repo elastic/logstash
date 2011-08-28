@@ -29,9 +29,9 @@ logs.
 
 # graylog2
 
-<http://graylog2.org/>
+[http://graylog2.org/](http://graylog2.org)
 
-TBD
+_Overview to be written_
 
 You can use graylog2 with logstash by using the 'gelf' output to send logstash
 events to a graylog2 server. This gives you logstash's excellent input and
@@ -39,15 +39,15 @@ filter features while still being able to use the graylog2 web interface.
 
 # whoops
 
-<http://www.whoopsapp.com/>
+[whoops site](http://www.whoopsapp.com/)
 
-TBD
+_Overview to be written_
 
 A logstash output to whoops is coming soon - <https://logstash.jira.com/browse/LOGSTASH-133>
 
 # flume
 
-<https://github.com/cloudera/flume/wiki>
+[flume site](https://github.com/cloudera/flume/wiki)
 
 Flume is primarily a transport system aimed at reliably copying logs from
 application servers to HDFS.
@@ -57,4 +57,4 @@ at a logstash syslog input.
 
 # scribe
 
-TBD
+_Overview to be written_
