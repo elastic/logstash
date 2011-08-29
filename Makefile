@@ -97,7 +97,7 @@ build/monolith: compile copy-ruby-files
 	-mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
 	find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
-	| (cd $@; xargs -P2 -tn1 jar xf)
+	| (cd $@; xargs -tn1 jar xf)
 	@# Purge any extra files we don't need in META-INF (like manifests and
 	@# TODO(sissel): Simplify this.
 	-rm -f $@/META-INF/{INDEX.LIST,MANIFEST.MF,ECLIPSEF.RSA,ECLIPSEF.SF}
