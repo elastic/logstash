@@ -36,9 +36,28 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     # This comes from RFC3164, mostly.
     # Optional fields (priority, host, timestamp) are because some syslog implementations
     # don't send these under some circumstances.
+    year = '[0-9]+'
+    month = '\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b'
+    monthnum = '(?:0?[1-9]|1[0-2])'
+    monthday = '(?:3[01]|[1-2]?[0-9]|0?[1-9])'
+    hour = '(?:2[0123]|[01][0-9])'
+    minute = '(?:[0-5][0-9])'
+    second = '(?:(?:[0-5][0-9]|60)(?:[.,][0-9]+)?)'
+
+    time = "(?!<[0-9])#{hour}:#{minute}(?::#{second})(?![0-9])"
+    iso8601_timezone = "(?:Z|[+-]#{hour}(?::?#{minute}))"
+
+    timestamp = "#{month} +#{monthday} #{time}"
+    timestamp8601 = "#{year}-#{monthnum}-#{monthday}[T ]#{hour}:?#{minute}(?::?#{second})?#{iso8601_timezone}?"
+
+    priority = '<([0-9]{1,3})>'
+    host = '\S*[^ :]'
+    msg = '.*'
+
+    @@timestamp8601_re = Regexp.new(timestamp8601)
+
     @@syslog_re ||= \
-      /(?:<([0-9]{1,3})>)?(?:([A-z]{3}  ?[0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2}) )?(?:(\S*[^ :]) )?(.*)/
-      #   <priority>      timestamp     Mmm dd hh:mm:ss                           host        msg
+      Regexp.new("(?:#{priority})?(?:(#{timestamp}|#{timestamp8601}) )?(?:(#{host}) )?(#{msg})")
     
     @tcp_clients = []
   end # def register
@@ -162,8 +181,12 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
       # TODO(sissel): Use the date filter, somehow.
       if !match[2].nil?
-        event.timestamp = LogStash::Time.to_iso8601(
-          DateTime.strptime(match[2], "%b %d %H:%M:%S"))
+        if match[2].match(@@timestamp8601_re)
+          event.timestamp = match[2]
+        else
+          event.timestamp = LogStash::Time.to_iso8601(
+            DateTime.strptime(match[2], "%b %d %H:%M:%S"))
+        end
       end
 
       # Hostname is optional, use if present in message, otherwise use source
