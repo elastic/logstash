@@ -7,9 +7,12 @@ ELASTICSEARCH_VERSION=0.17.6
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 
+PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/')
+
 default: compile
 
 # Compile config grammar (ragel -> ruby)
+.PHONY: compile-grammar
 compile-grammar: lib/logstash/config/grammar.rb
 lib/logstash/config/grammar.rb: lib/logstash/config/grammar.rl
 	$(MAKE) -C lib/logstash/config grammar.rb
@@ -17,9 +20,10 @@ lib/logstash/config/grammar.rb: lib/logstash/config/grammar.rl
 .PHONY: clean
 clean:
 	-rm -rf .bundle
-	-sh "rm -rf build"
-	-sh "rm -rf vendor"
+	-rm -rf build
+	-rm -rf vendor
 
+.PHONY: compile
 compile: compile-grammar compile-runner | build/ruby
 
 .PHONY: compile-runner
@@ -27,6 +31,7 @@ compile-runner: build/ruby/logstash/runner.class
 build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby
 	(cd lib; jrubyc -t ../build/ruby logstash/runner.rb) 
 
+# TODO(sissel): Stop using cpio for this
 .PHONY: copy-ruby-files
 copy-ruby-files: | build/ruby
 	@# Copy lib/ and test/ files to the root.
@@ -35,18 +40,13 @@ copy-ruby-files: | build/ruby
 	git ls-files | grep '^test/.*\.rb$$' | sed -e 's,^test/,,' \
 	| (cd test; cpio -p --make-directories ../build/ruby)
 
-# TODO(sissel): Copy all .rb files from lib and test to build/ruby
-
-.PHONY: jar
-jar: | compile
-
 vendor: 
 	mkdir $@
 
 vendor/jar: | vendor
 	mkdir $@
 
-#vendor-jruby: vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
+.PHONY: vendor-jruby
 vendor-jruby: $(JRUBY)
 $(JRUBY): | vendor/jar
 	wget -O $@ $(JRUBY_URL)/$(shell basename $@)
@@ -57,6 +57,7 @@ vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | vendor/jar
 	wget --no-check-certificate \
 		-O $@ $(ELASTICSEARCH_URL)/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz
 
+.PHONY: vendor-elasticsearch
 vendor-elasticsearch: $(ELASTICSEARCH)
 $(ELASTICSEARCH): $(ELASTICSEARCH).tar.gz | vendor/jar
 	@echo "Pulling the jars out of $<"
@@ -96,7 +97,7 @@ build/monolith: compile copy-ruby-files
 	-mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
 	find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
-	| (cd $@; xargs -P2 -tn1 jar xf)
+	| (cd $@; xargs -tn1 jar xf)
 	@# Purge any extra files we don't need in META-INF (like manifests and
 	@# TODO(sissel): Simplify this.
 	-rm -f $@/META-INF/{INDEX.LIST,MANIFEST.MF,ECLIPSEF.RSA,ECLIPSEF.SF}
@@ -120,6 +121,33 @@ build/logstash-$(VERSION)-monolithic.jar:
 test: 
 	ruby bin/logstash test
 
+.PHONY: docs
+docs: OUTPUT=build/docs
 docs: docgen doccopy docindex
 
-# XXX Finish here' stopped at require_output_env
+build/docs:
+	-mkdir -p $@
+
+doccopy: $(addprefix build/,$(shell git ls-files | grep '^docs/')) | $(OUTPUT)
+docindex: build/docs/index.html
+
+#docgen: 
+	#$(MAKE) $(MAKEFLAGS) $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(FILES))))
+docgen: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
+
+build/docs/inputs/%.html: lib/logstash/inputs/%.rb
+build/docs/filters/%.html: lib/logstash/filters/%.rb
+build/docs/outputs/%.html: lib/logstash/outputs/%.rb
+
+build/docs/inputs/%.html build/docs/filters/%.html build/docs/outputs/%.html:
+	ruby docs/docgen.rb -o $@ $<
+
+build/docs/%: docs/%
+	@-mkdir -p $(shell dirname $@)
+	sed -re 's/%VERSION%/$(VERSION)/g' $< > $@
+
+build/docs/index.html: docs/generate_index.rb
+	ruby $< > $@
+
+publish: | gem
+	gem push logstash-$(VERSION).gem
