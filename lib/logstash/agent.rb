@@ -498,7 +498,9 @@ class LogStash::Agent
       end
     end
 
-    @logger.warn("Input #{input.to_s} shutting down")
+    # The following used to be a warning, but it confused so many users that
+    # I disabled it until something better can be provided.
+    #@logger.info("Input #{input.to_s} shutting down")
 
     # If we get here, the plugin finished, check if we need to shutdown.
     shutdown_if_none_running(LogStash::Inputs::Base, queue)
