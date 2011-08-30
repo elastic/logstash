@@ -7,10 +7,19 @@ are pretty much free to use it however you want in whatever way.
 
 For more info, see <http://logstash.net/>
 
-File bugs here: <http://logstash.jira.com>
-
 ## Contributing
 
-If you're going to send me patches, I prefer pull requests on github. However, I will also accept normal patches.
+All contributions are welcome: ideas, patches, documentation, bug reports,
+complaints, and even something you drew up on a napkin.
 
-If you want to request a new feature, file it on jira: <http://logstash.jira.com>
+It is more important that you contribute than how you contribute. Ideas and
+other things can come in the as a patch, a bug report, an emails, or over IRC.
+
+That said, some basic guidelines:
+
+* If you want to send patches, best way is to fork this repo and send me a pull
+  request. I will also accept normal diff/patch patches over email.
+* Found a bug? File it on [jira](https://logstash.jira.com/secure/Dashboard.jspa) 
+  or send details to the [mailing list](http://groups.google.com/group/logstash-users)
+* Have an idea or a specific feature request? Do the same as above.
+
