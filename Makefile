@@ -7,7 +7,7 @@ ELASTICSEARCH_VERSION=0.17.6
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 
-PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/')
+PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/base.rb$$')
 
 default: compile
 
@@ -122,20 +122,17 @@ test:
 	ruby bin/logstash test
 
 .PHONY: docs
-docs: OUTPUT=build/docs
 docs: docgen doccopy docindex
 
-build/docs:
-	-mkdir -p $@
-
-doccopy: $(addprefix build/,$(shell git ls-files | grep '^docs/')) | $(OUTPUT)
+doccopy: $(addprefix build/,$(shell git ls-files | grep '^docs/')) | build/docs
 docindex: build/docs/index.html
 
 docgen: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 
 build/docs: build
 	-mkdir $@
-build/docs/inputs build/docs/filters build/docs/outputs: build/docs
+
+build/docs/inputs build/docs/filters build/docs/outputs: | build/docs
 	-mkdir $@
 
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb | build/docs/inputs
