@@ -64,7 +64,6 @@ are parsing apache logs fully, we can trivially add additional metrics:
 
         # Use the 'bytes' field from the apache log as the count value.
         count => [ "apache.bytes", "%{bytes}" ]
-        ]
       }
     }
 
