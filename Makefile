@@ -131,23 +131,27 @@ build/docs:
 doccopy: $(addprefix build/,$(shell git ls-files | grep '^docs/')) | $(OUTPUT)
 docindex: build/docs/index.html
 
-#docgen: 
-	#$(MAKE) $(MAKEFLAGS) $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(FILES))))
 docgen: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 
-build/docs/inputs/%.html: lib/logstash/inputs/%.rb
-build/docs/filters/%.html: lib/logstash/filters/%.rb
-build/docs/outputs/%.html: lib/logstash/outputs/%.rb
+build/docs: build
+	-mkdir $@
+build/docs/inputs build/docs/filters build/docs/outputs: build/docs
+	-mkdir $@
 
-build/docs/inputs/%.html build/docs/filters/%.html build/docs/outputs/%.html:
-	ruby docs/docgen.rb -o $@ $<
+build/docs/inputs/%.html: lib/logstash/inputs/%.rb | build/docs/inputs
+	ruby docs/docgen.rb -o build/docs $<
+build/docs/filters/%.html: lib/logstash/filters/%.rb | build/docs/filters
+	ruby docs/docgen.rb -o build/docs $<
+build/docs/outputs/%.html: lib/logstash/outputs/%.rb | build/docs/outputs
+	ruby docs/docgen.rb -o build/docs $<
 
 build/docs/%: docs/%
 	@-mkdir -p $(shell dirname $@)
 	sed -re 's/%VERSION%/$(VERSION)/g' $< > $@
 
+build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 build/docs/index.html: docs/generate_index.rb
-	ruby $< > $@
+	ruby $< build/docs > $@
 
 publish: | gem
 	gem push logstash-$(VERSION).gem
