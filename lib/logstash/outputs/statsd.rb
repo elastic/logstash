@@ -15,7 +15,7 @@ require "logstash/namespace"
 #
 # A simple example usage of this is to count HTTP hits by response code; to learn
 # more about that, check out the 
-# [log metrics tutorial](../../tutorials/metrics-from-logs)
+# [log metrics tutorial](../tutorials/metrics-from-logs)
 class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # Regex stolen from statsd code
   RESERVED_CHARACTERS_REGEX = /[\:\|\@]/
