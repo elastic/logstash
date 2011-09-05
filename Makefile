@@ -3,7 +3,7 @@ VERSION=$(shell ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 JRUBY_VERSION=1.6.4
 JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
-JRUBYC=java -jar $(PWD)/$(JRUBY) -S jrubyc
+JRUBYC=java -Djruby.compat.version=RUBY1_9 -jar $(PWD)/$(JRUBY) -S jrubyc
 ELASTICSEARCH_VERSION=0.17.6
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
@@ -11,6 +11,9 @@ ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/')
 
 default: jar
+
+debug:
+	echo $(JRUBY)
 
 # Compile config grammar (ragel -> ruby)
 .PHONY: compile-grammar
@@ -30,7 +33,7 @@ compile: compile-grammar compile-runner | build/ruby
 .PHONY: compile-runner
 compile-runner: build/ruby/logstash/runner.class
 build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
-	(cd lib; $(JRUBYC) -t ../build/ruby logstash/runner.rb) 
+	(cd lib; JRUBY_OPTS=--1.9 $(JRUBYC) -t ../build/ruby logstash/runner.rb) 
 
 # TODO(sissel): Stop using cpio for this
 .PHONY: copy-ruby-files
@@ -117,7 +120,7 @@ build/monolith: compile copy-ruby-files
 	| (cd $@; xargs -tn1 jar xf)
 	@# Purge any extra files we don't need in META-INF (like manifests and
 	@# TODO(sissel): Simplify this.
-	-rm -f $@/META-INF/{INDEX.LIST,MANIFEST.MF,ECLIPSEF.RSA,ECLIPSEF.SF}
+	-rm -f $@/META-INF/{INDEX.LIST,MANIFEST.MF,ECLIPSEF.RSA,ECLIPSEF.SF,BCKEY.SF,BCKEY.DSA,NOTICE{,.txt},LICENSE{,.txt}}
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
