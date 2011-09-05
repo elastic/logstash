@@ -2,7 +2,6 @@ require "rubygems"
 $: << File.join(File.dirname(__FILE__), "..")
 $: << File.join(File.dirname(__FILE__), "..", "..", "test")
 require "logstash/namespace"
-require "java"
 
 class LogStash::Runner
   def main(args)
@@ -12,6 +11,21 @@ class LogStash::Runner
       $stderr.puts "No arguments given."
       java.lang.System.exit(1)
     end
+
+    if (RUBY_ENGINE rescue nil) != "jruby"
+      $stderr.puts "JRuby is required to use this."
+      return 1
+    end
+
+    if RUBY_VERSION != "1.9.2"
+      $stderr.puts "Ruby 1.9.2 mode is required."
+      $stderr.puts "Options for fixin this: "
+      $stderr.puts "  * If doing 'ruby bin/logstash ...' add --1.9 flag to 'ruby'"
+      $stderr.puts "  * If doing 'java -jar ... ' add -Djruby.compat.version=RUBY1_9 to java flags"
+      return 1
+    end
+
+    require "java"
 
     @runners = []
     while !args.empty?
