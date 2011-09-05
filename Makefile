@@ -3,6 +3,7 @@ VERSION=$(shell ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 JRUBY_VERSION=1.6.4
 JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
+JRUBYC=java -jar $(PWD)/$(JRUBY) -S jrubyc
 ELASTICSEARCH_VERSION=0.17.6
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
@@ -29,7 +30,7 @@ compile: compile-grammar compile-runner | build/ruby
 .PHONY: compile-runner
 compile-runner: build/ruby/logstash/runner.class
 build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby
-	(cd lib; jrubyc -t ../build/ruby logstash/runner.rb) 
+	(cd lib; $(JRUBYC) -t ../build/ruby logstash/runner.rb) 
 
 # TODO(sissel): Stop using cpio for this
 .PHONY: copy-ruby-files
@@ -46,10 +47,31 @@ vendor:
 vendor/jar: | vendor
 	mkdir $@
 
-.PHONY: vendor-jruby
-vendor-jruby: $(JRUBY)
-$(JRUBY): | vendor/jar
-	wget -O $@ $(JRUBY_URL)/$(shell basename $@)
+#.PHONY: vendor-jruby
+#vendor-jruby: $(JRUBY)
+#$(JRUBY): | vendor/jar
+	#wget -O $@ $(JRUBY_URL)/$(shell basename $@)
+
+.PHONY: build-jruby
+build-jruby: $(JRUBY)
+
+$(JRUBY): build/jruby/jruby-1.6.4/lib/jruby-complete.jar
+	cp $< $@
+
+build/jruby: build
+	mkdir -p $@
+
+build/jruby/jruby-1.6.4/lib/jruby-complete.jar: build/jruby/jruby-$(JRUBY_VERSION)
+	# Patch that, yo.
+	sed -i -e 's/jruby.default.ruby.version=.*/jruby.default.ruby.version=1.9/' $</default.build.properties
+	(cd $<; ant jar-jruby-complete)
+
+build/jruby/jruby-$(JRUBY_VERSION): build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz
+	tar -C build/jruby/ -zxf $<
+	# Build jruby from source targeted at 1.9
+
+build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz: | build/jruby
+	wget -O $@ http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-src-$(JRUBY_VERSION).tar.gz
 
 vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | vendor/jar
 	@# --no-check-certificate is for github and wget not supporting wildcard
