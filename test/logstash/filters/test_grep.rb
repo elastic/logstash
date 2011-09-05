@@ -1,28 +1,23 @@
 require "rubygems"
-$:.unshift File.dirname(__FILE__) + "/../../../lib"
-$:.unshift File.dirname(__FILE__) + "/../../"
+require File.join(File.dirname(__FILE__), "..", "minitest")
 
-require "test/unit"
 require "logstash/loadlibs"
 require "logstash"
 require "logstash/filters"
 require "logstash/filters/grep"
 require "logstash/event"
 
-class TestFilterGrep < Test::Unit::TestCase
-  def setup
+describe LogStash::Filters::Grep do
+  before do
     @filter = LogStash::Filters.from_name("grep", {})
-  end # def setup
-
-  def test_name(name)
-    @typename = name
-  end # def test_name
+    @typename = "grepper"
+  end
 
   def config(cfg)
     cfg["type"] = @typename
     cfg.each_key do |key|
       if cfg[key].is_a?(String)
-        cfg[key] = cfg[key].to_a
+        cfg[key] = [cfg[key]]
       end
     end
 
@@ -30,8 +25,7 @@ class TestFilterGrep < Test::Unit::TestCase
     @filter.register
   end # def config
 
-  def test_single_match
-    test_name "single_match"
+  test "single grep match" do
     config "str" => "test"
 
     event = LogStash::Event.new
@@ -39,10 +33,9 @@ class TestFilterGrep < Test::Unit::TestCase
     event["str"] = "test: this should not be dropped"
     @filter.filter(event)
     assert_equal(false, event.cancelled?)
-  end # def test_single_match
+  end # testing a single match
 
-  def test_single_match_drop
-    test_name "single_match_dropp"
+  test "single match failure cancels the event" do
     config "str" => "test"
 
     event = LogStash::Event.new
@@ -50,10 +43,9 @@ class TestFilterGrep < Test::Unit::TestCase
     event["str"] = "foo: this should be dropped"
     @filter.filter(event)
     assert_equal(true, event.cancelled?)
-  end # def test_single_match_drop
+  end
 
-  def test_multiple_match
-    test_name "multiple_match"
+  test "multiple match conditions" do
     config "str" => "test", "bar" => "baz"
 
     event = LogStash::Event.new
@@ -64,8 +56,7 @@ class TestFilterGrep < Test::Unit::TestCase
     assert_equal(false, event.cancelled?)
   end # test_multiple_match
 
-  def test_multiple_match_drop
-    test_name "multiple_match_drop"
+  test "multiple match conditions should cancel on failure" do
     config "str" => "test", "bar" => "baz"
 
     event = LogStash::Event.new
@@ -76,8 +67,7 @@ class TestFilterGrep < Test::Unit::TestCase
     assert_equal(true, event.cancelled?)
   end # test_multiple_match_drop
 
-  def test_single_match_regexp
-    test_name "single_match_regexp"
+  test "single condition with regexp syntax" do
     config "str" => "(?i)test.*foo"
 
     event = LogStash::Event.new
@@ -85,10 +75,9 @@ class TestFilterGrep < Test::Unit::TestCase
     event["str"] = "TeST regexp match FoO"
     @filter.filter(event)
     assert_equal(false, event.cancelled?)
-  end # def test_single_match_regexp
+  end
 
-  def test_single_match_regexp_drop
-    test_name "single_match_regexp_drop"
+  test "single condition with regexp syntax cancels on failure" do
     config "str" => "test.*foo"
 
     event = LogStash::Event.new
@@ -98,8 +87,7 @@ class TestFilterGrep < Test::Unit::TestCase
     assert_equal(true, event.cancelled?)
   end # def test_single_match_regexp_drop
 
-  def test_add_fields
-    test_name "add_field"
+  test "adding fields on success" do
     config "str" => "test",
            "add_field" => ["new_field", "new_value"]
 
@@ -110,8 +98,7 @@ class TestFilterGrep < Test::Unit::TestCase
     assert_equal(["new_value"], event["new_field"])
   end # def test_add_fields
 
-  def test_add_fields_with_format
-    test_name "add_field_with_format"
+  test "adding fields with a sprintf value" do
     config "str" => "test",
            "add_field" => ["new_field", "%{@type}"]
 
@@ -123,7 +110,6 @@ class TestFilterGrep < Test::Unit::TestCase
   end # def test_add_fields_with_format
 
   def __DISABLED_FOR_NOW_test_add_fields_multiple_match
-    test_name "add_fields_multiple_match"
     #config "match" => {"str" => "test"},
            #"add_fields" => {"new_field" => "new_value"}},
            #"match" => {"str" => ".*"},
@@ -137,8 +123,7 @@ class TestFilterGrep < Test::Unit::TestCase
     assert_equal(["new_value", "new_value_2"], event["new_field"])
   end # def test_add_fields_multiple_match
 
-  def test_add_tags
-    test_name "add_tags"
+  test "add tags" do
     config "str" => "test",
            "add_tag" => ["new_tag"]
 
@@ -150,8 +135,7 @@ class TestFilterGrep < Test::Unit::TestCase
     assert_equal(["tag", "new_tag"], event.tags)
   end # def test_add_tags
 
-  def test_add_tags_with_format
-    test_name "add_tags_with_format"
+  test "add tags with sprintf value" do
     config "str" => "test",
            "add_tag" => ["%{str}"]
 

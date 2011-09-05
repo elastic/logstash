@@ -3,13 +3,17 @@ VERSION=$(shell ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 JRUBY_VERSION=1.6.4
 JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
+JRUBYC=java -Djruby.compat.version=RUBY1_9 -jar $(PWD)/$(JRUBY) -S jrubyc
 ELASTICSEARCH_VERSION=0.17.6
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/base.rb$$')
 
-default: compile
+default: jar
+
+debug:
+	echo $(JRUBY)
 
 # Compile config grammar (ragel -> ruby)
 .PHONY: compile-grammar
@@ -28,8 +32,8 @@ compile: compile-grammar compile-runner | build/ruby
 
 .PHONY: compile-runner
 compile-runner: build/ruby/logstash/runner.class
-build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby
-	(cd lib; jrubyc -t ../build/ruby logstash/runner.rb) 
+build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
+	(cd lib; JRUBY_OPTS=--1.9 $(JRUBYC) -t ../build/ruby logstash/runner.rb) 
 
 # TODO(sissel): Stop using cpio for this
 .PHONY: copy-ruby-files
@@ -46,10 +50,26 @@ vendor:
 vendor/jar: | vendor
 	mkdir $@
 
-.PHONY: vendor-jruby
-vendor-jruby: $(JRUBY)
-$(JRUBY): | vendor/jar
-	wget -O $@ $(JRUBY_URL)/$(shell basename $@)
+.PHONY: build-jruby
+build-jruby: $(JRUBY)
+
+$(JRUBY): build/jruby/jruby-1.6.4/lib/jruby-complete.jar | vendor/jar
+	cp $< $@
+
+build/jruby: build
+	mkdir -p $@
+
+build/jruby/jruby-1.6.4/lib/jruby-complete.jar: build/jruby/jruby-$(JRUBY_VERSION)
+	# Patch that, yo.
+	sed -i -e 's/jruby.default.ruby.version=.*/jruby.default.ruby.version=1.9/' $</default.build.properties
+	(cd $<; ant jar-jruby-complete)
+
+build/jruby/jruby-$(JRUBY_VERSION): build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz
+	tar -C build/jruby/ -zxf $<
+	# Build jruby from source targeted at 1.9
+
+build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz: | build/jruby
+	wget -O $@ http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-src-$(JRUBY_VERSION).tar.gz
 
 vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | vendor/jar
 	@# --no-check-certificate is for github and wget not supporting wildcard
@@ -92,7 +112,7 @@ build/ruby: | build
 # TODO(sissel): Skip sigar?
 # Run this one always? Hmm..
 .PHONY: build/monolith
-build/monolith: vendor-elasticsearch vendor-jruby vendor-gems | build
+build/monolith: $(ELASTICSEARCH) $(JRUBY) vendor-gems | build
 build/monolith: compile copy-ruby-files
 	-mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
@@ -100,7 +120,7 @@ build/monolith: compile copy-ruby-files
 	| (cd $@; xargs -tn1 jar xf)
 	@# Purge any extra files we don't need in META-INF (like manifests and
 	@# TODO(sissel): Simplify this.
-	-rm -f $@/META-INF/{INDEX.LIST,MANIFEST.MF,ECLIPSEF.RSA,ECLIPSEF.SF}
+	-rm -f $@/META-INF/{INDEX.LIST,MANIFEST.MF,ECLIPSEF.RSA,ECLIPSEF.SF,BCKEY.SF,BCKEY.DSA,NOTICE{,.txt},LICENSE{,.txt}}
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar

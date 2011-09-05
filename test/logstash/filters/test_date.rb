@@ -1,8 +1,6 @@
 require "rubygems"
-$:.unshift File.dirname(__FILE__) + "/../../../lib"
-$:.unshift File.dirname(__FILE__) + "/../../"
+require File.join(File.dirname(__FILE__), "..", "minitest")
 
-require "test/unit"
 require "logstash"
 require "logstash/loadlibs"
 require "logstash/filters"
@@ -10,15 +8,11 @@ require "logstash/filters/date"
 require "logstash/event"
 require "timeout"
 
-class TestFilterDate < Test::Unit::TestCase
-
+describe LogStash::Filters::Date do
   # These tests assume a given timezone.
-  def setup
+  before do
     ENV["TZ"] = "PST8PDT"
-  end
-
-  def test_name(name)
-    @typename = name.gsub(/[ ]/, "_")
+    @typename = "foozle"
   end
 
   def config(cfg)
@@ -33,8 +27,7 @@ class TestFilterDate < Test::Unit::TestCase
     @filter.register
   end
 
-  def test_iso8601
-    test_name "iso8601"
+  test "ISO8601 date parsing" do
     config "field1" => "ISO8601"
 
     times = {
@@ -63,11 +56,10 @@ class TestFilterDate < Test::Unit::TestCase
       @filter.filter(event)
       assert_equal(output, event.timestamp,
                    "Time '#{input}' should parse to '#{output}' but got '#{event.timestamp}'")
-    end
-  end # def test_iso8601
+    end # times.each
+  end # testing ISO8601
 
-  def test_formats
-    test_name "format test"
+  test "parsing with java SimpleDateFormat syntax" do
     #config "field1" => "%b %e %H:%M:%S"
     config "field1" => "MMM dd HH:mm:ss"
 
@@ -85,10 +77,9 @@ class TestFilterDate < Test::Unit::TestCase
       @filter.filter(event)
       assert_equal(output, event.timestamp)
     end
-  end # test_formats
+  end # SimpleDateFormat tests
 
-  def test_speed
-    test_name "speed test"
+  test "performance" do
     config "field1" => "MMM dd HH:mm:ss"
     iterations = 50000
 
@@ -101,10 +92,10 @@ class TestFilterDate < Test::Unit::TestCase
     event = LogStash::Event.new
     event.type = @typename
     event.fields["field1"] = input
-    check_interval = 1500
+    check_interval = 997
     max_duration = 10
-    Timeout.timeout(max_duration * 2) do 
-      1.upto(50000).each do |i|
+    Timeout.timeout(max_duration) do 
+      1.upto(iterations).each do |i|
         @filter.filter(event)
         if i % check_interval == 0
           assert_equal(event.timestamp, output)
@@ -115,5 +106,5 @@ class TestFilterDate < Test::Unit::TestCase
     duration = Time.now - start
     puts "filters/date speed test; #{iterations} iterations: #{duration} seconds (#{iterations / duration} per sec)"
     assert(duration < 10, "Should be able to do #{iterations} date parses in less than #{max_duration} seconds, got #{duration} seconds")
-  end # test_formats
-end
+  end # performance test
+end # describe LogStash::Filters::Date
