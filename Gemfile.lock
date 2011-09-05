@@ -5,9 +5,7 @@ GEM
     bouncy-castle-java (1.5.0146.1)
     bson (1.3.1-java)
     bunny (0.7.4)
-    ffi (1.0.9-java)
-    filewatch (0.2.5)
-      ffi
+    filewatch (0.3.0)
     gelf (1.1.3)
       json
     gmetric (0.1.3)
@@ -16,7 +14,7 @@ GEM
     jruby-elasticsearch (0.0.10)
     jruby-openssl (0.7.4)
       bouncy-castle-java
-    json (1.5.3-java)
+    json (1.5.4-java)
     minitest (2.5.1)
     mizuno (0.4.0)
       rack (>= 1.0.0)
@@ -40,7 +38,7 @@ PLATFORMS
 DEPENDENCIES
   awesome_print
   bunny
-  filewatch (~> 0.2.5)
+  filewatch (~> 0.3.0)
   gelf
   gmetric (~> 0.1.3)
   haml
