@@ -10,7 +10,7 @@ ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/')
 
-default: compile
+default: jar
 
 # Compile config grammar (ragel -> ruby)
 .PHONY: compile-grammar
@@ -29,7 +29,7 @@ compile: compile-grammar compile-runner | build/ruby
 
 .PHONY: compile-runner
 compile-runner: build/ruby/logstash/runner.class
-build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby
+build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
 	(cd lib; $(JRUBYC) -t ../build/ruby logstash/runner.rb) 
 
 # TODO(sissel): Stop using cpio for this
@@ -47,15 +47,10 @@ vendor:
 vendor/jar: | vendor
 	mkdir $@
 
-#.PHONY: vendor-jruby
-#vendor-jruby: $(JRUBY)
-#$(JRUBY): | vendor/jar
-	#wget -O $@ $(JRUBY_URL)/$(shell basename $@)
-
 .PHONY: build-jruby
 build-jruby: $(JRUBY)
 
-$(JRUBY): build/jruby/jruby-1.6.4/lib/jruby-complete.jar
+$(JRUBY): build/jruby/jruby-1.6.4/lib/jruby-complete.jar | vendor/jar
 	cp $< $@
 
 build/jruby: build
@@ -114,7 +109,7 @@ build/ruby: | build
 # TODO(sissel): Skip sigar?
 # Run this one always? Hmm..
 .PHONY: build/monolith
-build/monolith: vendor-elasticsearch vendor-jruby vendor-gems | build
+build/monolith: $(ELASTICSEARCH) $(JRUBY) vendor-gems | build
 build/monolith: compile copy-ruby-files
 	-mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
