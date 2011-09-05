@@ -348,7 +348,11 @@ class LogStash::Agent
 
     # Create N filter-worker threads
     if @filters.length > 0
-      1.times do |n|
+      @filters.each do |filter|
+        filter.logger = @logger
+        filter.register
+      end
+      2.times do |n|
         # TODO(sissel): facter this out into a 'filterworker' that  accepts
         # 'shutdown'
         # Start a filter worker

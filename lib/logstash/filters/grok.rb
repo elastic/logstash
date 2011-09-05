@@ -96,7 +96,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   public
   def register
     gem "jls-grok", ">=0.4.3"
-    require "grok" # rubygem 'jls-grok'
+    require "grok-pure" # rubygem 'jls-grok'
 
     @patternfiles = []
     @patterns_dir += @@patterns_path.to_a
@@ -134,6 +134,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       next if ["add_tag", "add_field", "type", "match", "patterns_dir",
                "drop_if_match", "named_captures_only", "pattern",
                "break_on_match" ].include?(field)
+      patterns = [patterns] if patterns.is_a?(String)
+
       if !@patterns.include?(field)
         @patterns[field] = Grok::Pile.new 
         add_patterns_from_files(@patternfiles, @patterns[field])

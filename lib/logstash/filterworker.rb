@@ -15,10 +15,10 @@ class LogStash::FilterWorker < LogStash::Plugin
 
   def run
     # for each thread.
-    @filters.each do |filter|
-      filter.logger = @logger
-      filter.register
-    end
+    #@filters.each do |filter|
+      #filter.logger = @logger
+      #filter.register
+    #end
 
     while event = @input_queue.pop
       if event == LogStash::SHUTDOWN
@@ -59,7 +59,7 @@ class LogStash::FilterWorker < LogStash::Plugin
         end
       end # @filters.each
 
-      @logger.debug(["Event finished filtering", event])
+      @logger.debug(["Event finished filtering", { :event => event, :thread => Thread.current[:name] }])
       @output_queue.push(event) unless event.cancelled?
     end # events.each 
   end # def filter
