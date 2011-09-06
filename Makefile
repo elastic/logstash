@@ -126,7 +126,7 @@ build/monolith: compile copy-ruby-files
 	find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
 	| (cd $@; xargs -tn1 jar xf)
 	@# Purge any extra files we don't need in META-INF (like manifests and
-	@# TODO(sissel): Simplify this.
+	@# signature files)
 	-rm -f $@/META-INF/*.LIST
 	-rm -f $@/META-INF/*.MF
 	-rm -f $@/META-INF/*.RSA
