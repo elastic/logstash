@@ -160,7 +160,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     if !event.tags.include?("_grokparsefailure")
       # Per RFC3164, priority = (facility * 8) + severity
       #                       = (facility << 3) & (severity)
-      priority = event.fields['priority'].to_i rescue 13
+      priority = event.fields["priority"].first.to_i rescue 13
       severity = priority & 7   # 7 is 111 (3 bits)
       facility = priority >> 3
       event.fields["priority"] = priority
