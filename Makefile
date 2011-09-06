@@ -127,7 +127,12 @@ build/monolith: compile copy-ruby-files
 	| (cd $@; xargs -tn1 jar xf)
 	@# Purge any extra files we don't need in META-INF (like manifests and
 	@# TODO(sissel): Simplify this.
-	-rm -f $@/META-INF/{INDEX.LIST,MANIFEST.MF,ECLIPSEF.RSA,ECLIPSEF.SF,BCKEY.SF,BCKEY.DSA,NOTICE{,.txt},LICENSE{,.txt}}
+	-rm -f $@/META-INF/*.LIST
+	-rm -f $@/META-INF/*.MF
+	-rm -f $@/META-INF/*.RSA
+	-rm -f $@/META-INF/*.SF
+	-rm -f $@/META-INF/NOTICE $@/META-INF/NOTICE.txt
+	-rm -f $@/META-INF/LICENSE $@/META-INF/LICENSE.txt
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
