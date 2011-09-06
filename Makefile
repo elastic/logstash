@@ -12,6 +12,13 @@ PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters
 
 default: jar
 
+.PHONY: pre-flight-check
+pre-flight-check: check-ruby-is-jruby
+
+.PHONY: check-ruby-is-jruby
+check-ruby-is-jruby:
+	ruby -e 'if RUBY_ENGINE != "jruby"; puts "JRuby is required to build."; exit 1; else; puts "JRuby OK"; end'
+
 debug:
 	echo $(JRUBY)
 
@@ -47,7 +54,7 @@ copy-ruby-files: | build/ruby
 vendor: 
 	mkdir $@
 
-vendor/jar: | vendor
+vendor/jar: | vendor pre-flight-check
 	mkdir $@
 
 .PHONY: build-jruby
