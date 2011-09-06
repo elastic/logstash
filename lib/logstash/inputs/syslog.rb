@@ -1,7 +1,8 @@
 require "date"
+require "logstash/filters/grok"
+require "logstash/filters/date"
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "logstash/time" # should really use the filters/date.rb bits
 require "socket"
 
 # Read syslog messages as events over the network.
@@ -33,31 +34,19 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
   public
   def register
-    # This comes from RFC3164, mostly.
-    # Optional fields (priority, host, timestamp) are because some syslog implementations
-    # don't send these under some circumstances.
-    year = '[0-9]+'
-    month = '\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b'
-    monthnum = '(?:0?[1-9]|1[0-2])'
-    monthday = '(?:3[01]|[1-2]?[0-9]|0?[1-9])'
-    hour = '(?:2[0123]|[01][0-9])'
-    minute = '(?:[0-5][0-9])'
-    second = '(?:(?:[0-5][0-9]|60)(?:[.,][0-9]+)?)'
+    @grok_filter = LogStash::Filters::Grok.new({
+      "type"    => [@config["type"]],
+      "pattern" => ["<%{POSINT:priority}>%{SYSLOGLINE}"],
+    })
 
-    time = "(?!<[0-9])#{hour}:#{minute}(?::#{second})(?![0-9])"
-    iso8601_timezone = "(?:Z|[+-]#{hour}(?::?#{minute}))"
+    @date_filter = LogStash::Filters::Date.new({
+      "type"          => [@config["type"]],
+      "timestamp"     => ["MMM  d HH:mm:ss", "MMM dd HH:mm:ss"],
+      "timestamp8601" => ["ISO8601"],
+    })
 
-    timestamp = "#{month} +#{monthday} #{time}"
-    timestamp8601 = "#{year}-#{monthnum}-#{monthday}[T ]#{hour}:?#{minute}(?::?#{second})?#{iso8601_timezone}?"
-
-    priority = '<([0-9]{1,3})>'
-    host = '\S*[^ :]'
-    msg = '.*'
-
-    @@timestamp8601_re = Regexp.new(timestamp8601)
-
-    @@syslog_re ||= \
-      Regexp.new("(?:#{priority})?(?:(#{timestamp}|#{timestamp8601}) )?(?:(#{host}) )?(#{msg})")
+    @grok_filter.register
+    @date_filter.register
     
     @tcp_clients = []
   end # def register
@@ -161,49 +150,30 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
   # Following RFC3164 where sane, we'll try to parse a received message
   # as if you were relaying a syslog message to it.
-  # If the message cannot be recognized (see @@syslog_re), we'll
+  # If the message cannot be recognized (see @grok_filter), we'll
   # treat it like the whole event.message is correct and try to fill
   # the missing pieces (host, priority, etc)
   public
   def syslog_relay(event, url)
-    match = @@syslog_re.match(event.message)
-    if match
-      # match[1,2,3,4] = {pri, timestamp, hostname, message}
+    @grok_filter.filter(event)
+
+    if !event.tags.include?("_grokparsefailure")
       # Per RFC3164, priority = (facility * 8) + severity
       #                       = (facility << 3) & (severity)
-      priority = match[1].to_i rescue 13
+      priority = event.fields['priority'].to_i rescue 13
       severity = priority & 7   # 7 is 111 (3 bits)
       facility = priority >> 3
       event.fields["priority"] = priority
       event.fields["severity"] = severity
       event.fields["facility"] = facility
-      host = match[3]
 
-      # TODO(sissel): Use the date filter, somehow.
-      if !match[2].nil?
-        if match[2].match(@@timestamp8601_re)
-          event.timestamp = match[2]
-        else
-          event.timestamp = LogStash::Time.to_iso8601(
-            DateTime.strptime(match[2], "%b %d %H:%M:%S"))
-        end
-      end
-
-      # Hostname is optional, use if present in message, otherwise use source
-      # address of message.
-      if host
-        event.source = "syslog://#{host}/"
-      end
-
-      event.message = match[4]
+      @date_filter.filter(event)
     else
       @logger.info(["NOT SYSLOG", event.message])
       url = "syslog://#{Socket.gethostname}/" if url == "syslog://127.0.0.1/"
 
       # RFC3164 says unknown messages get pri=13
       priority = 13
-      severity = priority & 7   # 7 is 111 (3 bits)
-      facility = priority >> 3
       event.fields["priority"] = 13
       event.fields["severity"] = 5   # 13 & 7 == 5
       event.fields["facility"] = 1   # 13 >> 3 == 1
