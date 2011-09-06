@@ -88,7 +88,7 @@ vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | vendor/jar
 vendor-elasticsearch: $(ELASTICSEARCH)
 $(ELASTICSEARCH): $(ELASTICSEARCH).tar.gz | vendor/jar
 	@echo "Pulling the jars out of $<"
-	tar -C $(shell dirname $@) -xf $< --exclude '*sigar*' \
+	tar -C $(shell dirname $@) -xf $< --exclude '*sigar*' --wildcards \
 		'elasticsearch-$(ELASTICSEARCH_VERSION)/lib/*.jar'
 
 # Always run vendor/bundle
