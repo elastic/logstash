@@ -49,7 +49,7 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # The sample rate for the metric
   config :sample_rate, :validate => :number, :default => 1
 
-  # Only handle these tagged events
+  # Only handle events with all of these tags
   # Optional.
   config :tags, :validate => :array, :default => []
 
@@ -68,7 +68,7 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   public
   def receive(event)
     if !@tags.empty?
-      if (event.tags - @tags).size == 0
+      if (event.tags & @tags).size != @tags.size
         return
       end
     end
