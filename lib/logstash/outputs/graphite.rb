@@ -17,6 +17,16 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   # The port to connect on your graphite server.
   config :port, :validate => :number, :default => 2003
 
+  # Only handle these events matching all of these tags
+  # Optional.
+  config :tags, :validate => :array, :default => []
+
+  # The type to act on. If a type is given, then this output will only
+  # act on messages with the same type. See any input plugin's "type"
+  # attribute for more.
+  # Optional.
+  config :type, :validate => :string, :default => ""
+
   # The metric(s) to use. This supports dynamic strings like %{@source_host}
   # for metric names and also for values. This is a hash field with key 
   # of the metric name, value of the metric value. Example:
@@ -45,8 +55,11 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless !event.type.empty? or event.type == @type
+    return unless !@tags.empty? or (event.tags & @tags).size() == @tags.size()
+
     # Graphite message format: metric value timestamp\n
-    
+
     # Catch exceptions like ECONNRESET and friends, reconnect on failure.
     @metrics.each do |metric, value|
       message = [event.sprintf(metric), event.sprintf(value).to_f,
