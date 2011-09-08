@@ -75,21 +75,21 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
 
     @client.namespace = event.sprintf(@namespace)
     logger.debug("Original sender: #{@sender}")
-    @sender = event.sprintf(@sender)
-    logger.debug("Munged sender: #{@sender}")
+    sender = event.sprintf(@sender)
+    logger.debug("Munged sender: #{sender}")
     logger.debug("Event: #{event}")
     @increment.each do |metric|
-      @client.increment(build_stat(event.sprintf(metric)), @sample_rate)
+      @client.increment(build_stat(event.sprintf(metric), sender), @sample_rate)
     end
     @decrement.each do |metric|
-      @client.decrement(build_stat(event.sprintf(metric)), @sample_rate)
+      @client.decrement(build_stat(event.sprintf(metric), sender), @sample_rate)
     end
     @count.each do |metric, val|
-      @client.count(build_stat(event.sprintf(metric)), 
+      @client.count(build_stat(event.sprintf(metric), sender),
                     event.sprintf(val).to_f, @sample_rate)
     end
     @timing.each do |metric, val|
-      @client.timing(build_stat(event.sprintf(metric)),
+      @client.timing(build_stat(event.sprintf(metric), sender),
                      event.sprintf(val).to_f, @sample_rate)
     end
   end # def receive
