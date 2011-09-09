@@ -201,6 +201,16 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
               value = value.to_f
           end
 
+	  # try automatic coercion to int if possible
+	  valueint = value.to_i
+	  # check if it is reversible (no loss)
+	  if valueint.to_s == value
+	    coercedvalue = valueint
+	  else
+	    coercedvalue = value
+	  end
+	  value = coercedvalue
+
           if fieldvalue == value and field == "@message"
             # Skip patterns that match the entire message
             @logger.debug("Skipping capture '#{key}' since it matches the whole line.")
