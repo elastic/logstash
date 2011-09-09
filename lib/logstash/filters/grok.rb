@@ -225,6 +225,12 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
             event.fields[key] << value
           end
         end # match.each_capture
+        
+        #The following should probably be governed by a configuration option
+        #If there is a single value on an array, set the key to the single value
+        event.fields.each { |k, v| event.fields[k] = v.first if v.is_a?(Array) && v.length == 1 }
+        #Also, empty fields are forced to be empty, not a null array
+        event.fields.each { |k, v| event.fields[k] = nil if v.is_a?(Array) && v.length == 0 }
 
         filter_matched(event)
       end # event[field]
