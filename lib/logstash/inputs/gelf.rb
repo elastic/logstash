@@ -26,11 +26,12 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   # intact.
   # Remapping converts the following:
   # full_message => event.message
+  # timestamp => event.timestamp
   # host => event.source_host ##NYI as event.source_host cannot be set here
   # file => event.source_path ##NYI as event.source_path cannot be set here
   #
   # Original message is parsed properly into event.fields
-  config :remap, :validate => :boolean, :default => false
+  config :remap, :validate => :boolean, :default => true
 
   public
   def initialize(params)
@@ -100,6 +101,8 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   private
   def remap_gelf(event)
     event.message = event.fields["full_message"]
+    event.timestamp = LogStash::Time.to_iso8601(DateTime.strptime(event.fields["timestamp"].to_s, "%s.%L" ))
+    event.source = "gelf://#{event.fields["host"]}#{event.fields["file"]}"
     # Neither event.data, event.source_host or event.source_path are expose with setters
     # For now, we'll just remap the full_message
     ##event.data["@source_host"] = event.fields["host"]
