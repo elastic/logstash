@@ -49,7 +49,7 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # The sample rate for the metric
   config :sample_rate, :validate => :number, :default => 1
 
-  # Only handle these tagged events
+  # Only handle events with all of these tags
   # Optional.
   config :tags, :validate => :array, :default => []
 
@@ -68,28 +68,28 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   public
   def receive(event)
     if !@tags.empty?
-      if (event.tags - @tags).size == 0
+      if (event.tags & @tags).size != @tags.size
         return
       end
     end
 
     @client.namespace = event.sprintf(@namespace)
     logger.debug("Original sender: #{@sender}")
-    @sender = event.sprintf(@sender)
-    logger.debug("Munged sender: #{@sender}")
+    sender = event.sprintf(@sender)
+    logger.debug("Munged sender: #{sender}")
     logger.debug("Event: #{event}")
     @increment.each do |metric|
-      @client.increment(build_stat(event.sprintf(metric)), @sample_rate)
+      @client.increment(build_stat(event.sprintf(metric), sender), @sample_rate)
     end
     @decrement.each do |metric|
-      @client.decrement(build_stat(event.sprintf(metric)), @sample_rate)
+      @client.decrement(build_stat(event.sprintf(metric), sender), @sample_rate)
     end
     @count.each do |metric, val|
-      @client.count(build_stat(event.sprintf(metric)), 
+      @client.count(build_stat(event.sprintf(metric), sender),
                     event.sprintf(val).to_f, @sample_rate)
     end
     @timing.each do |metric, val|
-      @client.timing(build_stat(event.sprintf(metric)),
+      @client.timing(build_stat(event.sprintf(metric), sender),
                      event.sprintf(val).to_f, @sample_rate)
     end
   end # def receive
