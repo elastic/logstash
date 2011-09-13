@@ -1,3 +1,9 @@
+1.1 (??? ??, 2011)
+  - Bugs fixed
+    - [LOGSTASH-174] - output/statsd: fix tag filtering
+    - [LOGSTASH-176] - output/graphite: support type & tag filtering
+    - [LOGSTASH-181] - output/statsd: set sender properly
+
 1.0.17 (Aug 12, 2011)
   - Bugs fixed
     - [LOGSTASH-147] - grok filter incorrectly adding fields when a match failed
