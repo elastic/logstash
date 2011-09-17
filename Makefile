@@ -1,7 +1,6 @@
 JRUBY_VERSION=1.6.4
-RUBY_PATH=build/jruby/jruby-$(JRUBY_VERSION)/bin
-PATH := "$(RUBY_PATH):$(PATH)"
-RUBY_CMD=$(RUBY_PATH)/ruby
+JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
+WITH_JRUBY=$(JRUBY_CMD) -S
 VERSION=$(shell ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
@@ -26,7 +25,7 @@ pre-flight-check: check-ruby-is-jruby
 
 .PHONY: check-ruby-is-jruby
 check-ruby-is-jruby: 
-	$(RUBY_CMD) -e 'if RUBY_ENGINE != "jruby"; puts "JRuby is required to build."; exit 1; else; puts "JRuby OK"; end'
+	$(JRUBY_CMD) -e 'if RUBY_ENGINE != "jruby"; puts "JRuby is required to build."; exit 1; else; puts "JRuby OK"; end'
 
 debug:
 	echo $(JRUBY)
@@ -78,7 +77,6 @@ build/jruby/jruby-1.6.4/lib/jruby-complete.jar: build/jruby/jruby-$(JRUBY_VERSIO
 	# Patch that, yo.
 	sed -i -e 's/jruby.default.ruby.version=.*/jruby.default.ruby.version=1.9/' $</default.build.properties
 	(cd $<; ant jar-jruby-complete)
-	cp -f build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby build/jruby/jruby-$(JRUBY_VERSION)/bin/ruby
 
 build/jruby/jruby-$(JRUBY_VERSION): build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz
 	tar -C build/jruby/ $(TAR_OPTS) -zxf $<
@@ -111,7 +109,7 @@ vendor-gems: | vendor/bundle
 .PHONY: vendor/bundle
 vendor/bundle: | fix-bundler
 	@echo "=> Installing gems to vendor/bundle/..."
-	PATH=$(PATH) bundle install --deployment
+	$(WITH_JRUBY) bundle install --deployment
 
 gem: logstash-$(VERSION).gem
 
@@ -145,7 +143,7 @@ build/monolith: compile copy-ruby-files
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
-VENDOR_DIR := `ls -d vendor/bundle/ruby/*`
+VENDOR_DIR := `ls -d vendor/bundle/*ruby/*`
 jar: build/logstash-$(VERSION)-monolithic.jar
 build/logstash-$(VERSION)-monolithic.jar: | build/monolith
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS=-C build/ruby .
@@ -161,7 +159,7 @@ build/logstash-$(VERSION)-monolithic.jar:
 
 .PHONY: test
 test: 
-	$(RUBY_CMD) bin/logstash test
+	$(JRUBY_CMD) bin/logstash test
 
 .PHONY: docs
 docs: docgen doccopy docindex
@@ -178,11 +176,11 @@ build/docs/inputs build/docs/filters build/docs/outputs: | build/docs
 	-mkdir $@
 
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb | build/docs/inputs
-	$(RUBY_CMD) docs/docgen.rb -o build/docs $<
+	$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
 build/docs/filters/%.html: lib/logstash/filters/%.rb | build/docs/filters
-	$(RUBY_CMD) docs/docgen.rb -o build/docs $<
+	$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
 build/docs/outputs/%.html: lib/logstash/outputs/%.rb | build/docs/outputs
-	$(RUBY_CMD) docs/docgen.rb -o build/docs $<
+	$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
 
 build/docs/%: docs/%
 	@-mkdir -p $(shell dirname $@)
@@ -190,7 +188,7 @@ build/docs/%: docs/%
 
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 build/docs/index.html: docs/generate_index.rb
-	$(RUBY_CMD) $< build/docs > $@
+	$(JRUBY_CMD) $< build/docs > $@
 
 publish: | gem
 	gem push logstash-$(VERSION).gem
