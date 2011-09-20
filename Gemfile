@@ -27,6 +27,7 @@ gem "xmpp4r", "~> 0.5" # outputs/xmpp, # License: As-Is
 
 # For testing/dev
 group :development do
+  gem "rake"
   #gem "stompserver"
   #gem "spoon"
 end
