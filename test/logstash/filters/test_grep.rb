@@ -41,7 +41,7 @@ describe LogStash::Filters::Grep do
 
     event = LogStash::Event.new
     event.type = @typename
-    event["str"] = "foo: this should be dropped"
+    event["str"] = "foo: this should not be dropped"
     @filter.filter(event)
     assert_equal(false, event.cancelled?)
   end
