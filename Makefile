@@ -175,12 +175,13 @@ build/docs: build
 build/docs/inputs build/docs/filters build/docs/outputs: | build/docs
 	-mkdir $@
 
+# bluecloth gem doesn't work on jruby. Use ruby.
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb | build/docs/inputs
-	$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
+	ruby docs/docgen.rb -o build/docs $<
 build/docs/filters/%.html: lib/logstash/filters/%.rb | build/docs/filters
-	$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
+	ruby docs/docgen.rb -o build/docs $<
 build/docs/outputs/%.html: lib/logstash/outputs/%.rb | build/docs/outputs
-	$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
+	ruby docs/docgen.rb -o build/docs $<
 
 build/docs/%: docs/%
 	@-mkdir -p $(shell dirname $@)
