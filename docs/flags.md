@@ -34,5 +34,6 @@ name, like --grok-foo.
 <dt> --port PORT </dt>
 <dd> Port on which to start webserver. Default is 9292. </dd>
 <dt> --backend URL </dt>
-<dd> The backend URL to use. Default is elasticsearch://localhost:9200/ </dd>
+<dd>The backend URL to use. Default is elasticsearch:/// (assumes multicast discovery). 
+You can specify elasticsearch://[host][:port]/[clustername]</dd>
 </dl>
