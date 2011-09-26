@@ -1,14 +1,22 @@
-VERSION=$(shell ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
-
 JRUBY_VERSION=1.6.4
+JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
+WITH_JRUBY=$(JRUBY_CMD) -S
+VERSION=$(shell ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
 JRUBYC=java -Djruby.compat.version=RUBY1_9 -jar $(PWD)/$(JRUBY) -S jrubyc
 ELASTICSEARCH_VERSION=0.17.6
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
-
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/base.rb$$')
+
+# OS-specific options
+UNAME := $(shell uname)
+ifeq ($(UNAME), Darwin)
+TAR_OPTS=
+else
+TAR_OPTS=--wildcards
+endif
 
 default: jar
 
@@ -16,8 +24,8 @@ default: jar
 pre-flight-check: check-ruby-is-jruby
 
 .PHONY: check-ruby-is-jruby
-check-ruby-is-jruby:
-	ruby -e 'if RUBY_ENGINE != "jruby"; puts "JRuby is required to build."; exit 1; else; puts "JRuby OK"; end'
+check-ruby-is-jruby: 
+	$(JRUBY_CMD) -e 'if RUBY_ENGINE != "jruby"; puts "JRuby is required to build."; exit 1; else; puts "JRuby OK"; end'
 
 debug:
 	echo $(JRUBY)
@@ -57,10 +65,9 @@ vendor:
 vendor/jar: | vendor pre-flight-check
 	mkdir $@
 
-.PHONY: build-jruby
 build-jruby: $(JRUBY)
 
-$(JRUBY): build/jruby/jruby-1.6.4/lib/jruby-complete.jar | vendor/jar
+$(JRUBY): build/jruby/jruby-$(JRUBY_VERSION)/lib/jruby-complete.jar | vendor/jar
 	cp $< $@
 
 build/jruby: build
@@ -72,7 +79,7 @@ build/jruby/jruby-1.6.4/lib/jruby-complete.jar: build/jruby/jruby-$(JRUBY_VERSIO
 	(cd $<; ant jar-jruby-complete)
 
 build/jruby/jruby-$(JRUBY_VERSION): build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz
-	tar -C build/jruby/ -zxf $<
+	tar -C build/jruby/ $(TAR_OPTS) -zxf $<
 	# Build jruby from source targeted at 1.9
 
 build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz: | build/jruby
@@ -88,7 +95,7 @@ vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | vendor/jar
 vendor-elasticsearch: $(ELASTICSEARCH)
 $(ELASTICSEARCH): $(ELASTICSEARCH).tar.gz | vendor/jar
 	@echo "Pulling the jars out of $<"
-	tar -C $(shell dirname $@) -xf $< --exclude '*sigar*' --wildcards \
+	tar -C $(shell dirname $@) -xf $< $(TAR_OPTS) --exclude '*sigar*' \
 		'elasticsearch-$(ELASTICSEARCH_VERSION)/lib/*.jar'
 
 # Always run vendor/bundle
@@ -102,7 +109,7 @@ vendor-gems: | vendor/bundle
 .PHONY: vendor/bundle
 vendor/bundle: | fix-bundler
 	@echo "=> Installing gems to vendor/bundle/..."
-	bundle install --path vendor/bundle
+	$(WITH_JRUBY) bundle install --deployment
 
 gem: logstash-$(VERSION).gem
 
@@ -136,12 +143,13 @@ build/monolith: compile copy-ruby-files
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
+VENDOR_DIR := `ls -d vendor/bundle/*ruby/*`
 jar: build/logstash-$(VERSION)-monolithic.jar
 build/logstash-$(VERSION)-monolithic.jar: | build/monolith
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS=-C build/ruby .
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C build/monolith .
-build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C vendor/bundle/jruby/1.8 gems
-build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C vendor/bundle/jruby/1.8 specifications
+build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C $(VENDOR_DIR) gems
+build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C $(VENDOR_DIR) specifications
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/web/public
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/web/views
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
@@ -151,7 +159,7 @@ build/logstash-$(VERSION)-monolithic.jar:
 
 .PHONY: test
 test: 
-	ruby bin/logstash test
+	$(JRUBY_CMD) bin/logstash test
 
 .PHONY: docs
 docs: docgen doccopy docindex
@@ -167,6 +175,7 @@ build/docs: build
 build/docs/inputs build/docs/filters build/docs/outputs: | build/docs
 	-mkdir $@
 
+# bluecloth gem doesn't work on jruby. Use ruby.
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb | build/docs/inputs
 	ruby docs/docgen.rb -o build/docs $<
 build/docs/filters/%.html: lib/logstash/filters/%.rb | build/docs/filters
@@ -180,7 +189,7 @@ build/docs/%: docs/%
 
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 build/docs/index.html: docs/generate_index.rb
-	ruby $< build/docs > $@
+	$(JRUBY_CMD) $< build/docs > $@
 
 publish: | gem
 	gem push logstash-$(VERSION).gem
