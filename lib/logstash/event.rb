@@ -12,7 +12,7 @@ class LogStash::Event
   public
   def initialize(data=Hash.new)
     if RUBY_ENGINE == "jruby"
-      @@date_parser ||= org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
+      @@date_parser ||= Java::org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
     else
       # TODO(sissel): LOGSTASH-217
       @@date_parser ||= nil
@@ -136,7 +136,9 @@ class LogStash::Event
   end
 
   public
-  def include?(key); return @data.include?(key) end
+  def include?(key)
+    return (@data.include?(key) or @data["@fields"].include?(key))
+  end # def include?
 
   # Append an event to this one.
   public
@@ -153,6 +155,16 @@ class LogStash::Event
       end
     end # event.fields.each
   end # def append
+
+  # Remove a field
+  public
+  def remove(field)
+    if @data.has_key?(field)
+      @data.delete(field)
+    else
+      @data["@fields"].delete(field)
+    end
+  end # def remove
 
   # sprintf. This could use a better method name.
   # The idea is to take an event and convert it to a string based on 
