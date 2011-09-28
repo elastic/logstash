@@ -5,6 +5,8 @@ require "logstash/time"
 # The mutate filter ...
 #
 # This filter is not guaranteed to stay around. It is an experiment.
+#
+# TODO(sissel): Support regexp replacements like String#gsub ?
 class LogStash::Filters::Mutate < LogStash::Filters::Base
   config_name "mutate"
 
@@ -16,9 +18,6 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
 
   # Replace a field with a new value.
   config :replace, :validate => :hash
-
-  # The field which value is split by the terminator
-  config :field, :validate => :string, :default => "@message"
 
   public
   def register
