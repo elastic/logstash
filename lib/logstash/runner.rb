@@ -2,20 +2,23 @@ require "rubygems"
 $: << File.join(File.dirname(__FILE__), "..")
 $: << File.join(File.dirname(__FILE__), "..", "..", "test")
 require "logstash/namespace"
+require "logstash/program"
 
 class LogStash::Runner
+  include LogStash::Program
+
   def main(args)
     $: << File.join(File.dirname(__FILE__), "../")
 
     if args.empty?
       $stderr.puts "No arguments given."
-      java.lang.System.exit(1)
+      exit(1)
     end
 
-    if (RUBY_ENGINE rescue nil) != "jruby"
-      $stderr.puts "JRuby is required to use this."
-      return 1
-    end
+    #if (RUBY_ENGINE rescue nil) != "jruby"
+      #$stderr.puts "JRuby is required to use this."
+      #exit(1)
+    #end
 
     if RUBY_VERSION != "1.9.2"
       $stderr.puts "Ruby 1.9.2 mode is required."
@@ -25,7 +28,7 @@ class LogStash::Runner
       return 1
     end
 
-    require "java"
+    #require "java"
 
     @runners = []
     while !args.empty?
@@ -37,7 +40,7 @@ class LogStash::Runner
     @runners.each { |r| status << r.wait }
 
     # Avoid running test/unit's at_exit crap
-    java.lang.System.exit(status.first)
+    exit(status.first)
   end # def self.main
 
   def run(args)

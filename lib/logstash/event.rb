@@ -8,7 +8,11 @@ require "uri"
 class LogStash::Event
   public
   def initialize(data=Hash.new)
-    @@date_parser ||= org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
+    if RUBY_ENGINE == "jruby"
+      @@date_parser ||= org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
+    else
+      @@date_parser ||= nil
+    end
 
     @cancelled = false
     @data = {
@@ -60,6 +64,10 @@ class LogStash::Event
 
   public
   def unix_timestamp
+    if RUBY_ENGINE != "jruby"
+      raise Exception.new("LogStash::Event#unix_timestamp is not supported yet in this version of ruby")
+    end
+
     time = @@date_parser.parseDateTime(timestamp)
     return time.getMillis.to_f / 1000
   end
@@ -166,10 +174,18 @@ class LogStash::Event
 
       if key == "+%s"
         # Got %{+%s}, support for unix epoch time
+        if RUBY_ENGINE != "jruby"
+          raise Exception.new("LogStash::Event#sprintf('+%s') is not " \
+                              "supported yet in this version of ruby")
+        end
         datetime = @@date_parser.parseDateTime(self.timestamp)
         (datetime.getMillis / 1000).to_i
       elsif key[0,1] == "+"
         # We got a %{+TIMEFORMAT} so use joda to format it.
+        if RUBY_ENGINE != "jruby"
+          raise Exception.new("LogStash::Event#sprintf('+dateformat') is not " \
+                              "supported yet in this version of ruby")
+        end
         datetime = @@date_parser.parseDateTime(self.timestamp)
         format = key[1 .. -1]
         datetime.toString(format) # return requested time format
