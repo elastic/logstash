@@ -5,12 +5,16 @@ require "uri"
 
 # General event type. 
 # Basically a light wrapper on top of a hash.
+#
+# TODO(sissel): properly handle lazy properties like parsed time formats, urls,
+# etc, as necessary.
 class LogStash::Event
   public
   def initialize(data=Hash.new)
     if RUBY_ENGINE == "jruby"
       @@date_parser ||= org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
     else
+      # TODO(sissel): LOGSTASH-217
       @@date_parser ||= nil
     end
 
@@ -65,9 +69,9 @@ class LogStash::Event
   public
   def unix_timestamp
     if RUBY_ENGINE != "jruby"
+      # TODO(sissel): LOGSTASH-217
       raise Exception.new("LogStash::Event#unix_timestamp is not supported yet in this version of ruby")
     end
-
     time = @@date_parser.parseDateTime(timestamp)
     return time.getMillis.to_f / 1000
   end
@@ -175,6 +179,7 @@ class LogStash::Event
       if key == "+%s"
         # Got %{+%s}, support for unix epoch time
         if RUBY_ENGINE != "jruby"
+          # TODO(sissel): LOGSTASH-217
           raise Exception.new("LogStash::Event#sprintf('+%s') is not " \
                               "supported yet in this version of ruby")
         end
@@ -183,6 +188,7 @@ class LogStash::Event
       elsif key[0,1] == "+"
         # We got a %{+TIMEFORMAT} so use joda to format it.
         if RUBY_ENGINE != "jruby"
+          # TODO(sissel): LOGSTASH-217
           raise Exception.new("LogStash::Event#sprintf('+dateformat') is not " \
                               "supported yet in this version of ruby")
         end
