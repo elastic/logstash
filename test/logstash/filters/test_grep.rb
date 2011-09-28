@@ -35,6 +35,17 @@ describe LogStash::Filters::Grep do
     assert_equal(false, event.cancelled?)
   end # testing a single match
 
+  test "single match failure does not cancel the event with drop set to false" do
+    config "str"  => "test",
+           "drop" => "false"
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event["str"] = "foo: this should not be dropped"
+    @filter.filter(event)
+    assert_equal(false, event.cancelled?)
+  end
+
   test "single match failure cancels the event" do
     config "str" => "test"
 
@@ -133,6 +144,34 @@ describe LogStash::Filters::Grep do
     event["str"] = "test"
     @filter.filter(event)
     assert_equal(["tag", "new_tag"], event.tags)
+  end # def test_add_tags
+
+  test "add tags with drop set to false tags matching events" do
+    config "str" => "test",
+           "drop" => "false",
+           "add_tag" => ["new_tag"]
+
+    event = LogStash::Event.new
+    event.tags << "tag"
+    event.type = @typename
+    event["str"] = "test"
+    @filter.filter(event)
+    assert_equal(["tag", "new_tag"], event.tags)
+    assert_equal(false, event.cancelled?)
+  end # def test_add_tags
+
+  test "add tags with drop set to false allows non-matching events through" do
+    config "str" => "test",
+           "drop" => "false",
+           "add_tag" => ["new_tag"]
+
+    event = LogStash::Event.new
+    event.tags << "tag"
+    event.type = @typename
+    event["str"] = "non-matching"
+    @filter.filter(event)
+    assert_equal(["tag"], event.tags)
+    assert_equal(false, event.cancelled?)
   end # def test_add_tags
 
   test "add tags with sprintf value" do
