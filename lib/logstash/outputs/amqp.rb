@@ -4,7 +4,7 @@ require "logstash/namespace"
 # Push events to an AMQP exchange.
 #
 # AMQP is a messaging system. It requires you to run an AMQP server or 'broker'
-# Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and 
+# Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and
 # [QPid](http://qpid.apache.org/)
 class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
@@ -28,7 +28,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   # The name of the exchange
   config :name, :validate => :string, :required => true
-  
+
   # Key to route to
   config :key, :validate => :string
 
@@ -125,10 +125,11 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@name}"
   end
 
-  #public
-  #def teardown
-    #@bunny.close rescue nil
-    #@bunny = nil
-    #@target = nil
-  #end # def teardown
+  public
+  def teardown
+    @bunny.close rescue nil
+    @bunny = nil
+    @target = nil
+    finished
+  end # def teardown
 end # class LogStash::Outputs::Amqp
