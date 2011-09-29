@@ -8,11 +8,11 @@ require "set"
 #
 # This filter requires you have libgrok installed.
 #
-# You can find libgrok here: 
+# You can find libgrok here:
 # <http://code.google.com/p/semicomplete/wiki/Grok>
 #
 # Compile/install notes can be found in the INSTALL file of the
-# grok tarball, or here: 
+# grok tarball, or here:
 # <https://github.com/jordansissel/grok/blob/master/INSTALL>
 #
 # Key dependencies:
@@ -43,7 +43,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   # Any existing field name can be used as a config name here for matching
   # against.
-  #     
+  #
   #     # this config:
   #     foo => "some pattern"
   #
@@ -57,7 +57,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # patterns.
   #
   # Pattern files are plain text with format:
-  # 
+  #
   #     NAME PATTERN
   #
   # For example:
@@ -94,6 +94,13 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   end
 
   public
+  def initialize(params)
+    super(params)
+    @match["@message"] ||= []
+    @match["@message"] += @pattern if @pattern # the config 'pattern' value (array)
+  end
+
+  public
   def register
     gem "jls-grok", ">=0.4.3"
     require "grok-pure" # rubygem 'jls-grok'
@@ -120,13 +127,10 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     end
 
     @patterns = Hash.new { |h,k| h[k] = [] }
-    
+
     @logger.info(:match => @match)
 
-    @match["@message"] ||= []
-    @match["@message"] += @pattern if @pattern # the config 'pattern' value (array)
-
-    # TODO(sissel): Hash.merge  actually overrides, not merges arrays. 
+    # TODO(sissel): Hash.merge  actually overrides, not merges arrays.
     # Work around it by implementing our own?
     # TODO(sissel): Check if 'match' is empty?
     @match.merge(@config).each do |field, patterns|
@@ -137,7 +141,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       patterns = [patterns] if patterns.is_a?(String)
 
       if !@patterns.include?(field)
-        @patterns[field] = Grok::Pile.new 
+        @patterns[field] = Grok::Pile.new
         add_patterns_from_files(@patternfiles, @patterns[field])
       end
       @logger.info(["Grok compile", { :field => field, :patterns => patterns }])
@@ -158,7 +162,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       return
     end
 
-    if @type != event.type 
+    if @type != event.type
       @logger.debug("Skipping grok for event type=#{event.type} (wanted '#{@type}')")
       return
     end
@@ -189,9 +193,9 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
           # http://code.google.com/p/logstash/issues/detail?id=45
           # Permit typing of captures by giving an additional colon and a type,
           # like: %{FOO:name:int} for int coercion.
-          if type_coerce 
-            @logger.info("Match type coerce: #{type_coerce}") 
-            @logger.info("Patt: #{grok.pattern}") 
+          if type_coerce
+            @logger.info("Match type coerce: #{type_coerce}")
+            @logger.info("Patt: #{grok.pattern}")
           end
 
           case type_coerce

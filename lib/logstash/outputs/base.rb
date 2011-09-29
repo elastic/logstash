@@ -9,13 +9,11 @@ require "uri"
 class LogStash::Outputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
 
-  attr_accessor :logger
-
   config_name "output"
 
   public
   def initialize(params)
-    @logger = LogStash::Logger.new(STDOUT)
+    super
     config_init(params)
   end
 
