@@ -33,19 +33,20 @@ On the server collecting and indexing your logs:
 
 Requirements: java
 
-Paste this in your shell for easy downloadings.
+You'll most likely want the version of ElasticSearch specified by the
+<outputs/elasticsearch> docs. Modify this in your shell for easy downloading of
+ElasticSearch:
 
-    ES_PACKAGE=elasticsearch-0.16.0.zip
+    ES_PACKAGE=elasticsearch-0.17.6.zip
     ES_DIR=${ES_PACKAGE%%.zip}
-    SITE=http://github.com/downloads/elasticsearch/elasticsearch
+    SITE=https://github.com/downloads/elasticsearch/elasticsearch
     if [ ! -d "$ES_DIR" ] ; then
       wget --no-check-certificate $SITE/$ES_PACKAGE
       unzip $ES_PACKAGE
     fi
 
-Otherwise - Download and unpack the elasticsearch yourself; you'll want version
-0.16.0 or newer. It's written in Java and requires Java (uses Lucene on the
-backend; if you want to know more read the elasticsearch docs).
+ElasticSearch requires Java (uses Lucene on the backend; if you want to know
+more read the elasticsearch docs).
 
 To start the service, run `bin/elasticsearch`. If you want to run it in the
 foreground, use 'bin/elasticsearch -f' 

@@ -1,6 +1,6 @@
 JRUBY_VERSION=1.6.4
 JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
-WITH_JRUBY=$(JRUBY_CMD) -S
+WITH_JRUBY=$(JRUBY_CMD) --1.9 -S
 VERSION=$(shell ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
@@ -9,9 +9,10 @@ ELASTICSEARCH_VERSION=0.17.7
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/base.rb$$')
+GEM_HOME=build/gems
 
 # OS-specific options
-UNAME := $(shell uname)
+UNAME=$(shell uname)
 ifeq ($(UNAME), Darwin)
 TAR_OPTS=
 else
@@ -21,7 +22,8 @@ endif
 default: jar
 
 .PHONY: pre-flight-check
-pre-flight-check: check-ruby-is-jruby
+pre-flight-check: # check-ruby-is-jruby
+	@true
 
 .PHONY: check-ruby-is-jruby
 check-ruby-is-jruby:
@@ -73,14 +75,14 @@ $(JRUBY): build/jruby/jruby-$(JRUBY_VERSION)/lib/jruby-complete.jar | vendor/jar
 build/jruby: build
 	mkdir -p $@
 
-build/jruby/jruby-1.6.4/lib/jruby-complete.jar: build/jruby/jruby-$(JRUBY_VERSION)
-	# Patch that, yo.
+$(JRUBY_CMD): build/jruby/jruby-$(JRUBY_VERSION)/lib/jruby-complete.jar
+build/jruby/jruby-$(JRUBY_VERSION)/lib/jruby-complete.jar: build/jruby/jruby-$(JRUBY_VERSION)
+	# Build jruby from source targeted at 1.9 - patch that, yo.
 	sed -i -e 's/jruby.default.ruby.version=.*/jruby.default.ruby.version=1.9/' $</default.build.properties
 	(cd $<; ant jar-jruby-complete)
 
 build/jruby/jruby-$(JRUBY_VERSION): build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz
 	tar -C build/jruby/ $(TAR_OPTS) -zxf $<
-	# Build jruby from source targeted at 1.9
 
 build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz: | build/jruby
 	wget -O $@ http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-src-$(JRUBY_VERSION).tar.gz
@@ -106,10 +108,14 @@ fix-bundler:
 .PHONY: vendor-gems
 vendor-gems: | vendor/bundle
 
+$(GEM_HOME)/bin/bundle: | $(JRUBY_CMD)
+	@echo "=> Installing bundler ($@)"
+	$(QUIET)GEM_HOME=$(GEM_HOME) $(WITH_JRUBY) gem install bundler
+
 .PHONY: vendor/bundle
-vendor/bundle: | fix-bundler
-	@echo "=> Installing gems to vendor/bundle/..."
-	$(WITH_JRUBY) bundle install --deployment
+vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
+	@echo "=> Installing gems to $@..."
+	GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
 
 gem: logstash-$(VERSION).gem
 
@@ -143,7 +149,7 @@ build/monolith: compile copy-ruby-files
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
-VENDOR_DIR := `ls -d vendor/bundle/*ruby/*`
+VENDOR_DIR=$(shell ls -d vendor/bundle/*ruby/*)
 jar: build/logstash-$(VERSION)-monolithic.jar
 build/logstash-$(VERSION)-monolithic.jar: | build/monolith
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS=-C build/ruby .

@@ -1,7 +1,6 @@
 #TODO(sissel): Maybe this will help jruby jar issues?
 #$: << File.join(File.dirname(__FILE__), "../"
 
-require "java"
 require "logstash/config/file"
 require "logstash/filters"
 require "logstash/filterworker"
@@ -10,6 +9,7 @@ require "logstash/logging"
 require "logstash/multiqueue"
 require "logstash/namespace"
 require "logstash/outputs"
+require "logstash/program"
 require "logstash/util"
 require "optparse"
 require "thread"
@@ -20,6 +20,8 @@ require "uri"
 
 # Collect logs, ship them out.
 class LogStash::Agent
+  include LogStash::Program
+
   attr_reader :config
   attr_reader :inputs
   attr_reader :outputs
@@ -440,7 +442,7 @@ class LogStash::Agent
     shutdown_plugins(@plugins)
     # When we get here, all inputs have finished, all messages are done
     @logger.info("Shutdown complete")
-    java.lang.System.exit(0)
+    exit(0)
   end # def shutdown
 
   def shutdown_plugins(plugins)
