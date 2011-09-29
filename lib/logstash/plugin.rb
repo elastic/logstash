@@ -3,6 +3,25 @@ require "logstash/logging"
 require "logstash/config/mixin"
 
 class LogStash::Plugin
+  attr_accessor :params
+  attr_accessor :logger
+
+  public
+  def hash
+    params.hash ^
+    self.class.name.hash
+  end
+
+  public
+  def eql?(other)
+    self.class.name == other.class.name && @params == other.params
+  end
+
+  public
+  def initialize(params=nil)
+    @params = params
+    @logger = LogStash::Logger.new(STDOUT)
+  end
 
   # This method is called when someone or something wants this plugin to shut
   # down. When you successfully shutdown, you must call 'finished'
@@ -43,6 +62,13 @@ class LogStash::Plugin
   public
   def teardown
     # nothing by default
+    finished
+  end
+
+  # This method is called when a SIGHUP triggers a reload operation
+  public
+  def reload
+    # Do nothing by default
   end
 
   public
@@ -60,4 +86,8 @@ class LogStash::Plugin
     return @plugin_state == :terminating
   end # def terminating?
 
+  public
+  def to_s
+    return "#{self.class.name}: #{@params}"
+  end
 end # class LogStash::Plugin
