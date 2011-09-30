@@ -5,7 +5,7 @@ VERSION=$(shell ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
 JRUBYC=java -Djruby.compat.version=RUBY1_9 -jar $(PWD)/$(JRUBY) -S jrubyc
-ELASTICSEARCH_VERSION=0.17.6
+ELASTICSEARCH_VERSION=0.17.7
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/base.rb$$')
@@ -26,7 +26,7 @@ pre-flight-check: # check-ruby-is-jruby
 	@true
 
 .PHONY: check-ruby-is-jruby
-check-ruby-is-jruby: 
+check-ruby-is-jruby:
 	$(JRUBY_CMD) -e 'if RUBY_ENGINE != "jruby"; puts "JRuby is required to build."; exit 1; else; puts "JRuby OK"; end'
 
 debug:
@@ -50,7 +50,7 @@ compile: compile-grammar compile-runner | build/ruby
 .PHONY: compile-runner
 compile-runner: build/ruby/logstash/runner.class
 build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
-	(cd lib; JRUBY_OPTS=--1.9 $(JRUBYC) -t ../build/ruby logstash/runner.rb) 
+	(cd lib; JRUBY_OPTS=--1.9 $(JRUBYC) -t ../build/ruby logstash/runner.rb)
 
 # TODO(sissel): Stop using cpio for this
 .PHONY: copy-ruby-files
@@ -61,7 +61,7 @@ copy-ruby-files: | build/ruby
 	git ls-files | grep '^test/.*\.rb$$' | sed -e 's,^test/,,' \
 	| (cd test; cpio -p --make-directories ../build/ruby)
 
-vendor: 
+vendor:
 	mkdir $@
 
 vendor/jar: | vendor pre-flight-check
@@ -119,7 +119,7 @@ vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
 
 gem: logstash-$(VERSION).gem
 
-logstash-$(VERSION).gem: compile 
+logstash-$(VERSION).gem: compile
 	gem build logstash.gemspec
 
 build:
@@ -164,7 +164,7 @@ build/logstash-$(VERSION)-monolithic.jar:
 	jar i $@
 
 .PHONY: test
-test: 
+test:
 	$(JRUBY_CMD) bin/logstash test
 
 .PHONY: docs
