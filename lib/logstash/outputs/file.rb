@@ -58,7 +58,10 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     @logger.info(["Opening", { :path => path }])
 
     dir = File.dirname(path)
-    FileUtils.mkdir_p(dir) if !Dir.exists?(dir)
+    if !Dir.exists?(dir)
+      @logger.info(["Creating directory", { :directory => dir }])
+      FileUtils.mkdir_p(dir) 
+    end
 
     @files[path] = File.new(path, "w")
   end
