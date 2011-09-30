@@ -10,6 +10,7 @@ ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/base.rb$$')
 GEM_HOME=build/gems
+QUIET=@
 
 # OS-specific options
 UNAME=$(shell uname)
@@ -21,28 +22,18 @@ endif
 
 default: jar
 
-.PHONY: pre-flight-check
-pre-flight-check: # check-ruby-is-jruby
-	@true
-
-.PHONY: check-ruby-is-jruby
-check-ruby-is-jruby: 
-	$(JRUBY_CMD) -e 'if RUBY_ENGINE != "jruby"; puts "JRuby is required to build."; exit 1; else; puts "JRuby OK"; end'
-
-debug:
-	echo $(JRUBY)
-
 # Compile config grammar (ragel -> ruby)
 .PHONY: compile-grammar
 compile-grammar: lib/logstash/config/grammar.rb
 lib/logstash/config/grammar.rb: lib/logstash/config/grammar.rl
-	$(MAKE) -C lib/logstash/config grammar.rb
+	$(QUIET)$(MAKE) -C lib/logstash/config grammar.rb
 
 .PHONY: clean
 clean:
-	-rm -rf .bundle
-	-rm -rf build
-	-rm -rf vendor
+	@echo "=> Cleaning up"
+	-$(QUIET)rm -rf .bundle
+	-$(QUIET)rm -rf build
+	-$(QUIET)rm -rf vendor
 
 .PHONY: compile
 compile: compile-grammar compile-runner | build/ruby
@@ -50,60 +41,62 @@ compile: compile-grammar compile-runner | build/ruby
 .PHONY: compile-runner
 compile-runner: build/ruby/logstash/runner.class
 build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
-	(cd lib; JRUBY_OPTS=--1.9 $(JRUBYC) -t ../build/ruby logstash/runner.rb) 
+	$(QUIET)(cd lib; JRUBY_OPTS=--1.9 $(JRUBYC) -t ../build/ruby logstash/runner.rb) 
 
 # TODO(sissel): Stop using cpio for this
 .PHONY: copy-ruby-files
 copy-ruby-files: | build/ruby
 	@# Copy lib/ and test/ files to the root.
-	git ls-files | grep '^lib/.*\.rb$$' | sed -e 's,^lib/,,' \
+	$(QUIET)git ls-files | grep '^lib/.*\.rb$$' | sed -e 's,^lib/,,' \
 	| (cd lib; cpio -p --make-directories ../build/ruby)
-	git ls-files | grep '^test/.*\.rb$$' | sed -e 's,^test/,,' \
+	$(QUIET)git ls-files | grep '^test/.*\.rb$$' | sed -e 's,^test/,,' \
 	| (cd test; cpio -p --make-directories ../build/ruby)
 
 vendor: 
-	mkdir $@
+	$(QUIET)mkdir $@
 
-vendor/jar: | vendor pre-flight-check
-	mkdir $@
+vendor/jar: | vendor
+	$(QUIET)mkdir $@
 
 build-jruby: $(JRUBY)
 
 $(JRUBY): build/jruby/jruby-$(JRUBY_VERSION)/lib/jruby-complete.jar | vendor/jar
-	cp $< $@
+	$(QUIET)cp $< $@
 
 build/jruby: build
-	mkdir -p $@
+	$(QUIET)mkdir -p $@
 
 $(JRUBY_CMD): build/jruby/jruby-$(JRUBY_VERSION)/lib/jruby-complete.jar
 build/jruby/jruby-$(JRUBY_VERSION)/lib/jruby-complete.jar: build/jruby/jruby-$(JRUBY_VERSION)
 	# Build jruby from source targeted at 1.9 - patch that, yo.
-	sed -i -e 's/jruby.default.ruby.version=.*/jruby.default.ruby.version=1.9/' $</default.build.properties
-	(cd $<; ant jar-jruby-complete)
+	$(QUIET)sed -i -e 's/jruby.default.ruby.version=.*/jruby.default.ruby.version=1.9/' $</default.build.properties
+	$(QUIET)(cd $<; ant jar-jruby-complete)
 
 build/jruby/jruby-$(JRUBY_VERSION): build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz
-	tar -C build/jruby/ $(TAR_OPTS) -zxf $<
+	$(QUIET)tar -C build/jruby/ $(TAR_OPTS) -zxf $<
 
 build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz: | build/jruby
-	wget -O $@ http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-src-$(JRUBY_VERSION).tar.gz
+	@echo "=> Fetching jruby source"
+	$(QUIET)wget -O $@ http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-src-$(JRUBY_VERSION).tar.gz
 
 vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | vendor/jar
 	@# --no-check-certificate is for github and wget not supporting wildcard
 	@# certs sanely.
-	wget --no-check-certificate \
+	@echo "=> Fetching elasticsearch"
+	$(QUIET)wget --no-check-certificate \
 		-O $@ $(ELASTICSEARCH_URL)/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz
 
 .PHONY: vendor-elasticsearch
 vendor-elasticsearch: $(ELASTICSEARCH)
 $(ELASTICSEARCH): $(ELASTICSEARCH).tar.gz | vendor/jar
-	@echo "Pulling the jars out of $<"
-	tar -C $(shell dirname $@) -xf $< $(TAR_OPTS) --exclude '*sigar*' \
+	@echo "=> Pulling the jars out of $<"
+	$(QUIET)tar -C $(shell dirname $@) -xf $< $(TAR_OPTS) --exclude '*sigar*' \
 		'elasticsearch-$(ELASTICSEARCH_VERSION)/lib/*.jar'
 
 # Always run vendor/bundle
 .PHONY: fix-bundler
 fix-bundler:
-	-rm -rf .bundle
+	-$(QUIET)rm -rf .bundle
 
 .PHONY: vendor-gems
 vendor-gems: | vendor/bundle
@@ -115,18 +108,18 @@ $(GEM_HOME)/bin/bundle: | $(JRUBY_CMD)
 .PHONY: vendor/bundle
 vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
 	@echo "=> Installing gems to $@..."
-	GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
+	$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
 
 gem: logstash-$(VERSION).gem
 
 logstash-$(VERSION).gem: compile 
-	gem build logstash.gemspec
+	$(QUIET)$(WITH_JRUBY) gem build logstash.gemspec
 
 build:
-	-mkdir -p $@
+	-$(QUIET)mkdir -p $@
 
 build/ruby: | build
-	-mkdir -p $@
+	-$(QUIET)mkdir -p $@
 
 # TODO(sissel): Update this to be like.. functional.
 # TODO(sissel): Skip sigar?
@@ -134,18 +127,18 @@ build/ruby: | build
 .PHONY: build/monolith
 build/monolith: $(ELASTICSEARCH) $(JRUBY) vendor-gems | build
 build/monolith: compile copy-ruby-files
-	-mkdir -p $@
+	-$(QUIET)mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
-	find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
+	$(QUIET)find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
 	| (cd $@; xargs -tn1 jar xf)
 	@# Purge any extra files we don't need in META-INF (like manifests and
 	@# signature files)
-	-rm -f $@/META-INF/*.LIST
-	-rm -f $@/META-INF/*.MF
-	-rm -f $@/META-INF/*.RSA
-	-rm -f $@/META-INF/*.SF
-	-rm -f $@/META-INF/NOTICE $@/META-INF/NOTICE.txt
-	-rm -f $@/META-INF/LICENSE $@/META-INF/LICENSE.txt
+	-$(QUIET)rm -f $@/META-INF/*.LIST
+	-$(QUIET)rm -f $@/META-INF/*.MF
+	-$(QUIET)rm -f $@/META-INF/*.RSA
+	-$(QUIET)rm -f $@/META-INF/*.SF
+	-$(QUIET)rm -f $@/META-INF/NOTICE $@/META-INF/NOTICE.txt
+	-$(QUIET)rm -f $@/META-INF/LICENSE $@/META-INF/LICENSE.txt
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
@@ -160,12 +153,12 @@ build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/web/public
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/web/views
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
 build/logstash-$(VERSION)-monolithic.jar:
-	jar cfe $@ logstash.runner $(JAR_ARGS)
-	jar i $@
+	$(QUIET)jar cfe $@ logstash.runner $(JAR_ARGS)
+	$(QUIET)jar i $@
 
 .PHONY: test
 test: 
-	$(JRUBY_CMD) bin/logstash test
+	$(QUIET)$(JRUBY_CMD) bin/logstash test
 
 .PHONY: docs
 docs: docgen doccopy docindex
@@ -176,26 +169,26 @@ docindex: build/docs/index.html
 docgen: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 
 build/docs: build
-	-mkdir $@
+	-$(QUIET)mkdir $@
 
 build/docs/inputs build/docs/filters build/docs/outputs: | build/docs
-	-mkdir $@
+	-$(QUIET)mkdir $@
 
 # bluecloth gem doesn't work on jruby. Use ruby.
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb | build/docs/inputs
-	ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)ruby docs/docgen.rb -o build/docs $<
 build/docs/filters/%.html: lib/logstash/filters/%.rb | build/docs/filters
-	ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)ruby docs/docgen.rb -o build/docs $<
 build/docs/outputs/%.html: lib/logstash/outputs/%.rb | build/docs/outputs
-	ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)ruby docs/docgen.rb -o build/docs $<
 
 build/docs/%: docs/%
-	@-mkdir -p $(shell dirname $@)
-	sed -re 's/%VERSION%/$(VERSION)/g' $< > $@
+	-$(QUIET)mkdir -p $(shell dirname $@)
+	$(QUIET)sed -re 's/%VERSION%/$(VERSION)/g' $< > $@
 
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 build/docs/index.html: docs/generate_index.rb
 	$(JRUBY_CMD) $< build/docs > $@
 
 publish: | gem
-	gem push logstash-$(VERSION).gem
+	$(QUIET)$(WITH_JRUBY) gem push logstash-$(VERSION).gem
