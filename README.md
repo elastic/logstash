@@ -34,3 +34,6 @@ That said, some basic guidelines, which you are free to ignore :)
 * If you want to send patches, best way is to fork this repo and send me a pull
   request. If you don't know git, I also accept diff(1) formatted patches -
   whatever is most comfortable for you.
+* Want to lurk about and see what others are doing? IRC (#logstash on
+  irc.freenode.org) is a good place for this as is the 
+  [mailing list](http://groups.google.com/group/logstash-users)
