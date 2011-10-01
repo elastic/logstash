@@ -29,11 +29,11 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   # The name of the exchange
   config :name, :validate => :string, :required => true
 
-  # The name of the queue. If not set, defaults to the same name as the exchange.
-  config :queue_name, :validate => :string
-
-  # Key to route to
+  # Key to route to by default. Defaults to queue name
   config :key, :validate => :string
+
+  # The name of the queue to bind to the default key. Defaults to exchange name
+  config :queue_name, :validate => :string
 
   # The vhost to use
   config :vhost, :validate => :string, :default => "/"
@@ -67,6 +67,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
     @queue_name ||= @name
     @queue_durable ||= @durable
+    @key ||= @queue_name
 
     @logger.info("Registering output #{to_s}")
     connect
@@ -100,9 +101,14 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       end
     end
 
-    @queue = @bunny.queue(@queue_name, :durable => @queue_durable)
-    exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
-    @queue.bind(exchange)
+    @logger.debug("Declaring queue '#{@queue_name}' as #{"not" unless @queue_durable} durable")
+    queue = @bunny.queue(@queue_name, :durable => @queue_durable)
+
+    @logger.debug("Declaring #{@exchange_type} exchange '#{@name}' as #{"not" unless @durable} durable")
+    @exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
+
+    @logger.debug("Binding exchange '#{@name}' to key '#{@key}'")
+    queue.bind(@exchange, :key => @key)
   end # def connect
 
   public
@@ -110,9 +116,9 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     key = event.sprintf(@key) if @key
     @logger.debug(["Sending event", { :destination => to_s, :event => event, :key => key }])
     begin
-      if @queue
+      if @exchange
         begin
-          @queue.publish(event.to_json, :persistent => @persistent, :key => key)
+          @exchange.publish(event.to_json, :persistent => @persistent, :key => key, :mandatory => true)
         rescue JSON::GeneratorError
           @logger.warn(["Trouble converting event to JSON", $!, event.to_hash])
           return
@@ -130,7 +136,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   # This is used by the ElasticSearch AMQP/River output.
   public
   def receive_raw(raw)
-    @queue.publish(raw, :persistent => @persistent, :key => @key)
+    @exchange.publish(raw, :persistent => @persistent, :key => @key, :mandatory => true)
   end # def receive_raw
 
   public
@@ -138,10 +144,11 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@name}\##{@queue_name}"
   end
 
-  #public
-  #def teardown
-    #@bunny.close rescue nil
-    #@bunny = nil
-    #@target = nil
-  #end # def teardown
+  public
+  def teardown
+    @bunny.close rescue nil
+    @bunny = nil
+    @exchange = nil
+    finished
+  end # def teardown
 end # class LogStash::Outputs::Amqp
