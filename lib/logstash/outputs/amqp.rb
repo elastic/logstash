@@ -4,7 +4,7 @@ require "logstash/namespace"
 # Push events to an AMQP exchange.
 #
 # AMQP is a messaging system. It requires you to run an AMQP server or 'broker'
-# Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and 
+# Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and
 # [QPid](http://qpid.apache.org/)
 class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
@@ -28,7 +28,10 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   # The name of the exchange
   config :name, :validate => :string, :required => true
-  
+
+  # The name of the queue. If not set, defaults to the same name as the exchange.
+  config :queue_name, :validate => :string
+
   # Key to route to
   config :key, :validate => :string
 
@@ -37,6 +40,10 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   # Is this exchange durable? (aka; Should it survive a broker restart?)
   config :durable, :validate => :boolean, :default => true
+
+  # Is this queue durable? (aka; Should it survive a broker restart?).
+  # If you omit this setting, the 'durable' property will be used as default.
+  config :queue_durable, :validate => :boolean
 
   # Should messages persist to disk on the AMQP broker until they are read by a
   # consumer?
@@ -57,6 +64,9 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     if !MQTYPES.include?(@exchange_type)
       raise "Invalid exchange_type, #{@exchange_type.inspect}, must be one of #{MQTYPES.join(", ")}"
     end
+
+    @queue_name ||= @name
+    @queue_durable ||= @durable
 
     @logger.info("Registering output #{to_s}")
     connect
@@ -89,7 +99,10 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
         retry
       end
     end
-    @target = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
+
+    @queue = @bunny.queue(@queue_name, :durable => @queue_durable)
+    exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
+    @queue.bind(exchange)
   end # def connect
 
   public
@@ -97,9 +110,9 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     key = event.sprintf(@key) if @key
     @logger.debug(["Sending event", { :destination => to_s, :event => event, :key => key }])
     begin
-      if @target
+      if @queue
         begin
-          @target.publish(event.to_json, :persistent => @persistent, :key => key)
+          @queue.publish(event.to_json, :persistent => @persistent, :key => key)
         rescue JSON::GeneratorError
           @logger.warn(["Trouble converting event to JSON", $!, event.to_hash])
           return
@@ -117,12 +130,12 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   # This is used by the ElasticSearch AMQP/River output.
   public
   def receive_raw(raw)
-    @target.publish(raw)
+    @queue.publish(raw, :persistent => @persistent, :key => @key)
   end # def receive_raw
 
   public
   def to_s
-    return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@name}"
+    return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@name}\##{@queue_name}"
   end
 
   #public
