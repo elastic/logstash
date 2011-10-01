@@ -12,14 +12,25 @@ For more info, see <http://logstash.net/>
 All contributions are welcome: ideas, patches, documentation, bug reports,
 complaints, and even something you drew up on a napkin.
 
-It is more important that you contribute than how you contribute. Ideas and
-other things can come in the as a patch, a bug report, an emails, or over IRC.
+Programming is not a required skill. Whatever you've seen about open source and
+maintainers or community members  saying "send patches or die" - you will not
+see that here.
 
-That said, some basic guidelines:
+It is more important to me that you are able to contribute.
 
+That said, some basic guidelines, which you are free to ignore :)
+
+* Have a problem you want logstash to solve for you? You can email the
+  [mailing list](http://groups.google.com/group/logstash-users), or
+  join the IRC channel #logstash on irc.freenode.org, or email me personally
+  (jls@semicomplete.com)
+* Have an idea or a feature request? File a ticket on
+  [jira](https://logstash.jira.com/secure/Dashboard.jspa), or email the
+  [mailing list](http://groups.google.com/group/logstash-users), or email
+  me personally (jls@semicomplete.com) if that is more comfortable.
+* If you think you found a bug, it probably is a bug. File it on
+  [jira](https://logstash.jira.com/secure/Dashboard.jspa) or send details to
+  the [mailing list](http://groups.google.com/group/logstash-users).
 * If you want to send patches, best way is to fork this repo and send me a pull
-  request. I will also accept normal diff/patch patches over email.
-* Found a bug? File it on [jira](https://logstash.jira.com/secure/Dashboard.jspa) 
-  or send details to the [mailing list](http://groups.google.com/group/logstash-users)
-* Have an idea or a specific feature request? Do the same as above.
-
+  request. If you don't know git, I also accept diff(1) formatted patches -
+  whatever is most comfortable for you.
