@@ -6,11 +6,13 @@ require "logstash/config/mixin"
 # TODO(sissel): Should this really be a 'plugin' ?
 class LogStash::FilterWorker < LogStash::Plugin
   attr_accessor :logger
+  attr_accessor :filters
 
   def initialize(filters, input_queue, output_queue)
     @filters = filters
     @input_queue = input_queue
     @output_queue = output_queue
+    @shutdown_requested = false
   end # def initialize
 
   def run
@@ -20,14 +22,19 @@ class LogStash::FilterWorker < LogStash::Plugin
       #filter.register
     #end
 
-    while event = @input_queue.pop
+    while !@shutdown_requested && event = @input_queue.pop
       if event == LogStash::SHUTDOWN
         finished
-        break
+        return
       end
 
       filter(event)
     end # while @input_queue.pop
+    finished
+  end
+
+  def teardown
+    @shutdown_requested = true
   end
 
   def filter(original_event)
@@ -61,6 +68,6 @@ class LogStash::FilterWorker < LogStash::Plugin
 
       @logger.debug(["Event finished filtering", { :event => event, :thread => Thread.current[:name] }])
       @output_queue.push(event) unless event.cancelled?
-    end # events.each 
+    end # events.each
   end # def filter
 end # class LogStash::FilterWorker

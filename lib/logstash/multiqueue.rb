@@ -28,6 +28,11 @@ class LogStash::MultiQueue
   end # def add_queue
 
   public
+  def remove_queue(queue)
+    @queues.delete(queue)
+  end
+
+  public
   def size
     return @queues.collect { |q| q.size }
   end # def size
