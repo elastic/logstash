@@ -1,7 +1,7 @@
 JRUBY_VERSION=1.6.4
 JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
 WITH_JRUBY=$(JRUBY_CMD) --1.9 -S
-VERSION=$(shell ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
+VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
 JRUBYC=java -Djruby.compat.version=RUBY1_9 -jar $(PWD)/$(JRUBY) -S jrubyc
