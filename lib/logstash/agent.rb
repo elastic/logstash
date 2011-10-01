@@ -97,6 +97,12 @@ class LogStash::Agent
       @verbose += 1
     end
 
+    opts.on("-V", "--version", "Show the version of logstash") do
+      require "logstash/version"
+      puts "logstash #{LOGSTASH_VERSION}"
+      exit(0)
+    end
+
     opts.on("-p PLUGIN_PATH", "--pluginpath PLUGIN_PATH",
             "A colon-delimited path to find plugins in.") do |path|
       path.split(":").each do |p|

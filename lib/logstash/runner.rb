@@ -40,12 +40,22 @@ class LogStash::Runner
     @runners.each { |r| status << r.wait }
 
     # Avoid running test/unit's at_exit crap
-    exit(status.first)
+    if status.empty?
+      exit(0)
+    else
+      exit(status.first)
+    end
   end # def self.main
 
   def run(args)
     command = args.shift
     commands = {
+      "-v" => lambda do
+        require "logstash/version"
+        puts "logstash #{LOGSTASH_VERSION}"
+        # '-v' can be the only argument, ignore the rest.
+        return []
+      end,
       "agent" => lambda do
         require "logstash/agent"
         agent = LogStash::Agent.new
