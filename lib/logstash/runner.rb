@@ -50,12 +50,9 @@ class LogStash::Runner
   def run(args)
     command = args.shift
     commands = {
-      "-v" => lambda do
-        require "logstash/version"
-        puts "logstash #{LOGSTASH_VERSION}"
-        # '-v' can be the only argument, ignore the rest.
-        return []
-      end,
+      "-v" => lambda { emit_version(args) },
+      "-V" => lambda { emit_version(args) },
+      "--version" => lambda { emit_version(args) },
       "agent" => lambda do
         require "logstash/agent"
         agent = LogStash::Agent.new
@@ -97,6 +94,14 @@ class LogStash::Runner
 
     return args
   end # def run
+
+  def emit_version
+    require "logstash/version"
+    puts "logstash #{LOGSTASH_VERSION}"
+
+    # '-v' can be the only argument, end processing args now.
+    return []
+  end # def emit_version
 end # class LogStash::Runner
 
 if $0 == __FILE__
