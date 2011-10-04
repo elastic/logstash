@@ -58,7 +58,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   def initialize(params)
     super
 
-    @format ||= ["json_event"]
+    @format ||= "json_event"
 
     if !MQTYPES.include?(@exchange_type)
       raise "Invalid type '#{@exchange_type}' must be one of #{MQTYPES.join(", ")}"
