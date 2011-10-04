@@ -29,7 +29,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     valid_conversions = %w(string integer float)
     # TODO(sissel): Validate conversion requests if provided.
     @convert.nil? or @convert.each do |field, type|
-      if !valid_types.include?(type)
+      if !valid_conversions.include?(type)
         @logger.error(["Invalid conversion type",
                       { "type" => type, "expected one of" => valid_types }])
         # TODO(sissel): It's 2011, man, let's actually make like.. a proper
@@ -88,9 +88,9 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
                       { "field" => field, "value" => original }])
         next
       elsif original.is_a?(Array)
-        value = original.map { |v| converter(v) }
+        value = original.map { |v| converter.call(v) }
       else
-        value = converter(value)
+        value = converter.call(original)
       end
       event[field] = value
     end
