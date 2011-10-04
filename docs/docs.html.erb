@@ -39,7 +39,11 @@ This is what it might look like in your config file:
      if setting_name.is_a?(Regexp)
        setting_name = "/" + setting_name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
      end
-     annotation += " (required)" if config[:required]
+     if config[:required]
+       annotation += " (required)"
+     else
+       annotation += " (optional)"
+     end
      annotation += ", default: #{config[:default].inspect}" if config[:default]
 -%>
     <a href="#setting_<%= setting_name %>"><%= setting_name %></a> => ... # <%= annotation %>
