@@ -94,4 +94,43 @@ describe LogStash::Filters::Mutate do
     assert_equal(event["newname"], "whoa",
                  "The 'newname' field was not renamed properly?")
   end # rename one field
+
+  test "convert one field to integer" do
+    config "convert" => [ "foo", "integer" ]
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event["foo"] = "1234"
+
+    @filter.filter(event)
+    assert_equal(1234, event["foo"],
+                 "Field 'foo' should now be an integer (1234), but is " \
+                 " a #{event["foo"].class.inspect} (#{event["foo"].inspect})")
+  end # convert one field
+
+  test "convert one field to string" do
+    config "convert" => [ "foo", "string" ]
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event["foo"] = 1234
+
+    @filter.filter(event)
+    assert_equal("1234", event["foo"],
+                 "Field 'foo' should now be a string ('1234'), but is " \
+                 " a #{event["foo"].class.inspect} (#{event["foo"].inspect})")
+  end # convert one field
+
+  test "convert one field to float" do
+    config "convert" => [ "foo", "float" ]
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event["foo"] = "1234.10"
+
+    @filter.filter(event)
+    assert_equal(1234.10, event["foo"],
+                 "Field 'foo' should now be an float (1234.10), but is " \
+                 " a #{event["foo"].class.inspect} (#{event["foo"].inspect})")
+  end # convert one field
 end # Test 'mutate' filter
