@@ -29,7 +29,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     BasicSocket.do_not_reverse_lookup = true
 
     # force "plain" format. others don't make sense here.
-    @format = ["plain"]
+    @format = "plain"
   end # def initialize
 
   public

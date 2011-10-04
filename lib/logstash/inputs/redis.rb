@@ -46,7 +46,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   def initialize(params)
     super
 
-    @format ||= ["json_event"]
+    @format ||= "json_event"
   end # def initialize
 
   public

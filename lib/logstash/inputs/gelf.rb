@@ -40,7 +40,7 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
 
     # nothing else makes sense here
     # gelf messages ARE json
-    @format = ["json"]
+    @format = "json"
   end # def initialize
 
   public

@@ -23,7 +23,7 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
     super
 
     # Force format to plain. Other values don't make any sense here.
-    @format = ["plain"]
+    @format = "plain"
   end # def initialize
 
   public
