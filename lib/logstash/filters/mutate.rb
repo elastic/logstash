@@ -9,24 +9,26 @@ require "logstash/time"
 class LogStash::Filters::Mutate < LogStash::Filters::Base
   config_name "mutate"
 
-  # Rename a field.
+  # Rename one or more fields.
   config :rename, :validate => :hash
 
-  # Remove a field.
+  # Remove one or more fields.
   config :remove, :validate => :array
 
   # Replace a field with a new value. The new value can include %{foo} strings
+  # to help you build a new value from other parts of the event.
   config :replace, :validate => :hash
 
   # Convert a field's value to a different type, like turning a string to an
-  # integer.
-  config :convert, :validate => :hash, :required => true
+  # integer. If the field value is an array, all members will be converted.
+  # If the field is a hash, no action will be taken.
+  config :convert, :validate => :hash
 
   public
   def register
     valid_conversions = %w(string integer float)
-    # TODO(sissel): Validate conversion requests.
-    @convert.each do |field, type|
+    # TODO(sissel): Validate conversion requests if provided.
+    @convert.nil? or @convert.each do |field, type|
       if !valid_types.include?(type)
         @logger.error(["Invalid conversion type",
                       { "type" => type, "expected one of" => valid_types }])
@@ -51,20 +53,20 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
 
   private
   def remove(event)
+    # TODO(sissel): use event.sprintf on the field names?
     @remove.each do |field|
-      # TODO(sissel): use event.sprintf on the field names?
       event.remove(field)
     end
   end # def remove
 
   private
   def rename(event)
+    # TODO(sissel): use event.sprintf on the field names?
     @rename.each do |old, new|
-      # TODO(sissel): use event.sprintf on the field names?
       event[new] = event[old]
       event.remove(old)
     end
-  end # def remove
+  end # def rename
 
   private
   def replace(event)
