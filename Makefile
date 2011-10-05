@@ -5,7 +5,7 @@
 #
 JRUBY_VERSION=1.6.4
 JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
-WITH_JRUBY=$(JRUBY_CMD) --1.9 -S
+WITH_JRUBY=bash $(JRUBY_CMD) --1.9 -S
 VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
@@ -163,7 +163,7 @@ build/logstash-$(VERSION)-monolithic.jar:
 
 .PHONY: test
 test:
-	$(QUIET)$(JRUBY_CMD) bin/logstash test
+	$(QUIET)bash $(JRUBY_CMD) bin/logstash test
 
 .PHONY: docs
 docs: docgen doccopy docindex
@@ -193,7 +193,7 @@ build/docs/%: docs/%
 
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 build/docs/index.html: docs/generate_index.rb
-	$(JRUBY_CMD) $< build/docs > $@
+	ruby $< build/docs > $@
 
 publish: | gem
 	$(QUIET)$(WITH_JRUBY) gem push logstash-$(VERSION).gem
