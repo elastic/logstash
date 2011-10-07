@@ -113,16 +113,22 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   public
   def receive(event)
-    key = event.sprintf(@key) if @key
     @logger.debug(["Sending event", { :destination => to_s, :event => event, :key => key }])
+    key = event.sprintf(@key) if @key
+    begin
+      receive_raw(event.to_json, key)
+    rescue JSON::GeneratorError
+      @logger.warn(["Trouble converting event to JSON", $!, event.to_hash])
+      return
+    end
+  end # def receive
+
+  public
+  def receive_raw(message, key=@key)
     begin
       if @exchange
-        begin
-          @exchange.publish(event.to_json, :persistent => @persistent, :key => key, :mandatory => true)
-        rescue JSON::GeneratorError
-          @logger.warn(["Trouble converting event to JSON", $!, event.to_hash])
-          return
-        end
+        @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
+        @exchange.publish(message, :persistent => @persistent, :key => key, :mandatory => true)
       else
         @logger.warn("Tried to send message, but not connected to amqp yet.")
       end
@@ -131,13 +137,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       connect
       retry
     end
-  end # def receive
-
-  # This is used by the ElasticSearch AMQP/River output.
-  public
-  def receive_raw(raw)
-    @exchange.publish(raw, :persistent => @persistent, :key => @key, :mandatory => true)
-  end # def receive_raw
+  end
 
   public
   def to_s
