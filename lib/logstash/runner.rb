@@ -22,7 +22,7 @@ class LogStash::Runner
 
     if RUBY_VERSION != "1.9.2"
       $stderr.puts "Ruby 1.9.2 mode is required."
-      $stderr.puts "Options for fixin this: "
+      $stderr.puts "Options for fixing this: "
       $stderr.puts "  * If doing 'ruby bin/logstash ...' add --1.9 flag to 'ruby'"
       $stderr.puts "  * If doing 'java -jar ... ' add -Djruby.compat.version=RUBY1_9 to java flags"
       return 1
