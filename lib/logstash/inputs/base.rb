@@ -7,8 +7,6 @@ require "logstash/config/mixin"
 # This is the base class for logstash inputs.
 class LogStash::Inputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
-  attr_accessor :logger
-
   config_name "input"
 
   # Label this input with a type.
@@ -43,15 +41,16 @@ class LogStash::Inputs::Base < LogStash::Plugin
       #if v !~ re
         #return [false, "Tag '#{v}' does not match #{re}"]
       #end # check 'v'
-    #end # value.each 
+    #end # value.each
     #return true
   #end) # config :tag
 
+  attr_accessor :params
+
   public
   def initialize(params)
-    @logger = LogStash::Logger.new(STDOUT)
+    super
     config_init(params)
-
     @tags ||= []
   end # def initialize
 

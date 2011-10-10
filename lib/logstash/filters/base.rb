@@ -6,12 +6,10 @@ require "logstash/config/mixin"
 class LogStash::Filters::Base < LogStash::Plugin
   include LogStash::Config::Mixin
 
-  attr_accessor :logger
-
   config_name "filter"
 
   # The type to act on. If a type is given, then this filter will only
-  # act on messages with the same type. See any input plugin's "type" 
+  # act on messages with the same type. See any input plugin's "type"
   # attribute for more.
   config :type, :validate => :string
 
@@ -44,7 +42,7 @@ class LogStash::Filters::Base < LogStash::Plugin
 
   public
   def initialize(params)
-    @logger = LogStash::Logger.new(STDOUT)
+    super
     config_init(params)
   end # def initialize
 

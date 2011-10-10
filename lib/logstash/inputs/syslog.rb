@@ -26,6 +26,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   public
   def initialize(params)
     super
+    @shutdown_requested = false
     BasicSocket.do_not_reverse_lookup = true
 
     # force "plain" format. others don't make sense here.
@@ -47,7 +48,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
     @grok_filter.register
     @date_filter.register
-    
+
     @tcp_clients = []
   end # def register
 
@@ -59,6 +60,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       begin
         udp_listener(output_queue)
       rescue => e
+        break if @shutdown_requested
         @logger.warn("syslog udp listener died: #{$!}")
         @logger.debug(["Backtrace", e.backtrace])
         sleep(5)
@@ -72,6 +74,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       begin
         tcp_listener(output_queue)
       rescue => e
+        break if @shutdown_requested
         @logger.warn("syslog tcp listener died: #{$!}")
         @logger.debug(["Backtrace", e.backtrace])
         sleep(5)
@@ -103,10 +106,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       end
     end
   ensure
-    if @udp
-      @udp.close_read rescue nil
-      @udp.close_write rescue nil
-    end
+    close_udp
   end # def udp_listener
 
   private
@@ -124,7 +124,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
         LogStash::Util::set_thread_name("input|syslog|tcp|#{ip}:#{port}}")
         if ip.include?(":") # ipv6
           source = "syslog://[#{ip}]/"
-        else 
+        else
           source = "syslog://#{ip}/"
         end
 
@@ -141,12 +141,35 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       end # Thread.new
     end # loop do
   ensure
+    close_tcp
+  end # def tcp_listener
+
+  public
+  def teardown
+    @shutdown_requested = true
+    close_udp
+    close_tcp
+    finished
+  end
+
+  private
+  def close_udp
+    if @udp
+      @udp.close_read rescue nil
+      @udp.close_write rescue nil
+    end
+    @udp = nil
+  end
+
+  private
+  def close_tcp
     # If we somehow have this left open, close it.
     @tcp_clients.each do |client|
       client.close rescue nil
     end
     @tcp.close if @tcp rescue nil
-  end # def tcp_listener
+    @tcp = nil
+  end
 
   # Following RFC3164 where sane, we'll try to parse a received message
   # as if you were relaying a syslog message to it.

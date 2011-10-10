@@ -4,7 +4,7 @@ require "logstash/namespace"
 # Pull events from an AMQP exchange.
 #
 # AMQP is a messaging system. It requires you to run an AMQP server or 'broker'
-# Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and 
+# Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and
 # [QPid](http://qpid.apache.org/)
 class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
@@ -31,7 +31,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
   # The name of the queue. If not set, defaults to the same name as the exchange.
   config :queue_name, :validate => :string
-  
+
   # The routing key to bind to
   config :key, :validate => :string
 
@@ -106,7 +106,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
       @queue = @bunny.queue(@queue_name, :durable => @queue_durable)
       exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
       @queue.bind(exchange, :key => @key)
-      
+
       @queue.subscribe do |data|
         e = to_event(data[:payload], @amqpurl)
         if e
@@ -124,5 +124,6 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
   def teardown
     @bunny.close if @bunny
+    finished
   end # def teardown
 end # class LogStash::Inputs::Amqp
