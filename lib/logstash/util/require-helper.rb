@@ -1,12 +1,12 @@
-require "logger"
 require "logstash/namespace"
+require "logstash/logging"
 
 module LogStash::Util::Require
   class << self
     attr_accessor :logger
 
     def require(lib, gemdep, message=nil)
-      @logger ||= Logger.new(STDERR)
+      @logger ||= LogStash::Logger.new(STDERR)
       begin
         require lib
       rescue LoadError => e
