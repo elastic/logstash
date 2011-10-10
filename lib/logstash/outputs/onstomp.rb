@@ -6,7 +6,7 @@ class LogStash::Outputs::Onstomp < LogStash::Outputs::Base
 
 
   # The address of the STOMP server.
-  config :host, :validate => :string
+  config :host, :validate => :string, :required => :true
 
   # The port to connect to on your STOMP server.
   config :port, :validate => :number, :default => 61613
@@ -26,18 +26,34 @@ class LogStash::Outputs::Onstomp < LogStash::Outputs::Base
   # Enable debugging output?
   config :debug, :validate => :boolean, :default => false
 
+  private
+  def connect
+    begin
+      @client.connect
+      @logger.debug("Connected to stomp server") if @client.connected?
+    rescue => e
+      @logger.debug("Failed to connect to stomp server : #{e}")
+    end
+  end
+
+
   public
   def register
     require "onstomp"
     @client = OnStomp::Client.new("stomp://#{@host}:#{@port}", :login => @user, :passcode => @password.value)
+    connect
   end # def register
-
-  public
+  
   def receive(event)
-    @client.connect
-    @logger.debug(["stomp sending event", { :host => @host, :event => event }])
-    @client.send(event.sprintf(@destination), event.to_json)
-    @client.disconnect # http://mdvlrb.com/onstomp/file.UserNarrative.html#What_Really_Goes_Down_when_you__disconnect
+    if @client.connected?
+      @logger.debug(["stomp sending event", { :host => @host, :event => event }])
+      @client.send(event.sprintf(@destination), event.to_json)
+    else
+      @logger.debug("Trying to reconnect to stomp server in 5s")
+      sleep 5
+      connect
+      @logger.debug("Connected again to stomp server") if @client.connected?
+    end # end if @client.connected?
   end # def receive
 end # class LogStash::Outputs::Onstomp
 
