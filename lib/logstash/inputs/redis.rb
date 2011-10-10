@@ -12,7 +12,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   # Name is used for logging in case there are multiple instances.
   # This feature has no real function and will be removed in future versions.
   config :name, :validate => :string, :default => "default", :deprecated => true
-  
+
   # The hostname of your redis server.
   config :host, :validate => :string, :default => "127.0.0.1"
 
@@ -36,7 +36,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   # TODO: change required to true
   config :key, :validate => :string, :required => false
 
-  # Either list or channel.  If redis_type is list, then we will BLPOP the 
+  # Either list or channel.  If redis_type is list, then we will BLPOP the
   # key.  If redis_type is channel, then we will SUBSCRIBE to the key.
   # If redis_type is pattern_channel, then we will PSUBSCRIBE to the key.
   # TODO: change required to true
@@ -72,7 +72,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
       )
     end
     # end TODO
-    
+
     @logger.info "Registering redis #{identity}"
   end # def register
 
@@ -105,7 +105,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
       @logger.debug(["Backtrace",  e.backtrace])
     end
   end
-  
+
   private
   def list_listener(redis, output_queue)
     response = redis.blpop @key, 0
@@ -184,5 +184,6 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
       @redis.quit
       @redis = nil
     end
+    finished
   end
 end # class LogStash::Inputs::Redis
