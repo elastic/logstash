@@ -5,7 +5,7 @@ class LogStash::Inputs::Onstomp < LogStash::Inputs::Base
   config_name "onstomp"
 
   # The address of the STOMP server.
-  config :host, :validate => :string, :default => "localhost"
+  config :host, :validate => :string, :default => "localhost", :required => true
 
   # The port to connet to on your STOMP server.
   config :port, :validate => :number, :default => 61613

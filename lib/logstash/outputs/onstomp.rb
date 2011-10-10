@@ -6,7 +6,7 @@ class LogStash::Outputs::Onstomp < LogStash::Outputs::Base
 
 
   # The address of the STOMP server.
-  config :host, :validate => :string, :required => :true
+  config :host, :validate => :string, :required => true
 
   # The port to connect to on your STOMP server.
   config :port, :validate => :number, :default => 61613
@@ -21,7 +21,7 @@ class LogStash::Outputs::Onstomp < LogStash::Outputs::Base
   # %{foo} values will expand to the field value.
   #
   # Example: "/topic/logstash"
-  config :destination, :validate => :string
+  config :destination, :validate => :string, :required => true
 
   # Enable debugging output?
   config :debug, :validate => :boolean, :default => false
