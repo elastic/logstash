@@ -101,13 +101,13 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       end
     end
 
-    @logger.debug("Declaring queue '#{@queue_name}' as #{"not" unless @queue_durable} durable")
+    @logger.debug(["Declaring queue", { :queue_name => @queue_name, :durable => @queue_durable }])
     queue = @bunny.queue(@queue_name, :durable => @queue_durable)
 
-    @logger.debug("Declaring #{@exchange_type} exchange '#{@name}' as #{"not" unless @durable} durable")
+    @logger.debug("Declaring exchange", {:name => @name, :type => @exchange_type, :durable => @durable})
     @exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
 
-    @logger.debug("Binding exchange '#{@name}' to key '#{@key}'")
+    @logger.debug("Binding exchange", {:name => @name, :key => @key})
     queue.bind(@exchange, :key => @key)
   end # def connect
 
