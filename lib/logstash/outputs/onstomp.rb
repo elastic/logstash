@@ -33,6 +33,8 @@ class LogStash::Outputs::Onstomp < LogStash::Outputs::Base
       @logger.debug("Connected to stomp server") if @client.connected?
     rescue => e
       @logger.debug("Failed to connect to stomp server : #{e}")
+      sleep 2
+      retry
     end
   end
 
@@ -41,19 +43,18 @@ class LogStash::Outputs::Onstomp < LogStash::Outputs::Base
   def register
     require "onstomp"
     @client = OnStomp::Client.new("stomp://#{@host}:#{@port}", :login => @user, :passcode => @password.value)
+
+    @client.on_connection_closed do |client, connection, msg|
+      @logger.debug("Disconnected from stomp server, re-connecting")
+      connect
+    end
+
     connect
   end # def register
   
   def receive(event)
-    if @client.connected?
       @logger.debug(["stomp sending event", { :host => @host, :event => event }])
       @client.send(event.sprintf(@destination), event.to_json)
-    else
-      @logger.debug("Trying to reconnect to stomp server in 5s")
-      sleep 5
-      connect
-      @logger.debug("Connected again to stomp server") if @client.connected?
-    end # end if @client.connected?
   end # def receive
 end # class LogStash::Outputs::Onstomp
 

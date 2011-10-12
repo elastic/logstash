@@ -31,6 +31,8 @@ class LogStash::Inputs::Onstomp < LogStash::Inputs::Base
       @logger.info("Connected to stomp server") if @client.connected?
     rescue => e
       @logger.debug("Failed in connect : #{e}")
+      sleep 2
+      retry
     end
   end
 
@@ -40,6 +42,12 @@ class LogStash::Inputs::Onstomp < LogStash::Inputs::Base
 
     @client = OnStomp::Client.new("stomp://#{@host}:#{@port}", :login => @user, :passcode => @password.value)
     @stomp_url = "stomp://#{@user}:#{@password}@#{@host}:#{@port}/#{@destination}"
+
+    @client.on_connection_closed do |client, connection, msg|
+      @logger.debug("Disconnected from stomp server, connecting again")
+      connect
+    end
+
     connect
   end # def register
 
