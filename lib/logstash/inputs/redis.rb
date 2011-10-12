@@ -73,7 +73,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
     end
     # end TODO
 
-    @logger.info "Registering redis #{identity}"
+    @logger.info("Registering redis", :identity => identity)
   end # def register
 
   # A string used to identify a redis instance in log messages
@@ -101,8 +101,8 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
       event = to_event msg, identity
       output_queue << event if event
     rescue => e # parse or event creation error
-      @logger.error(["Failed to create event with '#{msg}'", e])
-      @logger.debug(["Backtrace",  e.backtrace])
+      @logger.error("Failed to create event", :message => msg, exception => e,
+                    :backtrace => e.backtrace);
     end
   end
 
@@ -115,16 +115,16 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   private
   def channel_listener(redis, output_queue)
     redis.subscribe @key do |on|
-      on.subscribe do |ch, count|
-        @logger.info "Subscribed to #{ch} (#{count})"
+      on.subscribe do |channel, count|
+        @logger.info("Subscribed", :channel => channel, :count => count)
       end
 
-      on.message do |ch, message|
+      on.message do |channel, message|
         queue_event message, output_queue
       end
 
-      on.unsubscribe do |ch, count|
-        @logger.info "Unsubscribed from #{ch} (#{count})"
+      on.unsubscribe do |channel, count|
+        @logger.info("Unsubscribed", :channel => channel, :count => count)
       end
     end
   end
@@ -132,16 +132,16 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   private
   def pattern_channel_listener(redis, output_queue)
     redis.psubscribe @key do |on|
-      on.psubscribe do |ch, count|
-        @logger.info "Subscribed to #{ch} (#{count})"
+      on.psubscribe do |channel, count|
+        @logger.info("Subscribed", :channel => channel, :count => count)
       end
 
       on.pmessage do |ch, event, message|
         queue_event message, output_queue
       end
 
-      on.punsubscribe do |ch, count|
-        @logger.info "Unsubscribed from #{ch} (#{count})"
+      on.punsubscribe do |channel, count|
+        @logger.info("Unsubscribed", :channel => channel, :count => count)
       end
     end
   end
@@ -155,7 +155,8 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
         @redis ||= connect
         self.send listener, @redis, output_queue
       rescue => e # redis error
-        @logger.warn(["Failed to get event from redis #{@name}. ", e])
+        @logger.warn("Failed to get event from redis", :name => @name,
+                     :exception => e, :backtrace => e.backtrace)
         raise e
       end
     end # loop

@@ -39,9 +39,9 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
       #stream = TweetStream::Client.new(@user, @password.value)
       #stream.track(*@keywords) do |status|
       track(*@keywords) do |status|
-        @logger.debug :status => status
+        @logger.debug("twitter keyword track status", :status => status)
         #@logger.debug("Got twitter status from @#{status[:user][:screen_name]}")
-        @logger.info("Got twitter status from @#{status["user"]["screen_name"]}")
+        @logger.info("Got twitter status", :user => status["user"]["screen_name"]")
         e = to_event(status["text"], "http://twitter.com/#{status["user"]["screen_name"]}/status/#{status["id"]}")
         next unless e
 
@@ -84,13 +84,13 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
       response.read_body do |chunk|
         #@logger.info("Twitter: #{chunk.inspect}")
         buffer.extract(chunk).each do |line|
-          @logger.info("Twitter line: #{line.inspect}")
+          @logger.info("Twitter line", :line => line)
           begin 
             status = JSON.parse(line)
             yield status
           rescue => e
-            @logger.error e
-            @logger.debug(["Backtrace", e.backtrace])
+            @logger.error("Error parsing json from twitter", :exception => e,
+                          :backtrace => e.backtrace);
           end
         end # buffer.extract
       end # response.read_body

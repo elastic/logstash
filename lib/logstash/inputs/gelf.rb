@@ -56,8 +56,7 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
       begin
         udp_listener(output_queue)
       rescue => e
-        @logger.warn("gelf listener died: #{$!}")
-        @logger.debug(["Backtrace", e.backtrace])
+        @logger.warn("gelf listener died", :exception => e, :backtrace => e.backtrace)
         sleep(5)
         retry
       end # begin
@@ -66,7 +65,7 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
 
   private
   def udp_listener(output_queue)
-    @logger.info("Starting gelf listener on #{@host}:#{@port}")
+    @logger.info("Starting gelf listener", :address => "#{@host}:#{@port}")
 
     if @udp
       @udp.close_read
