@@ -62,7 +62,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       rescue => e
         break if @shutdown_requested
         @logger.warn("syslog udp listener died",
-                     :address => "#{@host}:#{@port}"), :exception => e,
+                     :address => "#{@host}:#{@port}", :exception => e,
                      :backtrace => e.backtrace)
         sleep(5)
         retry
@@ -77,7 +77,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       rescue => e
         break if @shutdown_requested
         @logger.warn("syslog tcp listener died",
-                     :address => "#{@host}:#{@port}"), :exception => e,
+                     :address => "#{@host}:#{@port}", :exception => e,
                      :backtrace => e.backtrace)
         sleep(5)
         retry

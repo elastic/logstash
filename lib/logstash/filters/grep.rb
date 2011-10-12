@@ -83,7 +83,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
             next if re.match(value)
             @logger.debug("grep not-matched (negate requested)", field => value)
           else
-            @logger.debug("want match", :regexp => re, :value => value])
+            @logger.debug("want match", :regexp => re, :value => value)
             next unless re.match(value)
             @logger.debug("grep matched", field => value)
           end

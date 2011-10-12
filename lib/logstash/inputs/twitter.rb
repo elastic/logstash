@@ -41,7 +41,7 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
       track(*@keywords) do |status|
         @logger.debug("twitter keyword track status", :status => status)
         #@logger.debug("Got twitter status from @#{status[:user][:screen_name]}")
-        @logger.info("Got twitter status", :user => status["user"]["screen_name"]")
+        @logger.info("Got twitter status", :user => status["user"]["screen_name"])
         e = to_event(status["text"], "http://twitter.com/#{status["user"]["screen_name"]}/status/#{status["id"]}")
         next unless e
 
