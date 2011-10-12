@@ -12,7 +12,7 @@ GEM
     gmetric (0.1.3)
     haml (3.1.3)
     jls-grok (0.9.0)
-    jruby-elasticsearch (0.0.10)
+    jruby-elasticsearch (0.0.11)
     jruby-openssl (0.7.4)
       bouncy-castle-java
     json (1.6.1-java)
@@ -46,7 +46,7 @@ DEPENDENCIES
   gmetric (~> 0.1.3)
   haml
   jls-grok (= 0.9.0)
-  jruby-elasticsearch (~> 0.0.10)
+  jruby-elasticsearch (~> 0.0.11)
   jruby-openssl
   json
   minitest
