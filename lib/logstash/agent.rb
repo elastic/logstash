@@ -227,14 +227,14 @@ class LogStash::Agent
     end
 
     if @verbose >= 3  # Uber debugging.
-      @logger.level = Logger::DEBUG
+      @logger.level = :debug
       $DEBUG = true
     elsif @verbose == 2 # logstash debug logs
-      @logger.level = Logger::DEBUG
+      @logger.level = :debug
     elsif @verbose == 1 # logstash info logs
-      @logger.level = Logger::INFO
+      @logger.level = :info
     else # Default log level
-      @logger.level = Logger::WARN
+      @logger.level = :warn
     end
   end # def configure
 

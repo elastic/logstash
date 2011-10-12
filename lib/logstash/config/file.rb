@@ -11,7 +11,7 @@ class LogStash::Config::File
   def initialize(path=nil, string=nil)
     @path = path
     @string = string
-    @logger = Logger.new(STDERR)
+    @logger = LogStash::Logger.new(STDERR)
 
     if (path.nil? and string.nil?) or (!path.nil? and !string.nil?)
        raise "Must give path or string, not both or neither"
