@@ -27,15 +27,15 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
   
   public
   def register
-    @logger.info(["Registering Exec Input", {:type => @type,
-                 :command => @command, :interval => @interval}])
+    @logger.info("Registering Exec Input", :type => @type,
+                 :command => @command, :interval => @interval)
   end # def register
 
   public
   def run(queue)
     loop do
       start = Time.now
-      @logger.info(["Running exec", { :command => @command }]) if @debug
+      @logger.info("Running exec", :command => @command) if @debug
       out = IO.popen(@command)
       # out.read will block until the process finishes.
       e = to_event(out.read, "exec://#{Socket.gethostname}/")
@@ -44,17 +44,17 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
 
       duration = Time.now - start
       if @debug
-        @logger.info(["Command completed",
-                     { :command => @command, :duration => duration } ])
+        @logger.info("Command completed", :command => @command,
+                     :duration => duration)
       end
 
       # Sleep for the remainder of the interval, or 0 if the duration ran
       # longer than the interval.
       sleeptime = [0, @interval - duration].max
       if sleeptime == 0
-        @logger.warn(["Execution ran longer than the interval. Skipping sleep...",
-                      { :command => @command, :duration => duration,
-                        :interval => @interval }])
+        @logger.warn("Execution ran longer than the interval. Skipping sleep.",
+                     :command => @command, :duration => duration,
+                     :interval => @interval)
       else
         sleep(sleeptime)
       end
