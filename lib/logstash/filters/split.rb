@@ -48,7 +48,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
       next if value.empty?
 
       event_split = event.clone
-      @logger.debug(["Split event", { :value => value, :field => @field }])
+      @logger.debug("Split event", :value => value, :field => @field)
       event_split[@field] = value
       filter_matched(event_split)
 
