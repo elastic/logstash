@@ -63,11 +63,12 @@ class LogStash::Filters::Base < LogStash::Plugin
     (@add_field or {}).each do |field, value|
       event[field] ||= []
       event[field] << event.sprintf(value)
-      @logger.debug("filters/#{self.class.name}: adding #{value} to field #{field}")
+      @logger.debug("filters/#{self.class.name}: adding value to field",
+                    :field => field, :value => value)
     end
 
     (@add_tag or []).each do |tag|
-      @logger.debug("filters/#{self.class.name}: adding tag #{tag}")
+      @logger.debug("filters/#{self.class.name}: adding tag", :tag => tag)
       event.tags << event.sprintf(tag)
       #event.tags |= [ event.sprintf(tag) ]
     end

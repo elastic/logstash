@@ -135,7 +135,7 @@ class LogStash::Agent
     # These are 'unknown' flags that begin --<plugin>-flag
     # Put any plugin paths into the ruby library path for requiring later.
     @plugin_paths.each do |p|
-      @logger.debug("Adding #{p.inspect} to ruby load path")
+      @logger.debug("Adding to ruby load path", :path => p)
       $:.unshift p
     end
 
@@ -158,16 +158,17 @@ class LogStash::Agent
       %w{inputs outputs filters}.each do |component|
         @plugin_paths.each do |path|
           plugin = File.join(path, component, name) + ".rb"
-          @logger.debug("Flag #{arg} found; trying to load #{plugin}")
+          @logger.debug("Plugin flag found; trying to load it",
+                        :flag => arg, :plugin => plugin)
           if File.file?(plugin)
-            @logger.info("Loading plugin #{plugin}")
+            @logger.info("Loading plugin", :plugin => plugin)
             require plugin
             [LogStash::Inputs, LogStash::Filters, LogStash::Outputs].each do |c|
               # If we get flag --foo-bar, check for LogStash::Inputs::Foo
               # and add any options to our option parser.
               klass_name = name.capitalize
               if c.const_defined?(klass_name)
-                @logger.debug("Found plugin class #{c}::#{klass_name})")
+                @logger.debug("Found plugin class", :class => "#{c}::#{klass_name})")
                 klass = c.const_get(klass_name)
                 # See LogStash::Config::Mixin::DSL#options
                 klass.options(@opts)
@@ -187,7 +188,7 @@ class LogStash::Agent
     begin
       remainder = @opts.parse(args)
     rescue OptionParser::InvalidOption => e
-      @logger.info e
+      @logger.info("Invalid option", :exception => e)
       raise e
     end
 
@@ -197,22 +198,22 @@ class LogStash::Agent
   private
   def configure
     if @config_path && @config_string
-      @logger.fatal "Can't use -f and -e at the same time"
+      @logger.fatal("Can't use -f and -e at the same time")
       raise "Configuration problem"
     elsif (@config_path.nil? || @config_path.empty?) && @config_string.nil?
-      @logger.fatal "No config file given. (missing -f or --config flag?)"
-      @logger.fatal @opts.help
+      @logger.fatal("No config file given. (missing -f or --config flag?)")
+      @logger.fatal(@opts.help)
       raise "Configuration problem"
     end
 
     #if @config_path and !File.exist?(@config_path)
     if @config_path and Dir.glob(@config_path).length == 0
-      @logger.fatal "Config file '#{@config_path}' does not exist."
+      @logger.fatal("Config file does not exist.", :path => @config_path)
       raise "Configuration problem"
     end
 
     if @daemonize
-      @logger.fatal "Can't daemonize, no support yet in JRuby."
+      @logger.fatal("Can't daemonize, no support yet in JRuby.")
       raise "Can't daemonize, no fork in JRuby."
     end
 
@@ -243,7 +244,8 @@ class LogStash::Agent
       # Support directory of config files.
       # https://logstash.jira.com/browse/LOGSTASH-106
       if File.directory?(@config_path)
-        @logger.debug("Loading '#{@config_path}' as directory")
+        @logger.debug("Config path is a directory, scanning files",
+                      :path => @config_path)
         paths = Dir.glob(File.join(@config_path, "*")).sort
       else
         # Get a list of files matching a glob. If the user specified a single
@@ -330,7 +332,7 @@ class LogStash::Agent
 
   private
   def start_input(input)
-    @logger.debug(["Starting input", input])
+    @logger.debug("Starting input", :plugin => input)
     # inputs should write directly to output queue if there are no filters.
     input_target = @filters.length > 0 ? @filter_queue : @output_queue
     @plugins[input] = Thread.new(input, input_target) do |*args|
@@ -340,7 +342,7 @@ class LogStash::Agent
 
   private
   def start_output(output)
-    @logger.debug(["Starting output", output])
+    @logger.debug("Starting output", :plugin => output)
     queue = SizedQueue.new(10)
     @output_queue.add_queue(queue)
     @output_plugin_queues[output] = queue
@@ -462,9 +464,9 @@ class LogStash::Agent
 
       finished_queue = Queue.new
       # Tell everything to shutdown.
-      @logger.debug(plugins.keys.collect(&:to_s))
+      @logger.debug("Plugins to shutdown", :plugins => plugins.keys.collect(&:to_s))
       plugins.each do |p, thread|
-        @logger.debug("Telling to shutdown: #{p.to_s}")
+        @logger.debug("Sending shutdown to: #{p.to_s}", :plugin => p)
         p.shutdown(finished_queue)
       end
 
@@ -474,7 +476,7 @@ class LogStash::Agent
       while remaining.size > 0
         if (Time.now > force_shutdown_time)
           @logger.warn("Time to quit, even if some plugins aren't finished yet.")
-          @logger.warn("Stuck plugins? #{remaining.map(&:first).join(", ")}")
+          @logger.warn("Stuck plugins?", :remaining => remaining.map(&:first))
           break
         end
 
@@ -485,9 +487,9 @@ class LogStash::Agent
           sleep(1)
         else
           remaining = plugins.select { |p, thread| plugin.running? }
-          @logger.debug("#{p.to_s} finished, waiting on " \
-                        "#{remaining.size} plugins; " \
-                        "#{remaining.map(&:first).join(", ")}")
+          @logger.debug("Plugin #{p.to_s} finished, waiting on the rest.",
+                        :count => remaining.size,
+                        :remaining => remaining.map(&:first))
         end
       end # while remaining.size > 0
     end
@@ -506,7 +508,7 @@ class LogStash::Agent
           config = read_config
           reloaded_inputs, reloaded_filters, reloaded_outputs = parse_config(config)
         rescue Exception => e
-          @logger.error "Aborting reload due to bad configuration: #{e}"
+          @logger.error("Aborting reload due to bad configuration", :exception => e)
           return
         end
 
@@ -526,7 +528,7 @@ class LogStash::Agent
             obsolete_plugins[p] = @plugins[p]
             @plugins.delete(p)
           else
-            @logger.warn("Couldn't find input plugin to stop: #{p}")
+            @logger.warn("Couldn't find input plugin to stop", :plugin => p)
           end
         end
 
@@ -536,7 +538,7 @@ class LogStash::Agent
             @plugins.delete(p)
             @output_queue.remove_queue(@output_plugin_queues[p])
           else
-            @logger.warn("Couldn't find output plugin to stop: #{p}")
+            @logger.warn("Couldn't find output plugin to stop", :plugin => p)
           end
         end
 
@@ -548,7 +550,7 @@ class LogStash::Agent
         deleted_filters.each {|f| obsolete_plugins[f] = nil}
 
         if obsolete_plugins.size > 0
-          @logger.info("Stopping removed plugins:\n\t" + obsolete_plugins.keys.join("\n\t"))
+          @logger.info("Stopping removed plugins:", :plugins => obsolete_plugins.keys)
           shutdown_plugins(obsolete_plugins)
         end
         # require 'pry'; binding.pry()
@@ -556,7 +558,7 @@ class LogStash::Agent
         # Start up filters
         if new_filters.size > 0 || deleted_filters.size > 0
           if new_filters.size > 0
-            @logger.info("Starting new filters: #{new_filters.join(', ')}")
+            @logger.info("Starting new filters", :plugins => new_filters)
             new_filters.each do |f|
               f.logger = @logger
               f.register
@@ -569,13 +571,13 @@ class LogStash::Agent
         end
 
         if new_inputs.size > 0
-          @logger.info("Starting new inputs: #{new_inputs.join(', ')}")
+          @logger.info("Starting new inputs", :plugins => new_inputs)
           new_inputs.each do |p|
             start_input(p)
           end
         end
         if new_outputs.size > 0
-          @logger.info("Starting new outputs: #{new_outputs.join(', ')}")
+          @logger.info("Starting new outputs", :plugins => new_outputs)
           new_inputs.each do |p|
             start_output(p)
           end
@@ -637,7 +639,7 @@ class LogStash::Agent
     LogStash::Util::set_thread_name("input|#{input.to_s}")
     input.logger = @logger
     input.register
-    @logger.info("Input #{input.to_s} registered")
+    @logger.info("Input registered", :plugin => input)
     @ready_queue << input
     done = false
 
@@ -646,12 +648,11 @@ class LogStash::Agent
         input.run(queue)
         done = true
       rescue => e
-        @logger.warn(["Input #{input.to_s} thread exception", e])
-        @logger.debug(["Input #{input.to_s} thread exception backtrace",
-                       e.backtrace])
-        @logger.error("Restarting input #{input.to_s} due to exception")
+        @logger.warn("Input thread exception", :plugin => input,
+                     :exception => e, :backtrace => e.backtrace)
+        @logger.error("Restarting input due to exception", :plugin => input)
         sleep(1)
-        retry # This jumps to the top of this proc (to the start of 'do')
+        retry # This jumps to the top of the 'begin'
       end
     end
 
@@ -668,7 +669,7 @@ class LogStash::Agent
   def run_filter(filterworker, index, output_queue)
     LogStash::Util::set_thread_name("filter|worker|#{index}")
     filterworker.run
-    @logger.warn("Filter worker ##{index} shutting down")
+    @logger.warn("Filter worker shutting down", :index => index)
 
     # If we get here, the plugin finished, check if we need to shutdown.
     shutdown_if_none_running(LogStash::FilterWorker, output_queue) unless @reloading
@@ -679,26 +680,25 @@ class LogStash::Agent
     LogStash::Util::set_thread_name("output|#{output.to_s}")
     output.logger = @logger
     output.register
-    @logger.info("Output #{output.to_s} registered")
+    @logger.info("Output registered", :plugin => output)
     @ready_queue << output
 
     # TODO(sissel): We need a 'reset' or 'restart' method to call on errors
 
     begin
       while event = queue.pop do
-        @logger.debug("Sending event to #{output.to_s}")
+        @logger.debug("Sending event", :target => output)
         output.handle(event)
       end
     rescue Exception => e
-      @logger.warn(["Output #{output.to_s} thread exception", e])
-      @logger.debug(["Output #{output.to_s} thread exception backtrace",
-                     e.backtrace])
+      @logger.warn("Output thread exception", :plugin => plugin,
+                   :exception => e, :backtrace => e.backtrace)
       # TODO(sissel): should we abort after too many failures?
       sleep(1)
       retry
     end # begin/rescue
 
-    @logger.warn("Output #{input.to_s} shutting down")
+    @logger.warn("Output shutting down", :plugin => output)
 
     # If we get here, the plugin finished, check if we need to shutdown.
     shutdown_if_none_running(LogStash::Outputs::Base) unless @reloading
@@ -714,7 +714,8 @@ class LogStash::Agent
       remaining = @plugins.count do |plugin, thread|
         plugin.is_a?(pluginclass) and plugin.running?
       end
-      @logger.debug("#{pluginclass} still running: #{remaining}")
+      @logger.debug("Plugins still running", :type => pluginclass,
+                    :remaining => remaining)
 
       if remaining == 0
         @logger.debug("All #{pluginclass} finished. Shutting down.")

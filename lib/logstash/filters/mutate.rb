@@ -30,8 +30,8 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     # TODO(sissel): Validate conversion requests if provided.
     @convert.nil? or @convert.each do |field, type|
       if !valid_conversions.include?(type)
-        @logger.error(["Invalid conversion type",
-                      { "type" => type, "expected one of" => valid_types }])
+        @logger.error("Invalid conversion type",
+                      "type" => type, "expected one of" => valid_types)
         # TODO(sissel): It's 2011, man, let's actually make like.. a proper
         # 'configuration broken' exception
         raise "Bad configuration, aborting."
@@ -84,8 +84,8 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
       # calls convert_{string,integer,float} depending on type requested.
       converter = method("convert_" + type)
       if original.is_a?(Hash)
-        @logger.debug(["I don't know how to type convert a hash, skipping",
-                      { "field" => field, "value" => original }])
+        @logger.debug("I don't know how to type convert a hash, skipping",
+                      :field => field, :value => original)
         next
       elsif original.is_a?(Array)
         value = original.map { |v| converter.call(v) }

@@ -44,7 +44,7 @@ module LogStash::Config::Mixin
     # Validation will modify the values inside params if necessary.
     # For example: converting a string to a number, etc.
     if !self.class.validate(params)
-      @logger.error "Config validation failed."
+      @logger.error("Config validation failed.")
       exit 1
     end
 
@@ -53,7 +53,7 @@ module LogStash::Config::Mixin
       opts = self.class.get_config[name]
       if opts && opts[:deprecated]
         @logger.warn("Deprecated config item #{name.inspect} set " +
-                     "in #{self.class.name}")
+                     "in #{self.class.name}", :name => name, :plugin => self)
       end
     end
 

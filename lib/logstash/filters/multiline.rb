@@ -82,14 +82,13 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   public
   def register
-    @logger.debug "Setting type #{@type.inspect} to the config #{@config.inspect}"
-
     begin
       @pattern = Regexp.new(@pattern)
     rescue RegexpError => e
-      @logger.fatal(["Invalid pattern for multiline filter on type '#{@type}'",
-                    @pattern, e])
+      @logger.fatal("Invalid pattern for multiline filter",
+                    :pattern => @pattern, :exception => e, :backtrace => e.backtrace)
     end
+    @logger.debug("Registered multiline plugin", :type => @type, :config => @config)
   end # def register
 
   public
@@ -100,7 +99,8 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     key = [event.source, event.type]
     pending = @pending[key]
 
-    @logger.debug(["Reg: ", @pattern, event.message, { :match => match, :negate => @negate }])
+    @logger.debug("Multiline", :pattern => @pattern, :message => event.message,
+                  :match => match, :negate => @negate)
 
     # Add negate option
     match = (match and !@negate) || (!match and @negate)
@@ -152,7 +152,8 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
         end
       end # if/else match
     else
-      @logger.warn(["Unknown multiline 'what' value.", { :what => @what }])
+      # TODO(sissel): Make this part of the 'register' method.
+      @logger.warn("Unknown multiline 'what' value.", :what => @what)
     end # case @what
 
     if !event.cancelled?
