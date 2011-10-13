@@ -29,7 +29,9 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
   public
   def register
     # TODO(sissel): put buftok in logstash, too
-    require "filewatch/buftok"
+    @logger.info("Registering twitter input")
+    v = require("filewatch/buftok")
+    @logger.info("Required buftok #{v}")
     #require "tweetstream" # rubygem 'tweetstream'
   end
 
@@ -69,17 +71,23 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
   private
   def track(*keywords)
-    uri = URI.parse("http://stream.twitter.com/1/statuses/filter.json")
+    uri = URI.parse("https://stream.twitter.com/1/statuses/filter.json")
     #params = {
       #"track" => keywords
     #}
 
     http = Net::HTTP.new(uri.host, uri.port)
-    #http.use_ssl = true
+    http.use_ssl = true
+
+    # TODO(sissel): Load certs.
+    http.ca_file = File.join(File.dirname(__FILE__), "..", "certs", "cacert.pem")
+    http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    http.verify_depth = 5
+
     request = Net::HTTP::Post.new(uri.path)
     request.body = "track=#{keywords.join(",")}"
     request.basic_auth @user, @password.value
-    buffer = BufferedTokenizer.new("\r\n")
+    buffer = FileWatch::BufferedTokenizer.new("\r\n")
     http.request(request) do |response|
       response.read_body do |chunk|
         #@logger.info("Twitter: #{chunk.inspect}")
