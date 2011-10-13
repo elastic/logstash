@@ -188,6 +188,7 @@ build/docs/outputs/%.html: lib/logstash/outputs/%.rb | build/docs/outputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
 
 build/docs/%: docs/%
+	@echo "Copying $< (to $@)"
 	-$(QUIET)mkdir -p $(shell dirname $@)
 	$(QUIET)sed -re 's/%VERSION%/$(VERSION)/g' $< > $@
 

@@ -12,7 +12,7 @@ require "bluecloth" # for markdown parsing
 $: << Dir.pwd
 $: << File.join(File.dirname(__FILE__), "..", "lib")
 
-require File.join(File.dirname(__FILE__), "..", "VERSION")
+require "logstash/version"
 
 class LogStashConfigDocGenerator
   COMMENT_RE = /^ *#(?: (.*)| *$)/
@@ -22,7 +22,7 @@ class LogStashConfigDocGenerator
       COMMENT_RE => lambda { |m| add_comment(m[1]) },
       /^ *class.*< *LogStash::(Outputs|Filters|Inputs)::Base/ => \
         lambda { |m| set_class_description },
-      /^ *config .*/ => lambda { |m| add_config(m[0]) },
+      /^ *config +[^=].*/ => lambda { |m| add_config(m[0]) },
       /^ *config_name .*/ => lambda { |m| set_config_name(m[0]) },
       /^ *flag[( ].*/ => lambda { |m| add_flag(m[0]) },
       /^ *(class|def|module) / => lambda { |m| clear_comments },
