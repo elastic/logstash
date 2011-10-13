@@ -91,7 +91,8 @@ and tokyocabinet (see above grok/INSTALL url)
 
 (This next step can be skipped if you are using a logstash jar release
 (logstash-%VERSION%.jar, etc) Once you have grok installed, you need to install the
-'jls-grok' rubygem, which you can do by running:
+'jls-grok' rubygem (unless you are using the logstash jar, which you should be
+using), which you can do by running:
 
     gem install jls-grok
  
