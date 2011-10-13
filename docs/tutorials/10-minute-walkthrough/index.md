@@ -8,7 +8,7 @@ layout: content_right
 
 ### Download logstash:
 
-* [logstash-1.0.17-monolithic.jar](http://semicomplete.com/files/logstash/logstash-1.0.17-monolithic.jar)
+* [logstash-%VERSION%-monolithic.jar](http://semicomplete.com/files/logstash/logstash-%VERSION%-monolithic.jar)
 
 ### Requirements:
 
@@ -28,7 +28,7 @@ I bake as much as possible into the single release file.
 
 ### Run it:
 
-    java -jar logstash-1.0.17-monolithic.jar agent -f hello.conf
+    java -jar logstash-%VERSION%-monolithic.jar agent -f hello.conf
 
 Type stuff on standard input. Press enter. Watch what event logstash sees.
 Press ^C to kill it.
@@ -41,7 +41,7 @@ Press ^C to kill it.
 
 ### Run it:
 
-    java -jar logstash-1.0.17-monolithic.jar agent -f hello-search.conf
+    java -jar logstash-%VERSION%-monolithic.jar agent -f hello-search.conf
 
 Same config as step 2, but now we are also writing events to ElasticSearch. Do
 a search for '*' (all):
@@ -56,7 +56,7 @@ The same config as step 3 is used.
 
 ### Run it:
 
-    java -jar logstash-1.0.17-monolithic.jar agent -f hello-search.conf -- web --backend 'elasticsearch:///?local'
+    java -jar logstash-%VERSION%-monolithic.jar agent -f hello-search.conf -- web --backend 'elasticsearch:///?local'
 
 The above runs both the agent and the logstash web interface in the same
 process. Useful for simple deploys.
@@ -85,7 +85,7 @@ keep reading below.
 
 ### Run it
 
-    java -jar logstash-1.0.17-monolithic.jar agent -f apache-parse.conf
+    java -jar logstash-%VERSION%-monolithic.jar agent -f apache-parse.conf
 
 Logstash will now be listening on TCP port 3333. Send an apache log message at it:
 
@@ -104,7 +104,7 @@ Same as the previous step, but we'll output to ElasticSearch now.
 
 ### Run it
 
-    java -jar logstash-1.0.17-monolithic.jar agent -f apache-elasticsearch.conf -- web --backend 'elasticsearch:///?local'
+    java -jar logstash-%VERSION%-monolithic.jar agent -f apache-elasticsearch.conf -- web --backend 'elasticsearch:///?local'
 
 Logstash should be all set for you now. Start feeding it logs:
 
@@ -121,7 +121,7 @@ Try some search queries. Click on some results.
 For further learning, try these:
 
 * [Watch a presentation on logstash](http://blip.tv/carolinacon/logstash-open-source-log-and-event-management-jordan-sissel-5123601)
-* [Getting started 'standalone' guide](http://logstash.net/docs/1.0.17/getting-started-simple)
-* [Getting started 'centralized' guide](http://logstash.net/docs/1.0.17/getting-started-centralized) - 
+* [Getting started 'standalone' guide](http://logstash.net/docs/%VERSION%-started-simple)
+* [Getting started 'centralized' guide](http://logstash.net/docs/%VERSION%-started-centralized) - 
   learn how to build out your logstash infrastructure and centralize your logs.
-* [Dive into the docs](http://logstash.net/docs/1.0.17/)
+* [Dive into the docs](http://logstash.net/docs/%VERSION%/)
