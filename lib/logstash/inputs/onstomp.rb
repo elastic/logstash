@@ -1,5 +1,6 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
+require 'pp'
 
 class LogStash::Inputs::Onstomp < LogStash::Inputs::Base
   config_name "onstomp"
@@ -30,7 +31,7 @@ class LogStash::Inputs::Onstomp < LogStash::Inputs::Base
       @client.connect
       @logger.info("Connected to stomp server") if @client.connected?
     rescue => e
-      @logger.debug("Failed in connect : #{e}")
+      @logger.info("Failed to connect to stomp server: #{e}")
       sleep 2
       retry
     end
@@ -39,31 +40,33 @@ class LogStash::Inputs::Onstomp < LogStash::Inputs::Base
   public
   def register
     require "onstomp"
-
     @client = OnStomp::Client.new("stomp://#{@host}:#{@port}", :login => @user, :passcode => @password.value)
     @stomp_url = "stomp://#{@user}:#{@password}@#{@host}:#{@port}/#{@destination}"
-
-    @client.on_connection_closed do |client, connection, msg|
-      @logger.debug("Disconnected from stomp server, connecting again")
+    
+    # Handle disconnects 
+    @client.on_connection_closed {
       connect
-    end
-
+      subscription_handler # is required for re-subscribing to the destination
+    }
     connect
   end # def register
 
-  def run(output_queue)
+  private
+  def subscription_handler
     @client.subscribe(@destination) do |msg|
       e = to_event(msg.body, @stomp_url)
-      if e
-        output_queue << e
-      end
-    end
-      
-    while true 
-      # stay subscribed to the destination
+      @output_queue << e if e
     end
 
-    raise "disconnected from stomp server"
+    while @client.connected?
+      # stay subscribed
+    end
+  end
+
+  public
+  def run(output_queue)
+    @output_queue = output_queue 
+    subscription_handler
   end # def run
 end # class LogStash::Inputs::Onstomp
 

@@ -44,11 +44,11 @@ class LogStash::Outputs::Onstomp < LogStash::Outputs::Base
     require "onstomp"
     @client = OnStomp::Client.new("stomp://#{@host}:#{@port}", :login => @user, :passcode => @password.value)
 
-    @client.on_connection_closed do |client, connection, msg|
-      @logger.debug("Disconnected from stomp server, re-connecting")
+    # Handle disconnects
+    @client.on_connection_closed {
       connect
-    end
-
+    }
+    
     connect
   end # def register
   
