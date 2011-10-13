@@ -26,7 +26,6 @@ On the server collecting and indexing your logs:
 
 * Download and run elasticsearch
 * Download and run an AMQP broker
-* Download and install grok (library) and jls-grok (rubygems)
 * Download and run logstash
 
 ## ElasticSearch
@@ -51,14 +50,16 @@ more read the elasticsearch docs).
 To start the service, run `bin/elasticsearch`. If you want to run it in the
 foreground, use 'bin/elasticsearch -f' 
 
-== AMQP Broker ==
+## AMQP Broker
 
-AMQP is a standard for message-based communication. It supports publish-subscribe, queues, etc. 
-AMQP is supported way to ship your logs between servers with logstash.
+AMQP is a standard for message-based communication. It supports
+publish-subscribe, queues, etc.  AMQP is supported way to ship your logs
+between servers with logstash. You could also use redis, xmpp, stomp, tcp, or
+other means to transport your logs.
 
 If you don't know what AMQP is, that's fine, you don't need to know anything
-about it for this config. If you already have an AMQP server and know how to configure it, you
-can skip this section.
+about it for this config. If you already have an AMQP server and know how to
+configure it, you can skip this section.
 
 If you don't have an AMQP server already, you might as well download [rabbitmq
 http://www.rabbitmq.com/server.html] I recommend using the native packages
@@ -70,35 +71,7 @@ you can use, and you'll be ready to go to the next section.
 
 If you want/need to configure RabbitMQ, seek the rabbitmq docs.
 
-== grok ==
-
-Site for download and install docs: <http://code.google.com/p/semicomplete/wiki/Grok>
-
-You'll need to install grok. If you're on Ubuntu 10.04 64bit, you can use this
-[ubuntu package
-http://code.google.com/p/semicomplete/downloads/detail?name=grok_1.20101030.3088_amd64.deb&can=2&q=]
-
-See <https://github.com/jordansissel/grok/blob/master/INSTALL> for further
-installation instructions and dependency information
-
-Note: On some systems, you may need to symlink libgrok.so to libgrok.so.1 (wherever
-you installed grok to).
-
-Note: On some 64bit linux systems, you'll need to install libgrok to /usr/lib64.
-
-Note: If you get segfaults from grok, it's likely becuase you are missing a
-correct dependency. Make sure you have the recent-enough versionf of libpcre
-and tokyocabinet (see above grok/INSTALL url)
-
-(This next step can be skipped if you are using a logstash jar release
-(logstash-%VERSION%.jar, etc) Once you have grok installed, you need to install the
-'jls-grok' rubygem, which you can do by running:
-
-{{{
-gem install jls-grok
-}}}
- 
-== logstash ==
+## logstash
 
 Once you have elasticsearch and rabbitmq (or any AMQP server) running, you're
 ready to configure logstash.
@@ -114,7 +87,7 @@ agent roles: a shipper and an indexer. You will ship logs from all servers to a
 single AMQP message queue and have another agent receive those messages, parse
 them, and index them in elasticsearch.
 
-=== logstash log shipper ===
+### logstash log shipper
 
 This agent you will run on all of your servers you want to collect logs on.
 Here's a good sample config:
@@ -159,7 +132,7 @@ This should start tailing the file inputs specified above and ships them out
 over amqp. If you included the 'stdout' output you will see events written to
 stdout as they are found.
 
-=== logstash indexer ===
+### logstash indexer
 
 This agent will parse and index your logs as they come in over AMQP. Here's a
 sample config based on the previous section.
@@ -224,7 +197,7 @@ parse them to use as the real timestamp value for the event.
 The above config will take raw logs in over amqp, parse them with grok and date
 filters, and index them into elasticsearch.
 
-== logstash web interface ==
+## logstash web interface
 
 Run this on the same server as your elasticsearch server.
 
@@ -243,3 +216,7 @@ Note: If your elasticsearch server is not discoverable with multicast, you can
 specify the host explicitly using the --backend flag:
 
     % java -jar logstash-%VERSION%-monolithic.jar web --backend elasticsearch://myserver/
+
+If you set a cluster name in ElasticSearch (ignore this if you don't know what
+that means), you must give the cluster name to logstash as well: --backend
+elasticsearch://myserver/clustername
