@@ -114,7 +114,8 @@ Logstash should be all set for you now. Start feeding it logs:
 
 Go to the logstash web interface in browser: <http://localhost:9292/>
 
-Try some search queries. Click on some results.
+Try some search queries. To see all the data, search for '*' (no quotes). Click
+on some results, drill around in some logs.
 
 ## Want more?
 
