@@ -30,6 +30,9 @@ gem "gmetric", "~> 0.1.3" # outputs/ganglia, # License: MIT
 gem "xmpp4r", "~> 0.5" # outputs/xmpp, # License: As-Is
 gem "gelfd", "~> 0.1.0" #inputs/gelf, # License: Apache 2.0
 
+gem "ffi-rzmq"
+gem "statsd-client"
+
 # For testing/dev
 group :development do
   gem "rake"

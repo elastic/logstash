@@ -55,6 +55,11 @@ Gem::Specification.new do |spec|
   spec.add_dependency("bunny")
   spec.add_dependency("uuidtools")
 
+  # We need zeromq for input
+  spec.add_dependency("ffi-rzmq")
+  # We need a statsd client
+  spec.add_dependency("statsd-client")
+
   # For beanstalk://
   #spec.add_dependency("em-jack")
 
