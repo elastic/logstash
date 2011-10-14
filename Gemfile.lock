@@ -5,6 +5,7 @@ GEM
     bouncy-castle-java (1.5.0146.1)
     bson (1.4.0-java)
     bunny (0.7.6)
+    ffi-rzmq (0.8.2)
     filewatch (0.3.0)
     gelf (1.1.3)
       json
@@ -40,6 +41,7 @@ PLATFORMS
 DEPENDENCIES
   awesome_print
   bunny
+  ffi-rzmq
   filewatch (~> 0.3.0)
   gelf
   gelfd (~> 0.1.0)
