@@ -2,9 +2,11 @@ GEM
   remote: http://rubygems.org/
   specs:
     awesome_print (0.4.0)
-    bouncy-castle-java (1.5.0146.1)
+    bson (1.4.0)
     bson (1.4.0-java)
     bunny (0.7.6)
+    cabin (0.1.3)
+      json
     filewatch (0.3.0)
     gelf (1.1.3)
       json
@@ -12,13 +14,9 @@ GEM
     gmetric (0.1.3)
     haml (3.1.3)
     jls-grok (0.9.0)
-    jruby-elasticsearch (0.0.10)
-    jruby-openssl (0.7.4)
-      bouncy-castle-java
+    json (1.6.1)
     json (1.6.1-java)
     minitest (2.6.1)
-    mizuno (0.4.0)
-      rack (>= 1.0.0)
     mongo (1.4.0)
       bson (= 1.4.0)
     rack (1.3.3)
@@ -36,21 +34,20 @@ GEM
 
 PLATFORMS
   java
+  ruby
 
 DEPENDENCIES
   awesome_print
   bunny
+  cabin
   filewatch (~> 0.3.0)
   gelf
   gelfd (~> 0.1.0)
   gmetric (~> 0.1.3)
   haml
   jls-grok (= 0.9.0)
-  jruby-elasticsearch (~> 0.0.10)
-  jruby-openssl
   json
   minitest
-  mizuno
   mongo
   rack
   rake
