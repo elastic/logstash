@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), "VERSION")  # For LOGSTASH_VERSION
+require File.join(File.dirname(__FILE__), "lib", "logstash", "version")  # For LOGSTASH_VERSION
 
 Gem::Specification.new do |spec|
   files = []
@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "bunny" # for amqp support
   spec.add_dependency "uuidtools" # for naming amqp queues
   spec.add_dependency "filewatch", "~> 0.2.3"  # for file tailing
-  spec.add_dependency "jls-grok", "~> 0.5.2" # for grok filter
+  spec.add_dependency "jls-grok", "~> 0.9.0" # for grok filter
   spec.add_dependency "jruby-elasticsearch", "~> 0.0.7"
   spec.add_dependency "stomp" # for stomp protocol
   spec.add_dependency "json"
@@ -48,9 +48,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "statsd-ruby" # outputs/statsd
   spec.add_dependency "gmetric" # outputs/ganglia
   spec.add_dependency "xmpp4r" # outputs/xmpp
-
-  # For the 'grok' filter
-  spec.add_dependency("jls-grok", "~> 0.4.7")
 
   spec.add_dependency("bunny")
   spec.add_dependency("uuidtools")
