@@ -52,7 +52,7 @@ DEPENDENCIES
   gmetric (~> 0.1.3)
   haml
   jls-grok (= 0.9.0)
-  jruby-elasticsearch (~> 0.0.10)
+  jruby-elasticsearch (~> 0.0.11)
   jruby-openssl
   json
   minitest
