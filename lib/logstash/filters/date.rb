@@ -94,7 +94,8 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           missing = DATEPATTERNS.reject { |p| format.include?(p) }
         end
 
-        @logger.debug "Adding type #{@type} with date config: #{field} => #{format}"
+        @logger.debug("Adding type with date config", :type => @type,
+                      :field => field, :format => format)
         @parsers[field] << {
           :parser => parser.withOffsetParsed,
           :missing => missing
@@ -105,13 +106,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
   public
   def filter(event)
-    @logger.debug "DATE FILTER: received event of type #{event.type}"
+    @logger.debug("Date filter: received event", :type => event.type)
     return unless event.type == @type
     now = Time.now
 
     @parsers.each do |field, fieldparsers|
-
-      @logger.debug "DATE FILTER: type #{event.type}, looking for field #{field.inspect}"
+      @logger.debug("Date filter: type #{event.type}, looking for field #{field.inspect}",
+                    :type => event.type, :field => field)
       # TODO(sissel): check event.message, too.
       next unless event.fields.member?(field)
 
@@ -165,12 +166,14 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           time = time.withZone(org.joda.time.DateTimeZone.forID("UTC"))
           event.timestamp = time.to_s 
           #event.timestamp = LogStash::Time.to_iso8601(time)
-          @logger.debug "Parsed #{value.inspect} as #{event.timestamp}"
+          @logger.debug("Date parsing done", :value => value, :timestamp => event.timestamp)
         rescue => e
-          @logger.warn "Failed parsing date #{value.inspect} from field #{field}: #{e}"
-          @logger.debug(["Backtrace", e.backtrace])
+          @logger.warn("Failed parsing date from field", :field => field,
+                       :value => value, :exception => e,
+                       :backtrace => e.backtrace)
           # Raising here will bubble all the way up and cause an exit.
           # TODO(sissel): Maybe we shouldn't raise?
+          # TODO(sissel): What do we do on a failure? Tag it like grok does?
           #raise e
         end # begin
       end # fieldvalue.each 
