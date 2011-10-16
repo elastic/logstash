@@ -41,7 +41,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   public
   def register
     if server?
-      @logger.info("Starting tcp input listener on #{@host}:#{@port}")
+      @logger.info("Starting tcp input listener", :address => "#{@host}:#{@port}")
       @server_socket = TCPServer.new(@host, @port)
     end
   end # def register
@@ -67,10 +67,11 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         end
       end # loop do
     rescue => e
-      @logger.debug(["Closing connection with #{socket.peer}", $!])
-      @logger.debug(["Backtrace", e.backtrace])
+      @logger.debug("Closing connection", :client => socket.peer,
+                    :exception => e, :backtrace => e.backtrace)
     rescue Timeout::Error
-      @logger.debug("Closing connection with #{socket.peer} after read timeout")
+      @logger.debug("Closing connection after read timeout",
+                    :client => socket.peer)
     end # begin
 
     begin
@@ -95,7 +96,8 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
           # monkeypatch a 'peer' method onto the socket.
           s.instance_eval { class << self; include SocketPeer end }
-          @logger.debug("Accepted connection from #{s.peer} on #{@host}:#{@port}")
+          @logger.debug("Accepted connection", :client => s.peer,
+                        :server => "#{@host}:#{@port}")
           handle_socket(s, output_queue, "tcp://#{@host}:#{@port}/client/#{s.peer}")
         end # Thread.start
       end # loop
@@ -103,7 +105,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
       loop do
         client_socket = TCPSocket.new(@host, @port)
         client_socket.instance_eval { class << self; include SocketPeer end }
-        @logger.debug("Opened connection to #{client_socket.peer}")
+        @logger.debug("Opened connection", :client => "#{client_socket.peer}")
         handle_socket(client_socket, output_queue, "tcp://#{client_socket.peer}/server")
       end # loop
     end

@@ -47,7 +47,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   def register
     require "filewatch/tail"
     LogStash::Util::set_thread_name("input|file|#{path.join(":")}")
-    @logger.info("Registering file input for #{path.join(":")}")
+    @logger.info("Registering file input", :path => @path)
   end # def register
 
   public
@@ -67,7 +67,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
     tail.subscribe do |path, line|
       source = "file://#{hostname}/#{path}"
-      @logger.debug({:path => path, :line => line})
+      @logger.debug("Received line", :path => path, :line => line)
       e = to_event(line, source)
       if e
         queue << e
