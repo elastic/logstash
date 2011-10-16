@@ -691,7 +691,7 @@ class LogStash::Agent
         output.handle(event)
       end
     rescue Exception => e
-      @logger.warn("Output thread exception", :plugin => plugin,
+      @logger.warn("Output thread exception", :plugin => output,
                    :exception => e, :backtrace => e.backtrace)
       # TODO(sissel): should we abort after too many failures?
       sleep(1)
