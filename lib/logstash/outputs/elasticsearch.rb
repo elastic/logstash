@@ -173,6 +173,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   def decrement_inflight_request_count
     @inflight_mutex.synchronize do
       @inflight_requests -= 1
+      @inflight_cv.signal
     end
   end # def decrement_inflight_request_count
 end # class LogStash::Outputs::Elasticsearch
