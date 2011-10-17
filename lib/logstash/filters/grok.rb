@@ -102,7 +102,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   public
   def register
-    gem "jls-grok", ">=0.4.3"
     require "grok-pure" # rubygem 'jls-grok'
 
     @patternfiles = []
