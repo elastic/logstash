@@ -46,8 +46,8 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
     begin
       @socket = TCPSocket.new(@host, @port)
     rescue Errno::ECONNREFUSED => e
-      @logger.warn(["Connection refused to graphite server, sleeping...",
-                   { :host => @host, :port => @port }])
+      @logger.warn("Connection refused to graphite server, sleeping...",
+                   :host => @host, :port => @port)
       sleep(2)
       retry
     end
@@ -68,8 +68,8 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
       begin
         @socket.puts(message)
       rescue Errno::EPIPE, Errno::ECONNRESET => e
-        @logger.warn(["Connection to graphite server died",
-                     { :exception => e, :host => @host, :port => @port }])
+        @logger.warn("Connection to graphite server died",
+                     :exception => e, :host => @host, :port => @port)
         sleep(2)
         connect
       end
