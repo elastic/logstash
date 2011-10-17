@@ -95,7 +95,7 @@ class LogStash::Runner
     return args
   end # def run
 
-  def emit_version
+  def emit_version(args)
     require "logstash/version"
     puts "logstash #{LOGSTASH_VERSION}"
 
