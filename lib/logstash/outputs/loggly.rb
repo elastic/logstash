@@ -44,14 +44,14 @@ class LogStash::Outputs::Loggly < LogStash::Outputs::Base
 
     # Send the event over http.
     url = URI.parse("http://#{@host}/inputs/#{event.sprintf(@key)}")
-    @logger.info("Loggly URL: #{url}")
+    @logger.info("Loggly URL", :url => url)
     request = Net::HTTP::Post.new(url.path)
     request.body = event.to_json
     response = Net::HTTP.new(url.host, url.port).start {|http| http.request(request) }
     if response == Net::HTTPSuccess
       @logger.info("Event send to Loggly OK!")
     else
-      @logger.info response.error!
+      @logger.info("HTTP error", :error => response.error!)
     end
   end # def receive
 end # class LogStash::Outputs::Loggly
