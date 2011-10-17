@@ -62,8 +62,8 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
     end
 
     if !File.exists?(@commandfile)
-      @logger.warn(["Skipping nagios output; command file is missing",
-                   {"commandfile" => @commandfile, "missed_event" => event}])
+      @logger.warn("Skipping nagios output; command file is missing",
+                   :commandfile => @commandfile, :missed_event => event)
       return
     end
 
@@ -74,15 +74,15 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
 
     host = event.fields["nagios_host"]
     if !host
-      @logger.warn(["Skipping nagios output; nagios_host field is missing",
-                   {"missed_event" => event}])
+      @logger.warn("Skipping nagios output; nagios_host field is missing",
+                   :missed_event => event)
       return
     end
 
     service = event.fields["nagios_service"]
     if !service
-      @logger.warn(["Skipping nagios output; nagios_service field is missing",
-                   {"missed_event" => event}])
+      @logger.warn("Skipping nagios output; nagios_service field is missing",
+                   "missed_event" => event)
       return
     end
 
@@ -100,17 +100,17 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
     # In the multi-line case, escape the newlines for the nagios command file
     cmd += event.message.gsub("\n", "\\n")
 
-    @logger.debug({"commandfile" => @commandfile, "nagios_command" => cmd})
+    @logger.debug("Opening nagios command file", :commandfile => @commandfile,
+                  :nagios_command => cmd)
     begin
       File.open(@commandfile, "r+") do |f|
         f.puts(cmd)
         f.flush # TODO(sissel): probably don't need this.
       end
     rescue => e
-      @logger.warn(["Skipping nagios output; error writing to command file",
-                   {"error" => $!, "commandfile" => @commandfile,
-                    "missed_event" => event}])
-      @logger.debug(["Backtrace", e.backtrace])
+      @logger.warn("Skipping nagios output; error writing to command file",
+                   :commandfile => @commandfile, :missed_event => event,
+                   :exception => e, :backtrace => e.backtrace)
     end
   end # def receive
 end # class LogStash::Outputs::Nagios
