@@ -74,22 +74,22 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
     end
  
     if !File.exists?(@zabbix_sender)
-      @logger.warn(["Skipping zabbix output; zabbix_sender file is missing",
-                   {"zabbix_sender" => @zabbix_sender, "missed_event" => event}])
+      @logger.warn("Skipping zabbix output; zabbix_sender file is missing",
+                   :zabbix_sender => @zabbix_sender, :missed_event => event)
       return
     end
  
     host = event.fields["zabbix_host"]
     if !host
-      @logger.warn(["Skipping zabbix output; zabbix_host field is missing",
-                   {"missed_event" => event}])
+      @logger.warn("Skipping zabbix output; zabbix_host field is missing",
+                   :missed_event => event)
       return
     end
  
     item = event.fields["zabbix_item"]
     if !item
-      @logger.warn(["Skipping zabbix output; zabbix_item field is missing",
-                   {"missed_event" => event}])
+      @logger.warn("Skipping zabbix output; zabbix_item field is missing",
+                   :missed_event => event)
       return
     end
  
@@ -99,14 +99,13 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
  
     cmd = "#{@zabbix_sender} -z #{@host} -p #{@port} -s #{host} -k #{item} -o \"#{zmsg}\" 2>/dev/null >/dev/null"
  
-    @logger.debug({"zabbix_sender_command" => cmd})
+    @logger.debug("Running zabbix command", :command => cmd)
     begin
-      system cmd
+      system(cmd)
     rescue => e
-      @logger.warn(["Skipping zabbix output; error calling zabbix_sender",
-                   {"error" => $!, "zabbix_sender_command" => cmd,
-                    "missed_event" => event}])
-      @logger.debug(["Backtrace", e.backtrace])
+      @logger.warn("Skipping zabbix output; error calling zabbix_sender",
+                   :command => cmd, :missed_event => event,
+                   :exception => e, :backtrace => e.backtrace)
     end
   end # def receive
 end # class LogStash::Outputs::Nagios

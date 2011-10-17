@@ -32,7 +32,8 @@ class LogStash::Outputs::Onstomp < LogStash::Outputs::Base
       @client.connect
       @logger.debug("Connected to stomp server") if @client.connected?
     rescue => e
-      @logger.debug("Failed to connect to stomp server : #{e}")
+      @logger.debug("Failed to connect to stomp server, will retry",
+                    :exception => e, :backtrace => e.backtrace)
       sleep 2
       retry
     end

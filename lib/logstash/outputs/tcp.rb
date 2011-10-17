@@ -39,8 +39,8 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
         begin
           @socket.write(@queue.pop)
         rescue => e
-          @logger.warn(["tcp output exception", @socket, $!])
-          @logger.debug(["backtrace", e.backtrace])
+          @logger.warn("tcp output exception", :socket => @socket,
+                       :exception => e, :backtrace => e.backtrace)
           break
         end
       end
@@ -55,7 +55,7 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
   public
   def register
     if server?
-      @logger.info("Starting tcp output listener on #{@host}:#{@port}")
+      @logger.info("Starting tcp output listener", :address => "#{@host}:#{@port}")
       @server_socket = TCPServer.new(@host, @port)
       @client_threads = []
 
@@ -100,8 +100,8 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
         @client_socket.write(event.to_hash.to_json)
         @client_socket.write("\n")
       rescue => e
-        @logger.warn(["tcp output exception", @host, @port, $!])
-        @logger.debug(["backtrace", e.backtrace])
+        @logger.warn("tcp output exception", :host => @host, :port => @port,
+                     :exception => e, :backtrace => e.backtrace)
         @client_socket = nil
       end
     end
