@@ -2,8 +2,8 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require 'pp'
 
-class LogStash::Inputs::Onstomp < LogStash::Inputs::Base
-  config_name "onstomp"
+class LogStash::Inputs::Stomp < LogStash::Inputs::Base
+  config_name "stomp"
 
   # The address of the STOMP server.
   config :host, :validate => :string, :default => "localhost", :required => true
@@ -29,9 +29,9 @@ class LogStash::Inputs::Onstomp < LogStash::Inputs::Base
   def connect
     begin
       @client.connect
-      @logger.info("Connected to stomp server") if @client.connected?
+      @logger.debug("Connected to stomp server") if @client.connected?
     rescue => e
-      @logger.info("Failed to connect to stomp server: #{e}")
+      @logger.debug("Failed to connect to stomp server, will retry", :exception => e, :backtrace => e.backtrace)
       sleep 2
       retry
     end
@@ -68,5 +68,5 @@ class LogStash::Inputs::Onstomp < LogStash::Inputs::Base
     @output_queue = output_queue 
     subscription_handler
   end # def run
-end # class LogStash::Inputs::Onstomp
+end # class LogStash::Inputs::Stomp
 
