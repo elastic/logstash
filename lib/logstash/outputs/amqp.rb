@@ -69,7 +69,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     @queue_durable ||= @durable
     @key ||= @queue_name
 
-    @logger.info("Registering output #{to_s}")
+    @logger.info("Registering output", :plugin => self)
     connect
   end # def register
 
@@ -87,38 +87,43 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
 
     begin
-      @logger.debug(["Connecting to AMQP", amqpsettings, @exchange_type, @name])
+      @logger.debug("Connecting to AMQP", :settings => amqpsettings,
+                    :exchange_type => @exchange_type, :name => @name)
       @bunny = Bunny.new(amqpsettings)
       @bunny.start
     rescue => e
       if terminating?
         return
       else
-        @logger.error("AMQP connection error (during connect), will reconnect: #{e}")
-        @logger.debug(["Backtrace", e.backtrace])
+        @logger.error("AMQP connection error (during connect), will reconnect",
+                      :exception => e, :backtrace => e.backtrace)
         sleep(1)
         retry
       end
     end
 
-    @logger.debug(["Declaring queue", { :queue_name => @queue_name, :durable => @queue_durable }])
+    @logger.debug("Declaring queue", :queue_name => @queue_name,
+                  :durable => @queue_durable)
     queue = @bunny.queue(@queue_name, :durable => @queue_durable)
 
-    @logger.debug("Declaring exchange", {:name => @name, :type => @exchange_type, :durable => @durable})
+    @logger.debug("Declaring exchange", :name => @name, :type => @exchange_type,
+                  :durable => @durable)
     @exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
 
-    @logger.debug("Binding exchange", {:name => @name, :key => @key})
+    @logger.debug("Binding exchange", :name => @name, :key => @key)
     queue.bind(@exchange, :key => @key)
   end # def connect
 
   public
   def receive(event)
-    @logger.debug(["Sending event", { :destination => to_s, :event => event, :key => key }])
+    @logger.debug("Sending event", :destination => to_s, :event => event,
+                  :key => key)
     key = event.sprintf(@key) if @key
     begin
       receive_raw(event.to_json, key)
-    rescue JSON::GeneratorError
-      @logger.warn(["Trouble converting event to JSON", $!, event.to_hash])
+    rescue JSON::GeneratorError => e
+      @logger.warn("Trouble converting event to JSON", :exception => e,
+                   :event => event)
       return
     end
   end # def receive

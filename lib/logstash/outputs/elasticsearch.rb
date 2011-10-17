@@ -82,7 +82,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
     require "jruby-elasticsearch"
 
-    @logger.info(:message => "New ElasticSearch output", :cluster => @cluster,
+    @logger.info("New ElasticSearch output", :cluster => @cluster,
                  :host => @host, :port => @port, :embedded => @embedded)
     @pending = []
     options = {
@@ -146,11 +146,12 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     increment_inflight_request_count
     #timer = @logger.time("elasticsearch write")
     req.on(:success) do |response|
-      @logger.debug(["Successfully indexed", event.to_hash])
+      @logger.debug("Successfully indexed", :event => event.to_hash)
       #timer.stop
       decrement_inflight_request_count
     end.on(:failure) do |exception|
-      @logger.debug(["Failed to index an event", exception, event.to_hash])
+      @logger.debug("Failed to index an event", :exception => exception,
+                    :event => event.to_hash)
       #timer.stop
       decrement_inflight_request_count
     end
