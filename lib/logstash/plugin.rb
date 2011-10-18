@@ -32,7 +32,7 @@ class LogStash::Plugin
     # If you need to take special efforts to shutdown (like waiting for
     # an operation to complete, etc)
     teardown
-    @logger.info("Got shutdown signal for #{self}")
+    @logger.info("Received shutdown signal", :plugin => self)
 
     @shutdown_queue = queue
     if @plugin_state == :finished
@@ -47,12 +47,12 @@ class LogStash::Plugin
   public
   def finished
     if @shutdown_queue
-      @logger.info("Sending shutdown event to agent queue. (plugin #{to_s})")
+      @logger.info("Sending shutdown event to agent queue", :plugin => self)
       @shutdown_queue << self
     end
 
     if @plugin_state != :finished
-      @logger.info("Plugin #{to_s} is finished")
+      @logger.info("Plugin is finished", :plugin => self)
       @plugin_state = :finished
     end
   end # def finished

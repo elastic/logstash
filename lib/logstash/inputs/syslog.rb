@@ -61,8 +61,9 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
         udp_listener(output_queue)
       rescue => e
         break if @shutdown_requested
-        @logger.warn("syslog udp listener died: #{$!}")
-        @logger.debug(["Backtrace", e.backtrace])
+        @logger.warn("syslog udp listener died",
+                     :address => "#{@host}:#{@port}", :exception => e,
+                     :backtrace => e.backtrace)
         sleep(5)
         retry
       end # begin
@@ -75,8 +76,9 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
         tcp_listener(output_queue)
       rescue => e
         break if @shutdown_requested
-        @logger.warn("syslog tcp listener died: #{$!}")
-        @logger.debug(["Backtrace", e.backtrace])
+        @logger.warn("syslog tcp listener died",
+                     :address => "#{@host}:#{@port}", :exception => e,
+                     :backtrace => e.backtrace)
         sleep(5)
         retry
       end # begin
@@ -85,7 +87,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
   private
   def udp_listener(output_queue)
-    @logger.info("Starting syslog udp listener on #{@host}:#{@port}")
+    @logger.info("Starting syslog udp listener", :address => "#{@host}:#{@port}")
 
     if @udp
       @udp.close_read
@@ -111,7 +113,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
   private
   def tcp_listener(output_queue)
-    @logger.info("Starting syslog tcp listener on #{@host}:#{@port}")
+    @logger.info("Starting syslog tcp listener", :address => "#{@host}:#{@port}")
     @tcp = TCPServer.new(@host, @port)
     @tcp_clients = []
 
@@ -120,7 +122,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       @tcp_clients << client
       Thread.new(client) do |client|
         ip, port = client.peeraddr[3], client.peeraddr[1]
-        @logger.warn("got connection from #{ip}:#{port}")
+        @logger.info("new connection", :client => "#{ip}:#{port}")
         LogStash::Util::set_thread_name("input|syslog|tcp|#{ip}:#{port}}")
         if ip.include?(":") # ipv6
           source = "syslog://[#{ip}]/"
@@ -192,7 +194,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
       @date_filter.filter(event)
     else
-      @logger.info(["NOT SYSLOG", event.message])
+      @logger.info("NOT SYSLOG", :message => event.message)
       url = "syslog://#{Socket.gethostname}/" if url == "syslog://127.0.0.1/"
 
       # RFC3164 says unknown messages get pri=13

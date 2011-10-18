@@ -43,23 +43,25 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
 
       re = Regexp.new(pattern)
       @patterns[field] << re
-      @logger.debug(["grep: #{@type}/#{field}", pattern, re])
+      @logger.debug("Registered grep", :type => @type, :field => field,
+                    :pattern => pattern, :regexp => re)
     end # @match.merge.each
   end # def register
 
   public
   def filter(event)
     if event.type != @type
-      @logger.debug("grep: skipping type #{event.type} from #{event.source}")
+      @logger.debug("grep: skipping non-matching event type", :type =>
+                    event.type, :wanted_type => @type, :event => event)
       return
     end
 
-    @logger.debug(["Running grep filter", event.to_hash, config])
+    @logger.debug("Running grep filter", :event => event, :config => config)
     matches = 0
     @patterns.each do |field, regexes|
       if !event[field]
-        @logger.debug(["Skipping match object, field not present", field,
-                      event, event[field]])
+        @logger.debug("Skipping match object, field not present",
+                      :field => field, :event => event)
         next
       end
 
@@ -77,13 +79,13 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
 
         (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |value|
           if @negate
-            @logger.debug(["want negate match", re, value])
+            @logger.debug("negate match", :regexp => re, :value => value)
             next if re.match(value)
-            @logger.debug(["grep not-matched (negate requsted)", { field => value }])
+            @logger.debug("grep not-matched (negate requested)", field => value)
           else
-            @logger.debug(["want match", re, value])
+            @logger.debug("want match", :regexp => re, :value => value)
             next unless re.match(value)
-            @logger.debug(["grep matched", { field => value }])
+            @logger.debug("grep matched", field => value)
           end
           match_count += 1
           break
@@ -92,10 +94,9 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
 
       if match_count == match_want
         matches += 1
-        @logger.debug("matched all fields (#{match_count})")
+        @logger.debug("matched all fields", :count => match_count)
       else
-        @logger.debug("match block failed " \
-                      "(#{match_count}/#{match_want} matches)")
+        @logger.debug("match failed", :count => match_count, :wanted => match_want)
       end # match["match"].each
     end # @patterns.each
 
@@ -111,6 +112,6 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       return
     end
 
-    @logger.debug(["Event after grep filter", event.to_hash])
+    @logger.debug("Event after grep filter", :event => event)
   end # def filter
 end # class LogStash::Filters::Grep

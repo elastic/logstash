@@ -79,6 +79,14 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # If true, only store named captures from grok.
   config :named_captures_only, :validate => :boolean, :default => false
 
+  # TODO(sissel): Add this feature?
+  # When disabled, any pattern that matches the entire string will not be set.
+  # This is useful if you have named patterns like COMBINEDAPACHELOG that will
+  # match entire events and you really don't want to add a field
+  # 'COMBINEDAPACHELOG' that is set to the whole event line.
+  #config :capture_full_match_patterns, :validate => :boolean, :default => false
+
+
   # Detect if we are running from a jarfile, pick the right path.
   @@patterns_path ||= Set.new
   if __FILE__ =~ /file:\/.*\.jar!.*/
@@ -102,18 +110,17 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   public
   def register
-    gem "jls-grok", ">=0.4.3"
     require "grok-pure" # rubygem 'jls-grok'
 
     @patternfiles = []
     @patterns_dir += @@patterns_path.to_a
-    @logger.info("Grok patterns path: #{@patterns_dir.join(":")}")
+    @logger.info("Grok patterns path", :patterns_dir => @patterns_dir)
     @patterns_dir.each do |path|
       # Can't read relative paths from jars, try to normalize away '../'
       while path =~ /file:\/.*\.jar!.*\/\.\.\//
         # replace /foo/bar/../baz => /foo/baz
         path = path.gsub(/[^\/]+\/\.\.\//, "")
-        @logger.debug "In-jar path to read: #{path}"
+        @logger.debug("In-jar path to read", :path => path)
       end
 
       if File.directory?(path)
@@ -121,14 +128,14 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       end
 
       Dir.glob(path).each do |file|
-        @logger.info("Grok loading patterns from #{file}")
+        @logger.info("Grok loading patterns from file", :path => file)
         @patternfiles << file
       end
     end
 
     @patterns = Hash.new { |h,k| h[k] = [] }
 
-    @logger.info(:match => @match)
+    @logger.info("Match data", :match => @match)
 
     # TODO(sissel): Hash.merge  actually overrides, not merges arrays.
     # Work around it by implementing our own?
@@ -142,11 +149,13 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
       if !@patterns.include?(field)
         @patterns[field] = Grok::Pile.new
+        @patterns[field].logger = @logger
+
         add_patterns_from_files(@patternfiles, @patterns[field])
       end
-      @logger.info(["Grok compile", { :field => field, :patterns => patterns }])
+      @logger.info("Grok compile", :field => field, :patterns => patterns)
       patterns.each do |pattern|
-        @logger.debug(["regexp: #{@type}/#{field}", pattern])
+        @logger.debug("regexp: #{@type}/#{field}", :pattern => pattern)
         @patterns[field].compile(pattern)
       end
     end # @config.each
@@ -158,26 +167,23 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     matched = false
 
     # Only filter events we are configured for
-    if event.type != @type
-      return
-    end
-
     if @type != event.type
-      @logger.debug("Skipping grok for event type=#{event.type} (wanted '#{@type}')")
+      @logger.debug("Skipping grok for event with wrong type",
+                    :type => event.type, :wanted_type => @type)
       return
     end
 
-    @logger.debug(["Running grok filter", event])
+    @logger.debug("Running grok filter", :event => event);
     done = false
     @patterns.each do |field, pile|
       break if done
       if !event[field]
-        @logger.debug(["Skipping match object, field not present", field,
-                      event, event[field]])
+        @logger.debug("Skipping match object, field not present", 
+                      :field => field, :event => event)
         next
       end
 
-      @logger.debug(["Trying pattern for type #{event.type}", { :pile => pile, :field => field }])
+      @logger.debug("Trying pattern", :pile => pile, :field => field )
       (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |fieldvalue|
         grok, match = pile.match(fieldvalue)
         next unless match
@@ -205,15 +211,16 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
               value = value.to_f
           end
 
+          # Special casing to skip captures that represent the entire log message.
           if fieldvalue == value and field == "@message"
             # Skip patterns that match the entire message
-            @logger.debug("Skipping capture '#{key}' since it matches the whole line.")
+            @logger.debug("Skipping capture since it matches the whole line.", :field => key)
             next
           end
 
           if @named_captures_only && key =~ /^[A-Z]+/
-            @logger.debug("Skipping capture '#{key}' since it is not a named " \
-                          "capture and named_captures_only is true.")
+            @logger.debug("Skipping capture since it is not a named " \
+                          "capture and named_captures_only is true.", :field => key)
             next
           end
 
@@ -240,7 +247,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       event.tags << "_grokparsefailure"
     end
 
-    @logger.debug(["Event now: ", event.to_hash])
+    @logger.debug("Event now: ", :event => event)
   end # def filter
 
   private
@@ -259,8 +266,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
         # the end. I don't know if this is a bug or intentional, but we need
         # to chomp it.
         name, pattern = line.chomp.split(/\s+/, 2)
-        @logger.debug "Adding pattern '#{name}' from file #{path}"
-        @logger.debug name => pattern
+        @logger.debug("Adding pattern from file", :name => name,
+                      :pattern => pattern, :path => path)
         pile.add_pattern(name, pattern)
       end
     else

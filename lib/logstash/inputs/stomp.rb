@@ -1,17 +1,12 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
+require 'pp'
 
-# TODO(sissel): This class doesn't work yet in JRuby.
-# http://jira.codehaus.org/browse/JRUBY-4941
-
-# Stream events from a STOMP broker.
-#
-# http://stomp.codehaus.org/
-class LogStash::Inputs::Stomp < LogStash::Inputs::Base
-  config_name "stomp"
+class LogStash::Inputs::Onstomp < LogStash::Inputs::Base
+  config_name "onstomp"
 
   # The address of the STOMP server.
-  config :host, :validate => :string, :default => "localhost"
+  config :host, :validate => :string, :default => "localhost", :required => true
 
   # The port to connet to on your STOMP server.
   config :port, :validate => :number, :default => 61613
@@ -30,32 +25,48 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   # Enable debugging output?
   config :debug, :validate => :boolean, :default => false
 
-  public
-  def initialize(params)
-    super
-
-    @format ||= "json_event"
-    raise "Stomp input currently not supported. See " +
-          "http://jira.codehaus.org/browse/JRUBY-4941 and " +
-          "https://logstash.jira.com/browse/LOGSTASH-8"
+  private
+  def connect
+    begin
+      @client.connect
+      @logger.info("Connected to stomp server") if @client.connected?
+    rescue => e
+      @logger.info("Failed to connect to stomp server: #{e}")
+      sleep 2
+      retry
+    end
   end
 
   public
   def register
-    require "stomp"
-
-    @client = Stomp::Client.new(@user, @password.value, @host, @port)
+    require "onstomp"
+    @client = OnStomp::Client.new("stomp://#{@host}:#{@port}", :login => @user, :passcode => @password.value)
     @stomp_url = "stomp://#{@user}:#{@password}@#{@host}:#{@port}/#{@destination}"
+    
+    # Handle disconnects 
+    @client.on_connection_closed {
+      connect
+      subscription_handler # is required for re-subscribing to the destination
+    }
+    connect
   end # def register
 
-  def run(output_queue)
+  private
+  def subscription_handler
     @client.subscribe(@destination) do |msg|
-      e = to_event(message.body, @stomp_url)
-      if e
-        output_queue << e
-      end
+      e = to_event(msg.body, @stomp_url)
+      @output_queue << e if e
     end
 
-    raise "disconnected from stomp server"
+    while @client.connected?
+      # stay subscribed
+    end
+  end
+
+  public
+  def run(output_queue)
+    @output_queue = output_queue 
+    subscription_handler
   end # def run
-end # class LogStash::Inputs::Stomp
+end # class LogStash::Inputs::Onstomp
+

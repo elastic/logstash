@@ -70,6 +70,20 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   # Negate the regexp pattern ('if not matched')
   config :negate, :validate => :boolean, :default => false
+  
+  # The stream identity is how the multiline filter determines which stream an
+  # event belongs. This is generally used for differentiating, say, events
+  # coming from multiple files in the same file input, or multiple connections
+  # coming from a tcp input.
+  #
+  # The default value here is usually what you want, but there are some cases
+  # where you want to change it. One such example is if you are using a tcp
+  # input with only one client connecting at any time. If that client
+  # reconnects (due to error or client restart), then logstash will identify
+  # the new connection as a new stream and break any multiline goodness that
+  # may have occurred between the old and new connection. To solve this use
+  # case, you can use "%{@source_host}.%{@type}" instead.
+  config :stream_identity , :validate => :string, :default => "%{@source}.%{@type}"
 
   public
   def initialize(config = {})
@@ -82,14 +96,13 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   public
   def register
-    @logger.debug "Setting type #{@type.inspect} to the config #{@config.inspect}"
-
     begin
       @pattern = Regexp.new(@pattern)
     rescue RegexpError => e
-      @logger.fatal(["Invalid pattern for multiline filter on type '#{@type}'",
-                    @pattern, e])
+      @logger.fatal("Invalid pattern for multiline filter",
+                    :pattern => @pattern, :exception => e, :backtrace => e.backtrace)
     end
+    @logger.debug("Registered multiline plugin", :type => @type, :config => @config)
   end # def register
 
   public
@@ -97,10 +110,11 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     return unless event.type == @type
 
     match = @pattern.match(event.message)
-    key = [event.source, event.type]
+    key = event.sprintf(@stream_identity)
     pending = @pending[key]
 
-    @logger.debug(["Reg: ", @pattern, event.message, { :match => match, :negate => @negate }])
+    @logger.debug("Multiline", :pattern => @pattern, :message => event.message,
+                  :match => match, :negate => @negate)
 
     # Add negate option
     match = (match and !@negate) || (!match and @negate)
@@ -152,7 +166,8 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
         end
       end # if/else match
     else
-      @logger.warn(["Unknown multiline 'what' value.", { :what => @what }])
+      # TODO(sissel): Make this part of the 'register' method.
+      @logger.warn("Unknown multiline 'what' value.", :what => @what)
     end # case @what
 
     if !event.cancelled?
@@ -161,14 +176,14 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     filter_matched(event) if !event.cancelled?
   end # def filter
 
-  # flush any pending messages
+  # Flush any pending messages. This is generally used for unit testing only.
   public
-  def flush(source, type)
-    key = [source, type]
+  def flush(key)
     if @pending[key]
       event = @pending[key]
       @pending.delete(key)
     end
     return event
   end # def flush
+
 end # class LogStash::Filters::Date

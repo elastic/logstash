@@ -27,13 +27,13 @@ class LogStash::Test
   def check_libraries
     results = [
       # main agent
-      check_lib("grok", "jls-grok", :optional, "needed for the grok filter."),
+      check_lib("grok-pure", "jls-grok", :optional, "needed for the grok filter."),
       check_lib("bunny", "bunny", :optional, "needed for AMQP input and output"),
       check_lib("uuidtools", "uuidtools", :required,
                 "needed for AMQP input and output"),
       check_lib("ap", "awesome_print", :optional, "improve debug logging output"),
       check_lib("json", "json", :required, "required for logstash to function"),
-      check_lib("filewatch/tailglob", "filewatch", :optional,
+      check_lib("filewatch/tail", "filewatch", :optional,
                 "required for file input"),
       check_lib("jruby-elasticsearch", "jruby-elasticsearch", :optional,
                 "required for elasticsearch output and for logstash web"),
