@@ -19,6 +19,8 @@ use "logstash/filters/test_date"
 use "logstash/filters/test_grep"
 use "logstash/filters/test_multiline"
 use "logstash/filters/test_grok"
+use "logstash/filters/test_tagger"
+
 
 use "logstash/outputs/test_elasticsearch"
 
