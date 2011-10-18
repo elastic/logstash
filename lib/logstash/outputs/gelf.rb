@@ -101,7 +101,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     m["facility"] = event.sprintf(@facility)
     m["timestamp"] = event.unix_timestamp.to_i
 
-    @logger.debug(["Sending GELF event", m])
+    @logger.debug("Sending GELF event", :event => m)
     @gelf.notify!(m)
   end # def receive
 end # class LogStash::Outputs::Gelf

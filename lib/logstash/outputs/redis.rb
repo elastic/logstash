@@ -96,7 +96,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
         @redis.publish event.sprintf(@key), event.to_json
       end
     rescue => e
-      @logger.warn(["Failed to log #{event.to_s} to #{identity}.", e])
+      @logger.warn("Failed to send event to redis", :event => event,
+                   :identity => identiy, :exception => e,
+                   :backtrace => e.backtrace)
       raise e
     end
   end # def receive

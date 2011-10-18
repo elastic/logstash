@@ -29,14 +29,21 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   # The name of the exchange
   config :name, :validate => :string, :required => true
 
-  # Key to route to
+  # Key to route to by default. Defaults to queue name
   config :key, :validate => :string
+
+  # The name of the queue to bind to the default key. Defaults to exchange name
+  config :queue_name, :validate => :string
 
   # The vhost to use
   config :vhost, :validate => :string, :default => "/"
 
   # Is this exchange durable? (aka; Should it survive a broker restart?)
   config :durable, :validate => :boolean, :default => true
+
+  # Is this queue durable? (aka; Should it survive a broker restart?).
+  # If you omit this setting, the 'durable' property will be used as default.
+  config :queue_durable, :validate => :boolean
 
   # Should messages persist to disk on the AMQP broker until they are read by a
   # consumer?
@@ -58,7 +65,11 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       raise "Invalid exchange_type, #{@exchange_type.inspect}, must be one of #{MQTYPES.join(", ")}"
     end
 
-    @logger.info("Registering output #{to_s}")
+    @queue_name ||= @name
+    @queue_durable ||= @durable
+    @key ||= @queue_name
+
+    @logger.info("Registering output", :plugin => self)
     connect
   end # def register
 
@@ -76,34 +87,53 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
 
     begin
-      @logger.debug(["Connecting to AMQP", amqpsettings, @exchange_type, @name])
+      @logger.debug("Connecting to AMQP", :settings => amqpsettings,
+                    :exchange_type => @exchange_type, :name => @name)
       @bunny = Bunny.new(amqpsettings)
       @bunny.start
     rescue => e
       if terminating?
         return
       else
-        @logger.error("AMQP connection error (during connect), will reconnect: #{e}")
-        @logger.debug(["Backtrace", e.backtrace])
+        @logger.error("AMQP connection error (during connect), will reconnect",
+                      :exception => e, :backtrace => e.backtrace)
         sleep(1)
         retry
       end
     end
-    @target = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
+
+    @logger.debug("Declaring queue", :queue_name => @queue_name,
+                  :durable => @queue_durable)
+    queue = @bunny.queue(@queue_name, :durable => @queue_durable)
+
+    @logger.debug("Declaring exchange", :name => @name, :type => @exchange_type,
+                  :durable => @durable)
+    @exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
+
+    @logger.debug("Binding exchange", :name => @name, :key => @key)
+    queue.bind(@exchange, :key => @key)
   end # def connect
 
   public
   def receive(event)
+    @logger.debug("Sending event", :destination => to_s, :event => event,
+                  :key => key)
     key = event.sprintf(@key) if @key
-    @logger.debug(["Sending event", { :destination => to_s, :event => event, :key => key }])
     begin
-      if @target
-        begin
-          @target.publish(event.to_json, :persistent => @persistent, :key => key)
-        rescue JSON::GeneratorError
-          @logger.warn(["Trouble converting event to JSON", $!, event.to_hash])
-          return
-        end
+      receive_raw(event.to_json, key)
+    rescue JSON::GeneratorError => e
+      @logger.warn("Trouble converting event to JSON", :exception => e,
+                   :event => event)
+      return
+    end
+  end # def receive
+
+  public
+  def receive_raw(message, key=@key)
+    begin
+      if @exchange
+        @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
+        @exchange.publish(message, :persistent => @persistent, :key => key, :mandatory => true)
       else
         @logger.warn("Tried to send message, but not connected to amqp yet.")
       end
@@ -112,24 +142,18 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       connect
       retry
     end
-  end # def receive
-
-  # This is used by the ElasticSearch AMQP/River output.
-  public
-  def receive_raw(raw)
-    @target.publish(raw)
-  end # def receive_raw
+  end
 
   public
   def to_s
-    return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@name}"
+    return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@name}\##{@queue_name}"
   end
 
   public
   def teardown
     @bunny.close rescue nil
     @bunny = nil
-    @target = nil
+    @exchange = nil
     finished
   end # def teardown
 end # class LogStash::Outputs::Amqp

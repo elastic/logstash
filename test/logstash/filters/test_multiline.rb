@@ -92,7 +92,7 @@ describe LogStash::Filters::Multiline do
         outputs << event.message
       end
     end
-    last = @filter.flush("unknown", @typename)
+    last = @filter.flush("unknown.#{@typename}")
     if last
       outputs << last.message
     end
@@ -137,7 +137,7 @@ describe LogStash::Filters::Multiline do
         outputs << event.message
       end
     end
-    last = @filter.flush("unknown", @typename)
+    last = @filter.flush("unknown.#{@typename}")
     if last
       outputs << last.message
     end
@@ -181,7 +181,7 @@ describe LogStash::Filters::Multiline do
         outputs << event.message
       end
     end
-    last = @filter.flush("unknown", @typename)
+    last = @filter.flush("unknown.#{@typename}")
     if last
       outputs << last.message
     end
@@ -191,4 +191,43 @@ describe LogStash::Filters::Multiline do
       assert_equal(expected, actual)
     end
   end # negate false
+
+  test "with custom stream identity" do
+    config "pattern" => ".*", "what" => "next",
+      "stream_identity" => "%{key}"
+
+    inputs = [
+      "one",
+      "two",
+      "one",
+      "two",
+      "one",
+    ]
+
+    expected_outputs = [
+      "one\none\none",
+      "two\ntwo",
+    ]
+         
+    outputs = []
+
+    inputs.each_with_index do |input, i|
+      event = LogStash::Event.new
+      event.type = @typename
+      # even/odd keying to fake multiple streams.
+      event["key"] = ["odd", "even"][i % 2]
+      event.message = input
+      @filter.filter(event)
+      if !event.cancelled?
+        outputs << event.message
+      end
+    end
+    outputs << @filter.flush("odd").message
+    outputs << @filter.flush("even").message
+    assert_equal(expected_outputs.length, outputs.length,
+                 "Incorrect number of output events")
+    expected_outputs.zip(outputs).each do |expected, actual|
+      assert_equal(expected, actual)
+    end
+  end
 end # tests for LogStash::Filters::Multiline

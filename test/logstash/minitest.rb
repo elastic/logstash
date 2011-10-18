@@ -10,7 +10,7 @@ require "logstash"
 parent = caller.collect { 
   |c| c.gsub(/:[0-9]+(:.*)$/, "")
 }.find { |c| c != __FILE__ }
-require "minitest/autorun" if parent == $0
+require "minitest/autorun" if parent == $0 or ENV["AUTORUN"]
 
 # I don't really like monkeypatching, but whatever, this is probably better
 # than overriding the 'describe' method.
