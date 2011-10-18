@@ -149,7 +149,14 @@ class LogStash::Event
     # Append all fields
     event.fields.each do |name, value|
       if self.fields.include?(name)
-        self.fields[name] |= value
+        if !self.fields[name].is_a?(Array)
+          self.fields[name] = [self.fields[name]]
+        end
+        if value.is_a?(Array)
+          self.fields[name] |= value
+        else
+          self.fields[name] << value
+        end
       else
         self.fields[name] = value
       end
