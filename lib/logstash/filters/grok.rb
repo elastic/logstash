@@ -79,6 +79,14 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # If true, only store named captures from grok.
   config :named_captures_only, :validate => :boolean, :default => false
 
+  # TODO(sissel): Add this feature?
+  # When disabled, any pattern that matches the entire string will not be set.
+  # This is useful if you have named patterns like COMBINEDAPACHELOG that will
+  # match entire events and you really don't want to add a field
+  # 'COMBINEDAPACHELOG' that is set to the whole event line.
+  #config :capture_full_match_patterns, :validate => :boolean, :default => false
+
+
   # Detect if we are running from a jarfile, pick the right path.
   @@patterns_path ||= Set.new
   if __FILE__ =~ /file:\/.*\.jar!.*/
@@ -141,6 +149,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
       if !@patterns.include?(field)
         @patterns[field] = Grok::Pile.new
+        @patterns[field].logger = @logger
+
         add_patterns_from_files(@patternfiles, @patterns[field])
       end
       @logger.info("Grok compile", :field => field, :patterns => patterns)
@@ -201,6 +211,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
               value = value.to_f
           end
 
+          # Special casing to skip captures that represent the entire log message.
           if fieldvalue == value and field == "@message"
             # Skip patterns that match the entire message
             @logger.debug("Skipping capture since it matches the whole line.", :field => key)
