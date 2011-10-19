@@ -23,35 +23,29 @@ Gem::Specification.new do |spec|
   spec.description = "scalable log and event management (search, archive, pipeline)"
   spec.license = "Apache License (2.0)"
 
-  #spec.add_dependency("eventmachine-tail") # TODO(sissel): remove, not for jruby
-  spec.add_dependency("json")
-
-  # New for our JRuby stuff
-  spec.add_dependency "bunny" # for amqp support
-  spec.add_dependency "uuidtools" # for naming amqp queues
-  spec.add_dependency "filewatch", "~> 0.2.3"  # for file tailing
-  spec.add_dependency "jls-grok", "~> 0.9.0" # for grok filter
-  spec.add_dependency "jruby-elasticsearch", "~> 0.0.11"
-  spec.add_dependency "stomp" # for stomp protocol
-  spec.add_dependency "json"
-  spec.add_dependency "awesome_print"
-
-  spec.add_dependency "rack"
-  spec.add_dependency "mizuno"
-  spec.add_dependency "sinatra"
-  spec.add_dependency "haml"
-
-  spec.add_dependency "mongo" # outputs/mongodb
-  spec.add_dependency "gelf" # outputs/gelf
-  spec.add_dependency "statsd-ruby" # outputs/statsd
-  spec.add_dependency "gmetric" # outputs/ganglia
-  spec.add_dependency "xmpp4r" # outputs/xmpp
-
-  spec.add_dependency("bunny")
-  spec.add_dependency("uuidtools")
-
-  # For beanstalk://
-  #spec.add_dependency("em-jack")
+  spec.add_dependency "awesome_print" # MIT License
+  spec.add_dependency "bunny" # for amqp support, MIT-style license
+  spec.add_dependency "cabin", "0.1.3" # for logging. apache 2 license
+  spec.add_dependency "filewatch", "~> 0.3.0"  # for file tailing, BSD License
+  spec.add_dependency "gelfd", "~> 0.1.0" #inputs/gelf, # License: Apache 2.0
+  spec.add_dependency "gelf" # outputs/gelf, # License: MIT-style
+  spec.add_dependency "gmetric", "~> 0.1.3" # outputs/ganglia, # License: MIT
+  spec.add_dependency "haml" # License: MIT
+  spec.add_dependency "jls-grok", "0.9.0" # for grok filter, BSD License
+  spec.add_dependency "jruby-elasticsearch", "~> 0.0.11" # BSD License
+  spec.add_dependency "jruby-openssl" # For enabling SSL support, CPL/GPL 2.0
+  spec.add_dependency "json" # Ruby license
+  spec.add_dependency "minitest" # License: Ruby
+  spec.add_dependency "mizuno" # License: Apache 2.0
+  spec.add_dependency "mongo" # outputs/mongodb, License: Apache 2.0
+  spec.add_dependency "rack" # License: MIT
+  spec.add_dependency "redis" # outputs/redis, License: MIT-style
+  spec.add_dependency "sass" # License: MIT
+  spec.add_dependency "sinatra" # License: MIT-style
+  spec.add_dependency "statsd-ruby", "~> 0.3.0" # outputs/statsd, # License: As-Is
+  spec.add_dependency "stomp" # for stomp protocol, Apache 2.0 License
+  spec.add_dependency "uuidtools" # for naming amqp queues, License ???
+  spec.add_dependency "xmpp4r", "~> 0.5" # outputs/xmpp, # License: As-Is
 
   spec.files = files
   spec.require_paths << "lib"
