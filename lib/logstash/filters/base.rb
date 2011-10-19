@@ -62,6 +62,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   def filter_matched(event)
     (@add_field or {}).each do |field, value|
       event[field] ||= []
+      event[field] = [event[field]] if !event[field].is_a?(Array)
       event[field] << event.sprintf(value)
       @logger.debug("filters/#{self.class.name}: adding value to field",
                     :field => field, :value => value)
