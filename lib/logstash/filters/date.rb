@@ -28,8 +28,16 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # The same field can be specified multiple times (or multiple dateformats for
   # the same field) do try different time formats; first success wins.
   #
-  # The date formats allowed are the string 'ISO8601' or whatever is supported
-  # by Joda; generally: [java.text.SimpleDateFormat][dateformats]
+  # The date formats allowed are anything allowed by Joda-Time (java time
+  # library), generally: [java.text.SimpleDateFormat][dateformats]
+  #
+  # There are a few special exceptions, the following format literals exist
+  # to help you save time and ensure correctness of date parsing.
+  #
+  # * "ISO8601" - should parse any valid ISO8601 timestamp, such as
+  #   2011-04-19T03:44:01.103Z
+  # * "UNIX" - will parse unix time in seconds since epoch
+  # * "UNIX_MS" - will parse unix time in milliseconds since epoch
   #
   # For example, if you have a field 'logdate' and with a value that looks like 'Aug 13 2010 00:03:44'
   # you would use this configuration:
@@ -77,16 +85,16 @@ class LogStash::Filters::Date < LogStash::Filters::Base
       next if ["add_tag", "add_field", "type"].include?(field)
 
       # values here are an array of format strings for the given field.
+      missing = []
       value.each do |format|
         case format
         when "ISO8601"
           joda_parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
           parser = lambda { |date| joda_parser.parseDateTime(date) }
-          missing = []
-        when "%s" # unix epoch
-          parser = lambda { |date| org.joda.time.format.DateTimeFormat.parseMillis("#{date}000") }
-        when "%S" # unix epoch in ms
-          parser = lambda { |date| org.joda.time.format.DateTimeFormat.parseMillis(date) }
+        when "UNIX" # unix epoch
+          parser = lambda { |date| org.joda.time.Instant.new(date.to_i * 1000).toDateTime }
+        when "UNIX_MS" # unix epoch in ms
+          parser = lambda { |date| org.joda.time.Instant.new(date.to_i).toDateTime }
         else
           joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withOffsetParsed
           parser = lambda { |date| joda_parser.parseDateTime(date) }
