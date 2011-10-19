@@ -80,10 +80,16 @@ class LogStash::Filters::Date < LogStash::Filters::Base
       value.each do |format|
         case format
         when "ISO8601"
-          parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser
+          joda_parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
+          parser = lambda { |date| joda_parser.parseDateTime(date) }
           missing = []
+        when "%s" # unix epoch
+          parser = lambda { |date| org.joda.time.format.DateTimeFormat.parseMillis("#{date}000") }
+        when "%S" # unix epoch in ms
+          parser = lambda { |date| org.joda.time.format.DateTimeFormat.parseMillis(date) }
         else
-          parser = org.joda.time.format.DateTimeFormat.forPattern(format)
+          joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withOffsetParsed
+          parser = lambda { |date| joda_parser.parseDateTime(date) }
 
           # Joda's time parser doesn't assume 'current time' for unparsed values.
           # That is, if you parse with format "mmm dd HH:MM:SS" (no year) then
@@ -97,7 +103,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
         @logger.debug("Adding type with date config", :type => @type,
                       :field => field, :format => format)
         @parsers[field] << {
-          :parser => parser.withOffsetParsed,
+          :parser => parser,
           :missing => missing
         }
       end # value.each
@@ -131,7 +137,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             #@logger.info :Missing => missing
             #p :parser => parser
             begin
-              time = parser.parseDateTime(value)
+              time = parser.call(value)
               success = true
               break # success
             rescue => e
