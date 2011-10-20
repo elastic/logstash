@@ -105,4 +105,41 @@ describe LogStash::Filters::Date do
     puts "filters/date speed test; #{iterations} iterations: #{duration} seconds (#{iterations / duration} per sec)"
     assert(duration < 10, "Should be able to do #{iterations} date parses in less than #{max_duration} seconds, got #{duration} seconds")
   end # performance test
+
+  test "UNIX date parsing" do
+    config "field1" => "UNIX"
+
+    times = {
+      "0"          => "1970-01-01T00:00:00.000Z",
+      "1000000000" => "2001-09-09T01:46:40.000Z"
+    }
+    
+    event = LogStash::Event.new
+    event.type = @typename
+    times.each do |input, output|
+      event.fields["field1"] = input
+      @filter.filter(event)
+      assert_equal(output, event.timestamp,
+                   "Time '#{input}' should parse to '#{output}' but got '#{event.timestamp}'")
+    end # times.each
+  end # testing UNIX date parse
+
+  test "UNIX_MS date parsing" do
+    config "field1" => "UNIX_MS"
+
+    times = {
+      "0"          => "1970-01-01T00:00:00.000Z",
+      "456"          => "1970-01-01T00:00:00.456Z",
+      "1000000000123" => "2001-09-09T01:46:40.123Z"
+    }
+    
+    event = LogStash::Event.new
+    event.type = @typename
+    times.each do |input, output|
+      event.fields["field1"] = input
+      @filter.filter(event)
+      assert_equal(output, event.timestamp,
+                   "Time '#{input}' should parse to '#{output}' but got '#{event.timestamp}'")
+    end # times.each
+  end # testing UNIX date parse
 end # describe LogStash::Filters::Date
