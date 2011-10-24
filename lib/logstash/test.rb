@@ -4,8 +4,23 @@ $:.unshift "#{File.dirname(__FILE__)}/../lib"
 $:.unshift "#{File.dirname(__FILE__)}/../test"
 require "logstash/namespace"
 require "logstash/loadlibs"
+require "logstash/logging"
+require "ruby-debug"
 
 class LogStash::Test
+    public
+    def initialize
+        log_to(STDERR)
+       
+        # initialize to an empty pluginpath
+        @plugin_paths = []
+    end
+
+  public
+  def log_to(target)
+    @logger = LogStash::Logger.new(target)
+  end # def log_to
+
   def check_lib(lib, provider, is=:optional, message=nil)
     optional = (is == :optional)
     begin
@@ -71,7 +86,40 @@ class LogStash::Test
     #return Test::Unit::AutoRunner.run
   end # def run_tests
 
+
+  # Parse options.
+  private
+  def extend_pluginpath(args)
+    # strip out the pluginpath argument if it exists and 
+    # extend the LOAD_PATH for the ruby runtime
+    opts = OptionParser.new
+
+    # Step one is to add test flags.
+    opts.on("--pluginpath PLUGINPATH", 
+            "Load plugins and test from a pluginpath") do |path|
+      @plugin_paths << path
+
+      @plugin_paths.each do |p|
+          @logger.debug("Adding to ruby load path", :path => p)
+          $:.unshift p
+      end
+    end # --pluginpath PLUGINPATH
+
+    begin
+      remainder = opts.parse(args)
+    rescue OptionParser::InvalidOption => e
+      @logger.info("Invalid option", :exception => e)
+      raise e
+    end
+    return remainder
+  end # def extend_pluginpath
+
+  public
   def run(args)
+
+    args = extend_pluginpath(args)
+    debugger
+
     @success = true
     @thread = Thread.new do
       report_ruby_version
