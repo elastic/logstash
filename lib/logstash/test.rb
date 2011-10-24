@@ -13,6 +13,7 @@ class LogStash::Test
         log_to(STDERR)
        
         # initialize to an empty pluginpath
+        @verbose = 0
         @plugin_paths = []
     end
 
@@ -81,7 +82,6 @@ class LogStash::Test
   end
 
   def run_tests(args)
-    require "logstash_test_runner"
     return MiniTest::Unit.new.run(args)
     #return Test::Unit::AutoRunner.run
   end # def run_tests
@@ -94,6 +94,22 @@ class LogStash::Test
     # extend the LOAD_PATH for the ruby runtime
     opts = OptionParser.new
 
+    opts.on("-v", "Increase verbosity") do
+      @verbose += 1
+
+      if @verbose >= 3  # Uber debugging.
+          @logger.level = :debug
+          $DEBUG = true
+      elsif @verbose == 2 # logstash debug logs
+          @logger.level = :debug
+      elsif @verbose == 1 # logstash info logs
+          @logger.level = :info
+      else # Default log level
+          @logger.level = :warn
+      end
+
+    end
+
     # Step one is to add test flags.
     opts.on("--pluginpath PLUGINPATH", 
             "Load plugins and test from a pluginpath") do |path|
@@ -101,12 +117,20 @@ class LogStash::Test
 
       @plugin_paths.each do |p|
           @logger.debug("Adding to ruby load path", :path => p)
-          $:.unshift p
+
+            runner = PluginTestRunner.new p
+            $:.unshift p
+            runner.load_tests()
+
+            puts "Added to ruby load :path = [#{p}]"
+          debugger
       end
     end # --pluginpath PLUGINPATH
 
+
     begin
       remainder = opts.parse(args)
+
     rescue OptionParser::InvalidOption => e
       @logger.info("Invalid option", :exception => e)
       raise e
@@ -142,3 +166,28 @@ class LogStash::Test
     return @success ? 0 : 1
   end # def wait
 end # class LogStash::Test
+
+class PluginTestRunner
+    def initialize(rootpath)
+        @rootpath = rootpath
+    end
+
+    def _discover_tests()
+        glob_path = File.join(@rootpath, "**", "test_*.rb")
+        puts "Searching [#{glob_path}]"
+        Dir.glob(glob_path).each do|f|
+            yield f
+        end
+    end
+
+    def load_tests()
+        _discover_tests() do |path|
+            path_parts = path.split(File::SEPARATOR).map {|x| x=="" ? File::SEPARATOR : x}
+            test_module = File.join(path_parts.slice(1, path_parts.length + 1))
+            test_module = test_module.sub(".rb", '')
+            puts "Loading test module: #{test_module}"
+            require test_module
+            puts "Loaded : [#{test_module}]"
+        end
+    end
+end
