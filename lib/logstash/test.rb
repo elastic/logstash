@@ -118,7 +118,6 @@ class LogStash::Test
   def run(args)
 
     args = extend_pluginpath(args)
-    debugger
 
     @success = true
     @thread = Thread.new do
