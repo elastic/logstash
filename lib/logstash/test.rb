@@ -82,8 +82,8 @@ class LogStash::Test
   end
 
   def run_tests(args)
+    require "logstash_test_runner"
     return MiniTest::Unit.new.run(args)
-    #return Test::Unit::AutoRunner.run
   end # def run_tests
 
 
@@ -116,14 +116,13 @@ class LogStash::Test
       @plugin_paths << path
 
       @plugin_paths.each do |p|
-          @logger.debug("Adding to ruby load path", :path => p)
+        @logger.debug("Adding to ruby load path", :path => p)
 
-            runner = PluginTestRunner.new p
-            $:.unshift p
-            runner.load_tests()
+        runner = PluginTestRunner.new p
+        $:.unshift p
+        runner.load_tests()
 
-            puts "Added to ruby load :path = [#{p}]"
-          debugger
+        puts "Added to ruby load :path = [#{p}]"
       end
     end # --pluginpath PLUGINPATH
 
