@@ -3,7 +3,7 @@
 #   cpio
 #   wget
 #
-JRUBY_VERSION=1.6.4
+JRUBY_VERSION=1.6.5
 JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
 WITH_JRUBY=bash $(JRUBY_CMD) --1.9 -S
 VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
@@ -162,7 +162,7 @@ build/logstash-$(VERSION)-monolithic.jar:
 	$(QUIET)jar i $@
 
 .PHONY: test
-test:
+test: | $(JRUBY_CMD) vendor-elasticsearch
 	$(QUIET)bash $(JRUBY_CMD) bin/logstash test
 
 .PHONY: docs
