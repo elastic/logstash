@@ -1,8 +1,8 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-class LogStash::Outputs::Onstomp < LogStash::Outputs::Base
-  config_name "onstomp"
+class LogStash::Outputs::Stomp < LogStash::Outputs::Base
+  config_name "stomp"
 
 
   # The address of the STOMP server.
@@ -57,5 +57,5 @@ class LogStash::Outputs::Onstomp < LogStash::Outputs::Base
       @logger.debug(["stomp sending event", { :host => @host, :event => event }])
       @client.send(event.sprintf(@destination), event.to_json)
   end # def receive
-end # class LogStash::Outputs::Onstomp
+end # class LogStash::Outputs::Stomp
 
