@@ -33,6 +33,7 @@ gem "gelfd", "~> 0.1.0" #inputs/gelf, # License: Apache 2.0
 
 gem "ffi-rzmq"
 gem "ruby-debug"
+gem "mocha"
 
 # For testing/dev
 group :development do
