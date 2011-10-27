@@ -37,10 +37,10 @@ require "logstash/outputs/base"
 #  
 #         # specify the hostname or ip of your zabbix server
 #         # (defaults to localhost)
-#         zabbix_server => "localhost"
+#         host => "localhost"
 #  
 #         # specify the port to connect to (default 10051)
-#         zabbix_port => "10051"
+#         port => "10051"
 #  
 #         # specify the path to zabbix_sender
 #         # (defaults to "/usr/local/bin/zabbix_sender")
