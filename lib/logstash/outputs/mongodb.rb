@@ -38,6 +38,8 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     @mongodb.collection(event.sprintf(@collection)).insert(event.to_hash)
   end # def receive
 end # class LogStash::Outputs::Mongodb

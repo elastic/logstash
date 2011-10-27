@@ -29,6 +29,8 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     if event == LogStash::SHUTDOWN
       finished
       return

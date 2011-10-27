@@ -86,6 +86,8 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     wire_event = event.to_hash.to_json + "\n"
 
     if server?
