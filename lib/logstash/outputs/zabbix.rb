@@ -1,7 +1,7 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
  
-# The zabbix output is used for sending item data to zabbux via the
+# The zabbix output is used for sending item data to zabbix via the
 # zabbix_sender executable.
 #
 # For this output to work, your event must have the following fields:
@@ -108,4 +108,4 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
                    :exception => e, :backtrace => e.backtrace)
     end
   end # def receive
-end # class LogStash::Outputs::Nagios
+end # class LogStash::Outputs::Zabbix
