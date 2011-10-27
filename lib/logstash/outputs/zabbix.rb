@@ -23,7 +23,7 @@ require "logstash/outputs/base"
 #          type => "linux-syslog"
 #          match => [ "@message", "(error|ERROR|CRITICAL)" ]
 #          add_tag => [ "zabbix-sender" ]
-#          add_fields => [
+#          add_field => [
 #            "zabbix_host", "%{@source_host}",
 #            "zabbix_item", "item.key"
 #          ]
