@@ -37,6 +37,8 @@ class LogStash::Outputs::Websocket < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     # Only publish the event to websockets if there are subscribers
     # TODO(sissel): send a patch to eventmachine to fix this.
     if @subscribers > 0

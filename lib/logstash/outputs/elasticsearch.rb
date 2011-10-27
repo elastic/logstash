@@ -6,7 +6,7 @@ require "logstash/outputs/base"
 # need to use this output.
 #
 #   *NOTE*: You must use the same version of elasticsearch server that logstash
-#   uses for it's client. Currently we use elasticsearch 0.17.6
+#   uses for it's client. Currently we use elasticsearch 0.17.7
 #
 # You can learn more about elasticseasrch at <http://elasticsearch.org>
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
@@ -21,9 +21,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # delete old data or only search specific date ranges.
   config :index, :validate => :string, :default => "logstash-%{+YYYY.MM.dd}"
 
-  # The type to write events to. Generally you should try to write only similar
-  # events to the same 'type'. String expansion '%{foo}' works here.
-  config :type, :validate => :string, :default => "%{@type}"
+  # The index type to write events to. Generally you should try to write only
+  # similar events to the same 'type'. String expansion '%{foo}' works here.
+  config :index_type, :validate => :string, :default => "%{@type}"
 
   # The name of your cluster if you set it on the ElasticSearch side. Useful
   # for discovery.
@@ -120,8 +120,10 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     index = event.sprintf(@index)
-    type = event.sprintf(@type)
+    type = event.sprintf(@index_type)
     # TODO(sissel): allow specifying the ID?
     # The document ID is how elasticsearch determines sharding hash, so it can
     # help performance if we allow folks to specify a specific ID.

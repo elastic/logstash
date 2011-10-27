@@ -16,6 +16,8 @@ class LogStash::Outputs::Internal < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     if @callbacks.empty?
       @logger.error("No callback for output #{@url}, cannot receive")
       return

@@ -55,10 +55,6 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
   config :port, :validate => :number, :default => 10051
   config :zabbix_sender, :validate => :string, :default => "/usr/local/bin/zabbix_sender"
  
-  # Only handle events with any of these tags. Optional.
-  # If not specified, will process all events.
-  config :tags, :validate => :array, :default => []
- 
   public
   def register
     # nothing to do
@@ -66,12 +62,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
  
   public
   def receive(event)
-    if !@tags.empty?
-      if (event.tags - @tags).size == 0
-        # Skip events that have no tags in common with what we were configured
-        return
-      end
-    end
+    return unless output?(event)
  
     if !File.exists?(@zabbix_sender)
       @logger.warn("Skipping zabbix output; zabbix_sender file is missing",

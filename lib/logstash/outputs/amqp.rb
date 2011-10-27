@@ -116,6 +116,8 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     @logger.debug("Sending event", :destination => to_s, :event => event,
                   :key => key)
     key = event.sprintf(@key) if @key
