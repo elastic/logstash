@@ -43,10 +43,6 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
   # The path to your nagios command file
   config :commandfile, :validate => :string, :default => "/var/lib/nagios3/rw/nagios.cmd"
 
-  # Only handle events with any of these tags. Optional.
-  # If not specified, will process all events.
-  config :tags, :validate => :array, :default => []
-
   public
   def register
     # nothing to do
@@ -54,12 +50,7 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
 
   public
   def receive(event)
-    if !@tags.empty?
-      if (event.tags - @tags).size == 0
-        # Skip events that have no tags in common with what we were configured
-        return
-      end
-    end
+    return unless output?(event)
 
     if !File.exists?(@commandfile)
       @logger.warn("Skipping nagios output; command file is missing",

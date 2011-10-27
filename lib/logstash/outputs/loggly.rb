@@ -37,6 +37,8 @@ class LogStash::Outputs::Loggly < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     if event == LogStash::SHUTDOWN
       finished
       return

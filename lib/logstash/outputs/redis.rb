@@ -88,6 +88,8 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     begin
       @redis ||= connect
       if @data_type == 'list'
