@@ -22,7 +22,7 @@ right? ;)
 
 # building a release.
 
-* Make sure all tests pass (rake test)
+* Make sure all tests pass (make test)
   * ruby bin/logstash test
   * java -jar logstash-x.y.z-monolithic.jar test
 * Update VERSION.rb
@@ -30,11 +30,12 @@ right? ;)
 * Ensure CHANGELOG is up-to-date
 * git tag v$VERSION; git push origin master; git push --tags
 * Build binaries
-  * rake package:gem
-  * rake package:monolith:jar
-* rake docs output=../logstash.github.com/docs/$VERSION
-  * Note: you will need to use c-ruby for this (ruby 1.8.7, etc)
-  * You'll need 'bluecloth' rubygem installed.
+  * make gem
+  * make jar
+* make docs
+  * move build/docs to ../logstash.github.com/docs/$VERSION
+  * Note: you will need to use c-ruby 1.9.2 for this.
+  * You'll need 'bluecloth' and 'cabin' rubygems installed.
 * cd ../logstash.github.com
   * make clean update VERSION=$VERSION
   * git add docs/$VERSION docs/latest.html index.html _layouts/*
