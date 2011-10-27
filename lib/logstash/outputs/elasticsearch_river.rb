@@ -145,6 +145,8 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     index_message = {"index" => {"_index" => event.sprintf(@index), "_type" => event.sprintf(@type)}}.to_json + "\n"
     index_message += event.to_hash.to_json + "\n"
     @mq.receive_raw(index_message)

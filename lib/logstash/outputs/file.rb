@@ -37,6 +37,8 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     path = event.sprintf(@path)
     fd = open(path)
 

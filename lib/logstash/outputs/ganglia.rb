@@ -21,7 +21,7 @@ class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
   config :value, :validate => :string, :required => true
 
   # The type of value for this metric.
-  config :type, :validate => %w{string int8 uint8 int16 uint16 int32 uint32 float double},
+  config :metric_type, :validate => %w{string int8 uint8 int16 uint16 int32 uint32 float double},
     :default => "uint8"
 
   # Gmetric units for metric, such as "kb/sec" or "ms" or whatever unit
@@ -40,6 +40,8 @@ class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     # gmetric only takes integer values, so convert it to int.
     case @type
       when "string"

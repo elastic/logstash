@@ -49,10 +49,6 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # The sample rate for the metric
   config :sample_rate, :validate => :number, :default => 1
 
-  # Only handle events with all of these tags
-  # Optional.
-  config :tags, :validate => :array, :default => []
-
   # The final metric sent to statsd will look like the following (assuming defaults)
   # logstash.sender.file_name
   #
@@ -67,11 +63,7 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
 
   public
   def receive(event)
-    if !@tags.empty?
-      if (event.tags & @tags).size != @tags.size
-        return
-      end
-    end
+    return unless output?(event)
 
     @client.namespace = event.sprintf(@namespace)
     logger.debug("Original sender: #{@sender}")
