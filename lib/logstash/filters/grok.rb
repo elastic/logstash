@@ -149,6 +149,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
       if !@patterns.include?(field)
         @patterns[field] = Grok::Pile.new
+        @patterns[field].logger = @logger
 
         add_patterns_from_files(@patternfiles, @patterns[field])
       end
