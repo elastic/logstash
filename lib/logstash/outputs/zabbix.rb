@@ -1,7 +1,7 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
  
-# The zabbix output is used for sending item data to zabbux via the
+# The zabbix output is used for sending item data to zabbix via the
 # zabbix_sender executable.
 #
 # For this output to work, your event must have the following fields:
@@ -23,7 +23,7 @@ require "logstash/outputs/base"
 #          type => "linux-syslog"
 #          match => [ "@message", "(error|ERROR|CRITICAL)" ]
 #          add_tag => [ "zabbix-sender" ]
-#          add_fields => [
+#          add_field => [
 #            "zabbix_host", "%{@source_host}",
 #            "zabbix_item", "item.key"
 #          ]
@@ -37,10 +37,10 @@ require "logstash/outputs/base"
 #  
 #         # specify the hostname or ip of your zabbix server
 #         # (defaults to localhost)
-#         zabbix_server => "localhost"
+#         host => "localhost"
 #  
 #         # specify the port to connect to (default 10051)
-#         zabbix_port => "10051"
+#         port => "10051"
 #  
 #         # specify the path to zabbix_sender
 #         # (defaults to "/usr/local/bin/zabbix_sender")
@@ -99,4 +99,4 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
                    :exception => e, :backtrace => e.backtrace)
     end
   end # def receive
-end # class LogStash::Outputs::Nagios
+end # class LogStash::Outputs::Zabbix
