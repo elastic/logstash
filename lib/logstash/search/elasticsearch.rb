@@ -18,6 +18,7 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
     @bind_host = (settings[:bind_host] || nil)
     @type = (settings[:type] || :node)
     @logger = LogStash::Logger.new(STDOUT)
+    @logger.level = :warn
     @client = ElasticSearch::Client.new(:host => @host, :port => @port, 
                                         :cluster => @cluster, 
                                         :bind_host => @bind_host,

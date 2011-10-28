@@ -1,21 +1,24 @@
 require "rubygems"
 require "optparse"
+
+# TODO(sissel): Are these necessary anymore?
 $:.unshift "#{File.dirname(__FILE__)}/../lib"
 $:.unshift "#{File.dirname(__FILE__)}/../test"
+
 require "logstash/namespace"
 require "logstash/loadlibs"
 require "logstash/logging"
 require "ruby-debug"
 
 class LogStash::Test
-    public
-    def initialize
-        log_to(STDERR)
-       
-        # initialize to an empty pluginpath
-        @verbose = 0
-        @plugin_paths = []
-    end
+  public
+  def initialize
+    log_to(STDERR)
+
+    # This is lib/logstash/test.rb, so go up 2 directories for the plugin path
+    @plugin_paths = [ File.join(File.dirname(__FILE__), "..", "..") ]
+    @verbose = 0
+  end # def initialize
 
   public
   def log_to(target)
@@ -34,11 +37,11 @@ class LogStash::Test
            "#{optional ? " if you want this library" : ""}. #{message}"
       return { :optional => optional, :found => false }
     end
-  end
+  end # def check_lib
 
   def report_ruby_version
     puts "Running #{RUBY_VERSION}p#{RUBY_PATCHLEVEL} on #{RUBY_PLATFORM}"
-  end
+  end # def report_ruby_version
 
   def check_libraries
     results = [
@@ -79,114 +82,88 @@ class LogStash::Test
     end
 
     return true
-  end
-
-  def run_tests(args)
-    require "logstash_test_runner"
-    return MiniTest::Unit.new.run(args)
-  end # def run_tests
-
+  end # def check_libraries
 
   # Parse options.
   private
-  def extend_pluginpath(args)
+  def options(args)
     # strip out the pluginpath argument if it exists and 
     # extend the LOAD_PATH for the ruby runtime
     opts = OptionParser.new
 
     opts.on("-v", "Increase verbosity") do
       @verbose += 1
-
-      if @verbose >= 3  # Uber debugging.
-          @logger.level = :debug
-          $DEBUG = true
-      elsif @verbose == 2 # logstash debug logs
-          @logger.level = :debug
-      elsif @verbose == 1 # logstash info logs
-          @logger.level = :info
-      else # Default log level
-          @logger.level = :warn
-      end
-
     end
 
     # Step one is to add test flags.
     opts.on("--pluginpath PLUGINPATH", 
             "Load plugins and test from a pluginpath") do |path|
       @plugin_paths << path
-
-      @plugin_paths.each do |p|
-        @logger.debug("Adding to ruby load path", :path => p)
-
-        runner = PluginTestRunner.new p
-        $:.unshift p
-        runner.load_tests()
-
-        puts "Added to ruby load :path = [#{p}]"
-      end
     end # --pluginpath PLUGINPATH
-
 
     begin
       remainder = opts.parse(args)
-
     rescue OptionParser::InvalidOption => e
       @logger.info("Invalid option", :exception => e)
       raise e
     end
     return remainder
-  end # def extend_pluginpath
+  end # def options
 
   public
   def run(args)
+    remainder = options(args)
 
-    args = extend_pluginpath(args)
+    if @verbose >= 3  # Uber debugging.
+      @logger.level = :debug
+      $DEBUG = true
+    elsif @verbose == 2 # logstash debug logs
+      @logger.level = :debug
+    elsif @verbose == 1 # logstash info logs
+      @logger.level = :info
+    else # Default log level
+      @logger.level = :warn
+    end
 
     @success = true
     @thread = Thread.new do
       report_ruby_version
-      # TODO(sissel): Add a way to call out specific things to test, like
-      # logstash-web, elasticsearch, mongodb, syslog, etc.
-      if !check_libraries
-        puts "Library check failed."
-        @success = false
+
+      # TODO(sissel): Rewrite this into a proper test?
+      #if !check_libraries
+        #puts "Library check failed."
+        #@success = false
+      #end
+
+      @plugin_paths.each do |path|
+        load_tests(path)
       end
 
-      if !run_tests(args)
-        puts "Test suite failed."
-        @success = false
-      end
-    end
-    return args
+      require "minitest/spec"
+      @status = MiniTest::Unit.new.run(ARGV)
+    end # the runner thread
+    return remainder
   end # def run
 
   def wait
     @thread.join
-    return @success ? 0 : 1
+    return @status
   end # def wait
+
+  # Find tests in a given path. Tests must be in the plugin path +
+  # "/test/.../test_*.rb"
+  def each_test(basepath, &block)
+    glob_path = File.join(basepath, "test", "**", "test_*.rb")
+    @logger.info("Searching for tests", :path => glob_path)
+    Dir.glob(glob_path).each do |path|
+      block.call(path)
+    end
+  end # def each_test
+
+  def load_tests(path)
+    each_test(path) do |test|
+      @logger.info("Loading test", :test => test)
+      require test
+    end
+  end # def load_tests
 end # class LogStash::Test
-
-class PluginTestRunner
-    def initialize(rootpath)
-        @rootpath = rootpath
-    end
-
-    def _discover_tests()
-        glob_path = File.join(@rootpath, "**", "test_*.rb")
-        puts "Searching [#{glob_path}]"
-        Dir.glob(glob_path).each do|f|
-            yield f
-        end
-    end
-
-    def load_tests()
-        _discover_tests() do |path|
-            path_parts = path.split(File::SEPARATOR).map {|x| x=="" ? File::SEPARATOR : x}
-            test_module = File.join(path_parts.slice(1, path_parts.length + 1))
-            test_module = test_module.sub(".rb", '')
-            puts "Loading test module: #{test_module}"
-            require test_module
-            puts "Loaded : [#{test_module}]"
-        end
-    end
-end

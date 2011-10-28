@@ -21,6 +21,7 @@ class LogStash::Plugin
   def initialize(params=nil)
     @params = params
     @logger = LogStash::Logger.new(STDOUT)
+    @logger.level = :warn
   end
 
   # This method is called when someone or something wants this plugin to shut

@@ -9,9 +9,7 @@ require "logstash/event"
 require "timeout"
 
 describe LogStash::Filters::Date do
-  # These tests assume a given timezone.
   before do
-    ENV["TZ"] = "PST8PDT"
     @typename = "foozle"
   end
 
@@ -60,17 +58,15 @@ describe LogStash::Filters::Date do
   end # testing ISO8601
 
   test "parsing with java SimpleDateFormat syntax" do
-    #config "field1" => "%b %e %H:%M:%S"
-    config "field1" => "MMM dd HH:mm:ss"
+    config "field1" => "MMM dd HH:mm:ss Z"
 
     now = Time.now
     now += now.gmt_offset
     year = now.year
     require 'java'
-    skip("this test assumes pacific time - won't work anywhere else")
 
     times = {
-      "Nov 24 01:29:01" => "#{year}-11-24T09:29:01.000Z",
+      "Nov 24 01:29:01 -0800" => "#{year}-11-24T09:29:01.000Z",
     }
 
     event = LogStash::Event.new
@@ -83,15 +79,14 @@ describe LogStash::Filters::Date do
   end # SimpleDateFormat tests
 
   test "performance" do
-    config "field1" => "MMM dd HH:mm:ss"
+    config "field1" => "MMM dd HH:mm:ss Z"
     iterations = 50000
 
     start = Time.now
     gmt_now = start + start.gmt_offset
     year = gmt_now.year
 
-    skip("This test assumes PDT")
-    input = "Nov 24 01:29:01" 
+    input = "Nov 24 01:29:01 -0800" 
     output = "#{year}-11-24T09:29:01.000Z"
 
     event = LogStash::Event.new
