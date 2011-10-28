@@ -38,7 +38,9 @@ describe LogStash::Filters::Date do
       "2001-09-05T16:36:36+0000"         => "2001-09-05T16:36:36.000Z",
       "2001-11-06T20:45:45-0000"         => "2001-11-06T20:45:45.000Z",
       "2001-12-07T23:54:54Z"             => "2001-12-07T23:54:54.000Z",
-      "2001-01-01T00:00:00.123"          => "2001-01-01T08:00:00.123Z",
+
+      # TODO: This test assumes PDT
+      #"2001-01-01T00:00:00.123"          => "2001-01-01T08:00:00.123Z",
 
       "2010-05-03T08:18:18.123+00:00"    => "2010-05-03T08:18:18.123Z",
       "2004-07-04T12:27:27.123-04:00"    => "2004-07-04T16:27:27.123Z",
@@ -64,6 +66,9 @@ describe LogStash::Filters::Date do
     now = Time.now
     now += now.gmt_offset
     year = now.year
+    require 'java'
+    skip("this test assumes pacific time - won't work anywhere else")
+
     times = {
       "Nov 24 01:29:01" => "#{year}-11-24T09:29:01.000Z",
     }
@@ -84,6 +89,8 @@ describe LogStash::Filters::Date do
     start = Time.now
     gmt_now = start + start.gmt_offset
     year = gmt_now.year
+
+    skip("This test assumes PDT")
     input = "Nov 24 01:29:01" 
     output = "#{year}-11-24T09:29:01.000Z"
 
