@@ -43,10 +43,10 @@ class LogStash::Config::File
       plugin = registry[o[:plugin]]
 
       if type.nil?
-        puts "Unknown config #{o[:type]}/#{o[:plugin]}"
+        @logger.info("Unknown plugin", :type => o[:type], :plugin => o[:plugin])
       end
-
       yield :type => type, :plugin => plugin, :parameters => o[:parameters]
+
     end
   end # def parse
 

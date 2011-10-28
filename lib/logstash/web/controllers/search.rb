@@ -1,3 +1,5 @@
+require "sinatra/base" # gem sinatra
+
 class LogStash::Web::Server < Sinatra::Base
   get '/search' do
     # TODO(sissel): Refactor this to use the api_search
