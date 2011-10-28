@@ -20,7 +20,6 @@ use "logstash/filters/test_grep"
 use "logstash/filters/test_multiline"
 use "logstash/filters/test_grok"
 
-
 use "logstash/outputs/test_elasticsearch"
 
 skip "logstash/inputs/test_file"
