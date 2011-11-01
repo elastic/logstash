@@ -6,28 +6,9 @@ require "set"
 # Grok is currently the best way in logstash to parse crappy unstructured log
 # data (like syslog or apache logs) into something structured and queryable.
 #
-# This filter requires you have libgrok installed.
-#
-# You can find libgrok here:
-# <http://code.google.com/p/semicomplete/wiki/Grok>
-#
-# Compile/install notes can be found in the INSTALL file of the
-# grok tarball, or here:
-# <https://github.com/jordansissel/grok/blob/master/INSTALL>
-#
-# Key dependencies:
-#
-# * libtokyocabinet > 1.4.6
-# * libpcre >= 7.6
-# * libevent >= 1.3 (though older versions may worK)
-#
-# Feature requirements:
-#
-# * Int/float coercion requires >= 1.20110223.*
-# * In-line pattern definitions >= 1.20110630.*
-#
-# Note:
-# CentOS 5 ships with an ancient version of pcre that does not work with grok.
+# Grok allows you to match text without needing to be a regular expressions
+# ninja. Logstash ships with about 120 patterns by default. You can add
+# your own trivially. (See the patterns_dir setting)
 class LogStash::Filters::Grok < LogStash::Filters::Base
   config_name "grok"
 
@@ -85,7 +66,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # match entire events and you really don't want to add a field
   # 'COMBINEDAPACHELOG' that is set to the whole event line.
   #config :capture_full_match_patterns, :validate => :boolean, :default => false
-
 
   # Detect if we are running from a jarfile, pick the right path.
   @@patterns_path ||= Set.new
