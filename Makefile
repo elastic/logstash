@@ -4,13 +4,14 @@
 #   wget
 #
 JRUBY_VERSION=1.6.5
+ELASTICSEARCH_VERSION=0.18.2
+VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
+
 JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
 WITH_JRUBY=bash $(JRUBY_CMD) --1.9 -S
-VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
 JRUBYC=java -Djruby.compat.version=RUBY1_9 -jar $(PWD)/$(JRUBY) -S jrubyc
-ELASTICSEARCH_VERSION=0.18.1
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/base.rb$$')
