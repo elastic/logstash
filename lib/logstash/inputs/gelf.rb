@@ -86,7 +86,7 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
       # when all chunks are completed
       e = to_event(data, source) unless data.nil?
       if e
-        remap_gelf(e) if @remap
+        remap_gelf(e) if @remap 
         output_queue << e
       end
     end
@@ -101,7 +101,7 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   def remap_gelf(event)
     event.message = event.fields["full_message"]
     event.timestamp = LogStash::Time.to_iso8601(
-      DateTime.strptime(event.fields["timestamp"].to_s, "%s.%L" ))
+      DateTime.strptime(event.fields["timestamp"].to_s, "%Q" ))
     event.source = "gelf://#{event.fields["host"]}#{event.fields["file"]}"
   end # def remap_gelf
 end # class LogStash::Inputs::Gelf
