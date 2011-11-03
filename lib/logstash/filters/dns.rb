@@ -66,6 +66,9 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
       rescue Resolv::ResolvError
         @logger.debug("DNS: couldn't resolve the hostname.")
         return
+      rescue Resolv::ResolvTimeout
+        @logger.debug("DNS: timeout on resolving the hostname.")
+        return
       end
       if @action == "replace"
         event[field] = address
@@ -86,6 +89,9 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
         hostname = Resolv.getname(event[field])
       rescue Resolv::ResolvError
         @logger.debug("DNS: couldn't resolve the address.")
+        return
+      rescue Resolv::ResolvTimeout
+        @logger.debug("DNS: timeout on resolving address.")
         return
       end
       if @action == "replace"
