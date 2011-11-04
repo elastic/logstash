@@ -69,6 +69,9 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
       rescue Resolv::ResolvTimeout
         @logger.debug("DNS: timeout on resolving the hostname.")
         return
+      rescue SocketError
+        @logger.debug("DNS: Encountered SocketError: name or service not known.")
+        return
       end
       if @action == "replace"
         event[field] = address
@@ -92,6 +95,9 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
         return
       rescue Resolv::ResolvTimeout
         @logger.debug("DNS: timeout on resolving address.")
+        return
+      rescue SocketError
+        @logger.debug("DNS: Encountered SocketError: name or service not known.")
         return
       end
       if @action == "replace"
