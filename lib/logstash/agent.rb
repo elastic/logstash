@@ -47,6 +47,7 @@ class LogStash::Agent
 
     @plugins = {}
     @plugins_mutex = Mutex.new
+    @plugin_setup_mutex = Mutex.new
     @outputs = []
     @inputs = []
     @filters = []
@@ -396,7 +397,7 @@ class LogStash::Agent
       if @filters.length > 0
         @filters.each do |filter|
           filter.logger = @logger
-          filter.register
+          @plugin_setup_mutex.synchronize { filter.register }
         end
         @filterworkers = {}
         2.times do |n|
@@ -561,7 +562,7 @@ class LogStash::Agent
             @logger.info("Starting new filters", :plugins => new_filters)
             new_filters.each do |f|
               f.logger = @logger
-              f.register
+              @plugin_setup_mutex.synchronize { f.register }
             end
           end
           @filters = reloaded_filters
@@ -638,7 +639,7 @@ class LogStash::Agent
   def run_input(input, queue)
     LogStash::Util::set_thread_name("input|#{input.to_s}")
     input.logger = @logger
-    input.register
+    @plugin_setup_mutex.synchronize { input.register }
     @logger.info("Input registered", :plugin => input)
     @ready_queue << input
     done = false
@@ -679,7 +680,7 @@ class LogStash::Agent
   def run_output(output, queue)
     LogStash::Util::set_thread_name("output|#{output.to_s}")
     output.logger = @logger
-    output.register
+    @plugin_setup_mutex.synchronize { output.register }
     @logger.info("Output registered", :plugin => output)
     @ready_queue << output
 
