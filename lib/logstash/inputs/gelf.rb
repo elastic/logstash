@@ -28,8 +28,7 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   # Default is true
   #
   # Remapping converts the following:
-  # full_message => event.message
-  # timestamp => event.timestamp
+  # full_message to event.message
   # host + file => event.source
   config :remap, :validate => :boolean, :default => true
 
@@ -100,8 +99,6 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   private
   def remap_gelf(event)
     event.message = event.fields["full_message"]
-    event.timestamp = LogStash::Time.to_iso8601(
-      DateTime.strptime(event.fields["timestamp"].to_s, "%Q" ))
     event.source = "gelf://#{event.fields["host"]}#{event.fields["file"]}"
   end # def remap_gelf
 end # class LogStash::Inputs::Gelf
