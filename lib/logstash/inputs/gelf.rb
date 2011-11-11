@@ -85,7 +85,7 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
       # when all chunks are completed
       e = to_event(data, source) unless data.nil?
       if e
-        remap_gelf(e) if @remap 
+        remap_gelf(e) if @remap
         output_queue << e
       end
     end
