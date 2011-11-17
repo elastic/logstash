@@ -16,7 +16,7 @@ class LogStash::Test
     log_to(STDERR)
 
     # This is lib/logstash/test.rb, so go up 2 directories for the plugin path
-    @plugin_paths = [ File.join(File.dirname(__FILE__), "..", "..") ]
+    @plugin_paths = [ File.dirname(File.dirname(File.dirname(__FILE__))) ]
     @verbose = 0
   end # def initialize
 
@@ -135,6 +135,7 @@ class LogStash::Test
         #@success = false
       #end
 
+      @logger.info("File name", :file => __FILE__)
       @plugin_paths.each do |path|
         load_tests(path)
       end
@@ -153,7 +154,12 @@ class LogStash::Test
   # Find tests in a given path. Tests must be in the plugin path +
   # "/test/.../test_*.rb"
   def each_test(basepath, &block)
-    glob_path = File.join(basepath, "test", "**", "test_*.rb")
+    if basepath =~ /^file:/
+      # No test/logstash/... heirarchy in the jar, not right now anyway.
+      glob_path = File.join(basepath, "logstash", "**", "test_*.rb")
+    else
+      glob_path = File.join(basepath, "test", "**", "test_*.rb")
+    end
     @logger.info("Searching for tests", :path => glob_path)
     Dir.glob(glob_path).each do |path|
       block.call(path)
