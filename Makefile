@@ -199,3 +199,10 @@ build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb
 
 publish: | gem
 	$(QUIET)$(WITH_JRUBY) gem push logstash-$(VERSION).gem
+
+rpm: build/logstash-$(VERSION)-monolithic.jar
+	rm -rf build/root
+	mkdir -p build/root/opt/logstash
+	cp -rp patterns build/root/opt/logstash/patterns
+	cp build/logstash-$(VERSION)-monolithic.jar build/root/opt/logstash
+	(cd build; fpm -t rpm -d jre -a noarch -n logstash -v $(VERSION) -s dir -C root opt)
