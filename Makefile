@@ -114,7 +114,7 @@ $(GEM_HOME)/bin/bundle: | $(JRUBY_CMD)
 .PHONY: vendor/bundle
 vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
 	@echo "=> Installing gems to $@..."
-	$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
+	$(QUIET)GEM_HOME=$(GEM_HOME) bash $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
 
 gem: logstash-$(VERSION).gem
 
