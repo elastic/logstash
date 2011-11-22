@@ -38,6 +38,12 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # is useful if you need to use a value from the event as the facility name.
   config :facility, :validate => :string, :default => "logstash-gelf"
 
+  # The GELF custom field mappings. GELF supports arbitrary attributes as custom
+  # fields. This exposes that. Exclude the `_` portion of the field name
+  # e.g. `custom_fields => ['foo_field', 'some_value']
+  # sets `_foo_field` = `some_value`
+  config :custom_fields, :validate => :hash, :default => {}
+
   public
   def register
     require "gelf" # rubygem 'gelf'
@@ -94,6 +100,12 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
           # https://logstash.jira.com/browse/LOGSTASH-113
           m["_#{name}"] = value
         end
+      end
+    end
+
+    if @custom_fields
+      @custom_fields.each do |field_name, field_value|
+        m["_#{field_name}"] = field_value unless field_name == 'id'
       end
     end
 
