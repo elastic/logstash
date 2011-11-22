@@ -1,9 +1,20 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 require "uri"
-
 # TODO(sissel): Move to something that performs better than net/http
 require "net/http"
+require "net/https"
+
+# Ugly monkey patch to get around <http://jira.codehaus.org/browse/JRUBY-5529>
+Net::BufferedIO.class_eval do
+    BUFSIZE = 1024 * 16
+
+    def rbuf_fill
+      timeout(@read_timeout) {
+        @rbuf << @io.sysread(BUFSIZE)
+      }
+    end
+end
 
 # Got a loggly account? Use logstash to ship logs to Loggly!
 #
@@ -30,6 +41,10 @@ class LogStash::Outputs::Loggly < LogStash::Outputs::Base
   # to offer shipping a customer's logs to that customer's loggly account.
   config :key, :validate => :string, :required => true
 
+  # Should the log action be sent over https instead of plain http
+  # Defaults to https
+  config :proto, :validate => :string, :default => "http"
+
   public
   def register
     # nothing to do
@@ -45,15 +60,20 @@ class LogStash::Outputs::Loggly < LogStash::Outputs::Base
     end
 
     # Send the event over http.
-    url = URI.parse("http://#{@host}/inputs/#{event.sprintf(@key)}")
+    url = URI.parse("#{@proto}://#{@host}/inputs/#{event.sprintf(@key)}")
     @logger.info("Loggly URL", :url => url)
+    http = Net::HTTP.new(url.host, url.port)
+    if url.scheme == 'https'
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    end
     request = Net::HTTP::Post.new(url.path)
     request.body = event.to_json
-    response = Net::HTTP.new(url.host, url.port).start {|http| http.request(request) }
-    if response == Net::HTTPSuccess
+    response = http.request(request)
+    if response.is_a?(Net::HTTPSuccess)
       @logger.info("Event send to Loggly OK!")
     else
-      @logger.info("HTTP error", :error => response.error!)
+      @logger.warn("HTTP error", :error => response.error!)
     end
   end # def receive
 end # class LogStash::Outputs::Loggly
