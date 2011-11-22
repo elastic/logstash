@@ -131,9 +131,9 @@ class LogStash::Filters::Date < LogStash::Filters::Base
       next unless event.fields.member?(field)
 
       fieldvalues = event.fields[field]
-      fieldvalues = [fieldvalues] if fieldvalues.is_a?(String)
+      fieldvalues = [fieldvalues] if !fieldvalues.is_a?(Array)
       fieldvalues.each do |value|
-        next if value.nil? or value.empty?
+        next if value.nil?
         begin
           time = nil
           missing = []
