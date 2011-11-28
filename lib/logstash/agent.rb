@@ -219,7 +219,7 @@ class LogStash::Agent
     end
 
     if @logfile
-      logfile = File.open(@logfile, "w")
+      logfile = File.open(@logfile, "w+")
       STDOUT.reopen(logfile)
       STDERR.reopen(logfile)
     elsif @daemonize
