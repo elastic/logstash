@@ -29,21 +29,14 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   # The name of the exchange
   config :name, :validate => :string, :required => true
 
-  # Key to route to by default. Defaults to queue name
-  config :key, :validate => :string
-
-  # The name of the queue to bind to the default key. Defaults to exchange name
-  config :queue_name, :validate => :string
+  # Key to route to by default. Defaults to 'logstash'
+  config :key, :validate => :string, :default => "logstash"
 
   # The vhost to use
   config :vhost, :validate => :string, :default => "/"
 
   # Is this exchange durable? (aka; Should it survive a broker restart?)
   config :durable, :validate => :boolean, :default => true
-
-  # Is this queue durable? (aka; Should it survive a broker restart?).
-  # If you omit this setting, the 'durable' property will be used as default.
-  config :queue_durable, :validate => :boolean
 
   # Should messages persist to disk on the AMQP broker until they are read by a
   # consumer?
@@ -64,10 +57,6 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     if !MQTYPES.include?(@exchange_type)
       raise "Invalid exchange_type, #{@exchange_type.inspect}, must be one of #{MQTYPES.join(", ")}"
     end
-
-    @queue_name ||= @name
-    @queue_durable ||= @durable
-    @key ||= @queue_name
 
     @logger.info("Registering output", :plugin => self)
     connect
@@ -102,16 +91,11 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       end
     end
 
-    @logger.debug("Declaring queue", :queue_name => @queue_name,
-                  :durable => @queue_durable)
-    queue = @bunny.queue(@queue_name, :durable => @queue_durable)
-
     @logger.debug("Declaring exchange", :name => @name, :type => @exchange_type,
                   :durable => @durable)
     @exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
 
     @logger.debug("Binding exchange", :name => @name, :key => @key)
-    queue.bind(@exchange, :key => @key)
   end # def connect
 
   public
@@ -135,7 +119,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     begin
       if @exchange
         @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
-        @exchange.publish(message, :persistent => @persistent, :key => key, :mandatory => true)
+        @exchange.publish(message, :persistent => @persistent, :key => key)
       else
         @logger.warn("Tried to send message, but not connected to amqp yet.")
       end
