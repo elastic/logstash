@@ -6,8 +6,10 @@ require "logstash/namespace"
 # AMQP is a messaging system. It requires you to run an AMQP server or 'broker'
 # Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and
 # [QPid](http://qpid.apache.org/)
+#
+# The default settings will create an entirely transient queue and listen for all messages by default.
+# If you need durability or any other advanced settings, please set the appropriate options
 class LogStash::Inputs::Amqp < LogStash::Inputs::Base
-  MQTYPES = [ "fanout", "direct", "topic" ]
 
   config_name "amqp"
 
@@ -23,27 +25,35 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   # Your amqp password
   config :password, :validate => :password, :default => "guest"
 
-  # The exchange type (fanout, topic, direct)
-  config :exchange_type, :validate => [ "fanout", "direct", "topic"], :required => true
+  # The name of the queue. 
+  config :name, :validate => :string, :default => ''
 
-  # The name of the exchange
-  config :name, :validate => :string, :required => true
+  # The name of the exchange to bind the queue.
+  config :exchange, :validate => :string, :required => true
 
-  # The name of the queue. If not set, defaults to the same name as the exchange.
-  config :queue_name, :validate => :string
-
-  # The routing key to bind to
-  config :key, :validate => :string
+  # The routing key to use
+  config :key, :validate => :string, :default => '#'
 
   # The vhost to use
   config :vhost, :validate => :string, :default => "/"
 
-  # Is this exchange durable? (aka; Should it survive a broker restart?)
-  config :durable, :validate => :boolean, :default => true
+  # Passive queue creation? Useful for checking queue existance without modifying server state
+  config :passive, :validate => :boolean, :default => false
 
-  # Is this queue durable? (aka; Should it survive a broker restart?).
-  # If you omit this setting, the 'durable' property will be used as default.
-  config :queue_durable, :validate => :boolean
+  # Is this queue durable? (aka; Should it survive a broker restart?)
+  config :durable, :validate => :boolean, :default => false
+
+  # Should the queue be auto-deleted?
+  config :auto_delete, :validate => :boolean, :default => true
+
+  # Is the queue exclusive? (aka: Will other clients connect to this named queue?)
+  config :exclusive, :validate => :boolean, :default => true
+
+  # Prefetch count. Number of messages to prefetch
+  config :prefetch_count, :validate => :number, :default => 1
+
+  # Enable message acknowledgement
+  config :ack, :validate => :boolean, :default => true
 
   # Enable or disable debugging
   config :debug, :validate => :boolean, :default => false
@@ -60,9 +70,6 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
     @format ||= "json_event"
 
-    if !MQTYPES.include?(@exchange_type)
-      raise "Invalid type '#{@exchange_type}' must be one of #{MQTYPES.join(", ")}"
-    end
   end # def initialize
 
   public
@@ -71,6 +78,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     require "bunny" # rubygem 'bunny'
     @vhost ||= "/"
     @port ||= 5672
+    @key ||= "#"
     @amqpsettings = {
       :vhost => @vhost,
       :host => @host,
@@ -82,32 +90,27 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     @amqpsettings[:ssl] = @ssl if @ssl
     @amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
     @amqpurl = "amqp://"
-    if @user or @password
-      @amqpurl += "#{@user}:xxxxxx@"
-    end
+    amqp_credentials = ''
+    amqp_credentials << @user if @user
+    amqp_credentials << ":#{@password}" if @password
+    @amqpurl += amqp_credentials unless amqp_credentials.nil?
     @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@name}"
 
-    if @queue_name.nil?
-      @queue_name = @name
-    end
 
-    if @queue_durable.nil?
-      @queue_durable = @durable
-    end
   end # def register
 
   def run(queue)
     begin
-      @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up #{@mqtype.inspect} queue #{@name.inspect}")
+      @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up queue #{@name.inspect}")
       @bunny = Bunny.new(@amqpsettings)
       return if terminating?
       @bunny.start
+      @bunny.qos({:prefetch_count => @prefetch_count})
 
-      @queue = @bunny.queue(@queue_name, :durable => @queue_durable)
-      exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
-      @queue.bind(exchange, :key => @key)
+      @queue = @bunny.queue(@name, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive})
+      @queue.bind(@exchange, :key => @key)
 
-      @queue.subscribe do |data|
+      @queue.subscribe({:ack => @ack}) do |data|
         e = to_event(data[:payload], @amqpurl)
         if e
           queue << e
@@ -123,6 +126,8 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   end # def run
 
   def teardown
+    @queue.unsubscribe unless @durable == true
+    @queue.delete unless @durable == true
     @bunny.close if @bunny
     finished
   end # def teardown
