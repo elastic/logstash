@@ -7,6 +7,11 @@ class LogStash::Outputs::Null < LogStash::Outputs::Base
   config_name "null"
 
   public
+  def register
+    # Nothing to do
+  end # def register
+
+  public
   def receive(event)
     # Do nothing
   end # def event
