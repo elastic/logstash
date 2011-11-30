@@ -93,7 +93,6 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       "user" => [@user],
       "password" => [@password],
       "exchange_type" => ["direct"],
-      "queue_name" => [@queue],
       "name" => [@exchange],
       "key" => [@key],
       "vhost" => [@vhost],

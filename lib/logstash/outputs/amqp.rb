@@ -132,7 +132,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   public
   def to_s
-    return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@name}\##{@queue_name}"
+    return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@name}"
   end
 
   public
