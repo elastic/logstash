@@ -19,6 +19,9 @@ require "optparse"
 require "rack" # gem rack
 require "sinatra/base" # gem sinatra
 
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
+
 class LogStash::Web::Server < Sinatra::Base
 
   mime_type :html, "text/html"
@@ -35,7 +38,7 @@ class LogStash::Web::Server < Sinatra::Base
 
   helpers Sinatra::RequireParam # logstash/web/helpers/require_param
 
-  set :haml, :format => :html5
+  set :haml, :format => :html5, :encoding => 'utf-8'
   set :logging, true
   set :views, "#{File.dirname(__FILE__)}/views"
 
