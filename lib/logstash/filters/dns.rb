@@ -64,13 +64,13 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
       begin
         address = Resolv.getaddress(event[field])
       rescue Resolv::ResolvError
-        @logger.debug("DNS: couldn't resolve the hostname. Field: #{event[field]}")
+        @logger.debug("DNS: couldn't resolve the hostname. Field: #{field}, hostname: #{event[field]}")
         return
       rescue Resolv::ResolvTimeout
-        @logger.debug("DNS: timeout on resolving the hostname. Field: #{event[field]}")
+        @logger.debug("DNS: timeout on resolving the hostname. Field: #{field}, hostname: #{event[field]}")
         return
       rescue SocketError => e
-        @logger.debug("DNS: Encountered SocketError. Field: #{event[field]}, error: #{e}")
+        @logger.debug("DNS: Encountered SocketError. Field: #{field}, hostname: #{event[field]} error: #{e}")
         return
       end
       if @action == "replace"
@@ -91,13 +91,13 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
       begin
         hostname = Resolv.getname(event[field])
       rescue Resolv::ResolvError
-        @logger.debug("DNS: couldn't resolve the address.")
+        @logger.debug("DNS: couldn't resolve the address. Field: #{field}, IP: #{event[field]}")
         return
       rescue Resolv::ResolvTimeout
-        @logger.debug("DNS: timeout on resolving address.")
+        @logger.debug("DNS: timeout on resolving address. Field: #{field}, IP: #{event[field]}")
         return
-      rescue SocketError
-        @logger.debug("DNS: Encountered SocketError: name or service not known.")
+      rescue SocketError => e
+        @logger.debug("DNS: Encountered SocketError. Field: #{field}, IP: #{event[field]}, error: #{e}")
         return
       end
       if @action == "replace"
