@@ -64,13 +64,13 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
       begin
         address = Resolv.getaddress(event[field])
       rescue Resolv::ResolvError
-        @logger.debug("DNS: couldn't resolve the hostname.")
+        @logger.debug("DNS: couldn't resolve the hostname. Field: #{event[field]}")
         return
       rescue Resolv::ResolvTimeout
-        @logger.debug("DNS: timeout on resolving the hostname.")
+        @logger.debug("DNS: timeout on resolving the hostname. Field: #{event[field]}")
         return
-      rescue SocketError
-        @logger.debug("DNS: Encountered SocketError: name or service not known.")
+      rescue SocketError => e
+        @logger.debug("DNS: Encountered SocketError. Field: #{event[field]}, error: #{e}")
         return
       end
       if @action == "replace"
