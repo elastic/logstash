@@ -6,7 +6,7 @@ require "logstash/outputs/base"
 # need to use this output.
 #
 #   *NOTE*: You must use the same version of elasticsearch server that logstash
-#   uses for it's client. Currently we use elasticsearch 0.18.3
+#   uses for its client. Currently we use elasticsearch 0.18.3
 #
 # You can learn more about elasticsearch at <http://elasticsearch.org>
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
@@ -17,7 +17,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   config :host, :validate => :string
 
   # The index to write events to. This can be dynamic using the %{foo} syntax.
-  # The default value will partition your indeces by day so you can more easily
+  # The default value will partition your indices by day so you can more easily
   # delete old data or only search specific date ranges.
   config :index, :validate => :string, :default => "logstash-%{+YYYY.MM.dd}"
 
@@ -162,7 +162,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     req.execute
   end # def receive
 
-  # Ruby doesn't appear to have a semaphor implementation, so this is a
+  # Ruby doesn't appear to have a semaphore implementation, so this is a
   # hack until I write one.
   private
   def increment_inflight_request_count
