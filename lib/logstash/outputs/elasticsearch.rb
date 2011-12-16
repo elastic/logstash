@@ -6,7 +6,7 @@ require "logstash/outputs/base"
 # need to use this output.
 #
 #   *NOTE*: You must use the same version of elasticsearch server that logstash
-#   uses for it's client. Currently we use elasticsearch 0.17.7
+#   uses for it's client. Currently we use elasticsearch 0.18.3
 #
 # You can learn more about elasticsearch at <http://elasticsearch.org>
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
