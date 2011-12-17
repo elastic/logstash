@@ -11,7 +11,8 @@ WORD \b\w+\b
 NOTSPACE \S+
 DATA .*?
 GREEDYDATA .*
-QUOTEDSTRING (?:(?<!\\\\)(?:"(?:\\\\.|[^\\\\"])*"|(?:'(?:\\\\.|[^\\\\'])*')|(?:`(?:\\\\.|[^\\\\`])*`)))
+#QUOTEDSTRING (?:(?<!\\)(?:"(?:\\.|[^\\"])*"|(?:'(?:\\.|[^\\'])*')|(?:`(?:\\.|[^\\`])*`)))
+QUOTEDSTRING (?:(?<!\\)(?:"(?:\\.|[^\\"]+)*"|(?:'(?:\\.|[^\\']+)*')|(?:`(?:\\.|[^\\`]+)*`)))
 
 # Networking
 MAC (?:%{CISCOMAC}|%{WINDOWSMAC}|%{COMMONMAC})
@@ -31,7 +32,7 @@ UNIXPATH (?:/(?:[\w_%!$@:.,-]+|\\.)*)+
 LINUXTTY (?:/dev/pts/%{POSINT})
 BSDTTY (?:/dev/tty[pq][a-z0-9])
 TTY (?:%{BSDTTY}|%{LINUXTTY})
-WINPATH (?:[A-Za-z]+:|\\\\)(?:\\\\[^\\\\?*]*)+
+WINPATH (?:[A-Za-z]+:|\\)(?:\\[^\\?*]*)+
 URIPROTO [A-Za-z]+(\+[A-Za-z+]+)?
 URIHOST %{IPORHOST}(?::%{POSINT:port})?
 # uripath comes loosely from RFC1738, but mostly from what Firefox
