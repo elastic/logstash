@@ -83,8 +83,8 @@ class LogStash::Inputs::Base < LogStash::Plugin
         fields = JSON.parse(raw)
         fields.each { |k, v| event[k] = v }
       rescue => e
-        # TODO(sissel): Instead of dropping the event, should we treat it as
-        # plain text and try to do the best we can with it?
+        ## TODO(sissel): Instead of dropping the event, should we treat it as
+        ## plain text and try to do the best we can with it?
         @logger.warn("Trouble parsing json input", :input => raw,
                      :source => source, :exception => e,
                      :backtrace => e.backtrace)
@@ -100,8 +100,8 @@ class LogStash::Inputs::Base < LogStash::Plugin
       begin
         event = LogStash::Event.from_json(raw)
       rescue => e
-        # TODO(sissel): Instead of dropping the event, should we treat it as
-        # plain text and try to do the best we can with it?
+        ## TODO(sissel): Instead of dropping the event, should we treat it as
+        ## plain text and try to do the best we can with it?
         @logger.warn("Trouble parsing json input", :input => raw,
                      :source => source, :exception => e,
                      :backtrace => e.backtrace)
