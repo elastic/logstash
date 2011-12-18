@@ -36,9 +36,9 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   # TODO: change required to true
   config :key, :validate => :string, :required => false
 
-  # Either list or channel.  If redis_type is list, then we will BLPOP the
-  # key.  If redis_type is channel, then we will SUBSCRIBE to the key.
-  # If redis_type is pattern_channel, then we will PSUBSCRIBE to the key.
+  # Either list or channel.  If redis\_type is list, then we will BLPOP the
+  # key.  If redis\_type is channel, then we will SUBSCRIBE to the key.
+  # If redis\_type is pattern_channel, then we will PSUBSCRIBE to the key.
   # TODO: change required to true
   config :data_type, :validate => [ "list", "channel", "pattern_channel" ], :required => false
 
