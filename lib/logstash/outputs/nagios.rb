@@ -5,8 +5,9 @@ require "logstash/outputs/base"
 # nagios command file. 
 #
 # For this output to work, your event must have the following fields:
-#   "nagios_host"
-#   "nagios_service"
+#
+#  * "nagios_host"
+#  * "nagios_service"
 #
 # This field is supported, but optional:
 #   "nagios_annotation"
