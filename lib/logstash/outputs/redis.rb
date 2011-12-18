@@ -1,7 +1,7 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-# send events to a redis databse using RPUSH
+# send events to a redis database using RPUSH
 #
 # For more information about redis, see <http://redis.io/>
 class LogStash::Outputs::Redis < LogStash::Outputs::Base
