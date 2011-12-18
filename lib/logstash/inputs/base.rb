@@ -12,6 +12,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # Label this input with a type.
   # Types are used mainly for filter activation.
   #
+  #
   # If you create an input with type "foobar", then only filters
   # which also have type "foobar" will act on them.
   #
