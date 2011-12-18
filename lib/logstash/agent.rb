@@ -15,6 +15,8 @@ require "optparse"
 require "thread"
 require "uri"
 
+include_class Java::java.lang.Error
+
 # TODO(sissel): only enable this if we are in debug mode.
 # JRuby.objectspace=true
 
@@ -648,7 +650,11 @@ class LogStash::Agent
       begin
         input.run(queue)
         done = true
-      rescue => e
+      rescue Error => e
+        @logger.error("Input thread unrecoverable exception", :plugin => input,
+                     :exception => e, :backtrace => e.backtrace)
+        raise e
+      rescue Exception => e
         @logger.warn("Input thread exception", :plugin => input,
                      :exception => e, :backtrace => e.backtrace)
         @logger.error("Restarting input due to exception", :plugin => input)
@@ -691,6 +697,10 @@ class LogStash::Agent
         @logger.debug("Sending event", :target => output)
         output.handle(event)
       end
+    rescue Error => e
+      @logger.error("Output thread unrecoverable exception", :plugin => output,
+                    :exception => e, :backtrace => e.backtrace)
+      raise e
     rescue Exception => e
       @logger.warn("Output thread exception", :plugin => output,
                    :exception => e, :backtrace => e.backtrace)
