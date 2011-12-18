@@ -21,15 +21,15 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   # ports) may require root to use.
   config :port, :validate => :number, :default => 12201
 
-  # Whether or not to remap the gelf message fields
-  # to logstash event fields or leave them
-  # intact.
+  # Whether or not to remap the gelf message fields to logstash event fields or
+  # leave them intact.
   #
   # Default is true
   #
-  # Remapping converts the following:
-  # full_message to event.message
-  # host + file => event.source
+  # Remapping converts the following gelf fields to logstash equivalents:
+  # 
+  # * full_message in to event.message
+  # * host + file to event.source
   config :remap, :validate => :boolean, :default => true
 
   public
@@ -45,28 +45,27 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   public
   def register
     require 'gelfd'
+    @udp = nil
   end # def register
 
   public
   def run(output_queue)
-    # udp server
-    Thread.new do
-      LogStash::Util::set_thread_name("input|gelf")
-      begin
-        udp_listener(output_queue)
-      rescue => e
-        @logger.warn("gelf listener died", :exception => e, :backtrace => e.backtrace)
-        sleep(5)
-        retry
-      end # begin
-    end # Thread.new
+    LogStash::Util::set_thread_name("input|gelf")
+    begin
+      # udp server
+      udp_listener(output_queue)
+    rescue => e
+      @logger.warn("gelf listener died", :exception => e, :backtrace => e.backtrace)
+      sleep(5)
+      retry
+    end # begin
   end # def run
 
   private
   def udp_listener(output_queue)
     @logger.info("Starting gelf listener", :address => "#{@host}:#{@port}")
 
-    if @udp
+    if @udp 
       @udp.close_read
       @udp.close_write
     end
@@ -79,10 +78,10 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
       # Ruby uri sucks, so don't use it.
       source = "gelf://#{client[3]}/"
       data = Gelfd::Parser.parse(line)
-      # The nil guard is needed
-      # to deal with chunked messages.
-      # Gelfd::Parser.parse will only return the message
-      # when all chunks are completed
+
+      # The nil guard is needed to deal with chunked messages.
+      # Gelfd::Parser.parse will only return the message when all chunks are
+      # completed
       e = to_event(data, source) unless data.nil?
       if e
         remap_gelf(e) if @remap
@@ -99,6 +98,6 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   private
   def remap_gelf(event)
     event.message = event.fields["full_message"]
-    event.source = "gelf://#{event.fields["host"]}#{event.fields["file"]}"
+    event.source = "gelf://#{event.fields["host"]}/#{event.fields["file"]}"
   end # def remap_gelf
 end # class LogStash::Inputs::Gelf
