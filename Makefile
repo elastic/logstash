@@ -4,7 +4,7 @@
 #   wget
 #
 JRUBY_VERSION=1.6.5
-ELASTICSEARCH_VERSION=0.18.5
+ELASTICSEARCH_VERSION=0.18.6
 VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 
 JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
