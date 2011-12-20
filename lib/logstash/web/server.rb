@@ -73,11 +73,13 @@ class LogStash::Web::Server < Sinatra::Base
         }
         query = backend_url.query
         if !(query.nil? or query.empty?)
+          # 'local' is deprecated (LOGSTASH-307)
           if !%w(local node).include?(query)
             raise "Invalid elasticsearch node type '#{query}' - expected " \
               "'local' or 'node'"
           end
-          options[:type] = query.to_sym
+          # 'local' is deprecated (LOGSTASH-307)
+          options[:type] = "node"
         end
 
         #p :web_es_config => options
