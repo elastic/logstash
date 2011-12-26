@@ -172,8 +172,10 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
         match.each_capture do |key, value|
           type_coerce = nil
+          is_named = false
           if key.include?(":")
             name, key, type_coerce = key.split(":")
+            is_named = true
           end
 
           # http://code.google.com/p/logstash/issues/detail?id=45
@@ -198,7 +200,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
             next
           end
 
-          if @named_captures_only && key =~ /^[A-Z]+/
+          if @named_captures_only && !is_named
             @logger.debug("Skipping capture since it is not a named " \
                           "capture and named_captures_only is true.", :field => key)
             next

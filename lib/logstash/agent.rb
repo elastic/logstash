@@ -1,6 +1,3 @@
-#TODO(sissel): Maybe this will help jruby jar issues?
-#$: << File.join(File.dirname(__FILE__), "../"
-
 require "logstash/config/file"
 require "logstash/filters"
 require "logstash/filterworker"
@@ -30,7 +27,6 @@ class LogStash::Agent
 
   # flags
   attr_reader :config_path
-  attr_reader :daemonize
   attr_reader :logfile
   attr_reader :verbose
 
@@ -43,7 +39,6 @@ class LogStash::Agent
 
     # flag/config defaults
     @verbose = 0
-    @daemonize = false
 
     @plugins = {}
     @plugins_mutex = Mutex.new
@@ -86,10 +81,6 @@ class LogStash::Agent
             "specified, 'stdout { debug => true }}' is default.") do |arg|
       @config_string = arg
     end # -e
-
-    opts.on("-d", "--daemonize", "Daemonize (default is run in foreground)") do
-      @daemonize = true
-    end
 
     opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
       @logfile = path
@@ -213,19 +204,10 @@ class LogStash::Agent
       raise "Configuration problem"
     end
 
-    if @daemonize
-      @logger.fatal("Can't daemonize, no support yet in JRuby.")
-      raise "Can't daemonize, no fork in JRuby."
-    end
-
     if @logfile
       logfile = File.open(@logfile, "a")
       STDOUT.reopen(logfile)
       STDERR.reopen(logfile)
-    elsif @daemonize
-      devnull = File.open("/dev/null", "w")
-      STDOUT.reopen(devnull)
-      STDERR.reopen(devnull)
     end
 
     if @verbose >= 3  # Uber debugging.
