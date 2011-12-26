@@ -2,7 +2,7 @@ require "logstash/namespace"
 require "mizuno" # gem mizuno
 
 class LogStash::Web::Runner
-  Settings = Struct.new(:daemonize, :logfile, :address, :port,
+  Settings = Struct.new(:logfile, :address, :port,
                         :backend_url, :bind_host)
 
   public
@@ -27,10 +27,6 @@ class LogStash::Web::Runner
 
     opts = OptionParser.new do |opts|
       opts.banner = "Usage: #{progname} [options]"
-
-      opts.on("-d", "--daemonize", "Daemonize (default is run in foreground).") do
-        settings.daemonize = true
-      end
 
       opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
         settings.logfile = path
@@ -57,16 +53,6 @@ class LogStash::Web::Runner
     end
 
     args = opts.parse(args)
-
-    if settings.daemonize
-      $stderr.puts "Daemonizing is not supported. (JRuby has no 'fork')"
-      exit(1)
-      #if Process.fork == nil
-        #Process.setsid
-      #else
-        #exit(0)
-      #end
-    end
 
     if settings.logfile
       logfile = File.open(settings.logfile, "w")

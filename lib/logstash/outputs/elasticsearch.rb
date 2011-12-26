@@ -92,12 +92,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       :bind_host => @bind_host,
     }
 
-    if (@embedded)
-      options[:type] = :local
-    else
-      options[:type] = :node
-      # TODO(sissel): Support 'transport client'
-    end
+    # TODO(sissel): Support 'transport client'
+    options[:type] = :node
 
     @client = ElasticSearch::Client.new(options)
     @inflight_requests = 0
@@ -111,7 +107,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   def start_local_elasticsearch
     @logger.info("Starting embedded ElasticSearch local node.")
     builder = org.elasticsearch.node.NodeBuilder.nodeBuilder
-    builder.local(true)
+    # Disable 'local only' - LOGSTASH-277
+    #builder.local(true)
+    # TODO(sissel): Set cluster name, etc?
     builder.settings.put("http.port", @embedded_http_port)
 
     @embedded_elasticsearch = builder.node

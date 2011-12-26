@@ -4,11 +4,11 @@ def jruby?
   return RUBY_ENGINE == "jruby"
 end
 
-gem "cabin", "0.1.3" # for logging. apache 2 license
+gem "cabin", "0.1.7" # for logging. apache 2 license
 gem "bunny" # for amqp support, MIT-style license
 gem "uuidtools" # for naming amqp queues, License ???
 gem "filewatch", "0.3.0"  # for file tailing, BSD License
-gem "jls-grok", "0.9.2" # for grok filter, BSD License
+gem "jls-grok", "0.9.4" # for grok filter, BSD License
 jruby? and gem "jruby-elasticsearch", "0.0.11" # BSD License
 gem "stomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license

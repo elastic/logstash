@@ -4,7 +4,7 @@
 #   wget
 #
 JRUBY_VERSION=1.6.5
-ELASTICSEARCH_VERSION=0.18.5
+ELASTICSEARCH_VERSION=0.18.6
 VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 
 JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
@@ -199,3 +199,10 @@ build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb
 
 publish: | gem
 	$(QUIET)$(WITH_JRUBY) gem push logstash-$(VERSION).gem
+
+rpm: build/logstash-$(VERSION)-monolithic.jar
+	rm -rf build/root
+	mkdir -p build/root/opt/logstash
+	cp -rp patterns build/root/opt/logstash/patterns
+	cp build/logstash-$(VERSION)-monolithic.jar build/root/opt/logstash
+	(cd build; fpm -t rpm -d jre -a noarch -n logstash -v $(VERSION) -s dir -C root opt)
