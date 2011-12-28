@@ -24,9 +24,9 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
   # delete old data or only search specific date ranges.
   config :index, :validate => :string, :default => "logstash-%{+YYYY.MM.dd}"
 
-  # The type to write events to. Generally you should try to write only similar
-  # events to the same 'type'. String expansion '%{foo}' works here.
-  config :type, :validate => :string, :default => "%{@type}"
+  # The index type to write events to. Generally you should try to write only
+  # similar events to the same 'type'. String expansion '%{foo}' works here.
+  config :index_type, :validate => :string, :default => "%{@type}"
 
   # The name/address of an ElasticSearch host to use for river creation
   config :es_host, :validate => :string, :required => true
@@ -141,15 +141,26 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
     rescue Exception => e
       @logger.warn "Couldn't set up river: #{e.inspect}. You'll have to set it up manually (or restart)"
     end
-  end
+  end # def prepare_river
 
   public
   def receive(event)
     return unless output?(event)
 
-    index_message = {"index" => {"_index" => event.sprintf(@index), "_type" => event.sprintf(@type)}}.to_json + "\n"
-    index_message += event.to_hash.to_json + "\n"
+    # TODO(sissel): Refactor this to not use so much string concatonation.
+
+    # River events have a format of
+    # "action\ndata\n"
+    # where 'action' is index or delete, data is the data to index.
+    index_message = {
+      "index" => { 
+        "_index" => event.sprintf(@index),
+        "_type" => event.sprintf(@index_type)
+      }
+   }.to_json + "\n"
+
+    index_message += event.to_json + "\n"
     @mq.receive_raw(index_message)
-  end
-end
+  end # def receive
+end # LogStash::Outputs::ElasticSearchRiver
 
