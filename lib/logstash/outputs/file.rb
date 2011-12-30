@@ -65,6 +65,6 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       FileUtils.mkdir_p(dir) 
     end
 
-    @files[path] = File.new(path, "w")
+    @files[path] = File.new(path, "a")
   end
 end # class LogStash::Outputs::Gelf
