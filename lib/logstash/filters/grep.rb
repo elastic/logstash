@@ -39,7 +39,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       # TODO(sissel): 
     @match.merge(@config).each do |field, pattern|
       # Skip known config names
-      next if ["add_tag", "add_field", "type", "tags", "negate", "match", "drop"].include?(field)
+      next if (RESERVED + ["negate", "match", "drop"]).include?(field)
 
       re = Regexp.new(pattern)
       @patterns[field] << re
