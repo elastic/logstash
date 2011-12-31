@@ -11,7 +11,13 @@ class LogStash::Filters::Base < LogStash::Plugin
   # The type to act on. If a type is given, then this filter will only
   # act on messages with the same type. See any input plugin's "type"
   # attribute for more.
-  config :type, :validate => :string
+  # Optional.
+  config :type, :validate => :string, :default => ""
+
+  # Only handle events with all of these tags.  Note that if you specify
+  # a type, the event must also match that type.
+  # Optional.
+  config :tags, :validate => :array, :default => []
 
   # If this filter is successful, add arbitrary tags to the event.
   # Tags can be dynamic and include parts of the event using the %{field}
@@ -74,4 +80,23 @@ class LogStash::Filters::Base < LogStash::Plugin
       #event.tags |= [ event.sprintf(tag) ]
     end
   end # def filter_matched
+
+  protected
+  def filter?(event)
+    if !@type.empty?
+      if event.type != @type
+        @logger.debug(["Dropping event because type doesn't match #{@type}", event])
+        return false
+      end
+    end
+
+    if !@tags.empty?
+      if (event.tags & @tags).size != @tags.size
+        @logger.debug(["Dropping event because tags don't match #{@tags.inspect}", event])
+        return false
+      end
+    end
+
+    return true
+  end
 end # class LogStash::Filters::Base
