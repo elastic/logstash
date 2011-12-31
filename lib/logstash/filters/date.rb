@@ -82,7 +82,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     require "java"
     # TODO(sissel): Need a way of capturing regexp configs better.
     @config.each do |field, value|
-      next if ["add_tag", "add_field", "type", "tags"].include?(field)
+      next if RESERVED.include?(field)
 
       # values here are an array of format strings for the given field.
       missing = []

@@ -122,9 +122,9 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     # TODO(sissel): Check if 'match' is empty?
     @match.merge(@config).each do |field, patterns|
       # Skip known config names
-      next if ["add_tag", "add_field", "type", "tags", "match", "patterns_dir",
+      next if (RESERVED + ["match", "patterns_dir",
                "drop_if_match", "named_captures_only", "pattern",
-               "break_on_match" ].include?(field)
+               "break_on_match"]).include?(field)
       patterns = [patterns] if patterns.is_a?(String)
 
       if !@patterns.include?(field)
