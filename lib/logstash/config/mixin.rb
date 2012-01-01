@@ -99,6 +99,11 @@ module LogStash::Config::Mixin
       return @config_name
     end
 
+    def plugin_status(status=nil)
+      @plugin_status = status if !status.nil?
+      return @plugin_status
+    end
+
     # Define a new configuration setting
     def config(name, opts={})
       @config ||= Hash.new
