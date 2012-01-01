@@ -86,9 +86,7 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
       # completed
       e = to_event(data, source) unless data.nil?
       if e
-        $stderr.puts "petef: gelf event with data #{data.inspect}"
         remap_gelf(e) if @remap
-        $stderr.puts "petef: after remap_gelf, e.message is #{e.message}"
         output_queue << e
       end
     end
