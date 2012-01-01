@@ -11,6 +11,8 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   config_name "output"
 
+  plugin_status "unstable"
+
   # The type to act on. If a type is given, then this output will only
   # act on messages with the same type. See any input plugin's "type"
   # attribute for more.
