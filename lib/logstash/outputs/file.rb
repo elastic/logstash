@@ -46,9 +46,9 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     # TODO(sissel): Check if we should close files not recently used.
 
     if @message_format
-      fd.puts(event.sprintf(@message_format))
+      fd.write(event.sprintf(@message_format) + "\n")
     else
-      fd.puts(event.to_json)
+      fd.write(event.to_json + "\n")
     end
     fd.flush
   end # def receive
@@ -65,6 +65,12 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       FileUtils.mkdir_p(dir) 
     end
 
-    @files[path] = File.new(path, "a")
+    # work around a bug opening fifos (bug JRUBY-6280)
+    stat = File.stat(path) rescue nil
+    if stat and stat.ftype == "fifo"
+      @files[path] = java.io.FileWriter.new(java.io.File.new(path))
+    else
+      @files[path] = File.new(path, "a")
+    end
   end
 end # class LogStash::Outputs::Gelf

@@ -61,7 +61,6 @@ describe LogStash::Filters::Date do
     config "field1" => "MMM dd HH:mm:ss Z"
 
     now = Time.now
-    now += now.gmt_offset
     year = now.year
     require 'java'
 
@@ -83,8 +82,7 @@ describe LogStash::Filters::Date do
     iterations = 50000
 
     start = Time.now
-    gmt_now = start + start.gmt_offset
-    year = gmt_now.year
+    year = start.year
 
     input = "Nov 24 01:29:01 -0800" 
     output = "#{year}-11-24T09:29:01.000Z"

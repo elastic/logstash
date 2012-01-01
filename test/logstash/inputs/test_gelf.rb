@@ -48,8 +48,6 @@ describe LogStash::Inputs::Gelf do
       end
     end
 
-    p events.first
-
     assert_equal(count, events.size, "Wanted #{count}, but got #{events.size} events")
     assert_equal("Hello world", events.first.message)
     assert_equal("Hello world", events.last.message)
