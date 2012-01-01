@@ -27,8 +27,10 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   # Default is true
   #
   # Remapping converts the following gelf fields to logstash equivalents:
-  # 
-  # * full_message in to event.message
+  #
+  # * event.message becomes full_message
+  #   if no full_message, use event.message becomes short_message
+  #   if no short_message, event.message is the raw json input
   # * host + file to event.source
   config :remap, :validate => :boolean, :default => true
 
@@ -84,7 +86,9 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
       # completed
       e = to_event(data, source) unless data.nil?
       if e
+        $stderr.puts "petef: gelf event with data #{data.inspect}"
         remap_gelf(e) if @remap
+        $stderr.puts "petef: after remap_gelf, e.message is #{e.message}"
         output_queue << e
       end
     end
@@ -97,7 +101,11 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
 
   private
   def remap_gelf(event)
-    event.message = event.fields["full_message"]
+    if event.fields["full_message"]
+      event.message = event.fields["full_message"].dup
+    elsif event.fields["short_message"]
+      event.message = event.fields["short_message"].dup
+    end
     event.source = "gelf://#{event.fields["host"]}/#{event.fields["file"]}"
   end # def remap_gelf
 end # class LogStash::Inputs::Gelf
