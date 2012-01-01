@@ -9,6 +9,8 @@ class LogStash::Inputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
   config_name "input"
 
+  plugin_status "unstable"
+
   # Label this input with a type.
   # Types are used mainly for filter activation.
   #
