@@ -34,6 +34,8 @@ class LogStash::Filters::Grokdiscovery < LogStash::Filters::Base
 
   public
   def filter(event)
+    return unless filter?(event)
+
     # parse it with grok
     message = event.message
     match = false

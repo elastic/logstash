@@ -122,9 +122,9 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     # TODO(sissel): Check if 'match' is empty?
     @match.merge(@config).each do |field, patterns|
       # Skip known config names
-      next if ["add_tag", "add_field", "type", "match", "patterns_dir",
+      next if (RESERVED + ["match", "patterns_dir",
                "drop_if_match", "named_captures_only", "pattern",
-               "break_on_match" ].include?(field)
+               "break_on_match"]).include?(field)
       patterns = [patterns] if patterns.is_a?(String)
 
       if !@patterns.include?(field)
@@ -143,15 +143,10 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   public
   def filter(event)
+    return unless filter?(event)
+
     # parse it with grok
     matched = false
-
-    # Only filter events we are configured for
-    if @type != event.type
-      @logger.debug("Skipping grok for event with wrong type",
-                    :type => event.type, :wanted_type => @type)
-      return
-    end
 
     @logger.debug("Running grok filter", :event => event);
     done = false

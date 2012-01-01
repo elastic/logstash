@@ -50,7 +50,7 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
 
   public
   def filter(event)
-    return unless event.type == @type or @type.nil?
+    return unless filter?(event)
 
     resolve(event) if @resolve
     reverse(event) if @reverse
