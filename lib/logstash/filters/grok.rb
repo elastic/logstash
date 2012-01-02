@@ -61,7 +61,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   config :named_captures_only, :validate => :boolean, :default => false
 
   # If true, keep empty captures as event fields.
-  config :empty_captures, :validate => :boolean, :default => false
+  config :keep_empty_captures, :validate => :boolean, :default => false
 
   # TODO(sissel): Add this feature?
   # When disabled, any pattern that matches the entire string will not be set.
