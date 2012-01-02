@@ -127,7 +127,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       # Skip known config names
       next if (RESERVED + ["match", "patterns_dir",
                "drop_if_match", "named_captures_only", "pattern",
-               "empty_captures", "break_on_match"]).include?(field)
+               "keep_empty_captures", "break_on_match"]).include?(field)
       patterns = [patterns] if patterns.is_a?(String)
 
       if !@patterns.include?(field)
@@ -208,7 +208,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
             event.fields[key] = [event.fields[key]]
           end
 
-          if @empty_captures && event.fields[key].nil?
+          if @keep_empty_captures && event.fields[key].nil?
             event.fields[key] = []
           end
 
