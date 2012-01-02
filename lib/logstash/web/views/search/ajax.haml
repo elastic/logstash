@@ -50,6 +50,6 @@
       - @results.events.reverse.each do |event|
         %tr.event
           %td.timestamp&= event.timestamp
-          %td.message{ :"data-full" => event.to_json }
+          %td.message{ :"data-full" => event.to_json.to_s.force_encoding('UTF-8')  }
             %a{:href => "#"}
-              %pre&= event.message
+              %pre&= event.message.force_encoding('UTF-8') 

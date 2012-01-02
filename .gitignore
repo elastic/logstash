@@ -8,3 +8,5 @@ build
 local
 test/setup/elasticsearch/elasticsearch-*
 vendor
+.sass-cache
+data

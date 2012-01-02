@@ -28,7 +28,8 @@ class LogStash::Filters::Split < LogStash::Filters::Base
 
   public
   def filter(event)
-    return unless event.type == @type or @type.nil?
+    return unless filter?(event)
+
     events = []
 
     original_value = event[@field]
