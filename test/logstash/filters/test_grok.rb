@@ -224,4 +224,27 @@ describe LogStash::Filters::Grok do
     assert_equal(nil, event["new_field"],
                 "Grok should not add fields on failed matches")
   end # should not add fields if match fails
+
+  test "drop empty fields by default" do
+    config "pattern" => "1=%{WORD:foo1} *(2=%{WORD:foo2})?"
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event.message = "1=test"
+    @filter.filter(event)
+    assert_equal(["test"], event["foo1"])
+    assert_equal(nil, event["foo2"])
+  end
+
+  test "keep empty fields" do
+    config "pattern" => "1=%{WORD:foo1} *(2=%{WORD:foo2})?",
+           "empty_captures" => "true"
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event.message = "1=test"
+    @filter.filter(event)
+    assert_equal(["test"], event["foo1"])
+    assert_equal([], event["foo2"])
+  end
 end # tests for LogStash::Filters::Grok
