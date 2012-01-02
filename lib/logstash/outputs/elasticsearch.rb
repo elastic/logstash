@@ -67,6 +67,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
         require jar
     end
 
+    # setup log4j properties for elasticsearch
+    @logger.setup_log4j
+
     if @embedded
       %w(host cluster bind_host).each do |name|
         if instance_variable_get("@#{name}")
