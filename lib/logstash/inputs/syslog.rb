@@ -228,19 +228,16 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     # Apply severity and facility metadata if
     # use_labels => true
     if @use_labels
+      facility_number = event.fields["facility"]
+      severity_number = event.fields["severity"]
 
-        facility_number = event.fields["facility"]
-        severity_number = event.fields["severity"]
+      if @facility_labels[facility_number]
+        event.fields["facility_label"] = @facility_labels[facility_number]
+      end
 
-        if @facility_labels[facility_number] 
-            event.fields["facility_label"] = @facility_labels[facility_number] 
-        end
-
-        if @severity_labels[severity_number] 
-            event.fields["severity_label"] = @severity_labels[severity_number] 
-        end
-
+      if @severity_labels[severity_number]
+        event.fields["severity_label"] = @severity_labels[severity_number]
+      end
     end
-
   end # def syslog_relay
 end # class LogStash::Inputs::Syslog
