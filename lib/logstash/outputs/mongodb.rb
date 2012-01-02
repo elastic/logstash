@@ -5,7 +5,7 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
 
   config_name "mongodb"
 
-  # your mongdob host
+  # your mongodb host
   config :host, :validate => :string, :required => true
 
   # the mongodb port
