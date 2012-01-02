@@ -6,18 +6,20 @@ require "logstash/namespace"
 class LogStash::Filters::Gelfify < LogStash::Filters::Base
   config_name "gelfify"
 
+  SYSLOG_LEVEL_MAP = {
+    0 => 3, # Emergency => FATAL
+    1 => 5, # Alert     => WARN
+    2 => 3, # Critical  => FATAL
+    3 => 4, # Error     => ERROR
+    4 => 5, # Warning   => WARN
+    5 => 6, # Notice    => INFO
+    6 => 6, # Informat. => INFO
+    7 => 7  # Debug     => DEBUG
+  }
+
   public
   def register
-    @syslog_level_map  = {
-      0 => 3, # Emergency => FATAL
-      1 => 5, # Alert     => WARN
-      2 => 3, # Critical  => FATAL
-      3 => 4, # Error     => ERROR
-      4 => 5, # Warning   => WARN
-      5 => 6, # Notice    => INFO
-      6 => 6, # Informat. => INFO
-      7 => 7  # Debug     => DEBUG
-    }
+    # nothing
   end # def register
 
   public
@@ -26,13 +28,19 @@ class LogStash::Filters::Gelfify < LogStash::Filters::Base
     @logger.debug("GELFIFY FILTER: received event of type #{event.type}")
 
     if event.fields.include?("severity")
-      if @syslog_level_map[event.fields["severity"].to_i]
+      sev = event.fields["severity"].to_i rescue nil
+      if sev.to_s != event.fields["severity"].to_s
+        # severity isn't convertable to an integer.
+        # "foo".to_i => 0, which would default to EMERG.
+        @logger.debug("GELFIFY FILTER: existing severity field is not an int")
+      elsif SYSLOG_LEVEL_MAP[sev]
         @logger.debug("GELFIFY FILTER: Severity level successfully mapped")
-        event.fields["GELF_severity"] =
-          @syslog_level_map[event.fields["severity"].to_i]
+        event.fields["GELF_severity"] = SYSLOG_LEVEL_MAP[sev]
+      else
+        @logger.debug("GELFIFY FILTER: unknown severity #{sev}")
       end
     else
-      @logger.warn("GELFIFY FILTER: No 'severity' field found")
+      @logger.debug("GELFIFY FILTER: No 'severity' field found")
     end
 
     if !event.cancelled?
