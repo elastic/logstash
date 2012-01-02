@@ -61,49 +61,103 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
   private
   def resolve(event)
     @resolve.each do |field|
+      is_array = false
+      raw = event[field]
+      if raw.is_a?(Array)
+        is_array = true
+        if raw.length > 1
+          @logger.warn("DNS: skipping resolve, can't deal with multiple values", :field => field, :value => raw)
+          return
+        end
+        raw = raw.first
+      end
+
       begin
-        address = Resolv.getaddress(event[field])
+        address = Resolv.getaddress(raw)
       rescue Resolv::ResolvError
-        @logger.debug("DNS: couldn't resolve the hostname. Field: #{field}, hostname: #{event[field]}")
+        @logger.debug("DNS: couldn't resolve the hostname.",
+                      :field => field, :value => raw)
         return
       rescue Resolv::ResolvTimeout
-        @logger.debug("DNS: timeout on resolving the hostname. Field: #{field}, hostname: #{event[field]}")
+        @logger.debug("DNS: timeout on resolving the hostname.",
+                      :field => field, :value => raw)
         return
       rescue SocketError => e
-        @logger.debug("DNS: Encountered SocketError. Field: #{field}, hostname: #{event[field]} error: #{e}")
+        @logger.debug("DNS: Encountered SocketError.",
+                      :field => field, :value => raw)
+        return
+      rescue NoMethodError => e
+        # see JRUBY-5647
+        @logger.debug("DNS: couldn't resolve the hostname.",
+                      :field => field, :value => raw,
+                      :extra => "NameError instead of ResolvError")
         return
       end
+
       if @action == "replace"
-        event[field] = address
+        if is_array
+          event[field] = [address]
+        else
+          event[field] = address
+        end
       else
-        event[field] << address
+        if !is_array
+          event[field] = [event[field], address]
+        else
+          event[field] << address
+        end
       end
+
     end
   end
 
   private
   def reverse(event)
     @reverse.each do |field|
-      if ! @ip_validator.match(event[field]) 
-        @logger.debug("DNS: not an address: #{event[field]}")
+      raw = event[field]
+      is_array = false
+      if raw.is_a?(Array)
+          is_array = true
+          if raw.length > 1
+            @logger.warn("DNS: skipping reverse, can't deal with multiple values", :field => field, :value => raw)
+            return
+          end
+          raw = raw.first
+      end
+
+      if ! @ip_validator.match(raw)
+        @logger.debug("DNS: not an address",
+                      :field => field, :value => event[field])
         return
       end
       begin
-        hostname = Resolv.getname(event[field])
+        hostname = Resolv.getname(raw)
       rescue Resolv::ResolvError
-        @logger.debug("DNS: couldn't resolve the address. Field: #{field}, IP: #{event[field]}")
+        @logger.debug("DNS: couldn't resolve the address.",
+                      :field => field, :value => raw)
         return
       rescue Resolv::ResolvTimeout
-        @logger.debug("DNS: timeout on resolving address. Field: #{field}, IP: #{event[field]}")
+        @logger.debug("DNS: timeout on resolving address.",
+                      :field => field, :value => raw)
         return
       rescue SocketError => e
-        @logger.debug("DNS: Encountered SocketError. Field: #{field}, IP: #{event[field]}, error: #{e}")
+        @logger.debug("DNS: Encountered SocketError.",
+                      :field => field, :value => raw)
         return
       end
+
       if @action == "replace"
-        event[field] = hostname
+        if is_array
+          event[field] = [hostname]
+        else
+          event[field] = hostname
+        end
       else
-        event[field] << hostname
+        if !is_array
+          event[field] = [event[field], hostname]
+        else
+          event[field] << hostname
+        end
       end
     end
   end
