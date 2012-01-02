@@ -70,7 +70,6 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
       "fatal" => 3, "f" => 3,
       "unknown" => 1, "u" => 1,
     }
-
   end # def register
 
   public
@@ -118,37 +117,32 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     # Allow 'INFO' 'I' or number. for 'level'
     m["timestamp"] = event.unix_timestamp.to_i
 
-    @logger.debug("Sending GELF event", :event => m)
-
     # Probe facility array levels
     if @facility.is_a?(Array)
-        @facility.each do |value|
-            parsed_value = event.sprintf(value)
-            next if parsed_value == nil
-            if !parsed_value.nil?
-                m["facility"] = parsed_value
-                break
-            end
+      @facility.each do |value|
+        parsed_value = event.sprintf(value)
+        if parsed_value
+          m["facility"] = parsed_value
+          break
         end
+      end
     else
-        m["facility"] = event.sprintf(@facility)
+      m["facility"] = event.sprintf(@facility)
     end
-    
+
     # Probe severity array levels
     level = nil
     if @level.is_a?(Array)
-        @level.each do |value|
-            parsed_value = event.sprintf(value)
-            next if parsed_value == nil
-            if !parsed_value.nil?
-                level = parsed_value
-                break
-            end
+      @level.each do |value|
+        parsed_value = event.sprintf(value)
+        if parsed_value
+          level = parsed_value
+          break
         end
+      end
     else
-        level = event.sprintf(@level.to_s)
+      level = event.sprintf(@level.to_s)
     end
-
     m["level"] = (@level_map[level.downcase] || level).to_i
 
     @logger.debug(["Sending GELF event", m])
