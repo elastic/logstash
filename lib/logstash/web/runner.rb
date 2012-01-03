@@ -58,11 +58,6 @@ class LogStash::Web::Runner
       logfile = File.open(settings.logfile, "w")
       STDOUT.reopen(logfile)
       STDERR.reopen(logfile)
-    elsif settings.daemonize
-      # Write to /dev/null if
-      devnull = File.open("/dev/null", "w")
-      STDOUT.reopen(devnull)
-      STDERR.reopen(devnull)
     end
 
     @thread = Thread.new do
