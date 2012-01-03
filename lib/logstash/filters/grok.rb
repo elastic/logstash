@@ -58,7 +58,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   config :break_on_match, :validate => :boolean, :default => true
 
   # If true, only store named captures from grok.
-  config :named_captures_only, :validate => :boolean, :default => false
+  config :named_captures_only, :validate => :boolean, :default => true
 
   # If true, keep empty captures as event fields.
   config :empty_captures, :validate => :boolean, :default => false
