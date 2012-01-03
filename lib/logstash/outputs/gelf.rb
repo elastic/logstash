@@ -146,6 +146,11 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     m["level"] = (@level_map[level.downcase] || level).to_i
 
     @logger.debug(["Sending GELF event", m])
-    @gelf.notify!(m)
+    begin
+      @gelf.notify!(m)
+    rescue
+      @logger.warn("Trouble sending GELF event", :gelf_event => m,
+                   :event => event, :error => $!)
+    end
   end # def receive
 end # class LogStash::Outputs::Gelf
