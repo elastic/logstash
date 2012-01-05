@@ -48,7 +48,9 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
 
             # now reopen everything
             path_list.each do |fpath|
-                open(fpath)
+                fd = open(fpath)
+                # Have to explicitly flush incase we rotate right away
+                fd.flush
             end
         end
     end
@@ -91,5 +93,8 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     else
       @files[path] = File.new(path, "a")
     end
+
+    @files[path].flush
+
   end
 end # class LogStash::Outputs::Gelf
