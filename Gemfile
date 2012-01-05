@@ -31,6 +31,7 @@ gem "gmetric", "0.1.3" # outputs/ganglia, # License: MIT
 gem "xmpp4r", "0.5" # outputs/xmpp, # License: As-Is
 gem "gelfd", "0.2.0" #inputs/gelf, # License: Apache 2.0
 
+gem "ffi", "1.0.11"
 gem "ffi-rzmq", "0.9.0"
 gem "ruby-debug", "0.10.4"
 gem "mocha", "0.10.0"

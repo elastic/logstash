@@ -1,5 +1,6 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
+require "logstash/util/signals"
 
 # File output.
 #
@@ -33,6 +34,25 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   def register
     require "fileutils" # For mkdir_p
     @files = {}
+
+    # Hook SIGHUP (1) to this instance
+    LogStash::Util::Signals::LibC.signal(1) do |signal|
+        if signal == 1
+            path_list = []
+            @files.each do |file_path, file_desc| 
+                file_desc.flush
+                file_desc.close
+                path_list << file_path
+            end
+            @files.clear
+
+            # now reopen everything
+            path_list.each do |fpath|
+                open(fpath)
+            end
+        end
+    end
+
   end # def register
 
   public
@@ -42,7 +62,6 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     path = event.sprintf(@path)
     fd = open(path)
 
-    # TODO(sissel): Check if we should rotate the file.
     # TODO(sissel): Check if we should close files not recently used.
 
     if @message_format
