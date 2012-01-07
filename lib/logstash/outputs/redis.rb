@@ -1,7 +1,7 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-# send events to a redis databse using RPUSH
+# send events to a redis database using RPUSH
 #
 # For more information about redis, see <http://redis.io/>
 class LogStash::Outputs::Redis < LogStash::Outputs::Base
@@ -99,7 +99,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       end
     rescue => e
       @logger.warn("Failed to send event to redis", :event => event,
-                   :identity => identiy, :exception => e,
+                   :identity => identity, :exception => e,
                    :backtrace => e.backtrace)
       raise e
     end

@@ -67,7 +67,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
 
     # work around a bug opening fifos (bug JRUBY-6280)
     stat = File.stat(path) rescue nil
-    if stat and stat.ftype == "fifo"
+    if stat and stat.ftype == "fifo" and RUBY_PLATFORM == "java"
       @files[path] = java.io.FileWriter.new(java.io.File.new(path))
     else
       @files[path] = File.new(path, "a")
