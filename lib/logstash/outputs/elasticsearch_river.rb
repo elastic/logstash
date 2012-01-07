@@ -12,6 +12,7 @@ require "net/http"
 # and configure it to read from the queue to which we write.
 #
 # You can learn more about elasticseasrch at <http://elasticsearch.org>
+# More about the elasticsearch rabbitmq river plugin: <https://github.com/elasticsearch/elasticsearch-river-rabbitmq/blob/master/README.md>
 
 class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
@@ -55,11 +56,15 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
   # AMQP vhost
   config :vhost, :validate => :string, :default => "/"
 
-  # AMQWP queue name
-  config :queue, :validate => :string, :default => "elasticsearch"
+  # AMQP queue name
+  config :name, :validate => :string, :default => "elasticsearch"
 
   # AMQP exchange name
   config :exchange, :validate => :string, :default => "elasticsearch"
+
+  # The exchange type (fanout, topic, direct)
+  config :exchange_type, :validate => [ "fanout", "direct", "topic"],
+         :default => "direct"
 
   # AMQP routing key
   config :key, :validate => :string, :default => "elasticsearch"
@@ -93,13 +98,14 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       "user" => [@user],
       "password" => [@password],
       "exchange_type" => ["direct"],
+      "queue_name" => [@queue],
       "name" => [@exchange],
       "key" => [@key],
       "vhost" => [@vhost],
       "durable" => [@durable.to_s],
       "persistent" => [@persistent.to_s],
       "debug" => [@debug.to_s],
-    }.reject {|k,v| v.nil?}
+    }.reject {|k,v| v.first.nil?}
     @mq = LogStash::Outputs::Amqp.new(params)
     @mq.register
 
@@ -122,14 +128,15 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
                                 "queue" => @queue,
                                 "exchange" => @exchange,
                                 "routing_key" => @key,
-                                "exchange_durable" => @durable,
-                                "queue_durable" => @durable,
+                                "exchange_type" => @exchange_type,
+                                "exchange_durable" => @durable.to_s,
+                                "queue_durable" => @durable.to_s,
                                },
                       "index" => {"bulk_size" => @es_bulk_size,
                                  "bulk_timeout" => "#{@es_bulk_timeout_ms}ms",
                                 },
                      }
-      @logger.info(["ElasticSearch using river", river_config])
+      @logger.info("ElasticSearch using river", :config => river_config)
       Net::HTTP.start(@es_host, @es_port) do |http|
         req = Net::HTTP::Put.new(api_path)
         req.body = river_config.to_json
@@ -138,7 +145,10 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
         @logger.info("River created: #{response.body}")
       end
     rescue Exception => e
-      @logger.warn "Couldn't set up river: #{e.inspect}. You'll have to set it up manually (or restart)"
+      # TODO(petef): should we just throw an exception here, so the
+      # agent tries to restart us and we in turn retry the river
+      # registration?
+      @logger.warn("Couldn't set up river. You'll have to set it up manually (or restart)", :exception => e)
     end
   end # def prepare_river
 

@@ -58,7 +58,10 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   config :break_on_match, :validate => :boolean, :default => true
 
   # If true, only store named captures from grok.
-  config :named_captures_only, :validate => :boolean, :default => false
+  config :named_captures_only, :validate => :boolean, :default => true
+
+  # If true, keep empty captures as event fields.
+  config :keep_empty_captures, :validate => :boolean, :default => false
 
   # TODO(sissel): Add this feature?
   # When disabled, any pattern that matches the entire string will not be set.
@@ -124,7 +127,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       # Skip known config names
       next if (RESERVED + ["match", "patterns_dir",
                "drop_if_match", "named_captures_only", "pattern",
-               "break_on_match"]).include?(field)
+               "keep_empty_captures", "break_on_match"]).include?(field)
       patterns = [patterns] if patterns.is_a?(String)
 
       if !@patterns.include?(field)
@@ -203,13 +206,16 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
           if event.fields[key].is_a?(String)
             event.fields[key] = [event.fields[key]]
-          elsif event.fields[key] == nil
+          end
+
+          if @keep_empty_captures && event.fields[key].nil?
             event.fields[key] = []
           end
 
           # If value is not nil, or responds to empty and is not empty, add the
           # value to the event.
           if !value.nil? && (!value.empty? rescue true)
+            event.fields[key] ||= []
             event.fields[key] << value
           end
         end # match.each_capture

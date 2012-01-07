@@ -1,5 +1,6 @@
 1.1 (??? ??, 2011)
   - ElasticSearch 0.18.4 now included
+  - grok filter: named_captures_only now defaults to true
   - Bugs fixed
     - [LOGSTASH-174] - output/statsd: fix tag filtering
     - [LOGSTASH-176] - output/graphite: support type & tag filtering

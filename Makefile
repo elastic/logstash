@@ -162,6 +162,9 @@ build/logstash-$(VERSION)-monolithic.jar:
 	$(QUIET)jar cfe $@ logstash.runner $(JAR_ARGS)
 	$(QUIET)jar i $@
 
+update-jar: copy-ruby-files
+	$(QUIET)jar uf build/logstash-$(VERSION)-monolithic.jar -C build/ruby .
+
 .PHONY: test
 test: | $(JRUBY_CMD) vendor-elasticsearch
 	$(QUIET)bash $(JRUBY_CMD) bin/logstash test
