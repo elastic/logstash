@@ -58,8 +58,7 @@ DEPENDENCIES
   awesome_print
   bunny
   cabin (= 0.1.7)
-  ffi
-  ffi-rzmq (= 0.9.0)
+  ffi-rzmq (~> 0.9.0)
   filewatch (= 0.3.2)
   gelf
   gelfd (= 0.2.0)
