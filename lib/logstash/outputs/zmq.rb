@@ -21,9 +21,9 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
   config :mode, :validate => ["server", "client"], :default => "client"
 
   config :socket_type, :validate => :string, :default => "push"
-  config :hwm, :validate => :fixnum, :default => 100
-  config :swap, :validate => :fixnum, :default => 0
-  config :linger, :validate => :fixnum, :default => -1
+  config :hwm, :validate => :number, :default => 100
+  config :swap, :validate => :numberr, :default => 0
+  config :linger, :validate => :number, :default => -1
 
   public
   def register
