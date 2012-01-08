@@ -22,7 +22,7 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
 
   config :socket_type, :validate => :string, :default => "push"
   config :hwm, :validate => :number, :default => 100
-  config :swap, :validate => :numberr, :default => 0
+  config :swap, :validate => :number, :default => 0
   config :linger, :validate => :number, :default => -1
 
   public
