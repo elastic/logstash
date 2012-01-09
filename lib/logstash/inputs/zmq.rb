@@ -23,6 +23,10 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
 
   config :socket_type, :validate => :string, :default => "pull"
 
+  flag("--threads THREADS", "Number of ZeroMQ threads to spawn") do |val|
+    ::LogStash::ZMQManager.threads = val.to_i
+  end
+
   public
   def register
     @socket = ::LogStash::ZMQManager.socket ::ZMQ.const_get @socket_type.upcase

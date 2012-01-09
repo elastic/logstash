@@ -20,10 +20,19 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
   # `client` connects to a server.
   config :mode, :validate => ["server", "client"], :default => "client"
 
+  # ZMQ socket type, currently only PUSH is supported (but others might work!)
   config :socket_type, :validate => :string, :default => "push"
+
+  # High watermark, amount of messages to keep in memory when unable to send
   config :hwm, :validate => :number, :default => 100
+  # Disk swap of messages, same as HWM but on disk
   config :swap, :validate => :number, :default => 0
+  # Time to wait before dispairing and dropping messages when terminating and there are still unsent messages
   config :linger, :validate => :number, :default => -1
+
+  flag("--threads THREADS", "Number of ZeroMQ threads to spawn") do |val|
+    ::LogStash::ZMQManager.threads = val.to_i
+  end
 
   public
   def register
