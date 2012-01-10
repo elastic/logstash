@@ -14,10 +14,10 @@ The desire here is to allow people to quickly iterate on possible new plugins wh
 When a plugin is in the `experimental` state, it is essentially untested. This does not mean that it does not have any associated unit tests. This applies more to in-the-wild usage. Most new plugins will probably fit in this category. There is a chance that experimental plugins may be removed at some point. It is possible that an experimental plugin will be broken mid-release.
 
 ## Unstable
-Unstable plugins are plugins that are in the process of being stabalized into a final form. Unstable plugins will have a bit more wide-spread usage in the community. The API for these plugins has stabilized and is unlikely to change mid-release.
+Unstable plugins are plugins that are in the process of being stabalized into a final form. Unstable plugins will have a bit more wide-spread usage in the community. The API for these plugins has stabilized and is unlikely to change mid-release. Test cases may or may not exist.
 
 ## Stable
-Stable plugins are plugins that you can comfortably rely on in production.
+Stable plugins are plugins that you can comfortably rely on in production. These have full test cases.
 
 # A note about output plugins
 It's worth reminding users that `output` plugins are currently blocking. If any output plugin fails, all output plugins are blocked. Please keep this in mind when using experimental output plugins as it could cause unintended side-effects.
