@@ -8,7 +8,7 @@ class LogStash::Filters::Base < LogStash::Plugin
 
   config_name "filter"
 
-  plugin_status "unstable"
+  plugin_status nil
 
   # The type to act on. If a type is given, then this filter will only
   # act on messages with the same type. See any input plugin's "type"

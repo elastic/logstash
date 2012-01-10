@@ -10,6 +10,8 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
 
   config_name "stdin"
 
+  plugin_status "experimental"
+
   public
   def register
     @host = Socket.gethostname
