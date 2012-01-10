@@ -28,7 +28,9 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
   # Disk swap of messages, same as HWM but on disk
   config :swap, :validate => :number, :default => 0
   # Time to wait before dispairing and dropping messages when terminating and there are still unsent messages
-  config :linger, :validate => :number, :default => -1
+  config :linger, :validate => :number, :default => 1
+
+  config :pubsub_topic, :validate => :string, :default => "logstash"
 
   flag("--threads THREADS", "Number of ZeroMQ threads to spawn") do |val|
     ::LogStash::ZMQManager.threads = val.to_i
@@ -37,7 +39,8 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
   public
   def register
     @logger.info("Starting 0mq output", :socket_addresses => @socket_addresses)
-    @socket = ::LogStash::ZMQManager.socket ::ZMQ.const_get socket_type.upcase
+    @socket_type = @socket_type.upcase.to_sym
+    @socket = ::LogStash::ZMQManager.socket ::ZMQ.const_get @socket_type
     @socket_addresses.each do |addr|
       if server?
         @logger.info("Binding socket", :address => addr)
@@ -59,6 +62,11 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
   end
 
   private
+  # parse the topic pattern
+  def topic
+    @pubsub_topic
+  end
+
   def server?
     @mode == "server"
   end # def server?
@@ -70,6 +78,12 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
     wire_event = event.to_hash.to_json + "\n"
 
     begin
+      case @socket_type
+      when :PUB
+        @socket.send_string(topic, ::ZMQ::SNDMORE)
+      when :PUSH
+        # nothing really
+      end
       @socket.send_string(event.to_hash.to_json)
     rescue => e
       @logger.warn("0mq output exception", :address => address,

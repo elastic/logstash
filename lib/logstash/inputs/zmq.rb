@@ -23,13 +23,26 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
 
   config :socket_type, :validate => :string, :default => "pull"
 
+  config :pubsub_topics, :validate => :array, :default => ["logstash"]
+
+  config :format, :validate => ["json", "json_event", "plain"], :default => "json_event"
+
   flag("--threads THREADS", "Number of ZeroMQ threads to spawn") do |val|
     ::LogStash::ZMQManager.threads = val.to_i
   end
 
   public
   def register
-    @socket = ::LogStash::ZMQManager.socket ::ZMQ.const_get @socket_type.upcase
+    @socket_type = @socket_type.upcase.to_sym
+    @socket = ::LogStash::ZMQManager.socket ::ZMQ.const_get @socket_type
+    case @socket_type
+    when :SUB
+      @pubsub_topics.each do |topic|
+        @socket.setsockopt ::ZMQ::SUBSCRIBE, topic
+      end
+    when :PULL
+      # nothing really.
+    end
   end # def register
 
   def teardown
@@ -56,10 +69,18 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
       end
     end
     loop do
-      message = String.new
-      @socket.recv_string message
-      e = to_event message, "0mq"
-      @logger.debug("Got message from socket", :event => e)
+      message = Array.new
+      @socket.recv_strings message
+      if message.count > 1 and @socket_type == :SUB
+        topic = message.first 
+        e = to_event message[1, message.length].join("\n"), "0mq"
+      else
+        topic = nil
+        e = to_event message.join("\n"), "0mq"
+      end
+      # TODO (avishai): do we need to read the sender identity off the final frame?
+      e['@zmq_topic'] = topic if topic and e
+      @logger.debug("Got message from socket", :event => e, :topic => topic)
       output_queue << e
     end # loop
   end # def run
