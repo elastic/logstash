@@ -5,6 +5,7 @@ require "logstash/outputs/base"
 class LogStash::Outputs::Websocket < LogStash::Outputs::Base
 
   config_name "websocket"
+  plugin_status "experimental"
 
   # The address to serve websocket data from
   config :host, :validate => :string, :default => "0.0.0.0"

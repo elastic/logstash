@@ -12,6 +12,7 @@ require "logstash/namespace"
 class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
   config_name "amqp"
+  plugin_status "unstable"
 
   # Your amqp server address
   config :host, :validate => :string, :required => true

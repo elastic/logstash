@@ -15,6 +15,7 @@ require "logstash/util/zmq"
 class LogStash::Inputs::Zmq < LogStash::Inputs::Base
 
   config_name "zmq"
+  plugin_status "experimental"
 
   # 0mq socket address to connect or bind to
   config :address, :validate => :string, :default => "tcp://127.0.0.1:2120"
