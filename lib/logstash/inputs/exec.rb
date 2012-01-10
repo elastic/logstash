@@ -15,6 +15,7 @@ require "socket" # for Socket.gethostname
 class LogStash::Inputs::Exec < LogStash::Inputs::Base
 
   config_name "exec"
+  plugin_status "unstable"
   
   # Set this to true to enable debugging on an input.
   config :debug, :validate => :boolean, :default => false
