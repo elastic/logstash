@@ -8,6 +8,7 @@ require "logstash/time"
 # TODO(sissel): Support regexp replacements like String#gsub ?
 class LogStash::Filters::Mutate < LogStash::Filters::Base
   config_name "mutate"
+  plugin_status "unstable"
 
   # Rename one or more fields.
   config :rename, :validate => :hash

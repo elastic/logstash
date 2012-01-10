@@ -4,6 +4,7 @@ require 'pp'
 
 class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   config_name "stomp"
+  plugin_status "unstable"
 
   # The address of the STOMP server.
   config :host, :validate => :string, :default => "localhost", :required => true
@@ -69,4 +70,3 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
     subscription_handler
   end # def run
 end # class LogStash::Inputs::Stomp
-
