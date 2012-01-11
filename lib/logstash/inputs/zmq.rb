@@ -33,7 +33,7 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
 
   public
   def register
-    self.class.send(:include, Logstash::Util::Zmq)
+    self.class.send(:include, LogStash::Util::Zmq)
     @subscriber = context.socket(ZMQ::SUB)
     error_check(@subscriber.setsockopt(ZMQ::HWM, @queue_length))
     error_check(@subscriber.setsockopt(ZMQ::SUBSCRIBE, @queue))
@@ -43,11 +43,11 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
 
   def teardown
     error_check(@subscriber.close)
-  end
+  end # def teardown
 
   def server?
     @mode == "server"
-  end
+  end # def server?
 
   def run(output_queue)
     begin

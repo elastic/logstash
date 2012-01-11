@@ -20,35 +20,41 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
   # 0mq socket address to connect or bind to
   config :address, :validate => :string, :default => "tcp://127.0.0.1:2120"
 
-  # 0mq topic
+  # 0mq topic (Used with ZMQ_SUBSCRIBE, see http://api.zeromq.org/2-1:zmq-setsockopt 
+  # for 'ZMQ_SUBSCRIBE: Establish message filter')
   config :queue, :validate => :string, :default => ""
 
-  # wether to bind ("server") or connect ("client") to the socket
+  # Whether to bind ("server") or connect ("client") to the socket
   config :mode, :validate => [ "server", "client"], :default => "server"
 
   public
   def register
-    # unfortunately it's not possible to simply include at the class level
+    # Unfortunately it's not possible to simply include at the class level
     # because the Config mixin thinks we're the included module and not the base-class
-    self.class.send(:include, Logstash::Util::Zmq)
+    self.class.send(:include, LogStash::Util::Zmq)
     @publisher = context.socket(ZMQ::PUB)
     error_check(@publisher.setsockopt(ZMQ::SUBSCRIBE, @queue)) if @queue != ""
     error_check(@publisher.setsockopt(ZMQ::LINGER, 1))
     setup(@publisher, @address)
   end # def register
 
+  public
   def teardown
     error_check(@publisher.close)
-  end
+  end # def teardown
 
+  private
   def server?
     @mode == "server"
-  end
+  end # def server?
 
+  public
   def receive(event)
     return unless output?(event)
 
-    wire_event = event.to_hash.to_json + "\n"
+    # TODO(sissel): Figure out why masterzen has '+ "\n"' here
+    #wire_event = event.to_hash.to_json + "\n"
+    wire_event = event.to_json
 
     begin
       @logger.debug("0mq: sending", :event => wire_event)
@@ -57,4 +63,4 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
       @logger.warn("0mq output exception", :address => @address, :queue => @queue, :exception => e, :backtrace => e.backtrace)
     end
   end # def receive
-end # class LogStash::Outputs::Tcp
+end # class LogStash::Outputs::Zmq
