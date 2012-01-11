@@ -8,6 +8,7 @@ module LogStash
   module Config; end
   module File; end
   module Web; end
+  module Util; end
 
   SHUTDOWN = :shutdown
 end # module LogStash
