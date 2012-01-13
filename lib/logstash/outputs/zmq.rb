@@ -63,8 +63,8 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
 
   private
   # parse the topic pattern
-  def topic
-    @pubsub_topic
+  def topic(e)
+    e.sprintf(@pubsub_topic)
   end
 
   def server?
@@ -80,7 +80,7 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
     begin
       case @socket_type
       when :PUB
-        @socket.send_string(topic, ::ZMQ::SNDMORE)
+        @socket.send_string(topic(evenet), ::ZMQ::SNDMORE)
       when :PUSH
         # nothing really
       end
