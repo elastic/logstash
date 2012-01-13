@@ -78,7 +78,7 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
     return unless output?(event)
 
     event_text = if @message_format
-      event.sprintf(@message_format) + "\n")
+      event.sprintf(@message_format) + "\n"
     else
       event.to_json
     end
