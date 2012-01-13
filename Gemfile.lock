@@ -10,7 +10,6 @@ GEM
       json
     columnize (0.3.4)
     ffi (1.0.11)
-    ffi (1.0.11-java)
     ffi-rzmq (0.9.0)
     filewatch (0.3.2)
     gelf (1.1.3)

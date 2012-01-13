@@ -34,7 +34,7 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
   def register
     self.class.send(:include, LogStash::Util::Zmq)
     @subscriber = context.socket(ZMQ::SUB)
-    error_check(@subscriber.setsockopt(ZMQ::HWM, @queue_length))
+    error_check(@subscriber.setsockopt(ZMQ::HWM, @queue_size))
     error_check(@subscriber.setsockopt(ZMQ::SUBSCRIBE, @queue))
     error_check(@subscriber.setsockopt(ZMQ::LINGER, 1))
     setup(@subscriber, @address)
