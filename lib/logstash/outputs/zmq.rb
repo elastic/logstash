@@ -32,6 +32,8 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
 
   config :pubsub_topic, :validate => :string, :default => "logstash"
 
+  config :message_format, :validate => :string
+
   flag("--threads THREADS", "Number of ZeroMQ threads to spawn") do |val|
     ::LogStash::ZMQManager.threads = val.to_i
   end
@@ -75,16 +77,20 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    wire_event = event.to_hash.to_json + "\n"
+    event_text = if @message_format
+      event.sprintf(@message_format) + "\n")
+    else
+      event.to_json
+    end
 
     begin
       case @socket_type
       when :PUB
-        @socket.send_string(topic(evenet), ::ZMQ::SNDMORE)
+        @socket.send_string(topic(event), ::ZMQ::SNDMORE)
       when :PUSH
         # nothing really
       end
-      @socket.send_string(event.to_hash.to_json)
+      @socket.send_string(event_text)
     rescue => e
       @logger.warn("0mq output exception", :address => address,
                     :exception => e, :backtrace => e.backtrace)
