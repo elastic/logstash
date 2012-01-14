@@ -17,6 +17,7 @@ require "net/http"
 class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   config_name "elasticsearch_river"
+  plugin_status "unstable"
 
   config :debug, :validate => :boolean, :default => false
 
@@ -172,4 +173,3 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
     @mq.receive_raw(index_message)
   end # def receive
 end # LogStash::Outputs::ElasticSearchRiver
-

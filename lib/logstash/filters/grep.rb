@@ -9,6 +9,7 @@ require "logstash/namespace"
 class LogStash::Filters::Grep < LogStash::Filters::Base
 
   config_name "grep"
+  plugin_status "unstable"
 
   # Drop events that don't match
   #
