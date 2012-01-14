@@ -5,6 +5,7 @@ require "logstash/namespace"
 # performance.
 class LogStash::Outputs::Null < LogStash::Outputs::Base
   config_name "null"
+  plugin_status "stable"
 
   public
   def register

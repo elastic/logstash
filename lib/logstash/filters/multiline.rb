@@ -61,6 +61,7 @@ require "logstash/namespace"
 class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   config_name "multiline"
+  plugin_status "unstable"
 
   # The regular expression to match
   config :pattern, :validate => :string, :require => true
