@@ -6,6 +6,7 @@ require "logstash/namespace"
 class LogStash::Filters::Json < LogStash::Filters::Base
 
   config_name "json"
+  plugin_status "unstable"
 
   # Config for json is:
   #   source: dest
