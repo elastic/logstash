@@ -1,9 +1,8 @@
 # Style Guide 
 
 Rather than write a full style guide, please follow by examples you see in the
-code.  If you send me a patch, I will not reject it for style reasons (but I
-will fix it before it gets committed) 
-
+code. If you send me a patch, I will not reject it for style reasons (but I
+will fix it before it gets committed).
 
 ## Logging
 
@@ -15,8 +14,7 @@ Rather than this:
 
 Do this:
     
-    @logger.info(["Some error occured in this request", { :request => request, :input => input, :client => ip}])
-
+    @logger.info("Some error occured in this request", :request => request, :input => input, :client => ip)
 
 ## Code Style
 
