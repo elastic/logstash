@@ -25,6 +25,7 @@ end
 # and 'json logging' enabled.
 class LogStash::Outputs::Loggly < LogStash::Outputs::Base
   config_name "loggly"
+  plugin_status "unstable"
 
   # The hostname to send logs to. This should target the loggly http input
   # server which is usually "logs.loggly.com"

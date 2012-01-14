@@ -5,6 +5,7 @@ require "logstash/namespace"
 # ganglia's gmond. This is heavily based on the graphite output.
 class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
   config_name "ganglia"
+  plugin_status "unstable"
 
   # The address of the graphite server.
   config :host, :validate => :string, :default => "localhost"
