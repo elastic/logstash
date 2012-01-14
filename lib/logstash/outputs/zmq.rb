@@ -20,7 +20,7 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
   # `client` connects to a server.
   config :mode, :validate => ["server", "client"], :default => "client"
 
-  # ZMQ socket type, currently only PUSH is supported (but others might work!)
+  # ZMQ socket type, currently only PUSH and PUB are supported (but others might work!)
   config :socket_type, :validate => :string, :default => "push"
 
   # High watermark, amount of messages to keep in memory when unable to send
@@ -30,8 +30,10 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
   # Time to wait before dispairing and dropping messages when terminating and there are still unsent messages
   config :linger, :validate => :number, :default => 1
 
+  # PUB/SUB topic, can be an sprintf string for dynamic per event topic, E.G. "%{@type}"
   config :pubsub_topic, :validate => :string, :default => "logstash"
 
+  # message format, an sprintf string. If ommited json_event will be used
   config :message_format, :validate => :string
 
   flag("--threads THREADS", "Number of ZeroMQ threads to spawn") do |val|

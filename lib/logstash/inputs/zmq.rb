@@ -21,8 +21,10 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
   # `client` connects to a server.
   config :mode, :validate => ["server", "client"], :default => "server"
 
+  # Currently only PULL and SUB are supported, other socket types might work as well
   config :socket_type, :validate => :string, :default => "pull"
 
+  # PUB/SUB topics to subscribe
   config :pubsub_topics, :validate => :array, :default => ["logstash"]
 
   config :format, :validate => ["json", "json_event", "plain"], :default => "json_event"
@@ -73,7 +75,7 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
       @socket.recv_strings message
       if message.count > 1 and @socket_type == :SUB
         topic = message.first 
-        e = to_event message[1, message.length].join("\n"), "0mq"
+        e = to_event message[1..-1].join("\n"), "0mq"
       else
         topic = nil
         e = to_event message.join("\n"), "0mq"
