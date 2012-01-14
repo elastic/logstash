@@ -13,6 +13,7 @@ require "logstash/time"
 class LogStash::Filters::Split < LogStash::Filters::Base
 
   config_name "split"
+  plugin_status "unstable"
 
   # The string to split on. This is usually a line terminator, but can be any
   # string.
