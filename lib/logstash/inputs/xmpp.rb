@@ -9,6 +9,7 @@ require "logstash/namespace"
 class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
   
   config_name "xmpp"
+  plugin_status "unstable"
 
   # The user or resource ID, like foo@example.com.
   config :user, :validate => :string, :required => :true
@@ -67,4 +68,3 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
   end # def run
 
 end # def class LogStash:Inputs::Xmpp
-

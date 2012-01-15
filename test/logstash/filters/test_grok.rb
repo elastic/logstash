@@ -29,7 +29,7 @@ describe LogStash::Filters::Grok do
 
   test "normal grok" do
     config "pattern" => [ "%{SYSLOGLINE}" ]
-    
+
     event = LogStash::Event.new
     event.type = @typename
 
@@ -43,7 +43,7 @@ describe LogStash::Filters::Grok do
     event.message = "#{timestamp} #{logsource} #{program}[#{pid}]: #{message}"
 
     @filter.filter(event)
-    assert_equal(event.fields["logsource"], [logsource], 
+    assert_equal(event.fields["logsource"], [logsource],
                  "Expected field 'logsource' to be [#{logsource.inspect}], " \
                  "is #{event.fields["logsource"].inspect}")
 
@@ -51,22 +51,22 @@ describe LogStash::Filters::Grok do
                  "Expected field 'timestamp' to be [#{timestamp.inspect}], " \
                  "is #{event.fields["timestamp"].inspect}")
 
-    assert_equal(event.fields["message"], [message], 
+    assert_equal(event.fields["message"], [message],
                  "Expected field 'message' to be ['#{message.inspect}'], " \
                  "is #{event.fields["message"].inspect}")
 
-    assert_equal(event.fields["program"], [program], 
+    assert_equal(event.fields["program"], [program],
                  "Expected field 'program' to be ['#{program.inspect}'], " \
                  "is #{event.fields["program"].inspect}")
 
-    assert_equal(event.fields["pid"], [pid], 
+    assert_equal(event.fields["pid"], [pid],
                  "Expected field 'pid' to be ['#{pid.inspect}'], " \
                  "is #{event.fields["pid"].inspect}")
   end # test normal
 
   test "parsing an event with multiple messages (array of strings)" do
     config "pattern" => [ "(?:hello|world) %{NUMBER}" ]
-    
+
     event = LogStash::Event.new
     event.type = @typename
     event.message = [ "hello 12345", "world 23456" ]
@@ -103,14 +103,14 @@ describe LogStash::Filters::Grok do
     max_duration = 20
     puts "filters/grok speed test; #{iterations} iterations: #{duration} " \
          "seconds (#{"%.3f" % (iterations / duration)} per sec)"
-    assert(duration < max_duration, 
+    assert(duration < max_duration,
            "Should be able to do #{iterations} grok parses in less " \
            "than #{max_duration} seconds, got #{duration} seconds")
   end # performance test
 
   test "grok pattern type coercion to integer" do
     config "pattern" => [ "%{NUMBER:foo:int}" ]
-    
+
     event = LogStash::Event.new
     event.type = @typename
 
@@ -128,7 +128,7 @@ describe LogStash::Filters::Grok do
 
   test "pattern type coercion to float" do
     config "pattern" => [ "%{NUMBER:foo:float}" ]
-    
+
     event = LogStash::Event.new
     event.type = @typename
 
@@ -146,7 +146,7 @@ describe LogStash::Filters::Grok do
 
   test "in-line pattern definitions" do
     config "pattern" => [ "%{FIZZLE=\\d+}" ]
-    
+
     event = LogStash::Event.new
     event.type = @typename
 
@@ -164,7 +164,7 @@ describe LogStash::Filters::Grok do
 
   test "processing fields other than the @message" do
     config "rum" => [ "%{FIZZLE=\\d+}" ]
-    
+
     event = LogStash::Event.new
     event.type = @typename
 
@@ -182,7 +182,7 @@ describe LogStash::Filters::Grok do
 
   test "parsing custom fields and default @message" do
     config "rum" => [ "%{FIZZLE=\\d+}" ], "pattern" => "%{WORD}", "break_on_match" => "false"
-    
+
     event = LogStash::Event.new
     event.type = @typename
 
@@ -224,4 +224,27 @@ describe LogStash::Filters::Grok do
     assert_equal(nil, event["new_field"],
                 "Grok should not add fields on failed matches")
   end # should not add fields if match fails
+
+  test "drop empty fields by default" do
+    config "pattern" => "1=%{WORD:foo1} *(2=%{WORD:foo2})?"
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event.message = "1=test"
+    @filter.filter(event)
+    assert_equal(["test"], event["foo1"])
+    assert_equal(nil, event["foo2"])
+  end
+
+  test "keep empty fields" do
+    config "pattern" => "1=%{WORD:foo1} *(2=%{WORD:foo2})?",
+           "empty_captures" => "true"
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event.message = "1=test"
+    @filter.filter(event)
+    assert_equal(["test"], event["foo1"])
+    assert_equal([], event["foo2"])
+  end
 end # tests for LogStash::Filters::Grok

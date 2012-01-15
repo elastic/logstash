@@ -61,6 +61,7 @@ require "logstash/namespace"
 class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   config_name "multiline"
+  plugin_status "unstable"
 
   # The regular expression to match
   config :pattern, :validate => :string, :require => true
@@ -107,7 +108,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   public
   def filter(event)
-    return unless event.type == @type
+    return unless filter?(event)
 
     match = @pattern.match(event.message)
     key = event.sprintf(@stream_identity)

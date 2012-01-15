@@ -4,7 +4,7 @@
 #   wget
 #
 JRUBY_VERSION=1.6.5
-ELASTICSEARCH_VERSION=0.18.5
+ELASTICSEARCH_VERSION=0.18.6
 VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 
 JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
@@ -161,6 +161,9 @@ build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
 build/logstash-$(VERSION)-monolithic.jar:
 	$(QUIET)jar cfe $@ logstash.runner $(JAR_ARGS)
 	$(QUIET)jar i $@
+
+update-jar: copy-ruby-files
+	$(QUIET)jar uf build/logstash-$(VERSION)-monolithic.jar -C build/ruby .
 
 .PHONY: test
 test: | $(JRUBY_CMD) vendor-elasticsearch

@@ -11,6 +11,7 @@ require "socket" # for Socket.gethostname
 # is detected and handled by this input.
 class LogStash::Inputs::File < LogStash::Inputs::Base
   config_name "file"
+  plugin_status "unstable"
 
   # The path to the file to use as an input.
   # You can use globs here, such as "/var/log/*.log"
@@ -35,9 +36,9 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   config :discover_interval, :validate => :number, :default => 15
 
   # Where to write the since database (keeps track of the current
-  # position of monitored log files).
-  config :sincedb_path, :validate => :string,
-         :default => "#{ENV['HOME']}/.sincedb"
+  # position of monitored log files). Defaults to the value of
+  # environment variable "$SINCEDB_PATH" or "$HOME/.sincedb".
+  config :sincedb_path, :validate => :string
 
   # How often to write a since database with the current position of
   # monitored log files.
@@ -56,10 +57,10 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       :exclude => @exclude,
       :stat_interval => @stat_interval,
       :discover_interval => @discover_interval,
-      :sincedb_path => @sincedb_path,
       :sincedb_write_interval => @sincedb_write_interval,
       :logger => @logger,
     }
+    config[:sincedb_path] = @sincedb_path if @sincedb_path
     tail = FileWatch::Tail.new(config)
     tail.logger = @logger
     @path.each { |path| tail.tail(path) }

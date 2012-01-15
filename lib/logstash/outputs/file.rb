@@ -8,7 +8,8 @@ require "logstash/outputs/base"
 class LogStash::Outputs::File < LogStash::Outputs::Base
 
   config_name "file"
-  
+  plugin_status "unstable"
+
   # The path to the file to write. Event fields can be used here, 
   # like "/var/log/logstash/%{@source_host}/%{application}"
   config :path, :validate => :string, :required => true
@@ -46,9 +47,9 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     # TODO(sissel): Check if we should close files not recently used.
 
     if @message_format
-      fd.puts(event.sprintf(@message_format))
+      fd.write(event.sprintf(@message_format) + "\n")
     else
-      fd.puts(event.to_json)
+      fd.write(event.to_json + "\n")
     end
     fd.flush
   end # def receive
@@ -65,6 +66,12 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       FileUtils.mkdir_p(dir) 
     end
 
-    @files[path] = File.new(path, "w")
+    # work around a bug opening fifos (bug JRUBY-6280)
+    stat = File.stat(path) rescue nil
+    if stat and stat.ftype == "fifo" and RUBY_PLATFORM == "java"
+      @files[path] = java.io.FileWriter.new(java.io.File.new(path))
+    else
+      @files[path] = File.new(path, "a")
+    end
   end
 end # class LogStash::Outputs::Gelf

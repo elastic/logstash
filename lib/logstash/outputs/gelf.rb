@@ -8,7 +8,8 @@ require "logstash/outputs/base"
 class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   config_name "gelf"
-  
+  plugin_status "unstable"
+
   # graylog2 server address
   config :host, :validate => :string, :required => true
 
@@ -32,11 +33,14 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # "debug", "info", "warn", "error", "fatal", "unknown" (case insensitive).
   # Single-character versions of these are also valid, "d", "i", "w", "e", "f",
   # "u"
-  config :level, :validate => :string, :default => "INFO"
+  config :level, :validate => :array, :default => [ "%{severity}", "INFO" ]
 
   # The GELF facility. Dynamic values like %{foo} are permitted here; this
   # is useful if you need to use a value from the event as the facility name.
-  config :facility, :validate => :string, :default => "logstash-gelf"
+  config :facility, :validate => :array, :default => [ "%{facility}" , "logstash-gelf" ]
+
+  # Ship metadata within event object?
+  config :ship_metadata, :validate => :boolean, :default => true
 
   # The GELF custom field mappings. GELF supports arbitrary attributes as custom
   # fields. This exposes that. Exclude the `_` portion of the field name
@@ -88,19 +92,21 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     m["host"] = event.sprintf(@sender)
     m["file"] = event["@source_path"]
 
-    event.fields.each do |name, value|
-      next if value == nil
-      name = "_id" if name == "id"  # "_id" is reserved, so use "__id"
-      if !value.nil?
-        if value.is_a?(Array)
-          # collapse single-element arrays, otherwise leave as array
-          m["_#{name}"] = (value.length == 1) ? value.first : value
-        else
-          # Non array values should be presented as-is
-          # https://logstash.jira.com/browse/LOGSTASH-113
-          m["_#{name}"] = value
+    if @ship_metadata
+        event.fields.each do |name, value|
+          next if value == nil
+          name = "_id" if name == "id"  # "_id" is reserved, so use "__id"
+          if !value.nil?
+            if value.is_a?(Array)
+              # collapse single-element arrays, otherwise leave as array
+              m["_#{name}"] = (value.length == 1) ? value.first : value
+            else
+              # Non array values should be presented as-is
+              # https://logstash.jira.com/browse/LOGSTASH-113
+              m["_#{name}"] = value
+            end
+          end
         end
-      end
     end
 
     if @custom_fields
@@ -110,12 +116,42 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     end
 
     # Allow 'INFO' 'I' or number. for 'level'
-    level = event.sprintf(@level.to_s)
-    m["level"] = (@level_map[level.downcase] || level).to_i
-    m["facility"] = event.sprintf(@facility)
     m["timestamp"] = event.unix_timestamp.to_i
 
-    @logger.debug("Sending GELF event", :event => m)
-    @gelf.notify!(m)
+    # Probe facility array levels
+    if @facility.is_a?(Array)
+      @facility.each do |value|
+        parsed_value = event.sprintf(value)
+        if parsed_value
+          m["facility"] = parsed_value
+          break
+        end
+      end
+    else
+      m["facility"] = event.sprintf(@facility)
+    end
+
+    # Probe severity array levels
+    level = nil
+    if @level.is_a?(Array)
+      @level.each do |value|
+        parsed_value = event.sprintf(value)
+        if parsed_value
+          level = parsed_value
+          break
+        end
+      end
+    else
+      level = event.sprintf(@level.to_s)
+    end
+    m["level"] = (@level_map[level.downcase] || level).to_i
+
+    @logger.debug(["Sending GELF event", m])
+    begin
+      @gelf.notify!(m)
+    rescue
+      @logger.warn("Trouble sending GELF event", :gelf_event => m,
+                   :event => event, :error => $!)
+    end
   end # def receive
 end # class LogStash::Outputs::Gelf

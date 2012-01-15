@@ -6,18 +6,19 @@ require "logstash/outputs/base"
 # need to use this output.
 #
 #   *NOTE*: You must use the same version of elasticsearch server that logstash
-#   uses for it's client. Currently we use elasticsearch 0.17.7
+#   uses for its client. Currently we use elasticsearch 0.18.6
 #
-# You can learn more about elasticseasrch at <http://elasticsearch.org>
+# You can learn more about elasticsearch at <http://elasticsearch.org>
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   config_name "elasticsearch"
+  plugin_status "stable"
 
   # ElasticSearch server name. This is optional if your server is discoverable.
   config :host, :validate => :string
 
   # The index to write events to. This can be dynamic using the %{foo} syntax.
-  # The default value will partition your indeces by day so you can more easily
+  # The default value will partition your indices by day so you can more easily
   # delete old data or only search specific date ranges.
   config :index, :validate => :string, :default => "logstash-%{+YYYY.MM.dd}"
 
@@ -67,6 +68,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
         require jar
     end
 
+    # setup log4j properties for elasticsearch
+    @logger.setup_log4j
+
     if @embedded
       %w(host cluster bind_host).each do |name|
         if instance_variable_get("@#{name}")
@@ -92,12 +96,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       :bind_host => @bind_host,
     }
 
-    if (@embedded)
-      options[:type] = :local
-    else
-      options[:type] = :node
-      # TODO(sissel): Support 'transport client'
-    end
+    # TODO(sissel): Support 'transport client'
+    options[:type] = :node
 
     @client = ElasticSearch::Client.new(options)
     @inflight_requests = 0
@@ -111,7 +111,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   def start_local_elasticsearch
     @logger.info("Starting embedded ElasticSearch local node.")
     builder = org.elasticsearch.node.NodeBuilder.nodeBuilder
-    builder.local(true)
+    # Disable 'local only' - LOGSTASH-277
+    #builder.local(true)
+    # TODO(sissel): Set cluster name, etc?
     builder.settings.put("http.port", @embedded_http_port)
 
     @embedded_elasticsearch = builder.node
@@ -162,7 +164,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     req.execute
   end # def receive
 
-  # Ruby doesn't appear to have a semaphor implementation, so this is a
+  # Ruby doesn't appear to have a semaphore implementation, so this is a
   # hack until I write one.
   private
   def increment_inflight_request_count

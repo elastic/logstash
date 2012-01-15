@@ -21,6 +21,7 @@ require "logstash/time"
 class LogStash::Filters::Date < LogStash::Filters::Base
 
   config_name "date"
+  plugin_status "unstable"
 
   # Config for date is:
   #   fieldname => dateformat
@@ -82,7 +83,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     require "java"
     # TODO(sissel): Need a way of capturing regexp configs better.
     @config.each do |field, value|
-      next if ["add_tag", "add_field", "type"].include?(field)
+      next if RESERVED.include?(field)
 
       # values here are an array of format strings for the given field.
       missing = []
@@ -121,7 +122,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   public
   def filter(event)
     @logger.debug("Date filter: received event", :type => event.type)
-    return unless event.type == @type
+    return unless filter?(event)
     now = Time.now
 
     @parsers.each do |field, fieldparsers|

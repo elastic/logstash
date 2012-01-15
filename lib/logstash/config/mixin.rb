@@ -99,6 +99,11 @@ module LogStash::Config::Mixin
       return @config_name
     end
 
+    def plugin_status(status=nil)
+      @plugin_status = status if !status.nil?
+      return @plugin_status
+    end
+
     # Define a new configuration setting
     def config(name, opts={})
       @config ||= Hash.new
@@ -157,12 +162,29 @@ module LogStash::Config::Mixin
       @logger = LogStash::Logger.new(STDOUT)
       is_valid = true
 
+      is_valid &&= validate_plugin_status
       is_valid &&= validate_check_invalid_parameter_names(params)
       is_valid &&= validate_check_required_parameter_names(params)
       is_valid &&= validate_check_parameter_values(params)
 
       return is_valid
     end # def validate
+
+    def validate_plugin_status
+      case @plugin_status
+      when "experimental"
+        @logger.warn("Using experimental plugin #{@config_name}. This plugin is untested. Use at your own risk")
+      when "unstable"
+        @logger.info("Using unstable plugin #{@config_name}.")
+      when "stable"
+        # This is cool.
+      when nil
+        raise "#{@config_name} must set a plugin_status"
+      else
+        raise "#{@config_name} set an invalid plugin status #{@plugin_status}. Valid values are experimental, unstable and stable"
+      end
+      return true
+    end
 
     def validate_check_invalid_parameter_names(params)
       invalid_params = params.keys

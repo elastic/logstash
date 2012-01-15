@@ -10,6 +10,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
 
   config_name "amqp"
+  plugin_status "unstable"
 
   # Your amqp server address
   config :host, :validate => :string, :required => true
@@ -54,9 +55,6 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   public
   def register
     require "bunny" # rubygem 'bunny'
-    if !MQTYPES.include?(@exchange_type)
-      raise "Invalid exchange_type, #{@exchange_type.inspect}, must be one of #{MQTYPES.join(", ")}"
-    end
 
     @logger.info("Registering output", :plugin => self)
     connect
@@ -132,7 +130,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   public
   def to_s
-    return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@name}\##{@queue_name}"
+    return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@name}\##{@key}"
   end
 
   public

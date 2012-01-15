@@ -9,6 +9,7 @@ require "logstash/namespace"
 class LogStash::Filters::Grep < LogStash::Filters::Base
 
   config_name "grep"
+  plugin_status "unstable"
 
   # Drop events that don't match
   #
@@ -39,7 +40,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       # TODO(sissel): 
     @match.merge(@config).each do |field, pattern|
       # Skip known config names
-      next if ["add_tag", "add_field", "type", "negate", "match", "drop"].include?(field)
+      next if (RESERVED + ["negate", "match", "drop"]).include?(field)
 
       re = Regexp.new(pattern)
       @patterns[field] << re
@@ -50,11 +51,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
 
   public
   def filter(event)
-    if event.type != @type
-      @logger.debug("grep: skipping non-matching event type", :type =>
-                    event.type, :wanted_type => @type, :event => event)
-      return
-    end
+    return unless filter?(event)
 
     @logger.debug("Running grep filter", :event => event, :config => config)
     matches = 0

@@ -408,7 +408,7 @@ class LogStash::Agent
           @plugin_setup_mutex.synchronize { filter.register }
         end
         @filterworkers = {}
-        2.times do |n|
+        1.times do |n|
           # TODO(sissel): facter this out into a 'filterworker' that  accepts
           # 'shutdown'
           # Start a filter worker

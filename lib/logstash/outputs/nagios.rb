@@ -5,8 +5,9 @@ require "logstash/outputs/base"
 # nagios command file. 
 #
 # For this output to work, your event must have the following fields:
-#   "nagios_host"
-#   "nagios_service"
+#
+#  * "nagios_host"
+#  * "nagios_service"
 #
 # This field is supported, but optional:
 #   "nagios_annotation"
@@ -39,6 +40,7 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
   NAGIOS_WARN = 1
 
   config_name "nagios"
+  plugin_status "unstable"
 
   # The path to your nagios command file
   config :commandfile, :validate => :string, :default => "/var/lib/nagios3/rw/nagios.cmd"
