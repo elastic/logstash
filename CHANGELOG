@@ -1,10 +1,68 @@
 1.1 (??? ??, 2011)
-  - ElasticSearch 0.18.4 now included
-  - grok filter: named_captures_only now defaults to true
+
   - Bugs fixed
-    - [LOGSTASH-174] - output/statsd: fix tag filtering
-    - [LOGSTASH-176] - output/graphite: support type & tag filtering
     - [LOGSTASH-181] - output/statsd: set sender properly
+    - feature: grok filter: named_captures_only now defaults to true
+
+
+  ### NEW
+  - upgrade: elasticsearch 0.18.6 now included
+  - upgrade: now using jruby 1.9
+  - feature: [LOGSTASH-158] - MRI-1.9 compatible (except for some
+    plugins/functions which will throw a compatibility exception)
+  - bugfix, feature: [LOGSTASH-40,65]: much smarter file watching for file
+    inputs. now supports globs, keeps state between runs, can handle
+    truncate, log rotation, etc.  no more inotify is required, either
+    (removes Linux restriction for file inputs)
+  - feature: [LOGSTASH-66,150]: libgrok re-written in pure ruby (no more
+    FFI / external libgrok.so dependency!)
+  - feature: new file output plugin
+  - feature: [LOGSTASH-316] - allow specifying type" and "tags" for filters
+  - feature: [LOGSTASH-168] - add new GELF input plugin
+  - feature: [LOGSTASH-267,-254] - add DNS filter for doing forward or
+    reverse DNS on an event field
+  - feature: [LOGSTASH-57] - add mutate filter to help with manipulating
+    event field content and type
+  - upgrade: now using cabin library for all internal logging
+  - feature: add json filter to turn an event field with JSON into the
+    expanded data structure
+  - 
+
+  ## general
+  - bugfix: initialize log4j appenders. silences warnings, provides logging
+    for in-process elasticsearch server
+  - bugfix: AMQP overhaul (input & output), please see docs for updated
+    config parameters
+  - bugfix: [LOGSTASH-162,177] - make sure plugin-contained global actions
+    happen serially across all plugins (with a mutex)
+
+
+  ## inputs
+  - bugfix: [LOGSTASH-317] - fix file input not to crash when a file
+    is unreadable
+  - feature: [LOGSTASH-172] - syslog input accepts ISO8601 timestamps
+  - feature: [LOGSTASH-159] - TCP input lets you configure what identifies
+    an input stream to the multiline filter (unique per host, or connection)
+  - bugfix: [LOGSTASH-8] - fix stomp input
+
+  ## filters
+  - bugfix: [LOGSTASH-285] - allow droping empty grok matches
+  - feature: [LOGSTASH-219] - support parsing unix epoch times
+
+
+  ## outputs
+  - bugfix: embedded elasticsearch now acts as a full ES server, not just
+    accessible from in-VM
+  - bugfix: many gelf output enhancements and bugfixes
+  - feature: [LOGSTASH-281] - add https support to loggly output
+  - bugfix: [LOGSTASH-167] - limit number of in-flight requests to the
+    elasticsearch node to avoid creating too many threads (one thread per
+    pending write request)
+
+  - misc: [LOGSTASH-160] - switch from rake to make
+  - misc: 
+  - test: use minitest
+
 
 1.0.17 (Aug 12, 2011)
   - Bugs fixed
