@@ -54,9 +54,9 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
         @socket.connect addr
       end
     end
-    @socket.setsockopt ::ZMQ::HWM, @hwm
-    @socket.setsockopt ::ZMQ::SWAP, @swap
-    @socket.setsockopt ::ZMQ::LINGER, @linger
+    assert(@socket.setsockopt(::ZMQ::HWM, @hwm), "Failed to set to set HWM")
+    assert(@socket.setsockopt(::ZMQ::SWAP, @swap), "Failed to set SWAP size")
+    assert(@socket.setsockopt(::ZMQ::LINGER, @linger) , "Failed to set socket linger time")
   end # def register
 
   def teardown
@@ -75,6 +75,12 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
     @mode == "server"
   end # def server?
 
+  def assert(val, msg)
+    unless val == 0
+      raise RuntimeError, "ZMQ error #{ZMQ::Util.error_string}. #{msg}"
+    end
+  end
+
   public
   def receive(event)
     return unless output?(event)
@@ -88,11 +94,11 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
     begin
       case @socket_type
       when :PUB
-        @socket.send_string(topic(event), ::ZMQ::SNDMORE)
+        assert(@socket.send_string(topic(event), ::ZMQ::SNDMORE), "Failed to send event")
       when :PUSH
         # nothing really
       end
-      @socket.send_string(event_text)
+      assert(@socket.send_string(event_text), "Failed to send event")
     rescue => e
       @logger.warn("0mq output exception", :address => address,
                     :exception => e, :backtrace => e.backtrace)

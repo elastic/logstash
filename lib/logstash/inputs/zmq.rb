@@ -40,7 +40,7 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
     case @socket_type
     when :SUB
       @pubsub_topics.each do |topic|
-        @socket.setsockopt ::ZMQ::SUBSCRIBE, topic
+        assert(@socket.setsockopt(::ZMQ::SUBSCRIBE, topic), "Failed to set socket topic")
       end
     when :PULL
       # nothing really.
@@ -58,21 +58,27 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
     @mode == "server"
   end # def server?
 
+  def assert(val, msg)
+    unless val == 0
+      raise RuntimeError, "ZMQ error #{ZMQ::Util.error_string}. #{msg}"
+    end
+  end
+
   public
   def run(output_queue)
     @logger.info("Starting 0mq output", :address => @socket_address)
     @socket_addresses.each do |addr|
       if server?
         @logger.info("Binding socket", :address => addr)
-        @socket.bind addr
+        assert @socket.bind addr
       else
         @logger.info("Connecting socket", :address => addr)
-        @socket.connect addr
+        assert @socket.connect addr
       end
     end
     loop do
       message = Array.new
-      @socket.recv_strings message
+      assert(@socket.recv_strings(message), "Failed to recv message")
       if message.count > 1 and @socket_type == :SUB
         topic = message.first 
         e = to_event message[1..-1].join("\n"), "0mq"
