@@ -10,8 +10,8 @@
     plugins/functions which will throw a compatibility exception)
   - bugfix, feature: [LOGSTASH-40,65]: much smarter file watching for file
     inputs. now supports globs, keeps state between runs, can handle
-    truncate, log rotation, etc.  no more inotify is required, either
-    (removes Linux restriction for file inputs)
+    truncate, log rotation, etc. no more inotify is required, either
+    (file input now works on all platforms)
   - feature: [LOGSTASH-66,150]: libgrok re-written in pure ruby (no more
     FFI / external libgrok.so dependency!)
   - feature: new file output plugin
