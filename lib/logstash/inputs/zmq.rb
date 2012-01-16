@@ -73,7 +73,7 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
         assert @socket.bind addr
       else
         @logger.info("Connecting socket", :address => addr)
-        assert @socket.connect addr
+        assert(@socket.connect(addr), "Failed connecting to #{addr}")
       end
     end
     loop do
