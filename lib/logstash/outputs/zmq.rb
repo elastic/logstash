@@ -44,6 +44,22 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
   def register
     @logger.info("Starting 0mq output", :socket_addresses => @socket_addresses)
     @socket_type = @socket_type.upcase.to_sym
+    open_sockets
+  end # def register
+
+  def teardown
+    @socket.close
+    finished
+    ::LogStash::ZMQManager.terminate
+  end
+
+  def reload
+    @socket.close
+    open_sockets
+  end
+
+  private
+  def open_sockets
     @socket = ::LogStash::ZMQManager.socket ::ZMQ.const_get @socket_type
     @socket_addresses.each do |addr|
       if server?
@@ -57,15 +73,8 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
     assert(@socket.setsockopt(::ZMQ::HWM, @hwm), "Failed to set to set HWM")
     assert(@socket.setsockopt(::ZMQ::SWAP, @swap), "Failed to set SWAP size")
     assert(@socket.setsockopt(::ZMQ::LINGER, @linger) , "Failed to set socket linger time")
-  end # def register
-
-  def teardown
-    @socket.close
-    finished
-    ::LogStash::ZMQManager.terminate
   end
 
-  private
   # parse the topic pattern
   def topic(e)
     e.sprintf(@pubsub_topic)

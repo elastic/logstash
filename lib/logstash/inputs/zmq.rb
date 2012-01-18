@@ -36,6 +36,22 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
   public
   def register
     @socket_type = @socket_type.upcase.to_sym
+    open_sockets
+  end # def register
+
+  def teardown
+    @socket.close
+    finished
+    ::LogStash::ZMQManager.terminate
+  end
+
+  def reload
+    @socket.close
+    open_sockets
+  end
+
+  private
+  def open_sockets
     @socket = ::LogStash::ZMQManager.socket ::ZMQ.const_get @socket_type
     case @socket_type
     when :SUB
@@ -45,15 +61,8 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
     when :PULL
       # nothing really.
     end
-  end # def register
-
-  def teardown
-    @socket.close
-    finished
-    ::LogStash::ZMQManager.terminate
   end
 
-  private
   def server?
     @mode == "server"
   end # def server?
