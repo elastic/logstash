@@ -109,7 +109,7 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
       end
       assert(@socket.send_string(event_text), "Failed to send event")
     rescue => e
-      @logger.warn("0mq output exception", :address => address,
+      @logger.warn("0mq output exception", :socket_addresses => @socket_addresses,
                     :exception => e, :backtrace => e.backtrace)
     end
   end # def receive
