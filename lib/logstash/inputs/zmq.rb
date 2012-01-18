@@ -70,7 +70,7 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
     @socket_addresses.each do |addr|
       if server?
         @logger.info("Binding socket", :address => addr)
-        assert @socket.bind addr
+        assert(@socket.bind(addr), "Failed to bind to #{addr}")
       else
         @logger.info("Connecting socket", :address => addr)
         assert(@socket.connect(addr), "Failed connecting to #{addr}")
