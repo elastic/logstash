@@ -53,9 +53,9 @@ build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
 .PHONY: copy-ruby-files
 copy-ruby-files: | build/ruby
 	@# Copy lib/ and test/ files to the root.
-	$(QUIET)find ./lib -name '*.rb' | sed -e 's,^lib/,,' \
+	$(QUIET)find ./lib -name '*.rb' | sed -e 's,^\./lib/,,' \
 	| (cd lib; cpio -p --make-directories ../build/ruby)
-	$(QUIET)find ./test -name '*.rb' | sed -e 's,^test/,,' \
+	$(QUIET)find ./test -name '*.rb' | sed -e 's,^\./test/,,' \
 	| (cd test; cpio -p --make-directories ../build/ruby)
 
 vendor:
