@@ -116,7 +116,7 @@ Here's a good sample config:
       # this output if you don't need it.
       stdout { }
 
-      # Ship events to the amqp fanout queue named 'rawlogs"
+      # Ship events to the amqp fanout exchange named 'rawlogs"
       amqp {
         host => "myamqpserver"
         exchange_type => "fanout"
@@ -146,8 +146,8 @@ parse them to use as the real timestamp value for the event.
         # ship logs to the 'rawlogs' fanout queue.
         type => "all"
         host => "myamqpserver"
-        exchange_type => "fanout"
-        name => "rawlogs"
+        exchange => "rawlogs"
+        name => "rawlogs_consumer"
       }
     }
 
