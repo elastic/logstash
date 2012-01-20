@@ -121,12 +121,12 @@ input {
 output { stdout { debug => true }}
 ```
 
-## Message durability
+## Message persistence
 By default, logstash will attempt to ensure that you don't lose any messages. This is reflected in the AMQP default settings as well.
 However there are cases where you might not want this. A good example is where AMQP is not your primary method of shipping.
 
 In the following example, we use AMQP as a sniffing interface. Our primary destination is the embedded ElasticSearch instance. We have
-a secondary AMQP output that we use for duplicating messages. However we disable durability on this interface so that messages
+a secondary AMQP output that we use for duplicating messages. However we disable persistence and durability on this interface so that messages
 don't pile up waiting for delivery. We only use AMQP when we want to watch messages in realtime. Additionally, we're going to leverage
 routing keys so that we can optionally filter incoming messages to subsets of hosts. The exercise of getting messages to this logstash
 agent are left up to the user.
@@ -140,8 +140,9 @@ output {
     host => "my_amqp_server"
     exchange_type => "topic" # We use topic here to enable pub/sub with routing keys
     key => "logs.%{host}"
-    durable => false # If there are no bindings, messages will essentially devnull
-    persistent => false # If the logstash agent disconnects, the declared exchange will go away with it
+    durable => false # If rabbitmq restarts, the exchange disappears.
+    auto_delete => true # If logstash disconnects, the exchange goes away
+    persistent => false # Messages are not persisted to disk
   }
 }
 ```
