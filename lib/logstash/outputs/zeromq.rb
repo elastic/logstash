@@ -1,7 +1,7 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 require "ffi-rzmq"
-require "logstash/util/zmq"
+require "logstash/util/zeromq"
 
 
 # Write events to a 0MQ PUB socket.
@@ -12,9 +12,9 @@ require "logstash/util/zmq"
 # The default settings will create a publisher connecting to a subscriber
 # bound to tcp://127.0.0.1:2120
 #
-class LogStash::Outputs::Zmq < LogStash::Outputs::Base
+class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
 
-  config_name "zmq"
+  config_name "zeromq"
   plugin_status "experimental"
 
   # 0mq socket address to connect or bind to
@@ -31,7 +31,7 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
   def register
     # Unfortunately it's not possible to simply include at the class level
     # because the Config mixin thinks we're the included module and not the base-class
-    self.class.send(:include, LogStash::Util::Zmq)
+    self.class.send(:include, LogStash::Util::ZeroMQ)
     @publisher = context.socket(ZMQ::PUB)
     error_check(@publisher.setsockopt(ZMQ::SUBSCRIBE, @queue)) if @queue != ""
     error_check(@publisher.setsockopt(ZMQ::LINGER, 1))
@@ -63,4 +63,4 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
       @logger.warn("0mq output exception", :address => @address, :queue => @queue, :exception => e, :backtrace => e.backtrace)
     end
   end # def receive
-end # class LogStash::Outputs::Zmq
+end # class LogStash::Outputs::ZeroMQ
