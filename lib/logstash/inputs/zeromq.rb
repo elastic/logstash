@@ -2,7 +2,7 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require "ffi-rzmq"
 require "timeout"
-require "logstash/util/zmq"
+require "logstash/util/zeromq"
 
 # Read events over a 0MQ SUB socket.
 #
@@ -12,9 +12,9 @@ require "logstash/util/zmq"
 # The default settings will create a subscriber binding to tcp://127.0.0.1:2120 
 # waiting for connecting publishers.
 #
-class LogStash::Inputs::Zmq < LogStash::Inputs::Base
+class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
 
-  config_name "zmq"
+  config_name "zeromq"
   plugin_status "experimental"
 
   # 0mq socket address to connect or bind to
@@ -33,7 +33,7 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
 
   public
   def register
-    self.class.send(:include, LogStash::Util::Zmq)
+    self.class.send(:include, LogStash::Util::ZeroMQ)
     @subscriber = context.socket(ZMQ::SUB)
     error_check(@subscriber.setsockopt(ZMQ::HWM, @queue_length))
     error_check(@subscriber.setsockopt(ZMQ::SUBSCRIBE, @queue))
@@ -68,4 +68,4 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
       @logger.debug("Read timeout", subscriber => @subscriber)
     end # begin
   end # def run
-end # class LogStash::Inputs::Zmq
+end # class LogStash::Inputs::ZeroMQ

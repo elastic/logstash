@@ -1,7 +1,7 @@
 require 'ffi-rzmq'
 require "logstash/namespace"
 
-module LogStash::Util::Zmq
+module LogStash::Util::ZeroMQ
   CONTEXT = ZMQ::Context.new
 
   def context
@@ -19,8 +19,8 @@ module LogStash::Util::Zmq
 
   def error_check(rc)
     unless ZMQ::Util.resultcode_ok?(rc)
-      @logger.error("ZMQ error: ", { :error_code => rc })
-      raise "ZMQ Error"
+      @logger.error("ZeroMQ error: ", { :error_code => rc })
+      raise "ZeroMQ Error"
     end
   end # def error_check
-end # module LogStash::Util::Zmq
+end # module LogStash::Util::ZeroMQ
