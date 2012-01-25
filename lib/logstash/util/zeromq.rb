@@ -10,17 +10,17 @@ module LogStash::Util::ZeroMQ
 
   def setup(socket, address)
     if server?
-      error_check(socket.bind(address))
+      error_check(socket.bind(address), "binding to #{address}")
     else
-      error_check(socket.connect(address))
+      error_check(socket.connect(address), "connecting to #{address}")
     end
     @logger.info("0mq: #{server? ? 'connected' : 'bound'}", :address => address)
   end
 
-  def error_check(rc)
+  def error_check(rc, doing)
     unless ZMQ::Util.resultcode_ok?(rc)
-      @logger.error("ZeroMQ error: ", { :error_code => rc })
-      raise "ZeroMQ Error"
+      @logger.error("ZeroMQ error while #{doing}", { :error_code => rc })
+      raise "ZeroMQ Error while #{doing}"
     end
   end # def error_check
 end # module LogStash::Util::ZeroMQ

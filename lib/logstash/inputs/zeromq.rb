@@ -36,14 +36,17 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   def register
     self.class.send(:include, LogStash::Util::ZeroMQ)
     @subscriber = context.socket(ZMQ::SUB)
-    error_check(@subscriber.setsockopt(ZMQ::HWM, @queue_length))
-    error_check(@subscriber.setsockopt(ZMQ::SUBSCRIBE, @queue))
-    error_check(@subscriber.setsockopt(ZMQ::LINGER, 1))
+    error_check(@subscriber.setsockopt(ZMQ::HWM, @queue_size),
+                "while setting ZMQ:HWM == #{@queue_size.inspect}")
+    error_check(@subscriber.setsockopt(ZMQ::SUBSCRIBE, @queue),
+                "while setting ZMQ:SUBSCRIBE == #{@queue.inspect}")
+    error_check(@subscriber.setsockopt(ZMQ::LINGER, 1),
+                "while setting ZMQ::LINGER == 1)")
     setup(@subscriber, @address)
   end # def register
 
   def teardown
-    error_check(@subscriber.close)
+    error_check(@subscriber.close, "while closing the zmq socket")
   end # def teardown
 
   def server?
@@ -55,7 +58,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
       loop do
         msg = ''
         rc = @subscriber.recv_string(msg)
-        error_check(rc)
+        error_check(rc, "in recv_string")
         @logger.debug("0mq: receiving", :event => msg)
         e = self.to_event(msg, @source)
         if e
