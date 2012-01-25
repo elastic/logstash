@@ -24,6 +24,11 @@
   - upgrade: now using cabin library for all internal logging
   - feature: add json filter to turn an event field with JSON into the
     expanded data structure
+  - feature: zeromq input and output plugins. Requires you have libzmq
+    installed on your system.
+  - feature: all plugins now have a 'plugin status' indicating the expectation
+    of stability, successful deployment, and rate of code change. If you
+    use an unstable plugin, you will now see a warning message on startup.
 
   ## general
   - bugfix: initialize log4j appenders. silences warnings, provides logging
