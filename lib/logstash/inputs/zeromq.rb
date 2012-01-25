@@ -21,9 +21,10 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   config :address, :validate => :string, :default => "tcp://127.0.0.1:2120"
 
   # 0mq queue size
-  config :queue_size, :validate => :number, :default => 1000
+  config :queue_size, :validate => :number, :default => 20
 
-  # 0mq topic to subscribe to
+  # 0mq topic (Used with ZMQ_SUBSCRIBE, see http://api.zeromq.org/2-1:zmq-setsockopt 
+  # for 'ZMQ_SUBSCRIBE: Establish message filter')
   config :queue, :validate => :string, :default => "" # default all
 
   # wether to bind ("server") or connect ("client") to the socket
