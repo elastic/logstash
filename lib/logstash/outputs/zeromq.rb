@@ -1,8 +1,5 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
-require "ffi-rzmq"
-require "logstash/util/zeromq"
-
 
 # Write events to a 0MQ PUB socket.
 #
@@ -29,6 +26,8 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
 
   public
   def register
+    require "ffi-rzmq"
+    require "logstash/util/zeromq"
     # Unfortunately it's not possible to simply include at the class level
     # because the Config mixin thinks we're the included module and not the base-class
     self.class.send(:include, LogStash::Util::ZeroMQ)

@@ -1,8 +1,6 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "ffi-rzmq"
 require "timeout"
-require "logstash/util/zeromq"
 
 # Read events over a 0MQ SUB socket.
 #
@@ -34,6 +32,8 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
 
   public
   def register
+    require "ffi-rzmq"
+    require "logstash/util/zeromq"
     self.class.send(:include, LogStash::Util::ZeroMQ)
     @subscriber = context.socket(ZMQ::SUB)
     error_check(@subscriber.setsockopt(ZMQ::HWM, @queue_size),
