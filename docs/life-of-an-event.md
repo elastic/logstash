@@ -1,27 +1,30 @@
 ---
-title: Queues and Threads - logstash internals
+title: the life of an event - logstash
 layout: content_right
 ---
-# Queues and Threading (logstash internals)
+# the life of an event
 
-The logstash agent is 3 parts: inputs -> filters -> outputs.
+The logstash agent is an event pipeline.
 
-Each '->' is an internal messaging system. It is implemented with a
-'SizedQueue' in Ruby. SizedQueue allows a bounded maximum of items in the queue
-such that any writes to the queue will block if the queue is full at maximum
-capacity.
+The logstash agent is 3 parts: inputs -> filters -> outputs. Inputs generate
+events, filters modify them, outputs ship them elsewhere.
 
-Logstash sets the queue size to 20. This means only 20 events can be pending
+Internal to logstash, events are passed from each phase using internal queues.
+It is implemented with a 'SizedQueue' in Ruby. SizedQueue allows a bounded
+maximum of items in the queue such that any writes to the queue will block if
+the queue is full at maximum capacity.
+
+Logstash sets each queue size to 20. This means only 20 events can be pending
 into the next phase - this helps reduce any data loss and in general avoids
 logstash trying to act as a data storage system. These internal queues are not
 for storing messages long-term.
 
-In reverse, here's what happens with a queue fills.
+Starting at outputs, here's what happens with a queue fills up.
 
 If an output is failing, the output thread will wait until this output is
-healthy again and able to successfully send the message before moving on.
-Therefore, the output queue (there is only one) will stop being read from and
-will eventually fill up with events and cause write blocks.
+healthy again and able to successfully send the message. Therefore, the output
+queue will stop being read from by this output and will eventually fill up with
+events and cause write blocks.
 
 A full output queue means filters will block trying to write to the output
 queue. Because filters will be stuck, blocked writing to the output queue, they
@@ -40,25 +43,25 @@ processing the current queue of data.
 
 The thread model in logstash is currently:
 
-    N input threads | M filter threads | 1 output thread
+    input threads | filter threads | output threads
 
 Filters are optional, so you will have this model if you have no filters defined:
 
-    N input threads | 1 output thread
+    input threads | output threads
 
 Each input runs in a thread by itself. This allows busier inputs to not be
 blocked by slower ones, etc. It also allows for easier containment of scope
 because each input has a thread.
 
-The filter thread model is a 'worker' one, where each worker receives an event
+The filter thread model is a 'worker' model where each worker receives an event
 and applies all filters, in order, before emitting that to the output queue.
 This allows scalability across CPUs because many filters are CPU intensive
-(permitting that we have thread safety). Currently logstash forces the number
-of filter worker threads to be 1, but this will be tunable in the future.
+(permitting that we have thread safety). Currently, logstash forces the number
+of filter worker threads to be 1, but this will be tunable in the future once
+we analyze the thread safety of each filter.
 
-The output thread model is a single thread. It operates like the worker model
-above where one event is received and all outputs process it in order and
-serially.
+The output thread model one thread per output. Each output has its own queue
+receiving events. This is implemented in logstash with LogStash::MultiQueue.
 
 ## Consequences and Expectations
 
@@ -67,8 +70,8 @@ times of load or other temporary pipeline problems. The alternative is
 unlimited queues which grow unbounded and eventually exceed memory causing a
 crash which loses all of those messages.
 
-Given the above, by default, logstash will have probably 3 threads at a minimum
-(2 if you have no filters). One input, one filter, and one output thread each.
+At a minum, logstash will have probably 3 threads (2 if you have no filters).
+One input, one filter worker, and one output thread each.
 
 If you see logstash using multiple CPUs, this is likely why. If you want to
 know more about what each thread is doing, you should read this:
