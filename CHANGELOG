@@ -3,15 +3,17 @@
     - [LOGSTASH-181] - output/statsd: set sender properly
 
   ## IMPORTANT CHANGES FOR PEOPLE UPGRADING
-    - feature: grok filter: named_captures_only now defaults to true
+    - grok filter: named_captures_only now defaults to true
         This means simple patterns %{NUMBER} without any other name will 
         now not be included in the field set. You can revert to the old
         behavior by setting 'named_captures_only => false' in your grok
         filter config.
+    - elasticsearch library upgraded to 0.18.6
+        This means you will need to upgrade your elasticsearch servers,
+        if any, to the this version: 0.18.6
     - DOCUMENT INCOMPATIBLE AMQP CHANGES
 
   ## NEW
-  - upgrade: elasticsearch 0.18.6 now included
   - upgrade: now using jruby 1.9
   - feature: [LOGSTASH-158] - MRI-1.9 compatible (except for some
     plugins/functions which will throw a compatibility exception)
