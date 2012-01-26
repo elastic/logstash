@@ -184,11 +184,11 @@ build/docs/inputs build/docs/filters build/docs/outputs: | build/docs
 	-$(QUIET)mkdir $@
 
 # bluecloth gem doesn't work on jruby. Use ruby.
-build/docs/inputs/%.html: lib/logstash/inputs/%.rb | build/docs/inputs
+build/docs/inputs/%.html: lib/logstash/inputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/inputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
-build/docs/filters/%.html: lib/logstash/filters/%.rb | build/docs/filters
+build/docs/filters/%.html: lib/logstash/filters/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/filters
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
-build/docs/outputs/%.html: lib/logstash/outputs/%.rb | build/docs/outputs
+build/docs/outputs/%.html: lib/logstash/outputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/outputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
 
 build/docs/%: docs/% lib/logstash/version.rb Makefile
