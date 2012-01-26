@@ -8,6 +8,7 @@
         now not be included in the field set. You can revert to the old
         behavior by setting 'named_captures_only => false' in your grok
         filter config.
+    - DOCUMENT INCOMPATIBLE AMQP CHANGES
 
   ## NEW
   - upgrade: elasticsearch 0.18.6 now included
