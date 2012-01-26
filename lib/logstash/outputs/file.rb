@@ -30,10 +30,18 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # event will be written as a single line.
   config :message_format, :validate => :string
 
+  # Flush interval for flushing writes to log files. 0 will flush on every meesage
+  config :flush_interval, :validate => :number, :default => 2
+
   public
   def register
     require "fileutils" # For mkdir_p
     @files = {}
+    now = Time.now
+    @last_flush_cycle = now
+    @last_stale_cleanup_cycle = now
+    flush_interval = @flush_interval.to_f
+    @stale_cleanup_interval = 10
   end # def register
 
   public
@@ -44,17 +52,68 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     fd = open(path)
 
     # TODO(sissel): Check if we should rotate the file.
-    # TODO(sissel): Check if we should close files not recently used.
 
     if @message_format
       fd.write(event.sprintf(@message_format) + "\n")
     else
       fd.write(event.to_json + "\n")
     end
-    fd.flush
+    flush(fd)
+    close_stale_files
   end # def receive
 
+  def teardown
+    @files.each do |fd|
+      unless fd.closed?
+        fd.flush
+        fd.close
+      end
+    end
+  end
+
   private
+  def flush(fd)
+    if flush_interval > 0
+      flush_pending_files
+    else
+      fd.flush
+    end
+  end
+
+  # every flush_interval seconds or so (triggered by events, but if there are no events there's no point flushing files anyway)
+  def flush_pending_files
+    if Time.now - @last_flush_cycle > flush_interval
+      @logger.debug("Starting flush cycle")
+      @files.each do |path, fd|
+        @logger.debug("Flushing file", :path => path, :fd => fd)
+        fd.flush
+      end
+      @last_flush_cycle = Time.now
+    end
+  end
+
+  # every 10 seconds or so (triggered by events, but if there are no events there's no point closing files anyway)
+  def close_stale_files
+    now = Time.now
+    if now - @last_stale_cleanup_cycle > @stale_cleanup_interval
+      @logger.debug("Starting stale files cleanup cycle", :files => files)
+      inactive_files = @files.select do |path, fd|
+        not fd.active
+      end
+      @logger.debug("%d stale files found" % inactive_files.count, :inactive_files => inactive_files)
+      inactive_files.each do |path, fd|
+        @logger.debug("Closing file %s" % path)
+        fd.close
+        @files.delete(path)
+      end
+      # mark all files as inactive, a call to write will mark them as active again
+      @files.each do |path, fd|
+        fd.active = false
+      end
+      @last_stale_cleanup_cycle = now
+    end
+  end
+
   def open(path)
     return @files[path] if @files.include?(path)
 
@@ -72,6 +131,14 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       @files[path] = java.io.FileWriter.new(java.io.File.new(path))
     else
       @files[path] = File.new(path, "a")
+    end
+    class << @files[path]
+      alias :write_real :write
+      def write(str)
+        write_real(str)
+        active = true
+      end
+      attr_accessor :active
     end
   end
 end # class LogStash::Outputs::Gelf
