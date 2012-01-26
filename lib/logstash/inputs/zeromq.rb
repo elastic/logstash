@@ -1,8 +1,6 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "ffi-rzmq"
 require "timeout"
-require "logstash/util/zmq"
 
 # Read events over a 0MQ SUB socket.
 #
@@ -12,18 +10,19 @@ require "logstash/util/zmq"
 # The default settings will create a subscriber binding to tcp://127.0.0.1:2120 
 # waiting for connecting publishers.
 #
-class LogStash::Inputs::Zmq < LogStash::Inputs::Base
+class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
 
-  config_name "zmq"
+  config_name "zeromq"
   plugin_status "experimental"
 
   # 0mq socket address to connect or bind to
   config :address, :validate => :string, :default => "tcp://127.0.0.1:2120"
 
   # 0mq queue size
-  config :queue_size, :validate => :number, :default => 1000
+  config :queue_size, :validate => :number, :default => 20
 
-  # 0mq topic to subscribe to
+  # 0mq topic (Used with ZMQ_SUBSCRIBE, see http://api.zeromq.org/2-1:zmq-setsockopt 
+  # for 'ZMQ_SUBSCRIBE: Establish message filter')
   config :queue, :validate => :string, :default => "" # default all
 
   # wether to bind ("server") or connect ("client") to the socket
@@ -33,16 +32,21 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
 
   public
   def register
-    self.class.send(:include, LogStash::Util::Zmq)
+    require "ffi-rzmq"
+    require "logstash/util/zeromq"
+    self.class.send(:include, LogStash::Util::ZeroMQ)
     @subscriber = context.socket(ZMQ::SUB)
-    error_check(@subscriber.setsockopt(ZMQ::HWM, @queue_length))
-    error_check(@subscriber.setsockopt(ZMQ::SUBSCRIBE, @queue))
-    error_check(@subscriber.setsockopt(ZMQ::LINGER, 1))
+    error_check(@subscriber.setsockopt(ZMQ::HWM, @queue_size),
+                "while setting ZMQ:HWM == #{@queue_size.inspect}")
+    error_check(@subscriber.setsockopt(ZMQ::SUBSCRIBE, @queue),
+                "while setting ZMQ:SUBSCRIBE == #{@queue.inspect}")
+    error_check(@subscriber.setsockopt(ZMQ::LINGER, 1),
+                "while setting ZMQ::LINGER == 1)")
     setup(@subscriber, @address)
   end # def register
 
   def teardown
-    error_check(@subscriber.close)
+    error_check(@subscriber.close, "while closing the zmq socket")
   end # def teardown
 
   def server?
@@ -54,7 +58,7 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
       loop do
         msg = ''
         rc = @subscriber.recv_string(msg)
-        error_check(rc)
+        error_check(rc, "in recv_string")
         @logger.debug("0mq: receiving", :event => msg)
         e = self.to_event(msg, @source)
         if e
@@ -68,4 +72,4 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
       @logger.debug("Read timeout", subscriber => @subscriber)
     end # begin
   end # def run
-end # class LogStash::Inputs::Zmq
+end # class LogStash::Inputs::ZeroMQ

@@ -162,7 +162,7 @@ class LogStashConfigDocGenerator
       section = "output"
     end
 
-    template_file = File.join(File.dirname(__FILE__), "docs.html.erb")
+    template_file = File.join(File.dirname(__FILE__), "plugin-doc.html.erb")
     template = ERB.new(File.new(template_file).read, nil, "-")
 
     # descriptions are assumed to be markdown

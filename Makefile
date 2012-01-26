@@ -184,21 +184,25 @@ build/docs/inputs build/docs/filters build/docs/outputs: | build/docs
 	-$(QUIET)mkdir $@
 
 # bluecloth gem doesn't work on jruby. Use ruby.
-build/docs/inputs/%.html: lib/logstash/inputs/%.rb | build/docs/inputs
+build/docs/inputs/%.html: lib/logstash/inputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/inputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
-build/docs/filters/%.html: lib/logstash/filters/%.rb | build/docs/filters
+build/docs/filters/%.html: lib/logstash/filters/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/filters
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
-build/docs/outputs/%.html: lib/logstash/outputs/%.rb | build/docs/outputs
+build/docs/outputs/%.html: lib/logstash/outputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/outputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
 
-build/docs/%: docs/% lib/logstash/version.rb
+build/docs/%: docs/% lib/logstash/version.rb Makefile
 	@echo "Copying $< (to $@)"
 	-$(QUIET)mkdir -p $(shell dirname $@)
-	$(QUIET)sed -re 's/%VERSION%/$(VERSION)/g' $< > $@
+	$(QUIET)cp $< $@
+	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
-build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb
+build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index.html.erb Makefile
 	ruby $< build/docs > $@
+	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 
 publish: | gem
 	$(QUIET)$(WITH_JRUBY) gem push logstash-$(VERSION).gem
