@@ -200,7 +200,8 @@ build/docs/%: docs/% lib/logstash/version.rb Makefile
 
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index.html.erb Makefile
-	ruby $< build/docs > $@
+	@echo "Building documentation index.html"
+	$(QUIET)ruby $< build/docs > $@
 	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 
