@@ -191,14 +191,15 @@ build/docs/filters/%.html: lib/logstash/filters/%.rb | build/docs/filters
 build/docs/outputs/%.html: lib/logstash/outputs/%.rb | build/docs/outputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
 
-build/docs/%: docs/% lib/logstash/version.rb
+build/docs/%: docs/% lib/logstash/version.rb Makefile
 	@echo "Copying $< (to $@)"
 	-$(QUIET)mkdir -p $(shell dirname $@)
-	$(QUIET)sed -re 's/%VERSION%/$(VERSION)/g' $< > $@
-	$(QUIET)sed -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $< > $@
+	$(QUIET)cp $< $@
+	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
-build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index.html.erb
+build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index.html.erb Makefile
 	ruby $< build/docs > $@
 	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
