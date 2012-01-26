@@ -1,6 +1,6 @@
 ---
 title: Just Enough AMQP - logstash
-layout: content\_right
+layout: content_right
 ---
 
 While configuring your AMQP broker is out of scope for logstash, it's important to understand how
