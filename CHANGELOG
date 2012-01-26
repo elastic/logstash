@@ -1,10 +1,19 @@
 1.1 (??? ??, 2012)
   - Bugs fixed
     - [LOGSTASH-181] - output/statsd: set sender properly
-    - feature: grok filter: named_captures_only now defaults to true
+
+  ## IMPORTANT CHANGES FOR PEOPLE UPGRADING
+    - grok filter: named_captures_only now defaults to true
+        This means simple patterns %{NUMBER} without any other name will 
+        now not be included in the field set. You can revert to the old
+        behavior by setting 'named_captures_only => false' in your grok
+        filter config.
+    - elasticsearch library upgraded to 0.18.6
+        This means you will need to upgrade your elasticsearch servers,
+        if any, to the this version: 0.18.6
+    - DOCUMENT INCOMPATIBLE AMQP CHANGES
 
   ## NEW
-  - upgrade: elasticsearch 0.18.6 now included
   - upgrade: now using jruby 1.9
   - feature: [LOGSTASH-158] - MRI-1.9 compatible (except for some
     plugins/functions which will throw a compatibility exception)
@@ -24,6 +33,11 @@
   - upgrade: now using cabin library for all internal logging
   - feature: add json filter to turn an event field with JSON into the
     expanded data structure
+  - feature: zeromq input and output plugins. Requires you have libzmq
+    installed on your system.
+  - feature: all plugins now have a 'plugin status' indicating the expectation
+    of stability, successful deployment, and rate of code change. If you
+    use an unstable plugin, you will now see a warning message on startup.
 
   ## general
   - bugfix: initialize log4j appenders. silences warnings, provides logging

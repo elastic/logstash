@@ -3,6 +3,7 @@ require "logstash/namespace"
 require "logstash/config/registry"
 require "logstash/logging"
 require "logstash/util/password"
+require "logstash/version"
 
 # This module is meant as a mixin to classes wishing to be configurable from
 # config files
@@ -171,17 +172,18 @@ module LogStash::Config::Mixin
     end # def validate
 
     def validate_plugin_status
+      docmsg = "For more information about plugin statuses, see http://logstash.net/docs/#{LOGSTASH_VERSION}/plugin-status "
       case @plugin_status
       when "experimental"
-        @logger.warn("Using experimental plugin #{@config_name}. This plugin is untested. Use at your own risk")
+        @logger.warn("Using experimental plugin #{@config_name}. This plugin is untested. Use at your own risk. #{docmsg}")
       when "unstable"
-        @logger.info("Using unstable plugin #{@config_name}.")
+        @logger.info("Using unstable plugin #{@config_name}. #{docmsg}")
       when "stable"
         # This is cool.
       when nil
-        raise "#{@config_name} must set a plugin_status"
+        raise "#{@config_name} must set a plugin_status. #{docmsg}"
       else
-        raise "#{@config_name} set an invalid plugin status #{@plugin_status}. Valid values are experimental, unstable and stable"
+        raise "#{@config_name} set an invalid plugin status #{@plugin_status}. Valid values are experimental, unstable and stable. #{docmsg}"
       end
       return true
     end
