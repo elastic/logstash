@@ -96,7 +96,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   def close_stale_files
     now = Time.now
     if now - @last_stale_cleanup_cycle > @stale_cleanup_interval
-      @logger.debug("Starting stale files cleanup cycle", :files => files)
+      @logger.debug("Starting stale files cleanup cycle", :files => @files)
       inactive_files = @files.select do |path, fd|
         not fd.active
       end
