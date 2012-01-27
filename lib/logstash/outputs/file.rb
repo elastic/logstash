@@ -136,10 +136,10 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       alias :write_real :write
       def write(str)
         write_real(str)
-        active = true
+        @active = true
       end
       attr_accessor :active
     end
     @files[path]
   end
-end # class LogStash::Outputs::Gelf
+end # class LogStash::Outputs::File
