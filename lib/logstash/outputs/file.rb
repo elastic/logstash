@@ -70,6 +70,9 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     @files.each do |fd|
       begin
         fd.flush
+        if fd.class == Zlib::GzipWriter
+          fd.to_io.flush
+        end
         fd.close
       rescue Exception => e
         @logger.error("Excpetion while flushing and closing files.", :exception => e)
@@ -84,6 +87,9 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       flush_pending_files
     else
       fd.flush
+      if fd.class == Zlib::GzipWriter
+        fd.to_io.flush
+      end
     end
   end
 
