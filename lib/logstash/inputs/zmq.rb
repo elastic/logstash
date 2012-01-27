@@ -1,7 +1,5 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "logstash/zmq_manager"
-require "ffi-rzmq"
 
 # Read events over a 0MQ socket
 #
@@ -12,6 +10,7 @@ require "ffi-rzmq"
 class LogStash::Inputs::Zmq < LogStash::Inputs::Base
 
   config_name "zmq"
+  plugin_status "experimental"
 
   # When mode is `server`, the address to listen on.
   # When mode is `client`, the address to connect to.
@@ -35,6 +34,8 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
 
   public
   def register
+    require "logstash/zmq_manager"
+    require "ffi-rzmq"
     @socket_type = @socket_type.upcase.to_sym
     open_sockets
   end # def register

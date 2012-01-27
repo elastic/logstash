@@ -1,7 +1,5 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
-require "ffi-rzmq"
-require "logstash/zmq_manager"
 
 
 # Write events over a 0MQ socket
@@ -13,6 +11,7 @@ require "logstash/zmq_manager"
 class LogStash::Outputs::Zmq < LogStash::Outputs::Base
 
   config_name "zmq"
+  plugin_status "experimental"
 
   config :socket_addresses, :validate => :array, :required => true
 
@@ -42,6 +41,8 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
 
   public
   def register
+    require "ffi-rzmq"
+    require "logstash/zmq_manager"
     @logger.info("Starting 0mq output", :socket_addresses => @socket_addresses)
     @socket_type = @socket_type.upcase.to_sym
     open_sockets
