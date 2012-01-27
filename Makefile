@@ -19,8 +19,8 @@ GEM_HOME=build/gems
 QUIET=@
 
 # OS-specific options
-UNAME=$(shell uname)
-ifeq ($(UNAME), Darwin)
+TARCHECK=$(shell tar --help|grep wildcard|wc -l)
+ifeq ($TARCHECK), 0)
 TAR_OPTS=
 else
 TAR_OPTS=--wildcards
