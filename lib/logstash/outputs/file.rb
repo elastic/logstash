@@ -64,11 +64,14 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
 
   def teardown
     @files.each do |fd|
-      unless fd.closed?
+      begin
         fd.flush
         fd.close
+      rescue Exception => e
+        @logger.error("Excpetion while flushing and closing files.", :exception => e)
       end
     end
+    super
   end
 
   private
@@ -82,7 +85,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
 
   # every flush_interval seconds or so (triggered by events, but if there are no events there's no point flushing files anyway)
   def flush_pending_files
-    if Time.now - @last_flush_cycle > flush_interval
+    if Time.now - @last_flush_cycle >= flush_interval
       @logger.debug("Starting flush cycle")
       @files.each do |path, fd|
         @logger.debug("Flushing file", :path => path, :fd => fd)
@@ -95,14 +98,14 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # every 10 seconds or so (triggered by events, but if there are no events there's no point closing files anyway)
   def close_stale_files
     now = Time.now
-    if now - @last_stale_cleanup_cycle > @stale_cleanup_interval
-      @logger.debug("Starting stale files cleanup cycle", :files => @files)
+    if now - @last_stale_cleanup_cycle >= @stale_cleanup_interval
+      @logger.info("Starting stale files cleanup cycle", :files => @files)
       inactive_files = @files.select do |path, fd|
         not fd.active
       end
       @logger.debug("%d stale files found" % inactive_files.count, :inactive_files => inactive_files)
       inactive_files.each do |path, fd|
-        @logger.debug("Closing file %s" % path)
+        @logger.info("Closing file %s" % path)
         fd.close
         @files.delete(path)
       end
@@ -115,7 +118,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   end
 
   def open(path)
-    return @files[path] if @files.include?(path)
+    return @files[path] if @files.include?(path) and not @files[path].nil?
 
     @logger.info("Opening file", :path => path)
 
