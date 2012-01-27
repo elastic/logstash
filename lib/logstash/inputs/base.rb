@@ -113,7 +113,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
       raise "unknown event format #{@format}, this should never happen"
     end
 
-    (@add_field or {}).each do |field, value|
+    @add_field.each do |field, value|
        event[field] ||= []
        event[field] = [event[field]] if !event[field].is_a?(Array)
        event[field] << event.sprintf(value)
