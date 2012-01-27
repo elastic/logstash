@@ -1,5 +1,6 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
+require "zlib"
 
 # File output.
 #
@@ -33,6 +34,9 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # Flush interval for flushing writes to log files. 0 will flush on every meesage
   config :flush_interval, :validate => :number, :default => 2
 
+  # Gzip output stream
+  config :gzip, :validate => :boolean, :default => false
+
   public
   def register
     require "fileutils" # For mkdir_p
@@ -40,7 +44,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     now = Time.now
     @last_flush_cycle = now
     @last_stale_cleanup_cycle = now
-    flush_interval = @flush_interval.to_f
+    flush_interval = @flush_interval.to_i
     @stale_cleanup_interval = 10
   end # def register
 
@@ -134,6 +138,9 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       @files[path] = java.io.FileWriter.new(java.io.File.new(path))
     else
       @files[path] = File.new(path, "a")
+    end
+    if gzip
+      @files[path] = Zlib::GzipWriter.new(@files[path])
     end
     class << @files[path]
       alias :write_real :write
