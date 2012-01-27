@@ -140,5 +140,6 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       end
       attr_accessor :active
     end
+    @files[path]
   end
 end # class LogStash::Outputs::Gelf
