@@ -8,7 +8,8 @@ require "logstash/outputs/base"
 class LogStash::Outputs::File < LogStash::Outputs::Base
 
   config_name "file"
-  
+  plugin_status "unstable"
+
   # The path to the file to write. Event fields can be used here, 
   # like "/var/log/logstash/%{@source_host}/%{application}"
   config :path, :validate => :string, :required => true
