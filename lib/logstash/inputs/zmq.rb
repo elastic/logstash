@@ -43,7 +43,6 @@ class LogStash::Inputs::Zmq < LogStash::Inputs::Base
   def teardown
     @socket.close
     finished
-    ::LogStash::ZMQManager.terminate
   end
 
   def reload

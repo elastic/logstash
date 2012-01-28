@@ -51,7 +51,6 @@ class LogStash::Outputs::Zmq < LogStash::Outputs::Base
   def teardown
     @socket.close
     finished
-    ::LogStash::ZMQManager.terminate
   end
 
   def reload
