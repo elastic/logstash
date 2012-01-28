@@ -67,18 +67,16 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   end # def receive
 
   def teardown
-    @files.each do |fd|
+    @logger.debug("Teardown: closing files")
+    @files.each do |path, fd|
       begin
-        fd.flush
-        if fd.class == Zlib::GzipWriter
-          fd.to_io.flush
-        end
         fd.close
+        @logger.debug("Closed file #{path}", :fd => fd)
       rescue Exception => e
         @logger.error("Excpetion while flushing and closing files.", :exception => e)
       end
     end
-    super
+    finished
   end
 
   private
@@ -87,44 +85,35 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       flush_pending_files
     else
       fd.flush
-      if fd.class == Zlib::GzipWriter
-        fd.to_io.flush
-      end
     end
   end
 
   # every flush_interval seconds or so (triggered by events, but if there are no events there's no point flushing files anyway)
   def flush_pending_files
-    if Time.now - @last_flush_cycle >= flush_interval
-      @logger.debug("Starting flush cycle")
-      @files.each do |path, fd|
-        @logger.debug("Flushing file", :path => path, :fd => fd)
-        fd.flush
-      end
-      @last_flush_cycle = Time.now
+    return unless Time.now - @last_flush_cycle >= flush_interval
+    @logger.debug("Starting flush cycle")
+    @files.each do |path, fd|
+      @logger.debug("Flushing file", :path => path, :fd => fd)
+      fd.flush
     end
+    @last_flush_cycle = Time.now
   end
 
   # every 10 seconds or so (triggered by events, but if there are no events there's no point closing files anyway)
   def close_stale_files
     now = Time.now
-    if now - @last_stale_cleanup_cycle >= @stale_cleanup_interval
-      @logger.info("Starting stale files cleanup cycle", :files => @files)
-      inactive_files = @files.select do |path, fd|
-        not fd.active
-      end
-      @logger.debug("%d stale files found" % inactive_files.count, :inactive_files => inactive_files)
-      inactive_files.each do |path, fd|
-        @logger.info("Closing file %s" % path)
-        fd.close
-        @files.delete(path)
-      end
-      # mark all files as inactive, a call to write will mark them as active again
-      @files.each do |path, fd|
-        fd.active = false
-      end
-      @last_stale_cleanup_cycle = now
+    return unless now - @last_stale_cleanup_cycle >= @stale_cleanup_interval
+    @logger.info("Starting stale files cleanup cycle", :files => @files)
+    inactive_files = @files.select { |path, fd| not fd.active }
+    @logger.debug("%d stale files found" % inactive_files.count, :inactive_files => inactive_files)
+    inactive_files.each do |path, fd|
+      @logger.info("Closing file %s" % path)
+      fd.close
+      @files.delete(path)
     end
+    # mark all files as inactive, a call to write will mark them as active again
+    @files.each { |path, fd| fd.active = false }
+    @last_stale_cleanup_cycle = now
   end
 
   def open(path)
@@ -141,21 +130,38 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     # work around a bug opening fifos (bug JRUBY-6280)
     stat = File.stat(path) rescue nil
     if stat and stat.ftype == "fifo" and RUBY_PLATFORM == "java"
-      @files[path] = java.io.FileWriter.new(java.io.File.new(path))
+      fd = java.io.FileWriter.new(java.io.File.new(path))
     else
-      @files[path] = File.new(path, "a")
+      fd = File.new(path, "a")
     end
     if gzip
-      @files[path] = Zlib::GzipWriter.new(@files[path])
+      fd = Zlib::GzipWriter.new(fd)
     end
-    class << @files[path]
-      alias :write_real :write
-      def write(str)
-        write_real(str)
-        @active = true
-      end
-      attr_accessor :active
-    end
-    @files[path]
+    @files[path] = IOWriter.new(fd)
   end
 end # class LogStash::Outputs::File
+
+# wrapper class
+class IOWriter
+  def initialize(io)
+    @io = io
+  end
+  def write(*args)
+    @io.write(*args)
+    @active = true
+  end
+  def flush
+    @io.flush
+    if @io.class == Zlib::GzipWriter
+      @io.to_io.flush
+    end
+  end
+  def method_missing(method_name, *args, &block)
+    if @io.respond_to?(method_name)
+      @io.send(method_name, *args, &block)
+    else
+      super
+    end
+  end
+  attr_accessor :active
+end
