@@ -7,6 +7,7 @@ require "logstash/namespace"
 class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   config_name "redis"
+  plugin_status "unstable"
 
   # Name is used for logging in case there are multiple instances.
   # TODO: delete

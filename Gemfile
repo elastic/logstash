@@ -7,8 +7,10 @@ end
 gem "cabin", "0.1.7" # for logging. apache 2 license
 gem "bunny" # for amqp support, MIT-style license
 gem "uuidtools" # for naming amqp queues, License ???
+
+# Don't upgrade filewatch to >0.3.2 until *after* 1.1.0 is released. (sissel)
 gem "filewatch", "0.3.2"  # for file tailing, BSD License
-gem "jls-grok", "0.9.4" # for grok filter, BSD License
+gem "jls-grok", "0.9.6" # for grok filter, BSD License
 jruby? and gem "jruby-elasticsearch", "0.0.11" # BSD License
 gem "stomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license
@@ -32,5 +34,13 @@ gem "xmpp4r", "0.5" # outputs/xmpp, # License: As-Is
 gem "gelfd", "0.2.0" #inputs/gelf, # License: Apache 2.0
 
 gem "ffi-rzmq", "0.9.0"
-gem "ruby-debug", "0.10.4"
-gem "mocha", "0.10.0"
+gem "ffi"
+
+# ruby-debug is broken in 1.9.x due, at a minimum, the following:
+#    Installing rbx-require-relative (0.0.5)
+#    Gem::InstallError: rbx-require-relative requires Ruby version ~> 1.8.7.
+#
+# ruby-debug wants linecache which wants rbx-require-relative which won't
+# install under 1.9.x. I never use ruby-debug anyway, so, kill it.
+#gem "ruby-debug", "0.10.4"
+#gem "mocha", "0.10.0"

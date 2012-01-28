@@ -50,7 +50,8 @@ require "logstash/outputs/base"
 class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
  
   config_name "zabbix"
- 
+  plugin_status "unstable"
+
   config :host, :validate => :string, :default => "localhost"
   config :port, :validate => :number, :default => 10051
   config :zabbix_sender, :validate => :string, :default => "/usr/local/bin/zabbix_sender"

@@ -33,10 +33,10 @@ On the server collecting and indexing your logs:
 Requirements: java
 
 You'll most likely want the version of ElasticSearch specified by the
-<outputs/elasticsearch> docs. Modify this in your shell for easy downloading of
-ElasticSearch:
+[outputs/elasticsearch](outputs/elasticsearch) docs. Modify this in your shell
+for easy downloading of ElasticSearch:
 
-    ES_PACKAGE=elasticsearch-0.17.6.zip
+    ES_PACKAGE=elasticsearch-%ELASTICSEARCH_VERSION%.zip
     ES_DIR=${ES_PACKAGE%%.zip}
     SITE=https://github.com/downloads/elasticsearch/elasticsearch
     if [ ! -d "$ES_DIR" ] ; then
@@ -54,16 +54,16 @@ foreground, use 'bin/elasticsearch -f'
 
 AMQP is a standard for message-based communication. It supports
 publish-subscribe, queues, etc.  AMQP is supported way to ship your logs
-between servers with logstash. You could also use redis, xmpp, stomp, tcp, or
-other means to transport your logs.
+between servers with logstash. You could also use redis, xmpp, stomp, tcp,
+zeromq, or other means to transport your logs.
 
 If you don't know what AMQP is, that's fine, you don't need to know anything
 about it for this config. If you already have an AMQP server and know how to
 configure it, you can skip this section.
 
-If you don't have an AMQP server already, you might as well download [rabbitmq
-http://www.rabbitmq.com/server.html] I recommend using the native packages
-(rpm, deb) if those are available for your system.
+If you don't have an AMQP server already, you might as well download
+[rabbitmq](http://www.rabbitmq.com/server.html). I recommend using the native
+packages (rpm, deb) if those are available for your system.
 
 Configuring RabbitMQ is out of scope for this doc, but know that if you use the
 RPM or Deb package you'll probably end up with a rabbitmq startup script that
@@ -80,7 +80,7 @@ Download the monolithic logstash release package. By 'monolithic' I mean the
 package contains all required dependencies to save you time chasing down
 requirements.
 
-You can download the latest release on the [front page](/)
+Follow [this link to download logstash-%VERSION%](http://semicomplete.com/files/logstash/logstash-%VERSION%-monolithic.jar).
 
 Since we're doing a centralized configuration, you'll have two main logstash
 agent roles: a shipper and an indexer. You will ship logs from all servers to a
@@ -116,7 +116,7 @@ Here's a good sample config:
       # this output if you don't need it.
       stdout { }
 
-      # Ship events to the amqp fanout queue named 'rawlogs"
+      # Ship events to the amqp fanout exchange named 'rawlogs"
       amqp {
         host => "myamqpserver"
         exchange_type => "fanout"
@@ -146,8 +146,8 @@ parse them to use as the real timestamp value for the event.
         # ship logs to the 'rawlogs' fanout queue.
         type => "all"
         host => "myamqpserver"
-        exchange_type => "fanout"
-        name => "rawlogs"
+        exchange => "rawlogs"
+        name => "rawlogs_consumer"
       }
     }
 

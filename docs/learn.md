@@ -41,5 +41,5 @@ logstash releases come in a few flavors.
 
 ## What's next?
 
-Try the [standalone logstash guide](getting-started-simple) for a simple
+Try the [standalone logstash guide](tutorials/getting-started-simple) for a simple
 real-world example getting started using logstash.

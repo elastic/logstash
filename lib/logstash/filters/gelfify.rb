@@ -5,6 +5,7 @@ require "logstash/namespace"
 # corresponding GELF levels.
 class LogStash::Filters::Gelfify < LogStash::Filters::Base
   config_name "gelfify"
+  plugin_status "unstable"
 
   SYSLOG_LEVEL_MAP = {
     0 => 3, # Emergency => FATAL
