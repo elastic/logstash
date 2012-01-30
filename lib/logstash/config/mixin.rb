@@ -176,10 +176,10 @@ module LogStash::Config::Mixin
       case @plugin_status
       when "experimental"
         @logger.warn("Using experimental plugin #{@config_name}. This plugin is untested. Use at your own risk. #{docmsg}")
-      when "unstable"
-        @logger.info("Using unstable plugin #{@config_name}. #{docmsg}")
+      when "beta"
+        @logger.info("Using beta plugin #{@config_name}. #{docmsg}")
       when "stable"
-        # This is cool.
+        # This is cool. Nothing worth logging.
       when nil
         raise "#{@config_name} must set a plugin_status. #{docmsg}"
       else

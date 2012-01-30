@@ -12,7 +12,7 @@ require "timeout"
 class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
   config_name "tcp"
-  plugin_status "unstable"
+  plugin_status "beta"
 
   # When mode is `server`, the address to listen on.
   # When mode is `client`, the address to connect to.
