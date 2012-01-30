@@ -46,6 +46,9 @@ class LogStash::Inputs::Base < LogStash::Plugin
     #return true
   #end) # config :tag
 
+  # Add a field to an event
+  config :add_field, :validate => :hash, :default => {}
+
   attr_accessor :params
 
   public
@@ -108,6 +111,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
       end
     else
       raise "unknown event format #{@format}, this should never happen"
+    end
+
+    @add_field.each do |field, value|
+       event[field] ||= []
+       event[field] = [event[field]] if !event[field].is_a?(Array)
+       event[field] << event.sprintf(value)
     end
 
     logger.debug(["Received new event", {:source => source, :event => event}])

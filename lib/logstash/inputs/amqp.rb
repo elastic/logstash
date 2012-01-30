@@ -29,13 +29,15 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   # The name of the queue. 
   config :name, :validate => :string, :default => ''
 
-  # The name of the exchange to bind the queue.
+  # The name of the exchange to bind the queue. This is analogous to the 'amqp
+  # output' [config 'name'](../outputs/amqp)
   config :exchange, :validate => :string, :required => true
 
-  # The routing key to use
+  # The routing key to use. This is only valid for direct or fanout exchanges
+  # This setting is ignored on topic exchanges.
   config :key, :validate => :string, :default => '#'
 
-  # The vhost to use
+  # The vhost to use. If you don't know what this is, leave the default.
   config :vhost, :validate => :string, :default => "/"
 
   # Passive queue creation? Useful for checking queue existance without modifying server state
@@ -44,7 +46,10 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   # Is this queue durable? (aka; Should it survive a broker restart?)
   config :durable, :validate => :boolean, :default => false
 
-  # Should the queue be auto-deleted?
+  # Should the queue be deleted on the broker when the last consumer
+  # disconnects? Set this option to 'false' if you want the queue to remain
+  # on the broker, queueing up messages until a consumer comes along to
+  # consume them.
   config :auto_delete, :validate => :boolean, :default => true
 
   # Is the queue exclusive? (aka: Will other clients connect to this named queue?)
