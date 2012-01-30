@@ -35,6 +35,8 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
   # The routing key to use. This is only valid for direct or fanout exchanges
   # This setting is ignored on topic exchanges.
+  # 
+  # If you don't know what this setting is for, leave it default.
   config :key, :validate => :string, :default => '#'
 
   # The vhost to use. If you don't know what this is, leave the default.
