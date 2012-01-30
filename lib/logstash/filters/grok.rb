@@ -11,7 +11,7 @@ require "set"
 # your own trivially. (See the patterns_dir setting)
 class LogStash::Filters::Grok < LogStash::Filters::Base
   config_name "grok"
-  plugin_status "unstable"
+  plugin_status "beta"
 
   # Specify a pattern to parse with. This will match the '@message' field.
   #
