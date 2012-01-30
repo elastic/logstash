@@ -20,7 +20,7 @@ QUIET=@
 
 # OS-specific options
 TARCHECK=$(shell tar --help|grep wildcard|wc -l)
-ifeq ($TARCHECK), 0)
+ifeq (0, $(TARCHECK))
 TAR_OPTS=
 else
 TAR_OPTS=--wildcards
