@@ -14,9 +14,11 @@ require "tmpdir"
 describe LogStash::Outputs::ElasticSearch do
   before do
     FileUtils.rm_r("data") if File.exists?("data")
+    @clustername = "#{$$}.#{rand(100000)}"
     @output = LogStash::Outputs::ElasticSearch.new({
       "type" => ["foo"],
       "embedded" => ["true"],
+      "cluster" => [@clustername]
     })
     @output.register
   end # before
@@ -41,7 +43,7 @@ describe LogStash::Outputs::ElasticSearch do
     end
 
     tries = 30 
-    es = LogStash::Search::ElasticSearch.new(:type => :local)
+    es = LogStash::Search::ElasticSearch.new(:cluster => @clustername)
     while tries > 0
       tries -= 1
       puts "Tries left: #{tries}" if $DEBUG
@@ -72,5 +74,9 @@ describe LogStash::Outputs::ElasticSearch do
 
       sleep 0.2
     end # while tries > 0
+
+    if tries == 0
+      raise "Failed to find results in elasticsearch"
+    end
   end # test_elasticsearch_basic
 end # testing for LogStash::Outputs::ElasticSearch

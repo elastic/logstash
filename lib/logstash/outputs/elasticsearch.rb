@@ -72,7 +72,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     @logger.setup_log4j
 
     if @embedded
-      %w(host cluster bind_host).each do |name|
+      # Check for settings that are incompatible with @embedded
+      %w(host).each do |name|
         if instance_variable_get("@#{name}")
           @logger.error("outputs/elasticsearch: You cannot specify " \
                         "'embedded => true' and also set '#{name}'")
