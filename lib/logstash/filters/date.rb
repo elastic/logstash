@@ -21,7 +21,7 @@ require "logstash/time"
 class LogStash::Filters::Date < LogStash::Filters::Base
 
   config_name "date"
-  plugin_status "beta"
+  plugin_status "stable"
 
   # Config for date is:
   #   fieldname => dateformat
