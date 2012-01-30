@@ -1,11 +1,12 @@
 1.1.0 (January 30, 2012)
-  This is a large release due to the longevity of the 1.1.0 betas.
-  We don't like long releases and will try to avoid this in the future.
+  ## Overview of this release:
+    * New input plugins: zeromq, gelf
+    * New filter plugins: mutate, dns, json
+    * New output plugins: zeromq, file
+    * The logstash agent now runs also in MRI 1.9.2 and above
 
-  Overview of this release:
-    New input plugins: zeromq
-    New filter plugins: mutate, dns
-    New output plugins: zeromq
+    This is a large release due to the longevity of the 1.1.0 betas.
+    We don't like long releases and will try to avoid this in the future.
 
   ## IMPORTANT CHANGES FOR UPGRADES FROM 1.0.x
     - grok filter: named_captures_only now defaults to true
@@ -14,8 +15,8 @@
         behavior by setting 'named_captures_only => false' in your grok
         filter config.
     - grok filter: now uses Ruby's regular expression engine
-        The previous engine was PCRE. It is now Oniguruma (Ruby).
-        Most syntax works in both, but it is something to be aware of.
+        The previous engine was PCRE. It is now Oniguruma (Ruby). Their
+        syntaxes are quite similar, but it is something to be aware of.
     - elasticsearch library upgraded to 0.18.7
         This means you will need to upgrade your elasticsearch servers,
         if any, to the this version: 0.18.7
@@ -28,17 +29,17 @@
   - feature: [LOGSTASH-158] - MRI-1.9 compatible (except for some
     plugins/functions which will throw a compatibility exception) This means
     you can use most of the logstash agent under standard ruby.
+  - feature: [LOGSTASH-118] - logstash version output (--version or -V for
+    agent)
+  - feature: all plugins now have a 'plugin status' indicating the expectation
+    of stability, successful deployment, and rate of code change. If you
+    use an unstable plugin, you will now see a warning message on startup.
   - bugfix: AMQP overhaul (input & output), please see docs for updated
     config parameters.
   - bugfix: [LOGSTASH-162,177,196] make sure plugin-contained global actions
     happen serially across all plugins (with a mutex)
   - bugfix: [LOGSTASH-286] - logstash agent should not truncate logfile on
     startup
-  - feature: [LOGSTASH-118] - logstash version output (--version or -V for
-    agent)
-  - feature: all plugins now have a 'plugin status' indicating the expectation
-    of stability, successful deployment, and rate of code change. If you
-    use an unstable plugin, you will now see a warning message on startup.
   - misc: [LOGSTASH-160] - now use gnu make instead of rake.
   - misc: now using cabin library for all internal logging
   - test: use minitest
