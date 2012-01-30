@@ -8,7 +8,6 @@ $:.unshift "#{File.dirname(__FILE__)}/../test"
 require "logstash/namespace"
 require "logstash/loadlibs"
 require "logstash/logging"
-require "ruby-debug"
 
 class LogStash::Test
   public

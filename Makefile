@@ -53,9 +53,9 @@ build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
 .PHONY: copy-ruby-files
 copy-ruby-files: | build/ruby
 	@# Copy lib/ and test/ files to the root.
-	$(QUIET)git ls-files | grep '^lib/.*\.rb$$' | sed -e 's,^lib/,,' \
+	$(QUIET)find ./lib -name '*.rb' | sed -e 's,^\./lib/,,' \
 	| (cd lib; cpio -p --make-directories ../build/ruby)
-	$(QUIET)git ls-files | grep '^test/.*\.rb$$' | sed -e 's,^test/,,' \
+	$(QUIET)find ./test -name '*.rb' | sed -e 's,^\./test/,,' \
 	| (cd test; cpio -p --make-directories ../build/ruby)
 
 vendor:
@@ -195,9 +195,10 @@ build/docs/%: docs/% lib/logstash/version.rb
 	@echo "Copying $< (to $@)"
 	-$(QUIET)mkdir -p $(shell dirname $@)
 	$(QUIET)sed -re 's/%VERSION%/$(VERSION)/g' $< > $@
+	$(QUIET)sed -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $< > $@
 
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
-build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb
+build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index.html.erb
 	ruby $< build/docs > $@
 
 publish: | gem
