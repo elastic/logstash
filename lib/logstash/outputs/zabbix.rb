@@ -93,6 +93,8 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
  
     @logger.debug("Running zabbix command", :command => cmd)
     begin
+      # TODO(sissel): Update this to use IO.popen so we can capture the output and
+      # log it accordingly.
       system(cmd)
     rescue => e
       @logger.warn("Skipping zabbix output; error calling zabbix_sender",
