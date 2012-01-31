@@ -185,4 +185,20 @@ describe LogStash::Filters::Grep do
     @filter.filter(event)
     assert_equal(["tag", event["str"]], event.tags)
   end # def test_add_tags
+
+  test "negate=true should not cause drops when field is nil" do
+    # Set negate to true; the pattern being searched doesn't actually matter
+    # here. We're testing to make sure "grep -v" behavior doesn't drop events
+    # that don't even have the field being filtered for.
+    config "negate" => "true", "str" => "doesn't matter lol"
+
+    event = LogStash::Event.new
+    event.type = @typename
+    # Make an event where the field in question is nil
+    event["str"] = nil
+    @filter.filter(event)
+    # Event should not have been canceled
+    assert_equal(false, event.cancelled?)
+  end # testing negate=true and nil field
+
 end # TestFilterGrep
