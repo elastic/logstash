@@ -114,7 +114,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     builder = org.elasticsearch.node.NodeBuilder.nodeBuilder
     # Disable 'local only' - LOGSTASH-277
     #builder.local(true)
-    # TODO(sissel): Set cluster name, etc?
+    builder.settings.put("cluster.name", @cluster) if !@cluster.nil?
     builder.settings.put("http.port", @embedded_http_port)
 
     @embedded_elasticsearch = builder.node
