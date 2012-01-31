@@ -56,12 +56,6 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
     @logger.debug("Running grep filter", :event => event, :config => config)
     matches = 0
     @patterns.each do |field, regexes|
-      if !event[field]
-        @logger.debug("Skipping match object, field not present",
-                      :field => field, :event => event)
-        next
-      end
-
       # For each match object, we have to match everything in order to
       # apply any fields/tags.
       match_count = 0
@@ -70,8 +64,19 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
         match_want += 1
 
         # Events without this field, with negate enabled, count as a match.
-        if event[field].nil? and @negate == true
-          match_count += 1
+        # With negate disabled, we can't possibly match, so skip ahead.
+        if event[field].nil?
+          if @negate
+            msg = "Field not present, but negate is true; marking as a match"
+            @logger.debug(msg, :field => field, :event => event)
+            match_count += 1
+          else
+            @logger.debug("Skipping match object, field not present",
+                          :field => field, :event => event)
+          end
+          # Either way, don't try to process -- may end up with extra unwanted
+          # +1's to match_count
+          next
         end
 
         (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |value|
