@@ -175,9 +175,9 @@ module LogStash::Config::Mixin
       docmsg = "For more information about plugin statuses, see http://logstash.net/docs/#{LOGSTASH_VERSION}/plugin-status "
       case @plugin_status
       when "experimental"
-        @logger.warn("Using experimental plugin #{@config_name}. This plugin is untested. Use at your own risk. #{docmsg}")
+        @logger.warn("Using experimental plugin '#{@config_name}'. This plugin is untested and may change in the future. #{docmsg}")
       when "beta"
-        @logger.info("Using beta plugin #{@config_name}. #{docmsg}")
+        @logger.info("Using beta plugin '#{@config_name}'. #{docmsg}")
       when "stable"
         # This is cool. Nothing worth logging.
       when nil
