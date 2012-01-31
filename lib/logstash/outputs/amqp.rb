@@ -31,9 +31,8 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   config :name, :validate => :string, :required => true
 
   # Key to route to by default. Defaults to 'logstash'
-  # This key setting is ignored for topic exchanges.
   #
-  # If you don't know what this setting is for, leave it default.
+  # * Routing keys are ignored on topic exchanges.
   config :key, :validate => :string, :default => "logstash"
 
   # The vhost to use
