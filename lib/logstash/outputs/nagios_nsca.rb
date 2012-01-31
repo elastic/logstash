@@ -23,6 +23,7 @@ require "logstash/namespace"
 class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
 
   config_name "nagios_nsca"
+  plugin_status "experimental"
 
   # The nagios host or IP to send logs to. It should have a NSCA daemon running.
   config :host, :validate => :string, :default => "localhost"
