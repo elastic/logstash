@@ -63,8 +63,8 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
 
     # skip if 'send_nsca' binary doesn't exist
     if !File.exists?(@send_nsca_bin)
-      @logger.warn(["Skipping nagios_nsca output; send_nsca_bin file is missing",
-                   {"send_nsca_bin" => @send_nsca_bin, "missed_event" => event}])
+      @logger.warn("Skipping nagios_nsca output; send_nsca_bin file is missing",
+                   "send_nsca_bin" => @send_nsca_bin, "missed_event" => event)
       return
     end
 
@@ -86,15 +86,15 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
     cmd << %( #{@send_nsca_bin} -H #{@host} -p #{@port} -d '~')
     cmd << %( -c #{@send_nsca_config}) if @send_nsca_config
     cmd << %( 2>/dev/null >/dev/null)
-    @logger.debug({"nagios_nsca_command" => cmd})
+    @logger.debug("Running send_nsca command", "nagios_nsca_command" => cmd)
 
     begin
       system cmd
     rescue => e
-      @logger.warn(["Skipping nagios_nsca output; error calling send_nsca",
-                   {"error" => $!, "nagios_nsca_command" => cmd,
-                    "missed_event" => event}])
-      @logger.debug(["Backtrace", e.backtrace])
+      @logger.warn("Skipping nagios_nsca output; error calling send_nsca",
+                   "error" => $!, "nagios_nsca_command" => cmd,
+                   "missed_event" => event)
+      @logger.debug("Backtrace", e.backtrace)
     end
   end # def receive
 end # class LogStash::Outputs::NagiosNsca
