@@ -53,11 +53,6 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
   end
 
   public
-  def connect
-    #nothing for now
-  end
-
-  public
   def receive(event)
     # catch logstash shutdown
     if event == LogStash::SHUTDOWN
