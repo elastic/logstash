@@ -13,11 +13,9 @@ require "logstash/namespace"
 #     output {
 #       nagios_nsca {
 #         # specify the hostname or ip of your nagios server
-#         # (defaults to localhost)
 #         host => "nagios.example.com"
 #
 #         # specify the port to connect to
-#         # (default 5667)
 #         port => 5667
 #       }
 #     }
@@ -27,15 +25,12 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
   config_name "nagios_nsca"
 
   # The nagios host or IP to send logs to. It should have a NSCA daemon running.
-  # (defaults to: "localhost")
   config :host, :validate => :string, :default => "localhost"
 
   # The port where the NSCA daemon on the nagios host listens.
-  # (defaults to: 5667)
   config :port, :validate => :number, :default => 5667
 
   # The path to the 'send_nsca' binary on the local host.
-  # (defaults to: "/usr/sbin/send_nsca")
   config :send_nsca_bin, :validate => :string, :default => "/usr/sbin/send_nsca"
 
   # The path to the send_nsca config file on the local host.
@@ -45,13 +40,11 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
   # The nagios 'host' you want to submit a passive check result to. This
   # parameter accepts interpolation, e.g. you can use @source_host or other
   # logstash internal variables.
-  # (defaults to: "%{@source_host}")
   config :nagios_host, :validate => :string, :default => "%{@source_host}"
 
   # The nagios 'service' you want to submit a passive check result to. This
   # parameter accepts interpolation, e.g. you can use @source_host or other
   # logstash internal variables.
-  # (defaults to: "LOGSTASH")
   config :nagios_service, :validate => :string, :default => "LOGSTASH"
 
   public
