@@ -27,7 +27,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   config :password, :validate => :password, :default => "guest"
 
   # The name of the queue. 
-  config :name, :validate => :string, :default => ''
+  config :name, :validate => :string, :default => ""
 
   # The name of the exchange to bind the queue. This is analogous to the 'amqp
   # output' [config 'name'](../outputs/amqp)
@@ -35,7 +35,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
   # The routing key to use. This is only valid for direct or fanout exchanges
   # This setting is ignored on topic exchanges.
-  config :key, :validate => :string, :default => '#'
+  config :key, :validate => :string, :default => "logstash"
 
   # The vhost to use. If you don't know what this is, leave the default.
   config :vhost, :validate => :string, :default => "/"
@@ -96,7 +96,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     @amqpsettings[:ssl] = @ssl if @ssl
     @amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
     @amqpurl = "amqp://"
-    amqp_credentials = ''
+    amqp_credentials = ""
     amqp_credentials << @user if @user
     amqp_credentials << ":#{@password}" if @password
     @amqpurl += amqp_credentials unless amqp_credentials.nil?
