@@ -31,13 +31,9 @@ If you find a bug or have a feature request, file them
 on <http://logstash.jira.com/>. (Honestly though, if you prefer email or irc
 for such things, that works for me, too.)
 
-## Download it
+## Download It
 
-logstash releases come in a few flavors.
-
-* [Monolithic jar](http://semicomplete.com/files/logstash/logstash-%VERSION%-monolithic.jar)
-* [rubygem](http://rubygems.org/gems/logstash/versions/%VERSION%)
-* [`gem install logstash -v %VERSION%`](http://rubygems.org/gems/logstash)
+[Download logstash-%VERSION%](http://semicomplete.com/files/logstash/logstash-%VERSION%-monolithic.jar)
 
 ## What's next?
 
