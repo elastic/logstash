@@ -7,6 +7,17 @@ are pretty much free to use it however you want in whatever way.
 
 For more info, see <http://logstash.net/>
 
+## Building
+
+jar releases are available here: <http://semicomplete.com/files/logstash/>
+If you want to build the jar yourself, run:
+
+    make jar
+
+gem releases are not available anywhere. If you want to build a gem, run:
+
+    make gem
+
 ## Contributing
 
 All contributions are welcome: ideas, patches, documentation, bug reports,
