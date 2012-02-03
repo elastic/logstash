@@ -8,8 +8,7 @@ gem "cabin", "0.1.8" # for logging. apache 2 license
 gem "bunny" # for amqp support, MIT-style license
 gem "uuidtools" # for naming amqp queues, License ???
 
-# Don't upgrade filewatch to >0.3.2 until *after* 1.1.0 is released. (sissel)
-gem "filewatch", "0.3.2"  # for file tailing, BSD License
+gem "filewatch", "0.3.3"  # for file tailing, BSD License
 gem "jls-grok", "0.9.6" # for grok filter, BSD License
 jruby? and gem "jruby-elasticsearch", "0.0.11" # BSD License
 gem "stomp" # for stomp protocol, Apache 2.0 License
