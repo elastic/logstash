@@ -5,7 +5,16 @@ require "json"
 # This output ships metrics to MetricCatcher, allowing you to
 # utilize Coda Hale's Metrics.
 #
-# At Clearspring, we use it to count the response codes from Apache logs
+# More info on MetricCatcher: https://github.com/clearspring/MetricCatcher
+#
+# At Clearspring, we use it to count the response codes from Apache logs:
+#     metriccatcher {
+#         host => "localhost"
+#         port => "1420"
+#         type => "apache-access"
+#         fields => [ "response" ]
+#         meter => [ "%{@source_host}.apache.response.%{response}", "1" ]
+#     }
 class LogStash::Outputs::MetricCatcher < LogStash::Outputs::Base
   config_name "metriccatcher"
   plugin_status "beta"
