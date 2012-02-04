@@ -17,28 +17,69 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   # 0mq socket address to connect or bind to
   config :address, :validate => :string, :default => "tcp://127.0.0.1:2120"
 
+  # 0mq queue size
+  config :queue_size, :validate => :number, :default => 20
+
   # 0mq topic (Used with ZMQ_SUBSCRIBE, see http://api.zeromq.org/2-1:zmq-setsockopt 
   # for 'ZMQ_SUBSCRIBE: Establish message filter')
-  config :queue, :validate => :string, :default => ""
+  config :queue_name, :validate => :string, :default => ""
 
-  # Whether to bind ("server") or connect ("client") to the socket
+  # 0mq socket type
+  # There is no default.
+  config :socket_type, :validate => ["rep","push","pub","router","pair"], :required => true
+
+  # 0mq swap size
+  # Controls buffering to disk 
+  # in the event of messages counts exceeding the queue_size
+  # size in bytes
+  # Default: 15MB
+  # (ZMQ_SWAP)
+  config :swap_size, :validate => :number, :default => 15728640
+
+  # 0mq identity
+  # (ZMQ_IDENTITY)
+  config :identity, :validate => :string
+
+  # 0mq socket options
+  # This exposes zmq_setsockopt
+  # for advanced tuning
+  # see http://api.zeromq.org/2-1:zmq-setsockopt for details
+  config :sockopt, :validate => :hash
+
+  # mode
+  # server mode binds/listens
+  # client mode connects
+  # This only makes sense with "pair" types
+  # default pair mode is server
   config :mode, :validate => [ "server", "client"], :default => "server"
 
   public
   def register
     require "ffi-rzmq"
     require "logstash/util/zeromq"
-    # Unfortunately it's not possible to simply include at the class level
-    # because the Config mixin thinks we're the included module and not the base-class
     self.class.send(:include, LogStash::Util::ZeroMQ)
-    @publisher = context.socket(ZMQ::PUB)
-    if !@queue.empty?
-      error_check(@publisher.setsockopt(ZMQ::SUBSCRIBE, @queue),
-                  "while setting ZMQ::SUBSCRIBE to #{@queue.inspect}")
+    case @socket_type
+    when "rep"
+      zmq_const = ZMQ::REP
+      @mode = "server"
+    when "pair"
+      zmq_const = ZMQ::PAIR
+      @mode ||= "client"
+    when "push"
+      zmq_const = ZMQ::PUSH
+      @mode = "server"
+    when "pub"
+      zmq_const = ZMQ::PUB
+      @mode = "server"
     end
-    error_check(@publisher.setsockopt(ZMQ::LINGER, 1),
-                "while setting ZMQ::SUBSCRIBE to 1")
-    setup(@publisher, @address)
+    @zsocket = context.socket(zmq_const)
+    error_check(@zsocket.setsockopt(ZMQ::HWM, @queue_size),
+                "while setting ZMQ:HWM == #{@queue_size.inspect}")
+    error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
+                "while setting ZMQ::LINGER == 1)")
+    error_check(@zsocket.setsockopt(ZMQ::SWAP, @swap_size),
+                "while setting ZMQ::SWAP == #{@swap_size}")
+    setup(@zsocket, @address)
   end # def register
 
   public
@@ -61,9 +102,9 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
 
     begin
       @logger.debug("0mq: sending", :event => wire_event)
-      error_check(@publisher.send_string(wire_event), "in send_string")
+      error_check(@zsocket.send_string(wire_event), "in send_string")
     rescue => e
-      @logger.warn("0mq output exception", :address => @address, :queue => @queue, :exception => e, :backtrace => e.backtrace)
+      @logger.warn("0mq output exception", :address => @address, :queue => @queue_name, :exception => e, :backtrace => e.backtrace)
     end
   end # def receive
 end # class LogStash::Outputs::ZeroMQ
