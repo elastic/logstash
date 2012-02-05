@@ -415,6 +415,16 @@ class LogStash::Agent
     # like tests, etc.
     yield if block_given?
 
+    Thread.new do
+      while true
+        @logger.metrics.each do |identifier, metric|
+          instance, name = identifier
+          @logger.info("metric #{instance.class.name}.#{name}", :value => metric.value)
+        end
+        sleep 3
+      end
+    end
+
     # TODO(sissel): Monitor what's going on? Sleep forever? what?
     while sleep 5
     end
