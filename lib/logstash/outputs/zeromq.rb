@@ -14,72 +14,80 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   config_name "zeromq"
   plugin_status "experimental"
 
-  # 0mq socket address to connect or bind to
-  config :address, :validate => :string, :default => "tcp://127.0.0.1:2120"
+  # 0mq socket address to connect or bind
+  # Please note that `inproc://` will not work with logstash
+  # As each we use a context per thread
+  # By default, inputs bind/listen
+  # and outputs connect
+  config :address, :validate => :array, :default => ["tcp://127.0.0.1:2120"]
 
-  # 0mq queue size
-  config :queue_size, :validate => :number, :default => 20
+  # 0mq topology
+  # The default logstash topologies work as follows:
+  # * pushpull - inputs are pull, outputs are push
+  # * pubsub - inputs are subscribers, outputs are publishers
+  # * pair - inputs are clients, inputs are servers
+  #
+  # If the predefined topology flows don't work for you,
+  # you can change the 'mode' setting
+  # TODO (lusis) add req/rep MAYBE
+  # TODO (lusis) add router/dealer
+  config :topology, :validate => ["pushpull", "pubsub", "pair"]
 
-  # 0mq topic (Used with ZMQ_SUBSCRIBE, see http://api.zeromq.org/2-1:zmq-setsockopt 
-  # for 'ZMQ_SUBSCRIBE: Establish message filter')
-  config :queue_name, :validate => :string, :default => ""
-
-  # 0mq socket type
-  # There is no default.
-  config :socket_type, :validate => ["rep","push","pub","router","pair"], :required => true
-
-  # 0mq swap size
-  # Controls buffering to disk 
-  # in the event of messages counts exceeding the queue_size
-  # size in bytes
-  # Default: 15MB
-  # (ZMQ_SWAP)
-  config :swap_size, :validate => :number, :default => 15728640
-
-  # 0mq identity
-  # (ZMQ_IDENTITY)
-  config :identity, :validate => :string
+  # mode
+  # server mode binds/listens
+  # client mode connects
+  config :mode, :validate => ["server", "client"], :default => "client"
 
   # 0mq socket options
   # This exposes zmq_setsockopt
   # for advanced tuning
   # see http://api.zeromq.org/2-1:zmq-setsockopt for details
+  #
+  # This is where you would set values like:
+  # ZMQ::HWM - high water mark
+  # ZMQ::IDENTITY - named queues
+  # ZMQ::SWAP_SIZE - space for disk overflow
+  # ZMQ::SUBSCRIBE - topic filters for pubsub
+  #
+  # example: sockopt => ["ZMQ::HWM", 50, "ZMQ::IDENTITY", "my_named_queue"]
   config :sockopt, :validate => :hash
-
-  # mode
-  # server mode binds/listens
-  # client mode connects
-  # This only makes sense with "pair" types
-  # default pair mode is server
-  config :mode, :validate => [ "server", "client"], :default => "server"
 
   public
   def register
     require "ffi-rzmq"
     require "logstash/util/zeromq"
     self.class.send(:include, LogStash::Util::ZeroMQ)
-    case @socket_type
-    when "rep"
-      zmq_const = ZMQ::REP
-      @mode = "server"
+
+    # Translate topology shorthand to socket types
+    case @topology
     when "pair"
       zmq_const = ZMQ::PAIR
-      @mode ||= "client"
-    when "push"
+    when "pushpull"
       zmq_const = ZMQ::PUSH
-      @mode = "server"
-    when "pub"
+    when "pubsub"
       zmq_const = ZMQ::PUB
-      @mode = "server"
-    end
+    end # case socket_type
+
     @zsocket = context.socket(zmq_const)
-    error_check(@zsocket.setsockopt(ZMQ::HWM, @queue_size),
-                "while setting ZMQ:HWM == #{@queue_size.inspect}")
+
     error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
                 "while setting ZMQ::LINGER == 1)")
-    error_check(@zsocket.setsockopt(ZMQ::SWAP, @swap_size),
-                "while setting ZMQ::SWAP == #{@swap_size}")
-    setup(@zsocket, @address)
+
+    # TODO (lusis)
+    # wireup sockopt hash better
+    # making assumptions on split
+    if @sockopt
+      @sockopt.each do |opt,value|
+        sockopt = opt.split('::')[1]
+        option = ZMQ.const_defined?(sockopt) ? ZMQ.const_get(sockopt) : ZMQ.const_missing(sockopt)
+        error_check(@zsocket.setsockopt(option, value),
+                "while setting #{opt} == 1)")
+      end
+    end
+
+    @address.each do |addr|
+      setup(@zsocket, addr)
+    end
   end # def register
 
   public
