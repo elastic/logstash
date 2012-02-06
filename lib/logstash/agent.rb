@@ -379,7 +379,10 @@ class LogStash::Agent
       if @filters.length > 0
         @filters.each do |filter|
           filter.logger = @logger
-          @plugin_setup_mutex.synchronize { filter.register }
+          @plugin_setup_mutex.synchronize do
+            filter.register
+            filter.prepare_metrics
+          end
         end
         @filterworkers = {}
         1.times do |n|
@@ -421,7 +424,7 @@ class LogStash::Agent
           instance, name = identifier
           @logger.info("metric #{instance.class.name}.#{name}", :value => metric.value)
         end
-        sleep 3
+        sleep 5
       end
     end
 
