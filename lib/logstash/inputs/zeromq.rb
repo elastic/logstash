@@ -15,38 +15,81 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   config_name "zeromq"
   plugin_status "experimental"
 
-  # 0mq socket address to connect or bind to
-  config :address, :validate => :string, :default => "tcp://127.0.0.1:2120"
+  # 0mq socket address to connect or bind
+  # Please note that `inproc://` will not work with logstash
+  # as each we use a context per thread.
+  # By default, inputs bind/listen
+  # and outputs connect
+  config :address, :validate => :array, :default => ["tcp://*:2120"]
 
-  # 0mq queue size
-  config :queue_size, :validate => :number, :default => 20
+  # 0mq topology
+  # The default logstash topologies work as follows:
+  # * pushpull - inputs are pull, outputs are push
+  # * pubsub - inputs are subscribers, outputs are publishers
+  # * pair - inputs are clients, inputs are servers
+  #
+  # If the predefined topology flows don't work for you,
+  # you can change the 'mode' setting
+  # TODO (lusis) add req/rep MAYBE
+  # TODO (lusis) add router/dealer
+  config :topology, :validate => ["pushpull", "pubsub", "pair"]
 
-  # 0mq topic (Used with ZMQ_SUBSCRIBE, see http://api.zeromq.org/2-1:zmq-setsockopt 
-  # for 'ZMQ_SUBSCRIBE: Establish message filter')
-  config :queue, :validate => :string, :default => "" # default all
+  # mode
+  # server mode binds/listens
+  # client mode connects
+  config :mode, :validate => ["server", "client"], :default => "server"
 
-  # wether to bind ("server") or connect ("client") to the socket
-  config :mode, :validate => [ "server", "client"], :default => "client"
-
-  @source = "0mq_#{@address}/#{@queue}"
+  # 0mq socket options
+  # This exposes zmq_setsockopt
+  # for advanced tuning
+  # see http://api.zeromq.org/2-1:zmq-setsockopt for details
+  #
+  # This is where you would set values like:
+  # ZMQ::HWM - high water mark
+  # ZMQ::IDENTITY - named queues
+  # ZMQ::SWAP_SIZE - space for disk overflow
+  # ZMQ::SUBSCRIBE - topic filters for pubsub
+  #
+  # example: sockopt => ["ZMQ::HWM", 50, "ZMQ::IDENTITY", "my_named_queue"]
+  config :sockopt, :validate => :hash
 
   public
   def register
     require "ffi-rzmq"
     require "logstash/util/zeromq"
     self.class.send(:include, LogStash::Util::ZeroMQ)
-    @subscriber = context.socket(ZMQ::SUB)
-    error_check(@subscriber.setsockopt(ZMQ::HWM, @queue_size),
-                "while setting ZMQ:HWM == #{@queue_size.inspect}")
-    error_check(@subscriber.setsockopt(ZMQ::SUBSCRIBE, @queue),
-                "while setting ZMQ:SUBSCRIBE == #{@queue.inspect}")
-    error_check(@subscriber.setsockopt(ZMQ::LINGER, 1),
+
+    case @topology
+    when "pair"
+      zmq_const = ZMQ::PAIR 
+    when "pushpull"
+      zmq_const = ZMQ::PULL
+    when "pubsub"
+      zmq_const = ZMQ::SUB
+    end # case socket_type
+    @zsocket = context.socket(zmq_const)
+
+    error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
                 "while setting ZMQ::LINGER == 1)")
-    setup(@subscriber, @address)
+
+    # TODO (lusis)
+    # wireup sockopt hash
+    if @sockopt
+      @sockopt.each do |opt,value|
+        sockopt = opt.split('::')[1]
+        option = ZMQ.const_defined?(sockopt) ? ZMQ.const_get(sockopt) : ZMQ.const_missing(sockopt)
+        error_check(@zsocket.setsockopt(option, value),
+                "while setting #{opt} == 1)")
+      end
+    end
+    
+    @address.each do |addr|
+      setup(@zsocket, addr)
+    end
   end # def register
 
   def teardown
-    error_check(@subscriber.close, "while closing the zmq socket")
+    error_check(@zsocket.close, "while closing the zmq socket")
   end # def teardown
 
   def server?
@@ -57,7 +100,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
     begin
       loop do
         msg = ''
-        rc = @subscriber.recv_string(msg)
+        rc = @zsocket.recv_string(msg)
         error_check(rc, "in recv_string")
         @logger.debug("0mq: receiving", :event => msg)
         e = self.to_event(msg, @source)
@@ -66,10 +109,10 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
         end
       end
     rescue => e
-      @logger.debug("ZMQ Error", :subscriber => @subscriber,
+      @logger.debug("ZMQ Error", :subscriber => @zsocket,
                     :exception => e, :backtrace => e.backtrace)
     rescue Timeout::Error
-      @logger.debug("Read timeout", subscriber => @subscriber)
+      @logger.debug("Read timeout", subscriber => @zsocket)
     end # begin
   end # def run
 end # class LogStash::Inputs::ZeroMQ
