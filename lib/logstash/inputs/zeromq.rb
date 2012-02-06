@@ -67,6 +67,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
     when "pubsub"
       @zmq_const = ZMQ::SUB
     end # case socket_type
+    setup
     
   end # def register
 
@@ -81,11 +82,16 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   def run(output_queue)
     begin
       loop do
-        msg = ''
-        rc = @zsocket.recv_string(msg)
-        error_check(rc, "in recv_string")
-        @logger.debug("0mq: receiving", :event => msg)
-        e = self.to_event(msg, @source)
+        msg_array = Array.new
+        rc = @zsocket.recv_strings(msg_array)
+        error_check(rc, "in recv_strings")
+        @logger.debug("0mq: receiving", :event => msg_array)
+        if msg_array.count >1 and @zmq_const == ZMQ::SUB
+          e = self.to_event(msg_array[1..-1].join("\n"), @source)
+          e['@zeromq_topic'] = msg_array.first
+        else
+          e = self.to_event(msg_array.first, @source)
+        end
         if e
           output_queue << e
         end
