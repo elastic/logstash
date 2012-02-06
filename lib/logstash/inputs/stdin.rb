@@ -10,7 +10,7 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
 
   config_name "stdin"
 
-  plugin_status "unstable"
+  plugin_status "beta"
 
   public
   def register

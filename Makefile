@@ -4,7 +4,7 @@
 #   wget
 #
 JRUBY_VERSION=1.6.5
-ELASTICSEARCH_VERSION=0.18.6
+ELASTICSEARCH_VERSION=0.18.7
 VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 
 JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
@@ -20,7 +20,7 @@ QUIET=@
 
 # OS-specific options
 TARCHECK=$(shell tar --help|grep wildcard|wc -l)
-ifeq ($TARCHECK), 0)
+ifeq (0, $(TARCHECK))
 TAR_OPTS=
 else
 TAR_OPTS=--wildcards
@@ -186,10 +186,16 @@ build/docs/inputs build/docs/filters build/docs/outputs: | build/docs
 # bluecloth gem doesn't work on jruby. Use ruby.
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/inputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/filters/%.html: lib/logstash/filters/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/filters
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/outputs/%.html: lib/logstash/outputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/outputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 
 build/docs/%: docs/% lib/logstash/version.rb Makefile
 	@echo "Copying $< (to $@)"
@@ -200,7 +206,8 @@ build/docs/%: docs/% lib/logstash/version.rb Makefile
 
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index.html.erb Makefile
-	ruby $< build/docs > $@
+	@echo "Building documentation index.html"
+	$(QUIET)ruby $< build/docs > $@
 	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 

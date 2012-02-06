@@ -12,7 +12,7 @@ require "logstash/namespace"
 class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
   config_name "amqp"
-  plugin_status "unstable"
+  plugin_status "beta"
 
   # Your amqp server address
   config :host, :validate => :string, :required => true
@@ -27,15 +27,19 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   config :password, :validate => :password, :default => "guest"
 
   # The name of the queue. 
-  config :name, :validate => :string, :default => ''
+  config :name, :validate => :string, :default => ""
 
-  # The name of the exchange to bind the queue.
+  # The name of the exchange to bind the queue. This is analogous to the 'amqp
+  # output' [config 'name'](../outputs/amqp)
   config :exchange, :validate => :string, :required => true
 
-  # The routing key to use
-  config :key, :validate => :string, :default => '#'
+  # The routing key to use. This is only valid for direct or fanout exchanges
+  #
+  # * Routing keys are ignored on topic exchanges.
+  # * Wildcards are not valid on direct exchanges.
+  config :key, :validate => :string, :default => "logstash"
 
-  # The vhost to use
+  # The vhost to use. If you don't know what this is, leave the default.
   config :vhost, :validate => :string, :default => "/"
 
   # Passive queue creation? Useful for checking queue existance without modifying server state
@@ -44,7 +48,10 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   # Is this queue durable? (aka; Should it survive a broker restart?)
   config :durable, :validate => :boolean, :default => false
 
-  # Should the queue be auto-deleted?
+  # Should the queue be deleted on the broker when the last consumer
+  # disconnects? Set this option to 'false' if you want the queue to remain
+  # on the broker, queueing up messages until a consumer comes along to
+  # consume them.
   config :auto_delete, :validate => :boolean, :default => true
 
   # Is the queue exclusive? (aka: Will other clients connect to this named queue?)
@@ -91,7 +98,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     @amqpsettings[:ssl] = @ssl if @ssl
     @amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
     @amqpurl = "amqp://"
-    amqp_credentials = ''
+    amqp_credentials = ""
     amqp_credentials << @user if @user
     amqp_credentials << ":#{@password}" if @password
     @amqpurl += amqp_credentials unless amqp_credentials.nil?

@@ -40,7 +40,7 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
   NAGIOS_WARN = 1
 
   config_name "nagios"
-  plugin_status "unstable"
+  plugin_status "beta"
 
   # The path to your nagios command file
   config :commandfile, :validate => :string, :default => "/var/lib/nagios3/rw/nagios.cmd"

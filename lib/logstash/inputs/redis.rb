@@ -8,7 +8,7 @@ require "logstash/namespace"
 class LogStash::Inputs::Redis < LogStash::Inputs::Base
 
   config_name "redis"
-  plugin_status "unstable"
+  plugin_status "beta"
 
   # Name is used for logging in case there are multiple instances.
   # This feature has no real function and will be removed in future versions.
