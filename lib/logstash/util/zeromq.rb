@@ -33,7 +33,7 @@ module LogStash::Util::ZeroMQ
         sockopt = opt.split('::')[1]
         option = ZMQ.const_defined?(sockopt) ? ZMQ.const_get(sockopt) : ZMQ.const_missing(sockopt)
         error_check(@zsocket.setsockopt(option, value),
-                "while setting #{opt} == 1)")
+                "while setting #{opt} == #{value})")
       end
     end
     

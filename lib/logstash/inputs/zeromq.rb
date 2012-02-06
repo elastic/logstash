@@ -112,6 +112,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   def run(output_queue)
     begin
       loop do
+<<<<<<< HEAD
         # Here's the unified receiver
         # Get the first part as the msg
         m1 = ''
@@ -131,6 +132,18 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
         end
         @sender ||= "zmq+#{@topology}://#{@type}/"
         e = self.to_event(msg, @sender)
+=======
+        msg_array = Array.new
+        rc = @zsocket.recv_strings(msg_array)
+        error_check(rc, "in recv_strings")
+        @logger.debug("0mq: receiving", :event => msg_array)
+        if msg_array.count >1 and @zmq_const == ZMQ::SUB
+          e = self.to_event(msg_array[1..-1].join("\n"), @source)
+          e['@zeromq_topic'] = msg_array.first
+        else
+          e = self.to_event(msg_array.first, @source)
+        end
+>>>>>>> Added zeromq_topic field when reading from pub/sub socket
         if e
           output_queue << e
         end

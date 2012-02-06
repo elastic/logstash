@@ -64,6 +64,9 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   # example: message_format => "%{@timestamp} %{@message}"
   config :message_format, :validate => :string
 
+  # Per message topic for pubsub sockets. Topic string will be evaluated by sprintf
+  config :pubsub_topic, :validate => :string, :required => false
+
   public
   def register
     require "ffi-rzmq"
@@ -81,6 +84,7 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
     end # case socket_type
 
     setup
+
   end # def register
 
   public
@@ -110,9 +114,9 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
     end
 
     begin
-      if @topology == "pubsub" and @pubsub_topic and not @sockopt.include? "ZMQ::SUBSCRIBE"
+      if @topology == "pubsub" and @pubsub_topic
         e_topic = topic(event)
-        log.debug("0mq: sending topic string", :topic => e_topic) 
+        @logger.debug("0mq: sending topic string", :topic => e_topic) 
         error_check(@zsocket.send_string(e_topic, ::ZMQ::SNDMORE), "in send_string topic")
       end
       @logger.debug("0mq: sending", :event => wire_event)
