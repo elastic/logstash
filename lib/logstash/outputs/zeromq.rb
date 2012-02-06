@@ -52,6 +52,10 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   # example: sockopt => ["ZMQ::HWM", 50, "ZMQ::IDENTITY", "my_named_queue"]
   config :sockopt, :validate => :hash
 
+  # Message output fomart, an sprintf string. If ommited json_event will be used.
+  # example: message_format => "%{@timestamp} %{@message}"
+  config :message_format, :validate => :string
+
   public
   def register
     require "ffi-rzmq"
@@ -106,7 +110,11 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
 
     # TODO(sissel): Figure out why masterzen has '+ "\n"' here
     #wire_event = event.to_hash.to_json + "\n"
-    wire_event = event.to_json
+    if @message_format
+      wire_event = event.sprintf(@message_format) + "\n"
+    else
+      wire_event = event.to_json
+    end
 
     begin
       @logger.debug("0mq: sending", :event => wire_event)
