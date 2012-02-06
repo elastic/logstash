@@ -104,6 +104,10 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
     @mode == "server"
   end # def server?
 
+  def topic(e)
+    e.sprintf(@pubsub_topic)
+  end
+
   public
   def receive(event)
     return unless output?(event)
@@ -117,6 +121,11 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
     end
 
     begin
+      if @topology == "pubsub" and @pubsub_topic and not @sockopt.include? "ZMQ::SUBSCRIBE"
+        e_topic = topic(event)
+        log.debug("0mq: sending topic string", :topic => e_topic) 
+        error_check(@zsocket.send_string(e_topic, ::ZMQ::SNDMORE), "in send_string topic")
+      end
       @logger.debug("0mq: sending", :event => wire_event)
       error_check(@zsocket.send_string(wire_event), "in send_string")
     rescue => e
