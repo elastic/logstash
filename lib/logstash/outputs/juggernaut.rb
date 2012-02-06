@@ -78,14 +78,12 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       else
         formatted = event.to_json
       end
-      puts formatted
       juggernaut_message = { 
         "channels" => @channels.collect{ |x| event.sprintf(x) }, 
         "data" => event.message 
       }
       
       @redis.publish 'juggernaut', juggernaut_message.to_json
-      puts juggernaut_message.to_json
     rescue => e
       @logger.warn("Failed to send event to redis", :event => event,
                    :identity => identity, :exception => e,
