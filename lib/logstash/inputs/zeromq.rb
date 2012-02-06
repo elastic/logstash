@@ -61,31 +61,13 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
 
     case @topology
     when "pair"
-      zmq_const = ZMQ::PAIR 
+      @zmq_const = ZMQ::PAIR 
     when "pushpull"
-      zmq_const = ZMQ::PULL
+      @zmq_const = ZMQ::PULL
     when "pubsub"
-      zmq_const = ZMQ::SUB
+      @zmq_const = ZMQ::SUB
     end # case socket_type
-    @zsocket = context.socket(zmq_const)
-
-    error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
-                "while setting ZMQ::LINGER == 1)")
-
-    # TODO (lusis)
-    # wireup sockopt hash
-    if @sockopt
-      @sockopt.each do |opt,value|
-        sockopt = opt.split('::')[1]
-        option = ZMQ.const_defined?(sockopt) ? ZMQ.const_get(sockopt) : ZMQ.const_missing(sockopt)
-        error_check(@zsocket.setsockopt(option, value),
-                "while setting #{opt} == 1)")
-      end
-    end
     
-    @address.each do |addr|
-      setup(@zsocket, addr)
-    end
   end # def register
 
   def teardown
