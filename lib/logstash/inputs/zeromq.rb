@@ -76,23 +76,14 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
 
     case @topology
     when "pair"
-      zmq_const = ZMQ::PAIR 
+      @zmq_const = ZMQ::PAIR 
     when "pushpull"
-      zmq_const = ZMQ::PULL
+      @zmq_const = ZMQ::PULL
     when "pubsub"
-      zmq_const = ZMQ::SUB
+      @zmq_const = ZMQ::SUB
     end # case socket_type
-    @zsocket = context.socket(zmq_const)
-    error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
-                "while setting ZMQ::LINGER == 1)")
 
-    if @sockopt
-      setopts(@zsocket, @sockopt)
-    end
-
-    @address.each do |addr|
-      setup(@zsocket, addr)
-    end
+    setup
 
     if @topology == "pubsub"
       if @topic.nil?

@@ -73,30 +73,19 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
     # Translate topology shorthand to socket types
     case @topology
     when "pair"
-      zmq_const = ZMQ::PAIR
+      @zmq_const = ZMQ::PAIR
     when "pushpull"
-      zmq_const = ZMQ::PUSH
+      @zmq_const = ZMQ::PUSH
     when "pubsub"
-      zmq_const = ZMQ::PUB
+      @zmq_const = ZMQ::PUB
     end # case socket_type
 
-    @zsocket = context.socket(zmq_const)
-
-    error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
-                "while setting ZMQ::LINGER == 1)")
-
-    if @sockopt
-      setopts(@zsocket, @sockopt)
-    end
-
-    @address.each do |addr|
-      setup(@zsocket, addr)
-    end
+    setup
   end # def register
 
   public
   def teardown
-    error_check(@publisher.close, "while closing the socket")
+    error_check(@zsocket.close, "while closing the socket")
   end # def teardown
 
   private
