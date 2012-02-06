@@ -6,7 +6,7 @@ require "logstash/outputs/base"
 # need to use this output.
 #
 #   *NOTE*: You must use the same version of elasticsearch server that logstash
-#   uses for its client. Currently we use elasticsearch 0.18.6
+#   uses for its client. Currently we use elasticsearch 0.18.7
 #
 # You can learn more about elasticsearch at <http://elasticsearch.org>
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
@@ -72,7 +72,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     @logger.setup_log4j
 
     if @embedded
-      %w(host cluster bind_host).each do |name|
+      # Check for settings that are incompatible with @embedded
+      %w(host).each do |name|
         if instance_variable_get("@#{name}")
           @logger.error("outputs/elasticsearch: You cannot specify " \
                         "'embedded => true' and also set '#{name}'")
@@ -113,7 +114,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     builder = org.elasticsearch.node.NodeBuilder.nodeBuilder
     # Disable 'local only' - LOGSTASH-277
     #builder.local(true)
-    # TODO(sissel): Set cluster name, etc?
+    builder.settings.put("cluster.name", @cluster) if !@cluster.nil?
     builder.settings.put("http.port", @embedded_http_port)
 
     @embedded_elasticsearch = builder.node

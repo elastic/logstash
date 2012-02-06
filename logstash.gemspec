@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "gelf" # outputs/gelf, # License: MIT-style
   spec.add_dependency "gmetric", "~> 0.1.3" # outputs/ganglia, # License: MIT
   spec.add_dependency "haml" # License: MIT
-  spec.add_dependency "jls-grok", "0.9.0" # for grok filter, BSD License
+  spec.add_dependency "jls-grok", "0.9.6" # for grok filter, BSD License
   spec.add_dependency "jruby-elasticsearch", "~> 0.0.11" # BSD License
   spec.add_dependency "jruby-openssl" # For enabling SSL support, CPL/GPL 2.0
   spec.add_dependency "json" # Ruby license
@@ -48,8 +48,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "xmpp4r", "~> 0.5" # outputs/xmpp, # License: As-Is
 
   spec.add_dependency("ffi-rzmq")
-  spec.add_dependency("ruby-debug")
-  spec.add_dependency("mocha")
 
   spec.files = files
   spec.require_paths << "lib"

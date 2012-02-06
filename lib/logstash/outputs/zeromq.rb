@@ -14,31 +14,80 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   config_name "zeromq"
   plugin_status "experimental"
 
-  # 0mq socket address to connect or bind to
-  config :address, :validate => :string, :default => "tcp://127.0.0.1:2120"
+  # 0mq socket address to connect or bind
+  # Please note that `inproc://` will not work with logstash
+  # As each we use a context per thread
+  # By default, inputs bind/listen
+  # and outputs connect
+  config :address, :validate => :array, :default => ["tcp://127.0.0.1:2120"]
 
-  # 0mq topic (Used with ZMQ_SUBSCRIBE, see http://api.zeromq.org/2-1:zmq-setsockopt 
-  # for 'ZMQ_SUBSCRIBE: Establish message filter')
-  config :queue, :validate => :string, :default => ""
+  # 0mq topology
+  # The default logstash topologies work as follows:
+  # * pushpull - inputs are pull, outputs are push
+  # * pubsub - inputs are subscribers, outputs are publishers
+  # * pair - inputs are clients, inputs are servers
+  #
+  # If the predefined topology flows don't work for you,
+  # you can change the 'mode' setting
+  # TODO (lusis) add req/rep MAYBE
+  # TODO (lusis) add router/dealer
+  config :topology, :validate => ["pushpull", "pubsub", "pair"]
 
-  # Whether to bind ("server") or connect ("client") to the socket
-  config :mode, :validate => [ "server", "client"], :default => "server"
+  # mode
+  # server mode binds/listens
+  # client mode connects
+  config :mode, :validate => ["server", "client"], :default => "client"
+
+  # 0mq socket options
+  # This exposes zmq_setsockopt
+  # for advanced tuning
+  # see http://api.zeromq.org/2-1:zmq-setsockopt for details
+  #
+  # This is where you would set values like:
+  # ZMQ::HWM - high water mark
+  # ZMQ::IDENTITY - named queues
+  # ZMQ::SWAP_SIZE - space for disk overflow
+  # ZMQ::SUBSCRIBE - topic filters for pubsub
+  #
+  # example: sockopt => ["ZMQ::HWM", 50, "ZMQ::IDENTITY", "my_named_queue"]
+  config :sockopt, :validate => :hash
 
   public
   def register
     require "ffi-rzmq"
     require "logstash/util/zeromq"
-    # Unfortunately it's not possible to simply include at the class level
-    # because the Config mixin thinks we're the included module and not the base-class
     self.class.send(:include, LogStash::Util::ZeroMQ)
-    @publisher = context.socket(ZMQ::PUB)
-    if !@queue.empty?
-      error_check(@publisher.setsockopt(ZMQ::SUBSCRIBE, @queue),
-                  "while setting ZMQ::SUBSCRIBE to #{@queue.inspect}")
+
+    # Translate topology shorthand to socket types
+    case @topology
+    when "pair"
+      zmq_const = ZMQ::PAIR
+    when "pushpull"
+      zmq_const = ZMQ::PUSH
+    when "pubsub"
+      zmq_const = ZMQ::PUB
+    end # case socket_type
+
+    @zsocket = context.socket(zmq_const)
+
+    error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
+                "while setting ZMQ::LINGER == 1)")
+
+    # TODO (lusis)
+    # wireup sockopt hash better
+    # making assumptions on split
+    if @sockopt
+      @sockopt.each do |opt,value|
+        sockopt = opt.split('::')[1]
+        option = ZMQ.const_defined?(sockopt) ? ZMQ.const_get(sockopt) : ZMQ.const_missing(sockopt)
+        error_check(@zsocket.setsockopt(option, value),
+                "while setting #{opt} == 1)")
+      end
     end
-    error_check(@publisher.setsockopt(ZMQ::LINGER, 1),
-                "while setting ZMQ::SUBSCRIBE to 1")
-    setup(@publisher, @address)
+
+    @address.each do |addr|
+      setup(@zsocket, addr)
+    end
   end # def register
 
   public
@@ -61,9 +110,9 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
 
     begin
       @logger.debug("0mq: sending", :event => wire_event)
-      error_check(@publisher.send_string(wire_event), "in send_string")
+      error_check(@zsocket.send_string(wire_event), "in send_string")
     rescue => e
-      @logger.warn("0mq output exception", :address => @address, :queue => @queue, :exception => e, :backtrace => e.backtrace)
+      @logger.warn("0mq output exception", :address => @address, :queue => @queue_name, :exception => e, :backtrace => e.backtrace)
     end
   end # def receive
 end # class LogStash::Outputs::ZeroMQ

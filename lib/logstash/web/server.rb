@@ -18,6 +18,8 @@ require "logstash/web/helpers/require_param"
 require "optparse"
 require "rack" # gem rack
 require "sinatra/base" # gem sinatra
+require "haml"
+require "sass"
 
 Encoding.default_external = Encoding::UTF_8
 Encoding.default_internal = Encoding::UTF_8

@@ -54,7 +54,7 @@ class LogStash::FilterWorker < LogStash::Plugin
         # this is the best approach. The goal is to allow filters to modify
         # the current event, but if necessary, create new events based on
         # this event.
-        filter.filter(event) do |newevent|
+        filter.execute(event) do |newevent|
           events << newevent
         end
         if event.cancelled?

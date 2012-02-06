@@ -12,7 +12,7 @@ require "timeout"
 class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
   config_name "tcp"
-  plugin_status "unstable"
+  plugin_status "beta"
 
   # When mode is `server`, the address to listen on.
   # When mode is `client`, the address to connect to.
@@ -39,12 +39,18 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
     end # def peer
   end # module SocketPeer
 
+  def initialize(*args)
+    super(*args)
+  end # def initialize
+
   public
   def register
     if server?
       @logger.info("Starting tcp input listener", :address => "#{@host}:#{@port}")
       @server_socket = TCPServer.new(@host, @port)
     end
+    @event_meter = @logger.metrics.meter(self, "events")
+    @logger.info("tcp input", :meter => @event_meter)
   end # def register
 
   private
@@ -56,10 +62,10 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         # or socket dies
         # TODO(sissel): Why do we have a timeout here? What's the point?
         if @data_timeout == -1
-          buf = socket.readline
+          buf = readline(socket)
         else
           Timeout::timeout(@data_timeout) do
-            buf = socket.readline
+            buf = readline(socket)
           end
         end
         e = self.to_event(buf, event_source)
@@ -86,6 +92,12 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   def server?
     @mode == "server"
   end # def server?
+
+  private
+  def readline(socket)
+    @event_meter.mark
+    line = socket.readline
+  end # def readline
 
   public
   def run(output_queue)

@@ -379,7 +379,10 @@ class LogStash::Agent
       if @filters.length > 0
         @filters.each do |filter|
           filter.logger = @logger
-          @plugin_setup_mutex.synchronize { filter.register }
+          @plugin_setup_mutex.synchronize do
+            filter.register
+            filter.prepare_metrics
+          end
         end
         @filterworkers = {}
         1.times do |n|
@@ -414,6 +417,16 @@ class LogStash::Agent
     # yield to a block in case someone's waiting for us to be done setting up
     # like tests, etc.
     yield if block_given?
+
+    Thread.new do
+      while true
+        @logger.metrics.each do |identifier, metric|
+          instance, name = identifier
+          @logger.info("metric #{instance.class.name}.#{name}", :value => metric.value)
+        end
+        sleep 5
+      end
+    end
 
     # TODO(sissel): Monitor what's going on? Sleep forever? what?
     while sleep 5
