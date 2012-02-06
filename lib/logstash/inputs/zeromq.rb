@@ -57,6 +57,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   def register
     require "ffi-rzmq"
     require "logstash/util/zeromq"
+    @format ||= "json_event"
     self.class.send(:include, LogStash::Util::ZeroMQ)
 
     case @topology
