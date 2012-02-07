@@ -23,6 +23,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   config_name "date"
   plugin_status "unstable"
 
+  # specify a locale to be used for date parsing. If this is not specified the platform default will be
+  # used
+  #
+  # The locale is mostly necessary to be set for parsing month names and weekday names
+  #
+  config :locale, :validate => :string
+
   # Config for date is:
   #   fieldname => dateformat
   #
@@ -78,12 +85,26 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     @parsers = Hash.new { |h,k| h[k] = [] }
   end # def initialize
 
+  
+
+
+  private
+  def parseLocale(localeString)
+    return nil if localeString == nil
+    matches = localeString.match(/(?<lang>.+?)(?:_(?<country>.+?))?(?:_(?<variant>.+))?/)
+    lang = matches['lang'] == nil ? "" : matches['lang'].strip()
+    country = matches['country'] == nil ? "" : matches['country'].strip()
+    variant = matches['variant'] == nil ? "" : matches['variant'].strip()
+    return lang.length > 0 ? java.util.Locale.new(lang, country, variant) : nil
+  end
+
   public
   def register
     require "java"
     # TODO(sissel): Need a way of capturing regexp configs better.
+    locale = parseLocale(@config["locale"][0]) if @config["locale"] != nil and @config["locale"][0] != nil 
     @config.each do |field, value|
-      next if RESERVED.include?(field)
+      next if (RESERVED + ["locale"]).include?(field)
 
       # values here are an array of format strings for the given field.
       missing = []
@@ -98,6 +119,9 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           parser = lambda { |date| org.joda.time.Instant.new(date.to_i).toDateTime }
         else
           joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withOffsetParsed
+          if(locale != nil) 
+            joda_parser = joda_parser.withLocale(locale)
+          end
           parser = lambda { |date| joda_parser.parseDateTime(date) }
 
           # Joda's time parser doesn't assume 'current time' for unparsed values.
