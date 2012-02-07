@@ -4,7 +4,7 @@ def jruby?
   return RUBY_ENGINE == "jruby"
 end
 
-gem "cabin", "0.2.3" # for logging. apache 2 license
+gem "cabin", "0.3.0" # for logging. apache 2 license
 gem "bunny" # for amqp support, MIT-style license
 gem "uuidtools" # for naming amqp queues, License ???
 
