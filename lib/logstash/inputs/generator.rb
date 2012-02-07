@@ -8,9 +8,7 @@ require "socket" # for Socket.gethostname
 #
 # An event is generated first
 class LogStash::Inputs::Generator < LogStash::Inputs::Base
-
   config_name "generator"
-
   plugin_status "experimental"
 
   # The message string to use in the event.
@@ -24,7 +22,8 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Base
   public
   def register
     @host = Socket.gethostname
-    @event_count = @logger.metrics.timer(self)
+    @metric_generate = @logger.metrics.timer(self, "event-generation")
+    @metric_queue_write = @logger.metrics.timer(self, "queue-write-time")
   end # def register
 
   def run(queue)
@@ -38,13 +37,15 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Base
     end
 
     while !finished?
-      event = to_event(@message, source)
-      event["sequence"] = number
-      # Time how long each queue push takes.
-      @event_count.time do
-        queue << event
+      @metric_generate.time do
+        event = to_event(@message, source)
+        event["sequence"] = number
+        # Time how long each queue push takes.
+        number += 1
+        @metric_queue_write.time do
+          queue << event
+        end
       end
-      number += 1
     end # loop
   end # def run
 

@@ -3,6 +3,7 @@ require "logstash/filters"
 require "logstash/filterworker"
 require "logstash/inputs"
 require "logstash/logging"
+require "logstash/sized_queue"
 require "logstash/multiqueue"
 require "logstash/namespace"
 require "logstash/outputs"
@@ -326,7 +327,8 @@ class LogStash::Agent
   private
   def start_output(output)
     @logger.debug("Starting output", :plugin => output)
-    queue = SizedQueue.new(10)
+    queue = LogStash::SizedQueue.new(10)
+    queue.logger = @logger
     @output_queue.add_queue(queue)
     @output_plugin_queues[output] = queue
     @plugins[output] = Thread.new(output, queue) do |*args|
@@ -365,8 +367,10 @@ class LogStash::Agent
       end
 
       # NOTE(petef) we should use a SizedQueue here (w/config params for size)
-      @filter_queue = SizedQueue.new(10)
+      @filter_queue = LogStash::SizedQueue.new(10)
+      @filter_queue.logger = @logger
       @output_queue = LogStash::MultiQueue.new
+      @output_queue.logger = @logger
 
       @ready_queue = Queue.new
 
@@ -420,9 +424,10 @@ class LogStash::Agent
 
     Thread.new do
       while true
+        @logger.info("metrics dump")
         @logger.metrics.each do |identifier, metric|
           instance, name = identifier
-          @logger.info("metric #{instance.class.name}.#{name}", :value => metric.value)
+          @logger.info("metric #{instance.class.name}.#{name}", metric.to_hash)
         end
         sleep 5
       end
