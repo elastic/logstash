@@ -1,24 +1,20 @@
 source :rubygems
 
-def jruby?
-  return RUBY_ENGINE == "jruby"
-end
-
 gem "cabin", "0.3.0" # for logging. apache 2 license
 gem "bunny" # for amqp support, MIT-style license
 gem "uuidtools" # for naming amqp queues, License ???
 
 gem "filewatch", "0.3.3"  # for file tailing, BSD License
-gem "jls-grok", "0.10.2" # for grok filter, BSD License
-jruby? and gem "jruby-elasticsearch", "0.0.11" # BSD License
+gem "jls-grok", "0.10.4" # for grok filter, BSD License
+gem "jruby-elasticsearch", "0.0.11", :platforms => :jruby # BSD License
 gem "stomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license
 gem "awesome_print" # MIT License
-jruby? and gem "jruby-openssl" # For enabling SSL support, CPL/GPL 2.0
+gem "jruby-openssl", :platforms => :jruby # For enabling SSL support, CPL/GPL 2.0
 
 gem "minitest" # License: Ruby
 gem "rack" # License: MIT
-jruby? and gem "mizuno" # License: Apache 2.0
+gem "mizuno", :platforms => :jruby # License: Apache 2.0
 gem "sinatra" # License: MIT-style
 gem "haml" # License: MIT
 gem "sass" # License: MIT
