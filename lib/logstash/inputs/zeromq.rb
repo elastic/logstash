@@ -38,6 +38,8 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   # This is used for the 'pubsub' topology only
   # On inputs, this allows you to filter messages by topic
   # On outputs, this allows you to tag a message for routing
+  # NOTE: ZeroMQ does subscriber side filtering.
+  # NOTE: All topics have an implicit wildcard at the end
   config :topic, :validate => :string, :default => ""
 
   # mode
@@ -83,6 +85,8 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
       setopts(@zsocket, @sockopt)
     end
 
+    setopts(@zsocket, {"ZMQ::SUBSCRIBE" => @topic}) if @topology == "pubsub"
+
     @address.each do |addr|
       setup(@zsocket, addr)
     end
@@ -99,6 +103,12 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   def run(output_queue)
     begin
       loop do
+        if @topology == "pubsub"
+          topic = ''
+          rc = @zsocket.recv_string(topic)
+          error_check(rc, "in recv_string")
+          @logger.debug("0mq input: got topic #{topic}")
+        end
         msg = ''
         rc = @zsocket.recv_string(msg)
         error_check(rc, "in recv_string")
