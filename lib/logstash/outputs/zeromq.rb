@@ -37,6 +37,9 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   # This is used for the 'pubsub' topology only
   # On inputs, this allows you to filter messages by topic
   # On outputs, this allows you to tag a message for routing
+  # NOTE: ZeroMQ does subscriber-side filtering
+  # NOTE: Topic is evaluated with `event.sprintf` so 
+  #       macros are valid here
   config :topic, :validate => :string, :default => ""
 
   # mode
@@ -108,6 +111,10 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
 
     begin
       @logger.debug("0mq: sending", :event => wire_event)
+      if @topology == "pubsub"
+        @logger.debug("0mq output: setting topic to: #{event.sprintf(@topic)}")
+        error_check(@zsocket.send_string(event.sprintf(@topic), ZMQ::SNDMORE), "in topic send_string")
+      end
       error_check(@zsocket.send_string(wire_event), "in send_string")
     rescue => e
       @logger.warn("0mq output exception", :address => @address, :queue => @queue_name, :exception => e, :backtrace => e.backtrace)
