@@ -25,6 +25,26 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # If the field is a hash, no action will be taken.
   config :convert, :validate => :hash
 
+  # Convert a string field by applying a regular expression and a replacement
+  # if the field is not a string, no action will be taken
+  # 
+  # the pattern and the replacement have to be seperated by / the slash can be escaped with a backslash \
+  #
+  # be aware of escaping the backslash in the config file
+  #
+  # for example:
+  #
+  #    mutate {
+  #       …
+  #      gsub => [
+  #        "fieldname", "\\//_",      #replace all forward slashes with underscore
+  #        "fieldname", "[\\?#-]/_"   #replace backslashes, question marks, hashes and minuses with underscore
+  #      ]
+  #       …
+  #    }
+  #
+  config :gsub, :validate => :hash
+
   public
   def register
     valid_conversions = %w(string integer float)
@@ -48,6 +68,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     remove(event) if @remove
     replace(event) if @replace
     convert(event) if @convert
+    gsub(event) if @gsub
 
     filter_matched(event)
   end # def filter
@@ -108,4 +129,33 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   def convert_float(value)
     return value.to_f
   end # def convert_float
+
+  private
+  def gsub(event)
+    @gsub.each do |field, replacement_string|
+      match = replacement_string.split(/(?!<[\/])\//, 2)
+      if match == nil
+        @logger.debug("gsub mutation requires a / separated pattern/replacement pair, skipping",
+                      :field => field, :value => event[field])
+        next
+      end
+      if(event[field].is_a?(Array))
+        event[field] = event[field].map do |v| 
+          if not v.is_a?(String)
+            @logger.debug("gsub mutation is only applicable for Strings, skipping",
+                          :field => field, :value => event[field])
+            next
+          end
+          v.gsub(Regexp.new(match[0]), match[1]) 
+        end
+      else
+        if not event[field].is_a?(String)
+          @logger.debug("gsub mutation is only applicable for Strings, skipping",
+                        :field => field, :value => event[field])
+          next
+        end
+        event[field] = event[field].gsub(Regexp.new(match[0]), match[1])
+      end
+    end # @gsub.each
+  end # def gsub
 end # class LogStash::Filters::Mutate
