@@ -34,6 +34,12 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   # TODO (lusis) add router/dealer
   config :topology, :validate => ["pushpull", "pubsub", "pair"]
 
+  # 0mq topic
+  # This is used for the 'pubsub' topology only
+  # On inputs, this allows you to filter messages by topic
+  # On outputs, this allows you to tag a message for routing
+  config :topic, :validate => :string, :default => ""
+
   # mode
   # server mode binds/listens
   # client mode connects
