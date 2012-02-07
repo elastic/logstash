@@ -12,6 +12,10 @@ class LogStash::Web::Server < Sinatra::Base
     offset = params["offset"] = (params["offset"] or 0).to_i
     format = (params[:format] or "json")
 
+    if count == 0
+        count = params["count"] = 50
+    end
+
     query = LogStash::Search::Query.new(
       :query_string => params[:q],
       :offset => offset,
@@ -44,7 +48,6 @@ class LogStash::Web::Server < Sinatra::Base
 
       @events = @results.events
       @total = (@results.total rescue 0)
-      count = @results.events.size
 
       if count and offset
         if @total > (count + offset)
@@ -57,10 +60,10 @@ class LogStash::Web::Server < Sinatra::Base
 
       if count + offset < @total
         next_params = params.clone
-        next_params["offset"] = [offset + count, @total - count].min
+        next_params["offset"] = [offset + count, @total/count * count].min
         @next_href = "?" +  next_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
         last_params = next_params.clone
-        last_params["offset"] = @total - count
+        last_params["offset"] = @total/count * count
         @last_href = "?" +  last_params.collect { |k,v| [URI.escape(k.to_s), URI.escape(v.to_s)].join("=") }.join("&")
       end
 
