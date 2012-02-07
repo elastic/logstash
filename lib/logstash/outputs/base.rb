@@ -24,7 +24,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   # Only handle events with all of these fields.
   # Optional.
-  config :fields, :validae => :array, :default => []
+  config :fields, :validate => :array, :default => []
 
   public
   def initialize(params)
