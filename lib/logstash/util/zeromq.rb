@@ -3,6 +3,9 @@ require "logstash/namespace"
 
 module LogStash::Util::ZeroMQ
   CONTEXT = ZMQ::Context.new
+  # LOGSTASH-400
+  # see https://github.com/chuckremes/ffi-rzmq/blob/master/lib/ffi-rzmq/socket.rb#L93-117
+  STRING_OPTS = %w{IDENTITY SUBSCRIBE UNSUBSCRIBE}
 
   def context
     CONTEXT
@@ -23,4 +26,21 @@ module LogStash::Util::ZeroMQ
       raise "ZeroMQ Error while #{doing}"
     end
   end # def error_check
+
+  def setopts(socket, options)
+    options.each do |opt,value|
+      sockopt = opt.split('::')[1]
+      option = ZMQ.const_defined?(sockopt) ? ZMQ.const_get(sockopt) : ZMQ.const_missing(sockopt)
+      unless STRING_OPTS.include?(sockopt)
+        begin
+          Float(value)
+          value = value.to_i
+        rescue ArgumentError
+          raise "#{sockopt} requires a numeric value. #{value} is not numeric"
+        end
+      end # end unless
+      error_check(socket.setsockopt(option, value),
+              "while setting #{opt} == #{value}")
+    end # end each
+  end # end setopts
 end # module LogStash::Util::ZeroMQ

@@ -73,17 +73,10 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
     error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
                 "while setting ZMQ::LINGER == 1)")
 
-    # TODO (lusis)
-    # wireup sockopt hash
     if @sockopt
-      @sockopt.each do |opt,value|
-        sockopt = opt.split('::')[1]
-        option = ZMQ.const_defined?(sockopt) ? ZMQ.const_get(sockopt) : ZMQ.const_missing(sockopt)
-        error_check(@zsocket.setsockopt(option, value),
-                "while setting #{opt} == 1)")
-      end
+      setopts(@zsocket, @sockopt)
     end
-    
+
     @address.each do |addr|
       setup(@zsocket, addr)
     end
