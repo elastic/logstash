@@ -4,7 +4,7 @@ GEM
     awesome_print (1.0.2)
     bouncy-castle-java (1.5.0146.1)
     bson (1.5.2-java)
-    bunny (0.7.9)
+    bunny (0.7.8)
     cabin (0.3.6)
       json
     childprocess (0.3.1)
