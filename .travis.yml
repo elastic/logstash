@@ -1,0 +1,8 @@
+language: ruby
+rvm:
+  - jruby-19mode
+
+script: ruby bin/logstash test
+
+before_install: 
+  - make vendor-elasticsearch
