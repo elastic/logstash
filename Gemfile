@@ -1,6 +1,7 @@
 source :rubygems
 
-gem "cabin", "0.3.1" # for logging. apache 2 license
+#gem "cabin", :git => "https://github.com/jordansissel/ruby-cabin.git" # for logging. apache 2 license
+gem "cabin", "0.3.6" # for logging. apache 2 license
 gem "bunny" # for amqp support, MIT-style license
 gem "uuidtools" # for naming amqp queues, License ???
 
