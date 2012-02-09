@@ -29,6 +29,7 @@ describe LogStash::Outputs::ElasticSearch do
   end # after
 
   test "elasticsearch basic output" do
+    skip("Debug es test output")
     events = []
     myfile = File.basename(__FILE__)
     1.upto(5).each do |i|
