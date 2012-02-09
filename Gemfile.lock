@@ -5,7 +5,7 @@ GEM
     bouncy-castle-java (1.5.0146.1)
     bson (1.5.2-java)
     bunny (0.7.8)
-    cabin (0.3.0)
+    cabin (0.3.1)
       json
     childprocess (0.3.1)
       ffi (~> 1.0.6)
@@ -18,7 +18,7 @@ GEM
     gelfd (0.2.0)
     gmetric (0.1.3)
     haml (3.1.4)
-    jls-grok (0.10.4)
+    jls-grok (0.10.5)
       cabin (~> 0.3.0)
     jruby-elasticsearch (0.0.11)
     jruby-openssl (0.7.5)
@@ -53,7 +53,7 @@ PLATFORMS
 DEPENDENCIES
   awesome_print
   bunny
-  cabin (= 0.3.0)
+  cabin (= 0.3.1)
   ffi
   ffi-rzmq (= 0.9.0)
   filewatch (= 0.3.3)
@@ -61,7 +61,7 @@ DEPENDENCIES
   gelfd (= 0.2.0)
   gmetric (= 0.1.3)
   haml
-  jls-grok (= 0.10.4)
+  jls-grok (= 0.10.5)
   jruby-elasticsearch (= 0.0.11)
   jruby-openssl
   json
