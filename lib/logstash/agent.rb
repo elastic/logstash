@@ -426,8 +426,7 @@ class LogStash::Agent
       while true
         @logger.info("metrics dump")
         @logger.metrics.each do |identifier, metric|
-          instance, name = identifier
-          @logger.info("metric #{instance.class.name}.#{name}", metric.to_hash)
+          @logger.info("metric #{identifier}", metric.to_hash)
         end
         sleep 5
       end
