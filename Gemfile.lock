@@ -6,7 +6,7 @@ GEM
     bson (1.5.2)
     bson (1.5.2-java)
     bunny (0.7.9)
-    cabin (0.3.7)
+    cabin (0.3.8)
       json
     childprocess (0.3.1)
       ffi (~> 1.0.6)
@@ -57,7 +57,7 @@ PLATFORMS
 DEPENDENCIES
   awesome_print
   bunny
-  cabin (= 0.3.7)
+  cabin (= 0.3.8)
   ffi
   ffi-rzmq (= 0.9.0)
   filewatch (= 0.3.3)
