@@ -104,7 +104,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     @amqpurl += amqp_credentials unless amqp_credentials.nil?
     @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@name}"
 
-
+    @metric_queue_pop = @logger.metrics.timer(self, "queue-pop")
   end # def register
 
   def run(queue)
@@ -118,12 +118,14 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
       @queue = @bunny.queue(@name, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive})
       @queue.bind(@exchange, :key => @key)
 
-      @queue.subscribe({:ack => @ack}) do |data|
-        e = to_event(data[:payload], @amqpurl)
-        if e
-          queue << e
+      while true
+        data = ""
+        @metric_queue_pop.time do
+          data = @queue.pop(:ack => @ack)
         end
-      end # @queue.subscribe
+        e = to_event(data[:payload], @amqpurl)
+        queue << e if e
+      end # looping forever
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
       @logger.error("AMQP connection error, will reconnect: #{e}")
       # Sleep for a bit before retrying.

@@ -3,13 +3,15 @@ GEM
   specs:
     awesome_print (1.0.2)
     bouncy-castle-java (1.5.0146.1)
+    bson (1.5.2)
     bson (1.5.2-java)
     bunny (0.7.9)
-    cabin (0.3.6)
+    cabin (0.3.7)
       json
     childprocess (0.3.1)
       ffi (~> 1.0.6)
     choice (0.1.4)
+    ffi (1.0.11)
     ffi (1.0.11-java)
     ffi-rzmq (0.9.0)
     filewatch (0.3.3)
@@ -23,6 +25,7 @@ GEM
     jruby-elasticsearch (0.0.11)
     jruby-openssl (0.7.5)
       bouncy-castle-java (>= 1.5.0146.1)
+    json (1.6.5)
     json (1.6.5-java)
     minitest (2.11.1)
     mizuno (0.5.0)
@@ -49,11 +52,12 @@ GEM
 
 PLATFORMS
   java
+  ruby
 
 DEPENDENCIES
   awesome_print
   bunny
-  cabin (= 0.3.6)
+  cabin (= 0.3.7)
   ffi
   ffi-rzmq (= 0.9.0)
   filewatch (= 0.3.3)
