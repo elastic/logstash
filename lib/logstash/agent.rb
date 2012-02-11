@@ -305,6 +305,32 @@ class LogStash::Agent
       run_with_config(config, &block)
     end
 
+    @monitor_thread = Thread.new do
+      #Hopefully this is never the thread that runs out of memory
+      while sleep 5
+        has_thread_died = false
+        @plugins_mutex.synchronize do
+          @plugins.each do |p, thread|
+            if(!thread.alive?)
+              @logger.warn("Thread died unexpectedly, assuming the worst and restarting everything")
+            end
+            while @reloading || @is_shutting_down
+              @logger.warn("Waiting to stop shutting down and reloading")
+              @logger.warn("@reloading = #{@reloading}")
+              @logger.warn("@is_shutting_down = #{@is_shutting_down}")
+              sleep 1
+            end
+            has_thread_died = true
+          end
+        end
+        if(has_thread_died)
+          #@TODO(jbarciauskas) Maybe stop everything and reload instead of shutting down?
+          shutdown_and_reload
+        end
+      end
+      @logger.warn("Monitor thread has died")
+    end
+
     return remaining
   end # def run
 
@@ -453,6 +479,22 @@ class LogStash::Agent
     exit(0)
   end # def shutdown
 
+  def shutdown_and_reload
+    @logger.info("Shutting down before reloading...")
+    shutdown_plugins(@plugins)
+    while @is_shutting_down
+      sleep 1
+    end
+    #should result in an empty set
+    @plugins = @plugins.select { |p, thread| p.running? }
+    @inputs = []
+    @filters = []
+    @outputs = []
+    @logger.info("Starting to reload...")
+    reload
+    @logger.info("Reloading complete!")
+  end
+
   def shutdown_plugins(plugins)
     return if @is_shutting_down
 
@@ -492,8 +534,8 @@ class LogStash::Agent
                         :remaining => remaining.map(&:first))
         end
       end # while remaining.size > 0
+      @is_shutting_down = false
     end
-    @is_shutting_down = false
   end
 
 
@@ -588,6 +630,7 @@ class LogStash::Agent
         while wait_count > 0 and @ready_queue.pop
           wait_count -= 1
         end
+        @reloading = false
       rescue Exception => e
         @reloading = false
         raise e
@@ -690,7 +733,7 @@ class LogStash::Agent
         @logger.debug("Sending event", :target => output)
         output.handle(event)
       end
-    rescue Exception => e
+    rescue => e
       @logger.warn("Output thread exception", :plugin => output,
                    :exception => e, :backtrace => e.backtrace)
       # TODO(sissel): should we abort after too many failures?
