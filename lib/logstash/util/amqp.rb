@@ -25,17 +25,17 @@ module LogStash::Util::AMQP
     return connection
   end
 
-  def start!(driver, connection, prefetch_count)
+  def start!(driver, connection, prefetch_count = nil)
     case driver
     when 'hot_bunnies'
       # hot_bunnies operates on channel object
       channel = connection.create_channel
-      channel.prefetch = prefetch_count
+      channel.prefetch = prefetch_count unless prefetch_count == nil
       return channel
     else
       # bunny operations on connection object
       connection.start
-      connection.qos({:prefetch_count => prefetch_count})
+      connection.qos({:prefetch_count => prefetch_count}) unless prefetch_count == nil
       return connection
     end
   end
