@@ -34,6 +34,14 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   # TODO (lusis) add router/dealer
   config :topology, :validate => ["pushpull", "pubsub", "pair"]
 
+  # 0mq topic
+  # This is used for the 'pubsub' topology only
+  # On inputs, this allows you to filter messages by topic
+  # On outputs, this allows you to tag a message for routing
+  # NOTE: ZeroMQ does subscriber side filtering.
+  # NOTE: All topics have an implicit wildcard at the end
+  config :topic, :validate => :string, :default => ""
+
   # mode
   # server mode binds/listens
   # client mode connects
@@ -57,6 +65,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   def register
     require "ffi-rzmq"
     require "logstash/util/zeromq"
+    @format ||= "json_event"
     self.class.send(:include, LogStash::Util::ZeroMQ)
 
     case @topology
@@ -69,6 +78,8 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
     end # case socket_type
     setup
     
+    setopts(@zsocket, {"ZMQ::SUBSCRIBE" => @topic}) if @topology == "pubsub"
+
   end # def register
 
   def teardown

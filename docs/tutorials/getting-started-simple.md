@@ -81,4 +81,4 @@ Want to know more about the configuration language? Check out the
 [configuration](configuration) documentation.
 
 You may have logs on many servers you want to centralize through logstash. To
-learn how to do that, [read this](tutorials/getting-started-centralized)
+learn how to do that, [read this](getting-started-centralized)
