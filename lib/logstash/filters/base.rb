@@ -70,9 +70,9 @@ class LogStash::Filters::Base < LogStash::Plugin
   end # def filter
 
   public
-  def execute(event)
+  def execute(event, &block)
     @filter_metric.time do
-      filter(event)
+      filter(event, &block)
     end
   end # def execute
 

@@ -34,6 +34,14 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   # TODO (lusis) add router/dealer
   config :topology, :validate => ["pushpull", "pubsub", "pair"]
 
+  # 0mq topic
+  # This is used for the 'pubsub' topology only
+  # On inputs, this allows you to filter messages by topic
+  # On outputs, this allows you to tag a message for routing
+  # NOTE: ZeroMQ does subscriber side filtering.
+  # NOTE: All topics have an implicit wildcard at the end
+  config :topic, :validate => :string, :default => ""
+
   # mode
   # server mode binds/listens
   # client mode connects
@@ -57,6 +65,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   def register
     require "ffi-rzmq"
     require "logstash/util/zeromq"
+    @format ||= "json_event"
     self.class.send(:include, LogStash::Util::ZeroMQ)
 
     case @topology
@@ -72,17 +81,12 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
     error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
                 "while setting ZMQ::LINGER == 1)")
 
-    # TODO (lusis)
-    # wireup sockopt hash
     if @sockopt
-      @sockopt.each do |opt,value|
-        sockopt = opt.split('::')[1]
-        option = ZMQ.const_defined?(sockopt) ? ZMQ.const_get(sockopt) : ZMQ.const_missing(sockopt)
-        error_check(@zsocket.setsockopt(option, value),
-                "while setting #{opt} == 1)")
-      end
+      setopts(@zsocket, @sockopt)
     end
-    
+
+    setopts(@zsocket, {"ZMQ::SUBSCRIBE" => @topic}) if @topology == "pubsub"
+
     @address.each do |addr|
       setup(@zsocket, addr)
     end
@@ -99,6 +103,12 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   def run(output_queue)
     begin
       loop do
+        if @topology == "pubsub"
+          topic = ''
+          rc = @zsocket.recv_string(topic)
+          error_check(rc, "in recv_string")
+          @logger.debug("0mq input: got topic #{topic}")
+        end
         msg = ''
         rc = @zsocket.recv_string(msg)
         error_check(rc, "in recv_string")
