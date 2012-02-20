@@ -33,6 +33,15 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   # TODO (lusis) add router/dealer
   config :topology, :validate => ["pushpull", "pubsub", "pair"]
 
+  # 0mq topic
+  # This is used for the 'pubsub' topology only
+  # On inputs, this allows you to filter messages by topic
+  # On outputs, this allows you to tag a message for routing
+  # NOTE: ZeroMQ does subscriber-side filtering
+  # NOTE: Topic is evaluated with `event.sprintf` so 
+  #       macros are valid here
+  config :topic, :validate => :string, :default => ""
+
   # mode
   # server mode binds/listens
   # client mode connects
@@ -73,16 +82,8 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
     error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
                 "while setting ZMQ::LINGER == 1)")
 
-    # TODO (lusis)
-    # wireup sockopt hash better
-    # making assumptions on split
     if @sockopt
-      @sockopt.each do |opt,value|
-        sockopt = opt.split('::')[1]
-        option = ZMQ.const_defined?(sockopt) ? ZMQ.const_get(sockopt) : ZMQ.const_missing(sockopt)
-        error_check(@zsocket.setsockopt(option, value),
-                "while setting #{opt} == 1)")
-      end
+      setopts(@zsocket, @sockopt)
     end
 
     @address.each do |addr|
@@ -110,6 +111,10 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
 
     begin
       @logger.debug("0mq: sending", :event => wire_event)
+      if @topology == "pubsub"
+        @logger.debug("0mq output: setting topic to: #{event.sprintf(@topic)}")
+        error_check(@zsocket.send_string(event.sprintf(@topic), ZMQ::SNDMORE), "in topic send_string")
+      end
       error_check(@zsocket.send_string(wire_event), "in send_string")
     rescue => e
       @logger.warn("0mq output exception", :address => @address, :queue => @queue_name, :exception => e, :backtrace => e.backtrace)
