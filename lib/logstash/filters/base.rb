@@ -49,7 +49,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   #  and the %{@source} piece replaced with that value from the event.
   config :add_field, :validate => :hash, :default => {}
 
-  RESERVED = ["type", "tags", "add_tag", "add_field"]
+  RESERVED = ["type", "tags", "add_tag", "add_field", "exclude_tags"]
 
   public
   def initialize(params)
