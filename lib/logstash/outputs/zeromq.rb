@@ -40,6 +40,7 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   # NOTE: ZeroMQ does subscriber-side filtering
   # NOTE: Topic is evaluated with `event.sprintf` so 
   #       macros are valid here
+  # NOTE: If no topic is given, type is used.
   config :topic, :validate => :string, :default => ""
 
   # mode
@@ -115,15 +116,11 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
     end
 
     begin
-      if @topology == "pubsub" and @pubsub_topic
-        e_topic = topic(event)
-        @logger.debug("0mq: sending topic string", :topic => e_topic) 
-        error_check(@zsocket.send_string(e_topic, ::ZMQ::SNDMORE), "in send_string topic")
-      end
       @logger.debug("0mq: sending", :event => wire_event)
       if @topology == "pubsub"
-        @logger.debug("0mq output: setting topic to: #{event.sprintf(@topic)}")
-        error_check(@zsocket.send_string(event.sprintf(@topic), ZMQ::SNDMORE), "in topic send_string")
+        topic = @topic ? event.sprintf(@topic) : @type
+        @logger.debug("0mq output: setting topic to: #{topic}")
+        error_check(@zsocket.send_string(topic, ZMQ::SNDMORE), "in topic send_string")
       end
       error_check(@zsocket.send_string(wire_event), "in send_string")
     rescue => e
