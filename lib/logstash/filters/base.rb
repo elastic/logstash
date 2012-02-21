@@ -36,6 +36,20 @@ class LogStash::Filters::Base < LogStash::Plugin
   # would add a tag "foo_hello"
   config :add_tag, :validate => :array, :default => []
 
+  # If this filter is successful, remove arbitrary tags from the event.
+  # Tags can be dynamic and include parts of the event using the %{field}
+  # syntax. Example:
+  #
+  #     filter {
+  #       myfilter {
+  #         remove_tag => [ "foo_%{somefield}" ]
+  #       }
+  #     }
+  #
+  # If the event has field "somefield" == "hello" this filter, on success,
+  # would remove the tag "foo_hello" if it is present
+  config :remove_tag, :validate => :array, :default => []
+
   # If this filter is successful, add any arbitrary fields to this event.
   # Example:
   #
@@ -49,7 +63,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   #  and the %{@source} piece replaced with that value from the event.
   config :add_field, :validate => :hash, :default => {}
 
-  RESERVED = ["type", "tags", "add_tag", "add_field", "exclude_tags"]
+  RESERVED = ["type", "tags", "add_tag", "remove_tag", "add_field", "exclude_tags"]
 
   public
   def initialize(params)
@@ -95,6 +109,14 @@ class LogStash::Filters::Base < LogStash::Plugin
       @logger.debug("filters/#{self.class.name}: adding tag", :tag => tag)
       event.tags << event.sprintf(tag)
       #event.tags |= [ event.sprintf(tag) ]
+    end
+
+    if @remove_tag
+      remove_tags = @remove_tag.map do |tag|
+        event.sprintf(tag)
+      end
+      @logger.debug("filters/#{self.class.name}: removing tags", :tags => (event.tags & remove_tags))
+      event.tags -= remove_tags
     end
   end # def filter_matched
 
