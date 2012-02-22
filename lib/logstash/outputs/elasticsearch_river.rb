@@ -98,7 +98,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       "port" => [@amqp_port],
       "user" => [@user],
       "password" => [@password],
-      "exchange_type" => ["direct"],
+      "exchange_type" => [@exchange_type],
       "queue_name" => [@name],
       "name" => [@exchange],
       "key" => [@key],
