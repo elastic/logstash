@@ -126,7 +126,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
                                 "user" => @user,
                                 "pass" => @password,
                                 "vhost" => @vhost,
-                                "queue" => @queue,
+                                "queue" => @name,
                                 "exchange" => @exchange,
                                 "routing_key" => @key,
                                 "exchange_type" => @exchange_type,
