@@ -10,6 +10,8 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
 
   config_name "stdin"
 
+  plugin_status "beta"
+
   public
   def register
     @host = Socket.gethostname
@@ -27,5 +29,6 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
   public
   def teardown
     $stdin.close
+    finished
   end # def teardown
 end # class LogStash::Inputs::Stdin

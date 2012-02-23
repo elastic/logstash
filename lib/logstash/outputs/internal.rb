@@ -5,6 +5,7 @@ require "logstash/outputs/base"
 # is not useful for general deployment.
 class LogStash::Outputs::Internal < LogStash::Outputs::Base
   config_name "internal"
+  plugin_status "stable"
 
   attr_accessor :callback
 
@@ -16,6 +17,8 @@ class LogStash::Outputs::Internal < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     if @callbacks.empty?
       @logger.error("No callback for output #{@url}, cannot receive")
       return

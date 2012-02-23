@@ -27,7 +27,7 @@ Example:
 
 For a given event, are applied in the order of appearance in the config file.
 
-## Types
+## Value Types
 
 The documentation for a plugin may say that a config field has a certain type.
 Examples include boolean, string, array, number, hash, etc.
@@ -47,6 +47,8 @@ A string must be a single value.
 Example:
 
     name => "Hello world"
+
+Single, unquoted words are valid as strings, too, but you should use quotes.
 
 ### Number
 

@@ -5,8 +5,9 @@ require "logstash/outputs/base"
 # nagios command file. 
 #
 # For this output to work, your event must have the following fields:
-#   "nagios_host"
-#   "nagios_service"
+#
+#  * "nagios_host"
+#  * "nagios_service"
 #
 # This field is supported, but optional:
 #   "nagios_annotation"
@@ -25,27 +26,24 @@ require "logstash/outputs/base"
 #           "nagios_host", "%{@source_host}",
 #           "nagios_service", "the name of your nagios service check"
 #         ]
-#      }
-#    }
+#       }
+#     }
 #    
-#    output{
-#      nagios { 
-#        # only process events with this tag
-#        tags => "nagios-update"
-#      }
-#    }
+#     output{
+#       nagios { 
+#         # only process events with this tag
+#         tags => "nagios-update"
+#       }
+#     }
 class LogStash::Outputs::Nagios < LogStash::Outputs::Base
   NAGIOS_CRITICAL = 2
   NAGIOS_WARN = 1
 
   config_name "nagios"
+  plugin_status "beta"
 
   # The path to your nagios command file
   config :commandfile, :validate => :string, :default => "/var/lib/nagios3/rw/nagios.cmd"
-
-  # Only handle events with any of these tags. Optional.
-  # If not specified, will process all events.
-  config :tags, :validate => :array, :default => []
 
   public
   def register
@@ -54,16 +52,11 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
 
   public
   def receive(event)
-    if !@tags.empty?
-      if (event.tags - @tags).size == 0
-        # Skip events that have no tags in common with what we were configured
-        return
-      end
-    end
+    return unless output?(event)
 
     if !File.exists?(@commandfile)
-      @logger.warn(["Skipping nagios output; command file is missing",
-                   {"commandfile" => @commandfile, "missed_event" => event}])
+      @logger.warn("Skipping nagios output; command file is missing",
+                   :commandfile => @commandfile, :missed_event => event)
       return
     end
 
@@ -74,15 +67,15 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
 
     host = event.fields["nagios_host"]
     if !host
-      @logger.warn(["Skipping nagios output; nagios_host field is missing",
-                   {"missed_event" => event}])
+      @logger.warn("Skipping nagios output; nagios_host field is missing",
+                   :missed_event => event)
       return
     end
 
     service = event.fields["nagios_service"]
     if !service
-      @logger.warn(["Skipping nagios output; nagios_service field is missing",
-                   {"missed_event" => event}])
+      @logger.warn("Skipping nagios output; nagios_service field is missing",
+                   "missed_event" => event)
       return
     end
 
@@ -100,17 +93,17 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
     # In the multi-line case, escape the newlines for the nagios command file
     cmd += event.message.gsub("\n", "\\n")
 
-    @logger.debug({"commandfile" => @commandfile, "nagios_command" => cmd})
+    @logger.debug("Opening nagios command file", :commandfile => @commandfile,
+                  :nagios_command => cmd)
     begin
       File.open(@commandfile, "r+") do |f|
         f.puts(cmd)
         f.flush # TODO(sissel): probably don't need this.
       end
     rescue => e
-      @logger.warn(["Skipping nagios output; error writing to command file",
-                   {"error" => $!, "commandfile" => @commandfile,
-                    "missed_event" => event}])
-      @logger.debug(["Backtrace", e.backtrace])
+      @logger.warn("Skipping nagios output; error writing to command file",
+                   :commandfile => @commandfile, :missed_event => event,
+                   :exception => e, :backtrace => e.backtrace)
     end
   end # def receive
 end # class LogStash::Outputs::Nagios

@@ -5,6 +5,7 @@ require "logstash/outputs/base"
 class LogStash::Outputs::Websocket < LogStash::Outputs::Base
 
   config_name "websocket"
+  plugin_status "experimental"
 
   # The address to serve websocket data from
   config :host, :validate => :string, :default => "0.0.0.0"
@@ -37,6 +38,8 @@ class LogStash::Outputs::Websocket < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     # Only publish the event to websockets if there are subscribers
     # TODO(sissel): send a patch to eventmachine to fix this.
     if @subscribers > 0

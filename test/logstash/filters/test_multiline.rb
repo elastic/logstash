@@ -1,21 +1,17 @@
 require "rubygems"
-$:.unshift File.dirname(__FILE__) + "/../../../lib"
-$:.unshift File.dirname(__FILE__) + "/../../"
-require "test/unit"
+require File.join(File.dirname(__FILE__), "..", "minitest")
+
 require "logstash"
 require "logstash/filters"
 require "logstash/filters/multiline"
 require "logstash/event"
 
-class TestFilterMultiline < Test::Unit::TestCase
-  def setup
-    @filter = LogStash::Filters.from_name("multiline", {})
+describe LogStash::Filters::Multiline do
+  before do
+    @typename = "multiline-test"
   end
 
-  def test_name(name)
-    @typename = name
-  end
-
+  # TODO(sissel): Refactor this into a reusable method.
   def config(cfg)
     cfg["type"] = @typename
     cfg.each_key do |key|
@@ -28,8 +24,7 @@ class TestFilterMultiline < Test::Unit::TestCase
     @filter.register
   end
 
-  def test_with_next
-    test_name "with next"
+  test "using 'next' mode" do
     config "pattern" => "\\.\\.\\.$", "what" => "next"
 
     inputs = [
@@ -63,10 +58,9 @@ class TestFilterMultiline < Test::Unit::TestCase
     expected_outputs.zip(outputs).each do |expected, actual|
       assert_equal(expected, actual)
     end
-  end # def test_with_next
+  end # test with what => 'next'
   
-  def test_with_previous
-    test_name "with previous"
+  test "using 'previous' mode" do
     config "pattern" => "^\\s", "what" => "previous"
 
     inputs = [
@@ -98,7 +92,7 @@ class TestFilterMultiline < Test::Unit::TestCase
         outputs << event.message
       end
     end
-    last = @filter.flush("unknown", @typename)
+    last = @filter.flush("unknown.#{@typename}")
     if last
       outputs << last.message
     end
@@ -108,11 +102,10 @@ class TestFilterMultiline < Test::Unit::TestCase
     expected_outputs.zip(outputs).each do |expected, actual|
       assert_equal(expected, actual)
     end
-  end
+  end # test using 'previous'
 
-  def test_with_negate_true
+  test "with negate => true" do
     @logger = LogStash::Logger.new(STDERR)
-    test_name "with negate true"
     config "pattern" => "^\\S", "what" => "previous", "negate" => "true"
 
     inputs = [
@@ -144,7 +137,7 @@ class TestFilterMultiline < Test::Unit::TestCase
         outputs << event.message
       end
     end
-    last = @filter.flush("unknown", @typename)
+    last = @filter.flush("unknown.#{@typename}")
     if last
       outputs << last.message
     end
@@ -153,11 +146,10 @@ class TestFilterMultiline < Test::Unit::TestCase
     expected_outputs.zip(outputs).each do |expected, actual|
       assert_equal(expected, actual)
     end
-  end
+  end # negate tests
 
-  def test_with_negate_false
+  test "with negate => 'false'"  do
     @logger = LogStash::Logger.new(STDERR)
-    test_name "with negate true"
     config "pattern" => "^\\s", "what" => "previous", "negate" => "false"
 
     inputs = [
@@ -189,7 +181,7 @@ class TestFilterMultiline < Test::Unit::TestCase
         outputs << event.message
       end
     end
-    last = @filter.flush("unknown", @typename)
+    last = @filter.flush("unknown.#{@typename}")
     if last
       outputs << last.message
     end
@@ -198,5 +190,44 @@ class TestFilterMultiline < Test::Unit::TestCase
     expected_outputs.zip(outputs).each do |expected, actual|
       assert_equal(expected, actual)
     end
+  end # negate false
+
+  test "with custom stream identity" do
+    config "pattern" => ".*", "what" => "next",
+      "stream_identity" => "%{key}"
+
+    inputs = [
+      "one",
+      "two",
+      "one",
+      "two",
+      "one",
+    ]
+
+    expected_outputs = [
+      "one\none\none",
+      "two\ntwo",
+    ]
+         
+    outputs = []
+
+    inputs.each_with_index do |input, i|
+      event = LogStash::Event.new
+      event.type = @typename
+      # even/odd keying to fake multiple streams.
+      event["key"] = ["odd", "even"][i % 2]
+      event.message = input
+      @filter.filter(event)
+      if !event.cancelled?
+        outputs << event.message
+      end
+    end
+    outputs << @filter.flush("odd").message
+    outputs << @filter.flush("even").message
+    assert_equal(expected_outputs.length, outputs.length,
+                 "Incorrect number of output events")
+    expected_outputs.zip(outputs).each do |expected, actual|
+      assert_equal(expected, actual)
+    end
   end
-end
+end # tests for LogStash::Filters::Multiline

@@ -8,12 +8,12 @@ require "logstash/namespace"
 class LogStash::Inputs::Redis < LogStash::Inputs::Base
 
   config_name "redis"
+  plugin_status "beta"
 
   # Name is used for logging in case there are multiple instances.
-  # TODO: remove
-  config :name, :validate => :string, :default => "default", 
-    :deprecated => true
-  
+  # This feature has no real function and will be removed in future versions.
+  config :name, :validate => :string, :default => "default", :deprecated => true
+
   # The hostname of your redis server.
   config :host, :validate => :string, :default => "127.0.0.1"
 
@@ -30,16 +30,16 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   config :password, :validate => :password
 
   # The name of the redis queue (we'll use BLPOP against this).
-  # TODO: remove
+  # TODO: remove soon.
   config :queue, :validate => :string, :deprecated => true
 
   # The name of a redis list or channel.
   # TODO: change required to true
   config :key, :validate => :string, :required => false
 
-  # Either list or channel.  If redis_type is list, then we will BLPOP the 
-  # key.  If redis_type is channel, then we will SUBSCRIBE to the key.
-  # If redis_type is pattern_channel, then we will PSUBSCRIBE to the key.
+  # Either list or channel.  If redis\_type is list, then we will BLPOP the
+  # key.  If redis\_type is channel, then we will SUBSCRIBE to the key.
+  # If redis\_type is pattern_channel, then we will PSUBSCRIBE to the key.
   # TODO: change required to true
   config :data_type, :validate => [ "list", "channel", "pattern_channel" ], :required => false
 
@@ -47,7 +47,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   def initialize(params)
     super
 
-    @format ||= ["json_event"]
+    @format ||= "json_event"
   end # def initialize
 
   public
@@ -73,11 +73,13 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
       )
     end
     # end TODO
-    
-    @logger.info "Registering redis #{identity}"
+
+    @logger.info("Registering redis", :identity => identity)
   end # def register
 
   # A string used to identify a redis instance in log messages
+  # TODO(sissel): Use instance variables for this once the @name config
+  # option is removed.
   private
   def identity
     @name || "#{@redis_url} #{@data_type}:#{@key}"
@@ -100,11 +102,11 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
       event = to_event msg, identity
       output_queue << event if event
     rescue => e # parse or event creation error
-      @logger.error(["Failed to create event with '#{msg}'", e])
-      @logger.debug(["Backtrace",  e.backtrace])
+      @logger.error("Failed to create event", :message => msg, exception => e,
+                    :backtrace => e.backtrace);
     end
   end
-  
+
   private
   def list_listener(redis, output_queue)
     response = redis.blpop @key, 0
@@ -114,16 +116,16 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   private
   def channel_listener(redis, output_queue)
     redis.subscribe @key do |on|
-      on.subscribe do |ch, count|
-        @logger.info "Subscribed to #{ch} (#{count})"
+      on.subscribe do |channel, count|
+        @logger.info("Subscribed", :channel => channel, :count => count)
       end
 
-      on.message do |ch, message|
+      on.message do |channel, message|
         queue_event message, output_queue
       end
 
-      on.unsubscribe do |ch, count|
-        @logger.info "Unsubscribed from #{ch} (#{count})"
+      on.unsubscribe do |channel, count|
+        @logger.info("Unsubscribed", :channel => channel, :count => count)
       end
     end
   end
@@ -131,16 +133,16 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
   private
   def pattern_channel_listener(redis, output_queue)
     redis.psubscribe @key do |on|
-      on.psubscribe do |ch, count|
-        @logger.info "Subscribed to #{ch} (#{count})"
+      on.psubscribe do |channel, count|
+        @logger.info("Subscribed", :channel => channel, :count => count)
       end
 
       on.pmessage do |ch, event, message|
         queue_event message, output_queue
       end
 
-      on.punsubscribe do |ch, count|
-        @logger.info "Unsubscribed from #{ch} (#{count})"
+      on.punsubscribe do |channel, count|
+        @logger.info("Unsubscribed", :channel => channel, :count => count)
       end
     end
   end
@@ -154,7 +156,8 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
         @redis ||= connect
         self.send listener, @redis, output_queue
       rescue => e # redis error
-        @logger.warn(["Failed to get event from redis #{@name}. ", e])
+        @logger.warn("Failed to get event from redis", :name => @name,
+                     :exception => e, :backtrace => e.backtrace)
         raise e
       end
     end # loop
@@ -183,5 +186,6 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
       @redis.quit
       @redis = nil
     end
+    finished
   end
 end # class LogStash::Inputs::Redis

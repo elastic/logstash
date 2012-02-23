@@ -4,14 +4,14 @@ require "logstash/plugin"
 require "logstash/logging"
 require "logstash/config/mixin"
 
+# This is the base class for logstash inputs.
 class LogStash::Inputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
-  attr_accessor :logger
-
   config_name "input"
 
   # Label this input with a type.
   # Types are used mainly for filter activation.
+  #
   #
   # If you create an input with type "foobar", then only filters
   # which also have type "foobar" will act on them.
@@ -24,17 +24,10 @@ class LogStash::Inputs::Base < LogStash::Plugin
   config :debug, :validate => :boolean, :default => false
 
   # The format of input data (plain, json, json_event)
-  config :format, :validate => (lambda do |value|
-    valid_formats = ["plain", "json", "json_event"]
-    if value.length != 1
-      false
-    else
-      valid_formats.member?(value.first)
-    end
-  end) # config :format
+  config :format, :validate => ["plain", "json", "json_event"]
 
   # If format is "json", an event sprintf string to build what
-  # the display @message should be (defaults to the raw JSON).
+  # the display @message should be given (defaults to the raw JSON).
   # sprintf format strings look like %{fieldname} or %{@metadata}.
   config :message_format, :validate => :string
 
@@ -49,15 +42,19 @@ class LogStash::Inputs::Base < LogStash::Plugin
       #if v !~ re
         #return [false, "Tag '#{v}' does not match #{re}"]
       #end # check 'v'
-    #end # value.each 
+    #end # value.each
     #return true
   #end) # config :tag
 
+  # Add a field to an event
+  config :add_field, :validate => :hash, :default => {}
+
+  attr_accessor :params
+
   public
   def initialize(params)
-    @logger = LogStash::Logger.new(STDOUT)
+    super
     config_init(params)
-
     @tags ||= []
   end # def initialize
 
@@ -73,14 +70,14 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   protected
   def to_event(raw, source)
-    @format ||= ["plain"]
+    @format ||= "plain"
 
     event = LogStash::Event.new
     event.type = @type
     event.tags = @tags.clone rescue []
     event.source = source
 
-    case @format.first
+    case @format
     when "plain"
       event.message = raw
     when "json"
@@ -88,11 +85,11 @@ class LogStash::Inputs::Base < LogStash::Plugin
         fields = JSON.parse(raw)
         fields.each { |k, v| event[k] = v }
       rescue => e
-        @logger.warn({:message => "Trouble parsing json input",
-                      :input => raw,
-                      :source => source,
-                     })
-        @logger.debug(["Backtrace", e.backtrace])
+        ## TODO(sissel): Instead of dropping the event, should we treat it as
+        ## plain text and try to do the best we can with it?
+        @logger.warn("Trouble parsing json input", :input => raw,
+                     :source => source, :exception => e,
+                     :backtrace => e.backtrace)
         return nil
       end
 
@@ -105,18 +102,24 @@ class LogStash::Inputs::Base < LogStash::Plugin
       begin
         event = LogStash::Event.from_json(raw)
       rescue => e
-        @logger.warn({:message => "Trouble parsing json_event input",
-                      :input => raw,
-                      :source => source,
-                     })
-        @logger.debug(["Backtrace", e.backtrace])
+        ## TODO(sissel): Instead of dropping the event, should we treat it as
+        ## plain text and try to do the best we can with it?
+        @logger.warn("Trouble parsing json input", :input => raw,
+                     :source => source, :exception => e,
+                     :backtrace => e.backtrace)
         return nil
       end
     else
-      raise "unknown event format #{@format.first}, this should never happen"
+      raise "unknown event format #{@format}, this should never happen"
+    end
+
+    @add_field.each do |field, value|
+       event[field] ||= []
+       event[field] = [event[field]] if !event[field].is_a?(Array)
+       event[field] << event.sprintf(value)
     end
 
     logger.debug(["Received new event", {:source => source, :event => event}])
     return event
-  end
+  end # def to_event
 end # class LogStash::Inputs::Base

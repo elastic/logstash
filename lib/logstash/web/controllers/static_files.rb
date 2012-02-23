@@ -1,3 +1,5 @@
+require "sinatra/base"
+
 class LogStash::Web::Server < Sinatra::Base
   # Mizuno can't serve static files from a jar
   # https://github.com/matadon/mizuno/issues/9

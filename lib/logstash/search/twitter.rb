@@ -1,4 +1,4 @@
-require "em-http-request"
+#require "em-http-request"
 require "logstash/namespace"
 require "logstash/logging"
 require "logstash/event"
@@ -9,6 +9,7 @@ require "logstash/search/facetresult"
 require "logstash/search/facetresult/histogram"
 
 # TODO(sissel): This won't work anymore (we don't use EM right now)
+# TODO(sissel): Update this to be functional again?
  
 class LogStash::Search::Twitter < LogStash::Search::Base
   public

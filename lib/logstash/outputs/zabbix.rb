@@ -1,7 +1,7 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
  
-# The zabbix output is used for sending item data to zabbux via the
+# The zabbix output is used for sending item data to zabbix via the
 # zabbix_sender executable.
 #
 # For this output to work, your event must have the following fields:
@@ -23,7 +23,7 @@ require "logstash/outputs/base"
 #          type => "linux-syslog"
 #          match => [ "@message", "(error|ERROR|CRITICAL)" ]
 #          add_tag => [ "zabbix-sender" ]
-#          add_fields => [
+#          add_field => [
 #            "zabbix_host", "%{@source_host}",
 #            "zabbix_item", "item.key"
 #          ]
@@ -37,10 +37,10 @@ require "logstash/outputs/base"
 #  
 #         # specify the hostname or ip of your zabbix server
 #         # (defaults to localhost)
-#         zabbix_server => "localhost"
+#         host => "localhost"
 #  
 #         # specify the port to connect to (default 10051)
-#         zabbix_port => "10051"
+#         port => "10051"
 #  
 #         # specify the path to zabbix_sender
 #         # (defaults to "/usr/local/bin/zabbix_sender")
@@ -50,14 +50,11 @@ require "logstash/outputs/base"
 class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
  
   config_name "zabbix"
- 
+  plugin_status "beta"
+
   config :host, :validate => :string, :default => "localhost"
   config :port, :validate => :number, :default => 10051
   config :zabbix_sender, :validate => :string, :default => "/usr/local/bin/zabbix_sender"
- 
-  # Only handle events with any of these tags. Optional.
-  # If not specified, will process all events.
-  config :tags, :validate => :array, :default => []
  
   public
   def register
@@ -66,30 +63,25 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
  
   public
   def receive(event)
-    if !@tags.empty?
-      if (event.tags - @tags).size == 0
-        # Skip events that have no tags in common with what we were configured
-        return
-      end
-    end
+    return unless output?(event)
  
     if !File.exists?(@zabbix_sender)
-      @logger.warn(["Skipping zabbix output; zabbix_sender file is missing",
-                   {"zabbix_sender" => @zabbix_sender, "missed_event" => event}])
+      @logger.warn("Skipping zabbix output; zabbix_sender file is missing",
+                   :zabbix_sender => @zabbix_sender, :missed_event => event)
       return
     end
  
     host = event.fields["zabbix_host"]
     if !host
-      @logger.warn(["Skipping zabbix output; zabbix_host field is missing",
-                   {"missed_event" => event}])
+      @logger.warn("Skipping zabbix output; zabbix_host field is missing",
+                   :missed_event => event)
       return
     end
  
     item = event.fields["zabbix_item"]
     if !item
-      @logger.warn(["Skipping zabbix output; zabbix_item field is missing",
-                   {"missed_event" => event}])
+      @logger.warn("Skipping zabbix output; zabbix_item field is missing",
+                   :missed_event => event)
       return
     end
  
@@ -99,14 +91,15 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
  
     cmd = "#{@zabbix_sender} -z #{@host} -p #{@port} -s #{host} -k #{item} -o \"#{zmsg}\" 2>/dev/null >/dev/null"
  
-    @logger.debug({"zabbix_sender_command" => cmd})
+    @logger.debug("Running zabbix command", :command => cmd)
     begin
-      system cmd
+      # TODO(sissel): Update this to use IO.popen so we can capture the output and
+      # log it accordingly.
+      system(cmd)
     rescue => e
-      @logger.warn(["Skipping zabbix output; error calling zabbix_sender",
-                   {"error" => $!, "zabbix_sender_command" => cmd,
-                    "missed_event" => event}])
-      @logger.debug(["Backtrace", e.backtrace])
+      @logger.warn("Skipping zabbix output; error calling zabbix_sender",
+                   :command => cmd, :missed_event => event,
+                   :exception => e, :backtrace => e.backtrace)
     end
   end # def receive
-end # class LogStash::Outputs::Nagios
+end # class LogStash::Outputs::Zabbix

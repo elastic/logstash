@@ -21,6 +21,7 @@ require "logstash/time"
 class LogStash::Filters::Date < LogStash::Filters::Base
 
   config_name "date"
+  plugin_status "stable"
 
   # Config for date is:
   #   fieldname => dateformat
@@ -28,8 +29,16 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # The same field can be specified multiple times (or multiple dateformats for
   # the same field) do try different time formats; first success wins.
   #
-  # The date formats allowed are the string 'ISO8601' or whatever is supported
-  # by Joda; generally: [java.text.SimpleDateFormat][dateformats]
+  # The date formats allowed are anything allowed by Joda-Time (java time
+  # library), generally: [java.text.SimpleDateFormat][dateformats]
+  #
+  # There are a few special exceptions, the following format literals exist
+  # to help you save time and ensure correctness of date parsing.
+  #
+  # * "ISO8601" - should parse any valid ISO8601 timestamp, such as
+  #   2011-04-19T03:44:01.103Z
+  # * "UNIX" - will parse unix time in seconds since epoch
+  # * "UNIX_MS" - will parse unix time in milliseconds since epoch
   #
   # For example, if you have a field 'logdate' and with a value that looks like 'Aug 13 2010 00:03:44'
   # you would use this configuration:
@@ -74,16 +83,22 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     require "java"
     # TODO(sissel): Need a way of capturing regexp configs better.
     @config.each do |field, value|
-      next if ["add_tag", "add_field", "type"].include?(field)
+      next if RESERVED.include?(field)
 
       # values here are an array of format strings for the given field.
+      missing = []
       value.each do |format|
         case format
         when "ISO8601"
-          parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser
-          missing = []
+          joda_parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
+          parser = lambda { |date| joda_parser.parseDateTime(date) }
+        when "UNIX" # unix epoch
+          parser = lambda { |date| org.joda.time.Instant.new(date.to_i * 1000).toDateTime }
+        when "UNIX_MS" # unix epoch in ms
+          parser = lambda { |date| org.joda.time.Instant.new(date.to_i).toDateTime }
         else
-          parser = org.joda.time.format.DateTimeFormat.forPattern(format)
+          joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withOffsetParsed
+          parser = lambda { |date| joda_parser.parseDateTime(date) }
 
           # Joda's time parser doesn't assume 'current time' for unparsed values.
           # That is, if you parse with format "mmm dd HH:MM:SS" (no year) then
@@ -94,9 +109,10 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           missing = DATEPATTERNS.reject { |p| format.include?(p) }
         end
 
-        @logger.debug "Adding type #{@type} with date config: #{field} => #{format}"
+        @logger.debug("Adding type with date config", :type => @type,
+                      :field => field, :format => format)
         @parsers[field] << {
-          :parser => parser.withOffsetParsed,
+          :parser => parser,
           :missing => missing
         }
       end # value.each
@@ -105,20 +121,20 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
   public
   def filter(event)
-    @logger.debug "DATE FILTER: received event of type #{event.type}"
-    return unless event.type == @type
+    @logger.debug("Date filter: received event", :type => event.type)
+    return unless filter?(event)
     now = Time.now
 
     @parsers.each do |field, fieldparsers|
-
-      @logger.debug "DATE FILTER: type #{event.type}, looking for field #{field.inspect}"
+      @logger.debug("Date filter: type #{event.type}, looking for field #{field.inspect}",
+                    :type => event.type, :field => field)
       # TODO(sissel): check event.message, too.
       next unless event.fields.member?(field)
 
       fieldvalues = event.fields[field]
-      fieldvalues = [fieldvalues] if fieldvalues.is_a?(String)
+      fieldvalues = [fieldvalues] if !fieldvalues.is_a?(Array)
       fieldvalues.each do |value|
-        next if value.nil? or value.empty?
+        next if value.nil?
         begin
           time = nil
           missing = []
@@ -130,7 +146,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             #@logger.info :Missing => missing
             #p :parser => parser
             begin
-              time = parser.parseDateTime(value)
+              time = parser.call(value)
               success = true
               break # success
             rescue => e
@@ -165,19 +181,20 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           time = time.withZone(org.joda.time.DateTimeZone.forID("UTC"))
           event.timestamp = time.to_s 
           #event.timestamp = LogStash::Time.to_iso8601(time)
-          @logger.debug "Parsed #{value.inspect} as #{event.timestamp}"
+          @logger.debug("Date parsing done", :value => value, :timestamp => event.timestamp)
         rescue => e
-          @logger.warn "Failed parsing date #{value.inspect} from field #{field}: #{e}"
-          @logger.debug(["Backtrace", e.backtrace])
+          @logger.warn("Failed parsing date from field", :field => field,
+                       :value => value, :exception => e,
+                       :backtrace => e.backtrace)
           # Raising here will bubble all the way up and cause an exit.
           # TODO(sissel): Maybe we shouldn't raise?
+          # TODO(sissel): What do we do on a failure? Tag it like grok does?
           #raise e
         end # begin
       end # fieldvalue.each 
     end # @parsers.each
 
-    if !event.cancelled?
-      filter_matched(event)
-    end
+    filter_matched(event) if !event.cancelled?
+    return event
   end # def filter
 end # class LogStash::Filters::Date

@@ -7,12 +7,13 @@ BASE16NUM (?<![0-9A-Fa-f])(?:[+-]?(?:0x)?(?:[0-9A-Fa-f]+))
 BASE16FLOAT \b(?<![0-9A-Fa-f.])(?:[+-]?(?:0x)?(?:(?:[0-9A-Fa-f]+(?:\.[0-9A-Fa-f]*)?)|(?:\.[0-9A-Fa-f]+)))\b
 
 POSINT \b(?:[0-9]+)\b
-TWODIGITINT [0-9]{2}
 WORD \b\w+\b
 NOTSPACE \S+
+SPACE \s*
 DATA .*?
 GREEDYDATA .*
-QUOTEDSTRING (?:(?<!\\)(?:"(?:\\.|[^\\"])*"|(?:'(?:\\.|[^\\'])*')|(?:`(?:\\.|[^\\`])*`)))
+#QUOTEDSTRING (?:(?<!\\)(?:"(?:\\.|[^\\"])*"|(?:'(?:\\.|[^\\'])*')|(?:`(?:\\.|[^\\`])*`)))
+QUOTEDSTRING (?:(?<!\\)(?:"(?:\\.|[^\\"]+)*"|(?:'(?:\\.|[^\\']+)*')|(?:`(?:\\.|[^\\`]+)*`)))
 
 # Networking
 MAC (?:%{CISCOMAC}|%{WINDOWSMAC}|%{COMMONMAC})
@@ -27,26 +28,26 @@ HOSTPORT (?:%{IPORHOST=~/\./}:%{POSINT})
 
 # paths
 PATH (?:%{UNIXPATH}|%{WINPATH})
-UNIXPATH (?<![\w\\/])(?:/(?:[\w_%!$@:.,-]+|\\.)*)+
+UNIXPATH (?:/(?:[\w_%!$@:.,-]+|\\.)*)+
 #UNIXPATH (?<![\w\/])(?:/[^\/\s?*]*)+
 LINUXTTY (?:/dev/pts/%{POSINT})
 BSDTTY (?:/dev/tty[pq][a-z0-9])
 TTY (?:%{BSDTTY}|%{LINUXTTY})
 WINPATH (?:[A-Za-z]+:|\\)(?:\\[^\\?*]*)+
 URIPROTO [A-Za-z]+(\+[A-Za-z+]+)?
-URIHOST %{IPORHOST}(?::%{POSINT})?
+URIHOST %{IPORHOST}(?::%{POSINT:port})?
 # uripath comes loosely from RFC1738, but mostly from what Firefox
 # doesn't turn into %XX
 URIPATH (?:/[A-Za-z0-9$.+!*'(),~:#%_-]*)+
 #URIPARAM \?(?:[A-Za-z0-9]+(?:=(?:[^&]*))?(?:&(?:[A-Za-z0-9]+(?:=(?:[^&]*))?)?)*)?
 URIPARAM \?[A-Za-z0-9$.+!*'(),~#%&/=:;_-]*
 URIPATHPARAM %{URIPATH}(?:%{URIPARAM})?
-URI %{URIPROTO}://(?:%{USER}(?::[^@]*)?@)?(?:%{URIHOST})?(?:$|%{URIPATHPARAM})
+URI %{URIPROTO}://(?:%{USER}(?::[^@]*)?@)?(?:%{URIHOST})?(?:%{URIPATHPARAM})?
 
 # Months: January, Feb, 3, 03, 12, December
 MONTH \b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b
 MONTHNUM (?:0?[1-9]|1[0-2])
-MONTHDAY (?:3[01]|[1-2]?[0-9]|0?[1-9])
+MONTHDAY (?:(?:0[1-9])|(?:[12][0-9])|(?:3[01])|[1-9])
 
 # Days: Monday, Tue, Thu, etc...
 DAY (?:Mon(?:day)?|Tue(?:sday)?|Wed(?:nesday)?|Thu(?:rsday)?|Fri(?:day)?|Sat(?:urday)?|Sun(?:day)?)
@@ -73,7 +74,7 @@ DATE %{DATE_US}|%{DATE_EU}
 DATESTAMP %{DATE}[- ]%{TIME}
 TZ (?:[PMCE][SD]T)
 DATESTAMP_RFC822 %{DAY} %{MONTH} %{MONTHDAY} %{YEAR} %{TIME} %{TZ}
-DATESTAMP_OTHER %{DAY} %{MONTH} %{MONTHDAY} %{TIME} (?:%{TZ} )?%{YEAR}
+DATESTAMP_OTHER %{DAY} %{MONTH} %{MONTHDAY} %{TIME} %{TZ} %{YEAR}
 
 # Syslog Dates: Month Day HH:MM:SS
 SYSLOGTIMESTAMP %{MONTH} +%{MONTHDAY} %{TIME}
@@ -88,11 +89,4 @@ QS %{QUOTEDSTRING}
 
 # Log formats
 SYSLOGBASE %{SYSLOGTIMESTAMP:timestamp} (?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource} %{SYSLOGPROG}:
-COMBINEDAPACHELOG %{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:httpversion}" %{NUMBER:response} (?:%{NUMBER:bytes}|-) (?:"%{URI:referrer}"|%{QUOTEDSTRING:referrer}|"-") %{QS:agent}
-
-#
-# Custom formats
-# Add additional custom patterns below
-DATESTAMP_RAILS %{DAY} %{MONTH} %{MONTHDAY} %{TIME} (?:%{INT:ZONE} )?%{YEAR}
-DATESTAMP_MYSQL %{TWODIGITINT:year}%{TWODIGITINT:month}%{TWODIGITINT:day}\s+%{TIME}
-
+COMBINEDAPACHELOG %{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:httpversion}" %{NUMBER:response} (?:%{NUMBER:bytes}|-) "(?:%{URI:referrer}|-)" %{QS:agent}

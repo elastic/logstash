@@ -12,7 +12,7 @@ require "bluecloth" # for markdown parsing
 $: << Dir.pwd
 $: << File.join(File.dirname(__FILE__), "..", "lib")
 
-require File.join(File.dirname(__FILE__), "..", "VERSION")
+require "logstash/version"
 
 class LogStashConfigDocGenerator
   COMMENT_RE = /^ *#(?: (.*)| *$)/
@@ -22,7 +22,8 @@ class LogStashConfigDocGenerator
       COMMENT_RE => lambda { |m| add_comment(m[1]) },
       /^ *class.*< *LogStash::(Outputs|Filters|Inputs)::Base/ => \
         lambda { |m| set_class_description },
-      /^ *config .*/ => lambda { |m| add_config(m[0]) },
+      /^ *config +[^=].*/ => lambda { |m| add_config(m[0]) },
+      /^ *plugin_status .*/ => lambda { |m| set_plugin_status(m[0]) },
       /^ *config_name .*/ => lambda { |m| set_config_name(m[0]) },
       /^ *flag[( ].*/ => lambda { |m| add_flag(m[0]) },
       /^ *(class|def|module) / => lambda { |m| clear_comments },
@@ -96,6 +97,11 @@ class LogStashConfigDocGenerator
     @name = name
   end # def set_config_name
 
+  def set_plugin_status(code)
+    status = eval(code)
+    @plugin_status = status
+  end
+
   # pretend to be the config DSL and just get the name
   def config(name, opts={})
     return name, opts
@@ -113,6 +119,11 @@ class LogStashConfigDocGenerator
     return name
   end # def config_name
 
+  # pretend to be the config dsl's 'plugin_status' method
+  def plugin_status(status)
+    return status
+  end # def plugin_status
+
   def clear_comments
     @comments.clear
   end # def clear_comments
@@ -126,6 +137,7 @@ class LogStashConfigDocGenerator
     @comments = []
     @settings = {}
     @class_description = ""
+    @plugin_status = ""
 
     # parse base first
     parse(File.new(File.join(File.dirname(file), "base.rb"), "r").read)
@@ -150,7 +162,7 @@ class LogStashConfigDocGenerator
       section = "output"
     end
 
-    template_file = File.join(File.dirname(__FILE__), "docs.html.erb")
+    template_file = File.join(File.dirname(__FILE__), "plugin-doc.html.erb")
     template = ERB.new(File.new(template_file).read, nil, "-")
 
     # descriptions are assumed to be markdown
@@ -166,7 +178,9 @@ class LogStashConfigDocGenerator
       Dir.mkdir(settings[:output]) if !File.directory?(settings[:output])
       Dir.mkdir(dir) if !File.directory?(dir)
       File.open(path, "w") do |out|
-        out.puts(template.result(binding))
+        html = template.result(binding)
+        html.gsub!("%VERSION%", LOGSTASH_VERSION)
+        out.puts(html)
       end
     else 
       puts template.result(binding)

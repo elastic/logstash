@@ -161,7 +161,12 @@ class LogStash::Config::Grammar
   end
 
   def parse(string)
+    # TODO(sissel): Due to a bug in my parser, we need one trailing whitespace
+    # at the end of the string. I'll fix this later.
+    string += "\n"
+
     data = string.unpack("c*")
+
 
     # BEGIN RAGEL INIT
     %% write init;

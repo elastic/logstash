@@ -2,12 +2,16 @@ require "logstash/namespace"
 require "logstash/config/grammar"
 require "logstash/config/registry"
 require "logstash/agent"
+require "logger"
 
 class LogStash::Config::File
+  attr_accessor :logger
+
   public
   def initialize(path=nil, string=nil)
     @path = path
     @string = string
+    @logger = LogStash::Logger.new(STDERR)
 
     if (path.nil? and string.nil?) or (!path.nil? and !string.nil?)
        raise "Must give path or string, not both or neither"
@@ -39,10 +43,10 @@ class LogStash::Config::File
       plugin = registry[o[:plugin]]
 
       if type.nil?
-        puts "Unknown config #{o[:type]}/#{o[:plugin]}"
+        @logger.info("Unknown plugin", :type => o[:type], :plugin => o[:plugin])
       end
-
       yield :type => type, :plugin => plugin, :parameters => o[:parameters]
+
     end
   end # def parse
 
@@ -50,15 +54,15 @@ class LogStash::Config::File
   def tryload(parent, child)
     child = child.downcase if child.is_a? String
     begin
-      loaded = (require "logstash/#{parent}s/#{child}")
-      #if loaded
-        #puts "Loading logstash/#{parent}s/#{child}"
-      #end
-    rescue => e
+      loaded = require("logstash/#{parent}s/#{child}")
+    rescue LoadError => e
       if child == :base
-        $stderr.puts "Failure loading base class '#{parent}': #{e.inspect}"
+        @logger.fatal("Failure loading plugin type '#{parent}' - is that " \
+                      "really a valid plugin type? (check for typos!)")
       else
-        $stderr.puts "Failure loading plugin #{parent}s/#{child}: #{e.inspect}"
+        @logger.fatal("Failure loading plugin from config: " \
+                      "'#{parent} { #{child} { ... } }' - is that " \
+                      "really a valid #{parent} plugin? (check for typos!)")
       end
       raise e
     end
@@ -66,8 +70,6 @@ class LogStash::Config::File
 
   public
   def each(&block)
-    #ap @config
-
     # First level is the components
     # Like:
     #   input {

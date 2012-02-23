@@ -6,14 +6,18 @@ require "logstash/config/mixin"
 class LogStash::Filters::Base < LogStash::Plugin
   include LogStash::Config::Mixin
 
-  attr_accessor :logger
-
   config_name "filter"
 
   # The type to act on. If a type is given, then this filter will only
-  # act on messages with the same type. See any input plugin's "type" 
+  # act on messages with the same type. See any input plugin's "type"
   # attribute for more.
-  config :type, :validate => :string
+  # Optional.
+  config :type, :validate => :string, :default => ""
+
+  # Only handle events with all of these tags.  Note that if you specify
+  # a type, the event must also match that type.
+  # Optional.
+  config :tags, :validate => :array, :default => []
 
   # If this filter is successful, add arbitrary tags to the event.
   # Tags can be dynamic and include parts of the event using the %{field}
@@ -42,9 +46,11 @@ class LogStash::Filters::Base < LogStash::Plugin
   #  and the %{@source} piece replaced with that value from the event.
   config :add_field, :validate => :hash, :default => {}
 
+  RESERVED = ["type", "tags", "add_tag", "add_field"]
+
   public
   def initialize(params)
-    @logger = LogStash::Logger.new(STDOUT)
+    super
     config_init(params)
   end # def initialize
 
@@ -54,9 +60,21 @@ class LogStash::Filters::Base < LogStash::Plugin
   end # def register
 
   public
+  def prepare_metrics
+    @filter_metric = @logger.metrics.timer(self)
+  end # def prepare_metrics
+
+  public
   def filter(event)
     raise "#{self.class}#filter must be overidden"
   end # def filter
+
+  public
+  def execute(event, &block)
+    @filter_metric.time do
+      filter(event, &block)
+    end
+  end # def execute
 
   # a filter instance should call filter_matched from filter if the event
   # matches the filter's conditions (right type, etc)
@@ -64,14 +82,35 @@ class LogStash::Filters::Base < LogStash::Plugin
   def filter_matched(event)
     (@add_field or {}).each do |field, value|
       event[field] ||= []
+      event[field] = [event[field]] if !event[field].is_a?(Array)
       event[field] << event.sprintf(value)
-      @logger.debug("filters/#{self.class.name}: adding #{value} to field #{field}")
+      @logger.debug("filters/#{self.class.name}: adding value to field",
+                    :field => field, :value => value)
     end
 
     (@add_tag or []).each do |tag|
-      @logger.debug("filters/#{self.class.name}: adding tag #{tag}")
+      @logger.debug("filters/#{self.class.name}: adding tag", :tag => tag)
       event.tags << event.sprintf(tag)
       #event.tags |= [ event.sprintf(tag) ]
     end
   end # def filter_matched
+
+  protected
+  def filter?(event)
+    if !@type.empty?
+      if event.type != @type
+        @logger.debug(["Dropping event because type doesn't match #{@type}", event])
+        return false
+      end
+    end
+
+    if !@tags.empty?
+      if (event.tags & @tags).size != @tags.size
+        @logger.debug(["Dropping event because tags don't match #{@tags.inspect}", event])
+        return false
+      end
+    end
+
+    return true
+  end
 end # class LogStash::Filters::Base

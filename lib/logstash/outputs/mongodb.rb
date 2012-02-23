@@ -4,8 +4,9 @@ require "logstash/namespace"
 class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
 
   config_name "mongodb"
+  plugin_status "beta"
 
-  # your mongdob host
+  # your mongodb host
   config :host, :validate => :string, :required => true
 
   # the mongodb port
@@ -38,6 +39,8 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     @mongodb.collection(event.sprintf(@collection)).insert(event.to_hash)
   end # def receive
 end # class LogStash::Outputs::Mongodb

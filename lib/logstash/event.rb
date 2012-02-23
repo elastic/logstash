@@ -3,11 +3,20 @@ require "logstash/time"
 require "logstash/namespace"
 require "uri"
 
-# General event type. Will expand this in the future.
+# General event type. 
+# Basically a light wrapper on top of a hash.
+#
+# TODO(sissel): properly handle lazy properties like parsed time formats, urls,
+# etc, as necessary.
 class LogStash::Event
   public
   def initialize(data=Hash.new)
-    @@date_parser ||= org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
+    if RUBY_ENGINE == "jruby"
+      @@date_parser ||= Java::org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
+    else
+      # TODO(sissel): LOGSTASH-217
+      @@date_parser ||= nil
+    end
 
     @cancelled = false
     @data = {
@@ -30,12 +39,23 @@ class LogStash::Event
   public
   def cancel
     @cancelled = true
-  end
+  end # def cancel
 
   public
   def cancelled?
     return @cancelled
-  end
+  end # def cancelled?
+
+  # Create a deep-ish copy of this event.
+  public
+  def clone
+    newdata = @data.clone
+    newdata["@fields"] = {}
+    fields.each do |k,v|
+      newdata["@fields"][k] = v.clone
+    end
+    return LogStash::Event.new(newdata)
+  end # def clone
 
   public
   def to_s
@@ -46,7 +66,12 @@ class LogStash::Event
   def timestamp; @data["@timestamp"]; end # def timestamp
   def timestamp=(val); @data["@timestamp"] = val; end # def timestamp=
 
+  public
   def unix_timestamp
+    if RUBY_ENGINE != "jruby"
+      # TODO(sissel): LOGSTASH-217
+      raise Exception.new("LogStash::Event#unix_timestamp is not supported yet in this version of ruby")
+    end
     time = @@date_parser.parseDateTime(timestamp)
     return time.getMillis.to_f / 1000
   end
@@ -90,11 +115,15 @@ class LogStash::Event
     end
   end # def []
   
-  # TODO(sissel): the semantics of [] and []= are now different in that
-  # []= only allows you to assign to only fields (not metadata), but
-  # [] allows you to read fields and metadata.
-  # We should fix this. Metadata is really a namespace issue, anyway.
-  def []=(key, value); @data["@fields"][key] = value end # def []=
+  public
+  def []=(key, value)
+    if @data.has_key?(key)
+      @data[key] = value
+    else
+      @data["@fields"][key] = value
+    end
+  end # def []=
+
   def fields; return @data["@fields"] end # def fields
   
   public
@@ -107,7 +136,9 @@ class LogStash::Event
   end
 
   public
-  def include?(key); return @data.include?(key) end
+  def include?(key)
+    return (@data.include?(key) or @data["@fields"].include?(key))
+  end # def include?
 
   # Append an event to this one.
   public
@@ -118,12 +149,29 @@ class LogStash::Event
     # Append all fields
     event.fields.each do |name, value|
       if self.fields.include?(name)
-        self.fields[name] |= value
+        if !self.fields[name].is_a?(Array)
+          self.fields[name] = [self.fields[name]]
+        end
+        if value.is_a?(Array)
+          self.fields[name] |= value
+        else
+          self.fields[name] << value
+        end
       else
         self.fields[name] = value
       end
     end # event.fields.each
   end # def append
+
+  # Remove a field
+  public
+  def remove(field)
+    if @data.has_key?(field)
+      @data.delete(field)
+    else
+      @data["@fields"].delete(field)
+    end
+  end # def remove
 
   # sprintf. This could use a better method name.
   # The idea is to take an event and convert it to a string based on 
@@ -149,14 +197,23 @@ class LogStash::Event
 
       if key == "+%s"
         # Got %{+%s}, support for unix epoch time
+        if RUBY_ENGINE != "jruby"
+          # TODO(sissel): LOGSTASH-217
+          raise Exception.new("LogStash::Event#sprintf('+%s') is not " \
+                              "supported yet in this version of ruby")
+        end
         datetime = @@date_parser.parseDateTime(self.timestamp)
         (datetime.getMillis / 1000).to_i
       elsif key[0,1] == "+"
         # We got a %{+TIMEFORMAT} so use joda to format it.
+        if RUBY_ENGINE != "jruby"
+          # TODO(sissel): LOGSTASH-217
+          raise Exception.new("LogStash::Event#sprintf('+dateformat') is not " \
+                              "supported yet in this version of ruby")
+        end
         datetime = @@date_parser.parseDateTime(self.timestamp)
         format = key[1 .. -1]
         datetime.toString(format) # return requested time format
-        p :datetime => datetime.class
       else 
         # Use an event field.
         value = self[key]

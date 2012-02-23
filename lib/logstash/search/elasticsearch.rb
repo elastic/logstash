@@ -18,6 +18,7 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
     @bind_host = (settings[:bind_host] || nil)
     @type = (settings[:type] || :node)
     @logger = LogStash::Logger.new(STDOUT)
+    @logger.level = :warn
     @client = ElasticSearch::Client.new(:host => @host, :port => @port, 
                                         :cluster => @cluster, 
                                         :bind_host => @bind_host,
@@ -104,7 +105,10 @@ class LogStash::Search::ElasticSearch < LogStash::Search::Base
       # to_json properly
       fields = {}
       data["@fields"].each do |key, value|
-        fields[key] = value.to_a
+        # Try forcing coercion to ruby type if it's a java collection
+        # so that we can convert this hash to JSON safely.
+        value = value.to_a if value.is_a?(java.util.Collection)
+        fields[key] = value
       end
       data["@fields"] = fields
       result.events << LogStash::Event.new(data)

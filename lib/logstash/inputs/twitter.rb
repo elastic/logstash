@@ -8,7 +8,8 @@ require "json"
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
   config_name "twitter"
-  
+  plugin_status "beta"
+
   # Your twitter username
   config :user, :validate => :string, :required => true
 
@@ -23,13 +24,15 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
     super
 
     # Force format to plain. Other values don't make any sense here.
-    @format = ["plain"]
+    @format = "plain"
   end # def initialize
 
   public
   def register
     # TODO(sissel): put buftok in logstash, too
-    require "filewatch/buftok"
+    @logger.info("Registering twitter input")
+    v = require("filewatch/buftok")
+    @logger.info("Required buftok #{v}")
     #require "tweetstream" # rubygem 'tweetstream'
   end
 
@@ -39,9 +42,9 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
       #stream = TweetStream::Client.new(@user, @password.value)
       #stream.track(*@keywords) do |status|
       track(*@keywords) do |status|
-        @logger.debug :status => status
+        @logger.debug("twitter keyword track status", :status => status)
         #@logger.debug("Got twitter status from @#{status[:user][:screen_name]}")
-        @logger.info("Got twitter status from @#{status["user"]["screen_name"]}")
+        @logger.info("Got twitter status", :user => status["user"]["screen_name"])
         e = to_event(status["text"], "http://twitter.com/#{status["user"]["screen_name"]}/status/#{status["id"]}")
         next unless e
 
@@ -69,28 +72,34 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
   private
   def track(*keywords)
-    uri = URI.parse("http://stream.twitter.com/1/statuses/filter.json")
+    uri = URI.parse("https://stream.twitter.com/1/statuses/filter.json")
     #params = {
       #"track" => keywords
     #}
 
     http = Net::HTTP.new(uri.host, uri.port)
-    #http.use_ssl = true
+    http.use_ssl = true
+
+    # TODO(sissel): Load certs.
+    http.ca_file = File.join(File.dirname(__FILE__), "..", "certs", "cacert.pem")
+    http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    http.verify_depth = 5
+
     request = Net::HTTP::Post.new(uri.path)
     request.body = "track=#{keywords.join(",")}"
     request.basic_auth @user, @password.value
-    buffer = BufferedTokenizer.new("\r\n")
+    buffer = FileWatch::BufferedTokenizer.new("\r\n")
     http.request(request) do |response|
       response.read_body do |chunk|
         #@logger.info("Twitter: #{chunk.inspect}")
         buffer.extract(chunk).each do |line|
-          @logger.info("Twitter line: #{line.inspect}")
+          @logger.info("Twitter line", :line => line)
           begin 
             status = JSON.parse(line)
             yield status
           rescue => e
-            @logger.error e
-            @logger.debug(["Backtrace", e.backtrace])
+            @logger.error("Error parsing json from twitter", :exception => e,
+                          :backtrace => e.backtrace);
           end
         end # buffer.extract
       end # response.read_body

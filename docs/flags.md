@@ -20,6 +20,10 @@ The logstash agent has the following flags (also try using the '--help' flag)
 <dd> A colon-delimted path to find other logstash plugins in </dd>
 </dl>
 
+Note: Plugins can provide addition command-line flags, such as the
+[grok](filters/grok) filter. Plugin-specific flags always start with the plugin
+name, like --grok-foo.
+
 ## Web UI
 
 <dl>
@@ -30,5 +34,6 @@ The logstash agent has the following flags (also try using the '--help' flag)
 <dt> --port PORT </dt>
 <dd> Port on which to start webserver. Default is 9292. </dd>
 <dt> --backend URL </dt>
-<dd> The backend URL to use. Default is elasticsearch://localhost:9200/ </dd>
+<dd>The backend URL to use. Default is elasticsearch:/// (assumes multicast discovery). 
+You can specify elasticsearch://[host][:port]/[clustername]</dd>
 </dl>

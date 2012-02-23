@@ -1,12 +1,13 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-# send events to a redis databse using RPUSH
+# send events to a redis database using RPUSH
 #
 # For more information about redis, see <http://redis.io/>
 class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   config_name "redis"
+  plugin_status "beta"
 
   # Name is used for logging in case there are multiple instances.
   # TODO: delete
@@ -88,6 +89,8 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
+
     begin
       @redis ||= connect
       if @data_type == 'list'
@@ -96,7 +99,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
         @redis.publish event.sprintf(@key), event.to_json
       end
     rescue => e
-      @logger.warn(["Failed to log #{event.to_s} to #{identity}.", e])
+      @logger.warn("Failed to send event to redis", :event => event,
+                   :identity => identity, :exception => e,
+                   :backtrace => e.backtrace)
       raise e
     end
   end # def receive
