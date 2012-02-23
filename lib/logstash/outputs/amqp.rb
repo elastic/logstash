@@ -30,6 +30,9 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   # The name of the exchange
   config :name, :validate => :string, :required => true
 
+  # The name of the queue
+  config :queue, :validate => :string, :default => Nil 
+
   # Key to route to by default. Defaults to 'logstash'
   #
   # * Routing keys are ignored on topic exchanges.
@@ -95,7 +98,14 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
                   :durable => @durable)
     @exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
 
-    @logger.debug("Binding exchange", :name => @name, :key => @key)
+    # Queue name is optional
+    if !@queue.nil?
+        @logger.debug("Declaring queue", :queue => @queue)
+        @queue = @bunny.queue(@queue)
+
+        @logger.debug("Binding exchange", :name => @name, :key => @key)
+        @queue.bind(@exchange, :key => @key)
+    end
   end # def connect
 
   public
