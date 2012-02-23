@@ -79,7 +79,7 @@ Use `pair` topology. On the output side, specify the ipaddress and port of the i
 
 ## broadcast
 Use `pubsub`
-If you need to broadcast ALL messages to multiple hosts that each need to see all events, use `pubsub`. Note that all events are broadcast to all subscribers.
+If you need to broadcast ALL messages to multiple hosts that each need to see all events, use `pubsub`. Note that all events are broadcast to all subscribers. When using `pubsub` you might also want to investigate the `topic` configuration option which allows subscribers to see only a subset of messages.
 
 ## Filter workers
 Use `pushpull`
@@ -95,24 +95,30 @@ ZeroMQ supports multiple types of transports:
 
 For pretty much all cases, you'll be using `tcp://` transports with Logstash.
 
-# sockopts
-Sockopts is not you choosing between blue or black socks. ZeroMQ supports setting various flags or options on sockets. In the interest of minimizing configuration syntax, these are _hidden_ behind a logstash configuration element called `sockopts`. You probably won't need to tune these for most cases. If you do need to tune them, you'll probably set the following:
-
-## ZMQ::SUBSCRIBE - applies to `pubsub`
+## Topic - applies to `pubsub`
 This opt mimics the routing keys functionality in AMQP. Imagine you have a network of receivers but only a subset of the messages need to be seen by a subset of the hosts. You can use this option as a routing key to facilite that:
 
 ```
 # This output is a PUB
 output {
-  zeromq { topology => "pubsub" sockopts => ["ZMQ::SUBSCRIBE", "logs.production.%{host}"] }
+  zeromq { topology => "pubsub" topic => "logs.production.%{host}" }
 }
 ```
 
 ```
-# This output is a SUB
+# This input is a SUB
 # I only care about db1 logs
-input { zeromq { type => "db1logs" address => "tcp://<ipaddress>:2120" sockopts => ["ZMQ::SUBSCRIBE","logs.production.db1"]}}
+input { zeromq { type => "db1logs" address => "tcp://<ipaddress>:2120" topic => "logs.production.db1"}}
 ```
+
+One thing important to note about 0mq PUBSUB and topics is that all filtering is done on the subscriber side. The subscriber will get ALL messages but discard any that don't match the topic.
+
+Also important to note is that 0mq doesn't do topic in the same sense as an AMQP broker might. When a SUB socket gets a message, it compares the first bytes of the message against the topic. However, this isn't always flexible depending on the format of your message. The common practice then, is to send a 0mq multipart message and make the first part the topic. The next parts become the actual message body.
+
+This is approach is how logstash handles this. When using PUBSUB, Logstash will send a multipart message where the first part is the name of the topic and the second part is the event. This is important to know if you are sending to a SUB input from sources other than Logstash.
+
+# sockopts
+Sockopts is not you choosing between blue or black socks. ZeroMQ supports setting various flags or options on sockets. In the interest of minimizing configuration syntax, these are _hidden_ behind a logstash configuration element called `sockopts`. You probably won't need to tune these for most cases. If you do need to tune them, you'll probably set the following:
 
 ## ZMQ::HWM - sets the high water mark
 The high water mark is the maximum number of messages a given socket pair can have in its internal queue. Use this to throttle essentially.
