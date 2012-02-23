@@ -21,6 +21,7 @@ use "logstash/filters/test_multiline"
 use "logstash/filters/test_grok"
 
 use "logstash/outputs/test_elasticsearch"
+use "logstash/outputs/sns_test"
 
 skip "logstash/inputs/test_file"
 skip "logstash/inputs/test_syslog"
