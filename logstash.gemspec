@@ -25,8 +25,9 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "awesome_print" # MIT License
   spec.add_dependency "bunny" # for amqp support, MIT-style license
-  spec.add_dependency "cabin", "0.3.1" # for logging. apache 2 license
+  spec.add_dependency "cabin", "0.3.8" # for logging. apache 2 license
   spec.add_dependency "filewatch", "~> 0.3.3"  # for file tailing, BSD License
+  spec.add_dependency "fog" # for AWS/SNS.  MIT License
   spec.add_dependency "gelfd", "~> 0.2.0" #inputs/gelf, # License: Apache 2.0
   spec.add_dependency "gelf" # outputs/gelf, # License: MIT-style
   spec.add_dependency "gmetric", "~> 0.1.3" # outputs/ganglia, # License: MIT
@@ -49,6 +50,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "xmpp4r", "~> 0.5" # outputs/xmpp, # License: As-Is
 
   spec.add_dependency("ffi-rzmq")
+  spec.add_development_dependency 'mocha'
+  spec.add_development_dependency 'shoulda'
 
   spec.files = files
   spec.require_paths << "lib"

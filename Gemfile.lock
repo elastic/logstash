@@ -8,19 +8,28 @@ GEM
     bson (1.6.1)
     bson (1.6.1-java)
     bunny (0.7.9)
-    cabin (0.4.1)
+    cabin (0.3.8)
+    builder (3.0.0)
       json
+    childprocess (0.3.1)
+      ffi (~> 1.0.6)
+    choice (0.1.4)
+    excon (0.9.5)
     ffi (1.0.11)
     ffi (1.0.11-java)
     ffi-rzmq (0.9.0)
     filewatch (0.3.3)
-    ftw (0.0.13)
-      addressable (= 2.2.6)
-      backports (= 2.3.0)
-      cabin (> 0)
-      http_parser.rb (= 0.5.3)
-      json (= 1.6.5)
-      minitest (> 0)
+    fog (1.1.2)
+      builder
+      excon (~> 0.9.0)
+      formatador (~> 0.2.0)
+      mime-types
+      multi_json (~> 1.0.3)
+      net-scp (~> 1.0.4)
+      net-ssh (>= 2.1.3)
+      nokogiri (~> 1.5.0)
+      ruby-hmac
+    formatador (0.2.1)
     gelf (1.3.2)
       json
     gelfd (0.2.0)
@@ -40,31 +49,30 @@ GEM
       bouncy-castle-java (>= 1.5.0146.1)
     json (1.6.5)
     json (1.6.5-java)
-    launchy (2.1.0)
-      addressable (~> 2.2.6)
-    launchy (2.1.0-java)
-      addressable (~> 2.2.6)
-      ffi (~> 1.0.9)
-      spoon (~> 0.0.1)
-    mime-types (1.18)
-    minitest (2.11.4)
-    mongo (1.6.1)
-      bson (~> 1.6.1)
-    mtrc (0.0.4)
-    netrc (0.7.1)
-    onstomp (1.0.6)
+    metaclass (0.0.1)
+    mime-types (1.17.2)
+    minitest (2.11.1)
+    mizuno (0.5.0)
+      childprocess (>= 0.2.6)
+      choice (>= 0.1.0)
+      ffi (>= 1.0.0)
+      rack (>= 1.0.0)
+    mocha (0.10.4)
+      metaclass (~> 0.0.1)
+    mongo (1.5.2)
+      bson (= 1.5.2)
+    multi_json (1.0.4)
+    net-scp (1.0.4)
+      net-ssh (>= 1.99.1)
+    net-ssh (2.3.0)
+    nokogiri (1.5.0-java)
     rack (1.4.1)
     rack-protection (1.2.0)
       rack
     redis (2.2.2)
-    rest-client (1.6.7)
-      mime-types (>= 1.16)
-    riemann-client (0.0.6)
-      beefcake (>= 0.3.5)
-      mtrc (>= 0.0.4)
-      trollop (>= 1.16.2)
-    rubyzip (0.9.6.1)
-    sass (3.1.15)
+    ruby-hmac (0.4.0)
+    sass (3.1.14)
+    shoulda (2.11.3)
     sinatra (1.3.2)
       rack (~> 1.3, >= 1.3.6)
       rack-protection (~> 1.2)
@@ -86,7 +94,7 @@ DEPENDENCIES
   ffi
   ffi-rzmq (= 0.9.0)
   filewatch (= 0.3.3)
-  ftw (~> 0.0.13)
+  fog
   gelf
   gelfd (= 0.2.0)
   gmetric (= 0.1.3)
@@ -97,12 +105,15 @@ DEPENDENCIES
   jruby-openssl
   json
   minitest
+  mizuno
+  mocha
   mongo
   onstomp
   rack
   redis
   riemann-client (= 0.0.6)
   sass
+  shoulda
   sinatra
   statsd-ruby (= 0.3.0)
   uuidtools
