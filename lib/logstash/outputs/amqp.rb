@@ -127,7 +127,10 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   public
   def receive_raw(message, key=@key)
     begin
-      if @exchange
+      if @queue
+        @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
+        @queue.publish(message, :persistent => @persistent, :key => key)
+      else if @exchange
         @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
         @exchange.publish(message, :persistent => @persistent, :key => key)
       else
