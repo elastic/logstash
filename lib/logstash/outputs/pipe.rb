@@ -100,7 +100,7 @@ class LogStash::Outputs::Pipe < LogStash::Outputs::Base
   end
 
   def get_pipe(command)
-    return @pipes[command] if @pipes.include?(command) and not @pipes[command].nil?
+    return @pipes[command] if @pipes.include?(command)
 
     @logger.info("Opening pipe", :command => command)
 
