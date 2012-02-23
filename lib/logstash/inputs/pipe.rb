@@ -1,0 +1,37 @@
+require "logstash/inputs/base"
+require "logstash/namespace"
+require "socket" # for Socket.gethostname
+
+# Stream events from a long running command pipe.
+#
+# By default, each event is assumed to be one line. If you
+# want to join lines, you'll want to use the multiline filter.
+#
+class LogStash::Inputs::Pipe < LogStash::Inputs::Base
+  config_name "pipe"
+  plugin_status "experimental"
+
+  # Command line to run and read events from.
+  config :command, :validate => :string, :required => true
+
+  public
+  def register
+    LogStash::Util::set_thread_name("input|pipe|#{command}")
+    @logger.info("Registering pipe input", :command => @command)
+  end # def register
+
+  public
+  def run(queue)
+    @pipe = IO.popen(command, mode="r")
+    hostname = Socket.gethostname
+
+    @pipe.readline do |line|
+      source = "pipe://#{hostname}/#{command}"
+      @logger.debug("Received line", :command => command, :line => line)
+      e = to_event(line, source)
+      if e
+        queue << e
+      end
+    end
+  end # def run
+end # class LogStash::Inputs::Pipe
