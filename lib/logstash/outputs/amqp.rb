@@ -31,7 +31,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   config :name, :validate => :string, :required => true
 
   # The name of the queue
-  config :queue, :validate => :string, :default => Nil 
+  config :queue_name, :validate => :string, :default => nil 
 
   # Key to route to by default. Defaults to 'logstash'
   #
@@ -99,9 +99,9 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
     @exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
 
     # Queue name is optional
-    if !@queue.nil?
-        @logger.debug("Declaring queue", :queue => @queue)
-        @queue = @bunny.queue(@queue)
+    if !@queue_name.nil?
+        @logger.debug("Declaring queue", :queue_name => @queue_name)
+        @queue = @bunny.queue(@queue_name, :durable => @durable)
 
         @logger.debug("Binding exchange", :name => @name, :key => @key)
         @queue.bind(@exchange, :key => @key)
@@ -127,10 +127,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   public
   def receive_raw(message, key=@key)
     begin
-      if @queue
-        @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
-        @queue.publish(message, :persistent => @persistent, :key => key)
-      else if @exchange
+      if @exchange
         @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
         @exchange.publish(message, :persistent => @persistent, :key => key)
       else
