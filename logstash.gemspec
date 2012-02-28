@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "gelf" # outputs/gelf, # License: MIT-style
   spec.add_dependency "gmetric", "~> 0.1.3" # outputs/ganglia, # License: MIT
   spec.add_dependency "haml" # License: MIT
-  spec.add_dependency "jls-grok", "0.10.5" # for grok filter, BSD License
+  spec.add_dependency "jls-grok", "0.10.6" # for grok filter, BSD License
   spec.add_dependency "jruby-elasticsearch", "~> 0.0.11" # BSD License
   spec.add_dependency "jruby-openssl" # For enabling SSL support, CPL/GPL 2.0
   spec.add_dependency "json" # Ruby license
