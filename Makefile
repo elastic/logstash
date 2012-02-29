@@ -5,6 +5,7 @@
 #
 JRUBY_VERSION=1.6.5
 ELASTICSEARCH_VERSION=0.18.7
+JODA_VERSION=2.1
 VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 
 JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
@@ -14,6 +15,7 @@ JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
 JRUBYC=java -Djruby.compat.version=RUBY1_9 -jar $(PWD)/$(JRUBY) -S jrubyc
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
+JODA=vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/base.rb$$')
 GEM_HOME=build/gems
 QUIET=@
@@ -99,6 +101,12 @@ $(ELASTICSEARCH): $(ELASTICSEARCH).tar.gz | vendor/jar
 	$(QUIET)tar -C $(shell dirname $@) -xf $< $(TAR_OPTS) --exclude '*sigar*' \
 		'elasticsearch-$(ELASTICSEARCH_VERSION)/lib/*.jar'
 
+vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz:
+	wget "http://downloads.sourceforge.net/project/joda-time/joda-time/$(JODA_VERSION)/joda-time-$(JODA_VERSION)-dist.tar.gz"
+
+vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar: vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz
+	tar -C $(notdir $@) -zxf $< joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
+
 # Always run vendor/bundle
 .PHONY: fix-bundler
 fix-bundler:
@@ -131,7 +139,7 @@ build/ruby: | build
 # TODO(sissel): Skip sigar?
 # Run this one always? Hmm..
 .PHONY: build/monolith
-build/monolith: $(ELASTICSEARCH) $(JRUBY) vendor-gems | build
+build/monolith: $(ELASTICSEARCH) $(JRUBY) $(JODA) vendor-gems | build
 build/monolith: compile copy-ruby-files
 	-$(QUIET)mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
