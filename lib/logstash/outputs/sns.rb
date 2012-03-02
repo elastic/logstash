@@ -23,8 +23,8 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
   # The path to YAML file containing a hash of the AWS credentials for your
   # account.  The contents of the file should look like this:
   # --- 
-  # :aws_access_key_id: "12345"
-  # :aws_secret_access_key: "54321"
+  # :access_key_id: "12345"
+  # :secret_access_key: "54321"
   config :credentials, :validate => :string, :required => true
 
   # When an ARN for an SNS topic is specified here, the message "Logstash
@@ -34,14 +34,14 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
 
   public
   def register
-    require "fog"
+    require "aws-sdk"
     access_creds = YAML.load_file(@credentials)
 
-    @sns = Fog::AWS::SNS.new(access_creds)
+    @sns = AWS::SNS.new(access_creds)
 
-    # Try to get a list of the topics on this account to cause an error ASAP if the creds are bad
+    # Try to publish a "Logstash booted" message to the ARN provided to cause an error ASAP if the creds are bad
     if @publish_boot_message_arn
-      @sns.publish(@publish_boot_message_arn, "Logstash successfully booted", 'Subject' => "Logstash booted")
+      @sns.topics[@publish_boot_message_arn].publish("Logstash successfully booted", :subject => "Logstash booted")
     end
   end # def register
 
@@ -58,7 +58,8 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
     @logger.debug("Sending event to SNS topic #{arn} with subject '#{subject}' and message:")
     message.split("\n").each { |line| @logger.debug(line) }
 
-    @sns.publish(arn, message, 'Subject' => subject.slice(0, MAX_SUBJECT_SIZE))
+    # Look up the topic and publish the message
+    @sns.topics[arn].publish(message, :subject => subject.slice(0, MAX_SUBJECT_SIZE))
   end # def receive
 
   public
