@@ -6,7 +6,7 @@ gem "uuidtools" # for naming amqp queues, License ???
 
 gem "filewatch", "0.3.3"  # for file tailing, BSD License
 gem "jls-grok", "0.10.5" # for grok filter, BSD License
-gem "fog" # for AWS/SNS.  MIT License
+gem "aws-sdk" # for AWS access: SNS and S3 log tailing.  Apache 2.0 License
 gem "jruby-elasticsearch", "0.0.11", :platforms => :jruby # BSD License
 gem "onstomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license
