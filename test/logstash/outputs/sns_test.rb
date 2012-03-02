@@ -1,11 +1,13 @@
 require "test_helper"
 require "logstash/outputs/sns"
-require 'fog'
+require "aws-sdk"
 
 describe LogStash::Outputs::Sns do
   before do
-    # Fog mocks for SNS are not implemented, need to do it manually
-    @sns = stub(:publish => true)
+    # Fake SNS object
+    @topic = stub()
+    @topic_collection = stub(:[] => @topic)
+    @sns = stub(:topics => @topic_collection)
 
     # Some default values for an event
     @event = LogStash::Event.new
@@ -14,20 +16,20 @@ describe LogStash::Outputs::Sns do
     @event.message = "Feb  1 15:37:27 localhost systemd-logind[384]: New session 265 of user ec2-user."
 
     # Sample AWS credentials
-    @aws_creds = { :aws_secret_access_key => '54321z', :aws_access_key_id => '12345a' }
+    @aws_creds = { :secret_access_key => '54321z', :access_key_id => '12345a' }
   end
 
   describe '.register' do
     before do
       YAML.stubs(:load_file => @aws_creds)
-      Fog::AWS::SNS.stubs(:new => @sns)
+      AWS::SNS.stubs(:new => @sns)
     end
 
-    test 'registers an SNS proxy' do
+    test 'registers an SNS proxy without publishing a boot message' do
       sns_output = LogStash::Outputs::Sns.new(
-        'credentials' => ['/fake/file.yml'],
-        'publish_boot_message_arn' => ['fake_arn']
+        'credentials' => ['/fake/file.yml']
       )
+      @topic_collection.expects(:[]).never
 
       sns_output.register
     end
@@ -35,25 +37,13 @@ describe LogStash::Outputs::Sns do
     test 'publishes a boot message when able to create a SNS proxy' do
       sns_output = LogStash::Outputs::Sns.new(
         'credentials' => ['/fake/file.yml'],
-        'publish_boot_message_arn' => ['fake_arn']
+        'publish_boot_message_arn' => ['fake_boot_arn']
       )
 
-      @sns.expects(:publish).with('fake_arn', instance_of(String), has_entries('Subject' => instance_of(String)))
+      @topic_collection.expects(:[]).with('fake_boot_arn').returns(@topic)
+      @topic.expects(:publish).with(instance_of(String), has_entries(:subject => instance_of(String)))
 
       sns_output.register
-    end
-
-    test 'raises an exception when unable to create an SNS proxy' do
-      sns_output = LogStash::Outputs::Sns.new(
-        'credentials' => ['/fake/file.yml'],
-        'publish_boot_message_arn' => ['fake_arn']
-      )
-
-      @sns.expects(:publish).raises(Excon::Errors::Timeout)
-
-      assert_raises(Excon::Errors::Timeout) do
-        sns_output.register
-      end
     end
   end
 
@@ -61,11 +51,10 @@ describe LogStash::Outputs::Sns do
     before do
       # Need to have a registered SNS proxy
       YAML.stubs(:load_file => @aws_creds)
-      Fog::AWS::SNS.stubs(:new => @sns)
+      AWS::SNS.stubs(:new => @sns)
 
       @subject = LogStash::Outputs::Sns.new(
-          'credentials' => ['/fake/file.yml'],
-          'publish_boot_message_arn' => ['fake_arn']
+          'credentials' => ['/fake/file.yml']
         )
       @subject.register
 
@@ -75,34 +64,34 @@ describe LogStash::Outputs::Sns do
 
     test 'does not send a message to SNS when an event should not be output' do
       @subject.stubs(:output? => false)
-      @sns.expects(:publish).never
+      @topic.expects(:publish).never
 
       @subject.receive(@event)
     end
 
     test 'raises an exception when an event with no sns field is received' do
       @event.fields.delete('sns')
-      @sns.expects(:publish).never
+      @topic.expects(:publish).never
 
       assert_raises(RuntimeError) { @subject.receive(@event) }
     end
 
     test 'uses the sns_subject when one is provided' do
       @event.fields['sns_subject'] = 'Test subject'
-      @sns.expects(:publish).with(@arn, instance_of(String), 'Subject' => 'Test subject')
+      @topic.expects(:publish).with(instance_of(String), :subject => 'Test subject')
 
       @subject.receive(@event)
     end
 
     test 'uses the sns_message when one is provided' do
       @event.fields['sns_message'] = 'Test message'
-      @sns.expects(:publish).with(@arn, 'Test message', has_entries('Subject' => instance_of(String)))
+      @topic.expects(:publish).with('Test message', has_entries(:subject => instance_of(String)))
 
       @subject.receive(@event)
     end
 
     test 'uses a default message and subject when no sns_message or sns_subject are provided' do
-      @sns.expects(:publish).with(@arn, instance_of(String), has_entries('Subject' => instance_of(String)))
+      @topic.expects(:publish).with(instance_of(String), has_entries(:subject => instance_of(String)))
 
       @subject.receive(@event)
     end
