@@ -6,6 +6,7 @@ gem "uuidtools" # for naming amqp queues, License ???
 
 gem "filewatch", "0.3.3"  # for file tailing, BSD License
 gem "jls-grok", "0.10.5" # for grok filter, BSD License
+gem "aws-sdk" # for AWS access: SNS and S3 log tailing.  Apache 2.0 License
 gem "jruby-elasticsearch", "0.0.11", :platforms => :jruby # BSD License
 gem "stomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license
@@ -30,6 +31,11 @@ gem "gelfd", "0.2.0" #inputs/gelf, # License: Apache 2.0
 
 gem "ffi-rzmq", "0.9.0"
 gem "ffi"
+
+group :test do
+  gem "mocha"
+  gem "shoulda"
+end
 
 # ruby-debug is broken in 1.9.x due, at a minimum, the following:
 #    Installing rbx-require-relative (0.0.5)
