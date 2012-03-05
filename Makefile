@@ -101,11 +101,11 @@ $(ELASTICSEARCH): $(ELASTICSEARCH).tar.gz | vendor/jar
 	$(QUIET)tar -C $(shell dirname $@) -xf $< $(TAR_OPTS) --exclude '*sigar*' \
 		'elasticsearch-$(ELASTICSEARCH_VERSION)/lib/*.jar'
 
-vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz:
-	wget "http://downloads.sourceforge.net/project/joda-time/joda-time/$(JODA_VERSION)/joda-time-$(JODA_VERSION)-dist.tar.gz"
+vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz: | vendor/jar
+	wget -O $@ "http://downloads.sourceforge.net/project/joda-time/joda-time/$(JODA_VERSION)/joda-time-$(JODA_VERSION)-dist.tar.gz"
 
-vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar: vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz
-	tar -C $(notdir $@) -zxf $< joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
+vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar: vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz | vendor/jar
+	tar -C vendor/jar -zxf $< joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
 
 # Always run vendor/bundle
 .PHONY: fix-bundler
@@ -144,6 +144,10 @@ build/monolith: compile copy-ruby-files
 	-$(QUIET)mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
 	$(QUIET)find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
+	| (cd $@; xargs -tn1 jar xf)
+	@# Make sure joda-time gets unpacked last, so it overwrites the joda jruby
+	@# ships with.
+	$(QUIET)find $$PWD/vendor/jar/joda-time-$(JODA_VERSION) -name '*.jar' \
 	| (cd $@; xargs -tn1 jar xf)
 	@# Purge any extra files we don't need in META-INF (like manifests and
 	@# signature files)
