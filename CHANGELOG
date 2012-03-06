@@ -5,6 +5,7 @@
   * New filter plugins: zeromq
   * Fixes for gelf output
   * Fixes for elasticsearch_river output
+  * Fixes for ganglia output
 
  ## IMPORTANT CHANGES FOR UPGRADES FROM 1.1.0
   - zeromq input and output rewritten
