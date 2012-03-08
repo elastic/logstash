@@ -2,6 +2,7 @@ require "json"
 require "logstash/time"
 require "logstash/namespace"
 require "uri"
+require "time"
 
 # General event type. 
 # Basically a light wrapper on top of a hash.
