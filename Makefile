@@ -91,6 +91,11 @@ vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | vendor/jar
 	@echo "=> Fetching elasticsearch"
 	$(QUIET)wget --no-check-certificate \
 		-O $@ $(ELASTICSEARCH_URL)/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz
+		
+vendor/jar/graphtastic-rmiclient.jar: | vendor/jar
+	@echo "=> Fetching graphtastic rmi client jar"
+	$(QUIET)wget --no-check-certificate \
+		-O $@ http://cloud.github.com/downloads/NickPadilla/GraphTastic/graphtastic-rmiclient.jar
 
 .PHONY: vendor-elasticsearch
 vendor-elasticsearch: $(ELASTICSEARCH)
@@ -98,6 +103,12 @@ $(ELASTICSEARCH): $(ELASTICSEARCH).tar.gz | vendor/jar
 	@echo "=> Pulling the jars out of $<"
 	$(QUIET)tar -C $(shell dirname $@) -xf $< $(TAR_OPTS) --exclude '*sigar*' \
 		'elasticsearch-$(ELASTICSEARCH_VERSION)/lib/*.jar'
+
+vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz: | vendor/jar
+	wget -O $@ "http://downloads.sourceforge.net/project/joda-time/joda-time/$(JODA_VERSION)/joda-time-$(JODA_VERSION)-dist.tar.gz"
+
+vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar: vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz | vendor/jar
+	tar -C vendor/jar -zxf $< joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
 
 # Always run vendor/bundle
 .PHONY: fix-bundler
@@ -132,10 +143,14 @@ build/ruby: | build
 # Run this one always? Hmm..
 .PHONY: build/monolith
 build/monolith: $(ELASTICSEARCH) $(JRUBY) vendor-gems | build
-build/monolith: compile copy-ruby-files
+build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
 	$(QUIET)find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
+	| (cd $@; xargs -tn1 jar xf)
+	@# Make sure joda-time gets unpacked last, so it overwrites the joda jruby
+	@# ships with.
+	$(QUIET)find $$PWD/vendor/jar/joda-time-$(JODA_VERSION) -name '*.jar' \
 	| (cd $@; xargs -tn1 jar xf)
 	@# Purge any extra files we don't need in META-INF (like manifests and
 	@# signature files)
