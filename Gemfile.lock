@@ -1,7 +1,6 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    awesome_print (1.0.2)
     bouncy-castle-java (1.5.0146.1)
     bson (1.5.2)
     bson (1.5.2-java)
@@ -55,7 +54,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  awesome_print
   bunny
   cabin (= 0.4.1)
   ffi
