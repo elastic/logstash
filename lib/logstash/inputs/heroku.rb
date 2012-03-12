@@ -1,13 +1,25 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "socket" # for Socket.gethostname
 
 # Stream events from a heroku app's logs.
 #
+# This will read events in a manner similar to how the `heroku logs -t` command
+# fetches logs.
+#
+# Recommended filters:
+#
+#     filter { 
+#       grok { 
+#         pattern => "^%{TIMESTAMP_ISO8601:timestamp} %{WORD:component}\[%{WORD:process}(?:\.%{INT:instance:int})?\]: %{DATA:message}$" 
+#       } 
+#       date { timestamp => ISO8601 }
+#     }
 class LogStash::Inputs::Heroku < LogStash::Inputs::Base
   config_name "heroku"
   plugin_status "experimental"
 
+  # The name of your heroku application. This is usually the first part of the 
+  # the domain name 'my-app-name.herokuapp.com'
   config :app, :validate => :string, :required => true
 
   public
@@ -36,4 +48,4 @@ class LogStash::Inputs::Heroku < LogStash::Inputs::Base
       end # buffer.extract
     end
   end # def run
-end # class LogStash::Inputs::File
+end # class LogStash::Inputs::Heroku
