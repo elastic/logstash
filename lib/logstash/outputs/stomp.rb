@@ -3,7 +3,7 @@ require "logstash/namespace"
 
 class LogStash::Outputs::Stomp < LogStash::Outputs::Base
   config_name "stomp"
-  plugin_status "unstable"
+  plugin_status "beta"
 
   # The address of the STOMP server.
   config :host, :validate => :string, :required => true

@@ -65,13 +65,15 @@ describe LogStash::Filters::Grok do
   end # test normal
 
   test "parsing an event with multiple messages (array of strings)" do
-    config "pattern" => [ "(?:hello|world) %{NUMBER}" ]
+    config "pattern" => [ "(?:hello|world) %{NUMBER}" ],
+           "named_captures_only" => "false"
 
     event = LogStash::Event.new
     event.type = @typename
     event.message = [ "hello 12345", "world 23456" ]
 
     @filter.filter(event)
+    $stderr.puts event.to_hash.inspect
     assert_equal(event.fields["NUMBER"].sort, ["12345", "23456"])
   end # parsing event with multiple messages
 
@@ -145,7 +147,7 @@ describe LogStash::Filters::Grok do
   end # test float coercion
 
   test "in-line pattern definitions" do
-    config "pattern" => [ "%{FIZZLE=\\d+}" ]
+    config "pattern" => [ "%{FIZZLE=\\d+}" ], "named_captures_only" => "false"
 
     event = LogStash::Event.new
     event.type = @typename
@@ -163,7 +165,7 @@ describe LogStash::Filters::Grok do
   end # test in-line definitions
 
   test "processing fields other than the @message" do
-    config "rum" => [ "%{FIZZLE=\\d+}" ]
+    config "rum" => [ "%{FIZZLE=\\d+}" ], "named_captures_only" => "false"
 
     event = LogStash::Event.new
     event.type = @typename
@@ -181,7 +183,8 @@ describe LogStash::Filters::Grok do
   end # test processing custom fields
 
   test "parsing custom fields and default @message" do
-    config "rum" => [ "%{FIZZLE=\\d+}" ], "pattern" => "%{WORD}", "break_on_match" => "false"
+    config "rum" => [ "%{FIZZLE=\\d+}" ], "pattern" => "%{WORD}",
+      "break_on_match" => "false", "named_captures_only" => "false"
 
     event = LogStash::Event.new
     event.type = @typename
@@ -238,7 +241,7 @@ describe LogStash::Filters::Grok do
 
   test "keep empty fields" do
     config "pattern" => "1=%{WORD:foo1} *(2=%{WORD:foo2})?",
-           "empty_captures" => "true"
+           "keep_empty_captures" => "true"
 
     event = LogStash::Event.new
     event.type = @typename
@@ -246,5 +249,20 @@ describe LogStash::Filters::Grok do
     @filter.filter(event)
     assert_equal(["test"], event["foo1"])
     assert_equal([], event["foo2"])
+  end
+
+  test "named_captures_only set to false" do
+    config "pattern" => "Hello %{WORD}. %{WORD:foo}", "named_captures_only" => "false"
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event.message = "Hello World, yo!"
+    @filter.filter(event)
+    assert(event.fields.include?("WORD"),
+           "The event must have the 'WORD' field")
+    assert(event.fields.include?("foo"),
+           "The event must have the 'foo' field")
+    assert_equal("World", event.fields["WORD"].first)
+    assert_equal("yo", event.fields["foo"].first)
   end
 end # tests for LogStash::Filters::Grok

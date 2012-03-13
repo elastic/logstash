@@ -10,7 +10,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
 
   config_name "amqp"
-  plugin_status "unstable"
+  plugin_status "beta"
 
   # Your amqp server address
   config :host, :validate => :string, :required => true
@@ -31,6 +31,8 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   config :name, :validate => :string, :required => true
 
   # Key to route to by default. Defaults to 'logstash'
+  #
+  # * Routing keys are ignored on topic exchanges.
   config :key, :validate => :string, :default => "logstash"
 
   # The vhost to use

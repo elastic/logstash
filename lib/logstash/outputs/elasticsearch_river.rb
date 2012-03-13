@@ -17,7 +17,7 @@ require "net/http"
 class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   config_name "elasticsearch_river"
-  plugin_status "unstable"
+  plugin_status "beta"
 
   config :debug, :validate => :boolean, :default => false
 
@@ -98,8 +98,8 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       "port" => [@amqp_port],
       "user" => [@user],
       "password" => [@password],
-      "exchange_type" => ["direct"],
-      "queue_name" => [@queue],
+      "exchange_type" => [@exchange_type],
+      "queue_name" => [@name],
       "name" => [@exchange],
       "key" => [@key],
       "vhost" => [@vhost],
@@ -126,7 +126,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
                                 "user" => @user,
                                 "pass" => @password,
                                 "vhost" => @vhost,
-                                "queue" => @queue,
+                                "queue" => @name,
                                 "exchange" => @exchange,
                                 "routing_key" => @key,
                                 "exchange_type" => @exchange_type,

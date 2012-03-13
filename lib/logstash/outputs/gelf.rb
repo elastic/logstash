@@ -8,7 +8,7 @@ require "logstash/outputs/base"
 class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   config_name "gelf"
-  plugin_status "unstable"
+  plugin_status "beta"
 
   # graylog2 server address
   config :host, :validate => :string, :required => true
@@ -37,7 +37,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   # The GELF facility. Dynamic values like %{foo} are permitted here; this
   # is useful if you need to use a value from the event as the facility name.
-  config :facility, :validate => :array, :default => [ "%{facility}" , "logstash-gelf" ]
+  config :facility, :validate => :string, :default => "logstash-gelf"
 
   # Ship metadata within event object?
   config :ship_metadata, :validate => :boolean, :default => true
@@ -115,21 +115,8 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
       end
     end
 
-    # Allow 'INFO' 'I' or number. for 'level'
-    m["timestamp"] = event.unix_timestamp.to_i
-
-    # Probe facility array levels
-    if @facility.is_a?(Array)
-      @facility.each do |value|
-        parsed_value = event.sprintf(value)
-        if parsed_value
-          m["facility"] = parsed_value
-          break
-        end
-      end
-    else
-      m["facility"] = event.sprintf(@facility)
-    end
+    # set facility as defined
+    m["facility"] = event.sprintf(@facility)
 
     # Probe severity array levels
     level = nil
@@ -148,7 +135,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
     @logger.debug(["Sending GELF event", m])
     begin
-      @gelf.notify!(m)
+      @gelf.notify!(m, :timestamp => event.unix_timestamp.to_f)
     rescue
       @logger.warn("Trouble sending GELF event", :gelf_event => m,
                    :event => event, :error => $!)

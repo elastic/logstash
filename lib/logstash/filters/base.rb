@@ -60,9 +60,21 @@ class LogStash::Filters::Base < LogStash::Plugin
   end # def register
 
   public
-  def filter(event, input_queue)
+  def prepare_metrics
+    @filter_metric = @logger.metrics.timer(self)
+  end # def prepare_metrics
+
+  public
+  def filter(event)
     raise "#{self.class}#filter must be overidden"
   end # def filter
+
+  public
+  def execute(event, &block)
+    @filter_metric.time do
+      filter(event, &block)
+    end
+  end # def execute
 
   # a filter instance should call filter_matched from filter if the event
   # matches the filter's conditions (right type, etc)

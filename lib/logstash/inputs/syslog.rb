@@ -20,7 +20,7 @@ require "socket"
 # Note: this input will start listeners on both TCP and UDP
 class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   config_name "syslog"
-  plugin_status "unstable"
+  plugin_status "experimental"
 
   # The address to listen on
   config :host, :validate => :string, :default => "0.0.0.0"
@@ -52,6 +52,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
   public
   def register
+    @logger.warn("ATTENTION: THIS PLUGIN WILL BE REMOVED IN LOGSTASH 1.2.0")
     @grok_filter = LogStash::Filters::Grok.new({
       "type"    => [@config["type"]],
       "pattern" => ["<%{POSINT:priority}>%{SYSLOGLINE}"],

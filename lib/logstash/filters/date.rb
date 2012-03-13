@@ -21,7 +21,7 @@ require "logstash/time"
 class LogStash::Filters::Date < LogStash::Filters::Base
 
   config_name "date"
-  plugin_status "unstable"
+  plugin_status "stable"
 
   # specify a locale to be used for date parsing. If this is not specified the platform default will be
   # used

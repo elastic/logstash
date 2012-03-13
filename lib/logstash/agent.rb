@@ -3,6 +3,7 @@ require "logstash/filters"
 require "logstash/filterworker"
 require "logstash/inputs"
 require "logstash/logging"
+require "logstash/sized_queue"
 require "logstash/multiqueue"
 require "logstash/namespace"
 require "logstash/outputs"
@@ -326,7 +327,8 @@ class LogStash::Agent
   private
   def start_output(output)
     @logger.debug("Starting output", :plugin => output)
-    queue = SizedQueue.new(10)
+    queue = LogStash::SizedQueue.new(10)
+    queue.logger = @logger
     @output_queue.add_queue(queue)
     @output_plugin_queues[output] = queue
     @plugins[output] = Thread.new(output, queue) do |*args|
@@ -365,8 +367,10 @@ class LogStash::Agent
       end
 
       # NOTE(petef) we should use a SizedQueue here (w/config params for size)
-      @filter_queue = SizedQueue.new(10)
+      @filter_queue = LogStash::SizedQueue.new(10)
+      @filter_queue.logger = @logger
       @output_queue = LogStash::MultiQueue.new
+      @output_queue.logger = @logger
 
       @ready_queue = Queue.new
 
@@ -379,7 +383,10 @@ class LogStash::Agent
       if @filters.length > 0
         @filters.each do |filter|
           filter.logger = @logger
-          @plugin_setup_mutex.synchronize { filter.register }
+          @plugin_setup_mutex.synchronize do
+            filter.register
+            filter.prepare_metrics
+          end
         end
         @filterworkers = {}
         1.times do |n|
@@ -414,6 +421,16 @@ class LogStash::Agent
     # yield to a block in case someone's waiting for us to be done setting up
     # like tests, etc.
     yield if block_given?
+
+    Thread.new do
+      while true
+        @logger.info("metrics dump")
+        @logger.metrics.each do |identifier, metric|
+          @logger.info("metric #{identifier}", metric.to_hash)
+        end
+        sleep 5
+      end
+    end
 
     # TODO(sissel): Monitor what's going on? Sleep forever? what?
     while sleep 5
