@@ -40,6 +40,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "mongo" # outputs/mongodb, License: Apache 2.0
   spec.add_dependency "rack" # License: MIT
   spec.add_dependency "redis" # outputs/redis, License: MIT-style
+  spec.add_dependency "riemann-client", "~> 0.0.6" # outputs/riemann, License: MIT
   spec.add_dependency "sass" # License: MIT
   spec.add_dependency "sinatra" # License: MIT-style
   spec.add_dependency "statsd-ruby", "~> 0.3.0" # outputs/statsd, # License: As-Is
@@ -60,4 +61,3 @@ Gem::Specification.new do |spec|
   spec.email = ["jls@semicomplete.com", "petef@databits.net"]
   spec.homepage = "http://logstash.net/"
 end
-
