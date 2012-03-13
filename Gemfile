@@ -18,7 +18,7 @@ gem "mizuno", :platforms => :jruby # License: Apache 2.0
 gem "sinatra" # License: MIT-style
 gem "haml" # License: MIT
 gem "sass" # License: MIT
-#gem "heroku" # License: MIT
+gem "heroku" # License: MIT
 
 # TODO(sissel): Put this into a group that's only used for monolith packaging
 gem "mongo" # outputs/mongodb, License: Apache 2.0
