@@ -9,7 +9,7 @@ gem "jls-grok", "0.10.6" # for grok filter, BSD License
 gem "jruby-elasticsearch", "0.0.11", :platforms => :jruby # BSD License
 gem "stomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license
-gem "awesome_print" # MIT License
+#gem "awesome_print" # MIT License
 gem "jruby-openssl", :platforms => :jruby # For enabling SSL support, CPL/GPL 2.0
 
 gem "minitest" # License: Ruby
@@ -18,6 +18,7 @@ gem "mizuno", :platforms => :jruby # License: Apache 2.0
 gem "sinatra" # License: MIT-style
 gem "haml" # License: MIT
 gem "sass" # License: MIT
+gem "heroku" # License: MIT
 
 # TODO(sissel): Put this into a group that's only used for monolith packaging
 gem "mongo" # outputs/mongodb, License: Apache 2.0
@@ -30,6 +31,8 @@ gem "gelfd", "0.2.0" #inputs/gelf, # License: Apache 2.0
 
 gem "ffi-rzmq", "0.9.0"
 gem "ffi"
+
+gem "riemann-client", "0.0.6" #outputs/riemann, License: MIT
 
 # ruby-debug is broken in 1.9.x due, at a minimum, the following:
 #    Installing rbx-require-relative (0.0.5)

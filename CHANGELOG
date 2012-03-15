@@ -2,7 +2,7 @@
  ## Overview of this release:
   * New input plugins: pipes
   * New output plugins: juggernaut, metricscatcher, nagios_ncsa, pipes
-  * New filter plugins: zeromq
+  * New filter plugins: zeromq, environment
   * Fixes for gelf output
   * Fixes for elasticsearch_river output
   * Fixes for ganglia output
@@ -13,6 +13,10 @@
       something more flexible. The configuration options have changed entirely.
       While this is still listed as `experimental`, we don't predict any more
       configuration syntax changes. The next release will bump this to beta.
+  - unix_timestamp
+      Previously, several plugins did not work as expected on MRI due to the
+      usage of the JRuby-only Jodatime library. We now have a contributed fix
+      for a slower parser on MRI/CRuby!
 
 1.1.0 (January 30, 2012)
   ## Overview of this release:
