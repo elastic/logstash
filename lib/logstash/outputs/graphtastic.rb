@@ -37,23 +37,12 @@ class LogStash::Outputs::GraphTastic < LogStash::Outputs::Base
   #
   # NOTE: you can also use the dynamic fields for the key value as well as the actual value
   config :metrics, :validate => :hash, :default => {}
-  
-  # Only handle events with any of these tags. if empty check all events.
-  config :tags, :validate => :array, :default => []
    
   # host for the graphtastic server - defaults to 127.0.0.1
   config :host, :validate => :string, :default => "127.0.0.1"
   
   # port for the graphtastic instance - defaults to 1199 for RMI, 1299 for TCP, 1399 for UDP, and 8080 for REST
   config :port, :validate => :number, :default => 0
-  
-  # ability to override the default ISO8601 timestamp format. 
-  # we use your date and convert it to time in mills to send it over
-  # so I need to manipulate your timestamp to ensure your metric contains
-  # the correct time from your logs. By default we use ISO8601 which I 
-  # believe is the default for logstash as well, just in case you log doesn't
-  # have a timestamp we will use logstash's.
-  config :date_pattern, :validate => :string, :default => LogStash::Time::ISO8601
   
   # number of attempted retry after send error - currently only way to integrate
   # errored transactions - should try and save to a file or later consumption
@@ -72,10 +61,13 @@ class LogStash::Outputs::GraphTastic < LogStash::Outputs::Base
   
   public
    def register
-     require "java"
      @batch = []
      begin
        if @integration.downcase == "rmi"
+         if RUBY_ENGINE != "jruby"
+            raise Exception.new("LogStash::Outputs::GraphTastic# JRuby is needed for RMI to work!")
+         end
+         require "java"
          if @port == 0
            @port = 1199
          end
@@ -85,10 +77,10 @@ class LogStash::Outputs::GraphTastic < LogStash::Outputs::Base
          require "net/http"         
          if @port == 0
            @port = 8080
+           gem "mail" #outputs/email, # License: MIT License
          end
          @http = Net::HTTP.new(@host, @port)
-       end       
-       @formatter = java.text.SimpleDateFormat.new(@date_pattern)
+       end
        @logger.info("GraphTastic Output Successfully Registered! Using #{@integration} Integration!")
      rescue 
        @logger.error("*******ERROR :  #{$!}")
@@ -106,9 +98,8 @@ class LogStash::Outputs::GraphTastic < LogStash::Outputs::Base
     end
     @retry = 1
     @logger.debug("Event found for GraphTastic!", :tags => @tags, :event => event)
-    timestamp = @formatter.parse(java.lang.String.new(event["timestamp"].fetch(0)))
     @metrics.each do |name, metric|
-      send(event.sprintf(name),event.sprintf(metric),timestamp.getTime())
+      send(event.sprintf(name),event.sprintf(metric),event.unix_timestamp)
     end
   end
   
@@ -134,6 +125,9 @@ class LogStash::Outputs::GraphTastic < LogStash::Outputs::Base
         tcpsocket.close
         @logger.debug("GraphTastic Sent Message Using TCP : #{@batch.join(',')}")
       elsif @integration.downcase == "rmi"
+        if RUBY_ENGINE != "jruby"
+           raise Exception.new("LogStash::Outputs::GraphTastic# JRuby is needed for RMI to work!")
+        end
         @remote.insertMetrics(@batch.join(','))
         @logger.debug("GraphTastic Sent Message Using RMI : #{@batch.join(',')}")    
       elsif @integration.downcase == "udp"
