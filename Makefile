@@ -112,12 +112,6 @@ vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz: | vendor/jar
 vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar: vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz | vendor/jar
 	tar -C vendor/jar -zxf $< joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
 
-vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz: | vendor/jar
-	wget -O $@ "http://downloads.sourceforge.net/project/joda-time/joda-time/$(JODA_VERSION)/joda-time-$(JODA_VERSION)-dist.tar.gz"
-
-vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar: vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz | vendor/jar
-	tar -C vendor/jar -zxf $< joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
-
 # Always run vendor/bundle
 .PHONY: fix-bundler
 fix-bundler:
