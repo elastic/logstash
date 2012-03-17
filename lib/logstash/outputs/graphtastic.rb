@@ -99,7 +99,7 @@ class LogStash::Outputs::GraphTastic < LogStash::Outputs::Base
     @retry = 1
     @logger.debug("Event found for GraphTastic!", :tags => @tags, :event => event)
     @metrics.each do |name, metric|
-      send(event.sprintf(name),event.sprintf(metric),event.unix_timestamp)
+      send(event.sprintf(name),event.sprintf(metric),(event.unix_timestamp*1000))# unix_timestamp is what I need in seconds - multiply by 1000 to make milliseconds.
     end
   end
   
