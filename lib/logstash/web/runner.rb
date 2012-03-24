@@ -1,9 +1,9 @@
 require "logstash/namespace"
-require "mizuno" # gem mizuno
+require "ftw" # gem ftw
+require "rack/handler/ftw" # gem ftw
 
 class LogStash::Web::Runner
-  Settings = Struct.new(:logfile, :address, :port,
-                        :backend_url, :bind_host)
+  Settings = Struct.new(:logfile, :address, :port, :backend_url, :bind_host)
 
   public
   def run(args)
@@ -59,12 +59,13 @@ class LogStash::Web::Runner
       STDOUT.reopen(logfile)
       STDERR.reopen(logfile)
     end
+    Cabin::Channel.get.subscribe(STDOUT)
 
     @thread = Thread.new do
-      Mizuno::HttpServer.run(
-        LogStash::Web::Server.new(settings),
-        :port => settings.port,
-        :host => settings.address)
+      Cabin::Channel.get.info("Starting web server", :settings => settings)
+      Rack::Handler::FTW.run(LogStash::Web::Server.new(settings),
+                             :Host => settings.address,
+                             :Port => settings.port)
     end
 
     return args

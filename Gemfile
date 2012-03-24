@@ -14,7 +14,7 @@ gem "jruby-openssl", :platforms => :jruby # For enabling SSL support, CPL/GPL 2.
 
 gem "minitest" # License: Ruby
 gem "rack" # License: MIT
-gem "mizuno", :platforms => :jruby # License: Apache 2.0
+gem "ftw", "~> 0.0.11"  # License: Apache 2.0
 gem "sinatra" # License: MIT-style
 gem "haml" # License: MIT
 gem "sass" # License: MIT
