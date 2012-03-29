@@ -52,6 +52,7 @@ GEM
       bson (~> 1.6.1)
     mtrc (0.0.4)
     netrc (0.7.1)
+    onstomp (1.0.6)
     rack (1.4.1)
     rack-protection (1.2.0)
       rack
@@ -70,7 +71,6 @@ GEM
       tilt (~> 1.3, >= 1.3.3)
     spoon (0.0.1)
     statsd-ruby (0.3.0)
-    stomp (1.2.1)
     tilt (1.3.3)
     trollop (1.16.2)
     uuidtools (2.1.2)
@@ -98,12 +98,12 @@ DEPENDENCIES
   json
   minitest
   mongo
+  onstomp
   rack
   redis
   riemann-client (= 0.0.6)
   sass
   sinatra
   statsd-ruby (= 0.3.0)
-  stomp
   uuidtools
   xmpp4r (= 0.5)
