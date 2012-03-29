@@ -93,6 +93,11 @@ vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | vendor/jar
 	@echo "=> Fetching elasticsearch"
 	$(QUIET)wget --no-check-certificate \
 		-O $@ $(ELASTICSEARCH_URL)/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz
+		
+vendor/jar/graphtastic-rmiclient.jar: | vendor/jar
+	@echo "=> Fetching graphtastic rmi client jar"
+	$(QUIET)wget --no-check-certificate \
+		-O $@ http://cloud.github.com/downloads/NickPadilla/GraphTastic/graphtastic-rmiclient.jar
 
 .PHONY: vendor-elasticsearch
 vendor-elasticsearch: $(ELASTICSEARCH)
@@ -140,7 +145,7 @@ build/ruby: | build
 # Run this one always? Hmm..
 .PHONY: build/monolith
 build/monolith: $(ELASTICSEARCH) $(JRUBY) $(JODA) vendor-gems | build
-build/monolith: compile copy-ruby-files
+build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
 	$(QUIET)find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
