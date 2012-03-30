@@ -7,14 +7,14 @@ gem "uuidtools" # for naming amqp queues, License ???
 gem "filewatch", "0.3.3"  # for file tailing, BSD License
 gem "jls-grok", "0.10.6" # for grok filter, BSD License
 gem "jruby-elasticsearch", "0.0.11", :platforms => :jruby # BSD License
-gem "stomp" # for stomp protocol, Apache 2.0 License
+gem "onstomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license
 #gem "awesome_print" # MIT License
 gem "jruby-openssl", :platforms => :jruby # For enabling SSL support, CPL/GPL 2.0
 
 gem "minitest" # License: Ruby
 gem "rack" # License: MIT
-gem "mizuno", :platforms => :jruby # License: Apache 2.0
+gem "ftw", "~> 0.0.11"  # License: Apache 2.0
 gem "sinatra" # License: MIT-style
 gem "haml" # License: MIT
 gem "sass" # License: MIT

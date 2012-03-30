@@ -284,24 +284,27 @@ class LogStash::Agent
     return inputs, filters, outputs
   end
 
-
-
   public
   def run(args, &block)
-    LogStash::Util::set_thread_name(self.class.name)
+    @logger.info("Register signal handlers")
     register_signal_handlers
 
+    @logger.info("Parse options ")
     remaining = parse_options(args)
     if remaining == false
       raise "Option parsing failed. See error log."
     end
 
+    @logger.info("Configure")
     configure
 
     # Load the config file
+    @logger.info("Read config")
     config = read_config
 
+    @logger.info("Start thread")
     @thread = Thread.new do
+      LogStash::Util::set_thread_name(self.class.name)
       run_with_config(config, &block)
     end
 
@@ -434,6 +437,7 @@ class LogStash::Agent
 
     # TODO(sissel): Monitor what's going on? Sleep forever? what?
     while sleep 5
+      @logger.info("heartbeat")
     end
   end # def run_with_config
 
