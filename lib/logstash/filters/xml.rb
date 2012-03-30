@@ -47,7 +47,7 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
     @xml = {}
 
     @config.each do |field, dest|
-      next if ( RESERVED + ["xpath","store_whole"] ).member?(field)
+      next if ( RESERVED + ["xpath","store_xml"] ).member?(field)
 
       @xml[field] = dest
     end
