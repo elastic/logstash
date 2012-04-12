@@ -10,7 +10,6 @@ gem "uuidtools" # for naming amqp queues, License ???
 gem "filewatch", "~> 0.3.0"  # for file tailing, BSD License
 gem "jls-grok", "0.9.0" # for grok filter, BSD License
 jruby? and gem "jruby-elasticsearch", "~> 0.0.11" # BSD License
-gem "stomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license
 gem "awesome_print" # MIT License
 jruby? and gem "jruby-openssl" # For enabling SSL support, CPL/GPL 2.0
@@ -30,6 +29,7 @@ gem "statsd-ruby", "~> 0.3.0" # outputs/statsd, # License: As-Is
 gem "gmetric", "~> 0.1.3" # outputs/ganglia, # License: MIT
 gem "xmpp4r", "~> 0.5" # outputs/xmpp, # License: As-Is
 gem "gelfd", "~> 0.1.0" #inputs/gelf, # License: Apache 2.0
+gem "onstomp", "1.0.5" # License: Apache 2.0 
 
 # For testing/dev
 group :development do
