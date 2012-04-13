@@ -12,7 +12,7 @@ require "logstash/outputs/base"
 class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   config_name "elasticsearch_http"
-  plugin_status "stable"
+  plugin_status "experimental"
 
   # ElasticSearch server name. This is optional if your server is discoverable.
   config :host, :validate => :string
