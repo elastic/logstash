@@ -14,7 +14,7 @@ GEM
     ffi (1.0.11-java)
     ffi-rzmq (0.9.0)
     filewatch (0.3.3)
-    ftw (0.0.11)
+    ftw (0.0.13)
       addressable (= 2.2.6)
       backports (= 2.3.0)
       cabin (> 0)
@@ -86,7 +86,7 @@ DEPENDENCIES
   ffi
   ffi-rzmq (= 0.9.0)
   filewatch (= 0.3.3)
-  ftw (~> 0.0.11)
+  ftw (~> 0.0.13)
   gelf
   gelfd (= 0.2.0)
   gmetric (= 0.1.3)
