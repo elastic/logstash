@@ -5,7 +5,7 @@ gem "bunny" # for amqp support, MIT-style license
 gem "uuidtools" # for naming amqp queues, License ???
 
 gem "filewatch", "0.3.3"  # for file tailing, BSD License
-gem "jls-grok", "0.10.5" # for grok filter, BSD License
+gem "jls-grok", "0.10.6" # for grok filter, BSD License
 gem "aws-sdk" # for AWS access: SNS and S3 log tailing.  Apache 2.0 License
 gem "jruby-elasticsearch", "0.0.11", :platforms => :jruby # BSD License
 gem "onstomp" # for stomp protocol, Apache 2.0 License
@@ -32,6 +32,8 @@ gem "gelfd", "0.2.0" #inputs/gelf, # License: Apache 2.0
 
 gem "ffi-rzmq", "0.9.0"
 gem "ffi"
+
+gem "riemann-client", "0.0.6" #outputs/riemann, License: MIT
 
 group :test do
   gem "mocha"

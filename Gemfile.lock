@@ -1,61 +1,83 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    awesome_print (1.0.2)
-    aws-sdk (1.3.5)
+    addressable (2.2.6)
+    aws-sdk (1.4.1)
       httparty (~> 0.7)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
       uuidtools (~> 2.1)
+    backports (2.3.0)
+    beefcake (0.3.7)
     bouncy-castle-java (1.5.0146.1)
-    bson (1.6.1)
-    bson (1.6.1-java)
+    bson (1.6.2-java)
     bunny (0.7.9)
-    cabin (0.3.8)
+    cabin (0.4.1)
       json
-    childprocess (0.3.1)
-      ffi (~> 1.0.6)
-    choice (0.1.4)
-    ffi (1.0.11)
     ffi (1.0.11-java)
     ffi-rzmq (0.9.0)
     filewatch (0.3.3)
+    ftw (0.0.14)
+      addressable (= 2.2.6)
+      backports (= 2.3.0)
+      cabin (> 0)
+      http_parser.rb (= 0.5.3)
+      json (= 1.6.5)
+      minitest (> 0)
     gelf (1.3.2)
       json
     gelfd (0.2.0)
     gmetric (0.1.3)
     haml (3.1.4)
-    httparty (0.8.1)
+    heroku (2.24.1)
+      launchy (>= 0.3.2)
+      netrc (~> 0.7.1)
+      rest-client (~> 1.6.1)
+      rubyzip
+    http_parser.rb (0.5.3-java)
+    httparty (0.8.2)
       multi_json
       multi_xml
-    jls-grok (0.10.5)
-      cabin (~> 0.3.0)
+    jls-grok (0.10.6)
+      cabin (~> 0.4.0)
     jruby-elasticsearch (0.0.11)
     jruby-openssl (0.7.6.1)
       bouncy-castle-java (>= 1.5.0146.1)
-    json (1.6.5)
     json (1.6.5-java)
+    launchy (2.1.0-java)
+      addressable (~> 2.2.6)
+      ffi (~> 1.0.9)
+      spoon (~> 0.0.1)
     metaclass (0.0.1)
-    minitest (2.11.1)
-    mizuno (0.5.0)
-      childprocess (>= 0.2.6)
-      choice (>= 0.1.0)
-      ffi (>= 1.0.0)
-      rack (>= 1.0.0)
-    mocha (0.10.4)
+    mime-types (1.18)
+    minitest (2.12.1)
+    mocha (0.11.0)
       metaclass (~> 0.0.1)
-    mongo (1.5.2)
-      bson (= 1.5.2)
-    multi_json (1.1.0)
-    multi_xml (0.4.1)
-    nokogiri (1.5.0)
-    nokogiri (1.5.0-java)
+    mongo (1.6.2)
+      bson (~> 1.6.2)
+    mtrc (0.0.4)
+    multi_json (1.3.2)
+    multi_xml (0.4.4)
+    netrc (0.7.1)
+    nokogiri (1.5.2-java)
+    onstomp (1.0.6)
     rack (1.4.1)
     rack-protection (1.2.0)
       rack
     redis (2.2.2)
-    sass (3.1.14)
-    shoulda (2.11.3)
+    rest-client (1.6.7)
+      mime-types (>= 1.16)
+    riemann-client (0.0.6)
+      beefcake (>= 0.3.5)
+      mtrc (>= 0.0.4)
+      trollop (>= 1.16.2)
+    rubyzip (0.9.7)
+    sass (3.1.15)
+    shoulda (3.0.1)
+      shoulda-context (~> 1.0.0)
+      shoulda-matchers (~> 1.0.0)
+    shoulda-context (1.0.0)
+    shoulda-matchers (1.0.0)
     sinatra (1.3.2)
       rack (~> 1.3, >= 1.3.6)
       rack-protection (~> 1.2)
@@ -69,16 +91,15 @@ GEM
 
 PLATFORMS
   java
-  ruby
 
 DEPENDENCIES
-  awesome_print
   aws-sdk
   bunny
   cabin (= 0.4.1)
   ffi
   ffi-rzmq (= 0.9.0)
   filewatch (= 0.3.3)
+  ftw (~> 0.0.13)
   gelf
   gelfd (= 0.2.0)
   gmetric (= 0.1.3)
@@ -89,7 +110,6 @@ DEPENDENCIES
   jruby-openssl
   json
   minitest
-  mizuno
   mocha
   mongo
   onstomp

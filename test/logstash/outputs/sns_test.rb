@@ -34,6 +34,17 @@ describe LogStash::Outputs::Sns do
       sns_output.register
     end
 
+    test 'uses configuration AWS credentials when present' do
+      sns_output = LogStash::Outputs::Sns.new(
+        'access_key_id' => ['54321z-no-yaml'],
+        'secret_access_key' => ['12345a-no-yaml']
+      )
+
+      YAML.expects(:load_file).never
+
+      sns_output.register
+    end
+
     test 'publishes a boot message when able to create a SNS proxy' do
       sns_output = LogStash::Outputs::Sns.new(
         'credentials' => ['/fake/file.yml'],
@@ -69,6 +80,20 @@ describe LogStash::Outputs::Sns do
       @subject.receive(@event)
     end
 
+    test 'uses ARN configuration when no sns field is received' do
+      sns_output = LogStash::Outputs::Sns.new(
+        'credentials' => ['/fake/file.yml'],
+        'arn' => ['test:arn']
+      )
+      sns_output.register
+
+      @topic_collection.expects(:[]).with('test:arn').returns(@topic)
+      @topic.expects(:publish).with(instance_of(String), has_entries(:subject => instance_of(String)))
+      @event.fields.delete('sns')
+
+      sns_output.receive(@event)
+    end
+
     test 'raises an exception when an event with no sns field is received' do
       @event.fields.delete('sns')
       @topic.expects(:publish).never
@@ -97,6 +122,22 @@ describe LogStash::Outputs::Sns do
     end
   end
 
+  describe '#json_message' do
+    test 'formats messages as JSON' do
+      msg = LogStash::Outputs::Sns.json_message(@event)
+
+      assert_equal msg, @event.to_json
+    end
+
+    test 'truncates messages that are too long' do
+      @event.message = 'hi'*LogStash::Outputs::Sns::MAX_MESSAGE_SIZE_IN_BYTES
+      msg = LogStash::Outputs::Sns.json_message(@event)
+
+      assert_equal @event.message.bytesize - (msg.bytesize - LogStash::Outputs::Sns::MAX_MESSAGE_SIZE_IN_BYTES), JSON.parse(msg)["@message"].bytesize
+      assert_equal LogStash::Outputs::Sns::MAX_MESSAGE_SIZE_IN_BYTES, msg.bytesize
+    end
+  end
+
   describe '#format_message' do
     test 'formats messages with tags and fields correctly' do
       @event.fields['field1'] = 'val1'
@@ -109,11 +150,11 @@ describe LogStash::Outputs::Sns do
     end
 
     test 'truncates messages that are too long' do
-      @event.message = 'hi'*LogStash::Outputs::Sns::MAX_MESSAGE_SIZE
+      @event.message = 'hi'*LogStash::Outputs::Sns::MAX_MESSAGE_SIZE_IN_BYTES
       msg = LogStash::Outputs::Sns.format_message(@event)
 
-      assert_equal 2 * LogStash::Outputs::Sns::MAX_MESSAGE_SIZE, @event.message.length
-      assert_equal LogStash::Outputs::Sns::MAX_MESSAGE_SIZE, msg.length
+      assert_equal 2 * LogStash::Outputs::Sns::MAX_MESSAGE_SIZE_IN_BYTES, @event.message.bytesize
+      assert_equal LogStash::Outputs::Sns::MAX_MESSAGE_SIZE_IN_BYTES, msg.bytesize
     end
   end
 end
