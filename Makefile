@@ -21,7 +21,7 @@ GEM_HOME=build/gems
 QUIET=@
 
 # OS-specific options
-TARCHECK=$(shell tar --help|grep wildcard|wc -l)
+TARCHECK=$(shell tar --help|grep wildcard|wc -l|tr -d ' ')
 ifeq (0, $(TARCHECK))
 TAR_OPTS=
 else
