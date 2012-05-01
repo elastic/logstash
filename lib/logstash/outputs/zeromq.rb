@@ -12,7 +12,7 @@ require "logstash/namespace"
 class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
 
   config_name "zeromq"
-  plugin_status "experimental"
+  plugin_status "beta"
 
   # 0mq socket address to connect or bind
   # Please note that `inproc://` will not work with logstash
@@ -56,7 +56,6 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   # ZMQ::HWM - high water mark
   # ZMQ::IDENTITY - named queues
   # ZMQ::SWAP_SIZE - space for disk overflow
-  # ZMQ::SUBSCRIBE - topic filters for pubsub
   #
   # example: sockopt => ["ZMQ::HWM", 50, "ZMQ::IDENTITY", "my_named_queue"]
   config :sockopt, :validate => :hash
