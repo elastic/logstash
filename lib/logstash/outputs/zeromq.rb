@@ -56,7 +56,6 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   # ZMQ::HWM - high water mark
   # ZMQ::IDENTITY - named queues
   # ZMQ::SWAP_SIZE - space for disk overflow
-  # ZMQ::SUBSCRIBE - topic filters for pubsub
   #
   # example: sockopt => ["ZMQ::HWM", 50, "ZMQ::IDENTITY", "my_named_queue"]
   config :sockopt, :validate => :hash
