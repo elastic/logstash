@@ -47,6 +47,12 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   # client mode connects
   config :mode, :validate => ["server", "client"], :default => "server"
 
+  # sender
+  # overrides the sender to 
+  # set the source of the event
+  # default is "zmq+topology://type/"
+  config :sender, :validate => :string
+
   # 0mq socket options
   # This exposes zmq_setsockopt
   # for advanced tuning
@@ -77,19 +83,23 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
       zmq_const = ZMQ::SUB
     end # case socket_type
     @zsocket = context.socket(zmq_const)
-
+    
     error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
                 "while setting ZMQ::LINGER == 1)")
 
     if @sockopt
       setopts(@zsocket, @sockopt)
     end
-
-    setopts(@zsocket, {"ZMQ::SUBSCRIBE" => @topic}) if @topology == "pubsub"
-
+    
     @address.each do |addr|
       setup(@zsocket, addr)
     end
+
+    if @topology == "pubsub"
+      error_check(@zsocket.setsockopt(ZMQ::SUBSCRIBE, @topic),
+		"while setting ZMQ::SUBSCRIBE == #{@topic}") if @topic
+    end
+
   end # def register
 
   def teardown
@@ -103,17 +113,19 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   def run(output_queue)
     begin
       loop do
-        if @topology == "pubsub"
+        if (@topology == "pubsub") && @topic
           topic = ''
           rc = @zsocket.recv_string(topic)
           error_check(rc, "in recv_string")
-          @logger.debug("0mq input: got topic #{topic}")
+          @logger.debug("ZMQ input", :topic => topic)
         end
         msg = ''
         rc = @zsocket.recv_string(msg)
         error_check(rc, "in recv_string")
-        @logger.debug("0mq: receiving", :event => msg)
-        e = self.to_event(msg, @source)
+        @logger.debug("ZMQ receiving", :event => msg)
+        #e = self.to_event(msg, @source)
+	@sender ||= "zmq+#{@topology}://#{@type}/"
+	e = self.to_event(msg, @sender)
         if e
           output_queue << e
         end
@@ -125,4 +137,10 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
       @logger.debug("Read timeout", subscriber => @zsocket)
     end # begin
   end # def run
+
+  private
+  def build_source_string
+    id = @address.first.clone
+    
+  end
 end # class LogStash::Inputs::ZeroMQ
