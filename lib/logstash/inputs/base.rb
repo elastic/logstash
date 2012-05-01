@@ -29,6 +29,10 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # If format is "json", an event sprintf string to build what
   # the display @message should be given (defaults to the raw JSON).
   # sprintf format strings look like %{fieldname} or %{@metadata}.
+  #
+  # If format is "json_event", ALL fields except for @type
+  # are expected to be present. Not receiving all fields
+  # will cause unexpected results.
   config :message_format, :validate => :string
 
   # Add any number of arbitrary tags to your event.
@@ -101,6 +105,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
     when "json_event"
       begin
         event = LogStash::Event.from_json(raw)
+        event.type ||= @type
       rescue => e
         ## TODO(sissel): Instead of dropping the event, should we treat it as
         ## plain text and try to do the best we can with it?
