@@ -115,9 +115,6 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
       end
     end
 
-    # Allow 'INFO' 'I' or number. for 'level'
-    m["timestamp"] = event.unix_timestamp.to_i
-
     # set facility as defined
     m["facility"] = event.sprintf(@facility)
 
@@ -138,7 +135,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
     @logger.debug(["Sending GELF event", m])
     begin
-      @gelf.notify!(m)
+      @gelf.notify!(m, :timestamp => event.unix_timestamp.to_f)
     rescue
       @logger.warn("Trouble sending GELF event", :gelf_event => m,
                    :event => event, :error => $!)

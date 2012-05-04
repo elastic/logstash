@@ -10,14 +10,18 @@ class LogStash::Logger < Cabin::Channel
     super()
 
     # Set default loglevel to WARN unless $DEBUG is set (run with 'ruby -d')
-    @level = $DEBUG ? :debug : :info
+    @level = $DEBUG ? :debug : :warn
     if ENV["LOGSTASH_DEBUG"]
       self.level = :debug
     end
 
     #self[:program] = File.basename($0)
-    subscribe(::Logger.new(*args))
+    #subscribe(::Logger.new(*args))
     @target = args[0]
+    subscribe(@target)
+
+    # Direct metrics elsewhere.
+    metrics.channel = Cabin::Channel.new
   end # def initialize
 
   def setup_log4j(logger="")
@@ -31,6 +35,8 @@ class LogStash::Logger < Cabin::Channel
         log4j_level = "DEBUG"
       when :info
         log4j_level = "INFO"
+      when :warn
+        log4j_level = "WARN"
     end # case level
     p.setProperty("log4j.rootLogger", "#{log4j_level},logstash")
 

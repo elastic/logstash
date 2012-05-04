@@ -13,7 +13,7 @@ require "timeout"
 class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
 
   config_name "zeromq"
-  plugin_status "experimental"
+  plugin_status "beta"
 
   # 0mq socket address to connect or bind
   # Please note that `inproc://` will not work with logstash
@@ -40,12 +40,19 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   # On outputs, this allows you to tag a message for routing
   # NOTE: ZeroMQ does subscriber side filtering.
   # NOTE: All topics have an implicit wildcard at the end
-  config :topic, :validate => :string, :default => ""
+  # You can specify multiple topics here
+  config :topic, :validate => :array
 
   # mode
   # server mode binds/listens
   # client mode connects
   config :mode, :validate => ["server", "client"], :default => "server"
+
+  # sender
+  # overrides the sender to 
+  # set the source of the event
+  # default is "zmq+topology://type/"
+  config :sender, :validate => :string
 
   # 0mq socket options
   # This exposes zmq_setsockopt
@@ -56,7 +63,6 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   # ZMQ::HWM - high water mark
   # ZMQ::IDENTITY - named queues
   # ZMQ::SWAP_SIZE - space for disk overflow
-  # ZMQ::SUBSCRIBE - topic filters for pubsub
   #
   # example: sockopt => ["ZMQ::HWM", 50, "ZMQ::IDENTITY", "my_named_queue"]
   config :sockopt, :validate => :hash
@@ -78,7 +84,19 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
     end # case socket_type
     setup
     
-    setopts(@zsocket, {"ZMQ::SUBSCRIBE" => @topic}) if @topology == "pubsub"
+    if @topology == "pubsub"
+      if @topic.nil?
+        @logger.debug("ZMQ - No topic provided. Subscribing to all messages")
+        error_check(@zsocket.setsockopt(ZMQ::SUBSCRIBE, ""),
+      "while setting ZMQ::SUBSCRIBE")
+      else
+        @topic.each do |t|
+          @logger.debug("ZMQ subscribing to topic: #{t}")
+          error_check(@zsocket.setsockopt(ZMQ::SUBSCRIBE, t),
+        "while setting ZMQ::SUBSCRIBE == #{t}")
+        end
+      end
+    end
 
   end # def register
 
@@ -101,7 +119,8 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
           e = self.to_event(msg_array[1..-1].join("\n"), @source)
           e['@zeromq_topic'] = msg_array.first
         else
-          e = self.to_event(msg_array.first, @source)
+          @sender ||= "zmq+#{@topology}://#{@type}/"
+          e = self.to_event(msg_array.first, @sender)
         end
         if e
           output_queue << e
@@ -114,4 +133,9 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
       @logger.debug("Read timeout", subscriber => @zsocket)
     end # begin
   end # def run
+
+  private
+  def build_source_string
+    id = @address.first.clone
+  end
 end # class LogStash::Inputs::ZeroMQ

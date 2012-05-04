@@ -1,8 +1,4 @@
 #!/usr/bin/env ruby
-# I don't want folks to have to learn to use yet another tool (rackup)
-# just to launch logstash-web. So let's work like a standard ruby
-# library.
-
 
 $:.unshift("%s/../lib" % File.dirname(__FILE__))
 $:.unshift(File.dirname(__FILE__))
@@ -16,13 +12,21 @@ require "logstash/web/controllers/search"
 require "logstash/web/controllers/static_files"
 require "logstash/web/helpers/require_param"
 require "optparse"
+require "cabin" # gem cabin
 require "rack" # gem rack
 require "sinatra/base" # gem sinatra
 require "haml"
 require "sass"
+require "ftw" # gem ftw
 
 Encoding.default_external = Encoding::UTF_8
 Encoding.default_internal = Encoding::UTF_8
+
+class FTW::Connection
+  def rewind
+    # Rack::Request (Or sinatra?) calls #rewind. fake it.
+  end
+end
 
 class LogStash::Web::Server < Sinatra::Base
 
@@ -61,6 +65,8 @@ class LogStash::Web::Server < Sinatra::Base
 
   def initialize(settings)
     super()
+    logger = Cabin::Channel.get
+    logger.info("settings", :settings => settings)
 
     # TODO(sissel): Make this better.
     backend_url = URI.parse(settings.backend_url)
@@ -96,6 +102,7 @@ class LogStash::Web::Server < Sinatra::Base
           :port => backend_url.port
         )
     end # backend_url.scheme
+    logger.info("init done")
   end
 
   get '/style.css' do
