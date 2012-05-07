@@ -109,12 +109,12 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
     begin
       @logger.debug("0mq: sending", :event => wire_event)
       if @topology == "pubsub"
-        topic = e.sprintf(@topic)
+        topic = event.sprintf(@topic)
         @logger.debug("0mq output: setting topic to: \"#{topic}\"")
         error_check(@zsocket.send_string(topic, ZMQ::SNDMORE), "in topic send_string")
       end
       error_check(@zsocket.send_string(wire_event), "in send_string")
-    rescue => e
+    rescue Exception => e
       @logger.warn("0mq output exception", :address => @address, :queue => @queue_name, :exception => e, :backtrace => e.backtrace)
     end
   end # def receive
