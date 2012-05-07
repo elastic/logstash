@@ -46,7 +46,8 @@ That said, some basic guidelines, which you are free to ignore :)
   the [mailing list](http://groups.google.com/group/logstash-users).
 * If you want to send patches, best way is to fork this repo and send me a pull
   request. If you don't know git, I also accept diff(1) formatted patches -
-  whatever is most comfortable for you.
+  whatever is most comfortable for you. 
+    * _DO NOT MODIFY `Gemfile.lock` IN YOUR PULL REQUESTS_. THIS WILL CAUSE MERGE FAILURES.
 * Want to lurk about and see what others are doing? IRC (#logstash on
   irc.freenode.org) is a good place for this as is the 
   [mailing list](http://groups.google.com/group/logstash-users)
