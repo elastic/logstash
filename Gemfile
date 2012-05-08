@@ -12,6 +12,7 @@ gem "onstomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license
 #gem "awesome_print" # MIT License
 gem "jruby-openssl", :platforms => :jruby # For enabling SSL support, CPL/GPL 2.0
+gem "xml-simple" # unknown license: http://xml-simple.rubyforge.org/
 
 gem "minitest" # License: Ruby
 gem "rack" # License: MIT
