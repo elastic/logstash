@@ -61,6 +61,8 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   config :prefetch_count, :validate => :number, :default => 1
 
   # Enable message acknowledgement
+  # Disabling this can greatly increase speed
+  # at the expense of possible duplicate messages
   config :ack, :validate => :boolean, :default => true
 
   # Enable or disable debugging
@@ -72,6 +74,16 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   # Validate SSL certificate
   config :verify_ssl, :validate => :boolean, :default => false
 
+  # Driver selection
+  # By default, logstash will use the `hot_bunnies` gem under JRuby
+  # and the `bunny` gem under MRI/YARV variants
+  # If you need to explcitly set this, do so here
+  # see [choosing a driver](choosing-a-driver) for more information
+  # Please note that currently, `hot_bunnies` does not yet
+  # support SSL. If you need SSL, please explicitly set this to
+  # `bunny`
+  config :driver, :validate => ["bunny", "hot_bunnies"]
+
   public
   def initialize(params)
     super
@@ -82,8 +94,12 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
 
   public
   def register
+    require "logstash/util/amqp"
     @logger.info("Registering input #{@url}")
-    require "bunny" # rubygem 'bunny'
+    self.class.send(:include, LogStash::Util::AMQP)
+    @driver ||= select_driver
+    @logger.info("Logstash driver selected", :driver => driver)
+    require "#{@driver}"
     @vhost ||= "/"
     @port ||= 5672
     @key ||= "#"
@@ -111,28 +127,41 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   def run(queue)
     begin
       @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up queue #{@name.inspect}")
-      @bunny = Bunny.new(@amqpsettings)
+      @connection = connect(@driver, @amqpsettings)
       return if terminating?
-      @bunny.start
-      @bunny.qos({:prefetch_count => @prefetch_count})
+      @channel = start!(@driver, @connection, @prefetch_count)
 
-      @queue = @bunny.queue(@name, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive})
-      @queue.bind(@exchange, :key => @key)
+      @queue = @channel.queue(@name, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive})
+      do_bind(@driver, @queue, @exchange, @key)
 
       timer = @metric_amqp_read.time
-      @queue.subscribe({:ack => @ack}) do |data|
-        timer.stop
-        e = to_event(data[:payload], @amqpurl)
-        if e
-          @metric_queue_write.time do
-            queue << e
+      if @driver == 'hot_bunnies'
+        subscription = @queue.subscribe(:ack => @ack, :blocking => true) do |headers,data|
+          timer.stop
+          e = to_event(data, @amqp_url)
+          if e
+            @metric_queue_write.time do
+              queue << e
+              headers.ack if @ack == true # ack after we know we're good
+            end
           end
-        end
-        timer = @metric_amqp_read.time
-      end # @queue.subscribe
+          time = @metric_amqp_read.time
+        end # @queue.subscribe
+      else
+        @queue.subscribe({:ack => @ack}) do |data|
+          timer.stop
+          e = to_event(data[:payload], @amqpurl)
+          if e
+            @metric_queue_write.time do
+              queue << e
+            end
+          end
+          timer = @metric_amqp_read.time
+        end # @queue.subscribe
+      end # @driver.subscribe
 
-    rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
-      @logger.error("AMQP connection error, will reconnect: #{e}")
+    rescue Exception => e
+      @logger.error("AMQP connection error: #{e}")
       # Sleep for a bit before retrying.
       # TODO(sissel): Write 'backoff' method?
       sleep(1)
@@ -141,6 +170,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   end # def run
 
   def teardown
+    do_unbind(@driver, @queue, @exchange, @key) unless @durable == true
     @queue.unsubscribe unless @durable == true
     @queue.delete unless @durable == true
     @bunny.close if @bunny

@@ -2,6 +2,7 @@ source :rubygems
 
 gem "cabin", "0.4.1" # for logging. apache 2 license
 gem "bunny" # for amqp support, MIT-style license
+gem "hot_bunnies", :git => "git://github.com/ruby-amqp/hot_bunnies.git", :platforms => :jruby  #License: MIT
 gem "uuidtools" # for naming amqp queues, License ???
 
 gem "filewatch", "0.3.3"  # for file tailing, BSD License
