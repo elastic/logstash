@@ -25,7 +25,7 @@ gem "heroku" # License: MIT
 # TODO(sissel): Put this into a group that's only used for monolith packaging
 gem "mongo" # outputs/mongodb, License: Apache 2.0
 gem "redis" # outputs/redis, License: MIT-style
-gem "gelf" # outputs/gelf, # License: MIT-style
+gem "gelf", "1.3.2" # outputs/gelf, # License: MIT-style
 gem "statsd-ruby", "0.3.0" # outputs/statsd, # License: As-Is
 gem "gmetric", "0.1.3" # outputs/ganglia, # License: MIT
 gem "xmpp4r", "0.5" # outputs/xmpp, # License: As-Is
