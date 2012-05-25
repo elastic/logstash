@@ -1,9 +1,5 @@
 source :rubygems
 
-def jruby?
-  return RUBY_ENGINE == "jruby"
-end
-
 gem "cabin", "0.4.1" # for logging. apache 2 license
 gem "bunny" # for amqp support, MIT-style license
 gem "uuidtools" # for naming amqp queues, License ???
@@ -34,7 +30,7 @@ gem "statsd-ruby", "0.3.0" # outputs/statsd, # License: As-Is
 gem "gmetric", "0.1.3" # outputs/ganglia, # License: MIT
 gem "xmpp4r", "0.5" # outputs/xmpp, # License: As-Is
 gem "gelfd", "0.2.0" #inputs/gelf, # License: Apache 2.0
-jruby? and gem "jruby-win32ole" # inputs/eventlog, # License: JRuby
+gem "jruby-win32ole", :platforms => :jruby # inputs/eventlog, # License: JRuby
 
 gem "ffi-rzmq", "0.9.0"
 gem "ffi"
