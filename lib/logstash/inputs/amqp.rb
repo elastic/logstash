@@ -14,6 +14,9 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   config_name "amqp"
   plugin_status "beta"
 
+  # Your amqp broker's custom arguments. For mirrored queues in RabbitMQ: [ "x-ha-policy", "all" ]
+  config :arguments, :validate => :array, :default => []
+
   # Your amqp server address
   config :host, :validate => :string, :required => true
 
@@ -116,7 +119,9 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
       @bunny.start
       @bunny.qos({:prefetch_count => @prefetch_count})
 
-      @queue = @bunny.queue(@name, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive})
+      @arguments_hash = Hash[*@arguments]
+
+      @queue = @bunny.queue(@name, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive, :arguments => @arguments_hash })
       @queue.bind(@exchange, :key => @key)
 
       timer = @metric_amqp_read.time
