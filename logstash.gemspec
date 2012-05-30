@@ -49,6 +49,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "uuidtools" # for naming amqp queues, License ???
   spec.add_dependency "xmpp4r", "~> 0.5" # outputs/xmpp, # License: As-Is
   spec.add_dependency "mail" #outputs/email, # License: MIT License
+  spec.add_dependency "jruby-win32ole" # License: JRuby
 
   spec.add_dependency("ffi-rzmq")
   spec.add_development_dependency 'mocha'
