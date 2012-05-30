@@ -1,13 +1,15 @@
 source :rubygems
 
-gem "cabin", "0.4.1" # for logging. apache 2 license
+gem "cabin", "0.4.4" # for logging. apache 2 license
 gem "bunny" # for amqp support, MIT-style license
 gem "uuidtools" # for naming amqp queues, License ???
 
 gem "filewatch", "0.3.3"  # for file tailing, BSD License
 gem "jls-grok", "0.10.6" # for grok filter, BSD License
 gem "aws-sdk" # for AWS access: SNS and S3 log tailing.  Apache 2.0 License
-gem "jruby-elasticsearch", "0.0.11", :platforms => :jruby # BSD License
+#gem "lusis-jruby-elasticsearch", "0.0.13", :platforms => :jruby # BSD License
+# Placeholder so master ES works until @jordansissel push a new jruby-elasticsearch
+gem "lusis-jruby-elasticsearch", "0.0.13", :platforms => :jruby # BSD License 
 gem "onstomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license
 #gem "awesome_print" # MIT License
@@ -25,11 +27,12 @@ gem "heroku" # License: MIT
 # TODO(sissel): Put this into a group that's only used for monolith packaging
 gem "mongo" # outputs/mongodb, License: Apache 2.0
 gem "redis" # outputs/redis, License: MIT-style
-gem "gelf" # outputs/gelf, # License: MIT-style
+gem "gelf", "1.3.2" # outputs/gelf, # License: MIT-style
 gem "statsd-ruby", "0.3.0" # outputs/statsd, # License: As-Is
 gem "gmetric", "0.1.3" # outputs/ganglia, # License: MIT
 gem "xmpp4r", "0.5" # outputs/xmpp, # License: As-Is
 gem "gelfd", "0.2.0" #inputs/gelf, # License: Apache 2.0
+gem "jruby-win32ole", :platforms => :jruby # inputs/eventlog, # License: JRuby
 
 gem "ffi-rzmq", "0.9.0"
 gem "ffi"
