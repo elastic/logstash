@@ -77,6 +77,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
                    :missed_event => event)
       return
     end
+    host = host.first if host.is_a?(Array)
  
     item = event.fields["zabbix_item"]
     if !item
@@ -84,6 +85,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
                    :missed_event => event)
       return
     end
+    item = item.first if item.is_a?(Array)
  
     zmsg = event.message
     zmsg = zmsg.gsub("\n", "\\n")
