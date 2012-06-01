@@ -7,9 +7,7 @@ gem "uuidtools" # for naming amqp queues, License ???
 gem "filewatch", "0.3.3"  # for file tailing, BSD License
 gem "jls-grok", "0.10.6" # for grok filter, BSD License
 gem "aws-sdk" # for AWS access: SNS and S3 log tailing.  Apache 2.0 License
-#gem "lusis-jruby-elasticsearch", "0.0.13", :platforms => :jruby # BSD License
-# Placeholder so master ES works until @jordansissel push a new jruby-elasticsearch
-gem "lusis-jruby-elasticsearch", "0.0.13", :platforms => :jruby # BSD License 
+gem "jruby-elasticsearch", "0.0.13", :platforms => :jruby # BSD License
 gem "onstomp" # for stomp protocol, Apache 2.0 License
 gem "json" # Ruby license
 #gem "awesome_print" # MIT License
