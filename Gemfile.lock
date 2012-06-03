@@ -12,7 +12,7 @@ GEM
     bouncy-castle-java (1.5.0146.1)
     bson (1.6.2-java)
     bunny (0.7.9)
-    cabin (0.4.1)
+    cabin (0.4.4)
       json
     excon (0.13.4)
     ffi (1.0.11-java)
@@ -48,6 +48,7 @@ GEM
     jruby-elasticsearch (0.0.13)
     jruby-openssl (0.7.7)
       bouncy-castle-java (>= 1.5.0146.1)
+    jruby-win32ole (0.8.5)
     json (1.6.5-java)
     launchy (2.1.0-java)
       addressable (~> 2.2.6)
@@ -108,12 +109,12 @@ PLATFORMS
 DEPENDENCIES
   aws-sdk
   bunny
-  cabin (= 0.4.1)
+  cabin (= 0.4.4)
   ffi
   ffi-rzmq (= 0.9.0)
   filewatch (= 0.3.3)
   ftw (~> 0.0.13)
-  gelf
+  gelf (= 1.3.2)
   gelfd (= 0.2.0)
   gmetric (= 0.1.3)
   haml
@@ -121,6 +122,7 @@ DEPENDENCIES
   jls-grok (= 0.10.6)
   jruby-elasticsearch (= 0.0.13)
   jruby-openssl
+  jruby-win32ole
   json
   mail
   minitest
