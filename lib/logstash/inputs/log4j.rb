@@ -3,17 +3,17 @@ require "logstash/namespace"
 require "logstash/util/socket_peer"
 require "socket"
 require "timeout"
+require "java"
+require "jruby/serialization"
 
-# Read events over a TCP socket.
-#
-# Like stdin and file inputs, each event is assumed to be one line of text.
+# Read events over a TCP socket from Log4j SocketAppender.
 #
 # Can either accept connections from clients or connect to a server,
-# depending on `mode`.
-class LogStash::Inputs::Tcp < LogStash::Inputs::Base
+# depending on `mode`. Sepending on mode, you need a matching SocketAppender or SocketHubAppender on the remote side
+class LogStash::Inputs::Log4j < LogStash::Inputs::Base
 
-  config_name "tcp"
-  plugin_status "beta"
+  config_name "log4j"
+  plugin_status "experimental"
 
   # When mode is `server`, the address to listen on.
   # When mode is `client`, the address to connect to.
@@ -40,29 +40,38 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   public
   def register
     if server?
-      @logger.info("Starting tcp input listener", :address => "#{@host}:#{@port}")
+      @logger.info("Starting Log4j input listener", :address => "#{@host}:#{@port}")
       @server_socket = TCPServer.new(@host, @port)
     end
     @event_meter = @logger.metrics.meter(self, "events")
-    @logger.info("tcp input", :meter => @event_meter)
+    @logger.info("Log4j input", :meter => @event_meter)
   end # def register
 
   private
   def handle_socket(socket, output_queue, event_source)
     begin
+      # JRubyObjectInputStream uses JRuby class path to find the class to de-serialize to
+      ois = JRubyObjectInputStream.new(java.io.BufferedInputStream.new(socket.to_inputstream))
       loop do
-        buf = nil
-        # NOTE(petef): the timeout only hits after the line is read
-        # or socket dies
-        # TODO(sissel): Why do we have a timeout here? What's the point?
-        if @data_timeout == -1
-          buf = readline(socket)
-        else
-          Timeout::timeout(@data_timeout) do
-            buf = readline(socket)
-          end
-        end
-        e = self.to_event(buf, event_source)
+        # NOTE: event_raw is org.apache.log4j.spi.LoggingEvent
+        event_obj = ois.readObject()
+        event_data = {
+          "@type" => type,
+          "@source" => event_source,
+          "@source_host" => socket.peer,
+          "@source_path" => event_obj.getLoggerName(),
+          "@fields" => { "priority" => event_obj.getLevel().toString(), "logger_name" => event_obj.getLoggerName(), 
+                         "thread" => event_obj.getThreadName(), "class" => event_obj.getLocationInformation().getClassName(),
+                         "file" => event_obj.getLocationInformation().getFileName() + ":" + event_obj.getLocationInformation().getLineNumber(),
+                         "method" => event_obj.getLocationInformation().getMethodName()
+          },
+          "@message" => event_obj.getRenderedMessage() 
+        }
+        event_data["@fields"]["NDC"] = event_obj.getNDC() if event_obj.getNDC()
+        event_data["@fields"]["stack_trace"] = event_obj.getThrowableStrRep().join("\n") if event_obj.getThrowableInformation()
+
+        e = ::LogStash::Event.new event_data
+        puts "Event: #{e}"
         if e
           output_queue << e
         end
@@ -117,4 +126,4 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
       end # loop
     end
   end # def run
-end # class LogStash::Inputs::Tcp
+end # class LogStash::Inputs::Log4j
