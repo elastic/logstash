@@ -58,10 +58,6 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
       e = to_event(msg.body, @stomp_url)
       @output_queue << e if e
     end
-
-    while @client.connected?
-      # stay subscribed
-    end
   end
 
   public
