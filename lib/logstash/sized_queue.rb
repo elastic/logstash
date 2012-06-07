@@ -14,15 +14,11 @@ class LogStash::SizedQueue < SizedQueue
     @metric_queue_write = @logger.metrics.timer(self, "queue-write")
   end # def logger=
 
-  # Wrap SizedQueue#<< with a timer metric.
-  def <<(*args)
+  # Wrap SizedQueue#push with a timer metric.
+  def push(*args)
     @metric_queue_write.time do
       super(*args)
     end
-  end # def <<
-
-  # push should call <<
-  def push(*args)
-    self << *args
   end # def push
+  alias_method :<<, :push
 end
