@@ -20,4 +20,9 @@ class LogStash::SizedQueue < SizedQueue
       super(*args)
     end
   end # def <<
+
+  # push should call <<
+  def push(*args)
+    self << *args
+  end # def push
 end
