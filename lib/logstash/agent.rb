@@ -320,8 +320,21 @@ class LogStash::Agent
   private
   def start_input(input)
     @logger.debug("Starting input", :plugin => input)
+    t = 0
     # inputs should write directly to output queue if there are no filters.
     input_target = @filters.length > 0 ? @filter_queue : @output_queue
+    if input.threadable
+      @logger.debug("Threadable input", :plugin => input)
+      (input.threads-1).times do
+        #input_thread = input.class.new(input.raw_params.clone)
+        input_thread = input.clone
+        @logger.debug("Starting thread", :plugin => input, :thread => (t+=1))
+        @plugins[input_thread] = Thread.new(input_thread, input_target) do |*args|
+          run_input(*args)
+        end
+      end
+    end
+    @logger.debug("Starting thread", :plugin => input, :thread => (t+=1))
     @plugins[input] = Thread.new(input, input_target) do |*args|
       run_input(*args)
     end
