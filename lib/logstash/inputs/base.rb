@@ -54,14 +54,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
   config :add_field, :validate => :hash, :default => {}
 
   attr_accessor :params
-  attr_accessor :raw_params
   attr_accessor :threadable
 
   public
   def initialize(params)
     super
     @threadable = false
-    @raw_params = params.clone
     config_init(params)
     @tags ||= []
   end # def initialize
