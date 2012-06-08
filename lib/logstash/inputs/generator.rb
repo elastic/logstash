@@ -1,4 +1,4 @@
-require "logstash/inputs/base"
+require "logstash/inputs/threadable"
 require "logstash/namespace"
 require "socket" # for Socket.gethostname
 
@@ -7,7 +7,7 @@ require "socket" # for Socket.gethostname
 # The general intention of this is to test performance of plugins.
 #
 # An event is generated first
-class LogStash::Inputs::Generator < LogStash::Inputs::Base
+class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   config_name "generator"
   plugin_status "experimental"
 
