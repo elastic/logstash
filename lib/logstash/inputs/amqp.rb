@@ -1,4 +1,4 @@
-require "logstash/inputs/base"
+require "logstash/inputs/threadable"
 require "logstash/namespace"
 
 # Pull events from an AMQP exchange.
@@ -9,7 +9,7 @@ require "logstash/namespace"
 #
 # The default settings will create an entirely transient queue and listen for all messages by default.
 # If you need durability or any other advanced settings, please set the appropriate options
-class LogStash::Inputs::Amqp < LogStash::Inputs::Base
+class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
 
   config_name "amqp"
   plugin_status "beta"
