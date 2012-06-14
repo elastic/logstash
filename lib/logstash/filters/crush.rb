@@ -19,8 +19,8 @@ class LogStash::Filters::Crush < LogStash::Filters::Base
   # strip off the beginning and ending of the @message string
   #  removing everything beyond the left and right end strings
 
-  config :leftstop, :validate => :string, :default => "{"
-  config :rightstop, :validate => :string, :default => "}"
+  config :leftstop, :validate => :string, :default => ""
+  config :rightstop, :validate => :string, :default => ""
   
   public
   def register
@@ -31,7 +31,7 @@ class LogStash::Filters::Crush < LogStash::Filters::Base
   def filter(event)
     # process message to remove extraneous strings
     @leftend = event.message.index(@leftstop)
-    @rightend = event.message.rindex(@rightstop)
+    @rightend = event.message.rindex(@rightstop) + @rightstop.length
     event.message = event.message.slice(@leftend..@rightend) if @rightend >= @leftend
   end # def filter
 end # class LogStash::Filters::Crush
