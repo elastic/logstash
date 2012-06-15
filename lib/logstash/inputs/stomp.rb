@@ -4,6 +4,7 @@ require 'pp'
 
 class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   config_name "stomp"
+  plugin_status "beta"
 
   # The address of the STOMP server.
   config :host, :validate => :string, :default => "localhost", :required => true
@@ -57,10 +58,6 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
       e = to_event(msg.body, @stomp_url)
       @output_queue << e if e
     end
-
-    while @client.connected?
-      # stay subscribed
-    end
   end
 
   public
@@ -69,4 +66,3 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
     subscription_handler
   end # def run
 end # class LogStash::Inputs::Stomp
-

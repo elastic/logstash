@@ -4,6 +4,7 @@ require "logstash/namespace"
 class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
 
   config_name "mongodb"
+  plugin_status "beta"
 
   # your mongodb host
   config :host, :validate => :string, :required => true

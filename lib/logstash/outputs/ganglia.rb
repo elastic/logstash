@@ -5,6 +5,7 @@ require "logstash/namespace"
 # ganglia's gmond. This is heavily based on the graphite output.
 class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
   config_name "ganglia"
+  plugin_status "beta"
 
   # The address of the graphite server.
   config :host, :validate => :string, :default => "localhost"
@@ -43,7 +44,7 @@ class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
     return unless output?(event)
 
     # gmetric only takes integer values, so convert it to int.
-    case @type
+    case @metric_type
       when "string"
         localvalue = event.sprintf(@value)
       when "float"
@@ -56,7 +57,7 @@ class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
     Ganglia::GMetric.send(@host, @port, {
       :name => event.sprintf(@metric),
       :units => @units,
-      :type => @type,
+      :type => @metric_type,
       :value => localvalue,
       :tmax => @tmax,
       :dmax => @dmax

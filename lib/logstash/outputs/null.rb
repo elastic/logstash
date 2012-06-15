@@ -5,14 +5,15 @@ require "logstash/namespace"
 # performance.
 class LogStash::Outputs::Null < LogStash::Outputs::Base
   config_name "null"
+  plugin_status "stable"
 
   public
   def register
-    # Nothing to do
+    @metric_hits = @logger.metrics.meter(self, "events")
   end # def register
 
   public
   def receive(event)
-    # Do nothing
+    @metric_hits.mark
   end # def event
 end # class LogStash::Outputs::Null

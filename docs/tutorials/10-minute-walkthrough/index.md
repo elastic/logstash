@@ -71,12 +71,7 @@ Type stuff on stdin on the agent, then search for it in the web interface.
 
 Let's backfill some old apache logs.  First, let's use grok.
 
-Requirements:
-
-* libgrok [INSTALL notes here](https://github.com/jordansissel/grok/blob/master/INSTALL)
-
-Use the 'grok' logstash filter to parse logs. Once you have libgrok installed,
-keep reading below.
+Use the 'grok' logstash filter to parse logs. 
 
 ### Download
 
@@ -122,7 +117,7 @@ on some results, drill around in some logs.
 For further learning, try these:
 
 * [Watch a presentation on logstash](http://blip.tv/carolinacon/logstash-open-source-log-and-event-management-jordan-sissel-5123601)
-* [Getting started 'standalone' guide](http://logstash.net/docs/%VERSION%-started-simple)
-* [Getting started 'centralized' guide](http://logstash.net/docs/%VERSION%-started-centralized) - 
+* [Getting started 'standalone' guide](http://logstash.net/docs/%VERSION%/tutorials/getting-started-simple)
+* [Getting started 'centralized' guide](http://logstash.net/docs/%VERSION%/tutorials/getting-started-centralized) - 
   learn how to build out your logstash infrastructure and centralize your logs.
 * [Dive into the docs](http://logstash.net/docs/%VERSION%/)

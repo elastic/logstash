@@ -1,4 +1,4 @@
-require "logstash/inputs/base"
+require "logstash/inputs/threadable"
 require "logstash/namespace"
 
 # Pull events from an AMQP exchange.
@@ -9,9 +9,13 @@ require "logstash/namespace"
 #
 # The default settings will create an entirely transient queue and listen for all messages by default.
 # If you need durability or any other advanced settings, please set the appropriate options
-class LogStash::Inputs::Amqp < LogStash::Inputs::Base
+class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
 
   config_name "amqp"
+  plugin_status "beta"
+
+  # Your amqp broker's custom arguments. For mirrored queues in RabbitMQ: [ "x-ha-policy", "all" ]
+  config :arguments, :validate => :array, :default => []
 
   # Your amqp server address
   config :host, :validate => :string, :required => true
@@ -26,15 +30,19 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   config :password, :validate => :password, :default => "guest"
 
   # The name of the queue. 
-  config :name, :validate => :string, :default => ''
+  config :name, :validate => :string, :default => ""
 
-  # The name of the exchange to bind the queue.
+  # The name of the exchange to bind the queue. This is analogous to the 'amqp
+  # output' [config 'name'](../outputs/amqp)
   config :exchange, :validate => :string, :required => true
 
-  # The routing key to use
-  config :key, :validate => :string, :default => '#'
+  # The routing key to use. This is only valid for direct or fanout exchanges
+  #
+  # * Routing keys are ignored on topic exchanges.
+  # * Wildcards are not valid on direct exchanges.
+  config :key, :validate => :string, :default => "logstash"
 
-  # The vhost to use
+  # The vhost to use. If you don't know what this is, leave the default.
   config :vhost, :validate => :string, :default => "/"
 
   # Passive queue creation? Useful for checking queue existance without modifying server state
@@ -43,7 +51,10 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
   # Is this queue durable? (aka; Should it survive a broker restart?)
   config :durable, :validate => :boolean, :default => false
 
-  # Should the queue be auto-deleted?
+  # Should the queue be deleted on the broker when the last consumer
+  # disconnects? Set this option to 'false' if you want the queue to remain
+  # on the broker, queueing up messages until a consumer comes along to
+  # consume them.
   config :auto_delete, :validate => :boolean, :default => true
 
   # Is the queue exclusive? (aka: Will other clients connect to this named queue?)
@@ -90,13 +101,14 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
     @amqpsettings[:ssl] = @ssl if @ssl
     @amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
     @amqpurl = "amqp://"
-    amqp_credentials = ''
+    amqp_credentials = ""
     amqp_credentials << @user if @user
     amqp_credentials << ":#{@password}" if @password
     @amqpurl += amqp_credentials unless amqp_credentials.nil?
     @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@name}"
 
-
+    @metric_amqp_read = @logger.metrics.timer(self, "amqp-read")
+    @metric_queue_write = @logger.metrics.timer(self, "internal-queue-write")
   end # def register
 
   def run(queue)
@@ -107,15 +119,23 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Base
       @bunny.start
       @bunny.qos({:prefetch_count => @prefetch_count})
 
-      @queue = @bunny.queue(@name, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive})
+      @arguments_hash = Hash[*@arguments]
+
+      @queue = @bunny.queue(@name, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive, :arguments => @arguments_hash })
       @queue.bind(@exchange, :key => @key)
 
+      timer = @metric_amqp_read.time
       @queue.subscribe({:ack => @ack}) do |data|
+        timer.stop
         e = to_event(data[:payload], @amqpurl)
         if e
-          queue << e
+          @metric_queue_write.time do
+            queue << e
+          end
         end
+        timer = @metric_amqp_read.time
       end # @queue.subscribe
+
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
       @logger.error("AMQP connection error, will reconnect: #{e}")
       # Sleep for a bit before retrying.

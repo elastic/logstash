@@ -1,18 +1,13 @@
 require "sinatra/base"
 
 class LogStash::Web::Server < Sinatra::Base
-  # Mizuno can't serve static files from a jar
-  # https://github.com/matadon/mizuno/issues/9
-  #if __FILE__ =~ /^file:.+!.+$/
-    get '/js/*' do static_file end
-    get '/css/*' do static_file end
-    get '/media/*' do static_file end
-    get '/ws/*' do static_file end
-  #else
-    ## If here, we aren't running from a jar; safe to serve files
-    ## through the normal public handler.
-    #set :public, "#{File.dirname(__FILE__)}/public"
-  #end
+  get '/js/*' do static_file end
+  get '/css/*' do static_file end
+  get '/media/*' do static_file end
+  get '/ws/*' do static_file end
+  ## If here, we aren't running from a jar; safe to serve files
+  ## through the normal public handler.
+  #set :public, "#{File.dirname(__FILE__)}/public"
 
   def static_file
     # request.path_info is the full path of the request.

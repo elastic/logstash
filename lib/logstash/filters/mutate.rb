@@ -8,20 +8,56 @@ require "logstash/time"
 # TODO(sissel): Support regexp replacements like String#gsub ?
 class LogStash::Filters::Mutate < LogStash::Filters::Base
   config_name "mutate"
+  plugin_status "stable"
 
   # Rename one or more fields.
+  #
+  # Example:
+  #
+  #     filter {
+  #       mutate {
+  #         # Renames the 'HOSTORIP' field to 'client_ip'
+  #         rename => [ "HOSTORIP", "client_ip" ]
+  #       }
+  #     }
   config :rename, :validate => :hash
 
   # Remove one or more fields.
+  #
+  # Example:
+  #
+  #     filter {
+  #       mutate {
+  #         remove => [ "client" ]  # Removes the 'client' field
+  #       }
+  #     }
   config :remove, :validate => :array
 
   # Replace a field with a new value. The new value can include %{foo} strings
   # to help you build a new value from other parts of the event.
+  #
+  # Example:
+  # 
+  #     filter {
+  #       mutate {
+  #         replace => [ "@message", "%{source_host}: My new message" ]
+  #       }
+  #     }
   config :replace, :validate => :hash
 
   # Convert a field's value to a different type, like turning a string to an
   # integer. If the field value is an array, all members will be converted.
   # If the field is a hash, no action will be taken.
+  #
+  # Valid conversion targets are: integer, float, string
+  #
+  # Example:
+  #
+  #     filter {
+  #       mutate {
+  #         convert => [ "fieldname", "integer" ]
+  #       }
+  #     }
   config :convert, :validate => :hash
 
   public

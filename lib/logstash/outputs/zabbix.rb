@@ -50,7 +50,8 @@ require "logstash/outputs/base"
 class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
  
   config_name "zabbix"
- 
+  plugin_status "beta"
+
   config :host, :validate => :string, :default => "localhost"
   config :port, :validate => :number, :default => 10051
   config :zabbix_sender, :validate => :string, :default => "/usr/local/bin/zabbix_sender"
@@ -76,6 +77,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
                    :missed_event => event)
       return
     end
+    host = host.first if host.is_a?(Array)
  
     item = event.fields["zabbix_item"]
     if !item
@@ -83,6 +85,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
                    :missed_event => event)
       return
     end
+    item = item.first if item.is_a?(Array)
  
     zmsg = event.message
     zmsg = zmsg.gsub("\n", "\\n")
@@ -92,6 +95,8 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
  
     @logger.debug("Running zabbix command", :command => cmd)
     begin
+      # TODO(sissel): Update this to use IO.popen so we can capture the output and
+      # log it accordingly.
       system(cmd)
     rescue => e
       @logger.warn("Skipping zabbix output; error calling zabbix_sender",

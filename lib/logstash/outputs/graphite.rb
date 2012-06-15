@@ -10,6 +10,7 @@ require "socket"
 # I can capture the metric values from the logs and emit them to graphite.
 class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   config_name "graphite"
+  plugin_status "beta"
 
   # The address of the graphite server.
   config :host, :validate => :string, :default => "localhost"

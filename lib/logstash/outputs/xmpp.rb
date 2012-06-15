@@ -7,6 +7,7 @@ require "logstash/namespace"
 # use it for PubSub or general message passing for logstash to logstash.
 class LogStash::Outputs::Xmpp < LogStash::Outputs::Base
   config_name "xmpp"
+  plugin_status "beta"
 
   # The user or resource ID, like foo@example.com.
   config :user, :validate => :string, :required => :true

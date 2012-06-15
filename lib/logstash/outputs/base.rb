@@ -22,6 +22,10 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Optional.
   config :tags, :validate => :array, :default => []
 
+  # Only handle events with all of these fields.
+  # Optional.
+  config :fields, :validate => :array, :default => []
+
   public
   def initialize(params)
     super
@@ -60,6 +64,13 @@ class LogStash::Outputs::Base < LogStash::Plugin
     if !@tags.empty?
       if (event.tags & @tags).size != @tags.size
         @logger.debug(["Dropping event because tags don't match #{@tags.inspect}", event])
+        return false
+      end
+    end
+
+    if !@fields.empty?
+      if (event.fields.keys & @fields).size != @fields.size
+        @logger.debug(["Dropping event because type doesn't match #{@fields.inspect}", event])
         return false
       end
     end

@@ -8,7 +8,6 @@ $:.unshift "#{File.dirname(__FILE__)}/../test"
 require "logstash/namespace"
 require "logstash/loadlibs"
 require "logstash/logging"
-require "ruby-debug"
 
 class LogStash::Test
   public
@@ -74,7 +73,7 @@ class LogStash::Test
       check_lib("statsd", "statsd-ruby", :optional, "required for statsd output"),
 
       # logstash web
-      check_lib("mizuno", "mizuno", :required, "needed for logstash web"),
+      check_lib("ftw", "ftw", :required, "needed for logstash web"),
       check_lib("rack", "rack", :required, "needed for logstash web"),
       check_lib("sinatra", "sinatra", :required, "needed for logstash web"),
       check_lib("sass", "sass", :required, "needed for logstash web"),

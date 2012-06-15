@@ -1,0 +1,129 @@
+require "logstash/inputs/base"
+require "logstash/namespace"
+require "logstash/util/socket_peer"
+require "socket"
+require "timeout"
+require "java"
+require "jruby/serialization"
+
+# Read events over a TCP socket from Log4j SocketAppender.
+#
+# Can either accept connections from clients or connect to a server,
+# depending on `mode`. Sepending on mode, you need a matching SocketAppender or SocketHubAppender on the remote side
+class LogStash::Inputs::Log4j < LogStash::Inputs::Base
+
+  config_name "log4j"
+  plugin_status "experimental"
+
+  # When mode is `server`, the address to listen on.
+  # When mode is `client`, the address to connect to.
+  config :host, :validate => :string, :default => "0.0.0.0"
+
+  # When mode is `server`, the port to listen on.
+  # When mode is `client`, the port to connect to.
+  config :port, :validate => :number, :required => true
+
+  # Read timeout in seconds. If a particular tcp connection is
+  # idle for more than this timeout period, we will assume
+  # it is dead and close it.
+  # If you never want to timeout, use -1.
+  config :data_timeout, :validate => :number, :default => 5
+
+  # Mode to operate in. `server` listens for client connections,
+  # `client` connects to a server.
+  config :mode, :validate => ["server", "client"], :default => "server"
+
+  def initialize(*args)
+    super(*args)
+  end # def initialize
+
+  public
+  def register
+    if server?
+      @logger.info("Starting Log4j input listener", :address => "#{@host}:#{@port}")
+      @server_socket = TCPServer.new(@host, @port)
+    end
+    @event_meter = @logger.metrics.meter(self, "events")
+    @logger.info("Log4j input", :meter => @event_meter)
+  end # def register
+
+  private
+  def handle_socket(socket, output_queue, event_source)
+    begin
+      # JRubyObjectInputStream uses JRuby class path to find the class to de-serialize to
+      ois = JRubyObjectInputStream.new(java.io.BufferedInputStream.new(socket.to_inputstream))
+      loop do
+        # NOTE: event_raw is org.apache.log4j.spi.LoggingEvent
+        event_obj = ois.readObject()
+        event_data = {
+          "@type" => type,
+          "@source" => event_source,
+          "@source_host" => socket.peer,
+          "@source_path" => event_obj.getLoggerName(),
+          "@fields" => { "priority" => event_obj.getLevel().toString(), "logger_name" => event_obj.getLoggerName(), 
+                         "thread" => event_obj.getThreadName(), "class" => event_obj.getLocationInformation().getClassName(),
+                         "file" => event_obj.getLocationInformation().getFileName() + ":" + event_obj.getLocationInformation().getLineNumber(),
+                         "method" => event_obj.getLocationInformation().getMethodName()
+          },
+          "@message" => event_obj.getRenderedMessage() 
+        }
+        event_data["@fields"]["NDC"] = event_obj.getNDC() if event_obj.getNDC()
+        event_data["@fields"]["stack_trace"] = event_obj.getThrowableStrRep().join("\n") if event_obj.getThrowableInformation()
+
+        e = ::LogStash::Event.new event_data
+        puts "Event: #{e}"
+        if e
+          output_queue << e
+        end
+      end # loop do
+    rescue => e
+      @logger.debug("Closing connection", :client => socket.peer,
+                    :exception => e, :backtrace => e.backtrace)
+    rescue Timeout::Error
+      @logger.debug("Closing connection after read timeout",
+                    :client => socket.peer)
+    end # begin
+
+    begin
+      socket.close
+    rescue IOError
+      pass
+    end # begin
+  end
+
+  private
+  def server?
+    @mode == "server"
+  end # def server?
+
+  private
+  def readline(socket)
+    @event_meter.mark
+    line = socket.readline
+  end # def readline
+
+  public
+  def run(output_queue)
+    if server?
+      loop do
+        # Start a new thread for each connection.
+        Thread.start(@server_socket.accept) do |s|
+          # TODO(sissel): put this block in its own method.
+
+          # monkeypatch a 'peer' method onto the socket.
+          s.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
+          @logger.debug("Accepted connection", :client => s.peer,
+                        :server => "#{@host}:#{@port}")
+          handle_socket(s, output_queue, "tcp://#{@host}:#{@port}/client/#{s.peer}")
+        end # Thread.start
+      end # loop
+    else
+      loop do
+        client_socket = TCPSocket.new(@host, @port)
+        client_socket.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
+        @logger.debug("Opened connection", :client => "#{client_socket.peer}")
+        handle_socket(client_socket, output_queue, "tcp://#{client_socket.peer}/server")
+      end # loop
+    end
+  end # def run
+end # class LogStash::Inputs::Log4j

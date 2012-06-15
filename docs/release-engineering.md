@@ -30,11 +30,10 @@ right? ;)
 * Ensure CHANGELOG is up-to-date
 * git tag v$VERSION; git push origin master; git push --tags
 * Build binaries
-  * make gem
   * make jar
 * make docs
-  * move build/docs to ../logstash.github.com/docs/$VERSION
-  * Note: you will need to use c-ruby 1.9.2 for this.
+  * copy build/docs to ../logstash.github.com/docs/$VERSION
+  * Note: you will need to use C-ruby 1.9.2 for this.
   * You'll need 'bluecloth' and 'cabin' rubygems installed.
 * cd ../logstash.github.com
   * make clean update VERSION=$VERSION
@@ -42,7 +41,6 @@ right? ;)
   * git commit -m "version $VERSION docs" && git push origin master
 * Publish binaries
   * Stage binaries at `carrera.databits.net:/home/jls/s/files/logstash/`
-  * rake publish
 * Update #logstash IRC /topic
 * Send announcement email to logstash-users@, include relevant download URLs &
   changelog (see past emails for a template)

@@ -29,6 +29,10 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # If format is "json", an event sprintf string to build what
   # the display @message should be given (defaults to the raw JSON).
   # sprintf format strings look like %{fieldname} or %{@metadata}.
+  #
+  # If format is "json_event", ALL fields except for @type
+  # are expected to be present. Not receiving all fields
+  # will cause unexpected results.
   config :message_format, :validate => :string
 
   # Add any number of arbitrary tags to your event.
@@ -46,11 +50,16 @@ class LogStash::Inputs::Base < LogStash::Plugin
     #return true
   #end) # config :tag
 
+  # Add a field to an event
+  config :add_field, :validate => :hash, :default => {}
+
   attr_accessor :params
+  attr_accessor :threadable
 
   public
   def initialize(params)
     super
+    @threadable = false
     config_init(params)
     @tags ||= []
   end # def initialize
@@ -98,6 +107,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
     when "json_event"
       begin
         event = LogStash::Event.from_json(raw)
+        event.type ||= @type
       rescue => e
         ## TODO(sissel): Instead of dropping the event, should we treat it as
         ## plain text and try to do the best we can with it?
@@ -108,6 +118,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
       end
     else
       raise "unknown event format #{@format}, this should never happen"
+    end
+
+    @add_field.each do |field, value|
+       event[field] ||= []
+       event[field] = [event[field]] if !event[field].is_a?(Array)
+       event[field] << event.sprintf(value)
     end
 
     logger.debug(["Received new event", {:source => source, :event => event}])

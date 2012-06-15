@@ -3,6 +3,7 @@ require "logstash/filters"
 require "logstash/filterworker"
 require "logstash/inputs"
 require "logstash/logging"
+require "logstash/sized_queue"
 require "logstash/multiqueue"
 require "logstash/namespace"
 require "logstash/outputs"
@@ -283,24 +284,27 @@ class LogStash::Agent
     return inputs, filters, outputs
   end
 
-
-
   public
   def run(args, &block)
-    LogStash::Util::set_thread_name(self.class.name)
+    @logger.info("Register signal handlers")
     register_signal_handlers
 
+    @logger.info("Parse options ")
     remaining = parse_options(args)
     if remaining == false
       raise "Option parsing failed. See error log."
     end
 
+    @logger.info("Configure")
     configure
 
     # Load the config file
+    @logger.info("Read config")
     config = read_config
 
+    @logger.info("Start thread")
     @thread = Thread.new do
+      LogStash::Util::set_thread_name(self.class.name)
       run_with_config(config, &block)
     end
 
@@ -316,8 +320,22 @@ class LogStash::Agent
   private
   def start_input(input)
     @logger.debug("Starting input", :plugin => input)
+    t = 0
     # inputs should write directly to output queue if there are no filters.
     input_target = @filters.length > 0 ? @filter_queue : @output_queue
+    # check to see if input supports multiple threads
+    if input.threadable
+      @logger.debug("Threadable input", :plugin => input)
+      # start up extra threads if need be
+      (input.threads-1).times do
+        input_thread = input.clone
+        @logger.debug("Starting thread", :plugin => input, :thread => (t+=1))
+        @plugins[input_thread] = Thread.new(input_thread, input_target) do |*args|
+          run_input(*args)
+        end
+      end
+    end
+    @logger.debug("Starting thread", :plugin => input, :thread => (t+=1))
     @plugins[input] = Thread.new(input, input_target) do |*args|
       run_input(*args)
     end
@@ -326,7 +344,8 @@ class LogStash::Agent
   private
   def start_output(output)
     @logger.debug("Starting output", :plugin => output)
-    queue = SizedQueue.new(10)
+    queue = LogStash::SizedQueue.new(10)
+    queue.logger = @logger
     @output_queue.add_queue(queue)
     @output_plugin_queues[output] = queue
     @plugins[output] = Thread.new(output, queue) do |*args|
@@ -365,8 +384,10 @@ class LogStash::Agent
       end
 
       # NOTE(petef) we should use a SizedQueue here (w/config params for size)
-      @filter_queue = SizedQueue.new(10)
+      @filter_queue = LogStash::SizedQueue.new(10)
+      @filter_queue.logger = @logger
       @output_queue = LogStash::MultiQueue.new
+      @output_queue.logger = @logger
 
       @ready_queue = Queue.new
 
@@ -379,7 +400,10 @@ class LogStash::Agent
       if @filters.length > 0
         @filters.each do |filter|
           filter.logger = @logger
-          @plugin_setup_mutex.synchronize { filter.register }
+          @plugin_setup_mutex.synchronize do
+            filter.register
+            filter.prepare_metrics
+          end
         end
         @filterworkers = {}
         1.times do |n|
@@ -415,8 +439,19 @@ class LogStash::Agent
     # like tests, etc.
     yield if block_given?
 
+    Thread.new do
+      while true
+        @logger.info("metrics dump")
+        @logger.metrics.each do |identifier, metric|
+          @logger.info("metric #{identifier}", metric.to_hash)
+        end
+        sleep 5
+      end
+    end
+
     # TODO(sissel): Monitor what's going on? Sleep forever? what?
     while sleep 5
+      @logger.info("heartbeat")
     end
   end # def run_with_config
 

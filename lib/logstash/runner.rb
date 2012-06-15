@@ -3,12 +3,14 @@ $: << File.join(File.dirname(__FILE__), "..")
 $: << File.join(File.dirname(__FILE__), "..", "..", "test")
 require "logstash/namespace"
 require "logstash/program"
+require "logstash/util"
 
 class LogStash::Runner
   include LogStash::Program
 
   def main(args)
-    $: << File.join(File.dirname(__FILE__), "../")
+    LogStash::Util::set_thread_name(self.class.name)
+    $: << File.join(File.dirname(__FILE__), "..")
 
     if args.empty?
       $stderr.puts "No arguments given."
@@ -20,8 +22,8 @@ class LogStash::Runner
       #exit(1)
     #end
 
-    if RUBY_VERSION != "1.9.2"
-      $stderr.puts "Ruby 1.9.2 mode is required."
+    if RUBY_VERSION < "1.9.2"
+      $stderr.puts "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
       $stderr.puts "Options for fixing this: "
       $stderr.puts "  * If doing 'ruby bin/logstash ...' add --1.9 flag to 'ruby'"
       $stderr.puts "  * If doing 'java -jar ... ' add -Djruby.compat.version=RUBY1_9 to java flags"
@@ -32,12 +34,15 @@ class LogStash::Runner
 
     @runners = []
     while !args.empty?
-      #p :args => args
+      $stderr.puts(:args => args)
       args = run(args)
+      $stderr.puts(:remaining => args)
     end
 
+    $stderr.puts :doneargs
+
     status = []
-    @runners.each { |r| status << r.wait }
+    @runners.each { |r| @logger.info("Waiting on", :r => r.wait); status << r.wait }
 
     # Avoid running test/unit's at_exit crap
     if status.empty?
@@ -49,6 +54,7 @@ class LogStash::Runner
 
   def run(args)
     command = args.shift
+    p :run => command
     commands = {
       "-v" => lambda { emit_version(args) },
       "-V" => lambda { emit_version(args) },
@@ -66,9 +72,13 @@ class LogStash::Runner
         return agent.run(args)
       end,
       "web" => lambda do
+        p :web
         require "logstash/web/runner"
+        p :web2
         web = LogStash::Web::Runner.new
+        p :web3
         @runners << web
+        p :web4
         return web.run(args)
       end,
       "test" => lambda do
