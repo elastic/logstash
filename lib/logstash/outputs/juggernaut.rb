@@ -9,7 +9,7 @@ require "logstash/event"
 # (Juggernaut pulls messages from redis).  But it pushes messages
 # to a particular channel and formats the messages in the way 
 # juggernaut expects.
-class LogStash::Outputs::Redis < LogStash::Outputs::Base
+class LogStash::Outputs::Juggernaut < LogStash::Outputs::Base
 
   config_name "juggernaut"
   plugin_status "experimental"
