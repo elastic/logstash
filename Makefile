@@ -179,6 +179,7 @@ build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C build/monolith .
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C $(VENDOR_DIR) gems
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C $(VENDOR_DIR) specifications
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/web/public
+build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/certs
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/web/views
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
 build/logstash-$(VERSION)-monolithic.jar:
