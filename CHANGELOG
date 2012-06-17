@@ -1,11 +1,9 @@
 1.1.1 (???, 2012)
  ## Overview of this release:
-  * New input plugins: pipes
-  * New output plugins: juggernaut, metricscatcher, nagios_ncsa, pipes
+  * New input plugins: generator, heroku, pipe
+  * New output plugins: juggernaut, metricscatcher, nagios_ncsa, pipe
   * New filter plugins: zeromq, environment
   * Fixes for gelf output
-  * Fixes for elasticsearch_river output
-  * Fixes for ganglia output
 
  ## IMPORTANT CHANGES FOR UPGRADES FROM 1.1.0
   - zeromq input and output rewritten
@@ -17,6 +15,40 @@
       Previously, several plugins did not work as expected on MRI due to the
       usage of the JRuby-only Jodatime library. We now have a contributed fix
       for a slower parser on MRI/CRuby!
+
+  ## general
+  - misc: newer cabin gem for logging
+  - misc: initial support for reporting internal metrics (currently outputs
+    to INFO log; eventually will be an internal event type)
+
+  ## inputs
+  - feature: [LOGSTASH-410] - inputs can now be duplicated with the
+    'threads' parameter (where supported)
+  - bugfix: [LOGSTASH-490] - include cacert.pem in jar for twitter input
+
+  ## filters
+  - bugfix: [LOGSTASH-300] - bump grok pattern replace limit to 1000,
+    fixes "deep recursion pattern compilation" problems
+  - bugfix: [LOGSTASH-375] - fix bug in grep: don't drop when field is nil
+    and negate is true
+  - bugfix: [LOGSTASH-386] - fix some grok patterns for haproxy
+  - bugfix: [LOGSTASH-446] - fix grok %{QUOTEDSTRING} pattern, should fix
+    some grok filter hangs
+
+  ## outputs
+  - bugfix: [LOGSTASH-351] - fix file input on windows
+  - feature: [LOGSTASH-356] - make file output flush intervals configurable
+  - feature: [LOGSTASH-392] - add 'field' attribute to restrict which fields
+    get sent to an output
+  - feature: [LOGSTASH-374] - add gzip support to file output
+  - bugfix: elastic search river now respects exchange_type and queue_name
+  - bugfix: ganglia plugin now respects metric_type
+  - bugfix: GELF output facility fixes; now defaults to 'logstash-gelf'
+
+1.1.0.1 (January 30, 2012)
+  ## Overview of this release:
+    * date filter bugfix: [LOGSTASH-438] - update joda-time to properly
+      handle leap days
 
 1.1.0 (January 30, 2012)
   ## Overview of this release:
