@@ -7,6 +7,8 @@
 # http://rubyforge.org/projects/ruby-xdr/
 
 require 'logstash/inputs/ganglia/xdr'
+require 'stringio'
+
 class GmonPacket
 
   def initialize(packet)
