@@ -13,6 +13,7 @@ gem "json" # Ruby license
 #gem "awesome_print" # MIT License
 gem "jruby-openssl", :platforms => :jruby # For enabling SSL support, CPL/GPL 2.0
 gem "mail" #outputs/email, # License: MIT License
+gem "xml-simple" # unknown license: http://xml-simple.rubyforge.org/
 
 gem "minitest" # License: Ruby
 gem "rack" # License: MIT
