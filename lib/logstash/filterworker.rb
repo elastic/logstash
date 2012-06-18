@@ -38,8 +38,6 @@ class LogStash::FilterWorker < LogStash::Plugin
   end
 
   def filter(original_event)
-    # TODO(sissel): Handle exceptions? Retry? Drop it?
-
     # Make an 'events' array that filters can push onto if they
     # need to generate additional events based on the current event.
     # The 'split' filter does this, for example.
@@ -54,8 +52,16 @@ class LogStash::FilterWorker < LogStash::Plugin
         # this is the best approach. The goal is to allow filters to modify
         # the current event, but if necessary, create new events based on
         # this event.
-        filter.execute(event) do |newevent|
-          events << newevent
+        begin
+          update_watchdog(:event => event, :filter => filter.class)
+          filter.execute(event) do |newevent|
+            events << newevent
+          end
+        rescue
+          @logger.warn("Exception during filter", :event => event,
+                       :exception => $!, :filter => filter.class)
+        ensure
+          clear_watchdog
         end
         if event.cancelled?
           @logger.debug("Event cancelled", :event => event,
