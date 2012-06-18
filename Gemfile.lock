@@ -10,7 +10,6 @@ GEM
     backports (2.3.0)
     beefcake (0.3.7)
     bouncy-castle-java (1.5.0146.1)
-    bson (1.6.4)
     bson (1.6.4-java)
     bunny (0.7.9)
     cabin (0.4.4)
@@ -40,6 +39,7 @@ GEM
       rubyzip
     heroku-api (0.2.4)
       excon (~> 0.14.0)
+    http_parser.rb (0.5.3)
     http_parser.rb (0.5.3-java)
     httparty (0.8.3)
       multi_json (~> 1.0)
@@ -51,6 +51,7 @@ GEM
     jruby-openssl (0.7.7)
       bouncy-castle-java (>= 1.5.0146.1)
     jruby-win32ole (0.8.5)
+    json (1.6.5)
     json (1.6.5-java)
     launchy (2.1.0)
       addressable (~> 2.2.6)
@@ -73,7 +74,6 @@ GEM
     multi_json (1.3.6)
     multi_xml (0.5.1)
     netrc (0.7.4)
-    nokogiri (1.5.3)
     nokogiri (1.5.3-java)
     onstomp (1.0.6)
     polyglot (0.3.3)
@@ -106,6 +106,7 @@ GEM
       polyglot (>= 0.3.1)
     trollop (1.16.2)
     uuidtools (2.1.2)
+    xml-simple (1.1.1)
     xmpp4r (0.5)
 
 PLATFORMS
@@ -142,4 +143,5 @@ DEPENDENCIES
   sinatra
   statsd-ruby (= 0.3.0)
   uuidtools
+  xml-simple
   xmpp4r (= 0.5)
