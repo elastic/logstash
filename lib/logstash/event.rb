@@ -187,7 +187,7 @@ class LogStash::Event
   #   "type is foo and source is bar"
   #
   # If a %{name} value is an array, then we will join by ','
-  # If a %{name} value does not exist, then no substitution occurs.
+  # If a %{name} value does not exist, then the token is removed.
   #
   # TODO(sissel): It is not clear what the value of a field that 
   # is an array (or hash?) should be. Join by comma? Something else?
@@ -220,9 +220,15 @@ class LogStash::Event
         # Use an event field.
         value = self[key]
         if value.nil?
-          tok # leave the %{foo} if this field does not exist in this event.
+          # check within the fields array
+          subvalue = self["@fields"][key]
+          if subvalue.nil?
+            nil # return nil to allow failovers
+          else
+            subvalue # use the value in the fields array
+          end
         elsif value.is_a?(Array)
-          value.join(",") # Join by ',' if value is an rray
+          value.join(",") # Join by ',' if value is an array
         else
           value # otherwise return the value
         end

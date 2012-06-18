@@ -33,11 +33,11 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # "debug", "info", "warn", "error", "fatal", "unknown" (case insensitive).
   # Single-character versions of these are also valid, "d", "i", "w", "e", "f",
   # "u"
-  config :level, :validate => :array, :default => [ "%{severity}", "INFO" ]
+  config :level, :validate => :array, :default => [ "%{severity}", "%{level}", "INFO" ]
 
   # The GELF facility. Dynamic values like %{foo} are permitted here; this
   # is useful if you need to use a value from the event as the facility name.
-  config :facility, :validate => :string, :default => "logstash-gelf"
+  config :facility, :validate => :string, :default => [ "%{facility}", "logstash-gelf" ]
 
   # Ship metadata within event object?
   config :ship_metadata, :validate => :boolean, :default => true
@@ -92,6 +92,22 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     m["host"] = event.sprintf(@sender)
     m["file"] = event["@source_path"]
 
+    # set facility using optional failover array
+    if @facility.is_a?(Array)
+      @facility.each do |value|
+        parsed_value = event.sprintf(value)
+        if !parsed_value.empty?
+          m["facility"] = parsed_value
+          break
+        end
+      end
+    else
+      m["facility"] = event.sprintf(@facility)
+    end
+
+    # graylog2 chokes on the old facility field hanging around
+    event["@fields"].delete("facility")
+    
     if @ship_metadata
         event.fields.each do |name, value|
           next if value == nil
@@ -115,15 +131,12 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
       end
     end
 
-    # set facility as defined
-    m["facility"] = event.sprintf(@facility)
-
     # Probe severity array levels
     level = nil
     if @level.is_a?(Array)
       @level.each do |value|
         parsed_value = event.sprintf(value)
-        if parsed_value
+        if !parsed_value.empty?
           level = parsed_value
           break
         end
