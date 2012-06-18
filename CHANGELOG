@@ -36,6 +36,8 @@
   - bugfix: [LOGSTASH-446] - fix grok %{QUOTEDSTRING} pattern, should fix
     some grok filter hangs
   - bugfix: some enhancements to grok pattern %{COMBINEDAPACHELOG}
+  - bugfix: grok: %{URIPATH} and %{URIPARAM} enhancements
+  - feature: grok: add %{UUID} pattern
 
   ## outputs
   - bugfix: [LOGSTASH-351] - fix file input on windows
