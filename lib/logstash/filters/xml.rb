@@ -26,16 +26,16 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
   #
   # xpath => [ "xpath-syntax", "destination-field" ]
   #
-  # Values returned by XPath parsring from xpath-synatx will be put in the 
+  # Values returned by XPath parsring from xpath-synatx will be put in the
   # destination field. Multiple values returned will be pushed onto the
   # destination field as an array. As such, multiple matches across
   # multiple source fields will produce duplicate entries in the field
   #
   # More on xpath: http://www.w3schools.com/xpath/
-  # 
+  #
   # The xpath functions are particularly powerful:
   # http://www.w3schools.com/xpath/xpath_functions.asp
-  # 
+  #
   config :xpath, :validate => :hash, :default => {}
 
   # By default the filter will store the whole parsed xml in the destination
@@ -47,7 +47,7 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
     @xml = {}
 
     @config.each do |field, dest|
-      next if ( RESERVED + ["xpath","store_xml"] ).member?(field)
+      next if (RESERVED + ["xpath", "store_xml"]).member?(field)
 
       @xml[field] = dest
     end
@@ -83,13 +83,12 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
             doc = Document.new(raw)
           rescue => e
             event.tags << "_xmlparsefailure"
-            @logger.warn("Trouble parsing xml with REXML::Document", :key => key, :raw => raw,
-                          :exception => e, :backtrace => e.backtrace)
+            @logger.warn("Trouble parsing xml", :key => key, :raw => raw,
+                         :exception => e, :backtrace => e.backtrace)
             next
           end
 
           @xpath.each do |xpath_src, xpath_dest|
-
             XPath.each(doc, xpath_src).each do |value|
               # some XPath functions return empty arrays as string
               if value.is_a?(Array)
@@ -101,9 +100,9 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
                 event[xpath_dest] ||= []
                 event[xpath_dest] << value.to_s
               end
-            end
-          end
-        end
+            end # XPath.each
+          end # @xpath.each
+        end # if @xpath
 
         if @store_xml
           begin
@@ -115,11 +114,10 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
                           :exception => e, :backtrace => e.backtrace)
             next
           end
-        end
+        end # if @store_xml
 
         filter_matched(event) if matched
-
-      end
+      end # @xml.each
     end
 
     @logger.debug("Event after xml filter", :event => event)
