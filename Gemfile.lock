@@ -14,6 +14,7 @@ GEM
     bunny (0.7.9)
     cabin (0.4.4)
       json
+    columnize (0.3.4)
     excon (0.14.0)
     ffi (1.0.11)
     ffi (1.0.11-java)

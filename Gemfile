@@ -33,6 +33,7 @@ gem "xmpp4r", "0.5" # outputs/xmpp, # License: As-Is
 gem "gelfd", "0.2.0" #inputs/gelf, # License: Apache 2.0
 gem "jruby-win32ole", :platforms => :jruby # inputs/eventlog, # License: JRuby
 
+gem "ffi", "1.0.11"
 gem "ffi-rzmq", "0.9.0"
 gem "ffi"
 

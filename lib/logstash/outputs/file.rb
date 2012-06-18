@@ -1,5 +1,6 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
+require "logstash/util/signals"
 require "zlib"
 
 # File output.
@@ -41,6 +42,27 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   def register
     require "fileutils" # For mkdir_p
     @files = {}
+
+    # Hook SIGHUP (1) to this instance
+    LogStash::Util::Signals::LibC.signal(1) do |signal|
+        if signal == 1
+            path_list = []
+            @files.each do |file_path, file_desc| 
+                file_desc.flush
+                file_desc.close
+                path_list << file_path
+            end
+            @files.clear
+
+            # now reopen everything
+            path_list.each do |fpath|
+            fd = open(fpath)
+            # Have to explicitly flush incase we rotate right away
+            fd.flush
+            end
+        end
+    end
+
     now = Time.now
     @last_flush_cycle = now
     @last_stale_cleanup_cycle = now
@@ -49,6 +71,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     @metric_flushes = @logger.metrics.timer(self, "flushes")
     @metric_write_delay = @logger.metrics.timer(self, "write-delay")
     @metric_write_bytes = @logger.metrics.histogram(self, "write-bytes")
+
   end # def register
 
   public
@@ -58,7 +81,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     path = event.sprintf(@path)
     fd = open(path)
 
-    # TODO(sissel): Check if we should rotate the file.
+    # TODO(sissel): Check if we should close files not recently used.
 
     if @message_format
       output = event.sprintf(@message_format) + "\n"
@@ -175,6 +198,9 @@ class IOWriter
     else
       super
     end
+
+    @files[path].flush
+
   end
   attr_accessor :active
 end
