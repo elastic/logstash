@@ -34,6 +34,7 @@
   - bugfix: [LOGSTASH-386] - fix some grok patterns for haproxy
   - bugfix: [LOGSTASH-446] - fix grok %{QUOTEDSTRING} pattern, should fix
     some grok filter hangs
+  - bugfix: some enhancements to grok pattern %{COMBINEDAPACHELOG}
 
   ## outputs
   - bugfix: [LOGSTASH-351] - fix file input on windows
