@@ -53,13 +53,14 @@ class LogStash::FilterWorker < LogStash::Plugin
         # the current event, but if necessary, create new events based on
         # this event.
         begin
-          update_watchdog(:event => event, :filter => filter.class)
+          update_watchdog(:event => event, :filter => filter)
           filter.execute(event) do |newevent|
             events << newevent
           end
-        rescue
+        rescue => e
           @logger.warn("Exception during filter", :event => event,
-                       :exception => $!, :filter => filter.class)
+                       :exception => $!, :backtrace => e.backtrace,
+                       :filter => filter)
         ensure
           clear_watchdog
         end
