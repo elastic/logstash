@@ -398,6 +398,7 @@ class LogStash::Agent
       end # @inputs.each
 
       # Create N filter-worker threads
+      @filterworkers = {}
       if @filters.length > 0
         @filters.each do |filter|
           filter.logger = @logger
@@ -406,7 +407,6 @@ class LogStash::Agent
             filter.prepare_metrics
           end
         end
-        @filterworkers = {}
         1.times do |n|
           # TODO(sissel): facter this out into a 'filterworker' that  accepts
           # 'shutdown'
