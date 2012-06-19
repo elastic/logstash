@@ -91,4 +91,16 @@ class LogStash::Plugin
   def to_s
     return "#{self.class.name}: #{@params}"
   end
+
+  protected
+  def update_watchdog(state)
+    Thread.current[:watchdog] = Time.now
+    Thread.current[:watchdog_state] = state
+  end
+
+  protected
+  def clear_watchdog
+    Thread.current[:watchdog] = nil
+    Thread.current[:watchdog_state] = nil
+  end
 end # class LogStash::Plugin
