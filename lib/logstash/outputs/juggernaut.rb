@@ -3,13 +3,13 @@ require "logstash/namespace"
 require "logstash/event"
 
 # Push messages to the juggernaut websockets server
-# https://github.com/maccman/juggernaut  Wraps 
+# https://github.com/maccman/juggernaut  Wraps
 # Websockets and supports other methods (including xhr longpolling)
-# This is basiccaly, just an extension of the redis output 
+# This is basiccaly, just an extension of the redis output
 # (Juggernaut pulls messages from redis).  But it pushes messages
-# to a particular channel and formats the messages in the way 
+# to a particular channel and formats the messages in the way
 # juggernaut expects.
-class LogStash::Outputs::Redis < LogStash::Outputs::Base
+class LogStash::Outputs::Juggernaut < LogStash::Outputs::Base
 
   config_name "juggernaut"
   plugin_status "experimental"
@@ -40,7 +40,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   def register
     require 'redis'
 
-    if not @channels 
+    if not @channels
       raise RuntimeError.new(
         "Must define the channels on which to publish the messages"
       )
@@ -74,15 +74,15 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     begin
       @redis ||= connect
       if @message_format
-        formatted = event.sprintf(@message_format) 
+        formatted = event.sprintf(@message_format)
       else
         formatted = event.to_json
       end
-      juggernaut_message = { 
-        "channels" => @channels.collect{ |x| event.sprintf(x) }, 
-        "data" => event.message 
+      juggernaut_message = {
+        "channels" => @channels.collect{ |x| event.sprintf(x) },
+        "data" => event.message
       }
-      
+
       @redis.publish 'juggernaut', juggernaut_message.to_json
     rescue => e
       @logger.warn("Failed to send event to redis", :event => event,
