@@ -21,6 +21,8 @@
   - misc: newer cabin gem for logging
   - misc: initial support for reporting internal metrics (currently outputs
     to INFO log; eventually will be an internal event type)
+  - misc: added a "thread watchdog" to detect hanging filter workers, and
+    crash logstash w/an informational message
 
   ## inputs
   - feature: [LOGSTASH-410] - inputs can now be duplicated with the
