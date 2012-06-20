@@ -16,6 +16,9 @@
       Previously, several plugins did not work as expected on MRI due to the
       usage of the JRuby-only Jodatime library. We now have a contributed fix
       for a slower parser on MRI/CRuby!
+  - elasticsearch version is now 0.19.4
+      For best results, we recommend keeping the logstash elasticsearch
+      version and your elasticsearch cluster version in sync.
 
   ## general
   - misc: newer cabin gem for logging
