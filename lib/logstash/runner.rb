@@ -34,12 +34,8 @@ class LogStash::Runner
 
     @runners = []
     while !args.empty?
-      $stderr.puts(:args => args)
       args = run(args)
-      $stderr.puts(:remaining => args)
     end
-
-    $stderr.puts :doneargs
 
     status = []
     @runners.each { |r| @logger.info("Waiting on", :r => r.wait); status << r.wait }
@@ -90,6 +86,10 @@ class LogStash::Runner
       "irb" => lambda do
         require "irb"
         return IRB.start(__FILE__)
+      end,
+      "pry" => lambda do
+        require "pry"
+        return binding.pry
       end
     } # commands
 
