@@ -18,7 +18,8 @@ class LogStash::ThreadWatchdog
     while sleep(@watchdog_timeout / 2)
       cutoff = Time.now - @watchdog_timeout
       @threads.each do |t|
-        if t[:watchdog] and t[:watchdog] <= cutoff
+        watchdog = t[:watchdog]
+        if watchdog and watchdog <= cutoff
           @logger.fatal("thread watchdog timeout",
                         :thread => t,
                         :backtrace => t.backtrace,
