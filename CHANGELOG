@@ -21,6 +21,8 @@
       version and your elasticsearch cluster version in sync.
 
   ## general
+  - feature: logstash sub-command "irb" for interactive debugging console,
+    useful to debug jruby when running with a monolithic jar
   - misc: newer cabin gem for logging
   - misc: initial support for reporting internal metrics (currently outputs
     to INFO log; eventually will be an internal event type)

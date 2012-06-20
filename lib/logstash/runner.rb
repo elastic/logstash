@@ -86,6 +86,10 @@ class LogStash::Runner
         test = LogStash::Test.new
         @runners << test
         return test.run(args)
+      end,
+      "irb" => lambda do
+        require "irb"
+        return IRB.start(__FILE__)
       end
     } # commands
 
