@@ -6,7 +6,7 @@ NUMBER (?:%{BASE10NUM})
 BASE16NUM (?<![0-9A-Fa-f])(?:[+-]?(?:0x)?(?:[0-9A-Fa-f]+))
 BASE16FLOAT \b(?<![0-9A-Fa-f.])(?:[+-]?(?:0x)?(?:(?:[0-9A-Fa-f]+(?:\.[0-9A-Fa-f]*)?)|(?:\.[0-9A-Fa-f]+)))\b
 
-POSINT \b(?:[0-9]+)\b
+POSINT \b(?:[1-9][0-9]*)\b
 WORD \b\w+\b
 NOTSPACE \S+
 SPACE \s*
