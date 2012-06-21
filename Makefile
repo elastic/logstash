@@ -3,7 +3,7 @@
 #   cpio
 #   wget
 #
-JRUBY_VERSION=1.6.7
+JRUBY_VERSION=1.6.7.2
 ELASTICSEARCH_VERSION=0.19.4
 JODA_VERSION=2.1
 VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
