@@ -38,7 +38,10 @@ class LogStash::Runner
     end
 
     status = []
-    @runners.each { |r| @logger.info("Waiting on", :r => r.wait); status << r.wait }
+    @runners.each do |r|
+      $stderr.puts "Waiting on #{r.wait.inspect}"
+      status << r.wait
+    end
 
     # Avoid running test/unit's at_exit crap
     if status.empty?
