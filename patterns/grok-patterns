@@ -6,7 +6,8 @@ NUMBER (?:%{BASE10NUM})
 BASE16NUM (?<![0-9A-Fa-f])(?:[+-]?(?:0x)?(?:[0-9A-Fa-f]+))
 BASE16FLOAT \b(?<![0-9A-Fa-f.])(?:[+-]?(?:0x)?(?:(?:[0-9A-Fa-f]+(?:\.[0-9A-Fa-f]*)?)|(?:\.[0-9A-Fa-f]+)))\b
 
-POSINT \b(?:[0-9]+)\b
+POSINT \b(?:[1-9][0-9]*)\b
+NONNEGINT \b(?:[0-9]+)\b
 WORD \b\w+\b
 NOTSPACE \S+
 SPACE \s*
@@ -31,7 +32,7 @@ HOSTPORT (?:%{IPORHOST=~/\./}:%{POSINT})
 PATH (?:%{UNIXPATH}|%{WINPATH})
 UNIXPATH (?:/(?:[\w_%!$@:.,-]+|\\.)*)+
 #UNIXPATH (?<![\w\/])(?:/[^\/\s?*]*)+
-LINUXTTY (?:/dev/pts/%{POSINT})
+LINUXTTY (?:/dev/pts/%{NONNEGINT})
 BSDTTY (?:/dev/tty[pq][a-z0-9])
 TTY (?:%{BSDTTY}|%{LINUXTTY})
 WINPATH (?:[A-Za-z]+:|\\)(?:\\[^\\?*]*)+
