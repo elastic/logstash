@@ -3,7 +3,7 @@
   * New input plugins: generator, heroku, pipe, ganglia
   * New output plugins: juggernaut, metricscatcher, nagios_ncsa, pipe,
                         opentsdb
-  * New filter plugins: zeromq, environment, xml, csv
+  * New filter plugins: zeromq, environment, xml, csv, syslog_pri
   * Fixes for gelf output
 
  ## IMPORTANT CHANGES FOR UPGRADES FROM 1.1.0
@@ -19,6 +19,12 @@
   - elasticsearch version is now 0.19.4
       This means your elasticsearch cluster must be running 0.19.x for
       compatibility reasons.
+  - grok pattern %{POSINT} used to match '0' -- now it does not. If you want
+    to match non-negative integers, there is now a %{NONNEGINT} pattern.
+  - bug in file input fixed that led to an extra leading slash in @source_path.
+    Previously, file input would have @source = 'file://host//var/log/foo' and
+    @source_path = '//var/log/foo'; now @source = 'file://host/var/log/foo'
+    and @source_path = '/var/log/foo'. [LOGSTASH-501]
 
   ## general
   - NOTE: gemspec removed; deploying logstash as a gem hasn't been supported
