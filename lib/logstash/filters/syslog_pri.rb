@@ -2,7 +2,8 @@ require "logstash/filters/base"
 require "logstash/namespace"
 
 # Filter plugin for logstash to parse the PRI field from the front
-# of a Syslog (RFC3164) message.
+# of a Syslog (RFC3164) message.  If no priority is set, it will
+# default to 13 (per RFC).
 #
 # This filter is based on the original syslog.rb code shipped
 # with logstash.
@@ -74,9 +75,16 @@ class LogStash::Filters::Syslog_pri < LogStash::Filters::Base
   def parse_pri(event)
     # Per RFC3164, priority = (facility * 8) + severity
     # = (facility << 3) & (severity)
-    priority = event.fields[@syslog_pri_field_name].first.to_i rescue 13
+    if event.fields[@syslog_pri_field_name]
+      if event.fields[@syslog_pri_field_name].is_a?(Array)
+        priority = event.fields[@syslog_pri_field_name].first.to_i
+      else
+        priority = event.fields[@syslog_pri_field_name].to_i
+      end
+    else
+      priority = 13  # default
+    end
     severity = priority & 7 # 7 is 111 (3 bits)
-    $stderr.puts "priority=#{priority} severity=#{severity}"
     facility = priority >> 3
     event.fields["syslog_severity_code"] = severity
     event.fields["syslog_facility_code"] = facility
