@@ -129,11 +129,6 @@ vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
 	@echo "=> Installing gems to $@..."
 	$(QUIET)GEM_HOME=$(GEM_HOME) bash $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
 
-gem: logstash-$(VERSION).gem
-
-logstash-$(VERSION).gem: compile
-	$(QUIET)$(WITH_JRUBY) gem build logstash.gemspec
-
 build:
 	-$(QUIET)mkdir -p $@
 
@@ -234,9 +229,6 @@ build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index
 	$(QUIET)ruby $< build/docs > $@
 	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
-
-publish: | gem
-	$(QUIET)$(WITH_JRUBY) gem push logstash-$(VERSION).gem
 
 rpm: build/logstash-$(VERSION)-monolithic.jar
 	rm -rf build/root
