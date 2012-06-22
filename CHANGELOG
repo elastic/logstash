@@ -17,8 +17,8 @@
       usage of the JRuby-only Jodatime library. We now have a contributed fix
       for a slower parser on MRI/CRuby!
   - elasticsearch version is now 0.19.4
-      For best results, we recommend keeping the logstash elasticsearch
-      version and your elasticsearch cluster version in sync.
+      This means your elasticsearch cluster must be running 0.19.x for
+      compatibility reasons.
 
   ## general
   - feature: logstash sub-commands "irb" and "pry" for an interactive debug
