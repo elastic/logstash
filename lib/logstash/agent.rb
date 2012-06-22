@@ -457,9 +457,12 @@ class LogStash::Agent
       end
     end
 
-    # TODO(sissel): Monitor what's going on? Sleep forever? what?
-    while sleep 5
-      @logger.info("heartbeat")
+    while sleep(2)
+      if @plugins.values.count { |p| p.alive? } == 0
+        @logger.warn("no plugins running, shutting down")
+        shutdown
+      end
+      @logger.debug("heartbeat")
     end
   end # def run_with_config
 
@@ -673,6 +676,7 @@ class LogStash::Agent
       begin
         input.run(queue)
         done = true
+        input.finished
       rescue => e
         @logger.warn("Input thread exception", :plugin => input,
                      :exception => e, :backtrace => e.backtrace)
@@ -715,6 +719,7 @@ class LogStash::Agent
       while event = queue.pop do
         @logger.debug("Sending event", :target => output)
         output.handle(event)
+        break if output.finished?
       end
     rescue Exception => e
       @logger.warn("Output thread exception", :plugin => output,
@@ -738,17 +743,16 @@ class LogStash::Agent
       # If none are running, start the shutdown sequence and
       # send the 'shutdown' event down the pipeline.
       remaining = @plugins.count do |plugin, thread|
-        plugin.is_a?(pluginclass) and plugin.running?
+        plugin.is_a?(pluginclass) and plugin.running? and thread.alive?
       end
       @logger.debug("Plugins still running", :type => pluginclass,
                     :remaining => remaining)
 
       if remaining == 0
-        @logger.debug("All #{pluginclass} finished. Shutting down.")
+        @logger.warn("All #{pluginclass} finished. Shutting down.")
 
-        # Send 'shutdown' to the filters.
-        queue << LogStash::SHUTDOWN if !queue.nil?
-        shutdown
+        # Send 'shutdown' event to other running plugins
+        queue << LogStash::SHUTDOWN unless queue.nil?
       end # if remaining == 0
     end # @plugins_mutex.synchronize
   end # def shutdown_if_none_running
