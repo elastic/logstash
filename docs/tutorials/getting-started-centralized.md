@@ -33,7 +33,7 @@ On the server collecting and indexing your logs:
 Requirements: java
 
 You'll most likely want the version of ElasticSearch specified by the
-[outputs/elasticsearch](outputs/elasticsearch) docs. Modify this in your shell
+[../outputs/elasticsearch](outputs/elasticsearch) docs. Modify this in your shell
 for easy downloading of ElasticSearch:
 
     ES_PACKAGE=elasticsearch-%ELASTICSEARCH_VERSION%.zip
