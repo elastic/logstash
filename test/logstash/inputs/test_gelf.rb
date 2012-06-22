@@ -53,4 +53,4 @@ describe LogStash::Inputs::Gelf do
     assert_equal("Hello world", events.last.message)
     assert_equal("bar", events.last.fields["foo"])
   end # test gelf input defaults
-end # testing for LogStash::Outputs::ElasticSearch
+end # testing for LogStash::Inputs::Gelf
