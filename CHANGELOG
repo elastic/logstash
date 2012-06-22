@@ -21,6 +21,8 @@
       compatibility reasons.
 
   ## general
+  - NOTE: gemspec removed; deploying logstash as a gem hasn't been supported
+    for a while.
   - feature: logstash sub-commands "irb" and "pry" for an interactive debug
     console, useful to debug jruby when running from the monolithic jar
   - misc: newer cabin gem for logging
