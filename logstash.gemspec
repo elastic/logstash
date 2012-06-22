@@ -37,7 +37,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "jruby-openssl" # For enabling SSL support, CPL/GPL 2.0
   spec.add_dependency "json" # Ruby license
   spec.add_dependency "minitest" # License: Ruby
-  spec.add_dependency "mizuno" # License: Apache 2.0
   spec.add_dependency "mongo" # outputs/mongodb, License: Apache 2.0
   spec.add_dependency "rack" # License: MIT
   spec.add_dependency "redis" # outputs/redis, License: MIT-style
