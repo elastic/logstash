@@ -19,7 +19,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # Multiple patterns is fine.
   config :pattern, :validate => :array
 
-  # Specify a path to a directory with grok pattern files in it
   # A hash of matches of field => value
   config :match, :validate => :hash, :default => {}
 
