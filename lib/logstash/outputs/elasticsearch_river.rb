@@ -76,6 +76,12 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
   # AMQP persistence setting
   config :persistent, :validate => :boolean, :default => true
 
+  # AMQP Enable or disable SSL
+  config :ssl, :validate => :boolean, :default => false
+
+  # AMQP Validate SSL certificate
+  config :verify_ssl, :validate => :boolean, :default => false
+
   public
   def register
     # TODO(sissel): find a better way of declaring where the elasticsearch
@@ -105,6 +111,8 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       "durable" => [@durable.to_s],
       "persistent" => [@persistent.to_s],
       "debug" => [@debug.to_s],
+      "ssl" => [@ssl.to_s],
+      "verify_ssl" => [@verify_ssl.to_s],
     }.reject {|k,v| v.first.nil?}
     @mq = LogStash::Outputs::Amqp.new(params)
     @mq.register
