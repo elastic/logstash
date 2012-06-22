@@ -29,8 +29,10 @@
   - misc: added a "thread watchdog" to detect hanging filter workers, and
     crash logstash w/an informational message
   - misc: jar is built with jruby 1.6.7.2
+  - misc: better shutdown behavior when there are no inputs/plugins running
 
   ## inputs
+  - bugfix: stdin: exit plugin gracefully on EOF
   - feature: [LOGSTASH-410] - inputs can now be duplicated with the
     'threads' parameter (where supported)
   - bugfix: [LOGSTASH-490] - include cacert.pem in jar for twitter input
