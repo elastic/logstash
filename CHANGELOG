@@ -20,7 +20,7 @@
       This means your elasticsearch cluster must be running 0.19.x for
       compatibility reasons.
   - grok pattern %{POSINT} used to match '0' -- now it does not. If you want
-    to match non-negative integers, here is now a %{NONNEGINT} pattern.
+    to match non-negative integers, there is now a %{NONNEGINT} pattern.
 
   ## general
   - NOTE: gemspec removed; deploying logstash as a gem hasn't been supported
