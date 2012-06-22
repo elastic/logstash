@@ -25,7 +25,8 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
   # through.
   config :negate, :validate => :boolean, :default => false
 
-  # A hash of matches of field => regexp
+  # A hash of matches of field => regexp.  If multiple matches are specified,
+  # all must match for the grep to be considered successful.
   # Normal regular expressions are supported here.
   config :match, :validate => :hash, :default => {}
 
