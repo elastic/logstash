@@ -1,7 +1,9 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
+
 require "socket" # for Socket.gethostname
-require "uri"
+
+require "addressable/uri"
 
 # Stream events from files.
 #
@@ -68,7 +70,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     hostname = Socket.gethostname
 
     tail.subscribe do |path, line|
-      source = URI::Generic.new("file", nil, hostname, nil, nil, path, nil, nil, nil).to_s
+      source = Addressable::URI.new(:scheme => "file", :host => hostname, :path => path).to_s
       @logger.debug("Received line", :path => path, :line => line)
       e = to_event(line, source)
       if e
