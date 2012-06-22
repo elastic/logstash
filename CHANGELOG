@@ -30,6 +30,8 @@
     crash logstash w/an informational message
   - misc: jar is built with jruby 1.6.7.2
   - misc: better shutdown behavior when there are no inputs/plugins running
+  - feature: logstash web now uses relative URLs; useful if you want to
+    reverseproxy with a path other than "/"
 
   ## inputs
   - bugfix: stdin: exit plugin gracefully on EOF
