@@ -46,7 +46,7 @@ Press ^C to kill it.
 Same config as step 2, but now we are also writing events to ElasticSearch. Do
 a search for '*' (all):
 
-    curl http://localhost:9200/_search?pretty=1&q=*
+    curl 'http://localhost:9200/_search?pretty=1&q=*'
 
 ## Step 4 - logstash web
 
