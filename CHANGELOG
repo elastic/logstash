@@ -28,6 +28,7 @@
     to INFO log; eventually will be an internal event type)
   - misc: added a "thread watchdog" to detect hanging filter workers, and
     crash logstash w/an informational message
+  - misc: jar is built with jruby 1.6.7.2
 
   ## inputs
   - feature: [LOGSTASH-410] - inputs can now be duplicated with the
