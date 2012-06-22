@@ -21,6 +21,10 @@
       compatibility reasons.
   - grok pattern %{POSINT} used to match '0' -- now it does not. If you want
     to match non-negative integers, there is now a %{NONNEGINT} pattern.
+  - bug in file input fixed that led to an extra leading slash in @source_path.
+    Previously, file input would have @source = 'file://host//var/log/foo' and
+    @source_path = '//var/log/foo'; now @source = 'file://host/var/log/foo'
+    and @source_path = '/var/log/foo'. [LOGSTASH-501]
 
   ## general
   - NOTE: gemspec removed; deploying logstash as a gem hasn't been supported
