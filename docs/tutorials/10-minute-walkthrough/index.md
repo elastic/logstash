@@ -71,7 +71,7 @@ Type stuff on stdin on the agent, then search for it in the web interface.
 
 Let's backfill some old apache logs.  First, let's use grok.
 
-Use the 'grok' logstash filter to parse logs. 
+Use the [../../filters/grok]('grok') logstash filter to parse logs. 
 
 ### Download
 
