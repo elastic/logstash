@@ -59,6 +59,7 @@
   - bugfix: some enhancements to grok pattern %{COMBINEDAPACHELOG}
   - bugfix: grok: %{URIPATH} and %{URIPARAM} enhancements
   - feature: grok: add %{UUID} pattern
+  - bugfix: grok: better error message when expanding unknown %{pattern}
 
   ## outputs
   - bugfix: [LOGSTASH-351] - fix file input on windows
