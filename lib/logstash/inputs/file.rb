@@ -1,6 +1,7 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 
+require "pathname"
 require "socket" # for Socket.gethostname
 
 require "addressable/uri"
@@ -18,6 +19,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
   # The path to the file to use as an input.
   # You can use globs here, such as "/var/log/*.log"
+  # Paths must be absolute and cannot be relative.
   config :path, :validate => :array, :required => true
 
   # Exclusions (matched against the filename, not full path). Globs
@@ -46,6 +48,17 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   # How often to write a since database with the current position of
   # monitored log files.
   config :sincedb_write_interval, :validate => :number, :default => 15
+
+  public
+  def initialize(params)
+    super
+    
+    @path.each do |path|
+      if Pathname.new(path).relative?
+        raise ArgumentError.new("File paths must be absolute, relative path specified: #{path}")
+      end
+    end
+  end
 
   public
   def register
