@@ -118,4 +118,12 @@ describe LogStash::Inputs::File do
     assert_equal("File paths must be absolute, relative path specified: #{relative_path}", e.message)
   end
 
+  test "file input should not raise an exception for an absolute path containing wildcards" do
+    begin
+      LogStash::Inputs::File.new("type" => ["testing"], "path" => ["/absolute/path/*"])
+    rescue ArgumentError => e
+      flunk "An absolute path containing a wildcard should be valid"
+    end
+  end
+
 end # testing for LogStash::Inputs::File
