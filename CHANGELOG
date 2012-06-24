@@ -25,6 +25,7 @@
     Previously, file input would have @source = 'file://host//var/log/foo' and
     @source_path = '//var/log/foo'; now @source = 'file://host/var/log/foo'
     and @source_path = '/var/log/foo'. [LOGSTASH-501]
+  - file input now rejects relative paths. [LOGSTASH-503]
 
   ## general
   - NOTE: gemspec removed; deploying logstash as a gem hasn't been supported
