@@ -41,6 +41,7 @@ class LogStash::Agent
 
     # flag/config defaults
     @verbose = 0
+    @filterworker_count = 1
 
     @plugins = {}
     @plugins_mutex = Mutex.new
@@ -83,6 +84,14 @@ class LogStash::Agent
             "specified, 'stdout { debug => true }}' is default.") do |arg|
       @config_string = arg
     end # -e
+
+    opts.on("-w COUNT", "--filterworkers COUNT", Integer,
+            "Run COUNT filter workers (default: 1)") do |arg|
+      @filterworker_count = arg
+      if @filterworker_count <= 0
+        raise ArgumentError, "filter worker count must be > 0"
+      end
+    end # -w
 
     opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
       @logfile = path
@@ -345,7 +354,7 @@ class LogStash::Agent
   private
   def start_output(output)
     @logger.debug("Starting output", :plugin => output)
-    queue = LogStash::SizedQueue.new(10)
+    queue = LogStash::SizedQueue.new(10 * @filterworker_count)
     queue.logger = @logger
     @output_queue.add_queue(queue)
     @output_plugin_queues[output] = queue
@@ -384,7 +393,7 @@ class LogStash::Agent
         raise "Must have both inputs and outputs configured."
       end
 
-      # NOTE(petef) we should use a SizedQueue here (w/config params for size)
+      # NOTE(petef) we should have config params for queue size
       @filter_queue = LogStash::SizedQueue.new(10)
       @filter_queue.logger = @logger
       @output_queue = LogStash::MultiQueue.new
@@ -407,7 +416,16 @@ class LogStash::Agent
             filter.prepare_metrics
           end
         end
-        1.times do |n|
+
+        if @filterworker_count > 1
+          @filters.each do |filter|
+            if ! filter.threadsafe?
+                raise "fail"
+            end
+          end
+        end
+
+        @filterworker_count.times do |n|
           # TODO(sissel): facter this out into a 'filterworker' that  accepts
           # 'shutdown'
           # Start a filter worker
