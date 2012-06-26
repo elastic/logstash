@@ -38,6 +38,7 @@ gem "ffi-rzmq", "0.9.0"
 gem "ffi"
 
 gem "riemann-client", "0.0.6" #outputs/riemann, License: MIT
+gem "riak-client", "1.0.3" #outputs/riak, License: Apache 2.0
 
 group :test do
   gem "mocha"
