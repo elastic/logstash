@@ -20,8 +20,8 @@ PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters
 GEM_HOME=build/gems
 QUIET=@
 
-WGET=$(shell command -v wget)
-CURL=$(shell command -v curl)
+WGET=$(shell which wget 2>/dev/null)
+CURL=$(shell which curl 2>/dev/null)
 
 # OS-specific options
 TARCHECK=$(shell tar --help|grep wildcard|wc -l|tr -d ' ')
