@@ -12,6 +12,7 @@ GEM
     bouncy-castle-java (1.5.0146.1)
     bson (1.6.4)
     bson (1.6.4-java)
+    builder (3.0.0)
     bunny (0.7.9)
     cabin (0.4.4)
       json
@@ -53,6 +54,7 @@ GEM
     jruby-openssl (0.7.7)
       bouncy-castle-java (>= 1.5.0146.1)
     jruby-win32ole (0.8.5)
+    json (1.6.5)
     json (1.6.5-java)
     launchy (2.1.0)
       addressable (~> 2.2.6)
@@ -95,6 +97,11 @@ GEM
     redis (3.0.1)
     rest-client (1.6.7)
       mime-types (>= 1.16)
+    riak-client (1.0.3)
+      beefcake (~> 0.3.7)
+      builder (>= 2.1.2)
+      i18n (>= 0.4.0)
+      multi_json (~> 1.0)
     riemann-client (0.0.6)
       beefcake (>= 0.3.5)
       mtrc (>= 0.0.4)
@@ -151,6 +158,7 @@ DEPENDENCIES
   pry
   rack
   redis
+  riak-client (= 1.0.3)
   riemann-client (= 0.0.6)
   sass
   shoulda
