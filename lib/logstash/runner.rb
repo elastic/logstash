@@ -53,7 +53,6 @@ class LogStash::Runner
 
   def run(args)
     command = args.shift
-    p :run => command
     commands = {
       "-v" => lambda { emit_version(args) },
       "-V" => lambda { emit_version(args) },
@@ -71,13 +70,9 @@ class LogStash::Runner
         return agent.run(args)
       end,
       "web" => lambda do
-        p :web
         require "logstash/web/runner"
-        p :web2
         web = LogStash::Web::Runner.new
-        p :web3
         @runners << web
-        p :web4
         return web.run(args)
       end,
       "test" => lambda do
