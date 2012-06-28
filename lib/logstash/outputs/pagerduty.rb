@@ -31,12 +31,20 @@ class LogStash::Outputs::PagerDuty < LogStash::Outputs::Base
   # This allows for flexibility
   # should PD iterate the API
   # and Logstash hasn't updated yet
-  config :pdurl, :validate => :string, :default => "http://events.pagerduty.com/generic/2010-04-15/create_event.json"
+  config :pdurl, :validate => :string, :default => "https://events.pagerduty.com/generic/2010-04-15/create_event.json"
 
   public
   def register
-    require 'ftw'
-    @client = FTW::Agent.new
+    require 'net/https'
+    require 'uri'
+    @pd_uri = URI.parse(@pdurl)
+    @client = Net::HTTP.new(@pd_uri.host, @pd_uri.port)
+    if @pd_uri.scheme == "https"
+      @client.use_ssl = true
+      #@client.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      # PagerDuty cert doesn't verify oob
+      @client.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    end
   end # def register
 
   public
@@ -50,19 +58,21 @@ class LogStash::Outputs::PagerDuty < LogStash::Outputs::Base
     pd_event[:description] = event.sprintf(@description)
     pd_event[:details] = Hash.new
     @details.each do |key, value|
-      @logger.debug("Details added:" , key => event.sprintf(value))
+      @logger.debug("PD Details added:" , key => event.sprintf(value))
       pd_event[:details]["#{key}"] = event.sprintf(value)
     end
     pd_event[:details][:tags] = @tags if @tags
 
     @logger.info("PD Event", :event => pd_event)
     begin
-      request = @client.post(@pdurl, :body => pd_event.to_json)
-      @logger.debug("PD Request", :request => request)
-      response = @client.execute(request)
-      @logger.debug("PD Response", :response => response)
+      request = Net::HTTP::Post.new(@pd_uri.path)
+      request.body = pd_event.to_json
+      @logger.debug("PD Request", :request => request.inspect)
+      response = @client.request(request)
+      @logger.debug("PD Response", :response => response.body)
+
     rescue Exception => e
-      @logger.debug("Unhandled exception", :error => e)
+      @logger.debug("PD Unhandled exception", :pd_error => e.backtrace)
     end
   end # def receive
 end # class LogStash::Outputs::PagerDuty
