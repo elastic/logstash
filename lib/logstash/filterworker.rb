@@ -25,6 +25,7 @@ class LogStash::FilterWorker < LogStash::Plugin
     while !@shutdown_requested && event = @input_queue.pop
       if event == LogStash::SHUTDOWN
         finished
+        @input_queue << LogStash::SHUTDOWN # for the next filter thread
         return
       end
 
