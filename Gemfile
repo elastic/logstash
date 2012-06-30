@@ -4,6 +4,7 @@ gem "cabin", "0.4.4" # for logging. apache 2 license
 gem "bunny" # for amqp support, MIT-style license
 gem "uuidtools" # for naming amqp queues, License ???
 
+gem "cinch" # for irc support
 gem "filewatch", "0.3.3"  # for file tailing, BSD License
 gem "jls-grok", "0.10.7" # for grok filter, BSD License
 gem "aws-sdk" # for AWS access: SNS and S3 log tailing.  Apache 2.0 License
