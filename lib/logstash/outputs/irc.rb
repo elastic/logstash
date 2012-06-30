@@ -60,4 +60,4 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
       channel.msg(event.sprintf(@format))
     end # channels.each
   end # def receive
-end # class LogStash::Outputs::Tcp
+end # class LogStash::Outputs::Irc
