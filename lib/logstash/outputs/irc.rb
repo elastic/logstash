@@ -1,18 +1,19 @@
-require "logstash/inputs/base"
+require "logstash/outputs/base"
 require "logstash/namespace"
 require "thread"
 require "cinch"
-# Read events from an IRC Server.
+
+# Write events to IRC
 #
-class LogStash::Inputs::Irc < LogStash::Inputs::Base
+class LogStash::Outputs::Irc < LogStash::Outputs::Base
 
   config_name "irc"
   plugin_status "experimental"
 
-  # Host of the IRC Server to connect to.
+  # Address of the host to connect to
   config :host, :validate => :string, :required => true
 
-  # Port for the IRC Server
+  # Port on host to connect to.
   config :port, :validate => :number, :required => true
 
   # IRC Nickname
@@ -24,16 +25,11 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
   # IRC Real name
   config :real, :validate => :string, :default => "logstash"
 
-  # IRC Server password
-  config :password, :validate => :password, :default => nil
-
-  # Channels to listen to
+  # Channels to broadcast to
   config :channels, :validate => :array, :required => true
 
-
-  def initialize(*args)
-    super(*args)
-  end # def initialize
+  # Message format to send, event tokens are usable here
+  config :format, :validate => :string, :default => "%{@message}"
 
   public
   def register
@@ -46,28 +42,22 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
       c.server = @host
       c.port = @port
       c.nick = @nick
-      c.realname = @real
       c.user = @user
+      c.realname = @real
+      c.channels = @channels
+      c.channels = @channels
       c.channels = @channels
       c.password = @password
     end
-    queue = @irc_queue
-    @bot.on :channel  do |m|
-      queue << m
+    Thread.new(@bot) do |bot|
+      bot.start
     end
   end # def register
 
   public
-  def run(output_queue)
-    Thread.new(@bot) do |bot|
-      bot.start
-    end
-    loop do
-      msg = @irc_queue.pop
-      event = self.to_event(msg.message, "irc://#{@host}:#{@port}/#{msg.channel}")
-      event["channel"] = msg.channel
-      event["user"] = msg.user.user
-      output_queue << event
-    end
-  end # def run
-end # class LogStash::Inputs::Irc
+  def receive(event)
+    @bot.channels.each do |channel|
+      channel.msg(event.sprintf(@format))
+    end # channels.each
+  end # def receive
+end # class LogStash::Outputs::Tcp
