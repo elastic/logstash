@@ -24,7 +24,10 @@ class LogStash::Outputs::Riak < LogStash::Outputs::Base
   # The bucket name to write events to
   # Expansion is supported here as values are 
   # passed through event.sprintf
-  config :bucket, :validate => :string, :default => "logstash-%{+YYYY.MM.dd}"
+  # Multiple buckets can be specified here
+  # but any bucket-specific settings defined
+  # apply to ALL the buckets.
+  config :bucket, :validate => :array, :default => ["logstash-%{+YYYY.MM.dd}"]
 
   # The event key name
   # variables are valid here.
@@ -105,42 +108,44 @@ class LogStash::Outputs::Riak < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
     
-    # setup our bucket
-    bukkit = @client.bucket(event.sprintf(@bucket))
-    # Disable bucket props for now
-    # Need to detect params passed that should be converted to int
-    # otherwise setting props fails =(
-    # Logstash syntax only supports strings and bools
-    # likely fix is to either hack in is_numeric?
-    # or whitelist certain params and call to_i
-    ##@logger.debug("Setting bucket props", :props => @bucket_props)
-    ##bukkit.props = @bucket_props if @bucket_props
-    ##@logger.debug("Bucket", :bukkit => bukkit.inspect)
-   
-    if @enable_search
-      @logger.debug("Enable search requested", :bucket => bukkit.inspect)
-      # Check if search is enabled
-      @logger.debug("Checking bucket status", :search_enabled => bukkit.is_indexed?)
-      bukkit.enable_index! unless bukkit.is_indexed?
-      @logger.debug("Rechecking bucket status", :search_enabled => bukkit.is_indexed?)
-    end
-    @key_name.nil? ? evt_key=nil : evt_key=event.sprintf(@key_name)
-    evt = Riak::RObject.new(bukkit, evt_key)
-    @logger.debug("RObject", :robject => evt.to_s)
-    begin
-      evt.content_type = "application/json"
-      evt.data = event
-      if @indices
-        @indices.each do |k|
-          idx_name = "#{k.gsub('@','')}_bin"
-          @logger.debug("Riak index name", :idx => idx_name)
-          @logger.info("Indexes", :indexes => evt.indexes.to_s)
-          evt.indexes[idx_name] << event.sprintf("%{#{k}}")
-        end
+    @bucket.each do |b|
+      # setup our bucket(s)
+      bukkit = @client.bucket(event.sprintf(b))
+      # Disable bucket props for now
+      # Need to detect params passed that should be converted to int
+      # otherwise setting props fails =(
+      # Logstash syntax only supports strings and bools
+      # likely fix is to either hack in is_numeric?
+      # or whitelist certain params and call to_i
+      ##@logger.debug("Setting bucket props", :props => @bucket_props)
+      ##bukkit.props = @bucket_props if @bucket_props
+      ##@logger.debug("Bucket", :bukkit => bukkit.inspect)
+     
+      if @enable_search
+        @logger.debug("Enable search requested", :bucket => bukkit.inspect)
+        # Check if search is enabled
+        @logger.debug("Checking bucket status", :search_enabled => bukkit.is_indexed?)
+        bukkit.enable_index! unless bukkit.is_indexed?
+        @logger.debug("Rechecking bucket status", :search_enabled => bukkit.is_indexed?)
       end
-      evt.store
-    rescue Exception => e
-      @logger.warn("Exception storing", :message => e.message)
+      @key_name.nil? ? evt_key=nil : evt_key=event.sprintf(@key_name)
+      evt = Riak::RObject.new(bukkit, evt_key)
+      @logger.debug("RObject", :robject => evt.to_s)
+      begin
+        evt.content_type = "application/json"
+        evt.data = event
+        if @indices
+          @indices.each do |k|
+            idx_name = "#{k.gsub('@','')}_bin"
+            @logger.debug("Riak index name", :idx => idx_name)
+            @logger.info("Indexes", :indexes => evt.indexes.to_s)
+            evt.indexes[idx_name] << event.sprintf("%{#{k}}")
+          end
+        end
+        evt.store
+      rescue Exception => e
+        @logger.warn("Exception storing", :message => e.message)
+      end
     end
   end # def receive
 end # class LogStash::Outputs::Riak
