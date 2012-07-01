@@ -1,8 +1,8 @@
 1.1.1 (???, 2012)
  ## Overview of this release:
-  * New input plugins: generator, heroku, pipe, ganglia
+  * New input plugins: generator, heroku, pipe, ganglia, irc
   * New output plugins: juggernaut, metricscatcher, nagios_ncsa, pipe,
-                        opentsdb, pagerduty
+                        opentsdb, pagerduty, irc
   * New filter plugins: zeromq, environment, xml, csv, syslog_pri
   * Fixes for gelf output
 
@@ -47,6 +47,7 @@
   - feature: [LOGSTASH-410] - inputs can now be duplicated with the
     'threads' parameter (where supported)
   - bugfix: [LOGSTASH-490] - include cacert.pem in jar for twitter input
+  - feature: [LOGSTASH-139] - support for IRC
 
   ## filters
   - bugfix: [LOGSTASH-300] - bump grok pattern replace limit to 1000,
@@ -70,6 +71,7 @@
   - bugfix: elastic search river now respects exchange_type and queue_name
   - bugfix: ganglia plugin now respects metric_type
   - bugfix: GELF output facility fixes; now defaults to 'logstash-gelf'
+  - feature: [LOGSTASH-139] - support for IRC
 
 1.1.0.1 (January 30, 2012)
   ## Overview of this release:
