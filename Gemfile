@@ -32,6 +32,8 @@ gem "gmetric", "0.1.3" # outputs/ganglia, # License: MIT
 gem "xmpp4r", "0.5" # outputs/xmpp, # License: As-Is
 gem "gelfd", "0.2.0" #inputs/gelf, # License: Apache 2.0
 gem "jruby-win32ole", :platforms => :jruby # inputs/eventlog, # License: JRuby
+gem "jruby-httpclient", :platforms => :jruby #outputs/http, # License: Apache 2.0
+gem "excon", :platforms => :ruby #outputs/http, # License: MIT License
 gem "pry"
 
 gem "ffi-rzmq", "0.9.0"
