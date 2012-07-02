@@ -39,9 +39,17 @@ Contributors:
 * David Castro (arimus)
 * Parker DeBardelaben (parkerd)
 * Max Horbul (mhorbul)
+* Harlan Barnes (harlanbarnes)
+* Jeremiah Shirk (jeremiahshirk)
+* Patrick Debois (jedi4ever)
+* bodik
+* Philippe Weber
+* Marc Huffnagle (mhuffnagle)
+* Oliver Gorwits (ollyg)
+* Rashid Khan (rashidkpc)
 
 
-Note: If you've sent me patches, bug reports, or other stuff for logstash, and
-you aren't on the list above, and want to be, please let me know and I'll make
-sure you're here. Contributions from folks like you are what make open source
-the bomb.
+Note: If you've sent me patches, bug reports, or otherwise contributed to
+logstash, and you aren't on the list above and want to be, please let me know
+and I'll make sure you're here. Contributions from folks like you are what make
+open source the bomb.

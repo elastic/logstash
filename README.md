@@ -16,9 +16,10 @@ If you want to build the jar yourself, run:
 
     make jar
 
-gem releases are not available anywhere. If you want to build a gem, run:
-
-    make gem
+rpm, deb, or other package formats are not currently available, but are easy to
+build with [fpm](https://github.com/jordansissel/fpm). If you are interested in
+seeing future releases include your favorite packaging format, please let me
+know.
 
 ## Contributing
 
