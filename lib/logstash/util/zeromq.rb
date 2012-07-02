@@ -20,6 +20,7 @@ module LogStash::Util::ZeroMQ
     @logger.info("0mq: #{server? ? 'connected' : 'bound'}", :address => address)
   end
 
+  # Instance method for common socket setup
   def setup
     @zsocket = context.socket(@zmq_const)
 
@@ -29,12 +30,7 @@ module LogStash::Util::ZeroMQ
     # TODO (lusis)
     # wireup sockopt hash
     if @sockopt
-      @sockopt.each do |opt,value|
-        sockopt = opt.split('::')[1]
-        option = ZMQ.const_defined?(sockopt) ? ZMQ.const_get(sockopt) : ZMQ.const_missing(sockopt)
-        error_check(@zsocket.setsockopt(option, value),
-                "while setting #{opt} == #{value})")
-      end
+      setopts(@zsocket, @sockopt)
     end
     
     @address.each do |addr|
@@ -48,6 +44,11 @@ module LogStash::Util::ZeroMQ
       raise "ZeroMQ Error while #{doing}"
     end
   end # def error_check
+
+  def reload
+    error_check(@zsocket.close, "while closing socket")
+    setup
+  end
 
   def setopts(socket, options)
     options.each do |opt,value|
