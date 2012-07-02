@@ -124,7 +124,7 @@ Logstash ships with a built-in web interface. It's fairly spartan but it's a goo
 
     java -jar logstash-%VERSION%-monolithic.jar agent -f logstash-simple.conf -- web --backend elasticsearch:///?local
 
-One important thing to note is that the `web --backend` option is actually its own set of commmand-line options. We're essentially starting to programs in one.
+One important thing to note is that the `web --backend` option is actually its own set of commmand-line options. We're essentially starting two programs in one.
 This is worth remembering as you move to an external Elasticsearch server. The options you specify in your logstash.conf have no bearing on the web ui. It has its own options.
 
 Again, the reason for testing without the web interface is to ensure that the logstash agent itself is getting events into Elasticsearch. This is different than the Logstash web ui being able to read them.
@@ -169,7 +169,7 @@ grouped by type and two outputs.
       elasticsearch { embedded => true }
     }
 
-Put this in a file called "logstash.-complex.conf"
+Put this in a file called "logstash-complex.conf"
 
 Now run it all (again. Be sure to stop your previous Logstash tests!):
 
