@@ -34,15 +34,14 @@ class LogStash::Runner
 
     @runners = []
     while !args.empty?
-      $stderr.puts(:args => args)
       args = run(args)
-      $stderr.puts(:remaining => args)
     end
 
-    $stderr.puts :doneargs
-
     status = []
-    @runners.each { |r| @logger.info("Waiting on", :r => r.wait); status << r.wait }
+    @runners.each do |r|
+      $stderr.puts "Waiting on #{r.wait.inspect}"
+      status << r.wait
+    end
 
     # Avoid running test/unit's at_exit crap
     if status.empty?
@@ -54,7 +53,6 @@ class LogStash::Runner
 
   def run(args)
     command = args.shift
-    p :run => command
     commands = {
       "-v" => lambda { emit_version(args) },
       "-V" => lambda { emit_version(args) },
@@ -72,13 +70,9 @@ class LogStash::Runner
         return agent.run(args)
       end,
       "web" => lambda do
-        p :web
         require "logstash/web/runner"
-        p :web2
         web = LogStash::Web::Runner.new
-        p :web3
         @runners << web
-        p :web4
         return web.run(args)
       end,
       "test" => lambda do
@@ -86,6 +80,14 @@ class LogStash::Runner
         test = LogStash::Test.new
         @runners << test
         return test.run(args)
+      end,
+      "irb" => lambda do
+        require "irb"
+        return IRB.start(__FILE__)
+      end,
+      "pry" => lambda do
+        require "pry"
+        return binding.pry
       end
     } # commands
 

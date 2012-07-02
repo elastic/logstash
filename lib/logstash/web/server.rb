@@ -111,7 +111,7 @@ class LogStash::Web::Server < Sinatra::Base
   end # /style.css
 
   get '/' do
-    redirect "/search"
+    redirect "search"
   end # '/'
 
   get '/*' do

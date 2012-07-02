@@ -90,6 +90,8 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   def initialize(config = {})
     super
 
+    @threadsafe = false
+
     # This filter needs to keep state.
     @types = Hash.new { |h,k| h[k] = [] }
     @pending = Hash.new

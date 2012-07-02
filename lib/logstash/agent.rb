@@ -8,6 +8,7 @@ require "logstash/multiqueue"
 require "logstash/namespace"
 require "logstash/outputs"
 require "logstash/program"
+require "logstash/threadwatchdog"
 require "logstash/util"
 require "optparse"
 require "thread"
@@ -40,6 +41,7 @@ class LogStash::Agent
 
     # flag/config defaults
     @verbose = 0
+    @filterworker_count = 1
 
     @plugins = {}
     @plugins_mutex = Mutex.new
@@ -82,6 +84,14 @@ class LogStash::Agent
             "specified, 'stdout { debug => true }}' is default.") do |arg|
       @config_string = arg
     end # -e
+
+    opts.on("-w COUNT", "--filterworkers COUNT", Integer,
+            "Run COUNT filter workers (default: 1)") do |arg|
+      @filterworker_count = arg
+      if @filterworker_count <= 0
+        raise ArgumentError, "filter worker count must be > 0"
+      end
+    end # -w
 
     opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
       @logfile = path
@@ -344,7 +354,7 @@ class LogStash::Agent
   private
   def start_output(output)
     @logger.debug("Starting output", :plugin => output)
-    queue = LogStash::SizedQueue.new(10)
+    queue = LogStash::SizedQueue.new(10 * @filterworker_count)
     queue.logger = @logger
     @output_queue.add_queue(queue)
     @output_plugin_queues[output] = queue
@@ -383,7 +393,7 @@ class LogStash::Agent
         raise "Must have both inputs and outputs configured."
       end
 
-      # NOTE(petef) we should use a SizedQueue here (w/config params for size)
+      # NOTE(petef) we should have config params for queue size
       @filter_queue = LogStash::SizedQueue.new(10)
       @filter_queue.logger = @logger
       @output_queue = LogStash::MultiQueue.new
@@ -397,6 +407,7 @@ class LogStash::Agent
       end # @inputs.each
 
       # Create N filter-worker threads
+      @filterworkers = {}
       if @filters.length > 0
         @filters.each do |filter|
           filter.logger = @logger
@@ -405,8 +416,16 @@ class LogStash::Agent
             filter.prepare_metrics
           end
         end
-        @filterworkers = {}
-        1.times do |n|
+
+        if @filterworker_count > 1
+          @filters.each do |filter|
+            if ! filter.threadsafe?
+                raise "fail"
+            end
+          end
+        end
+
+        @filterworker_count.times do |n|
           # TODO(sissel): facter this out into a 'filterworker' that  accepts
           # 'shutdown'
           # Start a filter worker
@@ -420,6 +439,13 @@ class LogStash::Agent
           @filterworkers[filterworker] = thread
         end # N.times
       end # if @filters.length > 0
+
+      # A thread to supervise filter workers
+      watchdog = LogStash::ThreadWatchdog.new(@filterworkers.values)
+      watchdog.logger = logger
+      Thread.new do
+        watchdog.watch
+      end
 
       # Create output threads
       @output_plugin_queues = {}
@@ -449,9 +475,12 @@ class LogStash::Agent
       end
     end
 
-    # TODO(sissel): Monitor what's going on? Sleep forever? what?
-    while sleep 5
-      @logger.info("heartbeat")
+    while sleep(2)
+      if @plugins.values.count { |p| p.alive? } == 0
+        @logger.warn("no plugins running, shutting down")
+        shutdown
+      end
+      @logger.debug("heartbeat")
     end
   end # def run_with_config
 
@@ -665,6 +694,7 @@ class LogStash::Agent
       begin
         input.run(queue)
         done = true
+        input.finished
       rescue => e
         @logger.warn("Input thread exception", :plugin => input,
                      :exception => e, :backtrace => e.backtrace)
@@ -707,6 +737,7 @@ class LogStash::Agent
       while event = queue.pop do
         @logger.debug("Sending event", :target => output)
         output.handle(event)
+        break if output.finished?
       end
     rescue Exception => e
       @logger.warn("Output thread exception", :plugin => output,
@@ -730,17 +761,16 @@ class LogStash::Agent
       # If none are running, start the shutdown sequence and
       # send the 'shutdown' event down the pipeline.
       remaining = @plugins.count do |plugin, thread|
-        plugin.is_a?(pluginclass) and plugin.running?
+        plugin.is_a?(pluginclass) and plugin.running? and thread.alive?
       end
       @logger.debug("Plugins still running", :type => pluginclass,
                     :remaining => remaining)
 
       if remaining == 0
-        @logger.debug("All #{pluginclass} finished. Shutting down.")
+        @logger.warn("All #{pluginclass} finished. Shutting down.")
 
-        # Send 'shutdown' to the filters.
-        queue << LogStash::SHUTDOWN if !queue.nil?
-        shutdown
+        # Send 'shutdown' event to other running plugins
+        queue << LogStash::SHUTDOWN unless queue.nil?
       end # if remaining == 0
     end # @plugins_mutex.synchronize
   end # def shutdown_if_none_running
