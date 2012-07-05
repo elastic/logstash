@@ -117,6 +117,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       require "socket"
       hostname = Socket.gethostname
       api_path = "/_river/logstash-#{hostname.gsub('.','_')}/_meta"
+      @status_path = "/_river/logstash-#{hostname.gsub('.','_')}/_status"
 
       river_config = {"type" => "rabbitmq",
                       "rabbitmq" => {
@@ -150,7 +151,38 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       # registration?
       @logger.warn("Couldn't set up river. You'll have to set it up manually (or restart)", :exception => e)
     end
+
+    check_river_status
   end # def prepare_river
+
+  private
+  def check_river_status
+    tries = 0
+    success = false
+    reason = nil
+    begin
+      while !success && tries <= 3 do
+        tries += 1
+        Net::HTTP.start(@es_host, @es_port) do |http|
+          req = Net::HTTP::Get.new(@status_path)
+          response = http.request(req)
+          response.value
+          status = JSON.parse(response.body)
+          @logger.debug("Checking ES river status", :status => status)
+          if status["_source"]["error"]
+            reason = "ES river status: #{status["_source"]["error"]}"
+          else
+            success = true
+          end
+        end
+        sleep(2)
+      end
+    rescue Exception => e
+      raise "river is not running, checking status failed: #{$!}"
+    end
+
+    raise "river is not running: #{reason}" unless success
+  end # def check_river_status
 
   public
   def receive(event)

@@ -72,6 +72,7 @@
   - bugfix: ganglia plugin now respects metric_type
   - bugfix: GELF output facility fixes; now defaults to 'logstash-gelf'
   - feature: [LOGSTASH-139] - support for IRC
+  - bugfix: es_river: check river status after creation to verify status
 
 1.1.0.1 (January 30, 2012)
   ## Overview of this release:
