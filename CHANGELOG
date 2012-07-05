@@ -16,7 +16,7 @@
       Previously, several plugins did not work as expected on MRI due to the
       usage of the JRuby-only Jodatime library. We now have a contributed fix
       for a slower parser on MRI/CRuby!
-  - elasticsearch version is now 0.19.4
+  - elasticsearch version is now 0.19.8
       This means your elasticsearch cluster must be running 0.19.x for
       compatibility reasons.
   - grok pattern %{POSINT} used to match '0' -- now it does not. If you want
