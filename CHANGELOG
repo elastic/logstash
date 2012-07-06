@@ -26,6 +26,11 @@
     @source_path = '//var/log/foo'; now @source = 'file://host/var/log/foo'
     and @source_path = '/var/log/foo'. [LOGSTASH-501]
   - file input now rejects relative paths. [LOGSTASH-503]
+  - event sprintf can now look inside structured field data. %{foo.bar} will
+    look in the event field "foo" (if it is a hash) for "bar".  To preserve
+    compatibility, we first look for a top-level key that matches exactly
+    (so %{foo.bar} will first look for a field named "foo.bar", then look for
+    "bar" under "foo").
 
   ## general
   - NOTE: gemspec removed; deploying logstash as a gem hasn't been supported
