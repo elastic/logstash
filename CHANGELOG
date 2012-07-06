@@ -73,6 +73,7 @@
   - bugfix: GELF output facility fixes; now defaults to 'logstash-gelf'
   - feature: [LOGSTASH-139] - support for IRC
   - bugfix: es_river: check river status after creation to verify status
+  - feature: es: allow setting node_name
 
 1.1.0.1 (January 30, 2012)
   ## Overview of this release:
