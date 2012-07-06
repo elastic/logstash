@@ -32,7 +32,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   # Key to route to by default. Defaults to 'logstash'
   #
-  # * Routing keys are ignored on topic exchanges.
+  # * Routing keys are ignored on fanout exchanges.
   config :key, :validate => :string, :default => "logstash"
 
   # The vhost to use
