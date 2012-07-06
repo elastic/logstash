@@ -18,6 +18,10 @@ It's important to note that logstash itself has no concept of "shipper" and
 "collector" - the behavior of an agent depends entirely on how you configure
 it.
 
+This diagram gives you an overview of the architecture:
+
+![Centralized setup overview](getting-started-centralized-overview-diagram.png)
+
 On servers shipping logs:
 
 * Download and run logstash (See section 'logstash log shipper' below)
@@ -33,7 +37,7 @@ On the server collecting and indexing your logs:
 Requirements: java
 
 You'll most likely want the version of ElasticSearch specified by the
-[outputs/elasticsearch](outputs/elasticsearch) docs. Modify this in your shell
+[elasticsearch output](../outputs/elasticsearch) docs. Modify this in your shell
 for easy downloading of ElasticSearch:
 
     ES_PACKAGE=elasticsearch-%ELASTICSEARCH_VERSION%.zip
