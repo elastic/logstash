@@ -55,6 +55,8 @@
   - feature: [LOGSTASH-139] - support for IRC
 
   ## filters
+  - feature: all filters support 'remove_tag' (remove tags on success)
+  - feature: all filters support 'exclude_tags' (inverse of 'tags')
   - bugfix: [LOGSTASH-300] - bump grok pattern replace limit to 1000,
     fixes "deep recursion pattern compilation" problems
   - bugfix: [LOGSTASH-375] - fix bug in grep: don't drop when field is nil
