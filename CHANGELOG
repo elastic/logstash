@@ -68,6 +68,8 @@
   - bugfix: grok: %{URIPATH} and %{URIPARAM} enhancements
   - feature: grok: add %{UUID} pattern
   - bugfix: grok: better error message when expanding unknown %{pattern}
+  - feature: mutate: now supports a 'gsub' operation for applying a regexp
+    substitution on event fields
 
   ## outputs
   - bugfix: [LOGSTASH-351] - fix file input on windows
