@@ -133,4 +133,53 @@ describe LogStash::Filters::Mutate do
                  "Field 'foo' should now be an float (1234.10), but is " \
                  " a #{event["foo"].class.inspect} (#{event["foo"].inspect})")
   end # convert one field
+
+  test "gsub on a String" do
+    config "gsub" => ["test", "foo", "bar"]
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event["test"] = "test foo test"
+
+    @filter.filter(event)
+    assert_equal("test bar test", event["test"])
+  end
+
+  test "gsub on an Array of Strings" do
+    config "gsub" => ["test", "foo", "bar"]
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event["test"] = ["test foo test", "test2 foo test2"]
+
+    @filter.filter(event)
+    assert_equal(["test bar test", "test2 bar test2"], event["test"])
+  end
+
+  test "gsub on an Array of non-Strings" do
+    config "gsub" => ["test", "foo", "bar"]
+
+    event = LogStash::Event.new
+    event.type = @typename
+    test_data = [{"foo" => "test foo test"}]
+    event["test"] = test_data
+
+    @filter.filter(event)
+    assert_equal(test_data, event["test"])
+  end
+
+  test "gsub on multiple fields" do
+    config "gsub" => ["test", "foo", "bar",
+                      "test2", "foo", "bar",
+                     ]
+
+    event = LogStash::Event.new
+    event.type = @typename
+    event["test"] = "test foo test"
+    event["test2"] = "test2 foo test2"
+
+    @filter.filter(event)
+    assert_equal("test bar test", event["test"])
+    assert_equal("test2 bar test2", event["test2"])
+  end
 end # Test 'mutate' filter
