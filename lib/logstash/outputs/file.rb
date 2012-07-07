@@ -46,9 +46,6 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     @last_stale_cleanup_cycle = now
     flush_interval = @flush_interval.to_i
     @stale_cleanup_interval = 10
-    @metric_flushes = @logger.metrics.timer(self, "flushes")
-    @metric_write_delay = @logger.metrics.timer(self, "write-delay")
-    @metric_write_bytes = @logger.metrics.histogram(self, "write-bytes")
   end # def register
 
   public
@@ -66,10 +63,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       output = event.to_json
     end
 
-    @metric_write_delay.time do
-      fd.puts(output)
-    end
-    @metric_write_bytes.record(output.size)
+    fd.puts(output)
 
     flush(fd)
     close_stale_files
@@ -93,9 +87,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     if flush_interval > 0
       flush_pending_files
     else
-      @metric_flushes.time do
-        fd.flush
-      end
+      fd.flush
     end
   end
 
@@ -105,9 +97,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     @logger.debug("Starting flush cycle")
     @files.each do |path, fd|
       @logger.debug("Flushing file", :path => path, :fd => fd)
-      @metric_flushes.time do
-        fd.flush
-      end
+      fd.flush
     end
     @last_flush_cycle = Time.now
   end
