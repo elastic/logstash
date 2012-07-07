@@ -63,22 +63,22 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # Convert a string field by applying a regular expression and a replacement
   # if the field is not a string, no action will be taken
   # 
-  # the pattern and the replacement have to be seperated by / the slash can be escaped with a backslash \
+  # this configuration takes an array consisting of 3 elements per field/substitution
   #
-  # be aware of escaping the backslash in the config file
+  # be aware of escaping any backslash in the config file
   #
   # for example:
   #
   #    mutate {
   #       …
   #      gsub => [
-  #        "fieldname", "\\//_",      #replace all forward slashes with underscore
-  #        "fieldname", "[\\?#-]/_"   #replace backslashes, question marks, hashes and minuses with underscore
+  #        "fieldname", "\\/", "_",      #replace all forward slashes with underscore
+  #        "fieldname", "[\\?#-]", "_"   #replace backslashes, question marks, hashes and minuses with underscore
   #      ]
   #       …
   #    }
   #
-  config :gsub, :validate => :hash
+  config :gsub, :validate => :array
 
   public
   def register
@@ -93,6 +93,18 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
         raise "Bad configuration, aborting."
       end
     end # @convert.each
+    
+    @gsub_parsed = []
+    @gsub.nil? or @gsub.each_slice(3) do |field, needle, replacement|
+      if [field, needle, replacement].any? {|n| n.nil?}
+        @logger.error("Invalid gsub configuration. gsub has to define 3 elements per config entry", :file => file, :needle => needle, :replacement => replacement)
+      end
+      @gsub_parsed << {
+        :field        => field,
+        :needle       => Regexp.new(needle),
+        :replacement  => replacement
+      }
+    end
   end # def register
 
   public
@@ -167,30 +179,28 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
 
   private
   def gsub(event)
-    @gsub.each do |field, replacement_string|
-      match = replacement_string.split(/(?!<[\/])\//, 2)
-      if match == nil
-        @logger.debug("gsub mutation requires a / separated pattern/replacement pair, skipping",
-                      :field => field, :value => event[field])
-        next
-      end
-      if(event[field].is_a?(Array))
+    @gsub_parsed.each do |config|
+      field = config[:field]
+      needle = config[:needle]
+      replacement = config[:replacement]
+
+      if(event[field].is_a? Array)
         event[field] = event[field].map do |v| 
-          if not v.is_a?(String)
+          if not v.is_a? String
             @logger.debug("gsub mutation is only applicable for Strings, skipping",
                           :field => field, :value => event[field])
             next
           end
-          v.gsub(Regexp.new(match[0]), match[1]) 
+          v.gsub(needle, replacement) 
         end
       else
-        if not event[field].is_a?(String)
+        if not event[field].is_a? String
           @logger.debug("gsub mutation is only applicable for Strings, skipping",
                         :field => field, :value => event[field])
           next
         end
-        event[field] = event[field].gsub(Regexp.new(match[0]), match[1])
+        event[field] = event[field].gsub(needle, replacement)
       end
-    end # @gsub.each
+    end # @gsub_parsed.each
   end # def gsub
 end # class LogStash::Filters::Mutate
