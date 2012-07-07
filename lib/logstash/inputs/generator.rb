@@ -27,8 +27,6 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   public
   def register
     @host = Socket.gethostname
-    @metric_generate = @logger.metrics.timer(self, "event-generation")
-    @metric_queue_write = @logger.metrics.timer(self, "queue-write-time")
 
     if @count.is_a?(Array)
       @count = @count.first
@@ -46,15 +44,10 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
     end
 
     while !finished? && (@count <= 0 || number < @count)
-      @metric_generate.time do
-        event = to_event(@message, source)
-        event["sequence"] = number
-        # Time how long each queue push takes.
-        number += 1
-        @metric_queue_write.time do
-          queue << event
-        end
-      end
+      event = to_event(@message, source)
+      event["sequence"] = number
+      number += 1
+      queue << event
     end # loop
   end # def run
 

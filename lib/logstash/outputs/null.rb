@@ -9,11 +9,9 @@ class LogStash::Outputs::Null < LogStash::Outputs::Base
 
   public
   def register
-    @metric_hits = @logger.metrics.meter(self, "events")
   end # def register
 
   public
   def receive(event)
-    @metric_hits.mark
   end # def event
 end # class LogStash::Outputs::Null

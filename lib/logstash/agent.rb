@@ -413,7 +413,6 @@ class LogStash::Agent
           filter.logger = @logger
           @plugin_setup_mutex.synchronize do
             filter.register
-            filter.prepare_metrics
           end
         end
 
@@ -464,16 +463,6 @@ class LogStash::Agent
     # yield to a block in case someone's waiting for us to be done setting up
     # like tests, etc.
     yield if block_given?
-
-    Thread.new do
-      while true
-        @logger.info("metrics dump")
-        @logger.metrics.each do |identifier, metric|
-          @logger.info("metric #{identifier}", metric.to_hash)
-        end
-        sleep 5
-      end
-    end
 
     while sleep(2)
       if @plugins.values.count { |p| p.alive? } == 0
