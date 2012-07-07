@@ -98,6 +98,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     @gsub.nil? or @gsub.each_slice(3) do |field, needle, replacement|
       if [field, needle, replacement].any? {|n| n.nil?}
         @logger.error("Invalid gsub configuration. gsub has to define 3 elements per config entry", :file => file, :needle => needle, :replacement => replacement)
+        raise "Bad configuration, aborting."
       end
       @gsub_parsed << {
         :field        => field,
