@@ -19,7 +19,8 @@ class LogStash::Filters::Base < LogStash::Plugin
   # Optional.
   config :tags, :validate => :array, :default => []
 
-  # Only handle events without any of these tags. Note this check is additional to type and tags.
+  # Only handle events without any of these tags. Note this check is
+  # additional to type and tags.
   config :exclude_tags, :validate => :array, :default => []
 
   # If this filter is successful, add arbitrary tags to the event.
