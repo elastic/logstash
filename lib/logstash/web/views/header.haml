@@ -1,7 +1,7 @@
 .logo
   logstash.
 .search
-  %form.search{ :action => "/search" }
+  %form.search{ :action => "search" }
     %label{ :for => "q" } Query:
     %input.query{ :id => "query", :type => "text", :name => "q", :value => params[:q],
                   :size => 60 }

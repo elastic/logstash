@@ -46,7 +46,7 @@ Press ^C to kill it.
 Same config as step 2, but now we are also writing events to ElasticSearch. Do
 a search for '*' (all):
 
-    curl http://localhost:9200/_search?pretty=1&q=*
+    curl 'http://localhost:9200/_search?pretty=1&q=*'
 
 ## Step 4 - logstash web
 
@@ -71,12 +71,7 @@ Type stuff on stdin on the agent, then search for it in the web interface.
 
 Let's backfill some old apache logs.  First, let's use grok.
 
-Requirements:
-
-* libgrok [INSTALL notes here](https://github.com/jordansissel/grok/blob/master/INSTALL)
-
-Use the 'grok' logstash filter to parse logs. Once you have libgrok installed,
-keep reading below.
+Use the ['grok'](../../filters/grok) logstash filter to parse logs. 
 
 ### Download
 

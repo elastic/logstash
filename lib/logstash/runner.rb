@@ -3,12 +3,14 @@ $: << File.join(File.dirname(__FILE__), "..")
 $: << File.join(File.dirname(__FILE__), "..", "..", "test")
 require "logstash/namespace"
 require "logstash/program"
+require "logstash/util"
 
 class LogStash::Runner
   include LogStash::Program
 
   def main(args)
-    $: << File.join(File.dirname(__FILE__), "../")
+    LogStash::Util::set_thread_name(self.class.name)
+    $: << File.join(File.dirname(__FILE__), "..")
 
     if args.empty?
       $stderr.puts "No arguments given."
@@ -32,12 +34,14 @@ class LogStash::Runner
 
     @runners = []
     while !args.empty?
-      #p :args => args
       args = run(args)
     end
 
     status = []
-    @runners.each { |r| status << r.wait }
+    @runners.each do |r|
+      $stderr.puts "Waiting on #{r.wait.inspect}"
+      status << r.wait
+    end
 
     # Avoid running test/unit's at_exit crap
     if status.empty?
@@ -76,6 +80,14 @@ class LogStash::Runner
         test = LogStash::Test.new
         @runners << test
         return test.run(args)
+      end,
+      "irb" => lambda do
+        require "irb"
+        return IRB.start(__FILE__)
+      end,
+      "pry" => lambda do
+        require "pry"
+        return binding.pry
       end
     } # commands
 

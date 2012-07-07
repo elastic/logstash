@@ -55,6 +55,9 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
 
   public
   def receive(event)
+    # exit if type or tags don't match
+    return unless output?(event)
+
     # catch logstash shutdown
     if event == LogStash::SHUTDOWN
       finished

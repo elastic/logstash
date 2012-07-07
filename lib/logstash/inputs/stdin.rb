@@ -19,7 +19,11 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
 
   def run(queue)
     loop do
-      e = to_event($stdin.readline.chomp, "stdin://#{@host}/")
+       begin
+         e = to_event($stdin.readline.chomp, "stdin://#{@host}/")
+       rescue EOFError => ex
+         break
+       end
       if e
         queue << e
       end

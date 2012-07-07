@@ -73,7 +73,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   public
   def run(output_queue)
     # udp server
-    Thread.new do
+    udp_thr = Thread.new do
       LogStash::Util::set_thread_name("input|syslog|udp")
       begin
         udp_listener(output_queue)
@@ -88,7 +88,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     end # Thread.new
 
     # tcp server
-    Thread.new do
+    tcp_thr = Thread.new do
       LogStash::Util::set_thread_name("input|syslog|tcp")
       begin
         tcp_listener(output_queue)
@@ -101,6 +101,11 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
         retry
       end # begin
     end # Thread.new
+
+    # If we exit and we're the only input, the agent will think no inputs
+    # are running and initiate a shutdown.
+    udp_thr.join
+    tcp_thr.join
   end # def run
 
   private

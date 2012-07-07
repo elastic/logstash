@@ -1,6 +1,10 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
+
+require "pathname"
 require "socket" # for Socket.gethostname
+
+require "addressable/uri"
 
 # Stream events from files.
 #
@@ -15,6 +19,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
   # The path to the file to use as an input.
   # You can use globs here, such as "/var/log/*.log"
+  # Paths must be absolute and cannot be relative.
   config :path, :validate => :array, :required => true
 
   # Exclusions (matched against the filename, not full path). Globs
@@ -45,6 +50,17 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   config :sincedb_write_interval, :validate => :number, :default => 15
 
   public
+  def initialize(params)
+    super
+    
+    @path.each do |path|
+      if Pathname.new(path).relative?
+        raise ArgumentError.new("File paths must be absolute, relative path specified: #{path}")
+      end
+    end
+  end
+
+  public
   def register
     require "filewatch/tail"
     LogStash::Util::set_thread_name("input|file|#{path.join(":")}")
@@ -67,7 +83,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     hostname = Socket.gethostname
 
     tail.subscribe do |path, line|
-      source = "file://#{hostname}/#{path}"
+      source = Addressable::URI.new(:scheme => "file", :host => hostname, :path => path).to_s
       @logger.debug("Received line", :path => path, :line => line)
       e = to_event(line, source)
       if e

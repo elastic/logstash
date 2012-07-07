@@ -5,8 +5,13 @@ require "logstash/outputs/base"
 # output for logstash. If you plan on using the logstash web interface, you'll
 # need to use this output.
 #
-#   *NOTE*: You must use the same version of elasticsearch server that logstash
-#   uses for its client. Currently we use elasticsearch 0.18.7
+#   *NOTE*: The elasticsearch client is version 0.19.4. Your elasticsearch
+#   cluster must be running 0.19.x for API compatibility.
+#
+# If you want to set other elasticsearch options that are not exposed directly
+# as config options, there are two options:
+# * create an elasticsearch.yml file in the $PWD of the logstash process
+# * pass in es.* java properties (java -Des.node.foo= or ruby -J-Des.node.foo=)
 #
 # You can learn more about elasticsearch at <http://elasticsearch.org>
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
@@ -58,6 +63,11 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # Note: This setting may be removed in the future.
   config :max_inflight_requests, :validate => :number, :default => 50
 
+  # The node name ES will use when joining a cluster.
+  #
+  # By default, this is generated internally by the ES client.
+  config :node_name, :validate => :string
+
   public
   def register
     # TODO(sissel): find a better way of declaring where the elasticsearch
@@ -95,6 +105,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       :host => @host,
       :port => @port,
       :bind_host => @bind_host,
+      :node_name => @node_name,
     }
 
     # TODO(sissel): Support 'transport client'
@@ -115,6 +126,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     # Disable 'local only' - LOGSTASH-277
     #builder.local(true)
     builder.settings.put("cluster.name", @cluster) if !@cluster.nil?
+    builder.settings.put("node.name", @node_name) if !@node_name.nil?
     builder.settings.put("http.port", @embedded_http_port)
 
     @embedded_elasticsearch = builder.node
@@ -155,7 +167,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       #timer.stop
       decrement_inflight_request_count
     end.on(:failure) do |exception|
-      @logger.debug("Failed to index an event", :exception => exception,
+      @logger.warn("Failed to index an event", :exception => exception,
                     :event => event.to_hash)
       #timer.stop
       decrement_inflight_request_count

@@ -16,9 +16,10 @@ If you want to build the jar yourself, run:
 
     make jar
 
-gem releases are not available anywhere. If you want to build a gem, run:
-
-    make gem
+rpm, deb, or other package formats are not currently available, but are easy to
+build with [fpm](https://github.com/jordansissel/fpm). If you are interested in
+seeing future releases include your favorite packaging format, please let me
+know.
 
 ## Contributing
 
@@ -46,7 +47,8 @@ That said, some basic guidelines, which you are free to ignore :)
   the [mailing list](http://groups.google.com/group/logstash-users).
 * If you want to send patches, best way is to fork this repo and send me a pull
   request. If you don't know git, I also accept diff(1) formatted patches -
-  whatever is most comfortable for you.
+  whatever is most comfortable for you. 
+    * _DO NOT MODIFY `Gemfile.lock` IN YOUR PULL REQUESTS_. THIS WILL CAUSE MERGE FAILURES.
 * Want to lurk about and see what others are doing? IRC (#logstash on
   irc.freenode.org) is a good place for this as is the 
   [mailing list](http://groups.google.com/group/logstash-users)

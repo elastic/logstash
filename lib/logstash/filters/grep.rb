@@ -25,7 +25,8 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
   # through.
   config :negate, :validate => :boolean, :default => false
 
-  # A hash of matches of field => regexp
+  # A hash of matches of field => regexp.  If multiple matches are specified,
+  # all must match for the grep to be considered successful.
   # Normal regular expressions are supported here.
   config :match, :validate => :hash, :default => {}
 
@@ -80,6 +81,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
         end
 
         (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |value|
+          value = value.to_s if value.is_a?(Numeric)
           if @negate
             @logger.debug("negate match", :regexp => re, :value => value)
             next if re.match(value)

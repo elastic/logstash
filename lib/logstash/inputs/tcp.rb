@@ -1,5 +1,6 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "logstash/util/socket_peer"
 require "socket"
 require "timeout"
 
@@ -31,13 +32,6 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   # Mode to operate in. `server` listens for client connections,
   # `client` connects to a server.
   config :mode, :validate => ["server", "client"], :default => "server"
-
-  module SocketPeer
-    public
-    def peer
-      "#{peeraddr[3]}:#{peeraddr[1]}"
-    end # def peer
-  end # module SocketPeer
 
   def initialize(*args)
     super(*args)
@@ -108,7 +102,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
           # TODO(sissel): put this block in its own method.
 
           # monkeypatch a 'peer' method onto the socket.
-          s.instance_eval { class << self; include SocketPeer end }
+          s.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
           @logger.debug("Accepted connection", :client => s.peer,
                         :server => "#{@host}:#{@port}")
           handle_socket(s, output_queue, "tcp://#{@host}:#{@port}/client/#{s.peer}")
@@ -117,7 +111,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
     else
       loop do
         client_socket = TCPSocket.new(@host, @port)
-        client_socket.instance_eval { class << self; include SocketPeer end }
+        client_socket.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
         @logger.debug("Opened connection", :client => "#{client_socket.peer}")
         handle_socket(client_socket, output_queue, "tcp://#{client_socket.peer}/server")
       end # loop
