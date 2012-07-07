@@ -43,8 +43,7 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
       @logger.info("Starting Log4j input listener", :address => "#{@host}:#{@port}")
       @server_socket = TCPServer.new(@host, @port)
     end
-    @event_meter = @logger.metrics.meter(self, "events")
-    @logger.info("Log4j input", :meter => @event_meter)
+    @logger.info("Log4j input")
   end # def register
 
   private
@@ -98,7 +97,6 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
 
   private
   def readline(socket)
-    @event_meter.mark
     line = socket.readline
   end # def readline
 

@@ -43,8 +43,6 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
       @logger.info("Starting tcp input listener", :address => "#{@host}:#{@port}")
       @server_socket = TCPServer.new(@host, @port)
     end
-    @event_meter = @logger.metrics.meter(self, "events")
-    @logger.info("tcp input", :meter => @event_meter)
   end # def register
 
   private
@@ -89,7 +87,6 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
   private
   def readline(socket)
-    @event_meter.mark
     line = socket.readline
   end # def readline
 
