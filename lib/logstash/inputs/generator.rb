@@ -19,11 +19,20 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   # Otherwise, this value will be used verbatim as the event message.
   config :message, :validate => :string, :default => "Hello world!"
 
+  # Set how many messages should be generated.
+  #
+  # The default, 0, means generate an unlimited number of events.
+  config :count, :validate => :integer, :default => 0
+
   public
   def register
     @host = Socket.gethostname
     @metric_generate = @logger.metrics.timer(self, "event-generation")
     @metric_queue_write = @logger.metrics.timer(self, "queue-write-time")
+
+    if @count.is_a?(Array)
+      @count = @count.first
+    end
   end # def register
 
   def run(queue)
@@ -36,7 +45,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
       @logger.debug("Generator line read complete", :message => @message)
     end
 
-    while !finished?
+    while !finished? && (@count <= 0 || number < @count)
       @metric_generate.time do
         event = to_event(@message, source)
         event["sequence"] = number
