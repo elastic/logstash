@@ -27,9 +27,9 @@ CURL=$(shell which curl 2>/dev/null)
 TARCHECK=$(shell tar --help|grep wildcard|wc -l|tr -d ' ')
 ifeq (0, $(TARCHECK))
 TAR_OPTS=
-else
-TAR_OPTS=--wildcards
-endif
+#else
+#TAR_OPTS=--wildcards
+#endif
 
 default: jar
 
