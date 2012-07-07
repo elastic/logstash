@@ -185,19 +185,19 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
       needle = config[:needle]
       replacement = config[:replacement]
 
-      if(event[field].is_a? Array)
-        event[field] = event[field].map do |v| 
-          if not v.is_a? String
-            @logger.debug("gsub mutation is only applicable for Strings, skipping",
-                          :field => field, :value => event[field])
+      if event[field].is_a?(Array)
+        event[field] = event[field].map do |v|
+          if not v.is_a?(String)
+            @logger.debug("gsub mutation is only applicable for Strings, " +
+                          "skipping", :field => field, :value => event[field])
             next
           end
-          v.gsub(needle, replacement) 
+          v.gsub(needle, replacement)
         end
       else
-        if not event[field].is_a? String
-          @logger.debug("gsub mutation is only applicable for Strings, skipping",
-                        :field => field, :value => event[field])
+        if not event[field].is_a?(String)
+          @logger.debug("gsub mutation is only applicable for Strings, " +
+                        "skipping", :field => field, :value => event[field])
           next
         end
         event[field] = event[field].gsub(needle, replacement)
