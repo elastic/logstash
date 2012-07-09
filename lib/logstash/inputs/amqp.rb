@@ -122,7 +122,6 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
       @queue.bind(@exchange, :key => @key)
 
       @queue.subscribe({:ack => @ack}) do |data|
-        timer.stop
         e = to_event(data[:payload], @amqpurl)
         if e
           queue << e
