@@ -1,8 +1,47 @@
+PATH
+  remote: .
+  specs:
+    logstash (1.1.1.rc3-java)
+      aws-sdk
+      bunny
+      cabin (= 0.4.4)
+      cinch
+      ffi
+      ffi-rzmq (= 0.9.3)
+      filewatch (= 0.3.3)
+      ftw (~> 0.0.19)
+      gelf (= 1.3.2)
+      gelfd (= 0.2.0)
+      gmetric (= 0.1.3)
+      haml
+      heroku
+      jls-grok (= 0.10.7)
+      jruby-elasticsearch (= 0.0.14)
+      jruby-httpclient
+      jruby-openssl
+      jruby-win32ole
+      json
+      mail
+      minitest
+      mongo
+      onstomp
+      pry
+      rack
+      redis
+      riak-client (= 1.0.3)
+      riemann-client (= 0.0.6)
+      sass
+      sinatra
+      statsd-ruby (= 0.3.0)
+      uuidtools
+      xml-simple
+      xmpp4r (= 0.5)
+
 GEM
   remote: http://rubygems.org/
   specs:
     addressable (2.2.6)
-    aws-sdk (1.5.2)
+    aws-sdk (1.5.6)
       httparty (~> 0.7)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
@@ -12,14 +51,15 @@ GEM
     bouncy-castle-java (1.5.0146.1)
     bson (1.6.4-java)
     builder (3.0.0)
-    bunny (0.7.9)
+    bunny (0.8.0)
     cabin (0.4.4)
       json
     cinch (2.0.3)
-    coderay (1.0.6)
-    excon (0.14.0)
+    coderay (1.0.7)
+    excon (0.14.3)
     ffi (1.0.11-java)
-    ffi-rzmq (0.9.0)
+    ffi-rzmq (0.9.3)
+      ffi
     filewatch (0.3.3)
     ftw (0.0.19)
       addressable (= 2.2.6)
@@ -33,14 +73,14 @@ GEM
     gelfd (0.2.0)
     gmetric (0.1.3)
     haml (3.1.6)
-    heroku (2.26.6)
-      heroku-api (~> 0.2.4)
+    heroku (2.28.12)
+      heroku-api (~> 0.2.8)
       launchy (>= 0.3.2)
-      netrc (~> 0.7.2)
+      netrc (~> 0.7.5)
       rest-client (~> 1.6.1)
       rubyzip
-    heroku-api (0.2.4)
-      excon (~> 0.14.0)
+    heroku-api (0.2.8)
+      excon (~> 0.14.3)
     http_parser.rb (0.5.3-java)
     httparty (0.8.3)
       multi_json (~> 1.0)
@@ -64,8 +104,8 @@ GEM
       treetop (~> 1.4.8)
     metaclass (0.0.1)
     method_source (0.7.1)
-    mime-types (1.18)
-    minitest (3.0.1)
+    mime-types (1.19)
+    minitest (3.2.0)
     mocha (0.11.4)
       metaclass (~> 0.0.1)
     mongo (1.6.4)
@@ -73,9 +113,9 @@ GEM
     mtrc (0.0.4)
     multi_json (1.3.6)
     multi_xml (0.5.1)
-    netrc (0.7.4)
-    nokogiri (1.5.3-java)
-    onstomp (1.0.6)
+    netrc (0.7.5)
+    nokogiri (1.5.5-java)
+    onstomp (1.0.7)
     polyglot (0.3.3)
     pry (0.9.9.6-java)
       coderay (~> 1.0.5)
@@ -97,8 +137,8 @@ GEM
       beefcake (>= 0.3.5)
       mtrc (>= 0.0.4)
       trollop (>= 1.16.2)
-    rubyzip (0.9.8)
-    sass (3.1.19)
+    rubyzip (0.9.9)
+    sass (3.1.20)
     shoulda (3.0.1)
       shoulda-context (~> 1.0.0)
       shoulda-matchers (~> 1.0.0)
@@ -122,42 +162,14 @@ GEM
 
 PLATFORMS
   java
+  ruby
 
 DEPENDENCIES
-  aws-sdk
-  bunny
-  cabin (= 0.4.4)
   cinch
   excon
-  ffi
-  ffi-rzmq (= 0.9.0)
-  filewatch (= 0.3.3)
-  ftw (~> 0.0.19)
-  gelf (= 1.3.2)
-  gelfd (= 0.2.0)
-  gmetric (= 0.1.3)
-  haml
-  heroku
-  jls-grok (= 0.10.7)
   jruby-elasticsearch (= 0.0.14)
   jruby-httpclient
-  jruby-openssl
   jruby-win32ole
-  json
-  mail
-  minitest
+  logstash!
   mocha
-  mongo
-  onstomp
-  pry
-  rack
-  redis
-  riak-client (= 1.0.3)
-  riemann-client (= 0.0.6)
-  sass
   shoulda
-  sinatra
-  statsd-ruby (= 0.3.0)
-  uuidtools
-  xml-simple
-  xmpp4r (= 0.5)
