@@ -22,7 +22,7 @@ require "logstash/outputs/base"
 #         type => "linux-syslog"
 #         match => [ "@message", "(error|ERROR|CRITICAL)" ]
 #         add_tag => [ "nagios-update" ]
-#         add_fields => [
+#         add_field => [
 #           "nagios_host", "%{@source_host}",
 #           "nagios_service", "the name of your nagios service check"
 #         ]
