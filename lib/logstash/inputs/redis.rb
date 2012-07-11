@@ -5,7 +5,7 @@ require "logstash/namespace"
 # (using BLPOP)
 #
 # For more information about redis, see <http://redis.io/>
-class LogStash::Inputs::Redis < LogStash::Inputs::Base
+class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
 
   config_name "redis"
   plugin_status "beta"
