@@ -22,6 +22,9 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Optional.
   config :tags, :validate => :array, :default => []
 
+  # Only handle events without any of these tags. Note this check is additional to type and tags.
+  config :exclude_tags, :validate => :array, :default => []
+
   # Only handle events with all of these fields.
   # Optional.
   config :fields, :validate => :array, :default => []
@@ -68,6 +71,13 @@ class LogStash::Outputs::Base < LogStash::Plugin
       end
     end
 
+    if !@exclude_tags.empty?
+      if (diff_tags = (event.tags & @exclude_tags)).size != 0
+        @logger.debug(["Dropping event because tags contains excluded tags: #{diff_tags.inspect}", event])
+        return false
+      end
+    end
+        
     if !@fields.empty?
       if (event.fields.keys & @fields).size != @fields.size
         @logger.debug(["Dropping event because type doesn't match #{@fields.inspect}", event])

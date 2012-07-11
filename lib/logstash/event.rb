@@ -193,6 +193,10 @@ class LogStash::Event
   # is an array (or hash?) should be. Join by comma? Something else?
   public
   def sprintf(format)
+    if format.index("%").nil?
+      return format
+    end
+
     return format.gsub(/%\{[^}]+\}/) do |tok|
       # Take the inside of the %{ ... }
       key = tok[2 ... -1]
@@ -216,9 +220,30 @@ class LogStash::Event
         datetime = @@date_parser.parseDateTime(self.timestamp)
         format = key[1 .. -1]
         datetime.toString(format) # return requested time format
-      else 
+      else
         # Use an event field.
-        value = self[key]
+        value = nil
+        obj = self
+
+        # If the top-level value exists, use that and don't try
+        # to "look" into data structures.
+        if self[key]
+          value = self[key]
+        else
+          # "." is what ES uses to access structured data, so adopt that
+          # idea here, too.  "foo.bar" will access key "bar" under hash "foo".
+          key.split('.').each do |segment|
+            if obj
+              value = obj[segment] rescue nil
+              obj = obj[segment] rescue nil
+            else
+              value = nil
+              break
+            end
+          end # key.split.each
+        end # if self[key]
+
+        # TODO(petef): what if value.is_a?(Hash)?
         if value.nil?
           tok # leave the %{foo} if this field does not exist in this event.
         elsif value.is_a?(Array)

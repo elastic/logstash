@@ -14,11 +14,6 @@ class LogStash::MultiQueue
   public
   def logger=(_logger)
     @logger = _logger
-    @metric_queue_write = @logger.metrics.timer(self, "multiqueue-write")
-    @metric_queue_count = @logger.metrics.counter(self, "multiqueue-queues")
-
-    # TODO(sissel): gauge not implemented yet.
-    #@metric_queue_items = @logger.metrics.gauge(self, "multiqueue-items") { size }
 
     # Set the logger for all known queues, too.
     @queues.each do |q|
@@ -30,9 +25,7 @@ class LogStash::MultiQueue
   # Push an object to all queues.
   public
   def push(object)
-    @metric_queue_write.time do
-      @queues.each { |q| q.push(object) }
-    end
+    @queues.each { |q| q.push(object) }
   end # def push
   alias :<< :push
 
@@ -42,7 +35,6 @@ class LogStash::MultiQueue
   public
   def add_queue(queue)
     @mutex.synchronize do
-      @metric_queue_count.incr
       @queues << queue
     end
   end # def add_queue
@@ -50,7 +42,6 @@ class LogStash::MultiQueue
   public
   def remove_queue(queue)
     @mutex.synchronize do
-      @metric_queue_count.decr
       @queues.delete(queue)
     end
   end # def remove_queue

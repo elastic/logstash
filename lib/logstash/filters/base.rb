@@ -19,6 +19,10 @@ class LogStash::Filters::Base < LogStash::Plugin
   # Optional.
   config :tags, :validate => :array, :default => []
 
+  # Only handle events without any of these tags. Note this check is
+  # additional to type and tags.
+  config :exclude_tags, :validate => :array, :default => []
+
   # If this filter is successful, add arbitrary tags to the event.
   # Tags can be dynamic and include parts of the event using the %{field}
   # syntax. Example:
@@ -60,7 +64,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   #  and the %{@source} piece replaced with that value from the event.
   config :add_field, :validate => :hash, :default => {}
 
-  RESERVED = ["type", "tags", "add_tag", "remove_tag", "add_field"]
+  RESERVED = ["type", "tags", "add_tag", "remove_tag", "add_field", "exclude_tags"]
 
   public
   def initialize(params)
@@ -75,20 +79,13 @@ class LogStash::Filters::Base < LogStash::Plugin
   end # def register
 
   public
-  def prepare_metrics
-    @filter_metric = @logger.metrics.timer(self)
-  end # def prepare_metrics
-
-  public
   def filter(event)
     raise "#{self.class}#filter must be overidden"
   end # def filter
 
   public
   def execute(event, &block)
-    @filter_metric.time do
-      filter(event, &block)
-    end
+    filter(event, &block)
   end # def execute
 
   public
@@ -135,6 +132,13 @@ class LogStash::Filters::Base < LogStash::Plugin
     if !@tags.empty?
       if (event.tags & @tags).size != @tags.size
         @logger.debug(["Dropping event because tags don't match #{@tags.inspect}", event])
+        return false
+      end
+    end
+
+    if !@exclude_tags.empty?
+      if (diff_tags = (event.tags & @exclude_tags)).size != 0
+        @logger.debug(["Dropping event because tags contains excluded tags: #{diff_tags.inspect}", event])
         return false
       end
     end

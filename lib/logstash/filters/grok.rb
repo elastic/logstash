@@ -163,7 +163,15 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
       @logger.debug("Trying pattern", :pile => pile, :field => field )
       (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |fieldvalue|
-        grok, match = pile.match(fieldvalue)
+        begin
+          grok, match = pile.match(fieldvalue)
+        rescue Exception => e
+          fieldvalue_bytes = []
+          fieldvalue.bytes.each { |b| fieldvalue_bytes << b }
+          @logger.warn("Grok regexp threw exception", :exception => e.message,
+                       :field => field, :grok_pile => pile,
+                       :fieldvalue_bytes => fieldvalue_bytes)
+        end
         next unless match
         matched = true
         done = true if @break_on_match

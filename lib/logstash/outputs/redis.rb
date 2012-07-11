@@ -44,6 +44,21 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # TODO set required true
   config :data_type, :validate => [ "list", "channel" ], :required => false
 
+  # Set to true if you want redis to batch up values and send 1 RPUSH command
+  # instead of one command per value to push on the list.  Note that this only
+  # works with data_type="list" mode right now.
+  #
+  # If true, we send an RPUSH every "batch_events" events or
+  # "batch_timeout" seconds (whichever comes first).
+  config :batch, :validate => :boolean, :default => false
+
+  # If batch is set to true, the number of events we queue up for an RPUSH.
+  config :batch_events, :validate => :number, :default => 50
+
+  # If batch is set to true, the maximum amount of time between RPUSH commands
+  # when there are pending events to flush.
+  config :batch_timeout, :validate => :number, :default => 5
+
   public
   def register
     require 'redis'
@@ -66,7 +81,24 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     end
     # end TODO
 
+    @pending = Hash.new { |h, k| h[k] = [] }
+    @last_pending_flush = Time.now.to_f
+    if @batch and @data_type != "list"
+      raise RuntimeError.new(
+        "batch is not supported with data_type #{@data_type}"
+      )
+    end
+
+    if @batch
+      @flush_thread = Thread.new do
+        while sleep(@batch_timeout) do
+          process_pending(true)
+        end
+      end
+    end
+
     @redis = nil
+    @pending_mutex = Mutex.new
   end # def register
 
   private
@@ -91,6 +123,12 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
+    if @batch
+      @pending[event.sprintf(@key)] << event.to_json
+      process_pending
+      return
+    end
+
     begin
       @redis ||= connect
       if @data_type == 'list'
@@ -106,8 +144,48 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     end
   end # def receive
 
+  private
+  def process_pending(force=false)
+    if !@pending_mutex.try_lock # failed to get lock
+      return
+    end
+
+    pending_count = 0
+    @pending.each { |k, v| pending_count += v.length }
+    time_since_last_flush = Time.now.to_f - @last_pending_flush
+
+    if (force && pending_count > 0) ||
+       (pending_count >= @batch_events) ||
+       (time_since_last_flush >= @batch_timeout && pending_count > 0)
+      @logger.debug("Flushing redis output",
+                    :pending_count => pending_count,
+                    :time_since_last_flush => time_since_last_flush,
+                    :batch_events => @batch_events,
+                    :batch_timeout => @batch_timeout,
+                    :force => force)
+      begin
+        @redis ||= connect
+        @pending.each do |k, v|
+          @redis.rpush(k, v)
+          @pending.delete(k)
+        end
+        @last_pending_flush = Time.now.to_f
+      rescue => e
+        @pending_mutex.unlock
+        @logger.warn("Failed to send backlog of events to redis",
+                     :pending => pending,
+                     :identity => identity, :exception => e,
+                     :backtrace => e.backtrace)
+        raise e
+      end
+    end
+
+    @pending_mutex.unlock
+  end
+
   public
   def teardown
+    process_pending(true)
     if @data_type == 'channel' and @redis
       @redis.quit
       @redis = nil

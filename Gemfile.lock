@@ -10,15 +10,14 @@ GEM
     backports (2.3.0)
     beefcake (0.3.7)
     bouncy-castle-java (1.5.0146.1)
-    bson (1.6.4)
     bson (1.6.4-java)
     builder (3.0.0)
     bunny (0.7.9)
     cabin (0.4.4)
       json
+    cinch (2.0.3)
     coderay (1.0.6)
     excon (0.14.0)
-    ffi (1.0.11)
     ffi (1.0.11-java)
     ffi-rzmq (0.9.0)
     filewatch (0.3.3)
@@ -42,7 +41,6 @@ GEM
       rubyzip
     heroku-api (0.2.4)
       excon (~> 0.14.0)
-    http_parser.rb (0.5.3)
     http_parser.rb (0.5.3-java)
     httparty (0.8.3)
       multi_json (~> 1.0)
@@ -50,14 +48,12 @@ GEM
     i18n (0.6.0)
     jls-grok (0.10.7)
       cabin (~> 0.4.0)
-    jruby-elasticsearch (0.0.13)
+    jruby-elasticsearch (0.0.14)
+    jruby-httpclient (1.1.0-java)
     jruby-openssl (0.7.7)
       bouncy-castle-java (>= 1.5.0146.1)
     jruby-win32ole (0.8.5)
-    json (1.6.5)
     json (1.6.5-java)
-    launchy (2.1.0)
-      addressable (~> 2.2.6)
     launchy (2.1.0-java)
       addressable (~> 2.2.6)
       ffi (~> 1.0.9)
@@ -78,14 +74,9 @@ GEM
     multi_json (1.3.6)
     multi_xml (0.5.1)
     netrc (0.7.4)
-    nokogiri (1.5.3)
     nokogiri (1.5.3-java)
     onstomp (1.0.6)
     polyglot (0.3.3)
-    pry (0.9.9.6)
-      coderay (~> 1.0.5)
-      method_source (~> 0.7.1)
-      slop (>= 2.4.4, < 3)
     pry (0.9.9.6-java)
       coderay (~> 1.0.5)
       method_source (~> 0.7.1)
@@ -136,6 +127,8 @@ DEPENDENCIES
   aws-sdk
   bunny
   cabin (= 0.4.4)
+  cinch
+  excon
   ffi
   ffi-rzmq (= 0.9.0)
   filewatch (= 0.3.3)
@@ -146,7 +139,8 @@ DEPENDENCIES
   haml
   heroku
   jls-grok (= 0.10.7)
-  jruby-elasticsearch (= 0.0.13)
+  jruby-elasticsearch (= 0.0.14)
+  jruby-httpclient
   jruby-openssl
   jruby-win32ole
   json

@@ -28,8 +28,6 @@ class LogStash::Outputs::Pipe < LogStash::Outputs::Base
   def register
     @pipes = {}
     @last_stale_cleanup_cycle = Time.now
-    @metric_write_delay = @logger.metrics.timer(self, "write-delay")
-    @metric_write_bytes = @logger.metrics.histogram(self, "write-bytes")
   end # def register
 
   public
@@ -45,15 +43,12 @@ class LogStash::Outputs::Pipe < LogStash::Outputs::Base
       output = event.to_json
     end
 
-    @metric_write_delay.time do
-      begin
-        pipe.puts(output)
-      rescue IOError, Errno::EPIPE => e
-        @logger.error("Error writing to pipe, closing pipe.", :command => command, :pipe => pipe)
-        drop_pipe(command)
-      end
+    begin
+      pipe.puts(output)
+    rescue IOError, Errno::EPIPE => e
+      @logger.error("Error writing to pipe, closing pipe.", :command => command, :pipe => pipe)
+      drop_pipe(command)
     end
-    @metric_write_bytes.record(output.size)
 
     close_stale_pipes
   end # def receive
