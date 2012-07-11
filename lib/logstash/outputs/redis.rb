@@ -157,7 +157,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     if (force && pending_count > 0) ||
        (pending_count >= @batch_events) ||
        (time_since_last_flush >= @batch_timeout && pending_count > 0)
-      @logger.warn("Flushing redis output",
+      @logger.debug("Flushing redis output",
                     :pending_count => pending_count,
                     :time_since_last_flush => time_since_last_flush,
                     :batch_events => @batch_events,
