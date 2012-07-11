@@ -193,6 +193,10 @@ class LogStash::Event
   # is an array (or hash?) should be. Join by comma? Something else?
   public
   def sprintf(format)
+    if format.index("%").nil?
+      return format
+    end
+
     return format.gsub(/%\{[^}]+\}/) do |tok|
       # Take the inside of the %{ ... }
       key = tok[2 ... -1]
