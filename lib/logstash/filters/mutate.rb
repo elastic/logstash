@@ -84,9 +84,9 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # 
   # Example:
   # 
-  # 	mutate {
-  # 	  uppercase => [ "fieldname" ]
-  #		}
+  #    mutate {
+  #      uppercase => [ "fieldname" ]
+  #    }
   # 
   config :uppercase, :validate => :array
   
@@ -94,9 +94,9 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # 
   # Example:
   # 
-  # 	mutate {
-  # 	  lowercase => [ "fieldname" ]
-  #		}
+  #   mutate {
+  #     lowercase => [ "fieldname" ]
+  #   }
   # 
   config :lowercase, :validate => :array
 
@@ -137,8 +137,8 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     replace(event) if @replace
     convert(event) if @convert
     gsub(event) if @gsub
-	uppercase(event) if @uppercase
-	lowercase(event) if @lowercase
+    uppercase(event) if @uppercase
+    lowercase(event) if @lowercase
 
     filter_matched(event)
   end # def filter
@@ -230,24 +230,25 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   
   private
   def uppercase(event)
-	 @uppercase.each do |field|
-		 if event[field].is_a?(String)
-		 	event[field].upcase!
-		 else
-			 @logger.debug("Can't uppercase something that isn't a string",
-						   :field => field, :value => event[field])
-		 end
-	 end
+    @uppercase.each do |field|
+      if event[field].is_a?(String)
+        event[field].upcase!
+      else
+        @logger.debug("Can't uppercase something that isn't a string",
+                      :field => field, :value => event[field])
+      end
+    end
   end # def uppercase
+
   private
   def lowercase(event)
-	 @lowercase.each do |field|
-		 if event[field].is_a?(String)
-			 event[field].downcase!
-		 else
-			 @logger.debug("Can't lowercase something that isn't a string",
-						   :field => field, :value => event[field])
-		 end
-	 end
+    @lowercase.each do |field|
+      if event[field].is_a?(String)
+        event[field].downcase!
+      else
+        @logger.debug("Can't lowercase something that isn't a string",
+                      :field => field, :value => event[field])
+      end
+    end
   end # def lowercase
 end # class LogStash::Filters::Mutate
