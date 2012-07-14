@@ -5,6 +5,7 @@
                         opentsdb, pagerduty, irc
   * New filter plugins: zeromq, environment, xml, csv, syslog_pri
   * Fixes for gelf output
+  * Support for more than 1 filter worker (agent argument "-w")
 
  ## IMPORTANT CHANGES FOR UPGRADES FROM 1.1.0
   - zeromq input and output rewritten
