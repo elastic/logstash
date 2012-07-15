@@ -41,7 +41,7 @@ class LogStashConfigDocGenerator
         # nothing
       else
         # Join extended lines
-        if line =~ /(, *$)|(\\$)/
+        if line =~ /(, *$)|(\\$)|(\[ *$)/
           buffer += line.gsub(/\\$/, "")
           next
         end
@@ -144,6 +144,12 @@ class LogStashConfigDocGenerator
 
     # Now parse the real library
     code = File.new(file).read
+
+    # inputs either inherit from Base or Threadable.
+    if code =~ /\< LogStash::Inputs::Threadable/
+      parse(File.new(File.join(File.dirname(file), "threadable.rb"), "r").read)
+    end
+
     parse(code)
 
     puts "Generating docs for #{file}"
