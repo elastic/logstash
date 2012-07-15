@@ -3,8 +3,6 @@ require "logstash/namespace"
 require "logstash/util/socket_peer"
 require "socket"
 require "timeout"
-require "java"
-require "jruby/serialization"
 
 # Read events over a TCP socket from Log4j SocketAppender.
 #
@@ -39,6 +37,9 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
 
   public
   def register
+    require "java"
+    require "jruby/serialization"
+
     if server?
       @logger.info("Starting Log4j input listener", :address => "#{@host}:#{@port}")
       @server_socket = TCPServer.new(@host, @port)
