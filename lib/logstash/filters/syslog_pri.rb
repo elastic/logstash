@@ -44,7 +44,7 @@ class LogStash::Filters::Syslog_pri < LogStash::Filters::Base
     "local4",
     "local5",
     "local6",
-    "local7"
+    "local7",
   ]
 
   # Labels for severity levels. This comes from RFC3164.
@@ -56,7 +56,7 @@ class LogStash::Filters::Syslog_pri < LogStash::Filters::Base
     "warning",
     "notice",
     "informational",
-    "debug"
+    "debug",
   ]
 
   public
