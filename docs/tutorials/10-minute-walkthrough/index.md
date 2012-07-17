@@ -44,7 +44,7 @@ Press ^C to kill it.
     java -jar logstash-%VERSION%-monolithic.jar agent -f hello-search.conf
 
 Same config as step 2, but now we are also writing events to ElasticSearch. Do
-a search for '*' (all):
+a search for `*` (all):
 
     curl 'http://localhost:9200/_search?pretty=1&q=*'
 
@@ -109,7 +109,7 @@ Logstash should be all set for you now. Start feeding it logs:
 
 Go to the logstash web interface in browser: <http://localhost:9292/>
 
-Try some search queries. To see all the data, search for '*' (no quotes). Click
+Try some search queries. To see all the data, search for `*` (no quotes). Click
 on some results, drill around in some logs.
 
 ## Want more?
