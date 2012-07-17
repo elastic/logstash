@@ -39,20 +39,26 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
   # in the Riemann event
   config :sender, :validate => :string, :default => "%{@source_host}"
 
-  # Hash to set Riemann fields
-  # Values are passed through event.sprintf
-  # so macros are usable here
+  # A Hash to set Riemann event fields 
+  # (<http://aphyr.github.com/riemann/concepts.html>).
   #
-  # See Events here:
-  # <http://aphyr.github.com/riemann/concepts.html>
+  # The following event fields are supported:
+  # `description`, `state`, `metric`, `ttl`, `service`
   #
-  # The following keys are supported:
-  # description, state, metric, ttl, service
+  # Example:
   #
-  # i.e
-  # riemann_event => ["state", "up", "ttl" => "600", "metric" => %{bytes}]
-  # Description, by default, will be set to the event message
-  # but can be overridden here
+  #     riemann {
+  #         riemann_event => [ 
+  #             "metric", "%{metric}",
+  #             "service", "%{service}"
+  #         ]
+  #     }
+  #
+  # `metric` and `ttl` values will be coerced to a floating point value. 
+  # Values which cannot be coerced will zero (0.0).
+  #
+  # `description`, by default, will be set to the event message
+  # but can be overridden here.
   config :riemann_event, :validate => :hash
 
   #
@@ -82,9 +88,8 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
           @logger.warn("Invalid key specified in riemann_event", :key => key)
           next
         end
-        if ["ttl","metric"].include?(key) 
-          val = val.to_f if ["ttl","metric"].include?(key)
-          r_event[key.to_sym] = val
+        if ["ttl","metric"].include?(key)
+          r_event[key.to_sym] = event.sprintf(val).to_f
         else
           r_event[key.to_sym] = event.sprintf(val)
         end
