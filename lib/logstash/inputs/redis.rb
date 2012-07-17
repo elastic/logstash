@@ -93,7 +93,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
       :port => @port,
       :timeout => @timeout,
       :db => @db,
-      :password => @password
+      :password => @password.value
     )
   end # def connect
 
