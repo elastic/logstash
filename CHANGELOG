@@ -1,3 +1,18 @@
+1.1.2 (???, 2012)
+ ## Overview of this release:
+
+ ## IMPORTANT CHANGES FOR UPGRADES FROM 1.1.1
+
+ ## general
+
+ ## inputs
+ - bugfix: redis: [LOGSTASH-526] fix bug with password passing
+
+ ## filters
+
+ ## outputs
+ - bugfix: redis: [LOGSTASH-526] fix bug with password passing
+
 1.1.1 (July 14, 2012)
  ## Overview of this release:
   * New input plugins: generator, heroku, pipe, ganglia, irc
