@@ -12,6 +12,8 @@
 
  ## outputs
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
+ - improvement: riemann: metric and ttl values in riemann_event now support
+   sprintf %{foo} values. (pull #174)
 
 1.1.1 (July 14, 2012)
  ## Overview of this release:
