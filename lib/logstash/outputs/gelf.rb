@@ -76,7 +76,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     @level_map = {
       "debug" => 7, "d" => 7,
       "info" => 6, "i" => 6,
-      "notice" => 5, "w" => 5,
+      "notice" => 5, "n" => 5,
       "warn" => 4, "w" => 4,
       "error" => 3, "e" => 3,
       "critical" => 2, "c" => 2,
