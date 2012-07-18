@@ -77,7 +77,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
       "debug" => 7, "d" => 7,
       "info" => 6, "i" => 6,
       "notice" => 5, "n" => 5,
-      "warn" => 4, "w" => 4,
+      "warn" => 4, "w" => 4, "warning" => 4,
       "error" => 3, "e" => 3,
       "critical" => 2, "c" => 2,
       "alert" => 1, "a" => 1,
