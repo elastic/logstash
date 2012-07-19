@@ -22,7 +22,6 @@ describe LogStash::Filters::Split do
     end
 
     @filter = LogStash::Filters::Split.new(cfg)
-    @filter.prepare_metrics
   end
 
   test "default behavior" do

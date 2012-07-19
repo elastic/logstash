@@ -1,11 +1,12 @@
 require "logstash/inputs/base"
+require "logstash/inputs/threadable"
 require "logstash/namespace"
 
 # Read events from a redis. Supports both redis channels and also redis lists
 # (using BLPOP)
 #
 # For more information about redis, see <http://redis.io/>
-class LogStash::Inputs::Redis < LogStash::Inputs::Base
+class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
 
   config_name "redis"
   plugin_status "beta"
@@ -92,7 +93,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Base
       :port => @port,
       :timeout => @timeout,
       :db => @db,
-      :password => @password
+      :password => @password.value
     )
   end # def connect
 

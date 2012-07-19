@@ -108,7 +108,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       :port => @port,
       :timeout => @timeout,
       :db => @db,
-      :password => @password
+      :password => @password.value
     )
   end # def connect
 

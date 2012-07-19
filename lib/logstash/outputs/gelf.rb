@@ -63,14 +63,26 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     # shipped
     @gelf.level = 0
 
+    # Since we use gelf-rb which assumes the severity level integer
+    # is coming from a ruby logging subsystem, we need to instruct it
+    # that the levels we provide should be mapped directly since they're
+    # already RFC 5424 compliant
+    # this requires gelf-rb commit bb1f4a9 which added the level_mapping def
+    level_mapping = Hash.new
+    (0..7).step(1) { |l| level_mapping[l]=l }
+    @gelf.level_mapping = level_mapping
+
+    # these are syslog words and abbreviations mapped to RFC 5424 integers
     @level_map = {
       "debug" => 7, "d" => 7,
       "info" => 6, "i" => 6,
-      "warn" => 5, "w" => 5,
-      "error" => 4, "e" => 4,
-      "fatal" => 3, "f" => 3,
-      "unknown" => 1, "u" => 1,
-    }
+      "notice" => 5, "n" => 5,
+      "warn" => 4, "w" => 4, "warning" => 4,
+      "error" => 3, "e" => 3,
+      "critical" => 2, "c" => 2,
+      "alert" => 1, "a" => 1,
+      "emergency" => 0, "e" => 0,
+     }
   end # def register
 
   public

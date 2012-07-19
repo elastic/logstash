@@ -24,11 +24,11 @@ Note that this is not a full-fledged tutorial on ZeroMQ. It is a tutorial on how
 # ZeroMQ and logstash
 In the spirit of ZeroMQ, Logstash takes these socket type pairs and uses them to create topologies with some very simply rules that make usage very easy to understand:
 
-- The receiving end of a socket pair is always a logstash input
-- The sending end of a socket pair is always a logstash output
-- By default, inputs `bind`/listen and outputs `connect`
-- Logstash refers to the socket pairs as topologies and mirrors the naming scheme from ZeroMQ
-- By default, ZeroMQ inputs listen on all interfaces on port 2120, ZeroMQ outputs connect to `localhost` on port 2120
+* The receiving end of a socket pair is always a logstash input
+* The sending end of a socket pair is always a logstash output
+* By default, inputs `bind`/listen and outputs `connect`
+* Logstash refers to the socket pairs as topologies and mirrors the naming scheme from ZeroMQ
+* By default, ZeroMQ inputs listen on all interfaces on port 2120, ZeroMQ outputs connect to `localhost` on port 2120
 
 The currently understood Logstash topologies for ZeroMQ inputs and outputs are:
 
@@ -43,31 +43,23 @@ By keeping the options simple, this allows you to get started VERY easily with w
 * _node agent lives at 192.168.1.2_
 * _indexer agent lives at 192.168.1.1_
 
-```
-# Node agent config
-input { stdin { type => "test-stdin-input" } }
-output { zeromq { topology => "pubsub" address => "tcp://192.168.1.1.:2120" } }
-```
+    # Node agent config
+    input { stdin { type => "test-stdin-input" } }
+    output { zeromq { topology => "pubsub" address => "tcp://192.168.1.1.:2120" } }
 
-```
-# Indexer agent config
-input { zeromq { topology => "pubsub" } }
-output { stdout { debug => true }}
-```
+    # Indexer agent config
+    input { zeromq { topology => "pubsub" } }
+    output { stdout { debug => true }}
 
 If for some reason you need connections to initiate from the indexer because of firewall rules:
 
-```
-# Node agent config - now listening on all interfaces port 2120
-input { stdin { type => "test-stdin-input" } }
-output { zeromq { topology => "pubsub" address => "tcp://*.:2120" mode => "server" } }
-```
+    # Node agent config - now listening on all interfaces port 2120
+    input { stdin { type => "test-stdin-input" } }
+    output { zeromq { topology => "pubsub" address => "tcp://*.:2120" mode => "server" } }
 
-```
-# Indexer agent config
-input { zeromq { topology => "pubsub" address => "tcp://192.168.1.2" mode => "client" } }
-output { stdout { debug => true }}
-```
+    # Indexer agent config
+    input { zeromq { topology => "pubsub" address => "tcp://192.168.1.2" mode => "client" } }
+    output { stdout { debug => true }}
 
 As stated above, by default `inputs` always start as listeners and `outputs` always start as initiators. Please don't confuse what happens once the socket is connect with the direction of the connection. ZeroMQ separates connection from topology. In the second case of the above configs, once the two sockets are connected, regardless of who initiated the connection, the message flow itself is absolute. The indexer is reading events from the node.
 
@@ -98,18 +90,14 @@ For pretty much all cases, you'll be using `tcp://` transports with Logstash.
 ## Topic - applies to `pubsub`
 This opt mimics the routing keys functionality in AMQP. Imagine you have a network of receivers but only a subset of the messages need to be seen by a subset of the hosts. You can use this option as a routing key to facilite that:
 
-```
-# This output is a PUB
-output {
-  zeromq { topology => "pubsub" topic => "logs.production.%{host}" }
-}
-```
+    # This output is a PUB
+    output {
+    zeromq { topology => "pubsub" topic => "logs.production.%{host}" }
+    }
 
-```
-# This input is a SUB
-# I only care about db1 logs
-input { zeromq { type => "db1logs" address => "tcp://<ipaddress>:2120" topic => "logs.production.db1"}}
-```
+    # This input is a SUB
+    # I only care about db1 logs
+    input { zeromq { type => "db1logs" address => "tcp://<ipaddress>:2120" topic => "logs.production.db1"}}
 
 One thing important to note about 0mq PUBSUB and topics is that all filtering is done on the subscriber side. The subscriber will get ALL messages but discard any that don't match the topic.
 
@@ -128,4 +116,3 @@ TODO
 
 ## ZMQ::IDENTITY
 TODO
-
