@@ -244,7 +244,7 @@ class LogStash::Agent
       else
         # Get a list of files matching a glob. If the user specified a single
         # file, then this will only have one match and we are still happy.
-        paths = Dir.glob(@config_path)
+        paths = Dir.glob(@config_path).sort
       end
 
       concatconfig = []
