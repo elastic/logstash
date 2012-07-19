@@ -21,7 +21,12 @@ describe LogStash::Event do
   test "sprintf should join array fields by comma" do
     @event.fields["foo"] = ["one", "two", "three"]
     assert_equal(@event.fields["foo"].join(","), @event.sprintf("%{foo}"))
-  end # sprintf testing
+  end # sprintf array testing
+
+  test "sprintf should represent hash fields as json" do
+    @event.fields["foo"] = { "hello" => "world", "foo" => 123 }
+    assert_equal(@event.fields["foo"].to_json, @event.sprintf("%{foo}"))
+  end # sprintf hash formatting
 
   test "sprintf should not error when a token does not exist" do
     assert_equal("%{foo}", @event.sprintf("%{foo}"))
