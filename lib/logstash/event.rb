@@ -243,11 +243,13 @@ class LogStash::Event
           end # key.split.each
         end # if self[key]
 
-        # TODO(petef): what if value.is_a?(Hash)?
-        if value.nil?
+        case value
+        when nil
           tok # leave the %{foo} if this field does not exist in this event.
-        elsif value.is_a?(Array)
-          value.join(",") # Join by ',' if value is an rray
+        when Array
+          value.join(",") # Join by ',' if value is an array
+        when Hash
+          value.to_json # Convert hashes to json
         else
           value # otherwise return the value
         end
