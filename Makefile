@@ -16,7 +16,7 @@ JRUBYC=java -Djruby.compat.version=RUBY1_9 -jar $(PWD)/$(JRUBY) -S jrubyc
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 JODA=vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
-PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/base.rb$$')
+PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 GEM_HOME=build/gems
 QUIET=@
 

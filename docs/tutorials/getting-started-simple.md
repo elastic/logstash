@@ -177,6 +177,10 @@ Now run it all (again. Be sure to stop your previous Logstash tests!):
 
 Point your browser at <http://yourserver:9292> and start searching!
 
+*Note*: If things are not working, such as you get an error message while
+searching, like 'SERVICE_UNAVAILABLE' or some other elasticsearch error, you
+should check that your firewall (local, too) is not blocking multicast.
+
 ## Futher reading
 
 Want to know more about the configuration language? Check out the

@@ -25,18 +25,56 @@ class LogStash::Outputs::MetricCatcher < LogStash::Outputs::Base
   config :port, :validate => :number, :default => 1420
 
   # The metrics to send. This supports dynamic strings like %{@source_host}
-  # for metric names and also for values. This is a hash field with key 
-  # of the metric name, value of the metric value. Example:
-  #
-  #   counter => [ "%{@source_host}.apache.hits", "1", "widgets.served.doubled", "2" ]
-  #   meter => [ "%{@source_host}.apache.response.%{response}", "1" ]
+  # for metric names and also for values. This is a hash field with key
+  # of the metric name, value of the metric value.
   #
   # The value will be coerced to a floating point value. Values which cannot be
   # coerced will zero (0)
-  @@metric_types = ["gauge", "counter", "meter", "biased", "uniform", "timer"]
-  @@metric_types.each do |metric_type|
-    config metric_type, :validate => :hash
-  end
+  config :gauge, :validate => :hash
+
+  # The metrics to send. This supports dynamic strings like %{@source_host}
+  # for metric names and also for values. This is a hash field with key
+  # of the metric name, value of the metric value. Example:
+  #
+  #   counter => [ "%{@source_host}.apache.hits.%{response}, "1" ]
+  #
+  # The value will be coerced to a floating point value. Values which cannot be
+  # coerced will zero (0)
+  config :counter, :validate => :hash
+
+  # The metrics to send. This supports dynamic strings like %{@source_host}
+  # for metric names and also for values. This is a hash field with key
+  # of the metric name, value of the metric value.
+  #
+  # The value will be coerced to a floating point value. Values which cannot be
+  # coerced will zero (0)
+  config :meter, :validate => :hash
+
+  # The metrics to send. This supports dynamic strings like %{@source_host}
+  # for metric names and also for values. This is a hash field with key
+  # of the metric name, value of the metric value.
+  #
+  # The value will be coerced to a floating point value. Values which cannot be
+  # coerced will zero (0)
+  config :biased, :validate => :hash
+
+  # The metrics to send. This supports dynamic strings like %{@source_host}
+  # for metric names and also for values. This is a hash field with key
+  # of the metric name, value of the metric value.
+  #
+  # The value will be coerced to a floating point value. Values which cannot be
+  # coerced will zero (0)
+  config :uniform, :validate => :hash
+
+  # The metrics to send. This supports dynamic strings like %{@source_host}
+  # for metric names and also for values. This is a hash field with key
+  # of the metric name, value of the metric value. Example:
+  #
+  #   timer => [ "%{@source_host}.apache.response_time, "%{response_time}" ]
+  #
+  # The value will be coerced to a floating point value. Values which cannot be
+  # coerced will zero (0)
+  config :timer, :validate => :hash
 
   def register
     @socket = UDPSocket.new
