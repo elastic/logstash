@@ -40,17 +40,20 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
     elsif frame==false
       return false
     elsif frame['command']!='open'
+      @logger.warn('Relp client attempted to open connection with '+frame['command'])
       return false
     else
       @logger.debug("Recieved relp offer: #{frame.to_s}")
       offer=Hash[*frame['message'].scan(/^(.*)=(.*)$/).flatten]
       if offer['relp_version'].nil?
         #if no version specified, relp spec says we must close connection
+        @logger.error('No relp_version specified')
         relp_serverclose(socket)
         return false
       elsif ! offer['commands'].split(',').include?('syslog')
         #if it can't send us syslog it's useless to us; close the connection
         relp_serverclose(socket)
+        @logger.error('Relp client incapable of syslog')
         return false
       else
         #attempt to set up connection
@@ -61,6 +64,7 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
         response_frame['message']='200 OK relp_version=0'+"\n"+'relp_software=logstash,1.0.0,http://logstash.net'+"\n"+'commands=syslog'
         begin
           relp_frame_write(socket,response_frame)
+          @logger.info('Relp connection sucessfully negotiated with '+socket.peer)
           return true
         rescue
           @logger.warning('Broken connection with '+socket.peer)
@@ -75,13 +79,13 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   def relp_stream(socket,output_queue,event_source)
     loop do
       frame=relp_frame_read(socket)
-
       if frame['command']=='syslog'
         event=self.to_event(frame['message'],event_source)
         output_queue << event
         #To get this far, the message must have made it into the queue for filtering. I don't think it's possible to wait for output before ack without fundamentally breaking the plugin architecture
         relp_ack(socket,frame['txnr'])
       elsif frame['command']=='close'
+        @logger.info('Close received from relp client'+socket.peer)
         #the client is closing the connection, acknowledge the close and act on it
         response_frame=Hash.new
         response_frame['txnr']=frame['txnr']
@@ -89,13 +93,18 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
         relp_frame_write(socket,response_frame)
         relp_serverclose(socket)
         #TODO: completed without errors?
-        return 0
+        return true
       else
-        #the client is trying to do something else, we can either ignore it or send it serverclose
-        #TODO: we should have cases for all basic commands, anything else we didn't offer should cause a serverclose right?
+        #the client is trying to do something unexpected
+        if relp_valid_command?(frame['command'])
+          @logger.error('Inappropriate relp command '+frame['command'])
+        else
+          @logger.error('Invalid relp command '+frame['command'])
+        end
+        #This should deal with framing errors/invalid input most of the time; TODO: look at being more stringent somewhere
         relp_serverclose(socket)
         #TODO: sort out these error codes
-        return 1
+        return false
       end
     end
   end
@@ -121,12 +130,29 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   end
 
   private
+  def relp_valid_command?(command)
+    valid_commands=Array.new
+    valid_commands << 'open'
+    valid_commands << 'close'
+    valid_commands << 'syslog'
+    #Don't accept serverclose or rsp as valid commands because this is the server
+    #TODO: vague mentions of abort and starttls commands in spec need looking into
+    return valid_commands.include?(command)
+  end
+
+  private
   def relp_serverclose(socket)
     frame=Hash.new
     frame['txnr']=0
     frame['command']='serverclose'
-    relp_frame_write(socket,frame)
-    socket.close
+    begin
+      peer=socket.peer
+      relp_frame_write(socket,frame)
+      socket.close
+      @logger.info('Relp connection to '+peer+' closed')
+    rescue
+      @logger.info('Relp connection already closed by client')
+    end
   end
 
   #frame is a hash including at minimum txnr,command and optionally message
@@ -135,8 +161,8 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
     frame['txnr']=frame['txnr'].to_s
     frame['message']='' if frame['message'].nil?
     frame['datalen']=frame['message'].length.to_s
-    wiredata=[frame['txnr'],frame['command'],frame['datalen'],frame['message']].join(' ').strip+"\n"
     #Ending each frame with a newline is required in the specifications
+    wiredata=[frame['txnr'],frame['command'],frame['datalen'],frame['message']].join(' ').strip+"\n"
     socket.write(wiredata)
   end
 
@@ -167,7 +193,6 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
 #TODO: deal with stream unexpectedly closing
         rescue
           puts 'rescue'
-#TODO: what if the socket is already closed?
           socket.close
         end
       end # Thread.start
