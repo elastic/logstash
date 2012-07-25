@@ -33,25 +33,40 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   #give it a socket, it'll wait for a relp open frame and do the handshake
   private
   def relp_initialise(socket)
-    # Throw away everything until we find a RELP frame with open command
-    #TODO: is this really the best thing to do if we're sent something that's not an open frame?
-    frame=relp_frame_read(socket) until !frame.nil? && frame['command']=='open'
-    @logger.debug("Recieved relp offer: #{frame.to_s}")
-    offer=Hash[*frame['message'].scan(/^(.*)=(.*)$/).flatten]
-    if offer['relp_version'].nil?
-      #if no version specified, relp spec says we must close connection
-      relp_serverclose(socket)
-    elsif ! offer['commands'].split(',').include?('syslog')
-      #if it can't send us syslog it's useless to us; close the connection
-      relp_serverclose(socket)
+    #TODO: while this logic works, it's not very readable- exeptions are probably a better thing to do
+    frame=relp_frame_read(socket)
+    if frame.nil?
+      return false
+    elsif frame==false
+      return false
+    elsif frame['command']!='open'
+      return false
     else
-      #attempt to set up connection
-      response_frame=Hash.new
-      response_frame['txnr']=frame['txnr']
-      response_frame['command']='rsp'
-      #TODO: the values in this message probably ought to be constants defined at the top somewhere
-      response_frame['message']='200 OK relp_version=0'+"\n"+'relp_software=logstash,1.0.0,http://logstash.net'+"\n"+'commands=syslog'
-      relp_frame_write(socket,response_frame)
+      @logger.debug("Recieved relp offer: #{frame.to_s}")
+      offer=Hash[*frame['message'].scan(/^(.*)=(.*)$/).flatten]
+      if offer['relp_version'].nil?
+        #if no version specified, relp spec says we must close connection
+        relp_serverclose(socket)
+        return false
+      elsif ! offer['commands'].split(',').include?('syslog')
+        #if it can't send us syslog it's useless to us; close the connection
+        relp_serverclose(socket)
+        return false
+      else
+        #attempt to set up connection
+        response_frame=Hash.new
+        response_frame['txnr']=frame['txnr']
+        response_frame['command']='rsp'
+        #TODO: the values in this message probably ought to be constants defined at the top somewhere
+        response_frame['message']='200 OK relp_version=0'+"\n"+'relp_software=logstash,1.0.0,http://logstash.net'+"\n"+'commands=syslog'
+        begin
+          relp_frame_write(socket,response_frame)
+          return true
+        rescue
+          @logger.warning('Broken connection with '+socket.peer)
+          return false
+        end
+      end
     end
 #TODO: give a meaningful return value
   end
@@ -146,14 +161,16 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
         @logger.debug("Accepted connection", :client => s.peer,
                       :server => "#{@host}:#{@port}")
         begin
-          relp_initialise(s)
-          relp_stream(s,output_queue,"relp://#{@host}:#{@port}/s.peer")
+          if relp_initialise(s)
+            relp_stream(s,output_queue,"relp://#{@host}:#{@port}/s.peer")
+          end
 #TODO: deal with stream unexpectedly closing
         rescue
           puts 'rescue'
+#TODO: what if the socket is already closed?
           socket.close
         end
       end # Thread.start
     end # loop
   end # def run
-end # class LogStash::Inputs::Tcp
+end # class LogStash::Inputs::Relp
