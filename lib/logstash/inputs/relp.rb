@@ -2,13 +2,11 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require "logstash/util/socket_peer"
 require "socket"
-require "timeout"
 #TODO: remove before release
 require "pry"
-
 # Read RELP events over a TCP socket.
 #
-#
+#Application level acknowledgements allow assurance of no message loss. This only finctions as far as messages being put into the queue for filters- anything lost after that point will not be retransmitted
 class LogStash::Inputs::Relp < LogStash::Inputs::Base
 
   config_name "relp"
@@ -54,23 +52,25 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
         begin
           rs=RelpSocket.new(s)
           relp_stream(rs,output_queue,"relp://#{@host}:#{@port}/s.peer")
-          
-        rescue Exception => e
-          @logger.error('Unexpected error: '+e.message)
+        rescue RelpSocket::RelpError => e
+          @logger.error('Relp error: '+e.class.to_s+' '+e.message)#TODO: Still not happy with this, are they really error level? Will this catch everything I want it to?
           #Relp spec says to close connection on error
           s.close
         end
+        #Let garbage collection clear up after us
+        rs=nil
       end # Thread.start
     end # loop
   end # def run
 end # class LogStash::Inputs::Relp
 
+#TODO: Dumping a class here feels wrong; could be a separate gem, but would need full relp functionality not just this subset in order to make sense
 class RelpSocket #TODO: Should this be a subclass of TCPSocket?
 
   class RelpError < StandardError; end
   class InvalidCommand < RelpError; end
   class InappropriateCommand < RelpError; end
-  class ConnectionClosed < RelpError; end #TODO: should this be handled as an exception?
+  class ConnectionClosed < RelpError; end #TODO: should this be handled as an exception? There is both unexpected closing and proper closing covered by this- unexpected might be a legitimate exception; routine, not so much
   
   def initialize(socket)
     @socket=socket
@@ -80,11 +80,11 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
       if offer['relp_version'].nil?
         #if no version specified, relp spec says we must close connection
         self.serverclose
-        Raise RelpError 'No relp_version specified'
+        raise RelpError, 'No relp_version specified'
       elsif ! offer['commands'].split(',').include?('syslog')
         #if it can't send us syslog it's useless to us; close the connection TODO:Generalise relp class and make this optional
         self.serverclose
-        Raise RelpError 'Relp client incapable of syslog'
+        raise RelpError, 'Relp client incapable of syslog'
       else
         #attempt to set up connection
         response_frame=Hash.new
@@ -95,13 +95,13 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
         begin
           self.frame_write(response_frame)
         rescue
-          Raise ConnectionClosed#TODO:should I really be handling it like this? surely a general catchall somewhere for connection errors is a better idea?
+          raise ConnectionClosed#TODO:should I really be handling it like this? surely a general catchall somewhere for connection errors is a better idea?
         end
       end
     elsif RelpSocket.valid_command?(frame['command'])
-        Raise InappropriateCommand frame['command']+' expecting open'
+        raise InappropriateCommand, frame['command']+' expecting open'
     else
-        Raise InvalidCommand frame['command']
+        raise InvalidCommand, frame['command']
     end
   end
 
@@ -126,19 +126,18 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
       response_frame['command']='rsp'
       self.frame_write(response_frame)
       self.serverclose
-      raise ConnectionClosed
+      raise RelpSocket::ConnectionClosed
     else
       #the client is trying to do something unexpected
       self.serverclose
       #This should deal with framing errors/invalid input most of the time; TODO: look at being more stringent somewhere
       if RelpSocket.valid_command?(frame['command'])
-        Raise InappropriateCommand frame['command']+' expecting syslog'
+        raise InappropriateCommand, frame['command']+' expecting syslog'
       else
-        Raise InvalidCommand frame['command']
+        raise InvalidCommand, frame['command']
       end
     end
   end
-
 
   def serverclose
     frame=Hash.new
@@ -165,18 +164,22 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
   end
 
   def frame_read
-    frame=Hash.new
-    frame['txnr']=@socket.readline(' ').strip.to_i
-    frame['command']=@socket.readline(' ').strip
+    begin
+      frame=Hash.new
+      frame['txnr']=@socket.readline(' ').strip.to_i
+      frame['command']=@socket.readline(' ').strip
 
-    #Things get a little tricky here because if the length is 0 it is not followed by a space.
-    leading_digit=@socket.read(1)
-    if leading_digit=='0' then
-      frame['datalen']=0
-      frame['message']=''
-    else
-      frame['datalen']=(leading_digit + @socket.readline(' ')).strip.to_i
-      frame['message']=@socket.read(frame['datalen'])
+      #Things get a little tricky here because if the length is 0 it is not followed by a space.
+      leading_digit=@socket.read(1)
+      if leading_digit=='0' then
+        frame['datalen']=0
+        frame['message']=''
+      else
+        frame['datalen']=(leading_digit + @socket.readline(' ')).strip.to_i
+        frame['message']=@socket.read(frame['datalen'])
+      end
+    rescue EOFError
+      raise ConnectionClosed
     end
 #TODO: check here for invalid commands to try to detect framing errors?
     return frame
@@ -189,6 +192,5 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
     frame['message']='200 OK'
     self.frame_write(frame)
   end
-
 end
 
