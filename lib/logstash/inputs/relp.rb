@@ -6,7 +6,6 @@ require "timeout"
 #TODO: remove before release
 require "pry"
 
-
 # Read RELP events over a TCP socket.
 #
 #
@@ -48,7 +47,7 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
       # Start a new thread for each connection.
       Thread.start(@server_socket.accept) do |s|
 
-        # monkeypatch a 'peer' method onto the socket. I think this is just used for constructing the event_source below, not sure
+        # monkeypatch a 'peer' method onto the socket.
         s.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
         @logger.debug("Accepted connection", :client => s.peer,
                       :server => "#{@host}:#{@port}")
@@ -66,32 +65,26 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   end # def run
 end # class LogStash::Inputs::Relp
 
-class RelpSocket
-#TODO: logger
+class RelpSocket #TODO: Should this be a subclass of TCPSocket?
+
+  class RelpError < StandardError; end
+  class InvalidCommand < RelpError; end
+  class InappropriateCommand < RelpError; end
+  class ConnectionClosed < RelpError; end #TODO: should this be handled as an exception?
+  
   def initialize(socket)
-#TODO: don't return false; raise exceptions
     @socket=socket
     frame=self.frame_read
-    if frame.nil?
-      return false
-    elsif frame==false
-      return false
-    elsif frame['command']!='open'
-      #@logger.warn('Relp client attempted to open connection with '+frame['command'])#TODO: differentiate between invalid and innapropriate?
-      return false
-    else
-      #@logger.debug("Recieved relp offer: #{frame.to_s}")
+    if frame['command']=='open'
       offer=Hash[*frame['message'].scan(/^(.*)=(.*)$/).flatten]
       if offer['relp_version'].nil?
         #if no version specified, relp spec says we must close connection
-        #@logger.error('No relp_version specified')
-        self.relp_serverclose
-        return false
+        self.serverclose
+        Raise RelpError 'No relp_version specified'
       elsif ! offer['commands'].split(',').include?('syslog')
         #if it can't send us syslog it's useless to us; close the connection TODO:Generalise relp class and make this optional
         self.serverclose
-        #@logger.error('Relp client incapable of syslog')
-        return false
+        Raise RelpError 'Relp client incapable of syslog'
       else
         #attempt to set up connection
         response_frame=Hash.new
@@ -101,13 +94,14 @@ class RelpSocket
         response_frame['message']='200 OK relp_version=0'+"\n"+'relp_software=logstash,1.0.0,http://logstash.net'+"\n"+'commands=syslog'
         begin
           self.frame_write(response_frame)
-          #@logger.info('Relp connection sucessfully negotiated with '+@socket.peer)
-          return true
         rescue
-          #@logger.warning('Broken connection with '+@socket.peer)
-          return false
+          Raise ConnectionClosed#TODO:should I really be handling it like this? surely a general catchall somewhere for connection errors is a better idea?
         end
       end
+    elsif RelpSocket.valid_command?(frame['command'])
+        Raise InappropriateCommand frame['command']+' expecting open'
+    else
+        Raise InvalidCommand frame['command']
     end
   end
 
@@ -126,29 +120,27 @@ class RelpSocket
     if frame['command']=='syslog'
       return frame
     elsif frame['command']=='close'
-      #@logger.info('Close received from relp client'+socket.peer)TODO:socket.peer broken
       #the client is closing the connection, acknowledge the close and act on it
       response_frame=Hash.new
       response_frame['txnr']=frame['txnr']
       response_frame['command']='rsp'
       self.frame_write(response_frame)
       self.serverclose
-      #TODO:exception?
+      raise ConnectionClosed
     else
       #the client is trying to do something unexpected
-      if RelpSocket.valid_command?(frame['command'])
-        #@logger.error('Inappropriate relp command '+frame['command'])
-      else
-        #@logger.error('Invalid relp command '+frame['command'])
-      end
-      #This should deal with framing errors/invalid input most of the time; TODO: look at being more stringent somewhere
       self.serverclose
-      #TODO:exception?
+      #This should deal with framing errors/invalid input most of the time; TODO: look at being more stringent somewhere
+      if RelpSocket.valid_command?(frame['command'])
+        Raise InappropriateCommand frame['command']+' expecting syslog'
+      else
+        Raise InvalidCommand frame['command']
+      end
     end
   end
 
 
-  def relp_serverclose
+  def serverclose
     frame=Hash.new
     frame['txnr']=0
     frame['command']='serverclose'
@@ -156,9 +148,9 @@ class RelpSocket
       peer=@socket.peer
       self.frame_write(frame)
       @socket.close
-      #@logger.info('Relp connection to '+peer+' closed')
+      raise ConnectionClosed
     rescue
-      #@logger.info('Relp connection already closed by client')
+      raise ConnectionClosed #This catches the possibility of the client having already closed the connection
     end
   end
 
@@ -186,8 +178,8 @@ class RelpSocket
       frame['datalen']=(leading_digit + @socket.readline(' ')).strip.to_i
       frame['message']=@socket.read(frame['datalen'])
     end
-
-    frame
+#TODO: check here for invalid commands to try to detect framing errors?
+    return frame
   end
 
   def ack(txnr)
