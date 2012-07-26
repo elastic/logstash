@@ -6,7 +6,10 @@ require "socket"
 require "pry"
 # Read RELP events over a TCP socket.
 #
-#Application level acknowledgements allow assurance of no message loss. This only finctions as far as messages being put into the queue for filters- anything lost after that point will not be retransmitted
+#Application level acknowledgements allow assurance of no message loss.
+#
+#This only functions as far as messages being put into the queue for filters- 
+# anything lost after that point will not be retransmitted
 class LogStash::Inputs::Relp < LogStash::Inputs::Base
 
   config_name "relp"
@@ -34,7 +37,9 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
       frame=relpsocket.syslog_read
       event=self.to_event(frame['message'],event_source)
       output_queue << event
-      #To get this far, the message must have made it into the queue for filtering. I don't think it's possible to wait for output before ack without fundamentally breaking the plugin architecture
+      #To get this far, the message must have made it into the queue for 
+      #filtering. I don't think it's possible to wait for output before ack
+      #without fundamentally breaking the plugin architecture
       relpsocket.ack(frame['txnr'])
     end
   end
@@ -53,7 +58,9 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
           rs=RelpSocket.new(s)
           relp_stream(rs,output_queue,"relp://#{@host}:#{@port}/s.peer")
         rescue RelpSocket::RelpError => e
-          @logger.error('Relp error: '+e.class.to_s+' '+e.message)#TODO: Still not happy with this, are they really error level? Will this catch everything I want it to?
+          @logger.error('Relp error: '+e.class.to_s+' '+e.message)
+          #TODO: Still not happy with this, are they really error level?
+          #Will this catch everything I want it to?
           #Relp spec says to close connection on error
           s.close
         end
@@ -64,13 +71,21 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   end # def run
 end # class LogStash::Inputs::Relp
 
-#TODO: Dumping a class here feels wrong; could be a separate gem, but would need full relp functionality not just this subset in order to make sense
+#TODO: Dumping a class here feels wrong; could be a separate gem, but would need
+#full relp functionality not just this subset in order to make sense
 class RelpSocket #TODO: Should this be a subclass of TCPSocket?
+
+  RelpVersion='0'#TODO: spec says this is experimental, but rsyslog still seems to exclusively use it
+  RelpSoftware='logstash,1.1.1,http://logstash.net'#TODO: this is a placeholder for now
+  RelpCommands=['syslog']#TODO: If this becomes a separate gem, make this variable, define required and optional ones
 
   class RelpError < StandardError; end
   class InvalidCommand < RelpError; end
   class InappropriateCommand < RelpError; end
-  class ConnectionClosed < RelpError; end #TODO: should this be handled as an exception? There is both unexpected closing and proper closing covered by this- unexpected might be a legitimate exception; routine, not so much
+  class ConnectionClosed < RelpError; end 
+  #TODO: should this be handled as an exception?
+  #There is both unexpected closing and proper closing covered by this-
+  # unexpected might be a legitimate exception; routine, not so much
   
   def initialize(socket)
     @socket=socket
@@ -82,7 +97,8 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
         self.serverclose
         raise RelpError, 'No relp_version specified'
       elsif ! offer['commands'].split(',').include?('syslog')
-        #if it can't send us syslog it's useless to us; close the connection TODO:Generalise relp class and make this optional
+        #if it can't send us syslog it's useless to us; close the connection 
+        #TODO:Generalise relp class and make this optional (related to RelpCommands)
         self.serverclose
         raise RelpError, 'Relp client incapable of syslog'
       else
@@ -91,7 +107,10 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
         response_frame['txnr']=frame['txnr']
         response_frame['command']='rsp'
         #TODO: the values in this message probably ought to be constants defined at the top somewhere
-        response_frame['message']='200 OK relp_version=0'+"\n"+'relp_software=logstash,1.0.0,http://logstash.net'+"\n"+'commands=syslog'
+        response_frame['message']='200 OK '
+        response_frame['message']+='relp_version='+RelpVersion+"\n"
+        response_frame['message']+='relp_software='+RelpSoftware+"\n"
+        response_frame['message']+='commands='+RelpCommands.join(',')
         begin
           self.frame_write(response_frame)
         rescue
@@ -155,9 +174,14 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
 
   def self.valid_command?(command)
     valid_commands=Array.new
+    
+    #Allow anything in the basic protocol
     valid_commands << 'open'
     valid_commands << 'close'
-    valid_commands << 'syslog'
+
+    #Allow anything we offered to accept
+    valid_commands + RelpCommands
+    
     #Don't accept serverclose or rsp as valid commands because this is the server
     #TODO: vague mentions of abort and starttls commands in spec need looking into
     return valid_commands.include?(command)
@@ -178,7 +202,7 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
         frame['datalen']=(leading_digit + @socket.readline(' ')).strip.to_i
         frame['message']=@socket.read(frame['datalen'])
       end
-    rescue EOFError
+    rescue EOFError #This should catch pretty much all unexpected breaks in the connection
       raise ConnectionClosed
     end
 #TODO: check here for invalid commands to try to detect framing errors?
