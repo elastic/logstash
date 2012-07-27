@@ -1,6 +1,6 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "logstash/util/socket_peer"
+#require "logstash/util/socket_peer"
 require "socket"
 #TODO: remove before release
 require "pry"
@@ -28,7 +28,7 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   public
   def register
     @logger.info("Starting relp input listener", :address => "#{@host}:#{@port}")
-    @server_socket = TCPServer.new(@host, @port)
+    @server_socket = RelpServer.new(@host, @port)
   end # def register
 
   private
@@ -48,22 +48,17 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   def run(output_queue)
     loop do
       # Start a new thread for each connection.
-      Thread.start(@server_socket.accept) do |s|
-
-        # monkeypatch a 'peer' method onto the socket.
-        s.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
-        @logger.debug("Accepted connection", :client => s.peer,
-                      :server => "#{@host}:#{@port}")
+      Thread.start(@server_socket.accept) do |rs|
         begin
-          rs=RelpServer.new(s)
-          relp_stream(rs,output_queue,"relp://#{@host}:#{@port}/#{s.peer}")#TODO: is s.peer the best source?
+          relp_stream(@server_socket,output_queue,"relp://#{@host}:#{@port}/#{rs.peer}")
         rescue Relp::ConnectionClosed => e
-          @logger.warn('Relp Connection Closed')#TODO: Is warn the right level?
+          @logger.debug('Relp Connection to #{rs.peer} Closed')
         rescue Relp::RelpError => e
-          @logger.error('Relp error: '+e.class.to_s+' '+e.message)
-          #TODO: Still not happy with this, are they really error level?
+          @logger.warn('Relp error: '+e.class.to_s+' '+e.message)
+          #TODO: Still not happy with this, are they all warn level?
           #Will this catch everything I want it to?
-          #TODO: Relp spec says to close connection on error, ensure this is the case
+          #Relp spec says to close connection on error, ensure this is the case
+          rs.serverclose
         end
         #Let garbage collection clear up after us
         rs=nil
@@ -91,9 +86,8 @@ class Relp#This isn't much use on its own, but gives RelpServer and RelpClient t
     valid_commands << 'close'
 
     #Allow anything we offered to accept
-    valid_commands + RelpCommands
-    
-    #Don't accept serverclose or rsp as valid commands because this is the server
+    valid_commands += RelpCommands
+    #Don't accept serverclose or rsp as valid commands because this is the server TODO: generalise
     #TODO: vague mentions of abort and starttls commands in spec need looking into
     return valid_commands.include?(command)
   end
@@ -129,7 +123,9 @@ class Relp#This isn't much use on its own, but gives RelpServer and RelpClient t
     rescue EOFError
       raise ConnectionClosed
     end
-#TODO: check here for invalid         rescue Relp::RelpError => ecommands to try to detect framing errors?
+    if ! Relp.valid_command?(frame['command'])#TODO: is this enough to catch framing errors?
+      raise InvalidCommand,frame['command']
+    end
     return frame
   end
 
@@ -137,9 +133,16 @@ end
 
 class RelpServer < Relp
 
-  def initialize(socket)
+  def peer
+    @socket.peeraddr[3]#TODO: is this the best thing to report?
+  end
 
-    @socket=socket
+  def initialize(host,port)
+    @server=TCPServer.new(host,port)
+  end
+  
+  def accept
+    @socket=@server.accept
     frame=self.frame_read
     if frame['command']=='open'
       offer=Hash[*frame['message'].scan(/^(.*)=(.*)$/).flatten]
@@ -163,12 +166,10 @@ class RelpServer < Relp
         response_frame['message']+='relp_software='+RelpSoftware+"\n"
         response_frame['message']+='commands='+RelpCommands.join(',')
         self.frame_write(response_frame)
+return self
       end
+      raise InappropriateCommand, frame['command']+' expecting open'
 
-    elsif RelpSocket.valid_command?(frame['command'])
-        raise InappropriateCommand, frame['command']+' expecting open'
-    else
-        raise InvalidCommand, frame['command']
     end
   end
 
@@ -189,12 +190,7 @@ class RelpServer < Relp
     else
       #the client is trying to do something unexpected
       self.serverclose
-      #This should deal with framing errors/invalid input most of the time; TODO: look at being more stringent somewhere
-      if RelpSocket.valid_command?(frame['command'])
-        raise InappropriateCommand, frame['command']+' expecting syslog'
-      else
-        raise InvalidCommand, frame['command']
-      end
+      raise InappropriateCommand, frame['command']+' expecting syslog'
     end
   end
 
@@ -203,7 +199,6 @@ class RelpServer < Relp
     frame['txnr']=0
     frame['command']='serverclose'
     begin
-      peer=@socket.peer
       self.frame_write(frame)
       @socket.close#TODO: shutdown?
     rescue#This catches the possibility of the client having already closed the connection
