@@ -55,14 +55,15 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
         @logger.debug("Accepted connection", :client => s.peer,
                       :server => "#{@host}:#{@port}")
         begin
-          rs=RelpSocket.new(s)
-          relp_stream(rs,output_queue,"relp://#{@host}:#{@port}/s.peer")
-        rescue RelpSocket::RelpError => e
+          rs=RelpServer.new(s)
+          relp_stream(rs,output_queue,"relp://#{@host}:#{@port}/#{s.peer}")#TODO: is s.peer the best source?
+        rescue Relp::ConnectionClosed => e
+          @logger.warn('Relp Connection Closed')#TODO: Is warn the right level?
+        rescue Relp::RelpError => e
           @logger.error('Relp error: '+e.class.to_s+' '+e.message)
           #TODO: Still not happy with this, are they really error level?
           #Will this catch everything I want it to?
-          #Relp spec says to close connection on error
-          s.close
+          #TODO: Relp spec says to close connection on error, ensure this is the case
         end
         #Let garbage collection clear up after us
         rs=nil
@@ -71,9 +72,7 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   end # def run
 end # class LogStash::Inputs::Relp
 
-#TODO: Dumping a class here feels wrong; could be a separate gem, but would need
-#full relp functionality not just this subset in order to make sense
-class RelpSocket #TODO: Should this be a subclass of TCPSocket?
+class Relp#This isn't much use on its own, but gives RelpServer and RelpClient things
 
   RelpVersion='0'#TODO: spec says this is experimental, but rsyslog still seems to exclusively use it
   RelpSoftware='logstash,1.1.1,http://logstash.net'#TODO: this is a placeholder for now
@@ -83,11 +82,63 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
   class InvalidCommand < RelpError; end
   class InappropriateCommand < RelpError; end
   class ConnectionClosed < RelpError; end 
-  #TODO: should this be handled as an exception?
-  #There is both unexpected closing and proper closing covered by this-
-  # unexpected might be a legitimate exception; routine, not so much
-  
+
+  def self.valid_command?(command)
+    valid_commands=Array.new
+    
+    #Allow anything in the basic protocol
+    valid_commands << 'open'
+    valid_commands << 'close'
+
+    #Allow anything we offered to accept
+    valid_commands + RelpCommands
+    
+    #Don't accept serverclose or rsp as valid commands because this is the server
+    #TODO: vague mentions of abort and starttls commands in spec need looking into
+    return valid_commands.include?(command)
+  end
+
+  def frame_write(frame)
+    frame['txnr']=frame['txnr'].to_s
+    frame['message']='' if frame['message'].nil?
+    frame['datalen']=frame['message'].length.to_s
+    #Ending each frame with a newline is required in the specifications
+    wiredata=[frame['txnr'],frame['command'],frame['datalen'],frame['message']].join(' ').strip+"\n"
+    begin
+      @socket.write(wiredata)
+    rescue Errno::EPIPE#TODO: is this sufficient to catch all broken connections?
+      raise ConnectionClosed
+    end
+  end
+
+  def frame_read
+    begin
+      frame=Hash.new
+      frame['txnr']=@socket.readline(' ').strip.to_i
+      frame['command']=@socket.readline(' ').strip
+
+      #Things get a little tricky here because if the length is 0 it is not followed by a space.
+      leading_digit=@socket.read(1)
+      if leading_digit=='0' then
+        frame['datalen']=0
+        frame['message']=''
+      else
+        frame['datalen']=(leading_digit + @socket.readline(' ')).strip.to_i
+        frame['message']=@socket.read(frame['datalen'])
+      end
+    rescue EOFError
+      raise ConnectionClosed
+    end
+#TODO: check here for invalid         rescue Relp::RelpError => ecommands to try to detect framing errors?
+    return frame
+  end
+
+end
+
+class RelpServer < Relp
+
   def initialize(socket)
+
     @socket=socket
     frame=self.frame_read
     if frame['command']=='open'
@@ -106,17 +157,14 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
         response_frame=Hash.new
         response_frame['txnr']=frame['txnr']
         response_frame['command']='rsp'
-        #TODO: the values in this message probably ought to be constants defined at the top somewhere
+
         response_frame['message']='200 OK '
         response_frame['message']+='relp_version='+RelpVersion+"\n"
         response_frame['message']+='relp_software='+RelpSoftware+"\n"
         response_frame['message']+='commands='+RelpCommands.join(',')
-        begin
-          self.frame_write(response_frame)
-        rescue
-          raise ConnectionClosed#TODO:should I really be handling it like this? surely a general catchall somewhere for connection errors is a better idea?
-        end
+        self.frame_write(response_frame)
       end
+
     elsif RelpSocket.valid_command?(frame['command'])
         raise InappropriateCommand, frame['command']+' expecting open'
     else
@@ -124,14 +172,6 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
     end
   end
 
-  def frame_write(frame)
-    frame['txnr']=frame['txnr'].to_s
-    frame['message']='' if frame['message'].nil?
-    frame['datalen']=frame['message'].length.to_s
-    #Ending each frame with a newline is required in the specifications
-    wiredata=[frame['txnr'],frame['command'],frame['datalen'],frame['message']].join(' ').strip+"\n"
-    @socket.write(wiredata)
-  end
 
   #This does not ack the frame, just reads it
   def syslog_read
@@ -145,7 +185,7 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
       response_frame['command']='rsp'
       self.frame_write(response_frame)
       self.serverclose
-      raise RelpSocket::ConnectionClosed
+      raise ConnectionClosed
     else
       #the client is trying to do something unexpected
       self.serverclose
@@ -165,48 +205,9 @@ class RelpSocket #TODO: Should this be a subclass of TCPSocket?
     begin
       peer=@socket.peer
       self.frame_write(frame)
-      @socket.close
-      raise ConnectionClosed
-    rescue
-      raise ConnectionClosed #This catches the possibility of the client having already closed the connection
+      @socket.close#TODO: shutdown?
+    rescue#This catches the possibility of the client having already closed the connection
     end
-  end
-
-  def self.valid_command?(command)
-    valid_commands=Array.new
-    
-    #Allow anything in the basic protocol
-    valid_commands << 'open'
-    valid_commands << 'close'
-
-    #Allow anything we offered to accept
-    valid_commands + RelpCommands
-    
-    #Don't accept serverclose or rsp as valid commands because this is the server
-    #TODO: vague mentions of abort and starttls commands in spec need looking into
-    return valid_commands.include?(command)
-  end
-
-  def frame_read
-    begin
-      frame=Hash.new
-      frame['txnr']=@socket.readline(' ').strip.to_i
-      frame['command']=@socket.readline(' ').strip
-
-      #Things get a little tricky here because if the length is 0 it is not followed by a space.
-      leading_digit=@socket.read(1)
-      if leading_digit=='0' then
-        frame['datalen']=0
-        frame['message']=''
-      else
-        frame['datalen']=(leading_digit + @socket.readline(' ')).strip.to_i
-        frame['message']=@socket.read(frame['datalen'])
-      end
-    rescue EOFError #This should catch pretty much all unexpected breaks in the connection
-      raise ConnectionClosed
-    end
-#TODO: check here for invalid commands to try to detect framing errors?
-    return frame
   end
 
   def ack(txnr)
