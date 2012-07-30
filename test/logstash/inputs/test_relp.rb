@@ -10,6 +10,10 @@ require "logstash/util/relp"
 
 require "mocha"
 
+#TODO: remove before release
+require "pry"
+
+
 #TODO: I just copy/pasted all those^ which ones do I actually need?
 
 describe LogStash::Inputs::Relp do
@@ -33,7 +37,7 @@ describe LogStash::Inputs::Relp do
     sleep(2)
 
     begin
-      rc=RelpClient.new('127.0.0.1',15515)
+      rc=RelpClient.new('127.0.0.1',15515,['syslog'])
       rc.syslog_write('This is the first relp test message')
       rc.syslog_write('This is the second relp test message')
       rc.syslog_write('This is the third relp test message')
@@ -66,6 +70,14 @@ describe LogStash::Inputs::Relp do
     rescue Relp::RelpError => re
       flunk re.class.to_s+': '+re.to_s#TODO: is there not a proper way to do this?
     end
+  end
+
+  test "RelpServer rejects invalid/innapropriate commands" do
+    #TODO: 
+  end
+
+  test "RelpServer refuses to connect if no syslog command available" do
+    #TODO: 
   end
 
 end # testing for LogStash::Inputs::File
