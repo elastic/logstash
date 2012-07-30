@@ -201,7 +201,7 @@ class RelpClient < Relp
     frame=Hash.new
     frame['command']='close'
     txnr=self.frame_write(frame)
-    #TODO: give anything else that is reading a chance to receive outstanding packets before actually closing the connection
+    #TODO: timeout
     sleep 0.01 until ! @replies[txnr].nil?
     #Give other threads a bit of time to act on acks. TODO: feels a bit dodgy
     sleep 1
@@ -216,11 +216,9 @@ class RelpClient < Relp
     txnr=self.frame_write(frame)
 
     #This could potentially block indefinately, TODO: is this a good idea?
-    #TODO: resend if no ack after too long
+    #TODO: resend if no ack after too long, raise an exception if this fails multiple times?
     sleep 0.01 until ! @replies[txnr].nil?
     reply=@replies.delete(txnr)
     raise RelpError,reply unless reply=='200 OK'
   end
-
-
 end
