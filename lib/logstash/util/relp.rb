@@ -157,12 +157,11 @@ class RelpServer < Relp
     frame=Hash.new
     frame['txnr']=0
     frame['command']='serverclose'
-    begin
-      self.frame_write(frame)
-      @socket.shutdown
-      @socket.close#TODO: This isn't actually freeing up the port as shown by test_relp
-    rescue#This catches the possibility of the client having already closed the connection
-    end
+  end
+
+  def shutdown
+    @server.shutdown
+    @server.close
   end
 
   def ack(txnr)
