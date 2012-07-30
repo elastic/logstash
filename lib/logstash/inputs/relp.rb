@@ -28,7 +28,7 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   public
   def register
     @logger.info("Starting relp input listener", :address => "#{@host}:#{@port}")
-    @server_socket = RelpServer.new(@host, @port)
+    @server_socket = RelpServer.new(@host, @port,['syslog'])
   end # def register
 
   private
@@ -47,22 +47,32 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   public
   def run(output_queue)
     loop do
-      # Start a new thread for each connection.
-      Thread.start(@server_socket.accept) do |rs|
-        begin
-          relp_stream(@server_socket,output_queue,"relp://#{@host}:#{@port}/#{rs.peer}")
-        rescue Relp::ConnectionClosed => e
-          @logger.debug('Relp Connection to #{rs.peer} Closed')
-        rescue Relp::RelpError => e
-          @logger.warn('Relp error: '+e.class.to_s+' '+e.message)
-          #TODO: Still not happy with this, are they all warn level?
-          #Will this catch everything I want it to?
-          #Relp spec says to close connection on error, ensure this is the case
-          rs.serverclose
-        end
-        #Let garbage collection clear up after us
-        rs=nil
-      end # Thread.start
+      begin
+        # Start a new thread for each connection.
+        Thread.start(@server_socket.accept) do |rs|
+          begin
+            relp_stream(@server_socket,output_queue,"relp://#{@host}:#{@port}/#{rs.peer}")
+          rescue Relp::ConnectionClosed => e
+            @logger.debug('Relp Connection to #{rs.peer} Closed')
+          rescue Relp::RelpError => e
+            @logger.warn('Relp error: '+e.class.to_s+' '+e.message)
+            #TODO: Still not happy with this, are they all warn level?
+            #Will this catch everything I want it to?
+            #Relp spec says to close connection on error, ensure this is the case
+            rs.serverclose
+          end
+          #Let garbage collection clear up after us
+          rs=nil
+        end # Thread.start
+      rescue Relp::InsufficientCommands#TODO: why didn't it work when I included this is the same block as the other rescues?
+        @logger.warn('Relp client incapable of syslog')
+      end
     end # loop
   end # def run
+
+  #TODO: Make sure this is doing the job properly
+  def teardown
+    @server_socket.serverclose
+    finished
+  end
 end # class LogStash::Inputs::Relp
