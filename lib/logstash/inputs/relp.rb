@@ -28,7 +28,7 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   public
   def register
     @logger.info("Starting relp input listener", :address => "#{@host}:#{@port}")
-    @server_socket = RelpServer.new(@host, @port,['syslog'])
+    @relp_server = RelpServer.new(@host, @port,['syslog'])
   end # def register
 
   private
@@ -49,9 +49,9 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
     loop do
       begin
         # Start a new thread for each connection.
-        Thread.start(@server_socket.accept) do |rs|
+        Thread.start(@relp_server.accept) do |rs|
           begin
-            relp_stream(@server_socket,output_queue,"relp://#{@host}:#{@port}/#{rs.peer}")
+            relp_stream(@relp_server,output_queue,"relp://#{@host}:#{@port}/#{rs.peer}")#TODO: rs???
           rescue Relp::ConnectionClosed => e
             @logger.debug('Relp Connection to #{rs.peer} Closed')
           rescue Relp::RelpError => e
@@ -72,7 +72,6 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
 
   #TODO: Make sure this is doing the job properly
   def teardown
-    @server_socket.serverclose
-    finished
+    @relp_server.shutdown
   end
 end # class LogStash::Inputs::Relp
