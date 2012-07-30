@@ -33,13 +33,11 @@ class Relp#This isn't much use on its own, but gives RelpServer and RelpClient t
     return valid_commands.include?(command)
   end
 
-  #TODO: this only makes sense for RelpClient; RelpServer can only use the txnr of the frame it's replying to or 0
-  def nexttxnr
-    @lasttxnr+=1
-  end
-
   def frame_write(frame)
-    frame['txnr']=self.nexttxnr if frame['txnr'].nil?
+    unless self.server? #I think we have to trust a server to be using the correct txnr
+      #Only allow txnr to be 0 or be determined automatically TODO: do we raise an exception if they've tried to set it themselves?
+      frame['txnr']=self.nexttxnr unless frame['txnr']==0
+    end
     frame['txnr']=frame['txnr'].to_s
     frame['message']='' if frame['message'].nil?
     frame['datalen']=frame['message'].length.to_s
@@ -77,9 +75,15 @@ class Relp#This isn't much use on its own, but gives RelpServer and RelpClient t
     return frame
   end
 
+  def server?
+    @server
+  end
+
 end
 
 class RelpServer < Relp
+  
+  @server=true
 
   def peer
     @socket.peeraddr[3]#TODO: is this the best thing to report?
@@ -108,7 +112,6 @@ class RelpServer < Relp
       #subtracting one array from the other checks to see if all elements in @required_relp_commands are present in the offer
       elsif ! (@required_relp_commands - offer['commands'].split(',')).empty?
         #if it can't send us syslog it's useless to us; close the connection 
-        #TODO:Generalise relp class and make this optional (related to RelpCommands)
         self.serverclose
         raise InsufficientCommands, offer['commands']+' offered, require '+@required_relp_commands.join(',')
       else
@@ -173,7 +176,7 @@ end
 
 class RelpClient < Relp
 
-#  @relpcommands=['syslog']#TODO: If this becomes a separate gem, make this variable, define required and optional ones
+  @server=false
 
   def initialize(host,port,required_commands=[])
 
@@ -184,8 +187,11 @@ class RelpClient < Relp
     @required_relp_commands = required_commands
 
     @socket=TCPSocket.new(host,port)
+
+    #This'll start the automatic frame numbering 
+    @lasttxnr=0
+
     offer=Hash.new
-    offer['txnr']=1
     offer['command']='open'
     offer['message']='relp_version='+RelpVersion+"\n"
     offer['message']+='relp_software='+RelpSoftware+"\n"
@@ -202,12 +208,11 @@ class RelpClient < Relp
     #subtracting one array from the other checks to see if all elements in @required_relp_commands are present in the offer
     elsif ! (@required_relp_commands - response['commands'].split(',')).empty?
       #if it can't receive syslog it's useless to us; close the connection 
-      #TODO:Generalise relp class and make this optional (related to RelpCommands)
       self.close
       raise InsufficientCommands, response['commands']+' offered, require '+@required_relp_commands.join(',')
     end
     #If we've got this far with no problems, we're good to go
-    @lasttxnr=1
+
 
     #TODO: This allows us to keep track of what acks have been recieved. What this interface looks like and how to handle acks needs thinking about
     @replies=Hash.new
@@ -248,4 +253,9 @@ class RelpClient < Relp
     reply=@replies.delete(txnr)
     raise RelpError,reply unless reply=='200 OK'
   end
+
+  def nexttxnr
+    @lasttxnr+=1
+  end
+
 end
