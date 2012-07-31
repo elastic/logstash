@@ -51,7 +51,7 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
         # Start a new thread for each connection.
         Thread.start(@relp_server.accept) do |rs|
           begin
-            relp_stream(@relp_server,output_queue,"relp://#{@host}:#{@port}/#{rs.peer}")#TODO: rs???
+            relp_stream(rs,output_queue,"relp://#{@host}:#{@port}/#{rs.peer}")
           rescue Relp::ConnectionClosed => e
             @logger.debug('Relp Connection to #{rs.peer} Closed')
           rescue Relp::RelpError => e
@@ -70,7 +70,6 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
     end # loop
   end # def run
 
-  #TODO: Make sure this is doing the job properly
   def teardown
     @relp_server.shutdown
   end
