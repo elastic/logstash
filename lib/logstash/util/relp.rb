@@ -67,7 +67,7 @@ class Relp#This isn't much use on its own, but gives RelpServer and RelpClient t
         frame['message']=@socket.read(frame['datalen'])
       end
     rescue EOFError
-      raise ConnectionClosed #TODO: ECONNRESET
+      raise ConnectionClosed,Errno::ECONNRESET
     end
     if ! self.valid_command?(frame['command'])#TODO: is this enough to catch framing errors? 
       raise InvalidCommand,frame['command']
@@ -111,7 +111,13 @@ class RelpServer < Relp
         raise RelpError, 'No relp_version specified'
       #subtracting one array from the other checks to see if all elements in @required_relp_commands are present in the offer
       elsif ! (@required_relp_commands - offer['commands'].split(',')).empty?
-        #if it can't send us syslog it's useless to us; close the connection 
+        #Tell them why we're closing the connection:
+        response_frame=Hash.new
+        response_frame['txnr']=frame['txnr']
+        response_frame['command']='rsp'
+        response_frame['message']='500 Required commands '+(@required_relp_commands - offer['commands'].split(',')).join(',')+' not offered'
+        self.frame_write(response_frame)
+
         self.serverclose
         raise InsufficientCommands, offer['commands']+' offered, require '+@required_relp_commands.join(',')
       else
@@ -157,6 +163,8 @@ class RelpServer < Relp
     frame=Hash.new
     frame['txnr']=0
     frame['command']='serverclose'
+    self.frame_write(frame)
+    @socket.close
   end
 
   def shutdown
@@ -197,7 +205,7 @@ class RelpClient < Relp
     offer['message']+='commands='+@required_relp_commands.join(',')#TODO: add optional ones
     self.frame_write(offer)
     response_frame=self.frame_read
-    raise RelpError if response_frame['message'][0,3]!='200' 
+    raise RelpError,response_frame['message'] unless response_frame['message'][0,3]=='200' 
     response=Hash[*response_frame['message'][7..-1].scan(/^(.*)=(.*)$/).flatten]
     if response['relp_version'].nil?
       #if no version specified, relp spec says we must close connection
@@ -220,9 +228,7 @@ class RelpClient < Relp
         f=self.frame_read
         @replies[f['txnr'].to_i]=f['message']
         if f['command']=='serverclose'
-          #Give other threads a bit of time to act on acks. TODO: feels a bit dodgy
-          sleep 1
-          raise ConnectionClosed
+          raise ConnectionClosed#TODO: this doesn't raise the exception anywhere sensible
         end
       end
     end
@@ -234,8 +240,6 @@ class RelpClient < Relp
     txnr=self.frame_write(frame)
     #TODO: timeout
     sleep 0.01 until ! @replies[txnr].nil?
-    #Give other threads a bit of time to act on acks. TODO: feels a bit dodgy
-    sleep 1
     @socket.close#TODO: shutdown? 
   end
 
