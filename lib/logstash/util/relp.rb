@@ -66,8 +66,8 @@ class Relp#This isn't much use on its own, but gives RelpServer and RelpClient t
         frame['datalen']=(leading_digit + @socket.readline(' ')).strip.to_i
         frame['message']=@socket.read(frame['datalen'])
       end
-    rescue EOFError
-      raise ConnectionClosed,Errno::ECONNRESET
+    rescue EOFError,Errno::ECONNRESET
+      raise ConnectionClosed
     end
     if ! self.valid_command?(frame['command'])#TODO: is this enough to catch framing errors? 
       raise InvalidCommand,frame['command']
