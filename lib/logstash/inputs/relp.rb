@@ -50,10 +50,11 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
       begin
         # Start a new thread for each connection.
         Thread.start(@relp_server.accept) do |rs|
+            @logger.debug("Relp Connection to #{rs.peer} created")
           begin
             relp_stream(rs,output_queue,"relp://#{@host}:#{@port}/#{rs.peer}")
           rescue Relp::ConnectionClosed => e
-            @logger.debug('Relp Connection to #{rs.peer} Closed')
+            @logger.debug("Relp Connection to #{rs.peer} Closed")
           rescue Relp::RelpError => e
             @logger.warn('Relp error: '+e.class.to_s+' '+e.message)
             #TODO: Still not happy with this, are they all warn level?
@@ -61,10 +62,10 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
             #Relp spec says to close connection on error, ensure this is the case
             rs.serverclose
           end
-          #Let garbage collection clear up after us
-          rs=nil
         end # Thread.start
-      rescue Relp::InsufficientCommands#TODO: why didn't it work when I included this is the same block as the other rescues?
+      rescue Relp::InvalidCommand,Relp::InappropriateCommand => e
+        @logger.warn('Relp client trying to open connection with something other than open:'+e.message)
+      rescue Relp::InsufficientCommands
         @logger.warn('Relp client incapable of syslog')
       end
     end # loop
