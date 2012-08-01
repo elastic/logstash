@@ -45,7 +45,7 @@ class Relp#This isn't much use on its own, but gives RelpServer and RelpClient t
     wiredata=[frame['txnr'],frame['command'],frame['datalen'],frame['message']].join(' ').strip+"\n"
     begin
       @socket.write(wiredata)
-    rescue Errno::EPIPE#TODO: is this sufficient to catch all broken connections?
+    rescue Errno::EPIPE,IOError#TODO: is this sufficient to catch all broken connections?
       raise ConnectionClosed
     end
     frame['txnr'].to_i
@@ -70,6 +70,11 @@ class Relp#This isn't much use on its own, but gives RelpServer and RelpClient t
       raise ConnectionClosed
     end
     if ! self.valid_command?(frame['command'])#TODO: is this enough to catch framing errors? 
+      if self.server?
+        self.serverclose
+      else
+        self.close
+      end
       raise InvalidCommand,frame['command']
     end
     return frame
@@ -133,8 +138,9 @@ class RelpServer < Relp
         self.frame_write(response_frame)
         return self
       end
+    else
+      self.serverclose
       raise InappropriateCommand, frame['command']+' expecting open'
-
     end
   end
 
@@ -168,8 +174,13 @@ class RelpServer < Relp
   end
 
   def shutdown
-    @server.shutdown
-    @server.close
+    begin
+      @server.shutdown
+#@logger.debug('pre')
+      @server.close
+#@logger.debug('post')
+    rescue Exception#@server might already be down
+    end
   end
 
   def ack(txnr)
