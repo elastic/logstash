@@ -1,7 +1,7 @@
 require "socket"
 
 #TODO: remove before release
-require "pry"
+#require "pry"
 
 class Relp#This isn't much use on its own, but gives RelpServer and RelpClient things
 
@@ -35,7 +35,7 @@ class Relp#This isn't much use on its own, but gives RelpServer and RelpClient t
 
   def frame_write(frame)
     unless self.server? #I think we have to trust a server to be using the correct txnr
-      #Only allow txnr to be 0 or be determined automatically TODO: do we raise an exception if they've tried to set it themselves?
+      #Only allow txnr to be 0 or be determined automatically
       frame['txnr']=self.nexttxnr unless frame['txnr']==0
     end
     frame['txnr']=frame['txnr'].to_s
@@ -88,13 +88,19 @@ end
 
 class RelpServer < Relp
   
-  @server=true
+
 
   def peer
-    @socket.peeraddr[3]#TODO: is this the best thing to report?
+    begin
+      @socket.peeraddr[3]#TODO: is this the best thing to report? I don't think so...
+    rescue IOError
+      raise ConnectionClosed
+    end
   end
 
   def initialize(host,port,required_commands=[])
+
+    @server=true
 
     #These are things that are part of the basic protocol, but only valid in one direction (rsp, close etc.)
     @basic_relp_commands=['close']#TODO: check for others
@@ -169,8 +175,11 @@ class RelpServer < Relp
     frame=Hash.new
     frame['txnr']=0
     frame['command']='serverclose'
-    self.frame_write(frame)
-    @socket.close
+    begin
+      self.frame_write(frame)
+      @socket.close
+    rescue ConnectionClosed
+    end
   end
 
   def shutdown
@@ -194,9 +203,13 @@ end
 
 class RelpClient < Relp
 
-  @server=false
+  def initialize(host,port,required_commands=[],buffer_size=128,retransmission_timeout=10)
 
-  def initialize(host,port,required_commands=[])
+    @server=false
+    @buffer=Hash.new
+
+    @buffer_size=buffer_size
+    @retransmission_timeout=retransmission_timeout
 
     #These are things that are part of the basic protocol, but only valid in one direction (rsp, close etc.)
     @basic_relp_commands=['serverclose','rsp']#TODO: check for others
@@ -232,40 +245,64 @@ class RelpClient < Relp
     #If we've got this far with no problems, we're good to go
 
 
-    #TODO: This allows us to keep track of what acks have been recieved. What this interface looks like and how to handle acks needs thinking about
-    @replies=Hash.new
+    #This thread deals with responses that come back
     Thread.start do
       loop do
         f=self.frame_read
-        @replies[f['txnr'].to_i]=f['message']
-        if f['command']=='serverclose'
+        if f['command']=='rsp' && f['message']=='200 OK'
+          @buffer.delete(f['txnr'])
+        elsif f['command']=='rsp' && f['message'][0,1]=='5'
+          #TODO: What if we get an error for something we're already retransmitted due to timeout?
+          new_txnr=self.frame_write(@buffer[f['txnr']])
+          @buffer[new_txnr]=@buffer[f['txnr']]
+          @buffer.delete(f['txnr'])
+        elsif f['command']=='serverclose'
           raise ConnectionClosed#TODO: this doesn't raise the exception anywhere sensible
+        else
+          #Don't know what's going on if we get here, but it can't be good
+          raise RelpError#TODO: this exception will disappear as well
         end
+      end
+    end
+
+    #While this one deals with frames for which we get no reply
+    Thread.start do
+      old_buffer=Hash.new
+      loop do
+        #This returns old txnrs that are still present
+        (@buffer.keys & old_buffer.keys).each do |txnr|
+          new_txnr=self.frame_write(@buffer[txnr])
+          @buffer[new_txnr]=@buffer[txnr]
+          @buffer.delete(txnr)
+        end
+        old_buffer=@buffer
+        sleep @retransmission_timeout
       end
     end
   end
 
+  #TODO: have a way to get back unacked messages on close
   def close
     frame=Hash.new
     frame['command']='close'
     txnr=self.frame_write(frame)
-    #TODO: timeout
-    sleep 0.01 until ! @replies[txnr].nil?
-    @socket.close#TODO: shutdown? 
+    #TODO: ought to properly wait for a reply etc. The serverclose will make it work though
+    sleep @retransmission_timeout
+    @socket.close#TODO: shutdown?
+    return @buffer
   end
 
-  #This will block until it can confirm a reply, but is written so multiple threads can call it concurrently
   def syslog_write(logline)
+
+    #If the buffer is already full, wait until a gap opens up
+    sleep 0.1 until @buffer.length<@buffer_size
+
     frame=Hash.new
     frame['command']='syslog'
     frame['message']=logline
-    txnr=self.frame_write(frame)
 
-    #This could potentially block indefinately, TODO: is this a good idea?
-    #TODO: resend if no ack after too long, raise an exception if this fails multiple times?
-    sleep 0.01 until ! @replies[txnr].nil?
-    reply=@replies.delete(txnr)
-    raise RelpError,reply unless reply=='200 OK'
+    txnr=self.frame_write(frame)
+    @buffer[txnr]=frame
   end
 
   def nexttxnr
