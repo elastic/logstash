@@ -79,7 +79,7 @@ describe LogStash::Inputs::Relp do
     logger=Queue.new
     (@input.instance_eval { @logger }).subscribe(logger)
 
-    assert_raises(Relp::ConnectionClosed) do#TODO: I think these exceptions are being raised wrong somehow
+    assert_raises(Relp::ConnectionClosed) do
       rc=RelpClient.new('127.0.0.1',15515,['syslog'])
       badframe=Hash.new
       badframe['command']='badcommand'
@@ -99,7 +99,7 @@ describe LogStash::Inputs::Relp do
     logger=Queue.new
     (@input.instance_eval { @logger }).subscribe(logger)
 
-    assert_raises(Relp::ConnectionClosed) do #TODO: I think these exceptions are being raised wrong somehow
+    assert_raises(Relp::ConnectionClosed) do
       rc=RelpClient.new('127.0.0.1',15515,['syslog'])
       badframe=Hash.new
       badframe['command']='open'#it's not expecting open again
