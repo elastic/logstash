@@ -41,11 +41,12 @@ class Relp#This isn't much use on its own, but gives RelpServer and RelpClient t
     frame['txnr']=frame['txnr'].to_s
     frame['message']='' if frame['message'].nil?
     frame['datalen']=frame['message'].length.to_s
-    #Ending each frame with a newline is required in the specifications
-    wiredata=[frame['txnr'],frame['command'],frame['datalen'],frame['message']].join(' ').strip+"\n"
+    wiredata=[frame['txnr'],frame['command'],frame['datalen'],frame['message']].join(' ').strip
     begin
       @socket.write(wiredata)
-    rescue Errno::EPIPE,IOError#TODO: is this sufficient to catch all broken connections?
+      #Ending each frame with a newline is required in the specifications, doing it a separately is useful (but a bit of a bodge) because for some reason it seems to take 2 writes after the server closes the connection before we get an exception
+      @socket.write("\n")
+    rescue Errno::EPIPE,IOError,Errno::ECONNRESET#TODO: is this sufficient to catch all broken connections?
       raise ConnectionClosed
     end
     frame['txnr'].to_i
@@ -66,7 +67,7 @@ class Relp#This isn't much use on its own, but gives RelpServer and RelpClient t
         frame['datalen']=(leading_digit + @socket.readline(' ')).strip.to_i
         frame['message']=@socket.read(frame['datalen'])
       end
-    rescue EOFError,Errno::ECONNRESET
+    rescue EOFError,Errno::ECONNRESET,IOError
       raise ConnectionClosed
     end
     if ! self.valid_command?(frame['command'])#TODO: is this enough to catch framing errors? 
@@ -126,7 +127,7 @@ class RelpServer < Relp
         response_frame=Hash.new
         response_frame['txnr']=frame['txnr']
         response_frame['command']='rsp'
-        response_frame['message']='500 Required commands '+(@required_relp_commands - offer['commands'].split(',')).join(',')+' not offered'
+        response_frame['message']='500 Required command(s) '+(@required_relp_commands - offer['commands'].split(',')).join(',')+' not offered'
         self.frame_write(response_frame)
 
         self.serverclose
@@ -185,9 +186,7 @@ class RelpServer < Relp
   def shutdown
     begin
       @server.shutdown
-#@logger.debug('pre')
       @server.close
-#@logger.debug('post')
     rescue Exception#@server might already be down
     end
   end
@@ -246,7 +245,7 @@ class RelpClient < Relp
 
 
     #This thread deals with responses that come back
-    Thread.start do
+    reader=Thread.start do |parent|
       loop do
         f=self.frame_read
         if f['command']=='rsp' && f['message']=='200 OK'
@@ -256,11 +255,11 @@ class RelpClient < Relp
           new_txnr=self.frame_write(@buffer[f['txnr']])
           @buffer[new_txnr]=@buffer[f['txnr']]
           @buffer.delete(f['txnr'])
-        elsif f['command']=='serverclose'
-          raise ConnectionClosed#TODO: this doesn't raise the exception anywhere sensible
+        elsif f['command']=='serverclose' || f['txnr']==@close_txnr
+          parent.raise ConnectionClosed#TODO: raising errors like this makes no sense
         else
           #Don't know what's going on if we get here, but it can't be good
-          raise RelpError#TODO: this exception will disappear as well
+          parent.raise RelpError#TODO: raising errors like this makes no sense
         end
       end
     end
@@ -285,7 +284,7 @@ class RelpClient < Relp
   def close
     frame=Hash.new
     frame['command']='close'
-    txnr=self.frame_write(frame)
+    @close_txnr=self.frame_write(frame)
     #TODO: ought to properly wait for a reply etc. The serverclose will make it work though
     sleep @retransmission_timeout
     @socket.close#TODO: shutdown?
