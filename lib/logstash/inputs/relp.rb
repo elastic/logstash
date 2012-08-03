@@ -60,7 +60,7 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
             #TODO: Still not happy with this, are they all warn level?
             #Will this catch everything I want it to?
             #Relp spec says to close connection on error, ensure this is the case
-            rs.serverclose
+            #rs.serverclose
           end
         end # Thread.start
       rescue Relp::InvalidCommand,Relp::InappropriateCommand => e
@@ -75,3 +75,5 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
     @relp_server.shutdown
   end
 end # class LogStash::Inputs::Relp
+
+#TODO: structured error logging

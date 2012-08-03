@@ -25,7 +25,6 @@ describe LogStash::Inputs::Relp do
 
   after do
     @input.teardown
-    # This plugin has no proper teardown yet.
   end # after
 
   test "Basic handshaking/message transmission" do
@@ -72,12 +71,64 @@ describe LogStash::Inputs::Relp do
     end
   end
 
-  test "RelpServer rejects invalid/innapropriate commands" do
-    #TODO: 
+  test "RelpServer rejects invalid commands" do
+    #Need it to close the connection, but not bring down the whole server
+    queue = Queue.new
+    thread = Thread.new { @input.run(queue) }
+
+    logger=Queue.new
+    (@input.instance_eval { @logger }).subscribe(logger)
+
+    assert_raises(Relp::ConnectionClosed) do#TODO: I think these exceptions are being raised wrong somehow
+      rc=RelpClient.new('127.0.0.1',15515,['syslog'])
+      badframe=Hash.new
+      badframe['command']='badcommand'
+      rc.frame_write(badframe)
+      #We can't detect that it's closed until we try to write to it again (delay is required for connection to be closed)
+      sleep 1
+      rc.frame_write(badframe)
+    end
+    assert_equal("Relp error: Relp::InvalidCommand badcommand",logger.pop[:message])
+  end
+
+  test "RelpServer rejects inappropriate commands" do
+    #Need it to close the connection, but not bring down the whole server
+    queue = Queue.new
+    thread = Thread.new { @input.run(queue) }
+
+    logger=Queue.new
+    (@input.instance_eval { @logger }).subscribe(logger)
+
+    assert_raises(Relp::ConnectionClosed) do #TODO: I think these exceptions are being raised wrong somehow
+      rc=RelpClient.new('127.0.0.1',15515,['syslog'])
+      badframe=Hash.new
+      badframe['command']='open'#it's not expecting open again
+      rc.frame_write(badframe)
+      #We can't detect that it's closed until we try to write to it again(but with something other than an open)
+      sleep 1
+      badframe['command']='syslog'
+      rc.frame_write(badframe)
+    end
+    assert_equal("Relp error: Relp::InappropriateCommand open expecting syslog",logger.pop[:message])
+
   end
 
   test "RelpServer refuses to connect if no syslog command available" do
-    #TODO: 
+
+    logger=Queue.new
+    (@input.instance_eval { @logger }).subscribe(logger)
+
+    assert_raises(Relp::RelpError) do
+      queue = Queue.new
+      thread = Thread.new { @input.run(queue) }
+      rc=RelpClient.new('127.0.0.1',15515)
+    end
+ 
+    assert_equal("Relp client incapable of syslog",logger.pop[:message])
+
+    
   end
 
 end # testing for LogStash::Inputs::File
+
+#TODO: structured error logging
