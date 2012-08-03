@@ -9,6 +9,8 @@
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
 
  ## filters
+ - new filter: kv: useful for parsing log formats taht use 'foo=bar baz=fizz'
+   and similar key-value-like things.
 
  ## outputs
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
