@@ -7,6 +7,8 @@
 
  ## inputs
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
+ - new input: lumberjack: for use with the lumberjack log shipper 
+   (https://github.com/jordansissel/lumberjack)
 
  ## filters
  - new filter: kv: useful for parsing log formats taht use 'foo=bar baz=fizz'
@@ -16,6 +18,8 @@
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
  - improvement: riemann: metric and ttl values in riemann_event now support
    sprintf %{foo} values. (pull #174)
+ - improvement: stdout: new 'dots' debug_format value emits one dot per event
+   useful for tracking event rates.
 
 1.1.1 (July 14, 2012)
  ## Overview of this release:
