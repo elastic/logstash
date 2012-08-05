@@ -14,40 +14,53 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   config :debug, :validate => :boolean
 
   # Debug output format: ruby (default), json
-  config :debug_format, :default => ["ruby"], :validate => (lambda do |value|
-    valid_formats = ["ruby", "json"]
-    if value.length != 1
-      false
-    else
-      valid_formats.member?(value.first)
-    end
-  end) # config :debug_format
+  config :debug_format, :default => "ruby", :validate => ["ruby", "json", "dots"]
 
   public
   def register
     @print_method = method(:ap) rescue method(:p)
-  end
-
-  public
-  def receive(event)
-    return unless output?(event)
-
-    if event == LogStash::SHUTDOWN
-      finished
-      return
-    end
-
     if @debug
-      case @debug_format.first
+      case @debug_format
         when "ruby"
-          @print_method.call(event.to_hash)
+          define_singleton_method(:receive) do |event|
+            return unless output?(event)
+            if event == LogStash::SHUTDOWN
+              finished
+              return
+            end
+            @print_method.call(event.to_hash)
+          end
         when "json"
-          puts event.to_json
+          define_singleton_method(:receive) do |event|
+            return unless output?(event)
+            if event == LogStash::SHUTDOWN
+              finished
+              return
+            end
+            puts event.to_json
+          end
+        when "dots"
+          define_singleton_method(:receive) do |event|
+            return unless output?(event)
+            if event == LogStash::SHUTDOWN
+              finished
+              return
+            end
+            $stdout.write(".")
+          end
         else
           raise "unknown debug_format #{@debug_format}, this should never happen"
       end
     else
-      puts event.to_s
+      define_singleton_method(:receive) do |event|
+        return unless output?(event)
+        if event == LogStash::SHUTDOWN
+          finished
+          return
+        end
+        puts event.to_s
+      end
     end
-  end # def event
+  end
+
 end # class LogStash::Outputs::Stdout
