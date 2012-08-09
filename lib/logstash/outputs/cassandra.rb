@@ -52,6 +52,7 @@ class LogStash::Outputs::Cassandra < LogStash::Outputs::Base
     @columns_cql_clause = @columns.join(',')
     @column_mappings = @columns.map { |c| @event_schema[c] }.map { |c| "%{#{c}}" }
     @column_mappings_placeholder = (["?"]*@columns.size).join(',')
+    @log_insert_query = "INSERT INTO #{@table} (id,#{@columns_cql_clause}) VALUES (?,#{@column_mappings_placeholder})"
 
     @logger.debug("Will map #{@columns_cql_clause} to #{@column_mappings_cql_clause}")
   end # def register
@@ -73,16 +74,15 @@ class LogStash::Outputs::Cassandra < LogStash::Outputs::Base
     event_uuid = CassandraCQL::UUID.new(self.timestamp_as_uuid(event))
 
     # Write the event itself. Unfortunately, maintaining the event and index tables don't happen as one atomic transaction; every update is separate.
-    log_insert_query = "INSERT INTO #{@table} (id,#{@columns_cql_clause}) VALUES (?,#{@column_mappings_placeholder})"
     column_values = @column_mappings.map do |i|
-      if i.eql?('%{timestamp}')
+      if i.eql?('%{@timestamp}')
         self.timestamp_as_uuid(event)
       else
         event.sprintf(i)
       end
     end
     # @logger.info(log_insert_query)
-    @client.execute(log_insert_query, event_uuid, *column_values)
+    @client.execute(@log_insert_query, event_uuid, *column_values)
 
     # Write index maintenance wide columns.
     @index_tables.each do |tbl, id_key|
