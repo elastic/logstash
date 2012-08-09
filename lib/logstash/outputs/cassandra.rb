@@ -26,12 +26,12 @@ class LogStash::Outputs::Cassandra < LogStash::Outputs::Base
   # "index" your events under multiple keys. You can use event.sprintf to manage the row keys - see below.
   # This CF should have a string key, and a UUID comparator:
   #   CREATE COLUMNFAMILY logstash_timeline (id text primary key) WITH comparator=uuid;
-  config :index_tables, :validate => :array, :default => ["logstash_timeline"]
+  config :index_tables, :validate => :array
 
   # What key to use for the index CF's wide rows. The values are passed through event.sprintf, so you 
   # can configure the time period where your bucket rolls over here through tweaking the value.
   # Pass a hash from an index table name you specified in index_tables to the formatted key name.
-  config :index_table_keys, :validate => :array, :default => ["logstash", "logstash_%{+YYYY.MM.dd}"]
+  config :index_table_keys, :validate => :array
 
   public
   def register
@@ -41,6 +41,8 @@ class LogStash::Outputs::Cassandra < LogStash::Outputs::Base
     @logger.info("Cluster nodes", :nodes => cluster_nodes)
 
     @client = CassandraCQL::Database.new(cluster_nodes, {:keyspace => @keyspace, :cql_version => 3})
+
+    @index_tables ||= []
 
     # sanity check.
     ([@table] + @index_tables).each do |t|
