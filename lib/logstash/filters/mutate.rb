@@ -133,12 +133,12 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     return unless filter?(event)
 
     rename(event) if @rename
-    remove(event) if @remove
     replace(event) if @replace
     convert(event) if @convert
     gsub(event) if @gsub
     uppercase(event) if @uppercase
     lowercase(event) if @lowercase
+    remove(event) if @remove
 
     filter_matched(event)
   end # def filter
