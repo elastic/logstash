@@ -22,16 +22,13 @@ class LogStash::Outputs::Cassandra < LogStash::Outputs::Base
   # If not, the @message field goes into a "message" column.
   config :event_schema, :validate => :hash, :default => ["@message", "message"]
 
-  # The columnfamily name(s) to maintain the time-series index in. You can specify multiple ones if you want to 
-  # "index" your events under multiple keys. You can use event.sprintf to manage the row keys - see below.
-  # This CF should have a string key, and a UUID comparator:
+  # The columnfamily name(s) to maintain the time-series index in, and the template to use for row keys. 
+  # You can specify multiple tables if you want to "index" your events under multiple keys. 
+  # The row keys will be run through event.sprintf, so you can bucket the rows by an event attribute.
+  #
+  # The colum families you list should have a string key, and a UUID comparator for the wide columns:
   #   CREATE COLUMNFAMILY logstash_timeline (id text primary key) WITH comparator=uuid;
-  config :index_tables, :validate => :array
-
-  # What key to use for the index CF's wide rows. The values are passed through event.sprintf, so you 
-  # can configure the time period where your bucket rolls over here through tweaking the value.
-  # Pass a hash from an index table name you specified in index_tables to the formatted key name.
-  config :index_table_keys, :validate => :array
+  config :index_tables, :validate => :hash
 
   public
   def register
@@ -42,10 +39,10 @@ class LogStash::Outputs::Cassandra < LogStash::Outputs::Base
 
     @client = CassandraCQL::Database.new(cluster_nodes, {:keyspace => @keyspace, :cql_version => 3})
 
-    @index_tables ||= []
+    @index_tables ||= {}
 
     # sanity check.
-    ([@table] + @index_tables).each do |t|
+    ([@table] + @index_tables.keys).each do |t|
       raise "Can't register Cassandra output handler - columnfamily #{t} doesn't exist!" unless @client.schema.column_families.include?(t)
     end
 
@@ -88,9 +85,8 @@ class LogStash::Outputs::Cassandra < LogStash::Outputs::Base
     @client.execute(log_insert_query, event_uuid, *column_values)
 
     # Write index maintenance wide columns.
-    @index_tables.each_with_index do |tbl, i|
+    @index_tables.each do |tbl, id_key|
       timeline_insert_query = "INSERT INTO #{tbl} (id,?) VALUES (?,?)"
-      id_key = @index_table_keys[i*2+1]
       @client.execute(timeline_insert_query, event_uuid, event.sprintf(id_key), '')
     end
   end # def receive
