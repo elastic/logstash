@@ -78,7 +78,7 @@ class LogStash::Outputs::Cassandra < LogStash::Outputs::Base
     # Write the event itself. Unfortunately, maintaining the event and index tables don't happen as one atomic transaction; every update is separate.
     log_insert_query = "INSERT INTO #{@table} (id,#{@columns_cql_clause}) VALUES (?,#{@column_mappings_placeholder})"
     column_values = @column_mappings.map do |i|
-      if i.eql?('%{raw_timestamp}')
+      if i.eql?('%{timestamp}')
         self.timestamp_as_uuid(event)
       else
         event.sprintf(i)
