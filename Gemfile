@@ -42,6 +42,7 @@ gem "ffi"
 
 gem "riemann-client", "0.0.6" #outputs/riemann, License: MIT
 gem "riak-client", "1.0.3" #outputs/riak, License: Apache 2.0
+gem "cassandra-cql", "1.0.4" #outputs/cassandra, License: Apache 2.0
 
 group :test do
   gem "mocha"

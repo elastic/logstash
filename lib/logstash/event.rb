@@ -1,8 +1,8 @@
 require "json"
-require "logstash/time"
 require "logstash/namespace"
 require "uri"
 require "time"
+require "logstash/time"
 
 # General event type. 
 # Basically a light wrapper on top of a hash.
@@ -71,11 +71,24 @@ class LogStash::Event
   def unix_timestamp
     if RUBY_ENGINE != "jruby"
       # This is really slow. See LOGSTASH-217
-      return Time.parse(timestamp).to_f
+      return self.ruby_timestamp.to_f
     else
-      time = @@date_parser.parseDateTime(timestamp)
-      return time.getMillis.to_f / 1000
+      return self.ruby_timestamp.getMillis.to_f / 1000
     end
+  end
+
+  public
+  def ruby_timestamp
+    if @ruby_timestamp.nil?
+      if RUBY_ENGINE != "jruby"
+        # This is really slow. See LOGSTASH-217
+        @ruby_timestamp = Time.parse(timestamp)
+      else
+        @ruby_timestamp = @@date_parser.parseDateTime(timestamp)
+      end
+    end
+
+    @ruby_timestamp
   end
 
   public
