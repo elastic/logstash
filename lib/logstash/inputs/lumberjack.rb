@@ -28,12 +28,17 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   def handle_socket(socket, output_queue, event_source)
     begin
       last_ack = 0
-      window_size = 2048
+      window_size = 1 # assume window size of 1 until told otherwise
 
       # TODO(sissel): Update the protocol to announce window size from the
       # publisher.
       while true
         vf = socket.read(2)
+
+        if vf == "1W"
+          window_size = socket.read(2).unpack("N").first
+          next
+        end
 
         if vf != "1D" 
           logger.warn("Unexpected version/frame type", :vf => vf);
@@ -41,7 +46,8 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
           return
         end
 
-        # data frame
+        # We got a data frame, read the sequence, count of elements, then each
+        # element.
         sequence, count = socket.read(8).unpack("NN")
         map = {}
         count.times do 
