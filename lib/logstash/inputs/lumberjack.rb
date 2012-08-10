@@ -18,10 +18,57 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   # the port to listen on.
   config :port, :validate => :number, :required => true
 
+  # ssl certificate to use
+  config :ssl_certificate, :validate => :string, :required => true
+
+  # ssl key to use
+  config :ssl_key, :validate => :string, :required => true
+
+  # ssl key passphrase to use
+  config :ssl_key_passphrase, :validate => :password
+
+  # TODO(sissel): Add CA to authenticate clients with.
+
   public
   def register
     @logger.info("Starting lumberjack input listener", :address => "#{@host}:#{@port}")
-    @server_socket = TCPServer.new(@host, @port)
+    @tcp_server = TCPServer.new(@host, @port)
+
+    ssl_context = OpenSSL::SSL::SSLContext.new
+    begin
+      cert_data = File.read(@ssl_certificate)
+    rescue NameError, NoMethodError
+      raise
+    rescue => e
+      @logger.error("Failed reading ssl certificate", :path => @ssl_certificate, :exception => e)
+    end
+
+    begin
+      ssl_context.cert = OpenSSL::X509::Certificate.new(cert_data)
+    rescue NameError, NoMethodError; raise
+    rescue => e
+      @logger.error("Failed parsing ssl certificate", :path => @ssl_certificate, :exception => e)
+      raise
+    end
+
+    begin
+      key_data = File.read(@ssl_key)
+    rescue NameError, NoMethodError; raise
+    rescue => e
+      @logger.error("Failed reading ssl key file", :path => @ssl_key, :exception => e)
+      raise
+    end
+
+    begin
+      ssl_context.key = OpenSSL::PKey::RSA.new(key_data, @ssl_key_passphrase.value)
+    rescue NameError, NoMethodError; raise
+    rescue => e
+      @logger.error("Failed parsing ssl key", :path => @ssl_key,
+                    :passphrase? => !@ssl_key_passphrase.nil?, :exception => e)
+      raise
+    end
+
+    @ssl_server = OpenSSL::SSL::SSLServer.new(server, ssl_context)
   end # def register
 
   private
@@ -58,7 +105,8 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
           map[key] = value
         end
 
-        if sequence - last_ack >= window_size
+        # bulk ack if we hit the window size
+        if sequence - last_ack == window_size
           # bulk ack, we've hit the window size
           socket.write(["1", "A", sequence].pack("AAN"))
           last_ack = sequence
@@ -75,7 +123,7 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
         output_queue << event
       end
     rescue StandardError => e
-      @logger.warn("Closing connection", :client => socket.peer,
+      @logger.warn("Exception caught, closing connection", :client => socket.peer,
                     :exception => e, :backtrace => e.backtrace)
     end # begin
   ensure
@@ -90,14 +138,14 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   def run(output_queue)
     loop do
       # Start a new thread for each connection.
-      Thread.start(@server_socket.accept) do |s|
+      Thread.start(@server.accept) do |client|
         # TODO(sissel): put this block in its own method.
 
         # monkeypatch a 'peer' method onto the socket.
-        s.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
-        @logger.debug("Accepted connection", :client => s.peer,
-                      :server => "#{@host}:#{@port}")
-        handle_socket(s, output_queue, "lumberjack://#{@host}:#{@port}/#{s.peer}")
+        client.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
+        @logger.debug("Accepted connection", :client => client.peer,
+                      :server => "#{@host}:#{@port}", :plugin => self)
+        handle_socket(client, output_queue, "lumberjack://#{@host}:#{@port}/#{s.peer}")
       end # Thread.start
     end # loop
   end # def run
