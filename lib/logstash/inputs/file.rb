@@ -63,21 +63,50 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   public
   def register
     require "filewatch/tail"
+    require "digest/md5"
     LogStash::Util::set_thread_name("input|file|#{path.join(":")}")
     @logger.info("Registering file input", :path => @path)
-  end # def register
 
-  public
-  def run(queue)
-    config = {
+    @tail_config = {
       :exclude => @exclude,
       :stat_interval => @stat_interval,
       :discover_interval => @discover_interval,
       :sincedb_write_interval => @sincedb_write_interval,
       :logger => @logger,
     }
-    config[:sincedb_path] = @sincedb_path if @sincedb_path
-    tail = FileWatch::Tail.new(config)
+
+    if @sincedb_path.nil?
+      if ENV["HOME"].nil?
+        @logger.error("No HOME environment variable set, I don't know where " \
+                      "to keep track of the files I'm watching. Either set " \
+                      "HOME in your environment, or set sincedb_path in " \
+                      "in your logstash config for the file input with " \
+                      "path '#{@path.inspect}'")
+        raise # TODO(sissel): HOW DO I FAIL PROPERLY YO
+      end
+
+      # Join by ',' to make it easy for folks to know their own sincedb
+      # generated path (vs, say, inspecting the @path array)
+      @sincedb_path = File.join(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest(@path.join(",")))
+
+      # Migrate any old .sincedb to the new file (this is for version <=1.1.1 compatibility)
+      old_sincedb = File.join(ENV["HOME"], ".sincedb")
+      if File.exists?(old_sincedb)
+        @logger.info("Renaming old ~/.sincedb to new one", :old => old_sincedb,
+                     :new => @sincedb_path)
+        File.rename(old_sincedb, @sincedb_path)
+      end
+
+      @logger.info("No sincedb_path set, generating one based on the file path",
+                   :sincedb_path => @sincedb_path, :path => @path)
+    end
+
+    @tail_config[:sincedb_path] = @sincedb_path
+  end # def register
+
+  public
+  def run(queue)
+    tail = FileWatch::Tail.new(@tail_config)
     tail.logger = @logger
     @path.each { |path| tail.tail(path) }
     hostname = Socket.gethostname
