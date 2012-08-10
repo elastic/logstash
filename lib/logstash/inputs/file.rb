@@ -63,21 +63,42 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   public
   def register
     require "filewatch/tail"
+    require "digest/md5"
     LogStash::Util::set_thread_name("input|file|#{path.join(":")}")
     @logger.info("Registering file input", :path => @path)
-  end # def register
 
-  public
-  def run(queue)
-    config = {
+    @tail_config = {
       :exclude => @exclude,
       :stat_interval => @stat_interval,
       :discover_interval => @discover_interval,
       :sincedb_write_interval => @sincedb_write_interval,
       :logger => @logger,
     }
-    config[:sincedb_path] = @sincedb_path if @sincedb_path
-    tail = FileWatch::Tail.new(config)
+
+    if @sincedb_path.nil?
+      # TODO(sissel): migrate .sincedb file if it exists
+      if ENV["HOME"].nil?
+        @logger.error("No HOME environment variable set, I don't know where " \
+                      "keep track of the files I'm watching. Either set " \
+                      "HOME in your environment, or set sincedb_path in " \
+                      "in your logstash config for the file input with " \
+                      "path '#{@path.inspect}'")
+        raise # TODO(sissel): HOW DO I FAIL PROPERLY YO
+      end
+
+      # Join by ',' to make it easy for folks to know their own sincedb
+      # generated path (vs, say, inspecting the @path array)
+      @sincedb_path = File.join(ENV["HOME"], Digest::MD5.hexdigest(@path.join(",")))
+      @logger.info("No sincedb_path set, generating one based on the path",
+                   :sincedb_path => @sincedb_path)
+    end
+
+    @tail_config[:sincedb_path] = @sincedb_path
+  end # def register
+
+  public
+  def run(queue)
+    tail = FileWatch::Tail.new(@tail_config)
     tail.logger = @logger
     @path.each { |path| tail.tail(path) }
     hostname = Socket.gethostname
