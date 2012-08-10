@@ -16,6 +16,8 @@
  ## filters
  - new filter: kv: useful for parsing log formats taht use 'foo=bar baz=fizz'
    and similar key-value-like things.
+ - mutate filter: fix bug in uppercase and lowercase feature that would prevent
+   it from actually doing the uppercasing/lowercasing.
 
  ## outputs
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
