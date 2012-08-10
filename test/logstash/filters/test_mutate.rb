@@ -182,4 +182,28 @@ describe LogStash::Filters::Mutate do
     assert_equal("test bar test", event["test"])
     assert_equal("test2 bar test2", event["test2"])
   end
+
+  test "uppercase"  do
+    config "uppercase" => [ "test", "test2" ]
+    event = LogStash::Event.new
+    event.type = @typename
+    event["test"] = [ "test foo test" ]
+    event["test2"] = "test2 foo test2"
+
+    @filter.filter(event)
+    assert_equal(event["test"].collect(&:upcase), event["test"])
+    assert_equal(event["test2"].upcase, event["test2"])
+  end
+
+  test "lowercase"  do
+    config "lowercase" => [ "test", "test2" ]
+    event = LogStash::Event.new
+    event.type = @typename
+    event["test"] = [ "TEST FOO TEST" ]
+    event["test2"] = "TEST2 FOO TEST2"
+
+    @filter.filter(event)
+    assert_equal(event["test"].collect(&:downcase), event["test"])
+    assert_equal(event["test2"].downcase, event["test2"])
+  end
 end # Test 'mutate' filter
