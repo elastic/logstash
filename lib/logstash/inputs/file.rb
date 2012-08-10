@@ -76,10 +76,9 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     }
 
     if @sincedb_path.nil?
-      # TODO(sissel): migrate .sincedb file if it exists
       if ENV["HOME"].nil?
         @logger.error("No HOME environment variable set, I don't know where " \
-                      "keep track of the files I'm watching. Either set " \
+                      "to keep track of the files I'm watching. Either set " \
                       "HOME in your environment, or set sincedb_path in " \
                       "in your logstash config for the file input with " \
                       "path '#{@path.inspect}'")
@@ -88,9 +87,18 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
       # Join by ',' to make it easy for folks to know their own sincedb
       # generated path (vs, say, inspecting the @path array)
-      @sincedb_path = File.join(ENV["HOME"], Digest::MD5.hexdigest(@path.join(",")))
-      @logger.info("No sincedb_path set, generating one based on the path",
-                   :sincedb_path => @sincedb_path)
+      @sincedb_path = File.join(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest(@path.join(",")))
+
+      # Migrate any old .sincedb to the new file (this is for version <=1.1.1 compatibility)
+      old_sincedb = File.join(ENV["HOME"], ".sincedb")
+      if File.exists?(old_sincedb)
+        @logger.info("Renaming old ~/.sincedb to new one", :old => old_sincedb,
+                     :new => @sincedb_path)
+        File.rename(old_sincedb, @sincedb_path)
+      end
+
+      @logger.info("No sincedb_path set, generating one based on the file path",
+                   :sincedb_path => @sincedb_path, :path => @path)
     end
 
     @tail_config[:sincedb_path] = @sincedb_path
