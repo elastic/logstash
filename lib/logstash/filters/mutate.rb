@@ -231,7 +231,9 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   private
   def uppercase(event)
     @uppercase.each do |field|
-      if event[field].is_a?(String)
+      if event[field].is_a?(Array)
+        event[field].each { |v| v.upcase! }
+      elsif event[field].is_a?(String)
         event[field].upcase!
       else
         @logger.debug("Can't uppercase something that isn't a string",
@@ -243,7 +245,9 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   private
   def lowercase(event)
     @lowercase.each do |field|
-      if event[field].is_a?(String)
+      if event[field].is_a?(Array)
+        event[field].each { |v| v.downcase! }
+      elsif event[field].is_a?(String)
         event[field].downcase!
       else
         @logger.debug("Can't lowercase something that isn't a string",
