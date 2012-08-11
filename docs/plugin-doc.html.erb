@@ -44,7 +44,7 @@ This is what it might look like in your config file:
      else
        annotation += " (optional)"
      end
-     annotation += ", default: #{config[:default].inspect}" if config[:default]
+     annotation += ", default: #{config[:default].inspect}" if config.include?(:default)
 -%>
     <a href="#setting_<%= setting_name %>"><%= setting_name %></a> => ... # <%= annotation %>
 <% end -%>
@@ -84,7 +84,7 @@ This is what it might look like in your config file:
 <% elsif config[:validate].is_a?(Array) -%>
   <li> Value can be any of: <%= config[:validate].map(&:inspect).join(", ") %> </li>
 <% end -%>
-<% if config[:default].nil? -%>
+<% if config.include?(:default) -%>
   <li> Default value is <%= config[:default].inspect %> </li>
 <% else -%>
   <li> There is no default value for this setting. </li>
