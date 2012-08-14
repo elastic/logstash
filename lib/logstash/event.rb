@@ -212,22 +212,24 @@ class LogStash::Event
       if key == "+%s"
         # Got %{+%s}, support for unix epoch time
         if RUBY_ENGINE != "jruby"
-          # TODO(sissel): LOGSTASH-217
-          raise Exception.new("LogStash::Event#sprintf('+%s') is not " \
-                              "supported yet in this version of ruby")
+          # This is really slow. See LOGSTASH-217
+          Date.parse(self.timestamp).to_i
+        else
+          datetime = @@date_parser.parseDateTime(self.timestamp)
+          (datetime.getMillis / 1000).to_i
         end
-        datetime = @@date_parser.parseDateTime(self.timestamp)
-        (datetime.getMillis / 1000).to_i
       elsif key[0,1] == "+"
         # We got a %{+TIMEFORMAT} so use joda to format it.
         if RUBY_ENGINE != "jruby"
-          # TODO(sissel): LOGSTASH-217
-          raise Exception.new("LogStash::Event#sprintf('+dateformat') is not " \
-                              "supported yet in this version of ruby")
+          # This is really slow. See LOGSTASH-217
+          datetime = Date.parse(self.timestamp)
+          format = key[1 .. -1]
+          datetime.strftime(format)
+        else
+          datetime = @@date_parser.parseDateTime(self.timestamp)
+          format = key[1 .. -1]
+          datetime.toString(format) # return requested time format
         end
-        datetime = @@date_parser.parseDateTime(self.timestamp)
-        format = key[1 .. -1]
-        datetime.toString(format) # return requested time format
       else
         # Use an event field.
         value = nil
