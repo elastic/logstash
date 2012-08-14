@@ -94,6 +94,14 @@ class LogStash::Event
   end # def source=
 
   public
+  def source_host; @data["@source_host"]; end # def source_host
+  def source_host=(val); @data["@source_host"] = val; end # def source_host=
+
+  public
+  def source_path; @data["@source_path"]; end # def source_path
+  def source_path=(val); @data["@source_path"] = val; end # def source_path=
+
+  public
   def message; @data["@message"]; end # def message
   def message=(val); @data["@message"] = val; end # def message=
 
