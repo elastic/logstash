@@ -31,6 +31,9 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
 
   public
   def register
+    require "openssl"
+    require "zlib"
+
     @logger.info("Starting lumberjack input listener", :address => "#{@host}:#{@port}")
     @tcp_server = TCPServer.new(@host, @port)
 
@@ -87,6 +90,15 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
           next
         end
 
+        if vf == "1C" # compressed frame envelope
+          length = io.read(4).unpack("N").first
+          compressed = io.read(length)
+          original = Zlib::Inflate.inflate(compressed)
+          # push the decompressed data back into the socket buffer
+          # to be processed as like normal
+          io.pushback(original)
+        end
+
         if vf != "1D" 
           logger.warn("Unexpected version/frame type", :vf => vf);
           socket.close
@@ -105,23 +117,28 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
           map[key] = value
         end
 
-        # bulk ack if we hit the window size
-        if sequence - last_ack == window_size
-          # bulk ack, we've hit the window size
-          socket.write(["1", "A", sequence].pack("AAN"))
-          last_ack = sequence
-        end
-
         event = LogStash::Event.new(
           "@type" => @type,
           "@tags" => (@tags.clone rescue []),
           "@source_path" => map["file"],
           "@source_host" => map["host"],
           "@source" => "lumberjack://#{map["host"]}#{map["file"]}",
-          "@message" => map["line"]
-        )
+          "@message" => map["line"])
+
+        # Add any other arbitrary fields given.
+        map.each do |k,v|
+          next if ["file", "host", "line"].include?(k)
+          event[k] = v
+        end
+
         output_queue << event
-      end
+
+        # bulk ack if we hit the window size
+        if sequence - last_ack == window_size
+          socket.write(["1", "A", sequence].pack("AAN"))
+          last_ack = sequence
+        end
+      end # while true
     rescue StandardError => e
       @logger.warn("Exception caught, closing connection", :client => socket.peer,
                     :exception => e, :backtrace => e.backtrace)
@@ -145,8 +162,40 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
         client.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
         @logger.debug("Accepted connection", :client => client.peer,
                       :server => "#{@host}:#{@port}", :plugin => self)
-        handle_socket(client, output_queue, "lumberjack://#{@host}:#{@port}/#{s.peer}")
+        handle_socket(IOWrap.new(fd), output_queue, "lumberjack://#{@host}:#{@port}/#{s.peer}")
       end # Thread.start
     end # loop
   end # def run
+
+  class IOWrap
+    def initialize(io)
+      @io = io
+      @buffer = ""
+    end
+
+    def read(bytes)
+      if @buffer.empty?
+        #puts "reading direct from @io"
+        return @io.read(bytes)
+      elsif @buffer.length > bytes
+        #puts "reading buffered"
+        data = @buffer[0...bytes]
+        @buffer[0...bytes] = ""
+        return data
+      else
+        data = @buffer.clone
+        @buffer.clear
+        return data + @io.read(bytes - data.length)
+      end
+    end
+
+    def pushback(data)
+      #puts "Pushback: #{data[0..30].inspect}..."
+      @buffer += data
+    end
+
+    def method_missing(method, *args)
+      @io.send(method, *args)
+    end
+  end
 end # class LogStash::Inputs::Tcp
