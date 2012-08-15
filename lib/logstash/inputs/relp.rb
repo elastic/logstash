@@ -1,8 +1,7 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "logstash/util/relp"
-#TODO: remove before release
-require "pry"
+
 
 # Read RELP events over a TCP socket.
 #
@@ -34,8 +33,8 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   private
   def relp_stream(relpsocket,output_queue,event_source)
     loop do
-      frame=relpsocket.syslog_read
-      event=self.to_event(frame['message'],event_source)
+      frame = relpsocket.syslog_read
+      event = self.to_event(frame['message'],event_source)
       output_queue << event
       #To get this far, the message must have made it into the queue for 
       #filtering. I don't think it's possible to wait for output before ack
@@ -60,7 +59,6 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
             #TODO: Still not happy with this, are they all warn level?
             #Will this catch everything I want it to?
             #Relp spec says to close connection on error, ensure this is the case
-            #rs.serverclose
           end
         end # Thread.start
       rescue Relp::InvalidCommand,Relp::InappropriateCommand => e
