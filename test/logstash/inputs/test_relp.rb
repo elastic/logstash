@@ -10,16 +10,14 @@ require "logstash/util/relp"
 
 require "mocha"
 
-#TODO: remove before release
-require "pry"
-
-
 #TODO: I just copy/pasted all those^ which ones do I actually need?
 
 describe LogStash::Inputs::Relp do
 
   before do
-    @input = LogStash::Inputs::Relp.new("type" => ["relp"], "host" => ["127.0.0.1"], "port" => [15515])#TODO: port 15515 is what I tend to use; pick a default?
+    #TODO: port 15515 is what I tend to use; pick a default?
+    @input = LogStash::Inputs::Relp.new("type" => ["relp"],
+        "host" => ["127.0.0.1"], "port" => [15515])
     @input.register
   end # before
 
@@ -33,6 +31,7 @@ describe LogStash::Inputs::Relp do
 
     # Let the input start listening. This is a crappy solution, but until
     # plugins can notify "I am ready!" testing will be a bit awkward.
+    # TODO: could we not pull this from the logger?
     sleep(2)
 
     begin
@@ -67,7 +66,7 @@ describe LogStash::Inputs::Relp do
       assert_equal("This is the fifth relp test message", events.last.message)
 
     rescue Relp::RelpError => re
-      flunk re.class.to_s+': '+re.to_s#TODO: is there not a proper way to do this?
+      flunk re.class.to_s + ': ' + re.to_s#TODO: is there not a proper way to do this?
     end
   end
 
@@ -80,11 +79,12 @@ describe LogStash::Inputs::Relp do
     (@input.instance_eval { @logger }).subscribe(logger)
 
     assert_raises(Relp::ConnectionClosed) do
-      rc=RelpClient.new('127.0.0.1',15515,['syslog'])
-      badframe=Hash.new
-      badframe['command']='badcommand'
+      rc = RelpClient.new('127.0.0.1',15515,['syslog'])
+      badframe = Hash.new
+      badframe['command'] = 'badcommand'
       rc.frame_write(badframe)
-      #We can't detect that it's closed until we try to write to it again (delay is required for connection to be closed)
+      #We can't detect that it's closed until we try to write to it again
+      #(delay is required for connection to be closed)
       sleep 1
       rc.frame_write(badframe)
     end
@@ -96,37 +96,37 @@ describe LogStash::Inputs::Relp do
     queue = Queue.new
     thread = Thread.new { @input.run(queue) }
 
-    logger=Queue.new
+    logger = Queue.new
     (@input.instance_eval { @logger }).subscribe(logger)
 
     assert_raises(Relp::ConnectionClosed) do
-      rc=RelpClient.new('127.0.0.1',15515,['syslog'])
-      badframe=Hash.new
-      badframe['command']='open'#it's not expecting open again
+      rc = RelpClient.new('127.0.0.1',15515,['syslog'])
+      badframe = Hash.new
+      badframe['command'] = 'open'#it's not expecting open again
       rc.frame_write(badframe)
-      #We can't detect that it's closed until we try to write to it again(but with something other than an open)
+      #We can't detect that it's closed until we try to write to it again
+      #(but with something other than an open)
       sleep 1
-      badframe['command']='syslog'
+      badframe['command'] = 'syslog'
       rc.frame_write(badframe)
     end
-    assert_equal("Relp error: Relp::InappropriateCommand open expecting syslog",logger.pop[:message])
+    assert_equal("Relp error: Relp::InappropriateCommand open expecting syslog",
+                 logger.pop[:message])
 
   end
 
   test "RelpServer refuses to connect if no syslog command available" do
 
-    logger=Queue.new
+    logger = Queue.new
     (@input.instance_eval { @logger }).subscribe(logger)
 
     assert_raises(Relp::RelpError) do
       queue = Queue.new
       thread = Thread.new { @input.run(queue) }
-      rc=RelpClient.new('127.0.0.1',15515)
+      rc = RelpClient.new('127.0.0.1',15515)
     end
  
     assert_equal("Relp client incapable of syslog",logger.pop[:message])
-
-    
   end
 
 end # testing for LogStash::Inputs::File
