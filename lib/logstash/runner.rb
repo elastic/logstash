@@ -1,6 +1,4 @@
 require "rubygems"
-$: << File.join(File.dirname(__FILE__), "..")
-$: << File.join(File.dirname(__FILE__), "..", "..", "test")
 require "logstash/namespace"
 require "logstash/program"
 require "logstash/util"
@@ -70,6 +68,7 @@ class LogStash::Runner
         return web.run(args)
       end,
       "test" => lambda do
+        $: << File.join(File.dirname(__FILE__), "..", "..", "test")
         require "logstash/test"
         test = LogStash::Test.new
         @runners << test
