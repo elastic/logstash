@@ -95,11 +95,10 @@ end
 class RelpServer < Relp
   
   def peer
-    begin
-      @socket.peeraddr[3]#TODO: is this the best thing to report? I don't think so...
-    rescue IOError
-      raise ConnectionClosed
+    if @peer.nil?
+      @peer = @socket.peeraddr[3]#TODO: is this the best thing to report? I don't think so...
     end
+    @peer
   end
 
   def initialize(host,port,required_commands=[])
