@@ -63,7 +63,11 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
     end
 
     begin
-      ssl_context.key = OpenSSL::PKey::RSA.new(key_data, @ssl_key_passphrase.value)
+      if @ssl_key_passphrase.nil?
+        ssl_context.key = OpenSSL::PKey::RSA.new(key_data)
+      else
+        ssl_context.key = OpenSSL::PKey::RSA.new(key_data, @ssl_key_passphrase.value)
+      end
     rescue NameError, NoMethodError; raise
     rescue => e
       @logger.error("Failed parsing ssl key", :path => @ssl_key,
@@ -71,7 +75,7 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
       raise
     end
 
-    @ssl_server = OpenSSL::SSL::SSLServer.new(server, ssl_context)
+    @ssl_server = OpenSSL::SSL::SSLServer.new(@tcp_server, ssl_context)
   end # def register
 
   private
@@ -155,7 +159,7 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   def run(output_queue)
     loop do
       # Start a new thread for each connection.
-      Thread.start(@server.accept) do |client|
+      Thread.start(@ssl_server.accept) do |client|
         # TODO(sissel): put this block in its own method.
 
         # monkeypatch a 'peer' method onto the socket.
