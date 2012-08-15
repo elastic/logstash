@@ -61,12 +61,6 @@ class LogStash::Runner
         require "logstash/agent"
         agent = LogStash::Agent.new
         @runners << agent
-
-        # TODO(sissel): There's a race condition somewhere that when two agents
-        # run in the same process, if their startups coincide, there's some 
-        # bleeding that happens between the config parsing. I haven't figured
-        # out where that is yet, but this sleep helps.
-        sleep 1
         return agent.run(args)
       end,
       "web" => lambda do
