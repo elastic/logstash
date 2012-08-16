@@ -11,6 +11,8 @@ configurations for each plugin available in that section.
 
 Example:
 
+    # This is a comment. You should use comments to describe
+    # parts of your configuration.
     input {
       ...
     }
@@ -23,9 +25,15 @@ Example:
       ...
     }
 
-## Filters
+## Filters and Ordering
 
 For a given event, are applied in the order of appearance in the config file.
+
+## Comments
+
+Comments are as in ruby, perl, and python. Starts with a '#' character. Example:
+
+    # this is a comment
 
 ## Value Types
 
