@@ -114,8 +114,6 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
 
     sourcehost = event.sprintf(@sourcehost)
 
-    timestamp = event.sprintf(@timestamp)
-
     facility_code = FACILITY_LABELS.index(@facility)
 
     severity_code = SEVERITY_LABELS.index(@severity)
@@ -123,8 +121,10 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
     priority = (facility_code * 8) + severity_code
 
     if rfc3164?
+       timestamp = DateTime.iso8601(event.sprintf(@timestamp)).strftime("%b %e %H:%M:%S")
        syslog_msg = "<"+priority.to_s()+">"+timestamp+" "+sourcehost+" "+@appname+"["+@procid+"]: "+event.message
     else
+       timestamp = DateTime.iso8601(event.sprintf(@timestamp)).rfc3339()
        syslog_msg = "<"+priority.to_s()+">1 "+timestamp+" "+sourcehost+" "+@appname+" "+@procid+" "+@msgid+" - "+event.message
     end
 
