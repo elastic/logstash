@@ -120,6 +120,7 @@ class PipeWrapper
 
   def puts(txt)
     @pipe.puts(txt)
+    @pipe.flush
     @active = true
   end
 

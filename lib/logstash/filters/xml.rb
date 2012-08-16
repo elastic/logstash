@@ -1,6 +1,5 @@
 require "logstash/filters/base"
 require "logstash/namespace"
-require "xmlsimple"
 require "rexml/document"
 include REXML
 
@@ -44,6 +43,7 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
 
   public
   def register
+    require "xmlsimple"
     @xml = {}
 
     @config.each do |field, dest|

@@ -1,7 +1,6 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 require "thread"
-require "cinch"
 
 # Write events to IRC
 #
@@ -33,6 +32,7 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
 
   public
   def register
+    require "cinch"
     @irc_queue = Queue.new
     @logger.info("Connecting to irc server", :host => @host, :port => @port, :nick => @nick, :channels => @channels)
 
@@ -56,6 +56,7 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
 
   public
   def receive(event)
+    return unless output?(event)
     @bot.channels.each do |channel|
       channel.msg(event.sprintf(@format))
     end # channels.each

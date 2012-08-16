@@ -10,7 +10,7 @@ The logstash agent has the following flags (also try using the '--help' flag)
 
 <dl>
 <dt> --config CONFIGFILE </dt>
-<dd> Load the logstash config from a specific file </dd>
+<dd> Load the logstash config from a specific file, directory, or a wildcard. If given a directory or wildcard, config files will be read in order lexigraphically.  </dd>
 <dt> --log FILE </dt>
 <dd> Log to a given path. Default is to log to stdout </dd>
 <dt> -v </dt>
