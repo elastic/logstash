@@ -71,7 +71,6 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
         event_data["@fields"]["stack_trace"] = event_obj.getThrowableStrRep().join("\n") if event_obj.getThrowableInformation()
 
         e = ::LogStash::Event.new event_data
-        puts "Event: #{e}"
         if e
           output_queue << e
         end
