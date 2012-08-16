@@ -218,10 +218,11 @@ class LogStash::Agent
       STDERR.reopen(logfile)
     end
 
-    if @verbose >= 3  # Uber debugging.
-      @logger.level = :debug
+    if ENV.include?("RUBY_DEBUG")
       $DEBUG = true
-    elsif @verbose == 2 # logstash debug logs
+    end
+
+    if @verbose >= 2 # logstash debug logs
       @logger.level = :debug
     elsif @verbose == 1 # logstash info logs
       @logger.level = :info
