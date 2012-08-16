@@ -1,6 +1,5 @@
 source :rubygems
-
-gemspec
+gemspec :name => "logstash"
 
 platforms :jruby do
   gem 'jruby-elasticsearch', '0.0.14'
