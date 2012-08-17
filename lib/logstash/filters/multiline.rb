@@ -41,7 +41,7 @@ require "logstash/namespace"
 #     filter {
 #       multiline {
 #         type => "somefiletype"
-#         pattern => "^\\s"
+#         pattern => "^\s"
 #         what => "previous"
 #       }
 #     }
