@@ -53,7 +53,7 @@ require "logstash/namespace"
 #     filter {
 #       multiline {
 #         type => "somefiletype "
-#         pattern => "\$"
+#         pattern => "\\$"
 #         what => "next"
 #       }
 #     }
