@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    logstash (1.1.1.rc3-java)
+    logstash (1.1.2.dev)
       aws-sdk
       bunny
       cabin (= 0.4.4)
