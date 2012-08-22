@@ -90,17 +90,18 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
         vf = socket.read(2)
 
         if vf == "1W"
-          window_size = socket.read(2).unpack("N").first
+          window_size = socket.read(4).unpack("N").first
           next
         end
 
         if vf == "1C" # compressed frame envelope
-          length = io.read(4).unpack("N").first
-          compressed = io.read(length)
+          length = socket.read(4).unpack("N").first
+          compressed = socket.read(length)
           original = Zlib::Inflate.inflate(compressed)
           # push the decompressed data back into the socket buffer
           # to be processed as like normal
-          io.pushback(original)
+          socket.pushback(original)
+          next
         end
 
         if vf != "1D" 
@@ -166,7 +167,8 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
         client.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
         @logger.debug("Accepted connection", :client => client.peer,
                       :server => "#{@host}:#{@port}", :plugin => self)
-        handle_socket(IOWrap.new(fd), output_queue, "lumberjack://#{@host}:#{@port}/#{s.peer}")
+        handle_socket(IOWrap.new(client), output_queue,
+                      "lumberjack://#{@host}:#{@port}/#{client.peer}")
       end # Thread.start
     end # loop
   end # def run
