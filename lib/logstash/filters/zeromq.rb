@@ -4,6 +4,12 @@ require "logstash/namespace"
 # ZeroMQ filter. This is the best way to send an event externally for filtering
 # It works much like an exec filter would by sending the event "offsite"
 # for processing and waiting for a response
+#
+# The protocol here is:
+#   * REQ sent with JSON-serialized logstash event
+#   * REP read expected to be the full JSON 'filtered' event
+#   * - if reply read is an empty string, it will cancel the event.
+#
 # Note that this is a limited subset of the zeromq functionality in
 # inputs and outputs. The only topology that makes sense here is:
 # REQ/REP. 
@@ -80,6 +86,13 @@ class LogStash::Filters::ZeroMQ < LogStash::Filters::Base
       reply = ''
       rc = @zsocket.recv_string(reply)
       error_check(rc, "in recv_string")
+
+      # If we receive an empty reply, this is an indication that the filter
+      # wishes to cancel this event.
+      if reply.empty?
+        event.cancel
+        return
+      end
       @logger.debug("0mq: receiving", :reply => reply)
       if @field
         event[@field] = event.sprintf(reply)
