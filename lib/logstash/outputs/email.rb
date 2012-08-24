@@ -38,11 +38,11 @@ require "logstash/namespace"
 class LogStash::Outputs::Email < LogStash::Outputs::Base
 
   config_name "email"
-  plugin_status "beta"
+  plugin_status "experimental"
   
   # the registered fields that we want to monitor
   # A hash of matches of field => value
-  config :match, :validate => :hash, :required => true
+  config :match, :validate => :hash
   
   # the To address setting - fully qualified email address to send to
   config :to, :validate => :string, :required => true
@@ -175,6 +175,10 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
                                   :authentication => authenticationType,
                                   :enable_starttls_auto => tls,
                                   :debug => debug }  
+      end
+    elsif @via == 'sendmail'
+      Mail.defaults do
+        delivery_method :sendmail
       end
     else
       Mail.defaults do                                                
