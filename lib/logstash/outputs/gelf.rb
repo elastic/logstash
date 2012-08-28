@@ -33,11 +33,11 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # "debug", "info", "warn", "error", "fatal", "unknown" (case insensitive).
   # Single-character versions of these are also valid, "d", "i", "w", "e", "f",
   # "u"
-  config :level, :validate => :array, :default => [ "%{severity}", "INFO" ]
+  config :level, :validate => :array, :default => [ "%{level}", "INFO" ]
 
   # The GELF facility. Dynamic values like %{foo} are permitted here; this
   # is useful if you need to use a value from the event as the facility name.
-  config :facility, :validate => :string, :default => "logstash-gelf"
+  config :facility, :validate => :string, :default => "%{facility}"
 
   # Ship metadata within event object?
   config :ship_metadata, :validate => :boolean, :default => true
@@ -83,6 +83,8 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
       "alert" => 1, "a" => 1,
       "emergency" => 0, "e" => 0,
      }
+
+     @ignore_fields = [ "facility", "full_message", "short_message", "host", "level", "line", "timestamp", "version", "file" ]
   end # def register
 
   public
@@ -92,8 +94,8 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     # We have to make our own hash here because GELF expects a hash
     # with a specific format.
     m = Hash.new
-    if event.fields["message"]
-      v = event.fields["message"]
+    if event.fields["short_message"]
+      v = event.fields["short_message"]
       m["short_message"] = (v.is_a?(Array) && v.length == 1) ? v.first : v
     else
       m["short_message"] = event.message
@@ -103,19 +105,34 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     
     m["host"] = event.sprintf(@sender)
     m["file"] = event["@source_path"]
+    
+    if event.fields["version"]
+      m["version"] = event.fields["version"]
+    end
+
+    if event.fields["line"]
+      m["line"] = event.fields["line"]
+    end
+
+    if event.fields["file"]
+      m["file"] = event.fields["file"]
+    end
 
     if @ship_metadata
         event.fields.each do |name, value|
           next if value == nil
+          name = name[1..-1] if name.start_with?('_')
           name = "_id" if name == "id"  # "_id" is reserved, so use "__id"
           if !value.nil?
-            if value.is_a?(Array)
-              # collapse single-element arrays, otherwise leave as array
-              m["_#{name}"] = (value.length == 1) ? value.first : value
-            else
-              # Non array values should be presented as-is
-              # https://logstash.jira.com/browse/LOGSTASH-113
-              m["_#{name}"] = value
+            if !@ignore_fields.include?(name)
+              if value.is_a?(Array)
+                # collapse single-element arrays, otherwise leave as array
+                m["_#{name}"] = (value.length == 1) ? value.first : value
+              else
+                # Non array values should be presented as-is
+                # https://logstash.jira.com/browse/LOGSTASH-113
+                m["_#{name}"] = value
+              end
             end
           end
         end
