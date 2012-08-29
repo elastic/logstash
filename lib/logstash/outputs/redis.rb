@@ -11,9 +11,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   # Name is used for logging in case there are multiple instances.
   # TODO: delete
-  config :name, :validate => :string, :default => 'default', 
+  config :name, :validate => :string, :default => 'default',
     :deprecated => true
-  
+
   # The hostname of your redis server.
   config :host, :validate => :string, :default => "127.0.0.1"
 
@@ -103,13 +103,17 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   private
   def connect
-    Redis.new(
+    params = {
       :host => @host,
       :port => @port,
       :timeout => @timeout,
-      :db => @db,
-      :password => @password.value
-    )
+      :db => @db
+    }
+    if @password
+      params[:password] = @password.value
+    end
+
+    Redis.new(params)
   end # def connect
 
   # A string used to identify a redis instance in log messages
@@ -171,12 +175,10 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
         end
         @last_pending_flush = Time.now.to_f
       rescue => e
-        @pending_mutex.unlock
         @logger.warn("Failed to send backlog of events to redis",
-                     :pending => pending,
+                     :pending_count => pending_count,
                      :identity => identity, :exception => e,
                      :backtrace => e.backtrace)
-        raise e
       end
     end
 
