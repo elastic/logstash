@@ -22,10 +22,9 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "minitest" # for running the tests from the jar
   gem.add_runtime_dependency "pry"
 
-  # Server dependencies
+  # Web dependencies
   gem.add_runtime_dependency "ftw", ["~> 0.0.19"]
   gem.add_runtime_dependency "haml"
-  gem.add_runtime_dependency "heroku"
   gem.add_runtime_dependency "rack"
   gem.add_runtime_dependency "sass"
   gem.add_runtime_dependency "sinatra"
@@ -33,6 +32,7 @@ Gem::Specification.new do |gem|
   # Input/Output/Filter dependencies
   #TODO Can these be optional?
   gem.add_runtime_dependency "aws-sdk"
+  gem.add_runtime_dependency "heroku"
   gem.add_runtime_dependency "addressable", ["2.2.6"]
   gem.add_runtime_dependency "bunny"
   gem.add_runtime_dependency "ffi"
