@@ -91,7 +91,7 @@ GEM
       multi_json (~> 1.0)
       multi_xml
     i18n (0.6.0)
-    insist (0.0.5)
+    insist (0.0.6)
     jls-grok (0.10.7)
       cabin (~> 0.4.0)
     jruby-elasticsearch (0.0.14)
@@ -177,7 +177,7 @@ PLATFORMS
   java
 
 DEPENDENCIES
-  insist
+  insist (= 0.0.6)
   logstash!
   mocha
   rspec
