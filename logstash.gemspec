@@ -70,5 +70,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "mocha"
   gem.add_development_dependency "shoulda"
   gem.add_development_dependency "rspec"
-  gem.add_development_dependency "insist"
+  gem.add_development_dependency "insist", "0.0.6"
 end
