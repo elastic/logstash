@@ -15,6 +15,10 @@ describe "apache common log format" do
   CONFIG
 
   # Here we provide a sample log event for the testing suite.
+  #
+  # Any filters you define above will be applied the same way the logstash
+  # agent performs. Inside the 'sample ... ' block the 'subject' will be
+  # a LogStash::Event object for you to inspect and verify for correctness.
   sample '198.151.8.4 - - [29/Aug/2012:20:17:38 -0400] "GET /favicon.ico HTTP/1.1" 200 3638 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:14.0) Gecko/20100101 Firefox/14.0.1"' do
 
     # These 'insist' and 'reject' calls use my 'insist' rubygem.
