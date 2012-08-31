@@ -249,3 +249,9 @@ rpm: build/logstash-$(VERSION)-monolithic.jar
 	cp -rp patterns build/root/opt/logstash/patterns
 	cp build/logstash-$(VERSION)-monolithic.jar build/root/opt/logstash
 	(cd build; fpm -t rpm -d jre -a noarch -n logstash -v $(VERSION) -s dir -C root opt)
+
+.PHONY: patterns
+patterns:
+	curl https://nodeload.github.com/logstash/grok-patterns/tarball/master | tar zx
+	mv logstash-grok-patterns*/* patterns/
+	rm -rf logstash-grok-patterns*

@@ -63,6 +63,10 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # If true, keep empty captures as event fields.
   config :keep_empty_captures, :validate => :boolean, :default => false
 
+  # If true, make single-value fields simply that value, not an array
+  # containing that one value.
+  config :singles, :validate => :boolean, :default => false
+
   # TODO(sissel): Add this feature?
   # When disabled, any pattern that matches the entire string will not be set.
   # This is useful if you have named patterns like COMBINEDAPACHELOG that will
@@ -127,7 +131,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       # Skip known config names
       next if (RESERVED + ["match", "patterns_dir",
                "drop_if_match", "named_captures_only", "pattern",
-               "keep_empty_captures", "break_on_match"]).include?(field)
+               "keep_empty_captures", "break_on_match", "singles"]).include?(field)
       patterns = [patterns] if patterns.is_a?(String)
 
       if !@patterns.include?(field)
@@ -223,8 +227,14 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
           # If value is not nil, or responds to empty and is not empty, add the
           # value to the event.
           if !value.nil? && (!value.empty? rescue true)
-            event.fields[key] ||= []
-            event.fields[key] << value
+            # Store fields as an array unless otherwise instructed with the
+            # 'singles' config option
+            if !event.fields.include?(key) and @singles
+              event.fields[key] = value
+            else
+              event.fields[key] ||= []
+              event.fields[key] << value
+            end
           end
         end # match.each_capture
 

@@ -63,7 +63,11 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
     end
 
     begin
-      ssl_context.key = OpenSSL::PKey::RSA.new(key_data, @ssl_key_passphrase.value)
+      if @ssl_key_passphrase.nil?
+        ssl_context.key = OpenSSL::PKey::RSA.new(key_data)
+      else
+        ssl_context.key = OpenSSL::PKey::RSA.new(key_data, @ssl_key_passphrase.value)
+      end
     rescue NameError, NoMethodError; raise
     rescue => e
       @logger.error("Failed parsing ssl key", :path => @ssl_key,
@@ -71,7 +75,7 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
       raise
     end
 
-    @ssl_server = OpenSSL::SSL::SSLServer.new(server, ssl_context)
+    @ssl_server = OpenSSL::SSL::SSLServer.new(@tcp_server, ssl_context)
   end # def register
 
   private
@@ -86,17 +90,18 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
         vf = socket.read(2)
 
         if vf == "1W"
-          window_size = socket.read(2).unpack("N").first
+          window_size = socket.read(4).unpack("N").first
           next
         end
 
         if vf == "1C" # compressed frame envelope
-          length = io.read(4).unpack("N").first
-          compressed = io.read(length)
+          length = socket.read(4).unpack("N").first
+          compressed = socket.read(length)
           original = Zlib::Inflate.inflate(compressed)
           # push the decompressed data back into the socket buffer
           # to be processed as like normal
-          io.pushback(original)
+          socket.pushback(original)
+          next
         end
 
         if vf != "1D" 
@@ -155,14 +160,15 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   def run(output_queue)
     loop do
       # Start a new thread for each connection.
-      Thread.start(@server.accept) do |client|
+      Thread.start(@ssl_server.accept) do |client|
         # TODO(sissel): put this block in its own method.
 
         # monkeypatch a 'peer' method onto the socket.
         client.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
         @logger.debug("Accepted connection", :client => client.peer,
                       :server => "#{@host}:#{@port}", :plugin => self)
-        handle_socket(IOWrap.new(fd), output_queue, "lumberjack://#{@host}:#{@port}/#{s.peer}")
+        handle_socket(IOWrap.new(client), output_queue,
+                      "lumberjack://#{@host}:#{@port}/#{client.peer}")
       end # Thread.start
     end # loop
   end # def run

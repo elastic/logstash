@@ -12,12 +12,16 @@
  - file input: sincedb path is now automatically generated if not specified.
    This helps work around a problem where two file inputs don't specify a
    sincedb_path would clobber eachother (LOGSTASH-554)
+ - file input: no longer crashes if HOME is not set in env (LOGSTASH-458)
 
  ## filters
  - new filter: kv: useful for parsing log formats taht use 'foo=bar baz=fizz'
    and similar key-value-like things.
  - mutate filter: fix bug in uppercase and lowercase feature that would prevent
    it from actually doing the uppercasing/lowercasing.
+ - grok filter: new 'singles' config option which, when true, stores single-value
+   fields simply as a single value rather than as an array, like [value].
+   (LOGSTASH-185)
 
  ## outputs
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing

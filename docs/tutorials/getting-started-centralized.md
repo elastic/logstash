@@ -69,7 +69,7 @@ That's it.
 
 ## logstash
 
-Once you have elasticsearch and rabbitmq (or any AMQP server) running, you're
+Once you have elasticsearch and redis running, you're
 ready to configure logstash.
 
 Download the monolithic logstash release package. By 'monolithic' I mean the
