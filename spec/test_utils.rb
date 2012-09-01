@@ -1,5 +1,4 @@
 require "insist"
-require "logstash/agent"
 require "logstash/event"
 
 if RUBY_VERSION < "1.9.2"
@@ -18,17 +17,18 @@ module LogStash
     end
 
     def config(configstr)
-      require "logstash/config/file"
-      config = LogStash::Config::File.new(nil, configstr)
-      agent = LogStash::Agent.new
-      @inputs, @filters, @outputs = agent.instance_eval { parse_config(config) }
-
-      [@inputs, @filters, @outputs].flatten.each do |plugin|
-        plugin.register
-      end
+      @config_str = configstr
     end # def config
 
     def sample(event, &block)
+      require "logstash/config/file"
+      config = LogStash::Config::File.new(nil, @config_str)
+      agent = LogStash::Agent.new
+      @inputs, @filters, @outputs = agent.instance_eval { parse_config(config) }
+      [@inputs, @filters, @outputs].flatten.each do |plugin|
+        plugin.register
+      end
+
       filters = @filters
       describe event do
         if event.is_a?(String)
@@ -45,5 +45,22 @@ module LogStash
         it("when processed", &block)
       end
     end # def sample
+
+    def agent(&block)
+      @agent_count ||= 0
+      require "logstash/agent"
+
+      # scoping is hard, let's go shopping!
+      config_str = @config_str
+      describe "agent(#{@agent_count}) #{caller[1]}" do
+        before :all do
+          @agent = LogStash::Agent.new
+          @agent.run(["-e", config_str])
+          @agent.wait
+        end
+        it("looks good", &block)
+      end
+      @agent_count += 1
+    end # def agent
   end # module RSpec
 end # module LogStash
