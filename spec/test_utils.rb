@@ -1,5 +1,7 @@
 require "insist"
 require "logstash/event"
+require "insist"
+require "stud/try"
 
 if RUBY_VERSION < "1.9.2"
   $stderr.puts "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
@@ -54,9 +56,11 @@ module LogStash
       config_str = @config_str
       describe "agent(#{@agent_count}) #{caller[1]}" do
         before :all do
+          start = Time.now
           @agent = LogStash::Agent.new
           @agent.run(["-e", config_str])
           @agent.wait
+          @duration = Time.now - start
         end
         it("looks good", &block)
       end
