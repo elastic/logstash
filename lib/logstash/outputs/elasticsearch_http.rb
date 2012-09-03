@@ -101,7 +101,9 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       event.to_json
     ].join("\n")
 
-    flush if @queue.size >= @flush_size
+    # Keep trying to flush while the queue is full.
+    # This will cause retries in flushing if the flush fails.
+    flush while @queue.size >= @flush_size
   end # def receive_bulk
 
   def flush
