@@ -108,7 +108,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       :port => @port,
       :timeout => @timeout,
       :db => @db,
-      :password => @password.value
+      :password => @password.nil? ? nil : @password.value
     )
   end # def connect
 
@@ -117,7 +117,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   def identity
     @name || "redis://#{@password}@#{@host}:#{@port}/#{@db} #{@data_type}:#{@key}"
   end
-
 
   public
   def receive(event)
