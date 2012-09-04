@@ -48,6 +48,16 @@ module LogStash
       end
     end # def sample
 
+    def input(&block)
+      require "logstash/config/file"
+      config = LogStash::Config::File.new(nil, @config_str)
+      agent = LogStash::Agent.new
+      it "looks good" do
+        inputs, filters, outputs = agent.instance_eval { parse_config(config) }
+        block.call(inputs)
+      end
+    end # def input
+
     def agent(&block)
       @agent_count ||= 0
       require "logstash/agent"
