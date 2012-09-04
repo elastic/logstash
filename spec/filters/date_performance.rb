@@ -25,7 +25,7 @@ describe LogStash::Filters::Date do
     CONFIG
 
     agent do
-        insist { @duration } < max_duration
-      end
+      insist { @duration } < max_duration
+    end
   end
 end

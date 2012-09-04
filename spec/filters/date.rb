@@ -14,29 +14,29 @@ describe LogStash::Filters::Date do
     CONFIG
 
     times = {
-          "2001-01-01T00:00:00-0800"         => "2001-01-01T08:00:00.000Z",
-          "1974-03-02T04:09:09-0800"         => "1974-03-02T12:09:09.000Z",
-          "2010-05-03T08:18:18+00:00"        => "2010-05-03T08:18:18.000Z",
-          "2004-07-04T12:27:27-00:00"        => "2004-07-04T12:27:27.000Z",
-          "2001-09-05T16:36:36+0000"         => "2001-09-05T16:36:36.000Z",
-          "2001-11-06T20:45:45-0000"         => "2001-11-06T20:45:45.000Z",
-          "2001-12-07T23:54:54Z"             => "2001-12-07T23:54:54.000Z",
+      "2001-01-01T00:00:00-0800"         => "2001-01-01T08:00:00.000Z",
+      "1974-03-02T04:09:09-0800"         => "1974-03-02T12:09:09.000Z",
+      "2010-05-03T08:18:18+00:00"        => "2010-05-03T08:18:18.000Z",
+      "2004-07-04T12:27:27-00:00"        => "2004-07-04T12:27:27.000Z",
+      "2001-09-05T16:36:36+0000"         => "2001-09-05T16:36:36.000Z",
+      "2001-11-06T20:45:45-0000"         => "2001-11-06T20:45:45.000Z",
+      "2001-12-07T23:54:54Z"             => "2001-12-07T23:54:54.000Z",
 
-          # TODO: This test assumes PDT
-          #"2001-01-01T00:00:00.123"          => "2001-01-01T08:00:00.123Z",
+      # TODO: This test assumes PDT
+      #"2001-01-01T00:00:00.123"          => "2001-01-01T08:00:00.123Z",
 
-          "2010-05-03T08:18:18.123+00:00"    => "2010-05-03T08:18:18.123Z",
-          "2004-07-04T12:27:27.123-04:00"    => "2004-07-04T16:27:27.123Z",
-          "2001-09-05T16:36:36.123+0700"     => "2001-09-05T09:36:36.123Z",
-          "2001-11-06T20:45:45.123-0000"     => "2001-11-06T20:45:45.123Z",
-          "2001-12-07T23:54:54.123Z"         => "2001-12-07T23:54:54.123Z",
-        }
+      "2010-05-03T08:18:18.123+00:00"    => "2010-05-03T08:18:18.123Z",
+      "2004-07-04T12:27:27.123-04:00"    => "2004-07-04T16:27:27.123Z",
+      "2001-09-05T16:36:36.123+0700"     => "2001-09-05T09:36:36.123Z",
+      "2001-11-06T20:45:45.123-0000"     => "2001-11-06T20:45:45.123Z",
+      "2001-12-07T23:54:54.123Z"         => "2001-12-07T23:54:54.123Z",
+    }
     times.each do |input, output|
-        sample({"@fields" => {"mydate" => input}}) do
-          insist { subject["mydate"] } == input
-          insist { subject.timestamp } == output
-          insist { subject["@timestamp"] } == output
-        end
+      sample({"@fields" => {"mydate" => input}}) do
+        insist { subject["mydate"] } == input
+        insist { subject.timestamp } == output
+        insist { subject["@timestamp"] } == output
+      end
     end # times.each
   end
 
@@ -57,11 +57,11 @@ describe LogStash::Filters::Date do
       "Nov 24 01:29:01 -0800" => "#{year}-11-24T09:29:01.000Z",
     }
     times.each do |input, output|
-        sample({"@fields" => {"mydate" => input}}) do
-          insist { subject["mydate"] } == input
-          insist { subject.timestamp } == output
-          insist { subject["@timestamp"] } == output
-        end
+      sample({"@fields" => {"mydate" => input}}) do
+        insist { subject["mydate"] } == input
+        insist { subject.timestamp } == output
+        insist { subject["@timestamp"] } == output
+      end
     end # times.each
   end
 
@@ -83,11 +83,11 @@ describe LogStash::Filters::Date do
       1000000000 => "2001-09-09T01:46:40.000Z"
     }
     times.each do |input, output|
-        sample({"@fields" => {"mydate" => input}}) do
-          insist { subject["mydate"] } == input
-          insist { subject.timestamp } == output
-          insist { subject["@timestamp"] } == output
-        end
+      sample({"@fields" => {"mydate" => input}}) do
+        insist { subject["mydate"] } == input
+        insist { subject.timestamp } == output
+        insist { subject["@timestamp"] } == output
+      end
     end # times.each
   end
 
@@ -111,11 +111,11 @@ describe LogStash::Filters::Date do
       1000000000123 => "2001-09-09T01:46:40.123Z"
     }
     times.each do |input, output|
-        sample({"@fields" => {"mydate" => input}}) do
-          insist { subject["mydate"] } == input
-          insist { subject.timestamp } == output
-          insist { subject["@timestamp"] } == output
-        end
+      sample({"@fields" => {"mydate" => input}}) do
+        insist { subject["mydate"] } == input
+        insist { subject.timestamp } == output
+        insist { subject["@timestamp"] } == output
+      end
     end # times.each
   end
 end
