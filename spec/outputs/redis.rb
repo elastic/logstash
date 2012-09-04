@@ -1,6 +1,6 @@
 require "test_utils"
 
-describe "outputs/elasticsearch_http" do
+describe "outputs/redis" do
   extend LogStash::RSpec
 
   describe "ship lots of events to a list" do
