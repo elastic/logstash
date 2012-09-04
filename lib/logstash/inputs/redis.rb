@@ -152,7 +152,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   # loop.
   private
   def listener_loop(listener, output_queue)
-    loop do
+    while !finished?
       begin
         @redis ||= connect
         self.send listener, @redis, output_queue
@@ -161,7 +161,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
                      :exception => e, :backtrace => e.backtrace)
         raise e
       end
-    end # loop
+    end # while !finished?
   end # listener_loop
 
   public
