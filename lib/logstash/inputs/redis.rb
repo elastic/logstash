@@ -103,7 +103,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
       event = to_event msg, identity
       output_queue << event if event
     rescue => e # parse or event creation error
-      @logger.error("Failed to create event", :message => msg, exception => e,
+      @logger.error("Failed to create event", :message => msg, :exception => e,
                     :backtrace => e.backtrace);
     end
   end
