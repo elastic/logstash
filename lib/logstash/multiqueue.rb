@@ -17,7 +17,6 @@ class LogStash::MultiQueue
 
     # Set the logger for all known queues, too.
     @queues.each do |q|
-      p :q => q
       q.logger = _logger
     end
   end # def logger=
