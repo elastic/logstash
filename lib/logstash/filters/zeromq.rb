@@ -51,6 +51,13 @@ class LogStash::Filters::ZeroMQ < LogStash::Filters::Base
   config :sockopt, :validate => :hash
 
   public
+  def initialize
+    super
+
+    @threadsafe = false
+  end
+
+  public
   def register
     require "ffi-rzmq"
     require "logstash/util/zeromq"
