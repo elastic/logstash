@@ -83,15 +83,18 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   end # def receive
 
   def receive_single(event, index, type)
-    response = @agent.post!("http://#{@host}:#{@port}/#{index}/#{type}",
-                            :body => event.to_json)
-    # We must read the body to free up this connection for reuse.
-    body = "";
-    response.read_body { |chunk| body += chunk }
+    begin
+      response = @agent.post!("http://#{@host}:#{@port}/#{index}/#{type}",
+                              :body => event.to_json)
+      # We must read the body to free up this connection for reuse.
+      body = "";
+      response.read_body { |chunk| body += chunk }
 
-    if response.status != 201
-      @logger.error("Error writing to elasticsearch",
-                    :response => response, :response_body => body)
+      if response.status != 201
+        @logger.error("Error writing to elasticsearch",
+                      :response => response, :response_body => body)
+        retry
+      end
     end
   end # def receive_single
 
@@ -122,11 +125,12 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       @logger.error("Error writing (bulk) to elasticsearch",
                     :response => response, :response_body => body,
                     :request_body => @queue.join("\n"))
+      return
     end
     @queue.clear
   end # def flush
 
   def teardown
-    flush if @queue.size > 0
+    flush while @queue.size > 0
   end # def teardown
 end # class LogStash::Outputs::ElasticSearchHTTP
