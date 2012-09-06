@@ -52,16 +52,6 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   def register
     require "ftw" # gem ftw
     @agent = FTW::Agent.new
-
-    # TODO(sissel): Implement this model in FTW:
-    #    reader, writer = IO.pipe
-    #    request = agent.post(url, :body => reader)
-    #    agent.execute(request)
-    #    writer.write(body...)
-    #    writer.write(body...)
-    #    writer.write(body...)
-    #    writer.close
-    #    TODO(sissel): How to get the response?
     @queue = []
   end # def register
 
@@ -127,6 +117,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
                     :request_body => @queue.join("\n"))
       return
     end
+
+    # Clear the queue on success only.
     @queue.clear
   end # def flush
 
