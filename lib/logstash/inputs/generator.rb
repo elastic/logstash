@@ -35,7 +35,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
 
   def run(queue)
     number = 0
-    source = "stdin://#{@host}/"
+    source = "generator://#{@host}/"
 
     if @message == "stdin"
       @logger.info("Generator plugin reading a line from stdin")
