@@ -143,7 +143,8 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       @logger.warn("Failed to send event to redis", :event => event,
                    :identity => identity, :exception => e,
                    :backtrace => e.backtrace)
-      raise e
+      sleep 1
+      retry
     end
   end # def receive
 
@@ -178,6 +179,8 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
                      :pending_count => pending_count,
                      :identity => identity, :exception => e,
                      :backtrace => e.backtrace)
+        sleep 1
+        retry
       end
     end
 
