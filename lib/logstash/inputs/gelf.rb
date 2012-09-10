@@ -105,6 +105,12 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
     elsif event.fields["short_message"]
       event.message = event.fields["short_message"].dup
     end
+    if event.fields["host"]
+      event.source_host = event.fields["host"]
+    end
+    if event.fields["file"]
+      event.source_path = event.fields["file"]
+    end
     event.source = "gelf://#{event.fields["host"]}/#{event.fields["file"]}"
   end # def remap_gelf
 end # class LogStash::Inputs::Gelf

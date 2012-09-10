@@ -9,7 +9,7 @@ require "socket" # for Socket.gethostname
 # An event is generated first
 class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   config_name "generator"
-  plugin_status "experimental"
+  plugin_status "beta"
 
   # The message string to use in the event.
   #
@@ -35,7 +35,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
 
   def run(queue)
     number = 0
-    source = "stdin://#{@host}/"
+    source = "generator://#{@host}/"
 
     if @message == "stdin"
       @logger.info("Generator plugin reading a line from stdin")

@@ -95,6 +95,8 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
         buffer.extract(chunk).each do |line|
           @logger.info("Twitter line", :line => line)
           begin 
+            # Ignore blank lines twitter sometimes sends
+            next if line == ""
             status = JSON.parse(line)
             yield status
           rescue => e

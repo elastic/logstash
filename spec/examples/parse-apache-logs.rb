@@ -11,6 +11,9 @@ describe "apache common log format" do
         pattern => "%{COMBINEDAPACHELOG}"
         singles => true
       }
+      date {
+        timestamp => "dd/MMM/yyyy:HH:mm:ss Z"
+      }
     }
   CONFIG
 
@@ -47,5 +50,8 @@ describe "apache common log format" do
     insist { subject["bytes"] } == "3638"
     insist { subject["referrer"] }.nil?
     insist { subject["agent"] } == "\"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:14.0) Gecko/20100101 Firefox/14.0.1\""
+
+    # Verify date parsing
+    insist { subject.timestamp } == "2012-08-30T00:17:38.000Z"
   end
 end

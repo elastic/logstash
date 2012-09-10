@@ -93,7 +93,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
       :port => @port,
       :timeout => @timeout,
       :db => @db,
-      :password => @password.value
+      :password => @password.nil? ? nil : @password.value
     )
   end # def connect
 
@@ -103,7 +103,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
       event = to_event msg, identity
       output_queue << event if event
     rescue => e # parse or event creation error
-      @logger.error("Failed to create event", :message => msg, exception => e,
+      @logger.error("Failed to create event", :message => msg, :exception => e,
                     :backtrace => e.backtrace);
     end
   end
@@ -152,7 +152,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   # loop.
   private
   def listener_loop(listener, output_queue)
-    loop do
+    while !finished?
       begin
         @redis ||= connect
         self.send listener, @redis, output_queue
@@ -161,7 +161,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
                      :exception => e, :backtrace => e.backtrace)
         raise e
       end
-    end # loop
+    end # while !finished?
   end # listener_loop
 
   public

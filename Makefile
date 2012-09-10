@@ -100,15 +100,15 @@ build/jruby/jruby-$(JRUBY_VERSION)/lib/jruby-complete.jar: build/jruby/jruby-$(J
 build/jruby/jruby-$(JRUBY_VERSION): build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz
 	$(QUIET)tar -C build/jruby/ $(TAR_OPTS) -zxf $<
 
-build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz: wget-or-curl | build/jruby
+build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz: | wget-or-curl build/jruby
 	@echo "=> Fetching jruby source"
 	$(QUIET)$(DOWNLOAD_COMMAND) $@ http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-src-$(JRUBY_VERSION).tar.gz
 
-vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: wget-or-curl | vendor/jar
+vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | wget-or-curl vendor/jar
 	@echo "=> Fetching elasticsearch"
 	$(QUIET)$(DOWNLOAD_COMMAND) $@ $(ELASTICSEARCH_URL)/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz
 		
-vendor/jar/graphtastic-rmiclient.jar: wget-or-curl | vendor/jar
+vendor/jar/graphtastic-rmiclient.jar: | wget-or-curl vendor/jar
 	@echo "=> Fetching graphtastic rmi client jar"
 	$(QUIET)$(DOWNLOAD_COMMAND) $@ http://cloud.github.com/downloads/NickPadilla/GraphTastic/graphtastic-rmiclient.jar
 
@@ -119,7 +119,7 @@ $(ELASTICSEARCH): $(ELASTICSEARCH).tar.gz | vendor/jar
 	$(QUIET)tar -C $(shell dirname $@) -xf $< $(TAR_OPTS) --exclude '*sigar*' \
 		'elasticsearch-$(ELASTICSEARCH_VERSION)/lib/*.jar'
 
-vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz: wget-or-curl | vendor/jar
+vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz: | wget-or-curl vendor/jar
 	$(DOWNLOAD_COMMAND) $@ "http://downloads.sourceforge.net/project/joda-time/joda-time/$(JODA_VERSION)/joda-time-$(JODA_VERSION)-dist.tar.gz"
 
 vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar: vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz | vendor/jar

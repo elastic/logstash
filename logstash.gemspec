@@ -21,6 +21,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "json"
   gem.add_runtime_dependency "minitest" # for running the tests from the jar
   gem.add_runtime_dependency "pry"
+  gem.add_runtime_dependency "stud"
 
   # Web dependencies
   gem.add_runtime_dependency "ftw", ["~> 0.0.19"]
@@ -67,6 +68,7 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "cinch" # cinch requires 1.9.1+
   end
 
+  gem.add_development_dependency "spoon"
   gem.add_development_dependency "mocha"
   gem.add_development_dependency "shoulda"
   gem.add_development_dependency "rspec"

@@ -158,6 +158,7 @@ describe LogStash::Filters::Grok do
         grok {
           pattern => "Hello %{WORD}. %{WORD:foo}"
           named_captures_only => false
+          singles => true
         }
       }
     CONFIG
