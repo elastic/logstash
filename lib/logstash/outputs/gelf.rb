@@ -39,7 +39,18 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # is useful if you need to use a value from the event as the facility name.
   config :facility, :validate => :string, :default => "logstash-gelf"
 
-  # Ship metadata within event object?
+  # The GELF line number; this is usually the line number in your program where
+  # the log event originated. Dynamic values like %{foo} are permitted here, but the
+  # value should be a number.
+  config :line, :validate => :string
+
+  # The GELF file; this is usually the source code file in your program where
+  # the log event originated. Dynamic values like %{foo} are permitted here.
+  config :file, :validate => :string, :default => "%{@source_path}"
+
+  # Ship metadata within event object? This will cause logstash to ship
+  # any fields in the event (such as those created by grok) in the GELF
+  # messages.
   config :ship_metadata, :validate => :boolean, :default => true
 
   # The GELF custom field mappings. GELF supports arbitrary attributes as custom
@@ -83,6 +94,8 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
       "alert" => 1, "a" => 1,
       "emergency" => 0, "e" => 0,
      }
+
+     @ignore_fields = [ "facility", "full_message", "short_message", "host", "level", "line", "timestamp", "version", "file" ]
   end # def register
 
   public
@@ -92,8 +105,8 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     # We have to make our own hash here because GELF expects a hash
     # with a specific format.
     m = Hash.new
-    if event.fields["message"]
-      v = event.fields["message"]
+    if event.fields["short_message"]
+      v = event.fields["short_message"]
       m["short_message"] = (v.is_a?(Array) && v.length == 1) ? v.first : v
     else
       m["short_message"] = event.message
@@ -102,23 +115,28 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     m["full_message"] = (event.message)
     
     m["host"] = event.sprintf(@sender)
-    m["file"] = event["@source_path"]
+    m["file"] = event.sprintf(@file)
+    m["line"] = event.sprintf(@line)
+    m["line"] = Integer(m["line"]) if m["line"].is_a?(String) and m["line"] === /^[\d]+$/
 
     if @ship_metadata
-        event.fields.each do |name, value|
-          next if value == nil
-          name = "_id" if name == "id"  # "_id" is reserved, so use "__id"
-          if !value.nil?
-            if value.is_a?(Array)
-              # collapse single-element arrays, otherwise leave as array
-              m["_#{name}"] = (value.length == 1) ? value.first : value
-            else
-              # Non array values should be presented as-is
-              # https://logstash.jira.com/browse/LOGSTASH-113
-              m["_#{name}"] = value
-            end
+      event.fields.each do |name, value|
+        next if value == nil
+
+        # Trim leading '_' in the event
+        name = name[1..-1] if name.start_with?('_')
+        name = "_id" if name == "id"  # "_id" is reserved, so use "__id"
+        if !value.nil? and !@ignore_fields.include?(name)
+          if value.is_a?(Array)
+            # collapse single-element arrays, otherwise leave as array
+            m["_#{name}"] = (value.length == 1) ? value.first : value
+          else
+            # Non array values should be presented as-is
+            # https://logstash.jira.com/browse/LOGSTASH-113
+            m["_#{name}"] = value
           end
         end
+      end
     end
 
     if @custom_fields
