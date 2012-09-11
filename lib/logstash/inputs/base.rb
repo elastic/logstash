@@ -62,6 +62,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
     @threadable = false
     config_init(params)
     @tags ||= []
+    @format ||= "plain"
   end # def initialize
 
   public
@@ -76,17 +77,21 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   protected
   def to_event(raw, source)
-    @format ||= "plain"
-
-    event = LogStash::Event.new
-    event.type = @type
-    event.tags = @tags.clone rescue []
-    event.source = source
 
     case @format
     when "plain"
-      event.message = raw
+      event = LogStash::Event.new(
+        "@type" => @type,
+        "@tags" => (@tags.clone rescue []),
+        "@source" => source,
+        "@message" => raw
+      )
     when "json"
+      event = LogStash::Event.new(
+        "@type" => @type,
+        "@tags" => (@tags.clone rescue []),
+        "@source" => source,
+      )
       begin
         fields = JSON.parse(raw)
         fields.each { |k, v| event[k] = v }
