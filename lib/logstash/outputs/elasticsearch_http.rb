@@ -117,4 +117,43 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   def teardown
     flush while @queue.size > 0
   end # def teardown
+
+  # THIS IS NOT USED YET. SEE LOGSTASH-592
+  def setup_index_template
+    template_name = "logstash-template"
+    template_wildcard = @index.gsub(/%{[^}+]}/, "*")
+    template_config = {
+      "template" => template_wildcard,
+      "settings" => {
+        "number_of_shards" => 5,
+        "index.compress.stored" => true,
+        "index.query.default_field" => "@message"
+      },
+      "mappings" => {
+        "_default_" => {
+          "_all" => { "enabled" => false } 
+        }
+      }
+    } # template_config
+
+    @logger.info("Setting up index template", :name => template_name,
+                 :config => template_config)
+    begin
+      response = @agent.put!("http://#{@host}:#{@port}/_template/#{template_name}",
+                             :body => template_config.to_json)
+      if response.error?
+        body = ""
+        response.read_body { |c| body << c }
+        @logger.warn("Failure setting up elasticsearch index template, will retry...",
+                     :status => response.status, :response => body)
+        sleep(1)
+        retry
+      end
+    rescue => e
+      @logger.warn("Failure setting up elasticsearch index template, will retry...",
+                   :exception => e)
+      sleep(1)
+      retry
+    end
+  end # def setup_index_template
 end # class LogStash::Outputs::ElasticSearchHTTP
