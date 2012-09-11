@@ -4,6 +4,15 @@
  ## IMPORTANT CHANGES FOR UPGRADES FROM 1.1.1
 
  ## general
+ - Stopped using 'Gemfile' for dependencies, the logstash.gemspec has returned.
+   (Patch by Grant Rogers)
+ - New 'logstash-event.gemspec' for generating logstash events in your own
+   ruby programs (Patch by Garry Shutler)
+ - Wildcard config files are now sorted properly (agent -f
+   /etc/logstash/*.conf)
+ - The old '-vvv' setting ruby's internal $DEBUG is now gone. It was causing
+   too much confusion for users due to noise.
+ - Improved 'logstash event' creation speed by 3.5x
 
  ## inputs
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
@@ -15,20 +24,34 @@
  - file input: no longer crashes if HOME is not set in env (LOGSTASH-458)
 
  ## filters
- - new filter: kv: useful for parsing log formats taht use 'foo=bar baz=fizz'
-   and similar key-value-like things.
- - mutate filter: fix bug in uppercase and lowercase feature that would prevent
-   it from actually doing the uppercasing/lowercasing.
- - grok filter: new 'singles' config option which, when true, stores single-value
-   fields simply as a single value rather than as an array, like [value].
-   (LOGSTASH-185)
+ - new: kv: useful for parsing log formats taht use 'foo=bar baz=fizz' and
+   similar key-value-like things.
+ - improvement: zeromq: an empty reply is now considered as a 'cancel this
+   event' operation (LOGSTASH-574)
+ - bugfix: mutate: fix bug in uppercase and lowercase feature that would
+   prevent it from actually doing the uppercasing/lowercasing.
+ - improvement: mutate:: do the 'remove' action last (LOGSTASH-543)
+ - feature: grok: new 'singles' config option which, when true, stores
+   single-value fields simply as a single value rather than as an array, like
+   [value]. (LOGSTASH-185)
+ - grok patterns: the URIPARAM pattern now includes pipe '|' as a valid
+   character. (Patch by Chris Mague)
+ - grok patterns: improve haproxy log patterns (Patch by Kevin Nuckolls)
+ - grok patterns: include 'FATAL' as a valid LOGLEVEL match 
+   (patch by Corry Haines)
+ - grok patterns: 'ZONE' is no longer captured by name in the HTTPDATE pattern
 
  ## outputs
+ - new: exec: run arbitrary commands based on an event.
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
+ - improvement: redis: [LOGSTASH-573] retry on failure even in batch-mode. This
+   also fixes a prior bug where an exception in batch mode would cause logstash
+   to crash. (Patch by Alex Dean)
  - improvement: riemann: metric and ttl values in riemann_event now support
    sprintf %{foo} values. (pull #174)
  - improvement: stdout: new 'dots' debug_format value emits one dot per event
    useful for tracking event rates.
+ - gelf output: correct severity level mappings (patch by Jason Koppe)
 
 1.1.1 (July 14, 2012)
  ## Overview of this release:
