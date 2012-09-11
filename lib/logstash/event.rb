@@ -19,12 +19,8 @@ class LogStash::Event
       "@tags" => [],
       "@fields" => {},
     }
-    @data.merge(data) unless data.nil?
-
-    #if !@data.include?("@timestamp")
-      #@data["@timestamp"] = LogStash::Time.new.to_s
-    #end
-      @data["@timestamp"] ||= LogStash::Time.new.to_s
+    @data.merge!(data) unless data.nil?
+    @data["@timestamp"] ||= LogStash::Time.now
   end # def initialize
 
   if RUBY_ENGINE == "jruby"
