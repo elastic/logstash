@@ -66,11 +66,11 @@ module LogStash
       config_str = @config_str
       describe "agent(#{@agent_count}) #{caller[1]}" do
         before :all do
-          start = Time.now
+          start = ::Time.now
           @agent = LogStash::Agent.new
           @agent.run(["-e", config_str])
           @agent.wait
-          @duration = Time.now - start
+          @duration = ::Time.now - start
         end
         it("looks good", &block)
       end
