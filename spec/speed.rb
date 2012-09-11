@@ -2,7 +2,7 @@ require "test_utils"
 
 describe "speed tests" do
   extend LogStash::RSpec
-  count = 50000
+  count = 1000000
 
   config <<-CONFIG
     input {
