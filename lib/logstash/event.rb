@@ -11,26 +11,24 @@ require "time"
 # etc, as necessary.
 class LogStash::Event
   public
-  def initialize(data=Hash.new)
-    if RUBY_ENGINE == "jruby"
-      @@date_parser ||= Java::org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
-    else
-      # TODO(sissel): LOGSTASH-217
-      @@date_parser ||= nil
-    end
-
+  def initialize(data=nil)
     @cancelled = false
+
     @data = {
       "@source" => "unknown",
-      "@type" => nil,
       "@tags" => [],
       "@fields" => {},
-    }.merge(data)
-
-    if !@data.include?("@timestamp")
-      @data["@timestamp"] = LogStash::Time.now.utc.to_iso8601
-    end
+    }
+    @data.merge!(data) unless data.nil?
+    @data["@timestamp"] ||= LogStash::Time.now
   end # def initialize
+
+  if RUBY_ENGINE == "jruby"
+    @@date_parser = Java::org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
+  else
+    # TODO(sissel): LOGSTASH-217
+    @@date_parser ||= nil
+  end
 
   public
   def self.from_json(json)

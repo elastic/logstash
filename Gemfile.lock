@@ -6,11 +6,10 @@ PATH
       aws-sdk
       bunny
       cabin (= 0.4.4)
-      cinch
       ffi
       ffi-rzmq (= 0.9.3)
       filewatch (= 0.3.4)
-      ftw (~> 0.0.19)
+      ftw (~> 0.0.20)
       gelf (= 1.3.2)
       gelfd (= 0.2.0)
       gmetric (= 0.1.3)
@@ -55,11 +54,10 @@ GEM
     beefcake (0.3.7)
     bouncy-castle-java (1.5.0146.1)
     bson (1.7.0-java)
-    builder (3.1.2)
+    builder (3.1.3)
     bunny (0.8.0)
     cabin (0.4.4)
       json
-    cinch (2.0.3)
     coderay (1.0.7)
     diff-lcs (1.1.3)
     excon (0.16.2)
@@ -67,7 +65,7 @@ GEM
     ffi-rzmq (0.9.3)
       ffi
     filewatch (0.3.4)
-    ftw (0.0.19)
+    ftw (0.0.20)
       addressable (= 2.2.6)
       backports (= 2.3.0)
       cabin (> 0)
