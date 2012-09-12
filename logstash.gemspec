@@ -24,7 +24,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "stud"
 
   # Web dependencies
-  gem.add_runtime_dependency "ftw", ["~> 0.0.19"]
+  gem.add_runtime_dependency "ftw", ["~> 0.0.20"]
   gem.add_runtime_dependency "haml"
   gem.add_runtime_dependency "rack"
   gem.add_runtime_dependency "sass"

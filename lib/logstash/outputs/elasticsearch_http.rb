@@ -1,21 +1,16 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
 
-# This output lets you store logs in elasticsearch and is the most recommended
-# output for logstash. If you plan on using the logstash web interface, you'll
-# need to use this output.
+# This output lets you store logs in elasticsearch.
 #
-#   *NOTE*: The elasticsearch client is version 0.19.8. Your elasticsearch
-#   cluster must be running 0.19.x for API compatibility.
+# This output differs from the 'elasticsearch' output by using the HTTP
+# interface for indexing data with elasticsearch.
 #
 # You can learn more about elasticsearch at <http://elasticsearch.org>
 class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   config_name "elasticsearch_http"
   plugin_status "beta"
-
-  # ElasticSearch server name. This is optional if your server is discoverable.
-  config :host, :validate => :string
 
   # The index to write events to. This can be dynamic using the %{foo} syntax.
   # The default value will partition your indices by day so you can more easily
@@ -25,10 +20,6 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # The index type to write events to. Generally you should try to write only
   # similar events to the same 'type'. String expansion '%{foo}' works here.
   config :index_type, :validate => :string, :default => "%{@type}"
-
-  # The name of your cluster if you set it on the ElasticSearch side. Useful
-  # for discovery.
-  config :cluster, :validate => :string
 
   # The name/address of the host to use for ElasticSearch unicast discovery
   # This is only required if the normal multicast/cluster discovery stuff won't
@@ -53,6 +44,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     require "ftw" # gem ftw
     @agent = FTW::Agent.new
     @queue = []
+
   end # def register
 
   public
@@ -125,4 +117,43 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   def teardown
     flush while @queue.size > 0
   end # def teardown
+
+  # THIS IS NOT USED YET. SEE LOGSTASH-592
+  def setup_index_template
+    template_name = "logstash-template"
+    template_wildcard = @index.gsub(/%{[^}+]}/, "*")
+    template_config = {
+      "template" => template_wildcard,
+      "settings" => {
+        "number_of_shards" => 5,
+        "index.compress.stored" => true,
+        "index.query.default_field" => "@message"
+      },
+      "mappings" => {
+        "_default_" => {
+          "_all" => { "enabled" => false } 
+        }
+      }
+    } # template_config
+
+    @logger.info("Setting up index template", :name => template_name,
+                 :config => template_config)
+    begin
+      response = @agent.put!("http://#{@host}:#{@port}/_template/#{template_name}",
+                             :body => template_config.to_json)
+      if response.error?
+        body = ""
+        response.read_body { |c| body << c }
+        @logger.warn("Failure setting up elasticsearch index template, will retry...",
+                     :status => response.status, :response => body)
+        sleep(1)
+        retry
+      end
+    rescue => e
+      @logger.warn("Failure setting up elasticsearch index template, will retry...",
+                   :exception => e)
+      sleep(1)
+      retry
+    end
+  end # def setup_index_template
 end # class LogStash::Outputs::ElasticSearchHTTP

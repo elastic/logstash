@@ -1,5 +1,4 @@
 require "logstash/namespace"
-require "date" # for DateTime
 
 # Provide our own Time wrapper for ISO8601 support
 # Example:
@@ -8,24 +7,21 @@ require "date" # for DateTime
 #
 #   >> LogStash::Time.now.utc.to_iso8601
 #   => "2010-10-17 07:25:26.788704Z"
-class LogStash::Time < ::Time
-  ISO8601 = "%Y-%m-%dT%H:%M:%S"
-
-  # Return a string that is this time in ISO8601 format.
-  def to_iso8601
-    tz = self.utc? ? "Z" : self.strftime("%z")
-    # zero-pad tv_usec so the time string is sortable.
-    return "%s.%06d%s" % [self.strftime(ISO8601), self.tv_usec, tz]
-  end
-
-  def self.to_iso8601(obj)
-    if obj.is_a?(DateTime)
-      tz = obj.offset == 0 ? "Z" : obj.strftime("%z")
-      # DateTime#sec_fraction is fractional seconds "of a day"
-      sec_fraction = (obj.sec_fraction.to_f * 86400 * 1000000)
-      return "%s.%06d%s" % [obj.strftime(ISO8601), sec_fraction, tz]
-    else
-      raise "Can't convert object of type #{obj.class} (#{obj}) to iso8601."
+module LogStash::Time
+  if RUBY_ENGINE == "jruby"
+    require "java"
+    DateTime = org.joda.time.DateTime
+    def self.now
+      # org.joda.time.DateTime#to_s returns the time in ISO8601 form :)
+      return DateTime.new.to_s
+    end # def initialize
+  else
+    # Otherwise, use ruby stdlib Time, which is much slower than Joda.
+    ISO8601_STRFTIME = "%04d-%02d-%02dT%02d:%02d:%02d.%06d%+03d:00".freeze
+    def self.now
+      now = Time.new
+      return sprintf(ISO8601_STRFTIME, now.year, now.month, now.day, now.hour,
+                     now.min, now.sec, now.tv_usec, now.utc_offset / 3600)
     end
   end
-end # class LogStash::Time
+end # module LogStash::Time
