@@ -89,7 +89,11 @@ class LogStash::Inputs::Base < LogStash::Plugin
     when "json"
       begin
         fields = JSON.parse(raw)
-        fields.each { |k, v| event[k] = v }
+        fields.each do |k, v|
+          event[k] ||= []
+          event[k] = [event[k]] if !event[k].is_a?(Array)
+          event[k] << event.sprintf(v)
+        end
       rescue => e
         ## TODO(sissel): Instead of dropping the event, should we treat it as
         ## plain text and try to do the best we can with it?
