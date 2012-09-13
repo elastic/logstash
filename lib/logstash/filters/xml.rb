@@ -1,7 +1,6 @@
 require "logstash/filters/base"
 require "logstash/namespace"
-require "rexml/document"
-include REXML
+require "nokogiri"
 
 # XML filter. Takes a field that contains XML and expands it into
 # an actual datastructure.
@@ -80,7 +79,7 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
 
         if @xpath
           begin
-            doc = Document.new(raw)
+            doc = Nokogiri::XML(raw)
           rescue => e
             event.tags << "_xmlparsefailure"
             @logger.warn("Trouble parsing xml", :key => key, :raw => raw,
@@ -89,7 +88,13 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
           end
 
           @xpath.each do |xpath_src, xpath_dest|
-            XPath.each(doc, xpath_src).each do |value|
+            nodeset = doc.xpath(xpath_src)
+
+            # If asking xpath for a String, like "name(/*)", we get back a
+            # String instead of a NodeSet.  We normalize that here.
+            normalized_nodeset = nodeset.kind_of?(Nokogiri::XML::NodeSet) ? nodeset : [nodeset]
+
+            normalized_nodeset.each do |value|
               # some XPath functions return empty arrays as string
               if value.is_a?(Array)
                 next if value.length == 0
