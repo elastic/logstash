@@ -67,7 +67,7 @@ describe LogStash::Filters::Grep do
       reject { subject }.cancelled?
     end
   end
-  
+
   describe "multiple match conditions should cancel on failure" do
     config <<-CONFIG
     filter {
@@ -82,7 +82,7 @@ describe LogStash::Filters::Grep do
       insist { subject }.cancelled?
     end
   end
-  
+
   describe "single condition with regexp syntax" do
     config <<-CONFIG
     filter {
@@ -110,8 +110,8 @@ describe LogStash::Filters::Grep do
       insist { subject }.cancelled?
     end
   end
- 
- describe "adding one field on success" do
+
+  describe "adding one field on success" do
     config <<-CONFIG
     filter {
       grep {
@@ -126,7 +126,7 @@ describe LogStash::Filters::Grep do
       insist { subject["new_field"]} == ["new_value"]
     end
   end
-  
+
   describe "adding one field with a sprintf value" do
     config <<-CONFIG
     filter {
@@ -147,7 +147,7 @@ describe LogStash::Filters::Grep do
   # Seems to be multi-match several time on the same field not allowed
   # maybe a clearer test on multi-match on same field could be created
   # Also add_field behaviour tested separately in new NOOP test for add_field
-  
+
   # describe "adding fields on successful multiple match" do
   #   config <<-CONFIG
   #   filter {
@@ -165,7 +165,7 @@ describe LogStash::Filters::Grep do
   #     insist { subject["new_field"]} == ["new_value", "new_value_2"]
   #   end
   # end
-  
+
   describe "add tags" do
     config <<-CONFIG
     filter {
@@ -175,14 +175,14 @@ describe LogStash::Filters::Grep do
       }
     }
     CONFIG
-  
+
     sample ({"@tags" => ["tag"], "@fields" => {"str" => "test"}}) do
       reject { subject }.cancelled?
       insist { subject.tags} == ["tag", "new_tag"]
     end
   end
- 
- describe "add tags with drop set to false tags matching events" do
+
+  describe "add tags with drop set to false tags matching events" do
     config <<-CONFIG
     filter {
       grep {
@@ -192,7 +192,7 @@ describe LogStash::Filters::Grep do
       }
     }
     CONFIG
-  
+
     sample ({"@tags" => ["tag"], "@fields" => {"str" => "test"}}) do
       reject { subject }.cancelled?
       insist { subject.tags} == ["tag", "new_tag"]
@@ -209,7 +209,7 @@ describe LogStash::Filters::Grep do
       }
     }
     CONFIG
-  
+
     sample ({"@tags" => ["tag"], "@fields" => {"str" => "non-matching"}}) do
       reject { subject }.cancelled?
       insist { subject.tags} == ["tag"]
@@ -225,13 +225,13 @@ describe LogStash::Filters::Grep do
       }
     }
     CONFIG
-  
+
     sample ({"@tags" => ["tag"], "@fields" => {"str" => "test"}}) do
       reject { subject }.cancelled?
       insist { subject.tags} == ["tag", subject["str"]]
     end
   end
-  
+
   describe "negate=true should not cause drops when field is nil" do
     # Set negate to true; the pattern being searched doesn't actually matter
     # here. We're testing to make sure "grep -v" behavior doesn't drop events
@@ -244,7 +244,7 @@ describe LogStash::Filters::Grep do
       }
     }
     CONFIG
-  
+
     sample ({"@tags" => ["tag"], "@fields" => {"str" => nil}}) do
       reject { subject }.cancelled?
     end
@@ -261,7 +261,7 @@ describe LogStash::Filters::Grep do
       }
     }
     CONFIG
-  
+
     sample ({"@type" => "testing", "@tags" => ["_grokparsefailure"], "@fields" => {"str" => "test"}}) do
       insist { subject }.cancelled?
     end
