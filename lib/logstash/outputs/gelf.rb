@@ -63,6 +63,12 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     # shipped
     @gelf.level = 0
 
+    # If we leave that set, the gelf gem will extract the file and line number
+    # of the source file that logged the message (i.e. logstash/gelf.rb:138).
+    # With that set to false, it can use the actual event's filename (i.e. 
+    # /var/log/syslog), which is much more useful
+    @gelf.collect_file_and_line = false    
+
     @level_map = {
       "debug" => 7, "d" => 7,
       "info" => 6, "i" => 6,
