@@ -13,11 +13,7 @@ end
 
 module LogStash
   module RSpec
-    if ENV["DEBUG"] 
-      require "cabin"
-      Cabin::Channel.get.level = :debug
-    end
-
+    
     def config(configstr)
       @config_str = configstr
     end # def config
