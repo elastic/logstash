@@ -49,6 +49,16 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   # monitored log files.
   config :sincedb_write_interval, :validate => :number, :default => 15
 
+  # Choose where logstash starts initially reading files - at the beginning or
+  # at the end. The default behavior treats files like live streams and thus
+  # starts at the end. If you have old data you want to import, set this
+  # to 'beginning'
+  #
+  # This option only modifieds "first contact" situations where a file is new
+  # and not seen before. If a file has already been seen before, this option
+  # has no effect.
+  config :start_position, :validate => [ "beginning", "end"], :default => "end"
+
   public
   def initialize(params)
     super
@@ -102,6 +112,10 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     end
 
     @tail_config[:sincedb_path] = @sincedb_path
+
+    if @start_position == "beginning"
+      @tail_config[:start_new_files_at] = :beginning
+    end
   end # def register
 
   public
