@@ -1,4 +1,5 @@
 require "logstash/inputs/base"
+require "logstash/inputs/threadable"
 require "logstash/namespace"
 
 # Read events from a redis. Supports both redis channels and also redis lists
