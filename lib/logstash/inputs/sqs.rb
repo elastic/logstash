@@ -23,7 +23,7 @@ class Logstash::Inputs::SQS < LogStash::Inputs::Base
       :access_key_id => @access_key,
       :secret_access_key => @secret_key
     )
-    @sqs_queue = @sqs.named(@queue)
+    @sqs_queue = @sqs.queues.named(@queue)
     @logger.info("Connected to AWS SQS queue #{@queue}")
   end
 
