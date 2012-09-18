@@ -1,7 +1,7 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 
-class Logstash::Inputs::SQS < LogStash::Inputs::Base
+class Logstash::Inputs::SQS < LogStash::Inputs::Threadable
   config_name "sqs"
   plugin_status "experimental"
 
@@ -12,8 +12,9 @@ class Logstash::Inputs::SQS < LogStash::Inputs::Base
   config :access_key, :validate => :string, :required => true
   config :secret_key, :validate => :string, :required => true
 
-  def initialize(*args)
-    super(*args)
+  def initialize(params)
+    super
+    @format ||= "json_event"
   end
 
   public
@@ -30,7 +31,12 @@ class Logstash::Inputs::SQS < LogStash::Inputs::Base
   public
   def run(output_queue)
     @sqs_queue.poll(:initial_timeout => false, :idle_timeout => 10) do |message|
-      output_queue << message if message
+      if message
+        e = to_event(data.body, @sqs_queue)
+        if e
+          output_queue << e
+        end
+      end
     end
   end
 end
