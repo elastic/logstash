@@ -3,7 +3,7 @@ require "logstash/namespace"
 
 class LogStash::Outputs::SQS < LogStash::Outputs::Base
   config_name "sqs"
-  plugin_status "beta"
+  plugin_status "experimental"
 
   # SQS Queue name
   config :queue, :validate => :string, :required => true
