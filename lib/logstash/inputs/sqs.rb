@@ -1,7 +1,7 @@
-require "logstash/inputs/base"
+require "logstash/inputs/threadable"
 require "logstash/namespace"
 
-class Logstash::Inputs::SQS < LogStash::Inputs::Threadable
+class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   config_name "sqs"
   plugin_status "experimental"
 
