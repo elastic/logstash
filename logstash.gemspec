@@ -53,6 +53,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "uuidtools" # For generating amqp queue names
   gem.add_runtime_dependency "xml-simple"
   gem.add_runtime_dependency "xmpp4r", ["0.5"]
+  gem.add_runtime_dependency "jls-lumberjack"
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
