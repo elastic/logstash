@@ -31,7 +31,7 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
     require "lumberjack/server"
 
     @logger.info("Starting lumberjack input listener", :address => "#{@host}:#{@port}")
-    @lumberjack = Lumberjack::Server.new(:address => @host, :port => @port
+    @lumberjack = Lumberjack::Server.new(:address => @host, :port => @port,
       :ssl_certificate => @ssl_certificate, :ssl_key => @ssl_key,
       :ssl_key_passphrase => @ssl_key_passphrase)
   end # def register
@@ -40,13 +40,13 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   def run(output_queue)
     @lumberjack.run do |l|
       event = LogStash::Event.new(
-        "@message" => l["line"],
-        "@source_path" => l["file"],
-        "@source_host" => l["host"],
-        "@type" => @type
+        "@message" => l.delete("line"),
+        "@source_path" => l.delete("file"),
+        "@source_host" => l.delete("host"),
+        "@fields" => l,
+        "@type" => @type,
         "@tags" => @tags.clone
       )
-
       output_queue << event
     end
   end # def run
