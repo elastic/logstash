@@ -4,10 +4,6 @@ require "logstash/filters/xml"
 describe LogStash::Filters::Xml do
   extend LogStash::RSpec
 
-  it "needs MORE tests!" do
-    raise "I NEED MORE TESTS"
-  end
-
   describe "parse standard xml" do
     config <<-CONFIG
     filter {
