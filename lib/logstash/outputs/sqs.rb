@@ -25,6 +25,6 @@ class LogStash::Outputs::SQS < LogStash::Outputs::Base
 
   public
   def receive(event)
-    @sqs_queue.send_message(event.to_hash)
+    @sqs_queue.send_message(event.to_json)
   end
 end
