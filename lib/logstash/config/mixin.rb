@@ -77,13 +77,11 @@ module LogStash::Config::Mixin
 
     # set instance variables like '@foo'  for each config value given.
     params.each do |key, value|
-      @logger.debug("config #{self.class.name}/@#{key} = #{value.inspect}")
+      next if key[0, 1] == "@"
 
-      # set @foo
-      #ivar = "@#{key}"
+      # Set this key as an instance variable only if it doesn't start with an '@'
+      @logger.debug("config #{self.class.name}/@#{key} = #{value.inspect}")
       instance_variable_set("@#{key}", value)
-      #define_method(key.to_sym) { value }
-      #define_method("#{key}=".to_sym) { |v| instance_variable_set("@#{key}", v) }
     end
 
     @config = params

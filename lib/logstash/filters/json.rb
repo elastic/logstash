@@ -34,27 +34,26 @@ class LogStash::Filters::Json < LogStash::Filters::Base
 
     matches = 0
     @json.each do |key, dest|
-      if event.fields[key]
-        if event.fields[key].is_a?(String)
-          event.fields[key] = [event.fields[key]]
-        end
+      next unless event[key]
+      if event[key].is_a?(String)
+        event[key] = [event[key]]
+      end
 
-        if event.fields[key].length > 1
-          @logger.warn("JSON filter only works on fields of length 1",
-                       :key => key, :value => event.fields[key])
-          next
-        end
+      if event[key].length > 1
+        @logger.warn("JSON filter only works on single fields (not lists)",
+                     :key => key, :value => event[key])
+        next
+      end
 
-        raw = event.fields[key].first
-        begin
-          event[dest] = JSON.parse(raw)
-          filter_matched(event)
-        rescue => e
-          event.tags << "_jsonparsefailure"
-          @logger.warn("Trouble parsing json", :key => key, :raw => raw,
-                        :exception => e, :backtrace => e.backtrace)
-          next
-        end
+      raw = event[key].first
+      begin
+        event[dest] = JSON.parse(raw)
+        filter_matched(event)
+      rescue => e
+        event.tags << "_jsonparsefailure"
+        @logger.warn("Trouble parsing json", :key => key, :raw => raw,
+                      :exception => e)
+        next
       end
     end
 
