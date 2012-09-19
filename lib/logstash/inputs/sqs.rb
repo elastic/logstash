@@ -19,24 +19,47 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
 
   public
   def register
+    @logger.info("Registering SQS input for queue '#{@queue}'")
     require "aws-sdk"
     @sqs = AWS::SQS.new(
       :access_key_id => @access_key,
       :secret_access_key => @secret_key
     )
-    @sqs_queue = @sqs.queues.named(@queue)
-    @logger.info("Connected to AWS SQS queue #{@queue}")
+    begin
+      puts "Connecting to AWS SQS queue '#{@queue}'..."
+      @logger.debug("Connecting to AWS SQS queue '#{@queue}'...")
+      @sqs_queue = @sqs.queues.named(@queue)
+      puts "Connected to AWS SQS queue '#{@queue}' successfully."
+      @logger.info("Connected to AWS SQS queue '#{@queue}' successfully.")
+    rescue Exception => e
+      puts "Unable to access SQS queue '#{@queue}': #{e.to_s}"
+      @logger.error("Unable to access SQS queue '#{@queue}': #{e.to_s}")
+      throw e
+    end
   end
 
   public
   def run(output_queue)
-    @sqs_queue.poll(:initial_timeout => false, :idle_timeout => 10) do |message|
-      if message
-        e = to_event(data.body, @sqs_queue)
-        if e
-          output_queue << e
+    begin
+      puts "Polling SQS queue '#{@queue}'..."
+      @sqs_queue.poll(:initial_timeout => false, :idle_timeout => 10) do |message|
+        puts "Message: #{message.to_s}"
+        if message
+          e = to_event(message.body, @sqs_queue)
+          if e
+            output_queue << e
+          end
         end
       end
+    rescue Exception => e
+      puts "Erroring processing messages from AWS SQS queue '#{queue}': #{e.to_s}"
+      @logger.error("Erroring processing messages from AWS SQS queue '#{queue}': #{e.to_s}")
     end
+  end
+
+  def teardown
+    puts "Starting teardown"
+    finished
+    puts "teardown complete"
   end
 end
