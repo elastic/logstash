@@ -141,6 +141,13 @@ $(GEM_HOME)/bin/bundle: | $(JRUBY_CMD)
 vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
 	@echo "=> Installing gems to $@..."
 	$(QUIET)GEM_HOME=$(GEM_HOME) bash $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
+	@# Purge any junk that fattens our jar without need!
+	@# The riak gem includes previous gems in the 'pkg' dir. :(
+	-rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
+	@# Purge any rspec or test directories
+	-rm -rf $@/jruby/1.9/gems/*/spec $@/jruby/1.9/gems/*/test
+	@# Purge any comments in ruby code.
+	@#-find $@/jruby/1.9/gems/ -name '*.rb' | xargs -n1 sed -i -re '/^[ \t]*#/d; /^[ \t]*$$/d'
 
 build:
 	-$(QUIET)mkdir -p $@
