@@ -124,21 +124,21 @@ class LogStash::Filters::Base < LogStash::Plugin
   def filter?(event)
     if !@type.empty?
       if event.type != @type
-        @logger.debug(["Dropping event because type doesn't match #{@type}", event])
+        @logger.debug(["Skipping event because type doesn't match #{@type}", event])
         return false
       end
     end
 
     if !@tags.empty?
       if (event.tags & @tags).size != @tags.size
-        @logger.debug(["Dropping event because tags don't match #{@tags.inspect}", event])
+        @logger.debug(["Skipping event because tags don't match #{@tags.inspect}", event])
         return false
       end
     end
 
     if !@exclude_tags.empty?
       if (diff_tags = (event.tags & @exclude_tags)).size != 0
-        @logger.debug(["Dropping event because tags contains excluded tags: #{diff_tags.inspect}", event])
+        @logger.debug(["Skipping event because tags contains excluded tags: #{diff_tags.inspect}", event])
         return false
       end
     end

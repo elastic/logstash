@@ -8,3 +8,7 @@ Run them all:
 
   `rspec spec/**/*.rb`
 
+Debug one test:
+
+  `LOGSTASH_DEBUG=y rspec spec/the/test.rb`
+

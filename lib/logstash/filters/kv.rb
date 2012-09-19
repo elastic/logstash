@@ -5,7 +5,7 @@ require "logstash/namespace"
 # to indicate log fields.
 class LogStash::Filters::KV < LogStash::Filters::Base
   config_name "kv"
-  plugin_status "experimental"
+  plugin_status "beta"
 
   # The fields to perform 'key=value' searching on
   config :fields, :validate => :array, :default => ["@message"]
@@ -27,16 +27,28 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     return unless filter?(event)
 
     @fields.each do |fieldname|
-      text = event[fieldname]
-      next if text.nil? || !text.is_a?(String)
+      value = event[fieldname]
 
-      text.scan(/([^ =]+)=([^ ]+)/) do |key, value|
-        if !@trim.nil?
-          value = value.gsub(@trim_re, "")
-        end
-
-        event[key] = value
-      end
+      case value
+        when String; parse(value, event)
+        when Array; value.each { |v| parse(v, event) }
+        else 
+          @logger.warn("kv filter has no support for this type of data",
+                       :type => value.type, :value => value)
+      end # case value
     end
   end # def filter
+
+  private
+  def parse(text, event)
+    #text.scan(/([^ =]+)=("[^"]+"|'[^']+'|[^ ]+)/) do |key, value|
+    text.scan(/([^ =]+)=(?:"([^"]+)"|'([^']+)'|([^ ]+))/) do |key, v1, v2, v3|
+      value = v1 || v2 || v3
+      if !@trim.nil?
+        value = value.gsub(@trim_re, "")
+      end
+
+      event[key] = value
+    end
+  end
 end # class LogStash::Filter::KV

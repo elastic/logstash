@@ -25,6 +25,7 @@ describe "inputs/redis" do
           type => "blah"
           key => "#{key}"
           data_type => "list"
+          format => json_event
         }
       }
     CONFIG
