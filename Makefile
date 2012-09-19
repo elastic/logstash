@@ -164,7 +164,7 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
 	$(QUIET)find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
-	| (cd $@; xargs -tn1 jar xf)
+	| (cd $@; xargs -n1 jar xf)
 	@# copy openssl/lib/shared folders/files to root of jar - need this for openssl to work with JRuby
 	$(QUIET)mkdir -p $@/openssl
 	$(QUIET)mkdir -p $@/jopenssl
@@ -200,6 +200,7 @@ build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
 build/logstash-$(VERSION)-monolithic.jar:
 	$(QUIET)jar cfe $@ logstash.runner $(JAR_ARGS)
 	$(QUIET)jar i $@
+	@echo "Created $@"
 
 update-jar: copy-ruby-files
 	$(QUIET)jar uf build/logstash-$(VERSION)-monolithic.jar -C build/ruby .
