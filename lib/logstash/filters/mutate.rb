@@ -164,7 +164,6 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   def replace(event)
     # TODO(sissel): use event.sprintf on the field names?
     @replace.each do |field, newvalue|
-      next unless event[field]
       event[field] = event.sprintf(newvalue)
     end
   end # def replace
