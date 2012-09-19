@@ -112,7 +112,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
                      :input => raw, :source => source, :exception => e,
                      :backtrace => e.backtrace)
         event.message = raw
-        return nil
       end
     else
       raise "unknown event format #{@format}, this should never happen"
