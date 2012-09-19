@@ -116,6 +116,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
                      :backtrace => e.backtrace)
         event.message = raw
       end
+
+      # If event source is unknown, this json_event is missing a @source, set it
+      # from the to_event source value.
+      if event.source == "unknown"
+        event.source = source
+      end
     else
       raise "unknown event format #{@format}, this should never happen"
     end
