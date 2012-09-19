@@ -105,6 +105,9 @@ class LogStash::Inputs::Base < LogStash::Plugin
     when "json_event"
       begin
         event = LogStash::Event.from_json(raw)
+        if @message_format
+          event.message ||= event.sprintf(@message_format)
+        end
       rescue => e
         ## TODO(sissel): Instead of dropping the event, should we treat it as
         ## plain text and try to do the best we can with it?
