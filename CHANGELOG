@@ -40,6 +40,9 @@
  - grok patterns: include 'FATAL' as a valid LOGLEVEL match 
    (patch by Corry Haines)
  - grok patterns: 'ZONE' is no longer captured by name in the HTTPDATE pattern
+ - new: alter: adds some conditional field modification as well as a 
+   'coalesce' feature which sets the value of a field to the first non-null
+   value given in a list. (Patch by Francesco Salbaroli)
 
  ## outputs
  - new: exec: run arbitrary commands based on an event.
