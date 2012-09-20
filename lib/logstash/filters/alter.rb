@@ -4,9 +4,12 @@ require "logstash/namespace"
 # The alter filter allows you to do general alterations to fields 
 # that are not included in the normal mutate filter. 
 #
+#
+# NOTE: The functionality provided by this plugin is likely to
+# be merged into the 'mutate' filter in future versions.
 class LogStash::Filters::Alter < LogStash::Filters::Base
   config_name "alter"
-  plugin_status "beta"
+  plugin_status "experimental"
   
   # Change the content of the field to the specified value
   # if the actual content is equal to the expected one.
