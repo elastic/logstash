@@ -141,6 +141,13 @@ $(GEM_HOME)/bin/bundle: | $(JRUBY_CMD)
 vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
 	@echo "=> Installing gems to $@..."
 	$(QUIET)GEM_HOME=$(GEM_HOME) bash $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
+	@# Purge any junk that fattens our jar without need!
+	@# The riak gem includes previous gems in the 'pkg' dir. :(
+	-rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
+	@# Purge any rspec or test directories
+	-rm -rf $@/jruby/1.9/gems/*/spec $@/jruby/1.9/gems/*/test
+	@# Purge any comments in ruby code.
+	@#-find $@/jruby/1.9/gems/ -name '*.rb' | xargs -n1 sed -i -re '/^[ \t]*#/d; /^[ \t]*$$/d'
 
 build:
 	-$(QUIET)mkdir -p $@
@@ -157,7 +164,7 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
 	$(QUIET)find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
-	| (cd $@; xargs -tn1 jar xf)
+	| (cd $@; xargs -n1 jar xf)
 	@# copy openssl/lib/shared folders/files to root of jar - need this for openssl to work with JRuby
 	$(QUIET)mkdir -p $@/openssl
 	$(QUIET)mkdir -p $@/jopenssl
@@ -193,6 +200,7 @@ build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
 build/logstash-$(VERSION)-monolithic.jar:
 	$(QUIET)jar cfe $@ logstash.runner $(JAR_ARGS)
 	$(QUIET)jar i $@
+	@echo "Created $@"
 
 update-jar: copy-ruby-files
 	$(QUIET)jar uf build/logstash-$(VERSION)-monolithic.jar -C build/ruby .
