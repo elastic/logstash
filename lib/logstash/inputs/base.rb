@@ -105,6 +105,9 @@ class LogStash::Inputs::Base < LogStash::Plugin
     when "json_event"
       begin
         event = LogStash::Event.from_json(raw)
+        if @message_format
+          event.message ||= event.sprintf(@message_format)
+        end
       rescue => e
         ## TODO(sissel): Instead of dropping the event, should we treat it as
         ## plain text and try to do the best we can with it?
@@ -112,7 +115,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
                      :input => raw, :source => source, :exception => e,
                      :backtrace => e.backtrace)
         event.message = raw
-        return nil
+      end
+
+      # If event source is unknown, this json_event is missing a @source, set it
+      # from the to_event source value.
+      if event.source == "unknown"
+        event.source = source
       end
     else
       raise "unknown event format #{@format}, this should never happen"

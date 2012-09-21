@@ -30,7 +30,7 @@
    event' operation (LOGSTASH-574)
  - bugfix: mutate: fix bug in uppercase and lowercase feature that would
    prevent it from actually doing the uppercasing/lowercasing.
- - improvement: mutate:: do the 'remove' action last (LOGSTASH-543)
+ - improvement: mutate: do the 'remove' action last (LOGSTASH-543)
  - feature: grok: new 'singles' config option which, when true, stores
    single-value fields simply as a single value rather than as an array, like
    [value]. (LOGSTASH-185)
@@ -40,6 +40,10 @@
  - grok patterns: include 'FATAL' as a valid LOGLEVEL match 
    (patch by Corry Haines)
  - grok patterns: 'ZONE' is no longer captured by name in the HTTPDATE pattern
+ - new: alter: adds some conditional field modification as well as a 
+   'coalesce' feature which sets the value of a field to the first non-null
+   value given in a list. (Patch by Francesco Salbaroli)
+ - improvement: date: add TAI64N support
 
  ## outputs
  - new: exec: run arbitrary commands based on an event.
