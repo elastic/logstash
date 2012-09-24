@@ -45,7 +45,7 @@ class LogStash::Web::Runner
       end
 
       opts.on("-b", "--backend URL",
-              "The backend URL to use. Default is elasticserach:/// (assumes " \
+              "The backend URL to use. Default is elasticsearch:/// (assumes " \
               "multicast discovery); You can specify " \
               "elasticsearch://[host][:port]/[clustername]") do |url|
         settings.backend_url = url
