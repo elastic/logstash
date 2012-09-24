@@ -15,7 +15,6 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   def initialize(params)
     super
     @format ||= "json_event"
-    @messages_processed = 0
   end
 
   public
@@ -38,33 +37,62 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
 
   public
   def run(output_queue)
-    begin
-      @logger.debug("Polling SQS queue '#{@queue}'...")
-      poll_settings = {
-        :initial_timeout => false, 
-        :idle_timeout => 10, 
-        :batch_size => 10, 
-        :visibility_timeout => 10
-      }
-      @sqs_queue.poll() do |message|
-        if message
-          e = to_event(message.body, @sqs_queue)
-          if e
-            @logger.debug("Processed SQS message #{message.id} [#{message.md5}] from queue '#{@queue}'")
-            puts "Processed SQS message #{message.id} [#{message.md5}] from queue '#{@queue}' (#{@messages_processed}) (#{e.source_host})"
-            output_queue << e
-            message.delete
-            @messages_processed += 1
+    @logger.debug("Polling SQS queue '#{@queue}'...")
+    
+    receive_opts = {
+      :limit => 10,
+      :visibility_timeout => 30
+    }
+
+    continue_polling = true
+    while running? && continue_polling
+      continue_polling = run_with_backoff(60, 1, "retrieving messages from SQS queue '#{@queue}'") do
+        @sqs_queue.receive_message(receive_opts) do |message|
+          if message
+            e = to_event(message.body, @sqs_queue)
+            if e
+              @logger.debug("Processed SQS message #{message.id} [#{message.md5}] from queue '#{@queue}'")
+              output_queue << e
+              message.delete
+            end
           end
         end
       end
-    rescue Exception => e
-      @logger.error("Erroring processing messages from AWS SQS queue '#{queue}': #{e.to_s}")
     end
   end
 
   def teardown
     @sqs_queue = nil
     finished
+  end
+
+  private
+  # Runs an AWS request inside a Ruby block with an exponential backoff in case
+  # we exceed the allowed AWS RequestLimit.
+  #
+  # @param [Integer] max_time maximum amount of time to sleep before giving up.
+  # @param [Integer] sleep_time the initial amount of time to sleep before retrying.
+  # @param [message] message message to display if we get an exception.
+  # @param [Block] block Ruby code block to execute.
+  def run_with_backoff(max_time, sleep_time, message, &block)
+    if sleep_time > max_time
+      puts "AWS::EC2::Errors::RequestLimitExceeded ... failed #{message}"
+      return false
+    end
+    
+    begin
+      yield
+    rescue AWS::EC2::Errors::RequestLimitExceeded
+      puts "AWS::EC2::Errors::RequestLimitExceeded ... retrying #{message} in #{sleep_time} seconds"
+      sleep sleep_time
+      run_with_backoff(max_time, sleep_time * 2, message, &block)
+    rescue AWS::EC2::Errors::InstanceLimitExceeded
+      puts "AWS::EC2::Errors::InstanceLimitExceeded ... aborting launch."
+      return false
+    rescue Error => bang
+      print "Error for #{message}: #{bang}"
+      return false
+    end
+    true
   end
 end
