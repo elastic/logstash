@@ -9,6 +9,8 @@ class LogStash::Filters::Csv < LogStash::Filters::Base
   config_name "csv"
   plugin_status "beta"
 
+  WARNING_MSG_EMPTY_CONFIG = "No configuration source => dest specified. This filter will do nothing!"
+
   # Config for csv is:
   #   "source => dest".
   # The CSV data in the value of the source field will be expanded into a
@@ -31,6 +33,9 @@ class LogStash::Filters::Csv < LogStash::Filters::Base
       next if (RESERVED + ["fields"]).member?(field)
 
       @csv[field] = dest
+    end
+    if @csv.empty?
+      @logger.warn(WARNING_MSG_EMPTY_CONFIG)
     end
   end # def register
 
