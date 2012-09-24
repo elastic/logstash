@@ -15,6 +15,7 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   def initialize(params)
     super
     @format ||= "json_event"
+    @messages_processed = 0
   end
 
   public
@@ -39,13 +40,21 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   def run(output_queue)
     begin
       @logger.debug("Polling SQS queue '#{@queue}'...")
-      @sqs_queue.poll(:initial_timeout => false, :idle_timeout => 10) do |message|
-        puts "Message: #{message.to_s}"
+      poll_settings = {
+        :initial_timeout => false, 
+        :idle_timeout => 10, 
+        :batch_size => 10, 
+        :visibility_timeout => 10
+      }
+      @sqs_queue.poll() do |message|
         if message
           e = to_event(message.body, @sqs_queue)
           if e
-            @logger.debug("Processed SQS message #{message.id} [#{message.md5} from queue '#{@queue}'")
+            @logger.debug("Processed SQS message #{message.id} [#{message.md5}] from queue '#{@queue}'")
+            puts "Processed SQS message #{message.id} [#{message.md5}] from queue '#{@queue}' (#{@messages_processed}) (#{e.source_host})"
             output_queue << e
+            message.delete
+            @messages_processed += 1
           end
         end
       end
@@ -55,6 +64,7 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   end
 
   def teardown
+    @sqs_queue = nil
     finished
   end
 end
