@@ -32,4 +32,10 @@ class LogStash::Outputs::SQS < LogStash::Outputs::Base
   def receive(event)
     @sqs_queue.send_message(event.to_json)
   end
+
+  public
+  def teardown
+    @sqs_queue = nil
+    finished
+  end
 end
