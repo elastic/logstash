@@ -7,12 +7,17 @@ class LogStash::Outputs::Internal < LogStash::Outputs::Base
   config_name "internal"
   plugin_status "stable"
 
-  attr_accessor :callback
+  attr_accessor :callbacks
+
+  public 
+  def initialize(*args)
+    super(*args)
+    @callbacks ||= []
+  end # def initialize
 
   public
   def register
     @logger.info("Registering internal output (for testing!)")
-    @callbacks ||= []
   end # def register
 
   public
