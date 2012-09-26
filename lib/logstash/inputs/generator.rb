@@ -19,6 +19,27 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   # Otherwise, this value will be used verbatim as the event message.
   config :message, :validate => :string, :default => "Hello world!"
 
+  # The lines to emit, in order. This option cannot be used with the 'message'
+  # setting.
+  #
+  # Example:
+  #
+  #     input {
+  #       generator {
+  #         lines => [
+  #           "line 1",
+  #           "line 2",
+  #           "line 3"
+  #         ]
+  #       }
+  #
+  #       # Emit all lines 3 times.
+  #       count => 3
+  #     }
+  #
+  # The above will emit "line 1" then "line 2" then "line", then "line 1", etc... 
+  config :lines, :validate => :array
+
   # Set how many messages should be generated.
   #
   # The default, 0, means generate an unlimited number of events.
@@ -44,10 +65,18 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
     end
 
     while !finished? && (@count <= 0 || number < @count)
-      event = to_event(@message, source)
-      event["sequence"] = number
+      if @lines
+        @lines.each do |line|
+          event = to_event(line, source)
+          event["sequence"] = number
+          queue << event
+        end
+      else
+        event = to_event(@message, source)
+        event["sequence"] = number
+        queue << event
+      end
       number += 1
-      queue << event
     end # loop
   end # def run
 
