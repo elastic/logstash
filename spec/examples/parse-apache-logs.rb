@@ -48,10 +48,19 @@ describe "apache common log format" do
     insist { subject["httpversion"] } == "1.1"
     insist { subject["response"] } == "200"
     insist { subject["bytes"] } == "3638"
-    insist { subject["referrer"] }.nil?
+    insist { subject["referrer"] } == '"-"'
     insist { subject["agent"] } == "\"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:14.0) Gecko/20100101 Firefox/14.0.1\""
 
     # Verify date parsing
     insist { subject.timestamp } == "2012-08-30T00:17:38.000Z"
+  end
+
+  sample '61.135.248.195 - - [26/Sep/2012:11:49:20 -0400] "GET /projects/keynav/ HTTP/1.1" 200 18985 "" "Mozilla/5.0 (compatible; YodaoBot/1.0; http://www.yodao.com/help/webmaster/spider/; )"' do
+    reject { subject["@tags"] }.include?("_grokparsefailure")
+    insist { subject["clientip"] } == "61.135.248.195"
+  end
+
+  sample '72.14.164.185 - - [25/Sep/2012:12:05:02 -0400] "GET /robots.txt HTTP/1.1" 200 - "www.brandimensions.com" "BDFetch"' do
+    reject { subject["@tags"] }.include?("_grokparsefailure")
   end
 end
