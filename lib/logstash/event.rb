@@ -151,7 +151,13 @@ class LogStash::Event
   # Append an event to this one.
   public
   def append(event)
-    self.message += "\n" + event.message 
+    if event.message
+      if self.message
+        self.message += "\n" + event.message 
+      else
+        self.message = event.message
+      end
+    end
     self.tags |= event.tags
 
     # Append all fields
