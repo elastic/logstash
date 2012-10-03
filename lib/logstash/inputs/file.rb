@@ -120,12 +120,12 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
   public
   def run(queue)
-    tail = FileWatch::Tail.new(@tail_config)
-    tail.logger = @logger
-    @path.each { |path| tail.tail(path) }
+    @tail = FileWatch::Tail.new(@tail_config)
+    @tail.logger = @logger
+    @path.each { |path| @tail.tail(path) }
     hostname = Socket.gethostname
 
-    tail.subscribe do |path, line|
+    @tail.subscribe do |path, line|
       source = Addressable::URI.new(:scheme => "file", :host => hostname, :path => path).to_s
       @logger.debug("Received line", :path => path, :line => line)
       e = to_event(line, source)
@@ -133,5 +133,11 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
         queue << e
       end
     end
+    finished
   end # def run
+
+  public
+  def teardown
+    @tail.quit
+  end # def teardown
 end # class LogStash::Inputs::File
