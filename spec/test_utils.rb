@@ -29,17 +29,32 @@ module LogStash
 
       filters = @filters
       describe event do
-        if event.is_a?(String)
-          subject { LogStash::Event.new("@message" => [event]) }
-        else
-          subject { LogStash::Event.new(event) }
-        end
-
         before :all do
-          filters.each do |filter|
-            filter.filter(subject)
+          # Coerce to an array of LogStash::Event
+          event = [event] unless event.is_a?(Array)
+          event = event.collect do |e| 
+            if e.is_a?(String)
+              LogStash::Event.new("@message" => e)
+            else
+              LogStash::Event.new(e)
+            end
           end
+          
+          results = []
+          event.each do |e|
+            filters.each do |filter|
+              filter.filter(e)
+              results << e unless e.cancelled?
+            end
+          end
+          filters.select { |f| f.respond_to?(:flush) }.each do |filter|
+            event = filter.flush 
+            results += event if event
+          end
+
+          @results = results
         end
+        subject { @results }
         it("when processed", &block)
       end
     end # def sample
