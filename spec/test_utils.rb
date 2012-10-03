@@ -27,6 +27,8 @@ module LogStash
         plugin.register
       end
 
+      multiple_events = event.is_a?(Array)
+
       filters = @filters
       describe event do
         before :all do
@@ -54,7 +56,11 @@ module LogStash
 
           @results = results
         end
-        subject { @results }
+        if multiple_events
+          subject { @results }
+        else
+          subject { @results.first }
+        end
         it("when processed", &block)
       end
     end # def sample
