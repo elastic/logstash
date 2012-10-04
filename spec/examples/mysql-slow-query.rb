@@ -3,8 +3,6 @@ require "test_utils"
 describe "parse mysql slow query log" do
   extend LogStash::RSpec
 
-  # The logstash config goes here.
-  # At this time, only filters are supported.
   config <<-'CONFIG'
     filter {
       grep {
@@ -57,7 +55,10 @@ MYSQL_SLOW_LOGS
     event = subject.first
     insist { event.message.split("\n").size } == 5 # 5 lines
 
-    p event.fields
+    lines.split("\n").each_with_index do |line, i|
+      insist { event.message[i] } == line
+    end
+
     insist { event["user"] } == "someuser"
     insist { event["host"] } == "db.example.com"
     insist { event["ip"] } == "1.2.3.4"
