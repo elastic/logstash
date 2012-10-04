@@ -100,7 +100,10 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     require "grok-pure" # rubygem 'jls-grok'
 
     @patternfiles = []
-    @patterns_dir += @@patterns_path.to_a
+
+    # Have @@patterns_path show first. Last-in pattern definitions win; this
+    # will let folks redefine built-in patterns at runtime.
+    @patterns_dir = @@patterns_path.to_a + @patterns_dir
     @logger.info("Grok patterns path", :patterns_dir => @patterns_dir)
     @patterns_dir.each do |path|
       # Can't read relative paths from jars, try to normalize away '../'
