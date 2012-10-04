@@ -45,10 +45,12 @@ module LogStash
           results = []
           event.each do |e|
             filters.each do |filter|
+              next if e.cancelled?
               filter.filter(e)
-              results << e unless e.cancelled?
             end
+            results << e unless e.cancelled?
           end
+
           filters.select { |f| f.respond_to?(:flush) }.each do |filter|
             event = filter.flush 
             results += event if event
