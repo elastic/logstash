@@ -55,7 +55,7 @@ MYSQL_SLOW_LOGS
     event = subject.first
     insist { event.message.split("\n").size } == 5 # 5 lines
 
-    lines.split("\n").each_with_index do |line, i|
+    lines.split("\n")[1..5].each_with_index do |line, i|
       insist { event.message[i] } == line
     end
 
