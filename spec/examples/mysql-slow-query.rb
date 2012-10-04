@@ -8,7 +8,12 @@ describe "parse mysql slow query log" do
   config <<-'CONFIG'
     filter {
       grep {
-        # Drop the '# Time:' lines
+        # Drop the '# Time:' lines since they only appear when the 'time'
+        # changes and are omitted otherwise. Further, there's always (from what
+        # I have seen) a 'SET timestamp=123456789' line in each query event, so
+        # I use that as the timestamp instead.
+        #
+        # mysql logs are fucked up, so this is pretty much best effort.
         match => [ "@message", "^# Time: " ]
         negate => true
       }
