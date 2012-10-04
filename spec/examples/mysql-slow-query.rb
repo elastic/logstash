@@ -19,7 +19,7 @@ describe "parse mysql slow query log" do
       grok {
         singles => true
         pattern => [
-          "^# User@Host: %{USER:user}\[[^\]]+\] @ %{HOST:host} \[%{IP:ip}]",
+          "^# User@Host: %{USER:user}\[[^\]]+\] @ %{HOST:host} \[%{IP:ip}?]",
           "^# Query_time: %{NUMBER:duration:float} \s*Lock_time: %{NUMBER:lock_wait:float} \s*Rows_sent: %{NUMBER:results:int} \s*Rows_examined: %{NUMBER:scanned:int}",
           "^SET timestamp=%{NUMBER:timestamp};"
         ]
