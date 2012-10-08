@@ -25,31 +25,32 @@ class LogStash::Filters::Urldecode < LogStash::Filters::Base
     # If all_fields is true then try to decode them all
     if @all_fields
       event.fields.each do |name, value|
-        # deal with arrays
-        if value.is_a?(Array)
-          all_vs = []
-          value.each do |v|
-            all_vs << URI.unescape(v)
-          end
-          event.fields[name] = all_vs
-        else 
-          event.fields[name] = URI.unescape(value)
-        end #end if array
+        event.fields[name] = urldecode(value)
       end
     # Else decode the specified field
     else
-      decode_field = event[@field]
-      # deal with arrays
-      if decode_field.is_a?(Array)
-        all_vs = []
-        decode_field.each do |v|
-          all_vs << URI.unescape(v)
-        end
-        event[@field] = all_vs
-      else
-        event[@field] = URI.unescape(decode_field)
-      end #end if array
+      event[@field] = urldecode(event[@field])
     end
     filter_matched(event)
   end # def filter
+
+  # Attempt to handle string, array, and hash values for fields.
+  # For all other datatypes, just return, URI.unescape doesn't support them.
+  private
+  def urldecode(value)
+    case value
+    when String
+      return URI.unescape(value)
+    when Array
+      ret_values = []
+      value.each { |v| ret_values << urldecode(v) }
+      return ret_values
+    when Hash
+      ret_values = {}
+      value.each { |k,v| ret_values[k] = urldecode(v) }
+      return ret_values
+    else
+      return value
+    end
+  end
 end # class LogStash::Filters::Urldecode
