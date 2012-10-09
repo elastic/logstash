@@ -14,7 +14,7 @@ module LogStash::Time
     DateTimeZone = org.joda.time.DateTimeZone
     def self.now
       # org.joda.time.DateTime#to_s returns the time in ISO8601 form :)
-      return DateTime.new(DateTimeZone::UTC).to_s
+      return DateTime.now(DateTimeZone::UTC).to_s
     end # def initialize
   else
     # Otherwise, use ruby stdlib Time, which is much slower than Joda.
