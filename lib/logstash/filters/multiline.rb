@@ -5,6 +5,7 @@
 
 require "logstash/filters/base"
 require "logstash/namespace"
+require "set"
 
 # The multiline filter is for combining multiple events from a single source
 # into the same event.
