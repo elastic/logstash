@@ -30,7 +30,9 @@ module LogStash
       multiple_events = event.is_a?(Array)
 
       filters = @filters
-      describe event do
+      name = event.to_s
+      name = name[0..50] + "..." if name.length > 50
+      describe "\"#{name}\"" do
         before :all do
           # Coerce to an array of LogStash::Event
           event = [event] unless event.is_a?(Array)
