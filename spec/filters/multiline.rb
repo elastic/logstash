@@ -46,30 +46,55 @@ describe LogStash::Filters::Multiline do
     # The logstash config goes here.
     # At this time, only filters are supported.
     config <<-CONFIG
-    filter {
-      multiline {
-        pattern => "^\s"
-        what => previous
+      filter {
+        multiline {
+          pattern => "^\\s"
+          what => previous
+        }
       }
-    }
     CONFIG
 
     multiline_event = [
       "hello world",
-      "   line 2",
-      "   line 3",
-      "   line 4",
-      "   line 5",
     ]
 
-    # generate 20 independent streams of this same event, possibly repeated multiple times in each stream
-    eventstream = 20.times.collect do |stream|
-      multiline_event.collect { |line| LogStash::Event.new("@message" => line, "@type" => stream.to_s) }
+    count = 20
+    stream_count = 2
+    id = 0
+    eventstream = count.times.collect do |i|
+      stream = "stream#{i % stream_count}"
+      (
+        [ "hello world #{stream}" ] \
+        + rand(5).times.collect { |n| id += 1; "   extra line #{n} in #{stream} event #{id}" }
+      ) .collect do |line|
+        LogStash::Event.new("@message" => line,
+                            "@source" => stream, "@type" => stream,
+                            "@fields" => { "event" => i })
+      end
     end
 
-    sample eventstream do 
-      require "pry"
-      binding.pry
+    alllines = eventstream.flatten
+
+    # Take whole events and mix them with other events (maintain order)
+    # This simulates a mixing of multiple streams being received 
+    # and processed. It requires that the multiline filter correctly partition
+    # by stream_identity
+    concurrent_stream = eventstream.flatten.count.times.collect do 
+      index = rand(eventstream.count)
+      event = eventstream[index].shift
+      eventstream.delete_at(index) if eventstream[index].empty?
+      event
+    end
+
+    sample concurrent_stream do 
+      require "pry"; binding.pry
+      insist { subject.count } == count
+      subject.each_with_index do |event, i|
+        puts "#{i}/#{event["event"]}: #{event.to_json}"
+        #insist { event.type } == stream
+        #insist { event.source } == stream
+        insist { event.message.split("\n").first } =~ /hello world /
+      end
     end
   end
 end
