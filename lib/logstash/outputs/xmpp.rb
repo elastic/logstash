@@ -15,8 +15,12 @@ class LogStash::Outputs::Xmpp < LogStash::Outputs::Base
   # The xmpp password for the user/identity.
   config :password, :validate => :password, :required => :true
 
-  # The targets to send messages to (users, chat rooms, etc)
-  config :targets, :validate => :array, :required => true
+  # The users to send messages to
+  config :users, :validate => :array
+
+  # if muc/multi-user-chat required, give the name of the room that
+  # you want to join: room@conference.domain/nick
+  config :rooms, :validate => :array
 
   # The xmpp server to connect to. This is optional. If you omit this setting,
   # the host on the user/identity is used. (foo.com for user@foo.com)
@@ -29,6 +33,19 @@ class LogStash::Outputs::Xmpp < LogStash::Outputs::Base
   def register
     require "xmpp4r"
     @client = connect
+
+    @mucs = []
+    @users = [] if !@users
+
+    # load the MUC Client if we are joining rooms.
+    if @rooms && !@rooms.empty?
+      require 'xmpp4r/muc'
+      @rooms.each do |room| # handle muc messages in different rooms
+        muc = Jabber::MUC::MUCClient.new(@client)
+        muc.join(room)
+        @mucs << muc
+      end # @rooms.each
+    end # if @rooms
   end # def register
 
   public
@@ -45,10 +62,16 @@ class LogStash::Outputs::Xmpp < LogStash::Outputs::Base
     return unless output?(event)
 
     string_message = event.sprintf(@message)
-    @targets.each do |target|
-      msg = Jabber::Message.new(target, string_message)
+    @users.each do |user|
+      msg = Jabber::Message.new(user, string_message)
       msg.type = :chat
       @client.send(msg)
     end # @targets.each
+
+    msg = Jabber::Message.new(nil, string_message)
+    msg.type = :groupchat
+    @mucs.each do |muc|
+      muc.send(msg)
+    end # @mucs.each
   end # def receive
 end # class LogStash::Outputs::Xmpp
