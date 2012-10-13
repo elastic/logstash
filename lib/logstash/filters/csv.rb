@@ -5,7 +5,7 @@ require "csv"
 
 # CSV filter. Takes an event field containing CSV data, parses it,
 # and stores it as individual fields (can optionally specify the names).
-class LogStash::Filters::Csv < LogStash::Filters::Base
+class LogStash::Filters::CSV < LogStash::Filters::Base
   config_name "csv"
   plugin_status "beta"
 
@@ -29,8 +29,12 @@ class LogStash::Filters::Csv < LogStash::Filters::Base
 
     @config.each do |field, dest|
       next if (RESERVED + ["fields"]).member?(field)
-
       @csv[field] = dest
+    end
+
+    # Default to parsing @message and dumping into @fields
+    if @csv.empty?
+      @csv["@message"] = "@fields"
     end
   end # def register
 
@@ -42,19 +46,19 @@ class LogStash::Filters::Csv < LogStash::Filters::Base
 
     matches = 0
     @csv.each do |key, dest|
-      if event.fields[key]
-        if event.fields[key].is_a?(String)
-          event.fields[key] = [event.fields[key]]
+      if event[key]
+        if event[key].is_a?(String)
+          event[key] = [event[key]]
         end
 
-        if event.fields[key].length > 1
+        if event[key].length > 1
           @logger.warn("csv filter only works on fields of length 1",
-                       :key => key, :value => event.fields[key],
+                       :key => key, :value => event[key],
                        :event => event)
           next
         end
 
-        raw = event.fields[key].first
+        raw = event[key].first
         begin
           values = CSV.parse_line(raw)
           data = {}
@@ -63,7 +67,7 @@ class LogStash::Filters::Csv < LogStash::Filters::Base
             data[field_name] = values[i]
           end
 
-          event.fields[dest] = data
+          event[dest] = data
 
           filter_matched(event)
         rescue => e
