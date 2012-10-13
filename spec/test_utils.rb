@@ -99,3 +99,14 @@ module LogStash
     end # def agent
   end # module RSpec
 end # module LogStash
+
+class Shiftback
+  def initialize(&block)
+    @block = block
+  end
+
+  def <<(event)
+    @block.call(event)
+  end
+end # class Shiftback
+

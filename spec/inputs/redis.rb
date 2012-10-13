@@ -1,16 +1,5 @@
 require "test_utils"
 
-
-class Shiftback
-  def initialize(&block)
-    @block = block
-  end
-
-  def <<(event)
-    @block.call(event)
-  end
-end # class Shiftback
-
 describe "inputs/redis" do
   extend LogStash::RSpec
   require "redis"
