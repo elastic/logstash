@@ -144,7 +144,7 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
       @logger.warn("AWS::EC2::Errors::InstanceLimitExceeded ... aborting SQS message retreival.")
       return false
     rescue Exception => bang
-      @logger.error("Error reading SQS queue.", :errir => bang, :queue => @queue)
+      @logger.error("Error reading SQS queue.", :error => bang, :queue => @queue)
       return false
     end # begin/rescue
     return true
