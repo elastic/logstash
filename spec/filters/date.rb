@@ -91,6 +91,20 @@ describe LogStash::Filters::Date do
     end # times.each
   end
 
+  describe "parsing microsecond-precise times with UNIX (#213)" do
+    config <<-CONFIG
+      filter {
+        date {
+          mydate => "UNIX"
+        }
+      }
+    CONFIG
+
+    sample({"@fields" => {"mydate" => "1350414944.123456"}}) do
+      insist { subject.timestamp } == "2012-10-16T19:15:44.123Z"
+    end
+  end
+
   describe "parsing with UNIX_MS" do
     config <<-CONFIG
       filter {
