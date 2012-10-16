@@ -19,6 +19,7 @@
  - new: lumberjack: for use with the lumberjack log shipper 
    (https://github.com/jordansissel/lumberjack)
  - new: sqs: Amazon SQS input (Patch by Sean Laurent, #211)
+ - new: relp: RELP (rsyslog) plugin (Patch by Mike Worth, #177)
  - file input: sincedb path is now automatically generated if not specified.
    This helps work around a problem where two file inputs don't specify a
    sincedb_path would clobber eachother (LOGSTASH-554)
