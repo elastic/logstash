@@ -7,7 +7,7 @@ require "timeout"
 # Read events over a TCP socket from Log4j SocketAppender.
 #
 # Can either accept connections from clients or connect to a server,
-# depending on `mode`. Sepending on mode, you need a matching SocketAppender or SocketHubAppender on the remote side
+# depending on `mode`. Depending on mode, you need a matching SocketAppender or SocketHubAppender on the remote side
 class LogStash::Inputs::Log4j < LogStash::Inputs::Base
 
   config_name "log4j"
