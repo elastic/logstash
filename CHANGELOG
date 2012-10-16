@@ -31,6 +31,8 @@
    similar key-value-like things.
  - new: urldecode: a filter for urldecoding fields in your event. (Patch by
    Joey Imbasciano, LOGSTASH-612)
+ - new: geoip: query a local geoip database for location information (Patch by
+   Avishai Ish-Shalom, #208)
  - improvement: zeromq: an empty reply is now considered as a 'cancel this
    event' operation (LOGSTASH-574)
  - bugfix: mutate: fix bug in uppercase and lowercase feature that would
