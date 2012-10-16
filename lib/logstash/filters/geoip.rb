@@ -2,7 +2,7 @@ require "logstash/filters/base"
 require "logstash/namespace"
 require "geoip"
 
-# Set fields from environment variables
+# Add GeoIP fields from Maxmind database
 class LogStash::Filters::GeoIP < LogStash::Filters::Base
   config_name "geoip"
   plugin_status "experimental"
