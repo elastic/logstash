@@ -169,7 +169,7 @@ class LogStash::Event
         if value.is_a?(Array)
           self.fields[name] |= value
         else
-          self.fields[name] << value
+          self.fields[name] << value unless self.fields[name].include?(value)
         end
       else
         self.fields[name] = value
