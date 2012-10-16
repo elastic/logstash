@@ -16,6 +16,8 @@ JRUBYC=java -Djruby.compat.version=RUBY1_9 -jar $(PWD)/$(JRUBY) -S jrubyc
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 JODA=vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
+GEOIP=vendor/geoip/GeoCityLite.dat
+GEOIP_URL=http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 GEM_HOME=build/gems
 QUIET=@
@@ -125,6 +127,13 @@ vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz: | wget-or-curl vendor/jar
 vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar: vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz | vendor/jar
 	tar -C vendor/jar -zxf $< joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
 
+vendor/geoip: | vendor
+	$(QUIET)mkdir $@
+
+$(GEOIP): | vendor/geoip
+	$(QUIET)wget -q -O - http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz \
+		| gzip -dc - > $@
+
 # Always run vendor/bundle
 .PHONY: fix-bundler
 fix-bundler:
@@ -148,6 +157,7 @@ vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
 	-rm -rf $@/jruby/1.9/gems/*/spec $@/jruby/1.9/gems/*/test
 	@# Purge any comments in ruby code.
 	@#-find $@/jruby/1.9/gems/ -name '*.rb' | xargs -n1 sed -i -re '/^[ \t]*#/d; /^[ \t]*$$/d'
+	touch $@
 
 build:
 	-$(QUIET)mkdir -p $@
@@ -159,7 +169,7 @@ build/ruby: | build
 # TODO(sissel): Skip sigar?
 # Run this one always? Hmm..
 .PHONY: build/monolith
-build/monolith: $(ELASTICSEARCH) $(JRUBY) $(JODA) vendor-gems | build
+build/monolith: $(ELASTICSEARCH) $(JRUBY) $(JODA) $(GEOIP) vendor-gems | build
 build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
@@ -183,6 +193,7 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)rm -f $@/META-INF/*.SF
 	-$(QUIET)rm -f $@/META-INF/NOTICE $@/META-INF/NOTICE.txt
 	-$(QUIET)rm -f $@/META-INF/LICENSE $@/META-INF/LICENSE.txt
+	$(QUIET)cp $(GEOIP) $@/
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
