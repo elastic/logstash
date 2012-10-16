@@ -22,6 +22,9 @@
    This helps work around a problem where two file inputs don't specify a
    sincedb_path would clobber eachother (LOGSTASH-554)
  - file input: no longer crashes if HOME is not set in env (LOGSTASH-458)
+ - log4j input: now supports MDC 'event properties' which are stored as fields
+   in the logstash event. (#216, #179. Patches by Charles Robertson and Jurjan
+   Woltman)
 
  ## filters
  - new: kv: useful for parsing log formats taht use 'foo=bar baz=fizz' and
@@ -46,6 +49,8 @@
    'coalesce' feature which sets the value of a field to the first non-null
    value given in a list. (Patch by Francesco Salbaroli)
  - improvement: date: add TAI64N support
+ - improvement: date: subsecond precision on UNIX timestamps is retained on
+   conversion (#213, Patch by Ralph Meijer)
 
  ## outputs
  - new: exec: run arbitrary commands based on an event.
