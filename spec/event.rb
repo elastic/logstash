@@ -43,7 +43,7 @@ describe LogStash::Event do
       end
       it "should not change value, if appended value is equal current" do
         subject.append(LogStash::Event.new("@fields" => {"field1" => "original1"}))
-        insist { subject["field1"] } == "original1"
+        insist { subject["field1"] } == [ "original1" ]
       end
       it "should concatenate values in an array" do
         subject.append(LogStash::Event.new("@fields" => {"field1" => ["append1"]}))
