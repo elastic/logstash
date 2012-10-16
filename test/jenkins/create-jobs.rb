@@ -13,7 +13,7 @@ plugins = %w(inputs filters outputs).collect { |t| Dir.glob(File.join(plugindir,
 
 template = ERB.new(File.read(File.join(File.dirname(__FILE__), "config.xml.erb")))
 plugins.each do |path|
-  job = path.gsub(/.*\/([^\/]+)\/([^\/]+)\.rb$/, '\1-\2')
+  job = path.gsub(/.*\/([^\/]+)\/([^\/]+)\.rb$/, 'plugin.\1.\2')
   plugin_path = path.gsub(/.*\/([^\/]+)\/([^\/]+)$/, '\1/\2')
 
   jobdir = File.join(ENV["JENKINS_HOME"], "jobs", job)
