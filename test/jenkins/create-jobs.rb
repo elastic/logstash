@@ -16,7 +16,7 @@ plugins.each do |path|
   job = path.gsub(/.*\/([^\/]+)\/([^\/]+)\.rb$/, '\1-\2')
   plugin_path = path.gsub(/.*\/([^\/]+)\/([^\/]+)$/, '\1/\2')
 
-  jobdir = File.join(ENV["JENKINS_HOME"], job)
+  jobdir = File.join(ENV["JENKINS_HOME"], "jobs", job)
   puts "Writing #{jobdir}/config.xml"
   Dir.mkdir(jobdir) if !Dir.exists?(jobdir)
   File.write(File.join(jobdir, "config.xml"), template.result(binding))
