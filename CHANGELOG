@@ -26,6 +26,8 @@
  ## filters
  - new: kv: useful for parsing log formats taht use 'foo=bar baz=fizz' and
    similar key-value-like things.
+ - new: urldecode: a filter for urldecoding fields in your event. (Patch by
+   Joey Imbasciano, LOGSTASH-612)
  - improvement: zeromq: an empty reply is now considered as a 'cancel this
    event' operation (LOGSTASH-574)
  - bugfix: mutate: fix bug in uppercase and lowercase feature that would
@@ -56,6 +58,8 @@
  - improvement: stdout: new 'dots' debug_format value emits one dot per event
    useful for tracking event rates.
  - gelf output: correct severity level mappings (patch by Jason Koppe)
+ - xmpp output: users and rooms are separate config settings now (patch by
+   Parker DeBardelaben)
 
 1.1.1 (July 14, 2012)
  ## Overview of this release:
