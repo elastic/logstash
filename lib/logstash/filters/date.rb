@@ -93,7 +93,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           joda_parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
           parser = lambda { |date| joda_parser.parseDateTime(date) }
         when "UNIX" # unix epoch
-          parser = lambda { |date| org.joda.time.Instant.new(date.to_i * 1000).toDateTime }
+          parser = lambda { |date| org.joda.time.Instant.new((date.to_f * 1000).to_i).toDateTime }
         when "UNIX_MS" # unix epoch in ms
           parser = lambda { |date| org.joda.time.Instant.new(date.to_i).toDateTime }
         when "TAI64N" # TAI64 with nanoseconds, -10000 accounts for leap seconds
