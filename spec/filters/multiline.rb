@@ -87,10 +87,9 @@ describe LogStash::Filters::Multiline do
     end
 
     sample concurrent_stream do 
-      require "pry"; binding.pry
       insist { subject.count } == count
       subject.each_with_index do |event, i|
-        puts "#{i}/#{event["event"]}: #{event.to_json}"
+        #puts "#{i}/#{event["event"]}: #{event.to_json}"
         #insist { event.type } == stream
         #insist { event.source } == stream
         insist { event.message.split("\n").first } =~ /hello world /
