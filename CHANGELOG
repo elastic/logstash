@@ -16,8 +16,9 @@
 
  ## inputs
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
- - new input: lumberjack: for use with the lumberjack log shipper 
+ - new: lumberjack: for use with the lumberjack log shipper 
    (https://github.com/jordansissel/lumberjack)
+ - new: sqs: Amazon SQS input (Patch by Sean Laurent, #211)
  - file input: sincedb path is now automatically generated if not specified.
    This helps work around a problem where two file inputs don't specify a
    sincedb_path would clobber eachother (LOGSTASH-554)
@@ -56,6 +57,7 @@
 
  ## outputs
  - new: exec: run arbitrary commands based on an event.
+ - new: sqs: Amazon SQS output (Patch by Sean Laurent, #211)
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
  - improvement: redis: [LOGSTASH-573] retry on failure even in batch-mode. This
    also fixes a prior bug where an exception in batch mode would cause logstash
