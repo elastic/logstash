@@ -69,6 +69,13 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
         }
         event_data["@fields"]["NDC"] = event_obj.getNDC() if event_obj.getNDC()
         event_data["@fields"]["stack_trace"] = event_obj.getThrowableStrRep().join("\n") if event_obj.getThrowableInformation()
+        
+        # Add the MDC context properties to '@fields'
+        if event_obj.getProperties()
+          event_obj.getPropertyKeySet().each do |key|
+            event_data["@fields"][key] = event_obj.getProperty(key)
+          end  
+        end  
 
         e = ::LogStash::Event.new event_data
         if e
