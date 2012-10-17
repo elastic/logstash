@@ -29,7 +29,7 @@ class LogStash::Filters::Rate < LogStash::Filters::Base
   # stream_identity to something like "%{@type}.%{remote_address}"
   config :stream_identity , :validate => :string, :default => "%{@source}.%{@type}"
 
-  # There are multiple methods of calculating/estimating rate. The rate filters supports the following:
+  # There are multiple methods of calculating/estimating rate. Currently, the rate filter supports the following:
   # * EWMA - Exponential weighted moving average: For every new matching event,
   #   calculate the current "rate" (1/ time since last event) then apply EWMA to it.
   #   See https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
