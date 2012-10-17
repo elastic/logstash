@@ -10,6 +10,13 @@ are pretty much free to use it however you want in whatever way.
 For more info, see <http://logstash.net/>
 
 ## Building
+To work on the code without building a jar, install rvm and run the following:
+
+    rvm install 1.6.8
+    rvm use 1.6.8
+    export JRUBY_OPTS=--1.9
+    bundle install
+    bundle exec ruby bin/logstash agent [options]
 
 jar releases are available here: <http://semicomplete.com/files/logstash/>
 If you want to build the jar yourself, run:
