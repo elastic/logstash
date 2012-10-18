@@ -1,6 +1,5 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
-require "time"
 
 class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
 
@@ -42,8 +41,6 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    @tmphash=event.to_hash
-    @tmphash['@timestamp']=Time.now
-    @mongodb.collection(event.sprintf(@collection)).insert(@tmphash)
+    @mongodb.collection(event.sprintf(@collection)).insert(event.to_hash)
   end # def receive
 end # class LogStash::Outputs::Mongodb
