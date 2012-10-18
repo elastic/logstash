@@ -71,10 +71,10 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
     unless geo_data.nil?
       geo_data_hash = geo_data.to_hash
       geo_data_hash.delete(:request)
-      if event["geoip"].is_a?(Hash)
-        event["geoip"].merge!(geo_data_hash)
-      else
-        event["geoip"] = geo_data_hash
+      event["geoip"] = {} if event["geoip"].nil?
+      geo_data_hash.each do |key, value|
+        # convert key to string (normally a Symbol)
+        event["geoip"][key.to_s] = value
       end
       filter_matched(event)
     end
