@@ -466,7 +466,6 @@ class LogStash::Agent
       if @plugins.values.count { |p| p.alive? } == 0
         @logger.warn("no plugins running, shutting down")
         shutdown
-        break
       end
       @logger.debug("heartbeat")
     end
@@ -485,6 +484,7 @@ class LogStash::Agent
     shutdown_plugins(@plugins)
     # When we get here, all inputs have finished, all messages are done
     @logger.info("Shutdown complete")
+    exit(0)
   end # def shutdown
 
   def shutdown_plugins(plugins)
