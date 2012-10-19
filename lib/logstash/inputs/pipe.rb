@@ -11,7 +11,11 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
   config_name "pipe"
   plugin_status "experimental"
 
-  # Command line to run and read events from.
+  # Command to run and read events from, one line at a time.
+  #
+  # Example:
+  #
+  #    command => "echo hello world"
   config :command, :validate => :string, :required => true
 
   public
