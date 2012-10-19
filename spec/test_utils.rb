@@ -3,6 +3,7 @@ require "logstash/event"
 require "insist"
 require "stud/try"
 
+$TESTING = true
 if RUBY_VERSION < "1.9.2"
   $stderr.puts "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
   $stderr.puts "Options for fixing this: "
