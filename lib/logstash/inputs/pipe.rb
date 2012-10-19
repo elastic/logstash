@@ -25,7 +25,8 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
     @pipe = IO.popen(command, mode="r")
     hostname = Socket.gethostname
 
-    @pipe.readline do |line|
+    @pipe.each do |line|
+      line = line.chomp
       source = "pipe://#{hostname}/#{command}"
       @logger.debug("Received line", :command => command, :line => line)
       e = to_event(line, source)
