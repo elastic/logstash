@@ -41,6 +41,8 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    @mongodb.collection(event.sprintf(@collection)).insert(event.to_hash)
+    @tmphash=event.to_hash
+    @tmphash['@timestamp']=event.ruby_timestamp
+    @mongodb.collection(event.sprintf(@collection)).insert(@tmphash)
   end # def receive
 end # class LogStash::Outputs::Mongodb
