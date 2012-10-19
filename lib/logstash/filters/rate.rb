@@ -47,10 +47,10 @@ class LogStash::Filters::Rate < LogStash::Filters::Base
   public
   def register
     @interval_seconds = Time::Unit.parse(@interval.tr(" ", "")).seconds
-    @logger.debug("Registered rate plugin", :type => @type, :config => @config)
     @rate_method = method("rate_#{mode}")
     @rate_threshold = threshold.to_f / @interval_seconds
     send("prepare_#{mode}")
+    @logger.debug("Registered rate plugin", :type => @type, :config => @config, :interval_seconds => @interval_seconds, :rate_threshold => @rate_threshold)
   end # def register
 
   def filter(event)
@@ -89,9 +89,9 @@ class LogStash::Filters::Rate < LogStash::Filters::Base
   end
 
   def rate_COUNT(event, stream_id, event_time)
-    now = ::LogStash::Time.now_f
-    @counters[stream_id].delete_if { |e| e < now - @interval_seconds } if @counters[stream_id].any?
     @counters[stream_id].push event_time
+    max_time = @counters[stream_id].max
+    @counters[stream_id].delete_if { |e| e < max_time - @interval_seconds } if @counters[stream_id].any?
     value = @counters[stream_id].count.to_f / @interval_seconds
     logger.debug("Current rate: #{value}", :event => event, :stream_id => stream_id)
     value
