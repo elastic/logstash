@@ -1,4 +1,28 @@
 require "test_utils"
+require "redis"
+
+class Redis
+  def initialize(*args)
+    @@data ||= Hash.new { |h,k| h[k] = [] }
+  end
+
+  def rpush(key, value)
+    @@data[key] << value
+  end
+
+  def llen(key)
+    @@data[key].length
+  end
+
+  def lpop(key)
+    @@data[key].shift
+  end
+
+  def blpop(key, timeout=0)
+    sleep 0.1 while llen(key) == 0
+    return "whatever", lpop(key)
+  end
+end # class Redis
 
 describe "inputs/redis" do
   extend LogStash::RSpec
