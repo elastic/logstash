@@ -466,6 +466,7 @@ class LogStash::Agent
       if @plugins.values.count { |p| p.alive? } == 0
         @logger.warn("no plugins running, shutting down")
         shutdown
+        break
       end
       @logger.debug("heartbeat")
     end
@@ -484,7 +485,18 @@ class LogStash::Agent
     shutdown_plugins(@plugins)
     # When we get here, all inputs have finished, all messages are done
     @logger.info("Shutdown complete")
-    exit(0)
+
+    # The 'unless $TESTING' is a hack for now to work around the test suite
+    # needing the pipeline to finish cleanly. We should just *not* exit here,
+    # but many plugins don't shutdown correctly. Fixing that shutdown problem
+    # will require a new pipeline design that has shutdown contracts built-in
+    # to the plugin<->agent protocol.
+    #
+    # For now, to make SIGINT/SIGTERM actually shutdown, exit. Unless we are
+    # testing, in which case wait properly for shutdown. Shitty solution, but
+    # whatever. We'll hopefully have a new pipeline/plugin protocol design
+    # shortly (by November 2012?) that will resolve this hack.
+    exit(0) unless $TESTING
   end # def shutdown
 
   def shutdown_plugins(plugins)
