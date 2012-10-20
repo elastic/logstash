@@ -305,8 +305,21 @@ module LogStash::Config::Mixin
             if value.size % 2 == 1
               return false, "This field must contain an even number of items, got #{value.size}"
             end
-            # Use Hash[] (works in 1.8.7, anyway) to coerce into a hash.
-            result = Hash[*value]
+
+            # Convert the array the config parser produces into a hash.
+            result = {}
+            value.each_slice(2) do |key, value|
+              entry = result[key]
+              if entry.nil?
+                result[key] = value
+              else
+                if entry.is_a?(Array)
+                  entry << value
+                else
+                  result[key] = [entry, value]
+                end
+              end
+            end
           when :array
             result = value
           when :string
