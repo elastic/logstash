@@ -4,23 +4,6 @@ require "redis"
 describe "inputs/redis" do
   extend LogStash::RSpec
 
-  before :each do
-    service = File.join(File.dirname(__FILE__), "../../test/services/redis")
-    system("make -C '#{service}' build")
-    redis = Dir.glob(File.join(service, "redis*/src/redis-server")).first
-    @redis_proc = IO.popen("cd '#{service}'; exec '#{redis}' 2>&1", "r")
-    Thread.new do
-      @redis_proc.each do |line|
-        puts "redis[#{@redis_proc.pid}]: #{line.chomp}"
-      end
-    end
-  end
-
-  after :each do
-    Process.kill("KILL", @redis_proc.pid)
-    Process.wait(@redis_proc.pid)
-  end
-
   describe "read events from a list" do
     key = 10.times.collect { rand(10).to_s }.join("")
     event_count = 1000 + rand(50)
