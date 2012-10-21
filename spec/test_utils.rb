@@ -110,4 +110,3 @@ class Shiftback
     @block.call(event)
   end
 end # class Shiftback
-
