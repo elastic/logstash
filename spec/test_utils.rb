@@ -14,7 +14,6 @@ end
 
 module LogStash
   module RSpec
-    
     def config(configstr)
       @config_str = configstr
     end # def config
@@ -87,7 +86,7 @@ module LogStash
       # scoping is hard, let's go shopping!
       config_str = @config_str
       describe "agent(#{@agent_count}) #{caller[1]}" do
-        before :all do
+        before :each do
           start = ::Time.now
           @agent = LogStash::Agent.new
           @agent.run(["-e", config_str])
@@ -98,6 +97,7 @@ module LogStash
       end
       @agent_count += 1
     end # def agent
+
   end # module RSpec
 end # module LogStash
 
