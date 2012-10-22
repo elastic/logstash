@@ -15,8 +15,8 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample "" do
-      insist { subject["new_field"]} == ["new_value", "new_value_2"]
+    sample "example" do
+      insist { subject["new_field"] } == ["new_value", "new_value_2"]
     end
   end
 
@@ -31,11 +31,11 @@ describe LogStash::Filters::NOOP do
     CONFIG
 
     sample({"@type" => "noop"})  do
-      insist { subject.tags} == ["test"]
+      insist { subject.tags } == ["test"]
     end
 
     sample({"@type" => "not_noop"})  do
-      insist { subject.tags} == []
+      insist { subject.tags } == []
     end
   end
 

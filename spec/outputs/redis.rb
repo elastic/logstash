@@ -1,6 +1,8 @@
 require "test_utils"
+require "logstash/outputs/redis"
+require "redis"
 
-describe "outputs/redis" do
+describe LogStash::Outputs::Redis do
   extend LogStash::RSpec
 
   describe "ship lots of events to a list" do

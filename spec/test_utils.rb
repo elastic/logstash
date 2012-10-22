@@ -3,6 +3,7 @@ require "logstash/event"
 require "insist"
 require "stud/try"
 
+$TESTING = true
 if RUBY_VERSION < "1.9.2"
   $stderr.puts "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
   $stderr.puts "Options for fixing this: "
@@ -13,7 +14,6 @@ end
 
 module LogStash
   module RSpec
-    
     def config(configstr)
       @config_str = configstr
     end # def config
@@ -86,7 +86,7 @@ module LogStash
       # scoping is hard, let's go shopping!
       config_str = @config_str
       describe "agent(#{@agent_count}) #{caller[1]}" do
-        before :all do
+        before :each do
           start = ::Time.now
           @agent = LogStash::Agent.new
           @agent.run(["-e", config_str])
@@ -97,6 +97,7 @@ module LogStash
       end
       @agent_count += 1
     end # def agent
+
   end # module RSpec
 end # module LogStash
 
@@ -109,4 +110,3 @@ class Shiftback
     @block.call(event)
   end
 end # class Shiftback
-
