@@ -5,10 +5,14 @@ require "logstash/util/relp"
 
 # Read RELP events over a TCP socket.
 #
-#Application level acknowledgements allow assurance of no message loss.
+# For more information about RELP, see 
+# <http://www.rsyslog.com/doc/imrelp.html>
 #
-#This only functions as far as messages being put into the queue for filters- 
-# anything lost after that point will not be retransmitted
+# This protocol implements application-level acknowledgements to help protect
+# against message loss.
+#
+# Message acks only function as far as messages being put into the queue for
+# filters; anything lost after that point will not be retransmitted
 class LogStash::Inputs::Relp < LogStash::Inputs::Base
 
   config_name "relp"

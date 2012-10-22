@@ -2,7 +2,7 @@ require "logstash/filters/base"
 require "logstash/namespace"
 require "uri"
 
-# The urldecode filter is for decoding events that are urlencoded.
+# The urldecode filter is for decoding fields that are urlencoded.
 class LogStash::Filters::Urldecode < LogStash::Filters::Base
   config_name "urldecode"
   plugin_status "beta"

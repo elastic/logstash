@@ -1,8 +1,17 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
-# Many log formats are somewhat structured plain-text forms which use 'foo=bar'
-# to indicate log fields.
+# This filter helps automatically parse messages which are of the 'foo=bar'
+# variety.
+#
+# For example, if you have a log message which contains 'ip=1.2.3.4
+# error=REFUSED', you can parse those automatically by doing:
+# 
+#   filter {
+#     kv { }
+#   }
+#
+# And you will get field 'ip' == "1.2.3.4" etc.
 class LogStash::Filters::KV < LogStash::Filters::Base
   config_name "kv"
   plugin_status "beta"
