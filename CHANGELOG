@@ -13,6 +13,8 @@
  - The old '-vvv' setting ruby's internal $DEBUG is now gone. It was causing
    too much confusion for users due to noise.
  - Improved 'logstash event' creation speed by 3.5x
+ - Now uses JRuby 1.7.0
+ - Now ships with Elasticsearch 0.19.10
 
  ## inputs
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
@@ -27,7 +29,7 @@
  - log4j input: now supports MDC 'event properties' which are stored as fields
    in the logstash event. (#216, #179. Patches by Charles Robertson and Jurjan
    Woltman)
- - pipe input: fixed to actually work now.
+ - pipe input: should work now.
 
  ## filters
  - new: kv: useful for parsing log formats taht use 'foo=bar baz=fizz' and
@@ -56,6 +58,8 @@
  - improvement: date: add TAI64N support
  - improvement: date: subsecond precision on UNIX timestamps is retained on
    conversion (#213, Patch by Ralph Meijer)
+ - improvement: date: Add locale setting; useful for day/month name parsing.
+   (#100, Patch by Christian Schröder)
 
  ## outputs
  - new: exec: run arbitrary commands based on an event.
