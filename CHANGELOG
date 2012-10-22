@@ -75,6 +75,8 @@
  - gelf output: correct severity level mappings (patch by Jason Koppe)
  - xmpp output: users and rooms are separate config settings now (patch by
    Parker DeBardelaben)
+ - improvement: redis: 'host' setting now accepts a list of hosts for failover
+   of writes should the current host go down. (#222, patch by Corry Haines)
 
 1.1.1 (July 14, 2012)
  ## Overview of this release:
