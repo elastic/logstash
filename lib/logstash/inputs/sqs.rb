@@ -12,11 +12,13 @@ require "logstash/namespace"
 # what the pricing schedule looks like and how to setup a queue.
 #
 # To use this plugin, you *must*:
+#
 #  * Have an AWS account
 #  * Setup an SQS queue
 #  * Create an identify that has access to consume messages from the queue.
 #
 # The "consumer" identity must have the following permissions on the queue:
+#
 #  * sqs:ChangeMessageVisibility
 #  * sqs:ChangeMessageVisibilityBatch
 #  * sqs:DeleteMessage
