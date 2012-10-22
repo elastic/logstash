@@ -39,6 +39,7 @@ class LogStash::Agent
     # flag/config defaults
     @verbose = 0
     @filterworker_count = 1
+    @watchdog_timeout = 10
 
     @plugins = {}
     @plugins_mutex = Mutex.new
@@ -89,6 +90,10 @@ class LogStash::Agent
         raise ArgumentError, "filter worker count must be > 0"
       end
     end # -w
+
+    opts.on("--watchdog-timeout TIMEOUT", "Set watchdog timeout value") do |arg|
+      @watchdog_timeout = arg.to_f
+    end # --watchdog-timeout
 
     opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
       @logfile = path
@@ -438,7 +443,8 @@ class LogStash::Agent
       end # if @filters.length > 0
 
       # A thread to supervise filter workers
-      watchdog = LogStash::ThreadWatchdog.new(@filterworkers.values)
+      watchdog = LogStash::ThreadWatchdog.new(@filterworkers.values,
+                                              @watchdog_timeout)
       watchdog.logger = logger
       Thread.new do
         watchdog.watch
