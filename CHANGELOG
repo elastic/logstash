@@ -1,7 +1,10 @@
-1.1.2 (???, 2012)
+1.1.2 (October 22 2012)
  ## Overview of this release:
-
- ## IMPORTANT CHANGES FOR UPGRADES FROM 1.1.1
+  * New input plugins: lumberjack, sqs, relp
+  * New output plugins: exec, sqs
+  * New filter plugins: kv, geoip, urldecode, alter
+  * file input supports backfill via 'start_position'
+  * filter watchdog timer set to 10 seconds (was 2 seconds)
 
  ## general
  - Stopped using 'Gemfile' for dependencies, the logstash.gemspec has returned.
