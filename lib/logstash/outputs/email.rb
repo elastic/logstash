@@ -2,7 +2,7 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 
 
-class LogStash::Outputs::Email < LogStash::Outputs::base
+class LogStash::Outputs::Email < LogStash::Outputs::Base
 
   config_name "email"
   plugin_status "experimental"
