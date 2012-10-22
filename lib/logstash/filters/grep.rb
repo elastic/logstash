@@ -56,6 +56,22 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
 
     @logger.debug("Running grep filter", :event => event, :config => config)
     matches = 0
+
+    # If negate is set but no patterns are given, drop the event.
+    # This is useful in cases where you want to drop all events with
+    # a given type or set of tags
+    #
+    # filter {
+    #   grep {
+    #     negate => true
+    #     type => blah
+    #   }
+    # }
+    if @negate && @patterns.empty?
+      event.cancel
+      return
+    end
+
     @patterns.each do |field, regexes|
       # For each match object, we have to match everything in order to
       # apply any fields/tags.

@@ -27,6 +27,7 @@
  - log4j input: now supports MDC 'event properties' which are stored as fields
    in the logstash event. (#216, #179. Patches by Charles Robertson and Jurjan
    Woltman)
+ - pipe input: fixed to actually work now.
 
  ## filters
  - new: kv: useful for parsing log formats taht use 'foo=bar baz=fizz' and
