@@ -132,4 +132,18 @@ describe LogStash::Filters::Date do
       end
     end # times.each
   end
+
+  describe "failed parses should not cause a failure (LOGSTASH-641)" do
+    config <<-CONFIG
+      filter {
+        date {
+          mydate => [ "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+        }
+      }
+    CONFIG
+
+    sample "@fields" => { "mydate" => "Jun 12 11:22:33" } do
+      # nothing to do, if this crashes it's an error..
+    end
+  end
 end
