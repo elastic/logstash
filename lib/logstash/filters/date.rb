@@ -19,6 +19,7 @@ require "logstash/time"
 # set in the event. For example, with file input, the timestamp is set to the
 # time of reading.
 class LogStash::Filters::Date < LogStash::Filters::Base
+  JavaException = java.lang.Exception
 
   config_name "date"
   plugin_status "stable"
@@ -175,7 +176,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
               time = parser.call(value)
               success = true
               break # success
-            rescue => e
+            rescue StandardError, JavaException => e
               last_exception = e
             end
           end # fieldparsers.each
