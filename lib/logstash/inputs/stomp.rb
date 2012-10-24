@@ -58,6 +58,13 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
       e = to_event(msg.body, @stomp_url)
       @output_queue << e if e
     end
+    #In the event that there is only Stomp input plugin instances
+    #the process ends prematurely. The above code runs, and return
+    #the flow control to the 'run' method below. After that, the
+    #method "run_input" from agent.rb marks 'done' as 'true' and calls
+    #'finish' over the Stomp plugin instance.
+    #'Sleeping' the plugin leves the instance alive.
+    sleep
   end
 
   public
