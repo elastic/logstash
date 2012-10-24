@@ -71,7 +71,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     return unless filter?(event)
 
     if !@container.nil?
-      event[@container]=Hash.new
+      @kv_keys=Hash.new
     end
     @fields.each do |fieldname|
       value = event[fieldname]
@@ -83,6 +83,12 @@ class LogStash::Filters::KV < LogStash::Filters::Base
           @logger.warn("kv filter has no support for this type of data",
                        :type => value.type, :value => value)
       end # case value
+    end
+    if !@container.nil?
+      # If we didn't add any keys, delete the hash
+      if @kv_keys.length > 0
+        event[@container]=@kv_keys
+      end
     end
   end # def filter
 
@@ -97,7 +103,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       end
       key = @prefix + key
       if !@container.nil?
-        event[@container][key] = value
+	@kv_keys[key] = value
       else
         event[key] = value
       end
