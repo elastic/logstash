@@ -49,12 +49,14 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # A string to prepend to all of the extracted keys
   #
   # Example, to prepend arg_ to all keys:
+  #
   #     filter { kv { prefix => "arg_" } }
   config :prefix, :validate => :string
 
   # The name of the container to put all of the key-value pairs into 
   #
   # Example, to place all keys into container kv:
+  #
   #     filter { kv { conatiner => "kv" } }
   config :container, :validate => :string
 
