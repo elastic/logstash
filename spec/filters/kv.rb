@@ -23,6 +23,88 @@ describe LogStash::Filters::KV do
 
   end
 
+  describe "test value_split" do
+    config <<-CONFIG
+      filter {
+        kv { value_split => ':' }
+      }
+    CONFIG
+
+    sample "hello:=world foo:bar baz=:fizz doublequoted:\"hello world\" singlequoted:'hello world'" do
+      insist { subject["hello"] } == "=world"
+      insist { subject["foo"] } == "bar"
+      insist { subject["baz="] } == "fizz"
+      insist { subject["doublequoted"] } == "hello world"
+      insist { subject["singlequoted"] } == "hello world"
+    end
+
+  end
+
+  describe "test field_split" do
+    config <<-CONFIG
+      filter {
+        kv { field_split => '?&' }
+      }
+    CONFIG
+
+    sample "?hello=world&foo=bar&baz=fizz&doublequoted=\"hello world\"&singlequoted='hello world'&ignoreme&foo12=bar12" do
+      insist { subject["hello"] } == "world"
+      insist { subject["foo"] } == "bar"
+      insist { subject["baz"] } == "fizz"
+      insist { subject["doublequoted"] } == "hello world"
+      insist { subject["singlequoted"] } == "hello world"
+      insist { subject["foo12"] } == "bar12"
+    end
+
+  end
+
+  describe "test prefix" do
+    config <<-CONFIG
+      filter {
+        kv { prefix => '__' }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["__hello"] } == "world"
+      insist { subject["__foo"] } == "bar"
+      insist { subject["__baz"] } == "fizz"
+      insist { subject["__doublequoted"] } == "hello world"
+      insist { subject["__singlequoted"] } == "hello world"
+    end
+
+  end
+
+  describe "test container" do
+    config <<-CONFIG
+      filter {
+        kv { container => 'kv' }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["kv"]["hello"] } == "world"
+      insist { subject["kv"]["foo"] } == "bar"
+      insist { subject["kv"]["baz"] } == "fizz"
+      insist { subject["kv"]["doublequoted"] } == "hello world"
+      insist { subject["kv"]["singlequoted"] } == "hello world"
+    end
+
+  end
+
+  describe "test empty container" do
+    config <<-CONFIG
+      filter {
+        kv { container => 'kv' }
+      }
+    CONFIG
+
+    sample "hello:world:foo:bar:baz:fizz" do
+      insist { subject["kv"] } == nil
+    end
+
+  end
+
   describe "speed test" do
     count = 10000 + rand(3000)
     config <<-CONFIG
