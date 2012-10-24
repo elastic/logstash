@@ -28,13 +28,49 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     filter { kv { trim => "<>," } }
   config :trim, :validate => :string
 
+
+  # A string of characters to use as delimiters for parsing out key-value pairs.
+  #
+  # Example, to split out the args from a string such as
+  # '?pin=12345~0&d=123&e=foo@bar.com&oq=bobo&ss=12345':
+  # 
+  #     filter { kv { field_split => "&?" } }
+  config :field_split, :validate => :string
+
+
+  # A string of characters to use as delimiters for identifying key-value relations.
+  #
+  # Example, to identify key-values such as
+  # 'key1:value1 key2:value2':
+  # 
+  #     filter { kv { value_split => ":" } }
+  config :value_split, :validate => :string
+
+  # A string to prepend to all of the extracted keys
+  #
+  # Example, to prepend arg_ to all keys:
+  #     filter { kv { prefix => "arg_" } }
+  config :prefix, :validate => :string
+
+  # The name of the container to put all of the key-value pairs into 
+  #
+  # Example, to place all keys into container kv:
+  #     filter { kv { conatiner => "kv" } }
+  config :container, :validate => :string
+
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
+    @value_split = @value_split || '='
+    @field_split = @field_split || ''
+    @prefix = @prefix || ''
   end # def register
 
   def filter(event)
     return unless filter?(event)
 
+    if !@container.nil?
+      event[@container]=Hash.new
+    end
     @fields.each do |fieldname|
       value = event[fieldname]
 
@@ -51,13 +87,18 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   private
   def parse(text, event)
     #text.scan(/([^ =]+)=("[^"]+"|'[^']+'|[^ ]+)/) do |key, value|
-    text.scan(/([^ =]+)=(?:"([^"]+)"|'([^']+)'|([^ ]+))/) do |key, v1, v2, v3|
+    scan_re =Regexp.new("([^ ="+@field_split+"]+)["+@value_split+"](?:\"([^\""+@field_split+"]+)\"|'([^'"+@field_split+"]+)'|([^ "+@field_split+"]+))")
+    text.scan(scan_re) do |key, v1, v2, v3|
       value = v1 || v2 || v3
       if !@trim.nil?
         value = value.gsub(@trim_re, "")
       end
-
-      event[key] = value
+      key = @prefix + key
+      if !@container.nil?
+        event[@container][key] = value
+      else
+        event[key] = value
+      end
     end
   end
 end # class LogStash::Filter::KV
