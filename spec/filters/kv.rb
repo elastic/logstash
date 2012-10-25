@@ -19,6 +19,7 @@ describe LogStash::Filters::KV do
       insist { subject["baz"] } == "fizz"
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
+      insist {subject['@fields'].count } == 5
     end
 
   end
@@ -36,6 +37,7 @@ describe LogStash::Filters::KV do
       insist { subject["baz="] } == "fizz"
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
+      insist {subject['@fields'].count } == 5
     end
 
   end
@@ -54,6 +56,7 @@ describe LogStash::Filters::KV do
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
       insist { subject["foo12"] } == "bar12"
+      insist {subject['@fields'].count } == 6
     end
 
   end
@@ -71,6 +74,7 @@ describe LogStash::Filters::KV do
       insist { subject["__baz"] } == "fizz"
       insist { subject["__doublequoted"] } == "hello world"
       insist { subject["__singlequoted"] } == "hello world"
+      insist {subject['@fields'].count } == 5
     end
 
   end
@@ -88,6 +92,7 @@ describe LogStash::Filters::KV do
       insist { subject["kv"]["baz"] } == "fizz"
       insist { subject["kv"]["doublequoted"] } == "hello world"
       insist { subject["kv"]["singlequoted"] } == "hello world"
+      insist {subject['@fields']["kv"].count } == 5
     end
 
   end
@@ -101,6 +106,7 @@ describe LogStash::Filters::KV do
 
     sample "hello:world:foo:bar:baz:fizz" do
       insist { subject["kv"] } == nil
+      insist {subject['@fields'].count } == 0
     end
 
   end
