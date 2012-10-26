@@ -79,6 +79,8 @@ copy-ruby-files: | build/ruby
 	| (cd lib; cpio -p --make-directories ../build/ruby)
 	$(QUIET)find ./test -name '*.rb' | sed -e 's,^\./test/,,' \
 	| (cd test; cpio -p --make-directories ../build/ruby)
+	$(QUIET)find ./spec -name '*.rb' | sed -e 's,^\./spec/,,' \
+	| (cd spec; cpio -p --make-directories ../build/ruby)
 
 vendor:
 	$(QUIET)mkdir $@
