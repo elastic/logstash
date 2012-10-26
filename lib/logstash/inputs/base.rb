@@ -40,16 +40,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # This can help with processing later.
   config :tags, :validate => :array
 
-  #config :tags, :validate => (lambda do |value|
-    #re = /^[A-Za-z0-9_]+$/
-    #value.each do |v|
-      #if v !~ re
-        #return [false, "Tag '#{v}' does not match #{re}"]
-      #end # check 'v'
-    #end # value.each
-    #return true
-  #end) # config :tag
-
   # Add a field to an event
   config :add_field, :validate => :hash, :default => {}
 
@@ -117,8 +107,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
         event.message = raw
       end
 
-      # If event source is unknown, this json_event is missing a @source, set it
-      # from the to_event source value.
       if event.source == "unknown"
         event.source = source
       end

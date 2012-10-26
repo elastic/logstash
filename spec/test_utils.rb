@@ -3,6 +3,7 @@ require "logstash/event"
 require "insist"
 require "stud/try"
 
+$TESTING = true
 if RUBY_VERSION < "1.9.2"
   $stderr.puts "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
   $stderr.puts "Options for fixing this: "
@@ -13,7 +14,6 @@ end
 
 module LogStash
   module RSpec
-    
     def config(configstr)
       @config_str = configstr
     end # def config
@@ -27,18 +27,43 @@ module LogStash
         plugin.register
       end
 
-      filters = @filters
-      describe event do
-        if event.is_a?(String)
-          subject { LogStash::Event.new("@message" => [event]) }
-        else
-          subject { LogStash::Event.new(event) }
-        end
+      multiple_events = event.is_a?(Array)
 
+      filters = @filters
+      name = event.to_s
+      name = name[0..50] + "..." if name.length > 50
+      describe "\"#{name}\"" do
         before :all do
-          filters.each do |filter|
-            filter.filter(subject)
+          # Coerce to an array of LogStash::Event
+          event = [event] unless event.is_a?(Array)
+          event = event.collect do |e| 
+            if e.is_a?(String)
+              LogStash::Event.new("@message" => e)
+            else
+              LogStash::Event.new(e)
+            end
           end
+          
+          results = []
+          event.each do |e|
+            filters.each do |filter|
+              next if e.cancelled?
+              filter.filter(e)
+            end
+            results << e unless e.cancelled?
+          end
+
+          filters.select { |f| f.respond_to?(:flush) }.each do |filter|
+            event = filter.flush 
+            results += event if event
+          end
+
+          @results = results
+        end
+        if multiple_events
+          subject { @results }
+        else
+          subject { @results.first }
         end
         it("when processed", &block)
       end
@@ -61,7 +86,7 @@ module LogStash
       # scoping is hard, let's go shopping!
       config_str = @config_str
       describe "agent(#{@agent_count}) #{caller[1]}" do
-        before :all do
+        before :each do
           start = ::Time.now
           @agent = LogStash::Agent.new
           @agent.run(["-e", config_str])
@@ -72,5 +97,16 @@ module LogStash
       end
       @agent_count += 1
     end # def agent
+
   end # module RSpec
 end # module LogStash
+
+class Shiftback
+  def initialize(&block)
+    @block = block
+  end
+
+  def <<(event)
+    @block.call(event)
+  end
+end # class Shiftback

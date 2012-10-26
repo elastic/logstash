@@ -3,19 +3,22 @@
 #   cpio
 #   wget or curl
 #
-JRUBY_VERSION=1.6.7.2
-ELASTICSEARCH_VERSION=0.19.9
+JRUBY_VERSION=1.7.0
+ELASTICSEARCH_VERSION=0.19.10
 JODA_VERSION=2.1
-VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
+#VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
+VERSION=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb )
 
-JRUBY_CMD=build/jruby/jruby-$(JRUBY_VERSION)/bin/jruby
-WITH_JRUBY=bash $(JRUBY_CMD) --1.9 -S
-JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
+WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
-JRUBYC=java -Djruby.compat.version=RUBY1_9 -jar $(PWD)/$(JRUBY) -S jrubyc
+JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
+JRUBY_CMD=java -jar $(JRUBY)
+JRUBYC=$(WITH_JRUBY) jrubyc
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 JODA=vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
+GEOIP=vendor/geoip/GeoCityLite.dat
+GEOIP_URL=http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 GEM_HOME=build/gems
 QUIET=@
@@ -66,7 +69,7 @@ compile: compile-grammar compile-runner | build/ruby
 .PHONY: compile-runner
 compile-runner: build/ruby/logstash/runner.class
 build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
-	$(QUIET)(cd lib; JRUBY_OPTS=--1.9 $(JRUBYC) -t ../build/ruby logstash/runner.rb)
+	$(QUIET)(cd lib; $(JRUBYC) -5 -t ../build/ruby logstash/runner.rb)
 
 # TODO(sissel): Stop using cpio for this
 .PHONY: copy-ruby-files
@@ -85,24 +88,9 @@ vendor/jar: | vendor
 
 build-jruby: $(JRUBY)
 
-$(JRUBY): build/jruby/jruby-$(JRUBY_VERSION)/lib/jruby-complete.jar | vendor/jar
-	$(QUIET)cp $< $@
-
-build/jruby: build
-	$(QUIET)mkdir -p $@
-
-$(JRUBY_CMD): build/jruby/jruby-$(JRUBY_VERSION)/lib/jruby-complete.jar
-build/jruby/jruby-$(JRUBY_VERSION)/lib/jruby-complete.jar: build/jruby/jruby-$(JRUBY_VERSION)
-	# Build jruby from source targeted at 1.9 - patch that, yo.
-	$(QUIET)sed -i -e 's/jruby.default.ruby.version=.*/jruby.default.ruby.version=1.9/' $</default.build.properties
-	$(QUIET)(cd $<; ant jar-jruby-complete)
-
-build/jruby/jruby-$(JRUBY_VERSION): build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz
-	$(QUIET)tar -C build/jruby/ $(TAR_OPTS) -zxf $<
-
-build/jruby/jruby-src-$(JRUBY_VERSION).tar.gz: | wget-or-curl build/jruby
-	@echo "=> Fetching jruby source"
-	$(QUIET)$(DOWNLOAD_COMMAND) $@ http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-src-$(JRUBY_VERSION).tar.gz
+$(JRUBY): | vendor/jar
+	$(QUIET)echo " ==> Downloading jruby $(JRUBY_VERSION)"
+	$(QUIET)$(DOWNLOAD_COMMAND) $@ http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)/jruby-complete-$(JRUBY_VERSION).jar
 
 vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | wget-or-curl vendor/jar
 	@echo "=> Fetching elasticsearch"
@@ -125,6 +113,13 @@ vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz: | wget-or-curl vendor/jar
 vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar: vendor/jar/joda-time-$(JODA_VERSION)-dist.tar.gz | vendor/jar
 	tar -C vendor/jar -zxf $< joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
 
+vendor/geoip: | vendor
+	$(QUIET)mkdir $@
+
+$(GEOIP): | vendor/geoip
+	$(QUIET)wget -q -O - http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz \
+		| gzip -dc - > $@
+
 # Always run vendor/bundle
 .PHONY: fix-bundler
 fix-bundler:
@@ -133,14 +128,14 @@ fix-bundler:
 .PHONY: vendor-gems
 vendor-gems: | vendor/bundle
 
-$(GEM_HOME)/bin/bundle: | $(JRUBY_CMD)
+$(GEM_HOME)/bin/bundle: | $(JRUBY)
 	@echo "=> Installing bundler ($@)"
 	$(QUIET)GEM_HOME=$(GEM_HOME) $(WITH_JRUBY) gem install bundler
 
 .PHONY: vendor/bundle
 vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
 	@echo "=> Installing gems to $@..."
-	$(QUIET)GEM_HOME=$(GEM_HOME) bash $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
+	$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
 	-rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
@@ -148,6 +143,7 @@ vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
 	-rm -rf $@/jruby/1.9/gems/*/spec $@/jruby/1.9/gems/*/test
 	@# Purge any comments in ruby code.
 	@#-find $@/jruby/1.9/gems/ -name '*.rb' | xargs -n1 sed -i -re '/^[ \t]*#/d; /^[ \t]*$$/d'
+	touch $@
 
 build:
 	-$(QUIET)mkdir -p $@
@@ -159,7 +155,7 @@ build/ruby: | build
 # TODO(sissel): Skip sigar?
 # Run this one always? Hmm..
 .PHONY: build/monolith
-build/monolith: $(ELASTICSEARCH) $(JRUBY) $(JODA) vendor-gems | build
+build/monolith: $(ELASTICSEARCH) $(JRUBY) $(JODA) $(GEOIP) vendor-gems | build
 build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
@@ -183,6 +179,7 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)rm -f $@/META-INF/*.SF
 	-$(QUIET)rm -f $@/META-INF/NOTICE $@/META-INF/NOTICE.txt
 	-$(QUIET)rm -f $@/META-INF/LICENSE $@/META-INF/LICENSE.txt
+	$(QUIET)cp $(GEOIP) $@/
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
@@ -206,8 +203,8 @@ update-jar: copy-ruby-files
 	$(QUIET)jar uf build/logstash-$(VERSION)-monolithic.jar -C build/ruby .
 
 .PHONY: test
-test: | $(JRUBY_CMD) vendor-elasticsearch
-	$(QUIET)bash $(JRUBY_CMD) bin/logstash test
+test: | $(JRUBY) vendor-elasticsearch
+	$(QUIET)$(JRUBY_CMD) bin/logstash test
 
 .PHONY: docs
 docs: docgen doccopy docindex

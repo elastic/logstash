@@ -8,19 +8,19 @@ describe LogStash::Filters::Grep do
     # The logstash config goes here.
     # At this time, only filters are supported.
     config <<-CONFIG
-    filter {
-      grep {
-        "str" => "test"
+      filter {
+        grep {
+          "str" => "test"
+        }
       }
-    }
     CONFIG
 
     sample ({"@fields" => {"str" => "test: this should not be dropped"}}) do
-      reject { subject }.cancelled?
+      reject { subject }.nil?
     end
 
     sample ({"@fields" => {"str" => "foo: this should be dropped"}}) do
-      insist { subject }.cancelled?
+      insist { subject }.nil?
     end
   end
 
@@ -34,7 +34,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@fields" => {"str" => "foo: this should be dropped"}}) do
-      insist { subject }.cancelled?
+      insist { subject }.nil?
     end
   end
 
@@ -49,7 +49,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@fields" => {"str" => "foo: this should not be dropped"}}) do
-      reject { subject }.cancelled?
+      reject { subject }.nil?
     end
   end
 
@@ -64,7 +64,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@fields" => {"str" => "test: this should not be dropped", "bar" => "foo baz foo"}}) do
-      reject { subject }.cancelled?
+      reject { subject }.nil?
     end
   end
 
@@ -79,7 +79,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@fields" => {"str" => "test: this should be dropped", "bar" => "foo bAz foo"}}) do
-      insist { subject }.cancelled?
+      insist { subject }.nil?
     end
   end
 
@@ -93,7 +93,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@fields" => {"str" => "TeST regexp match FoO"}}) do
-      reject { subject }.cancelled?
+      reject { subject }.nil?
     end
   end
 
@@ -107,7 +107,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@fields" => {"str" => "TeST regexp match FoO"}}) do
-      insist { subject }.cancelled?
+      insist { subject }.nil?
     end
   end
 
@@ -122,7 +122,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@fields" => {"str" => "test"}}) do
-      reject { subject }.cancelled?
+      reject { subject }.nil?
       insist { subject["new_field"]} == ["new_value"]
     end
   end
@@ -138,7 +138,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@type" => "grepper", "@fields" => {"str" => "test"}}) do
-      reject { subject }.cancelled?
+      reject { subject }.nil?
       insist { subject["new_field"]} == [subject.type]
     end
   end
@@ -161,7 +161,7 @@ describe LogStash::Filters::Grep do
   #   CONFIG
   #
   #   sample ({"@type" => "grepper", "@fields" => {"str" => "test"}}) do
-  #     reject { subject }.cancelled?
+  #     reject { subject }.nil?
   #     insist { subject["new_field"]} == ["new_value", "new_value_2"]
   #   end
   # end
@@ -177,7 +177,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@tags" => ["tag"], "@fields" => {"str" => "test"}}) do
-      reject { subject }.cancelled?
+      reject { subject }.nil?
       insist { subject.tags} == ["tag", "new_tag"]
     end
   end
@@ -194,7 +194,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@tags" => ["tag"], "@fields" => {"str" => "test"}}) do
-      reject { subject }.cancelled?
+      reject { subject }.nil?
       insist { subject.tags} == ["tag", "new_tag"]
     end
   end
@@ -211,7 +211,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@tags" => ["tag"], "@fields" => {"str" => "non-matching"}}) do
-      reject { subject }.cancelled?
+      reject { subject }.nil?
       insist { subject.tags} == ["tag"]
     end
   end
@@ -227,7 +227,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@tags" => ["tag"], "@fields" => {"str" => "test"}}) do
-      reject { subject }.cancelled?
+      reject { subject }.nil?
       insist { subject.tags} == ["tag", subject["str"]]
     end
   end
@@ -246,12 +246,12 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@tags" => ["tag"], "@fields" => {"str" => nil}}) do
-      reject { subject }.cancelled?
+      reject { subject }.nil?
     end
   end
 
   #LOGSTASH-599
-  describe "drop line based on type-tags 'matching' only but no pattern matching" do
+  describe "drop line based on type and tags 'matching' only but otherwise pattern matching" do
     config <<-CONFIG
     filter {
       grep {
@@ -263,7 +263,7 @@ describe LogStash::Filters::Grep do
     CONFIG
 
     sample ({"@type" => "testing", "@tags" => ["_grokparsefailure"], "@fields" => {"str" => "test"}}) do
-      insist { subject }.cancelled?
+      insist { subject }.nil?
     end
   end
 end

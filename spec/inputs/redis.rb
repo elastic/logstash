@@ -1,19 +1,8 @@
 require "test_utils"
-
-
-class Shiftback
-  def initialize(&block)
-    @block = block
-  end
-
-  def <<(event)
-    @block.call(event)
-  end
-end # class Shiftback
+require "redis"
 
 describe "inputs/redis" do
   extend LogStash::RSpec
-  require "redis"
 
   describe "read events from a list" do
     key = 10.times.collect { rand(10).to_s }.join("")
@@ -31,12 +20,14 @@ describe "inputs/redis" do
     CONFIG
 
     # populate the redis list
-    before :all do
+    before :each do
       require "logstash/event"
       redis = Redis.new(:host => "localhost")
       event_count.times do |value|
         event = LogStash::Event.new("@fields" => { "sequence" => value })
-        redis.rpush(key, event.to_json)
+        Stud::try(10.times) do
+          redis.rpush(key, event.to_json)
+        end
       end
     end
 

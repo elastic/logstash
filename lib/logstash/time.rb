@@ -14,7 +14,11 @@ module LogStash::Time
     DateTimeZone = org.joda.time.DateTimeZone
     def self.now
       # org.joda.time.DateTime#to_s returns the time in ISO8601 form :)
-      return DateTime.new(DateTimeZone::UTC).to_s
+      # Could call DateTime.new(DateTimeZone::UTC) but JRuby calls the
+      # DateTime#new(Object) constructor instead of the
+      # DateTime#new(DateTimeZone) constructor. I was unable to get java_send to invoke this constructor,
+      # so instead I have to do DateTime#new#withZone(UTC)
+      return DateTime.new.withZone(DateTimeZone::UTC).to_s
     end # def initialize
   else
     # Otherwise, use ruby stdlib Time, which is much slower than Joda.

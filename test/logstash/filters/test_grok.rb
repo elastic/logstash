@@ -3,7 +3,6 @@ require File.join(File.dirname(__FILE__), "..", "minitest")
 
 require "logstash"
 require "logstash/loadlibs"
-require "logstash/filters"
 require "logstash/filters/grok"
 require "logstash/event"
 
@@ -83,21 +82,16 @@ describe LogStash::Filters::Grok do
 
     iterations = 50000
 
-    start = Time.now
-    event = LogStash::Event.new
-    event.type = @typename
-
     logsource = "evita"
     timestamp = "Mar 16 00:01:25"
     message = "connect from camomile.cloud9.net[168.100.1.3]"
     program = "postfix/smtpd"
     pid = "1713"
 
-    event.message = "#{timestamp} #{logsource} #{program}[#{pid}]: #{message}"
-
-    check_interval = 997
+    message = "#{timestamp} #{logsource} #{program}[#{pid}]: #{message}"
+    start = Time.now
     1.upto(iterations).each do |i|
-      event.fields.clear
+      event = LogStash::Event.new("@message" => message, "@type" => @typename)
       @filter.filter(event)
     end
 

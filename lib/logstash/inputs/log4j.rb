@@ -7,7 +7,7 @@ require "timeout"
 # Read events over a TCP socket from Log4j SocketAppender.
 #
 # Can either accept connections from clients or connect to a server,
-# depending on `mode`. Sepending on mode, you need a matching SocketAppender or SocketHubAppender on the remote side
+# depending on `mode`. Depending on mode, you need a matching SocketAppender or SocketHubAppender on the remote side
 class LogStash::Inputs::Log4j < LogStash::Inputs::Base
 
   config_name "log4j"
@@ -69,6 +69,13 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
         }
         event_data["@fields"]["NDC"] = event_obj.getNDC() if event_obj.getNDC()
         event_data["@fields"]["stack_trace"] = event_obj.getThrowableStrRep().join("\n") if event_obj.getThrowableInformation()
+        
+        # Add the MDC context properties to '@fields'
+        if event_obj.getProperties()
+          event_obj.getPropertyKeySet().each do |key|
+            event_data["@fields"][key] = event_obj.getProperty(key)
+          end  
+        end  
 
         e = ::LogStash::Event.new event_data
         if e

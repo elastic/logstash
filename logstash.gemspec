@@ -54,6 +54,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "xml-simple"
   gem.add_runtime_dependency "xmpp4r", ["0.5"]
   gem.add_runtime_dependency "jls-lumberjack"
+  gem.add_runtime_dependency "geoip", [">= 1.1.0"]
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
@@ -73,5 +74,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "mocha"
   gem.add_development_dependency "shoulda"
   gem.add_development_dependency "rspec"
-  gem.add_development_dependency "insist", "0.0.6"
+  gem.add_development_dependency "insist", "0.0.7"
 end

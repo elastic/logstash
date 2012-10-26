@@ -122,8 +122,8 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     
     m["host"] = event.sprintf(@sender)
     m["file"] = event.sprintf(@file)
-    m["line"] = event.sprintf(@line)
-    m["line"] = Integer(m["line"]) if m["line"].is_a?(String) and m["line"] === /^[\d]+$/
+    m["line"] = event.sprintf(@line) if @line
+    m["line"] = m["line"].to_i if m["line"].is_a?(String) and m["line"] === /^[\d]+$/
 
     if @ship_metadata
       event.fields.each do |name, value|

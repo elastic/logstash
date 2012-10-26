@@ -1,7 +1,13 @@
-1.1.2 (???, 2012)
- ## Overview of this release:
+1.1.3 (October 22 2012)
+ - rebuilt 1.1.2 for java 5 and 6
 
- ## IMPORTANT CHANGES FOR UPGRADES FROM 1.1.1
+1.1.2 (October 22 2012)
+ ## Overview of this release:
+  * New input plugins: lumberjack, sqs, relp
+  * New output plugins: exec, sqs
+  * New filter plugins: kv, geoip, urldecode, alter
+  * file input supports backfill via 'start_position'
+  * filter watchdog timer set to 10 seconds (was 2 seconds)
 
  ## general
  - Stopped using 'Gemfile' for dependencies, the logstash.gemspec has returned.
@@ -13,19 +19,31 @@
  - The old '-vvv' setting ruby's internal $DEBUG is now gone. It was causing
    too much confusion for users due to noise.
  - Improved 'logstash event' creation speed by 3.5x
+ - Now uses JRuby 1.7.0
+ - Now ships with Elasticsearch 0.19.10
 
  ## inputs
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
- - new input: lumberjack: for use with the lumberjack log shipper 
+ - new: lumberjack: for use with the lumberjack log shipper 
    (https://github.com/jordansissel/lumberjack)
+ - new: sqs: Amazon SQS input (Patch by Sean Laurent, #211)
+ - new: relp: RELP (rsyslog) plugin (Patch by Mike Worth, #177)
  - file input: sincedb path is now automatically generated if not specified.
    This helps work around a problem where two file inputs don't specify a
    sincedb_path would clobber eachother (LOGSTASH-554)
  - file input: no longer crashes if HOME is not set in env (LOGSTASH-458)
+ - log4j input: now supports MDC 'event properties' which are stored as fields
+   in the logstash event. (#216, #179. Patches by Charles Robertson and Jurjan
+   Woltman)
+ - pipe input: should work now.
 
  ## filters
  - new: kv: useful for parsing log formats taht use 'foo=bar baz=fizz' and
    similar key-value-like things.
+ - new: urldecode: a filter for urldecoding fields in your event. (Patch by
+   Joey Imbasciano, LOGSTASH-612)
+ - new: geoip: query a local geoip database for location information (Patch by
+   Avishai Ish-Shalom, #208)
  - improvement: zeromq: an empty reply is now considered as a 'cancel this
    event' operation (LOGSTASH-574)
  - bugfix: mutate: fix bug in uppercase and lowercase feature that would
@@ -44,9 +62,14 @@
    'coalesce' feature which sets the value of a field to the first non-null
    value given in a list. (Patch by Francesco Salbaroli)
  - improvement: date: add TAI64N support
+ - improvement: date: subsecond precision on UNIX timestamps is retained on
+   conversion (#213, Patch by Ralph Meijer)
+ - improvement: date: Add locale setting; useful for day/month name parsing.
+   (#100, Patch by Christian Schröder)
 
  ## outputs
  - new: exec: run arbitrary commands based on an event.
+ - new: sqs: Amazon SQS output (Patch by Sean Laurent, #211)
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
  - improvement: redis: [LOGSTASH-573] retry on failure even in batch-mode. This
    also fixes a prior bug where an exception in batch mode would cause logstash
@@ -56,6 +79,10 @@
  - improvement: stdout: new 'dots' debug_format value emits one dot per event
    useful for tracking event rates.
  - gelf output: correct severity level mappings (patch by Jason Koppe)
+ - xmpp output: users and rooms are separate config settings now (patch by
+   Parker DeBardelaben)
+ - improvement: redis: 'host' setting now accepts a list of hosts for failover
+   of writes should the current host go down. (#222, patch by Corry Haines)
 
 1.1.1 (July 14, 2012)
  ## Overview of this release:
