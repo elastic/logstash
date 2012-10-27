@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    logstash (1.1.3-java)
+    logstash (1.1.4-java)
       addressable (= 2.2.6)
       aws-sdk
       bunny
@@ -10,7 +10,7 @@ PATH
       ffi
       ffi-rzmq (= 0.9.3)
       filewatch (= 0.5.0)
-      ftw (~> 0.0.20)
+      ftw (~> 0.0.21)
       gelf (= 1.3.2)
       gelfd (= 0.2.0)
       geoip (>= 1.1.0)
@@ -69,7 +69,7 @@ GEM
     ffi-rzmq (0.9.3)
       ffi
     filewatch (0.5.0)
-    ftw (0.0.20)
+    ftw (0.0.21)
       addressable (= 2.2.6)
       backports (= 2.3.0)
       cabin (> 0)
@@ -82,7 +82,7 @@ GEM
     geoip (1.2.0)
     gmetric (0.1.3)
     haml (3.1.7)
-    heroku (2.32.14)
+    heroku (2.33.0)
       heroku-api (~> 0.3.5)
       launchy (>= 0.3.2)
       netrc (~> 0.7.7)
@@ -156,8 +156,8 @@ GEM
     rspec-mocks (2.11.3)
     rubyzip (0.9.9)
     sass (3.2.1)
-    shoulda (3.3.1)
-      shoulda-context (~> 1.0)
+    shoulda (3.3.2)
+      shoulda-context (~> 1.0.1)
       shoulda-matchers (~> 1.4.1)
     shoulda-context (1.0.1)
     shoulda-matchers (1.4.1)
@@ -181,7 +181,6 @@ GEM
 
 PLATFORMS
   java
-  ruby
 
 DEPENDENCIES
   insist (= 0.0.7)
