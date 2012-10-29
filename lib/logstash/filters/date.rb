@@ -19,7 +19,7 @@ require "logstash/time"
 # set in the event. For example, with file input, the timestamp is set to the
 # time of reading.
 class LogStash::Filters::Date < LogStash::Filters::Base
-  JavaException = java.lang.Exception
+  JavaException = java.lang.Exception if RUBY_ENGINE == "jruby"
 
   config_name "date"
   plugin_status "stable"
