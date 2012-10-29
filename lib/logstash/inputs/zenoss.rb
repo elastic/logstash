@@ -34,6 +34,7 @@ class LogStash::Inputs::Zenoss < LogStash::Inputs::Amqp
   def register
     super
     require "logstash/util/zenoss"
+    require "bunny"
   end # def register
 
   def run(queue)
