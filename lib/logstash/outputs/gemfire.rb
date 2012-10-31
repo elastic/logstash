@@ -4,6 +4,12 @@ require "logstash/namespace"
 # Push events to a GemFire region.
 #
 # GemFire is an object database.
+#
+# To use this plugin you need to add gemfire.jar to your CLASSPATH;
+# using format=json requires jackson.jar too.
+#
+# Note: this plugin has only been tested with GemFire 7.0.
+#
 class LogStash::Outputs::Gemfire < LogStash::Outputs::Base
 
   config_name "gemfire"
