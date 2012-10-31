@@ -82,23 +82,10 @@ class LogStash::Outputs::Gemfire < LogStash::Outputs::Base
 
     key = event.sprintf @key_format
 
-    if @format == "plain"
-      message = format_message(event)
-    else
-      message = JSONFormatter.fromJSON(event.to_json)
-    end
+    message = JSONFormatter.fromJSON(event.to_json)
 
     receive_raw(message, key)
   end # def receive
-
-  def self.format_message(event)
-    message =  "Date: #{event.timestamp}\n"
-    message << "Source: #{event.source}\n"
-    message << "Tags: #{event.tags.join(', ')}\n"
-    message << "Fields: #{event.fields.inspect}\n"
-    message << "Message: #{event.message}"
-    message
-  end
 
   public
   def receive_raw(message, key)
