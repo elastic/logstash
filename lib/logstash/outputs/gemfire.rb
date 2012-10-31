@@ -18,7 +18,20 @@ class LogStash::Outputs::Gemfire < LogStash::Outputs::Base
   # Your client cache name
   config :name, :validate => :string, :default => "logstash"
 
-  # A path to a GemFire XML file
+  # The path to a GemFire client cache XML file.
+  #
+  # Example:
+  #
+  #      <client-cache>
+  #        <pool name="client-pool">
+  #            <locator host="localhost" port="31331"/>
+  #        </pool>
+  #        <region name="Logstash">
+  #            <region-attributes refid="CACHING_PROXY" pool-name="client-pool" >
+  #            </region-attributes>
+  #        </region>
+  #      </client-cache>
+  #
   config :cache_xml_file, :validate => :string, :default => nil
 
   # The region name
