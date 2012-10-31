@@ -19,7 +19,20 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
   # Your client cache name
   config :name, :validate => :string, :default => "logstash"
 
-  # A path to a GemFire XML file
+  # The path to a GemFire client cache XML file.
+  #
+  # Example:
+  #
+  #      <client-cache>
+  #        <pool name="client-pool" subscription-enabled="true" subscription-redundancy="1">
+  #            <locator host="localhost" port="31331"/>
+  #        </pool>
+  #        <region name="Logstash">
+  #            <region-attributes refid="CACHING_PROXY" pool-name="client-pool" >
+  #            </region-attributes>
+  #        </region>
+  #      </client-cache>
+  #
   config :cache_xml_file, :validate => :string, :default => nil
 
   # The region name
@@ -31,6 +44,8 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
 
   # A query to run as a GemFire "continuous query"; if specified it takes
   # precedence over :interest_regexp which will be ignore.
+  #
+  # Important: use of continuous queries requires subscriptions to be enabled on the client pool.
   config :query, :validate => :string, :default => nil
 
   # How the message is serialized in the cache. Can be one of "json" or "plain"; default is plain
