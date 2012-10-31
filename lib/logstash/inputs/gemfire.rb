@@ -18,8 +18,13 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
   # The region name
   config :region_name, :validate => :string, :default => "Logstash"
 
-  # A regexp to use when registering interest for cache events
+  # A regexp to use when registering interest for cache events.
+  # Ignored if a :query is specified.
   config :interest_regexp, :validate => :string, :default => ".*"
+
+  # A query to run as a GemFire "continuous query"; if specified it takes
+  # precedence over :interest_regexp which will be ignore.
+  config :query, :validate => :string, :default => nil
 
   # How the message is serialized in the cache. Can be one of "json" or "plain"; default is plain
   config :serialization, :validate => :string, :default => nil
@@ -38,6 +43,11 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
     import com.gemstone.gemfire.cache.InterestResultPolicy
     import com.gemstone.gemfire.cache.client.ClientCacheFactory
     import com.gemstone.gemfire.cache.client.ClientRegionShortcut
+    import com.gemstone.gemfire.cache.query.CqQuery
+    import com.gemstone.gemfire.cache.query.CqAttributes
+    import com.gemstone.gemfire.cache.query.CqAttributesFactory
+    import com.gemstone.gemfire.cache.query.QueryService
+    import com.gemstone.gemfire.cache.query.SelectResults
     import com.gemstone.gemfire.pdx.JSONFormatter
 
     @logger.info("Registering input", :plugin => self)
@@ -49,7 +59,11 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
 
     @logstash_queue = queue
 
-    register_interest(@interest_regexp)
+    if @query
+      continuous_query(@query)
+    else
+      register_interest(@interest_regexp)
+    end
   end # def run
 
   def teardown
@@ -84,6 +98,19 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
   end # def connect
 
   protected
+  def continuous_query(query)
+    qs = @cache.getQueryService
+
+    cqAf = CqAttributesFactory.new
+    cqAf.addCqListener(self)
+    cqa = cqAf.create
+
+    @logger.debug("Running continuous query #{query}")
+    cq = qs.newCq("logstashCQ" + self.object_id.to_s, query, cqa)
+
+    cq.executeWithInitialResults
+  end
+
   def register_interest(interest)
     @region.getAttributesMutator.addCacheListener(self)
     @region.registerInterestRegex(interest, InterestResultPolicy::NONE, false, true)
@@ -103,6 +130,25 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
     if e
       @logstash_queue << e
     end
+  end
+
+  # multiple interfaces
+  def close
+  end
+
+  #
+  # CqListener interface
+  #
+  def onEvent(event)
+    key = event.getKey
+    newValue = event.getNewValue
+    @logger.debug("onEvent #{event.getQueryOperation} #{key} #{newValue}")
+
+    process_event(event.getNewValue, "onEvent", "gemfire://query/#{key}/#{event.getQueryOperation}")
+  end
+
+  def onError(event)
+    @logger.debug("onError #{event}")
   end
 
   #
