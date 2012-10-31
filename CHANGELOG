@@ -1,7 +1,21 @@
-1.1.3 (October 22 2012)
+1.1.4 (October 28, 2012)
+ ## Overview of this release:
+ - bug fixes mostly
+
+ ## filters
+ - date: Fix crashing on date filter failures. Wrote test to cover this case.
+   (LOGSTASH-641)
+ - grok: Improve QUOTEDSTRING pattern to avoid some more 'watchdog timeout' problems
+
+ ## outputs
+ - nagios_nsca: Allow check status to be set from the event (#228, patch by
+   Tomas Doran)
+ - elasticsearch_http: Fix OpenSSL::X509::StoreError (LOGSTASH-642)
+
+1.1.3 (October 22, 2012)
  - rebuilt 1.1.2 for java 5 and 6
 
-1.1.2 (October 22 2012)
+1.1.2 (October 22, 2012)
  ## Overview of this release:
   * New input plugins: lumberjack, sqs, relp
   * New output plugins: exec, sqs
