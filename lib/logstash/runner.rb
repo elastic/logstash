@@ -74,6 +74,12 @@ class LogStash::Runner
         @runners << test
         return test.run(args)
       end,
+      "rspec" => lambda do
+        require "rspec/core/runner"
+        require "rspec"
+        RSpec::Core::Runner.run(args)
+        return []
+      end,
       "irb" => lambda do
         require "irb"
         return IRB.start(__FILE__)
