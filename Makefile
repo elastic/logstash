@@ -39,15 +39,15 @@ default: jar
 # Figure out if we're using wget or curl
 .PHONY: wget-or-curl
 wget-or-curl:
-ifeq ($(WGET),)
 ifeq ($(CURL),)
+ifeq ($(WGET),)
 	@echo "wget or curl are required."
 	exit 1
 else
-DOWNLOAD_COMMAND=curl -L -k -o
+DOWNLOAD_COMMAND=wget --no-check-certificate -O
 endif
 else
-DOWNLOAD_COMMAND=wget --no-check-certificate -O
+DOWNLOAD_COMMAND=curl -L -k -o
 endif
 
 # Compile config grammar (ragel -> ruby)
