@@ -1,3 +1,16 @@
+# Monkeypatch for JRUBY-6970
+module Kernel
+  alias_method :require_JRUBY_6970_hack, :require
+
+  def require(path)
+    if path =~ /^jar:file:.+!.+/
+      path = path.gsub(/^jar:/, "")
+      puts "JRUBY-6970: require(#{path})" if ENV["REQUIRE_DEBUG"] == "1"
+    end
+    return require_JRUBY_6970_hack(path)
+  end
+end
+
 require "rubygems"
 require "logstash/namespace"
 require "logstash/program"
