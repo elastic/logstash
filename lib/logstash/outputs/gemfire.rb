@@ -84,18 +84,9 @@ class LogStash::Outputs::Gemfire < LogStash::Outputs::Base
 
     message = JSONFormatter.fromJSON(event.to_json)
 
-    receive_raw(message, key)
+    @logger.debug("Publishing message", { :destination => to_s, :message => message, :key => key })
+    @region.put(key, message)
   end # def receive
-
-  public
-  def receive_raw(message, key)
-    if @region
-      @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
-      @region.put(key, message)
-    else
-      @logger.warn("Tried to send message, but not connected to GemFire yet.")
-    end
-  end
 
   public
   def to_s
