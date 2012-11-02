@@ -76,5 +76,5 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "mocha"
   gem.add_runtime_dependency "shoulda"
   gem.add_runtime_dependency "rspec"
-  gem.add_runtime_dependency "insist", "0.0.7"
+  gem.add_runtime_dependency "insist", "0.0.8"
 end
