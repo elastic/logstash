@@ -79,7 +79,7 @@ copy-ruby-files: | build/ruby
 	| (cd lib; cpio -p --make-directories ../build/ruby)
 	$(QUIET)find ./test -name '*.rb' | sed -e 's,^\./test/,,' \
 	| (cd test; cpio -p --make-directories ../build/ruby)
-	$(QUIET)find ./spec -name '*.rb' | cpio -p --make-directories ../build/ruby
+	$(QUIET)rsync -av ./spec build/ruby
 
 vendor:
 	$(QUIET)mkdir $@
@@ -196,6 +196,7 @@ build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/certs
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/web/views
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
 build/logstash-$(VERSION)-monolithic.jar:
+	$(QUIET)rm -f $@
 	$(QUIET)jar cfe $@ logstash.runner $(JAR_ARGS)
 	$(QUIET)jar i $@
 	@echo "Created $@"
