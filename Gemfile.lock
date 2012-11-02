@@ -18,7 +18,7 @@ PATH
       gmetric (= 0.1.3)
       haml
       heroku
-      insist (= 0.0.7)
+      insist (= 0.0.8)
       jls-grok (= 0.10.7)
       jls-lumberjack
       jruby-elasticsearch (= 0.0.14)
@@ -94,14 +94,14 @@ GEM
       netrc (~> 0.7.7)
       rest-client (~> 1.6.1)
       rubyzip
-    heroku-api (0.3.5)
-      excon (~> 0.16.1)
+    heroku-api (0.3.6)
+      excon (~> 0.16.7)
     http_parser.rb (0.5.3-java)
     httparty (0.9.0)
       multi_json (~> 1.0)
       multi_xml
     i18n (0.6.1)
-    insist (0.0.7)
+    insist (0.0.8)
     jls-grok (0.10.7)
       cabin (~> 0.4.0)
     jls-lumberjack (0.0.2)
