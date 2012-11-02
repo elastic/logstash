@@ -44,10 +44,10 @@ ifeq ($(WGET),)
 	@echo "wget or curl are required."
 	exit 1
 else
-DOWNLOAD_COMMAND=wget --no-check-certificate -O
+DOWNLOAD_COMMAND=wget -q --no-check-certificate -O
 endif
 else
-DOWNLOAD_COMMAND=curl -L -k -o
+DOWNLOAD_COMMAND=curl -s -L -k -o
 endif
 
 # Compile config grammar (ragel -> ruby)
