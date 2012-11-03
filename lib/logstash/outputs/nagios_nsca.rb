@@ -85,10 +85,11 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
     msg.gsub!("'", "&#146;")
 
     status = event.sprintf(@nagios_status)
-    if status.to_i != status
+    if status.to_i.to_s != status # Check it round-trips to int correctly
       msg = "status '#{status}' is not numeric"
       status = 2
     else
+      status = status.to_i
       if status > 3 || status < 0
          msg "status must be > 0 and <= 3, not #{status}"
          status = 2
