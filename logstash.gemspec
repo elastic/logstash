@@ -55,6 +55,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "xmpp4r", ["0.5"]
   gem.add_runtime_dependency "jls-lumberjack"
   gem.add_runtime_dependency "geoip", [">= 1.1.0"]
+  gem.add_runtime_dependency "beefcake", "0.3.7"
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
@@ -70,9 +71,10 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "cinch" # cinch requires 1.9.1+
   end
 
-  gem.add_development_dependency "spoon"
-  gem.add_development_dependency "mocha"
-  gem.add_development_dependency "shoulda"
-  gem.add_development_dependency "rspec"
-  gem.add_development_dependency "insist", "0.0.7"
+  # These are runtime-deps so you can do 'java -jar logstash.jar rspec <test>'
+  gem.add_runtime_dependency "spoon"
+  gem.add_runtime_dependency "mocha"
+  gem.add_runtime_dependency "shoulda"
+  gem.add_runtime_dependency "rspec"
+  gem.add_runtime_dependency "insist", "0.0.8"
 end

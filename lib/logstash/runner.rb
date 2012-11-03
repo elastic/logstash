@@ -1,3 +1,16 @@
+# Monkeypatch for JRUBY-6970
+module Kernel
+  alias_method :require_JRUBY_6970_hack, :require
+
+  def require(path)
+    if path =~ /^jar:file:.+!.+/
+      path = path.gsub(/^jar:/, "")
+      puts "JRUBY-6970: require(#{path})" if ENV["REQUIRE_DEBUG"] == "1"
+    end
+    return require_JRUBY_6970_hack(path)
+  end
+end
+
 require "rubygems"
 require "logstash/namespace"
 require "logstash/program"
@@ -73,6 +86,24 @@ class LogStash::Runner
         test = LogStash::Test.new
         @runners << test
         return test.run(args)
+      end,
+      "rspec" => lambda do
+        require "rspec/core/runner"
+        require "rspec"
+        if args.first =~ /\.rb$/
+          # check if it's a file, if not, try inside the jar if we are in it.
+          if !File.exists?(args.first) && __FILE__ =~ /file:.*\.jar!\//
+            # Try inside the jar.
+            jar_root = __FILE__.gsub(/!.*/,"!")
+            newpath = File.join(jar_root, args.first)
+            if File.exists?(newpath)
+              $: << File.join(jar_root, "spec")
+              args[0] = newpath
+            end
+          end
+        end
+        RSpec::Core::Runner.run(args)
+        return []
       end,
       "irb" => lambda do
         require "irb"

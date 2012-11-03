@@ -39,15 +39,15 @@ default: jar
 # Figure out if we're using wget or curl
 .PHONY: wget-or-curl
 wget-or-curl:
-ifeq ($(WGET),)
 ifeq ($(CURL),)
+ifeq ($(WGET),)
 	@echo "wget or curl are required."
 	exit 1
 else
-DOWNLOAD_COMMAND=curl -L -k -o
+DOWNLOAD_COMMAND=wget -q --no-check-certificate -O
 endif
 else
-DOWNLOAD_COMMAND=wget --no-check-certificate -O
+DOWNLOAD_COMMAND=curl -s -L -k -o
 endif
 
 # Compile config grammar (ragel -> ruby)
@@ -79,8 +79,7 @@ copy-ruby-files: | build/ruby
 	| (cd lib; cpio -p --make-directories ../build/ruby)
 	$(QUIET)find ./test -name '*.rb' | sed -e 's,^\./test/,,' \
 	| (cd test; cpio -p --make-directories ../build/ruby)
-	$(QUIET)find ./spec -name '*.rb' | sed -e 's,^\./spec/,,' \
-	| (cd spec; cpio -p --make-directories ../build/ruby)
+	$(QUIET)rsync -av ./spec build/ruby
 
 vendor:
 	$(QUIET)mkdir $@
@@ -197,6 +196,7 @@ build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/certs
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/web/views
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
 build/logstash-$(VERSION)-monolithic.jar:
+	$(QUIET)rm -f $@
 	$(QUIET)jar cfe $@ logstash.runner $(JAR_ARGS)
 	$(QUIET)jar i $@
 	@echo "Created $@"
