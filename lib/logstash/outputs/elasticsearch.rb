@@ -91,10 +91,12 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
         end
       end
 
+      # use unicast discovery
+      @host = "localhost"
+
       # Start elasticsearch local.
       start_local_elasticsearch
     end
-
     require "jruby-elasticsearch"
 
     @logger.info("New ElasticSearch output", :cluster => @cluster,
