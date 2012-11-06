@@ -40,11 +40,13 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   public
   def run(output_queue)
     @lumberjack.run do |l|
-      source = "lumberjack://#{l.delete("host")}/#{l.delete("file")}"
-      event = to_event(l.delete("line"), source)
+      source = "lumberjack://#{l.delete("host")}/#{l.delete("file")}".force_encoding("UTF-8")
+      event = to_event(l.delete("line").force_encoding("UTF-8"), source)
       # take any remaining fields in the lumberjack event and merge it as a
       # field in the logstash event.
-      event.fields.merge!(l)
+      l.each do |key, value|
+        event[key.force_encoding("UTF-8")] = value.force_encoding("UTF-8")
+      end
       output_queue << event
     end
   end # def run
