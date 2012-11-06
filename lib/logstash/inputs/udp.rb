@@ -48,7 +48,7 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
   def udp_listener(output_queue)
     @logger.info("Starting UDP listener", :address => "#{@host}:#{@port}")
 
-    if @udp 
+    if @udp && ! @udp.closed?
       @udp.close
     end
 
