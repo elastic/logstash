@@ -7,8 +7,11 @@ gemspec = ARGV.shift
 spec = Gem::Specification.load(gemspec)
 deps = [spec.development_dependencies, spec.runtime_dependencies].flatten
 
+# target for now
+target = "vendor/bundle/jruby/1.9/"
+
 deps.each do |dep|
-  cmd = "gem install --install-dir ./vendor/gems #{dep.name} -v '#{dep.requirement}'"
+  cmd = "gem install --install-dir #{target} #{dep.name} -v '#{dep.requirement}'"
   puts cmd
   system(cmd)
 end
