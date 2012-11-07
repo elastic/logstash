@@ -3,6 +3,11 @@ require "logstash/namespace"
 
 # Pull events from an AMQP exchange.
 #
+# <b> NOTE: THIS IS ONLY KNOWN TO WORK WITH RECENT RELEASES OF RABBITMQ. Any
+# other amqp broker will not work with this plugin. I do not know why. If you
+# need support for brokers other than rabbitmq, please file bugs here:
+# <https://github.com/ruby-amqp/bunny> </b>
+#
 # AMQP is a messaging system. It requires you to run an AMQP server or 'broker'
 # Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and
 # [QPid](http://qpid.apache.org/)
