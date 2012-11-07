@@ -53,7 +53,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "uuidtools" # For generating amqp queue names
   gem.add_runtime_dependency "xml-simple"
   gem.add_runtime_dependency "xmpp4r", ["0.5"]
-  gem.add_runtime_dependency "jls-lumberjack"
+  gem.add_runtime_dependency "jls-lumberjack", ["0.0.9000"]
   gem.add_runtime_dependency "geoip", [">= 1.1.0"]
   gem.add_runtime_dependency "beefcake", "0.3.7"
 
