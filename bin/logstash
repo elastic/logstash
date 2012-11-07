@@ -1,13 +1,9 @@
-#!/usr/bin/env ruby
+#!/bin/sh
 
-$: << File.dirname($0) + "/../lib"
+if [ -d .git ] ; then
+  export GEM_HOME=./vendor/bundle/jruby/1.9
+  export GEM_PATH=
+fi
 
-require "rubygems"
-require "logstash/runner"
-
-# If the first argument is a flag, assume agent.
-if ARGV[0] =~ /^-/
-  ARGV.unshift("agent")
-end
-
-LogStash::Runner.new.main(ARGV)
+export RUBYLIB=./lib 
+ruby lib/logstash/runner.rb "$@"
