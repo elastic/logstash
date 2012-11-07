@@ -131,12 +131,13 @@ vendor-gems: | vendor/bundle
 
 $(GEM_HOME)/bin/bundle: | $(JRUBY)
 	@echo "=> Installing bundler ($@)"
-	$(QUIET)GEM_HOME=$(GEM_HOME) $(WITH_JRUBY) gem install bundler
+	#$(QUIET)GEM_HOME=$(GEM_HOME) $(WITH_JRUBY) gem install bundler
 
 .PHONY: vendor/bundle
 vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
 	@echo "=> Installing gems to $@..."
-	$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
+	#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
+	$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 gembag.rb logstash.gemspec
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
 	-rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
