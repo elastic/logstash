@@ -51,8 +51,8 @@ class LogStash::Filters::ZeroMQ < LogStash::Filters::Base
   config :sockopt, :validate => :hash
 
   public
-  def initialize
-    super
+  def initialize(params)
+    super(params)
 
     @threadsafe = false
   end
