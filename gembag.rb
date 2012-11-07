@@ -18,6 +18,7 @@ deps.each do |dep|
   installer.options[:generate_ri] = false
   installer.options[:version] = dep.requirement
   installer.options[:args] = [dep.name]
+  installer.options[:install_dir] = target
   begin
     installer.execute
   rescue Gem::SystemExitException => e
