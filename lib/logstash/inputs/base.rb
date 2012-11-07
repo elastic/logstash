@@ -95,7 +95,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
     when "json_event"
       begin
         event = LogStash::Event.from_json(raw)
-        event.tags.concat @tags.clone rescue []
+        event.tags += @tags
         if @message_format
           event.message ||= event.sprintf(@message_format)
         end
