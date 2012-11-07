@@ -20,7 +20,6 @@ JODA=vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
 GEOIP=vendor/geoip/GeoCityLite.dat
 GEOIP_URL=http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
-GEM_HOME=build/gems
 QUIET=@
 
 WGET=$(shell which wget 2>/dev/null)
@@ -129,15 +128,11 @@ fix-bundler:
 .PHONY: vendor-gems
 vendor-gems: | vendor/bundle
 
-$(GEM_HOME)/bin/bundle: | $(JRUBY)
-	@echo "=> Installing bundler ($@)"
-	#$(QUIET)GEM_HOME=$(GEM_HOME) $(WITH_JRUBY) gem install bundler
-
 .PHONY: vendor/bundle
-vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
+vendor/bundle: | vendor
 	@echo "=> Installing gems to $@..."
 	#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
-	$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 gembag.rb logstash.gemspec
+	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec 
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
 	-rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
