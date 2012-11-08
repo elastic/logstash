@@ -15,7 +15,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
 
   config_name "amqp"
-  plugin_status "beta"
+  plugin_status "unsupported"
 
   # Your amqp server address
   config :host, :validate => :string, :required => true

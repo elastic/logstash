@@ -15,6 +15,13 @@ while conveying to the end-user a set of expectations about that plugin. This
 allows you to make more informed decisions about when and where to use the
 functionality provided by the new plugin.
 
+## Unsupported
+
+This plugin is not supported. It should work, but if you have any problems with
+it you are unlikely to find any help due to lack of experience in the community.
+
+Additionally, this label may mean that a plugin has no active maintainer.
+
 ## Experimental
 
 When a plugin is in the `experimental` state, it is essentially untested. This
