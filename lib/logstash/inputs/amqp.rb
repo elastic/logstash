@@ -17,7 +17,7 @@ require "logstash/namespace"
 class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
 
   config_name "amqp"
-  plugin_status "beta"
+  plugin_status "unsupported"
 
   # Your amqp broker's custom arguments. For mirrored queues in RabbitMQ: [ "x-ha-policy", "all" ]
   config :arguments, :validate => :array, :default => []
