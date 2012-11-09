@@ -17,7 +17,7 @@ Gem::Specification.new do |gem|
   gem.version       = LOGSTASH_VERSION
 
   # Core dependencies
-  gem.add_runtime_dependency "cabin", ["0.4.4"]
+  gem.add_runtime_dependency "cabin", ["0.5.0"]
   gem.add_runtime_dependency "json"
   gem.add_runtime_dependency "minitest" # for running the tests from the jar
   gem.add_runtime_dependency "pry"
@@ -42,7 +42,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "gelfd", ["0.2.0"]
   gem.add_runtime_dependency "gelf", ["1.3.2"]
   gem.add_runtime_dependency "gmetric", ["0.1.3"]
-  gem.add_runtime_dependency "jls-grok", ["0.10.7"]
+  gem.add_runtime_dependency "jls-grok", ["0.10.8"]
   gem.add_runtime_dependency "mail"
   gem.add_runtime_dependency "mongo"
   gem.add_runtime_dependency "onstomp"
