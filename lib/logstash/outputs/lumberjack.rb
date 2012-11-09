@@ -12,7 +12,7 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
   # ssl certificate to use
   config :ssl_certificate, :validate => :string, :required => true
 
-  # ssl key to use
+  # window size
   config :window_size, :validate => :number, :default => 5000
 
   public
