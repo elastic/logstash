@@ -35,7 +35,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #   fieldname => dateformat
   #
   # The same field can be specified multiple times (or multiple dateformats for
-  # the same field) do try different time formats; first success wins.
+  # the same field) do try different time formats; if there are a number of matches, the last one wins
   #
   # The date formats allowed are anything allowed by Joda-Time (java time
   # library), generally: [java.text.SimpleDateFormat][dateformats]
