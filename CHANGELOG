@@ -1,6 +1,6 @@
 1.1.5 (November 10, 2012)
  ## Overview of this release:
- * New inputs: zabbix, gemfire
+ * New inputs: zenoss, gemfire
  * New outputs: lumberjack, gemfire
  * Many UTF-8 crashing bugs were resolved
 
@@ -22,7 +22,7 @@
 
  ## inputs
  - irc: now stores irc nick
- - new: zabbix (#232, patch by Chet Luther)
+ - new: zenoss (#232, patch by Chet Luther)
  - new: gemfire (#235, patch by Andrea Campi)
  - bugfix: udp: skip close() call if we're already closed (#238, patch by kcrayon)
 
