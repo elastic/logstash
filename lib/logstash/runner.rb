@@ -107,6 +107,8 @@ class LogStash::Runner
               else
                 arg
               end
+            else
+              arg
             end
           else
             arg
