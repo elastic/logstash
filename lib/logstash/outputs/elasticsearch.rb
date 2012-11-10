@@ -82,17 +82,10 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     @logger.setup_log4j
 
     if @embedded
-      # Check for settings that are incompatible with @embedded
-      %w(host).each do |name|
-        if instance_variable_get("@#{name}")
-          @logger.error("outputs/elasticsearch: You cannot specify " \
-                        "'embedded => true' and also set '#{name}'")
-          raise "Invalid configuration detected. Please fix."
-        end
-      end
-
-      # use unicast discovery
-      @host = "localhost"
+      # Default @host with embedded to localhost. This should help avoid
+      # newbies tripping on ubuntu and other distros that have a default
+      # firewall that blocks multicast.
+      @host ||= "localhost"
 
       # Start elasticsearch local.
       start_local_elasticsearch
