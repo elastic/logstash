@@ -90,19 +90,29 @@ class LogStash::Runner
       "rspec" => lambda do
         require "rspec/core/runner"
         require "rspec"
-        if args.first =~ /\.rb$/
-          # check if it's a file, if not, try inside the jar if we are in it.
-          if !File.exists?(args.first) && __FILE__ =~ /file:.*\.jar!\//
-            # Try inside the jar.
-            jar_root = __FILE__.gsub(/!.*/,"!")
-            newpath = File.join(jar_root, args.first)
-            if File.exists?(newpath)
-              $: << File.join(jar_root, "spec")
-              args[0] = newpath
+        fixedargs = args.collect do |arg|
+
+          # if the arg ends in .rb or has a "/" in it, assume it's a path.
+          if arg =~ /\.rb$/ || arg =~ /\//
+            # check if it's a file, if not, try inside the jar if we are in it.
+            if !File.exists?(arg) && __FILE__ =~ /file:.*\.jar!\//
+              # Try inside the jar.
+              jar_root = __FILE__.gsub(/!.*/,"!")
+              newpath = File.join(jar_root, args.first)
+              if File.exists?(newpath)
+                # Add the 'spec' dir to the load path so specs can run
+                specpath = File.join(jar_root, "spec")
+                $: << specpath unless $:.include?(specpath)
+                newpath
+              else
+                arg
+              end
             end
+          else
+            arg
           end
-        end
-        RSpec::Core::Runner.run(args)
+        end # args.collect
+        RSpec::Core::Runner.run(fixedargs)
         return []
       end,
       "irb" => lambda do
