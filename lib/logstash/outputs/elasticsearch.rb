@@ -169,10 +169,15 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       #timer.stop
       decrement_inflight_request_count
     end.on(:failure) do |exception|
-      @logger.warn("Failed to index an event", :exception => exception,
+      @logger.warn("Failed to index an event, will retry", :exception => exception,
                     :event => event.to_hash)
       #timer.stop
       decrement_inflight_request_count
+
+      # Failed to index, try again after a short sleep (incase our hammering is
+      # the problem).
+      sleep(0.200)
+      receive(event)
     end
 
     # Execute this request asynchronously.
