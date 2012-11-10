@@ -32,7 +32,7 @@
  ## outputs
  - new: lumberjack
  - new: gemfire output (#234, patch by Andrea Campi)
- - improved: nagios_ncsa
+ - improved: nagios_ncsa (patch by Tomas Doran)
  - improved: elasticsearch: permit setting 'host' even if embedded. Also set the
    host default to 'localhost' when using embedded. These fixes should help resolve
    issues new users have when their distros surprisingly block multicast by default.
