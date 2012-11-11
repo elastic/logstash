@@ -18,13 +18,15 @@ Do this:
 
 ## Code Style
 
+* comment everything you can think of.
 * indentation: 2 spaces
 * between methods: 1 line
 * sort your requires
-* long lines should wrap at 80 characters. If you wrap at an operator (or, +,
-  etc) start the next line with that operator.
+* long lines should wrap at 80 characters. If you wrap at an operator ('or',
+  '+', etc) start the next line with that operator.
 * parentheses on function definitions/calls
 * explicit is better than implicit
+  * implicit returns are forbidden except in the case of a single expression 
 
 The point is consistency and documentation. If you see inconsistencies, let me
 know, and I'll fix them :)
@@ -55,6 +57,7 @@ Short example:
           some_really_long_function_call_blah_blah_blah(arg1,
               arg2, arg3, arg4)
 
+          # indent the 'when' inside a 'case'.
           case foo
             when "bar"
               puts "Hello world"
