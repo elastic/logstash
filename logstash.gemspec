@@ -24,7 +24,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "stud"
 
   # Web dependencies
-  gem.add_runtime_dependency "ftw", ["~> 0.0.22"]
+  gem.add_runtime_dependency "ftw", ["~> 0.0.23"]
   gem.add_runtime_dependency "haml"
   gem.add_runtime_dependency "rack"
   gem.add_runtime_dependency "sass"
@@ -34,7 +34,7 @@ Gem::Specification.new do |gem|
   #TODO Can these be optional?
   gem.add_runtime_dependency "aws-sdk"
   gem.add_runtime_dependency "heroku"
-  gem.add_runtime_dependency "addressable", ["2.2.6"]
+  gem.add_runtime_dependency "addressable", ["~> 2.2.6"]
   gem.add_runtime_dependency "bunny"
   gem.add_runtime_dependency "ffi"
   gem.add_runtime_dependency "ffi-rzmq", ["0.9.3"]
