@@ -1,3 +1,10 @@
+1.1.6 (???)
+ ## Overview of this release:
+ - bug fixes
+
+ ## general
+ - fixed internal dependency versioning on 'addressable' gem (LOGSTASH-694)
+
 1.1.5 (November 10, 2012)
  ## Overview of this release:
  * New inputs: zenoss, gemfire
