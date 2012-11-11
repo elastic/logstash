@@ -32,7 +32,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   # you can change the 'mode' setting
   # TODO (lusis) add req/rep MAYBE
   # TODO (lusis) add router/dealer
-  config :topology, :validate => ["pushpull", "pubsub", "pair"]
+  config :topology, :validate => ["pushpull", "pubsub", "pair"], :required => true
 
   # 0mq topic
   # This is used for the 'pubsub' topology only
