@@ -155,6 +155,9 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   def rename(event)
     # TODO(sissel): use event.sprintf on the field names?
     @rename.each do |old, new|
+      if !event.has_key?(old)
+        next
+      end
       event[new] = event[old]
       event.remove(old)
     end
@@ -164,12 +167,18 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   def replace(event)
     # TODO(sissel): use event.sprintf on the field names?
     @replace.each do |field, newvalue|
+      if !event.has_key?(field)
+        next
+      end
       event[field] = event.sprintf(newvalue)
     end
   end # def replace
 
   def convert(event)
     @convert.each do |field, type|
+      if !event.has_key?(field)
+        next
+      end
       original = event[field]
 
       # calls convert_{string,integer,float} depending on type requested.

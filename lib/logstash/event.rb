@@ -122,6 +122,10 @@ class LogStash::Event
       return @data["@fields"][key]
     end
   end # def []
+
+  def has_key?(key)
+    return @data["@fields"].has_key?(key)
+  end
   
   public
   def []=(key, value)
