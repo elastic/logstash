@@ -20,7 +20,8 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
   def run(queue)
     loop do
        begin
-         e = to_event($stdin.readline.chomp, "stdin://#{@host}/")
+         line = $stdin.readline.encode("UTF-8", :invalid => :replace).chomp
+         e = to_event(line, "stdin://#{@host}/")
        rescue EOFError => ex
          break
        end
