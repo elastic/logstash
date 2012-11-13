@@ -196,6 +196,26 @@ build/logstash-$(VERSION)-monolithic.jar:
 	$(QUIET)jar i $@
 	@echo "Created $@"
 
+build/flatgems: | build
+	mkdir $@
+	for i in $(VENDOR_DIR)/gems/*/lib; do \
+		rsync -av $$i/ $@/lib ; \
+	done
+
+flatjar: build/logstash-$(VERSION)-flatjar.jar
+build/jar: | build build/flatgems build/monolith
+	$(QUIET)mkdir build/jar
+	$(QUIET)rsync -av --delete build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
+	$(QUIET)(cd lib; rsync -av --delete logstash/web/public ../build/jar/logstash/web/public)
+	$(QUIET)(cd lib; rsync -av --delete logstash/web/views ../build/jar/logstash/web/views)
+	$(QUIET)(cd lib; rsync -av --delete logstash/certs ../build/jar/logstash/certs)
+
+build/logstash-$(VERSION)-flatjar.jar: | build/jar
+	$(QUIET)rm -f $@
+	$(QUIET)jar cfe $@ logstash.runner -C build/jar .
+	$(QUIET)jar i $@
+	@echo "Created $@"
+
 update-jar: copy-ruby-files
 	$(QUIET)jar uf build/logstash-$(VERSION)-monolithic.jar -C build/ruby .
 
