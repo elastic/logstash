@@ -76,7 +76,6 @@ module LogStash
                   filters[i+1 .. -1].each do |f|
                     f.filter(e)
                   end
-                  puts :EEEEEE => e.cancelled?
                   results << e unless e.cancelled?
                 end
               end # if list
