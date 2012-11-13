@@ -196,7 +196,7 @@ build/logstash-$(VERSION)-monolithic.jar:
 	$(QUIET)jar i $@
 	@echo "Created $@"
 
-build/flatgems: | build
+build/flatgems: | build vendor/bundle
 	mkdir $@
 	for i in $(VENDOR_DIR)/gems/*/lib; do \
 		rsync -av $$i/ $@/lib ; \
