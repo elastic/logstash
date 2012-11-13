@@ -45,7 +45,6 @@ describe "https://groups.google.com/forum/?fromgroups=#!topic/logstash-users/Ec8
 
   # Try with a proper multiline event
   sample [ line1, line2 ] do
-    #require "pry"; binding.pry
     insist { subject.count } == 1
 
     event = subject.first # get the first event.
@@ -55,7 +54,6 @@ describe "https://groups.google.com/forum/?fromgroups=#!topic/logstash-users/Ec8
     insist { event.tags }.include?("multiline")
 
     # grok shouldn't fail.
-    require "pry"; binding.pry
     reject { event.tags }.include?("_grokparsefailure")
 
     # Verify grok is working and pulling out certain fields
