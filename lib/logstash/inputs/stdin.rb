@@ -12,15 +12,23 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
 
   plugin_status "beta"
 
+  # Set the encoding of the file.
+  config :encoding, :validate => :string
+
   public
   def register
     @host = Socket.gethostname
+
+    if @encoding
+      $stdin.set_encoding(@encoding)
+    end
   end # def register
 
   def run(queue)
     loop do
        begin
-         e = to_event($stdin.readline.chomp, "stdin://#{@host}/")
+         line = $stdin.readline.encode("UTF-8").chomp
+         e = to_event(line, "stdin://#{@host}/")
        rescue EOFError => ex
          break
        end
