@@ -59,6 +59,9 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   # has no effect.
   config :start_position, :validate => [ "beginning", "end"], :default => "end"
 
+  # Set the encoding of the file.
+  config :encoding, :validate => :string
+
   public
   def initialize(params)
     super
@@ -127,7 +130,10 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
     @tail.subscribe do |path, line|
       path = path
-      line = line.force_encoding("UTF-8")
+      if @encoding
+        line.force_encoding(@encoding).encode("UTF-8")
+      end
+
       source = Addressable::URI.new(:scheme => "file", :host => hostname, :path => path).to_s
       @logger.debug("Received line", :path => path, :line => line)
       e = to_event(line, source)
