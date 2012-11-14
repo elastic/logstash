@@ -172,6 +172,8 @@ module LogStash::Config::Mixin
     def validate_plugin_status
       docmsg = "For more information about plugin statuses, see http://logstash.net/docs/#{LOGSTASH_VERSION}/plugin-status "
       case @plugin_status
+      when "unsupported"
+        @logger.warn("Using unsupported plugin '#{@config_name}'. This plugin isn't well supported by the community and likely has no maintainer. #{docmsg}")
       when "experimental"
         @logger.warn("Using experimental plugin '#{@config_name}'. This plugin is untested and may change in the future. #{docmsg}")
       when "beta"

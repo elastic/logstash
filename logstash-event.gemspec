@@ -7,6 +7,7 @@ Gem::Specification.new do |gem|
   gem.description   = %q{Library that contains the classes required to create LogStash events}
   gem.summary       = %q{Library that contains the classes required to create LogStash events}
   gem.homepage      = "https://github.com/logstash/logstash"
+  gem.license       = "Apache License (2.0)"
 
   gem.files = %w{
     lib/logstash-event.rb

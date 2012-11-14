@@ -17,10 +17,9 @@ JRUBYC=$(WITH_JRUBY) jrubyc
 ELASTICSEARCH_URL=http://github.com/downloads/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 JODA=vendor/jar/joda-time-$(JODA_VERSION)/joda-time-$(JODA_VERSION).jar
-GEOIP=vendor/geoip/GeoCityLite.dat
-GEOIP_URL=http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz
+GEOIP=vendor/geoip/GeoLiteCity.dat
+GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2012-11-09.dat.gz
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
-GEM_HOME=build/gems
 QUIET=@
 
 WGET=$(shell which wget 2>/dev/null)
@@ -39,15 +38,15 @@ default: jar
 # Figure out if we're using wget or curl
 .PHONY: wget-or-curl
 wget-or-curl:
-ifeq ($(WGET),)
 ifeq ($(CURL),)
+ifeq ($(WGET),)
 	@echo "wget or curl are required."
 	exit 1
 else
-DOWNLOAD_COMMAND=curl -L -k -o
+DOWNLOAD_COMMAND=wget -q --no-check-certificate -O
 endif
 else
-DOWNLOAD_COMMAND=wget --no-check-certificate -O
+DOWNLOAD_COMMAND=curl -s -L -k -o
 endif
 
 # Compile config grammar (ragel -> ruby)
@@ -79,8 +78,7 @@ copy-ruby-files: | build/ruby
 	| (cd lib; cpio -p --make-directories ../build/ruby)
 	$(QUIET)find ./test -name '*.rb' | sed -e 's,^\./test/,,' \
 	| (cd test; cpio -p --make-directories ../build/ruby)
-	$(QUIET)find ./spec -name '*.rb' | sed -e 's,^\./spec/,,' \
-	| (cd spec; cpio -p --make-directories ../build/ruby)
+	$(QUIET)rsync -av ./spec build/ruby
 
 vendor:
 	$(QUIET)mkdir $@
@@ -119,8 +117,7 @@ vendor/geoip: | vendor
 	$(QUIET)mkdir $@
 
 $(GEOIP): | vendor/geoip
-	$(QUIET)wget -q -O - http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz \
-		| gzip -dc - > $@
+	$(QUIET)wget -q -O - $(GEOIP_URL) | gzip -dc - > $@
 
 # Always run vendor/bundle
 .PHONY: fix-bundler
@@ -130,14 +127,11 @@ fix-bundler:
 .PHONY: vendor-gems
 vendor-gems: | vendor/bundle
 
-$(GEM_HOME)/bin/bundle: | $(JRUBY)
-	@echo "=> Installing bundler ($@)"
-	$(QUIET)GEM_HOME=$(GEM_HOME) $(WITH_JRUBY) gem install bundler
-
 .PHONY: vendor/bundle
-vendor/bundle: | $(GEM_HOME)/bin/bundle fix-bundler
+vendor/bundle: | vendor
 	@echo "=> Installing gems to $@..."
-	$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
+	#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
+	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec 
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
 	-rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
@@ -197,7 +191,28 @@ build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/certs
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/web/views
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
 build/logstash-$(VERSION)-monolithic.jar:
+	$(QUIET)rm -f $@
 	$(QUIET)jar cfe $@ logstash.runner $(JAR_ARGS)
+	$(QUIET)jar i $@
+	@echo "Created $@"
+
+build/flatgems: | build vendor/bundle
+	mkdir $@
+	for i in $(VENDOR_DIR)/gems/*/lib; do \
+		rsync -av $$i/ $@/lib ; \
+	done
+
+flatjar: build/logstash-$(VERSION)-flatjar.jar
+build/jar: | build build/flatgems build/monolith
+	$(QUIET)mkdir build/jar
+	$(QUIET)rsync -av --delete build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
+	$(QUIET)(cd lib; rsync -av --delete logstash/web/public ../build/jar/logstash/web/public)
+	$(QUIET)(cd lib; rsync -av --delete logstash/web/views ../build/jar/logstash/web/views)
+	$(QUIET)(cd lib; rsync -av --delete logstash/certs ../build/jar/logstash/certs)
+
+build/logstash-$(VERSION)-flatjar.jar: | build/jar
+	$(QUIET)rm -f $@
+	$(QUIET)jar cfe $@ logstash.runner -C build/jar .
 	$(QUIET)jar i $@
 	@echo "Created $@"
 

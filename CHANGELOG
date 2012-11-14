@@ -1,5 +1,49 @@
-1.1.5 (????????????????) 
- - irc input now stores nick
+1.1.6 (???)
+ ## Overview of this release:
+ - bug fixes
+
+ ## general
+ - fixed internal dependency versioning on 'addressable' gem (LOGSTASH-694)
+
+1.1.5 (November 10, 2012)
+ ## Overview of this release:
+ * New inputs: zenoss, gemfire
+ * New outputs: lumberjack, gemfire
+ * Many UTF-8 crashing bugs were resolved
+
+ ## general
+ - new runner command 'rspec' - lets you run rspec tests from the jar
+   This means you should now be able to write external tests that execute your
+   logstash configs and verify functionality.
+ - "file not found" errors related to paths that had "jar:" prefixes should
+   now work. (Fixes LOGSTASH-649, LOGSTASH-642, LOGSTASH-655)
+ - several plugins received UTF-8-related fixes (file, lumberjack, etc)
+   File bugs if you see any UTF-8 related crashes.
+ - 'json_event' format inputs will now respect 'tags' (#239, patch by 
+   Tim Laszlo)
+ - logstash no longer uses nor recommends bundler (see 'gembag.rb'). The
+   Gemfile will be purged in the near future.
+ - amqp plugins are now marked 'unsupported' as there is no active maintainer
+   nor is there source of active support in the community. If you're interested
+   in maintainership, please email the mailling list or contact Jordan!
+
+ ## inputs
+ - irc: now stores irc nick
+ - new: zenoss (#232, patch by Chet Luther)
+ - new: gemfire (#235, patch by Andrea Campi)
+ - bugfix: udp: skip close() call if we're already closed (#238, patch by kcrayon)
+
+ ## filters
+ - bugfix: fix for zeromq filter initializer (#237, patch by Tom Howe)
+
+ ## outputs
+ - new: lumberjack
+ - new: gemfire output (#234, patch by Andrea Campi)
+ - improved: nagios_ncsa (patch by Tomas Doran)
+ - improved: elasticsearch: permit setting 'host' even if embedded. Also set the
+   host default to 'localhost' when using embedded. These fixes should help resolve
+   issues new users have when their distros surprisingly block multicast by default.
+ - improved: elasticsearch: failed index attempts will be retried
 
 1.1.4 (October 28, 2012)
  ## Overview of this release:
