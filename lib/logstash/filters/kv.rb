@@ -35,7 +35,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # '?pin=12345~0&d=123&e=foo@bar.com&oq=bobo&ss=12345':
   # 
   #     filter { kv { field_split => "&?" } }
-  config :field_split, :validate => :string
+  config :field_split, :validate => :string, :default => ''
 
 
   # A string of characters to use as delimiters for identifying key-value relations.
@@ -44,14 +44,14 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # 'key1:value1 key2:value2':
   # 
   #     filter { kv { value_split => ":" } }
-  config :value_split, :validate => :string
+  config :value_split, :validate => :string, :default => '='
 
   # A string to prepend to all of the extracted keys
   #
   # Example, to prepend arg_ to all keys:
   #
   #     filter { kv { prefix => "arg_" } }
-  config :prefix, :validate => :string
+  config :prefix, :validate => :string, :default => ''
 
   # The name of the container to put all of the key-value pairs into 
   #
@@ -62,9 +62,9 @@ class LogStash::Filters::KV < LogStash::Filters::Base
 
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
-    @value_split = @value_split || '='
-    @field_split = @field_split || ''
-    @prefix = @prefix || ''
+    @value_split = @value_split
+    @field_split = @field_split
+    @prefix = @prefix
   end # def register
 
   def filter(event)
@@ -85,9 +85,9 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       end # case value
     end
     if !@container.nil?
-      # If we didn't add any keys, delete the hash
+      # If we have any keys, create the hash
       if @kv_keys.length > 0
-        event[@container]=@kv_keys
+        event[@container] = @kv_keys
       end
     end
   end # def filter
@@ -97,7 +97,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     if !event =~ /[@field_split]/
       return
     end
-    scan_re =Regexp.new("([^ "+@field_split+@value_split+"]+)["+@value_split+"](?:\"([^\""+@field_split+"]+)\"|'([^'"+@field_split+"]+)'|([^ "+@field_split+"]+))")
+    scan_re = Regexp.new("([^ "+@field_split+@value_split+"]+)["+@value_split+"](?:\"([^\""+@field_split+"]+)\"|'([^'"+@field_split+"]+)'|([^ "+@field_split+"]+))")
     text.scan(scan_re) do |key, v1, v2, v3|
       value = v1 || v2 || v3
       if !@trim.nil?
@@ -105,7 +105,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       end
       key = @prefix + key
       if !@container.nil?
-	@kv_keys[key] = value
+        @kv_keys[key] = value
       else
         event[key] = value
       end
