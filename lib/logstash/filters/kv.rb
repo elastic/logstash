@@ -58,44 +58,38 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # Example, to place all keys into container kv:
   #
   #     filter { kv { conatiner => "kv" } }
-  config :container, :validate => :string
+  config :container, :validate => :string, :default => '@fields'
 
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
-    @value_split = @value_split
-    @field_split = @field_split
-    @prefix = @prefix
   end # def register
 
   def filter(event)
     return unless filter?(event)
 
-    if !@container.nil?
-      @kv_keys=Hash.new
-    end
+    kv_keys=Hash.new
+
     @fields.each do |fieldname|
       value = event[fieldname]
 
       case value
-        when String; parse(value, event)
-        when Array; value.each { |v| parse(v, event) }
+        when String; kv_keys = parse(value, event, kv_keys)
+        when Array; value.each { |v| kv_keys = parse!(v, event, kv_keys) }
         else 
           @logger.warn("kv filter has no support for this type of data",
                        :type => value.type, :value => value)
       end # case value
     end
-    if !@container.nil?
-      # If we have any keys, create the hash
-      if @kv_keys.length > 0
-        event[@container] = @kv_keys
-      end
+    # If we have any keys, create/append the hash
+    if kv_keys.length > 0
+      event[@container] << kv_keys
     end
   end # def filter
 
   private
-  def parse(text, event)
+  def parse(text, event, kv_keys)
     if !event =~ /[@field_split]/
-      return
+      return kv_keys
     end
     scan_re = Regexp.new("([^ "+@field_split+@value_split+"]+)["+@value_split+"](?:\"([^\""+@field_split+"]+)\"|'([^'"+@field_split+"]+)'|([^ "+@field_split+"]+))")
     text.scan(scan_re) do |key, v1, v2, v3|
@@ -104,11 +98,8 @@ class LogStash::Filters::KV < LogStash::Filters::Base
         value = value.gsub(@trim_re, "")
       end
       key = @prefix + key
-      if !@container.nil?
-        @kv_keys[key] = value
-      else
-        event[key] = value
-      end
+      kv_keys[key] = value
     end
+    return kv_keys
   end
 end # class LogStash::Filter::KV
