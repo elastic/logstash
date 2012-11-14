@@ -74,7 +74,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
 
       case value
         when String; kv_keys = parse(value, event, kv_keys)
-        when Array; value.each { |v| kv_keys = parse!(v, event, kv_keys) }
+        when Array; value.each { |v| kv_keys = parse(v, event, kv_keys) }
         else 
           @logger.warn("kv filter has no support for this type of data",
                        :type => value.type, :value => value)
