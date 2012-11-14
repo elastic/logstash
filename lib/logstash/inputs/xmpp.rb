@@ -65,6 +65,7 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
         queue << e
       end
     end # @client.add_message_callback
+    sleep
   end # def run
 
 end # def class LogStash:Inputs::Xmpp

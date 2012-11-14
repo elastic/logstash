@@ -41,6 +41,11 @@ class LogStash::Event
   end # def cancel
 
   public
+  def uncancel
+    @cancelled = false
+  end # def uncancel
+
+  public
   def cancelled?
     return @cancelled
   end # def cancelled?

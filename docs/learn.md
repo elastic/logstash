@@ -16,10 +16,15 @@ presentation I gave at CarolinaCon 2011:
 logstash, how you can use it, some alternatives, logging best practices,
 parsing tools, etc. Video also below:
 
+<!--
 <embed src="http://blip.tv/play/gvE9grjcdQI" type="application/x-shockwave-flash" width="480" height="296" allowscriptaccess="always" allowfullscreen="true"></embed>
 
 The slides are available online here: [slides](http://goo.gl/68c62). The slides
 include speaker notes (click 'actions' then 'speaker notes').
+-->
+<iframe width="480" height="296" src="http://www.youtube.com/embed/RuUFnog29M4" frameborder="0" allowfullscreen></iframe>
+
+The slides are available online here: [slides](http://semicomplete.com/presentations/logstash-puppetconf-2012/).
 
 ## Getting Help
 
@@ -33,7 +38,7 @@ for such things, that works for me, too.)
 
 ## Download It
 
-[Download logstash-%VERSION%](http://semicomplete.com/files/logstash/logstash-%VERSION%-monolithic.jar)
+[Download logstash-%VERSION%](https://logstash.objects.dreamhost.com/release/logstash-%VERSION%-monolithic.jar)
 
 ## What's next?
 

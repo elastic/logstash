@@ -3,6 +3,11 @@ require "logstash/namespace"
 
 # Push events to an AMQP exchange.
 #
+# <b> NOTE: THIS IS ONLY KNOWN TO WORK WITH RECENT RELEASES OF RABBITMQ. Any
+# other amqp broker will not work with this plugin. I do not know why. If you
+# need support for brokers other than rabbitmq, please file bugs here:
+# <https://github.com/ruby-amqp/bunny> </b>
+#
 # AMQP is a messaging system. It requires you to run an AMQP server or 'broker'
 # Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and
 # [QPid](http://qpid.apache.org/)
@@ -10,7 +15,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
 
   config_name "amqp"
-  plugin_status "beta"
+  plugin_status "unsupported"
 
   # Your amqp server address
   config :host, :validate => :string, :required => true

@@ -82,19 +82,14 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     @logger.setup_log4j
 
     if @embedded
-      # Check for settings that are incompatible with @embedded
-      %w(host).each do |name|
-        if instance_variable_get("@#{name}")
-          @logger.error("outputs/elasticsearch: You cannot specify " \
-                        "'embedded => true' and also set '#{name}'")
-          raise "Invalid configuration detected. Please fix."
-        end
-      end
+      # Default @host with embedded to localhost. This should help avoid
+      # newbies tripping on ubuntu and other distros that have a default
+      # firewall that blocks multicast.
+      @host ||= "localhost"
 
       # Start elasticsearch local.
       start_local_elasticsearch
     end
-
     require "jruby-elasticsearch"
 
     @logger.info("New ElasticSearch output", :cluster => @cluster,
@@ -167,10 +162,15 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       #timer.stop
       decrement_inflight_request_count
     end.on(:failure) do |exception|
-      @logger.warn("Failed to index an event", :exception => exception,
+      @logger.warn("Failed to index an event, will retry", :exception => exception,
                     :event => event.to_hash)
       #timer.stop
       decrement_inflight_request_count
+
+      # Failed to index, try again after a short sleep (incase our hammering is
+      # the problem).
+      sleep(0.200)
+      receive(event)
     end
 
     # Execute this request asynchronously.

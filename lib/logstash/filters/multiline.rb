@@ -227,6 +227,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   def flush
     events = []
     @pending.each do |key, value|
+      value.uncancel
       events << value
     end
     @pending.clear

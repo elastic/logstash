@@ -17,14 +17,14 @@ Gem::Specification.new do |gem|
   gem.version       = LOGSTASH_VERSION
 
   # Core dependencies
-  gem.add_runtime_dependency "cabin", ["0.4.4"]
+  gem.add_runtime_dependency "cabin", ["0.5.0"]
   gem.add_runtime_dependency "json"
   gem.add_runtime_dependency "minitest" # for running the tests from the jar
   gem.add_runtime_dependency "pry"
   gem.add_runtime_dependency "stud"
 
   # Web dependencies
-  gem.add_runtime_dependency "ftw", ["~> 0.0.22"]
+  gem.add_runtime_dependency "ftw", ["~> 0.0.23"]
   gem.add_runtime_dependency "haml"
   gem.add_runtime_dependency "rack"
   gem.add_runtime_dependency "sass"
@@ -34,7 +34,7 @@ Gem::Specification.new do |gem|
   #TODO Can these be optional?
   gem.add_runtime_dependency "aws-sdk"
   gem.add_runtime_dependency "heroku"
-  gem.add_runtime_dependency "addressable", ["2.2.6"]
+  gem.add_runtime_dependency "addressable", ["~> 2.2.6"]
   gem.add_runtime_dependency "bunny"
   gem.add_runtime_dependency "ffi"
   gem.add_runtime_dependency "ffi-rzmq", ["0.9.3"]
@@ -42,7 +42,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "gelfd", ["0.2.0"]
   gem.add_runtime_dependency "gelf", ["1.3.2"]
   gem.add_runtime_dependency "gmetric", ["0.1.3"]
-  gem.add_runtime_dependency "jls-grok", ["0.10.7"]
+  gem.add_runtime_dependency "jls-grok", ["0.10.8"]
   gem.add_runtime_dependency "mail"
   gem.add_runtime_dependency "mongo"
   gem.add_runtime_dependency "onstomp"
@@ -53,7 +53,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "uuidtools" # For generating amqp queue names
   gem.add_runtime_dependency "xml-simple"
   gem.add_runtime_dependency "xmpp4r", ["0.5"]
-  gem.add_runtime_dependency "jls-lumberjack"
+  gem.add_runtime_dependency "jls-lumberjack", ["0.0.4"]
   gem.add_runtime_dependency "geoip", [">= 1.1.0"]
   gem.add_runtime_dependency "beefcake", "0.3.7"
 
@@ -71,9 +71,10 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "cinch" # cinch requires 1.9.1+
   end
 
-  gem.add_development_dependency "spoon"
-  gem.add_development_dependency "mocha"
-  gem.add_development_dependency "shoulda"
-  gem.add_development_dependency "rspec"
-  gem.add_development_dependency "insist", "0.0.7"
+  # These are runtime-deps so you can do 'java -jar logstash.jar rspec <test>'
+  gem.add_runtime_dependency "spoon"
+  gem.add_runtime_dependency "mocha"
+  gem.add_runtime_dependency "shoulda"
+  gem.add_runtime_dependency "rspec"
+  gem.add_runtime_dependency "insist", "0.0.8"
 end

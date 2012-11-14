@@ -83,7 +83,7 @@ _This assumes you have the `curl` command installed._
 You should get back some output like so:
 
     "logstash-2012.07.02" : {
-                "index" : "logstash-2012.07.02"
+      "index" : "logstash-2012.07.02"
 
 This means Logstash created a new index based on today's date. Likely your data is in there as well:
 

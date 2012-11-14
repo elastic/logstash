@@ -9,16 +9,22 @@ are pretty much free to use it however you want in whatever way.
 
 For more info, see <http://logstash.net/>
 
+Need help? Try #logstash on freenode irc or the logstash-users@googlegroups.com mailing list.
+
 ## Building
 To work on the code without building a jar, install rvm and run the following:
 
-    rvm install 1.6.8
-    rvm use 1.6.8
-    export JRUBY_OPTS=--1.9
-    bundle install
-    bundle exec ruby bin/logstash agent [options]
+    # Install JRuby with rvm
+    rvm install jruby-1.7.0
+    rvm use jruby-1.7.0
 
-jar releases are available here: <http://semicomplete.com/files/logstash/>
+    # Install logstash dependencies
+    ruby gembag.rb logstash.gemspec
+
+    # Run logstash
+    bin/logstash agent [options]
+
+jar releases are available here: <http://logstash.objects.dreamhost.com/>
 If you want to build the jar yourself, run:
 
     make jar
