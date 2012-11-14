@@ -82,7 +82,11 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     end
     # If we have any keys, create/append the hash
     if kv_keys.length > 0
-      event[@container] << kv_keys
+      if !event[@container].nil?
+        event[@container].merge!(kv_keys)
+      else
+        event[@container]= kv_keys
+      end
     end
   end # def filter
 
