@@ -1,6 +1,7 @@
 .*.swp
 *.gem
 *.class
+Gemfile.lock
 *.tar.gz
 *.jar
 .bundle
