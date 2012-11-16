@@ -142,7 +142,12 @@ describe LogStash::Filters::Date do
       }
     CONFIG
 
-    sample "@fields" => { "mydate" => "Jun 12 11:22:33" } do
+    sample "@fields" => { "mydate" => "this will not parse" } do
+      # nothing to do, if this crashes it's an error..
+    end
+
+    # No 'mydate' field at all
+    sample "@fields" => { } do
       # nothing to do, if this crashes it's an error..
     end
   end
