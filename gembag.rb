@@ -3,7 +3,7 @@
 require "rubygems/specification"
 require "rubygems/commands/install_command"
 
-gemspec = ARGV.shift
+gemspec = ARGV.shift || "logstash.gemspec"
 
 spec = Gem::Specification.load(gemspec)
 deps = [spec.development_dependencies, spec.runtime_dependencies].flatten
