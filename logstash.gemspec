@@ -42,7 +42,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "gelfd", ["0.2.0"]
   gem.add_runtime_dependency "gelf", ["1.3.2"]
   gem.add_runtime_dependency "gmetric", ["0.1.3"]
-  gem.add_runtime_dependency "jls-grok", ["0.10.8"]
+  gem.add_runtime_dependency "jls-grok", ["0.10.9"]
   gem.add_runtime_dependency "mail"
   gem.add_runtime_dependency "mongo"
   gem.add_runtime_dependency "onstomp"
