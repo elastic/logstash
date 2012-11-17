@@ -128,7 +128,7 @@ fix-bundler:
 vendor-gems: | vendor/bundle
 
 .PHONY: vendor/bundle
-vendor/bundle: | vendor
+vendor/bundle: | vendor $(JRUBY)
 	@echo "=> Installing gems to $@..."
 	#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
 	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec 
