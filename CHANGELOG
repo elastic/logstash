@@ -1,9 +1,26 @@
 1.1.6 (???)
  ## Overview of this release:
- - bug fixes
+ - grok now captures (?<somename>...) regexp into 'somename' field
+ - new 'charset' feature for inputs (for improved UTF-8 conversion support)
 
  ## general
  - fixed internal dependency versioning on 'addressable' gem (LOGSTASH-694)
+ - fixed another case of 'watchdog timeout' (LOGSTASH-701)
+
+ ## inputs
+ - All inputs now have a 'charset' setting to help you inform logstash of the
+   text encoding of the input. This is useful if you have Shift_JIS or CP1252
+   encoded log files. This should help resolve the many UTF-8 bugs that were
+   reported recently.
+ - bugfix: zeromq: 'topology' is now a required setting
+
+ ## filters
+ - improvement: grok: now accepts (?<foo>...) named captures. This lets you
+   compose a pattern in the grok config without needing to define it in a
+   patterns file. Example: (?<hostport>%{HOST}:%{POSINT}) to capture 'hostport'
+ 
+ ## outputs
+ - bugfix: zeromq: 'topology' is now a required setting
 
 1.1.5 (November 10, 2012)
  ## Overview of this release:
