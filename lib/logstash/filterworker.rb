@@ -8,6 +8,9 @@ class LogStash::FilterWorker < LogStash::Plugin
   attr_accessor :logger
   attr_accessor :filters
 
+  Exceptions = [Exception]
+  Exceptions << java.lang.Exception if RUBY_ENGINE == "jruby"
+
   def initialize(filters, input_queue, output_queue)
     @filters = filters
     @input_queue = input_queue
@@ -58,7 +61,7 @@ class LogStash::FilterWorker < LogStash::Plugin
           filter.execute(event) do |newevent|
             events << newevent
           end
-        rescue => e
+        rescue Exceptions => e
           @logger.warn("Exception during filter", :event => event,
                        :exception => $!, :backtrace => e.backtrace,
                        :filter => filter)
