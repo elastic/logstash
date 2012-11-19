@@ -15,6 +15,8 @@ require "logstash/namespace"
     #puts "numeric: #{token}"
     #puts "numeric?: #{string[startpos,50]}"
     #puts [startpos, endpos].join(",")
+    # TODO(sissel): Don't do 'to_i' here. Type coersion is the job of the
+    # plugin and the validator.
     @stack << token.to_i
   }
 
@@ -103,7 +105,7 @@ require "logstash/namespace"
   # TODO(sissel): allow use of this.
   regexp_literal = ( "/" ( ( (any - [\\'\n]) | "\\" any )* ) "/" )  ;
 
-  array = ( "[" ws string ws ("," ws string ws)* "]" ) >array_init %array_push;
+  array = ( "[" ws ( string | numeric ) ws ("," ws (string | numeric ) ws)* "]" ) >array_init %array_push;
   parameter_value = ( numeric | string | array );
   parameter = ( string ws "=>" ws parameter_value ) %parameter ;
   parameters = ( parameter ( ws parameter )** ) >parameter_init ;
