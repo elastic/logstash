@@ -202,6 +202,12 @@ build/flatgems: | build vendor/bundle
 		rsync -av $$i/ $@/lib ; \
 	done
 
+flatjar-test:
+	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec spec/support/*.rb spec/filters/*.rb spec/examples/*.rb
+
+jar-test:
+	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-monolithic.jar rspec spec/support/*.rb spec/filters/*.rb spec/examples/*.rb
+
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
