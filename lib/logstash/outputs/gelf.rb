@@ -63,6 +63,10 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # sets `_foo_field` = `some_value`
   config :custom_fields, :validate => :hash, :default => {}
 
+  # The GELF short message field name. If the field does not exist or is empty,
+  # the event message is taken instead.
+  config :short_message, :validate => :string, :default => "short_message"
+
   public
   def register
     require "gelf" # rubygem 'gelf'
@@ -111,11 +115,15 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     # We have to make our own hash here because GELF expects a hash
     # with a specific format.
     m = Hash.new
-    if event.fields["short_message"]
-      v = event.fields["short_message"]
-      m["short_message"] = (v.is_a?(Array) && v.length == 1) ? v.first : v
-    else
-      m["short_message"] = event.message
+
+    m["short_message"] = event.message
+    if event.fields[@short_message]
+      v = event.fields[@short_message]
+      short_message = (v.is_a?(Array) && v.length == 1) ? v.first : v
+      short_message = short_message.to_s
+      if !short_message.empty?
+        m["short_message"] = short_message
+      end
     end
 
     m["full_message"] = (event.message)
