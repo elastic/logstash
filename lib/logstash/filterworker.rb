@@ -61,7 +61,7 @@ class LogStash::FilterWorker < LogStash::Plugin
           filter.execute(event) do |newevent|
             events << newevent
           end
-        rescue Exceptions => e
+        rescue *Exceptions => e
           @logger.warn("Exception during filter", :event => event,
                        :exception => $!, :backtrace => e.backtrace,
                        :filter => filter)
