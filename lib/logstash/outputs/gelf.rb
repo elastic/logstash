@@ -53,18 +53,24 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # messages.
   config :ship_metadata, :validate => :boolean, :default => true
 
+  # Ignore these fields when ship_metadata is set. Typically this lists the
+  # fields used in dynamic values for GELF fields.
+  config :ignore_metadata, :validate => :array, :default => [ "severity", "source_host", "source_path" ]
+
   # The GELF custom field mappings. GELF supports arbitrary attributes as custom
   # fields. This exposes that. Exclude the `_` portion of the field name
   # e.g. `custom_fields => ['foo_field', 'some_value']
   # sets `_foo_field` = `some_value`
   config :custom_fields, :validate => :hash, :default => {}
 
+  # The GELF short message field name. If the field does not exist or is empty,
+  # the event message is taken instead.
+  config :short_message, :validate => :string, :default => "short_message"
+
   public
   def register
     require "gelf" # rubygem 'gelf'
     option_hash = Hash.new
-    #option_hash['level'] = @level
-    #option_hash['facility'] = @facility
 
     #@gelf = GELF::Notifier.new(@host, @port, @chunksize, option_hash)
     @gelf = GELF::Notifier.new(@host, @port, @chunksize)
@@ -100,8 +106,6 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
       "alert" => 1, "a" => 1,
       "emergency" => 0, "e" => 0,
      }
-
-     @ignore_fields = [ "facility", "full_message", "short_message", "host", "level", "line", "timestamp", "version", "file" ]
   end # def register
 
   public
@@ -111,11 +115,15 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     # We have to make our own hash here because GELF expects a hash
     # with a specific format.
     m = Hash.new
-    if event.fields["short_message"]
-      v = event.fields["short_message"]
-      m["short_message"] = (v.is_a?(Array) && v.length == 1) ? v.first : v
-    else
-      m["short_message"] = event.message
+
+    m["short_message"] = event.message
+    if event.fields[@short_message]
+      v = event.fields[@short_message]
+      short_message = (v.is_a?(Array) && v.length == 1) ? v.first : v
+      short_message = short_message.to_s
+      if !short_message.empty?
+        m["short_message"] = short_message
+      end
     end
 
     m["full_message"] = (event.message)
@@ -132,7 +140,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
         # Trim leading '_' in the event
         name = name[1..-1] if name.start_with?('_')
         name = "_id" if name == "id"  # "_id" is reserved, so use "__id"
-        if !value.nil? and !@ignore_fields.include?(name)
+        if !value.nil? and !@ignore_metadata.include?(name)
           if value.is_a?(Array)
             # collapse single-element arrays, otherwise leave as array
             m["_#{name}"] = (value.length == 1) ? value.first : value
