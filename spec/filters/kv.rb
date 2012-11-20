@@ -19,6 +19,94 @@ describe LogStash::Filters::KV do
       insist { subject["baz"] } == "fizz"
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
+      insist {subject['@fields'].count } == 5
+    end
+
+  end
+
+  describe "test value_split" do
+    config <<-CONFIG
+      filter {
+        kv { value_split => ':' }
+      }
+    CONFIG
+
+    sample "hello:=world foo:bar baz=:fizz doublequoted:\"hello world\" singlequoted:'hello world'" do
+      insist { subject["hello"] } == "=world"
+      insist { subject["foo"] } == "bar"
+      insist { subject["baz="] } == "fizz"
+      insist { subject["doublequoted"] } == "hello world"
+      insist { subject["singlequoted"] } == "hello world"
+      insist {subject['@fields'].count } == 5
+    end
+
+  end
+
+  describe "test field_split" do
+    config <<-CONFIG
+      filter {
+        kv { field_split => '?&' }
+      }
+    CONFIG
+
+    sample "?hello=world&foo=bar&baz=fizz&doublequoted=\"hello world\"&singlequoted='hello world'&ignoreme&foo12=bar12" do
+      insist { subject["hello"] } == "world"
+      insist { subject["foo"] } == "bar"
+      insist { subject["baz"] } == "fizz"
+      insist { subject["doublequoted"] } == "hello world"
+      insist { subject["singlequoted"] } == "hello world"
+      insist { subject["foo12"] } == "bar12"
+      insist {subject['@fields'].count } == 6
+    end
+
+  end
+
+  describe "test prefix" do
+    config <<-CONFIG
+      filter {
+        kv { prefix => '__' }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["__hello"] } == "world"
+      insist { subject["__foo"] } == "bar"
+      insist { subject["__baz"] } == "fizz"
+      insist { subject["__doublequoted"] } == "hello world"
+      insist { subject["__singlequoted"] } == "hello world"
+      insist {subject['@fields'].count } == 5
+    end
+
+  end
+
+  describe "test container" do
+    config <<-CONFIG
+      filter {
+        kv { container => 'kv' }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["kv"]["hello"] } == "world"
+      insist { subject["kv"]["foo"] } == "bar"
+      insist { subject["kv"]["baz"] } == "fizz"
+      insist { subject["kv"]["doublequoted"] } == "hello world"
+      insist { subject["kv"]["singlequoted"] } == "hello world"
+      insist {subject['@fields']["kv"].count } == 5
+    end
+
+  end
+
+  describe "test empty container" do
+    config <<-CONFIG
+      filter {
+        kv { container => 'kv' }
+      }
+    CONFIG
+
+    sample "hello:world:foo:bar:baz:fizz" do
+      insist { subject["kv"] } == nil
+      insist {subject['@fields'].count } == 0
     end
 
   end
