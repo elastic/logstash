@@ -203,10 +203,10 @@ build/flatgems: | build vendor/bundle
 	done
 
 flatjar-test:
-	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec spec/support/*.rb spec/filters/*.rb spec/examples/*.rb
+	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/event.rb spec/jar.rb
 
 jar-test:
-	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-monolithic.jar rspec spec/support/*.rb spec/filters/*.rb spec/examples/*.rb
+	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-monolithic.jar rspec spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/event.rb spec/jar.rb
 
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
