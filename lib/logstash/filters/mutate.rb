@@ -175,7 +175,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
       # calls convert_{string,integer,float} depending on type requested.
       converter = method("convert_" + type)
       if original.nil?
-	next
+        next
       elsif original.is_a?(Hash)
         @logger.debug("I don't know how to type convert a hash, skipping",
                       :field => field, :value => original)
