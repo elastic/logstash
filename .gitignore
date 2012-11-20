@@ -11,3 +11,5 @@ test/setup/elasticsearch/elasticsearch-*
 vendor
 .sass-cache
 data
+.buildpath
+.project
