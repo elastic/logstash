@@ -203,4 +203,36 @@ describe LogStash::Filters::Grok do
       end
     end
   end
+
+  describe "grok on integer types" do
+    config <<-'CONFIG'
+      filter {
+        grok {
+          match => [ "status", "^403$" ]
+          add_tag => "four_oh_three"
+        }
+      }
+    CONFIG
+
+    sample({ "@fields" => { "status" => 403 } }) do
+      reject { subject.tags }.include?("_grokparsefailure")
+      insist { subject.tags }.include?("four_oh_three")
+    end
+  end
+
+  describe "grok on float types" do
+    config <<-'CONFIG'
+      filter {
+        grok {
+          match => [ "version", "^1.0$" ]
+          add_tag => "one_point_oh"
+        }
+      }
+    CONFIG
+
+    sample({ "@fields" => { "version" => 1.0 } }) do
+      reject { subject.tags }.include?("_grokparsefailure")
+      insist { subject.tags }.include?("one_point_oh")
+    end
+  end
 end
