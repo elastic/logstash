@@ -155,12 +155,14 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       return
     end
 
+    event_key_and_payload = [event.sprintf(@key), event.to_json]
+
     begin
       @redis ||= connect
       if @data_type == 'list'
-        @redis.rpush event.sprintf(@key), event.to_json
+        @redis.rpush *event_key_and_payload
       else
-        @redis.publish event.sprintf(@key), event.to_json
+        @redis.publish *event_key_and_payload
       end
     rescue => e
       @logger.warn("Failed to send event to redis", :event => event,
