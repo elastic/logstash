@@ -81,6 +81,11 @@ class LogStash::Event
     end
   end
 
+  def ruby_timestamp
+    return Time.parse(timestamp)
+  end  
+  
+  
   public
   def source; @data["@source"]; end # def source
   def source=(val) 
