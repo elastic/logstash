@@ -41,8 +41,11 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    @tmphash=event.to_hash
-    @tmphash['@timestamp']=event.ruby_timestamp
-    @mongodb.collection(event.sprintf(@collection)).insert(@tmphash)
+    # TODO(sissel): someone should probably catch errors and retry?
+
+    # the mongodb driver wants time values as a ruby Time object.
+    # set the @timestamp value of the document to a ruby Time object, then.
+    document = event.to_hash.merge("@timestamp" => event.ruby_timestamp)
+    @mongodb.collection(event.sprintf(@collection)).insert(document)
   end # def receive
 end # class LogStash::Outputs::Mongodb
