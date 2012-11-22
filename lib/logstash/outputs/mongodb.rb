@@ -22,6 +22,11 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   # select a collection based on data in the event.
   config :collection, :validate => :string, :required => true
 
+  # If true, store the @timestamp field in mongodb as an ISODate type instead
+  # of an ISO8601 string.  For more information about this, see
+  # http://www.mongodb.org/display/DOCS/Dates
+  config :isodate, :validate => :boolean, :default => false
+
   public
   def register
     require "mongo"
@@ -42,10 +47,13 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
     return unless output?(event)
 
     # TODO(sissel): someone should probably catch errors and retry?
-
-    # the mongodb driver wants time values as a ruby Time object.
-    # set the @timestamp value of the document to a ruby Time object, then.
-    document = event.to_hash.merge("@timestamp" => event.ruby_timestamp)
-    @mongodb.collection(event.sprintf(@collection)).insert(document)
+    if @isodate
+      # the mongodb driver wants time values as a ruby Time object.
+      # set the @timestamp value of the document to a ruby Time object, then.
+      document = event.to_hash.merge("@timestamp" => event.ruby_timestamp)
+      @mongodb.collection(event.sprintf(@collection)).insert(document)
+    else
+      @mongodb.collection(event.sprintf(@collection)).insert(event.to_hash)
+    end
   end # def receive
 end # class LogStash::Outputs::Mongodb
