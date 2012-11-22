@@ -2,6 +2,9 @@
  ## Overview of this release:
  - grok now captures (?<somename>...) regexp into 'somename' field
  - new 'charset' feature for inputs (for improved UTF-8 conversion support)
+ - TODO TODO TODO new faster start-time release jars are available, see the 'flatjar' download
+   option. This flatjar thing may have bugs, so both flatjar and monolithic are
+   available.
 
  ## general
  - fixed internal dependency versioning on 'addressable' gem (LOGSTASH-694)
@@ -18,9 +21,22 @@
  - improvement: grok: now accepts (?<foo>...) named captures. This lets you
    compose a pattern in the grok config without needing to define it in a
    patterns file. Example: (?<hostport>%{HOST}:%{POSINT}) to capture 'hostport'
- 
+ - improvement: grok: allow '$' in JAVACLASS pattern (#241, patch by Corry
+   Haines)
+ - improvement: grok: can now match number types. Example, if you're sending
+   a json format event with { "status": 403 } you can now grok that field.
+   The number is represented as a string "403" before pattern matching.
+ - bugfix: date: Fix a bug that would crash the pipeline if no date pattern 
+   matched. (LOGSTASH-705)
+ - improvement: kv: Adds field_split, value_split, prefix, and container
+   settings. (#225, patch by Alex Wheeler)
+
  ## outputs
  - bugfix: zeromq: 'topology' is now a required setting
+ - improvement: mongodb: new setting 'isodate', when true, stores the @timestamp
+   field as a mongodb date instead of a string. (#224, patch by Kevin Amorin)
+ - improvement: gelf: Allow full_message gelf property to be overridden (#245, 
+   patch by Sébastien Masset)
 
 1.1.5 (November 10, 2012)
  ## Overview of this release:
