@@ -76,5 +76,34 @@ describe LogStash::Outputs::Redis do
     end # agent
   end
 
+  describe "converts US-ASCII to utf-8 without failures" do
+    key = 10.times.collect { rand(10).to_s }.join("")
+
+    config <<-CONFIG
+      input {
+        generator {
+          charset => "US-ASCII"
+          message => "\xAD\u0000"
+          count => 1
+          type => "generator"
+        }
+      }
+      output {
+        redis {
+          host => "127.0.0.1"
+          key => "#{key}"
+          data_type => list
+        }
+      }
+    CONFIG
+
+    agent do
+      # Query redis directly and inspect the goodness.
+      redis = Redis.new(:host => "127.0.0.1")
+
+      # The list should contain no elements.
+      insist { redis.llen(key) } == 1
+    end # agent
+  end
 end
 
