@@ -25,9 +25,9 @@ module XDR
             @io = io
         end
 
-	######
-	# ADDED HERE -> need to return patch
-	# Short
+        ######
+        # ADDED HERE -> need to return patch
+        # Short
         def uint16()
             _uint16("uint16")
         end
@@ -45,9 +45,9 @@ module XDR
         def _uint16(typename)
             _read_type(2, typename).unpack("n").first
         end
-	#############
-
-
+        #############
+        
+        
         # A signed 32-bit integer, big-endian
         def int32()
             _int32("int32")
