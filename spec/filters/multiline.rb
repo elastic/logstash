@@ -5,8 +5,6 @@ describe LogStash::Filters::Multiline do
   extend LogStash::RSpec
 
   describe "simple multiline" do
-    # The logstash config goes here.
-    # At this time, only filters are supported.
     config <<-CONFIG
     filter {
       multiline {
@@ -24,8 +22,6 @@ describe LogStash::Filters::Multiline do
   end
 
   describe "multiline using grok patterns" do
-    # The logstash config goes here.
-    # At this time, only filters are supported.
     config <<-CONFIG
     filter {
       multiline {
@@ -43,8 +39,6 @@ describe LogStash::Filters::Multiline do
   end
 
   describe "multiline safety among multiple concurrent streams" do
-    # The logstash config goes here.
-    # At this time, only filters are supported.
     config <<-CONFIG
       filter {
         multiline {
