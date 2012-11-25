@@ -60,7 +60,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
       check_database(output_queue)
 
       timeTaken = Time.now.to_i - start
-      sleepTime = @interval * 1 - timeTaken
+      sleepTime = @interval * 60 - timeTaken
       @logger.debug("Fetched all new watchdog entries. Sleeping for " + sleepTime.to_s + " seconds")
       sleep(sleepTime)
     end # loop
@@ -93,7 +93,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
       results.each do |row|
         event = build_event(row)
         if event
-          output_queue << to_event(JSON.dump(event), "")
+          output_queue << to_event(JSON.dump(event), @sitename)
           lastWid = row['wid'].to_s
         end
       end
