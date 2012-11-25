@@ -4,7 +4,6 @@ require "logstash/filters/dns"
 describe LogStash::Filters::DNS do
   extend LogStash::RSpec
 
-
   describe "dns reverse lookup, replace (on event.source)" do
     config <<-CONFIG
       filter {
@@ -126,6 +125,21 @@ describe LogStash::Filters::DNS do
     end
   end
 
+  describe "dns resolve lookup, append with multi-value does nothing" do
+    config <<-CONFIG
+      filter {
+        dns {
+          resolve => "foo"
+          action => "append"
+        }
+      }
+    CONFIG
+
+    sample({"@fields" => { "foo" => ["carrera.databits.net", "foo.databits.net"]}}) do
+      insist { subject["foo"] } == ["carrera.databits.net", "foo.databits.net"]
+    end
+  end
+
   describe "dns resolve lookup, not a valid hostname" do
     config <<-CONFIG
       filter {
@@ -140,9 +154,3 @@ describe LogStash::Filters::DNS do
     end
   end
 end
-
-
-
-
-
-
