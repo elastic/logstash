@@ -2,17 +2,17 @@ require "date"
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "logstash/time" # should really use the filters/date.rb bits
-
 require "mysql2"
 require "php_serialize"
 
-# Read messages as events over the network via udp.
+# Retrieve events from a Drupal installation with DBlog enabled.
+#
+# To avoid pulling the same watchdog entry twice, the last pulled wid
+# is saved as a variable in the Drupal database.
 #
 class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
   config_name "drupal_dblog"
   plugin_status "experimental"
-
-
 
   # The database host
   config :host, :validate => :string, :required => true
