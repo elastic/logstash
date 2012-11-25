@@ -40,6 +40,99 @@ describe LogStash::Filters::Mutate do
     end
   end
 
+  describe "remove multiple fields" do
+    config '
+      filter {
+        mutate {
+          remove => [ "remove-me", "remove-me2", "diedie" ]
+        }
+      }'
+
+    sample "@fields" => {
+      "remove-me"  => "Goodbye!",
+      "remove-me2" => 1234,
+      "diedie"     => [1, 2, 3, 4],
+      "survivor"   => "Hello."
+    } do
+      insist { subject.fields } == { "survivor" => "Hello." }
+    end
+  end
+
+  describe "convert one field to string" do
+    config '
+      filter {
+        mutate {
+          convert => [ "unicorns", "string" ]
+        }
+      }'
+
+    sample "@fields" => {
+      "unicorns" => 1234
+    } do
+      insist { subject.fields } == { "unicorns" => "1234" }
+    end
+  end
+
+  describe "gsub on a String" do
+    config '
+      filter {
+        mutate {
+          gsub => [ "unicorns", "but extinct", "and common" ]
+        }
+      }'
+
+    sample "@fields" => {
+      "unicorns" => "Magnificient, but extinct, animals"
+    } do
+      insist { subject.fields } == {
+        "unicorns" => "Magnificient, and common, animals"
+      }
+    end
+  end
+
+  describe "gsub on an Array of Strings" do
+    config '
+      filter {
+        mutate {
+          gsub => [ "unicorns", "extinct", "common" ]
+        }
+      }'
+
+    sample "@fields" => {
+      "unicorns" => [
+        "Magnificient extinct animals",
+        "Other extinct ideas"
+      ]
+    } do
+      insist { subject.fields } == {
+        "unicorns" => [
+          "Magnificient common animals",
+          "Other common ideas"
+        ]
+      }
+    end
+  end
+
+  describe "gsub on multiple fields" do
+    config '
+      filter {
+        mutate {
+          gsub => [ "colors", "red", "blue",
+                    "shapes", "square", "circle" ]
+        }
+      }'
+
+    sample "@fields" => {
+      "colors" => "One red car",
+      "shapes" => "Four red squares"
+    } do
+      insist { subject.fields } == {
+        "colors" => "One blue car",
+        "shapes" => "Four red circles"
+      }
+    end
+  end
+
   describe "regression - check grok+mutate" do
     config <<-CONFIG
       filter {
