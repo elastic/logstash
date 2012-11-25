@@ -2,8 +2,54 @@ require "date"
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "logstash/time" # should really use the filters/date.rb bits
-require "mysql2"
 require "php_serialize"
+
+if RUBY_PLATFORM != 'java'
+  require "mysql2"
+else
+  require "java"
+  require "rubygems"
+  require "jdbc/mysql"
+
+
+  include_class "com.mysql.jdbc.Driver"
+
+  class LogStash::Inputs::DrupalDblog::JdbcMysql
+    def initialize(host, username, password, database, port = nil)
+      port ||= 3306
+
+      address = "jdbc:mysql://#{host}:#{port}/#{database}"
+      @connection = java.sql.DriverManager.getConnection(address, username, password)
+    end
+
+    def query sql
+      resultSet = @connection.createStatement.executeQuery sql
+
+      meta = resultSet.getMetaData
+      column_count = meta.getColumnCount
+
+      rows = []
+
+      while resultSet.next
+        res = {}
+
+        (1..column_count).each do |i|
+          name = meta.getColumnName i
+          case meta.getColumnType i
+          when java.sql.Types::INTEGER
+            res[name] = resultSet.getInt name
+          else
+            res[name] = resultSet.getString name
+          end
+        end
+
+        rows << res
+      end
+
+      return rows
+    end
+  end
+end
 
 # Retrieve events from a Drupal installation with DBlog enabled.
 #
@@ -67,17 +113,33 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
   end # def run
 
   private
+  def get_client
+
+    if RUBY_PLATFORM == 'java'
+      @client = LogStash::Inputs::DrupalDblog::JdbcMysql.new(
+          :host => @host,
+          :port => @port,
+          :username => @user,
+          :password => @password,
+          :database => @database
+      )
+    else
+      @client = Mysql2::Client.new(
+          :host => @host,
+          :port => @port,
+          :username => @user,
+          :password => @password,
+          :database => @database
+      )
+    end
+  end
+
+  private
   def check_database(output_queue)
 
     begin
       # connect to the MySQL server
-      @client = Mysql2::Client.new(
-        :host => @host,
-        :port => @port,
-        :username => @user,
-        :password => @password,
-        :database => @database
-      )
+      get_client
 
       # If no source is set, try to retrieve site name.
       update_sitename
