@@ -130,12 +130,11 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
 
       begin
         connect unless @client_socket
-        @client_socket.write(syslog_msg)
-        @client_socket.write("\n")
+        @client_socket.write(syslog_msg + "\n")
       rescue => e
         @logger.warn(@protocol+" output exception", :host => @host, :port => @port,
                      :exception => e, :backtrace => e.backtrace)
-        @client_socket = nil
+        @client_socket.close
       end
   end
 end
