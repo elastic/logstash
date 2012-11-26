@@ -250,7 +250,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     if !matched
       # Tag this event if we can't parse it. We can use this later to
       # reparse+reindex logs if we improve the patterns given .
-      event.tags << "_grokparsefailure"
+      event.tags << "_grokparsefailure" unless event.tags.include?("_grokparsefailure")
     end
 
     @logger.debug("Event now: ", :event => event)
