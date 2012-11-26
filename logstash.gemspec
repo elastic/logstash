@@ -56,7 +56,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "jls-lumberjack", ["0.0.4"]
   gem.add_runtime_dependency "geoip", [">= 1.1.0"]
   gem.add_runtime_dependency "beefcake", "0.3.7"
-  gem.add_runtime_dependency "php-serialize", "1.1.0"
+  gem.add_runtime_dependency "php-serialize"
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
@@ -67,7 +67,7 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "jdbc-mysql"
   else
     gem.add_runtime_dependency "excon"
-    gem.add_runtime_dependency "mysql2", "0.3.11"
+    gem.add_runtime_dependency "mysql2"
   end
 
   if RUBY_VERSION >= '1.9.1'
