@@ -14,7 +14,7 @@ else
 
   include_class "com.mysql.jdbc.Driver"
 
-  class LogStash::Inputs::DrupalDblog::JdbcMysql
+  class JdbcMysql
     def initialize(host, username, password, database, port = nil)
       port ||= 3306
 
@@ -23,7 +23,16 @@ else
     end
 
     def query sql
-      resultSet = @connection.createStatement.executeQuery sql
+      if sql.downcase.scan('select').length > 0
+        return select(sql)
+      else
+        return update(sql)
+      end
+    end
+
+    def select sql
+      stmt = @connection.createStatement
+      resultSet = stmt.executeQuery sql
 
       meta = resultSet.getMetaData
       column_count = meta.getColumnCount
@@ -46,7 +55,18 @@ else
         rows << res
       end
 
+      stmt.close
       return rows
+    end
+
+    def update sql
+      stmt = @connection.createStatement
+      stmt.execute_update sql
+      stmt.close
+    end
+
+    def close
+      @connection.close
     end
   end
 end
@@ -116,12 +136,12 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
   def get_client
 
     if RUBY_PLATFORM == 'java'
-      @client = LogStash::Inputs::DrupalDblog::JdbcMysql.new(
-          :host => @host,
-          :port => @port,
-          :username => @user,
-          :password => @password,
-          :database => @database
+      @client = JdbcMysql.new(
+          @host,
+          @user,
+          @password,
+          @database,
+          @port
       )
     else
       @client = Mysql2::Client.new(
@@ -161,8 +181,8 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
       end
 
       set_last_wid(lastWid, initialLastWid == false)
-    rescue Mysql2::Error => e
-      @logger.info("Mysql error: ", :error => e.error)
+    rescue Exception => e
+      @logger.info("Mysql error: ", :error => e.message)
     end # begin
 
     # Close connection
