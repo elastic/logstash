@@ -1,7 +1,12 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
 
-# TODO(sissel): THIS IS NOT SUPPORTED IN JRUBY YET
+# This output runs a websocket server and publishes any 
+# messages to all connected websocket clients.
+#
+# You can connect to it with ws://<host>:<port>/
+#
+# If no clients are connected, any messages received are ignored.
 class LogStash::Outputs::WebSocket < LogStash::Outputs::Base
   config_name "websocket"
   plugin_status "experimental"
