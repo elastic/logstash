@@ -14,7 +14,7 @@ else
 
   java_import "com.mysql.jdbc.Driver"
 
-  class JdbcMysql
+  class LogStash::DrupalDblogJavaMysqlConnection
 
     def initialize(host, username, password, database, port = nil)
       port ||= 3306
@@ -95,7 +95,6 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
   def initialize(params)
     super
     @format = "json_event"
-    @debug = true
   end # def initialize
 
   public
@@ -180,7 +179,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
       end
 
       if RUBY_PLATFORM == 'java'
-        @client = JdbcMysql.new(
+        @client = LogStash::DrupalDblogJavaMysqlConnection.new(
             db["host"],
             db["user"],
             db["password"],
