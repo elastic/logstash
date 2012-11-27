@@ -15,6 +15,7 @@ else
   include_class "com.mysql.jdbc.Driver"
 
   class JdbcMysql
+
     def initialize(host, username, password, database, port = nil)
       port ||= 3306
 
@@ -80,23 +81,9 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
   config_name "drupal_dblog"
   plugin_status "experimental"
 
-  # The database host
-  config :host, :validate => :string, :required => true
+  config :databases, :validate => :hash
 
-  # Mysql database port
-  config :port, :validate => :number, :default => 3306
-
-  # Database name
-  config :database, :validate => :string, :required => true
-
-  # Database password
-  config :user, :validate => :string, :required => true
-
-  # Database password
-  config :password, :validate => :string, :required => true
-
-  # Name of the Drupal site, used for event source
-  config :sitename, :validate => :string, :default => ""
+  config :type, :validate => :string, :default => 'watchdog'
 
   # Add the username in addition to the user id to the event
   config :add_usernames, :validate => :boolean, :default => false
@@ -113,53 +100,112 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
 
   public
   def register
-
   end # def register
 
   public
+  def config_init(params)
+    super
+
+    dbs = {}
+    valid = true
+
+    @databases.each do |name, rawUri|
+      uri = URI(rawUri)
+
+      dbs[name] = {
+        "scheme" => uri.scheme,
+        "host" => uri.host,
+        "user" => uri.user,
+        "password" => uri.password,
+        "database" => uri.path.sub('/', ''),
+        "port" => uri.port.to_i
+      }
+
+      if not (
+        uri.scheme and not uri.scheme.empty?\
+        and uri.host and not uri.host.empty?\
+        and uri.user and not uri.user.empty?\
+        and uri.password\
+        and uri.path and not uri.path.sub('/', '').empty?
+      )
+        @logger.error("Drupal DBLog: Invalid database URI for #{name} : #{rawUri}")
+        valid = false
+      end
+      if not uri.scheme == 'mysql'
+        @logger.error("Drupal DBLog: Only mysql databases are supported.")
+        valid = false
+      end
+    end
+
+    if not valid
+      @logger.error("Config validation failed.")
+      exit 1
+    end
+
+    @databases = dbs
+  end #def config_init
+
+  public
   def run(output_queue)
-    @logger.info("Initializing drupal_dblog", :database => @database)
+    print "LALALLA"
+    @logger.info("Initializing drupal_dblog")
 
     loop do
-      @logger.debug("Starting to fetch new watchdog entries")
+      @logger.debug("Drupal DBLog: Starting to fetch new watchdog entries")
       start = Time.now.to_i
-      check_database(output_queue)
+
+      @databases.each do |name, db|
+        @logger.debug("Drupal DBLog: Checking database #{name}")
+        check_database(output_queue, db)
+      end
 
       timeTaken = Time.now.to_i - start
+      @logger.debug("Drupal DBLog: Fetched all new watchdog entries in #{timeTaken} seconds")
+
+      # If fetching of all databases took less time than the interval,
+      # sleep a bit.
       sleepTime = @interval * 60 - timeTaken
-      @logger.debug("Fetched all new watchdog entries. Sleeping for " + sleepTime.to_s + " seconds")
-      sleep(sleepTime)
+      if sleepTime > 0
+        @logger.debug("Drupal DBLog: Sleeping for #{sleepTime} seconds")
+        sleep(sleepTime)
+      end
     end # loop
   end # def run
 
   private
-  def get_client
+  def initialize_client(db)
+    if db["scheme"] == 'mysql'
 
-    if RUBY_PLATFORM == 'java'
-      @client = JdbcMysql.new(
-          @host,
-          @user,
-          @password,
-          @database,
-          @port
-      )
-    else
-      @client = Mysql2::Client.new(
-          :host => @host,
-          :port => @port,
-          :username => @user,
-          :password => @password,
-          :database => @database
-      )
+      if not db["port"] > 0
+        db["port"] = 3306
+      end
+
+      if RUBY_PLATFORM == 'java'
+        @client = JdbcMysql.new(
+            db["host"],
+            db["user"],
+            db["password"],
+            db["database"],
+            db["port"]
+        )
+      else
+        @client = Mysql2::Client.new(
+            :host => db["host"],
+            :port => db["port"],
+            :username => db["user"],
+            :password => db["password"],
+            :database => db["database"]
+        )
+      end
     end
-  end
+  end #def get_client
 
   private
-  def check_database(output_queue)
+  def check_database(output_queue, db)
 
     begin
       # connect to the MySQL server
-      get_client
+      initialize_client(db)
 
       # If no source is set, try to retrieve site name.
       update_sitename
