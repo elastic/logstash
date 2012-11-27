@@ -106,6 +106,9 @@ require "logstash/namespace"
   regexp_literal = ( "/" ( ( (any - [\\'\n]) | "\\" any )* ) "/" )  ;
 
   array = ( "[" ws ( string | numeric ) ws ("," ws (string | numeric ) ws)* "]" ) >array_init %array_push;
+  # TODO(sissel): Implement hash syntax { key => value, ... }
+  # TODO(sissel): hashes should support arrays as values.
+
   parameter_value = ( numeric | string | array );
   parameter = ( string ws "=>" ws parameter_value ) %parameter ;
   parameters = ( parameter ( ws parameter )** ) >parameter_init ;
