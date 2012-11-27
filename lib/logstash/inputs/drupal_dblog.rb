@@ -12,7 +12,7 @@ else
   require "jdbc/mysql"
 
 
-  include_class "com.mysql.jdbc.Driver"
+  java_import "com.mysql.jdbc.Driver"
 
   class JdbcMysql
 
@@ -147,7 +147,6 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
 
   public
   def run(output_queue)
-    print "LALALLA"
     @logger.info("Initializing drupal_dblog")
 
     loop do
