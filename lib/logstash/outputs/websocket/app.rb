@@ -12,23 +12,7 @@ class LogStash::Outputs::WebSocket::App < Sinatra::Base
 
   set :reload_templates, false
 
-  helpers do
-    def protected!
-      unless authorized?
-        response['WWW-Authenticate'] = %(Basic realm="Restricted Area")
-        throw(:halt, [401, "Not authorized\n"])
-      end
-    end
-
-    def authorized?
-      auth = Rack::Auth::Basic::Request.new(request.env)
-      auth.provided? && auth.basic? && auth.credentials && auth.credentials == ['admin', 'admin']
-    end
-  end
-
-
   get "/" do
-    protected!
     # TODO(sissel): Support filters/etc.
     ws = ::FTW::WebSocket::Rack.new(env)
     @logger.debug("New websocket client")
