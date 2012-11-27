@@ -112,6 +112,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
       uri = URI(rawUri)
 
       dbs[name] = {
+        "site" => name,
         "scheme" => uri.scheme,
         "host" => uri.host,
         "user" => uri.user,
@@ -205,8 +206,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
       # connect to the MySQL server
       initialize_client(db)
 
-      # If no source is set, try to retrieve site name.
-      update_sitename
+      @sitename = db["site"]
 
       @usermap = @add_usernames ? get_usermap : nil
 
