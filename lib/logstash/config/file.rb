@@ -18,18 +18,24 @@ class LogStash::Config::File
     end
   end # def initialize
 
+  def _get_config_data
+    if @string.nil?
+      File.new(@path).read
+    else
+      @string
+    end
+  end
+
+  def _get_config(data)
+    grammar = LogStash::Config::Grammar.new
+    grammar.parse(data)
+    grammar.config
+  end
+
   public
   def parse
-    grammar = LogStash::Config::Grammar.new
+    @config = _get_config(_get_config_data);
 
-    if @string.nil?
-      grammar.parse(File.new(@path).read)
-    else
-      grammar.parse(@string)
-    end
-
-    @config = grammar.config
-    
     registry = LogStash::Config::Registry::registry
     each do |o|
       # Load the base class for the type given (like inputs/base, or filters/base)
