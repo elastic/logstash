@@ -8,10 +8,6 @@ require "logstash/namespace"
 # need support for brokers other than rabbitmq, please file bugs here:
 # <https://github.com/ruby-amqp/bunny> </b>
 #
-# AMQP is a messaging system. It requires you to run an AMQP server or 'broker'
-# Examples of AMQP servers are [RabbitMQ](http://www.rabbitmq.com/) and
-# [QPid](http://qpid.apache.org/)
-#
 # The default settings will create an entirely transient queue and listen for all messages by default.
 # If you need durability or any other advanced settings, please set the appropriate options
 class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
