@@ -302,25 +302,29 @@ module LogStash::Config::Mixin
       elsif validator.is_a?(Symbol)
         # TODO(sissel): Factor this out into a coersion method?
         # TODO(sissel): Document this stuff.
-        value = [*value] # coerce scalar to array if necessary
+        value = hash_or_array(value)
 
         case validator
           when :hash
-            if value.size % 2 == 1
-              return false, "This field must contain an even number of items, got #{value.size}"
-            end
+            if value.is_a?(Hash)
+              result = value
+            else
+              if value.size % 2 == 1
+                return false, "This field must contain an even number of items, got #{value.size}"
+              end
 
-            # Convert the array the config parser produces into a hash.
-            result = {}
-            value.each_slice(2) do |key, value|
-              entry = result[key]
-              if entry.nil?
-                result[key] = value
-              else
-                if entry.is_a?(Array)
-                  entry << value
+              # Convert the array the config parser produces into a hash.
+              result = {}
+              value.each_slice(2) do |key, value|
+                entry = result[key]
+                if entry.nil?
+                  result[key] = value
                 else
-                  result[key] = [entry, value]
+                  if entry.is_a?(Array)
+                    entry << value
+                  else
+                    result[key] = [entry, value]
+                  end
                 end
               end
             end
@@ -385,5 +389,12 @@ module LogStash::Config::Mixin
       # Return the validator for later use, like with type coercion.
       return true, result
     end # def validate_value
+
+    def hash_or_array(value)
+      if !value.is_a?(Hash)
+        value = [*value] # coerce scalar to array if necessary
+      end
+      return value
+    end
   end # module LogStash::Config::DSL
 end # module LogStash::Config
