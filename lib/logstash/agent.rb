@@ -255,12 +255,13 @@ class LogStash::Agent
         paths = Dir.glob(@config_path).sort
       end
 
+      is_yaml = false
       concatconfig = []
       paths.each do |path|
         file = File.new(path)
         if File.extname(file) == '.yaml'
           # assume always YAML if even one file is
-          @is_yaml = true
+          is_yaml = true
         end
         concatconfig << file.read
       end
@@ -270,7 +271,7 @@ class LogStash::Agent
       config_data = @config_string
     end
 
-    if @is_yaml
+    if is_yaml
       config = LogStash::Config::File::Yaml.new(nil, config_data)
     else
       config = LogStash::Config::File.new(nil, config_data)
