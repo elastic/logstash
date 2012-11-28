@@ -300,6 +300,7 @@ module LogStash::Config::Mixin
       elsif validator.is_a?(Proc)
         return validator.call(value)
       elsif validator.is_a?(Array)
+        value = [*value]
         if value.size > 1
           return false, "Expected one of #{validator.inspect}, got #{value.inspect}"
         end
@@ -311,7 +312,7 @@ module LogStash::Config::Mixin
       elsif validator.is_a?(Symbol)
         # TODO(sissel): Factor this out into a coersion method?
         # TODO(sissel): Document this stuff.
-        value = hash_or_array(value)
+        value = [*value] # coerce scalar to array if necessary
 
         case validator
           when :hash
