@@ -302,6 +302,8 @@ module LogStash::Config::Mixin
       elsif validator.is_a?(Symbol)
         # TODO(sissel): Factor this out into a coersion method?
         # TODO(sissel): Document this stuff.
+        value = [*value] # coerce scalar to array if necessary
+
         case validator
           when :hash
             if value.size % 2 == 1
