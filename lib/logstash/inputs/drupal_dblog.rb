@@ -11,9 +11,9 @@ else
   require "rubygems"
   require "jdbc/mysql"
 
-
   java_import "com.mysql.jdbc.Driver"
 
+  # For JRuby, we need to supply a Connection class with an API like mysql2
   class LogStash::DrupalDblogJavaMysqlConnection
 
     def initialize(host, username, password, database, port = nil)
@@ -69,7 +69,7 @@ else
     def close
       @connection.close
     end
-  end
+  end # class LogStash::DrupalDblogJavaMysqlConnection
 end
 
 # Retrieve events from a Drupal installation with DBlog enabled.
@@ -231,7 +231,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
 
     # Close connection
     @client.close
-  end # def get_net_entries
+  end # def check_database
 
   private
   def update_sitename
@@ -241,7 +241,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
         @sitename = PHP.unserialize(result.first()['value'])
       end
     end
-  end
+  end # def update_sitename
 
   private
   def get_last_wid
@@ -254,7 +254,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
     end
 
     return lastWid
-  end
+  end # def get_last_wid
 
   private
   def set_last_wid(wid, insert)
@@ -265,7 +265,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
     else
       @client.query('UPDATE variable SET value="' + wid + '" WHERE name="logstash_last_wid"')
     end
-  end
+  end # def set_last_wid
 
   private
   def get_usermap
@@ -277,7 +277,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
 
     map[0] = "guest"
     return map
-  end
+  end # def get_usermap
 
   private
   def build_event(row)
