@@ -342,11 +342,18 @@ module LogStash::Config::Mixin
               return false, "Expected boolean, got #{value.inspect}"
             end
 
-            if value.first !~ /^(true|false)$/
-              return false, "Expected boolean 'true' or 'false', got #{value.first.inspect}"
-            end
+            bool_value = value.first
+            if !!bool_value == bool_value
+              # is_a does not work for booleans
+              # we have Boolean and not a string
+              result = bool_value
+            else
+              if bool_value !~ /^(true|false)$/
+                return false, "Expected boolean 'true' or 'false', got #{bool_value.inspect}"
+              end
 
-            result = (value.first == "true")
+              result = (bool_value == "true")
+            end
           when :ipaddr
             if value.size > 1 # only one value wanted
               return false, "Expected IPaddr, got #{value.inspect}"
