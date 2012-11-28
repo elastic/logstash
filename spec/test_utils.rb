@@ -1,4 +1,5 @@
 require "insist"
+require "logstash/agent"
 require "logstash/event"
 require "insist"
 require "stud/try"
