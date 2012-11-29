@@ -209,6 +209,12 @@ flatjar-test:
 jar-test:
 	cd build; GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec $(TESTS)
 
+flatjar-test-and-report:
+	cd build; GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --format h > build/results.flatjar.html
+
+jar-test-and-report:
+	cd build; GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --format h > build/results.monolithic.html
+
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
