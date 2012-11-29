@@ -5,8 +5,6 @@ describe LogStash::Filters::Grep do
   extend LogStash::RSpec
 
   describe "single grep match" do
-    # The logstash config goes here.
-    # At this time, only filters are supported.
     config <<-CONFIG
       filter {
         grep {

@@ -91,7 +91,6 @@ class LogStash::Runner
         require "rspec/core/runner"
         require "rspec"
         fixedargs = args.collect do |arg|
-
           # if the arg ends in .rb or has a "/" in it, assume it's a path.
           if arg =~ /\.rb$/ || arg =~ /\//
             # check if it's a file, if not, try inside the jar if we are in it.
@@ -114,7 +113,25 @@ class LogStash::Runner
             arg
           end
         end # args.collect
-        RSpec::Core::Runner.run(fixedargs)
+
+        # Hack up a runner
+        runner = Class.new do
+          def initialize(args)
+            @args = args
+          end
+          def run
+            @thread = Thread.new do
+              @result = RSpec::Core::Runner.run(@args)
+            end
+          end
+          def wait
+            @thread.join
+            return @result
+          end
+        end
+        rspec = runner.new(fixedargs)
+        rspec.run
+        @runners << rspec
         return []
       end,
       "irb" => lambda do
