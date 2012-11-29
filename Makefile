@@ -33,6 +33,7 @@ else
 TAR_OPTS=--wildcards
 endif
 
+TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/event.rb spec/jar.rb)
 default: jar
 
 # Figure out if we're using wget or curl
@@ -203,10 +204,16 @@ build/flatgems: | build vendor/bundle
 	done
 
 flatjar-test:
-	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/event.rb spec/jar.rb
+	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
 
 jar-test:
-	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-monolithic.jar rspec spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/event.rb spec/jar.rb
+	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec $(TESTS)
+
+flatjar-test-and-report:
+	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --format h > results.flatjar.html
+
+jar-test-and-report:
+	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --format h > results.monolithic.html
 
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
