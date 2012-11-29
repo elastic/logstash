@@ -212,10 +212,10 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
 
       # Retrieve last pulled watchdog entry id
       initialLastWid = get_last_wid
-      lastWid = initialLastWid ? initialLastWid : "0"
+      lastWid = initialLastWid ? initialLastWid : 0
 
       # Fetch new entries, and create the event
-      results = @client.query('SELECT * from watchdog WHERE wid > ' + initialLastWid + " ORDER BY wid asc")
+      results = @client.query('SELECT * from watchdog WHERE wid > ' + lastWid.to_s + " ORDER BY wid asc")
       results.each do |row|
         event = build_event(row)
         if event
