@@ -173,9 +173,9 @@ describe LogStash::Filters::Date do
     time = "2001-09-09T01:46:40.000Z"
 
     sample({"@fields" => {"mydate" => time}}) do
-      #insist { subject["mydate"] } == time
-      #insist { subject.timestamp } == time
-      #insist { subject["@timestamp"] } == time
+      insist { subject["mydate"] } == time
+      insist { subject.timestamp } == time
+      insist { subject["@timestamp"] } == time
     end
   end
 end
