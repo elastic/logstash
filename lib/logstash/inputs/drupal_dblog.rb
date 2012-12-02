@@ -1,75 +1,12 @@
 require "date"
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "logstash/time" # should really use the filters/date.rb bits
 require "php_serialize"
 
-if RUBY_PLATFORM != 'java'
-  require "mysql2"
+if RUBY_PLATFORM == 'java'
+  require "logstash/inputs/drupal_dblog/jdbcconnection"
 else
-  require "java"
-  require "rubygems"
-  require "jdbc/mysql"
-
-  java_import "com.mysql.jdbc.Driver"
-
-  # For JRuby, we need to supply a Connection class with an API like mysql2
-  class LogStash::DrupalDblogJavaMysqlConnection
-
-    def initialize(host, username, password, database, port = nil)
-      port ||= 3306
-
-      address = "jdbc:mysql://#{host}:#{port}/#{database}"
-      @connection = java.sql.DriverManager.getConnection(address, username, password)
-    end
-
-    def query sql
-      if sql.downcase.scan('select').length > 0
-        return select(sql)
-      else
-        return update(sql)
-      end
-    end
-
-    def select sql
-      stmt = @connection.createStatement
-      resultSet = stmt.executeQuery sql
-
-      meta = resultSet.getMetaData
-      column_count = meta.getColumnCount
-
-      rows = []
-
-      while resultSet.next
-        res = {}
-
-        (1..column_count).each do |i|
-          name = meta.getColumnName i
-          case meta.getColumnType i
-          when java.sql.Types::INTEGER
-            res[name] = resultSet.getInt name
-          else
-            res[name] = resultSet.getString name
-          end
-        end
-
-        rows << res
-      end
-
-      stmt.close
-      return rows
-    end
-
-    def update sql
-      stmt = @connection.createStatement
-      stmt.execute_update sql
-      stmt.close
-    end
-
-    def close
-      @connection.close
-    end
-  end # class LogStash::DrupalDblogJavaMysqlConnection
+  require "mysql2"
 end
 
 # Retrieve events from a Drupal installation with DBlog enabled.
@@ -81,15 +18,36 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
   config_name "drupal_dblog"
   plugin_status "experimental"
 
+  # Specify all drupal databases that you whish to import from.
+  # This can be as many as you whish.
+  # The format is a hash, with a unique site name as the key, and a databse
+  # url as the value.
+  #
+  # Example:
+  # [
+  #   "site1", "mysql://user1:password@host1.com/databasename",
+  #   "other_site", "mysql://user2:password@otherhost.com/databasename",
+  #   ...
+  # ]
   config :databases, :validate => :hash
 
-  config :type, :validate => :string, :default => 'watchdog'
-
-  # Add the username in addition to the user id to the event
+  # By default, the event only contains the current user id as a field.
+  # If you whish to add the username as an additional field, set this to true.
   config :add_usernames, :validate => :boolean, :default => false
 
-  # Time between checks in minutes
+  # Time between checks in minutes.
   config :interval, :validate => :number, :default => 10
+
+  # Label this input with a type.
+  # Types are used mainly for filter activation.
+  #
+  #
+  # If you create an input with type "foobar", then only filters
+  # which also have type "foobar" will act on them.
+  #
+  # The type is also stored as part of the event itself, so you
+  # can also use the type to search for in the web interface.
+  config :type, :validate => :string, :default => 'watchdog'
 
   public
   def initialize(params)
@@ -219,7 +177,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
       results.each do |row|
         event = build_event(row)
         if event
-          output_queue << to_event(JSON.dump(event), @sitename)
+          output_queue << event
           lastWid = row['wid'].to_s
         end
       end
@@ -227,6 +185,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
       set_last_wid(lastWid, initialLastWid == false)
     rescue Exception => e
       @logger.info("Mysql error: ", :error => e.message)
+      throw e
     end # begin
 
     # Close connection
@@ -307,6 +266,8 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
     row.delete("variables")
     row.delete("timestamp")
 
+    row["severity"] = row["severity"].to_i
+
     if @add_usernames and @usermap.has_key?(row["uid"])
       row["user"] = @usermap[row["uid"]]
     end
@@ -320,7 +281,9 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
       "@message" => msg
     }
 
-    return entry
+    event = to_event(JSON.dump(entry), @sitename)
+
+    return event
   end # def build_event
 
 end # class LogStash::Inputs::DrupalDblog
