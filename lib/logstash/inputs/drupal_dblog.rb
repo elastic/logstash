@@ -9,10 +9,16 @@ else
   require "mysql2"
 end
 
-# Retrieve events from a Drupal installation with DBlog enabled.
+# Retrieve watchdog log events from a Drupal installation with DBLog enabled.
+# The events are pulled out directly from the database.
+# The original events are not deleted, and on every consecutive run only new
+# events are pulled.
 #
-# To avoid pulling the same watchdog entry twice, the last pulled wid
-# is saved as a variable in the Drupal database.
+# The last watchdog event id that was processed is stored in the Drupal
+# variable table with the name "logstash_last_wid". Delete this variable or
+# set it to 0 if you want to re-import all events.
+#
+# More info on DBLog: http://drupal.org/documentation/modules/dblog
 #
 class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
   config_name "drupal_dblog"
