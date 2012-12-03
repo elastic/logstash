@@ -238,7 +238,7 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
       mail = Mail.new
       mail.from = event.sprintf(@from)
       mail.to = event.sprintf(@to)
-      mail.cc	= event.sprintf(@cc)
+      mail.cc = event.sprintf(@cc)
       mail.subject = formatedSubject
       if @htmlbody.empty?
         mail.body = formattedBody

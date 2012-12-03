@@ -90,8 +90,7 @@ module FileWatch; class BufferedTokenizer
     # empty tokens. Think of the empty line that delimits an HTTP header. It will have
     # two "\n" delimiters in a row, and this code mishandles the resulting empty token.
     # It someone figures out how to fix the problem, we can re-enable this code branch.
-    # Multi-chara100  5583  100  5583    0     0  10813      0 --:--:-- --:--:-- --:--:-- 15130
-cter token support.
+    # Multi-character token support.
     # Split any tokens that were incomplete on the last iteration buf complete now.
     entities.map! do |e|
       e.split @delimiter, -1

@@ -33,6 +33,7 @@ else
 TAR_OPTS=--wildcards
 endif
 
+TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/event.rb spec/jar.rb)
 default: jar
 
 # Figure out if we're using wget or curl
@@ -128,7 +129,7 @@ fix-bundler:
 vendor-gems: | vendor/bundle
 
 .PHONY: vendor/bundle
-vendor/bundle: | vendor
+vendor/bundle: | vendor $(JRUBY)
 	@echo "=> Installing gems to $@..."
 	#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
 	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec 
@@ -201,6 +202,18 @@ build/flatgems: | build vendor/bundle
 	for i in $(VENDOR_DIR)/gems/*/lib; do \
 		rsync -av $$i/ $@/lib ; \
 	done
+
+flatjar-test:
+	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
+
+jar-test:
+	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec $(TESTS)
+
+flatjar-test-and-report:
+	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --format h > results.flatjar.html
+
+jar-test-and-report:
+	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --format h > results.monolithic.html
 
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith

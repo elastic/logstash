@@ -70,12 +70,12 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # for example:
   #
   #    mutate {
-  #       …
   #      gsub => [
-  #        "fieldname", "\\/", "_",      #replace all forward slashes with underscore
-  #        "fieldname", "[\\?#-]", "_"   #replace backslashes, question marks, hashes and minuses with underscore
+  #        # replace all forward slashes with underscore
+  #        "fieldname", "\\/", "_",
+  #        # replace backslashes, question marks, hashes and minuses with underscore
+  #        "fieldname", "[\\?#-]", "_"
   #      ]
-  #       …
   #    }
   #
   config :gsub, :validate => :array

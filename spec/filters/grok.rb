@@ -1,7 +1,7 @@
 require "test_utils"
 require "logstash/filters/grok"
 
-describe LogStash::Filters::Grok do
+describe LogStash::Filters::Grok do 
   extend LogStash::RSpec
 
   describe "simple syslog line" do
@@ -26,7 +26,7 @@ describe LogStash::Filters::Grok do
     end
   end
 
-  describe "parsing an event with multiple messages (array of strings)" do
+  describe "parsing an event with multiple messages (array of strings)" do 
     config <<-CONFIG
       filter {
         grok {
@@ -168,6 +168,71 @@ describe LogStash::Filters::Grok do
       insist { subject["WORD"] } == "World"
       insist { subject }.include?("foo")
       insist { subject["foo"] } == "yo"
+    end
+  end
+
+  describe "using oniguruma named captures (?<name>regex)" do
+    context "plain regexp" do
+      config <<-'CONFIG'
+        filter {
+          grok {
+            singles => true
+            pattern => "(?<foo>\w+)"
+          }
+        }
+      CONFIG
+      sample "hello world" do
+        reject { subject.tags }.include?("_grokparsefailure")
+        insist { subject["foo"] } == "hello"
+      end
+    end
+
+    context "grok patterns" do
+      config <<-'CONFIG'
+        filter {
+          grok {
+            singles => true
+            pattern => "(?<timestamp>%{DATE_EU} %{TIME})"
+          }
+        }
+      CONFIG
+
+      sample "fancy 2012-12-12 12:12:12" do
+        reject { subject.tags }.include?("_grokparsefailure")
+        insist { subject["timestamp"] } == "2012-12-12 12:12:12"
+      end
+    end
+  end
+
+  describe "grok on integer types" do
+    config <<-'CONFIG'
+      filter {
+        grok {
+          match => [ "status", "^403$" ]
+          add_tag => "four_oh_three"
+        }
+      }
+    CONFIG
+
+    sample({ "@fields" => { "status" => 403 } }) do
+      reject { subject.tags }.include?("_grokparsefailure")
+      insist { subject.tags }.include?("four_oh_three")
+    end
+  end
+
+  describe "grok on float types" do
+    config <<-'CONFIG'
+      filter {
+        grok {
+          match => [ "version", "^1.0$" ]
+          add_tag => "one_point_oh"
+        }
+      }
+    CONFIG
+
+    sample({ "@fields" => { "version" => 1.0 } }) do
+      reject { subject.tags }.include?("_grokparsefailure")
+      insist { subject.tags }.include?("one_point_oh")
     end
   end
 end

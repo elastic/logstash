@@ -209,7 +209,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           event.timestamp = time.to_s 
           #event.timestamp = LogStash::Time.to_iso8601(time)
           @logger.debug("Date parsing done", :value => value, :timestamp => event.timestamp)
-        rescue => e
+        rescue StandardError, JavaException => e
           @logger.warn("Failed parsing date from field", :field => field,
                        :value => value, :exception => e,
                        :backtrace => e.backtrace)

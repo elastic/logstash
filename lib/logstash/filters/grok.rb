@@ -171,10 +171,12 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       @logger.debug("Trying pattern", :pile => pile, :field => field )
       (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |fieldvalue|
         begin
-          grok, match = pile.match(fieldvalue)
+          # Coerce all field values to string. This turns arrays, hashes, numbers, etc
+          # into strings for grokking. Seems like the best 'do what I mean' thing to do.
+          grok, match = pile.match(fieldvalue.to_s)
         rescue Exception => e
           fieldvalue_bytes = []
-          fieldvalue.bytes.each { |b| fieldvalue_bytes << b }
+          fieldvalue.to_s.bytes.each { |b| fieldvalue_bytes << b }
           @logger.warn("Grok regexp threw exception", :exception => e.message,
                        :field => field, :grok_pile => pile,
                        :fieldvalue_bytes => fieldvalue_bytes)
