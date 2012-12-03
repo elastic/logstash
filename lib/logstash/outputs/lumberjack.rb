@@ -42,7 +42,7 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
         :ssl_certificate => @ssl_certificate, :window_size => @window_size)
     rescue Exception => e
       @logger.error("All hosts unavailable, sleeping", :hosts => @hosts, :e => e, 
-        :backtrace => e.backtrace, :host => @client.host)
+        :backtrace => e.backtrace)
       sleep(10)
       retry
     end
