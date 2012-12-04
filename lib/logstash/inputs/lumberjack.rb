@@ -39,20 +39,15 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
 
   public
   def run(output_queue)
-    begin
-      @lumberjack.run do |l|
-        source = "lumberjack://#{l.delete("host")}/#{l.delete("file")}"
-        event = to_event(l.delete("line"), source)
-        # take any remaining fields in the lumberjack event and merge it as a
-        # field in the logstash event.
-        l.each do |key, value|
-          event[key] = value
-        end
-        output_queue << event
+    @lumberjack.run do |l|
+      source = "lumberjack://#{l.delete("host")}/#{l.delete("file")}"
+      event = to_event(l.delete("line"), source)
+      # take any remaining fields in the lumberjack event and merge it as a
+      # field in the logstash event.
+      l.each do |key, value|
+        event[key] = value
       end
-    rescue IOError => e
-      @logger.debug("Connection reset.", :e => e, :backtrace => e.backtrace)
-      retry
+      output_queue << event
     end
   end # def run
 end # class LogStash::Inputs::Lumberjack
