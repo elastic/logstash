@@ -25,7 +25,14 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
     begin
-      @client.write("line" => event.message, "host" => event.source_host, "file" => event.source_path)
+      @client.write(
+        {
+          "line" => event.message, 
+          "host" => event.source_host, 
+          "file" => event.source_path,
+          "type" => event.type
+        }.merge(event.fields)
+      )
     rescue Exception => e
       @logger.log("Client write error", :e => e, :backtrace => e.backtrace)
       connect
