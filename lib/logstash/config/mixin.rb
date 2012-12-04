@@ -157,7 +157,7 @@ module LogStash::Config::Mixin
     end # def inherited
 
     def validate(params)
-      @plugin_name = [ancestors[1].config_name, config_name].join("/")
+      @plugin_name = [superclass.config_name, config_name].join("/")
       @logger = LogStash::Logger.new(STDOUT)
       is_valid = true
 
