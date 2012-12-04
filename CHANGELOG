@@ -16,6 +16,7 @@
    encoded log files. This should help resolve the many UTF-8 bugs that were
    reported recently.
  - bugfix: zeromq: 'topology' is now a required setting
+ - lumberjack: jls-lumberjack gem updated to 0.0.6
 
  ## filters
  - improvement: grok: now accepts (?<foo>...) named captures. This lets you
@@ -37,6 +38,7 @@
    field as a mongodb date instead of a string. (#224, patch by Kevin Amorin)
  - improvement: gelf: Allow full_message gelf property to be overridden (#245, 
    patch by Sébastien Masset)
+ - lumberjack: jls-lumberjack gem updated to 0.0.6
 
 1.1.5 (November 10, 2012)
  ## Overview of this release:
