@@ -16,7 +16,7 @@
    encoded log files. This should help resolve the many UTF-8 bugs that were
    reported recently.
  - bugfix: zeromq: 'topology' is now a required setting
- - lumberjack: jls-lumberjack gem updated to 0.0.6
+ - lumberjack: jls-lumberjack gem updated to 0.0.7
 
  ## filters
  - improvement: grok: now accepts (?<foo>...) named captures. This lets you
