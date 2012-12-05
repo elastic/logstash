@@ -28,7 +28,7 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   # coerced will zero (0)
   config :metrics, :validate => :hash, :required => true
 
-  # Enable debug output (default: false)
+  # Enable debug output
   config :debug, :validate => :boolean, :default => false
 
   def register
@@ -55,12 +55,12 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
 
     # Catch exceptions like ECONNRESET and friends, reconnect on failure.
     @metrics.each do |metric, value|
-      @logger.debug("processing metric=#{metric.inspect} value=#{value.inspect}")
+      @logger.debug("processing", :metric => metric, :value => value)
 
       message = [event.sprintf(metric), event.sprintf(value).to_f,
                  event.sprintf("%{+%s}")].join(" ")
 
-      @logger.debug("sending #{message.inspect} to #{@host}:#{@port}")
+      @logger.debug("Sending carbon message", :message => message, :host => @host, :port => @port)
 
       # TODO(sissel): Test error cases. Catch exceptions. Find fortune and glory.
       begin
