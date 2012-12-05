@@ -1,7 +1,7 @@
 require "json"
 require "time"
 require "date"
-require "logstash/time"
+require "logstash/time_addon"
 require "logstash/namespace"
 require "uri"
 
@@ -230,7 +230,7 @@ class LogStash::Event
         # Got %{+%s}, support for unix epoch time
         if RUBY_ENGINE != "jruby"
           # This is really slow. See LOGSTASH-217
-          Date.parse(self.timestamp).to_i
+          Time.parse(self.timestamp).to_i
         else
           datetime = @@date_parser.parseDateTime(self.timestamp)
           (datetime.getMillis / 1000).to_i
