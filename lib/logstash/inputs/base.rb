@@ -91,7 +91,9 @@ class LogStash::Inputs::Base < LogStash::Plugin
       event.message = raw
     when "json"
       begin
-        fields = JSON.parse(raw)
+        # JSON must be valid UTF-8, and many inputs come from ruby IO
+        # instances, which almost all default to ASCII-8BIT. Force UTF-8
+        fields = JSON.parse(raw.force_encoding("UTF-8"))
         fields.each { |k, v| event[k] = v }
         if @message_format
           event.message = event.sprintf(@message_format)
@@ -108,7 +110,9 @@ class LogStash::Inputs::Base < LogStash::Plugin
       end
     when "json_event"
       begin
-        event = LogStash::Event.from_json(raw)
+        # JSON must be valid UTF-8, and many inputs come from ruby IO
+        # instances, which almost all default to ASCII-8BIT. Force UTF-8
+        event = LogStash::Event.from_json(raw.force_encoding("UTF-8"))
         event.tags += @tags
         if @message_format
           event.message ||= event.sprintf(@message_format)
