@@ -45,6 +45,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "jls-grok", ["0.10.10"]
   gem.add_runtime_dependency "mail"
   gem.add_runtime_dependency "mongo"
+  gem.add_runtime_dependency "metriks"
   gem.add_runtime_dependency "onstomp"
   gem.add_runtime_dependency "redis"
   gem.add_runtime_dependency "riak-client", ["1.0.3"]
