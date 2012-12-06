@@ -101,12 +101,16 @@ class LogStash::Outputs::Http < LogStash::Outputs::Base
       else
         request.body = encode(evt)
       end
-      puts request
-      puts 
-      puts request.body
+      #puts "#{request.port} / #{request.protocol}"
+      #puts request
+      #puts 
+      #puts request.body
       response = @agent.execute(request)
-      puts response
-      response.read_body { |c| puts c }
+
+      # Consume body to let this connection be reused
+      rbody = ""
+      response.read_body { |c| rbody << c }
+      #puts rbody
     rescue Exception => e
       @logger.warn("Unhandled exception", :request => request, :response => response, :exception => e, :stacktrace => e.backtrace)
     end
