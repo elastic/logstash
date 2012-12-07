@@ -98,4 +98,4 @@ TOMCATACCESSLOG %{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:tim
 # "%h %l %u %t &quot;%r&quot; %s %b &quot;%{Referer}i&quot; &quot;%{User-agent}i&quot; %D &quot;%{X-Forwarded-For}i&quot; %S %{AL_ERROR_MESSAGE}r %{lb}c"
 
 # Log Levels
-LOGLEVEL ([D|d]ebug|DEBUG|[N|n]otice|NOTICE|[I|i]nfo|INFO|[W|w]arn?(?:ing)?|WARN?(?:ING)?|[E|e]rr?(?:or)?|ERR?(?:OR)?|[C|c]rit?(?:ical)?|CRIT?(?:ICAL)?|[F|f]atal|FATAL|[S|s]evere|SEVERE)
+LOGLEVEL ([T|t]race|TRACE|[D|d]ebug|DEBUG|[N|n]otice|NOTICE|[I|i]nfo|INFO|[W|w]arn?(?:ing)?|WARN?(?:ING)?|[E|e]rr?(?:or)?|ERR?(?:OR)?|[C|c]rit?(?:ical)?|CRIT?(?:ICAL)?|[F|f]atal|FATAL|[S|s]evere|SEVERE)

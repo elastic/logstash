@@ -168,7 +168,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
         next
       end
 
-      @logger.debug("Trying pattern", :pile => pile, :field => field )
+      @logger.debug("Trying pattern", :pile => pile, :field => field)
       (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |fieldvalue|
         begin
           # Coerce all field values to string. This turns arrays, hashes, numbers, etc
