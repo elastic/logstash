@@ -79,7 +79,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   if __FILE__ =~ /file:\/.*\.jar!.*/
     @@patterns_path += ["#{File.dirname(__FILE__)}/../../patterns/*"]
   else
-    @@patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
+    @@patterns_path += ["#{File.dirname(__FILE__)}/../../patterns/*"]
   end
 
   # This flag becomes "--grok-patterns-path"
