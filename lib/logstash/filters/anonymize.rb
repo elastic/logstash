@@ -13,12 +13,22 @@ class LogStash::Filters::Anonymize < LogStash::Filters::Base
   config :key, :validate => :string, :required => true
 
   # digest type
-  config :algorithm, :validate => ['SHA', 'SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512', 'MD4', 'MD5'], :required => true, :default => 'SHA1'
+  config :algorithm, :validate => ['SHA', 'SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512', 'MD4', 'MD5', "MURMUR3", "IPV4_NETWORK"], :required => true, :default => 'SHA1'
 
   public
   def register
-    # require any library
-    require 'openssl'
+    # require any library and set the anonymize function
+    case @algorithm
+    when "IPV4_NETWORK"
+      require "ipaddress"
+      class << self; alias_method :anonymize, :anonymize_ipv4_network; end
+    when "MURMUR3"
+      require "murmurhash3"
+      class << self; alias_method :anonymize, :anonymize_murmur3; end
+    else
+      require 'openssl'
+      class << self; alias_method :anonymize, :anonymize_openssl; end
+    end
   end # def register
 
   public
@@ -30,12 +40,29 @@ class LogStash::Filters::Anonymize < LogStash::Filters::Base
   end # def filter
 
   private
-  def anonymize(data)
+  def anonymize_ipv4_network(ip_string)
+    warn "ipv4"
+    ip = IPAddress::IPv4.new(ip_string)
+    ip.prefix = @key
+    ip.network.to_s
+  end  
+
+  def anonymize_openssl(data)
+    warn "openssl"
     digest = algorithm()
     OpenSSL::HMAC.hexdigest(digest, @key, data)
   end
 
-  private
+  def anonymize_murmur3(value)
+    warn "murmur3"
+    case value
+    when Fixnum
+      MurmurHash3::V32.int_hash(value)
+    when String
+      MurmurHash3::V32.str_hash(value)
+    end
+  end
+
   def algorithm
  
    case @algorithm
@@ -59,5 +86,5 @@ class LogStash::Filters::Anonymize < LogStash::Filters::Base
         @logger.error("Unknown algorithm")
     end
   end
-
+      
 end # class LogStash::Filters::Anonymize
