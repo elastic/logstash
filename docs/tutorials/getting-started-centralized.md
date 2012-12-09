@@ -148,8 +148,9 @@ sample config based on the previous section. Save this as `indexer.conf`
         # these settings should match the output of the agent
         data_type => "list"
         key => "logstash"
+
         # We use json_event here since the sender is a logstash agent
-        message_format => "json_event"
+        format => "json_event"
       }
     }
     
