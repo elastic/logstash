@@ -45,6 +45,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "jls-grok", ["0.10.10"]
   gem.add_runtime_dependency "mail"
   gem.add_runtime_dependency "mongo"
+  gem.add_runtime_dependency "metriks"
   gem.add_runtime_dependency "onstomp"
   gem.add_runtime_dependency "redis"
   gem.add_runtime_dependency "riak-client", ["1.0.3"]
@@ -53,7 +54,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "uuidtools" # For generating amqp queue names
   gem.add_runtime_dependency "xml-simple"
   gem.add_runtime_dependency "xmpp4r", ["0.5"]
-  gem.add_runtime_dependency "jls-lumberjack", ["0.0.4"]
+  gem.add_runtime_dependency "jls-lumberjack", ["0.0.7"]
   gem.add_runtime_dependency "geoip", [">= 1.1.0"]
   gem.add_runtime_dependency "beefcake", "0.3.7"
 
