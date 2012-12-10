@@ -5,35 +5,78 @@ require "thread"
 require "rufus/scheduler"
 require "aws"
 
-# Got an AWS account? Use logstash to ship events to CloudWatch!
+# This output lets you aggregate and send metric data to AWS CloudWatch
 #
+# Configuration is done partly in this output and partly using fields added
+# to your events by other input & filter plugins.
+#
+# Events which do not have a "CW_metric" field will be ignored, so to send
+# events to CloudWatch you must at least add the "CW_metric" field to the
+# desired events (using grep for example)
+#
+# Other fields which can be added to events to modify the behavior of this
+# plugin are, "CW_namespace", "CW_unit", "CW_value", and the pair of
+# "CW_dimensionName" & "CW_dimensionValue".  All of these field names are
+# configurable in this output.  See below for details.
+#
+# You can read more about AWS CloudWatch here: http://aws.amazon.com/cloudwatch/
 class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   config_name "cloudwatch"
   plugin_status "experimental"
 
   # The AWS Region to send logs to.
   config :region, :validate => :string, :default => "us-east-1"
+
+  # The AWS Access Key ID
   config :access_key, :validate => :string, :required => true
+
+  # The AWS Secret Access Key
   config :secret_key, :validate => :string, :required => true
-  config :namespace, :validate => :string, :default => "Logstash"
+
+  # How often to send data to CloudWatch
+  # This does not affect the event timestamps, events will always have their
+  # actual timestamp (to-the-minute) sent to CloudWatch.
+  #
+  # Increasing this may reduce the number of CloudWatch API calls, which would
+  # reduce costs in heavy usage.
+  #
+  # See here for allowed values: https://github.com/jmettraux/rufus-scheduler#the-time-strings-understood-by-rufus-scheduler
   config :timeframe, :validate => :string, :default => "1m"
-  config :field_namespace, :validate => :string, :default => "CW_namespace"
+
+  # The default namespace to use for events which do not have a "CW_namespace" field
+  config :namespace, :validate => :string, :default => "Logstash"
+
+  # The name of the field used to set the metric name on an event
   config :field_metric, :validate => :string, :default => "CW_metric"
+
+  # The name of the field used to set a different namespace per event
+  config :field_namespace, :validate => :string, :default => "CW_namespace"
+
+  # The name of the field used to set the units on an event metric
   config :field_unit, :validate => :string, :default => "CW_unit"
+
+  # The name of the field used to set the value (float) on an event metric
   config :field_value, :validate => :string, :default => "CW_value"
+
+  # The name of the field used to set the dimension name on an event metric
   config :field_dimensionname, :validate => :string, :default => "CW_dimensionName"
+
+  # The name of the field used to set the dimension value on an event metric
   config :field_dimensionvalue, :validate => :string, :default => "CW_dimensionValue"
 
-  DIM_VALUE = "dimensionValue"
+  # aggregate_key members
   DIM_NAME = "dimensionName"
+  DIM_VALUE = "dimensionValue"
   TIMESTAMP = "timestamp"
   METRIC = "metric"
-  UNIT = "unit"
   COUNT = "count"
+  UNIT = "unit"
   SUM = "sum"
   MIN = "min"
   MAX = "max"
-  COUNT = "Count"
+
+  # Units
+  COUNT_UNIT = "Count"
   NONE = "None"
 
   public
@@ -45,7 +88,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
     )
     @cw = AWS::CloudWatch.new
 
-    @valid_units = ["Seconds", "Microseconds", "Milliseconds", "Bytes", "Kilobytes", "Megabytes", "Gigabytes", "Terabytes", "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits", "Percent", COUNT, "Bytes/Second", "Kilobytes/Second", "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second", "Bits/Second", "Kilobits/Second", "Megabits/Second", "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
+    @valid_units = ["Seconds", "Microseconds", "Milliseconds", "Bytes", "Kilobytes", "Megabytes", "Gigabytes", "Terabytes", "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits", "Percent", COUNT_UNIT, "Bytes/Second", "Kilobytes/Second", "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second", "Bits/Second", "Kilobits/Second", "Megabits/Second", "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
 
     @event_queue = Queue.new
     @scheduler = Rufus::Scheduler.start_new
