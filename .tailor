@@ -1,0 +1,8 @@
+Tailor.config do |config|
+  config.file_set '*.rb' do |style|
+    style.indentation_spaces 2, :level => :off
+    style.max_line_length 80, :level => :off
+    style.allow_trailing_line_spaces true, :level => :off
+    style.spaces_after_comma false, :level => :off
+  end
+end
