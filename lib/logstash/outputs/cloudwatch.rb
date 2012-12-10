@@ -1,11 +1,5 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
-require "openssl"
-require "base64"
-require "cgi"
-# TODO(sissel): Move to something that performs better than net/http
-require "net/http"
-require "net/https"
 
 require "thread"
 require "rufus/scheduler"
