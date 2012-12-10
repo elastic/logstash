@@ -111,7 +111,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
             #Intended shutdown, get out of the loop
             break
           else
-          # Else it was a genuine IOError caused by something else, so propagate it up..
+            # Else it was a genuine IOError caused by something else, so propagate it up..
             raise
           end
         end
