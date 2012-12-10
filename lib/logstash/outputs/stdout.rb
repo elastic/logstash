@@ -16,6 +16,9 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   # Debug output format: ruby (default), json
   config :debug_format, :default => "ruby", :validate => ["ruby", "json", "dots"]
 
+  # The message to emit to stdout.
+  config :message, :validate => :string, :default => "%{@timestamp} %{@source}: %{@message}"
+
   public
   def register
     @print_method = method(:ap) rescue method(:p)
@@ -58,7 +61,7 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
           finished
           return
         end
-        puts event.to_s
+        puts event.sprintf(@message)
       end
     end
   end

@@ -25,7 +25,14 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
     begin
-      @client.write("line" => event.message, "host" => event.source_host, "file" => event.source_path)
+      @client.write(
+        {
+          "line" => event.message, 
+          "host" => event.source_host, 
+          "file" => event.source_path,
+          "type" => event.type
+        }.merge(event.fields)
+      )
     rescue Exception => e
       @logger.log("Client write error", :e => e, :backtrace => e.backtrace)
       connect
@@ -42,7 +49,7 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
         :ssl_certificate => @ssl_certificate, :window_size => @window_size)
     rescue Exception => e
       @logger.error("All hosts unavailable, sleeping", :hosts => @hosts, :e => e, 
-        :backtrace => e.backtrace, :host => @client.host)
+        :backtrace => e.backtrace)
       sleep(10)
       retry
     end
