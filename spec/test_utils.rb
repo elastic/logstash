@@ -14,6 +14,10 @@ end
 
 module LogStash
   module RSpec
+    def options(opts)
+      @options = opts
+    end  # def options
+
     def config(configstr)
       @config_str = configstr
     end # def config
@@ -21,7 +25,7 @@ module LogStash
     def type(default_type)
       @default_type = default_type
     end
-    
+
     def tags(*tags)
       @default_tags = tags
       puts "Setting default tags: #{@default_tags}"
@@ -31,9 +35,13 @@ module LogStash
       default_type = @default_type || "default"
       default_tags = @default_tags || []
       require "logstash/config/file"
+      options = @options
       config = LogStash::Config::File.new(nil, @config_str)
       agent = LogStash::Agent.new
-      @inputs, @filters, @outputs = agent.instance_eval { parse_config(config) }
+      @inputs, @filters, @outputs = agent.instance_eval {
+        parse_options(options) unless options.nil?
+        parse_config(config)
+      }
       [@inputs, @filters, @outputs].flatten.each do |plugin|
         plugin.logger = Cabin::Channel.get
         plugin.register
@@ -48,7 +56,7 @@ module LogStash
         before :all do
           # Coerce to an array of LogStash::Event
           event = [event] unless event.is_a?(Array)
-          event = event.collect do |e| 
+          event = event.collect do |e|
             if e.is_a?(String)
               LogStash::Event.new("@message" => e, "@type" => default_type,
                                   "@tags" => default_tags)
@@ -56,7 +64,7 @@ module LogStash
               LogStash::Event.new(e)
             end
           end
-          
+
           results = []
           event.each do |e|
             filters.each do |filter|
