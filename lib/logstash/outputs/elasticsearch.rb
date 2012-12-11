@@ -5,7 +5,7 @@ require "logstash/outputs/base"
 # output for logstash. If you plan on using the logstash web interface, you'll
 # need to use this output.
 #
-#   *NOTE*: The elasticsearch client is version 0.19.8. Your elasticsearch
+#   *NOTE*: The elasticsearch client is version %ELASTICSEARCH_VERSION%. Your elasticsearch
 #   cluster must be running 0.19.x for API compatibility.
 #
 # If you want to set other elasticsearch options that are not exposed directly
