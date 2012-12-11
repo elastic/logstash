@@ -26,14 +26,14 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
   # Define the column separator value. If this is not specified the default
   # is a comma ','
   # Optional.
-  config :col_sep, :validate => :string, :default => ","
+  config :separator, :validate => :string, :default => ","
 
   public
   def register
     @csv = {}
 
     @config.each do |field, dest|
-      next if (RESERVED + ["fields", "col_sep"]).member?(field)
+      next if (RESERVED + ["fields", "separator"]).member?(field)
       @csv[field] = dest
     end
 
@@ -65,7 +65,7 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
 
         raw = event[key].first
         begin
-          values = CSV.parse_line(raw, {:col_sep => @col_sep})
+          values = CSV.parse_line(raw, {:col_sep => @separator})
           data = {}
           values.each_index do |i|
             field_name = @fields[i] || "field#{i+1}"

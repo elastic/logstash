@@ -42,7 +42,7 @@ describe LogStash::Filters::CSV do
     config <<-CONFIG
       filter {
         csv {
-          col_sep => ";"
+          separator => ";"
         }
       }
     CONFIG
