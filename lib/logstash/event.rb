@@ -190,13 +190,13 @@ class LogStash::Event
     end # event.fields.each
   end # def append
 
-  # Remove a field
+  # Remove a field. Returns the value of that field when deleted
   public
   def remove(field)
     if @data.has_key?(field)
-      @data.delete(field)
+      return @data.delete(field)
     else
-      @data["@fields"].delete(field)
+      return @data["@fields"].delete(field)
     end
   end # def remove
 

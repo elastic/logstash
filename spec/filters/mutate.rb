@@ -133,7 +133,7 @@ describe LogStash::Filters::Mutate do
     end
   end
 
-  describe "regression - check grok+mutate" do
+  describe "regression - mutate should lowercase a field created by grok" do
     config <<-CONFIG
       filter {
         grok {
@@ -149,4 +149,20 @@ describe LogStash::Filters::Mutate do
       insist { subject["foo"] } == ['hello']
     end
   end
+
+  describe "LOGSTASH-757: rename should do nothing with a missing field" do
+    config <<-CONFIG
+      filter {
+        mutate {
+          rename => [ "nosuchfield", "hello" ]
+        }
+      }
+    CONFIG
+
+    sample "whatever" do
+      reject { subject.fields }.include?("nosuchfield")
+      reject { subject.fields }.include?("hello")
+    end
+  end
 end
+

@@ -31,6 +31,8 @@
    matched. (LOGSTASH-705)
  - improvement: kv: Adds field_split, value_split, prefix, and container
    settings. (#225, patch by Alex Wheeler)
+ - mutate: rename on a nonexistant field now does nothing as expected.
+   (LOGSTASH-757)
 
  ## outputs
  - bugfix: zeromq: 'topology' is now a required setting

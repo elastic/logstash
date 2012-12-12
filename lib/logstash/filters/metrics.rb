@@ -14,7 +14,8 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
 
   def register
     require "metriks"
-
+    require "socket"
+    
     @metric_meters = Hash.new { |h,k| h[k] = Metriks.meter(k) }
     @metric_timers = Hash.new { |h,k| h[k] = Metriks.timer(k) }
   end # def register
@@ -33,6 +34,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
 
   def flush
     event = LogStash::Event.new
+    event.source_host = Socket.gethostname
     @metric_meters.each do |name, metric|
       event["#{name}.count"] = metric.count
       event["#{name}.rate_1m"] = metric.one_minute_rate

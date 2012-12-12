@@ -155,8 +155,8 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   def rename(event)
     # TODO(sissel): use event.sprintf on the field names?
     @rename.each do |old, new|
-      event[new] = event[old]
-      event.remove(old)
+      next unless event.include?(old)
+      event[new] = event.remove(old)
     end
   end # def rename
 

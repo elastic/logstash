@@ -77,7 +77,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
         when Array; value.each { |v| kv_keys = parse(v, event, kv_keys) }
         else 
           @logger.warn("kv filter has no support for this type of data",
-                       :type => value.type, :value => value)
+                       :type => value.class, :value => value)
       end # case value
     end
     # If we have any keys, create/append the hash
