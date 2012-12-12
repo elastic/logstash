@@ -123,9 +123,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
 
     @logger.info("Queueing event", :event => event)
     @event_queue << event
-  end
-
-  # def receive
+  end # def receive
 
   private
   def publish(aggregates)
@@ -165,9 +163,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
       end
     end # aggregates.each
     return aggregates
-  end
-
-  # def publish
+  end # def publish
 
   private
   def aggregate(aggregates)
@@ -187,12 +183,12 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   private
   def count(aggregates, event)
 
-    # If the event doesnt declare a namespace, use the default
+    # If the event doesn't declare a namespace, use the default
     ns = field(event, @field_namespace)
     namespace = (!ns) ? @namespace : ns
 
-    unit = field(event, @field_unit) # .to_s happens below
-    value = field(event, @field_value) # .to_f happens below
+    unit = field(event, @field_unit)
+    value = field(event, @field_value)
 
     # If neither Units nor Value is set, then we simply count the event
     if (!unit && !value)
