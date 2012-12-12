@@ -1,10 +1,6 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-require "thread"
-require "rufus/scheduler"
-require "aws"
-
 # This output lets you aggregate and send metric data to AWS CloudWatch
 #
 # Configuration is done partly in this output and partly using fields added
@@ -42,6 +38,10 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   #
   # See here for allowed values: https://github.com/jmettraux/rufus-scheduler#the-time-strings-understood-by-rufus-scheduler
   config :timeframe, :validate => :string, :default => "1m"
+
+  # How many events to queue before forcing a call to the CloudWatch API ahead of "timeframe" schedule
+  # Set this to the number of events-per-timeframe you will be sending to CloudWatch to avoid extra API calls
+  config :queue_size, :validate => :number, :default => 10000
 
   # The default namespace to use for events which do not have a "CW_namespace" field
   config :namespace, :validate => :string, :default => "Logstash"
@@ -81,6 +81,10 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
 
   public
   def register
+    require "thread"
+    require "rufus/scheduler"
+    require "aws"
+
     AWS.config(
         :access_key_id => @access_key,
         :secret_access_key => @secret_key,
@@ -90,11 +94,11 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
 
     @valid_units = ["Seconds", "Microseconds", "Milliseconds", "Bytes", "Kilobytes", "Megabytes", "Gigabytes", "Terabytes", "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits", "Percent", COUNT_UNIT, "Bytes/Second", "Kilobytes/Second", "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second", "Bits/Second", "Kilobits/Second", "Megabits/Second", "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
 
-    @event_queue = Queue.new
+    @event_queue = SizedQueue.new(@queue_size)
     @scheduler = Rufus::Scheduler.start_new
     @job = @scheduler.every @timeframe do
       @logger.info("Scheduler Activated")
-      send(aggregate({}))
+      publish(aggregate({}))
     end
   end
 
@@ -110,18 +114,25 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
       return
     end
 
-    return unless event.fields.member?(@field_metric)
+    return unless event[@field_metric]
+
+    if (@event_queue.length >= @event_queue.max)
+      @job.trigger
+      @logger.warn("Posted to AWS CloudWatch ahead of schedule.  If you see this often, consider increasing the cloudwatch queue_size option.")
+    end
 
     @logger.info("Queueing event", :event => event)
     @event_queue << event
-  end # def receive
+  end
+
+  # def receive
 
   private
-  def send(aggregates)
-    aggregates.each { |namespace, data|
+  def publish(aggregates)
+    aggregates.each do |namespace, data|
       @logger.info("Namespace, data: ", :namespace => namespace, :data => data)
       metric_data = []
-      data.each { |aggregate_key, stats|
+      data.each do |aggregate_key, stats|
         new_data = {
             :metric_name => aggregate_key[METRIC],
             :timestamp => aggregate_key[TIMESTAMP],
@@ -140,7 +151,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
                                    }]
         end
         metric_data << new_data
-      } # data.each
+      end # data.each
 
       begin
         response = @cw.put_metric_data(
@@ -152,17 +163,17 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
         @logger.warn("Failed to send to AWS CloudWatch", :exception => e, :namespace => namespace, :metric_data => metric_data)
         break
       end
-    } # aggregates.each
+    end # aggregates.each
     return aggregates
   end
 
-  # def send
+  # def publish
 
   private
   def aggregate(aggregates)
 
     @logger.info("QUEUE SIZE ", :queuesize => @event_queue.size)
-    until @event_queue.empty? do
+    while !@event_queue.empty? do
       begin
         count(aggregates, @event_queue.pop(true))
       rescue Exception => e
@@ -180,14 +191,17 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
     ns = field(event, @field_namespace)
     namespace = (!ns) ? @namespace : ns
 
-    unit = field(event, @field_unit)
-    value = field(event, @field_value)
+    unit = field(event, @field_unit) # .to_s happens below
+    value = field(event, @field_value) # .to_f happens below
 
     # If neither Units nor Value is set, then we simply count the event
     if (!unit && !value)
       unit = COUNT
       value = "1"
     end
+
+    # We may get to this point with valid Units but missing value.  Send zeros.
+    val = (!value) ? 0.0 : value.to_f
 
     # If Units is still not set (or is invalid), then we know Value must BE set, so set Units to "None"
     # And warn about misconfiguration
@@ -207,15 +221,12 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
         DIM_NAME => field(event, @field_dimensionname),
         DIM_VALUE => field(event, @field_dimensionvalue),
         UNIT => unit,
-        TIMESTAMP => normalizeTimestamp(event.timestamp)
+        TIMESTAMP => event.sprintf("%{+YYYY-MM-dd'T'HH:mm:00Z}")
     }
 
     if (!aggregates[namespace][aggregate_key])
       aggregates[namespace][aggregate_key] = {}
     end
-
-    # We may get to this point with valid Units but missing value.  Send zeros.
-    val = (!value) ? 0.0 : value.to_f
 
     if (!aggregates[namespace][aggregate_key][MAX] || val > aggregates[namespace][aggregate_key][MAX])
       aggregates[namespace][aggregate_key][MAX] = val
@@ -238,18 +249,17 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
     end
   end
 
-  # Zeros out the seconds in a ISO8601 timestamp like event.timestamp
-  public
-  def normalizeTimestamp(time)
-    tz = (time[-1, 1] == "Z") ? "Z" : time[-5, 5]
-    totheminute = time[0..16]
-    normal = totheminute + "00.000" + tz
-    return normal
-  end
-
   private
   def field(event, fieldname)
-    return event.fields.member?(fieldname) ? event.fields[fieldname][0] : nil
+    if !event[fieldname]
+      return nil
+    else
+      if event[fieldname].is_a?(Array)
+        return event[fieldname][0]
+      else
+        return event[fieldname]
+      end
+    end
   end
 
 end # class LogStash::Outputs::CloudWatch
