@@ -676,8 +676,9 @@ class LogStash::Agent
     end
 
     Signal.trap("HUP") do
-      @logger.warn("SIGHUP received, reloading.")
-      reload
+      # [rfeng]: Ignore the SIGHUP as it is not working well for elastic search output
+      # @logger.warn("SIGHUP received, reloading.")
+      # reload
     end
 
     Signal.trap("TERM") do
