@@ -58,15 +58,17 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   # The name of the field used to set the value (float) on an event metric
   config :field_value, :validate => :string, :default => "CW_value"
 
-  # The name of the field used to set the dimension name on an event metric
-  config :field_dimensionname, :validate => :string, :default => "CW_dimensionName"
-
-  # The name of the field used to set the dimension value on an event metric
-  config :field_dimensionvalue, :validate => :string, :default => "CW_dimensionValue"
+  # The name of the field used to set the dimensions on an event metric
+  # this field named here, if present in an event, must have an array of
+  # one or more key & value pairs, for example...
+  #     add_field => [ "CW_dimensions", "Environment", "CW_dimensions", "prod" ]
+  # or, equivalently...
+  #     add_field => [ "CW_dimensions", "Environment" ]
+  #     add_field => [ "CW_dimensions", "prod" ]
+  config :field_dimensions, :validate => :string, :default => "CW_dimensions"
 
   # aggregate_key members
-  DIM_NAME = "dimensionName"
-  DIM_VALUE = "dimensionValue"
+  DIMENSIONS = "dimensions"
   TIMESTAMP = "timestamp"
   METRIC = "metric"
   COUNT = "count"
@@ -123,7 +125,9 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
 
     @logger.info("Queueing event", :event => event)
     @event_queue << event
-  end # def receive
+  end
+
+  # def receive
 
   private
   def publish(aggregates)
@@ -142,11 +146,14 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
                 :maximum => stats[MAX],
             }
         }
-        if (aggregate_key[DIM_NAME] != nil && aggregate_key[DIM_VALUE] != nil)
-          new_data[:dimensions] = [{
-                                       :name => aggregate_key[DIM_NAME],
-                                       :value => aggregate_key[DIM_VALUE]
-                                   }]
+        dims = aggregate_key[DIMENSIONS]
+        if (dims.is_a?(Array) && dims.length > 0 && (dims.length % 2) == 0)
+          new_data[:dimensions] = Array.new
+          i = 0
+          while (i < dims.length)
+            new_data[:dimensions] << {:name => dims[i], :value => dims[i+1]}
+            i += 2
+          end
         end
         metric_data << new_data
       end # data.each
@@ -163,7 +170,9 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
       end
     end # aggregates.each
     return aggregates
-  end # def publish
+  end
+
+  # def publish
 
   private
   def aggregate(aggregates)
@@ -203,19 +212,22 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
     # And warn about misconfiguration
     if (!unit || !@valid_units.include?(unit))
       unit = NONE
-      @logger.warn("Possible config error: CloudWatch Value found with invalid or missing Units")
+      @logger.warn("Likely config error: CloudWatch Value found (#{val}) with invalid or missing Units (#{unit.to_s}", :event => event)
     end
-
 
     if (!aggregates[namespace])
       aggregates[namespace] = {}
-      @logger.info("INITIALIZING NAMESPACE DATA")
+    end
+
+    dims = event[@field_dimensions]
+    if ( dims && (!dims.is_a?(Array) || dims.length == 0 || (dims.length % 2) != 0) )
+      @logger.warn("Likely config error: CloudWatch dimensions field (#{dims.to_s}) found which is not a positive- & even-length array.  Ignoring it.", :event => event)
+      dims = nil
     end
 
     aggregate_key = {
         METRIC => field(event, @field_metric),
-        DIM_NAME => field(event, @field_dimensionname),
-        DIM_VALUE => field(event, @field_dimensionvalue),
+        DIMENSIONS => dims,
         UNIT => unit,
         TIMESTAMP => event.sprintf("%{+YYYY-MM-dd'T'HH:mm:00Z}")
     }
