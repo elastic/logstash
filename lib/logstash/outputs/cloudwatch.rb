@@ -79,14 +79,22 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   # The name of the field used to set the metric name on an event
   config :field_metricname, :validate => :string, :default => "CW_metricname"
 
+  @valid_units = ["Seconds", "Microseconds", "Milliseconds", "Bytes",
+                  "Kilobytes", "Megabytes", "Gigabytes", "Terabytes",
+                  "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits",
+                  "Percent", COUNT_UNIT, "Bytes/Second", "Kilobytes/Second",
+                  "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second",
+                  "Bits/Second", "Kilobits/Second", "Megabits/Second",
+                  "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
+
   # The default unit to use for events which do not have a "CW_unit" field
-  config :unit, :validate => :string, :default => COUNT_UNIT
+  config :unit, :validate => @valid_units, :default => COUNT_UNIT
 
   # The name of the field used to set the unit on an event metric
   config :field_unit, :validate => :string, :default => "CW_unit"
 
   # The default value to use for events which do not have a "CW_value" field
-  # If provided, this must be a string which can be converted to a fload, for example...
+  # If provided, this must be a string which can be converted to a float, for example...
   # "1", "2.34", ".5", and "0.67"
   config :value, :validate => :string, :default => "1"
 
@@ -117,14 +125,6 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
         :cloud_watch_endpoint => "monitoring.#{@region}.amazonaws.com"
     )
     @cw = AWS::CloudWatch.new
-
-    @valid_units = ["Seconds", "Microseconds", "Milliseconds", "Bytes",
-                    "Kilobytes", "Megabytes", "Gigabytes", "Terabytes",
-                    "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits",
-                    "Percent", COUNT_UNIT, "Bytes/Second", "Kilobytes/Second",
-                    "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second",
-                    "Bits/Second", "Kilobits/Second", "Megabits/Second",
-                    "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
 
     @event_queue = SizedQueue.new(@queue_size)
     @scheduler = Rufus::Scheduler.start_new
