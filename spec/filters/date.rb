@@ -132,4 +132,32 @@ describe LogStash::Filters::Date do
       end
     end # times.each
   end
+
+  describe "failed parses should not cause a failure (LOGSTASH-641)" do
+    config <<-'CONFIG'
+      input {
+        generator {
+          lines => [
+            '{ "@fields": { "mydate": "this will not parse" } }',
+            '{ "@fields": { } }'
+          ]
+          format => json_event
+          type => foo
+          count => 1
+        }
+      }
+      filter {
+        date {
+          mydate => [ "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+        }
+      }
+      output { 
+        null { }
+      }
+    CONFIG
+
+    agent do
+      # nothing to do, if this crashes it's an error..
+    end
+  end
 end

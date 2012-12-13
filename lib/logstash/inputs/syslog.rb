@@ -52,7 +52,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
   public
   def register
-    @logger.warn("ATTENTION: THIS PLUGIN WILL BE REMOVED IN LOGSTASH 1.2.0. YOU MAY CONTINUE USING IT. WHEN REMOVED, THERE WILL BE EXCELLENT DOCUMENTATION AND SUPPORT HELPING YOU MOVE AWAY FROM IT. DO NOT FEAR.")
+    @logger.warn("ATTENTION: THIS PLUGIN WILL BE REMOVED IN LOGSTASH 1.2.0. YOU MAY CONTINUE USING IT. WHEN REMOVED, TO LEARN HOW TO REPLACE THIS PLUGIN, SEE THIS URL: http://cookbook.logstash.net/recipes/syslog-pri/")
     @grok_filter = LogStash::Filters::Grok.new({
       "type"    => [@config["type"]],
       "pattern" => ["<%{POSINT:priority}>%{SYSLOGLINE}"],

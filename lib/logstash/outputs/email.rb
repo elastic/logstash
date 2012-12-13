@@ -2,7 +2,7 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 
 
-class LogStash::Outputs::Email < LogStash::Outputs::base
+class LogStash::Outputs::Email < LogStash::Outputs::Base
 
   config_name "email"
   plugin_status "experimental"
@@ -238,7 +238,7 @@ class LogStash::Outputs::Email < LogStash::Outputs::base
       mail = Mail.new
       mail.from = event.sprintf(@from)
       mail.to = event.sprintf(@to)
-      mail.cc	= event.sprintf(@cc)
+      mail.cc = event.sprintf(@cc)
       mail.subject = formatedSubject
       if @htmlbody.empty?
         mail.body = formattedBody

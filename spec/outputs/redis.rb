@@ -2,29 +2,6 @@ require "test_utils"
 require "logstash/outputs/redis"
 require "redis"
 
-class Redis
-  def initialize(*args)
-    @@data ||= Hash.new { |h,k| h[k] = [] }
-  end
-
-  def rpush(key, value)
-    @@data[key] << value
-  end
-
-  def llen(key)
-    @@data[key].length
-  end
-
-  def lpop(key)
-    @@data[key].shift
-  end
-
-  def blpop(key, timeout=0)
-    sleep 0.1 while llen(key) == 0
-    return "whatever", lpop(key)
-  end
-end # class Redis
-
 describe LogStash::Outputs::Redis do
   extend LogStash::RSpec
 
@@ -67,6 +44,65 @@ describe LogStash::Outputs::Redis do
 
       # The list should now be empty
       insist { redis.llen(key) } == 0
+    end # agent
+  end
+
+  describe "skips a message which can't be encoded as json" do
+    key = 10.times.collect { rand(10).to_s }.join("")
+
+    config <<-CONFIG
+      input {
+        generator {
+          message => "\xAD\u0000"
+          count => 1
+          type => "generator"
+        }
+      }
+      output {
+        redis {
+          host => "127.0.0.1"
+          key => "#{key}"
+          data_type => list
+        }
+      }
+    CONFIG
+
+    agent do
+      # Query redis directly and inspect the goodness.
+      redis = Redis.new(:host => "127.0.0.1")
+
+      # The list should contain no elements.
+      insist { redis.llen(key) } == 0
+    end # agent
+  end
+
+  describe "converts US-ASCII to utf-8 without failures" do
+    key = 10.times.collect { rand(10).to_s }.join("")
+
+    config <<-CONFIG
+      input {
+        generator {
+          charset => "US-ASCII"
+          message => "\xAD\u0000"
+          count => 1
+          type => "generator"
+        }
+      }
+      output {
+        redis {
+          host => "127.0.0.1"
+          key => "#{key}"
+          data_type => list
+        }
+      }
+    CONFIG
+
+    agent do
+      # Query redis directly and inspect the goodness.
+      redis = Redis.new(:host => "127.0.0.1")
+
+      # The list should contain no elements.
+      insist { redis.llen(key) } == 1
     end # agent
   end
 end

@@ -11,7 +11,11 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
   config_name "pipe"
   plugin_status "experimental"
 
-  # Command line to run and read events from.
+  # Command to run and read events from, one line at a time.
+  #
+  # Example:
+  #
+  #    command => "echo hello world"
   config :command, :validate => :string, :required => true
 
   public
@@ -25,7 +29,8 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
     @pipe = IO.popen(command, mode="r")
     hostname = Socket.gethostname
 
-    @pipe.readline do |line|
+    @pipe.each do |line|
+      line = line.chomp
       source = "pipe://#{hostname}/#{command}"
       @logger.debug("Received line", :command => command, :line => line)
       e = to_event(line, source)

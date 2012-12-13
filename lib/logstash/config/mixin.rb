@@ -157,7 +157,7 @@ module LogStash::Config::Mixin
     end # def inherited
 
     def validate(params)
-      @plugin_name = [ancestors[1].config_name, config_name].join("/")
+      @plugin_name = [superclass.config_name, config_name].join("/")
       @logger = LogStash::Logger.new(STDOUT)
       is_valid = true
 
@@ -172,6 +172,8 @@ module LogStash::Config::Mixin
     def validate_plugin_status
       docmsg = "For more information about plugin statuses, see http://logstash.net/docs/#{LOGSTASH_VERSION}/plugin-status "
       case @plugin_status
+      when "unsupported"
+        @logger.warn("Using unsupported plugin '#{@config_name}'. This plugin isn't well supported by the community and likely has no maintainer. #{docmsg}")
       when "experimental"
         @logger.warn("Using experimental plugin '#{@config_name}'. This plugin is untested and may change in the future. #{docmsg}")
       when "beta"
@@ -305,8 +307,21 @@ module LogStash::Config::Mixin
             if value.size % 2 == 1
               return false, "This field must contain an even number of items, got #{value.size}"
             end
-            # Use Hash[] (works in 1.8.7, anyway) to coerce into a hash.
-            result = Hash[*value]
+
+            # Convert the array the config parser produces into a hash.
+            result = {}
+            value.each_slice(2) do |key, value|
+              entry = result[key]
+              if entry.nil?
+                result[key] = value
+              else
+                if entry.is_a?(Array)
+                  entry << value
+                else
+                  result[key] = [entry, value]
+                end
+              end
+            end
           when :array
             result = value
           when :string

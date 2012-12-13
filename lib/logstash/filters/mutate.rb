@@ -70,12 +70,12 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # for example:
   #
   #    mutate {
-  #       …
   #      gsub => [
-  #        "fieldname", "\\/", "_",      #replace all forward slashes with underscore
-  #        "fieldname", "[\\?#-]", "_"   #replace backslashes, question marks, hashes and minuses with underscore
+  #        # replace all forward slashes with underscore
+  #        "fieldname", "\\/", "_",
+  #        # replace backslashes, question marks, hashes and minuses with underscore
+  #        "fieldname", "[\\?#-]", "_"
   #      ]
-  #       …
   #    }
   #
   config :gsub, :validate => :array
@@ -117,7 +117,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     @gsub_parsed = []
     @gsub.nil? or @gsub.each_slice(3) do |field, needle, replacement|
       if [field, needle, replacement].any? {|n| n.nil?}
-        @logger.error("Invalid gsub configuration. gsub has to define 3 elements per config entry", :file => file, :needle => needle, :replacement => replacement)
+        @logger.error("Invalid gsub configuration. gsub has to define 3 elements per config entry", :field => field, :needle => needle, :replacement => replacement)
         raise "Bad configuration, aborting."
       end
       @gsub_parsed << {
@@ -155,8 +155,8 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   def rename(event)
     # TODO(sissel): use event.sprintf on the field names?
     @rename.each do |old, new|
-      event[new] = event[old]
-      event.remove(old)
+      next unless event.include?(old)
+      event[new] = event.remove(old)
     end
   end # def rename
 

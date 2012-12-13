@@ -14,10 +14,20 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   config :name, :validate => :string, :default => 'default',
     :deprecated => true
 
-  # The hostname of your redis server.
-  config :host, :validate => :string, :default => "127.0.0.1"
+  # The hostname(s) of your redis server(s). Ports may be specified on any
+  # hostname, which will override the global port config.
+  #
+  # For example:
+  #
+  #     "127.0.0.1"
+  #     ["127.0.0.1", "127.0.0.2"]
+  #     ["127.0.0.1:6380", "127.0.0.1"]
+  config :host, :validate => :array, :default => ["127.0.0.1"]
 
-  # The port to connect on.
+  # Shuffle the host list during logstash startup.
+  config :shuffle_hosts, :validate => :boolean, :default => false
+
+  # The default port to connect on. Can be overridden on any hostname.
   config :port, :validate => :number, :default => 6379
 
   # The redis database number.
@@ -98,17 +108,30 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     end
 
     @redis = nil
+    if @shuffle_hosts
+        @host.shuffle!
+    end
+    @host_idx = 0
     @pending_mutex = Mutex.new
   end # def register
 
   private
   def connect
+    @current_host, @current_port = @host[@host_idx].split(':')
+    @host_idx = @host_idx + 1 >= @host.length ? 0 : @host_idx + 1
+
+    if not @current_port
+        @current_port = @port
+    end
+
     params = {
-      :host => @host,
-      :port => @port,
+      :host => @current_host,
+      :port => @current_port,
       :timeout => @timeout,
       :db => @db
     }
+    @logger.debug(params)
+
     if @password
       params[:password] = @password.value
     end
@@ -119,7 +142,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # A string used to identify a redis instance in log messages
   private
   def identity
-    @name || "redis://#{@password}@#{@host}:#{@port}/#{@db} #{@data_type}:#{@key}"
+    @name || "redis://#{@password}@#{@current_host}:#{@current_port}/#{@db} #{@data_type}:#{@key}"
   end
 
   public
@@ -132,18 +155,21 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       return
     end
 
+    event_key_and_payload = [event.sprintf(@key), event.to_json]
+
     begin
       @redis ||= connect
       if @data_type == 'list'
-        @redis.rpush event.sprintf(@key), event.to_json
+        @redis.rpush *event_key_and_payload
       else
-        @redis.publish event.sprintf(@key), event.to_json
+        @redis.publish *event_key_and_payload
       end
     rescue => e
       @logger.warn("Failed to send event to redis", :event => event,
                    :identity => identity, :exception => e,
                    :backtrace => e.backtrace)
       sleep 1
+      @redis = nil
       retry
     end
   end # def receive

@@ -1,8 +1,9 @@
 require "json"
+require "time"
+require "date"
 require "logstash/time"
 require "logstash/namespace"
 require "uri"
-require "time"
 
 # General event type. 
 # Basically a light wrapper on top of a hash.
@@ -41,6 +42,11 @@ class LogStash::Event
   end # def cancel
 
   public
+  def uncancel
+    @cancelled = false
+  end # def uncancel
+
+  public
   def cancelled?
     return @cancelled
   end # def cancelled?
@@ -69,13 +75,20 @@ class LogStash::Event
   def unix_timestamp
     if RUBY_ENGINE != "jruby"
       # This is really slow. See LOGSTASH-217
-      return Time.parse(timestamp).to_f
+      # For some reason, ::Time.parse isn't present even after 'require "time"'
+      # so use DateTime.parse
+      return ::DateTime.parse(timestamp).to_time.to_f
     else
       time = @@date_parser.parseDateTime(timestamp)
       return time.getMillis.to_f / 1000
     end
   end
 
+  def ruby_timestamp
+    return ::DateTime.parse(timestamp).to_time
+  end  
+  
+  
   public
   def source; @data["@source"]; end # def source
   def source=(val) 
@@ -177,13 +190,13 @@ class LogStash::Event
     end # event.fields.each
   end # def append
 
-  # Remove a field
+  # Remove a field. Returns the value of that field when deleted
   public
   def remove(field)
     if @data.has_key?(field)
-      @data.delete(field)
+      return @data.delete(field)
     else
-      @data["@fields"].delete(field)
+      return @data["@fields"].delete(field)
     end
   end # def remove
 

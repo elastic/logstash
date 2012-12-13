@@ -3,7 +3,8 @@ require "logstash/namespace"
 
 # Receive events using the lumberjack protocol.
 #
-# NOTE: THIS PROTOCOL IS STILL A WORK IN PROGRESS
+# This is mainly to receive events shipped  with lumberjack,
+# <http://github.com/jordansissel/lumberjack>
 class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
 
   config_name "lumberjack"
@@ -43,7 +44,9 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
       event = to_event(l.delete("line"), source)
       # take any remaining fields in the lumberjack event and merge it as a
       # field in the logstash event.
-      event.fields.merge!(l)
+      l.each do |key, value|
+        event[key] = value
+      end
       output_queue << event
     end
   end # def run

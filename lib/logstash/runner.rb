@@ -1,3 +1,16 @@
+# Monkeypatch for JRUBY-6970
+module Kernel
+  alias_method :require_JRUBY_6970_hack, :require
+
+  def require(path)
+    if path =~ /^jar:file:.+!.+/
+      path = path.gsub(/^jar:/, "")
+      puts "JRUBY-6970: require(#{path})" if ENV["REQUIRE_DEBUG"] == "1"
+    end
+    return require_JRUBY_6970_hack(path)
+  end
+end
+
 require "rubygems"
 require "logstash/namespace"
 require "logstash/program"
@@ -73,6 +86,53 @@ class LogStash::Runner
         test = LogStash::Test.new
         @runners << test
         return test.run(args)
+      end,
+      "rspec" => lambda do
+        require "rspec/core/runner"
+        require "rspec"
+        fixedargs = args.collect do |arg|
+          # if the arg ends in .rb or has a "/" in it, assume it's a path.
+          if arg =~ /\.rb$/ || arg =~ /\//
+            # check if it's a file, if not, try inside the jar if we are in it.
+            if !File.exists?(arg) && __FILE__ =~ /file:.*\.jar!\//
+              # Try inside the jar.
+              jar_root = __FILE__.gsub(/!.*/,"!")
+              newpath = File.join(jar_root, args.first)
+              if File.exists?(newpath)
+                # Add the 'spec' dir to the load path so specs can run
+                specpath = File.join(jar_root, "spec")
+                $: << specpath unless $:.include?(specpath)
+                newpath
+              else
+                arg
+              end
+            else
+              arg
+            end
+          else
+            arg
+          end
+        end # args.collect
+
+        # Hack up a runner
+        runner = Class.new do
+          def initialize(args)
+            @args = args
+          end
+          def run
+            @thread = Thread.new do
+              @result = RSpec::Core::Runner.run(@args)
+            end
+          end
+          def wait
+            @thread.join
+            return @result
+          end
+        end
+        rspec = runner.new(fixedargs)
+        rspec.run
+        @runners << rspec
+        return []
       end,
       "irb" => lambda do
         require "irb"

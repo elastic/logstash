@@ -59,6 +59,9 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # sets `_foo_field` = `some_value`
   config :custom_fields, :validate => :hash, :default => {}
 
+  # The GELF full message. Dynamic values like %{foo} are permitted here.
+  config :full_message, :validate => :string, :default => "%{@message}"
+
   public
   def register
     require "gelf" # rubygem 'gelf'
@@ -118,8 +121,8 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
       m["short_message"] = event.message
     end
 
-    m["full_message"] = (event.message)
-    
+    m["full_message"] = event.sprintf(@full_message)
+
     m["host"] = event.sprintf(@sender)
     m["file"] = event.sprintf(@file)
     m["line"] = event.sprintf(@line) if @line

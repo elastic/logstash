@@ -25,6 +25,9 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
   config_name "nagios_nsca"
   plugin_status "experimental"
 
+  # The status to send to nagios. Should be 0 = OK, 1 = WARNING, 2 = CRITICAL, 3 = UNKNOWN
+  config :nagios_status, :validate => :string, :required => true
+
   # The nagios host or IP to send logs to. It should have a NSCA daemon running.
   config :host, :validate => :string, :default => "localhost"
 
@@ -81,11 +84,22 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
     msg.gsub!("\n", "<br/>")
     msg.gsub!("'", "&#146;")
 
+    status = event.sprintf(@nagios_status)
+    if status.to_i.to_s != status # Check it round-trips to int correctly
+      msg = "status '#{status}' is not numeric"
+      status = 2
+    else
+      status = status.to_i
+      if status > 3 || status < 0
+         msg "status must be > 0 and <= 3, not #{status}"
+         status = 2
+      end
+    end
+
     # build the command
     # syntax: echo '<server>!<nagios_service>!<status>!<text>'  | \
     #           /usr/sbin/send_nsca -H <nagios_host> -d '!' -c <nsca_config>"
-    # TODO: make nagios status configurable ; defaults to 1 = 'WARNING' for now.
-    cmd = %(echo '#{nagios_host}~#{nagios_service}~1~#{msg}' |)
+    cmd = %(echo '#{nagios_host}~#{nagios_service}~#{status}~#{msg}' |)
     cmd << %( #{@send_nsca_bin} -H #{@host} -p #{@port} -d '~')
     cmd << %( -c #{@send_nsca_config}) if @send_nsca_config
     cmd << %( 2>/dev/null >/dev/null)

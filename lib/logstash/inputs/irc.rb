@@ -67,7 +67,7 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
       msg = @irc_queue.pop
       event = self.to_event(msg.message, "irc://#{@host}:#{@port}/#{msg.channel}")
       event["channel"] = msg.channel
-      event["user"] = msg.user.user
+      event["nick"] = msg.user.nick
       output_queue << event
     end
   end # def run

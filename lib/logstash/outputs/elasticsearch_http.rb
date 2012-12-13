@@ -65,7 +65,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   end # def receive
 
   def receive_single(event, index, type)
-    begin
+    success = false
+    while !success
       response = @agent.post!("http://#{@host}:#{@port}/#{index}/#{type}",
                               :body => event.to_json)
       # We must read the body to free up this connection for reuse.
@@ -75,7 +76,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       if response.status != 201
         @logger.error("Error writing to elasticsearch",
                       :response => response, :response_body => body)
-        retry
+      else
+        success = true
       end
     end
   end # def receive_single
@@ -139,15 +141,19 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     @logger.info("Setting up index template", :name => template_name,
                  :config => template_config)
     begin
-      response = @agent.put!("http://#{@host}:#{@port}/_template/#{template_name}",
-                             :body => template_config.to_json)
-      if response.error?
-        body = ""
-        response.read_body { |c| body << c }
-        @logger.warn("Failure setting up elasticsearch index template, will retry...",
-                     :status => response.status, :response => body)
-        sleep(1)
-        retry
+      success = false
+      while !success
+        response = @agent.put!("http://#{@host}:#{@port}/_template/#{template_name}",
+                               :body => template_config.to_json)
+        if response.error?
+          body = ""
+          response.read_body { |c| body << c }
+          @logger.warn("Failure setting up elasticsearch index template, will retry...",
+                       :status => response.status, :response => body)
+          sleep(1)
+        else
+          success = true
+        end
       end
     rescue => e
       @logger.warn("Failure setting up elasticsearch index template, will retry...",

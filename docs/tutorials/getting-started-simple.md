@@ -83,7 +83,7 @@ _This assumes you have the `curl` command installed._
 You should get back some output like so:
 
     "logstash-2012.07.02" : {
-                "index" : "logstash-2012.07.02"
+      "index" : "logstash-2012.07.02"
 
 This means Logstash created a new index based on today's date. Likely your data is in there as well:
 
@@ -113,7 +113,7 @@ Your output may look a little different.
 The reason we're going about it this way is to make absolutely sure that we have all the bits working before adding more complexity.
 
 If you are unable to get these steps working, you likely have something interfering with multicast traffic. This has been known to happen when connected to VPNs for instance.
-For best results, test on a Linux VM or system with less complicated networking. If in doubt, rerun the command with the options `-vvv` and paste the output to Github Gist or Pastie.
+For best results, test on a Linux VM or system with less complicated networking. If in doubt, rerun the command with the options `-vv` and paste the output to Github Gist or Pastie.
 Hop on the logstash IRC channel or mailing list and ask for help with that output as reference.
 
 Obviously this is fairly useless this way. Let's add the final step and test with the builtin logstash web ui:
