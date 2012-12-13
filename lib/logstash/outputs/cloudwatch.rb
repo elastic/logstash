@@ -20,6 +20,20 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   config_name "cloudwatch"
   plugin_status "experimental"
 
+  # Constants
+  # aggregate_key members
+  DIMENSIONS = "dimensions"
+  TIMESTAMP = "timestamp"
+  METRIC = "metric"
+  COUNT = "count"
+  UNIT = "unit"
+  SUM = "sum"
+  MIN = "min"
+  MAX = "max"
+  # Units
+  COUNT_UNIT = "Count"
+  NONE = "None"
+
   # The AWS Region to send logs to.
   config :region, :validate => :string, :default => "us-east-1"
 
@@ -46,17 +60,41 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   # The default namespace to use for events which do not have a "CW_namespace" field
   config :namespace, :validate => :string, :default => "Logstash"
 
-  # The name of the field used to set the metric name on an event
-  config :field_metric, :validate => :string, :default => "CW_metric"
-
   # The name of the field used to set a different namespace per event
   config :field_namespace, :validate => :string, :default => "CW_namespace"
 
-  # The name of the field used to set the units on an event metric
+  # The default metric name to use for events which do not have a "CW_metricname" field.
+  # If this is provided then all events which pass through this output will be aggregated and
+  # sent to CloudWatch, so use this carefully.  Furthermore, when providing this option, you
+  # will probably want to also restrict events from passing through this output using event
+  # type, tag, and field matching
+  #
+  # At a minimum events must have a "metric name" to be sent to CloudWatch. This can be achieved
+  # either by providing a default here, as described above, OR by adding a "CW_metricname" field
+  # to the events themselves, as described below.  By default, if no other configuration is
+  # provided besides a metric name, then events will be counted (Unit: Count, Value: 1)
+  # by their metric name (either this default or from their CW_metricname field)
+  config :metricname, :validate => :string
+
+  # The name of the field used to set the metric name on an event
+  config :field_metricname, :validate => :string, :default => "CW_metricname"
+
+  # The default unit to use for events which do not have a "CW_unit" field
+  config :unit, :validate => :string, :default => COUNT_UNIT
+
+  # The name of the field used to set the unit on an event metric
   config :field_unit, :validate => :string, :default => "CW_unit"
+
+  # The default value to use for events which do not have a "CW_value" field
+  # If provided, this must be a string which can be converted to a fload, for example...
+  # "1", "2.34", ".5", and "0.67"
+  config :value, :validate => :string, :default => "1"
 
   # The name of the field used to set the value (float) on an event metric
   config :field_value, :validate => :string, :default => "CW_value"
+
+  # The default dimensions [ name, value, ... ] to use for events which do not have a "CW_dimensions" field
+  config :dimensions, :validate => :hash
 
   # The name of the field used to set the dimensions on an event metric
   # this field named here, if present in an event, must have an array of
@@ -66,20 +104,6 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   #     add_field => [ "CW_dimensions", "Environment" ]
   #     add_field => [ "CW_dimensions", "prod" ]
   config :field_dimensions, :validate => :string, :default => "CW_dimensions"
-
-  # aggregate_key members
-  DIMENSIONS = "dimensions"
-  TIMESTAMP = "timestamp"
-  METRIC = "metric"
-  COUNT = "count"
-  UNIT = "unit"
-  SUM = "sum"
-  MIN = "min"
-  MAX = "max"
-
-  # Units
-  COUNT_UNIT = "Count"
-  NONE = "None"
 
   public
   def register
@@ -94,7 +118,13 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
     )
     @cw = AWS::CloudWatch.new
 
-    @valid_units = ["Seconds", "Microseconds", "Milliseconds", "Bytes", "Kilobytes", "Megabytes", "Gigabytes", "Terabytes", "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits", "Percent", COUNT_UNIT, "Bytes/Second", "Kilobytes/Second", "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second", "Bits/Second", "Kilobits/Second", "Megabits/Second", "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
+    @valid_units = ["Seconds", "Microseconds", "Milliseconds", "Bytes",
+                    "Kilobytes", "Megabytes", "Gigabytes", "Terabytes",
+                    "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits",
+                    "Percent", COUNT_UNIT, "Bytes/Second", "Kilobytes/Second",
+                    "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second",
+                    "Bits/Second", "Kilobits/Second", "Megabits/Second",
+                    "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
 
     @event_queue = SizedQueue.new(@queue_size)
     @scheduler = Rufus::Scheduler.start_new
@@ -102,7 +132,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
       @logger.info("Scheduler Activated")
       publish(aggregate({}))
     end
-  end
+  end # def register
 
   public
   def receive(event)
@@ -116,7 +146,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
       return
     end
 
-    return unless event[@field_metric]
+    return unless (event[@field_metricname] || @metricname)
 
     if (@event_queue.length >= @event_queue.max)
       @job.trigger
@@ -125,9 +155,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
 
     @logger.info("Queueing event", :event => event)
     @event_queue << event
-  end
-
-  # def receive
+  end # def receive
 
   private
   def publish(aggregates)
@@ -163,20 +191,17 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
             :namespace => namespace,
             :metric_data => metric_data
         )
-        @logger.info("Sent data to AWS CloudWatch OK")
+        @logger.info("Sent data to AWS CloudWatch OK", :namespace => namespace, :metric_data => metric_data)
       rescue Exception => e
         @logger.warn("Failed to send to AWS CloudWatch", :exception => e, :namespace => namespace, :metric_data => metric_data)
         break
       end
     end # aggregates.each
     return aggregates
-  end
-
-  # def publish
+  end# def publish
 
   private
   def aggregate(aggregates)
-
     @logger.info("QUEUE SIZE ", :queuesize => @event_queue.size)
     while !@event_queue.empty? do
       begin
@@ -187,32 +212,32 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
       end
     end
     return aggregates
-  end
+  end # def aggregate
 
   private
   def count(aggregates, event)
-
     # If the event doesn't declare a namespace, use the default
-    ns = field(event, @field_namespace)
-    namespace = (!ns) ? @namespace : ns
+    fnamespace = field(event, @field_namespace)
+    namespace = (fnamespace ? fnamespace : event.sprintf(@namespace))
 
-    unit = field(event, @field_unit)
-    value = field(event, @field_value)
+    funit = field(event, @field_unit)
+    unit = (funit ? funit : event.sprintf(@unit))
 
-    # If neither Units nor Value is set, then we simply count the event
-    if (!unit && !value)
-      unit = COUNT
-      value = "1"
-    end
+    fvalue = field(event, @field_value)
+    value = (fvalue ? fvalue : event.sprintf(@value))
 
     # We may get to this point with valid Units but missing value.  Send zeros.
     val = (!value) ? 0.0 : value.to_f
 
-    # If Units is still not set (or is invalid), then we know Value must BE set, so set Units to "None"
-    # And warn about misconfiguration
-    if (!unit || !@valid_units.include?(unit))
+    # Event provides exactly one (but not both) of value or unit
+    if ( (fvalue == nil) ^ (funit == nil) )
+      @logger.warn("Likely config error: event has one of #{@field_value} or #{@field_unit} fields but not both.", :event => event)
+    end
+
+    # If Unit is still not set or is invalid warn about misconfiguration & use NONE
+    if (!@valid_units.include?(unit))
       unit = NONE
-      @logger.warn("Likely config error: CloudWatch Value found (#{val}) with invalid or missing Units (#{unit.to_s}", :event => event)
+      @logger.warn("Likely config error: invalid or missing Units (#{unit.to_s}), using '#{NONE}' instead", :event => event)
     end
 
     if (!aggregates[namespace])
@@ -220,13 +245,25 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
     end
 
     dims = event[@field_dimensions]
-    if ( dims && (!dims.is_a?(Array) || dims.length == 0 || (dims.length % 2) != 0) )
-      @logger.warn("Likely config error: CloudWatch dimensions field (#{dims.to_s}) found which is not a positive- & even-length array.  Ignoring it.", :event => event)
+    if (dims) # event provides dimensions
+      # validate the structure
+      if (!dims.is_a?(Array) || dims.length == 0 || (dims.length % 2) != 0)
+        @logger.warn("Likely config error: CloudWatch dimensions field (#{dims.to_s}) found which is not a positive- & even-length array.  Ignoring it.", :event => event)
+        dims = nil
+      end
+      # Best case, we get here and exit the conditional because dims...
+      # - is an array
+      # - with positive length
+      # - and an even number of elements
+    elsif (@dimensions.is_a?(Hash)) # event did not provide dimensions, but the output has been configured with a default
+      dims = @dimensions.flatten.map{|d| event.sprintf(d)} # into the kind of array described just above
+    else
       dims = nil
     end
 
+    fmetric = field(event, @field_metricname)
     aggregate_key = {
-        METRIC => field(event, @field_metric),
+        METRIC => (fmetric ? fmetric : event.sprintf(@metricname)),
         DIMENSIONS => dims,
         UNIT => unit,
         TIMESTAMP => event.sprintf("%{+YYYY-MM-dd'T'HH:mm:00Z}")
@@ -255,7 +292,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
     else
       aggregates[namespace][aggregate_key][SUM] += val
     end
-  end
+  end # def count
 
   private
   def field(event, fieldname)
@@ -268,6 +305,6 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
         return event[fieldname]
       end
     end
-  end
+  end # def field
 
 end # class LogStash::Outputs::CloudWatch
