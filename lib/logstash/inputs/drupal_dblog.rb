@@ -44,6 +44,11 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
   # Time between checks in minutes.
   config :interval, :validate => :number, :default => 10
 
+  # The amount of log messages that should be fetched with each query.
+  # Bulk fetching is done to prevent querying huge data sets when lots of
+  # messages are in the database.
+  config :bulksize, :validate => :number, :default => 5000
+
   # Label this input with a type.
   # Types are used mainly for filter activation.
   #
@@ -120,10 +125,11 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
       @databases.each do |name, db|
         @logger.debug("Drupal DBLog: Checking database #{name}")
         check_database(output_queue, db)
+        @logger.info("Drupal DBLog: Retrieved all new watchdog messages from #{name}")
       end
 
       timeTaken = Time.now.to_i - start
-      @logger.debug("Drupal DBLog: Fetched all new watchdog entries in #{timeTaken} seconds")
+      @logger.info("Drupal DBLog: Fetched all new watchdog entries in #{timeTaken} seconds")
 
       # If fetching of all databases took less time than the interval,
       # sleep a bit.
@@ -169,34 +175,59 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
     begin
       # connect to the MySQL server
       initialize_client(db)
+    rescue Exception => e
+      @logger.error("Could not connect to database: " + e.message)
+      return
+    end #begin
 
+    begin
       @sitename = db["site"]
 
       @usermap = @add_usernames ? get_usermap : nil
 
       # Retrieve last pulled watchdog entry id
       initialLastWid = get_last_wid
-      lastWid = initialLastWid ? initialLastWid : 0
+      lastWid = nil
 
-      # Fetch new entries, and create the event
-      results = @client.query('SELECT * from watchdog WHERE wid > ' + lastWid.to_s + " ORDER BY wid asc")
-      results.each do |row|
-        event = build_event(row)
-        if event
-          output_queue << event
-          lastWid = row['wid'].to_s
-        end
+
+      if initialLastWid == false
+        lastWid = 0
+        set_last_wid(0, true)
+      else
+        lastWid = initialLastWid
       end
 
-      set_last_wid(lastWid, initialLastWid == false)
+      # Fetch new entries, and create the event
+      while true
+        results = get_db_rows(lastWid)
+        if results.length() < 1
+          break
+        end
+
+        @logger.debug("Fetched " + results.length().to_s + " database rows")
+
+        results.each do |row|
+          event = build_event(row)
+          if event
+            output_queue << event
+            lastWid = row['wid'].to_s
+          end
+        end
+
+        set_last_wid(lastWid, false)
+      end
     rescue Exception => e
-      @logger.info("Mysql error: ", :error => e.message)
-      throw e
+      @logger.error("Error while fetching messages: ", :error => e.message)
     end # begin
 
     # Close connection
     @client.close
   end # def check_database
+
+  def get_db_rows(lastWid)
+    query = 'SELECT * from watchdog WHERE wid > ' + lastWid.to_s + " ORDER BY wid asc LIMIT " + @bulksize.to_s
+    return @client.query(query)
+  end # def get_db_rows
 
   private
   def update_sitename
