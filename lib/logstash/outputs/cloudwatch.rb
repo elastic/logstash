@@ -79,7 +79,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   # The name of the field used to set the metric name on an event
   config :field_metricname, :validate => :string, :default => "CW_metricname"
 
-  @valid_units = ["Seconds", "Microseconds", "Milliseconds", "Bytes",
+  VALID_UNITS = ["Seconds", "Microseconds", "Milliseconds", "Bytes",
                   "Kilobytes", "Megabytes", "Gigabytes", "Terabytes",
                   "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits",
                   "Percent", COUNT_UNIT, "Bytes/Second", "Kilobytes/Second",
@@ -88,7 +88,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
                   "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
 
   # The default unit to use for events which do not have a "CW_unit" field
-  config :unit, :validate => @valid_units, :default => COUNT_UNIT
+  config :unit, :validate => VALID_UNITS, :default => COUNT_UNIT
 
   # The name of the field used to set the unit on an event metric
   config :field_unit, :validate => :string, :default => "CW_unit"
@@ -235,7 +235,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
     end
 
     # If Unit is still not set or is invalid warn about misconfiguration & use NONE
-    if (!@valid_units.include?(unit))
+    if (!VALID_UNITS.include?(unit))
       unit = NONE
       @logger.warn("Likely config error: invalid or missing Units (#{unit.to_s}), using '#{NONE}' instead", :event => event)
     end
