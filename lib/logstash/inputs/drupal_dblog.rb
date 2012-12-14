@@ -1,13 +1,6 @@
 require "date"
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "php_serialize"
-
-if RUBY_PLATFORM == 'java'
-  require "logstash/inputs/drupal_dblog/jdbcconnection"
-else
-  require "mysql2"
-end
 
 # Retrieve watchdog log events from a Drupal installation with DBLog enabled.
 # The events are pulled out directly from the database.
@@ -68,6 +61,13 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
 
   public
   def register
+    require "php_serialize"
+
+    if RUBY_PLATFORM == 'java'
+      require "logstash/inputs/drupal_dblog/jdbcconnection"
+    else
+      require "mysql2"
+    end
   end # def register
 
   public
