@@ -129,6 +129,9 @@ class LogStash::Runner
             return @result
           end
         end
+
+        $: << File.expand_path("#{File.dirname(__FILE__)}/../../spec")
+        require "test_utils"
         rspec = runner.new(fixedargs)
         rspec.run
         @runners << rspec
