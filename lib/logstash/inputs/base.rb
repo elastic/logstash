@@ -107,6 +107,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
                      :source => source, :exception => e,
                      :backtrace => e.backtrace)
         event.message = raw
+        event.tags << "_jsonparsefailure"
       end
     when "json_event"
       begin
@@ -124,6 +125,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
                      :input => raw, :source => source, :exception => e,
                      :backtrace => e.backtrace)
         event.message = raw
+        event.tags << "_jsonparsefailure"
       end
 
       if event.source == "unknown"
