@@ -16,8 +16,12 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
   config_name "eventlog"
   plugin_status "beta"
 
+  # Event Log Name. Depricated due to conflicts with puppet naming convention.
+  # Replaced by 'logfile' variable. See LOGSTASH-755
+  config :name, :validate => :string, :deprecated => true
+
   # Event Log Name
-  config :name, :validate => :string, :required => true, :default => "System"
+  config :logfile, :validate => :string, :required => true, :default => "System"
 
   public
   def initialize(params)
@@ -27,8 +31,16 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
   public
   def register
+
+    if @name
+      if @logfile
+        @logger.error("'name' and 'logfile' are the same setting, but 'name' is deprecated. Please use only 'logfile'")
+      end
+      @logfile = @name
+    end
+
     @hostname = Socket.gethostname
-    @logger.info("Registering input eventlog://#{@hostname}/#{@name}")
+    @logger.info("Registering input eventlog://#{@hostname}/#{@logfile}")
     require "win32ole" # rubygem 'win32ole' ('jruby-win32ole' on JRuby)
   end # def register
 
@@ -43,7 +55,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
     newest_shipped_event = latest_record_number
     next_newest_shipped_event = newest_shipped_event
     begin
-      @logger.debug("Tailing Windows Event Log '#{@name}'")
+      @logger.debug("Tailing Windows Event Log '#{@logfile}'")
       loop do
         event_index = 0
         latest_events.each do |event|
@@ -51,7 +63,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
           timestamp = DateTime.strptime(event.TimeGenerated, "%Y%m%d%H%M%S").iso8601
           timestamp[19..-1] = DateTime.now.iso8601[19..-1] # Copy over the correct TZ offset
           e = LogStash::Event.new({
-            "@source" => "eventlog://#{@hostname}/#{@name}",
+            "@source" => "eventlog://#{@hostname}/#{@logfile}",
             "@type" => @type,
             "@timestamp" => timestamp
           })
@@ -81,7 +93,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
   private
   def latest_events
-    wmi_query = "select * from Win32_NTLogEvent where Logfile = '#{@name}'"
+    wmi_query = "select * from Win32_NTLogEvent where Logfile = '#{@logfile}'"
     events = @wmi.ExecQuery(wmi_query)
   end # def latest_events
 
