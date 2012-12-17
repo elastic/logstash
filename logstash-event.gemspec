@@ -15,7 +15,7 @@ Gem::Specification.new do |gem|
     lib/logstash/namespace.rb
     lib/logstash/time.rb
     lib/logstash/version.rb
-    lib/spec/event.rb
+    spec/event.rb
     LICENSE
   }
 
