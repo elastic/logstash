@@ -1,8 +1,8 @@
 require "json"
 require "time"
 require "date"
-require File.join(File.dirname(__FILE__), "time")
-require File.join(File.dirname(__FILE__), "namespace")
+require "logstash/time"
+require "logstash/namespace"
 require "uri"
 
 # General event type. 
