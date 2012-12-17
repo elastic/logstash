@@ -78,8 +78,14 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   @@patterns_path ||= Set.new
   if __FILE__ =~ /file:\/.*\.jar!.*/
     @@patterns_path += ["#{File.dirname(__FILE__)}/../../patterns/*"]
-  else
-    @@patterns_path += ["#{File.dirname(__FILE__)}/../../patterns/*"]
+  else 
+    if __FILE__.include?('lib/logstash/filters/')
+      # Run directly from the github checkout
+      @@patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
+    else 
+      # Exploded jar
+      @@patterns_path += ["#{File.dirname(__FILE__)}/../../patterns/*"]
+    end
   end
 
   # This flag becomes "--grok-patterns-path"
