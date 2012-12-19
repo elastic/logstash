@@ -1,9 +1,12 @@
 #!/bin/sh
 
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR/..
+
 if [ -d .git ] ; then
   export GEM_HOME=./vendor/bundle/jruby/1.9
   export GEM_PATH=
 fi
 
-export RUBYLIB=./lib 
+export RUBYLIB=./lib
 ruby lib/logstash/runner.rb "$@"
