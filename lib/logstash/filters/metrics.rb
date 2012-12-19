@@ -44,7 +44,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
 
     @metric_timers.each do |name, metric|
       event["#{name}.count"] = metric.count
-      event["#{name}.rate_1m"] = metric.one_mintute_rate
+      event["#{name}.rate_1m"] = metric.one_minute_rate
       event["#{name}.rate_5m"] = metric.five_minute_rate
       event["#{name}.rate_15m"] = metric.fifteen_minute_rate
       event["#{name}.min"] = metric.min
