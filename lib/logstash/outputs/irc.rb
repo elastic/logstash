@@ -25,7 +25,7 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
   config :real, :validate => :string, :default => "logstash"
 
   # IRC server password
-  config :password, :validate => :string
+  config :password, :validate => :password, :default => nil
 
   # Channels to broadcast to
   config :channels, :validate => :array, :required => true
