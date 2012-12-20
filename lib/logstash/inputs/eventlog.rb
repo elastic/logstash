@@ -5,12 +5,13 @@ require "socket"
 # Pull events from a Windows Event Log
 #
 # To collect Events from the System Event Log, use a config like:
-# input {
-#   eventlog {
-#     type  => 'Win32-EventLog'
-#     name  => 'System'
-#   }
-# }
+#
+#     input {
+#       eventlog {
+#         type  => 'Win32-EventLog'
+#         name  => 'System'
+#       }
+#     }
 class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
   config_name "eventlog"

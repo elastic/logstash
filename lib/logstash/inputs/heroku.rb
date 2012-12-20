@@ -8,10 +8,10 @@ require "logstash/namespace"
 #
 # Recommended filters:
 #
-#     filter { 
-#       grok { 
-#         pattern => "^%{TIMESTAMP_ISO8601:timestamp} %{WORD:component}\[%{WORD:process}(?:\.%{INT:instance:int})?\]: %{DATA:message}$" 
-#       } 
+#     filter {
+#       grok {
+#         pattern => "^%{TIMESTAMP_ISO8601:timestamp} %{WORD:component}\[%{WORD:process}(?:\.%{INT:instance:int})?\]: %{DATA:message}$"
+#       }
 #       date { timestamp => ISO8601 }
 #     }
 class LogStash::Inputs::Heroku < LogStash::Inputs::Base
