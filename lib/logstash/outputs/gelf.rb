@@ -29,7 +29,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # useful if you want to parse the 'log level' from an event and use that
   # as the gelf level/severity.
   #
-  # Values here can be integers [0..7] inclusive or any of 
+  # Values here can be integers [0..7] inclusive or any of
   # "debug", "info", "warn", "error", "fatal", "unknown" (case insensitive).
   # Single-character versions of these are also valid, "d", "i", "w", "e", "f",
   # "u"
@@ -88,9 +88,9 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
     # If we leave that set, the gelf gem will extract the file and line number
     # of the source file that logged the message (i.e. logstash/gelf.rb:138).
-    # With that set to false, it can use the actual event's filename (i.e. 
+    # With that set to false, it can use the actual event's filename (i.e.
     # /var/log/syslog), which is much more useful
-    @gelf.collect_file_and_line = false    
+    @gelf.collect_file_and_line = false
 
     # these are syslog words and abbreviations mapped to RFC 5424 integers
     @level_map = {
@@ -162,10 +162,10 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     if @level.is_a?(Array)
       @level.each do |value|
         parsed_value = event.sprintf(value)
-        if parsed_value
-          level = parsed_value
-          break
-        end
+        next if value.count('%{') > 0 and parsed_value == value
+
+        level = parsed_value
+        break
       end
     else
       level = event.sprintf(@level.to_s)
