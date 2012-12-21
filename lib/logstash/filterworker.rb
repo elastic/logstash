@@ -58,7 +58,7 @@ class LogStash::FilterWorker < LogStash::Plugin
     end
 
     events.each do |event|
-      @logger.debug("Pushing flushed events", :event => event)
+      @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
       @output_queue.push(event) unless event.cancelled?
     end
   end # def flusher
@@ -95,14 +95,14 @@ class LogStash::FilterWorker < LogStash::Plugin
           clear_watchdog
         end
         if event.cancelled?
-          @logger.debug("Event cancelled", :event => event,
-                        :filter => filter.class)
+          @logger.debug? and @logger.debug("Event cancelled", :event => event,
+                                           :filter => filter.class)
           break
         end
       end # @filters.each
 
-      @logger.debug("Event finished filtering", :event => event,
-                    :thread => Thread.current[:name])
+      @logger.debug? and @logger.debug("Event finished filtering", :event => event,
+                                       :thread => Thread.current[:name])
       @output_queue.push(event) unless event.cancelled?
     end # events.each
   end # def filter

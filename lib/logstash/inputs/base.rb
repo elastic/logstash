@@ -143,7 +143,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
        event[field] << event.sprintf(value)
     end
 
-    logger.debug(["Received new event", {:source => source, :event => event}])
+    @logger.debug? and @logger.debug("Received new event", :source => source, :event => event)
     return event
   end # def to_event
 end # class LogStash::Inputs::Base
