@@ -3,7 +3,7 @@
 require "logstash/namespace"
 
 
-# line 147 "grammar.rl"
+# line 150 "grammar.rl"
 
 
 class LogStash::Config::Grammar
@@ -248,7 +248,7 @@ end
 self.logstash_config_en_main = 55;
 
 
-# line 156 "grammar.rl"
+# line 159 "grammar.rl"
     # END RAGEL DATA
 
     @tokenstack = Array.new
@@ -275,7 +275,7 @@ begin
 	cs = logstash_config_start
 end
 
-# line 175 "grammar.rl"
+# line 178 "grammar.rl"
     # END RAGEL INIT
 
     begin 
@@ -469,7 +469,7 @@ when 10 then
     #puts "Config component: #{name}"
   		end
 when 12 then
-# line 142 "grammar.rl"
+# line 145 "grammar.rl"
 		begin
  
             # Compute line and column of the cursor (p)
@@ -521,11 +521,11 @@ when 10 then
     #puts "Config component: #{name}"
   		end
 when 11 then
-# line 141 "grammar.rl"
+# line 144 "grammar.rl"
 		begin
  puts "END" 		end
 when 12 then
-# line 142 "grammar.rl"
+# line 145 "grammar.rl"
 		begin
  
             # Compute line and column of the cursor (p)
@@ -546,7 +546,7 @@ end
 	end
 	end
 
-# line 180 "grammar.rl"
+# line 183 "grammar.rl"
       # END RAGEL EXEC
     rescue => e
       # Compute line and column of the cursor (p)
