@@ -5,11 +5,12 @@ require "logstash/outputs/base"
 # output for logstash. If you plan on using the logstash web interface, you'll
 # need to use this output.
 #
-#   *NOTE*: The elasticsearch client is version %ELASTICSEARCH_VERSION%. Your elasticsearch
-#   cluster must be running 0.19.x for API compatibility.
+#   *NOTE*: Your elasticsearch cluster must be running elasticsearch
+#   %ELASTICSEARCH_VERSION%. Any other version may not work.
 #
 # If you want to set other elasticsearch options that are not exposed directly
 # as config options, there are two options:
+#
 # * create an elasticsearch.yml file in the $PWD of the logstash process
 # * pass in es.* java properties (java -Des.node.foo= or ruby -J-Des.node.foo=)
 #
