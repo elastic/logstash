@@ -26,6 +26,14 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
   # `client` connects to a server.
   config :mode, :validate => ["server", "client"], :default => "client"
 
+  # The format to use when writing events to the file. This value
+  # supports any string and can include %{name} and other dynamic
+  # strings.
+  #
+  # If this setting is omitted, the full json representation of the
+  # event will be written as a single line.
+  config :message_format, :validate => :string
+
   class Client
     public
     def initialize(socket, logger)
@@ -89,19 +97,22 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    wire_event = event.to_hash.to_json + "\n"
+    if @message_format
+      output = event.sprintf(@message_format) + "\n"
+    else
+      output = event.to_hash.to_json + "\n"
+    end
 
     if server?
       @client_threads.each do |client_thread|
-        client_thread[:client].write(wire_event)
+        client_thread[:client].write(output)
       end
 
       @client_threads.reject! {|t| !t.alive? }
     else
       begin
         connect unless @client_socket
-        @client_socket.write(event.to_hash.to_json)
-        @client_socket.write("\n")
+        @client_socket.write(output)
       rescue => e
         @logger.warn("tcp output exception", :host => @host, :port => @port,
                      :exception => e, :backtrace => e.backtrace)
