@@ -96,7 +96,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     if !event =~ /[@field_split]/
       return kv_keys
     end
-    scan_re = Regexp.new("([^"+@field_split+@value_split+"]+)["+@value_split+"](?:\"([^\"]+)\"|'([^']+)'|([^"+@field_split+"]+))")
+    scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)["+@value_split+"](?:\"([^\"]+)\"|'([^']+)'|((?:\\\\ |[^"+@field_split+"])+))")
     text.scan(scan_re) do |key, v1, v2, v3|
       value = v1 || v2 || v3
       if !@trim.nil?
