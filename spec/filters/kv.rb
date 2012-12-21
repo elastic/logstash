@@ -24,6 +24,19 @@ describe LogStash::Filters::KV do
 
   end
 
+   describe "LOGSTASH-624: allow escaped space in key or value " do
+    config <<-CONFIG
+      filter {
+        kv { value_split => ':' }
+      }
+    CONFIG
+
+    sample 'IKE:=Quick\ Mode\ completion IKE\ IDs:=subnet:\ x.x.x.x\ (mask=\ 255.255.255.254)\ and\ host:\ y.y.y.y' do
+      insist { subject["IKE"] } == '=Quick\ Mode\ completion'
+      insist { subject['IKE\ IDs'] } == '=subnet:\ x.x.x.x\ (mask=\ 255.255.255.254)\ and\ host:\ y.y.y.y'
+    end
+  end
+
   describe "test value_split" do
     config <<-CONFIG
       filter {
