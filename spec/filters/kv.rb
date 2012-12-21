@@ -61,6 +61,20 @@ describe LogStash::Filters::KV do
 
   end
 
+  describe  "delimited fields should override space default (reported by LOGSTASH-733)" do
+    config <<-CONFIG
+      filter {
+        kv { field_split => "|" }
+      }
+    CONFIG
+
+    sample "field1=test|field2=another test|field3=test3" do
+      insist { subject["field1"] } == "test"
+      insist { subject["field2"] } == "another test"
+      insist { subject["field3"] } == "test3"
+    end
+  end
+
   describe "test prefix" do
     config <<-CONFIG
       filter {
