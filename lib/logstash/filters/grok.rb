@@ -104,13 +104,13 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     # Have @@patterns_path show first. Last-in pattern definitions win; this
     # will let folks redefine built-in patterns at runtime.
     @patterns_dir = @@patterns_path.to_a + @patterns_dir
-    @logger.info("Grok patterns path", :patterns_dir => @patterns_dir)
+    @logger.info? and @logger.info("Grok patterns path", :patterns_dir => @patterns_dir)
     @patterns_dir.each do |path|
       # Can't read relative paths from jars, try to normalize away '../'
       while path =~ /file:\/.*\.jar!.*\/\.\.\//
         # replace /foo/bar/../baz => /foo/baz
         path = path.gsub(/[^\/]+\/\.\.\//, "")
-        @logger.debug("In-jar path to read", :path => path)
+        @logger.debug? and @logger.debug("In-jar path to read", :path => path)
       end
 
       if File.directory?(path)
@@ -118,14 +118,14 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       end
 
       Dir.glob(path).each do |file|
-        @logger.info("Grok loading patterns from file", :path => file)
+        @logger.info? and @logger.info("Grok loading patterns from file", :path => file)
         @patternfiles << file
       end
     end
 
     @patterns = Hash.new { |h,k| h[k] = [] }
 
-    @logger.info("Match data", :match => @match)
+    @logger.info? and @logger.info("Match data", :match => @match)
 
     # TODO(sissel): Hash.merge  actually overrides, not merges arrays.
     # Work around it by implementing our own?
@@ -143,9 +143,9 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
         add_patterns_from_files(@patternfiles, @patterns[field])
       end
-      @logger.info("Grok compile", :field => field, :patterns => patterns)
+      @logger.info? and @logger.info("Grok compile", :field => field, :patterns => patterns)
       patterns.each do |pattern|
-        @logger.debug("regexp: #{@type}/#{field}", :pattern => pattern)
+        @logger.debug? and @logger.debug("regexp: #{@type}/#{field}", :pattern => pattern)
         @patterns[field].compile(pattern)
       end
     end # @config.each
@@ -158,17 +158,17 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     # parse it with grok
     matched = false
 
-    @logger.debug("Running grok filter", :event => event);
+    @logger.debug? and @logger.debug("Running grok filter", :event => event);
     done = false
     @patterns.each do |field, pile|
       break if done
       if !event[field]
-        @logger.debug("Skipping match object, field not present", 
-                      :field => field, :event => event)
+        @logger.debug? and @logger.debug("Skipping match object, field not present", 
+                                         :field => field, :event => event)
         next
       end
 
-      @logger.debug("Trying pattern", :pile => pile, :field => field)
+      @logger.debug? and @logger.debug("Trying pattern", :pile => pile, :field => field)
       (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |fieldvalue|
         begin
           # Coerce all field values to string. This turns arrays, hashes, numbers, etc
@@ -197,8 +197,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
           # Permit typing of captures by giving an additional colon and a type,
           # like: %{FOO:name:int} for int coercion.
           if type_coerce
-            @logger.info("Match type coerce: #{type_coerce}")
-            @logger.info("Patt: #{grok.pattern}")
+            @logger.info? and @logger.info("Match type coerce: #{type_coerce}")
+            @logger.info? and @logger.info("Patt: #{grok.pattern}")
           end
 
           case type_coerce
@@ -211,13 +211,12 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
           # Special casing to skip captures that represent the entire log message.
           if fieldvalue == value and field == "@message"
             # Skip patterns that match the entire message
-            @logger.debug("Skipping capture since it matches the whole line.", :field => key)
+            @logger.debug? and @logger.debug("Skipping capture since it matches the whole line.", :field => key)
             next
           end
 
           if @named_captures_only && !is_named
-            @logger.debug("Skipping capture since it is not a named " \
-                          "capture and named_captures_only is true.", :field => key)
+            @logger.debug? and @logger.debug("Skipping capture since it is not a named " "capture and named_captures_only is true.", :field => key)
             next
           end
 
@@ -253,7 +252,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       event.tags << "_grokparsefailure"
     end
 
-    @logger.debug("Event now: ", :event => event)
+    @logger.debug? and @logger.debug("Event now: ", :event => event)
   end # def filter
 
   private
@@ -272,8 +271,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
         # the end. I don't know if this is a bug or intentional, but we need
         # to chomp it.
         name, pattern = line.chomp.split(/\s+/, 2)
-        @logger.debug("Adding pattern from file", :name => name,
-                      :pattern => pattern, :path => path)
+        @logger.debug? and @logger.debug("Adding pattern from file", :name => name,
+                                         :pattern => pattern, :path => path)
         pile.add_pattern(name, pattern)
       end
     else

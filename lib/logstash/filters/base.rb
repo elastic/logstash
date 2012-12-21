@@ -105,12 +105,14 @@ class LogStash::Filters::Base < LogStash::Plugin
         event[field] = [event[field]] if !event[field].is_a?(Array)
         event[field] << event.sprintf(value)
       end
-      @logger.debug("filters/#{self.class.name}: adding value to field",
-                    :field => field, :value => value)
+      @logger.debug? and @logger.debug("filters/#{self.class.name}: adding " \
+                                       "value to field", :field => field,
+                                       :value => value)
     end
 
     (@add_tag or []).each do |tag|
-      @logger.debug("filters/#{self.class.name}: adding tag", :tag => tag)
+      @logger.debug? and @logger.debug("filters/#{self.class.name}: adding tag",
+                                       :tag => tag)
       event.tags << event.sprintf(tag)
       #event.tags |= [ event.sprintf(tag) ]
     end
@@ -119,7 +121,8 @@ class LogStash::Filters::Base < LogStash::Plugin
       remove_tags = @remove_tag.map do |tag|
         event.sprintf(tag)
       end
-      @logger.debug("filters/#{self.class.name}: removing tags", :tags => (event.tags & remove_tags))
+      @logger.debug? and @logger.debug("filters/#{self.class.name}: removing tags",
+                                       :tags => (event.tags & remove_tags))
       event.tags -= remove_tags
     end
   end # def filter_matched
