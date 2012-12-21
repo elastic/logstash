@@ -50,6 +50,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
       event["#{name}.min"] = metric.min
       event["#{name}.max"] = metric.max
       event["#{name}.stddev"] = metric.stddev
+      event["#{name}.mean"] = metric.mean
     end
 
     filter_matched(event)
