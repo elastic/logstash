@@ -20,6 +20,9 @@ module LogStash::Time
       # so instead I have to do DateTime#new#withZone(UTC)
       return DateTime.new.withZone(DateTimeZone::UTC).to_s
     end # def initialize
+    def self.now_f
+      return DateTime.new(DateTimeZone::UTC).getMillis / 1000.0
+    end 
   else
     # Otherwise, use ruby stdlib Time, which is much slower than Joda.
     ISO8601_STRFTIME = "%04d-%02d-%02dT%02d:%02d:%02d.%06d%+03d:00".freeze
@@ -28,5 +31,8 @@ module LogStash::Time
       return sprintf(ISO8601_STRFTIME, now.year, now.month, now.day, now.hour,
                      now.min, now.sec, now.tv_usec, now.utc_offset / 3600)
     end
+    def self.now_f
+      return Time.now.to_f
+    end 
   end
 end # module LogStash::Time
