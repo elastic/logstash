@@ -22,7 +22,8 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
   config :name, :validate => :string, :deprecated => true
 
   # Event Log Name
-  config :logfile, :validate => :string, :default => "System"
+  config :logfile, :validate => :string
+  #:required => true, :default => "System"
 
   # TODO(sissel): Make 'logfile' required after :name is gone.
 
@@ -36,6 +37,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
   def register
 
     if @name
+      @logger.warn("Please use 'logfile' instead of the 'name' setting")
       if @logfile
         @logger.error("'name' and 'logfile' are the same setting, but 'name' is deprecated. Please use only 'logfile'")
       end
