@@ -63,20 +63,25 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # Convert a string field by applying a regular expression and a replacement
   # if the field is not a string, no action will be taken
   # 
-  # this configuration takes an array consisting of 3 elements per field/substitution
+  # This configuration takes an array consisting of 3 elements per
+  # field/substitution.
   #
   # be aware of escaping any backslash in the config file
   #
   # for example:
   #
-  #    mutate {
-  #      gsub => [
-  #        # replace all forward slashes with underscore
-  #        "fieldname", "\\/", "_",
-  #        # replace backslashes, question marks, hashes and minuses with underscore
-  #        "fieldname", "[\\?#-]", "_"
-  #      ]
-  #    }
+  #     filter {
+  #       mutate {
+  #         gsub => [
+  #           # replace all forward slashes with underscore
+  #           "fieldname", "\\/", "_",
+  #
+  #           # replace backslashes, question marks, hashes and minuses with
+  #           # underscore
+  #           "fieldname", "[\\?#-]", "_"
+  #         ]
+  #       }
+  #     }
   #
   config :gsub, :validate => :array
 
@@ -84,50 +89,56 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # 
   # Example:
   # 
-  #    mutate {
-  #      uppercase => [ "fieldname" ]
-  #    }
-  # 
+  #     filter {
+  #       mutate {
+  #         uppercase => [ "fieldname" ]
+  #       }
+  #     }
   config :uppercase, :validate => :array
   
   # Convert a string to its lowercase equivalent
   # 
   # Example:
   # 
-  #   mutate {
-  #     lowercase => [ "fieldname" ]
-  #   }
-  # 
+  #     filter {
+  #       mutate {
+  #         lowercase => [ "fieldname" ]
+  #       }
+  #     }
   config :lowercase, :validate => :array
 
-  # Split a field to an array using a separator character. Only works on string fields
+  # Split a field to an array using a separator character. Only works on string
+  # fields.
   #
   # Example:
   #
-  # mutate { 
-  #    split => ["fieldname", ","]
-  # }
-  #
+  #     filter {
+  #       mutate { 
+  #          split => ["fieldname", ","]
+  #       }
+  #     }
   config :split, :validate => :hash
 
   # Join an array with a separator character, does nothing on non-array fields
   #
   # Example:
   #
-  # mutate { 
-  #    join => ["fieldname", ","]
-  # }
-  #
+  #    filter {
+  #      mutate { 
+  #        join => ["fieldname", ","]
+  #      }
+  #    }
   config :join, :validate => :hash
 
   # Strip whitespaces
   #
   # Example:
   #
-  # mutate { 
-  #    strip => ["field1", "field2"]
-  # }
-  #
+  #     filter {
+  #       mutate { 
+  #          strip => ["field1", "field2"]
+  #       }
+  #     }
   config :strip, :validate => :array
 
   public
