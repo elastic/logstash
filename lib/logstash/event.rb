@@ -24,7 +24,7 @@ class LogStash::Event
     @data["@timestamp"] ||= LogStash::Time.now
   end # def initialize
 
-  if RUBY_ENGINE == "jruby"
+  if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
     @@date_parser = Java::org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
   else
     # TODO(sissel): LOGSTASH-217
