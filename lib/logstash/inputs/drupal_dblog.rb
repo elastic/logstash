@@ -254,6 +254,8 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
 
   private
   def set_last_wid(wid, insert)
+    wid = PHP.serialize(wid.to_i)
+
     # Update last import wid variable
     if insert
       # Does not exist yet, so insert
