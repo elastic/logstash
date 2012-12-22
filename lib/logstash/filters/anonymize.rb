@@ -10,9 +10,11 @@ class LogStash::Filters::Anonymize < LogStash::Filters::Base
   config :fields, :validate => :array, :required => true
 
   # Hashing key
+  # When using MURMUR3 the key is ignored but must still be set.
+  # When using IPV4_NETWORK key is the subnet prefix lentgh
   config :key, :validate => :string, :required => true
 
-  # digest type
+  # digest/hash type
   config :algorithm, :validate => ['SHA', 'SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512', 'MD4', 'MD5', "MURMUR3", "IPV4_NETWORK"], :required => true, :default => 'SHA1'
 
   public
