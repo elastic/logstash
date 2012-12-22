@@ -5,7 +5,7 @@ require "logstash/outputs/base"
 # output for logstash. If you plan on using the logstash web interface, you'll
 # need to use this output.
 #
-#   *NOTE*: Your elasticsearch cluster must be running elasticsearch
+#   *VERSION NOTE*: Your elasticsearch cluster must be running elasticsearch
 #   %ELASTICSEARCH_VERSION%. If you use any other version of elasticsearch,
 #   you should consider using the [elasticsearch_http](elasticsearch_http)
 #   output instead.
@@ -15,6 +15,9 @@ require "logstash/outputs/base"
 #
 # * create an elasticsearch.yml file in the $PWD of the logstash process
 # * pass in es.* java properties (java -Des.node.foo= or ruby -J-Des.node.foo=)
+#
+# This plugin will join your elasticsearch cluster, so it will show up in
+# elasticsearch's cluster health status.
 #
 # You can learn more about elasticsearch at <http://elasticsearch.org>
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
