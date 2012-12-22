@@ -33,7 +33,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   config :name, :validate => :string, :deprecated => true
 
   # The name of the exchange
-  config :exchange, :validate => :string, :required => true
+  config :exchange, :validate => :string # TODO(sissel): Make it required when 'name' is gone
 
   # Key to route to by default. Defaults to 'logstash'
   #
