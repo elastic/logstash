@@ -100,6 +100,36 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # 
   config :lowercase, :validate => :array
 
+  # Split a field to an array using a separator character. Only works on string fields
+  #
+  # Example:
+  #
+  # mutate { 
+  #    split => ["fieldname", ","]
+  # }
+  #
+  config :split, :validate => :hash
+
+  # Join an array with a separator character, does nothing on non-array fields
+  #
+  # Example:
+  #
+  # mutate { 
+  #    join => ["fieldname", ","]
+  # }
+  #
+  config :join, :validate => :hash
+
+  # Strip whitespaces
+  #
+  # Example:
+  #
+  # mutate { 
+  #    strip => ["field1", "field2"]
+  # }
+  #
+  config :strip, :validate => :array
+
   public
   def register
     valid_conversions = %w(string integer float)
@@ -139,6 +169,8 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     uppercase(event) if @uppercase
     lowercase(event) if @lowercase
     remove(event) if @remove
+    split(event) if @split
+    join(event) if @join
 
     filter_matched(event)
   end # def filter
@@ -254,4 +286,34 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
       end
     end
   end # def lowercase
+
+  private
+  def split(event)
+    @split.each do |field, separator|
+      if event[field].is_a?(String)
+        event[field] = event[field].split(separator)
+      end
+    end
+  end
+
+  private
+  def join(event)
+    @join.each do |field, separator|
+      if event[field].is_a?(Array)
+        event[field] = event[field].join(separator)
+      end
+    end
+  end
+
+  private
+  def strip(event)
+    @strip.each do |field|
+      if event[field].is_a?(Array)
+        event[field] = event[field].map{|s| s.strip }
+      elsif event[field].is_a?(String)
+        event[field] = event[field].strip
+      end
+    end
+  end
+
 end # class LogStash::Filters::Mutate
