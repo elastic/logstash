@@ -22,7 +22,9 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
   config :name, :validate => :string, :deprecated => true
 
   # Event Log Name
-  config :logfile, :validate => :string, :required => true, :default => "System"
+  config :logfile, :validate => :string, :default => "System"
+
+  # TODO(sissel): Make 'logfile' required after :name is gone.
 
   public
   def initialize(params)
@@ -38,6 +40,10 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
         @logger.error("'name' and 'logfile' are the same setting, but 'name' is deprecated. Please use only 'logfile'")
       end
       @logfile = @name
+    end
+
+    if @logfile.nil?
+      raise ArgumentError, "Missing required parameter 'logfile' for input/eventlog"
     end
 
     @hostname = Socket.gethostname
