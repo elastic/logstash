@@ -119,7 +119,12 @@ class LogStash::Filters::Date < LogStash::Filters::Base
         when "UNIX_MS" # unix epoch in ms
           parser = lambda { |date| org.joda.time.Instant.new(date.to_i).toDateTime }
         when "TAI64N" # TAI64 with nanoseconds, -10000 accounts for leap seconds
-          parser = lambda { |date| org.joda.time.Instant.new((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).toDateTime }
+          parser = lambda do |date| 
+            # Skip leading "@" if it is present (common in tai64n times)
+            date = date[1..-1] if date[0, 1] == "@"
+
+            org.joda.time.Instant.new((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).toDateTime 
+          end
         else
           joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withOffsetParsed
           if(locale != nil) 
