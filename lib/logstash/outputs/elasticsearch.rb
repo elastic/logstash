@@ -6,7 +6,9 @@ require "logstash/outputs/base"
 # need to use this output.
 #
 #   *NOTE*: Your elasticsearch cluster must be running elasticsearch
-#   %ELASTICSEARCH_VERSION%. Any other version may not work.
+#   %ELASTICSEARCH_VERSION%. If you use any other version of elasticsearch,
+#   you should consider using the [elasticsearch_http](elasticsearch_http)
+#   output instead.
 #
 # If you want to set other elasticsearch options that are not exposed directly
 # as config options, there are two options:
