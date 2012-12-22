@@ -38,6 +38,21 @@ describe LogStash::Filters::CSV do
     end
   end
 
+  describe "custom separator" do
+    config <<-CONFIG
+      filter {
+        csv {
+          separator => ";"
+        }
+      }
+    CONFIG
+
+    sample "big,bird;sesame street" do
+      insist { subject["field1"] } == "big,bird"
+      insist { subject["field2"] } == "sesame street"
+    end
+  end
+
   describe "parse csv with more data than defined field names" do
     config <<-CONFIG
       filter {
