@@ -11,7 +11,16 @@ The logstash agent has the following flags (also try using the '--help' flag)
 <dl>
 <dt> -f, --config CONFIGFILE </dt>
 <dd> Load the logstash config from a specific file, directory, or a wildcard. If given a directory or wildcard, config files will be read in order lexigraphically.  </dd>
-<dt> --log FILE </dt>
+<dt> -e CONFIGSTRING </dt>
+<dd> Use the given string as the configuration data. Same syntax as the
+config file. If not input is specified, 'stdin { type => stdin }' is
+default. If no output is specified, 'stdout { debug => true }}' is
+default. </dd>
+<dt> -w, --filterworks COUNT </dt>
+<dd> Run COUNT filter workers (default: 1) </dd>
+<dt> --watchdog-timeout TIMEOUT </dt>
+<dd> Set watchdog timeout value. </dd>
+<dt> -l, --log FILE </dt>
 <dd> Log to a given path. Default is to log to stdout </dd>
 <dt> -v </dt>
 <dd> Increase verbosity. There are multiple levels of verbosity available with
@@ -26,6 +35,9 @@ name, like --grok-foo.
 
 ## Web UI
 
+The logstash web interface has the following flags (also try using the '--help'
+flag)
+
 <dl>
 <dt> --log FILE </dt>
 <dd> Log to a given path. Default is stdout. </dd>
@@ -33,7 +45,9 @@ name, like --grok-foo.
 <dd> Address on which to start webserver. Default is 0.0.0.0. </dd>
 <dt> --port PORT </dt>
 <dd> Port on which to start webserver. Default is 9292. </dd>
-<dt> --backend URL </dt>
+<dt> -B, --elasticsearch-bind-host ADDRESS </dt>
+<dd> Address on which to bind elastic search node. </dd>
+<dt> -b, --backend URL </dt>
 <dd>The backend URL to use. Default is elasticsearch:/// (assumes multicast discovery). 
 You can specify elasticsearch://[host][:port]/[clustername]</dd>
 </dl>
