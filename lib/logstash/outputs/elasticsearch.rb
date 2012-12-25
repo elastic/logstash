@@ -38,7 +38,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   config :index_type, :validate => :string, :default => "%{@type}"
 
   # The document ID for the index. Overwrites any existing entry in elasticsearch with the same ID.
-  config :id, :validate => :string, :default => "%{@id}"
+  config :id, :validate => :string, :default => ""
 
   # The name of your cluster if you set it on the ElasticSearch side. Useful
   # for discovery.
@@ -164,7 +164,12 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       end
     end
 
-    req = @client.index(index, type, id, event.to_hash) 
+    if id == "%{@id}"
+        req = @client.index(index, type, event.to_hash) 
+    else
+        req = @client.index(index, type, id, event.to_hash)
+    end
+
     increment_inflight_request_count
     #timer = @logger.time("elasticsearch write")
     req.on(:success) do |response|
