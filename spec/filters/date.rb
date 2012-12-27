@@ -182,7 +182,7 @@ describe LogStash::Filters::Date do
     end
   end
 
-  describe "accept match config option with hash value like grep (LOGSTASH-735)" do
+  describe "accept match config option with hash value (LOGSTASH-735)" do
     config <<-CONFIG
       filter {
         date {
