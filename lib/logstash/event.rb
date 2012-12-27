@@ -124,7 +124,6 @@ class LogStash::Event
   def tags; @data["@tags"]; end # def tags
   def tags=(val); @data["@tags"] = val; end # def tags=
 
-  public
   def id; @data["@id"]; end # def id
   def id=(val); @data["@id"] = val; end # def id=
 
