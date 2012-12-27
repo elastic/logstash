@@ -22,7 +22,7 @@ class LogStash::Filters::Anonymize < LogStash::Filters::Base
     # require any library and set the anonymize function
     case @algorithm
     when "IPV4_NETWORK"
-      require "ipaddress"
+      require 'ipaddr'
       class << self; alias_method :anonymize, :anonymize_ipv4_network; end
     when "MURMUR3"
       require "murmurhash3"
@@ -43,20 +43,15 @@ class LogStash::Filters::Anonymize < LogStash::Filters::Base
 
   private
   def anonymize_ipv4_network(ip_string)
-    warn "ipv4"
-    ip = IPAddress::IPv4.new(ip_string)
-    ip.prefix = @key
-    ip.network.to_s
+    IPAddr.new(ip_string).mask(@key.to_i).to_s
   end  
 
   def anonymize_openssl(data)
-    warn "openssl"
     digest = algorithm()
     OpenSSL::HMAC.hexdigest(digest, @key, data)
   end
 
   def anonymize_murmur3(value)
-    warn "murmur3"
     case value
     when Fixnum
       MurmurHash3::V32.int_hash(value)
