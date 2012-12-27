@@ -1,4 +1,5 @@
 require "logstash/config/file"
+require "logstash/config/file/yaml"
 require "logstash/filterworker"
 require "logstash/logging"
 require "logstash/sized_queue"
@@ -34,6 +35,7 @@ class LogStash::Agent
     log_to(STDERR)
     @config_path = nil
     @config_string = nil
+    @is_yaml = false
     @logfile = nil
 
     # flag/config defaults
@@ -252,13 +254,25 @@ class LogStash::Agent
 
       concatconfig = []
       paths.each do |path|
-        concatconfig << File.new(path).read
+        file = File.new(path)
+        if File.extname(file) == '.yaml'
+          # assume always YAML if even one file is
+          @is_yaml = true
+        end
+        concatconfig << file.read
       end
-      config = LogStash::Config::File.new(nil, concatconfig.join("\n"))
+      config_data = concatconfig.join("\n")
     else # @config_string
       # Given a config string by the user (via the '-e' flag)
-      config = LogStash::Config::File.new(nil, @config_string)
+      config_data = @config_string
     end
+
+    if @is_yaml
+      config = LogStash::Config::File::Yaml.new(nil, config_data)
+    else
+      config = LogStash::Config::File.new(nil, config_data)
+    end
+
     config.logger = @logger
     config
   end
