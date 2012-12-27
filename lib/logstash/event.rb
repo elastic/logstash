@@ -97,14 +97,11 @@ class LogStash::Event
     val = uri if uri
     if val.is_a?(URI)
       @data["@source"] = val.to_s
-      maybe_new_source_host = val.host
+      @data["@source_host"] = val.host if @data["@source_host"].nil?
       @data["@source_path"] = val.path
     else
       @data["@source"] = val
-      maybe_new_source_host = val
-    end
-    if !@data["@source_host"]
-      @data["@source_host"] = maybe_new_source_host
+      @data["@source_host"] = val.host if @data["@source_host"].nil?
     end
   end # def source=
 
