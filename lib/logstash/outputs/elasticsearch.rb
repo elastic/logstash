@@ -38,7 +38,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   config :index_type, :validate => :string, :default => "%{@type}"
 
   # The document ID for the index. Overwrites any existing entry in elasticsearch with the same ID.
-  config :id, :validate => :string, :default => ""
+  config :id, :validate => :string, :default => nil
 
   # The name of your cluster if you set it on the ElasticSearch side. Useful
   # for discovery.
@@ -143,7 +143,6 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
     index = event.sprintf(@index)
     type = event.sprintf(@index_type)
-    id = event.sprintf(@id)
     # TODO(sissel): allow specifying the ID?
     # The document ID is how elasticsearch determines sharding hash, so it can
     # help performance if we allow folks to specify a specific ID.
@@ -164,9 +163,10 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       end
     end
 
-    if id == "%{@id}"
+    if id.nil?
         req = @client.index(index, type, event.to_hash) 
     else
+        id = event.sprintf(@id)
         req = @client.index(index, type, id, event.to_hash)
     end
 
