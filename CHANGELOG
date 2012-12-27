@@ -2,9 +2,9 @@
  ## Overview of this release:
  - grok now captures (?<somename>...) regexp into 'somename' field
  - new 'charset' feature for inputs (for improved UTF-8 conversion support)
- - TODO TODO TODO new faster start-time release jars are available, see the 'flatjar' download
-   option. This flatjar thing may have bugs, so both flatjar and monolithic are
-   available.
+ - TODO TODO TODO new faster start-time release jars are available, see the
+   'flatjar' download option. This flatjar thing may have bugs, so both flatjar
+   and monolithic are available.
 
  ## general
  - fixed internal dependency versioning on 'addressable' gem (LOGSTASH-694)
@@ -19,6 +19,9 @@
  - lumberjack: jls-lumberjack gem updated to 0.0.7
 
  ## filters
+ - new: anonymize: supports many hash mechanisms (murmur3, sha, md5, etc) as
+   well as IP address anonymization (#280, #261; patches by Richard Pijnenburg
+   and Avishai Ish-Shalom)
  - improvement: grok: now accepts (?<foo>...) named captures. This lets you
    compose a pattern in the grok config without needing to define it in a
    patterns file. Example: (?<hostport>%{HOST}:%{POSINT}) to capture 'hostport'
@@ -41,6 +44,8 @@
  - improvement: gelf: Allow full_message gelf property to be overridden (#245, 
    patch by Sébastien Masset)
  - lumberjack: jls-lumberjack gem updated to 0.0.6
+ - new: syslog output supporting both RFC3164 and RFC5424 (#180, patch by
+   ruckalvnet)
 
 1.1.5 (November 10, 2012)
  ## Overview of this release:
