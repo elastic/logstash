@@ -56,6 +56,10 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # [dateformats]: http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html
   config /[A-Za-z0-9_-]+/, :validate => :array
 
+  # An array with field name first, and format patterns following, [ field, formats... ]
+  # Using this more than once will have unpredictable results, so only use it once per date filter.
+  config :match, :validate => :array, :default => []
+
   # LOGSTASH-34
   DATEPATTERNS = %w{ y d H m s S } 
 
@@ -103,14 +107,21 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   def register
     require "java"
     # TODO(sissel): Need a way of capturing regexp configs better.
-    locale = parseLocale(@config["locale"][0]) if @config["locale"] != nil and @config["locale"][0] != nil 
+    locale = parseLocale(@config["locale"][0]) if @config["locale"] != nil and @config["locale"][0] != nil
+    missing = []
     @config.each do |field, value|
       next if (RESERVED + ["locale"]).include?(field)
+      next if (RESERVED + ["match"]).include?(field)
 
       # values here are an array of format strings for the given field.
-      missing = []
-      value.each do |format|
-        case format
+      setupMatcher(field, locale, missing, value) # value.each
+    end # @config.each
+    setupMatcher(@config["match"].shift, locale, missing, @config["match"] )
+  end
+
+  def setupMatcher(field, locale, missing, value)
+    value.each do |format|
+      case format
         when "ISO8601"
           joda_parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
           parser = lambda { |date| joda_parser.parseDateTime(date) }
@@ -127,7 +138,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           end
         else
           joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withOffsetParsed
-          if(locale != nil) 
+          if (locale != nil)
             joda_parser = joda_parser.withLocale(locale)
           end
           parser = lambda { |date| joda_parser.parseDateTime(date) }
@@ -139,17 +150,18 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           # are not specified so we can inject them later. (jordansissel)
           # LOGSTASH-34
           missing = DATEPATTERNS.reject { |p| format.include?(p) }
-        end
+      end
 
-        @logger.debug("Adding type with date config", :type => @type,
-                      :field => field, :format => format)
-        @parsers[field] << {
+      @logger.debug("Adding type with date config", :type => @type,
+                    :field => field, :format => format)
+      @parsers[field] << {
           :parser => parser,
           :missing => missing
-        }
-      end # value.each
-    end # @config.each
-  end # def register
+      }
+    end
+  end
+
+  # def register
 
   public
   def filter(event)
