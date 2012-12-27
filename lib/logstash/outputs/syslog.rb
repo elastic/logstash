@@ -2,14 +2,13 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 require "date"
 
-# Send events to syslog server
+# Send events to a syslog server.
+#
 # You can send messages compliant with RFC3164 or RFC5424
 # UDP or TCP syslog transport is supported
-
 class LogStash::Outputs::Syslog < LogStash::Outputs::Base
-
   config_name "syslog"
-  plugin_status "beta"
+  plugin_status "experimental"
 
   FACILITY_LABELS = [
     "kernel",
