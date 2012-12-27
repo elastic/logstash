@@ -16,6 +16,7 @@ class LogStash::Event
     @cancelled = false
 
     @data = {
+      "@source_host" => false,
       "@source" => "unknown",
       "@tags" => [],
       "@fields" => {},
@@ -91,16 +92,19 @@ class LogStash::Event
   
   public
   def source; @data["@source"]; end # def source
-  def source=(val) 
+  def source=(val)
     uri = URI.parse(val) rescue nil
     val = uri if uri
     if val.is_a?(URI)
       @data["@source"] = val.to_s
-      @data["@source_host"] = val.host
+      maybe_new_source_host = val.host
       @data["@source_path"] = val.path
     else
       @data["@source"] = val
-      @data["@source_host"] = val
+      maybe_new_source_host = val
+    end
+    if !@data["@source_host"]
+      @data["@source_host"] = maybe_new_source_host
     end
   end # def source=
 
