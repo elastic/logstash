@@ -21,6 +21,40 @@ describe LogStash::Filters::Anonymize do
       insist { subject["clientip"] } == "0d01b2191194d261fa1a2e7c18a38d44953ab4e2"
     end
   end
+
+  describe "anonymize ipaddress with IPV4_NETWORK algorithm" do
+    # The logstash config goes here.
+    # At this time, only filters are supported.
+    config <<-CONFIG
+      filter {
+        anonymize {
+          fields => ["clientip"]
+          algorithm => "IPV4_NETWORK"
+          key => 24
+        }
+      }
+    CONFIG
+
+    sample "@fields" => {"clientip" => "233.255.13.44"} do
+      insist { subject["clientip"] } == "233.255.13.0"
+    end
+  end
+
+  describe "anonymize string with MURMUR3 algorithm" do
+    config <<-CONFIG
+      filter { 
+        anonymize { 
+          fields => ["clientip"]
+          algorithm => "MURMUR3"
+          key => ""
+        }
+      }
+    CONFIG
+
+    sample "@fields" => {"clientip" => "123.52.122.33"} do
+      insist { subject["clientip"] } == 1541804874
+    end
+  end
  
    describe "anonymize string with SHA1 alogrithm" do
     # The logstash config goes here.
