@@ -181,4 +181,23 @@ describe LogStash::Filters::Date do
       insist { subject.timestamp } == "2012-12-22T01:00:46.767Z"
     end
   end
+
+  describe "accept match config option with hash value like grep (LOGSTASH-735)" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "mydate", "ISO8601" ]
+        }
+      }
+    CONFIG
+
+    time = "2001-09-09T01:46:40.000Z"
+
+    sample({"@fields" => {"mydate" => time}}) do
+      insist { subject["mydate"] } == time
+      insist { subject.timestamp } == time
+      insist { subject["@timestamp"] } == time
+    end
+  end
 end
+
