@@ -16,7 +16,10 @@ class LogStash::Outputs::Gemfire < LogStash::Outputs::Base
   plugin_status "experimental"
 
   # Your client cache name
-  config :name, :validate => :string, :default => "logstash"
+  config :name, :validate => :string, :deprecated => true
+
+  # Your client cache name
+  config :cache_name, :validate => :string, :default => "logstash"
 
   # The path to a GemFire client cache XML file.
   #
@@ -40,6 +43,14 @@ class LogStash::Outputs::Gemfire < LogStash::Outputs::Base
   # A sprintf format to use when building keys
   config :key_format, :validate => :string, :default => "%{@source}-%{@timestamp}"
 
+  if @name
+    if @cache_name
+      @logger.error("'name' and 'cache_name' are the same setting, but 'name' is deprecated. Please use only 'cache_name'")
+    end
+    @cache_name = @name
+  end
+
+
   public
   def register
     import com.gemstone.gemfire.cache.client.ClientCacheFactory
@@ -52,10 +63,10 @@ class LogStash::Outputs::Gemfire < LogStash::Outputs::Base
   public
   def connect
     begin
-      @logger.debug("Connecting to GemFire #{@name}")
+      @logger.debug("Connecting to GemFire #{@cache_name}")
 
       @cache = ClientCacheFactory.new.
-        set("name", @name).
+        set("name", @cache_name).
         set("cache-xml-file", @cache_xml_file).create
       @logger.debug("Created cache #{@cache.inspect}")
 
@@ -90,7 +101,7 @@ class LogStash::Outputs::Gemfire < LogStash::Outputs::Base
 
   public
   def to_s
-    return "gemfire://#{name}"
+    return "gemfire://#{cache_name}"
   end
 
   public
