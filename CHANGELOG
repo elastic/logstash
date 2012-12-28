@@ -2,9 +2,9 @@
  ## Overview of this release:
  - grok now captures (?<somename>...) regexp into 'somename' field
  - new 'charset' feature for inputs (for improved UTF-8 conversion support)
- - TODO TODO TODO new faster start-time release jars are available, see the 'flatjar' download
-   option. This flatjar thing may have bugs, so both flatjar and monolithic are
-   available.
+ - TODO TODO TODO new faster start-time release jars are available, see the
+   'flatjar' download option. This flatjar thing may have bugs, so both flatjar
+   and monolithic are available.
 
  ## general
  - fixed internal dependency versioning on 'addressable' gem (LOGSTASH-694)
@@ -12,13 +12,19 @@
 
  ## inputs
  - All inputs now have a 'charset' setting to help you inform logstash of the
-   text encoding of the input. This is useful if you have Shift_JIS or CP1252
+   text encoding of the input. This is useful if you have Shift_JIS or CP1251
    encoded log files. This should help resolve the many UTF-8 bugs that were
    reported recently.
  - bugfix: zeromq: 'topology' is now a required setting
- - lumberjack: jls-lumberjack gem updated to 0.0.7
+ - misc: lumberjack: jls-lumberjack gem updated to 0.0.7
+ - bugfix: stomp: fix startup problems causing early termination (#226
 
  ## filters
+ - new: anonymize: supports many hash mechanisms (murmur3, sha, md5, etc) as
+   well as IP address anonymization (#280, #261; patches by Richard Pijnenburg
+   and Avishai Ish-Shalom)
+ - filter: date: now accepts 'match' as a setting. Use of this is preferable
+   to the old syntax.
  - improvement: grok: now accepts (?<foo>...) named captures. This lets you
    compose a pattern in the grok config without needing to define it in a
    patterns file. Example: (?<hostport>%{HOST}:%{POSINT}) to capture 'hostport'
@@ -31,8 +37,13 @@
    matched. (LOGSTASH-705)
  - improvement: kv: Adds field_split, value_split, prefix, and container
    settings. (#225, patch by Alex Wheeler)
+ - mutate: rename on a nonexistant field now does nothing as expected.
+   (LOGSTASH-757)
 
  ## outputs
+ - new: syslog output supporting both RFC3164 and RFC5424 (#180, patch by
+   ruckalvnet)
+ - new: cloudwatch output to emit metrics and other events to Amazon CloudWatch.
  - bugfix: zeromq: 'topology' is now a required setting
  - improvement: mongodb: new setting 'isodate', when true, stores the @timestamp
    field as a mongodb date instead of a string. (#224, patch by Kevin Amorin)

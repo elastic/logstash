@@ -47,17 +47,47 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #   2011-04-19T03:44:01.103Z
   # * "UNIX" - will parse unix time in seconds since epoch
   # * "UNIX_MS" - will parse unix time in milliseconds since epoch
+  # * "TAI64N" - will parse tai64n time values
   #
-  # For example, if you have a field 'logdate' and with a value that looks like 'Aug 13 2010 00:03:44'
+  # For example, if you have a field 'logdate' and with a value that looks like
+  # 'Aug 13 2010 00:03:44'
   # you would use this configuration:
   #
-  #     logdate => "MMM dd yyyy HH:mm:ss"
+  #     logdate => "MMM dd YYYY HH:mm:ss"
   #
   # [dateformats]: http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html
   config /[A-Za-z0-9_-]+/, :validate => :array
 
-  # An array with field name first, and format patterns following, [ field, formats... ]
-  # Using this more than once will have unpredictable results, so only use it once per date filter.
+  # The date formats allowed are anything allowed by Joda-Time (java time
+  # library), generally: [java.text.SimpleDateFormat][dateformats]
+  #
+  # An array with field name first, and format patterns following, [ field,
+  # formats... ]
+  # 
+  # If your time field has multiple possible formats, you can do this:
+  #
+  #    match => [ "logdate", "MMM dd YYY HH:mm:ss",
+  #               "MMM  d YYY HH:mm:ss", "ISO8601" ]
+  #
+  # The above will match a syslog (rfc3164) or iso8601 timestamp.
+  #
+  # There are a few special exceptions, the following format literals exist
+  # to help you save time and ensure correctness of date parsing.
+  #
+  # * "ISO8601" - should parse any valid ISO8601 timestamp, such as
+  #   2011-04-19T03:44:01.103Z
+  # * "UNIX" - will parse unix time in seconds since epoch
+  # * "UNIX_MS" - will parse unix time in milliseconds since epoch
+  # * "TAI64N" - will parse tai64n time values
+  #
+  # For example, if you have a field 'logdate' and with a value that looks like
+  # 'Aug 13 2010 00:03:44', you would use this configuration:
+  #
+  #    filter {
+  #      date {
+  #        match => [ "logdate", "MMM dd YYYY HH:mm:ss" ]
+  #      }
+  #    }
   config :match, :validate => :array, :default => []
 
   # LOGSTASH-34
@@ -130,7 +160,12 @@ class LogStash::Filters::Date < LogStash::Filters::Base
         when "UNIX_MS" # unix epoch in ms
           parser = lambda { |date| org.joda.time.Instant.new(date.to_i).toDateTime }
         when "TAI64N" # TAI64 with nanoseconds, -10000 accounts for leap seconds
-          parser = lambda { |date| org.joda.time.Instant.new((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).toDateTime }
+          parser = lambda do |date| 
+            # Skip leading "@" if it is present (common in tai64n times)
+            date = date[1..-1] if date[0, 1] == "@"
+
+            org.joda.time.Instant.new((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).toDateTime 
+          end
         else
           joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withOffsetParsed
           if (locale != nil)

@@ -7,9 +7,9 @@ require "logstash/namespace"
 # For example, if you have a log message which contains 'ip=1.2.3.4
 # error=REFUSED', you can parse those automatically by doing:
 # 
-#   filter {
-#     kv { }
-#   }
+#    filter {
+#      kv { }
+#    }
 #
 # And you will get field 'ip' == "1.2.3.4" etc.
 class LogStash::Filters::KV < LogStash::Filters::Base
@@ -33,9 +33,10 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #
   # Example, to split out the args from a string such as
   # '?pin=12345~0&d=123&e=foo@bar.com&oq=bobo&ss=12345':
-  # 
+  #
+  # Default to space character for backward compatibility
   #     filter { kv { field_split => "&?" } }
-  config :field_split, :validate => :string, :default => ''
+  config :field_split, :validate => :string, :default => ' '
 
 
   # A string of characters to use as delimiters for identifying key-value relations.
@@ -77,7 +78,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
         when Array; value.each { |v| kv_keys = parse(v, event, kv_keys) }
         else 
           @logger.warn("kv filter has no support for this type of data",
-                       :type => value.type, :value => value)
+                       :type => value.class, :value => value)
       end # case value
     end
     # If we have any keys, create/append the hash
@@ -95,7 +96,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     if !event =~ /[@field_split]/
       return kv_keys
     end
-    scan_re = Regexp.new("([^ "+@field_split+@value_split+"]+)["+@value_split+"](?:\"([^\""+@field_split+"]+)\"|'([^'"+@field_split+"]+)'|([^ "+@field_split+"]+))")
+    scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)["+@value_split+"](?:\"([^\"]+)\"|'([^']+)'|((?:\\\\ |[^"+@field_split+"])+))")
     text.scan(scan_re) do |key, v1, v2, v3|
       value = v1 || v2 || v3
       if !@trim.nil?

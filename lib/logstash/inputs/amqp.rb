@@ -30,8 +30,12 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
   # Your amqp password
   config :password, :validate => :password, :default => "guest"
 
-  # The name of the queue. 
-  config :name, :validate => :string, :default => ""
+  # The name of the queue. Depricated due to conflicts with puppet naming convention.
+  # Replaced by 'queue' variable. See LOGSTASH-755
+  config :name, :validate => :string, :deprecated => true
+
+  # The name of the queue.
+  config :queue, :validate => :string, :default => ""
 
   # The name of the exchange to bind the queue. This is analogous to the 'amqp
   # output' [config 'name'](../outputs/amqp)
@@ -86,6 +90,14 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
 
   public
   def register
+
+    if @name
+      if @queue
+        @logger.error("'name' and 'queue' are the same setting, but 'name' is deprecated. Please use only 'queue'")
+      end
+      @queue = @name
+    end   
+
     @logger.info("Registering input #{@url}")
     require "bunny" # rubygem 'bunny'
     @vhost ||= "/"
@@ -106,12 +118,12 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
     amqp_credentials << @user if @user
     amqp_credentials << ":#{@password}" if @password
     @amqpurl += amqp_credentials unless amqp_credentials.nil?
-    @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@name}"
+    @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@queue}"
   end # def register
 
   def run(queue)
     begin
-      @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up queue #{@name.inspect}")
+      @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up queue #{@queue.inspect}")
       @bunny = Bunny.new(@amqpsettings)
       return if terminating?
       @bunny.start
@@ -119,15 +131,15 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
 
       @arguments_hash = Hash[*@arguments]
 
-      @queue = @bunny.queue(@name, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive, :arguments => @arguments_hash })
-      @queue.bind(@exchange, :key => @key)
+      @bunnyqueue = @bunny.queue(@queue, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive, :arguments => @arguments_hash })
+      @bunnyqueue.bind(@exchange, :key => @key)
 
-      @queue.subscribe({:ack => @ack}) do |data|
+      @bunnyqueue.subscribe({:ack => @ack}) do |data|
         e = to_event(data[:payload], @amqpurl)
         if e
           queue << e
         end
-      end # @queue.subscribe
+      end # @bunnyqueue.subscribe
 
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
       @logger.error("AMQP connection error, will reconnect: #{e}")
@@ -139,8 +151,8 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
   end # def run
 
   def teardown
-    @queue.unsubscribe unless @durable == true
-    @queue.delete unless @durable == true
+    @bunnyqueue.unsubscribe unless @durable == true
+    @bunnyqueue.delete unless @durable == true
     @bunny.close if @bunny
     finished
   end # def teardown

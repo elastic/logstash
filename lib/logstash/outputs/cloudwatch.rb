@@ -1,10 +1,6 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-require "thread"
-require "rufus/scheduler"
-require "aws"
-
 # This output lets you aggregate and send metric data to AWS CloudWatch
 #
 # Configuration is done partly in this output and partly using fields added
@@ -23,6 +19,20 @@ require "aws"
 class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   config_name "cloudwatch"
   plugin_status "experimental"
+
+  # Constants
+  # aggregate_key members
+  DIMENSIONS = "dimensions"
+  TIMESTAMP = "timestamp"
+  METRIC = "metric"
+  COUNT = "count"
+  UNIT = "unit"
+  SUM = "sum"
+  MIN = "min"
+  MAX = "max"
+  # Units
+  COUNT_UNIT = "Count"
+  NONE = "None"
 
   # The AWS Region to send logs to.
   config :region, :validate => :string, :default => "us-east-1"
@@ -43,44 +53,72 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   # See here for allowed values: https://github.com/jmettraux/rufus-scheduler#the-time-strings-understood-by-rufus-scheduler
   config :timeframe, :validate => :string, :default => "1m"
 
+  # How many events to queue before forcing a call to the CloudWatch API ahead of "timeframe" schedule
+  # Set this to the number of events-per-timeframe you will be sending to CloudWatch to avoid extra API calls
+  config :queue_size, :validate => :number, :default => 10000
+
   # The default namespace to use for events which do not have a "CW_namespace" field
   config :namespace, :validate => :string, :default => "Logstash"
-
-  # The name of the field used to set the metric name on an event
-  config :field_metric, :validate => :string, :default => "CW_metric"
 
   # The name of the field used to set a different namespace per event
   config :field_namespace, :validate => :string, :default => "CW_namespace"
 
-  # The name of the field used to set the units on an event metric
+  # The default metric name to use for events which do not have a "CW_metricname" field.
+  # If this is provided then all events which pass through this output will be aggregated and
+  # sent to CloudWatch, so use this carefully.  Furthermore, when providing this option, you
+  # will probably want to also restrict events from passing through this output using event
+  # type, tag, and field matching
+  #
+  # At a minimum events must have a "metric name" to be sent to CloudWatch. This can be achieved
+  # either by providing a default here, as described above, OR by adding a "CW_metricname" field
+  # to the events themselves, as described below.  By default, if no other configuration is
+  # provided besides a metric name, then events will be counted (Unit: Count, Value: 1)
+  # by their metric name (either this default or from their CW_metricname field)
+  config :metricname, :validate => :string
+
+  # The name of the field used to set the metric name on an event
+  config :field_metricname, :validate => :string, :default => "CW_metricname"
+
+  VALID_UNITS = ["Seconds", "Microseconds", "Milliseconds", "Bytes",
+                  "Kilobytes", "Megabytes", "Gigabytes", "Terabytes",
+                  "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits",
+                  "Percent", COUNT_UNIT, "Bytes/Second", "Kilobytes/Second",
+                  "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second",
+                  "Bits/Second", "Kilobits/Second", "Megabits/Second",
+                  "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
+
+  # The default unit to use for events which do not have a "CW_unit" field
+  config :unit, :validate => VALID_UNITS, :default => COUNT_UNIT
+
+  # The name of the field used to set the unit on an event metric
   config :field_unit, :validate => :string, :default => "CW_unit"
+
+  # The default value to use for events which do not have a "CW_value" field
+  # If provided, this must be a string which can be converted to a float, for example...
+  # "1", "2.34", ".5", and "0.67"
+  config :value, :validate => :string, :default => "1"
 
   # The name of the field used to set the value (float) on an event metric
   config :field_value, :validate => :string, :default => "CW_value"
 
-  # The name of the field used to set the dimension name on an event metric
-  config :field_dimensionname, :validate => :string, :default => "CW_dimensionName"
+  # The default dimensions [ name, value, ... ] to use for events which do not have a "CW_dimensions" field
+  config :dimensions, :validate => :hash
 
-  # The name of the field used to set the dimension value on an event metric
-  config :field_dimensionvalue, :validate => :string, :default => "CW_dimensionValue"
-
-  # aggregate_key members
-  DIM_NAME = "dimensionName"
-  DIM_VALUE = "dimensionValue"
-  TIMESTAMP = "timestamp"
-  METRIC = "metric"
-  COUNT = "count"
-  UNIT = "unit"
-  SUM = "sum"
-  MIN = "min"
-  MAX = "max"
-
-  # Units
-  COUNT_UNIT = "Count"
-  NONE = "None"
+  # The name of the field used to set the dimensions on an event metric
+  # this field named here, if present in an event, must have an array of
+  # one or more key & value pairs, for example...
+  #     add_field => [ "CW_dimensions", "Environment", "CW_dimensions", "prod" ]
+  # or, equivalently...
+  #     add_field => [ "CW_dimensions", "Environment" ]
+  #     add_field => [ "CW_dimensions", "prod" ]
+  config :field_dimensions, :validate => :string, :default => "CW_dimensions"
 
   public
   def register
+    require "thread"
+    require "rufus/scheduler"
+    require "aws"
+
     AWS.config(
         :access_key_id => @access_key,
         :secret_access_key => @secret_key,
@@ -88,15 +126,13 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
     )
     @cw = AWS::CloudWatch.new
 
-    @valid_units = ["Seconds", "Microseconds", "Milliseconds", "Bytes", "Kilobytes", "Megabytes", "Gigabytes", "Terabytes", "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits", "Percent", COUNT_UNIT, "Bytes/Second", "Kilobytes/Second", "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second", "Bits/Second", "Kilobits/Second", "Megabits/Second", "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
-
-    @event_queue = Queue.new
+    @event_queue = SizedQueue.new(@queue_size)
     @scheduler = Rufus::Scheduler.start_new
     @job = @scheduler.every @timeframe do
       @logger.info("Scheduler Activated")
-      send(aggregate({}))
+      publish(aggregate({}))
     end
-  end
+  end # def register
 
   public
   def receive(event)
@@ -110,18 +146,23 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
       return
     end
 
-    return unless event.fields.member?(@field_metric)
+    return unless (event[@field_metricname] || @metricname)
+
+    if (@event_queue.length >= @event_queue.max)
+      @job.trigger
+      @logger.warn("Posted to AWS CloudWatch ahead of schedule.  If you see this often, consider increasing the cloudwatch queue_size option.")
+    end
 
     @logger.info("Queueing event", :event => event)
     @event_queue << event
   end # def receive
 
   private
-  def send(aggregates)
-    aggregates.each { |namespace, data|
+  def publish(aggregates)
+    aggregates.each do |namespace, data|
       @logger.info("Namespace, data: ", :namespace => namespace, :data => data)
       metric_data = []
-      data.each { |aggregate_key, stats|
+      data.each do |aggregate_key, stats|
         new_data = {
             :metric_name => aggregate_key[METRIC],
             :timestamp => aggregate_key[TIMESTAMP],
@@ -133,36 +174,36 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
                 :maximum => stats[MAX],
             }
         }
-        if (aggregate_key[DIM_NAME] != nil && aggregate_key[DIM_VALUE] != nil)
-          new_data[:dimensions] = [{
-                                       :name => aggregate_key[DIM_NAME],
-                                       :value => aggregate_key[DIM_VALUE]
-                                   }]
+        dims = aggregate_key[DIMENSIONS]
+        if (dims.is_a?(Array) && dims.length > 0 && (dims.length % 2) == 0)
+          new_data[:dimensions] = Array.new
+          i = 0
+          while (i < dims.length)
+            new_data[:dimensions] << {:name => dims[i], :value => dims[i+1]}
+            i += 2
+          end
         end
         metric_data << new_data
-      } # data.each
+      end # data.each
 
       begin
         response = @cw.put_metric_data(
             :namespace => namespace,
             :metric_data => metric_data
         )
-        @logger.info("Sent data to AWS CloudWatch OK")
+        @logger.info("Sent data to AWS CloudWatch OK", :namespace => namespace, :metric_data => metric_data)
       rescue Exception => e
         @logger.warn("Failed to send to AWS CloudWatch", :exception => e, :namespace => namespace, :metric_data => metric_data)
         break
       end
-    } # aggregates.each
+    end # aggregates.each
     return aggregates
-  end
-
-  # def send
+  end# def publish
 
   private
   def aggregate(aggregates)
-
     @logger.info("QUEUE SIZE ", :queuesize => @event_queue.size)
-    until @event_queue.empty? do
+    while !@event_queue.empty? do
       begin
         count(aggregates, @event_queue.pop(true))
       rescue Exception => e
@@ -171,51 +212,66 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
       end
     end
     return aggregates
-  end
+  end # def aggregate
 
   private
   def count(aggregates, event)
+    # If the event doesn't declare a namespace, use the default
+    fnamespace = field(event, @field_namespace)
+    namespace = (fnamespace ? fnamespace : event.sprintf(@namespace))
 
-    # If the event doesnt declare a namespace, use the default
-    ns = field(event, @field_namespace)
-    namespace = (!ns) ? @namespace : ns
+    funit = field(event, @field_unit)
+    unit = (funit ? funit : event.sprintf(@unit))
 
-    unit = field(event, @field_unit)
-    value = field(event, @field_value)
+    fvalue = field(event, @field_value)
+    value = (fvalue ? fvalue : event.sprintf(@value))
 
-    # If neither Units nor Value is set, then we simply count the event
-    if (!unit && !value)
-      unit = COUNT
-      value = "1"
+    # We may get to this point with valid Units but missing value.  Send zeros.
+    val = (!value) ? 0.0 : value.to_f
+
+    # Event provides exactly one (but not both) of value or unit
+    if ( (fvalue == nil) ^ (funit == nil) )
+      @logger.warn("Likely config error: event has one of #{@field_value} or #{@field_unit} fields but not both.", :event => event)
     end
 
-    # If Units is still not set (or is invalid), then we know Value must BE set, so set Units to "None"
-    # And warn about misconfiguration
-    if (!unit || !@valid_units.include?(unit))
+    # If Unit is still not set or is invalid warn about misconfiguration & use NONE
+    if (!VALID_UNITS.include?(unit))
       unit = NONE
-      @logger.warn("Possible config error: CloudWatch Value found with invalid or missing Units")
+      @logger.warn("Likely config error: invalid or missing Units (#{unit.to_s}), using '#{NONE}' instead", :event => event)
     end
-
 
     if (!aggregates[namespace])
       aggregates[namespace] = {}
-      @logger.info("INITIALIZING NAMESPACE DATA")
     end
 
+    dims = event[@field_dimensions]
+    if (dims) # event provides dimensions
+      # validate the structure
+      if (!dims.is_a?(Array) || dims.length == 0 || (dims.length % 2) != 0)
+        @logger.warn("Likely config error: CloudWatch dimensions field (#{dims.to_s}) found which is not a positive- & even-length array.  Ignoring it.", :event => event)
+        dims = nil
+      end
+      # Best case, we get here and exit the conditional because dims...
+      # - is an array
+      # - with positive length
+      # - and an even number of elements
+    elsif (@dimensions.is_a?(Hash)) # event did not provide dimensions, but the output has been configured with a default
+      dims = @dimensions.flatten.map{|d| event.sprintf(d)} # into the kind of array described just above
+    else
+      dims = nil
+    end
+
+    fmetric = field(event, @field_metricname)
     aggregate_key = {
-        METRIC => field(event, @field_metric),
-        DIM_NAME => field(event, @field_dimensionname),
-        DIM_VALUE => field(event, @field_dimensionvalue),
+        METRIC => (fmetric ? fmetric : event.sprintf(@metricname)),
+        DIMENSIONS => dims,
         UNIT => unit,
-        TIMESTAMP => normalizeTimestamp(event.timestamp)
+        TIMESTAMP => event.sprintf("%{+YYYY-MM-dd'T'HH:mm:00Z}")
     }
 
     if (!aggregates[namespace][aggregate_key])
       aggregates[namespace][aggregate_key] = {}
     end
-
-    # We may get to this point with valid Units but missing value.  Send zeros.
-    val = (!value) ? 0.0 : value.to_f
 
     if (!aggregates[namespace][aggregate_key][MAX] || val > aggregates[namespace][aggregate_key][MAX])
       aggregates[namespace][aggregate_key][MAX] = val
@@ -236,20 +292,19 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
     else
       aggregates[namespace][aggregate_key][SUM] += val
     end
-  end
-
-  # Zeros out the seconds in a ISO8601 timestamp like event.timestamp
-  public
-  def normalizeTimestamp(time)
-    tz = (time[-1, 1] == "Z") ? "Z" : time[-5, 5]
-    totheminute = time[0..16]
-    normal = totheminute + "00.000" + tz
-    return normal
-  end
+  end # def count
 
   private
   def field(event, fieldname)
-    return event.fields.member?(fieldname) ? event.fields[fieldname][0] : nil
-  end
+    if !event[fieldname]
+      return nil
+    else
+      if event[fieldname].is_a?(Array)
+        return event[fieldname][0]
+      else
+        return event[fieldname]
+      end
+    end
+  end # def field
 
 end # class LogStash::Outputs::CloudWatch
