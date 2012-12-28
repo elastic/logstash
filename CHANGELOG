@@ -39,6 +39,8 @@
    settings. (#225, patch by Alex Wheeler)
  - mutate: rename on a nonexistant field now does nothing as expected.
    (LOGSTASH-757)
+ - grok: don't tag an event with _grokparsefailure if it's already so (#248,
+   patch by Greg Brockman)
 
  ## outputs
  - new: syslog output supporting both RFC3164 and RFC5424 (#180, patch by
