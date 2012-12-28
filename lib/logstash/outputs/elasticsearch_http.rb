@@ -3,8 +3,9 @@ require "logstash/outputs/base"
 
 # This output lets you store logs in elasticsearch.
 #
-# This output differs from the 'elasticsearch' output by using the HTTP
-# interface for indexing data with elasticsearch.
+# This plugin uses the HTTP/REST interface to ElasticSearch, which usually
+# lets you use any version of elasticsearch server. It is known to work
+# with elasticsearch %ELASTICSEARCH_VERSION%
 #
 # You can learn more about elasticsearch at <http://elasticsearch.org>
 class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base

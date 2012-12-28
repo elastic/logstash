@@ -1,4 +1,5 @@
 require "logstash/config/file"
+require "logstash/config/file/yaml"
 require "logstash/filterworker"
 require "logstash/logging"
 require "logstash/sized_queue"
@@ -34,6 +35,7 @@ class LogStash::Agent
     log_to(STDERR)
     @config_path = nil
     @config_string = nil
+    @is_yaml = false
     @logfile = nil
 
     # flag/config defaults
@@ -140,7 +142,7 @@ class LogStash::Agent
     # These are 'unknown' flags that begin --<plugin>-flag
     # Put any plugin paths into the ruby library path for requiring later.
     @plugin_paths.each do |p|
-      @logger.debug("Adding to ruby load path", :path => p)
+      @logger.debug? and @logger.debug("Adding to ruby load path", :path => p)
       $:.unshift p
     end
 
@@ -163,8 +165,8 @@ class LogStash::Agent
       %w{inputs outputs filters}.each do |component|
         @plugin_paths.each do |path|
           plugin = File.join(path, component, name) + ".rb"
-          @logger.debug("Plugin flag found; trying to load it",
-                        :flag => arg, :plugin => plugin)
+          @logger.debug? and @logger.debug("Plugin flag found; trying to load it",
+                                           :flag => arg, :plugin => plugin)
           if File.file?(plugin)
             @logger.info("Loading plugin", :plugin => plugin)
             require plugin
@@ -173,7 +175,7 @@ class LogStash::Agent
               # and add any options to our option parser.
               klass_name = name.capitalize
               if c.const_defined?(klass_name)
-                @logger.debug("Found plugin class", :class => "#{c}::#{klass_name})")
+                @logger.debug? and @logger.debug("Found plugin class", :class => "#{c}::#{klass_name})")
                 klass = c.const_get(klass_name)
                 # See LogStash::Config::Mixin::DSL#options
                 klass.options(@opts)
@@ -241,8 +243,8 @@ class LogStash::Agent
       # Support directory of config files.
       # https://logstash.jira.com/browse/LOGSTASH-106
       if File.directory?(@config_path)
-        @logger.debug("Config path is a directory, scanning files",
-                      :path => @config_path)
+        @logger.debug? and @logger.debug("Config path is a directory, scanning files",
+                                         :path => @config_path)
         paths = Dir.glob(File.join(@config_path, "*")).sort
       else
         # Get a list of files matching a glob. If the user specified a single
@@ -252,13 +254,25 @@ class LogStash::Agent
 
       concatconfig = []
       paths.each do |path|
-        concatconfig << File.new(path).read
+        file = File.new(path)
+        if File.extname(file) == '.yaml'
+          # assume always YAML if even one file is
+          @is_yaml = true
+        end
+        concatconfig << file.read
       end
-      config = LogStash::Config::File.new(nil, concatconfig.join("\n"))
+      config_data = concatconfig.join("\n")
     else # @config_string
       # Given a config string by the user (via the '-e' flag)
-      config = LogStash::Config::File.new(nil, @config_string)
+      config_data = @config_string
     end
+
+    if @is_yaml
+      config = LogStash::Config::File::Yaml.new(nil, config_data)
+    else
+      config = LogStash::Config::File.new(nil, config_data)
+    end
+
     config.logger = @logger
     config
   end
@@ -332,23 +346,23 @@ class LogStash::Agent
 
   private
   def start_input(input)
-    @logger.debug("Starting input", :plugin => input)
+    @logger.debug? and @logger.debug("Starting input", :plugin => input)
     t = 0
     # inputs should write directly to output queue if there are no filters.
     input_target = @filters.length > 0 ? @filter_queue : @output_queue
     # check to see if input supports multiple threads
     if input.threadable
-      @logger.debug("Threadable input", :plugin => input)
+      @logger.debug? and @logger.debug("Threadable input", :plugin => input)
       # start up extra threads if need be
       (input.threads-1).times do
         input_thread = input.clone
-        @logger.debug("Starting thread", :plugin => input, :thread => (t+=1))
+        @logger.debug? and @logger.debug("Starting thread", :plugin => input, :thread => (t+=1))
         @plugins[input_thread] = Thread.new(input_thread, input_target) do |*args|
           run_input(*args)
         end
       end
     end
-    @logger.debug("Starting thread", :plugin => input, :thread => (t+=1))
+    @logger.debug? and @logger.debug("Starting thread", :plugin => input, :thread => (t+=1))
     @plugins[input] = Thread.new(input, input_target) do |*args|
       run_input(*args)
     end
@@ -356,7 +370,7 @@ class LogStash::Agent
 
   private
   def start_output(output)
-    @logger.debug("Starting output", :plugin => output)
+    @logger.debug? and @logger.debug("Starting output", :plugin => output)
     queue = LogStash::SizedQueue.new(10 * @filterworker_count)
     queue.logger = @logger
     @output_queue.add_queue(queue)
@@ -474,7 +488,7 @@ class LogStash::Agent
         shutdown
         break
       end
-      @logger.debug("heartbeat")
+      @logger.debug? and @logger.debug("heartbeat")
     end
   end # def run_with_config
 
@@ -740,7 +754,7 @@ class LogStash::Agent
 
     begin
       while event = queue.pop do
-        @logger.debug("Sending event", :target => output)
+        @logger.debug? and @logger.debug("Sending event", :target => output)
         output.handle(event)
         break if output.finished?
       end
@@ -768,8 +782,9 @@ class LogStash::Agent
       remaining = @plugins.count do |plugin, thread|
         plugin.is_a?(pluginclass) and plugin.running? and thread.alive?
       end
-      @logger.debug("Plugins still running", :type => pluginclass,
-                    :remaining => remaining)
+      @logger.debug? and @logger.debug("Plugins still running",
+                                       :type => pluginclass,
+                                       :remaining => remaining)
 
       if remaining == 0
         @logger.warn("All #{pluginclass} finished. Shutting down.")

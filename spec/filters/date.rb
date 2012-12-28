@@ -161,7 +161,28 @@ describe LogStash::Filters::Date do
     end
   end
 
-  describe "accept match config option with hash value like grep (LOGSTASH-735)" do
+  describe "TAI64N support" do
+    config <<-'CONFIG'
+      filter {
+        date {
+          t => TAI64N
+        }
+      }
+    CONFIG
+
+    # Try without leading "@"
+    sample({ "@fields" => { "t" => "4000000050d506482dbdf024" } }) do
+      insist { subject.timestamp } == "2012-12-22T01:00:46.767Z"
+    end
+
+    # Should still parse successfully if it's a full tai64n time (with leading
+    # '@')
+    sample({ "@fields" => { "t" => "@4000000050d506482dbdf024" } }) do
+      insist { subject.timestamp } == "2012-12-22T01:00:46.767Z"
+    end
+  end
+
+  describe "accept match config option with hash value (LOGSTASH-735)" do
     config <<-CONFIG
       filter {
         date {
@@ -179,3 +200,4 @@ describe LogStash::Filters::Date do
     end
   end
 end
+

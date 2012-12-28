@@ -57,6 +57,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "jls-lumberjack", ["0.0.7"]
   gem.add_runtime_dependency "geoip", [">= 1.1.0"]
   gem.add_runtime_dependency "beefcake", "0.3.7"
+  gem.add_runtime_dependency "php-serialize" # For input drupal_dblog
+  gem.add_runtime_dependency "murmurhash3"
   gem.add_runtime_dependency "rufus-scheduler"
 
   if RUBY_PLATFORM == 'java'
@@ -65,8 +67,10 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "jruby-httpclient"
     gem.add_runtime_dependency "jruby-openssl"
     gem.add_runtime_dependency "jruby-win32ole"
+    gem.add_runtime_dependency "jdbc-mysql" # For input drupal_dblog
   else
     gem.add_runtime_dependency "excon"
+    gem.add_runtime_dependency "mysql2" # For input drupal_dblog
   end
 
   if RUBY_VERSION >= '1.9.1'

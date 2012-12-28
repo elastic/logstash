@@ -1,7 +1,7 @@
 require "json"
 require "time"
 require "date"
-require "logstash/time"
+require "logstash/time_addon"
 require "logstash/namespace"
 require "uri"
 
@@ -16,6 +16,7 @@ class LogStash::Event
     @cancelled = false
 
     @data = {
+      "@source_host" => false,
       "@source" => "unknown",
       "@tags" => [],
       "@fields" => {},
@@ -24,7 +25,7 @@ class LogStash::Event
     @data["@timestamp"] ||= LogStash::Time.now
   end # def initialize
 
-  if RUBY_ENGINE == "jruby"
+  if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
     @@date_parser = Java::org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
   else
     # TODO(sissel): LOGSTASH-217
@@ -91,16 +92,16 @@ class LogStash::Event
   
   public
   def source; @data["@source"]; end # def source
-  def source=(val) 
+  def source=(val)
     uri = URI.parse(val) rescue nil
     val = uri if uri
     if val.is_a?(URI)
       @data["@source"] = val.to_s
-      @data["@source_host"] = val.host
+      @data["@source_host"] = val.host if @data["@source_host"].nil?
       @data["@source_path"] = val.path
     else
       @data["@source"] = val
-      @data["@source_host"] = val
+      @data["@source_host"] = val.host if @data["@source_host"].nil?
     end
   end # def source=
 
@@ -123,6 +124,9 @@ class LogStash::Event
   public
   def tags; @data["@tags"]; end # def tags
   def tags=(val); @data["@tags"] = val; end # def tags=
+
+  def id; @data["@id"]; end # def id
+  def id=(val); @data["@id"] = val; end # def id=
 
   # field-related access
   public
@@ -190,13 +194,13 @@ class LogStash::Event
     end # event.fields.each
   end # def append
 
-  # Remove a field
+  # Remove a field. Returns the value of that field when deleted
   public
   def remove(field)
     if @data.has_key?(field)
-      @data.delete(field)
+      return @data.delete(field)
     else
-      @data["@fields"].delete(field)
+      return @data["@fields"].delete(field)
     end
   end # def remove
 
@@ -230,7 +234,7 @@ class LogStash::Event
         # Got %{+%s}, support for unix epoch time
         if RUBY_ENGINE != "jruby"
           # This is really slow. See LOGSTASH-217
-          Date.parse(self.timestamp).to_i
+          Time.parse(self.timestamp).to_i
         else
           datetime = @@date_parser.parseDateTime(self.timestamp)
           (datetime.getMillis / 1000).to_i
