@@ -24,7 +24,7 @@
    well as IP address anonymization (#280, #261; patches by Richard Pijnenburg
    and Avishai Ish-Shalom)
  - feature: date: now accepts 'match' as a setting. Use of this is preferable
-   to the old syntax.
+   to the old syntax. (#248, LOGSTASH-734, Patch by Louis Zuckerman)
  - improvement: grok: now accepts (?<foo>...) named captures. This lets you
    compose a pattern in the grok config without needing to define it in a
    patterns file. Example: (?<hostport>%{HOST}:%{POSINT}) to capture 'hostport'
