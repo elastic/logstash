@@ -126,7 +126,7 @@ vendor/bundle: | vendor $(JRUBY)
 	#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
 	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec
 	@# Purge old version of json
-	$(QUIET)rm -rf ./vendor/bundle/jruby/1.9/gems/json-1.6.5-java
+	#$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall json -v 1.6.5
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
 	-rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
