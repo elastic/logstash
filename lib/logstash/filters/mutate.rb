@@ -1,6 +1,6 @@
 require "logstash/filters/base"
 require "logstash/namespace"
-require "logstash/time"
+require "logstash/time_addon"
 
 # The mutate filter allows you to do general mutations to fields. You
 # can rename, remove, replace, and modify fields in your events.

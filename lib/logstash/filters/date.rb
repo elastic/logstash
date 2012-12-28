@@ -1,6 +1,6 @@
 require "logstash/filters/base"
 require "logstash/namespace"
-require "logstash/time"
+require "logstash/time_addon"
 
 # The date filter is used for parsing dates from fields and using that
 # date or timestamp as the timestamp for the event.
