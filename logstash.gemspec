@@ -59,6 +59,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "beefcake", "0.3.7"
   gem.add_runtime_dependency "php-serialize" # For input drupal_dblog
   gem.add_runtime_dependency "murmurhash3"
+  gem.add_runtime_dependency "rufus-scheduler"
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
