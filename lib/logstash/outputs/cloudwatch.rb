@@ -3,19 +3,62 @@ require "logstash/namespace"
 
 # This output lets you aggregate and send metric data to AWS CloudWatch
 #
-# Configuration is done partly in this output and partly using fields added
-# to your events by other input & filter plugins.
+# Summary:
+# This plugin is intended to be used on a logstash indexer agent (but that
+# is not the only way, see below.)  In the intended scenario, one cloudwatch
+# output plugin is configured, on the logstash indexer node, with just AWS API
+# credentials, and possibly a region and/or a namespace.  The output looks
+# for fields present in events, and when it finds them, it uses them to
+# calculate aggregate statistics.  If the "metricname" option is set in this
+# output, then any events which pass through it will be aggregated & sent to
+# CloudWatch, but that is not recommended.  The intended use is to NOT set the
+# metricname option here, and instead to add a "CW_metricname" field (and other
+# fields) to only the events you want sent to CloudWatch.
 #
-# Events which do not have a "CW_metric" field will be ignored, so to send
-# events to CloudWatch you must at least add the "CW_metric" field to the
-# desired events (using grep for example)
+# When events pass through this output they are queued for background
+# aggregation and sending, which happens every minute by default.  The
+# queue has a maximum size, and when it is full aggregated statistics will be
+# sent to CloudWatch ahead of schedule. Whenever this happens a warning
+# message is written to logstash's log.  If you see this you should increase
+# the queue_size configuration option to avoid the extra API calls.  The queue
+# is emptied every time we send data to CloudWatch.
+#
+# Note: when logstash is stopped the queue is destroyed before it can be processed.
+# This is a known limitation of logstash and will hopefully be addressed in a
+# future version.
+#
+# Details:
+# There are two ways to configure this plugin, and they can be used in
+# combination: event fields & per-output defaults
+#
+# Event Field configuration...
+# You add fields to your events in inputs & filters and this output reads
+# those fields to aggregate events.  The names of the fields read are
+# configurable via the field_* options.
+#
+# Per-output defaults...
+# You set universal defaults in this output plugin's configuration, and
+# if an event does not have a field for that option then the default is
+# used.
+#
+# Notice, the event fields take precedence over the per-output defaults.
+#
+# At a minimum events must have a "metric name" to be sent to CloudWatch.
+# This can be achieved either by providing a default here OR by adding a
+# "CW_metricname" field By default, if no other configuration is provided
+# besides a metric name, then events will be counted (Unit: Count, Value: 1)
+# by their metric name (either a default or from their CW_metricname field)
 #
 # Other fields which can be added to events to modify the behavior of this
 # plugin are, "CW_namespace", "CW_unit", "CW_value", and the pair of
 # "CW_dimensionName" & "CW_dimensionValue".  All of these field names are
-# configurable in this output.  See below for details.
+# configurable in this output.  You can also set per-output defaults for any
+# of them. See below for details.
 #
 # You can read more about AWS CloudWatch here: http://aws.amazon.com/cloudwatch/
+# This output makes only one kind of API call, PutMetricData, and you can read
+# more about that specifically, here:
+# http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_PutMetricData.html
 class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   config_name "cloudwatch"
   plugin_status "experimental"
@@ -47,8 +90,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   # This does not affect the event timestamps, events will always have their
   # actual timestamp (to-the-minute) sent to CloudWatch.
   #
-  # Increasing this may reduce the number of CloudWatch API calls, which would
-  # reduce costs in heavy usage.
+  # We only call the API if there is data to send.
   #
   # See here for allowed values: https://github.com/jmettraux/rufus-scheduler#the-time-strings-understood-by-rufus-scheduler
   config :timeframe, :validate => :string, :default => "1m"
@@ -61,22 +103,23 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   config :namespace, :validate => :string, :default => "Logstash"
 
   # The name of the field used to set a different namespace per event
+  # Note: Only one namespace can be sent to CloudWatch per API call
+  # so setting different namespaces will increase the number of API calls
+  # and those cost money.
   config :field_namespace, :validate => :string, :default => "CW_namespace"
 
   # The default metric name to use for events which do not have a "CW_metricname" field.
-  # If this is provided then all events which pass through this output will be aggregated and
+  # Beware: If this is provided then all events which pass through this output will be aggregated and
   # sent to CloudWatch, so use this carefully.  Furthermore, when providing this option, you
   # will probably want to also restrict events from passing through this output using event
   # type, tag, and field matching
-  #
-  # At a minimum events must have a "metric name" to be sent to CloudWatch. This can be achieved
-  # either by providing a default here, as described above, OR by adding a "CW_metricname" field
-  # to the events themselves, as described below.  By default, if no other configuration is
-  # provided besides a metric name, then events will be counted (Unit: Count, Value: 1)
-  # by their metric name (either this default or from their CW_metricname field)
   config :metricname, :validate => :string
 
   # The name of the field used to set the metric name on an event
+  # The author of this plugin recommends adding this field to events in inputs &
+  # filters rather than using the per-output default setting so that one output
+  # plugin on your logstash indexer can serve all events (which of course had
+  # fields set on your logstash shippers.)
   config :field_metricname, :validate => :string, :default => "CW_metricname"
 
   VALID_UNITS = ["Seconds", "Microseconds", "Milliseconds", "Bytes",
@@ -88,6 +131,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
                   "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
 
   # The default unit to use for events which do not have a "CW_unit" field
+  # If you set this option you should probably set the "value" option along with it
   config :unit, :validate => VALID_UNITS, :default => COUNT_UNIT
 
   # The name of the field used to set the unit on an event metric
@@ -96,6 +140,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   # The default value to use for events which do not have a "CW_value" field
   # If provided, this must be a string which can be converted to a float, for example...
   # "1", "2.34", ".5", and "0.67"
+  # If you set this option you should probably set the "unit" option along with it
   config :value, :validate => :string, :default => "1"
 
   # The name of the field used to set the value (float) on an event metric
@@ -187,7 +232,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
       end # data.each
 
       begin
-        response = @cw.put_metric_data(
+        @cw.put_metric_data(
             :namespace => namespace,
             :metric_data => metric_data
         )
