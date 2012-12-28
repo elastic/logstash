@@ -60,6 +60,10 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   # example: sockopt => ["ZMQ::HWM", 50, "ZMQ::IDENTITY", "my_named_queue"]
   config :sockopt, :validate => :hash
 
+  # Message output fomart, an sprintf string. If ommited json_event will be used.
+  # example: message_format => "%{@timestamp} %{@message}"
+  config :message_format, :validate => :string
+
   public
   def register
     require "ffi-rzmq"
@@ -69,30 +73,20 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
     # Translate topology shorthand to socket types
     case @topology
     when "pair"
-      zmq_const = ZMQ::PAIR
+      @zmq_const = ZMQ::PAIR
     when "pushpull"
-      zmq_const = ZMQ::PUSH
+      @zmq_const = ZMQ::PUSH
     when "pubsub"
-      zmq_const = ZMQ::PUB
+      @zmq_const = ZMQ::PUB
     end # case socket_type
 
-    @zsocket = context.socket(zmq_const)
+    setup
 
-    error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
-                "while setting ZMQ::LINGER == 1)")
-
-    if @sockopt
-      setopts(@zsocket, @sockopt)
-    end
-
-    @address.each do |addr|
-      setup(@zsocket, addr)
-    end
   end # def register
 
   public
   def teardown
-    error_check(@publisher.close, "while closing the socket")
+    error_check(@zsocket.close, "while closing the socket")
   end # def teardown
 
   private
@@ -106,16 +100,21 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
 
     # TODO(sissel): Figure out why masterzen has '+ "\n"' here
     #wire_event = event.to_hash.to_json + "\n"
-    wire_event = event.to_json
+    if @message_format
+      wire_event = event.sprintf(@message_format) + "\n"
+    else
+      wire_event = event.to_json
+    end
 
     begin
       @logger.debug("0mq: sending", :event => wire_event)
       if @topology == "pubsub"
-        @logger.debug("0mq output: setting topic to: #{event.sprintf(@topic)}")
-        error_check(@zsocket.send_string(event.sprintf(@topic), ZMQ::SNDMORE), "in topic send_string")
+        topic = event.sprintf(@topic)
+        @logger.debug("0mq output: setting topic to: \"#{topic}\"")
+        error_check(@zsocket.send_string(topic, ZMQ::SNDMORE), "in topic send_string")
       end
       error_check(@zsocket.send_string(wire_event), "in send_string")
-    rescue => e
+    rescue Exception => e
       @logger.warn("0mq output exception", :address => @address, :queue => @queue_name, :exception => e, :backtrace => e.backtrace)
     end
   end # def receive

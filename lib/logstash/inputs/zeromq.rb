@@ -76,24 +76,15 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
 
     case @topology
     when "pair"
-      zmq_const = ZMQ::PAIR 
+      @zmq_const = ZMQ::PAIR 
     when "pushpull"
-      zmq_const = ZMQ::PULL
+      @zmq_const = ZMQ::PULL
     when "pubsub"
-      zmq_const = ZMQ::SUB
+      @zmq_const = ZMQ::SUB
     end # case socket_type
-    @zsocket = context.socket(zmq_const)
-    error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
-                "while setting ZMQ::LINGER == 1)")
 
-    if @sockopt
-      setopts(@zsocket, @sockopt)
-    end
-
-    @address.each do |addr|
-      setup(@zsocket, addr)
-    end
-
+    setup
+    
     if @topology == "pubsub"
       if @topic.nil?
         @logger.debug("ZMQ - No topic provided. Subscribing to all messages")
@@ -138,8 +129,18 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
           @logger.debug("ZMQ receiving", :event => m2)
           msg = m2
         end
+
         @sender ||= "zmq+#{@topology}://#{@type}/"
-        e = self.to_event(msg, @sender)
+        msg_array = Array.new
+        rc = @zsocket.recv_strings(msg_array)
+        error_check(rc, "in recv_strings")
+        @logger.debug("0mq: receiving", :event => msg_array)
+        if msg_array.count >1 and @zmq_const == ZMQ::SUB
+          e = self.to_event(msg_array[1..-1].join("\n"), @source)
+          e['@zeromq_topic'] = msg_array.first
+        else
+          e = self.to_event(msg_array.first, @sender)
+        end
         if e
           output_queue << e
         end
