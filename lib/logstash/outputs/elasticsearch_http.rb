@@ -40,6 +40,10 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # be used.
   config :flush_size, :validate => :number, :default => 100
 
+  # The document ID for the index. Useful for overwriting existing entries in
+  # elasticsearch with the same ID.
+  config :document_id, :validate => :string, :default => nil
+
   public
   def register
     require "ftw" # gem ftw
@@ -84,9 +88,12 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   end # def receive_single
 
   def receive_bulk(event, index, type)
+    header = { "index" => { "_index" => index, "_type" => type } }
+    if @document_id.nil?
+      header["index"]["_id"] = event.sprintf(@document_id)
+    end
     @queue << [
-      { "index" => { "_index" => index, "_type" => type } }.to_json,
-      event.to_json
+      header.to_json, event.to_json
     ].join("\n")
 
     # Keep trying to flush while the queue is full.
@@ -98,6 +105,10 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     puts "Flushing #{@queue.count} events"
     # If we don't tack a trailing newline at the end, elasticsearch
     # doesn't seem to process the last event in this bulk index call.
+    #
+    # as documented here: 
+    # http://www.elasticsearch.org/guide/reference/api/bulk.html
+    #  "NOTE: the final line of data must end with a newline character \n."
     response = @agent.post!("http://#{@host}:#{@port}/_bulk",
                             :body => @queue.join("\n") + "\n")
 
