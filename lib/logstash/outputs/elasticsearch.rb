@@ -37,8 +37,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # similar events to the same 'type'. String expansion '%{foo}' works here.
   config :index_type, :validate => :string, :default => "%{@type}"
 
-  # The document ID for the index. Overwrites any existing entry in elasticsearch with the same ID.
-  config :id, :validate => :string, :default => nil
+  # The document ID for the index. Useful for overwriting existing entries in
+  # elasticsearch with the same ID.
+  config :document_id, :validate => :string, :default => nil
 
   # The name of your cluster if you set it on the ElasticSearch side. Useful
   # for discovery.
@@ -163,11 +164,11 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       end
     end
 
-    if id.nil?
-        req = @client.index(index, type, event.to_hash) 
+    if @document_id.nil?
+      req = @client.index(index, type, event.to_hash) 
     else
-        id = event.sprintf(@id)
-        req = @client.index(index, type, id, event.to_hash)
+      id = event.sprintf(@document_id)
+      req = @client.index(index, type, id, event.to_hash)
     end
 
     increment_inflight_request_count
