@@ -125,6 +125,9 @@ class LogStash::Event
   def tags; @data["@tags"]; end # def tags
   def tags=(val); @data["@tags"] = val; end # def tags=
 
+  def id; @data["@id"]; end # def id
+  def id=(val); @data["@id"] = val; end # def id=
+
   # field-related access
   public
   def [](key)
