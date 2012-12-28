@@ -9,7 +9,7 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
 
   # the registered fields that we want to monitor
   # A hash of matches of field => value
-  config :match, :validate => :hash
+  config :match, :validate => :hash, :required => true
 
   # the To address setting - fully qualified email address to send to
   config :to, :validate => :string, :required => true
