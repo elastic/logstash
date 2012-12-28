@@ -7,7 +7,8 @@ require "set"
 # data (like syslog or apache logs) into something structured and queryable.
 #
 # Grok allows you to match text without needing to be a regular expressions
-# ninja. Logstash ships with about 120 patterns by default. You can add
+# ninja. Logstash ships with about 120 patterns by default. You can find them here:
+# <https://github.com/logstash/logstash/tree/v%VERSION%/patterns>. You can add
 # your own trivially. (See the patterns_dir setting)
 class LogStash::Filters::Grok < LogStash::Filters::Base
   config_name "grok"
