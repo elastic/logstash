@@ -12,11 +12,12 @@
 
  ## inputs
  - All inputs now have a 'charset' setting to help you inform logstash of the
-   text encoding of the input. This is useful if you have Shift_JIS or CP1252
+   text encoding of the input. This is useful if you have Shift_JIS or CP1251
    encoded log files. This should help resolve the many UTF-8 bugs that were
    reported recently.
  - bugfix: zeromq: 'topology' is now a required setting
- - lumberjack: jls-lumberjack gem updated to 0.0.7
+ - misc: lumberjack: jls-lumberjack gem updated to 0.0.7
+ - bugfix: stomp: fix startup problems causing early termination (#226
 
  ## filters
  - new: anonymize: supports many hash mechanisms (murmur3, sha, md5, etc) as
@@ -40,14 +41,15 @@
    (LOGSTASH-757)
 
  ## outputs
+ - new: syslog output supporting both RFC3164 and RFC5424 (#180, patch by
+   ruckalvnet)
+ - new: cloudwatch output to emit metrics and other events to Amazon CloudWatch.
  - bugfix: zeromq: 'topology' is now a required setting
  - improvement: mongodb: new setting 'isodate', when true, stores the @timestamp
    field as a mongodb date instead of a string. (#224, patch by Kevin Amorin)
  - improvement: gelf: Allow full_message gelf property to be overridden (#245, 
    patch by Sébastien Masset)
  - lumberjack: jls-lumberjack gem updated to 0.0.6
- - new: syslog output supporting both RFC3164 and RFC5424 (#180, patch by
-   ruckalvnet)
 
 1.1.5 (November 10, 2012)
  ## Overview of this release:
