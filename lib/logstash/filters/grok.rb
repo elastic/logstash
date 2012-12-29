@@ -7,7 +7,8 @@ require "set"
 # data (like syslog or apache logs) into something structured and queryable.
 #
 # Grok allows you to match text without needing to be a regular expressions
-# ninja. Logstash ships with about 120 patterns by default. You can add
+# ninja. Logstash ships with about 120 patterns by default. You can find them here:
+# <https://github.com/logstash/logstash/tree/v%VERSION%/patterns>. You can add
 # your own trivially. (See the patterns_dir setting)
 class LogStash::Filters::Grok < LogStash::Filters::Base
   config_name "grok"
@@ -249,7 +250,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     if !matched
       # Tag this event if we can't parse it. We can use this later to
       # reparse+reindex logs if we improve the patterns given .
-      event.tags << "_grokparsefailure"
+      event.tags << "_grokparsefailure" unless event.tags.include?("_grokparsefailure")
     end
 
     @logger.debug? and @logger.debug("Event now: ", :event => event)

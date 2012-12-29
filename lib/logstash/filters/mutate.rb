@@ -1,6 +1,6 @@
 require "logstash/filters/base"
 require "logstash/namespace"
-require "logstash/time"
+require "logstash/time_addon"
 
 # The mutate filter allows you to do general mutations to fields. You
 # can rename, remove, replace, and modify fields in your events.
@@ -207,12 +207,14 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   def replace(event)
     # TODO(sissel): use event.sprintf on the field names?
     @replace.each do |field, newvalue|
+      next unless event.include?(field)
       event[field] = event.sprintf(newvalue)
     end
   end # def replace
 
   def convert(event)
     @convert.each do |field, type|
+      next unless event.include?(field)
       original = event[field]
 
       # calls convert_{string,integer,float} depending on type requested.
