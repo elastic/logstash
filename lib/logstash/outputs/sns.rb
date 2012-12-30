@@ -4,8 +4,7 @@ require "logstash/namespace"
 # SNS output.
 #
 # Send events to Amazon's Simple Notification Service, a hosted pub/sub
-# framework.  It supports subscribers of type email, HTTP/S, SMS, and
-# SQS.
+# framework.  It supports subscribers of type email, HTTP/S, SMS, and SQS.
 #
 # For further documentation about the service see:
 #
@@ -13,16 +12,16 @@ require "logstash/namespace"
 #
 # This plugin looks for the following fields on events it receives:
 #
-#  "sns"          =>  If no ARN is found in the configuration file,
-#                     this will be used as the ARN to publish.
-#  "sns_subject"  =>  The subject line that should be used.  Optional.
-#                     "%{@source}" will be used if not present
-#                     (truncated at MAX_SUBJECT_SIZE_IN_CHARACTERS).
-#  "sns_message"  =>  The message that should be sent.  Optional.  The
-#                     event serialzed as JSON will be used if not
-#                     present (with @message truncated so that the
-#                     length of the JSON fits in
-#                     MAX_MESSAGE_SIZE_IN_BYTES).
+#  * sns - If no ARN is found in the configuration file, this will be used as
+#  the ARN to publish.
+#  * sns_subject - The subject line that should be used.
+#  Optional. The "%{@source}" will be used if not present and truncated at
+#  MAX_SUBJECT_SIZE_IN_CHARACTERS.
+#  * sns_message - The message that should be
+#  sent. Optional. The event serialzed as JSON will be used if not present and
+#  with the @message truncated so that the length of the JSON fits in
+#  MAX_MESSAGE_SIZE_IN_BYTES.
+#
 class LogStash::Outputs::Sns < LogStash::Outputs::Base
   MAX_SUBJECT_SIZE_IN_CHARACTERS  = 100
   MAX_MESSAGE_SIZE_IN_BYTES       = 32768
@@ -36,16 +35,11 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
 
   # Path to YAML file containing a hash of AWS credentials.  This file
   # will be loaded if `access_key_id` and `secret_access_key` aren't
-  # set.
+  # set. The contents of the file should look like this:
   #
-  # Example:
-  #
-  # The path to YAML file containing a hash of the AWS credentials for
-  # your account.  The contents of the file should look like this:
-  #
-  # ---
-  # :access_key_id: "12345"
-  # :secret_access_key: "54321"
+  #     ---
+  #     :access_key_id: "12345"
+  #     :secret_access_key: "54321"
   #
   config :credentials, :validate => :string
 
