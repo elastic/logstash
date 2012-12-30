@@ -4,7 +4,7 @@ require "logstash/namespace"
 # Write events to a 0MQ PUB socket.
 #
 # You need to have the 0mq 2.1.x library installed to be able to use
-# this input plugin.
+# this output plugin.
 #
 # The default settings will create a publisher connecting to a subscriber
 # bound to tcp://127.0.0.1:2120
@@ -14,15 +14,14 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   config_name "zeromq"
   plugin_status "beta"
 
-  # 0mq socket address to connect or bind
-  # Please note that `inproc://` will not work with logstash
-  # As each we use a context per thread
-  # By default, inputs bind/listen
-  # and outputs connect
+  # 0mq socket address to connect or bind.
+  # Please note that `inproc://` will not work with logstashi.
+  # For each we use a context per thread.
+  # By default, inputs bind/listen and outputs connect.
   config :address, :validate => :array, :default => ["tcp://127.0.0.1:2120"]
 
-  # 0mq topology
   # The default logstash topologies work as follows:
+  #
   # * pushpull - inputs are pull, outputs are push
   # * pubsub - inputs are subscribers, outputs are publishers
   # * pair - inputs are clients, inputs are servers
@@ -33,31 +32,26 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   # TODO (lusis) add router/dealer
   config :topology, :validate => ["pushpull", "pubsub", "pair"], :required => true
 
-  # 0mq topic
-  # This is used for the 'pubsub' topology only
-  # On inputs, this allows you to filter messages by topic
-  # On outputs, this allows you to tag a message for routing
+  # This is used for the 'pubsub' topology only.
+  # On inputs, this allows you to filter messages by topic.
+  # On outputs, this allows you to tag a message for routing.
   # NOTE: ZeroMQ does subscriber-side filtering
-  # NOTE: Topic is evaluated with `event.sprintf` so 
-  #       macros are valid here
+  # NOTE: Topic is evaluated with `event.sprintf` so macros are valid here.
   config :topic, :validate => :string, :default => ""
 
-  # mode
-  # server mode binds/listens
-  # client mode connects
+  # Server mode binds/listens. Client mode connects.
   config :mode, :validate => ["server", "client"], :default => "client"
 
-  # 0mq socket options
-  # This exposes zmq_setsockopt
-  # for advanced tuning
-  # see http://api.zeromq.org/2-1:zmq-setsockopt for details
+  # This exposes zmq_setsockopt for advanced tuning.
+  # See http://api.zeromq.org/2-1:zmq-setsockopt for details.
   #
   # This is where you would set values like:
-  # ZMQ::HWM - high water mark
-  # ZMQ::IDENTITY - named queues
-  # ZMQ::SWAP_SIZE - space for disk overflow
   #
-  # example: sockopt => ["ZMQ::HWM", 50, "ZMQ::IDENTITY", "my_named_queue"]
+  # * ZMQ::HWM - high water mark
+  # * ZMQ::IDENTITY - named queues
+  # * ZMQ::SWAP_SIZE - space for disk overflow
+  #
+  # Example: sockopt => ["ZMQ::HWM", 50, "ZMQ::IDENTITY", "my_named_queue"]
   config :sockopt, :validate => :hash
 
   public
