@@ -75,13 +75,15 @@ describe "inputs/tcp" do
       tcp = plugins.first
       output = Shiftback.new do |event|
         sequence += 1
-        tcp.teardown if sequence == event_count
         begin
           insist { event.message } == "Hello ü Û"
           insist { event.message.encoding } == Encoding.find("UTF-8")
         rescue Exception => failure
           # Get out of the threads nets
           th.raise failure
+        end
+        if sequence == event_count
+          tcp.teardown 
         end
       end
 
@@ -99,6 +101,7 @@ describe "inputs/tcp" do
         sleep(0.1)
       end
       #wait for input termination
+      puts "Waiting for tcp input thread to finish"
       thread.join
     end # input
   end
