@@ -89,7 +89,7 @@ plugin tree is. In our case, it's the current directory.
 If you use the monolith jar release of logstash, you have an additional option
 - you can include the plugin right in the jar file.
 
-    % jar -uf jar -uf logstash-%VERSION%-monolithic.jar logstash/filters/foo.rb
+    % jar -uf logstash-%VERSION%-monolithic.jar logstash/filters/foo.rb
 
     # Verify it's in the right location in the jar!
     % jar tf logstash-%VERSION%-monolithic.jar | grep foo.rb
