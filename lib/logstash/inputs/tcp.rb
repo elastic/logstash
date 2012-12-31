@@ -73,6 +73,9 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
       :client => socket.peer)
     end # begin
 
+  rescue IOError
+    # nothing
+  ensure
     begin
       socket.close
     rescue IOError
