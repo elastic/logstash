@@ -13,6 +13,11 @@ if RUBY_VERSION < "1.9.2"
   raise LoadError
 end
 
+if ENV["TEST_DEBUG"]
+  Cabin::Channel.get.level = :debug 
+  Cabin::Channel.get.subscribe(STDOUT)
+end
+
 module LogStash
   module RSpec
     def config(configstr)
