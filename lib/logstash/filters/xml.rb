@@ -1,6 +1,5 @@
 require "logstash/filters/base"
 require "logstash/namespace"
-require "nokogiri"
 
 # XML filter. Takes a field that contains XML and expands it into
 # an actual datastructure.
@@ -42,6 +41,7 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
 
   public
   def register
+    require "nokogiri"
     require "xmlsimple"
     @xml = {}
 

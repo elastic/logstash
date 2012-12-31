@@ -1,6 +1,5 @@
 require "logstash/filters/base"
 require "logstash/namespace"
-require "geoip"
 
 # Add GeoIP fields from Maxmind database
 #
@@ -28,6 +27,7 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
 
   public
   def register
+    require "geoip"
     if @database.nil?
       if __FILE__ =~ /^file:\/.+!.+/
         # Running from a jar, assume GeoLiteCity.dat is at the root.
