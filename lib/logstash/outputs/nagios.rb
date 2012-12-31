@@ -14,8 +14,12 @@ require "logstash/outputs/base"
 #  * "nagios_annotation"
 #  * "nagios_level"
 #
-# The plugin defaults to sending CRITICAL check results. You can send WARNING check
-# results by setting the "nagios_level" field to "warn".
+# There are two configuration options:
+#
+#  * commandfile - The location of the Nagios external command file
+#  * nagios_level - Specifies the level of the check to be sent. Defaults to
+#    CRITICAL and can be overriden by setting the "nagios_level" field to one
+#    of "OK", "WARNING", "CRITICAL", or "UNKNOWN" 
 #
 # The easiest way to use this output is with the grep filter.
 # Presumably, you only want certain events matching a given pattern
@@ -41,14 +45,16 @@ require "logstash/outputs/base"
 #       }
 #     }
 class LogStash::Outputs::Nagios < LogStash::Outputs::Base
-  NAGIOS_CRITICAL = 2
-  NAGIOS_WARN = 1
 
   config_name "nagios"
   plugin_status "beta"
 
   # The path to your nagios command file
   config :commandfile, :validate => :string, :default => "/var/lib/nagios3/rw/nagios.cmd"
+
+  # The Nagios check level. Should be one of 0=OK, 1=WARNING, 2=CRITICAL,
+  # 3=UNKNOWN. Defaults to 2 - CRITICAL.
+  config :nagios_level, :validate => :number, :default => 2
 
   public
   def register
@@ -85,9 +91,20 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
     end
 
     annotation = event.fields["nagios_annotation"]
-    level = NAGIOS_CRITICAL
-    if event.fields["nagios_level"] and event.fields["nagios_level"][0].downcase == "warn"
-      level = NAGIOS_WARN
+    level = @nagios_level
+
+    if event.fields["nagios_level"]
+      event_level = event.fields["nagios_level"][0].downcase
+      case event_level
+      when "ok"
+        level = 0
+      when "warning"
+        level = 1
+      when "unknown"
+        level = 3
+      else
+        @logger.warn("Invalid Nagios level. Defaulting to CRITICAL", :data => event_level)
+      end
     end
 
     cmd = "[#{Time.now.to_i}] PROCESS_SERVICE_CHECK_RESULT;#{host[0]};#{service[0]};#{level};"
