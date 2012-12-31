@@ -9,8 +9,13 @@ require "logstash/outputs/base"
 #  * "nagios_host"
 #  * "nagios_service"
 #
-# This field is supported, but optional:
-#   "nagios_annotation"
+# These fields are supported, but optional:
+#
+#  * "nagios_annotation"
+#  * "nagios_level"
+#
+# The plugin defaults to sending CRITICAL check results. You can send WARNING check
+# results by setting the "nagios_level" field to "warn".
 #
 # The easiest way to use this output is with the grep filter.
 # Presumably, you only want certain events matching a given pattern
@@ -28,9 +33,9 @@ require "logstash/outputs/base"
 #         ]
 #       }
 #     }
-#    
+#
 #     output{
-#       nagios { 
+#       nagios {
 #         # only process events with this tag
 #         tags => "nagios-update"
 #       }
