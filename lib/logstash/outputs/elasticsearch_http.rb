@@ -89,7 +89,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   def receive_bulk(event, index, type)
     header = { "index" => { "_index" => index, "_type" => type } }
-    if @document_id.nil?
+    if !@document_id.nil?
       header["index"]["_id"] = event.sprintf(@document_id)
     end
     @queue << [
