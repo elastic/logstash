@@ -23,11 +23,11 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   # When mode is `client`, the port to connect to.
   config :port, :validate => :number, :required => true
 
-  # Read timeout in seconds. If a particular tcp connection is
-  # idle for more than this timeout period, we will assume
-  # it is dead and close it.
+  # The 'read' timeout in seconds. If a particular tcp connection is idle for
+  # more than this timeout period, we will assume it is dead and close it.
+  #
   # If you never want to timeout, use -1.
-  config :data_timeout, :validate => :number, :default => 5
+  config :data_timeout, :validate => :number, :default => -1
 
   # Mode to operate in. `server` listens for client connections,
   # `client` connects to a server.
