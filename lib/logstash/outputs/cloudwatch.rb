@@ -3,7 +3,7 @@ require "logstash/namespace"
 
 # This output lets you aggregate and send metric data to AWS CloudWatch
 #
-# Summary:
+# #### Summary:
 # This plugin is intended to be used on a logstash indexer agent (but that
 # is not the only way, see below.)  In the intended scenario, one cloudwatch
 # output plugin is configured, on the logstash indexer node, with just AWS API
@@ -12,7 +12,7 @@ require "logstash/namespace"
 # calculate aggregate statistics.  If the "metricname" option is set in this
 # output, then any events which pass through it will be aggregated & sent to
 # CloudWatch, but that is not recommended.  The intended use is to NOT set the
-# metricname option here, and instead to add a "CW_metricname" field (and other
+# metricname option here, and instead to add a "CW&#95;metricname" field (and other
 # fields) to only the events you want sent to CloudWatch.
 #
 # When events pass through this output they are queued for background
@@ -20,21 +20,21 @@ require "logstash/namespace"
 # queue has a maximum size, and when it is full aggregated statistics will be
 # sent to CloudWatch ahead of schedule. Whenever this happens a warning
 # message is written to logstash's log.  If you see this you should increase
-# the queue_size configuration option to avoid the extra API calls.  The queue
+# the queue&#95;size configuration option to avoid the extra API calls.  The queue
 # is emptied every time we send data to CloudWatch.
 #
 # Note: when logstash is stopped the queue is destroyed before it can be processed.
 # This is a known limitation of logstash and will hopefully be addressed in a
 # future version.
 #
-# Details:
+# #### Details:
 # There are two ways to configure this plugin, and they can be used in
 # combination: event fields & per-output defaults
 #
 # Event Field configuration...
 # You add fields to your events in inputs & filters and this output reads
 # those fields to aggregate events.  The names of the fields read are
-# configurable via the field_* options.
+# configurable via the field&#95;* options.
 #
 # Per-output defaults...
 # You set universal defaults in this output plugin's configuration, and
@@ -45,20 +45,19 @@ require "logstash/namespace"
 #
 # At a minimum events must have a "metric name" to be sent to CloudWatch.
 # This can be achieved either by providing a default here OR by adding a
-# "CW_metricname" field By default, if no other configuration is provided
+# "CW&#95;metricname" field. By default, if no other configuration is provided
 # besides a metric name, then events will be counted (Unit: Count, Value: 1)
-# by their metric name (either a default or from their CW_metricname field)
+# by their metric name (either a default or from their CW&#95;metricname field)
 #
 # Other fields which can be added to events to modify the behavior of this
-# plugin are, "CW_namespace", "CW_unit", "CW_value", and the pair of
-# "CW_dimensionName" & "CW_dimensionValue".  All of these field names are
-# configurable in this output.  You can also set per-output defaults for any
-# of them. See below for details.
+# plugin are, "CW&#95;namespace", "CW&#95;unit", "CW&#95;value", and 
+# "CW&#95;dimensions".  All of these field names are configurable in
+# this output.  You can also set per-output defaults for any of them.
+# See below for details.
 #
-# You can read more about AWS CloudWatch here: http://aws.amazon.com/cloudwatch/
-# This output makes only one kind of API call, PutMetricData, and you can read
-# more about that specifically, here:
-# http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_PutMetricData.html
+# Read more about [AWS CloudWatch](http://aws.amazon.com/cloudwatch/),
+# and the specific of API endpoint this output uses,
+# [PutMetricData](http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_PutMetricData.html)
 class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   config_name "cloudwatch"
   plugin_status "experimental"
@@ -86,36 +85,36 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   # The AWS Secret Access Key
   config :secret_key, :validate => :string, :required => true
 
-  # How often to send data to CloudWatch
+  # How often to send data to CloudWatch   
   # This does not affect the event timestamps, events will always have their
   # actual timestamp (to-the-minute) sent to CloudWatch.
   #
   # We only call the API if there is data to send.
   #
-  # See here for allowed values: https://github.com/jmettraux/rufus-scheduler#the-time-strings-understood-by-rufus-scheduler
+  # See the Rufus Scheduler docs for an [explanation of allowed values](https://github.com/jmettraux/rufus-scheduler#the-time-strings-understood-by-rufus-scheduler)
   config :timeframe, :validate => :string, :default => "1m"
 
-  # How many events to queue before forcing a call to the CloudWatch API ahead of "timeframe" schedule
+  # How many events to queue before forcing a call to the CloudWatch API ahead of "timeframe" schedule   
   # Set this to the number of events-per-timeframe you will be sending to CloudWatch to avoid extra API calls
   config :queue_size, :validate => :number, :default => 10000
 
   # The default namespace to use for events which do not have a "CW_namespace" field
   config :namespace, :validate => :string, :default => "Logstash"
 
-  # The name of the field used to set a different namespace per event
+  # The name of the field used to set a different namespace per event   
   # Note: Only one namespace can be sent to CloudWatch per API call
   # so setting different namespaces will increase the number of API calls
   # and those cost money.
   config :field_namespace, :validate => :string, :default => "CW_namespace"
 
-  # The default metric name to use for events which do not have a "CW_metricname" field.
+  # The default metric name to use for events which do not have a "CW_metricname" field.   
   # Beware: If this is provided then all events which pass through this output will be aggregated and
   # sent to CloudWatch, so use this carefully.  Furthermore, when providing this option, you
   # will probably want to also restrict events from passing through this output using event
   # type, tag, and field matching
   config :metricname, :validate => :string
 
-  # The name of the field used to set the metric name on an event
+  # The name of the field used to set the metric name on an event   
   # The author of this plugin recommends adding this field to events in inputs &
   # filters rather than using the per-output default setting so that one output
   # plugin on your logstash indexer can serve all events (which of course had
@@ -123,34 +122,34 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   config :field_metricname, :validate => :string, :default => "CW_metricname"
 
   VALID_UNITS = ["Seconds", "Microseconds", "Milliseconds", "Bytes",
-                  "Kilobytes", "Megabytes", "Gigabytes", "Terabytes",
-                  "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits",
-                  "Percent", COUNT_UNIT, "Bytes/Second", "Kilobytes/Second",
-                  "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second",
-                  "Bits/Second", "Kilobits/Second", "Megabits/Second",
-                  "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
+                 "Kilobytes", "Megabytes", "Gigabytes", "Terabytes",
+                 "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits",
+                 "Percent", COUNT_UNIT, "Bytes/Second", "Kilobytes/Second",
+                 "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second",
+                 "Bits/Second", "Kilobits/Second", "Megabits/Second",
+                 "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
 
-  # The default unit to use for events which do not have a "CW_unit" field
+  # The default unit to use for events which do not have a "CW_unit" field   
   # If you set this option you should probably set the "value" option along with it
   config :unit, :validate => VALID_UNITS, :default => COUNT_UNIT
 
-  # The name of the field used to set the unit on an event metric
+  # The name of the field used to set the unit on an event metric   
   config :field_unit, :validate => :string, :default => "CW_unit"
 
-  # The default value to use for events which do not have a "CW_value" field
+  # The default value to use for events which do not have a "CW_value" field   
   # If provided, this must be a string which can be converted to a float, for example...
-  # "1", "2.34", ".5", and "0.67"
+  #     "1", "2.34", ".5", and "0.67"
   # If you set this option you should probably set the "unit" option along with it
   config :value, :validate => :string, :default => "1"
 
-  # The name of the field used to set the value (float) on an event metric
+  # The name of the field used to set the value (float) on an event metric   
   config :field_value, :validate => :string, :default => "CW_value"
 
-  # The default dimensions [ name, value, ... ] to use for events which do not have a "CW_dimensions" field
+  # The default dimensions [ name, value, ... ] to use for events which do not have a "CW_dimensions" field   
   config :dimensions, :validate => :hash
 
-  # The name of the field used to set the dimensions on an event metric
-  # this field named here, if present in an event, must have an array of
+  # The name of the field used to set the dimensions on an event metric   
+  # The field named here, if present in an event, must have an array of
   # one or more key & value pairs, for example...
   #     add_field => [ "CW_dimensions", "Environment", "CW_dimensions", "prod" ]
   # or, equivalently...
@@ -291,15 +290,15 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
 
     dims = event[@field_dimensions]
     if (dims) # event provides dimensions
-      # validate the structure
+              # validate the structure
       if (!dims.is_a?(Array) || dims.length == 0 || (dims.length % 2) != 0)
         @logger.warn("Likely config error: CloudWatch dimensions field (#{dims.to_s}) found which is not a positive- & even-length array.  Ignoring it.", :event => event)
         dims = nil
       end
-      # Best case, we get here and exit the conditional because dims...
-      # - is an array
-      # - with positive length
-      # - and an even number of elements
+              # Best case, we get here and exit the conditional because dims...
+              # - is an array
+              # - with positive length
+              # - and an even number of elements
     elsif (@dimensions.is_a?(Hash)) # event did not provide dimensions, but the output has been configured with a default
       dims = @dimensions.flatten.map{|d| event.sprintf(d)} # into the kind of array described just above
     else
