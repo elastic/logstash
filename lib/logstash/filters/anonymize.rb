@@ -15,7 +15,7 @@ class LogStash::Filters::Anonymize < LogStash::Filters::Base
   config :key, :validate => :string, :required => true
 
   # digest/hash type
-  config :algorithm, :validate => ['SHA', 'SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512', 'MD4', 'MD5', "MURMUR3", "IPV4_NETWORK"], :required => true, :default => 'SHA1'
+  config :algorithm, :validate => ['SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512', 'MD4', 'MD5', "MURMUR3", "IPV4_NETWORK"], :required => true, :default => 'SHA1'
 
   public
   def register
@@ -63,8 +63,8 @@ class LogStash::Filters::Anonymize < LogStash::Filters::Base
   def algorithm
  
    case @algorithm
-      when 'SHA'
-        return OpenSSL::Digest::SHA.new
+      #when 'SHA'
+        #return OpenSSL::Digest::SHA.new
       when 'SHA1'
         return OpenSSL::Digest::SHA1.new
       when 'SHA224'

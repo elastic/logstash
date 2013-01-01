@@ -133,6 +133,9 @@ class LogStash::Runner
               # Try inside the jar.
               jar_root = __FILE__.gsub(/!.*/,"!")
               newpath = File.join(jar_root, args.first)
+
+              # Strip leading 'jar:' path (JRUBY_6970)
+              newpath.gsub!(/^jar:/, "")
               if File.exists?(newpath)
                 # Add the 'spec' dir to the load path so specs can run
                 specpath = File.join(jar_root, "spec")
@@ -167,6 +170,7 @@ class LogStash::Runner
 
         $: << File.expand_path("#{File.dirname(__FILE__)}/../../spec")
         require "test_utils"
+        #p :args => fixedargs
         rspec = runner.new(fixedargs)
         rspec.run
         @runners << rspec

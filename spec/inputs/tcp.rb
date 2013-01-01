@@ -75,13 +75,15 @@ describe "inputs/tcp" do
       tcp = plugins.first
       output = Shiftback.new do |event|
         sequence += 1
-        tcp.teardown if sequence == event_count
         begin
-          insist { event.message } == "Hello ü Û"
+          insist { event.message } == "Hello ü Û\n"
           insist { event.message.encoding } == Encoding.find("UTF-8")
         rescue Exception => failure
           # Get out of the threads nets
           th.raise failure
+        end
+        if sequence == event_count
+          tcp.teardown 
         end
       end
 
@@ -91,14 +93,13 @@ describe "inputs/tcp" do
         tcp.run(output)
       end
       #Send events from clients sockets
+      client_socket = TCPSocket.new("0.0.0.0", port)
       event_count.times do |value|
-        client_socket = TCPSocket.new("0.0.0.0", port)
-        client_socket.write "Hello ü Û"
-        client_socket.close
-        # micro sleep to ensure sequencing
-        sleep(0.1)
+        client_socket.write "Hello ü Û\n"
       end
+      client_socket.close
       #wait for input termination
+      puts "Waiting for tcp input thread to finish"
       thread.join
     end # input
   end
