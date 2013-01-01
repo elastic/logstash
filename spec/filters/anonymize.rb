@@ -4,24 +4,6 @@ require "logstash/filters/anonymize"
 describe LogStash::Filters::Anonymize do
   extend LogStash::RSpec
 
-  describe "anonymize string with SHA alogrithm" do
-    # The logstash config goes here.
-    # At this time, only filters are supported.
-    config <<-CONFIG
-      filter {
-        anonymize {
-          fields => ["clientip"]
-          key => "longencryptionkey"
-          algorithm => 'SHA'
-        }
-      }
-    CONFIG
-
-    sample "@fields" => {"clientip" => "123.123.123.123"} do
-      insist { subject["clientip"] } == "0d01b2191194d261fa1a2e7c18a38d44953ab4e2"
-    end
-  end
-
   describe "anonymize ipaddress with IPV4_NETWORK algorithm" do
     # The logstash config goes here.
     # At this time, only filters are supported.
