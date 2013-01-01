@@ -54,7 +54,7 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
 
   # The Nagios check level. Should be one of 0=OK, 1=WARNING, 2=CRITICAL,
   # 3=UNKNOWN. Defaults to 2 - CRITICAL.
-  config :nagios_level, :validate => :number, :default => 2
+  config :nagios_level, :validate => [ "0", "1", "2", "3" ], :default => "2"
 
   public
   def register
@@ -76,32 +76,34 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
     # array indexes (host/service combos) and the arrays must be the same
     # length.
 
-    host = event.fields["nagios_host"]
+    host = event["nagios_host"]
     if !host
       @logger.warn("Skipping nagios output; nagios_host field is missing",
                    :missed_event => event)
       return
     end
 
-    service = event.fields["nagios_service"]
+    service = event["nagios_service"]
     if !service
       @logger.warn("Skipping nagios output; nagios_service field is missing",
                    "missed_event" => event)
       return
     end
 
-    annotation = event.fields["nagios_annotation"]
+    annotation = event["nagios_annotation"]
     level = @nagios_level
 
-    if event.fields["nagios_level"]
-      event_level = event.fields["nagios_level"][0].downcase
-      case event_level
+    if event["nagios_level"]
+      event_level = [*event["nagios_level"]]
+      case event_level[0].downcase
       when "ok"
-        level = 0
+        level = "0"
       when "warning"
-        level = 1
+        level = "1"
+      when "critical"
+        level = "2"
       when "unknown"
-        level = 3
+        level = "3"
       else
         @logger.warn("Invalid Nagios level. Defaulting to CRITICAL", :data => event_level)
       end
