@@ -76,8 +76,11 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   COUNT_UNIT = "Count"
   NONE = "None"
 
+  US_EAST_1 = "us-east-1"
   # The AWS Region to send logs to.
-  config :region, :validate => :string, :default => "us-east-1"
+  config :region, :validate => [US_EAST_1, "us-west-1", "us-west-2",
+                                "eu-west-1", "ap-southeast-1", "ap-southeast-2",
+                                "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => US_EAST_1
 
   # The AWS Access Key ID
   config :access_key, :validate => :string, :required => true
