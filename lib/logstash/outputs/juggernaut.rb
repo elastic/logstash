@@ -2,13 +2,14 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 require "logstash/event"
 
-# Push messages to the juggernaut websockets server
-# https://github.com/maccman/juggernaut  Wraps
-# Websockets and supports other methods (including xhr longpolling)
-# This is basiccaly, just an extension of the redis output
-# (Juggernaut pulls messages from redis).  But it pushes messages
-# to a particular channel and formats the messages in the way
-# juggernaut expects.
+# Push messages to the juggernaut websockets server:
+#
+# * https://github.com/maccman/juggernaut
+#
+# Wraps Websockets and supports other methods (including xhr longpolling) This
+# is basically, just an extension of the redis output (Juggernaut pulls
+# messages from redis).  But it pushes messages to a particular channel and
+# formats the messages in the way juggernaut expects.
 class LogStash::Outputs::Juggernaut < LogStash::Outputs::Base
 
   config_name "juggernaut"
@@ -33,7 +34,7 @@ class LogStash::Outputs::Juggernaut < LogStash::Outputs::Base
   # valid here, for example "logstash-%{@type}".
   config :channels, :validate => :array, :required => true
 
-  # How should be message be formatted before pusing to the websocket.
+  # How should the message be formatted before pushing to the websocket.
   config :message_format, :validate => :string
 
   public
