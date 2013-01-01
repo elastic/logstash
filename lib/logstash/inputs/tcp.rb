@@ -23,11 +23,11 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   # When mode is `client`, the port to connect to.
   config :port, :validate => :number, :required => true
 
-  # Read timeout in seconds. If a particular tcp connection is
-  # idle for more than this timeout period, we will assume
-  # it is dead and close it.
+  # The 'read' timeout in seconds. If a particular tcp connection is idle for
+  # more than this timeout period, we will assume it is dead and close it.
+  #
   # If you never want to timeout, use -1.
-  config :data_timeout, :validate => :number, :default => 5
+  config :data_timeout, :validate => :number, :default => -1
 
   # Mode to operate in. `server` listens for client connections,
   # `client` connects to a server.
@@ -73,6 +73,9 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
       :client => socket.peer)
     end # begin
 
+  rescue IOError
+    # nothing
+  ensure
     begin
       socket.close
     rescue IOError
@@ -93,10 +96,12 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   public
   def run(output_queue)
     if server?
+      @thread = Thread.current
+      @client_threads = []
       loop do
         # Start a new thread for each connection.
         begin
-          Thread.start(@server_socket.accept) do |s|
+          @client_threads << Thread.start(@server_socket.accept) do |s|
             # TODO(sissel): put this block in its own method.
 
             # monkeypatch a 'peer' method onto the socket.
@@ -108,7 +113,11 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
           end # Thread.start
         rescue IOError
           if @interrupted
-            #Intended shutdown, get out of the loop
+            # Intended shutdown, get out of the loop
+            @server_socket.close
+            @client_threads.each do |thread|
+              thread.raise(IOError.new)
+            end
             break
           else
             # Else it was a genuine IOError caused by something else, so propagate it up..
@@ -130,7 +139,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   def teardown
     if server?
       @interrupted = true
-      @server_socket.close
+      @thread.raise(IOError.new)
     end
   end # def teardown
 end # class LogStash::Inputs::Tcp
