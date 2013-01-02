@@ -202,10 +202,10 @@ jar-test:
 	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec spec/jar.rb
 
 flatjar-test-and-report:
-	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS) --format h > build/results.flatjar.html
+	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS) --format h --out build/results.flatjar.html
 
 jar-test-and-report:
-	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --format h > build/results.monolithic.html
+	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --format h --out build/results.monolithic.html
 
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
