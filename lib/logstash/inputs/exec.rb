@@ -2,7 +2,7 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket" # for Socket.gethostname
 
-# Run command line tools and cature output as an event.
+# Run command line tools and capture the whole output as an event.
 #
 # Notes:
 #
