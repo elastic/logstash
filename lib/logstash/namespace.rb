@@ -9,6 +9,7 @@ module LogStash
   module File; end
   module Web; end
   module Util; end
+  module PluginMixins; end
 
   SHUTDOWN = :shutdown
 end # module LogStash
