@@ -62,6 +62,63 @@ require "set"
 # * bytes: 15824
 # * duration: 0.043
 #
+# #### Regular Expressions
+#
+# Grok sits on top of regular expressions, so any regular expressions are valid
+# in grok as well. The regular expression library is Oniguruma, and you can see
+# the full supported regexp syntax [on the Onigiruma
+# site](http://www.geocities.jp/kosako3/oniguruma/doc/RE.txt)
+#
+# #### Custom Patterns
+#
+# Sometimes logstash doesn't have a pattern you need. For this, you have
+# a few options.
+#
+# First, you can use the Oniguruma syntax for 'named capture' which will
+# let you match a piece of text and save it as a field:
+#
+#     (?<field_name>the pattern here)
+#
+# For example, postfix logs have a 'queue id' that is an 11-character
+# hexadecimal value. I can capture that easily like this:
+#
+#     (?<queue_id>[0-9A-F]{11})
+#
+# Alternately, you can create a custom patterns file. 
+#
+# * Create a directory called 'patterns' with a file in it called 'extra'
+#   (the file name doesn't matter, but name it meaningfully for yourself)
+# * In that file, write the pattern you need as the pattern name, a space, then
+#   the regexp for that pattern.
+#
+# For example, doing the postfix queue id example as above:
+#
+#     # in ./patterns/postfix 
+#     POSTFIX_QUEUEID [0-9A-F]{11}
+#
+# Then use the 'patterns_dir' setting in this plugin to tell logstash where
+# your custom patterns directory is. Here's a full example with a sample log:
+#
+#     Jan  1 06:25:43 mailserver14 postfix/cleanup[21403]: BEF25A72965: message-id=<20130101142543.5828399CCAF@mailserver14.example.com>
+#
+#     filter {
+#       grok {
+#         patterns_dir => "./patterns"
+#         pattern => "%{SYSLOGBASE} %{POSTFIX_QUEUEID:queue_id}: %{GREEDYDATA:message}"
+#       }
+#     }
+#
+# The above will match and result in the following fields:
+#
+# * timestamp: Jan  1 06:25:43
+# * logsource: mailserver14
+# * program: postfix/cleanup
+# * pid: 21403
+# * queue_id: BEF25A72965
+#
+# The 'timestamp', 'logsource', 'program', and 'pid' fields come from the
+# SYSLOGBASE pattern which itself is defined by other patterns.
+#
 class LogStash::Filters::Grok < LogStash::Filters::Base
   config_name "grok"
   plugin_status "stable"
