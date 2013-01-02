@@ -140,16 +140,11 @@ class LogStash::Runner
                 # Add the 'spec' dir to the load path so specs can run
                 specpath = File.join(jar_root, "spec")
                 $: << specpath unless $:.include?(specpath)
-                newpath
-              else
-                arg
+                next newpath
               end
-            else
-              arg
             end
-          else
-            arg
           end
+          next arg
         end # args.collect
 
         # Hack up a runner
