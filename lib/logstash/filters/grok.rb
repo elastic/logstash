@@ -135,19 +135,30 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   config :pattern, :validate => :array
 
   # A hash of matches of field => value
+  #
+  # For example:
+  #
+  #     filter {
+  #       grok {
+  #         match => [ "@message", "Duration: %{NUMBER:duration} ]
+  #       }
+  #     }
+  #
   config :match, :validate => :hash, :default => {}
 
-  # Any existing field name can be used as a config name here for matching
-  # against.
+  # Shorthand for 'match'
   #
-  #     # this config:
-  #     foo => "some pattern"
+  #     filter {
+  #       grok {
+  #         # This configuration
+  #         match => [ "foo", "some pattern" ]
   #
-  #     # same as:
-  #     match => [ "foo", "some pattern" ]
+  #         # is the same as this:
+  #         foo => "some pattern"
+  #       }
+  #     }
   #
-  # It is preferable to use the 'match' setting instead of this one, because
-  # this one is going to be removed..
+  # It is preferable to use the 'match' setting instead of this.
   config /[A-Za-z0-9_-]+/, :validate => :string, :deprecated => true
 
   #
