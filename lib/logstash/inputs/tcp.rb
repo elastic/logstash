@@ -107,8 +107,8 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
             # monkeypatch a 'peer' method onto the socket.
             s.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
             @logger.debug("Accepted connection", :client => s.peer,
-            :server => "#{@host}:#{@port}")
-            handle_socket(s, output_queue, "tcp://#{@host}:#{@port}/client/#{s.peer}")
+                          :server => "#{@host}:#{@port}")
+            handle_socket(s, output_queue, "tcp://#{s.peer}/")
 
           end # Thread.start
         rescue IOError
