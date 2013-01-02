@@ -36,8 +36,8 @@ require "set"
 #
 # #### Example
 #
-# Combining the two above, we can pull out useful fields from a sample log like
-# this fictional http request log:
+# With that idea of a syntax and semantic, we can pull out useful fields from a
+# sample log like this fictional http request log:
 #
 #     55.3.244.1 GET /index.html 15824 0.043
 #
