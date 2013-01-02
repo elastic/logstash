@@ -2,7 +2,7 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket" # for Socket.gethostname
 
-# Run command line tools and cature output as an event.
+# Run command line tools and capture the whole output as an event.
 #
 # Notes:
 #
@@ -10,8 +10,6 @@ require "socket" # for Socket.gethostname
 # * The '@message' of this event will be the entire stdout of the command
 #   as one event.
 #
-# TODO(sissel): Implement a 'split' filter so you can split output of this
-# and other messages by newline, etc.
 class LogStash::Inputs::Exec < LogStash::Inputs::Base
 
   config_name "exec"
