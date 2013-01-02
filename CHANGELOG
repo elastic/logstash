@@ -2,9 +2,6 @@
  ## Overview of this release:
  - grok now captures (?<somename>...) regexp into 'somename' field
  - new 'charset' feature for inputs (for improved UTF-8 conversion support)
- - TODO TODO TODO new faster start-time release jars are available, see the
-   'flatjar' download option. This flatjar thing may have bugs, so both flatjar
-   and monolithic are available.
 
  ## general
  - fixed internal dependency versioning on 'addressable' gem (LOGSTASH-694)
@@ -14,7 +11,7 @@
  - All inputs now have a 'charset' setting to help you inform logstash of the
    text encoding of the input. This is useful if you have Shift_JIS or CP1251
    encoded log files. This should help resolve the many UTF-8 bugs that were
-   reported recently.
+   reported recently. The default charset is UTF-8.
  - bugfix: zeromq: 'topology' is now a required setting
  - misc: lumberjack: jls-lumberjack gem updated to 0.0.7
  - bugfix: stomp: fix startup problems causing early termination (#226
