@@ -5,13 +5,16 @@ require "set"
 # Parse arbitrary text and structure it.
 #
 # Grok is currently the best way in logstash to parse crappy unstructured log
-# data (like syslog or apache logs) into something structured and queryable.
+# data into something structured and queryable.
 #
-# Grok allows you to match text without needing to be a regular expressions
-# ninja. Logstash ships with about 120 patterns by default. You can find them here:
+# This tool is perfect for syslog logs, apache and other webserver logs, mysql
+# logs, and in general, any log format that is generally written for humans
+# and not computer consumption.
+#
+# Logstash ships with about 120 patterns by default. You can find them here:
 # <https://github.com/logstash/logstash/tree/v%VERSION%/patterns>. You can add
 # your own trivially. (See the patterns_dir setting)
-#
+# 
 # #### Grok Basics
 #
 # Grok works by using combining text patterns into something that matches your
@@ -118,7 +121,6 @@ require "set"
 #
 # The 'timestamp', 'logsource', 'program', and 'pid' fields come from the
 # SYSLOGBASE pattern which itself is defined by other patterns.
-#
 class LogStash::Filters::Grok < LogStash::Filters::Base
   config_name "grok"
   plugin_status "stable"
