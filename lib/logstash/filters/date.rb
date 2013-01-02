@@ -18,47 +18,25 @@ require "logstash/time_addon"
 # In the absence of this filter, logstash will choose a timestamp based on the
 # first time it sees the event (at input time), if the timestamp is not already
 # set in the event. For example, with file input, the timestamp is set to the
-# time of reading.
+# time of each read.
 class LogStash::Filters::Date < LogStash::Filters::Base
   JavaException = java.lang.Exception if RUBY_ENGINE == "jruby"
 
   config_name "date"
   plugin_status "stable"
 
-  # specify a locale to be used for date parsing. If this is not specified the platform default will be
-  # used
+  # specify a locale to be used for date parsing. If this is not specified the
+  # platform default will be used
   #
-  # The locale is mostly necessary to be set for parsing month names and weekday names
+  # The locale is mostly necessary to be set for parsing month names and
+  # weekday names
   #
   config :locale, :validate => :string
 
-  # Config for date is:
+  # This is short-hand for `match => [ "fieldname", "dateformat" ]`
   #
-  #     fieldname => dateformat
-  #
-  # The same field can be specified multiple times (or multiple dateformats for
-  # the same field) do try different time formats; first success wins.
-  #
-  # The date formats allowed are anything allowed by Joda-Time (java time
-  # library), generally: [java.text.SimpleDateFormat][dateformats]
-  #
-  # There are a few special exceptions, the following format literals exist
-  # to help you save time and ensure correctness of date parsing.
-  #
-  # * "ISO8601" - should parse any valid ISO8601 timestamp, such as
-  #   2011-04-19T03:44:01.103Z
-  # * "UNIX" - will parse unix time in seconds since epoch
-  # * "UNIX_MS" - will parse unix time in milliseconds since epoch
-  # * "TAI64N" - will parse tai64n time values
-  #
-  # For example, if you have a field 'logdate' and with a value that looks like
-  # 'Aug 13 2010 00:03:44'
-  # you would use this configuration:
-  #
-  #     logdate => "MMM dd YYYY HH:mm:ss"
-  #
-  # [dateformats]: http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html
-  config /[A-Za-z0-9_-]+/, :validate => :array
+  # It is deprecated. Please use 'match' instead.
+  config /[A-Za-z0-9_-]+/, :validate => :array, :deprecated => true
 
   # The date formats allowed are anything allowed by Joda-Time (java time
   # library), generally: [java.text.SimpleDateFormat][dateformats]
