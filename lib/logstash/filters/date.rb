@@ -6,7 +6,8 @@ require "logstash/time_addon"
 # date or timestamp as the timestamp for the event.
 #
 # For example, syslog events usually have timestamps like this:
-#   "Apr 17 09:32:01"
+#
+#     "Apr 17 09:32:01"
 #
 # You would use the date format "MMM dd HH:mm:ss" to parse this.
 #
@@ -32,7 +33,8 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   config :locale, :validate => :string
 
   # Config for date is:
-  #   fieldname => dateformat
+  #
+  #     fieldname => dateformat
   #
   # The same field can be specified multiple times (or multiple dateformats for
   # the same field) do try different time formats; first success wins.
@@ -63,10 +65,10 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #
   # An array with field name first, and format patterns following, [ field,
   # formats... ]
-  # 
+  #
   # If your time field has multiple possible formats, you can do this:
   #
-  #    match => [ "logdate", "MMM dd YYY HH:mm:ss",
+  #     match => [ "logdate", "MMM dd YYY HH:mm:ss",
   #               "MMM  d YYY HH:mm:ss", "ISO8601" ]
   #
   # The above will match a syslog (rfc3164) or iso8601 timestamp.
@@ -83,11 +85,12 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # For example, if you have a field 'logdate' and with a value that looks like
   # 'Aug 13 2010 00:03:44', you would use this configuration:
   #
-  #    filter {
-  #      date {
-  #        match => [ "logdate", "MMM dd YYYY HH:mm:ss" ]
-  #      }
-  #    }
+  #     filter {
+  #       date {
+  #         match => [ "logdate", "MMM dd YYYY HH:mm:ss" ]
+  #       }
+  #     }
+  #
   config :match, :validate => :array, :default => []
 
   # LOGSTASH-34
@@ -99,15 +102,14 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #
   # The config looks like this:
   #
-  # filter {
-  #   date {
-  #     type => "typename"
-  #     fielname => fieldformat
-  #
-  #     # Example:
-  #     timestamp => "mmm DD HH:mm:ss"
-  #   }
-  # }
+  #     filter {
+  #       date {
+  #         type => "typename"
+  #         filename => fieldformat
+  #         # Example:
+  #         timestamp => "mmm DD HH:mm:ss"
+  #       }
+  #     }
   #
   # The format is whatever is supported by Joda; generally:
   # http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html
@@ -119,9 +121,6 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
     @parsers = Hash.new { |h,k| h[k] = [] }
   end # def initialize
-
-  
-
 
   private
   def parseLocale(localeString)
