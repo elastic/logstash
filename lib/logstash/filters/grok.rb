@@ -3,6 +3,7 @@ require "logstash/namespace"
 require "set"
 
 # Parse arbitrary text and structure it.
+#
 # Grok is currently the best way in logstash to parse crappy unstructured log
 # data (like syslog or apache logs) into something structured and queryable.
 #
@@ -10,6 +11,57 @@ require "set"
 # ninja. Logstash ships with about 120 patterns by default. You can find them here:
 # <https://github.com/logstash/logstash/tree/v%VERSION%/patterns>. You can add
 # your own trivially. (See the patterns_dir setting)
+#
+# #### Grok Basics
+#
+# Grok works by using combining text patterns into something that matches your
+# logs.
+#
+# The syntax for a grok pattern is '%{SYNTAX:SEMANTIC}'
+#
+# The 'SYNTAX' is the name of the pattern that will match your text. For
+# example, "3.44" will be matched by the NUMBER pattern and "55.3.244.1" will
+# be matched by the IP pattern. The syntax is how you match.
+#
+# The 'SEMANTIC' is the identifier you give to the piece of text being matched.
+# For example, "3.44" could be the duration of an event, so you could call it
+# simply 'duration'. Further, a string "55.3.244.1" might identify the client
+# making a request.
+#
+# #### Example
+#
+# Combining the two above, we can pull out useful fields from a sample log like
+# this fictional http request log:
+#
+#     55.3.244.1 GET /index.html 15824 0.043
+#
+# The pattern for this could be:
+#
+#     %{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}
+#
+# A more realistic example, let's read these logs from a file:
+#
+#     input {
+#       file {
+#         path => "/var/log/http.log"
+#         type => "examplehttp"
+#       }
+#     }
+#     filter {
+#       grok {
+#         type => "examplehttp"
+#         pattern => "%{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}"
+#       }
+#     }
+#
+# After the grok filter, the event will have a few extra fields in it:
+#
+# * client: 55.3.244.1
+# * method: GET
+# * request: /index.html
+# * bytes: 15824
+# * duration: 0.043
+#
 class LogStash::Filters::Grok < LogStash::Filters::Base
   config_name "grok"
   plugin_status "stable"
