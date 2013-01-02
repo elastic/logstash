@@ -136,12 +136,12 @@ class LogStashConfigDocGenerator
     # Monkeypatch the 'config' method to capture
     # Note, this monkeypatch requires us do the config processing
     # one at a time.
-    LogStash::Config::Mixin::DSL.instance_eval do
-      define_method(:config) do |name, opts={}|
+    #LogStash::Config::Mixin::DSL.instance_eval do
+      #define_method(:config) do |name, opts={}|
         #p name => opts
-        attributes[name].merge!(opts)
-      end
-    end
+        #attributes[name].merge!(opts)
+      #end
+    #end
 
     # Loading the file will trigger the config dsl which should
     # collect all the config settings.
@@ -182,6 +182,7 @@ class LogStashConfigDocGenerator
     # descriptions are assumed to be markdown
     description = BlueCloth.new(@class_description).to_html
 
+    @attributes = klass.get_config
     sorted_attributes = @attributes.sort { |a,b| a.first.to_s <=> b.first.to_s }
     klassname = LogStash::Config::Registry.registry[@name].to_s
     name = @name
