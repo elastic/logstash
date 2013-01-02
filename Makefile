@@ -194,12 +194,12 @@ build/flatgems: | build vendor/bundle
 	done
 
 flatjar-test:
-	GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
+	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
 	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-flatjar.jar rspec spec/jar.rb
 
 jar-test:
 	#cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec $(TESTS)
-	GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec $(TESTS)
+	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-monolithic.jar rspec $(TESTS)
 	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec spec/jar.rb
 
 flatjar-test-and-report:
