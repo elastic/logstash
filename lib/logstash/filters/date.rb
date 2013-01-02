@@ -39,7 +39,9 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   config /[A-Za-z0-9_-]+/, :validate => :array, :deprecated => true
 
   # The date formats allowed are anything allowed by Joda-Time (java time
-  # library), generally: [java.text.SimpleDateFormat][dateformats]
+  # library): You can see the docs for this format here:
+  #
+  # [joda.time.format.DateTimeFormat](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html)
   #
   # An array with field name first, and format patterns following, [ field,
   # formats... ]
