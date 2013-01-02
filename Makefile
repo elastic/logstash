@@ -4,7 +4,7 @@
 #   wget or curl
 #
 JRUBY_VERSION=1.7.1
-ELASTICSEARCH_VERSION=0.20.1
+ELASTICSEARCH_VERSION=0.20.2
 #VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 VERSION=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb )
 
