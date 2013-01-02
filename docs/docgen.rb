@@ -29,6 +29,7 @@ class LogStashConfigDocGenerator
   end
 
   def parse(string)
+    clear_comments
     buffer = ""
     string.split(/\r\n|\n/).each do |line|
       # Join long lines
