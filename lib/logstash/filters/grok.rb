@@ -140,7 +140,10 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   #
   #     # same as:
   #     match => [ "foo", "some pattern" ]
-  config /[A-Za-z0-9_-]+/, :validate => :string
+  #
+  # It is preferable to use the 'match' setting instead of this one, because
+  # this one is going to be removed..
+  config /[A-Za-z0-9_-]+/, :validate => :string, :deprecated => true
 
   #
   # logstash ships by default with a bunch of patterns, so you don't
