@@ -6,10 +6,11 @@ require "logstash/namespace"
 #
 # For example, if you have a log message which contains 'ip=1.2.3.4
 # error=REFUSED', you can parse those automatically by doing:
-# 
-#    filter {
-#      kv { }
-#    }
+#
+#
+#     filter {
+#       kv { }
+#     }
 #
 # And you will get field 'ip' == "1.2.3.4" etc.
 class LogStash::Filters::KV < LogStash::Filters::Base
