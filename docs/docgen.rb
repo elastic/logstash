@@ -18,7 +18,7 @@ class LogStashConfigDocGenerator
   def initialize
     @rules = {
       COMMENT_RE => lambda { |m| add_comment(m[1]) },
-      /^ *class.*< *LogStash::(Outputs|Filters|Inputs)::Base/ => \
+      /^ *class.*< *LogStash::(Outputs|Filters|Inputs)::(Base|Threadable)/ => \
         lambda { |m| set_class_description },
       /^ *config +[^=].*/ => lambda { |m| add_config(m[0]) },
       /^ *plugin_status .*/ => lambda { |m| set_plugin_status(m[0]) },
