@@ -28,7 +28,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   # syntax. Example:
   #
   #     filter {
-  #       myfilter {
+  #       %PLUGIN% {
   #         add_tag => [ "foo_%{somefield}" ]
   #       }
   #     }
@@ -42,7 +42,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   # syntax. Example:
   #
   #     filter {
-  #       myfilter {
+  #       %PLUGIN% {
   #         remove_tag => [ "foo_%{somefield}" ]
   #       }
   #     }
@@ -55,7 +55,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   # Example:
   #
   #     filter {
-  #       myfilter {
+  #       %PLUGIN% {
   #         add_field => [ "sample", "Hello world, from %{@source}" ]
   #       }
   #     }
