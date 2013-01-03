@@ -130,7 +130,7 @@
  - bugfix: fix for zeromq filter initializer (#237, patch by Tom Howe)
 
  ## outputs
- - new: lumberjack
+ - new: lumberjack output (patch by Nick Ethier)
  - new: gemfire output (#234, patch by Andrea Campi)
  - improved: nagios_ncsa (patch by Tomas Doran)
  - improved: elasticsearch: permit setting 'host' even if embedded. Also set the
