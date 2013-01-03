@@ -1,11 +1,9 @@
-1.x.x (????)
+1.1.7 (January 3, 2013)
  ## Overview of this release:
-
- ## general
+ - important bug fix
 
  ## inputs
-
- ## filters
+ - fix bug where @source_host was set to 'false' in many cases.
 
  ## outputs
  - improvement: redis: shuffle_hosts is now enabled by default
