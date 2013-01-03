@@ -25,7 +25,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   config :host, :validate => :array, :default => ["127.0.0.1"]
 
   # Shuffle the host list during logstash startup.
-  config :shuffle_hosts, :validate => :boolean, :default => false
+  config :shuffle_hosts, :validate => :boolean, :default => true
 
   # The default port to connect on. Can be overridden on any hostname.
   config :port, :validate => :number, :default => 6379
