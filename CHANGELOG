@@ -82,6 +82,8 @@
    Rui Alves)
  - new: cloudwatch output to emit metrics and other events to Amazon CloudWatch.
    (LOGSTASH-461, patch by Louis Zuckerman)
+ - feature: stdout: added 'message' setting for configuring the output message
+   format. The default is same behavior as before this feature.
  - feature: http: added 'format' option to select 'json' or form-encoded
    request body to send with each request.
  - feature: http: added 'content_Type' option set the Content-Type header.
