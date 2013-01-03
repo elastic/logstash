@@ -1,7 +1,4 @@
 1.1.7 (January 3, 2013)
- ## Overview of this release:
- - important bug fix
-
  ## inputs
  - fix bug where @source_host was set to 'false' in many cases.
 
