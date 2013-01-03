@@ -55,7 +55,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   # Ignore these fields when ship_metadata is set. Typically this lists the
   # fields used in dynamic values for GELF fields.
-  config :ignore_metadata, :validate => :array, :default => [ "severity", "source_host", "source_path" ]
+  config :ignore_metadata, :validate => :array, :default => [ "severity", "source_host", "source_path", "short_message" ]
 
   # The GELF custom field mappings. GELF supports arbitrary attributes as custom
   # fields. This exposes that. Exclude the `_` portion of the field name
