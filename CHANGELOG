@@ -1,3 +1,7 @@
+1.1.7 (dev)
+## outputs
+ - improvement: redis: shuffle_hosts is now enabled by default
+
 1.1.6 (January 2, 2013)
  ## Overview of this release:
  - new inputs: drupal_dblog.
