@@ -117,7 +117,7 @@ on some results, drill around in some logs.
 
 For further learning, try these:
 
-* [Watch a presentation on logstash](http://blip.tv/carolinacon/logstash-open-source-log-and-event-management-jordan-sissel-5123601)
+* [Watch a presentation on logstash](http://www.youtube.com/embed/RuUFnog29M4)
 * [Getting started 'standalone' guide](http://logstash.net/docs/%VERSION%/tutorials/getting-started-simple)
 * [Getting started 'centralized' guide](http://logstash.net/docs/%VERSION%/tutorials/getting-started-centralized) - 
   learn how to build out your logstash infrastructure and centralize your logs.
