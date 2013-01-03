@@ -1,14 +1,14 @@
 ---
-title: Logstash tutorial @ Dreamforce
+title: Logstash 10-Minute Tutorial
 layout: content_right
 ---
-# Logstash tutorial @ Dreamforce
+# Logstash 10-minute Tutorial
 
 ## Step 1 - Download
 
 ### Download logstash:
 
-* [logstash-%VERSION%-monolithic.jar](http://semicomplete.com/files/logstash/logstash-%VERSION%-monolithic.jar)
+* [logstash-%VERSION%-monolithic.jar](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-monolithic.jar)
 
 ### Requirements:
 
@@ -16,8 +16,9 @@ layout: content_right
 
 ### The Secret:
 
-logstash is written in JRuby but I release standalone jar files for easy
+logstash is written in JRuby, but I release standalone jar files for easy
 deployment, so you don't need to download JRuby or most any other dependencies.
+
 I bake as much as possible into the single release file.
 
 ## Step 2 - A hello world.
