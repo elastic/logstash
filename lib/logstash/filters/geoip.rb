@@ -31,7 +31,7 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
     if @database.nil?
       if __FILE__ =~ /^file:\/.+!.+/
         # Running from a jar, assume GeoLiteCity.dat is at the root.
-        @database = [__FILE__.split("!").first, "GeoLiteCity.dat"].join("!")
+        @database = [__FILE__.split("!").first, "/GeoLiteCity.dat"].join("!")
       else
         if File.exists?("GeoLiteCity.dat")
           @database = "GeoLiteCity.dat"
