@@ -58,9 +58,6 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
     index = event.sprintf(@index)
     type = event.sprintf(@index_type)
-    # TODO(sissel): allow specifying the ID?
-    # The document ID is how elasticsearch determines sharding hash, so it can
-    # help performance if we allow folks to specify a specific ID.
 
     if @flush_size == 1
       receive_single(event, index, type)
