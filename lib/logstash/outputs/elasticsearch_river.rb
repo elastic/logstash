@@ -206,7 +206,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
     # River events have a format of
     # "action\ndata\n"
     # where 'action' is index or delete, data is the data to index.
-    header = { "index" => { "_index" => index, "_type" => type } }
+    header = { "index" => { "_index" => event.sprintf(@index), "_type" => event.sprintf(@type) } }
     if !@document_id.nil?
       header["index"]["_id"] = event.sprintf(@document_id)
     end
