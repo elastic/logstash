@@ -4,6 +4,7 @@ require "insist"
 describe LogStash::Event do
   before :each do
     @event = LogStash::Event.new
+    @event.timestamp = "2013-01-01T00:00:00.000Z"
     @event.type = "sprintf"
     @event.message = "hello world"
     @event.tags = [ "tag1" ]
@@ -12,7 +13,20 @@ describe LogStash::Event do
 
   subject { @event }
 
-  describe "#append" do
+  context "#sprintf" do
+    it "should report a time with %{+format} syntax" do
+      insist { @event.sprintf("%{+YYYY}") } == "2013"
+      insist { @event.sprintf("%{+MM}") } == "01"
+      insist { @event.sprintf("%{+HH}") } == "00"
+    end
+
+    it "should report fields with %{field} syntax" do
+      insist { @event.sprintf("%{@type}") } == "sprintf"
+      insist { @event.sprintf("%{@message}") } == subject["@message"]
+    end
+  end
+
+  context "#append" do
     it "should append message with \\n" do
       subject.append(LogStash::Event.new("@message" => "hello world"))
       insist { subject.message } == "hello world\nhello world"
