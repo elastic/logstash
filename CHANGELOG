@@ -1,3 +1,7 @@
+1.1.8 (January 3, 2013)
+  ## general
+  - patched another work around for JRUBY-6970 (LOGSTASH-801)
+
 1.1.7 (January 3, 2013)
  ## inputs
  - fix bug where @source_host was set to 'false' in many cases.
