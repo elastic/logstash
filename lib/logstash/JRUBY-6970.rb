@@ -30,3 +30,25 @@ class OpenSSL::SSL::SSLContext
     return ca_path_JRUBY_6970=(arg)
   end
 end
+
+# Work around for a bug in File.expand_path that doesn't account for resources
+# in jar paths.
+#
+# Should solve this error:
+#   Exception in thread "LogStash::Runner" org.jruby.exceptions.RaiseException:
+#   (Errno::ENOENT) file:/home/jls/projects/logstash/build/data/unicode.data
+class File
+  class << self
+    alias_method :expand_path_JRUBY_6970, :expand_path
+
+    def expand_path(path, dir=nil)
+      if path =~ /(jar:)?file:\/.*\.jar!/
+        jar, resource = path.split("!", 2)
+        return "#{jar}!#{expand_path_JRUBY_6970(resource, dir)}"
+      else
+        return expand_path_JRUBY_6970(path, dir)
+      end
+    end
+  end
+end
+
