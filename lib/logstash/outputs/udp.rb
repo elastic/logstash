@@ -79,8 +79,7 @@ class LogStash::Outputs::Udp < LogStash::Outputs::Base
 
   private
   def connect
-    @da = Socket.pack_sockaddr_in(@port.to_i, @host)
-    @client_socket = Socket.new Socket::PF_INET, Socket::SOCK_DGRAM
+    @client_socket = UDPSocket.new
   end # def connect
 
   private
@@ -106,7 +105,7 @@ class LogStash::Outputs::Udp < LogStash::Outputs::Base
     else
       begin
         connect unless @client_socket
-        @client_socket.send(event.message, 0, @da)
+        @client_socket.send(event.message, 0, @host, @port)
       rescue => e
         @logger.warn("udp output exception", :host => @host, :port => @port,
                      :exception => e, :backtrace => e.backtrace)
