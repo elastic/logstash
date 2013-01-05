@@ -9,11 +9,16 @@ describe LogStash::Event do
     @event.message = "hello world"
     @event.tags = [ "tag1" ]
     @event.source = "/home/foo"
+    @event["@fields"] = { "j" => { "k1" => "v", "k2" => [ "w", "x" ] } }
   end
 
   subject { @event }
 
   context "#sprintf" do
+    it "should report a unix timestamp for %{+%s}" do
+      insist { @event.sprintf("%{+%s}") } == "1356998400"
+    end
+    
     it "should report a time with %{+format} syntax" do
       insist { @event.sprintf("%{+YYYY}") } == "2013"
       insist { @event.sprintf("%{+MM}") } == "01"
@@ -23,6 +28,11 @@ describe LogStash::Event do
     it "should report fields with %{field} syntax" do
       insist { @event.sprintf("%{@type}") } == "sprintf"
       insist { @event.sprintf("%{@message}") } == subject["@message"]
+    end
+    
+    it "should print deep fields" do
+      insist { @event.sprintf("%{j.k1}") } == "v"
+      insist { @event.sprintf("%{j.k2.0}") } == "w"
     end
   end
 

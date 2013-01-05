@@ -199,5 +199,18 @@ describe LogStash::Filters::Date do
       insist { subject["@timestamp"] } == time
     end
   end
+  
+  describe "support deep field access" do
+    config <<-CONFIG
+      filter { 
+        date {
+          match => [ "data.deep", "ISO8601" ]
+        }
+      }
+    CONFIG
+    
+    sample({ "@fields" => { "data" => { "deep" => "2013-01-01T00:00:00.000Z" } } }) do
+      insist { subject["@timestamp"] } == "2013-01-01T00:00:00.000Z"
+    end
+  end
 end
-
