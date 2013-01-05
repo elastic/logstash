@@ -182,9 +182,9 @@ class LogStash::Filters::Date < LogStash::Filters::Base
       @logger.debug("Date filter: type #{event.type}, looking for field #{field.inspect}",
                     :type => event.type, :field => field)
       # TODO(sissel): check event.message, too.
-      next unless event.fields.member?(field)
+      next unless event[field]
 
-      fieldvalues = event.fields[field]
+      fieldvalues = event[field]
       fieldvalues = [fieldvalues] if !fieldvalues.is_a?(Array)
       fieldvalues.each do |value|
         next if value.nil?

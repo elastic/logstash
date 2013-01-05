@@ -18,6 +18,9 @@ describe LogStash::Filters::Json do
       insist { subject["hello"] } == "world"
       insist { subject["list" ] } == [1,2,3]
       insist { subject["hash"] } == { "k" => "v" }
+
+      insist { subject["list.0" ] } == 1
+      insist { subject["hash.k"] } == "v"
     end
   end
 
@@ -33,8 +36,14 @@ describe LogStash::Filters::Json do
 
     sample '{ "hello": "world", "list": [ 1, 2, 3 ], "hash": { "k": "v" } }' do
       insist { subject["data"]["hello"] } == "world"
-      insist { subject["data"]["list" ] } == [1,2,3]
+      insist { subject["data"]["list"] } == [1,2,3]
       insist { subject["data"]["hash"] } == { "k" => "v" }
+      
+      insist { subject["data.hello"] } == "world"
+      insist { subject["data.list" ] } == [1,2,3]
+      insist { subject["data.list.0" ] } == 1
+      insist { subject["data.hash"] } == { "k" => "v" }
+      insist { subject["data.hash.k"] } ==  "v"
     end
   end
 
