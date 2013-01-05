@@ -93,14 +93,13 @@ class LogStash::Event
   def source; @data["@source"]; end # def source
   def source=(val)
     uri = URI.parse(val) rescue nil
-    val = uri if uri
-    if val.is_a?(URI)
-      @data["@source"] = val.to_s
-      @data["@source_host"] = val.host if @data["@source_host"].nil?
-      @data["@source_path"] = val.path
+    if uri.is_a?(URI)
+      @data["@source"] = uri.to_s
+      @data["@source_host"] = uri.host if @data["@source_host"].nil?
+      @data["@source_path"] = uri.path
     else
       @data["@source"] = val
-      @data["@source_host"] = val.host if @data["@source_host"].nil?
+      @data["@source_host"] = val if @data["@source_host"].nil?
     end
   end # def source=
 
