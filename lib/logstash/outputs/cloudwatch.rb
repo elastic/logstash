@@ -79,6 +79,9 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   COUNT_UNIT = "Count"
   NONE = "None"
 
+  # Set up common configuration from AwsConfig
+  setup_aws_config
+  
   # How often to send data to CloudWatch   
   # This does not affect the event timestamps, events will always have their
   # actual timestamp (to-the-minute) sent to CloudWatch.
