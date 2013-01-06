@@ -28,7 +28,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   # syntax. Example:
   #
   #     filter {
-  #       myfilter {
+  #       %PLUGIN% {
   #         add_tag => [ "foo_%{somefield}" ]
   #       }
   #     }
@@ -42,7 +42,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   # syntax. Example:
   #
   #     filter {
-  #       myfilter {
+  #       %PLUGIN% {
   #         remove_tag => [ "foo_%{somefield}" ]
   #       }
   #     }
@@ -55,13 +55,14 @@ class LogStash::Filters::Base < LogStash::Plugin
   # Example:
   #
   #     filter {
-  #       myfilter {
+  #       %PLUGIN% {
   #         add_field => [ "sample", "Hello world, from %{@source}" ]
   #       }
   #     }
   #
-  #  On success, myfilter will then add field 'sample' with the value above
-  #  and the %{@source} piece replaced with that value from the event.
+  #  On success, the %PLUGIN% plugin will then add field 'sample' with the
+  #  value above and the %{@source} piece replaced with that value from the
+  #  event.
   config :add_field, :validate => :hash, :default => {}
 
   RESERVED = ["type", "tags", "add_tag", "remove_tag", "add_field", "exclude_tags"]

@@ -1,54 +1,120 @@
-1.1.6 (???)
+1.1.8 (January 3, 2013)
+  ## general
+  - patched another work around for JRUBY-6970 (LOGSTASH-801)
+
+1.1.7 (January 3, 2013)
+ ## inputs
+ - fix bug where @source_host was set to 'false' in many cases.
+
+ ## outputs
+ - improvement: redis: shuffle_hosts is now enabled by default
+
+1.1.6 (January 2, 2013)
  ## Overview of this release:
+ - new inputs: drupal_dblog.
+ - new filters: anonymize, metrics.
+ - new outputs: syslog, cloudwatch.
+ - new 'charset' setting for all inputs. This should resolve all known encoding
+   problems. The default charset is UTF-8.
  - grok now captures (?<somename>...) regexp into 'somename' field
- - new 'charset' feature for inputs (for improved UTF-8 conversion support)
+ - Elasticsearch 0.20.2 is included. This means you are required to upgrade
+   your elasticsearch cluster to 0.20.2. If you wish to continue using an old
+   version of elasticsearch, you should use the elasticsearch_http plugin
+   instead of the elasticsearch one.
 
  ## general
  - fixed internal dependency versioning on 'addressable' gem (LOGSTASH-694)
  - fixed another case of 'watchdog timeout' (LOGSTASH-701)
+ - plugin flags are now deprecated. The grok filter (--grok-pattern-path) was
+   the only plugin to make use of this.
+ - the grok filter has improved documentation
+ - lots of documentation fixes (James Turnbull, Louis Zuckerman)
+ - lots of testing improvements (Philippe Weber, Laust Rud Jacobsen)
+ - all 'name' settings have been deprecated in favor of more descriptive
+   settings (LOGSTASH-755)
+ - JRuby upgraded to 1.7.1
+ - removed use of bundler
+ - Fixed timestamp parsing in MRI (patch by Rene Lengwinat)
 
  ## inputs
  - All inputs now have a 'charset' setting to help you inform logstash of the
    text encoding of the input. This is useful if you have Shift_JIS or CP1251
    encoded log files. This should help resolve the many UTF-8 bugs that were
    reported recently. The default charset is UTF-8.
+ - new: drupal_dblog: read events from a DBLog-enabled Drupal. (#251, Patch by
+   theduke)
  - bugfix: zeromq: 'topology' is now a required setting
+ - bugfix: lumberjack: client connection closing is now handled properly.
+   (Patch by Nick Ethier)
  - misc: lumberjack: jls-lumberjack gem updated to 0.0.7
  - bugfix: stomp: fix startup problems causing early termination (#226
+ - bugfix: tcp: the 'source host' for events is now the client ip:port that
+   sent it, instead of the listen address that received it. (LOGSTASH-796)
+ - improvement: tcp: the default data_timeout is now -1 (never timeout).
+   This change was made because read timeouts were causing data loss, and
+   logstash should avoid losing events by default.
+ - improvement: amqp: the 'name' setting is now called 'queue' (#274)
+ - improvement: eventlog: the 'name' setting is now called 'logfile' (#274)
+ - bugfix: log4j: fix stacktrace reading (#253, patch by Alex Arutyunyants)
 
  ## filters
- - new: anonymize: supports many hash mechanisms (murmur3, sha, md5, etc) as
+ - new: anonymize: supports many hash mechanisms (murmur3, sha1, md5, etc) as
    well as IP address anonymization (#280, #261; patches by Richard Pijnenburg
    and Avishai Ish-Shalom)
+ - new: metrics: allows you to aggregate metrics from events and emit them
+   periodically. Think of this like 'statsd' but implemented as a logstash
+   filter instead of an external service.
  - feature: date: now accepts 'match' as a setting. Use of this is preferable
-   to the old syntax. (#248, LOGSTASH-734, Patch by Louis Zuckerman)
- - improvement: grok: now accepts (?<foo>...) named captures. This lets you
+   to the old syntax. Where you previously had 'date { somefield =>
+   "somepattern" }' you should now do: 'date { match => [ "somefield",
+   "somepattern" ] }'. (#248, LOGSTASH-734, Patch by Louis Zuckerman)
+ - feature: grok: now accepts (?<foo>...) named captures. This lets you
    compose a pattern in the grok config without needing to define it in a
    patterns file. Example: (?<hostport>%{HOST}:%{POSINT}) to capture 'hostport'
  - improvement: grok: allow '$' in JAVACLASS pattern (#241, patch by Corry
    Haines)
- - improvement: grok: can now match number types. Example, if you're sending
-   a json format event with { "status": 403 } you can now grok that field.
-   The number is represented as a string "403" before pattern matching.
+ - improvement: grok: can now match against number types. Example, if you're
+   sending a json format event with { "status": 403 } you can now grok that
+   field.  The number is represented as a string "403" before pattern matching.
  - bugfix: date: Fix a bug that would crash the pipeline if no date pattern 
    matched. (LOGSTASH-705)
- - improvement: kv: Adds field_split, value_split, prefix, and container
+ - feature: kv: Adds field_split, value_split, prefix, and container
    settings. (#225, patch by Alex Wheeler)
- - mutate: rename on a nonexistant field now does nothing as expected.
+ - bugfix: mutate: rename on a nonexistant field now does nothing as expected.
    (LOGSTASH-757)
- - grok: don't tag an event with _grokparsefailure if it's already so (#248,
-   patch by Greg Brockman)
+ - bugfix: grok: don't tag an event with _grokparsefailure if it's already so
+   (#248, patch by Greg Brockman)
+ - feature: mutate: new settings - split, join, strip. "split" splits a field
+   into an array. "join" merges an array into a string. "strip" strips leading and
+   trailing whitespace. (Patch by Avishai Ish-Shalom)
 
  ## outputs
  - new: syslog output supporting both RFC3164 and RFC5424 (#180, patch by
-   ruckalvnet)
+   Rui Alves)
  - new: cloudwatch output to emit metrics and other events to Amazon CloudWatch.
+   (LOGSTASH-461, patch by Louis Zuckerman)
+ - feature: stdout: added 'message' setting for configuring the output message
+   format. The default is same behavior as before this feature.
+ - feature: http: added 'format' option to select 'json' or form-encoded
+   request body to send with each request.
+ - feature: http: added 'content_Type' option set the Content-Type header.
+   This defaults to "application/json" if the 'format' is 'json'. Will default
+   to 'application/x-www-form-urlencoded' if the 'format' is 'form'
  - bugfix: zeromq: 'topology' is now a required setting
- - improvement: mongodb: new setting 'isodate', when true, stores the @timestamp
-   field as a mongodb date instead of a string. (#224, patch by Kevin Amorin)
+ - feature: mongodb: new setting 'isodate' that, when true, stores the
+   @timestamp field as a mongodb date instead of a string. (#224, patch by
+   Kevin Amorin)
  - improvement: gelf: Allow full_message gelf property to be overridden (#245, 
    patch by Sébastien Masset)
- - lumberjack: jls-lumberjack gem updated to 0.0.6
+ - misc: lumberjack: jls-lumberjack gem updated to 0.0.6
+ - feature: nagios: New 'nagios_level' setting to let you change the level
+   of the passive check result sent to nagios. (#298, Patch by James Turnbull)
+ - feature: elasticsearch, elasticsearch_http, elasticsearch_river: new setting
+   'document_id' for explicitly setting the document id in each write to
+   elasticsearch. This is useful for overwriting existing documents.
+ - improvement: elasticsearch_river: 'name' is now 'queue' (#274)
+ - improvement: amqp: 'name' is now 'exchange' (#274)
+ - bugfix: the websocket output works again (supports RFC6455)
 
 1.1.5 (November 10, 2012)
  ## Overview of this release:
@@ -82,13 +148,15 @@
  - bugfix: fix for zeromq filter initializer (#237, patch by Tom Howe)
 
  ## outputs
- - new: lumberjack
+ - new: lumberjack output (patch by Nick Ethier)
  - new: gemfire output (#234, patch by Andrea Campi)
  - improved: nagios_ncsa (patch by Tomas Doran)
  - improved: elasticsearch: permit setting 'host' even if embedded. Also set the
    host default to 'localhost' when using embedded. These fixes should help resolve
-   issues new users have when their distros surprisingly block multicast by default.
+   issues new users have when their distros surprisingly block multicast by
+   default.
  - improved: elasticsearch: failed index attempts will be retried
+ - improved: irc: new 'password' setting (#283, patch by theduke)
 
 1.1.4 (October 28, 2012)
  ## Overview of this release:

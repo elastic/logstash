@@ -76,7 +76,7 @@ Download the monolithic logstash release package. By 'monolithic' I mean the
 package contains all required dependencies to save you time chasing down
 requirements.
 
-Follow [this link to download logstash-%VERSION%](http://semicomplete.com/files/logstash/logstash-%VERSION%-monolithic.jar).
+Follow [this link to download logstash-%VERSION%](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-monolithic.jar).
 
 Since we're doing a centralized configuration, you'll have two main logstash
 agent roles: a shipper and an indexer. You will ship logs from all servers via Redis and have another agent receive those messages, parse

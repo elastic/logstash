@@ -126,6 +126,12 @@ describe "inputs/tcp" do
         sequence += 1
         tcp.teardown if sequence == event_count
         begin
+          insist { event["@source_host"] } != nil
+          insist { event["@source"] } != nil
+          insist { event["@timestamp"] } != nil
+          insist { event["@fields"] } != nil
+          insist { event["@type"] } != nil
+          insist { event["@tags"] } != nil
           insist { event.message } == "Hello ü Û"
           insist { event.message.encoding } == Encoding.find("UTF-8")
         rescue Exception => failure

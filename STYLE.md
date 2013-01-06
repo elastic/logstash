@@ -72,14 +72,25 @@ Short example:
 
 ## Specific cases
 
-### Hash synatx
+### Hash Syntax
 
-Use of the "hash colon" syntax (ruby 1.9) is not accepted: { foo: "bar" }
+Use of the "hash colon" syntax (ruby 1.9) is not accepted.
+
+    # This is NOT good.
+    { foo: "bar" }
+
+    # This is good.
+    { :foo => "bar" }
 
 ### String#[]
 
-String#[] with one numeric argument must not be used due to bugs between ruby
-versions.
+String#[] with one numeric argument must not be used due to bugs and
+inconsistencies between ruby versions.
 
-* Do not use this: "foo"[0]
-* Use this: "foo"[0,1]
+    str = "foo"
+
+    # This is NOT good
+    str[0]
+
+    # This is good.
+    str[0, 1]

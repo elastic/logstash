@@ -1,7 +1,96 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
-# TODO(sissel): Fill in
+# The metrics filter is useful for aggregating metrics.
+#
+# For example, if you have a field 'response' that is 
+# a http response code, and you want to count each
+# kind of response, you can do this:
+#
+#     filter {
+#       metrics {
+#         meter => [ "http.%{response}" ]
+#         add_tag => metric
+#       }
+#     }
+#
+# Metrics are flushed every 5 seconds. Metrics appear as
+# new events in the event stream and go through any filters
+# that occur after as well as outputs.
+#
+# In general, you will want to add a tag to your metrics and have an output
+# explicitly look for that tag.
+#
+# The event that is flushed will include every 'meter' and 'timer'
+# metric in the following way:
+#
+# #### 'meter' values
+#
+# For a `meter => "something"` you will receive the following fields:
+#
+# * "thing.count" - the total count of events
+# * "thing.rate_1m" - the 1-minute rate (sliding)
+# * "thing.rate_5m" - the 5-minute rate (sliding)
+# * "thing.rate_15m" - the 15-minute rate (sliding)
+#
+# #### 'timer' values
+#
+# For a `timer => [ "thing", "%{duration}" ]` you will receive the following fields:
+#
+# * "thing.count" - the total count of events
+# * "thing.rate_1m" - the 1-minute rate of events (sliding)
+# * "thing.rate_5m" - the 5-minute rate of events (sliding)
+# * "thing.rate_15m" - the 15-minute rate of events (sliding)
+# * "thing.min" - the minimum value seen for this metric
+# * "thing.max" - the maximum value seen for this metric
+# * "thing.stddev" - the standard deviation for this metric
+# * "thing.mean" - the mean for this metric
+#
+# #### Example: computing event rate
+#
+# For a simple example, let's track how many events per second are running
+# through logstash:
+#
+#     input {
+#       generator {
+#         type => "generated"
+#       }
+#     }
+#
+#     filter {
+#       metrics {
+#         type => "generated"
+#         meter => "events"
+#         add_tag => "metric"
+#       }
+#     }
+#
+#     output {
+#       stdout {
+#         # only emit events with the 'metric' tag
+#         tags => "metric"
+#         message => "rate: %{events.rate_1m}"
+#       }
+#     }
+#
+# Running the above:
+#
+#     % java -jar logstash.jar agent -f example.conf
+#     rate: 23721.983566819246
+#     rate: 24811.395722536377
+#     rate: 25875.892745934525
+#     rate: 26836.42375967113
+#
+# We see the output includes our 'events' 1-minute rate.
+#
+# In the real world, you would emit this to graphite or another metrics store,
+# like so:
+#
+#     output {
+#       graphite {
+#         metrics => [ "events.rate_1m", "%{events.rate_1m}" ]
+#       }
+#     }
 class LogStash::Filters::Metrics < LogStash::Filters::Base
   config_name "metrics"
   plugin_status "experimental"

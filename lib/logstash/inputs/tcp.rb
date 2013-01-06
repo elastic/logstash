@@ -11,6 +11,7 @@ require "timeout"
 # Can either accept connections from clients or connect to a server,
 # depending on `mode`.
 class LogStash::Inputs::Tcp < LogStash::Inputs::Base
+  class Interrupted < StandardError; end
 
   config_name "tcp"
   plugin_status "beta"
@@ -73,8 +74,6 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
       :client => socket.peer)
     end # begin
 
-  rescue IOError
-    # nothing
   ensure
     begin
       socket.close
@@ -107,11 +106,14 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
             # monkeypatch a 'peer' method onto the socket.
             s.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
             @logger.debug("Accepted connection", :client => s.peer,
-            :server => "#{@host}:#{@port}")
-            handle_socket(s, output_queue, "tcp://#{@host}:#{@port}/client/#{s.peer}")
-
+                          :server => "#{@host}:#{@port}")
+            begin 
+              handle_socket(s, output_queue, "tcp://#{s.peer}/")
+            rescue Interrupted
+              s.close rescue nil
+            end
           end # Thread.start
-        rescue IOError
+        rescue IOError, Interrupted
           if @interrupted
             # Intended shutdown, get out of the loop
             @server_socket.close
@@ -139,7 +141,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   def teardown
     if server?
       @interrupted = true
-      @thread.raise(IOError.new)
+      @thread.raise(Interrupted.new)
     end
   end # def teardown
 end # class LogStash::Inputs::Tcp

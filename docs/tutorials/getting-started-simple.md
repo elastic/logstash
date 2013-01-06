@@ -5,7 +5,9 @@ layout: content_right
 # Getting started with logstash (standalone server example)
 
 This guide shows how to get you going quickly with logstash on a single,
-standalone server we'll begin by testing with simple stdin and stdout plugins. From there we'll start collecting actual log files.
+standalone server. We'll begin by showing you how to read events from standard
+input (your keyboard) and emit them to standard output. After that, we'll start
+collecting actual log files.
 
 By standalone, I mean that everything happens on a single server: log collection, indexing, and the web interface.
 
@@ -23,7 +25,7 @@ If you have problems, feel free to email the users list
 
 ## logstash
 
-You should download the logstash 'monolithic' jar - if you haven't yet, [download it now](http://semicomplete.com/files/logstash/logstash-%VERSION%-monolithic.jar). This package includes most
+You should download the logstash 'monolithic' jar - if you haven't yet, [download it now](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-monolithic.jar). This package includes most
 of the dependencies for logstash in it and helps you get started quicker.
 
 The configuration of any logstash agent consists of specifying inputs, filters,
