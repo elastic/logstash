@@ -32,15 +32,14 @@ module LogStash::PluginMixins::AwsConfig
     config :secret_access_key, :validate => :string
 
     # Should we require (true) or disable (false) using SSL for communicating with the AWS API   
-    # If this option is not provided, the AWS SDK for Ruby default will be used
-    config :use_ssl, :validate => :boolean
+    # The AWS SDK for Ruby defaults to SSL so we preserve that
+    config :use_ssl, :validate => :boolean, :default => true
 
     # Path to YAML file containing a hash of AWS credentials.   
     # This file will only be loaded if `access_key_id` and
     # `secret_access_key` aren't set. The contents of the
     # file should look like this:
     #
-    #     ---
     #     :access_key_id: "12345"
     #     :secret_access_key: "54321"
     #
@@ -67,12 +66,19 @@ module LogStash::PluginMixins::AwsConfig
       opts[:secret_access_key] = @secret_access_key
     end
 
-    if @use_ssl
-      opts[:use_ssl] = @use_ssl
-    end
+    opts[:use_ssl] = @use_ssl
 
-    opts[:region] = @region
-
+    # The AWS SDK for Ruby doesn't know how to make an endpoint hostname from a region
+    # for example us-west-1 -> foosvc.us-west-1.amazonaws.com
+    # So our plugins need to know how to generate their endpoints from a region
+    # Furthermore, they need to know the symbol required to set that value in the AWS SDK
+    # Classes using this module must implement aws_service_endpoint(region:string)
+    # which must return a hash with one key, the aws sdk for ruby config symbol of the service
+    # endpoint, which has a string value of the service endpoint hostname
+    # for example, CloudWatch, { :cloud_watch_endpoint => "monitoring.#{region}.amazonaws.com" }
+    # For a list, see https://github.com/aws/aws-sdk-ruby/blob/master/lib/aws/core/configuration.rb
+    opts.merge!(self.aws_service_endpoint(@region))
+    
     return opts
   end # def aws_options_hash
 
