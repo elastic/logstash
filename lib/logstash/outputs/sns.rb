@@ -1,5 +1,6 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
+require "logstash/plugin_mixins/aws_config"
 
 # SNS output.
 #
@@ -23,25 +24,16 @@ require "logstash/namespace"
 #  MAX_MESSAGE_SIZE_IN_BYTES.
 #
 class LogStash::Outputs::Sns < LogStash::Outputs::Base
+  include LogStash::PluginMixins::AwsConfig
+
   MAX_SUBJECT_SIZE_IN_CHARACTERS  = 100
   MAX_MESSAGE_SIZE_IN_BYTES       = 32768
 
   config_name "sns"
   plugin_status "experimental"
 
-  # Amazon API credentials.
-  config :access_key_id, :validate => :string
-  config :secret_access_key, :validate => :string
-
-  # Path to YAML file containing a hash of AWS credentials.  This file
-  # will be loaded if `access_key_id` and `secret_access_key` aren't
-  # set. The contents of the file should look like this:
-  #
-  #     ---
-  #     :access_key_id: "12345"
-  #     :secret_access_key: "54321"
-  #
-  config :credentials, :validate => :string
+  # Set up common configuration from AwsConfig
+  setup_aws_config
 
   # Message format.  Defaults to plain text.
   config :format, :validate => [ "json", "plain" ], :default => "plain"
@@ -58,21 +50,17 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
   config :publish_boot_message_arn, :validate => :string
 
   public
+  def aws_service_endpoint(region)
+    return {
+        :sns_endpoint => "sns.#{region}.amazonaws.com"
+    }
+  end
+
+  public
   def register
     require "aws-sdk"
 
-    # Credentials weren't specified in the configuration.
-    unless @access_key_id && @secret_access_key
-      access_creds = YAML.load_file(@credentials)
-
-      @access_key_id      = access_creds[:access_key_id]
-      @secret_access_key  = access_creds[:secret_access_key]
-    end
-
-    @sns = AWS::SNS.new(
-      :access_key_id      => @access_key_id,
-      :secret_access_key  => @secret_access_key
-    )
+    @sns = AWS::SNS.new(aws_options_hash)
 
     # Try to publish a "Logstash booted" message to the ARN provided to
     # cause an error ASAP if the credentials are bad.
