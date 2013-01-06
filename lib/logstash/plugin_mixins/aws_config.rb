@@ -5,14 +5,14 @@ module LogStash::PluginMixins::AwsConfig
   @logger = LogStash::Logger.new(STDOUT)
   @logger.level = $DEBUG ? :debug : :warn
 
-  US_EAST_1 = "us-east-1"
-
   # This method is called when someone includes this module
   def self.included(base)
     # Add these methods to the 'base' given.
     base.extend(self)
   end
 
+  US_EAST_1 = "us-east-1"
+  
   public
   def setup_aws_config
     # The AWS Region
