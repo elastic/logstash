@@ -16,7 +16,6 @@ class LogStash::Event
     @cancelled = false
 
     @data = {
-      "@source_host" => false,
       "@source" => "unknown",
       "@tags" => [],
       "@fields" => {},

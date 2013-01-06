@@ -34,7 +34,7 @@ This is what it might look like in your config file:
 <% sorted_attributes.each do |name, config|
      next if config[:deprecated]
      if config[:validate].is_a?(Array) 
-       annotation = "#{config[:validate].inspect}"
+       annotation = "string, one of #{config[:validate].inspect}"
      else 
        annotation = "#{config[:validate]}"
      end

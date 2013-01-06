@@ -26,14 +26,35 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
   config :negate, :validate => :boolean, :default => false
 
   # A hash of matches of field => regexp.  If multiple matches are specified,
-  # all must match for the grep to be considered successful.
-  # Normal regular expressions are supported here.
+  # all must match for the grep to be considered successful.  Normal regular
+  # expressions are supported here.
+  #
+  # For example:
+  #
+  #     filter {
+  #       grep {
+  #         match => [ "@message", "hello world" ]
+  #       }
+  #     }
+  #
+  # The above will drop all events with a message not matching "hello world" as
+  # a regular expression.
   config :match, :validate => :hash, :default => {}
 
-  # Config for grep is:
-  #   fieldname: pattern
-  #   Allow arbitrary keys for this config.
-  config /[A-Za-z0-9_-]+/, :validate => :string
+  # Short-hand for matching
+  #
+  #     filter {
+  #       grep {
+  #         # This 'match' usage
+  #         match => [ "fieldname", "pattern" ]
+  #
+  #         # is the same as this:
+  #         fieldname => "pattern"
+  #       }
+  #     }
+  #
+  # It is recommended to use 'match' instead of this.
+  config /[A-Za-z0-9_-]+/, :validate => :string, :deprecated => true
 
   public
   def register
