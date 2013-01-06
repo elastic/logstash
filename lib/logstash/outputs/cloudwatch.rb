@@ -155,6 +155,13 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   config :field_dimensions, :validate => :string, :default => "CW_dimensions"
 
   public
+  def aws_service_endpoint(region)
+    return {
+        :cloud_watch_endpoint => "monitoring.#{region}.amazonaws.com"
+    }
+  end
+  
+  public
   def register
     require "thread"
     require "rufus/scheduler"
