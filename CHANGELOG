@@ -1,3 +1,7 @@
+1.1.9 ( January X, 2013 )
+  ## outputs
+ - fix bug in elasticsearch_river where it wouldn't resolve %{} variables in index and changed index -> index_type in ES header. (LOGSTASH-819)
+
 1.1.8 (January 3, 2013)
   ## general
   - patched another work around for JRUBY-6970 (LOGSTASH-801)
@@ -239,7 +243,7 @@
  - improvement: date: subsecond precision on UNIX timestamps is retained on
    conversion (#213, Patch by Ralph Meijer)
  - improvement: date: Add locale setting; useful for day/month name parsing.
-   (#100, Patch by Christian Schröder)
+   (#100, Patch by Christian Schröder)
 
  ## outputs
  - new: exec: run arbitrary commands based on an event.
