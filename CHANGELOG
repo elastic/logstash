@@ -1,11 +1,26 @@
-1.1.9 ( January X, 2013 )
-  ## outputs
- - fix bug in elasticsearch_river where it wouldn't resolve %{} variables in index 
-   and changed index -> index_type in ES header. (LOGSTASH-819)
+NEXT (?????)
+  ## filters
+  - bugfix: mutate: skip missing fields in 'convert' (#244, patch by Ralph Meijer)
 
-1.1.8 (January 3, 2013)
+  ## outputs
+  - improvement: gelf: new tunable 'ignore_metadata' flag to set which fields
+    to ignore if ship_metadata is set. (#244, patch by Ralph Meijer)
+  - improvement: gelf: make short_message's field name tunable (#244, patch by
+    Ralph Meijer)
+
+1.1.8 (January 10, 2013)
   ## general
   - patched another work around for JRUBY-6970 (LOGSTASH-801)
+
+  ## inputs
+  - bugfix: tcp: 'Address in use' errors now report the host/port involved.
+    (LOGSTASH-831)
+  - bugfix: zeromq: fix bug where an invalid url could be given as a source
+    (LOGSTASH-821, #306)
+
+  ## outputs
+  - bugfix: elasticsearch_river: it now resolves evaluates %{} variables in
+    index and index_type settings. (LOGSTASH-819)
 
 1.1.7 (January 3, 2013)
  ## inputs
