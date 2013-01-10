@@ -35,6 +35,9 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
   # Set up common configuration from AwsConfig
   setup_aws_config
 
+  # The `credentials` option is deprecated, please update your config to use `aws_credentials_file` instead
+  config :credentials, :validate => :string
+
   # Message format.  Defaults to plain text.
   config :format, :validate => [ "json", "plain" ], :default => "plain"
 
@@ -59,6 +62,9 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
   public
   def register
     require "aws-sdk"
+
+    # This should be removed when the deprecated aws credentials option is removed
+    @aws_credentials_file = @credentials
 
     @sns = AWS::SNS.new(aws_options_hash)
 

@@ -63,6 +63,12 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   # Set up common configuration from AwsConfig
   setup_aws_config
 
+  # The `access_key` option is deprecated, please update your configuration to use `access_key_id` instead
+  config :access_key, :validate => :string, :deprecated => true
+
+  # The `secret_key` option is deprecated, please update your configuration to use `secret_access_key` instead
+  config :secret_key, :validate => :string, :deprecated => true
+
   # Name of the SQS Queue name to pull messages from. Note that this is just the name of the queue, not the URL or ARN.
   config :queue, :validate => :string, :required => true
 
@@ -83,6 +89,10 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
     @logger.info("Registering SQS input", :queue => @queue)
     require "aws-sdk"
 
+    # These should be removed when the deprecated aws credential options are removed
+    @access_key_id = @access_key
+    @secret_access_key = @secret_key
+    
     @sqs = AWS::SQS.new(aws_options_hash)
 
     begin
