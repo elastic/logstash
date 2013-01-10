@@ -173,9 +173,11 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
     require "rufus/scheduler"
     require "aws"
 
-    # These should be removed when the deprecated aws credential options are removed
-    @access_key_id = @access_key
-    @secret_access_key = @secret_key
+    # This should be removed when the deprecated aws credential options are removed
+    if (@access_key && @secret_key) 
+      @access_key_id = @access_key
+      @secret_access_key = @secret_key
+    end
 
     @cw = AWS::CloudWatch.new(aws_options_hash)
 

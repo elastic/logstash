@@ -64,7 +64,9 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
     require "aws-sdk"
 
     # This should be removed when the deprecated aws credentials option is removed
-    @aws_credentials_file = @credentials
+    if (@credentials)
+      @aws_credentials_file = @credentials
+    end
 
     @sns = AWS::SNS.new(aws_options_hash)
 
