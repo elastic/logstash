@@ -117,7 +117,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
     @amqpurl = "amqp://"
     if @user
       @amqpurl << @user if @user
-      @amqpurl << ":#{CGI.escape(@password)}" if @password
+      @amqpurl << ":#{CGI.escape(@password.to_s)}" if @password
       @amqpurl << "@"
     end
     @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@queue}"
