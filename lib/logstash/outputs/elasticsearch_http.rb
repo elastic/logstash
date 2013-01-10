@@ -99,7 +99,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   end # def receive_bulk
 
   def flush
-    puts "Flushing #{@queue.count} events"
+    @logger.debug? && @logger.debug("Flushing events to elasticsearch",
+                                    :count => @queue.count)
     # If we don't tack a trailing newline at the end, elasticsearch
     # doesn't seem to process the last event in this bulk index call.
     #
