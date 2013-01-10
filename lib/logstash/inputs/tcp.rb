@@ -42,7 +42,13 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   def register
     if server?
       @logger.info("Starting tcp input listener", :address => "#{@host}:#{@port}")
-      @server_socket = TCPServer.new(@host, @port)
+      begin
+        @server_socket = TCPServer.new(@host, @port)
+      rescue Errno::EADDRINUSE
+        @logger.error("Could not start TCP server: Address in use",
+                      :host => @host, :port => @port)
+        raise
+      end
     end
   end # def register
 
