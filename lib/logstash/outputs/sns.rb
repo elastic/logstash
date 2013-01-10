@@ -32,9 +32,6 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
   config_name "sns"
   plugin_status "experimental"
 
-  # Set up common configuration from AwsConfig
-  setup_aws_config
-
   # The `credentials` option is deprecated, please update your config to use `aws_credentials_file` instead
   config :credentials, :validate => :string, :deprecated => true
 

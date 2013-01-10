@@ -79,9 +79,6 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   COUNT_UNIT = "Count"
   NONE = "None"
 
-  # Set up common configuration from AwsConfig
-  setup_aws_config
-
   # The `access_key` option is deprecated, please update your configuration to use `access_key_id` instead
   config :access_key, :validate => :string, :deprecated => true
 
