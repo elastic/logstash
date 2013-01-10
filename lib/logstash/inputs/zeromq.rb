@@ -1,6 +1,7 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "timeout"
+require "socket"
 
 # Read events over a 0MQ SUB socket.
 #
@@ -119,6 +120,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   end # def server?
 
   def run(output_queue)
+    host = Socket.gethostname
     begin
       loop do
         # Here's the unified receiver
@@ -138,7 +140,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
           @logger.debug("ZMQ receiving", :event => m2)
           msg = m2
         end
-        @sender ||= "zmq+#{@topology}://#{@type}/"
+        @sender ||= "zmq+#{@topology}://#{host}/#{@type}"
         e = self.to_event(msg, @sender)
         if e
           output_queue << e
