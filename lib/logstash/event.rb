@@ -131,7 +131,7 @@ class LogStash::Event
   public
   def [](key)
     # If the key isn't in fields and it starts with an "@" sign, get it out of data instead of fields
-    if ! @data["@fields"].has_key?(key.gsub(/\\\./, ".")) and key.slice(0,1) == "@"
+    if ! @data["@fields"].has_key?(key) and key.slice(0,1) == "@"
       return @data[key]
     elsif key.index(/(?<!\\)\./)
       value = nil
