@@ -89,9 +89,11 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
     @logger.info("Registering SQS input", :queue => @queue)
     require "aws-sdk"
 
-    # These should be removed when the deprecated aws credential options are removed
-    @access_key_id = @access_key
-    @secret_access_key = @secret_key
+    # This should be removed when the deprecated aws credential options are removed
+    if (@access_key && @secret_key)
+      @access_key_id = @access_key
+      @secret_access_key = @secret_key
+    end
     
     @sqs = AWS::SQS.new(aws_options_hash)
 
