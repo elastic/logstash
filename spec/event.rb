@@ -13,6 +13,22 @@ describe LogStash::Event do
 
   subject { @event }
 
+  context "#source=" do
+    it "should handle invalid url" do
+      val = "zmq+pushpull://zeromq_pull/"
+      @event.source = val
+      insist { @event.source } == val
+      insist { @event.source_host } == val
+    end
+    it "should handle valid url" do
+      val = "foo://bar/baz"
+      @event.source = val
+      insist { @event.source } == val
+      insist { @event.source_host } == "bar"
+      insist { @event.source_path } == "/baz"
+    end
+  end
+  
   context "#sprintf" do
     it "should report a time with %{+format} syntax" do
       insist { @event.sprintf("%{+YYYY}") } == "2013"
