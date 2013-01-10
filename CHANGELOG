@@ -1,10 +1,16 @@
-1.1.8 (???)
+1.1.8 (January 10, 2013)
   ## general
   - patched another work around for JRUBY-6970 (LOGSTASH-801)
 
+  ## inputs
+  - bugfix: tcp: 'Address in use' errors now report the host/port involved.
+    (LOGSTASH-831)
+  - bugfix: zeromq: fix bug where an invalid url could be given as a source
+    (LOGSTASH-821, #306)
+
   ## outputs
-  - fix bug in elasticsearch_river where it wouldn't resolve %{} variables in index 
-    and changed index -> index_type in ES header. (LOGSTASH-819)
+  - bugfix: elasticsearch_river: it now resolves evaluates %{} variables in
+    index and index_type settings. (LOGSTASH-819)
 
 1.1.7 (January 3, 2013)
  ## inputs
