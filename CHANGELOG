@@ -1,11 +1,10 @@
-1.1.9 ( January X, 2013 )
-  ## outputs
- - fix bug in elasticsearch_river where it wouldn't resolve %{} variables in index 
-   and changed index -> index_type in ES header. (LOGSTASH-819)
-
-1.1.8 (January 3, 2013)
+1.1.8 (???)
   ## general
   - patched another work around for JRUBY-6970 (LOGSTASH-801)
+
+  ## outputs
+  - fix bug in elasticsearch_river where it wouldn't resolve %{} variables in index 
+    and changed index -> index_type in ES header. (LOGSTASH-819)
 
 1.1.7 (January 3, 2013)
  ## inputs
