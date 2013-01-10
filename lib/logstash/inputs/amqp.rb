@@ -1,5 +1,6 @@
 require "logstash/inputs/threadable"
 require "logstash/namespace"
+require "cgi" # for CGI.escape
 
 # Pull events from an AMQP exchange.
 #
@@ -114,10 +115,11 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
     @amqpsettings[:ssl] = @ssl if @ssl
     @amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
     @amqpurl = "amqp://"
-    amqp_credentials = ""
-    amqp_credentials << @user if @user
-    amqp_credentials << ":#{@password}" if @password
-    @amqpurl += amqp_credentials unless amqp_credentials.nil?
+    if @user
+      @amqpurl << @user if @user
+      @amqpurl << ":#{CGI.escape(@password)}" if @password
+      @amqpurl << "@"
+    end
     @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@queue}"
   end # def register
 
