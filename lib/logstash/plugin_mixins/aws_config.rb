@@ -9,6 +9,7 @@ module LogStash::PluginMixins::AwsConfig
   def self.included(base)
     # Add these methods to the 'base' given.
     base.extend(self)
+    base.setup_aws_config
   end
 
   US_EAST_1 = "us-east-1"
