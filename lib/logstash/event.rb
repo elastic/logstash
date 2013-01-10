@@ -100,7 +100,6 @@ class LogStash::Event
       @data["@source_path"] = val.path
     else
       @data["@source"] = val
-      @data["@source_host"] = val.host if @data["@source_host"].nil?
     end
   end # def source=
 
