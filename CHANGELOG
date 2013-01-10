@@ -1,3 +1,13 @@
+NEXT (?????)
+  ## filters
+  - bugfix: mutate: skip missing fields in 'convert' (#244, patch by Ralph Meijer)
+
+  ## outputs
+  - improvement: gelf: new tunable 'ignore_metadata' flag to set which fields
+    to ignore if ship_metadata is set. (#244, patch by Ralph Meijer)
+  - improvement: gelf: make short_message's field name tunable (#244, patch by
+    Ralph Meijer)
+
 1.1.8 (January 10, 2013)
   ## general
   - patched another work around for JRUBY-6970 (LOGSTASH-801)
