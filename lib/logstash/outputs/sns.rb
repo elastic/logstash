@@ -36,7 +36,7 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
   setup_aws_config
 
   # The `credentials` option is deprecated, please update your config to use `aws_credentials_file` instead
-  config :credentials, :validate => :string
+  config :credentials, :validate => :string, :deprecated => true
 
   # Message format.  Defaults to plain text.
   config :format, :validate => [ "json", "plain" ], :default => "plain"
