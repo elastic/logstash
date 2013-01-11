@@ -1,4 +1,7 @@
-NEXT (?????)
+1.1.9 (January 10, 2013)
+  ## inputs
+  - bugfix: all inputs: fix bug where some @source values were not valid urls
+
   ## filters
   - bugfix: mutate: skip missing fields in 'convert' (#244, patch by Ralph Meijer)
 
