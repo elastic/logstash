@@ -40,9 +40,9 @@ URIPROTO [A-Za-z]+(\+[A-Za-z+]+)?
 URIHOST %{IPORHOST}(?::%{POSINT:port})?
 # uripath comes loosely from RFC1738, but mostly from what Firefox
 # doesn't turn into %XX
-URIPATH (?:/[A-Za-z0-9$.+!*'(){},~:;=#%_-]*)+
+URIPATH (?:/[A-Za-z0-9$.+!*'(){},~:;=#%_\-]*)+
 #URIPARAM \?(?:[A-Za-z0-9]+(?:=(?:[^&]*))?(?:&(?:[A-Za-z0-9]+(?:=(?:[^&]*))?)?)*)?
-URIPARAM \?[A-Za-z0-9$.+!*'|(){},~#%&/=:;_?-\[\]]*
+URIPARAM \?[A-Za-z0-9$.+!*'|(){},~#%&/=:;_?\-\[\]]*
 URIPATHPARAM %{URIPATH}(?:%{URIPARAM})?
 URI %{URIPROTO}://(?:%{USER}(?::[^@]*)?@)?(?:%{URIHOST})?(?:%{URIPATHPARAM})?
 
