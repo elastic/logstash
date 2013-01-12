@@ -28,10 +28,10 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
   # This deprecates the regexp '[A-Za-z0-9_-]' variable.
   config :source, :validate => :string
 
-  # Define a list of field names (in the order they appear in the CSV,
+  # Define a list of column names (in the order they appear in the CSV,
   # as if it were a header line). If this is not specified or there
-  # are not enough fields specified, the default field name is "fieldN"
-  # (where N is the field number, starting from 1).
+  # are not enough columns specified, the default column name is "columnX"
+  # (where X is the field number, starting from 1).
   # This deprecates the 'fields' variable.
   # Optional.
   config :columns, :validate => :array, :default => []
