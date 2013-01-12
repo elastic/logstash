@@ -122,6 +122,9 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   end # def filter
 
   def flush
+    # Do nothing if there's nothing to do ;)
+    return if @metric_meters.empty? && @metric_timers.empty?
+
     event = LogStash::Event.new
     event.source_host = Socket.gethostname
     @metric_meters.each do |name, metric|
