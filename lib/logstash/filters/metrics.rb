@@ -139,10 +139,22 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
       event["#{name}.rate_1m"] = metric.one_minute_rate
       event["#{name}.rate_5m"] = metric.five_minute_rate
       event["#{name}.rate_15m"] = metric.fifteen_minute_rate
+
+      # These 4 values are not sliding, so they probably are not useful.
       event["#{name}.min"] = metric.min
       event["#{name}.max"] = metric.max
-      event["#{name}.stddev"] = metric.stddev
+      # timer's stddev currently returns variance, fix it.
+      event["#{name}.stddev"] = metric.stddev ** 0.5
       event["#{name}.mean"] = metric.mean
+
+      # TODO(sissel): Maybe make this configurable?
+      #   percentiles => [ 0, 1, 5, 95 99 100 ]
+      event["#{name}.p1"] = metric.snapshot.value(0.01)
+      event["#{name}.p5"] = metric.snapshot.value(0.05)
+      event["#{name}.p10"] = metric.snapshot.value(0.10)
+      event["#{name}.p90"] = metric.snapshot.value(0.90)
+      event["#{name}.p95"] = metric.snapshot.value(0.95)
+      event["#{name}.p99"] = metric.snapshot.value(0.99)
     end
 
     filter_matched(event)
