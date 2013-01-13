@@ -27,7 +27,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   plugin_status "beta"
 
   # The fields to perform 'key=value' searching on
-  config :fields, :validate => :array, :default => ["@message"]
+  config :fields, :validate => :array
 
   # A string of characters to trim from the value. This is useful if your
   # values are wrapped in brackets or are terminated by comma (like postfix
@@ -87,10 +87,42 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # Example, to place all keys into container kv:
   #
   #     filter { kv { container => "kv" } }
-  config :container, :validate => :string, :default => '@fields'
+  config :container, :validate => :string, :deprecated => true
+
+  # The fields to perform 'key=value' searching on
+  #
+  # Example, to use the @message field:
+  #
+  #     filter { kv { source => "@message" } }
+  config :source, :validate => :string, :default => '@message'
+
+  # The name of the container to put all of the key-value pairs into 
+  #
+  # Example, to place all keys into container kv:
+  #
+  #     filter { kv { container => "kv" } }
+  config :target, :validate => :string, :default => '@fields'
 
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
+
+    #TODO(electrical): Remove this when removing the container variable
+    if @container
+      if @target
+        logger.error("'container' and 'target' are the same setting, but 'container' is deprecated. Please use only 'target'")
+      end
+      @target = @container
+    end
+
+    #TODO(electrical): Remove this when removing the fields variable
+    if @source
+      if @fields
+        logger.error("'fields' and 'source' are the same setting, but 'fields' is deprecated. Please use only 'source'")
+      end
+      @fields=Array.new if @fields.nil?
+      @fields << @source
+    end
+
   end # def register
 
   def filter(event)
@@ -98,6 +130,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
 
     kv_keys=Hash.new
 
+    #TODO(electrical): Remove this loop when we remove the fields variable
     @fields.each do |fieldname|
       value = event[fieldname]
 
@@ -111,10 +144,10 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     end
     # If we have any keys, create/append the hash
     if kv_keys.length > 0
-      if !event[@container].nil?
-        event[@container].merge!(kv_keys)
+      if !event[@target].nil?
+        event[@target].merge!(kv_keys)
       else
-        event[@container] = kv_keys
+        event[@target]= kv_keys
       end
       filter_matched(event)
     end
