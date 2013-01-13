@@ -8,36 +8,85 @@ You can add your own input, output, or filter plugins to logstash.
 
 If you're looking to extend logstash today, please look at the existing plugins.
 
-Good examples include:
+## Good examples of plugins
 
 * [inputs/tcp](https://github.com/logstash/logstash/blob/master/lib/logstash/inputs/tcp.rb)
 * [filters/multiline](https://github.com/logstash/logstash/blob/master/lib/logstash/filters/multiline.rb)
 * [outputs/mongodb](https://github.com/logstash/logstash/blob/master/lib/logstash/outputs/mongodb.rb)
 
-Main stuff you need to know:
+## Common concepts
 
-* 'config_name' sets the name used in the config file.
-* 'config' lines define config options
-* 'register' method is called per plugin instantiation. Do any of your initialization here.
+* The `config_name` sets the name used in the config file.
+* The `plugin_status` sets the status of the plugin for example `beta`.
+* The `config` lines define config options.
+* The `register` method is called per plugin instantiation. Do any of your initialization here.
 
-Inputs have two methods: register and run.
+### Required modules
 
-* Each input runs as it's own thread.
-* the 'run' method is expected to run-forever.
+All plugins should require the Logstash module.
 
-Filters have two methods: register and filter.
+    require 'logstash/namespace'
 
-* 'filter' method gets an event. 
-* Call 'event.cancel' to drop the event.
+### Plugin name
+
+Every plugin must have a name set with the `plugin_name` method. If this
+is not specified plugins will fail to load with an error.
+
+### Plugin status
+
+Every plugin needs a status set using `plugin_status`. Valid values are
+`stable`, `beta`, `experimental`, and `unsupported`. Plugins with either
+the `experimental` and `unsupported` status will generate warnings when
+used.
+  
+### Config lines
+
+The `config` lines define configuration options and are constructed like
+so:
+
+    config :host, :validate => :string, :default => "0.0.0.0"
+
+The name of the option is specified, here `:host` and then the
+attributes of the option. They can include `:validate`, `:default`,
+`:required` (a Boolean `true` or `false`), and `:deprecated` (also a
+Boolean).  
+ 
+## Inputs
+
+All inputs require the LogStash::Inputs::Base class:
+
+    require 'logstash/inputs/base'
+ 
+Inputs have two methods: `register` and `run`.
+
+* Each input runs as its own thread.
+* The `run` method is expected to run-forever.
+
+## Filters
+
+All filters require the LogStash::Filters::Base class:
+
+    require 'logstash/filters/base'
+ 
+Filters have two methods: `register` and `filter`.
+
+* The `filter` method gets an event. 
+* Call `event.cancel` to drop the event.
 * To modify an event, simply make changes to the event you are given.
 * The return value is ignored.
 
-Outputs have two methods: register and receive.
+## Outputs
 
-* 'register' is called per plugin instantiation. Do any of your initialization here.
-* 'receive' is called when an event gets pushed to your output
+All outputs require the LogStash::Outputs::Base class:
 
-## Example: new filter
+    require 'logstash/outputs/base'
+ 
+Outputs have two methods: `register` and `receive`.
+
+* The `register` method is called per plugin instantiation. Do any of your initialization here.
+* The `receive` method is called when an event gets pushed to your output
+
+## Example: a new filter
 
 Learn by example how to [add a new filter to logstash](example-add-a-new-filter)
 
