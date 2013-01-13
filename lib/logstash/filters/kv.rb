@@ -86,7 +86,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #
   # Example, to place all keys into container kv:
   #
-  #     filter { kv { conatiner => "kv" } }
+  #     filter { kv { container => "kv" } }
   config :container, :validate => :string, :default => '@fields'
 
   def register
