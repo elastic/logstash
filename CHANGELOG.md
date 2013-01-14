@@ -4,13 +4,10 @@
   (LOGSTASH-849)
 
 # 1.1.9 (January 10, 2013)
-
 ## inputs
   * bugfix: all inputs: fix bug where some @source values were not valid urls
-
 ## filters
   * bugfix: mutate: skip missing fields in 'convert' (#244, patch by Ralph Meijer)
-
 ## outputs
   * improvement: gelf: new tunable 'ignore_metadata' flag to set which fields
     to ignore if ship_metadata is set. (#244, patch by Ralph Meijer)
@@ -18,30 +15,24 @@
     Ralph Meijer)
 
 # 1.1.8 (January 10, 2013)
-
 ## general
   * patched another work around for JRUBY-6970 (LOGSTASH-801)
-
 ## inputs
   * bugfix: tcp: 'Address in use' errors now report the host/port involved.
     (LOGSTASH-831)
   * bugfix: zeromq: fix bug where an invalid url could be given as a source
     (LOGSTASH-821, #306)
-
 ## outputs
   * bugfix: elasticsearch_river: it now resolves evaluates %{} variables in
     index and index_type settings. (LOGSTASH-819)
 
 # 1.1.7 (January 3, 2013)
-
 ## inputs
   * fix bug where @source_host was set to 'false' in many cases.
-
 ## outputs
   * improvement: redis: shuffle_hosts is now enabled by default
 
 # 1.1.6 (January 2, 2013)
-
 ## overview
   * new inputs: drupal_dblog.
   * new filters: anonymize, metrics.
@@ -53,7 +44,6 @@
     your elasticsearch cluster to 0.20.2. If you wish to continue using an old
     version of elasticsearch, you should use the elasticsearch_http plugin
     instead of the elasticsearch one.
-
 ## general
   * fixed internal dependency versioning on 'addressable' gem (LOGSTASH-694)
   * fixed another case of 'watchdog timeout' (LOGSTASH-701)
@@ -67,7 +57,6 @@
   * JRuby upgraded to 1.7.1
   * removed use of bundler
   * Fixed timestamp parsing in MRI (patch by Rene Lengwinat)
-
 ## inputs
   * All inputs now have a 'charset' setting to help you inform logstash of the
     text encoding of the input. This is useful if you have Shift_JIS or CP1251
@@ -88,7 +77,6 @@
   * improvement: amqp: the 'name' setting is now called 'queue' (#274)
   * improvement: eventlog: the 'name' setting is now called 'logfile' (#274)
   * bugfix: log4j: fix stacktrace reading (#253, patch by Alex Arutyunyants)
-
 ## filters
   * new: anonymize: supports many hash mechanisms (murmur3, sha1, md5, etc) as
     well as IP address anonymization (#280, #261; patches by Richard Pijnenburg
@@ -119,7 +107,6 @@
   * feature: mutate: new settings - split, join, strip. "split" splits a field
     into an array. "join" merges an array into a string. "strip" strips leading and
     trailing whitespace. (Patch by Avishai Ish-Shalom)
-
 ## outputs
   * new: syslog output supporting both RFC3164 and RFC5424 (#180, patch by
     Rui Alves)
@@ -149,7 +136,6 @@
   * bugfix: the websocket output works again (supports RFC6455)
 
 # 1.1.5 (November 10, 2012)
-
 ## Overview of this release:
   * New inputs: zenoss, gemfire
   * New outputs: lumberjack, gemfire
@@ -192,7 +178,6 @@
   * improved: irc: new 'password' setting (#283, patch by theduke)
 
 # 1.1.4 (October 28, 2012)
-
 ## overview
   * bug fixes mostly
 
@@ -211,7 +196,6 @@
   * rebuilt 1.1.2 for java 5 and 6
 
 # 1.1.2 (October 22, 2012)
-
 ## Overview of this release:
   * New input plugins: lumberjack, sqs, relp
   * New output plugins: exec, sqs
@@ -295,7 +279,6 @@
     of writes should the current host go down. (#222, patch by Corry Haines)
 
 # 1.1.1 (July 14, 2012)
-
 ## Overview of this release:
   * New input plugins: generator, heroku, pipe, ganglia, irc
   * New output plugins: juggernaut, metricscatcher, nagios_ncsa, pipe,
@@ -382,13 +365,11 @@
   * feature: redis: output batching for list mode
 
 # 1.1.0.1 (January 30, 2012)
-
 ## Overview of this release:
   * date filter bugfix: [LOGSTASH-438] - update joda-time to properly handle
     leap days
 
 # 1.1.0 (January 30, 2012)
-
 ## Overview of this release:
   * New input plugins: zeromq, gelf
   * New filter plugins: mutate, dns, json
@@ -396,7 +377,6 @@
   * The logstash agent now runs also in MRI 1.9.2 and above
   * This is a large release due to the longevity of the 1.1.0 betas.  We don't
     like long releases and will try to avoid this in the future.
-
 ## IMPORTANT CHANGES FOR UPGRADES FROM 1.0.x
   * grok filter: named_captures_only now defaults to true This means simple
     patterns %{NUMBER} without any other name will now not be included in the
@@ -410,7 +390,6 @@
   * AMQP parameters and usage have changed for the better. You might find that
     your old (1.0.x) AMQP logstash configs do not work.  If so, please consult
     the documentation for that plugin to find the new names of the parameters.
-
 ## general
   * feature: [LOGSTASH-158] - MRI-1.9 compatible (except for some
     plugins/functions which will throw a compatibility exception) This means
@@ -430,7 +409,6 @@
   * misc: now using cabin library for all internal logging
   * test: use minitest
   * upgrade: now using jruby in 1.9 mode
-
 ## inputs
   * feature: zeromq input. Requires you have libzmq installed on your system.
   * feature, bugfix: [LOGSTASH-40,65,234,296]: much smarter file watching for
@@ -447,7 +425,6 @@
   * bugfix: [LOGSTASH-249] - Input syslog force facility type to be an integer
   * bugfix: [LOGSTASH-317] - fix file input not to crash when a file is
     unreadable
-
 ## filters
   * feature: [LOGSTASH-66,150]: libgrok re-written in pure ruby (no more FFI /
     external libgrok.so dependency!)
@@ -464,7 +441,6 @@
     DNS on an event field
   * feature: [LOGSTASH-57] - add mutate filter to help with manipulating event
     field content and type
-
 ## outputs
   * feature: zeromq output. Requires you have libzmq installed on your system.
   * feature: new file output plugin
@@ -485,7 +461,6 @@
   * bugfix: [LOGSTASH-309] - file output can now write to named pipes (fifo)
 
 # 1.0.17 (Aug 12, 2011)
-
 ## bugs fixed
   * [LOGSTASH-147] - grok filter incorrectly adding fields when a match failed
   * [LOGSTASH-151] - Fix bug in routing keys on AMQP 
