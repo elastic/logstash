@@ -29,7 +29,7 @@ All plugins should require the Logstash module.
 
 ### Plugin name
 
-Every plugin must have a name set with the `plugin_name` method. If this
+Every plugin must have a name set with the `config_name` method. If this
 is not specified plugins will fail to load with an error.
 
 ### Plugin status
