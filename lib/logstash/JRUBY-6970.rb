@@ -7,6 +7,9 @@ module Kernel
       path = path.gsub(/^jar:/, "")
       puts "JRUBY-6970: require(#{path})" if ENV["REQUIRE_DEBUG"] == "1"
     end
+
+    # JRUBY-7065
+    path = File.expand_path(path) if path.include?("/../")
     return require_JRUBY_6970_hack(path)
   end
 end
