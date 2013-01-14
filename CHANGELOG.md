@@ -1,12 +1,7 @@
 # 1.1.10 (????)
-
-## filters
-  * grok: the --grok-patterns-path flag is deprecated and will now warn you if
-    you use it. (LOGSTASH-803)
-
 ## outputs
-  * fix bug in mongo output that would fail to load bson_java support
-    (LOGSTASH-849)
+- fix bug in mongo output that would fail to load bson_java support
+  (LOGSTASH-849)
 
 # 1.1.9 (January 10, 2013)
 
