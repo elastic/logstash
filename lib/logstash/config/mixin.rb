@@ -183,7 +183,7 @@ module LogStash::Config::Mixin
       when nil
         raise "#{@config_name} must set a plugin_status. #{docmsg}"
       else
-        raise "#{@config_name} set an invalid plugin status #{@plugin_status}. Valid values are experimental, beta and stable. #{docmsg}"
+        raise "#{@config_name} set an invalid plugin status #{@plugin_status}. Valid values are unsupported, experimental, beta and stable. #{docmsg}"
       end
       return true
     end
