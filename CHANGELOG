@@ -1,3 +1,8 @@
+1.1.10 (????)
+  ## outputs
+  - fix bug in mongo output that would fail to load bson_java support
+    (LOGSTASH-849)
+
 1.1.9 (January 10, 2013)
   ## inputs
   - bugfix: all inputs: fix bug where some @source values were not valid urls
