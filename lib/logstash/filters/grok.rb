@@ -213,7 +213,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   # This flag becomes "--grok-patterns-path"
   flag("--patterns-path PATH", "Colon-delimited path of patterns to load") do |val|
-    #@logger.info("Adding patterns path: #{val}")
+    @@deprecated_flag_used = true
     @@patterns_path += val.split(":")
   end
 
@@ -227,6 +227,12 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   public
   def register
     require "grok-pure" # rubygem 'jls-grok'
+
+    if @@deprecated_flag_used
+      @logger.warn("The --grok-patterns-path flag is deprecated. This flag " \
+                   "is going away in the next release. Use the " \
+                   "'patterns_dir' setting in your logstash config instead")
+    end
 
     @patternfiles = []
 
