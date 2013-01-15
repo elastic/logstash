@@ -84,7 +84,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
     begin
       socket.close
     rescue IOError
-      pass
+      #pass
     end # begin
   end
 
@@ -113,7 +113,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
             s.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
             @logger.debug("Accepted connection", :client => s.peer,
                           :server => "#{@host}:#{@port}")
-            begin 
+            begin
               handle_socket(s, output_queue, "tcp://#{s.peer}/")
             rescue Interrupted
               s.close rescue nil
