@@ -13,8 +13,7 @@ require "openssl"
 # depending on `mode`.
 class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   class Interrupted < StandardError; end
-  # NOTE(mrichar1): Temporary rename for testing
-  config_name "tcptls"
+  config_name "tcp"
   plugin_status "beta"
 
   # When mode is `server`, the address to listen on.
