@@ -3,6 +3,7 @@ require "logstash/namespace"
 require "logstash/util/socket_peer"
 require "socket"
 require "timeout"
+require "openssl"
 
 # Read events over a TCP socket.
 #
@@ -12,8 +13,8 @@ require "timeout"
 # depending on `mode`.
 class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   class Interrupted < StandardError; end
-
-  config_name "tcp"
+  # NOTE(mrichar1): Temporary rename for testing
+  config_name "tcptls"
   plugin_status "beta"
 
   # When mode is `server`, the address to listen on.
@@ -34,12 +35,50 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   # `client` connects to a server.
   config :mode, :validate => ["server", "client"], :default => "server"
 
+  # Enable ssl (must be set for other `ssl_` options to take effect_
+  config :ssl_enable, :validate => :boolean, :default => false
+
+  # Verify the identity of the other end of the ssl connection against the CA
+  # For input, sets the `@field.sslsubject` to that of the client certificate
+  config :ssl_verify, :validate => :boolean, :default => false
+
+  # ssl CA certificate, chainfile or CA path
+  # The system CA path is automatically included
+  config :ssl_cacert, :validate => :string
+
+  # ssl certificate
+  config :ssl_cert, :validate => :string
+
+  # ssl key
+  config :ssl_key, :validate => :string
+
+  # ssl key passphrase
+  config :ssl_key_passphrase, :validate => :password, :default => nil
+
   def initialize(*args)
     super(*args)
   end # def initialize
 
   public
   def register
+    if @ssl_enable
+      @ssl_context = OpenSSL::SSL::SSLContext.new
+      @ssl_context.cert = OpenSSL::X509::Certificate.new(File.read(@ssl_cert))
+      @ssl_context.key = OpenSSL::PKey::RSA.new(File.read(@ssl_key),@ssl_key_passphrase)
+      if @ssl_verify
+        @cert_store = OpenSSL::X509::Store.new
+        # Load the system default certificate path to the store
+        @cert_store.set_default_paths
+        if File.directory?(@ssl_cacert)
+          @cert_store.add_path(@ssl_cacert)
+        else
+          @cert_store.add_file(@ssl_cacert)
+        end
+        @ssl_context.cert_store = @cert_store
+        @ssl_context.verify_mode = OpenSSL::SSL::VERIFY_PEER|OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
+      end
+    end # @ssl_enable
+
     if server?
       @logger.info("Starting tcp input listener", :address => "#{@host}:#{@port}")
       begin
@@ -49,6 +88,9 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
                       :host => @host, :port => @port)
         raise
       end
+      if @ssl_enable
+        @server_socket = OpenSSL::SSL::SSLServer.new(@server_socket, @ssl_context)
+      end # @ssl_enable
     end
   end # def register
 
@@ -69,6 +111,9 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         end
         e = self.to_event(buf, event_source)
         if e
+          if @ssl_enable && @ssl_verify
+            e.fields["sslsubject"] = socket.peer_cert.subject
+          end
           output_queue << e
         end
       end # loop do
@@ -119,6 +164,10 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
               s.close rescue nil
             end
           end # Thread.start
+        rescue OpenSSL::SSL::SSLError => ssle
+          # NOTE(mrichar1): This doesn't return a useful error message for some reason
+          @logger.error("SSL Error", :exception => ssle,
+                        :backtrace => ssle.backtrace)
         rescue IOError, Interrupted
           if @interrupted
             # Intended shutdown, get out of the loop
@@ -136,6 +185,18 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
     else
       loop do
         client_socket = TCPSocket.new(@host, @port)
+        if @ssl_enable
+          client_socket = OpenSSL::SSL::SSLSocket.new(client_socket, @ssl_context)
+          begin
+            client_socket.connect
+          rescue OpenSSL::SSL::SSLError => ssle
+            @logger.error("SSL Error", :exception => ssle,
+                          :backtrace => ssle.backtrace)
+            # NOTE(mrichar1): Hack to prevent hammering peer
+            sleep(5)
+            next
+          end
+        end
         client_socket.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
         @logger.debug("Opened connection", :client => "#{client_socket.peer}")
         handle_socket(client_socket, output_queue, "tcp://#{client_socket.peer}/server")
