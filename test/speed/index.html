@@ -33,7 +33,7 @@
 
 var margin = {top: 20, right: 80, bottom: 30, left: 50},
   width = 960 - margin.left - margin.right,
-  height = 500 - margin.top - margin.bottom;
+  height = 300 - margin.top - margin.bottom;
 
 var d3_parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S").parse;
 var parseDate = function(s) {
@@ -61,7 +61,7 @@ var yAxis = d3.svg.axis()
 var y_element = "rate_1m";
 var ranges = {
   count: { x: [0, 300000], y: [0, 5000000] },
-  rate_1m: { x: [0, 300000], y: [0, 25000] }
+  rate_1m: { x: [0, 300000], y: [0, 20000] }
 };
 
 x.domain(ranges[y_element].x);
