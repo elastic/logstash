@@ -48,7 +48,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   config :batch_size, :validate => :number, :default => 1
 
   # How many pipelined requests to do against redis
-  # Each request uses EVAL to fetch upto batch_size events
+  # Each request uses EVAL to fetch upto batch_size events if batch_size is > 1
   config :pipeline_size, :validate => :number, :default => 1
 
   public
