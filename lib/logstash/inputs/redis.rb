@@ -45,11 +45,11 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   config :data_type, :validate => [ "list", "channel", "pattern_channel" ], :required => false
 
   # How many events to return from redis using EVAL
-  config :batch_size, :validate => :number, :default => 1
+  config :batch_count, :validate => :number, :default => 1
 
   # How many pipelined requests to do against redis
-  # Each request uses EVAL to fetch upto batch_size events if batch_size is > 1
-  config :pipeline_size, :validate => :number, :default => 1
+  # Each request uses EVAL to fetch upto batch_count events if batch_count is > 1
+  config :pipeline_count, :validate => :number, :default => 1
 
   public
   def initialize(params)
@@ -103,7 +103,9 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
       :password => @password.nil? ? nil : @password.value
     )
 
-    if @data_type == 'list' && (@batch_size > 1 || @pipeline_size > 1)
+    if @data_type == 'list' && (@batch_count > 1 || @pipeline_count > 1)
+      #A redis lua EVAL script to fetch a count of keys
+      #in case count is bigger than current items in queue whole queue will be returned without extra nil values
       redis_script = <<EOF
           local i = tonumber(ARGV[1])
           local res = {}
@@ -136,10 +138,10 @@ EOF
     response = redis.blpop @key, 0
     queue_event response[1], output_queue
 
-    if @batch_size > 1 || @pipeline_size > 1
+    if @batch_count > 1 || @pipeline_count > 1
       redis.pipelined do
-        @pipeline_size.times do
-          @batch_size > 1 ? redis.evalsha(@redis_script_sha, [@key], [@batch_size]) : redis.lpop(@key)
+        @pipeline_count.times do
+          @batch_count > 1 ? redis.evalsha(@redis_script_sha, [@key], [@batch_count]) : redis.lpop(@key)
         end
       end.flatten(1).each do |message|
         queue_event message, output_queue if message
