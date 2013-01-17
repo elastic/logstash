@@ -702,7 +702,7 @@ class LogStash::Agent
 
   private
   def run_input(input, queue)
-    LogStash::Util::set_thread_name("input|#{input.to_s}")
+    LogStash::Util::set_thread_name("<#{input.class.config_name}")
     input.logger = @logger
     @plugin_setup_mutex.synchronize { input.register }
     @logger.info("Input registered", :plugin => input)
@@ -734,7 +734,7 @@ class LogStash::Agent
   # Run a filter thread
   public
   def run_filter(filterworker, index, output_queue)
-    LogStash::Util::set_thread_name("filter|worker|#{index}")
+    LogStash::Util::set_thread_name("|worker.#{index}")
     filterworker.run
     @logger.warn("Filter worker shutting down", :index => index)
 
@@ -744,7 +744,7 @@ class LogStash::Agent
 
   # TODO(sissel): Factor this into an 'outputworker'
   def run_output(output, queue)
-    LogStash::Util::set_thread_name("output|#{output.to_s}")
+    LogStash::Util::set_thread_name(">#{output.class.config_name}")
     output.logger = @logger
     @plugin_setup_mutex.synchronize { output.register }
     @logger.info("Output registered", :plugin => output)
