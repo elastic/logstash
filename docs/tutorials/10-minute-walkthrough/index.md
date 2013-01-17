@@ -57,7 +57,7 @@ The same config as step 3 is used.
 
 ### Run it:
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f hello-search.conf -- web --backend 'elasticsearch:///?local'
+    java -jar logstash-%VERSION%-monolithic.jar agent -f hello-search.conf -- web --backend 'elasticsearch://localhost/'
 
 The above runs both the agent and the logstash web interface in the same
 process. Useful for simple deploys.
@@ -100,7 +100,7 @@ Same as the previous step, but we'll output to ElasticSearch now.
 
 ### Run it
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f apache-elasticsearch.conf -- web --backend 'elasticsearch:///?local'
+    java -jar logstash-%VERSION%-monolithic.jar agent -f apache-elasticsearch.conf -- web --backend 'elasticsearch://localhost/'
 
 Logstash should be all set for you now. Start feeding it logs:
 
