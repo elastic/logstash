@@ -22,6 +22,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "minitest" # for running the tests from the jar
   gem.add_runtime_dependency "pry"
   gem.add_runtime_dependency "stud"
+  gem.add_runtime_dependency "sys-uname" # for platform detection
 
   # Web dependencies
   gem.add_runtime_dependency "ftw", ["~> 0.0.26"]
