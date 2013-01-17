@@ -189,8 +189,8 @@ build/logstash-$(VERSION)-monolithic.jar:
 
 build/flatgems: | build vendor/bundle
 	mkdir $@
-	for i in $(VENDOR_DIR)/gems/*/lib; do \
-		rsync -av $$i/ $@/lib ; \
+	for i in $(VENDOR_DIR)/gems/*/{lib,data}; do \
+		rsync -av $$i/ $@/$$(basename $$i) ; \
 	done
 
 flatjar-test:
@@ -211,6 +211,7 @@ flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
 	$(QUIET)rsync -av --delete build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
+	$(QUIET)rsync -av --delete build/flatgems/data build/jar/
 	$(QUIET)(cd lib; rsync -av --delete logstash/web/public ../build/jar/logstash/web/public)
 	$(QUIET)(cd lib; rsync -av --delete logstash/web/views ../build/jar/logstash/web/views)
 	$(QUIET)(cd lib; rsync -av --delete logstash/certs ../build/jar/logstash/certs)
