@@ -60,7 +60,7 @@ var yAxis = d3.svg.axis()
 
 var y_element = "rate_1m";
 var ranges = {
-  count: { x: [0, 300000], y: [0, 5000000] },
+  count: { x: [0, 300000], y: [0, 4000000] },
   rate_1m: { x: [0, 300000], y: [0, 20000] }
 };
 
@@ -113,7 +113,7 @@ var graphcsv = function(file) {
         .attr("y", 6)
         .attr("dy", ".71em")
         .style("text-anchor", "end")
-        .text("count");
+        .text(y_element);
 
     svg.append("path")
         .datum(points)

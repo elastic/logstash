@@ -1,4 +1,4 @@
-input { generator { count => 5000000 type => t } } 
+input { generator { count => 4000000 type => t } } 
 filter { metrics { meter => "events" add_tag => m } } 
 output { 
   file { 
