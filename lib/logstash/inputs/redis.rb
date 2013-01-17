@@ -95,13 +95,29 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
 
   private
   def connect
-    Redis.new(
+    redis = Redis.new(
       :host => @host,
       :port => @port,
       :timeout => @timeout,
       :db => @db,
       :password => @password.nil? ? nil : @password.value
     )
+
+    if @data_type == 'list' && (@batch_size > 1 || @pipeline_size > 1)
+      redis_script = <<EOF
+          local i = tonumber(ARGV[1])
+          local res = {}
+          local length = redis.call('llen',KEYS[1])
+          if length < i then i = length end
+          while (i > 0) do
+            table.insert(res, redis.call('lpop',KEYS[1]))
+            i = i-1
+          end
+          return res
+EOF
+      @redis_script_sha = redis.script(:load, redis_script)
+    end
+    redis
   end # def connect
 
   private
@@ -117,25 +133,10 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
 
   private
   def list_listener(redis, output_queue)
-    if @batch_size == 1 && @pipeline_size == 1
-      response = redis.blpop @key, 0
-      queue_event response[1], output_queue
-    else
-      unless @redis_script_sha
-        @redis_script = <<EOF
-          local i = tonumber(ARGV[1])
-          local res = {}
-          local length = redis.call('llen',KEYS[1])
-          if length < i then i = length end
-          while (i > 0) do
-            table.insert(res, redis.call('lpop',KEYS[1]))
-            i = i-1
-          end
-          return res
-EOF
-        @redis_script_sha = redis.script(:load, @redis_script)
-      end
+    response = redis.blpop @key, 0
+    queue_event response[1], output_queue
 
+    if @batch_size > 1 || @pipeline_size > 1
       redis.pipelined do
         @pipeline_size.times do
           @batch_size > 1 ? redis.evalsha(@redis_script_sha, [@key], [@batch_size]) : redis.lpop(@key)
