@@ -44,6 +44,13 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   # TODO: change required to true
   config :data_type, :validate => [ "list", "channel", "pattern_channel" ], :required => false
 
+  # How many events to return from redis using EVAL
+  config :batch_size, :validate => :number, :default => 1
+
+  # How many pipelined requests to do against redis
+  # Each request uses EVAL to fetch upto batch_size events
+  config :pipeline_size, :validate => :number, :default => 1
+
   public
   def initialize(params)
     super
@@ -110,8 +117,33 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
 
   private
   def list_listener(redis, output_queue)
-    response = redis.blpop @key, 0
-    queue_event response[1], output_queue
+    if @batch_size == 1 && @pipeline_size == 1
+      response = redis.blpop @key, 0
+      queue_event response[1], output_queue
+    else
+      unless @redis_script_sha
+        @redis_script = <<EOF
+          local i = tonumber(ARGV[1])
+          local res = {}
+          local length = redis.call('llen',KEYS[1])
+          if length < i then i = length end
+          while (i > 0) do
+            table.insert(res, redis.call('lpop',KEYS[1]))
+            i = i-1
+          end
+          return res
+EOF
+        @redis_script_sha = redis.script(:load, @redis_script)
+      end
+
+      redis.pipelined do
+        @pipeline_size.times do
+          @batch_size > 1 ? redis.evalsha(@redis_script_sha, [@key], [@batch_size]) : redis.lpop(@key)
+        end
+      end.flatten(1).each do |message|
+        queue_event message, output_queue if message
+      end
+    end
   end
 
   private
