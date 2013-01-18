@@ -2,6 +2,7 @@
   ## general
   - on linux, all threads will set their process names so you can identify
     threads in tools like top(1).
+  - Java 5 is no longer supported (You must use Java 6 or newer).
 
   ## filters
   - deprecation: the --grok-patterns-path flag is deprecated and will now
