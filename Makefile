@@ -198,7 +198,10 @@ build/flatgems: | build vendor/bundle
 	for i in $(VENDOR_DIR)/gems/*/lib $(VENDOR_DIR)/gems/*/data; do \
 		rsync -av $$i/ $@/$$(basename $$i) ; \
 	done
+	@# Until I implement something that looks at the 'require_paths' from
+	@# all the gem specs.
 	rsync -av $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
+	rsync -av $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
 
 flatjar-test:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
