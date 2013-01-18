@@ -195,9 +195,10 @@ build/logstash-$(VERSION)-monolithic.jar:
 
 build/flatgems: | build vendor/bundle
 	mkdir $@
-	for i in $(VENDOR_DIR)/gems/*/{lib,data}; do \
+	for i in $(VENDOR_DIR)/gems/*/lib $(VENDOR_DIR)/gems/*/data; do \
 		rsync -av $$i/ $@/$$(basename $$i) ; \
 	done
+	rsync -av $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
 
 flatjar-test:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
