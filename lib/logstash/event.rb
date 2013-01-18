@@ -183,7 +183,7 @@ class LogStash::Event
 
   public
   def include?(key)
-    return (@data.include?(key) or @data["@fields"].include?(key))
+    return !self[key].nil?
   end # def include?
 
   # Append an event to this one.
