@@ -212,6 +212,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   end
 
   # This flag becomes "--grok-patterns-path"
+  @@deprecated_flag_used = false
   flag("--patterns-path PATH", "Colon-delimited path of patterns to load") do |val|
     @@deprecated_flag_used = true
     @@patterns_path += val.split(":")
