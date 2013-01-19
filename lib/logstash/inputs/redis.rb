@@ -102,11 +102,15 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
       :db => @db,
       :password => @password.nil? ? nil : @password.value
     )
+    load_batch_script(redis) if @data_type == 'list' && (@batch_count > 1 || @pipeline_count > 1)
+    return redis
+  end # def connect
 
-    if @data_type == 'list' && (@batch_count > 1 || @pipeline_count > 1)
-      #A redis lua EVAL script to fetch a count of keys
-      #in case count is bigger than current items in queue whole queue will be returned without extra nil values
-      redis_script = <<EOF
+  private
+  def load_batch_script(redis)
+    #A redis lua EVAL script to fetch a count of keys
+    #in case count is bigger than current items in queue whole queue will be returned without extra nil values
+    redis_script = <<EOF
           local i = tonumber(ARGV[1])
           local res = {}
           local length = redis.call('llen',KEYS[1])
@@ -117,10 +121,8 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
           end
           return res
 EOF
-      @redis_script_sha = redis.script(:load, redis_script)
-    end
-    return redis
-  end # def connect
+    @redis_script_sha = redis.script(:load, redis_script)
+  end
 
   private
   def queue_event(msg, output_queue)
@@ -139,12 +141,22 @@ EOF
     queue_event response[1], output_queue
 
     if @batch_count > 1 || @pipeline_count > 1
-      redis.pipelined do
-        @pipeline_count.times do
-          @batch_count > 1 ? redis.evalsha(@redis_script_sha, [@key], [@batch_count]) : redis.lpop(@key)
+      begin
+        redis.pipelined do
+          @pipeline_count.times do
+            @batch_count > 1 ? redis.evalsha(@redis_script_sha, [@key], [@batch_count]) : redis.lpop(@key)
+          end
+        end.flatten(1).each do |message|
+          queue_event message, output_queue if message
         end
-      end.flatten(1).each do |message|
-        queue_event message, output_queue if message
+      rescue Redis::CommandError => e
+        if e.to_s =~ /NOSCRIPT/ then
+          @logger.warn("Redis must have been restarted, reloading redis batch EVAL script", :exception => e);
+          load_batch_script(redis)
+          retry
+        else
+          raise e
+        end
       end
     end
   end
