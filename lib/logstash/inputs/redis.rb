@@ -82,6 +82,24 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
     end
     # end TODO
 
+    if @data_type == 'list' && (@batch_count > 1 || @pipeline_count > 1)
+      #A redis lua EVAL script to fetch a count of keys
+      #in case count is bigger than current items in queue whole queue will be returned without extra nil values
+      @redis_script = <<EOF
+          local i = tonumber(ARGV[1])
+          local res = {}
+          local length = redis.call('llen',KEYS[1])
+          if length < i then i = length end
+          while (i > 0) do
+            table.insert(res, redis.call('lpop',KEYS[1]))
+            i = i-1
+          end
+          return res
+EOF
+    else
+      @redis_script_sha = nil
+    end
+
     @logger.info("Registering redis", :identity => identity)
   end # def register
 
@@ -102,24 +120,6 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
       :db => @db,
       :password => @password.nil? ? nil : @password.value
     )
-
-    if @data_type == 'list' && (@batch_count > 1 || @pipeline_count > 1)
-      #A redis lua EVAL script to fetch a count of keys
-      #in case count is bigger than current items in queue whole queue will be returned without extra nil values
-      redis_script = <<EOF
-          local i = tonumber(ARGV[1])
-          local res = {}
-          local length = redis.call('llen',KEYS[1])
-          if length < i then i = length end
-          while (i > 0) do
-            table.insert(res, redis.call('lpop',KEYS[1]))
-            i = i-1
-          end
-          return res
-EOF
-      @redis_script_sha = redis.script(:load, redis_script)
-    end
-    redis
   end # def connect
 
   private
@@ -190,6 +190,7 @@ EOF
     while !finished?
       begin
         @redis ||= connect
+        @redis_script_sha ||= @redis.script(:load, @redis_script)
         self.send listener, @redis, output_queue
       rescue => e # redis error
         @logger.warn("Failed to get event from redis", :name => @name,
