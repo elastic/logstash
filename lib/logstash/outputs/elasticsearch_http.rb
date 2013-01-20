@@ -221,7 +221,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       end
 
       if response.nil? or response.status != 200
-        @logger.warn("Failed to fet _cluster/nodes from #{host}:#{port}, will retry...",
+        @logger.warn("Failed to fetch _cluster/nodes from #{host}:#{port}, will retry...",
                         :status => response.status, :response => body)
         sleep(5)
       else
