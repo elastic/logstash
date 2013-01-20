@@ -40,6 +40,9 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # be used.
   config :flush_size, :validate => :number, :default => 100
 
+  # The maximum amount of time between bulk flushes.
+  config :flush_timeout, :validate => :number, :default => 5
+
   # The document ID for the index. Useful for overwriting existing entries in
   # elasticsearch with the same ID.
   config :document_id, :validate => :string, :default => nil
@@ -50,6 +53,17 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     @agent = FTW::Agent.new
     @queue = []
 
+    @flush_mutex = Mutex.new
+    @last_pending_flush = Time.now.to_f
+
+    if @flush_size > 1
+      @flush_thread = Thread.new do
+        while sleep(@flush_timeout) do
+          @logger.debug? && @logger.debug("elasticsearch_http output flusher thread wakeup")
+          flush(true)
+        end
+      end
+    end
   end # def register
 
   public
@@ -63,27 +77,43 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       receive_single(event, index, type)
     else
       receive_bulk(event, index, type)
-    end # 
+    end
   end # def receive
 
-  def receive_single(event, index, type)
-    success = false
-    while !success
-      response = @agent.post!("http://#{@host}:#{@port}/#{index}/#{type}",
-                              :body => event.to_json)
-      # We must read the body to free up this connection for reuse.
-      body = "";
-      response.read_body { |chunk| body += chunk }
+  private
+  def post(uri, data)
+    begin
+      success = false
+      while !success
+        response = @agent.post!(uri, :body => data)
 
-      if response.status != 201
-        @logger.error("Error writing to elasticsearch",
-                      :response => response, :response_body => body)
-      else
-        success = true
+        # We must read the body to free up this connection for reuse.
+        body = "";
+        response.read_body { |chunk| body += chunk }
+
+        if response.status != 201 and response.status != 200
+          @logger.error("Got #{response.status} HTTP code then writing to elasticsearch",
+                        :response => response, :response_body => body,
+                        :request_body => data)
+        else
+          success = true
+        end
       end
+    rescue => e
+      @logger.error("Error writing to elasticsearch",
+                   :request_body => data, :exception => e,
+                   :backtrace => e.backtrace)
+      sleep 1
+      retry
     end
+  end # def post
+
+  private
+  def receive_single(event, index, type)
+      post("http://#{@host}:#{@port}/#{index}/#{type}", event.to_json)
   end # def receive_single
 
+  private
   def receive_bulk(event, index, type)
     header = { "index" => { "_index" => index, "_type" => type } }
     if !@document_id.nil?
@@ -92,38 +122,34 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     @queue << [
       header.to_json, event.to_json
     ].join("\n")
-
-    # Keep trying to flush while the queue is full.
-    # This will cause retries in flushing if the flush fails.
-    flush while @queue.size >= @flush_size
+    flush
   end # def receive_bulk
 
-  def flush
-    @logger.debug? && @logger.debug("Flushing events to elasticsearch",
-                                    :count => @queue.count)
-    # If we don't tack a trailing newline at the end, elasticsearch
-    # doesn't seem to process the last event in this bulk index call.
-    #
-    # as documented here: 
-    # http://www.elasticsearch.org/guide/reference/api/bulk.html
-    #  "NOTE: the final line of data must end with a newline character \n."
-    response = @agent.post!("http://#{@host}:#{@port}/_bulk",
-                            :body => @queue.join("\n") + "\n")
+  private
+  def flush(force=false)
+    return if !@flush_mutex.try_lock
 
-    # Consume the body for error checking
-    # This will also free up the connection for reuse.
-    body = ""
-    response.read_body { |chunk| body += chunk }
+    time_since_last_flush = Time.now.to_f - @last_pending_flush
 
-    if response.status != 200
-      @logger.error("Error writing (bulk) to elasticsearch",
-                    :response => response, :response_body => body,
-                    :request_body => @queue.join("\n"))
-      return
+    if (force && @queue.size > 0) ||
+       (@queue.size >= @flush_size) ||
+       (time_since_last_flush >= @flush_timeout && @queue.size > 0)
+
+      # If we don't tack a trailing newline at the end, elasticsearch
+      # doesn't seem to process the last event in this bulk index call.
+      #
+      # as documented here: 
+      # http://www.elasticsearch.org/guide/reference/api/bulk.html
+      #  "NOTE: the final line of data must end with a newline character \n."
+      count = @queue.size
+      bulk_data = @queue.shift(@queue.size).join("\n") + "\n"
+
+      @logger.debug? && @logger.debug("Flushing events to elasticsearch", :count => count)
+      post("http://#{@host}:#{@port}/_bulk", bulk_data)
+      @last_pending_flush = Time.now.to_f
     end
 
-    # Clear the queue on success only.
-    @queue.clear
+    @flush_mutex.unlock
   end # def flush
 
   def teardown
