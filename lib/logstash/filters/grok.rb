@@ -17,22 +17,28 @@ require "set"
 #
 # If you need help building patterns to match your logs, you will find the
 # <http://grokdebug.herokuapp.com> too quite useful!
-# 
+#
 # #### Grok Basics
 #
 # Grok works by using combining text patterns into something that matches your
 # logs.
 #
-# The syntax for a grok pattern is '%{SYNTAX:SEMANTIC}'
+# The syntax for a grok pattern is `%{SYNTAX:SEMANTIC}`
 #
-# The 'SYNTAX' is the name of the pattern that will match your text. For
+# The `SYNTAX` is the name of the pattern that will match your text. For
 # example, "3.44" will be matched by the NUMBER pattern and "55.3.244.1" will
 # be matched by the IP pattern. The syntax is how you match.
 #
-# The 'SEMANTIC' is the identifier you give to the piece of text being matched.
+# The `SEMANTIC` is the identifier you give to the piece of text being matched.
 # For example, "3.44" could be the duration of an event, so you could call it
 # simply 'duration'. Further, a string "55.3.244.1" might identify the client
 # making a request.
+#
+# Optionally you can add a data type conversion to your grok pattern. By default
+# all semantics are saved as strings. If you wish to convert a semnatic's data type,
+# for example change a string to an integer then suffix it with the target data type.
+# For example `${NUMBER:num:int}` which converts the 'num' semantic from a string to an
+# integer. Currently the only supporting conversions are `int` and `float`.
 #
 # #### Example
 #
@@ -92,7 +98,7 @@ require "set"
 #
 # Alternately, you can create a custom patterns file. 
 #
-# * Create a directory called 'patterns' with a file in it called 'extra'
+# * Create a directory called `patterns` with a file in it called `extra`
 #   (the file name doesn't matter, but name it meaningfully for yourself)
 # * In that file, write the pattern you need as the pattern name, a space, then
 #   the regexp for that pattern.
@@ -102,7 +108,7 @@ require "set"
 #     # in ./patterns/postfix 
 #     POSTFIX_QUEUEID [0-9A-F]{11}
 #
-# Then use the 'patterns_dir' setting in this plugin to tell logstash where
+# Then use the `patterns_dir` setting in this plugin to tell logstash where
 # your custom patterns directory is. Here's a full example with a sample log:
 #
 #     Jan  1 06:25:43 mailserver14 postfix/cleanup[21403]: BEF25A72965: message-id=<20130101142543.5828399CCAF@mailserver14.example.com>
@@ -122,7 +128,7 @@ require "set"
 # * pid: 21403
 # * queue_id: BEF25A72965
 #
-# The 'timestamp', 'logsource', 'program', and 'pid' fields come from the
+# The `timestamp`, `logsource`, `program`, and `pid` fields come from the
 # SYSLOGBASE pattern which itself is defined by other patterns.
 class LogStash::Filters::Grok < LogStash::Filters::Base
   config_name "grok"
@@ -146,7 +152,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   #
   config :match, :validate => :hash, :default => {}
 
-  # Shorthand for 'match'
+  # Shorthand for `match`.
   #
   #     filter {
   #       grok {
@@ -158,7 +164,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   #       }
   #     }
   #
-  # It is preferable to use the 'match' setting instead of this.
+  # It is preferable to use the `match` setting instead of this.
   config /[A-Za-z0-9_-]+/, :validate => :string, :deprecated => true
 
   #
@@ -200,7 +206,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # When disabled, any pattern that matches the entire string will not be set.
   # This is useful if you have named patterns like COMBINEDAPACHELOG that will
   # match entire events and you really don't want to add a field
-  # 'COMBINEDAPACHELOG' that is set to the whole event line.
+  # `COMBINEDAPACHELOG` that is set to the whole event line.
   #config :capture_full_match_patterns, :validate => :boolean, :default => false
 
   # Detect if we are running from a jarfile, pick the right path.
@@ -211,7 +217,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     @@patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
   end
 
-  # This flag becomes "--grok-patterns-path"
+  # This flag becomes `--grok-patterns-path`
   @@deprecated_flag_used = false
   flag("--patterns-path PATH", "Colon-delimited path of patterns to load") do |val|
     @@deprecated_flag_used = true
