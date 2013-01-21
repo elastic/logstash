@@ -43,7 +43,6 @@ class LogStash::Outputs::Loggly < LogStash::Outputs::Base
   config :key, :validate => :string, :required => true
 
   # Should the log action be sent over https instead of plain http
-  # Defaults to https
   config :proto, :validate => :string, :default => "http"
 
   public
