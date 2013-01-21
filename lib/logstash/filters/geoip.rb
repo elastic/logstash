@@ -34,14 +34,12 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
         begin
           # Running from a jar, assume GeoLiteCity.dat is at the root.
           jar_path = [__FILE__.split("!").first, "/GeoLiteCity.dat"].join("!")
-          jar_file = File.open(jar_path)
           tmp_file = Tempfile.new('logstash-geoip')
-          IO.copy_stream(jar_file,tmp_file)
-          jar_file.close
+          tmp_file.write(File.read(jar_path))
           tmp_file.close # this file is reaped when ruby exits
           @database = tmp_file.path
-        rescue
-          raise "You must specify 'database => ...' in your geoip filter"
+        rescue => ex
+          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
         end
       else
         if File.exists?("GeoLiteCity.dat")
