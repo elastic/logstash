@@ -235,4 +235,23 @@ describe LogStash::Filters::Grok do
       insist { subject.tags }.include?("one_point_oh")
     end
   end
+
+  describe "tagging on failure" do
+    config <<-CONFIG
+      filter {
+        grok {
+          pattern => "matchme %{NUMBER:fancy}"
+          tag_on_failure => false
+        }
+      }
+    CONFIG
+
+    sample "matchme 1234" do
+      reject { subject["@tags"] }.include?("_grokparsefailure")
+    end
+
+    sample "this will not be matched" do
+      reject { subject["@tags"] }.include?("_grokparsefailure")
+    end
+  end
 end
