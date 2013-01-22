@@ -193,6 +193,8 @@ build/logstash-$(VERSION)-monolithic.jar:
 	$(QUIET)jar i $@
 	@echo "Created $@"
 
+.PHONY: build/logstash-$(VERSION)-monolithic.jar
+
 build/flatgems: | build vendor/bundle
 	mkdir $@
 	for i in $(VENDOR_DIR)/gems/*/lib $(VENDOR_DIR)/gems/*/data; do \
