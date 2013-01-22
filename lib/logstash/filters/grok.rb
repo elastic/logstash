@@ -202,6 +202,10 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # containing that one value.
   config :singles, :validate => :boolean, :default => false
 
+  # If true, ensure the '_grokparsefailure' tag is present when there has been no
+  # successful match
+  config :tag_on_failure, :validate => :boolean, :default => true
+
   # TODO(sissel): Add this feature?
   # When disabled, any pattern that matches the entire string will not be set.
   # This is useful if you have named patterns like COMBINEDAPACHELOG that will
@@ -276,7 +280,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       # Skip known config names
       next if (RESERVED + ["match", "patterns_dir",
                "drop_if_match", "named_captures_only", "pattern",
-               "keep_empty_captures", "break_on_match", "singles"]).include?(field)
+               "keep_empty_captures", "break_on_match", "singles", "tag_on_failure"]).include?(field)
       patterns = [patterns] if patterns.is_a?(String)
 
       if !@patterns.include?(field)
@@ -388,7 +392,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       end # event[field]
     end # patterns.each
 
-    if !matched
+    if !matched && @tag_on_failure
       # Tag this event if we can't parse it. We can use this later to
       # reparse+reindex logs if we improve the patterns given .
       event.tags << "_grokparsefailure" unless event.tags.include?("_grokparsefailure")
