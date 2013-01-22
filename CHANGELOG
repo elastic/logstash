@@ -7,6 +7,8 @@
   ## filters
   - deprecation: the --grok-patterns-path flag is deprecated and will now
     warn you if you use it. (LOGSTASH-803)
+  - feature: grok: Adds tag_on_failure setting so you can prevent grok from
+    tagging events on failure. (#328, patch by Neil Prosser)
 
   ## outputs
   - fix bug in mongo output that would fail to load bson_java support
