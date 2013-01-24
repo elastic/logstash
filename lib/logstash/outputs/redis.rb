@@ -150,7 +150,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     return unless output?(event)
 
     if @batch
-      @pending[event.sprintf(@key)] << event.to_json
+      @pending_mutex.synchronize do
+        @pending[event.sprintf(@key)] << event.to_json
+      end
       process_pending
       return
     end
