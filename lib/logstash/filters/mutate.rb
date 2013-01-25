@@ -1,6 +1,6 @@
 require "logstash/filters/base"
 require "logstash/namespace"
-require "logstash/time"
+require "logstash/time_addon"
 
 # The mutate filter allows you to do general mutations to fields. You
 # can rename, remove, replace, and modify fields in your events.
@@ -63,20 +63,25 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # Convert a string field by applying a regular expression and a replacement
   # if the field is not a string, no action will be taken
   # 
-  # this configuration takes an array consisting of 3 elements per field/substitution
+  # This configuration takes an array consisting of 3 elements per
+  # field/substitution.
   #
   # be aware of escaping any backslash in the config file
   #
   # for example:
   #
-  #    mutate {
-  #      gsub => [
-  #        # replace all forward slashes with underscore
-  #        "fieldname", "\\/", "_",
-  #        # replace backslashes, question marks, hashes and minuses with underscore
-  #        "fieldname", "[\\?#-]", "_"
-  #      ]
-  #    }
+  #     filter {
+  #       mutate {
+  #         gsub => [
+  #           # replace all forward slashes with underscore
+  #           "fieldname", "\\/", "_",
+  #
+  #           # replace backslashes, question marks, hashes and minuses with
+  #           # underscore
+  #           "fieldname", "[\\?#-]", "_"
+  #         ]
+  #       }
+  #     }
   #
   config :gsub, :validate => :array
 
@@ -84,21 +89,57 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # 
   # Example:
   # 
-  #    mutate {
-  #      uppercase => [ "fieldname" ]
-  #    }
-  # 
+  #     filter {
+  #       mutate {
+  #         uppercase => [ "fieldname" ]
+  #       }
+  #     }
   config :uppercase, :validate => :array
   
   # Convert a string to its lowercase equivalent
   # 
   # Example:
   # 
-  #   mutate {
-  #     lowercase => [ "fieldname" ]
-  #   }
-  # 
+  #     filter {
+  #       mutate {
+  #         lowercase => [ "fieldname" ]
+  #       }
+  #     }
   config :lowercase, :validate => :array
+
+  # Split a field to an array using a separator character. Only works on string
+  # fields.
+  #
+  # Example:
+  #
+  #     filter {
+  #       mutate { 
+  #          split => ["fieldname", ","]
+  #       }
+  #     }
+  config :split, :validate => :hash
+
+  # Join an array with a separator character, does nothing on non-array fields
+  #
+  # Example:
+  #
+  #    filter {
+  #      mutate { 
+  #        join => ["fieldname", ","]
+  #      }
+  #    }
+  config :join, :validate => :hash
+
+  # Strip whitespaces
+  #
+  # Example:
+  #
+  #     filter {
+  #       mutate { 
+  #          strip => ["field1", "field2"]
+  #       }
+  #     }
+  config :strip, :validate => :array
 
   public
   def register
@@ -139,6 +180,8 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     uppercase(event) if @uppercase
     lowercase(event) if @lowercase
     remove(event) if @remove
+    split(event) if @split
+    join(event) if @join
 
     filter_matched(event)
   end # def filter
@@ -164,17 +207,21 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   def replace(event)
     # TODO(sissel): use event.sprintf on the field names?
     @replace.each do |field, newvalue|
+      next unless event.include?(field)
       event[field] = event.sprintf(newvalue)
     end
   end # def replace
 
   def convert(event)
     @convert.each do |field, type|
+      next unless event.include?(field)
       original = event[field]
 
       # calls convert_{string,integer,float} depending on type requested.
       converter = method("convert_" + type)
-      if original.is_a?(Hash)
+      if original.nil?
+        next
+      elsif original.is_a?(Hash)
         @logger.debug("I don't know how to type convert a hash, skipping",
                       :field => field, :value => original)
         next
@@ -254,4 +301,34 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
       end
     end
   end # def lowercase
+
+  private
+  def split(event)
+    @split.each do |field, separator|
+      if event[field].is_a?(String)
+        event[field] = event[field].split(separator)
+      end
+    end
+  end
+
+  private
+  def join(event)
+    @join.each do |field, separator|
+      if event[field].is_a?(Array)
+        event[field] = event[field].join(separator)
+      end
+    end
+  end
+
+  private
+  def strip(event)
+    @strip.each do |field|
+      if event[field].is_a?(Array)
+        event[field] = event[field].map{|s| s.strip }
+      elsif event[field].is_a?(String)
+        event[field] = event[field].strip
+      end
+    end
+  end
+
 end # class LogStash::Filters::Mutate

@@ -1,4 +1,5 @@
 require "insist"
+require "logstash/agent"
 require "logstash/event"
 require "insist"
 require "stud/try"
@@ -12,11 +13,21 @@ if RUBY_VERSION < "1.9.2"
   raise LoadError
 end
 
+if ENV["TEST_DEBUG"]
+  Cabin::Channel.get.level = :debug 
+  Cabin::Channel.get.subscribe(STDOUT)
+end
+
 module LogStash
   module RSpec
     def config(configstr)
       @config_str = configstr
     end # def config
+
+    def config_yaml(configstr)
+      @config_str = configstr
+      @is_yaml = true
+    end
 
     def type(default_type)
       @default_type = default_type
@@ -30,8 +41,7 @@ module LogStash
     def sample(event, &block)
       default_type = @default_type || "default"
       default_tags = @default_tags || []
-      require "logstash/config/file"
-      config = LogStash::Config::File.new(nil, @config_str)
+      config = get_config
       agent = LogStash::Agent.new
       @inputs, @filters, @outputs = agent.instance_eval { parse_config(config) }
       [@inputs, @filters, @outputs].flatten.each do |plugin|
@@ -95,14 +105,23 @@ module LogStash
     end # def sample
 
     def input(&block)
-      require "logstash/config/file"
-      config = LogStash::Config::File.new(nil, @config_str)
+      config = get_config
       agent = LogStash::Agent.new
       it "looks good" do
         inputs, filters, outputs = agent.instance_eval { parse_config(config) }
         block.call(inputs)
       end
     end # def input
+
+    def get_config
+      if @is_yaml
+        require "logstash/config/file/yaml"
+        config = LogStash::Config::File::Yaml.new(nil, @config_str)
+      else
+        require "logstash/config/file"
+        config = LogStash::Config::File.new(nil, @config_str)
+      end
+    end # def get_config
 
     def agent(&block)
       @agent_count ||= 0

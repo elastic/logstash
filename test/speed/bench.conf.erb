@@ -1,0 +1,10 @@
+input { generator { count => 5000000 type => t } } 
+filter { metrics { meter => "events" add_tag => m } } 
+output { 
+  file { 
+    tags => m
+    path => "PATH"
+    message_format => "%{@timestamp},%{events.count},%{events.rate_1m}"
+  }
+  stdout { tags => m message => "%{@timestamp},%{events.count},%{events.rate_1m}" }
+}

@@ -5,7 +5,9 @@ layout: content_right
 # Getting started with logstash (standalone server example)
 
 This guide shows how to get you going quickly with logstash on a single,
-standalone server we'll begin by testing with simple stdin and stdout plugins. From there we'll start collecting actual log files.
+standalone server. We'll begin by showing you how to read events from standard
+input (your keyboard) and emit them to standard output. After that, we'll start
+collecting actual log files.
 
 By standalone, I mean that everything happens on a single server: log collection, indexing, and the web interface.
 
@@ -23,7 +25,7 @@ If you have problems, feel free to email the users list
 
 ## logstash
 
-You should download the logstash 'monolithic' jar - if you haven't yet, [download it now](http://semicomplete.com/files/logstash/logstash-%VERSION%-monolithic.jar). This package includes most
+You should download the logstash 'monolithic' jar - if you haven't yet, [download it now](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-monolithic.jar). This package includes most
 of the dependencies for logstash in it and helps you get started quicker.
 
 The configuration of any logstash agent consists of specifying inputs, filters,
@@ -122,7 +124,7 @@ Obviously this is fairly useless this way. Let's add the final step and test wit
 We've already proven that events can make it into Elasticsearch. However using curl for everything is less than ideal.
 Logstash ships with a built-in web interface. It's fairly spartan but it's a good proof-of-concept. Let's restart our logstash process with an additional option:
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f logstash-simple.conf -- web --backend elasticsearch:///?local
+    java -jar logstash-%VERSION%-monolithic.jar agent -f logstash-simple.conf -- web --backend elasticsearch://localhost/
 
 One important thing to note is that the `web --backend` option is actually its own set of commmand-line options. We're essentially starting two programs in one.
 This is worth remembering as you move to an external Elasticsearch server. The options you specify in your logstash.conf have no bearing on the web ui. It has its own options.
@@ -173,7 +175,7 @@ Put this in a file called "logstash-complex.conf"
 
 Now run it all (again. Be sure to stop your previous Logstash tests!):
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f logstash-complex.conf -- web --backend elasticsearch:///?local
+    java -jar logstash-%VERSION%-monolithic.jar agent -f logstash-complex.conf -- web --backend elasticsearch://localhost/
 
 Point your browser at <http://yourserver:9292> and start searching!
 

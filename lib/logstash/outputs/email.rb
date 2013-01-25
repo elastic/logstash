@@ -7,11 +7,17 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
   config_name "email"
   plugin_status "experimental"
 
-  # the registered fields that we want to monitor
+  # The registered fields that we want to monitor
   # A hash of matches of field => value
-  config :match, :validate => :hash
+  # Takes the form of:
+  #
+  #    { "match name", "field.in.event,value.expected, , operand(and/or),field.in.event,value.expected, , or...",
+  #    "match name", "..." }
+  #
+  # The match name can be referenced using the `%{matchName}` field.
+  config :match, :validate => :hash, :required => true
 
-  # the To address setting - fully qualified email address to send to
+  # The To address setting - fully qualified email address to send to
   config :to, :validate => :string, :required => true
 
   # The From setting for email - fully qualified email address for the From:

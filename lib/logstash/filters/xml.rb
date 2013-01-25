@@ -1,6 +1,5 @@
 require "logstash/filters/base"
 require "logstash/namespace"
-require "nokogiri"
 
 # XML filter. Takes a field that contains XML and expands it into
 # an actual datastructure.
@@ -11,11 +10,23 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
 
   # Config for xml to hash is:
   #
-  #   source => dest
+  #     source_field => destination_field
   #
   # XML in the value of the source field will be expanded into a
   # datastructure in the "dest" field. Note: if the "dest" field
   # already exists, it will be overridden.
+  #
+  # For example, if you have the whole xml document in your @message field:
+  #
+  #     filter {
+  #       xml {
+  #         "@message" => "doc"
+  #       }
+  #     }
+  #
+  # The above would parse the xml from @message and store the resulting
+  # document into the 'doc' field.
+  #
   config /[A-Za-z0-9_-]+/, :validate => :string
 
   # xpath will additionally select string values (.to_s on whatever is selected)
@@ -42,6 +53,7 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
 
   public
   def register
+    require "nokogiri"
     require "xmlsimple"
     @xml = {}
 

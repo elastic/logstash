@@ -8,6 +8,7 @@ layout: content_right
 <%= description %>
 
 <% if !@flags.empty? -%>
+<!-- Flags are deprecated 
 <h3> Flags </h3>
 
 This plugin provides the following flags:
@@ -20,6 +21,8 @@ This plugin provides the following flags:
 <% end -%>
 </dl>
 
+... flags are deprecated -->
+
 <% end -%>
 
 <h3> Synopsis </h3>
@@ -28,16 +31,16 @@ This is what it might look like in your config file:
 
 <pre><code><%= section %> {
   <%= name %> {
-<% sorted_settings.each do |setting_name, config|
+<% sorted_attributes.each do |name, config|
      next if config[:deprecated]
      if config[:validate].is_a?(Array) 
-       annotation = "#{config[:validate].inspect}"
+       annotation = "string, one of #{config[:validate].inspect}"
      else 
        annotation = "#{config[:validate]}"
      end
 
-     if setting_name.is_a?(Regexp)
-       setting_name = "/" + setting_name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
+     if name.is_a?(Regexp)
+       name = "/" + name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
      end
      if config[:required]
        annotation += " (required)"
@@ -46,7 +49,7 @@ This is what it might look like in your config file:
      end
      annotation += ", default: #{config[:default].inspect}" if config.include?(:default)
 -%>
-    <a href="#setting_<%= setting_name %>"><%= setting_name %></a> => ... # <%= annotation %>
+    <a href="#setting_<%= name %>"><%= name %></a> => ... # <%= annotation %>
 <% end -%>
   }
 }
@@ -54,18 +57,18 @@ This is what it might look like in your config file:
 
 <h3> Details </h3>
 
-<% sorted_settings.each do |setting_name, config| -%>
+<% sorted_attributes.each do |name, config| -%>
 <%
-     if setting_name.is_a?(Regexp)
-       setting_name = "/" + setting_name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
+     if name.is_a?(Regexp)
+       name = "/" + name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
        is_regexp = true
      else
        is_regexp = false
      end
 -%>
 <h4> 
-  <a name="setting_<%= setting_name %>">
-    <%= setting_name %><%= " (required setting)" if config[:required] %>
+  <a name="setting_<%= name %>">
+    <%= name %><%= " (required setting)" if config[:required] %>
     <%= " <strong>DEPRECATED</strong>" if config[:deprecated] %>
 </a>
 </h4>

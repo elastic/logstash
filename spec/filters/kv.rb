@@ -24,6 +24,19 @@ describe LogStash::Filters::KV do
 
   end
 
+   describe "LOGSTASH-624: allow escaped space in key or value " do
+    config <<-CONFIG
+      filter {
+        kv { value_split => ':' }
+      }
+    CONFIG
+
+    sample 'IKE:=Quick\ Mode\ completion IKE\ IDs:=subnet:\ x.x.x.x\ (mask=\ 255.255.255.254)\ and\ host:\ y.y.y.y' do
+      insist { subject["IKE"] } == '=Quick\ Mode\ completion'
+      insist { subject['IKE\ IDs'] } == '=subnet:\ x.x.x.x\ (mask=\ 255.255.255.254)\ and\ host:\ y.y.y.y'
+    end
+  end
+
   describe "test value_split" do
     config <<-CONFIG
       filter {
@@ -59,6 +72,20 @@ describe LogStash::Filters::KV do
       insist {subject['@fields'].count } == 6
     end
 
+  end
+
+  describe  "delimited fields should override space default (reported by LOGSTASH-733)" do
+    config <<-CONFIG
+      filter {
+        kv { field_split => "|" }
+      }
+    CONFIG
+
+    sample "field1=test|field2=another test|field3=test3" do
+      insist { subject["field1"] } == "test"
+      insist { subject["field2"] } == "another test"
+      insist { subject["field3"] } == "test3"
+    end
   end
 
   describe "test prefix" do

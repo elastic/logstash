@@ -9,11 +9,22 @@ class LogStash::Filters::Json < LogStash::Filters::Base
   plugin_status "beta"
 
   # Config for json is:
-  #   source: dest
+  # 
+  # * source => dest
+  #
+  # For example, if you have a field named 'foo' that contains your json,
+  # and you want to store the evaluated json object in 'bar', do this:
+  #
+  #     filter {
+  #       json {
+  #         foo => bar
+  #       }
+  #     }
+  #
   # JSON in the value of the source field will be expanded into a
   # datastructure in the "dest" field.  Note: if the "dest" field
   # already exists, it will be overridden.
-  config /[A-Za-z0-9_-]+/, :validate => :string
+  config /[A-Za-z0-9_@-]+/, :validate => :string
 
   public
   def register

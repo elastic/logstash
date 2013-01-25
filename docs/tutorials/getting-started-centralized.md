@@ -63,7 +63,7 @@ Building and installing Redis is fairly straightforward. While normally this wou
 
 - Download Redis from http://redis.io/download (The latest stable release is like what you want)
 - Extract the source, change to the directory and run `make`
-- Run Redis with `src/redis-server`
+- Run Redis with `src/redis-server --loglevel verbose`
 
 That's it.
 
@@ -76,7 +76,7 @@ Download the monolithic logstash release package. By 'monolithic' I mean the
 package contains all required dependencies to save you time chasing down
 requirements.
 
-Follow [this link to download logstash-%VERSION%](http://semicomplete.com/files/logstash/logstash-%VERSION%-monolithic.jar).
+Follow [this link to download logstash-%VERSION%](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-monolithic.jar).
 
 Since we're doing a centralized configuration, you'll have two main logstash
 agent roles: a shipper and an indexer. You will ship logs from all servers via Redis and have another agent receive those messages, parse
@@ -104,6 +104,7 @@ Put this in a file and call it 'shipper.conf' (or anything, really), and run:
 This will take anything you type into this console and display it on the console. Additionally it will save events to Redis in a `list` named after the `key` value you provided.
 
 ### Testing the Redis output
+
 To verify that the message made it into Redis, check your Redis window. You should see something like the following:
 
     [83019] 02 Jul 12:51:02 - Accepted 127.0.0.1:58312

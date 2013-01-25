@@ -4,8 +4,6 @@ require "logstash/namespace"
 require "pathname"
 require "socket" # for Socket.gethostname
 
-require "addressable/uri"
-
 # Stream events from files.
 #
 # By default, each event is assumed to be one line. If you
@@ -72,6 +70,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
   public
   def register
+    require "addressable/uri"
     require "filewatch/tail"
     require "digest/md5"
     LogStash::Util::set_thread_name("input|file|#{path.join(":")}")

@@ -8,7 +8,7 @@ require "logstash/namespace"
 #   >> LogStash::Time.now.utc.to_iso8601
 #   => "2010-10-17 07:25:26.788704Z"
 module LogStash::Time
-  if RUBY_ENGINE == "jruby"
+  if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
     require "java"
     DateTime = org.joda.time.DateTime
     DateTimeZone = org.joda.time.DateTimeZone

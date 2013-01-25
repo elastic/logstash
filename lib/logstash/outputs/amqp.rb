@@ -28,8 +28,12 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   # The exchange type (fanout, topic, direct)
   config :exchange_type, :validate => [ "fanout", "direct", "topic"], :required => true
 
+  # The name of the exchange. Depricated due to conflicts with puppet naming convention.
+  # Replaced by 'exchange' variable. See LOGSTASH-755
+  config :name, :validate => :string, :deprecated => true
+
   # The name of the exchange
-  config :name, :validate => :string, :required => true
+  config :exchange, :validate => :string # TODO(sissel): Make it required when 'name' is gone
 
   # Key to route to by default. Defaults to 'logstash'
   #
@@ -59,6 +63,13 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   def register
     require "bunny" # rubygem 'bunny'
 
+    if @name
+      if @exchange
+        @logger.error("'name' and 'exchange' are the same setting, but 'name' is deprecated. Please use only 'exchange'")
+      end
+      @exchange = @name
+    end
+
     @logger.info("Registering output", :plugin => self)
     connect
   end # def register
@@ -78,7 +89,7 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
     begin
       @logger.debug("Connecting to AMQP", :settings => amqpsettings,
-                    :exchange_type => @exchange_type, :name => @name)
+                    :exchange_type => @exchange_type, :name => @exchange)
       @bunny = Bunny.new(amqpsettings)
       @bunny.start
     rescue => e
@@ -92,11 +103,11 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
       end
     end
 
-    @logger.debug("Declaring exchange", :name => @name, :type => @exchange_type,
+    @logger.debug("Declaring exchange", :name => @exchange, :type => @exchange_type,
                   :durable => @durable)
-    @exchange = @bunny.exchange(@name, :type => @exchange_type.to_sym, :durable => @durable)
+    @bunnyexchange = @bunny.exchange(@exchange, :type => @exchange_type.to_sym, :durable => @durable)
 
-    @logger.debug("Binding exchange", :name => @name, :key => @key)
+    @logger.debug("Binding exchange", :name => @exchange, :key => @key)
   end # def connect
 
   public
@@ -118,9 +129,9 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   public
   def receive_raw(message, key=@key)
     begin
-      if @exchange
+      if @bunnyexchange
         @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
-        @exchange.publish(message, :persistent => @persistent, :key => key)
+        @bunnyexchange.publish(message, :persistent => @persistent, :key => key)
       else
         @logger.warn("Tried to send message, but not connected to amqp yet.")
       end
@@ -133,14 +144,14 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
 
   public
   def to_s
-    return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@name}\##{@key}"
+    return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@exchange}\##{@key}"
   end
 
   public
   def teardown
     @bunny.close rescue nil
     @bunny = nil
-    @exchange = nil
+    @bunnyexchange = nil
     finished
   end # def teardown
 end # class LogStash::Outputs::Amqp

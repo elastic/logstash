@@ -5,13 +5,19 @@ require "logstash/outputs/base"
 # output for logstash. If you plan on using the logstash web interface, you'll
 # need to use this output.
 #
-#   *NOTE*: The elasticsearch client is version %ELASTICSEARCH_VERSION%. Your elasticsearch
-#   cluster must be running 0.19.x for API compatibility.
+#   *VERSION NOTE*: Your elasticsearch cluster must be running elasticsearch
+#   %ELASTICSEARCH_VERSION%. If you use any other version of elasticsearch,
+#   you should consider using the [elasticsearch_http](elasticsearch_http)
+#   output instead.
 #
 # If you want to set other elasticsearch options that are not exposed directly
 # as config options, there are two options:
+#
 # * create an elasticsearch.yml file in the $PWD of the logstash process
 # * pass in es.* java properties (java -Des.node.foo= or ruby -J-Des.node.foo=)
+#
+# This plugin will join your elasticsearch cluster, so it will show up in
+# elasticsearch's cluster health status.
 #
 # You can learn more about elasticsearch at <http://elasticsearch.org>
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
@@ -30,6 +36,10 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # The index type to write events to. Generally you should try to write only
   # similar events to the same 'type'. String expansion '%{foo}' works here.
   config :index_type, :validate => :string, :default => "%{@type}"
+
+  # The document ID for the index. Useful for overwriting existing entries in
+  # elasticsearch with the same ID.
+  config :document_id, :validate => :string, :default => nil
 
   # The name of your cluster if you set it on the ElasticSearch side. Useful
   # for discovery.
@@ -157,7 +167,13 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       end
     end
 
-    req = @client.index(index, type, event.to_hash) 
+    if @document_id.nil?
+      req = @client.index(index, type, event.to_hash) 
+    else
+      id = event.sprintf(@document_id)
+      req = @client.index(index, type, id, event.to_hash)
+    end
+
     increment_inflight_request_count
     #timer = @logger.time("elasticsearch write")
     req.on(:success) do |response|

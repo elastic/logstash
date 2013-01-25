@@ -1,14 +1,14 @@
 ---
-title: Logstash tutorial @ Dreamforce
+title: Logstash 10-Minute Tutorial
 layout: content_right
 ---
-# Logstash tutorial @ Dreamforce
+# Logstash 10-minute Tutorial
 
 ## Step 1 - Download
 
 ### Download logstash:
 
-* [logstash-%VERSION%-monolithic.jar](http://semicomplete.com/files/logstash/logstash-%VERSION%-monolithic.jar)
+* [logstash-%VERSION%-monolithic.jar](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-monolithic.jar)
 
 ### Requirements:
 
@@ -16,8 +16,9 @@ layout: content_right
 
 ### The Secret:
 
-logstash is written in JRuby but I release standalone jar files for easy
+logstash is written in JRuby, but I release standalone jar files for easy
 deployment, so you don't need to download JRuby or most any other dependencies.
+
 I bake as much as possible into the single release file.
 
 ## Step 2 - A hello world.
@@ -56,7 +57,7 @@ The same config as step 3 is used.
 
 ### Run it:
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f hello-search.conf -- web --backend 'elasticsearch:///?local'
+    java -jar logstash-%VERSION%-monolithic.jar agent -f hello-search.conf -- web --backend 'elasticsearch://localhost/'
 
 The above runs both the agent and the logstash web interface in the same
 process. Useful for simple deploys.
@@ -99,7 +100,7 @@ Same as the previous step, but we'll output to ElasticSearch now.
 
 ### Run it
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f apache-elasticsearch.conf -- web --backend 'elasticsearch:///?local'
+    java -jar logstash-%VERSION%-monolithic.jar agent -f apache-elasticsearch.conf -- web --backend 'elasticsearch://localhost/'
 
 Logstash should be all set for you now. Start feeding it logs:
 
@@ -116,7 +117,7 @@ on some results, drill around in some logs.
 
 For further learning, try these:
 
-* [Watch a presentation on logstash](http://blip.tv/carolinacon/logstash-open-source-log-and-event-management-jordan-sissel-5123601)
+* [Watch a presentation on logstash](http://www.youtube.com/embed/RuUFnog29M4)
 * [Getting started 'standalone' guide](http://logstash.net/docs/%VERSION%/tutorials/getting-started-simple)
 * [Getting started 'centralized' guide](http://logstash.net/docs/%VERSION%/tutorials/getting-started-centralized) - 
   learn how to build out your logstash infrastructure and centralize your logs.

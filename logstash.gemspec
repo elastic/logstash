@@ -22,9 +22,10 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "minitest" # for running the tests from the jar
   gem.add_runtime_dependency "pry"
   gem.add_runtime_dependency "stud"
+  gem.add_runtime_dependency "sys-uname" # for platform detection
 
   # Web dependencies
-  gem.add_runtime_dependency "ftw", ["~> 0.0.25"]
+  gem.add_runtime_dependency "ftw", ["~> 0.0.26"]
   gem.add_runtime_dependency "haml"
   gem.add_runtime_dependency "rack"
   gem.add_runtime_dependency "sass"
@@ -58,6 +59,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "geoip", [">= 1.1.0"]
   gem.add_runtime_dependency "beefcake", "0.3.7"
   gem.add_runtime_dependency "php-serialize" # For input drupal_dblog
+  gem.add_runtime_dependency "murmurhash3"
+  gem.add_runtime_dependency "rufus-scheduler"
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM

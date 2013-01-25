@@ -1,7 +1,7 @@
 require "json"
 require "time"
 require "date"
-require "logstash/time"
+require "logstash/time_addon"
 require "logstash/namespace"
 require "uri"
 
@@ -24,7 +24,7 @@ class LogStash::Event
     @data["@timestamp"] ||= LogStash::Time.now
   end # def initialize
 
-  if RUBY_ENGINE == "jruby"
+  if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
     @@date_parser = Java::org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
   else
     # TODO(sissel): LOGSTASH-217
@@ -91,16 +91,15 @@ class LogStash::Event
   
   public
   def source; @data["@source"]; end # def source
-  def source=(val) 
+  def source=(val)
     uri = URI.parse(val) rescue nil
     val = uri if uri
     if val.is_a?(URI)
       @data["@source"] = val.to_s
-      @data["@source_host"] = val.host
+      @data["@source_host"] = val.host if @data["@source_host"].nil?
       @data["@source_path"] = val.path
     else
       @data["@source"] = val
-      @data["@source_host"] = val
     end
   end # def source=
 
@@ -124,15 +123,41 @@ class LogStash::Event
   def tags; @data["@tags"]; end # def tags
   def tags=(val); @data["@tags"] = val; end # def tags=
 
+  def id; @data["@id"]; end # def id
+  def id=(val); @data["@id"] = val; end # def id=
+
   # field-related access
   public
   def [](key)
     # If the key isn't in fields and it starts with an "@" sign, get it out of data instead of fields
     if ! @data["@fields"].has_key?(key) and key.slice(0,1) == "@"
       return @data[key]
-    # Exists in @fields (returns value) or doesn't start with "@" (return null)
+    elsif key.index(/(?<!\\)\./)
+      value = nil
+      obj = @data["@fields"]
+      # "." is what ES uses to access structured data, so adopt that
+      # idea here, too.  "foo.bar" will access key "bar" under hash "foo".
+      key.split(/(?<!\\)\./).each do |segment|
+        segment.gsub!(/\\\./, ".")
+        if (obj.is_a?(Array) || (obj.is_a?(Hash) && !obj.member?(segment)) )
+          # try to safely cast segment to integer for the 0 in foo.0.bar
+          begin
+            segment = Integer(segment)
+          rescue Exception
+            #not an int, do nothing, segment remains a string
+          end
+        end
+        if obj
+          value = obj[segment] rescue nil
+          obj = obj[segment] rescue nil
+        else
+          value = nil
+          break
+        end
+      end # key.split.each
+      return value
     else
-      return @data["@fields"][key]
+      return @data["@fields"][key.gsub(/\\\./, ".")]
     end
   end # def []
   
@@ -158,7 +183,7 @@ class LogStash::Event
 
   public
   def include?(key)
-    return (@data.include?(key) or @data["@fields"].include?(key))
+    return !self[key].nil?
   end # def include?
 
   # Append an event to this one.
@@ -230,7 +255,7 @@ class LogStash::Event
         # Got %{+%s}, support for unix epoch time
         if RUBY_ENGINE != "jruby"
           # This is really slow. See LOGSTASH-217
-          Date.parse(self.timestamp).to_i
+          Time.parse(self.timestamp).to_i
         else
           datetime = @@date_parser.parseDateTime(self.timestamp)
           (datetime.getMillis / 1000).to_i
@@ -249,26 +274,7 @@ class LogStash::Event
         end
       else
         # Use an event field.
-        value = nil
-        obj = self
-
-        # If the top-level value exists, use that and don't try
-        # to "look" into data structures.
-        if self[key]
-          value = self[key]
-        else
-          # "." is what ES uses to access structured data, so adopt that
-          # idea here, too.  "foo.bar" will access key "bar" under hash "foo".
-          key.split('.').each do |segment|
-            if obj
-              value = obj[segment] rescue nil
-              obj = obj[segment] rescue nil
-            else
-              value = nil
-              break
-            end
-          end # key.split.each
-        end # if self[key]
+        value = self[key]
 
         case value
         when nil

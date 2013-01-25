@@ -57,9 +57,13 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
   # AMQP vhost
   config :vhost, :validate => :string, :default => "/"
 
-  # AMQP queue name
-  config :name, :validate => :string, :default => "elasticsearch"
+  # AMQP queue name. Depricated due to conflicts with puppet naming convention.
+  # Replaced by 'queue' variable. See LOGSTASH-755
+  config :name, :validate => :string, :deprecated => true
 
+  # AMQP queue name
+  config :queue, :validate => :string, :default => "elasticsearch"
+  
   # AMQP exchange name
   config :exchange, :validate => :string, :default => "elasticsearch"
 
@@ -76,8 +80,20 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
   # AMQP persistence setting
   config :persistent, :validate => :boolean, :default => true
 
+  # The document ID for the index. Useful for overwriting existing entries in
+  # elasticsearch with the same ID.
+  config :document_id, :validate => :string, :default => nil
+
   public
   def register
+
+    if @name
+      if @queue
+        @logger.error("'name' and 'queue' are the same setting, but 'name' is deprecated. Please use only 'queue'")
+      end
+      @queue = @name
+    end
+
     # TODO(sissel): find a better way of declaring where the elasticsearch
     # libraries are
     # TODO(sissel): can skip this step if we're running from a jar.
@@ -126,7 +142,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
                                 "user" => @user,
                                 "pass" => @password,
                                 "vhost" => @vhost,
-                                "queue" => @name,
+                                "queue" => @queue,
                                 "exchange" => @exchange,
                                 "routing_key" => @key,
                                 "exchange_type" => @exchange_type,
@@ -187,20 +203,14 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
   public
   def receive(event)
     return unless output?(event)
-
-    # TODO(sissel): Refactor this to not use so much string concatonation.
-
     # River events have a format of
     # "action\ndata\n"
     # where 'action' is index or delete, data is the data to index.
-    index_message = {
-      "index" => { 
-        "_index" => event.sprintf(@index),
-        "_type" => event.sprintf(@index_type)
-      }
-   }.to_json + "\n"
+    header = { "index" => { "_index" => event.sprintf(@index), "_type" => event.sprintf(@index_type) } }
+    if !@document_id.nil?
+      header["index"]["_id"] = event.sprintf(@document_id)
+    end
 
-    index_message += event.to_json + "\n"
-    @mq.receive_raw(index_message)
+    @mq.receive_raw(header.to_json + "\n" + event.to_json + "\n")
   end # def receive
 end # LogStash::Outputs::ElasticSearchRiver
