@@ -217,7 +217,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
         response.read_body { |chunk| body += chunk }
       rescue
         #probably conn refused
-        @logger.warn("Failed to fet _cluster/nodes from #{host}:#{port}, will retry...")
+        @logger.warn("Failed to fetch _cluster/nodes from #{host}:#{port}, will retry...")
       end
 
       if response.nil? or response.status != 200
