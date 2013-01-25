@@ -134,7 +134,10 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
       @arguments_hash = Hash[*@arguments]
 
       @bunnyqueue = @bunny.queue(@queue, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive, :arguments => @arguments_hash })
-      @bunnyqueue.bind(@exchange, :key => @key)
+      # Don't try to bind the default exchange
+      unless @exchange == ''
+        @bunnyqueue.bind(@exchange, :key => @key)
+      end
 
       @bunnyqueue.subscribe({:ack => @ack}) do |data|
         e = to_event(data[:payload], @amqpurl)
