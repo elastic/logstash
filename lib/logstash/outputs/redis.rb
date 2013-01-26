@@ -113,6 +113,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     end
     @host_idx = 0
     @pending_mutex = Mutex.new
+    @events_mutex = Mutex.new
   end # def register
 
   private
@@ -150,7 +151,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     return unless output?(event)
 
     if @batch
-      @pending[event.sprintf(@key)] << event.to_json
+      @events_mutex.synchronize { @pending[event.sprintf(@key)] << event.to_json }
       process_pending
       return
     end
@@ -187,6 +188,8 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     if (force && pending_count > 0) ||
        (pending_count >= @batch_events) ||
        (time_since_last_flush >= @batch_timeout && pending_count > 0)
+      pending_events = nil
+      @events_mutex.synchronize { pending_events, @pending = @pending, Hash.new { |h, k| h[k] = [] } }
       @logger.debug("Flushing redis output",
                     :pending_count => pending_count,
                     :time_since_last_flush => time_since_last_flush,
@@ -195,9 +198,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
                     :force => force)
       begin
         @redis ||= connect
-        @pending.each do |k, v|
+        pending_events.each do |k, v|
           @redis.rpush(k, v)
-          @pending.delete(k)
+          pending_events.delete(k)
         end
         @last_pending_flush = Time.now.to_f
       rescue => e
