@@ -53,6 +53,10 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # messages.
   config :ship_metadata, :validate => :boolean, :default => true
 
+  # Ship tags within events. This will cause logstash to ship the tags of an
+  # event as the field _tags.
+  config :ship_tags, :validate => :boolean, :default => true
+
   # Ignore these fields when ship_metadata is set. Typically this lists the
   # fields used in dynamic values for GELF fields.
   config :ignore_metadata, :validate => :array, :default => [ "severity", "source_host", "source_path", "short_message" ]
@@ -154,6 +158,10 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
           end
         end
       end
+    end
+
+    if @ship_tags
+      m["_tags"] = event.tags.join(', ')
     end
 
     if @custom_fields

@@ -13,6 +13,7 @@
   ## outputs
   - fix bug in mongo output that would fail to load bson_java support
     (LOGSTASH-849)
+  - Added tag support to gelf output. Returns tags as _tags field (LOGSTASH-880)
 
 1.1.9 (January 10, 2013)
   ## inputs
