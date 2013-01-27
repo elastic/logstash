@@ -40,7 +40,12 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   public
   def run(output_queue)
     @lumberjack.run do |l|
-      source = "lumberjack://#{l.delete("host")}/#{l.delete("file")}"
+      file = l.delete("file")
+      if file[0,1] == "/"
+        source = "lumberjack://#{l.delete("host")}#{file}"
+      else
+        source = "lumberjack://#{l.delete("host")}/#{file}"
+      end
       event = to_event(l.delete("line"), source)
       # take any remaining fields in the lumberjack event and merge it as a
       # field in the logstash event.
