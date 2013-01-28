@@ -12,12 +12,12 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   plugin_status "experimental"
 
 
-  # The field containing a response code If this field is an
-  # array, only the first value will be used.
+  # The field containing the words you wish to translate.
+  # If this field is an array, only the first value will be used.
   config :field, :validate => :string, :required => true
 
-  # The destination you wish to populate with the response code.    
-  # default is http_response_code.  set to the same value as source
+  # The destination you wish to populate with the translated text..    
+  # default is `translation`.  set to the same value as source
   # if you want to do a substitution.
   config :destination, :validate => :string, :default => "translation"
 
