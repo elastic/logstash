@@ -81,13 +81,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
   # Validate SSL certificate
   config :verify_ssl, :validate => :boolean, :default => false
 
-  public
-  def initialize(params)
-    super
-
-    @format ||= "json_event"
-
-  end # def initialize
+  config :format, :validate => [ "json_event", "msgpack_event" ], :default => "json_event"
 
   public
   def register

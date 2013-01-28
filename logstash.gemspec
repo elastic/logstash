@@ -23,6 +23,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "pry"
   gem.add_runtime_dependency "stud"
   gem.add_runtime_dependency "sys-uname" # for platform detection
+  gem.add_runtime_dependency "msgpack-jruby"
 
   # Web dependencies
   gem.add_runtime_dependency "ftw", ["~> 0.0.26"]
