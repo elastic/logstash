@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+#
+# Call this script through bundler:
+#
+# bundle exec logstash-ruby <...>
+#
+# ('bundle exec logstash <...>' will try to load the logstash script
+# from the gem shim, which won't work because logstash is a shell
+# script.)
+
+require "logstash/runner"
+LogStash::Runner.new.main(ARGV)
