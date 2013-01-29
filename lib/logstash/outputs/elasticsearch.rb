@@ -161,6 +161,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
                      :inflight_requests => @inflight_requests,
                      :max_inflight_requests => @max_inflight_requests);
         @inflight_cv.wait(@inflight_mutex)
+        @logger.info("ES requests are now resumed.", 
+                      :inflight_requests => @inflight_requests,
+                      :max_inflight_requests => @max_inflight_requests);
       end
       # Increase the counter within @inflight_mutex 
       @inflight_requests += 1
