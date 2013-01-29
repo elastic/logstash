@@ -152,8 +152,8 @@ class LogStash::Agent
     # Load any plugins that we have flags for.
     # TODO(sissel): The --<plugin> flag support currently will load
     # any matching plugins input, output, or filter. This means, for example,
-    # that the 'amqp' input *and* output plugin will be loaded if you pass
-    # --amqp-foo flag. This might cause confusion, but it seems reasonable for
+    # that the 'rabbitmq' input *and* output plugin will be loaded if you pass
+    # --rabbitmq-foo flag. This might cause confusion, but it seems reasonable for
     # now that any same-named component will have the same flags.
     plugins = []
     args.each do |arg|
