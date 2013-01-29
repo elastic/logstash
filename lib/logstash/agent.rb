@@ -29,6 +29,7 @@ class LogStash::Agent
   attr_reader :config_path
   attr_reader :logfile
   attr_reader :verbose
+  attr_reader :configtest
 
   public
   def initialize
@@ -42,6 +43,7 @@ class LogStash::Agent
     @verbose = 0
     @filterworker_count = 1
     @watchdog_timeout = 10
+    @configtest = false
 
     @plugins = {}
     @plugins_mutex = Mutex.new
@@ -99,6 +101,10 @@ class LogStash::Agent
 
     opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
       @logfile = path
+    end
+
+    opts.on("-t", "--configtest", "Test configuration and exit.") do |arg|
+        @configtest = true
     end
 
     opts.on("-v", "Increase verbosity") do
@@ -328,6 +334,10 @@ class LogStash::Agent
     # Load the config file
     @logger.info("Read config")
     config = read_config
+    if @configtest
+      puts "Config test passed.  Exiting..."
+      exit (0)
+    end
 
     @logger.info("Start thread")
     @thread = Thread.new do
