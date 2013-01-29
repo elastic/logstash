@@ -165,6 +165,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
                       :inflight_requests => @inflight_requests,
                       :max_inflight_requests => @max_inflight_requests);
       end
+      # Increase the counter within @inflight_mutex 
+      @inflight_requests += 1
     end
 
     if @document_id.nil?
@@ -174,7 +176,6 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       req = @client.index(index, type, id, event.to_hash)
     end
 
-    increment_inflight_request_count
     #timer = @logger.time("elasticsearch write")
     req.on(:success) do |response|
       @logger.debug("Successfully indexed", :event => event.to_hash)
@@ -188,8 +189,11 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
       # Failed to index, try again after a short sleep (incase our hammering is
       # the problem).
-      sleep(0.200)
-      receive(event)
+      # [rfeng] We need to run the callback in a different thread to avoid holding the ES thread from the pool
+      Thread.new do
+        sleep(0.200)
+        receive(event)
+      end
     end
 
     # Execute this request asynchronously.
@@ -198,19 +202,14 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   # Ruby doesn't appear to have a semaphore implementation, so this is a
   # hack until I write one.
-  private
-  def increment_inflight_request_count
-    @inflight_mutex.synchronize do
-      @inflight_requests += 1
-      @logger.debug("ElasticSearch in-flight requests", :count => @inflight_requests)
-    end
-  end # def increment_inflight_request_count
 
   private
   def decrement_inflight_request_count
     @inflight_mutex.synchronize do
       @inflight_requests -= 1
       @inflight_cv.signal
+      @logger.debug("ElasticSearch request is now finished", 
+                   :count => @inflight_requests)
     end
   end # def decrement_inflight_request_count
 end # class LogStash::Outputs::Elasticsearch
