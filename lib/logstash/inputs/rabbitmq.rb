@@ -90,29 +90,29 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
     @vhost ||= "/"
     @port ||= 5672
     @key ||= "#"
-    @amqpsettings = {
+    @rabbitmq_settings = {
       :vhost => @vhost,
       :host => @host,
       :port => @port,
     }
-    @amqpsettings[:user] = @user if @user
-    @amqpsettings[:pass] = @password.value if @password
-    @amqpsettings[:logging] = @debug
-    @amqpsettings[:ssl] = @ssl if @ssl
-    @amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
-    @amqpurl = "amqp://"
+    @rabbitmq_settings[:user] = @user if @user
+    @rabbitmq_settings[:pass] = @password.value if @password
+    @rabbitmq_settings[:logging] = @debug
+    @rabbitmq_settings[:ssl] = @ssl if @ssl
+    @rabbitmq_settings[:verify_ssl] = @verify_ssl if @verify_ssl
+    @rabbitmq_url = "amqp://"
     if @user
-      @amqpurl << @user if @user
-      @amqpurl << ":#{CGI.escape(@password.to_s)}" if @password
-      @amqpurl << "@"
+      @rabbitmq_url << @user if @user
+      @rabbitmq_url << ":#{CGI.escape(@password.to_s)}" if @password
+      @rabbitmq_url << "@"
     end
-    @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@queue}"
+    @rabbitmq_url += "#{@host}:#{@port}#{@vhost}/#{@queue}"
   end # def register
 
   def run(queue)
     begin
-      @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up queue #{@queue.inspect}")
-      @bunny = Bunny.new(@amqpsettings)
+      @logger.debug("Connecting with RabbitMQ settings #{@rabbitmq_settings.inspect} to set up queue #{@queue.inspect}")
+      @bunny = Bunny.new(@rabbitmq_settings)
       return if terminating?
       @bunny.start
       @bunny.qos({:prefetch_count => @prefetch_count})
@@ -123,7 +123,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
       @bunnyqueue.bind(@exchange, :key => @key)
 
       @bunnyqueue.subscribe({:ack => @ack}) do |data|
-        e = to_event(data[:payload], @amqpurl)
+        e = to_event(data[:payload], @rabbitmq_url)
         if e
           queue << e
         end
