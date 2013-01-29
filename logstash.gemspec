@@ -36,7 +36,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "aws-sdk"
   gem.add_runtime_dependency "heroku"
   gem.add_runtime_dependency "addressable", ["~> 2.2.6"]
-  gem.add_runtime_dependency "bunny"
+  gem.add_runtime_dependency "bunny", ["~> 0.8.0"]
   gem.add_runtime_dependency "ffi"
   gem.add_runtime_dependency "ffi-rzmq", ["0.9.3"]
   gem.add_runtime_dependency "filewatch", ["0.5.0"]
