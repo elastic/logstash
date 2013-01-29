@@ -7,8 +7,11 @@ require "cgi" # for CGI.escape
 # The default settings will create an entirely transient queue and listen for all messages by default.
 # If you need durability or any other advanced settings, please set the appropriate options
 #
-# RabbitMQ - <http://www.rabbitmq.com/>
-# Bunny - <https://github.com/ruby-amqp/bunny>
+# This has been tested with Bunny 0.8.x, which supports RabbitMQ 2.x and 3.x. You can
+# find links to both here:
+#
+# * RabbitMQ - <http://www.rabbitmq.com/>
+# * Bunny - <https://github.com/ruby-amqp/bunny>
 class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
   config_name "rabbitmq"
