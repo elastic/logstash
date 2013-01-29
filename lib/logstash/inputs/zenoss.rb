@@ -1,25 +1,25 @@
 require "date"
-require "logstash/inputs/amqp"
+require "logstash/inputs/rabbitmq"
 require "zlib"
 
 # Read Zenoss events from the zenoss.zenevents fanout exchange.
 #
-class LogStash::Inputs::Zenoss < LogStash::Inputs::Amqp
+class LogStash::Inputs::Zenoss < LogStash::Inputs::RabitMQ
 
   config_name "zenoss"
   plugin_status "experimental"
 
-  # Your amqp server address
+  # Your rabbitmq server address
   config :host, :validate => :string, :default => "localhost"
 
-  # Your amqp username
+  # Your rabbitmq username
   config :user, :validate => :string, :default => "zenoss"
 
-  # Your amqp password
+  # Your rabbitmq password
   config :password, :validate => :password, :default => "zenoss"
 
-  # The name of the exchange to bind the queue. This is analogous to the 'amqp
-  # output' [config 'name'](../outputs/amqp)
+  # The name of the exchange to bind the queue. This is analogous to the 'rabbitmq
+  # output' [config 'name'](../outputs/rabbitmq)
   config :exchange, :validate => :string, :default => "zenoss.zenevents"
 
   # The routing key to use. This is only valid for direct or fanout exchanges
@@ -41,8 +41,8 @@ class LogStash::Inputs::Zenoss < LogStash::Inputs::Amqp
     begin
       zep = Org::Zenoss::Protobufs::Zep
 
-      @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect}")
-      @bunny = Bunny.new(@amqpsettings)
+      @logger.debug("Connecting with RabbitMQ settings #{@rabbitmq_settings.inspect}")
+      @bunny = Bunny.new(@rabbitmq_settings)
       return if terminating?
       @bunny.start
       @bunny.qos({:prefetch_count => @prefetch_count})
@@ -77,7 +77,7 @@ class LogStash::Inputs::Zenoss < LogStash::Inputs::Amqp
 
         # LogStash event properties.
         event = LogStash::Event.new({
-          "@source" => @amqpurl,
+          "@source" => @rabbitmq_url,
           "@type" => @type,
           "@timestamp" => timestamp,
           "@source_host" => occurrence.actor.element_title,
@@ -130,7 +130,7 @@ class LogStash::Inputs::Zenoss < LogStash::Inputs::Amqp
       end # @queue.subscribe
 
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
-      @logger.error("AMQP connection error, will reconnect: #{e}")
+      @logger.error("RabbitMQ connection error, will reconnect: #{e}")
       # Sleep for a bit before retrying.
       # TODO(sissel): Write 'backoff' method?
       sleep(1)
