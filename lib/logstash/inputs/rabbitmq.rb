@@ -2,33 +2,31 @@ require "logstash/inputs/threadable"
 require "logstash/namespace"
 require "cgi" # for CGI.escape
 
-# Pull events from an AMQP exchange.
-#
-# <b> NOTE: THIS IS ONLY KNOWN TO WORK WITH RECENT RELEASES OF RABBITMQ. Any
-# other amqp broker will not work with this plugin. I do not know why. If you
-# need support for brokers other than rabbitmq, please file bugs here:
-# <https://github.com/ruby-amqp/bunny> </b>
+# Pull events from a RabbitMQ exchange.
 #
 # The default settings will create an entirely transient queue and listen for all messages by default.
 # If you need durability or any other advanced settings, please set the appropriate options
-class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
+#
+# RabbitMQ - <http://www.rabbitmq.com/>
+# Bunny - <https://github.com/ruby-amqp/bunny>
+class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
-  config_name "amqp"
-  plugin_status "unsupported"
+  config_name "rabbitmq"
+  plugin_status "beta"
 
-  # Your amqp broker's custom arguments. For mirrored queues in RabbitMQ: [ "x-ha-policy", "all" ]
+  # Custom arguments. For mirrored queues in rabbitmq: [ "x-ha-policy", "all" ]
   config :arguments, :validate => :array, :default => []
 
-  # Your amqp server address
+  # Your rabbitmq server address
   config :host, :validate => :string, :required => true
 
-  # The AMQP port to connect on
+  # The rabbitmq port to connect on
   config :port, :validate => :number, :default => 5672
 
-  # Your amqp username
+  # Your rabbitmq username
   config :user, :validate => :string, :default => "guest"
 
-  # Your amqp password
+  # Your rabbitmq password
   config :password, :validate => :password, :default => "guest"
 
   # The name of the queue. Depricated due to conflicts with puppet naming convention.
@@ -38,8 +36,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
   # The name of the queue.
   config :queue, :validate => :string, :default => ""
 
-  # The name of the exchange to bind the queue. This is analogous to the 'amqp
-  # output' [config 'name'](../outputs/amqp)
+  # The name of the exchange to bind the queue.
   config :exchange, :validate => :string, :required => true
 
   # The routing key to use. This is only valid for direct or fanout exchanges
@@ -144,7 +141,7 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
       end # @bunnyqueue.subscribe
 
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
-      @logger.error("AMQP connection error, will reconnect: #{e}")
+      @logger.error("RabbitMQ connection error, will reconnect: #{e}")
       # Sleep for a bit before retrying.
       # TODO(sissel): Write 'backoff' method?
       sleep(1)
@@ -158,4 +155,4 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
     @bunny.close if @bunny
     finished
   end # def teardown
-end # class LogStash::Inputs::Amqp
+end # class LogStash::Inputs::RabbitMQ
