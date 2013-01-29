@@ -29,10 +29,6 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Your rabbitmq password
   config :password, :validate => :password, :default => "guest"
 
-  # The name of the queue. Depricated due to conflicts with puppet naming convention.
-  # Replaced by 'queue' variable. See LOGSTASH-755
-  config :name, :validate => :string, :deprecated => true
-
   # The name of the queue.
   config :queue, :validate => :string, :default => ""
 
@@ -87,14 +83,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   end # def initialize
 
   public
-  def register
-
-    if @name
-      if @queue
-        @logger.error("'name' and 'queue' are the same setting, but 'name' is deprecated. Please use only 'queue'")
-      end
-      @queue = @name
-    end   
+  def register   
 
     @logger.info("Registering input #{@url}")
     require "bunny" # rubygem 'bunny'
