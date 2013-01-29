@@ -3,8 +3,8 @@ require "logstash/namespace"
 
 # Push events to a RabbitMQ exchange.
 #
-#   RabbitMQ - <http://www.rabbitmq.com/>
-#   Bunny - <https://github.com/ruby-amqp/bunny>
+# RabbitMQ - <http://www.rabbitmq.com/>
+# Bunny - <https://github.com/ruby-amqp/bunny>
 class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
 
