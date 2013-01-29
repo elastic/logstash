@@ -109,6 +109,38 @@ describe "outputs/email" do
             insist {message_observer.messages[0].body.raw_source} == "Line1\r\nLine2\r\nLine3"
         end
     end
+
+    describe  "use nil authenticationType (LOGSTASH-559)" do
+        config <<-CONFIG
+        input {
+            generator {
+                message => "hello world"
+                count => 1
+                type => "generator"
+            }
+        }
+        filter {
+            noop {
+                add_field => ["dummy_match", "ok"]
+            }
+        }
+        output{
+            email {
+                to => "me@host"
+                subject => "Hello World"
+                body => "Line1\\nLine2\\nLine3"
+                match => ["mymatch", "dummy_match,*"]
+                options => ["port", #{@@port}, "authenticationType", "nil"]
+            }
+        }
+        CONFIG
+
+        agent do
+            insist {message_observer.messages.size} == 1
+            insist {message_observer.messages[0].subject} == "Hello World"
+            insist {message_observer.messages[0].body.raw_source} == "Line1\r\nLine2\r\nLine3"
+        end
+    end
 end
 
 
