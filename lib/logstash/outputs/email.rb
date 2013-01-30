@@ -247,10 +247,12 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
       mail.cc = event.sprintf(@cc)
       mail.subject = formatedSubject
       if @htmlbody.empty?
+	formattedBody.gsub!(/\\n+/, "\n") # No escape new line
         mail.body = formattedBody
       else
         mail.text_part = Mail::Part.new do
           content_type "text/plain; charset=UTF-8"
+	  formattedBody.gsub!(/\\n+/, "\n") # No escape new line
           body formattedBody
         end
         mail.html_part = Mail::Part.new do
