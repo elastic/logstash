@@ -19,6 +19,18 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
   # Any keywords to track in the twitter stream
   config :keywords, :validate => :array, :required => true
 
+  # Proxy Host
+  config :proxy_host, :validate => :string
+
+  # Proxy Port
+  config :proxy_port, :validate => :number
+
+  # Proxy Username
+  config :proxy_user, :validate => :string
+
+  # Proxy Password
+  config :proxy_password, :validate => :password
+
   public
   def initialize(params)
     super
@@ -77,7 +89,7 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
       #"track" => keywords
     #}
 
-    http = Net::HTTP.new(uri.host, uri.port)
+    http = Net::HTTP::Proxy(@proxy_host, @proxy_port, @proxy_user, @proxy_password.value).new(uri.host, uri.port)
     http.use_ssl = true
 
     # TODO(sissel): Load certs.
