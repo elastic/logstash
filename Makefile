@@ -127,8 +127,8 @@ vendor/bundle: | vendor $(JRUBY)
 	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec
 	@# rubygems is rejecting pushes right now, so use a temporary locatin for lumberjack
 	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall jls-lumberjack
-	$(QUIET)rm jls-lumberjack*gem; wget http://jls.objects.dreamhost.com/gems/lumberjack/jls-lumberjack-0.0.15.gem
-	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem install --local jls-lumberjack-0.0.15.gem
+	$(QUIET)rm jls-lumberjack*gem; wget http://jls.objects.dreamhost.com/gems/lumberjack/jls-lumberjack-0.0.16.gem
+	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem install --local jls-lumberjack-0.0.16.gem
 	@# Purge old version of json
 	#$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall json -v 1.6.5
 	@# Purge old versions of gems installed because gembag doesn't do 
