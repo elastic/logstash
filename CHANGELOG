@@ -21,7 +21,9 @@
     (LOGSTASH-849)
   - Added tag support to gelf output. Returns tags as _tags field (LOGSTASH-880)
   - bugfix: elasticsearch: Fix a race condition. (#340, patch by Raymond Feng)
-
+  - improvement: http: now supports a custom 'message' format for building your
+    own http bodies from an event. (#319, patch by Christian S)
+ 
 1.1.9 (January 10, 2013)
   ## inputs
   - bugfix: all inputs: fix bug where some @source values were not valid urls
