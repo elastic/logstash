@@ -1,12 +1,30 @@
 1.1.10 (????)
+  ## general
+  - on linux, all threads will set their process names so you can identify
+    threads in tools like top(1).
+  - Java 5 is no longer supported (You must use Java 6 or newer).
+
+  ## inputs
+  - improvement: loggly: supports http proxying now (#276, patch by Richard
+    Pijnenburg)
+  - improvement: twitter: supports http proxying now (#276, patch by Richard
+    Pijnenburg)
+  - improvement: tcp: ssl now supported! (#318, patch by Matthew Richardson)
+
   ## filters
   - deprecation: the --grok-patterns-path flag is deprecated and will now
     warn you if you use it. (LOGSTASH-803)
+  - feature: grok: Adds tag_on_failure setting so you can prevent grok from
+    tagging events on failure. (#328, patch by Neil Prosser)
 
   ## outputs
   - fix bug in mongo output that would fail to load bson_java support
     (LOGSTASH-849)
-
+  - Added tag support to gelf output. Returns tags as _tags field (LOGSTASH-880)
+  - bugfix: elasticsearch: Fix a race condition. (#340, patch by Raymond Feng)
+  - improvement: http: now supports a custom 'message' format for building your
+    own http bodies from an event. (#319, patch by Christian S)
+ 
 1.1.9 (January 10, 2013)
   ## inputs
   - bugfix: all inputs: fix bug where some @source values were not valid urls

@@ -3,7 +3,7 @@
 #   cpio
 #   wget or curl
 #
-JRUBY_VERSION=1.7.1
+JRUBY_VERSION=1.7.2
 ELASTICSEARCH_VERSION=0.20.2
 #VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 VERSION=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb)
@@ -16,7 +16,7 @@ JRUBYC=$(WITH_JRUBY) jrubyc
 ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 GEOIP=vendor/geoip/GeoLiteCity.dat
-GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2012-11-09.dat.gz
+GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 QUIET=@
 
@@ -123,10 +123,20 @@ vendor-gems: | vendor/bundle
 .PHONY: vendor/bundle
 vendor/bundle: | vendor $(JRUBY)
 	@echo "=> Installing gems to $@..."
-	#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
+	@#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
 	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec
+	@# rubygems is rejecting pushes right now, so use a temporary locatin for lumberjack
+	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall jls-lumberjack
+	$(QUIET)rm jls-lumberjack*gem; wget http://jls.objects.dreamhost.com/gems/lumberjack/jls-lumberjack-0.0.15.gem
+	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem install --local jls-lumberjack-0.0.15.gem
 	@# Purge old version of json
 	#$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall json -v 1.6.5
+	@# Purge old versions of gems installed because gembag doesn't do 
+	@# dependency resolution correctly.
+	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall addressable -v 2.2.8
+	@# uninstall the newer ffi (1.1.5 vs 1.3.1) because that's what makes
+	@#dependencies happy (launchy wants ffi 1.1.x)
+	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall ffi -v 1.3.1
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
 	-rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
@@ -187,11 +197,17 @@ build/logstash-$(VERSION)-monolithic.jar:
 	$(QUIET)jar i $@
 	@echo "Created $@"
 
+.PHONY: build/logstash-$(VERSION)-monolithic.jar
+
 build/flatgems: | build vendor/bundle
 	mkdir $@
-	for i in $(VENDOR_DIR)/gems/*/lib; do \
-		rsync -av $$i/ $@/lib ; \
+	for i in $(VENDOR_DIR)/gems/*/lib $(VENDOR_DIR)/gems/*/data; do \
+		rsync -av $$i/ $@/$$(basename $$i) ; \
 	done
+	@# Until I implement something that looks at the 'require_paths' from
+	@# all the gem specs.
+	rsync -av $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
+	rsync -av $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
 
 flatjar-test:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
@@ -211,6 +227,7 @@ flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
 	$(QUIET)rsync -av --delete build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
+	$(QUIET)rsync -av --delete build/flatgems/data build/jar/
 	$(QUIET)(cd lib; rsync -av --delete logstash/web/public ../build/jar/logstash/web/public)
 	$(QUIET)(cd lib; rsync -av --delete logstash/web/views ../build/jar/logstash/web/views)
 	$(QUIET)(cd lib; rsync -av --delete logstash/certs ../build/jar/logstash/certs)

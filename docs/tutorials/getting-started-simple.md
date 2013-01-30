@@ -124,7 +124,7 @@ Obviously this is fairly useless this way. Let's add the final step and test wit
 We've already proven that events can make it into Elasticsearch. However using curl for everything is less than ideal.
 Logstash ships with a built-in web interface. It's fairly spartan but it's a good proof-of-concept. Let's restart our logstash process with an additional option:
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f logstash-simple.conf -- web --backend elasticsearch:///?local
+    java -jar logstash-%VERSION%-monolithic.jar agent -f logstash-simple.conf -- web --backend elasticsearch://localhost/
 
 One important thing to note is that the `web --backend` option is actually its own set of commmand-line options. We're essentially starting two programs in one.
 This is worth remembering as you move to an external Elasticsearch server. The options you specify in your logstash.conf have no bearing on the web ui. It has its own options.
@@ -175,7 +175,7 @@ Put this in a file called "logstash-complex.conf"
 
 Now run it all (again. Be sure to stop your previous Logstash tests!):
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f logstash-complex.conf -- web --backend elasticsearch:///?local
+    java -jar logstash-%VERSION%-monolithic.jar agent -f logstash-complex.conf -- web --backend elasticsearch://localhost/
 
 Point your browser at <http://yourserver:9292> and start searching!
 

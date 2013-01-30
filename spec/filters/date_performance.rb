@@ -7,7 +7,7 @@ describe LogStash::Filters::Date do
   describe "performance test of java syntax parsing" do
 
     event_count = 100000
-    min_rate = 5000
+    min_rate = 4000
 
     max_duration = event_count / min_rate
     input = "Nov 24 01:29:01 -0800"
