@@ -174,13 +174,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
   public
   def filter(event)
-    @logger.debug("Date filter: received event", :type => event.type)
+    @logger.debug? && @logger.debug("Date filter: received event", :type => event.type)
     return unless filter?(event)
     now = Time.now
 
     @parsers.each do |field, fieldparsers|
-      @logger.debug("Date filter: type #{event.type}, looking for field #{field.inspect}",
-                    :type => event.type, :field => field)
+      @logger.debug? && @logger.debug("Date filter looking for field",
+                                      :type => event.type, :field => field)
       next unless event.include?(field)
 
       fieldvalues = event[field]
@@ -233,7 +233,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           time = time.withZone(org.joda.time.DateTimeZone.forID("UTC"))
           event.timestamp = time.to_s 
           #event.timestamp = LogStash::Time.to_iso8601(time)
-          @logger.debug("Date parsing done", :value => value, :timestamp => event.timestamp)
+          @logger.debug? && @logger.debug("Date parsing done", :value => value, :timestamp => event.timestamp)
         rescue StandardError, JavaException => e
           @logger.warn("Failed parsing date from field", :field => field,
                        :value => value, :exception => e,

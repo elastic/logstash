@@ -57,6 +57,7 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
         event_obj = ois.readObject()
         event_data = {
           "@type" => type,
+          "@tags" => tags,
           "@source" => event_source,
           "@source_host" => socket.peer,
           "@source_path" => event_obj.getLoggerName(),

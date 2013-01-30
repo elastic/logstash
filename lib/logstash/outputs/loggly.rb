@@ -43,8 +43,20 @@ class LogStash::Outputs::Loggly < LogStash::Outputs::Base
   config :key, :validate => :string, :required => true
 
   # Should the log action be sent over https instead of plain http
-  # Defaults to https
   config :proto, :validate => :string, :default => "http"
+
+  # Proxy Host
+  config :proxy_host, :validate => :string
+
+  # Proxy Port
+  config :proxy_port, :validate => :number
+
+  # Proxy Username
+  config :proxy_user, :validate => :string
+
+  # Proxy Password
+  config :proxy_password, :validate => :password
+
 
   public
   def register
@@ -63,7 +75,7 @@ class LogStash::Outputs::Loggly < LogStash::Outputs::Base
     # Send the event over http.
     url = URI.parse("#{@proto}://#{@host}/inputs/#{event.sprintf(@key)}")
     @logger.info("Loggly URL", :url => url)
-    http = Net::HTTP.new(url.host, url.port)
+    http = Net::HTTP::Proxy(@proxy_host, @proxy_port, @proxy_user, @proxy_password.value).new(uri.host, uri.port)
     if url.scheme == 'https'
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE

@@ -1,5 +1,6 @@
 require "logstash/filters/base"
 require "logstash/namespace"
+require "tempfile"
 
 # Add GeoIP fields from Maxmind database
 #
@@ -30,8 +31,16 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
     require "geoip"
     if @database.nil?
       if __FILE__ =~ /^file:\/.+!.+/
-        # Running from a jar, assume GeoLiteCity.dat is at the root.
-        @database = [__FILE__.split("!").first, "/GeoLiteCity.dat"].join("!")
+        begin
+          # Running from a jar, assume GeoLiteCity.dat is at the root.
+          jar_path = [__FILE__.split("!").first, "/GeoLiteCity.dat"].join("!")
+          tmp_file = Tempfile.new('logstash-geoip')
+          tmp_file.write(File.read(jar_path))
+          tmp_file.close # this file is reaped when ruby exits
+          @database = tmp_file.path
+        rescue => ex
+          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
+        end
       else
         if File.exists?("GeoLiteCity.dat")
           @database = "GeoLiteCity.dat"

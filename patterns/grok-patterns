@@ -64,7 +64,7 @@ YEAR (?>\d\d){1,2}
 HOUR (?:2[0123]|[01][0-9])
 MINUTE (?:[0-5][0-9])
 # '60' is a leap second in most time standards and thus is valid.
-SECOND (?:(?:[0-5][0-9]|60)(?:[.,][0-9]+)?)
+SECOND (?:(?:[0-5][0-9]|60)(?:[:.,][0-9]+)?)
 TIME (?!<[0-9])%{HOUR}:%{MINUTE}(?::%{SECOND})(?![0-9])
 # datestamp is YYYY/MM/DD-HH:MM:SS.UUUU (or something like it)
 DATE_US %{MONTHNUM}[/-]%{MONTHDAY}[/-]%{YEAR}
