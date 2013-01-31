@@ -76,6 +76,9 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
   # Validate SSL certificate
   config :verify_ssl, :validate => :boolean, :default => false
+  
+  # Maximum permissible size of a frame (in bytes) to negotiate with clients
+  config :frame_max, :validate => :number, :default => 131072
 
   public
   def initialize(params)
@@ -89,20 +92,25 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   def register   
 
     @logger.info("Registering input #{@url}")
-    require "bunny" # rubygem 'bunny'
+    require "bunny"
+    
     @vhost ||= "/"
     @port ||= 5672
     @key ||= "#"
+    
     @rabbitmq_settings = {
       :vhost => @vhost,
       :host => @host,
       :port => @port,
     }
+    
     @rabbitmq_settings[:user] = @user if @user
     @rabbitmq_settings[:pass] = @password.value if @password
     @rabbitmq_settings[:logging] = @debug
     @rabbitmq_settings[:ssl] = @ssl if @ssl
     @rabbitmq_settings[:verify_ssl] = @verify_ssl if @verify_ssl
+    @rabbitmq_settings[:frame_max] = @frame_max if @frame_max
+    
     @rabbitmq_url = "amqp://"
     if @user
       @rabbitmq_url << @user if @user

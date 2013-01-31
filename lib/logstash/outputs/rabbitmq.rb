@@ -56,9 +56,12 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   # Validate SSL certificate
   config :verify_ssl, :validate => :boolean, :default => false
 
+  # Maximum permissible size of a frame (in bytes) to negotiate with clients
+  config :frame_max, :validate => :number, :default => 131072
+
   public
   def register
-    require "bunny" # rubygem 'bunny'
+    require "bunny"
 
     @logger.info("Registering output", :plugin => self)
     connect
@@ -77,6 +80,7 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
     rabbitmq_settings[:pass] = @password.value if @password
     rabbitmq_settings[:ssl] = @ssl if @ssl
     rabbitmq_settings[:verify_ssl] = @verify_ssl if @verify_ssl
+    rabbitmq_settings[:frame_max] = @frame_max if @frame_max
 
     begin
       @logger.debug("Connecting to RabbitMQ", :settings => rabbitmq_settings,
