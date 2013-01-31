@@ -146,7 +146,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
                                 "routing_key" => @key,
                                 "exchange_type" => @exchange_type,
                                 "exchange_durable" => @durable.to_s,
-                                "queue_durable" => @durable.to_s,
+                                "queue_durable" => @durable.to_s
                                },
                       "index" => {"bulk_size" => @es_bulk_size,
                                  "bulk_timeout" => "#{@es_bulk_timeout_ms}ms",
