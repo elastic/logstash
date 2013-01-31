@@ -17,7 +17,9 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   config_name "rabbitmq"
   plugin_status "beta"
 
-  # Custom arguments. For mirrored queues in rabbitmq: [ "x-ha-policy", "all" ]
+  # Custom arguments. For example, mirrored queues in RabbitMQ 2.x:  [ "x-ha-policy", "all" ]
+  # RabbitMQ 3.x mirrored queues are set by policy. More information can be found
+  # here: http://www.rabbitmq.com/blog/2012/11/19/breaking-things-with-rabbitmq-3-0/
   config :arguments, :validate => :array, :default => []
 
   # Your rabbitmq server address
