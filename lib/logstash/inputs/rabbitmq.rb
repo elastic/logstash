@@ -7,7 +7,7 @@ require "cgi" # for CGI.escape
 # The default settings will create an entirely transient queue and listen for all messages by default.
 # If you need durability or any other advanced settings, please set the appropriate options
 #
-# This has been tested with Bunny 0.8.x, which supports RabbitMQ 2.x and 3.x. You can
+# This has been tested with Bunny 0.9.x, which supports RabbitMQ 2.x and 3.x. You can
 # find links to both here:
 #
 # * RabbitMQ - <http://www.rabbitmq.com/>
