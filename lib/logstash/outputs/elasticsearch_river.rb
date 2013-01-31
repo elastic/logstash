@@ -133,7 +133,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       hostname = Socket.gethostname
       
       # Replace spaces with hyphens and remove all non-alpha non-dash non-underscore characters
-      river_name = "#{hostname} #{queue}".gsub(' ', '-').gsub(/[^\w-]/, '')
+      river_name = "#{hostname} #{@queue}".gsub(' ', '-').gsub(/[^\w-]/, '')
       
       api_path = "/_river/logstash-#{river_name}/_meta"
       @status_path = "/_river/logstash-#{river_name}/_status"
