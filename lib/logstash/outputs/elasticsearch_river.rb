@@ -41,6 +41,9 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   # ElasticSearch river configuration: bulk timeout in milliseconds
   config :es_bulk_timeout_ms, :validate => :number, :default => 100
+  
+  # ElasticSearch river configuration: is ordered?
+  config :es_ordered, :validate => :boolean, :default => false
 
   # Hostname of RabbitMQ server
   config :rabbitmq_host, :validate => :string, :required => true
@@ -147,6 +150,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
                                },
                       "index" => {"bulk_size" => @es_bulk_size,
                                  "bulk_timeout" => "#{@es_bulk_timeout_ms}ms",
+                                 "ordered" => @es_ordered
                                 },
                      }
       @logger.info("ElasticSearch using river", :config => river_config)
