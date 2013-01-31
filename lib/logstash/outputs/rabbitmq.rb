@@ -3,7 +3,7 @@ require "logstash/namespace"
 
 # Push events to a RabbitMQ exchange.
 #
-# This has been tested with Bunny 0.8.x, which supports RabbitMQ 2.x and 3.x. You can
+# This has been tested with Bunny 0.9.x, which supports RabbitMQ 2.x and 3.x. You can
 # find links to both here:
 #
 # * RabbitMQ - <http://www.rabbitmq.com/>
