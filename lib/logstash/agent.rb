@@ -334,7 +334,11 @@ class LogStash::Agent
     # Load the config file
     @logger.info("Read config")
     config = read_config
-    
+    if @configtest
+      puts "Config test passed.  Exiting..."
+      exit (0)
+    end
+
     @logger.info("Start thread")
     @thread = Thread.new do
       LogStash::Util::set_thread_name(self.class.name)
@@ -391,10 +395,6 @@ class LogStash::Agent
   def run_with_config(config)
     @plugins_mutex.synchronize do
       @inputs, @filters, @outputs = parse_config(config)
-      if @configtest
-        puts "Config test passed.  Exiting..."
-        exit (0)
-      end
 
       # If we are given a config string (run usually with 'agent -e "some config string"')
       # then set up some defaults.
