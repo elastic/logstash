@@ -130,8 +130,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     # Mutex to syncronize threads access to @active_servers.
     @lb_mutex = Mutex.new
 
-    # Mutex to syncronize main plug
-
     @redis_pool = {}
     @host.each {|uri| @redis_pool[uri] = nil}
 
