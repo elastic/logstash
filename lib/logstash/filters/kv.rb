@@ -98,9 +98,9 @@ class LogStash::Filters::KV < LogStash::Filters::Base
 
   # The name of the container to put all of the key-value pairs into 
   #
-  # Example, to place all keys into container kv:
+  # Example, to place all keys into field kv:
   #
-  #     filter { kv { container => "kv" } }
+  #     filter { kv { target => "kv" } }
   config :target, :validate => :string, :default => '@fields'
 
   def register
