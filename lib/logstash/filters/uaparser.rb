@@ -12,11 +12,22 @@ class LogStash::Filters::UAParser < LogStash::Filters::Base
   # The name of the field to assign the UA data hash to
   config :container, :validate => :string, :default => "ua"
 
+  # name with full path of BrowserScope YAML file.
+  # One is shipped with this filter, but you can reference
+  # updated versions here. See https://github.com/tobie/ua-parser
+  # for updates
+  config :regexes_path, :validate => :string
+
   public
   def register
     require 'user_agent_parser'
 
-    @parser = UserAgentParser::Parser.new
+    if @regexes_path.nil?
+        @parser = UserAgentParser::Parser.new
+    else
+        @logger.info? and @logger.info "Using regexes from",  :regexes_path => @regexes_path)
+        @parser = UserAgentParser::Parser.new(regexes_path)
+    end
   end #def register
 
   public
