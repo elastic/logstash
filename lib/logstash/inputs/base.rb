@@ -129,6 +129,23 @@ class LogStash::Inputs::Base < LogStash::Plugin
       if event.source == "unknown"
         event.source = source
       end
+    when "msgpack_event"
+      begin
+        event = LogStash::Event.from_msgpack(raw)
+        event.tags += @tags
+        if @message_format
+          event.message ||= event.sprintf(@message_format)
+        end
+      rescue => e
+        @logger.error("Trouble parsing msgpack input, falling back to plain text",
+                     :input => raw, :source => source, :exception => e)
+        event.message = raw
+        event.tags << "_msgpackparsefailure"
+      end
+
+      if event.source == "unknown"
+        event.source = source
+      end
     else
       raise "unknown event format #{@format}, this should never happen"
     end

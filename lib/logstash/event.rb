@@ -1,4 +1,5 @@
 require "json"
+require "msgpack"
 require "time"
 require "date"
 require "logstash/time_addon"
@@ -35,6 +36,11 @@ class LogStash::Event
   def self.from_json(json)
     return LogStash::Event.new(JSON.parse(json))
   end # def self.from_json
+
+  public
+  def self.from_msgpack(msgpack)
+    return LogStash::Event.new(MessagePack.unpack(msgpack))
+  end # def self.from_msgpack
 
   public
   def cancel
@@ -175,6 +181,7 @@ class LogStash::Event
   public
   def to_json(*args); return @data.to_json(*args) end # def to_json
   def to_hash; return @data end # def to_hash
+  def to_msgpack; return MessagePack.pack(@data) end # def to_msgpack
 
   public
   def overwrite(event)

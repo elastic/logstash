@@ -59,6 +59,8 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
   # Validate SSL certificate
   config :verify_ssl, :validate => :boolean, :default => false
 
+  config :format, :validate => ["json_event", "msgpack_event"], :default => "json_event"
+
   public
   def register
     require "bunny" # rubygem 'bunny'
@@ -118,13 +120,25 @@ class LogStash::Outputs::Amqp < LogStash::Outputs::Base
                   :key => key)
     key = event.sprintf(@key) if @key
     begin
-      receive_raw(event.to_json, key)
-    rescue JSON::GeneratorError => e
-      @logger.warn("Trouble converting event to JSON", :exception => e,
+      formatted = format_event(event, @format)
+    rescue => e
+      @logger.warn("Trouble formatting event as #{@format}", :exception => e,
                    :event => event)
       return
+    else
+      receive_raw(formatted, key)
     end
   end # def receive
+
+  private
+  def format_event(event, format)
+    case format
+    when "json_event"
+      event.to_json
+    when "msgpack_event"
+      event.to_msgpack
+    end
+  end
 
   public
   def receive_raw(message, key=@key)

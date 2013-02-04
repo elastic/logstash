@@ -23,6 +23,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "pry"
   gem.add_runtime_dependency "stud"
   gem.add_runtime_dependency "sys-uname" # for platform detection
+  gem.add_runtime_dependency "msgpack-jruby"
 
   # Web dependencies
   gem.add_runtime_dependency "ftw", ["~> 0.0.26"]
@@ -35,7 +36,7 @@ Gem::Specification.new do |gem|
   #TODO Can these be optional?
   gem.add_runtime_dependency "aws-sdk"
   gem.add_runtime_dependency "heroku"
-  gem.add_runtime_dependency "addressable", ["~> 2.2.6"]
+  gem.add_runtime_dependency "addressable", [">= 2.2.6"]
   gem.add_runtime_dependency "bunny"
   gem.add_runtime_dependency "ffi"
   gem.add_runtime_dependency "ffi-rzmq", ["0.9.3"]
