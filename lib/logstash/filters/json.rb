@@ -24,7 +24,7 @@ class LogStash::Filters::Json < LogStash::Filters::Base
   # JSON in the value of the source field will be expanded into a
   # datastructure in the "dest" field.  Note: if the "dest" field
   # already exists, it will be overridden.
-  config /[A-Za-z0-9_@-]+/, :validate => :string
+  config /[A-Za-z0-9_@-]+/, :validate => :string, :deprecated => true
 
   # Config for json is:
   #
@@ -63,6 +63,7 @@ class LogStash::Filters::Json < LogStash::Filters::Base
 
     @config.each do |field, dest|
       next if (RESERVED + ["source", "target"]).member?(field)
+      @logger.warn("You used a deprecated setting '#{field} => #{dest}'. You should use 'source => "%{field}"' and 'target => %{dest}'")
       @json[field] = dest
     end
 
