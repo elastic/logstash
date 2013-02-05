@@ -1,10 +1,13 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
+require "stud/buffer"
 
 # send events to a redis database using RPUSH
 #
 # For more information about redis, see <http://redis.io/>
 class LogStash::Outputs::Redis < LogStash::Outputs::Base
+
+  include Stud::Buffer
 
   config_name "redis"
   plugin_status "beta"
@@ -69,7 +72,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # when there are pending events to flush.
   config :batch_timeout, :validate => :number, :default => 5
 
-  public
   def register
     require 'redis'
 
@@ -91,20 +93,18 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     end
     # end TODO
 
-    @pending = Hash.new { |h, k| h[k] = [] }
-    @last_pending_flush = Time.now.to_f
-    if @batch and @data_type != "list"
-      raise RuntimeError.new(
-        "batch is not supported with data_type #{@data_type}"
-      )
-    end
 
     if @batch
-      @flush_thread = Thread.new do
-        while sleep(@batch_timeout) do
-          process_pending(true)
-        end
+      if @data_type != "list"
+        raise RuntimeError.new(
+          "batch is not supported with data_type #{@data_type}"
+        )
       end
+      buffer_initialize(
+        :max_items => @batch_events,
+        :max_interval => @batch_timeout,
+        :logger => @logger
+      )
     end
 
     @redis = nil
@@ -112,48 +112,14 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
         @host.shuffle!
     end
     @host_idx = 0
-    @pending_mutex = Mutex.new
   end # def register
 
-  private
-  def connect
-    @current_host, @current_port = @host[@host_idx].split(':')
-    @host_idx = @host_idx + 1 >= @host.length ? 0 : @host_idx + 1
-
-    if not @current_port
-        @current_port = @port
-    end
-
-    params = {
-      :host => @current_host,
-      :port => @current_port,
-      :timeout => @timeout,
-      :db => @db
-    }
-    @logger.debug(params)
-
-    if @password
-      params[:password] = @password.value
-    end
-
-    Redis.new(params)
-  end # def connect
-
-  # A string used to identify a redis instance in log messages
-  private
-  def identity
-    @name || "redis://#{@password}@#{@current_host}:#{@current_port}/#{@db} #{@data_type}:#{@key}"
-  end
-
-  public
   def receive(event)
     return unless output?(event)
 
     if @batch
-      @pending_mutex.synchronize do
-        @pending[event.sprintf(@key)] << event.to_json
-      end
-      process_pending
+      # Stud::Buffer
+      buffer_receive(event.to_json, event.sprintf(@key))
       return
     end
 
@@ -176,52 +142,58 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     end
   end # def receive
 
-  private
-  def process_pending(force=false)
-    if !@pending_mutex.try_lock # failed to get lock
-      return
-    end
-
-    pending_count = 0
-    @pending.each { |k, v| pending_count += v.length }
-    time_since_last_flush = Time.now.to_f - @last_pending_flush
-
-    if (force && pending_count > 0) ||
-       (pending_count >= @batch_events) ||
-       (time_since_last_flush >= @batch_timeout && pending_count > 0)
-      @logger.debug("Flushing redis output",
-                    :pending_count => pending_count,
-                    :time_since_last_flush => time_since_last_flush,
-                    :batch_events => @batch_events,
-                    :batch_timeout => @batch_timeout,
-                    :force => force)
-      begin
-        @redis ||= connect
-        @pending.each do |k, v|
-          @redis.rpush(k, v)
-          @pending.delete(k)
-        end
-        @last_pending_flush = Time.now.to_f
-      rescue => e
-        @logger.warn("Failed to send backlog of events to redis",
-                     :pending_count => pending_count,
-                     :identity => identity, :exception => e,
-                     :backtrace => e.backtrace)
-        sleep 1
-        retry
-      end
-    end
-
-    @pending_mutex.unlock
+  # called from Stud::Buffer#buffer_flush when there are events to flush
+  def flush(events, key)
+    @redis ||= connect
+    @redis.rpush(key, events)
+  end
+  # called from Stud::Buffer#buffer_flush when an error occurs
+  def on_flush_error(e)
+    @logger.warn("Failed to send backlog of events to redis",
+      :identity => identity,
+      :exception => e,
+      :backtrace => e.backtrace
+    )
+    @redis = connect
   end
 
-  public
   def teardown
-    process_pending(true)
+    if @batch
+      buffer_flush(:final => true)
+    end
     if @data_type == 'channel' and @redis
       @redis.quit
       @redis = nil
     end
+  end
+
+  private
+  def connect
+    @current_host, @current_port = @host[@host_idx].split(':')
+    @host_idx = @host_idx + 1 >= @host.length ? 0 : @host_idx + 1
+
+    if not @current_port
+      @current_port = @port
+    end
+
+    params = {
+      :host => @current_host,
+      :port => @current_port,
+      :timeout => @timeout,
+      :db => @db
+    }
+    @logger.debug(params)
+
+    if @password
+      params[:password] = @password.value
+    end
+
+    Redis.new(params)
+  end # def connect
+
+  # A string used to identify a redis instance in log messages
+  def identity
+    @name || "redis://#{@password}@#{@current_host}:#{@current_port}/#{@db} #{@data_type}:#{@key}"
   end
 
 end
