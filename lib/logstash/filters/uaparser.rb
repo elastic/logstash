@@ -25,7 +25,7 @@ class LogStash::Filters::UAParser < LogStash::Filters::Base
     if @regexes_path.nil?
         @parser = UserAgentParser::Parser.new
     else
-        @logger.info? and @logger.info "Using regexes from",  :regexes_path => @regexes_path)
+        @logger.info? and @logger.info "Using regexes from",  :regexes_path => @regexes_path
         @parser = UserAgentParser::Parser.new(regexes_path)
     end
   end #def register
