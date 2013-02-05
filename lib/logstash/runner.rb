@@ -73,7 +73,7 @@ class LogStash::Runner
 
     status = []
     @runners.each do |r|
-      $stderr.puts "Waiting on #{r.wait.inspect}"
+      #$stderr.puts "Waiting on #{r.wait.inspect}"
       status << r.wait
     end
 
@@ -166,6 +166,29 @@ class LogStash::Runner
       "pry" => lambda do
         require "pry"
         return binding.pry
+      end,
+      "agent2" => lambda do
+        require "logstash/agent2"
+        # Hack up a runner
+        runner = Class.new do
+          def initialize(args)
+            @args = args
+          end
+          def run
+            @thread = Thread.new do
+              @result = LogStash::Agent2.run($0, @args)
+            end
+          end
+          def wait
+            @thread.join
+            return @result
+          end
+        end
+
+        agent = runner.new(args)
+        agent.run
+        @runners << agent
+        return []
       end
     } # commands
 
