@@ -44,11 +44,26 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # elasticsearch with the same ID.
   config :document_id, :validate => :string, :default => nil
 
+  # this will enable automatic node discovery and random selection on each bulk index operation
+  config :bulk_discovery, :validate => :boolean, :default => false
+  config :bulk_discovery_refresh, :validate => :number, :default => 60
+
   public
   def register
     require "ftw" # gem ftw
     @agent = FTW::Agent.new
     @queue = []
+    @http_transports = []
+
+    if @bulk_discovery
+      @http_transports = get_http_transports
+
+      @bulk_discovery_thread = Thread.new do
+        while sleep(@bulk_discovery_refresh) do
+          @http_transports = get_http_transports
+        end
+      end
+    end
 
   end # def register
 
@@ -107,7 +122,15 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     # as documented here: 
     # http://www.elasticsearch.org/guide/reference/api/bulk.html
     #  "NOTE: the final line of data must end with a newline character \n."
-    response = @agent.post!("http://#{@host}:#{@port}/_bulk",
+
+    if @bulk_discovery
+      host, port = @http_transports[rand(@http_transports.size)]
+    else
+      host = @host
+      port = @port
+    end
+
+    response = @agent.post!("http://#{host}:#{port}/_bulk",
                             :body => @queue.join("\n") + "\n")
 
     # Consume the body for error checking
@@ -116,10 +139,18 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     response.read_body { |chunk| body += chunk }
 
     if response.status != 200
-      @logger.error("Error writing (bulk) to elasticsearch",
+     if @bulk_discovery == false
+       @logger.error("Error writing (bulk) to elasticsearch",
                     :response => response, :response_body => body,
                     :request_body => @queue.join("\n"))
-      return
+     else
+       @logger.error("Error writing (bulk) to elasticsearch",
+                     :response => response)
+       @logger.warn("Refreshing http transports")
+       @http_transports = get_http_transports
+     end
+
+     return
     end
 
     # Clear the queue on success only.
@@ -172,4 +203,49 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       retry
     end
   end # def setup_index_template
+
+  def get_http_transports
+    ret = []
+    @http_transports << [@host, @port]
+
+    while ret.empty?
+
+      host, port = @http_transports[rand(@http_transports.size)]
+      begin
+        response = @agent.get!("http://#{host}:#{port}/_cluster/nodes")
+        body = "";
+        response.read_body { |chunk| body += chunk }
+      rescue
+        #probably conn refused
+        @logger.warn("Failed to fetch _cluster/nodes from #{host}:#{port}, will retry...")
+      end
+
+      if response.nil? or response.status != 200
+        @logger.warn("Failed to fetch _cluster/nodes from #{host}:#{port}, will retry...",
+                        :status => response.status, :response => body)
+        sleep(5)
+      else
+
+        JSON.parse(body)['nodes'].each do |id,data|
+          #i don't want to buggy non data nodes on bulk uploads
+          next if ( data['attributes'] && data['attributes']['data'] && (data['attributes']['data'] == "false"))
+
+          if data['http_address']
+            match = data['http_address'].match /^inet\[\/(.*):(\d+)\]$/
+            ret << [ match[1], match[2] ]
+          end
+        end
+
+        if ret.empty?
+          @logger.warn("Fetched empty _cluster/nodes from #{host}:#{port}, will retry...",
+          :status => response.status, :response => body)
+          sleep(5)
+        end
+
+      end
+    end
+
+    return ret
+  end
+
 end # class LogStash::Outputs::ElasticSearchHTTP
