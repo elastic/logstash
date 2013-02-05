@@ -63,7 +63,7 @@ class LogStash::Filters::Json < LogStash::Filters::Base
 
     @config.each do |field, dest|
       next if (RESERVED + ["source", "target"]).member?(field)
-      @logger.warn("You used a deprecated setting '#{field} => #{dest}'. You should use 'source => "%{field}"' and 'target => %{dest}'")
+      @logger.warn("#{self.class.config_name}: You used a deprecated setting '#{field} => #{dest}'. You should use 'source => \"#{field}\"' and 'target => \"#{dest}\"'")
       @json[field] = dest
     end
 
