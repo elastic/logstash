@@ -1,7 +1,6 @@
 require "logstash/namespace"
 require "logstash/config/grammar"
 require "logstash/config/registry"
-require "logstash/agent"
 require "logger"
 
 class LogStash::Config::File
