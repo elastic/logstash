@@ -122,7 +122,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
       next if (RESERVED + ["locale", "match"]).include?(field)
 
       recommended_setting = value.map { |v| "\"#{v}\"" }.join(", ")
-      @logger.warn("You used a deprecated setting '#{field} => #{value}'. You should use 'match => [ \"#{field}\", #{recommended_setting} ]'")
+      @logger.warn("#{self.class.config_name}: You used a deprecated setting '#{field} => #{value}'. You should use 'match => [ \"#{field}\", #{recommended_setting} ]'")
       # values here are an array of format strings for the given field.
       setupMatcher(field, locale, missing, value) # value.each
     end # @config.each
