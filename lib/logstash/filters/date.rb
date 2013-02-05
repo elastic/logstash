@@ -119,9 +119,9 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     locale = parseLocale(@config["locale"][0]) if @config["locale"] != nil and @config["locale"][0] != nil
     missing = []
     @config.each do |field, value|
-      next if (RESERVED + ["locale"]).include?(field)
-      next if (RESERVED + ["match"]).include?(field)
+      next if (RESERVED + ["locale", "match"]).include?(field)
 
+      @logger.warn("You used a deprecated setting '#{field} => #{value}'. You should use 'match => [ \"#{field}\", \"#{value}\" ]'")
       # values here are an array of format strings for the given field.
       setupMatcher(field, locale, missing, value) # value.each
     end # @config.each

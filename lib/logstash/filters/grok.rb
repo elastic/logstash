@@ -293,6 +293,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       patterns.each do |pattern|
         @logger.debug? and @logger.debug("regexp: #{@type}/#{field}", :pattern => pattern)
         @patterns[field].compile(pattern)
+        @logger.warn("You used a deprecated setting '#{field} => #{pattern}'. You should use 'match => [ \"#{field}\", \"#{pattern}\" ]'")
       end
     end # @config.each
   end # def register

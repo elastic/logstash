@@ -90,6 +90,7 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
     #TODO(electrical): Will be removed when its fully deprecated
     @config.each do |field, dest|
       next if (RESERVED + ["xpath", "store_xml", "source", "target"]).member?(field)
+      @logger.warn("You used a deprecated setting '#{field} => #{dest}'. You should use 'source => "%{field}"' and 'target => %{dest}'")
       @xml[field] = dest
     end
 

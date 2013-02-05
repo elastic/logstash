@@ -61,6 +61,7 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
     #TODO(electrical): At some point this can be removed
     @config.each do |field, dest|
       next if (RESERVED + ["fields", "separator", "source", "columns", "target"]).member?(field)
+      @logger.warn("You used a deprecated setting '#{field} => #{dest}'. You should use 'source => "%{field}"' and 'target => %{dest}'")
       @csv[field] = dest
     end
 
