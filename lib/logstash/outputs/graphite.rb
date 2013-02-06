@@ -18,6 +18,12 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   # The port to connect on your graphite server.
   config :port, :validate => :number, :default => 2003
 
+  # Interval between reconnect attempts to carboon
+  config :reconnect_interval, :validate => :number, :default => 2
+
+  # Should metrics be resend on failure?
+  config :resend_on_failure, :validate => :boolean, :default => false
+
   # The metric(s) to use. This supports dynamic strings like %{@source_host}
   # for metric names and also for values. This is a hash field with key 
   # of the metric name, value of the metric value. Example:
@@ -26,12 +32,23 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   #
   # The value will be coerced to a floating point value. Values which cannot be
   # coerced will zero (0)
-  config :metrics, :validate => :hash, :required => true
+  config :metrics, :validate => :hash, :default => {}
+
+  # Indicate that the event @fields should be treated as metrics and will be sent as is to graphite
+  config :fields_are_metrics, :validate => :boolean, :default => false
+
+  # Include only regex matched metric names
+  config :include_metrics, :validate => :array, :default => []
+
+  # Exclude regex matched metric names, by default exclude unresolved %{field} strings
+  config :exclude_metrics, :validate => :array, :default => [ "%\{[^}]+\}" ]
 
   # Enable debug output
   config :debug, :validate => :boolean, :default => false
 
   def register
+    @include_metrics.collect!{|regexp| Regexp.new(regexp)}
+    @exclude_metrics.collect!{|regexp| Regexp.new(regexp)}
     connect
   end # def register
 
@@ -42,7 +59,7 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
     rescue Errno::ECONNREFUSED => e
       @logger.warn("Connection refused to graphite server, sleeping...",
                    :host => @host, :port => @port)
-      sleep(2)
+      sleep(@reconnect_interval)
       retry
     end
   end # def connect
@@ -50,31 +67,49 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   public
   def receive(event)
     return unless output?(event)
-
+    
     # Graphite message format: metric value timestamp\n
 
-    # Catch exceptions like ECONNRESET and friends, reconnect on failure.
-    @metrics.each do |metric, value|
-      @logger.debug("processing", :metric => metric, :value => value)
+    messages = []
+    timestamp = event.sprintf("%{+%s}")
 
-      message = [event.sprintf(metric), event.sprintf(value).to_f,
-                 event.sprintf("%{+%s}")].join(" ")
+    if @fields_are_metrics
+      @logger.debug("got metrics event", :metrics => event.fields)
+      event.fields.each do |metric,value|
 
-      @logger.debug("Sending carbon message", :message => message, :host => @host, :port => @port)
+        messages << "#{metric} #{value.to_f} #{timestamp}"
+      end
+    else
+      @metrics.each do |metric, value|
+        @logger.debug("processing", :metric => metric, :value => value)
+        messages << "#{event.sprintf(metric)} #{event.sprintf(value).to_f} #{timestamp}"
+      end
+    end
 
+    @include_metrics.each do |regexp|
+      messages.select!{|m| m.match(regexp)}
+    end
+
+    @exclude_metrics.each do |regexp|
+      messages.select!{|m| !m.match(regexp)}
+    end
+
+    unless messages.empty?
+      message = messages.join("\n")
+      @logger.debug("Sending carbon messages", :messages => messages, :host => @host, :port => @port)
+
+      # Catch exceptions like ECONNRESET and friends, reconnect on failure.
       # TODO(sissel): Test error cases. Catch exceptions. Find fortune and glory.
       begin
         @socket.puts(message)
       rescue Errno::EPIPE, Errno::ECONNRESET => e
         @logger.warn("Connection to graphite server died",
                      :exception => e, :host => @host, :port => @port)
-        sleep(2)
+        sleep(@reconnect_interval)
         connect
+        retry if @resend_on_failure
       end
-
-      # TODO(sissel): resend on failure 
-      # TODO(sissel): Make 'resend on failure' tunable; sometimes it's OK to
-      # drop metrics.
-    end # @metrics.each
+    end
+    
   end # def receive
 end # class LogStash::Outputs::Statsd
