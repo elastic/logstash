@@ -278,7 +278,7 @@ class LogStash::Event
 
         case value
         when nil
-          tok # leave the %{foo} if this field does not exist in this event.
+          break nil # Drop token if this field does not exist in this event.
         when Array
           value.join(",") # Join by ',' if value is an array
         when Hash
