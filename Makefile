@@ -208,6 +208,7 @@ build/flatgems: | build vendor/bundle
 	@# all the gem specs.
 	rsync -av $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
 	rsync -av $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
+	rsync -av $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
 
 flatjar-test:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
@@ -227,7 +228,7 @@ flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
 	$(QUIET)rsync -av --delete build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
-	$(QUIET)rsync -av --delete build/flatgems/data build/jar/
+	$(QUIET)rsync -av --delete build/flatgems/data build/flatgems/vendor build/jar/
 	$(QUIET)(cd lib; rsync -av --delete logstash/web/public ../build/jar/logstash/web/public)
 	$(QUIET)(cd lib; rsync -av --delete logstash/web/views ../build/jar/logstash/web/views)
 	$(QUIET)(cd lib; rsync -av --delete logstash/certs ../build/jar/logstash/certs)
