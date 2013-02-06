@@ -76,22 +76,18 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
     if @fields_are_metrics
       @logger.debug("got metrics event", :metrics => event.fields)
       event.fields.each do |metric,value|
-
+        next unless @include_metrics.any? {|regexp| metric.match(regexp)}
+        next if @exclude_metrics.any? {|regexp| metric.match(regexp)}
         messages << "#{metric} #{value.to_f} #{timestamp}"
       end
     else
       @metrics.each do |metric, value|
         @logger.debug("processing", :metric => metric, :value => value)
+        metric = event.sprintf(metric)
+        next unless @include_metrics.any? {|regexp| metric.match(regexp)}
+        next if @exclude_metrics.any? {|regexp| metric.match(regexp)}
         messages << "#{event.sprintf(metric)} #{event.sprintf(value).to_f} #{timestamp}"
       end
-    end
-
-    @include_metrics.each do |regexp|
-      messages.select!{|m| m.match(regexp)}
-    end
-
-    @exclude_metrics.each do |regexp|
-      messages.select!{|m| !m.match(regexp)}
     end
 
     unless messages.empty?
