@@ -2,6 +2,7 @@ require "logstash/config/file"
 require "logstash/pipeline"
 require "clamp" # gem 'clamp'
 require "cabin" # gem 'cabin'
+require "sys/uname" # gem 'sys-uname'
 
 class LogStash::Agent2 < Clamp::Command
   class ConfigurationError < StandardError; end
@@ -48,7 +49,7 @@ class LogStash::Agent2 < Clamp::Command
     else
       next :debug
     end
-  end
+  end # -v
 
   option ["-V", "--version"], :flag,
     "Emit the version of logstash and its friends"
@@ -60,44 +61,132 @@ class LogStash::Agent2 < Clamp::Command
     "Plugins are expected to be in a specific directory hierarchy: " \
     "'PATH/logstash/TYPE/NAME.rb' where TYPE is 'input' 'filter' or " \
     "'output' and NAME is the name of the plugin.",
-    :attribute_name => :plugin_path  do |value|
+    :attribute_name => :plugin_paths  do |value|
     plugin_paths << value unless plugin_paths.include?(value)
     next plugin_paths
-  end
+  end # -p / --pluginpath
 
+  # Emit a warning message.
   def warn(message)
+    # For now, all warnings are fatal.
     raise ConfigurationError, message
   end # def warn
 
+  # Emit a failure message and abort.
   def fail(message)
     raise ConfigurationError, message
   end # def fail
 
+  # Run the agent. This method is invoked after clamp parses the
+  # flags given to this program.
   def execute
     if version?
-      # TODO(sissel): This should emit the version of JRuby and ElasticSearch as
-      # well. Perhaps also the versions of all gems?
-      require "logstash/version"
-      puts "logstash #{LOGSTASH_VERSION}"
+      show_version
       return 0
     end
 
     logger = Cabin::Channel.get
-    #
     # Set with the -v (or -vv...) flag
     logger.level = verbosity?
 
-    # The -l or --log flag was given
-    if !log_file.nil?
-      # TODO(sissel): Implement file output/rotation in Cabin.
-      # TODO(sissel): Catch exceptions, report sane errors.
-      file = File.new(log_file, "a")
-      puts "Sending all output to #{log_file}."
-      logger.subscribe(file)
+    configure
+
+    # @config_string, @config_path
+    # @filter_workers
+    # @watchdog_timeout
+
+    puts "GO"
+    sleep 5
+    pipeline = LogStash::Pipeline.new(@config_string)
+    trap_id = Stud::trap("INT") { pipeline.shutdown }
+    pipeline.run
+    return 0
+  rescue ConfigurationError => e
+    puts "Error: #{e}"
+    return 1
+
+  rescue => e
+    puts e
+    puts e.backtrace
+  ensure
+    Stud::untrap("INT", trap_id) unless trap_id.nil?
+  end # def execute
+
+  def show_version
+    show_version_logstash
+
+    if RUBY_PLATFORM == "java"
+      show_version_java
+      show_version_jruby
+      show_version_elasticsearch
     end
 
+    # Was the -v or --v flag given? Show all gems, too.
+    show_gems if [:info, :debug].include?(verbosity?)
+  end # def show_version
+
+  def show_version_logstash
+    require "logstash/version"
+    puts "logstash #{LOGSTASH_VERSION}"
+  end # def show_version_logstash
+
+  def show_version_jruby
+    puts "jruby #{JRUBY_VERSION} (ruby #{RUBY_VERSION})"
+  end # def show_version_jruby
+
+  def show_version_elasticsearch
+    # Not running in the jar, assume elasticsearch jars are
+    # in ../../vendor/jar/...
+    if __FILE__ !~ /^(?:jar:)?file:/
+      jarpath = File.join(File.dirname(__FILE__), "../../vendor/jar/elasticsearch*/lib/*.jar")
+      Dir.glob(jarpath).each do |jar|
+        require jar
+      end
+    end
+
+    org.elasticsearch.Version::main([])
+  end # def show_version_elasticsearch
+
+  def show_version_java
+    properties = java.lang.System.getProperties
+    puts "java #{properties["java.version"]} (#{properties["java.vendor"]})"
+    puts "jvm #{properties["java.vm.name"]} / #{properties["java.vm.version"]}"
+  end # def show_version_java
+
+  def show_gems
+    require "rubygems"
+    Gem::Specification.each do |spec|
+      puts "gem #{spec.name} #{spec.version}"
+    end
+  end # def show_gems
+
+  # Do any start-time configuration.
+  #
+  # Log file stuff, plugin path checking, etc.
+  def configure
+    configure_logging(log_file) if !log_file.nil?
+    configure_plugin_path(plugin_paths) if !plugin_paths.nil??
+  end # def configure
+
+  # Point logging at a specific path.
+  def configure_logging(path)
+    logger = Cabin::Channel.get
+    # TODO(sissel): Implement file output/rotation in Cabin.
+    # TODO(sissel): Catch exceptions, report sane errors.
+    begin
+      file = File.new(path, "a")
+    rescue => e
+      fail("Failed to open #{path} for writing: #{e}")
+    end
+    puts "Sending all output to #{path}."
+    logger.subscribe(file)
+  end # def configure_logging
+
+  # Validate and add any paths to the list of locations
+  # logstash will look to find plugins.
+  def configure_plugin_path(paths)
     # Append any plugin paths to the ruby search path
-    plugin_path.each do |path|
+    paths.each do |path|
       # Verify the path exists
       if !Dir.exists?(path)
         warn("This plugin path does not exist: '#{path}'")
@@ -115,23 +204,5 @@ class LogStash::Agent2 < Clamp::Command
       logger.debug("Adding plugin path", :path => path)
       $LOAD_PATH.unshift(path)
     end
-
-    # @config_string, @config_path
-    # @filter_workers
-    # @watchdog_timeout
-    # @plugin_path
-
-    pipeline = LogStash::Pipeline.new(@config_string)
-    trap_id = Stud::trap("INT") { pipeline.shutdown }
-    pipeline.run
-    return 0
-  rescue ConfigurationError => e
-    puts "Error: #{e}"
-    return 1
-  rescue => e
-    puts e
-    puts e.backtrace
-  ensure
-    Stud::untrap("INT", trap_id) unless trap_id.nil?
-  end # def execute
+  end # def configure_plugin_path
 end # class LogStash::Agent2
