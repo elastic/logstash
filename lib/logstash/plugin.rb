@@ -103,4 +103,12 @@ class LogStash::Plugin
     Thread.current[:watchdog] = nil
     Thread.current[:watchdog_state] = nil
   end
+
+  public
+  def inspect
+    description = @config \
+      .select { |k,v| !v.nil? && (v.respond_to?(:empty?) && !v.empty?) } \
+      .collect { |k,v| "#{k}=>#{v.inspect}" }
+    return "<#{self.class.name} #{description.join(", ")}>"
+  end
 end # class LogStash::Plugin
