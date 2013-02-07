@@ -101,6 +101,10 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   # syntax: timer => [ "name of metric", "%{time_value}" ]
   config :timer, :validate => :hash, :default => {}
 
+  # skip events that have @timestamp older than @past_seconds, 0 means allways count
+  # this is usefull then logstash was down/restarted and metrics will get skewed by too many old events
+  config :past_seconds, :validate => :number, :default => 0
+
   def register
     require "metriks"
     require "socket"
@@ -111,6 +115,11 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
 
   def filter(event)
     return unless filter?(event)
+
+    if @past_seconds > 0 && Time.now - event.ruby_timestamp > @past_seconds
+      @logger.debug("Skipping metriks for old event", :event => event)
+      return
+    end
 
     @meter.each do |m|
       @metric_meters[event.sprintf(m)].mark
