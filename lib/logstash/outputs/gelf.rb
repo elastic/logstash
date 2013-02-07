@@ -178,10 +178,10 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     if @level.is_a?(Array)
       @level.each do |value|
         parsed_value = event.sprintf(value)
-        next if value.count('%{') > 0 and parsed_value == value
-
-        level = parsed_value
-        break
+        if parsed_value
+          level = parsed_value
+          break
+        end
       end
     else
       level = event.sprintf(@level.to_s)
