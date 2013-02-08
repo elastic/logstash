@@ -4,7 +4,10 @@ require "sys/uname" # gem sys-uname
 
 module LogStash::Util
   PR_SET_NAME = 15
-  UNAME = Sys::Uname.uname.sysname
+
+  # This can throw an exception, if it does, we're probably not
+  # on linux.
+  UNAME = Sys::Uname.uname.sysname rescue "unknown"
 
   module LibC
     extend FFI::Library
