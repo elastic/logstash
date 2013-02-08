@@ -10,7 +10,7 @@ module LogStash::Util
   begin
     require "sys/uname" # gem sys-uname
     UNAME = Sys::Uname.uname.sysname
-  rescue LoadError, NotFoundError
+  rescue LoadError, FFI::NotFoundError
     UNAME = "unknown"
   end
 
