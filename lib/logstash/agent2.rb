@@ -3,45 +3,39 @@ require "logstash/pipeline"
 require "clamp" # gem 'clamp'
 require "cabin" # gem 'cabin'
 require "sys/uname" # gem 'sys-uname'
+require "i18n" # gem 'i18n'
+
+I18n.load_path << File.expand_path(
+  File.join(File.dirname(__FILE__), "../../locales/en.yml")
+)
 
 class LogStash::Agent2 < Clamp::Command
   class ConfigurationError < StandardError; end
 
   option ["-f", "--config"], "CONFIG_PATH",
-    "Load the logstash config from a specific file or directory. " \
-    "If a direcory is given, all files in that directory will " \
-    "be concatonated in lexicographical order and then parsed as " \
-    "a single config file. You can also specify wildcards (globs)" \
-    "and any matched files will be loaded in the order described above",
+    I18n.t("logstash.agent.flag.config"),
     :attribute_name => :config_path
 
   option "-e", "CONFIG_STRING",
-    "Use the given string as the configuration data. Same syntax as " \
-    "the config file. If not input is specified, then " \
-    "'stdin { type => stdin }' is the default input. If no output is " \
-    "specified, then 'stdout { debug => true }}' is default output.",
+    I18n.t("logstash.agent.flag.config-string"),
     :attribute_name => :config_string
 
   option ["-w", "--filterworkers"], "COUNT",
-    "Sets the number of filter workers to run.",
+    I18n.t("logstash.agent.flag.filterworkers"),
     :attribute_name => :filter_workers, :default => 1, &:to_i
 
   option "--watchdog-timeout", "SECONDS", 
-    "Set the filter watchdog timeout (in seconds). This timeout is used" \
-    " to detect stuck filters; stuck filters usually symptoms of bugs. " \
-    "When a filter takes longer than TIMEOUT seconds, it will cause " \
-    "logstash to abort.", :default => 10, &:to_f
+    I18n.t("logstash.agent.flag.watchdog-timeout"),
+    :default => 10, &:to_f
 
   option ["-l", "--log"], "FILE",
-    "Write logstash internal logs to the given file. Without this flag, " \
-    "logstash will emit logs to standard output.",
+    I18n.t("logstash.agent.flag.log"),
     :attribute_name => :log_file
 
   verbosity = 0
-  option "-v", :flag, "Increase verbosity of logstash internal logs. " \
-    "Specifying once will show 'informational' logs. Specifying twice " \
-    "will show 'debug' logs.", :default => :warn, 
-    :attribute_name => :verbosity do
+  option "-v", :flag, 
+    I18n.t("logstash.agent.flag.verbosity"),
+    :default => :warn, :attribute_name => :verbosity do
     verbosity += 1
 
     if verbosity == 1
@@ -52,16 +46,12 @@ class LogStash::Agent2 < Clamp::Command
   end # -v
 
   option ["-V", "--version"], :flag,
-    "Emit the version of logstash and its friends"
+    I18n.t("logstash.agent.flag.version")
 
   plugin_paths = []
   option ["-p", "--pluginpath"] , "PATH",
-    "A path of where to find plugins. This flag can be " \
-    "given multiple times to include multiple paths. " \
-    "Plugins are expected to be in a specific directory hierarchy: " \
-    "'PATH/logstash/TYPE/NAME.rb' where TYPE is 'input' 'filter' or " \
-    "'output' and NAME is the name of the plugin.",
-    :attribute_name => :plugin_paths  do |value|
+    I18n.t("logstash.agent.flag.pluginpath"),
+    :attribute_name => :plugin_paths do |value|
     plugin_paths << value unless plugin_paths.include?(value)
     next plugin_paths
   end # -p / --pluginpath
@@ -86,6 +76,7 @@ class LogStash::Agent2 < Clamp::Command
     end
 
     logger = Cabin::Channel.get
+
     # Set with the -v (or -vv...) flag
     logger.level = verbosity?
 
@@ -95,19 +86,21 @@ class LogStash::Agent2 < Clamp::Command
     # @filter_workers
     # @watchdog_timeout
 
-    puts "GO"
-    sleep 5
     pipeline = LogStash::Pipeline.new(@config_string)
+
+    # Make SIGINT shutdown the pipeline.
     trap_id = Stud::trap("INT") { pipeline.shutdown }
+
+    # TODO(sissel): Get pipeline completion status.
     pipeline.run
     return 0
   rescue ConfigurationError => e
-    puts "Error: #{e}"
+    puts I18n.t("logstash.agent.error", :error => e)
     return 1
-
   rescue => e
-    puts e
-    puts e.backtrace
+    puts I18n.t("unexpected-exception", :error => e)
+    return 1
+    #puts e.backtrace
   ensure
     Stud::untrap("INT", trap_id) unless trap_id.nil?
   end # def execute
@@ -165,7 +158,7 @@ class LogStash::Agent2 < Clamp::Command
   # Log file stuff, plugin path checking, etc.
   def configure
     configure_logging(log_file) if !log_file.nil?
-    configure_plugin_path(plugin_paths) if !plugin_paths.nil??
+    configure_plugin_path(plugin_paths) if !plugin_paths.nil?
   end # def configure
 
   # Point logging at a specific path.
@@ -176,7 +169,8 @@ class LogStash::Agent2 < Clamp::Command
     begin
       file = File.new(path, "a")
     rescue => e
-      fail("Failed to open #{path} for writing: #{e}")
+      fail(I18n.t("logstash.agent.configuration.log_file_failed",
+                  :path => path, :error => e))
     end
     puts "Sending all output to #{path}."
     logger.subscribe(file)
@@ -189,14 +183,17 @@ class LogStash::Agent2 < Clamp::Command
     paths.each do |path|
       # Verify the path exists
       if !Dir.exists?(path)
-        warn("This plugin path does not exist: '#{path}'")
+        warn(I18n.t("logstash.agent.configuration.plugin_path_missing",
+                    :path => path))
+
       end
 
       # TODO(sissel): Verify the path looks like the correct form.
       # aka, there must be file in path/logstash/{filters,inputs,outputs}/*.rb
       plugin_glob = File.join(path, "logstash", "{inputs,filters,outputs}", "*.rb")
       if Dir.glob(plugin_glob).empty?
-        warn("No plugins were found at #{plugin_glob}")
+        warn(I18n.t("logstash.agent.configuration.no_plugins_found",
+                    :path => path, :plugin_glob => plugin_glob))
       end
 
       # We push plugin paths to the front of the LOAD_PATH so that folks
