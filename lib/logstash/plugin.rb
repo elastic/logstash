@@ -106,9 +106,13 @@ class LogStash::Plugin
 
   public
   def inspect
-    description = @config \
-      .select { |k,v| !v.nil? && (v.respond_to?(:empty?) && !v.empty?) } \
-      .collect { |k,v| "#{k}=>#{v.inspect}" }
-    return "<#{self.class.name} #{description.join(", ")}>"
+    if !@config.nil?
+      description = @config \
+        .select { |k,v| !v.nil? && (v.respond_to?(:empty?) && !v.empty?) } \
+        .collect { |k,v| "#{k}=>#{v.inspect}" }
+      return "<#{self.class.name} #{description.join(", ")}>"
+    else
+      return "<#{self.class.name} --->"
+    end
   end
 end # class LogStash::Plugin
