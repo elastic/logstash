@@ -4,6 +4,7 @@ require "logstash/config/registry"
 require "logstash/logging"
 require "logstash/util/password"
 require "logstash/version"
+require "i18n"
 
 # This module is meant as a mixin to classes wishing to be configurable from
 # config files
@@ -44,9 +45,12 @@ module LogStash::Config::Mixin
   def config_init(params)
     # Validation will modify the values inside params if necessary.
     # For example: converting a string to a number, etc.
+    
+    # store the plugin type, turns LogStash::Inputs::Base into 'input'
+    @plugin_type = self.class.ancestors[1].name.split("::")[1].downcase.gsub(/s$/,"")
     if !self.class.validate(params)
-      @logger.error("Config validation failed.")
-      exit 1
+      raise LogStash::Plugin::ConfigurationError,
+        I18n.t("logstash.agent.configuration.invalid_plugin_settings")
     end
 
     # warn about deprecated variable use
@@ -157,8 +161,9 @@ module LogStash::Config::Mixin
     end # def inherited
 
     def validate(params)
-      @plugin_name = [superclass.config_name, config_name].join("/")
-      @logger = LogStash::Logger.new(STDOUT)
+      @plugin_name = config_name #[superclass.config_name, config_name].join("/")
+      @plugin_type = superclass.config_name
+      @logger = Cabin::Channel.get(LogStash)
       is_valid = true
 
       is_valid &&= validate_plugin_status
@@ -221,8 +226,9 @@ module LogStash::Config::Mixin
         elsif config_key.is_a?(String)
           next if params.keys.member?(config_key)
         end
-        @logger.error("Missing required parameter '#{config_key}' for " \
-                      "#{@plugin_name}")
+        @logger.error(I18n.t("logstash.agent.configuration.setting_missing",
+                             :setting => config_key, :plugin => @plugin_name,
+                             :type => @plugin_type))
         is_valid = false
       end
 
@@ -257,7 +263,9 @@ module LogStash::Config::Mixin
             # Used for converting values in the config to proper objects.
             params[key] = result if !result.nil?
           else
-            @logger.error("Failed config #{@plugin_name}/#{key}: #{result} (#{value.inspect})")
+            @logger.error(I18n.t("logstash.agent.configuration.setting_invalid",
+                                 :plugin => @plugin_name, :type => @plugin_type,
+                                 :value => value, :value_type => config_val))
           end
           #puts "Result: #{key} / #{result.inspect} / #{success}"
           is_valid &&= success

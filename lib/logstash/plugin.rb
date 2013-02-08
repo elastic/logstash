@@ -1,8 +1,11 @@
 require "logstash/namespace"
 require "logstash/logging"
 require "logstash/config/mixin"
+require "cabin"
 
 class LogStash::Plugin
+  class ConfigurationError < StandardError; end
+
   attr_accessor :params
   attr_accessor :logger
 
@@ -20,8 +23,7 @@ class LogStash::Plugin
   public
   def initialize(params=nil)
     @params = params
-    @logger = LogStash::Logger.new(STDOUT)
-    @logger.level = $DEBUG ? :debug : :warn
+    @logger = Cabin::Channel.get(LogStash)
   end
 
   # This method is called when someone or something wants this plugin to shut
@@ -47,6 +49,8 @@ class LogStash::Plugin
   # forever.
   public
   def finished
+    # TODO(sissel): I'm not sure what I had planned for this shutdown_queue
+    # thing
     if @shutdown_queue
       @logger.info("Sending shutdown event to agent queue", :plugin => self)
       @shutdown_queue << self

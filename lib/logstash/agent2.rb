@@ -1,4 +1,5 @@
 require "logstash/config/file"
+require "logstash/plugin"
 require "logstash/pipeline"
 require "clamp" # gem 'clamp'
 require "cabin" # gem 'cabin'
@@ -70,35 +71,36 @@ class LogStash::Agent2 < Clamp::Command
   # Run the agent. This method is invoked after clamp parses the
   # flags given to this program.
   def execute
+    @logger = Cabin::Channel.get(LogStash)
+
     if version?
       show_version
       return 0
     end
 
-    logger = Cabin::Channel.get
-
-    # Set with the -v (or -vv...) flag
-    logger.level = verbosity?
-
     configure
 
-    # @config_string, @config_path
-    # @filter_workers
-    # @watchdog_timeout
-
-    pipeline = LogStash::Pipeline.new(@config_string)
+    begin
+      pipeline = LogStash::Pipeline.new(@config_string)
+    rescue LoadError => e
+      fail("Configuration problem.")
+    end
 
     # Make SIGINT shutdown the pipeline.
-    trap_id = Stud::trap("INT") { pipeline.shutdown }
+    trap_id = Stud::trap("INT") do
+      @logger.warn(I18n.t("logstash.agent.interrupted"))
+      pipeline.shutdown
+    end
 
     # TODO(sissel): Get pipeline completion status.
     pipeline.run
     return 0
-  rescue ConfigurationError => e
+  rescue ConfigurationError, LogStash::Plugin::ConfigurationError => e
     puts I18n.t("logstash.agent.error", :error => e)
     return 1
   rescue => e
     puts I18n.t("unexpected-exception", :error => e)
+    puts e.backtrace if @logger.debug?
     return 1
     #puts e.backtrace
   ensure
@@ -157,23 +159,34 @@ class LogStash::Agent2 < Clamp::Command
   #
   # Log file stuff, plugin path checking, etc.
   def configure
-    configure_logging(log_file) if !log_file.nil?
+    configure_logging(log_file)
     configure_plugin_path(plugin_paths) if !plugin_paths.nil?
   end # def configure
 
   # Point logging at a specific path.
   def configure_logging(path)
-    logger = Cabin::Channel.get
-    # TODO(sissel): Implement file output/rotation in Cabin.
-    # TODO(sissel): Catch exceptions, report sane errors.
-    begin
-      file = File.new(path, "a")
-    rescue => e
-      fail(I18n.t("logstash.agent.configuration.log_file_failed",
-                  :path => path, :error => e))
+    # Set with the -v (or -vv...) flag
+    @logger.level = verbosity?
+    puts "Level: #{verbosity?}"
+    if !log_file.nil?
+      # TODO(sissel): Implement file output/rotation in Cabin.
+      # TODO(sissel): Catch exceptions, report sane errors.
+      begin
+        file = File.new(path, "a")
+      rescue => e
+        fail(I18n.t("logstash.agent.configuration.log_file_failed",
+                    :path => path, :error => e))
+      end
+
+      puts "Sending all output to #{path}."
+      @logger.subscribe(file)
+    else
+      puts "Subscribing to stdout"
+      @logger.subscribe(STDOUT)
     end
-    puts "Sending all output to #{path}."
-    logger.subscribe(file)
+
+    # TODO(sissel): redirect stdout/stderr to the log as well
+    # http://jira.codehaus.org/browse/JRUBY-7003
   end # def configure_logging
 
   # Validate and add any paths to the list of locations
@@ -198,7 +211,7 @@ class LogStash::Agent2 < Clamp::Command
 
       # We push plugin paths to the front of the LOAD_PATH so that folks
       # can override any core logstash plugins if they need to.
-      logger.debug("Adding plugin path", :path => path)
+      @logger.debug("Adding plugin path", :path => path)
       $LOAD_PATH.unshift(path)
     end
   end # def configure_plugin_path
