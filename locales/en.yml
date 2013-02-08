@@ -1,0 +1,80 @@
+# YAML notes
+#   |- means 'scalar block' useful for formatted text
+#   > means 'scalar block' but it chomps all newlines. Useful 
+#     for unformatted text.
+en:
+  unexpected-exception: |-
+    +-------------------------------------------------------
+    | An unexpected error occurred. This is probably a bug.
+    | You can find help with this problem in a few places:
+    | 
+    | * chat: #logstash IRC channel on freenode irc. To get
+    |         to IRC on the web, go here: http://goo.gl/TI4Ro
+    | * email: logstash-users@googlegroups.com 
+    | * bug system: https://logstash.jira.com/
+    |
+    +-------------------------------------------------------
+    The error reported is: 
+      %{error}
+  logstash:
+    agent:
+      error: |-
+        Error: %{error}
+      configuration:
+        plugin_path_missing: |-
+          You specified a plugin path that does not exist: %{path}
+        no_plugins_found: |-
+          Could not find any plugins in "%{path}"
+          I tried to find files matching the following, but found none: 
+            %{plugin_glob}
+        log_file_failed: |-
+          Failed to open %{path} for writing: %{error}
+
+          This is often a permissions issue, or the wrong 
+          path was specified?
+      flag:
+        # Wrap these at 45 chars so they display nicely when clamp emits them in
+        # an 80-character terminal
+        config: |-
+          Load the logstash config from a specific file
+          or directory.  If a direcory is given, all
+          files in that directory will be concatonated
+          in lexicographical order and then parsed as a
+          single config file. You can also specify
+          wildcards (globs) and any matched files will
+          be loaded in the order described above.
+        config-string: |-
+          Use the given string as the configuration
+          data. Same syntax as the config file. If not
+          input is specified, then 'stdin { type =|-
+          stdin }' is the default input. If no output
+          is specified, then 'stdout { debug => true
+          }}' is default output.
+        filterworkers: |-
+          Sets the number of filter workers to run.
+        watchdog-timeout: |-
+          Set the filter watchdog timeout (in seconds).
+          This timeout is used to detect stuck filters;
+          stuck filters usually symptoms of bugs.
+          When a filter takes longer than TIMEOUT
+          seconds, it will cause logstash to abort.
+        log: |-
+          Write logstash internal logs to the given
+          file. Without this flag, logstash will emit
+          logs to standard output.
+        verbosity: |-
+          Increase verbosity of logstash internal logs.
+          Specifying once will show 'informational'
+          logs. Specifying twice will show 'debug'
+          logs.
+        version: |-
+          Emit the version of logstash and its friends,
+          then exit.
+        pluginpath: |-
+          A path of where to find plugins. This flag
+          can be given multiple times to include
+          multiple paths. Plugins are expected to be
+          in a specific directory hierarchy:
+          'PATH/logstash/TYPE/NAME.rb' where TYPE is
+          'input' 'filter' or 'output' and NAME is the
+          name of the plugin.
