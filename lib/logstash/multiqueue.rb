@@ -1,12 +1,12 @@
 require "logstash/namespace"
-require "logstash/logging"
+require "cabin"
 
 class LogStash::MultiQueue
   attr_accessor :logger
 
   public
   def initialize(*queues)
-    @logger = LogStash::Logger.new(STDOUT)
+    @logger = Cabin::Channel.get(LogStash)
     @mutex = Mutex.new
     @queues = queues
   end # def initialize

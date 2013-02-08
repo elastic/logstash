@@ -17,10 +17,38 @@ en:
     The error reported is: 
       %{error}
   logstash:
+    pipeline:
+      worker-error: |-
+        A plugin had an unrecoverable error. Will restart this plugin.
+          Plugin: %{plugin}
+          Error: %{error}
     agent:
       error: |-
         Error: %{error}
+      interrupted: |-
+        Interrupt received. Shutting down the pipeline.
       configuration:
+        setting_missing: |-
+          Missing a required setting for the %{plugin} %{type} plugin:
+
+            %{type} {
+              %{plugin} {
+                %{setting} => # MISSING
+                ...
+              }
+            }
+        setting_invalid: |-
+          Invalid setting for %{plugin} %{type} plugin:
+
+            %{type} {
+              %{plugin} {
+                # This setting must be a %{value_type}
+                %{setting} => %{value}
+                ...
+              }
+            }
+        invalid_plugin_settings: |-
+          Something is wrong with your configuration.
         plugin_path_missing: |-
           You specified a plugin path that does not exist: %{path}
         no_plugins_found: |-
