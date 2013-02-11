@@ -4,6 +4,11 @@ require "logstash/namespace"
 # statsd is a server for aggregating counters and other metrics to ship to
 # graphite.
 #
+# The most basic coverage of this plugin is that the 'namespace', 'sender', and
+# 'metric' names are combined into the full metric path like so:
+#
+#     namespace.sender.metric
+#
 # The general idea is that you send statsd count or latency data and every few
 # seconds it will emit the aggregated values to graphite (aggregates like
 # average, max, stddev, etc)
