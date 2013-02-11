@@ -167,7 +167,6 @@ class LogStash::Agent2 < Clamp::Command
   def configure_logging(path)
     # Set with the -v (or -vv...) flag
     @logger.level = verbosity?
-    puts "Level: #{verbosity?}"
     if !log_file.nil?
       # TODO(sissel): Implement file output/rotation in Cabin.
       # TODO(sissel): Catch exceptions, report sane errors.
@@ -181,7 +180,6 @@ class LogStash::Agent2 < Clamp::Command
       puts "Sending all output to #{path}."
       @logger.subscribe(file)
     else
-      puts "Subscribing to stdout"
       @logger.subscribe(STDOUT)
     end
 
