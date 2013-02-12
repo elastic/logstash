@@ -2,44 +2,42 @@ require "logstash/inputs/threadable"
 require "logstash/namespace"
 require "cgi" # for CGI.escape
 
-# Pull events from an AMQP exchange.
-#
-# <b> NOTE: THIS IS ONLY KNOWN TO WORK WITH RECENT RELEASES OF RABBITMQ. Any
-# other amqp broker will not work with this plugin. I do not know why. If you
-# need support for brokers other than rabbitmq, please file bugs here:
-# <https://github.com/ruby-amqp/bunny> </b>
+# Pull events from a RabbitMQ exchange.
 #
 # The default settings will create an entirely transient queue and listen for all messages by default.
 # If you need durability or any other advanced settings, please set the appropriate options
-class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
+#
+# This has been tested with Bunny 0.9.x, which supports RabbitMQ 2.x and 3.x. You can
+# find links to both here:
+#
+# * RabbitMQ - <http://www.rabbitmq.com/>
+# * Bunny - <https://github.com/ruby-amqp/bunny>
+class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
-  config_name "amqp"
-  plugin_status "unsupported"
+  config_name "rabbitmq"
+  plugin_status "beta"
 
-  # Your amqp broker's custom arguments. For mirrored queues in RabbitMQ: [ "x-ha-policy", "all" ]
+  # Custom arguments. For example, mirrored queues in RabbitMQ 2.x:  [ "x-ha-policy", "all" ]
+  # RabbitMQ 3.x mirrored queues are set by policy. More information can be found
+  # here: http://www.rabbitmq.com/blog/2012/11/19/breaking-things-with-rabbitmq-3-0/
   config :arguments, :validate => :array, :default => []
 
-  # Your amqp server address
+  # Your rabbitmq server address
   config :host, :validate => :string, :required => true
 
-  # The AMQP port to connect on
+  # The rabbitmq port to connect on
   config :port, :validate => :number, :default => 5672
 
-  # Your amqp username
+  # Your rabbitmq username
   config :user, :validate => :string, :default => "guest"
 
-  # Your amqp password
+  # Your rabbitmq password
   config :password, :validate => :password, :default => "guest"
-
-  # The name of the queue. Depricated due to conflicts with puppet naming convention.
-  # Replaced by 'queue' variable. See LOGSTASH-755
-  config :name, :validate => :string, :deprecated => true
 
   # The name of the queue.
   config :queue, :validate => :string, :default => ""
 
-  # The name of the exchange to bind the queue. This is analogous to the 'amqp
-  # output' [config 'name'](../outputs/amqp)
+  # The name of the exchange to bind the queue.
   config :exchange, :validate => :string, :required => true
 
   # The routing key to use. This is only valid for direct or fanout exchanges
@@ -80,6 +78,9 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
 
   # Validate SSL certificate
   config :verify_ssl, :validate => :boolean, :default => false
+  
+  # Maximum permissible size of a frame (in bytes) to negotiate with clients
+  config :frame_max, :validate => :number, :default => 131072
 
   public
   def initialize(params)
@@ -90,43 +91,41 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
   end # def initialize
 
   public
-  def register
-
-    if @name
-      if @queue
-        @logger.error("'name' and 'queue' are the same setting, but 'name' is deprecated. Please use only 'queue'")
-      end
-      @queue = @name
-    end   
+  def register   
 
     @logger.info("Registering input #{@url}")
-    require "bunny" # rubygem 'bunny'
+    require "bunny"
+    
     @vhost ||= "/"
     @port ||= 5672
     @key ||= "#"
-    @amqpsettings = {
+    
+    @rabbitmq_settings = {
       :vhost => @vhost,
       :host => @host,
       :port => @port,
     }
-    @amqpsettings[:user] = @user if @user
-    @amqpsettings[:pass] = @password.value if @password
-    @amqpsettings[:logging] = @debug
-    @amqpsettings[:ssl] = @ssl if @ssl
-    @amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
-    @amqpurl = "amqp://"
+    
+    @rabbitmq_settings[:user] = @user if @user
+    @rabbitmq_settings[:pass] = @password.value if @password
+    @rabbitmq_settings[:logging] = @debug
+    @rabbitmq_settings[:ssl] = @ssl if @ssl
+    @rabbitmq_settings[:verify_ssl] = @verify_ssl if @verify_ssl
+    @rabbitmq_settings[:frame_max] = @frame_max if @frame_max
+    
+    @rabbitmq_url = "amqp://"
     if @user
-      @amqpurl << @user if @user
-      @amqpurl << ":#{CGI.escape(@password.to_s)}" if @password
-      @amqpurl << "@"
+      @rabbitmq_url << @user if @user
+      @rabbitmq_url << ":#{CGI.escape(@password.to_s)}" if @password
+      @rabbitmq_url << "@"
     end
-    @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@queue}"
+    @rabbitmq_url += "#{@host}:#{@port}#{@vhost}/#{@queue}"
   end # def register
 
   def run(queue)
     begin
-      @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up queue #{@queue.inspect}")
-      @bunny = Bunny.new(@amqpsettings)
+      @logger.debug("Connecting with RabbitMQ settings #{@rabbitmq_settings.inspect} to set up queue #{@queue.inspect}")
+      @bunny = Bunny.new(@rabbitmq_settings)
       return if terminating?
       @bunny.start
       @bunny.qos({:prefetch_count => @prefetch_count})
@@ -137,14 +136,14 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
       @bunnyqueue.bind(@exchange, :key => @key)
 
       @bunnyqueue.subscribe({:ack => @ack}) do |data|
-        e = to_event(data[:payload], @amqpurl)
+        e = to_event(data[:payload], @rabbitmq_url)
         if e
           queue << e
         end
       end # @bunnyqueue.subscribe
 
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
-      @logger.error("AMQP connection error, will reconnect: #{e}")
+      @logger.error("RabbitMQ connection error, will reconnect: #{e}")
       # Sleep for a bit before retrying.
       # TODO(sissel): Write 'backoff' method?
       sleep(1)
@@ -158,4 +157,4 @@ class LogStash::Inputs::Amqp < LogStash::Inputs::Threadable
     @bunny.close if @bunny
     finished
   end # def teardown
-end # class LogStash::Inputs::Amqp
+end # class LogStash::Inputs::RabbitMQ
