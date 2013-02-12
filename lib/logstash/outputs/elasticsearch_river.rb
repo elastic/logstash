@@ -5,8 +5,8 @@ require "uri"
 require "net/http"
 
 # This output lets you store logs in elasticsearch. It's similar to the
-# 'elasticsearch' output but improves performance by using an AMQP server,
-# such as rabbitmq, to send data to elasticsearch.
+# 'elasticsearch' output but improves performance by using a queue server,
+# rabbitmq, to send data to elasticsearch.
 #
 # Upon startup, this output will automatically contact an elasticsearch cluster
 # and configure it to read from the queue to which we write.
@@ -41,43 +41,42 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   # ElasticSearch river configuration: bulk timeout in milliseconds
   config :es_bulk_timeout_ms, :validate => :number, :default => 100
+  
+  # ElasticSearch river configuration: is ordered?
+  config :es_ordered, :validate => :boolean, :default => false
 
-  # Hostname of AMQP server
-  config :amqp_host, :validate => :string, :required => true
+  # Hostname of RabbitMQ server
+  config :rabbitmq_host, :validate => :string, :required => true
 
-  # Port of AMQP server
-  config :amqp_port, :validate => :number, :default => 5672
+  # Port of RabbitMQ server
+  config :rabbitmq_port, :validate => :number, :default => 5672
 
-  # AMQP user
+  # RabbitMQ user
   config :user, :validate => :string, :default => "guest"
 
-  # AMQP password
+  # RabbitMQ password
   config :password, :validate => :string, :default => "guest"
 
-  # AMQP vhost
+  # RabbitMQ vhost
   config :vhost, :validate => :string, :default => "/"
 
-  # AMQP queue name. Depricated due to conflicts with puppet naming convention.
-  # Replaced by 'queue' variable. See LOGSTASH-755
-  config :name, :validate => :string, :deprecated => true
-
-  # AMQP queue name
+  # RabbitMQ queue name
   config :queue, :validate => :string, :default => "elasticsearch"
   
-  # AMQP exchange name
+  # RabbitMQ exchange name
   config :exchange, :validate => :string, :default => "elasticsearch"
 
   # The exchange type (fanout, topic, direct)
   config :exchange_type, :validate => [ "fanout", "direct", "topic"],
          :default => "direct"
 
-  # AMQP routing key
+  # RabbitMQ routing key
   config :key, :validate => :string, :default => "elasticsearch"
 
-  # AMQP durability setting. Also used for ElasticSearch setting
+  # RabbitMQ durability setting. Also used for ElasticSearch setting
   config :durable, :validate => :boolean, :default => true
 
-  # AMQP persistence setting
+  # RabbitMQ persistence setting
   config :persistent, :validate => :boolean, :default => true
 
   # The document ID for the index. Useful for overwriting existing entries in
@@ -106,12 +105,12 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   protected
   def prepare_river
-    require "logstash/outputs/amqp"
+    require "logstash/outputs/rabbitmq"
 
     # Configure the message plugin
     params = {
-      "host" => [@amqp_host],
-      "port" => [@amqp_port],
+      "host" => [@rabbitmq_host],
+      "port" => [@rabbitmq_port],
       "user" => [@user],
       "password" => [@password],
       "exchange_type" => [@exchange_type],
@@ -122,7 +121,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       "persistent" => [@persistent.to_s],
       "debug" => [@debug.to_s],
     }.reject {|k,v| v.first.nil?}
-    @mq = LogStash::Outputs::Amqp.new(params)
+    @mq = LogStash::Outputs::RabbitMQ.new(params)
     @mq.register
 
     # Set up the river
@@ -132,13 +131,17 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       # Name the river by our hostname
       require "socket"
       hostname = Socket.gethostname
-      api_path = "/_river/logstash-#{hostname.gsub('.','_')}/_meta"
-      @status_path = "/_river/logstash-#{hostname.gsub('.','_')}/_status"
+      
+      # Replace spaces with hyphens and remove all non-alpha non-dash non-underscore characters
+      river_name = "#{hostname} #{@queue}".gsub(' ', '-').gsub(/[^\w-]/, '')
+      
+      api_path = "/_river/logstash-#{river_name}/_meta"
+      @status_path = "/_river/logstash-#{river_name}/_status"
 
       river_config = {"type" => "rabbitmq",
                       "rabbitmq" => {
-                                "host" => @amqp_host=="localhost" ? hostname : @amqp_host,
-                                "port" => @amqp_port,
+                                "host" => @rabbitmq_host=="localhost" ? hostname : @rabbitmq_host,
+                                "port" => @rabbitmq_port,
                                 "user" => @user,
                                 "pass" => @password,
                                 "vhost" => @vhost,
@@ -147,10 +150,11 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
                                 "routing_key" => @key,
                                 "exchange_type" => @exchange_type,
                                 "exchange_durable" => @durable.to_s,
-                                "queue_durable" => @durable.to_s,
+                                "queue_durable" => @durable.to_s
                                },
                       "index" => {"bulk_size" => @es_bulk_size,
                                  "bulk_timeout" => "#{@es_bulk_timeout_ms}ms",
+                                 "ordered" => @es_ordered
                                 },
                      }
       @logger.info("ElasticSearch using river", :config => river_config)
