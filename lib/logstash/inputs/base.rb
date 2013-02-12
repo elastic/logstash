@@ -24,7 +24,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   config :debug, :validate => :boolean, :default => false
 
   # The format of input data (plain, json, json_event)
-  config :format, :validate => ["plain", "json", "json_event"]
+  config :format, :validate => ["plain", "json", "json_event", "msgpack_event"]
 
   # The character encoding used in this input. Examples include "UTF-8"
   # and "cp1252"
@@ -124,6 +124,26 @@ class LogStash::Inputs::Base < LogStash::Plugin
                      :input => raw, :source => source, :exception => e)
         event.message = raw
         event.tags << "_jsonparsefailure"
+      end
+
+      if event.source == "unknown"
+        event.source = source
+      end
+    when "msgpack_event"
+      begin
+        # Msgpack does not care about UTF-8
+        event = LogStash::Event.new(MessagePack.unpack(raw))
+        event.tags += @tags
+        if @message_format
+          event.message ||= event.sprintf(@message_format)
+        end
+      rescue => e
+        ## TODO(sissel): Instead of dropping the event, should we treat it as
+        ## plain text and try to do the best we can with it?
+        @logger.warn("Trouble parsing msgpack input, falling back to plain text",
+                     :input => raw, :source => source, :exception => e)
+        event.message = raw
+        event.tags << "_msgpackparsefailure"
       end
 
       if event.source == "unknown"
