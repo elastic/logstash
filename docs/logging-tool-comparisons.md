@@ -22,7 +22,7 @@ It provides you a simple event pipeline for taking events and logs from any
 input, manipulating them with filters, and sending them to any output. Inputs
 can be files, network, message brokers, etc. Filters are date and string
 parsers, grep-like, etc. Outputs are data stores (elasticsearch, mongodb, etc),
-message systems (amqp, stomp, etc), network (tcp, syslog), etc.
+message systems (rabbitmq, stomp, etc), network (tcp, syslog), etc.
 
 It also provides a web interface for doing search and analytics on your
 logs.
