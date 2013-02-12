@@ -64,6 +64,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "murmurhash3"
   gem.add_runtime_dependency "rufus-scheduler"
   gem.add_runtime_dependency "user_agent_parser", [">= 2.0.0"]
+  gem.add_runtime_dependency "snmp"
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
