@@ -10,8 +10,8 @@ require "tempfile"
 # Logstash releases ship with the regexes.yaml database made available from
 # ua-parser with an Apache 2.0 license. For more details on ua-parser, see
 # <https://github.com/tobie/ua-parser/>.
-class LogStash::Filters::UAParser < LogStash::Filters::Base
-  config_name "uaparser"
+class LogStash::Filters::UserAgent < LogStash::Filters::Base
+  config_name "useragent"
   plugin_status "experimental"
 
   # The field containing the user agent string. If this field is an
@@ -65,7 +65,7 @@ class LogStash::Filters::UAParser < LogStash::Filters::Base
       @logger.error("Uknown error while parsing user agent data", :exception => e, :field => @source, :event => event)
     end
 
-    unless ua_data.nil?
+    if !ua_data.nil?
         event[@target] = {} if event[@target].nil?
 
         event[@target]["name"] = ua_data.name
@@ -83,5 +83,5 @@ class LogStash::Filters::UAParser < LogStash::Filters::Base
     end
 
   end # def filter
-end # class LogStash::Filters::UAParser
+end # class LogStash::Filters::UserAgent
 
