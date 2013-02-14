@@ -32,11 +32,6 @@ module LogStash::EventV0
   end
 
   public
-  def self.from_json(json)
-    return LogStash::Event.new(JSON.parse(json))
-  end # def self.from_json
-
-  public
   def cancel
     @cancelled = true
   end # def cancel
@@ -299,4 +294,17 @@ module LogStash::EventV0
 
     return other.to_hash == self.to_hash
   end # def ==
+
+  # Add class methods on inclusion.
+  def self.included(klass)
+    klass.extend(ClassMethods)
+  end # def included
+
+  module ClassMethods
+    public
+    def from_json(json)
+      return self.new(JSON.parse(json))
+    end # def from_json
+  end
+
 end # module LogStash::EventV0
