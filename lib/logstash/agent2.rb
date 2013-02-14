@@ -4,11 +4,6 @@ require "logstash/pipeline"
 require "clamp" # gem 'clamp'
 require "cabin" # gem 'cabin'
 require "sys/uname" # gem 'sys-uname'
-require "i18n" # gem 'i18n'
-
-I18n.load_path << File.expand_path(
-  File.join(File.dirname(__FILE__), "../../locales/en.yml")
-)
 
 class LogStash::Agent2 < Clamp::Command
   class ConfigurationError < StandardError; end
