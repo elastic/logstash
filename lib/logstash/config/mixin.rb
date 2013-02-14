@@ -47,7 +47,7 @@ module LogStash::Config::Mixin
     # For example: converting a string to a number, etc.
     
     # store the plugin type, turns LogStash::Inputs::Base into 'input'
-    @plugin_type = self.class.ancestors[1].name.split("::")[1].downcase.gsub(/s$/,"")
+    @plugin_type = self.class.ancestors.find { |a| a.name =~ /::Base$/ }.config_name
     if !self.class.validate(params)
       raise LogStash::Plugin::ConfigurationError,
         I18n.t("logstash.agent.configuration.invalid_plugin_settings")
@@ -162,7 +162,8 @@ module LogStash::Config::Mixin
 
     def validate(params)
       @plugin_name = config_name #[superclass.config_name, config_name].join("/")
-      @plugin_type = superclass.config_name
+      @plugin_type = ancestors.find { |a| a.name =~ /::Base$/ }.config_name
+      #.name.split("::")[1].downcase.gsub(/s$/,"")
       @logger = Cabin::Channel.get(LogStash)
       is_valid = true
 
