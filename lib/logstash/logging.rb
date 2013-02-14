@@ -2,27 +2,41 @@ require "logstash/namespace"
 require "cabin"
 require "logger"
 
-class LogStash::Logger < Cabin::Channel
+class LogStash::Logger 
   attr_accessor :target
 
   public
   def initialize(*args)
     super()
 
-    # Set default loglevel to WARN unless $DEBUG is set (run with 'ruby -d')
-    @level = $DEBUG ? :debug : :warn
-    if ENV["LOGSTASH_DEBUG"]
-      self.level = :debug
-    end
-
     #self[:program] = File.basename($0)
     #subscribe(::Logger.new(*args))
     @target = args[0]
-    subscribe(@target)
+    @channel = Cabin::Channel.get(LogStash)
+    @channel.subscribe(@target)
+ 
+    # Set default loglevel to WARN unless $DEBUG is set (run with 'ruby -d')
+    @level = $DEBUG ? :debug : :warn
+    if ENV["LOGSTASH_DEBUG"]
+      @level = :debug
+    end
 
     # Direct metrics elsewhere.
-    metrics.channel = Cabin::Channel.new
+    @channel.metrics.channel = Cabin::Channel.new
   end # def initialize
+
+  # Delegation
+  def level=(value) @channel.level = value; end
+  def debug(*args); @channel.debug(*args); end
+  def debug?(*args); @channel.debug?(*args); end
+  def info(*args); @channel.info(*args); end
+  def info?(*args); @channel.info?(*args); end
+  def warn(*args); @channel.warn(*args); end
+  def warn?(*args); @channel.warn?(*args); end
+  def error(*args); @channel.error(*args); end
+  def error?(*args); @channel.error?(*args); end
+  def fatal(*args); @channel.fatal(*args); end
+  def fatal?(*args); @channel.fatal?(*args); end
 
   def setup_log4j(logger="")
     require "java"
