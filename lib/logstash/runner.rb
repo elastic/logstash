@@ -4,6 +4,11 @@ require "logstash/util"
 require "logstash/JRUBY-6970"
 require "stud/trap"
 
+require "i18n" # gem 'i18n'
+I18n.load_path << File.expand_path(
+  File.join(File.dirname(__FILE__), "../../locales/en.yml")
+)
+
 if ENV["PROFILE_BAD_LOG_CALLS"]
   # Set PROFILE_BAD_LOG_CALLS=1 in your environment if you want
   # to track down logger calls that cause performance problems
