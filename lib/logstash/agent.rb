@@ -33,6 +33,9 @@ class LogStash::Agent
   public
   def initialize
     log_to(STDERR)
+    # default log level for now.
+    @logger.level = :warn 
+
     @config_path = nil
     @config_string = nil
     @is_yaml = false
@@ -332,7 +335,11 @@ class LogStash::Agent
     @logger.info("Start thread")
     @thread = Thread.new do
       LogStash::Util::set_thread_name(self.class.name)
-      run_with_config(config, &block)
+      begin
+        run_with_config(config, &block)
+      rescue => e
+        @logger.warn(e.to_s)
+      end
     end
 
     return remaining
