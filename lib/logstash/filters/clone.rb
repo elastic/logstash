@@ -24,8 +24,10 @@ class LogStash::Filters::Clone < LogStash::Filters::Base
     @clones.each do |type|
       clone = event.clone
       clone.type = type
-      filter_matched(event_split)
+      filter_matched(clone)
       @logger.debug("Cloned event", :clone => clone, :event => event)
+
+      # Push this new event onto the stack at the LogStash::FilterWorker
       yield clone
     end
   end
