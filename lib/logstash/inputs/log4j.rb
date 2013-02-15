@@ -55,30 +55,25 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
       loop do
         # NOTE: event_raw is org.apache.log4j.spi.LoggingEvent
         event_obj = ois.readObject()
-        event_data = {
-          "@type" => type,
-          "@tags" => tags,
-          "@source" => event_source,
-          "@source_host" => socket.peer,
-          "@source_path" => event_obj.getLoggerName(),
-          "@fields" => { "priority" => event_obj.getLevel().toString(), "logger_name" => event_obj.getLoggerName(), 
-                         "thread" => event_obj.getThreadName(), "class" => event_obj.getLocationInformation().getClassName(),
-                         "file" => event_obj.getLocationInformation().getFileName() + ":" + event_obj.getLocationInformation().getLineNumber(),
-                         "method" => event_obj.getLocationInformation().getMethodName()
-          },
-          "@message" => event_obj.getRenderedMessage() 
-        }
-        event_data["@fields"]["NDC"] = event_obj.getNDC() if event_obj.getNDC()
-        event_data["@fields"]["stack_trace"] = event_obj.getThrowableStrRep().to_a.join("\n") if event_obj.getThrowableInformation()
+        e = to_event(event_obj.getRenderedMessage(), event_source)
+        e.source_host = socket.peer
+        e.source_path = event_obj.getLoggerName()
+        e["priority"] = event_obj.getLevel().toString()
+        e["logger_name"] = event_obj.getLoggerName()
+        e["thread"] = event_obj.getThreadName()
+        e["class"] = event_obj.getLocationInformation().getClassName()
+        e["file"] = event_obj.getLocationInformation().getFileName() + ":" + event_obj.getLocationInformation().getLineNumber(),
+        e["method"] = event_obj.getLocationInformation().getMethodName()
+        e["NDC"] = event_obj.getNDC() if event_obj.getNDC()
+        e["stack_trace"] = event_obj.getThrowableStrRep().to_a.join("\n") if event_obj.getThrowableInformation()
         
         # Add the MDC context properties to '@fields'
         if event_obj.getProperties()
           event_obj.getPropertyKeySet().each do |key|
-            event_data["@fields"][key] = event_obj.getProperty(key)
+            e[key] = event_obj.getProperty(key)
           end  
         end  
 
-        e = ::LogStash::Event.new event_data
         if e
           output_queue << e
         end
