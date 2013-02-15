@@ -33,6 +33,9 @@ class LogStash::Agent
   public
   def initialize
     log_to(STDERR)
+    # default log level for now.
+    @logger.level = :warn 
+
     @config_path = nil
     @config_string = nil
     @is_yaml = false
@@ -152,8 +155,8 @@ class LogStash::Agent
     # Load any plugins that we have flags for.
     # TODO(sissel): The --<plugin> flag support currently will load
     # any matching plugins input, output, or filter. This means, for example,
-    # that the 'amqp' input *and* output plugin will be loaded if you pass
-    # --amqp-foo flag. This might cause confusion, but it seems reasonable for
+    # that the 'rabbitmq' input *and* output plugin will be loaded if you pass
+    # --rabbitmq-foo flag. This might cause confusion, but it seems reasonable for
     # now that any same-named component will have the same flags.
     plugins = []
     args.each do |arg|
@@ -332,7 +335,11 @@ class LogStash::Agent
     @logger.info("Start thread")
     @thread = Thread.new do
       LogStash::Util::set_thread_name(self.class.name)
-      run_with_config(config, &block)
+      begin
+        run_with_config(config, &block)
+      rescue => e
+        @logger.warn(e.to_s)
+      end
     end
 
     return remaining

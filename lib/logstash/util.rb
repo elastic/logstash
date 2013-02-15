@@ -1,10 +1,18 @@
 require "logstash/namespace"
 require "ffi" # gem ffi
-require "sys/uname" # gem sys-uname
 
 module LogStash::Util
   PR_SET_NAME = 15
-  UNAME = Sys::Uname.uname.sysname
+
+  # This can throw an exception, if it does, we're probably not on linux.
+  # It certainly throws an exception on Windows; I don't know how
+  # to work around it other than this hack.
+  begin
+    require "sys/uname" # gem sys-uname
+    UNAME = Sys::Uname.uname.sysname
+  rescue LoadError, FFI::NotFoundError
+    UNAME = "unknown"
+  end
 
   module LibC
     extend FFI::Library

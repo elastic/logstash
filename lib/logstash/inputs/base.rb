@@ -12,12 +12,17 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # Label this input with a type.
   # Types are used mainly for filter activation.
   #
-  #
   # If you create an input with type "foobar", then only filters
   # which also have type "foobar" will act on them.
   #
   # The type is also stored as part of the event itself, so you
   # can also use the type to search for in the web interface.
+  #
+  # If you try to set a type on an event that already has one (for
+  # example when you send an event from a shipper to an indexer) then
+  # a new input will not override the existing type. A type set at 
+  # the shipper stays with that event for its life even
+  # when sent to another LogStash server.
   config :type, :validate => :string, :required => true
 
   # Set this to true to enable debugging on an input.
@@ -101,8 +106,8 @@ class LogStash::Inputs::Base < LogStash::Plugin
           event.message = raw
         end
       rescue => e
-        ## TODO(sissel): Instead of dropping the event, should we treat it as
-        ## plain text and try to do the best we can with it?
+        # Instead of dropping the event, should we treat it as
+        # plain text and try to do the best we can with it?
         @logger.warn("Trouble parsing json input, falling back to plain text",
                      :input => raw, :source => source, :exception => e)
         event.message = raw
@@ -118,8 +123,8 @@ class LogStash::Inputs::Base < LogStash::Plugin
           event.message ||= event.sprintf(@message_format)
         end
       rescue => e
-        ## TODO(sissel): Instead of dropping the event, should we treat it as
-        ## plain text and try to do the best we can with it?
+        # Instead of dropping the event, should we treat it as
+        # plain text and try to do the best we can with it?
         @logger.warn("Trouble parsing json input, falling back to plain text",
                      :input => raw, :source => source, :exception => e)
         event.message = raw

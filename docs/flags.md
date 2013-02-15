@@ -10,7 +10,9 @@ The logstash agent has the following flags (also try using the '--help' flag)
 
 <dl>
 <dt> -f, --config CONFIGFILE </dt>
-<dd> Load the logstash config from a specific file, directory, or a wildcard. If given a directory or wildcard, config files will be read in order lexigraphically.  </dd>
+<dd> Load the logstash config from a specific file, directory, or a
+wildcard. If given a directory or wildcard, config files will be read
+from the directory in alphabetical order. </dd>
 <dt> -e CONFIGSTRING </dt>
 <dd> Use the given string as the configuration data. Same syntax as the
 config file. If not input is specified, 'stdin { type => stdin }' is

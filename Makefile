@@ -125,10 +125,6 @@ vendor/bundle: | vendor $(JRUBY)
 	@echo "=> Installing gems to $@..."
 	@#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
 	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec
-	@# rubygems is rejecting pushes right now, so use a temporary locatin for lumberjack
-	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall jls-lumberjack
-	$(QUIET)rm jls-lumberjack*gem; wget http://jls.objects.dreamhost.com/gems/lumberjack/jls-lumberjack-0.0.16.gem
-	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem install --local jls-lumberjack-0.0.16.gem
 	@# Purge old version of json
 	#$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall json -v 1.6.5
 	@# Purge old versions of gems installed because gembag doesn't do 
@@ -136,7 +132,7 @@ vendor/bundle: | vendor $(JRUBY)
 	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall addressable -v 2.2.8
 	@# uninstall the newer ffi (1.1.5 vs 1.3.1) because that's what makes
 	@#dependencies happy (launchy wants ffi 1.1.x)
-	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall ffi -v 1.3.1
+	#$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall ffi -v 1.3.1
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
 	-rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
@@ -208,6 +204,7 @@ build/flatgems: | build vendor/bundle
 	@# all the gem specs.
 	rsync -av $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
 	rsync -av $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
+	rsync -av $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
 
 flatjar-test:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
@@ -227,7 +224,7 @@ flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
 	$(QUIET)rsync -av --delete build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
-	$(QUIET)rsync -av --delete build/flatgems/data build/jar/
+	$(QUIET)rsync -av --delete build/flatgems/data build/flatgems/vendor build/jar/
 	$(QUIET)(cd lib; rsync -av --delete logstash/web/public ../build/jar/logstash/web/public)
 	$(QUIET)(cd lib; rsync -av --delete logstash/web/views ../build/jar/logstash/web/views)
 	$(QUIET)(cd lib; rsync -av --delete logstash/certs ../build/jar/logstash/certs)

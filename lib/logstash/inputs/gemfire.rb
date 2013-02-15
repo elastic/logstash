@@ -234,4 +234,4 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
   def afterRegionInvalidate(event)
     @logger.debug("afterRegionInvalidate #{event}")
   end
-end # class LogStash::Inputs::Amqp
+end # class LogStash::Inputs::Gemfire
