@@ -26,8 +26,38 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
   #
   # The above would parse the xml from @message and store the resulting
   # document into the 'doc' field.
+  config /[A-Za-z0-9_-]+/, :validate => :string, :deprecated => true
+
+  # Config for xml to hash is:
   #
-  config /[A-Za-z0-9_-]+/, :validate => :string
+  #     source => source_field
+  #
+  # For example, if you have the whole xml document in your @message field:
+  #
+  #     filter {
+  #       xml {
+  #         source => "@message"
+  #       }
+  #     }
+  #
+  # The above would parse the xml from the @message field
+  config :source, :validate => :string
+
+  # Define target for placing the data
+  #
+  # for example if you want the data to be put in the 'doc' field:
+  #
+  #     filter {
+  #       xml {
+  #         target => "doc"
+  #       }
+  #     }
+  #
+  # XML in the value of the source field will be expanded into a
+  # datastructure in the "target" field.
+  # Note: if the "target" field already exists, it will be overridden
+  # Required
+  config :target, :validate => :string
 
   # xpath will additionally select string values (.to_s on whatever is selected)
   # from parsed XML (using each source field defined using the method above)
@@ -57,11 +87,17 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
     require "xmlsimple"
     @xml = {}
 
+    #TODO(electrical): Will be removed when its fully deprecated
     @config.each do |field, dest|
-      next if (RESERVED + ["xpath", "store_xml"]).member?(field)
-
+      next if (RESERVED + ["xpath", "store_xml", "source", "target"]).member?(field)
+      @logger.warn("#{self.class.config_name}: You used a deprecated setting '#{field} => #{dest}'. You should use 'source => \"#{field}\"' and 'target => \"#{dest}\"'")
       @xml[field] = dest
     end
+
+    if @source
+      @xml[@source] = @target
+    end
+
   end # def register
 
   public

@@ -46,6 +46,11 @@ build with [fpm](https://github.com/jordansissel/fpm). If you are interested in
 seeing future releases include your favorite packaging format, please let me
 know.
 
+## Project Principles
+
+* Software: Make it work, then make it right, then make it fast.
+* Community: If a newbie has a bad time, it's a bug.
+
 ## Contributing
 
 All contributions are welcome: ideas, patches, documentation, bug reports,

@@ -1,10 +1,10 @@
 ---
-title: Just Enough AMQP - logstash
+title: Just Enough RabbitMQ - logstash
 layout: content_right
 ---
 
-While configuring your AMQP broker is out of scope for logstash, it's important
-to understand how logstash uses AMQP. To do that, we need to understand a
+While configuring your RabbitMQ broker is out of scope for logstash, it's important
+to understand how logstash uses RabbitMQ. To do that, we need to understand a
 little about AMQP.
 
 You should also consider reading
@@ -35,9 +35,8 @@ routing key.  Routing keys are discussed below.
 
 ## Broker
 
-A broker is simply the AMQP server software. There are several brokers but the
-most common (and arguably popular) is [RabbitMQ](http://www.rabbitmq.com).
-Some others are Apache Qpid (and the commercial version - RedHat MRG)
+A broker is simply the AMQP server software. There are several brokers, but this
+tutorial will cover the most common (and arguably popular), [RabbitMQ](http://www.rabbitmq.com).
 
 # Routing Keys
 
@@ -112,19 +111,19 @@ support routing keys. Topic exchanges do support them.  Just like a fanout
 exchange, all bound queues see all messages with the additional filter of the
 routing key.
 
-# AMQP in logstash
+# RabbitMQ in logstash
 
 As stated earlier, in Logstash, Outputs publish to Exchanges. Inputs read from
-Queues that are bound to Exchanges.  Logstash uses the `bunny` AMQP library for
+Queues that are bound to Exchanges.  Logstash uses the `bunny` RabbitMQ library for
 interaction with a broker. Logstash endeavors to expose as much of the
 configuration for both exchanges and queues.  There are many different tunables
 that you might be concerned with setting - including things like message
 durability or persistence of declared queues/exchanges.  See the relevant input
-and output documentation for AMQP for a full list of tunables.
+and output documentation for RabbitMQ for a full list of tunables.
 
 # Sample configurations, tips, tricks and gotchas
 
-There are several examples in the logstash source directory of AMQP usage,
+There are several examples in the logstash source directory of RabbitMQ usage,
 however a few general rules might help eliminate any issues.
 
 ## Check your bindings
@@ -136,9 +135,9 @@ sender agent
 
     input { stdin { type = "test" } }
     output {
-      amqp {
-        name => "test_exchange"
-        host => "my_amqp_server"
+      rabbitmq {
+        exchange => "test_exchange"
+        host => "my_rabbitmq_server"
         exchange_type => "fanout"
       }
     }
@@ -146,9 +145,9 @@ sender agent
 receiver agent
 
     input {
-      amqp {
-        name => "test_queue"
-        host => "my_amqp_server"
+      rabbitmq {
+        queue => "test_queue"
+        host => "my_rabbitmq_server"
         exchange => "test_exchange" # This matches the exchange declared above
       }
     }
@@ -157,15 +156,15 @@ receiver agent
 ## Message persistence
 
 By default, logstash will attempt to ensure that you don't lose any messages.
-This is reflected in the AMQP default settings as well.  However there are
-cases where you might not want this. A good example is where AMQP is not your
+This is reflected in the RabbitMQ default settings as well.  However there are
+cases where you might not want this. A good example is where RabbitMQ is not your
 primary method of shipping.
 
-In the following example, we use AMQP as a sniffing interface. Our primary
-destination is the embedded ElasticSearch instance. We have a secondary AMQP
+In the following example, we use RabbitMQ as a sniffing interface. Our primary
+destination is the embedded ElasticSearch instance. We have a secondary RabbitMQ
 output that we use for duplicating messages. However we disable persistence and
 durability on this interface so that messages don't pile up waiting for
-delivery. We only use AMQP when we want to watch messages in realtime.
+delivery. We only use RabbitMQ when we want to watch messages in realtime.
 Additionally, we're going to leverage routing keys so that we can optionally
 filter incoming messages to subsets of hosts. The exercise of getting messages
 to this logstash agent are left up to the user.
@@ -176,9 +175,9 @@ to this logstash agent are left up to the user.
 
     output {
       elasticsearch { embedded => true }
-      amqp {
-        name => "logtail"
-        host => "my_amqp_server"
+      rabbitmq {
+        exchange => "logtail"
+        host => "my_rabbitmq_server"
         exchange_type => "topic" # We use topic here to enable pub/sub with routing keys
         key => "logs.%{host}"
         durable => false # If rabbitmq restarts, the exchange disappears.

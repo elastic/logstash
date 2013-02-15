@@ -1,7 +1,6 @@
 require "logstash/namespace"
 require "logstash/config/grammar"
 require "logstash/config/registry"
-require "logstash/agent"
 require "logger"
 
 class LogStash::Config::File
@@ -11,7 +10,7 @@ class LogStash::Config::File
   def initialize(path=nil, string=nil)
     @path = path
     @string = string
-    @logger = LogStash::Logger.new(STDERR)
+    @logger = Cabin::Channel.get(LogStash)
 
     if (path.nil? and string.nil?) or (!path.nil? and !string.nil?)
        raise "Must give path or string, not both or neither"
@@ -43,7 +42,7 @@ class LogStash::Config::File
       tryload o[:type], :base
       type = registry[o[:type]]
 
-      # Load the plugin itself (inputs/file, outputs/amqp, etc)
+      # Load the plugin itself (inputs/file, outputs/rabbitmq, etc)
       # TODO(sissel): Error handling
       tryload o[:type], o[:plugin]
       plugin = registry[o[:plugin]]
@@ -84,7 +83,7 @@ class LogStash::Config::File
     @config.each do |type, plugin_config_array|
       # plugin_config_array has arrays of each component config:
       # input {
-      #   amqp { ... }
+      #   rabbitmq { ... }
       #   file { ... }
       #   file { ... }
       # }

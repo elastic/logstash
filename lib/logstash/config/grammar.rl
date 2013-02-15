@@ -89,21 +89,21 @@ require "logstash/namespace"
   }
 
   #%{ e = @tokenstack.pop; puts "Comment: #{string[e ... p]}" };
-  comment = "#" (any - [\n])* >mark ; 
-  ws = ([ \t\n] | comment)** ;
+  comment = "#" (any - [\r\n])* >mark ; 
+  ws = ([ \t\r\n] | comment)** ;
   #ws = ([ \t\n])** ;
 
   # TODO(sissel): Support floating point values?
   numeric = ( ("+" | "-")?  [0-9] :>> [0-9]** ) >mark %stack_numeric;
   quoted_string = ( 
-    ( "\"" ( ( (any - [\\"\n]) | "\\" any )* ) "\"" )
-    | ( "'" ( ( (any - [\\'\n]) | "\\" any )* ) "'" ) 
+    ( "\"" ( ( (any - [\\"\r\n]) | "\\" any )* ) "\"" )
+    | ( "'" ( ( (any - [\\'\r\n]) | "\\" any )* ) "'" ) 
   ) >mark %stack_quoted_string ;
   naked_string = ( [A-Za-z_] :>> [A-Za-z0-9_]* ) >mark %stack_string ;
   string = ( quoted_string | naked_string ) ;
 
   # TODO(sissel): allow use of this.
-  regexp_literal = ( "/" ( ( (any - [\\'\n]) | "\\" any )* ) "/" )  ;
+  regexp_literal = ( "/" ( ( (any - [\\'\r\n]) | "\\" any )* ) "/" )  ;
 
   array = ( "[" ws ( string | numeric ) ws ("," ws (string | numeric ) ws)* "]" ) >array_init %array_push;
   # TODO(sissel): Implement hash syntax { key => value, ... }

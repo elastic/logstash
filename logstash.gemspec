@@ -23,6 +23,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "pry"
   gem.add_runtime_dependency "stud"
   gem.add_runtime_dependency "sys-uname" # for platform detection
+  gem.add_runtime_dependency "clamp" # for command line args/flags
+  gem.add_runtime_dependency "i18n"
 
   # Web dependencies
   gem.add_runtime_dependency "ftw", ["~> 0.0.26"]
@@ -36,7 +38,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "aws-sdk"
   gem.add_runtime_dependency "heroku"
   gem.add_runtime_dependency "addressable", ["~> 2.2.6"]
-  gem.add_runtime_dependency "bunny"
+  gem.add_runtime_dependency "bunny", [">= 0.9.0.pre6"]
   gem.add_runtime_dependency "ffi"
   gem.add_runtime_dependency "ffi-rzmq", ["0.9.3"]
   gem.add_runtime_dependency "filewatch", ["0.5.1"]
@@ -61,6 +63,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "php-serialize" # For input drupal_dblog
   gem.add_runtime_dependency "murmurhash3"
   gem.add_runtime_dependency "rufus-scheduler"
+  #gem.add_runtime_dependency "user_agent_parser", [">= 2.0.0"]
+  gem.add_runtime_dependency "snmp"
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
