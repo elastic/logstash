@@ -203,11 +203,7 @@ build/flatgems: | build vendor/bundle
 	$(QUIET)rsync -av $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
 	@# Other lame hacks to get crap to work.
 	$(QUIET)rsync -av $(VENDOR_DIR)/gems/sass-*/VERSION_NAME $@/root/
-	@# A not-so-subtle todo ;)
-	@echo "====================================="
-	@echo "== ENABLE USER_AGENT_PARSER COPIES =="
-	@echo "====================================="
-	$(QUIET)#rsync -av $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
+	$(QUIET)rsync -av $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
 
 flatjar-test:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
