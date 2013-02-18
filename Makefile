@@ -66,7 +66,8 @@ compile: compile-grammar compile-runner | build/ruby
 .PHONY: compile-runner
 compile-runner: build/ruby/logstash/runner.class
 build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
-	$(QUIET)(cd lib; $(JRUBYC) -5 -t ../build/ruby logstash/runner.rb)
+	#$(QUIET)(cd lib; $(JRUBYC) -5 -t ../build/ruby logstash/runner.rb)
+	$(QUIET)(cd lib; $(JRUBYC) -t ../build/ruby logstash/runner.rb)
 
 .PHONY: copy-ruby-files
 copy-ruby-files: | build/ruby
