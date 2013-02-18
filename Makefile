@@ -187,7 +187,6 @@ build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
 build/logstash-$(VERSION)-monolithic.jar:
 	$(QUIET)rm -f $@
 	$(QUIET)jar cfe $@ logstash.runner $(JAR_ARGS)
-	$(QUIET)jar i $@
 	@echo "Created $@"
 
 .PHONY: build/logstash-$(VERSION)-monolithic.jar
