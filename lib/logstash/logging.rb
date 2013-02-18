@@ -44,7 +44,7 @@ class LogStash::Logger
     #p = java.util.Properties.new(java.lang.System.getProperties())
     p = java.util.Properties.new
     log4j_level = "WARN"
-    case level
+    case @channel.level
       when :debug
         log4j_level = "DEBUG"
       when :info
