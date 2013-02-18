@@ -60,9 +60,12 @@ deps.each do |dep|
     case message
       when /Unable to activate/
         puts "Gem found, but funky: #{dep} (#{e})"
-      else
-        puts "Gem not found: #{dep} (#{e})"
+      when /Could not find/
+        puts "Gem not found: #{dep}"
         install_gem(dep.name, dep.requirement, target)
+      else
+        puts "Unexpected error: #{e}"
+        exit 1
     end # case message
   end # begin / rescue Gem::LoadError
 end # deps.each
