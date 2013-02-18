@@ -40,14 +40,14 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
           tmp_file = Tempfile.new('logstash-uaparser-regexes')
           tmp_file.write(File.read(jar_path))
           tmp_file.close # this file is reaped when ruby exits
-          @parser = UserAgentParser::Parser.new(patterns_path: tmp_file.path)
+          @parser = UserAgentParser::Parser.new(:patterns_path => tmp_file.path)
         rescue => ex
           raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
         end
       end
     else
       @logger.info("Using user agent regexes", :regexes => @regexes)
-      @parser = UserAgentParser::Parser.new(patterns_path: @regexes)
+      @parser = UserAgentParser::Parser.new(:patterns_path => @regexes)
     end
   end #def register
 
