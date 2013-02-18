@@ -47,7 +47,11 @@ class File
     def expand_path(path, dir=nil)
       if path =~ /(jar:)?file:\/.*\.jar!/
         jar, resource = path.split("!", 2)
-        return "#{jar}!#{expand_path_JRUBY_6970(resource, dir)}"
+        if resource.nil?
+          return jar
+        else
+          return "#{jar}!#{expand_path_JRUBY_6970(resource, dir)}"
+        end
       else
         return expand_path_JRUBY_6970(path, dir)
       end
