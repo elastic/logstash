@@ -183,7 +183,7 @@ Point your browser at <http://yourserver:9292> and start searching!
 searching, like 'SERVICE_UNAVAILABLE' or some other elasticsearch error, you
 should check that your firewall (local, too) is not blocking multicast.
 
-## Futher reading
+## Further reading
 
 Want to know more about the configuration language? Check out the
 [configuration](../configuration) documentation.

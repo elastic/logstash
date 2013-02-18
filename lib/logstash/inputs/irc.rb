@@ -27,7 +27,10 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
   # IRC Server password
   config :password, :validate => :password
 
-  # Channels to listen to
+  # Channels to join and read messages from.
+  #
+  # These should be full channel names including the '#' symbol, such as
+  # "#logstash".
   config :channels, :validate => :array, :required => true
 
 

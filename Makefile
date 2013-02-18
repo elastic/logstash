@@ -1,6 +1,5 @@
 # Requirements to build:
-#   ant
-#   cpio
+#   rsync
 #   wget or curl
 #
 JRUBY_VERSION=1.7.2
@@ -67,17 +66,16 @@ compile: compile-grammar compile-runner | build/ruby
 .PHONY: compile-runner
 compile-runner: build/ruby/logstash/runner.class
 build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
-	$(QUIET)(cd lib; $(JRUBYC) -5 -t ../build/ruby logstash/runner.rb)
+	#$(QUIET)(cd lib; $(JRUBYC) -5 -t ../build/ruby logstash/runner.rb)
+	$(QUIET)(cd lib; $(JRUBYC) -t ../build/ruby logstash/runner.rb)
 
-# TODO(sissel): Stop using cpio for this
 .PHONY: copy-ruby-files
 copy-ruby-files: | build/ruby
-	@# Copy lib/ and test/ files to the root.
-	$(QUIET)find ./lib -name '*.rb' | sed -e 's,^\./lib/,,' \
-	| (cd lib; cpio -p --make-directories ../build/ruby)
-	$(QUIET)find ./test -name '*.rb' | sed -e 's,^\./test/,,' \
-	| (cd test; cpio -p --make-directories ../build/ruby)
-	$(QUIET)rsync -av ./spec build/ruby
+	@# Copy lib/ and test/ files to the root
+	$(QUIET)rsync -av --include "*/" --include "*.rb" --exclude "*" ./lib/ ./test/ ./build/ruby
+	$(QUIET)rsync -av ./spec ./build/ruby
+	@# Delete any empty directories copied by rsync.
+	$(QUIET)find ./build/ruby -type d -empty -delete
 
 vendor:
 	$(QUIET)mkdir $@
@@ -190,7 +188,6 @@ build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
 build/logstash-$(VERSION)-monolithic.jar:
 	$(QUIET)rm -f $@
 	$(QUIET)jar cfe $@ logstash.runner $(JAR_ARGS)
-	$(QUIET)jar i $@
 	@echo "Created $@"
 
 .PHONY: build/logstash-$(VERSION)-monolithic.jar
@@ -202,9 +199,15 @@ build/flatgems: | build vendor/bundle
 	done
 	@# Until I implement something that looks at the 'require_paths' from
 	@# all the gem specs.
-	rsync -av $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
-	rsync -av $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
-	rsync -av $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
+	$(QUIET)rsync -av $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
+	$(QUIET)rsync -av $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
+	@# Other lame hacks to get crap to work.
+	$(QUIET)rsync -av $(VENDOR_DIR)/gems/sass-*/VERSION_NAME $@/root/
+	@# A not-so-subtle todo ;)
+	@echo "====================================="
+	@echo "== ENABLE USER_AGENT_PARSER COPIES =="
+	@echo "====================================="
+	$(QUIET)#rsync -av $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
 
 flatjar-test:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
@@ -223,8 +226,8 @@ jar-test-and-report:
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
-	$(QUIET)rsync -av --delete build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
-	$(QUIET)rsync -av --delete build/flatgems/data build/flatgems/vendor build/jar/
+	$(QUIET)rsync -av --delete build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
+	$(QUIET)rsync -av --delete build/flatgems/data build/jar/
 	$(QUIET)(cd lib; rsync -av --delete logstash/web/public ../build/jar/logstash/web/public)
 	$(QUIET)(cd lib; rsync -av --delete logstash/web/views ../build/jar/logstash/web/views)
 	$(QUIET)(cd lib; rsync -av --delete logstash/certs ../build/jar/logstash/certs)
