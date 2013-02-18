@@ -1,6 +1,5 @@
 # Requirements to build:
-#   ant
-#   cpio
+#   rsync
 #   wget or curl
 #
 JRUBY_VERSION=1.7.2
@@ -69,15 +68,13 @@ compile-runner: build/ruby/logstash/runner.class
 build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
 	$(QUIET)(cd lib; $(JRUBYC) -5 -t ../build/ruby logstash/runner.rb)
 
-# TODO(sissel): Stop using cpio for this
 .PHONY: copy-ruby-files
 copy-ruby-files: | build/ruby
-	@# Copy lib/ and test/ files to the root.
-	$(QUIET)find ./lib -name '*.rb' | sed -e 's,^\./lib/,,' \
-	| (cd lib; cpio -p --make-directories ../build/ruby)
-	$(QUIET)find ./test -name '*.rb' | sed -e 's,^\./test/,,' \
-	| (cd test; cpio -p --make-directories ../build/ruby)
-	$(QUIET)rsync -av ./spec build/ruby
+	@# Copy lib/ and test/ files to the root
+	$(QUIET)rsync -av --include "*/" --include "*.rb" --exclude "*" ./lib/ ./test/ ./build/ruby
+	$(QUIET)rsync -av ./spec ./build/ruby
+	@# Delete any empty directories copied by rsync.
+	$(QUIET)find ./build/ruby -type d -empty -delete
 
 vendor:
 	$(QUIET)mkdir $@
