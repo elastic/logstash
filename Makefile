@@ -199,13 +199,15 @@ build/flatgems: | build vendor/bundle
 	done
 	@# Until I implement something that looks at the 'require_paths' from
 	@# all the gem specs.
-	rsync -av $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
-	rsync -av $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
+	$(QUIET)rsync -av $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
+	$(QUIET)rsync -av $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
+	@# Other lame hacks to get crap to work.
+	$(QUIET)rsync -av $(VENDOR_DIR)/gems/sass-*/VERSION_NAME $@/root/
 	@# A not-so-subtle todo ;)
 	@echo "====================================="
 	@echo "== ENABLE USER_AGENT_PARSER COPIES =="
 	@echo "====================================="
-	@#rsync -av $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
+	$(QUIET)#rsync -av $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
 
 flatjar-test:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
@@ -224,7 +226,7 @@ jar-test-and-report:
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
-	$(QUIET)rsync -av --delete build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
+	$(QUIET)rsync -av --delete build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
 	$(QUIET)rsync -av --delete build/flatgems/data build/jar/
 	$(QUIET)(cd lib; rsync -av --delete logstash/web/public ../build/jar/logstash/web/public)
 	$(QUIET)(cd lib; rsync -av --delete logstash/web/views ../build/jar/logstash/web/views)
