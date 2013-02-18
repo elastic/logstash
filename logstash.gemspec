@@ -17,7 +17,7 @@ Gem::Specification.new do |gem|
   gem.version       = LOGSTASH_VERSION
 
   # Core dependencies
-  gem.add_runtime_dependency "cabin", ["0.5.0"]
+  gem.add_runtime_dependency "cabin", ["0.6.0"]
   gem.add_runtime_dependency "json"
   gem.add_runtime_dependency "minitest" # for running the tests from the jar
   gem.add_runtime_dependency "pry"
