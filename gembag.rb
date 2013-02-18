@@ -47,6 +47,16 @@ deps.each do |dep|
     # Not installed, continue.
     message = e.to_s
 
+    # Sometimes we failed to load because gembag installs too
+    # many things. Like 'shoulda' fails to load because two
+    # conflicting versions of 'mocha' were installed.
+    # Fundamentally, gembag should build a dependency graph and
+    # resolve all version requirements to single nodes to prevent
+    # this madness.
+    #
+    # Possible we can steal bundler's implementation of this,
+    # or just use bundler to do it, but only if bundler doesn't
+    # bite me in the ass again :)
     case message
       when /Unable to activate/
         puts "Gem found, but funky: #{dep} (#{e})"
