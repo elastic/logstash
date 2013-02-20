@@ -7,10 +7,10 @@ class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
   config_name "ganglia"
   plugin_status "beta"
 
-  # The address of the graphite server.
+  # The address of the ganglia server.
   config :host, :validate => :string, :default => "localhost"
 
-  # The port to connect on your graphite server.
+  # The port to connect on your ganglia server.
   config :port, :validate => :number, :default => 8649
 
   # The metric to use. This supports dynamic strings like %{@source_host}
