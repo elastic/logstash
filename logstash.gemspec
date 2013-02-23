@@ -74,6 +74,7 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "jruby-win32ole"
     gem.add_runtime_dependency "jdbc-mysql" # For input drupal_dblog
     gem.add_runtime_dependency "msgpack-jruby"
+    gem.add_runtime_dependency "hot_bunnies"
   else
     gem.add_runtime_dependency "excon"
     gem.add_runtime_dependency "mysql2" # For input drupal_dblog

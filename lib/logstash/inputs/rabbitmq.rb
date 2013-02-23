@@ -1,29 +1,25 @@
 require "logstash/inputs/threadable"
 require "logstash/namespace"
 require "cgi" # for CGI.escape
-
+require "logstash/util/amqp/driver"
 # Pull events from a RabbitMQ exchange.
 #
 # The default settings will create an entirely transient queue and listen for all messages by default.
 # If you need durability or any other advanced settings, please set the appropriate options
 #
-# This has been tested with Bunny 0.9.x, which supports RabbitMQ 2.x and 3.x. You can
-# find links to both here:
+# This plugin uses Bunny 0.9.x when running with mri and
+# host_bunnies 1.4.x when running under jruby.
 #
 # * RabbitMQ - <http://www.rabbitmq.com/>
 # * Bunny - <https://github.com/ruby-amqp/bunny>
+# * HotBunnies - <https://github.com/ruby-amqp/hot_bunnies>
 class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
   config_name "rabbitmq"
   plugin_status "beta"
 
-  # Custom arguments. For example, mirrored queues in RabbitMQ 2.x:  [ "x-ha-policy", "all" ]
-  # RabbitMQ 3.x mirrored queues are set by policy. More information can be found
-  # here: http://www.rabbitmq.com/blog/2012/11/19/breaking-things-with-rabbitmq-3-0/
-  config :arguments, :validate => :array, :default => []
-
   # Your rabbitmq server address
-  config :host, :validate => :string, :required => true
+  config :host, :validate => :string, :default => "localhost"
 
   # The rabbitmq port to connect on
   config :port, :validate => :number, :default => 5672
@@ -34,41 +30,46 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Your rabbitmq password
   config :password, :validate => :password, :default => "guest"
 
-  # The name of the queue.
-  config :queue, :validate => :string, :default => ""
-
-  # The name of the exchange to bind the queue.
-  config :exchange, :validate => :string, :required => true
-
-  # The routing key to use. This is only valid for direct or fanout exchanges
-  #
-  # * Routing keys are ignored on topic exchanges.
-  # * Wildcards are not valid on direct exchanges.
-  config :key, :validate => :string, :default => "logstash"
-
   # The vhost to use. If you don't know what this is, leave the default.
   config :vhost, :validate => :string, :default => "/"
 
-  # Passive queue creation? Useful for checking queue existance without modifying server state
-  config :passive, :validate => :boolean, :default => false
+  # The name of the queue.
+  config :queue, :validate => :string, :default => "logstash"
 
-  # Is this queue durable? (aka; Should it survive a broker restart?)
-  config :durable, :validate => :boolean, :default => false
+  # Options for queue declaration. By default, performance is valued over event durability.
+  config :queue_opts, :validate => :hash, :default => {
+    "durable" => false,
+    "exclusive" => false,
+    "auto_delete" => false,
+    "passive" => false,
+  }
 
-  # Should the queue be deleted on the broker when the last consumer
-  # disconnects? Set this option to 'false' if you want the queue to remain
-  # on the broker, queueing up messages until a consumer comes along to
-  # consume them.
-  config :auto_delete, :validate => :boolean, :default => true
+  # Additional arguments used when binding queue.
+  config :binding_arguments, :validate => :hash, :default => {}
 
-  # Is the queue exclusive? (aka: Will other clients connect to this named queue?)
-  config :exclusive, :validate => :boolean, :default => true
+  # The name of the exchange to bind the queue.
+  config :exchange, :validate => :string, :default => "logstash"
 
-  # Prefetch count. Number of messages to prefetch
+  # Exchange type, must be either fanout, direct or topic.
+  config :exchange_type, :validate => [ "fanout", "direct", "topic"], :default => "direct"
+
+  # Options for exchange decalration. By default, performance is valued over event durability.
+  config :exchange_opts, :validate => :hash, :default => {
+      "durable" => false,
+      "auto_delete" => false,
+      "passive" => false,
+  }
+  # The routing key to use. This is only valid for direct or topic exchanges
+  #
+  # * Routing keys are ignored on fanout exchanges.
+  # * Wildcards are not valid on direct exchanges.
+  config :routing_key, :validate => :string, :default => "logstash"
+
+  # Prefetch count. Number of messages to accept before acknowledgment.
   config :prefetch_count, :validate => :number, :default => 1
 
   # Enable message acknowledgement
-  config :ack, :validate => :boolean, :default => true
+  config :ack, :validate => :boolean, :default => false
 
   # Enable or disable debugging
   config :debug, :validate => :boolean, :default => false
@@ -94,7 +95,6 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   def register   
 
     @logger.info("Registering input #{@url}")
-    require "bunny"
     
     @vhost ||= "/"
     @port ||= 5672
@@ -120,41 +120,33 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
       @rabbitmq_url << "@"
     end
     @rabbitmq_url += "#{@host}:#{@port}#{@vhost}/#{@queue}"
+
+    @logger.debug("Connecting with RabbitMQ settings #{@rabbitmq_settings.inspect} to setup queue #{@queue.inspect}")
+    @driver = LogStash::Rabbitmq.driver_class.new(@rabbitmq_settings)
+    @driver.setup_input(
+        :exchange => @exchange,
+        :exchange_type => @exchange_type,
+        :exchange_opts => @exchange_opts,
+        :queue => @queue,
+        :queue_opts => @queue_opts,
+        :binding_arguments => @binding_arguments,
+        :prefetch_count => @prefetch_count,
+        :routing_key => @routing_key,
+        :ack => @ack
+    )
   end # def register
 
   def run(queue)
-    begin
-      @logger.debug("Connecting with RabbitMQ settings #{@rabbitmq_settings.inspect} to set up queue #{@queue.inspect}")
-      @bunny = Bunny.new(@rabbitmq_settings)
-      return if terminating?
-      @bunny.start
-      @bunny.qos({:prefetch_count => @prefetch_count})
-
-      @arguments_hash = Hash[*@arguments]
-
-      @bunnyqueue = @bunny.queue(@queue, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive, :arguments => @arguments_hash })
-      @bunnyqueue.bind(@exchange, :key => @key)
-
-      @bunnyqueue.subscribe({:ack => @ack}) do |data|
-        e = to_event(data[:payload], @rabbitmq_url)
-        if e
-          queue << e
-        end
-      end # @bunnyqueue.subscribe
-
-    rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
-      @logger.error("RabbitMQ connection error, will reconnect: #{e}")
-      # Sleep for a bit before retrying.
-      # TODO(sissel): Write 'backoff' method?
-      sleep(1)
-      retry
-    end # begin/rescue
+    @driver.subscribe do |payload|
+      e = to_event(payload, @rabbitmq_url)
+      if e
+        queue << e
+      end
+    end # @driver.subscribe
   end # def run
 
   def teardown
-    @bunnyqueue.unsubscribe unless @durable == true
-    @bunnyqueue.delete unless @durable == true
-    @bunny.close if @bunny
+    @driver.destroy
     finished
   end # def teardown
 end # class LogStash::Inputs::RabbitMQ
