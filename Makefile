@@ -239,7 +239,8 @@ update-jar: copy-ruby-files
 
 .PHONY: test
 test: | $(JRUBY) vendor-elasticsearch
-	$(QUIET)$(JRUBY_CMD) bin/logstash test
+	@#$(JRUBY_CMD) bin/logstash test
+	GEM_HOME= GEM_PATH= bin/logstash rspec $(TESTS)
 
 .PHONY: docs
 docs: docgen doccopy docindex
