@@ -1,0 +1,183 @@
+#!/bin/bash
+#
+# /etc/init.d/logstash -- startup script for LogStash.
+#
+### BEGIN INIT INFO
+# Provides:          logstash
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts logstash
+# Description:       Starts logstash using start-stop-daemon
+### END INIT INFO
+
+set -e
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+NAME=logstash
+DESC="Logstash Daemon"
+DEFAULT=/etc/default/$NAME
+
+if [ `id -u` -ne 0 ]; then
+   echo "You need root privileges to run this script"
+   exit 1
+fi
+
+. /lib/lsb/init-functions
+
+if [ -r /etc/default/rcS ]; then
+   . /etc/default/rcS
+fi
+
+# The following variables can be overwritten in $DEFAULT
+
+# Run logstash as this user ID and group ID
+LS_USER=logstash
+LS_GROUP=logstash
+
+JAVA=/usr/bin/java
+
+# Directory where the logstash all in one jar lives
+LS_HOME=/var/lib/logstash
+
+# Additional Java OPTS
+#LS_HOME/bin/java/JAVA/g_OPTS=
+
+# logstash log directory
+LOG_DIR=/var/log/logstash
+
+# logstash configuration directory
+CONF_DIR=/etc/logstash/conf.d
+
+# logstash log file
+LOG_FILE=$LOG_DIR/$NAME.log
+
+# Open File limit
+OPEN_FILES=2048
+
+
+LS_JAVA_OPTS=" -Djava.io.tmpdir=/var/logstash/"
+
+# Nice level
+NICE=19
+
+# End of variables that can be overwritten in $DEFAULT
+
+# overwrite settings from default file
+if [ -f "$DEFAULT" ]; then
+   . "$DEFAULT"
+fi
+
+# Define other required variables
+PID_FILE=/var/run/$NAME.pid
+DAEMON=$LS_JAR
+DAEMON_OPTS="agent -f ${CONF_DIR} --log ${LOG_FILE}"
+
+# Check DAEMON exists
+if ! test -e $DAEMON; then
+   log_failure_msg "Daemon $DAEMON doesn't exist"
+   exit 1
+fi
+
+case "$1" in
+   start)
+      if [ -z "$JAVA" ]; then
+         log_failure_msg "no JDK found - $JAVA"
+         exit 1
+      fi
+
+      log_daemon_msg "Starting $DESC"
+
+      if start-stop-daemon --test --start --pidfile "$PID_FILE" \
+         --user "$LS_USER" --exec "$JAVA" \
+      >/dev/null; then
+         # Prepare environment
+         ulimit -n $OPEN_FILES
+
+         # Start Daemon
+         start-stop-daemon --start -b --user "$LS_USER" -c "$LS_USER":"$LS_GROUP" \
+           -d "$LS_HOME" --pidfile "$PID_FILE" --make-pidfile \
+           --exec "$JAVA" -- $LS_JAVA_OPTS -jar $DAEMON $DAEMON_OPTS
+
+         sleep 1
+
+         if start-stop-daemon --test --start --pidfile "$PID_FILE" \
+            --user "$LS_USER" --exec "$JAVA" \
+         >/dev/null; then
+
+            if [ -f "$PID_FILE" ]; then
+               rm -f "$PID_FILE"
+            fi
+
+            log_end_msg 1
+         else
+            log_end_msg 0
+         fi
+      else
+         log_progress_msg "(already running)"
+         log_end_msg 0
+      fi
+   ;;
+   stop)
+      log_daemon_msg "Stopping $DESC"
+
+      set +e
+
+      if [ -f "$PID_FILE" ]; then
+         start-stop-daemon --stop --pidfile "$PID_FILE" \
+            --user "$LS_USER" \
+            --retry=TERM/20/KILL/5 >/dev/null
+
+         if [ $? -eq 1 ]; then
+            log_progress_msg "$DESC is not running but pid file exists, cleaning up"
+         elif [ $? -eq 3 ]; then
+            PID="`cat $PID_FILE`"
+            log_failure_msg "Failed to stop $DESC (pid $PID)"
+            exit 1
+         fi
+
+         rm -f "$PID_FILE"
+      else
+         log_progress_msg "(not running)"
+      fi
+
+      log_end_msg 0
+      set -e
+   ;;
+   status)
+      set +e
+
+      start-stop-daemon --test --start --pidfile "$PID_FILE" \
+         --user "$LS_USER" --exec "$JAVA" \
+      >/dev/null 2>&1
+
+      if [ "$?" = "0" ]; then
+         if [ -f "$PID_FILE" ]; then
+            log_success_msg "$DESC is not running, but pid file exists."
+            exit 1
+         else
+            log_success_msg "$DESC is not running."
+            exit 3
+         fi
+      else
+         log_success_msg "$DESC is running with pid `cat $PID_FILE`"
+      fi
+
+      set -e
+   ;;
+   restart|force-reload)
+      if [ -f "$PID_FILE" ]; then
+         $0 stop
+         sleep 1
+      fi
+
+      $0 start
+   ;;
+   *)
+      log_success_msg "Usage: $0 {start|stop|restart|force-reload|status}"
+      exit 1
+   ;;
+esac
+
+exit 0

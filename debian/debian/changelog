@@ -1,0 +1,5 @@
+logstash (1.1.9) unstable; urgency=low
+
+  * Initial packaging release
+
+ -- Corey Quinn <corey@sequestered.net>  Sun, 24 Feb 2013 18:24:41 -0800
