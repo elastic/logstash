@@ -1,0 +1,16 @@
+# moved from rules install
+usr/share/logstash
+
+# this is where LS_HOME is stored, so let's leave it as is for now
+var/lib/logstash
+
+# Need to create logstash's own directory to track the pid since the daemon is not run as root
+# and doesn't have permission to write the pid to /var/run (which would be the preferred location).
+var/run/logstash
+
+# Store logstash log file in it's own directory since they can become rather large and in the future
+# rotating logs can be easily added.
+var/log/logstash
+
+# Cache directory for the unpacked logstash.jar file.
+var/cache/logstash
