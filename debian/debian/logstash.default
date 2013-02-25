@@ -1,0 +1,36 @@
+# defaults for logstash
+
+# pulled in from the init script; makes things easier.
+NAME=logstash
+
+# location of java
+JAVA=/usr/bin/java
+
+# arguments to pass to java
+LS_JAVA_OPTS="-Xmx256m -Djava.io.tmpdir=/var/lib/logstash/"
+
+PIDFILE=/var/run/logstash.pid
+
+# user id to be invoked as
+LS_USER=logstash
+
+# location of the logstas jar file
+LS_JAR=/usr/share/logstash/logstash.jar
+
+# logstash home location
+LS_HOME=/var/lib/logstash
+
+# logstash log directory
+LOG_DIR=/var/log/logstash
+
+# logstash log file
+LOG_FILE=$LOG_DIR/$NAME.log
+
+# logstash configuration directory
+CONF_DIR=/etc/logstash/conf.d
+
+# Open file limit
+OPEN_FILES=2048
+
+# Nice level
+NICE=19
