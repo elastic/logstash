@@ -9,7 +9,7 @@ require "socket"
 #     input {
 #       eventlog {
 #         type  => 'Win32-EventLog'
-#         name  => 'System'
+#         logfile  => 'System'
 #       }
 #     }
 class LogStash::Inputs::EventLog < LogStash::Inputs::Base
