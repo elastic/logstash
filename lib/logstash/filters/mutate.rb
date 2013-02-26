@@ -141,6 +141,21 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #     }
   config :strip, :validate => :array
 
+  # merge two fields or arrays or hashes
+  # String fields will be converted in array, so 
+  #  array + string will work
+  #  string + string will result in an 2 entry array in dest_field
+  #  array and hash will not work
+  #
+  # Example:
+  #
+  #     filter {
+  #       mutate { 
+  #          merge => ["dest_field", "added_field"]
+  #       }
+  #     }
+  config :merge, :validate => :hash
+
   public
   def register
     valid_conversions = %w(string integer float)
@@ -182,6 +197,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     remove(event) if @remove
     split(event) if @split
     join(event) if @join
+    merge(event) if @merge
 
     filter_matched(event)
   end # def filter
@@ -327,6 +343,29 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
         event[field] = event[field].map{|s| s.strip }
       elsif event[field].is_a?(String)
         event[field] = event[field].strip
+      end
+    end
+  end
+
+  private
+  def merge(event)
+    @merge.each do |dest_field, added_fields|
+      #When multiple calls, added_field is an array
+      added_fields = [ added_fields ] if ! added_fields.is_a?(Array)
+      added_fields.each do |added_field|
+        if event[dest_field].is_a?(Hash) ^ event[added_field].is_a?(Hash)
+          @logger.error("Not possible to merge an array and a hash: ",
+                        :dest_field => dest_field,
+                        :added_field => added_field )
+          next
+        end
+        if event[dest_field].is_a?(Hash) #No need to test the other
+          event[dest_field].update(event[added_field])
+        else
+          event[dest_field] = [event[dest_field]] if ! event[dest_field].is_a?(Array)
+          event[added_field] = [event[added_field]] if ! event[added_field].is_a?(Array)
+         event[dest_field].concat(event[added_field])
+        end
       end
     end
   end
