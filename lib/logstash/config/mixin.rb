@@ -324,18 +324,17 @@ module LogStash::Config::Mixin
               return false, "This field must contain an even number of items, got #{value.size}"
             end
 
-              # Convert the array the config parser produces into a hash.
-              result = {}
-              value.each_slice(2) do |key, value|
-                entry = result[key]
-                if entry.nil?
-                  result[key] = value
+            # Convert the array the config parser produces into a hash.
+            result = {}
+            value.each_slice(2) do |key, value|
+              entry = result[key]
+              if entry.nil?
+                result[key] = value
+              else
+                if entry.is_a?(Array)
+                  entry << value
                 else
-                  if entry.is_a?(Array)
-                    entry << value
-                  else
-                    result[key] = [entry, value]
-                  end
+                  result[key] = [entry, value]
                 end
               end
             end
