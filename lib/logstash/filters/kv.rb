@@ -99,6 +99,9 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     kv_keys=Hash.new
 
     @fields.each do |fieldname|
+      # If var we want to use kv against is
+      # the result of a previous grok
+      # the field should be passed as @fields.myvar
       field, variable = fieldname.split('.')
       if !variable.nil?
         value = event[field][variable]
