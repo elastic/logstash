@@ -123,19 +123,19 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
       end
       pass = @options.include?("password")
       if !pass
-        pass = ""
+        pass = nil
       else
         pass = @options.fetch("password")
       end
       userName = @options.include?("userName")
       if !userName
-        userName = ""
+        userName = nil
       else
         userName = @options.fetch("userName")
       end
       authenticationType = @options.include?("authenticationType")
       if !authenticationType
-        authenticationType = "plain"
+        authenticationType = nil
       else
         authenticationType = @options.fetch("authenticationType")
       end
