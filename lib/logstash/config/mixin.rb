@@ -300,6 +300,7 @@ module LogStash::Config::Mixin
       elsif validator.is_a?(Proc)
         return validator.call(value)
       elsif validator.is_a?(Array)
+        value = [*value]
         if value.size > 1
           return false, "Expected one of #{validator.inspect}, got #{value.inspect}"
         end
@@ -316,11 +317,12 @@ module LogStash::Config::Mixin
         case validator
           when :hash
             if value.is_a?(Hash)
-              result = value
-            else
-              if value.size % 2 == 1
-                return false, "This field must contain an even number of items, got #{value.size}"
-              end
+              return true, value
+            end
+
+            if value.size % 2 == 1
+              return false, "This field must contain an even number of items, got #{value.size}"
+            end
 
               # Convert the array the config parser produces into a hash.
               result = {}
