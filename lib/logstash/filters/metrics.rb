@@ -101,9 +101,21 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   # syntax: timer => [ "name of metric", "%{time_value}" ]
   config :timer, :validate => :hash, :default => {}
 
-  # skip events that have @timestamp older than @past_seconds, 0 means allways count
-  # this is usefull then logstash was down/restarted and metrics will get skewed by too many old events
-  config :past_seconds, :validate => :number, :default => 0
+  # Don't track events that have @timestamp older than some number of seconds. 
+  #
+  # This is useful if you want to only include events that are near real-time
+  # in your metrics.
+  #
+  # Example, to only count events that are within 10 seconds of real-time, you 
+  # would do this:
+  #
+  #     filter {
+  #       metrics {
+  #         meter => [ "hits" ]
+  #         ignore_older_than => 10
+  #       }
+  #     }
+  config :ignore_older_than, :validate => :number, :default => 0
 
   def register
     require "metriks"
