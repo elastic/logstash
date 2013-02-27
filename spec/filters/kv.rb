@@ -106,7 +106,7 @@ describe LogStash::Filters::KV do
 
   end
 
-  describe "test container" do
+  describe "test container (deprecated test)" do
     config <<-CONFIG
       filter {
         kv { container => 'kv' }
@@ -124,7 +124,7 @@ describe LogStash::Filters::KV do
 
   end
 
-  describe "test empty container" do
+  describe "test empty container (deprecated test)" do
     config <<-CONFIG
       filter {
         kv { container => 'kv' }
@@ -162,4 +162,97 @@ describe LogStash::Filters::KV do
       p :duration => @duration, :rate => count/@duration
     end
   end
+
+
+
+  #New tests
+  
+  describe "test target" do
+    config <<-CONFIG
+      filter {
+        kv { target => 'kv' }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["kv"]["hello"] } == "world"
+      insist { subject["kv"]["foo"] } == "bar"
+      insist { subject["kv"]["baz"] } == "fizz"
+      insist { subject["kv"]["doublequoted"] } == "hello world"
+      insist { subject["kv"]["singlequoted"] } == "hello world"
+      insist {subject['@fields']["kv"].count } == 5
+    end
+
+  end
+
+  describe "test empty target" do
+    config <<-CONFIG
+      filter {
+        kv { target => 'kv' }
+      }
+    CONFIG
+
+    sample "hello:world:foo:bar:baz:fizz" do
+      insist { subject["kv"] } == nil
+      insist {subject['@fields'].count } == 0
+    end
+  end
+
+
+  describe "test data from specific sub source" do
+    config <<-CONFIG
+      filter {
+        kv {
+          source => "data"
+        }
+      }
+    CONFIG
+    sample({"@fields" => {"data" => "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'"}}) do
+      insist { subject["hello"] } == "world"
+      insist { subject["foo"] } == "bar"
+      insist { subject["baz"] } == "fizz"
+      insist { subject["doublequoted"] } == "hello world"
+      insist { subject["singlequoted"] } == "hello world"
+      insist { subject['@fields'].count } == 6
+    end
+  end
+
+  describe "test data from specific top source" do
+    config <<-CONFIG
+      filter {
+        kv {
+          source => "@data"
+        }
+      }
+    CONFIG
+    sample({"@data" => "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'"}) do
+      insist { subject["hello"] } == "world"
+      insist { subject["foo"] } == "bar"
+      insist { subject["baz"] } == "fizz"
+      insist { subject["doublequoted"] } == "hello world"
+      insist { subject["singlequoted"] } == "hello world"
+      insist { subject['@fields'].count } == 5
+    end
+  end
+
+
+  describe "test data from specific sub source and target" do
+    config <<-CONFIG
+      filter {
+        kv {
+          source => "data"
+          target => "kv"
+        }
+      }
+    CONFIG
+    sample({"@fields" => {"data" => "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'"}}) do
+      insist { subject["kv"]["hello"] } == "world"
+      insist { subject["kv"]["foo"] } == "bar"
+      insist { subject["kv"]["baz"] } == "fizz"
+      insist { subject["kv"]["doublequoted"] } == "hello world"
+      insist { subject["kv"]["singlequoted"] } == "hello world"
+      insist { subject['@fields']["kv"].count } == 5
+    end
+  end
+
 end
