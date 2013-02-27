@@ -273,6 +273,14 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
     @logger.info? and @logger.info("Match data", :match => @match)
 
+    # TODO(sissel): This can be removed once the 'field => [patterns]' syntax is removed.
+    @config.each do |field, pattern|
+      next if (RESERVED + ["match", "patterns_dir",
+               "drop_if_match", "named_captures_only", "pattern",
+               "keep_empty_captures", "break_on_match", "singles", "tag_on_failure"]).include?(field)
+      @logger.warn("#{self.class.config_name}: You used a deprecated setting '#{field} => \"#{pattern}\"'. You should use 'match => [ \"#{field}\", \"#{pattern}\" ]'")
+    end
+
     # TODO(sissel): Hash.merge  actually overrides, not merges arrays.
     # Work around it by implementing our own?
     # TODO(sissel): Check if 'match' is empty?
@@ -293,7 +301,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       patterns.each do |pattern|
         @logger.debug? and @logger.debug("regexp: #{@type}/#{field}", :pattern => pattern)
         @patterns[field].compile(pattern)
-        @logger.warn("#{self.class.config_name}: You used a deprecated setting '#{field} => #{pattern}'. You should use 'match => [ \"#{field}\", \"#{pattern}\" ]'")
       end
     end # @config.each
   end # def register
