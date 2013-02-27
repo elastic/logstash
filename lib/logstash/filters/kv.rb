@@ -99,14 +99,22 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     kv_keys=Hash.new
 
     @fields.each do |fieldname|
-      value = event[fieldname]
+      # If var we want to use kv against is
+      # the result of a previous grok
+      # the field should be passed as @fields.myvar
+      field, variable = fieldname.split('.')
+      if !variable.nil?
+        value = event[field][variable]
+      else
+        value = event[field]
+      end
 
       case value
-        when String; kv_keys = parse(value, event, kv_keys)
-        when Array; value.each { |v| kv_keys = parse(v, event, kv_keys) }
-        else 
-          @logger.warn("kv filter has no support for this type of data",
-                       :type => value.class, :value => value)
+      when String; kv_keys = parse(value, event, kv_keys)
+      when Array; value.each { |v| kv_keys = parse(v, event, kv_keys) }
+      else
+        @logger.warn("kv filter has no support for this type of data",
+                     :type => value.class, :value => value)
       end # case value
     end
     # If we have any keys, create/append the hash
