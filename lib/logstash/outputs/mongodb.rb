@@ -27,6 +27,9 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   # http://www.mongodb.org/display/DOCS/Dates
   config :isodate, :validate => :boolean, :default => false
 
+  # Number of seconds to wait after failure before retrying
+  config :waitTime, :validate => :number, :default => 3, :required => false
+
   public
   def register
     require "mongo"
@@ -46,14 +49,20 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    # TODO(sissel): someone should probably catch errors and retry?
-    if @isodate
-      # the mongodb driver wants time values as a ruby Time object.
-      # set the @timestamp value of the document to a ruby Time object, then.
-      document = event.to_hash.merge("@timestamp" => event.ruby_timestamp)
-      @mongodb.collection(event.sprintf(@collection)).insert(document)
-    else
-      @mongodb.collection(event.sprintf(@collection)).insert(event.to_hash)
+    begin
+      if @isodate
+        # the mongodb driver wants time values as a ruby Time object.
+        # set the @timestamp value of the document to a ruby Time object, then.
+        document = event.to_hash.merge("@timestamp" => event.ruby_timestamp)
+        @mongodb.collection(event.sprintf(@collection)).insert(document)
+      else
+        @mongodb.collection(event.sprintf(@collection)).insert(event.to_hash)
+      end
+    rescue => e
+      @logger.warn("Failed to send event to MongoDB", :event => event, :exception => e,
+                   :backtrace => e.backtrace)
+      sleep @waitTime
+      retry
     end
   end # def receive
 end # class LogStash::Outputs::Mongodb
