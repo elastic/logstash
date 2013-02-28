@@ -114,8 +114,9 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       if !event[@container].nil?
         event[@container].merge!(kv_keys)
       else
-        event[@container]= kv_keys
+        event[@container] = kv_keys
       end
+      filter_matched(event)
     end
   end # def filter
 
