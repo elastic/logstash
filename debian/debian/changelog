@@ -1,3 +1,9 @@
+logstash (1.1.9~1) unstable; urgency=low
+
+  * Depend on openjdk.  Don't start daemon by default.
+
+ -- Rudy Gevaert <Rudy.Gevaert@UGent.be>  Wed, 27 Feb 2013 21:54:41 +0100
+
 logstash (1.1.9) unstable; urgency=low
 
   * Initial packaging release
