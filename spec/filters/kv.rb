@@ -162,4 +162,57 @@ describe LogStash::Filters::KV do
       p :duration => @duration, :rate => count/@duration
     end
   end
+
+  describe "add_tag" do
+    context "should activate when successful" do
+      config <<-CONFIG
+        filter {
+          kv { add_tag => "hello" }
+        }
+      CONFIG
+
+      sample "hello=world" do
+        insist { subject["hello"] } == "world"
+        insist { subject["@tags"] }.include?("hello")
+      end
+    end
+    context "should not activate when failing" do
+      config <<-CONFIG
+        filter {
+          kv { add_tag => "hello" }
+        }
+      CONFIG
+
+      sample "this is not key value" do
+        reject { subject["@tags"] }.include?("hello")
+      end
+    end
+  end
+
+  describe "add_field" do
+    context "should activate when successful" do
+      config <<-CONFIG
+        filter {
+          kv { add_field => [ "whoa", "fancypants" ] }
+        }
+      CONFIG
+
+      sample "hello=world" do
+        insist { subject["hello"] } == "world"
+        insist { subject["whoa"] } == [ "fancypants" ]
+      end
+    end
+
+    context "should not activate when failing" do
+      config <<-CONFIG
+        filter {
+          kv { add_tag => "hello" }
+        }
+      CONFIG
+
+      sample "this is not key value" do
+        reject { subject["whoa"] } == [ "fancypants" ]
+      end
+    end
+  end
 end
