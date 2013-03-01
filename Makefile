@@ -296,3 +296,13 @@ patterns:
 	curl https://nodeload.github.com/logstash/grok-patterns/tarball/master | tar zx
 	mv logstash-grok-patterns*/* patterns/
 	rm -rf logstash-grok-patterns*
+
+## JIRA Interaction section
+JIRACLI=/path/to/your/jira-cli-3.1.0/jira.sh
+
+sync-jira-components: $(addprefix create/jiracomponent/,$(subst lib/logstash/,,$(subst .rb,,$(PLUGIN_FILES))))
+	-$(QUIET)$(JIRACLI) --action run --file tmp_jira_action_list --continue > /dev/null 2>&1
+	$(QUIET)rm tmp_jira_action_list
+
+create/jiracomponent/%: 
+	$(QUIET)echo "--action addComponent --project LOGSTASH --name $(subst create/jiracomponent/,,$@)" >> tmp_jira_action_list
