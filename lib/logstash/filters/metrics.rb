@@ -95,10 +95,10 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   config_name "metrics"
   plugin_status "experimental"
 
-  # syntax: meter => [ "name of metric", "name of metric" ]
+  # syntax: `meter => [ "name of metric", "name of metric" ]`
   config :meter, :validate => :array, :default => []
 
-  # syntax: timer => [ "name of metric", "%{time_value}" ]
+  # syntax: `timer => [ "name of metric", "%{time_value}" ]`
   config :timer, :validate => :hash, :default => {}
 
   # Don't track events that have @timestamp older than some number of seconds. 
