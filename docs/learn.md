@@ -22,7 +22,7 @@ parsing tools, etc. Video also below:
 The slides are available online here: [slides](http://goo.gl/68c62). The slides
 include speaker notes (click 'actions' then 'speaker notes').
 -->
-<iframe width="480" height="296" src="http://www.youtube.com/embed/RuUFnog29M4" frameborder="0" allowfullscreen></iframe>
+<iframe width="480" height="296" src="http://www.youtube.com/embed/RuUFnog29M4" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
 
 The slides are available online here: [slides](http://semicomplete.com/presentations/logstash-puppetconf-2012/).
 
