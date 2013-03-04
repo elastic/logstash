@@ -1,6 +1,5 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "snmp"
 
 # Read snmp trap messages as events
 #
@@ -34,6 +33,7 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
 
   public
   def register
+    require "snmp"
     @snmptrap = nil
   end # def register
 
@@ -54,17 +54,16 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
   def snmptrap_listener(output_queue)
     @logger.info("It's a Trap!", :host => @host, :port => @port, :community => @community)
     @snmptrap = SNMP::TrapListener.new(:Port => @port, :Community => @community, :Host => @host) 
-    loop do
-      @snmptrap.on_trap_default do |trap|
-        begin
-          event = to_event(trap.inspect, trap.source_ip)
-          @logger.info("SNMP Trap received: ", :trap_object => trap.inspect)
-          output_queue << event if event
-        rescue => event
-          @logger.error("Failed to create event", :trap_object => trap.inspect)
-        end
+    @snmptrap.on_trap_default do |trap|
+      begin
+        event = to_event(trap.inspect, trap.source_ip)
+        @logger.debug("SNMP Trap received: ", :trap_object => trap.inspect)
+        output_queue << event if event
+      rescue => event
+        @logger.error("Failed to create event", :trap_object => trap.inspect)
       end
     end
+    @snmptrap.join
   end # def snmptrap_listener
 
 end # class LogStash::Inputs::Snmptrap
