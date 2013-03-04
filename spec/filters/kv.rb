@@ -305,4 +305,19 @@ describe LogStash::Filters::KV do
     end
   end
 
+  describe "test data from nil sub source, should not issue a warning" do
+    config <<-CONFIG
+      filter {
+        kv {
+          source => "non-exisiting-field"
+          target => "kv"
+        }
+      }
+    CONFIG
+    sample "" do
+      insist { subject["non-exisiting-field"] } == nil
+      insist { subject["kv"] } == nil
+    end
+  end
+
 end
