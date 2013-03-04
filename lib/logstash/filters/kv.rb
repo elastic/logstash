@@ -135,6 +135,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       value = event[fieldname]
 
       case value
+        when nil; #Nothing to do
         when String; kv_keys = parse(value, event, kv_keys)
         when Array; value.each { |v| kv_keys = parse(v, event, kv_keys) }
         else 
