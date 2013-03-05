@@ -1,5 +1,6 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
+require "logstash/plugin_mixins/aws_config"
 
 # This output lets you aggregate and send metric data to AWS CloudWatch
 #
@@ -9,10 +10,10 @@ require "logstash/namespace"
 # output plugin is configured, on the logstash indexer node, with just AWS API
 # credentials, and possibly a region and/or a namespace.  The output looks
 # for fields present in events, and when it finds them, it uses them to
-# calculate aggregate statistics.  If the "metricname" option is set in this
+# calculate aggregate statistics.  If the `metricname` option is set in this
 # output, then any events which pass through it will be aggregated & sent to
 # CloudWatch, but that is not recommended.  The intended use is to NOT set the
-# metricname option here, and instead to add a "CW&#95;metricname" field (and other
+# metricname option here, and instead to add a `CW_metricname` field (and other
 # fields) to only the events you want sent to CloudWatch.
 #
 # When events pass through this output they are queued for background
@@ -20,7 +21,7 @@ require "logstash/namespace"
 # queue has a maximum size, and when it is full aggregated statistics will be
 # sent to CloudWatch ahead of schedule. Whenever this happens a warning
 # message is written to logstash's log.  If you see this you should increase
-# the queue&#95;size configuration option to avoid the extra API calls.  The queue
+# the `queue_size` configuration option to avoid the extra API calls.  The queue
 # is emptied every time we send data to CloudWatch.
 #
 # Note: when logstash is stopped the queue is destroyed before it can be processed.
@@ -34,7 +35,7 @@ require "logstash/namespace"
 # Event Field configuration...
 # You add fields to your events in inputs & filters and this output reads
 # those fields to aggregate events.  The names of the fields read are
-# configurable via the field&#95;* options.
+# configurable via the `field_*` options.
 #
 # Per-output defaults...
 # You set universal defaults in this output plugin's configuration, and
@@ -45,13 +46,13 @@ require "logstash/namespace"
 #
 # At a minimum events must have a "metric name" to be sent to CloudWatch.
 # This can be achieved either by providing a default here OR by adding a
-# "CW&#95;metricname" field. By default, if no other configuration is provided
+# `CW_metricname` field. By default, if no other configuration is provided
 # besides a metric name, then events will be counted (Unit: Count, Value: 1)
-# by their metric name (either a default or from their CW&#95;metricname field)
+# by their metric name (either a default or from their `CW_metricname` field)
 #
 # Other fields which can be added to events to modify the behavior of this
-# plugin are, "CW&#95;namespace", "CW&#95;unit", "CW&#95;value", and 
-# "CW&#95;dimensions".  All of these field names are configurable in
+# plugin are, `CW_namespace`, `CW_unit`, `CW_value`, and 
+# `CW_dimensions`.  All of these field names are configurable in
 # this output.  You can also set per-output defaults for any of them.
 # See below for details.
 #
@@ -59,6 +60,8 @@ require "logstash/namespace"
 # and the specific of API endpoint this output uses,
 # [PutMetricData](http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_PutMetricData.html)
 class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
+  include LogStash::PluginMixins::AwsConfig
+  
   config_name "cloudwatch"
   plugin_status "experimental"
 
@@ -76,17 +79,11 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   COUNT_UNIT = "Count"
   NONE = "None"
 
-  US_EAST_1 = "us-east-1"
-  # The AWS Region to send logs to.
-  config :region, :validate => [US_EAST_1, "us-west-1", "us-west-2",
-                                "eu-west-1", "ap-southeast-1", "ap-southeast-2",
-                                "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => US_EAST_1
+  # The `access_key` option is deprecated, please update your configuration to use `access_key_id` instead
+  config :access_key, :validate => :string, :deprecated => true
 
-  # The AWS Access Key ID
-  config :access_key, :validate => :string, :required => true
-
-  # The AWS Secret Access Key
-  config :secret_key, :validate => :string, :required => true
+  # The `secret_key` option is deprecated, please update your configuration to use `secret_access_key` instead
+  config :secret_key, :validate => :string, :deprecated => true
 
   # How often to send data to CloudWatch   
   # This does not affect the event timestamps, events will always have their
@@ -97,11 +94,11 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   # See the Rufus Scheduler docs for an [explanation of allowed values](https://github.com/jmettraux/rufus-scheduler#the-time-strings-understood-by-rufus-scheduler)
   config :timeframe, :validate => :string, :default => "1m"
 
-  # How many events to queue before forcing a call to the CloudWatch API ahead of "timeframe" schedule   
+  # How many events to queue before forcing a call to the CloudWatch API ahead of `timeframe` schedule   
   # Set this to the number of events-per-timeframe you will be sending to CloudWatch to avoid extra API calls
   config :queue_size, :validate => :number, :default => 10000
 
-  # The default namespace to use for events which do not have a "CW_namespace" field
+  # The default namespace to use for events which do not have a `CW_namespace` field
   config :namespace, :validate => :string, :default => "Logstash"
 
   # The name of the field used to set a different namespace per event   
@@ -110,7 +107,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   # and those cost money.
   config :field_namespace, :validate => :string, :default => "CW_namespace"
 
-  # The default metric name to use for events which do not have a "CW_metricname" field.   
+  # The default metric name to use for events which do not have a `CW_metricname` field.   
   # Beware: If this is provided then all events which pass through this output will be aggregated and
   # sent to CloudWatch, so use this carefully.  Furthermore, when providing this option, you
   # will probably want to also restrict events from passing through this output using event
@@ -132,23 +129,23 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
                  "Bits/Second", "Kilobits/Second", "Megabits/Second",
                  "Gigabits/Second", "Terabits/Second", "Count/Second", NONE]
 
-  # The default unit to use for events which do not have a "CW_unit" field   
+  # The default unit to use for events which do not have a `CW_unit` field   
   # If you set this option you should probably set the "value" option along with it
   config :unit, :validate => VALID_UNITS, :default => COUNT_UNIT
 
   # The name of the field used to set the unit on an event metric   
   config :field_unit, :validate => :string, :default => "CW_unit"
 
-  # The default value to use for events which do not have a "CW_value" field   
+  # The default value to use for events which do not have a `CW_value` field   
   # If provided, this must be a string which can be converted to a float, for example...
   #     "1", "2.34", ".5", and "0.67"
-  # If you set this option you should probably set the "unit" option along with it
+  # If you set this option you should probably set the `unit` option along with it
   config :value, :validate => :string, :default => "1"
 
   # The name of the field used to set the value (float) on an event metric   
   config :field_value, :validate => :string, :default => "CW_value"
 
-  # The default dimensions [ name, value, ... ] to use for events which do not have a "CW_dimensions" field   
+  # The default dimensions [ name, value, ... ] to use for events which do not have a `CW_dimensions` field   
   config :dimensions, :validate => :hash
 
   # The name of the field used to set the dimensions on an event metric   
@@ -161,17 +158,25 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   config :field_dimensions, :validate => :string, :default => "CW_dimensions"
 
   public
+  def aws_service_endpoint(region)
+    return {
+        :cloud_watch_endpoint => "monitoring.#{region}.amazonaws.com"
+    }
+  end
+  
+  public
   def register
     require "thread"
     require "rufus/scheduler"
     require "aws"
 
-    AWS.config(
-        :access_key_id => @access_key,
-        :secret_access_key => @secret_key,
-        :cloud_watch_endpoint => "monitoring.#{@region}.amazonaws.com"
-    )
-    @cw = AWS::CloudWatch.new
+    # This should be removed when the deprecated aws credential options are removed
+    if (@access_key && @secret_key) 
+      @access_key_id = @access_key
+      @secret_access_key = @secret_key
+    end
+
+    @cw = AWS::CloudWatch.new(aws_options_hash)
 
     @event_queue = SizedQueue.new(@queue_size)
     @scheduler = Rufus::Scheduler.start_new
