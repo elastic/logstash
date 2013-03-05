@@ -162,6 +162,13 @@ class LogStashConfigDocGenerator
       parse(File.new(File.join(File.dirname(file), "threadable.rb"), "r").read)
     end
 
+    if code =~ /include LogStash::PluginMixins/
+      mixin = code.gsub(/.*include LogStash::PluginMixins::(\w+)\s.*/m, '\1')
+      mixin.gsub!(/(.)([A-Z])/, '\1_\2')
+      mixin.downcase!
+      parse(File.new(File.join(File.dirname(file), "..", "plugin_mixins", "#{mixin}.rb")).read)
+    end
+    
     parse(code)
 
     puts "Generating docs for #{file}"

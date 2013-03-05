@@ -1,5 +1,6 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
+require "logstash/plugin_mixins/aws_config"
 
 # Push events to an Amazon Web Services Simple Queue Service (SQS) queue.
 #
@@ -55,25 +56,39 @@ require "logstash/namespace"
 # See http://aws.amazon.com/iam/ for more details on setting up AWS identities.
 #
 class LogStash::Outputs::SQS < LogStash::Outputs::Base
+  include LogStash::PluginMixins::AwsConfig
+
   config_name "sqs"
   plugin_status "experimental"
+
+  # The `access_key` option is deprecated, please update your configuration to use `access_key_id` instead
+  config :access_key, :validate => :string, :deprecated => true
+
+  # The `secret_key` option is deprecated, please update your configuration to use `secret_access_key` instead
+  config :secret_key, :validate => :string, :deprecated => true
 
   # Name of SQS queue to push messages into. Note that this is just the name of the queue, not the URL or ARN.
   config :queue, :validate => :string, :required => true
 
-  # AWS access key. Must have the appropriate permissions.
-  config :access_key, :validate => :string, :required => true
-
-  # AWS secret key. Must have the appropriate permissions.
-  config :secret_key, :validate => :string, :required => true
+  public
+  def aws_service_endpoint(region)
+    return {
+        :sqs_endpoint => "sqs.#{region}.amazonaws.com"
+    }
+  end
 
   public 
   def register
     require "aws-sdk"
-    @sqs = AWS::SQS.new(
-      :access_key_id => @access_key,
-      :secret_access_key => @secret_key
-    )
+
+    # This should be removed when the deprecated aws credential options are removed
+    if (@access_key && @secret_key)
+      @access_key_id = @access_key
+      @secret_access_key = @secret_key
+    end
+
+    @sqs = AWS::SQS.new(aws_options_hash)
+
     begin
       @logger.debug("Connecting to AWS SQS queue '#{@queue}'...")
       @sqs_queue = @sqs.queues.named(@queue)
