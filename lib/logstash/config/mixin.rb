@@ -5,6 +5,7 @@ require "logstash/logging"
 require "logstash/util/password"
 require "logstash/version"
 require "i18n"
+require "pathname"
 
 # This module is meant as a mixin to classes wishing to be configurable from
 # config files
@@ -391,6 +392,20 @@ module LogStash::Config::Mixin
             end
 
             result = ::LogStash::Util::Password.new(value.first)
+          when :path
+            if value.size > 1 # Only 1 value wanted
+              return false, "Expected path (one value), got #{value.size} values?"
+            end
+
+            unless (Pathname.new value.first).absolute? # We want an absolute path
+              return false, "Require absolute path, got relative path #{value.first}?"
+            end
+
+            unless File.exists?(value.first) # Check if the file exists
+              return false, "File does not exist or cannot be opened #{value.first}"
+            end
+
+            result = value.first
         end # case validator
       else
         return false, "Unknown validator #{validator.class}"
