@@ -397,7 +397,7 @@ module LogStash::Config::Mixin
               return false, "Expected path (one value), got #{value.size} values?"
             end
 
-            unless (Pathname.new value.first).absolute? == false # We want an absolute path
+            unless (Pathname.new value.first).absolute? # We want an absolute path
               return false, "Require absolute path, got relative path #{value.first}?"
             end
 
