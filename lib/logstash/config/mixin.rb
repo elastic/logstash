@@ -402,7 +402,7 @@ module LogStash::Config::Mixin
             end
 
             unless File.exists?(value.first) # Check if the file exists
-              return false, "File does not exist or cannot be opened"
+              return false, "File does not exist or cannot be opened #{value.first}"
             end
 
             result = value.first
