@@ -21,7 +21,7 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   # make sure you encase any integer based keys in quotes.
   # For simple string search and replacements for just a few values
   # use the gsub function of the mutate filter.
-  config :dictionary_path, :validate => :string, :required => true
+  config :dictionary_path, :validate => :path, :required => true
 
   # The destination you wish to populate with the response code.    
   # default is http_response_code.  set to the same value as source
