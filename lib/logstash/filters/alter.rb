@@ -61,7 +61,7 @@ class LogStash::Filters::Alter < LogStash::Filters::Base
     @condrewrite_parsed = []
     @condrewrite.nil? or @condrewrite.each_slice(3) do |field, expected, replacement|
       if [field, expected, replacement].any? {|n| n.nil?}
-        @logger.error("Invalid condrewrte configuration. condrewrite has to define 3 elements per config entry", :file => file, :expected => expected, :replacement => replacement)
+        @logger.error("Invalid condrewrte configuration. condrewrite has to define 3 elements per config entry", :field => field, :expected => expected, :replacement => replacement)
         raise "Bad configuration, aborting."
       end
       @condrewrite_parsed << {
@@ -74,7 +74,7 @@ class LogStash::Filters::Alter < LogStash::Filters::Base
     @condrewriteother_parsed = []
     @condrewriteother.nil? or @condrewriteother.each_slice(4) do |field, expected, replacement_field, replacement_value|
       if [field, expected, replacement_field, replacement_value].any? {|n| n.nil?}
-        @logger.error("Invalid condrewrteother configuration. condrewriteother has to define 4 elements per config entry", :file => file, :expected => expected, :replacement_field => replacementfield, :replacement_value => replacementvalue)
+        @logger.error("Invalid condrewrteother configuration. condrewriteother has to define 4 elements per config entry", :field => field, :expected => expected, :replacement_field => replacement_field, :replacement_value => replacement_value)
         raise "Bad configuration, aborting."
       end
       @condrewriteother_parsed << {
@@ -119,14 +119,14 @@ class LogStash::Filters::Alter < LogStash::Filters::Base
 
       if event[field].is_a?(Array)
         event[field] = event[field].map do |v|
-          if v == expected
+          if v == event.sprintf(expected)
             v = event.sprintf(replacement)
           else
             v
           end
         end
       else
-        if event[field] == expected
+        if event[field] == event.sprintf(expected)
           event[field] = event.sprintf(replacement)
         end
       end
@@ -143,12 +143,12 @@ class LogStash::Filters::Alter < LogStash::Filters::Base
 
       if event[field].is_a?(Array)
         event[field].each do |v|
-          if v == expected
+          if v == event.sprintf(expected)
             event[replacement_field] = event.sprintf(replacement_value)
           end
         end
       else
-        if event[field] == expected
+        if event[field] == event.sprintf(expected)
           event[replacement_field] = event.sprintf(replacement_value)
         end
       end
@@ -162,7 +162,7 @@ class LogStash::Filters::Alter < LogStash::Filters::Base
       subst_array = config[:subst_array]
       
       substitution_parsed = subst_array.map { |x| event.sprintf(x) }
-      not_nul_index = substitution_parsed.find_index { |x| not x.nil? and not x.eql?("nil") }
+      not_nul_index = substitution_parsed.find_index { |x| not x.nil? and not x.eql?("nil") and not (not x.index("%").nil? && x.match(/%\{[^}]\}/).nil?) }
       if not not_nul_index.nil?
         event[field] = substitution_parsed[not_nul_index]
       end
