@@ -35,6 +35,8 @@ This is what it might look like in your config file:
      next if config[:deprecated]
      if config[:validate].is_a?(Array) 
        annotation = "string, one of #{config[:validate].inspect}"
+     elsif config[:validate] == :path
+       annotation = "a valid filesystem path"
      else 
        annotation = "#{config[:validate]}"
      end
