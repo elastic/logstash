@@ -56,7 +56,7 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
       #end
       event.fields.merge(l)
 
-      output_queue << to_event("test", "lumberjack:///")
+      output_queue << event
     end
   end # def run
 end # class LogStash::Inputs::Lumberjack
