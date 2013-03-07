@@ -108,8 +108,9 @@ class LogStash::Inputs::Base < LogStash::Plugin
       rescue => e
         # Instead of dropping the event, should we treat it as
         # plain text and try to do the best we can with it?
-        @logger.warn("Trouble parsing json input, falling back to plain text",
-                     :input => raw, :source => source, :exception => e)
+        @logger.info? and @logger.info("Trouble parsing json input, falling " \
+                                       "back to plain text", :input => raw,
+                                       :source => source, :exception => e)
         event.message = raw
         event.tags << "_jsonparsefailure"
       end
@@ -125,8 +126,9 @@ class LogStash::Inputs::Base < LogStash::Plugin
       rescue => e
         # Instead of dropping the event, should we treat it as
         # plain text and try to do the best we can with it?
-        @logger.warn("Trouble parsing json input, falling back to plain text",
-                     :input => raw, :source => source, :exception => e)
+        @logger.info? and @logger.info("Trouble parsing json input, falling " \
+                                       "back to plain text", :input => raw,
+                                       :source => source, :exception => e)
         event.message = raw
         event.tags << "_jsonparsefailure"
       end
