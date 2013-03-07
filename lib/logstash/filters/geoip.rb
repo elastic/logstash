@@ -20,7 +20,7 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   #
   # If not specified, this will default to the GeoLiteCity database that ships
   # with logstash.
-  config :database, :validate => :string
+  config :database, :validate => :path
 
   # The field containing IP address, hostname is also OK. If this field is an
   # array, only the first value will be used.
