@@ -17,10 +17,10 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   config :port, :validate => :number, :required => true
 
   # ssl certificate to use
-  config :ssl_certificate, :validate => :string, :required => true
+  config :ssl_certificate, :validate => :path, :required => true
 
   # ssl key to use
-  config :ssl_key, :validate => :string, :required => true
+  config :ssl_key, :validate => :path, :required => true
 
   # ssl key passphrase to use
   config :ssl_key_passphrase, :validate => :password
