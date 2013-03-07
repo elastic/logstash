@@ -47,12 +47,16 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
         source = "lumberjack://#{l.delete("host")}/#{file}"
       end
       event = to_event(l.delete("line"), source)
-      # take any remaining fields in the lumberjack event and merge it as a
-      # field in the logstash event.
-      l.each do |key, value|
-        event[key] = value
-      end
-      output_queue << event
+
+      # TODO(sissel): We shoudln't use 'fields' here explicitly, but the new
+      # 'event[key]' code seems... slow, so work around it for now.
+      # TODO(sissel): Once Event_v1 is live, we can just merge 'l' directly into it.
+      #l.each do |key, value|
+        #event[key] = value
+      #end
+      event.fields.merge(l)
+
+      output_queue << to_event("test", "lumberjack:///")
     end
   end # def run
 end # class LogStash::Inputs::Lumberjack
