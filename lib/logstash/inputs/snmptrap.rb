@@ -3,14 +3,14 @@ require "logstash/namespace"
 
 # Read snmp trap messages as events
 #
-# Resulting @message looks like :
-#   #<SNMP::SNMPv1_Trap:0x6f1a7a4 @varbind_list=[#<SNMP::VarBind:0x2d7bcd8f @value="teststring", 
-#   @name=[1.11.12.13.14.15]>], @timestamp=#<SNMP::TimeTicks:0x1af47e9d @value=55>, @generic_trap=6, 
-#   @enterprise=[1.2.3.4.5.6], @source_ip="127.0.0.1", @agent_addr=#<SNMP::IpAddress:0x29a4833e @value="\xC0\xC1\xC2\xC3">, 
-#   @specific_trap=99>
+# SNMP varbinds are coerced to 'name=value' string pairs, separated by newlines.
+# This results in a @message that looks like:
+#   "SNMPv2-MIB::sysUpTime.0=134 days, 10:12:47.90\nSNMPv2-MIB::snmpTrapOID.0=SNMPv2-SMI::enterprises.5951.1.1.0.9"
 #
-# TODO : work out how to break it down into field.keys.   looks like varbind_list can have multiple entries which might 
-#        mean multiple events per trap ?
+# You can transform this into useful @fields with a filter like:
+#
+# filter { kv { field_split => "\n"} }
+#
 
 class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
   config_name "snmptrap"
@@ -56,7 +56,11 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
     @snmptrap = SNMP::TrapListener.new(:Port => @port, :Community => @community, :Host => @host) 
     @snmptrap.on_trap_default do |trap|
       begin
-        event = to_event(trap.inspect, trap.source_ip)
+        varbind_pairs = []
+        trap.each_varbind do |vb|
+          varbind_pairs << "#{vb.name.to_s}=#{vb.value.to_s}"
+        end
+        event = to_event(varbind_pairs.join("\n"), trap.source_ip)
         @logger.debug("SNMP Trap received: ", :trap_object => trap.inspect)
         output_queue << event if event
       rescue => event
