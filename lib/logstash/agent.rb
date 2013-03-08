@@ -258,6 +258,7 @@ class LogStash::Agent
       is_yaml = false
       concatconfig = []
       paths.each do |path|
+        next if File.directory?(path)
         file = File.new(path)
         if File.extname(file) == '.yaml'
           # assume always YAML if even one file is
