@@ -26,6 +26,21 @@ describe LogStash::Filters::Grok do
     end
   end
 
+  describe "create fields event if grok matches all messages and a key is specified" do
+    config <<-CONFIG
+      filter {
+        grok {
+          pattern => "%{DATE_EU:stimestamp}"
+        }
+      }
+    CONFIG
+
+    sample "2011/01/01" do
+      insist { subject["stimestamp"] } == "2011/01/01"
+    end
+  end
+
+
   describe "parsing an event with multiple messages (array of strings)" do 
     config <<-CONFIG
       filter {
