@@ -306,3 +306,26 @@ sync-jira-components: $(addprefix create/jiracomponent/,$(subst lib/logstash/,,$
 
 create/jiracomponent/%: 
 	$(QUIET)echo "--action addComponent --project LOGSTASH --name $(subst create/jiracomponent/,,$@)" >> tmp_jira_action_list
+
+## Release note section (up to you if/how/when to integrate in docs)
+# Collect the details of:
+#  - merged pull request from GitHub since last release
+#  - issues for FixVersion from JIRA
+
+# Note on used Github logic
+# We parse the commit between the last tag (should be the last release) and HEAD 
+# to extract all the notice about merged pull requests.
+
+# Note on used JIRA release note URL
+# The JIRA Release note list all issues (even open ones) 
+# with Fix Version assigned to target version
+# So one must verify manually that there is no open issue left (TODO use JIRACLI)
+
+# This is the ID for a version item in jira, can be obtained by CLI 
+# or through the Version URL https://logstash.jira.com/browse/LOGSTASH/fixforversion/xxx
+JIRA_VERSION_ID=10820
+
+releaseNote: 
+	-$(QUIET)rm releaseNote.html
+	$(QUIET)curl -si "https://logstash.jira.com/secure/ReleaseNote.jspa?version=$(JIRA_VERSION_ID)&projectId=10020" | sed -n '/<textarea.*>/,/<\/textarea>/p' | grep textarea -v >> releaseNote.html
+	$(QUIET)ruby pull_release_note.rb
