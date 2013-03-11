@@ -4,7 +4,6 @@ require "date"
 require "logstash/time_addon"
 require "logstash/namespace"
 require "uri"
-require "msgpack"
 
 # General event type. 
 # Basically a light wrapper on top of a hash.
