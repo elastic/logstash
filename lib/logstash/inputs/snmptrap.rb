@@ -9,8 +9,6 @@ require "logstash/namespace"
 #   @enterprise=[1.2.3.4.5.6], @source_ip="127.0.0.1", @agent_addr=#<SNMP::IpAddress:0x29a4833e @value="\xC0\xC1\xC2\xC3">, 
 #   @specific_trap=99>
 #
-# TODO : work out how to break it down into field.keys.   looks like varbind_list can have multiple entries which might 
-#        mean multiple events per trap ?
 
 class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
   config_name "snmptrap"
@@ -57,6 +55,9 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
     @snmptrap.on_trap_default do |trap|
       begin
         event = to_event(trap.inspect, trap.source_ip)
+        trap.each_varbind do |vb|
+          event[vb.name.to_s] = vb.value.to_s
+        end
         @logger.debug("SNMP Trap received: ", :trap_object => trap.inspect)
         output_queue << event if event
       rescue => event
