@@ -82,6 +82,9 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Maximum permissible size of a frame (in bytes) to negotiate with clients
   config :frame_max, :validate => :number, :default => 131072
 
+  # Array of headers (in messages' metadata) to add to fields in the event
+  config :headers2fields, :validate => :array, :default => {}
+  
   public
   def initialize(params)
     super
@@ -135,12 +138,29 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
       @bunnyqueue = @bunny.queue(@queue, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive, :arguments => @arguments_hash })
       @bunnyqueue.bind(@exchange, :key => @key)
 
-      @bunnyqueue.subscribe({:ack => @ack}) do |data|
-        e = to_event(data[:payload], @rabbitmq_url)
-        if e
+      @logger.debug("Bind sur la queue #{@bunnyqueue.name} reussi")
+       
+      # need to get metadata from data
+      @bunnyqueue.subscribe({:ack => @ack}) do |delivery_info, metadata, data|
+        
+        e = to_event(data, @rabbitmq_url)
+        if e          
+          if !@headers2fields.empty?
+            # constructing the hash array of headers to add
+            # select headers from properties if they are in the array @headers2fields
+            headers2add = metadata.headers.select {|k, v| @headers2fields.include?(k)}          
+            @logger.debug("Headers to insert in fields : #{headers2add.inspect}")
+             
+            # This doesn't work
+            #e.fields.merge(headers2add)
+            
+            headers2add.each do |added_field, added_value|
+              e[added_field] = added_value                        
+            end # headers2add.each do
+          end # if !@headers2fields.empty?
           queue << e
-        end
-      end # @bunnyqueue.subscribe
+        end # if e 
+      end # @bunnyqueue.subscribe do
 
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
       @logger.error("RabbitMQ connection error, will reconnect: #{e}")
