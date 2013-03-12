@@ -14,3 +14,6 @@ var/log/logstash
 
 # Cache directory for the unpacked logstash.jar file.
 var/cache/logstash
+
+# Temp dir for java
+var/logstash/
