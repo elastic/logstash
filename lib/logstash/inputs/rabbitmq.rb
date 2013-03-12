@@ -138,8 +138,6 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
       @bunnyqueue = @bunny.queue(@queue, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive, :arguments => @arguments_hash })
       @bunnyqueue.bind(@exchange, :key => @key)
 
-      @logger.debug("Bind sur la queue #{@bunnyqueue.name} reussi")
-       
       # need to get metadata from data
       @bunnyqueue.subscribe({:ack => @ack}) do |delivery_info, metadata, data|
         
