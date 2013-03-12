@@ -20,7 +20,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   #
   # If you try to set a type on an event that already has one (for
   # example when you send an event from a shipper to an indexer) then
-  # a new input will not override the existing type. A type set at 
+  # a new input will not override the existing type. A type set at
   # the shipper stays with that event for its life even
   # when sent to another LogStash server.
   config :type, :validate => :string, :required => true
@@ -119,6 +119,9 @@ class LogStash::Inputs::Base < LogStash::Plugin
         # JSON must be valid UTF-8, and many inputs come from ruby IO
         # instances, which almost all default to ASCII-8BIT. Force UTF-8
         event = LogStash::Event.from_json(raw.force_encoding("UTF-8"))
+        if ! @tags.is_a? Array
+          raise("@tags is not an array, is: #{@tags.inspect}")
+        end
         event.tags += @tags
         if @message_format
           event.message ||= event.sprintf(@message_format)
