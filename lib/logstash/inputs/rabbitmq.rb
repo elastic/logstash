@@ -153,7 +153,11 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
             #e.fields.merge(headers2add)
             
             headers2add.each do |added_field, added_value|
-              e[added_field] = added_value                        
+              if e.respond_to?("#{added_field}=")
+                e.method("#{added_field}=").call(added_value)
+              else
+                e[added_field] = added_value
+              end
             end # headers2add.each do
           end # if !@headers2fields.empty?
           queue << e
