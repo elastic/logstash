@@ -59,6 +59,9 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   # Maximum permissible size of a frame (in bytes) to negotiate with clients
   config :frame_max, :validate => :number, :default => 131072
 
+  # Array of fields to add to headers in messages' metadata
+  config :fields2headers, :validate => :array, :default => {}
+  
   public
   def register
     require "bunny"
@@ -112,6 +115,31 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
     @logger.debug("Sending event", :destination => to_s, :event => event,
                   :key => key)
     key = event.sprintf(@key) if @key
+    
+    # constructing the hash array of headers to add
+    @headers2add = Hash.new(0)
+    
+    # Adding headers from fields' attribute
+    @headers2add = event.fields.select {|k, v| @fields2headers.include?(k)}
+    @logger.debug("Adding headers from Fields attributes : #{@headers2add.inspect}")
+        
+    # Adding headers from "original" attributes 
+    
+    # This part is desactivated because event.select isn't public
+    #@headers2add.merge(event.select {|k, v| @fields2headers.include?(k)})
+    #@logger.debug("Adding headers from Fields and original attributes : #{@headers2add.inspect}")
+
+    # Iteration on each field name specified in fields2headers
+    @fields2headers.each do |tagname|
+      # Verify if tagname is in the list of tags     
+      if event.include?(tagname)
+        @headers2add[tagname] = event[tagname]
+        @logger.debug("Adding native field #{tagname} to headers")
+      else
+        @logger.debug("Not Adding tag #{tagname} to headers because missing")
+      end # if event.include?(tagname)
+    end # :fields2headers.each do |tagname|
+    
     begin
       receive_raw(event.to_json, key)
     rescue JSON::GeneratorError => e
@@ -125,22 +153,30 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   def receive_raw(message, key=@key)
     begin
       if @bunnyexchange
-        @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
-        @bunnyexchange.publish(message, :persistent => @persistent, :key => key)
+        if @headers2add.empty?
+          #tags2headers is empty, so we send the message normally
+          @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
+          @bunnyexchange.publish(message, :persistent => @persistent, :key => key)
+        else
+          #publishing messages WITH headers, that are stored in "headers2add"
+          @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key , :headers => @headers2add.inspect}])
+          @bunnyexchange.publish(message, :persistent => @persistent, :key => key, :headers => @headers2add)
+          
+        end # if @headers2headers.empty?
       else
         @logger.warn("Tried to send message, but not connected to rabbitmq yet.")
-      end
+      end  # if @bunnyexchange
     rescue *[Bunny::ServerDownError, Errno::ECONNRESET] => e
       @logger.error("RabbitMQ connection error (during publish), will reconnect: #{e}")
       connect
       retry
-    end
-  end
+    end # begin
+  end # def receive_raw
 
   public
   def to_s
     return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@exchange}\##{@key}"
-  end
+  end # def to_s
 
   public
   def teardown
