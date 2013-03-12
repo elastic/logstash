@@ -71,6 +71,7 @@ Gem::Specification.new do |gem|
     gem.platform = RUBY_PLATFORM
     gem.add_runtime_dependency "jruby-elasticsearch", ["0.0.14"]
     gem.add_runtime_dependency "jruby-httpclient"
+    gem.add_runtime_dependency "bouncy-castle-java", "1.5.0146.1"
     gem.add_runtime_dependency "jruby-openssl", "0.8.2"
     gem.add_runtime_dependency "jruby-win32ole"
     gem.add_runtime_dependency "jdbc-mysql" # For input drupal_dblog
