@@ -60,7 +60,7 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   config :frame_max, :validate => :number, :default => 131072
 
   # Array of fields to add to headers in messages' metadata
-  config :fields2headers, :validate => :array, :default => {}
+  config :fields_headers, :validate => :array, :default => {}
   
   public
   def register
@@ -116,29 +116,22 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
                   :key => key)
     key = event.sprintf(@key) if @key
     
-    # constructing the hash array of headers to add
-    @headers2add = Hash.new(0)
-    
+   
     # Adding headers from fields' attribute
-    @headers2add = event.fields.select {|k, v| @fields2headers.include?(k)}
-    @logger.debug("Adding headers from Fields attributes : #{@headers2add.inspect}")
-        
+    @headers_add = event.fields.select {|k, v| @fields_headers.include?(k)}
+    @logger.debug("Adding headers from Fields attributes : #{@headers_add.inspect}")
+            
     # Adding headers from "original" attributes 
-    
-    # This part is desactivated because event.select isn't public
-    #@headers2add.merge(event.select {|k, v| @fields2headers.include?(k)})
-    #@logger.debug("Adding headers from Fields and original attributes : #{@headers2add.inspect}")
-
-    # Iteration on each field name specified in fields2headers
-    @fields2headers.each do |tagname|
-      # Verify if tagname is in the list of tags     
-      if event.include?(tagname)
-        @headers2add[tagname] = event[tagname]
-        @logger.debug("Adding native field #{tagname} to headers")
+    # Iteration on each field name specified in fields_headers
+    @fields_headers.each do |added_field|
+      # Verify if added_field is in the list of tags     
+      if event.include?(added_field)
+        @headers_add[added_field] = event[added_field]
+        @logger.debug("Adding native field #{added_field} to headers")
       else
-        @logger.debug("Not Adding tag #{tagname} to headers because missing")
-      end # if event.include?(tagname)
-    end # :fields2headers.each do |tagname|
+        @logger.debug("Not Adding tag #{added_field} to headers because missing")
+      end # if event.include?(added_field)
+    end # :fields_headers.each do |added_field|
     
     begin
       receive_raw(event.to_json, key)
@@ -153,14 +146,14 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   def receive_raw(message, key=@key)
     begin
       if @bunnyexchange
-        if @headers2add.empty?
+        if @headers_add.empty?
           #tags2headers is empty, so we send the message normally
           @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
           @bunnyexchange.publish(message, :persistent => @persistent, :key => key)
         else
-          #publishing messages WITH headers, that are stored in "headers2add"
-          @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key , :headers => @headers2add.inspect}])
-          @bunnyexchange.publish(message, :persistent => @persistent, :key => key, :headers => @headers2add)
+          #publishing messages WITH headers, that are stored in "headers_add"
+          @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key , :headers => @headers_add.inspect}])
+          @bunnyexchange.publish(message, :persistent => @persistent, :key => key, :headers => @headers_add)
           
         end # if @headers2headers.empty?
       else
