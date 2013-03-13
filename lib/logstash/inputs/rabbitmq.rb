@@ -131,7 +131,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
       @bunny = Bunny.new(@rabbitmq_settings)
       return if terminating?
       @bunny.start
-      #@bunny.qos({:prefetch_count => @prefetch_count})
+      @bunny.qos({:prefetch_count => @prefetch_count})
 
       @arguments_hash = Hash[*@arguments]
 
