@@ -83,7 +83,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   config :frame_max, :validate => :number, :default => 131072
 
   # Array of headers (in messages' metadata) to add to fields in the event
-  config :headers2fields, :validate => :array, :default => {}
+  config :headers_fields, :validate => :array, :default => {}
   
   public
   def initialize(params)
@@ -131,7 +131,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
       @bunny = Bunny.new(@rabbitmq_settings)
       return if terminating?
       @bunny.start
-      @bunny.qos({:prefetch_count => @prefetch_count})
+      #@bunny.qos({:prefetch_count => @prefetch_count})
 
       @arguments_hash = Hash[*@arguments]
 
@@ -139,29 +139,22 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
       @bunnyqueue.bind(@exchange, :key => @key)
 
       # need to get metadata from data
-      @bunnyqueue.subscribe({:ack => @ack}) do |delivery_info, metadata, data|
+      @bunnyqueue.subscribe({:ack => @ack, :block => true}) do |delivery_info, metadata, data|
         
         e = to_event(data, @rabbitmq_url)
         if e          
-          if !@headers2fields.empty?
+          if !@headers_fields.empty?
             # constructing the hash array of headers to add
-            # select headers from properties if they are in the array @headers2fields
-            headers2add = metadata.headers.select {|k, v| @headers2fields.include?(k)}          
-            @logger.debug("Headers to insert in fields : #{headers2add.inspect}")
+            # select headers from properties if they are in the array @headers_fields
+            headers_add = metadata.headers.select {|k, v| @headers_fields.include?(k)}          
+            @logger.debug("Headers to insert in fields : ", :headers => headers_add)
              
-            # This doesn't work
-            #e.fields.merge(headers2add)
-            
-            headers2add.each do |added_field, added_value|
-              if e.respond_to?("#{added_field}=")
-                e.method("#{added_field}=").call(added_value)
-              else
-                e[added_field] = added_value
-              end
-            end # headers2add.each do
-          end # if !@headers2fields.empty?
+            headers_add.each do |added_field, added_value|
+              e[added_field] = added_value              
+            end # headers_add.each do
+          end # if !@headers_fields.empty?
           queue << e
-        end # if e 
+        end # if e
       end # @bunnyqueue.subscribe do
 
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
