@@ -27,7 +27,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "i18n"
 
   # Web dependencies
-  gem.add_runtime_dependency "ftw", ["~> 0.0.26"]
+  gem.add_runtime_dependency "ftw", ["~> 0.0.27"]
   gem.add_runtime_dependency "haml"
   gem.add_runtime_dependency "rack"
   gem.add_runtime_dependency "sass"
