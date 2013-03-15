@@ -50,7 +50,12 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
     @hostname = Socket.gethostname
     @logger.info("Registering input eventlog://#{@hostname}/#{@logfile}")
-    require "win32ole" # rubygem 'win32ole' ('jruby-win32ole' on JRuby)
+
+    if RUBY_PLATFORM == "java"
+      require "jruby-win32ole"
+    else
+      require "win32ole"
+    end
   end # def register
 
   public
