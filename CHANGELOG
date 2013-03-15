@@ -13,6 +13,7 @@
   - improvement: tcp: ssl now supported! (#318, patch by Matthew Richardson)
 
   ## filters
+  - bugfix: grep: allow repeating a field in the hash config (LOGSTASH-919)
   - deprecation: the --grok-patterns-path flag is deprecated and will now
     warn you if you use it. (LOGSTASH-803)
   - feature: grok: Adds tag_on_failure setting so you can prevent grok from

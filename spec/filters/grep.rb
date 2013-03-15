@@ -264,4 +264,60 @@ describe LogStash::Filters::Grep do
       insist { subject }.nil?
     end
   end
+
+  #LOGSTASH-894 and LOGSTASH-919
+  describe "repeat a field in match config, similar to piped grep command line" do
+    config <<-CONFIG
+    filter {
+      grep {
+        match => ["@message", "hello", "@message", "world"]
+      }
+    }
+    CONFIG
+
+    #both match
+    sample "hello world" do
+      reject { subject }.nil?
+    end
+    #one match
+    sample "bye world" do
+      insist { subject }.nil?
+    end
+    #one match
+    sample "hello Jordan" do
+      insist { subject }.nil?
+    end
+    #no match
+    sample "WTF" do
+      insist { subject }.nil?
+    end
+  end
+
+  describe "repeat a field in match config, similar to several -e in grep command line" do
+    config <<-CONFIG
+    filter {
+      grep {
+        match => ["@message", "hello", "@message", "world"]
+        negate => true
+      }
+    }
+    CONFIG
+
+    #both match
+    sample "hello world" do
+      insist { subject }.nil?
+    end
+    #one match
+    sample "bye world" do
+      insist { subject }.nil?
+    end
+    #one match
+    sample "hello Jordan" do
+      insist { subject }.nil?
+    end
+    #no match
+    sample "WTF" do
+      reject { subject }.nil?
+    end
+  end
 end

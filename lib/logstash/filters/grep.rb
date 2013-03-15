@@ -64,10 +64,13 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       # Skip known config names
       next if (RESERVED + ["negate", "match", "drop"]).include?(field)
 
-      re = Regexp.new(pattern)
-      @patterns[field] << re
-      @logger.debug("Registered grep", :type => @type, :field => field,
-                    :pattern => pattern, :regexp => re)
+      pattern = [pattern] if pattern.is_a?(String)
+      pattern.each do |p|
+        re = Regexp.new(p)
+        @patterns[field] << re
+        @logger.debug? and @logger.debug("Registered grep", :type => @type, :field => field,
+                    :pattern => p, :regexp => re)
+      end
     end # @match.merge.each
   end # def register
 
