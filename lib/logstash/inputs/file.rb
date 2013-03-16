@@ -85,10 +85,10 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     }
 
     if @sincedb_path.nil?
-      if ENV["HOME"].nil?
-        @logger.error("No HOME environment variable set, I don't know where " \
+      if ENV["HOME"].nil? and ENV["SINCEDB_PATH"].nil?
+        @logger.error("No HOME and SINCEDB_PATH  environment variables set, I don't know where " \
                       "to keep track of the files I'm watching. Either set " \
-                      "HOME in your environment, or set sincedb_path in " \
+                      "HOME/SINCEDB_PATH in your environment, or set sincedb_path in " \
                       "in your logstash config for the file input with " \
                       "path '#{@path.inspect}'")
         raise # TODO(sissel): HOW DO I FAIL PROPERLY YO
@@ -96,7 +96,11 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
       # Join by ',' to make it easy for folks to know their own sincedb
       # generated path (vs, say, inspecting the @path array)
-      @sincedb_path = File.join(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest(@path.join(",")))
+      if !ENV["SINCEDB_PATH"].nil?
+        @sincedb_path = File.join(ENV["SINCEDB_PATH"], ".sincedb_" + Digest::MD5.hexdigest(@path.join(",")))
+      else
+        @sincedb_path = File.join(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest(@path.join(",")))
+      end
 
       # Migrate any old .sincedb to the new file (this is for version <=1.1.1 compatibility)
       old_sincedb = File.join(ENV["HOME"], ".sincedb")
