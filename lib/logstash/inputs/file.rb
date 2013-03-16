@@ -103,7 +103,11 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       end
 
       # Migrate any old .sincedb to the new file (this is for version <=1.1.1 compatibility)
-      old_sincedb = File.join(ENV["HOME"], ".sincedb")
+      if !ENV["SINCEDB_PATH"].nil?
+        old_sincedb = File.join(ENV["SINCEDB_PATH"], ".sincedb")
+      else
+        old_sincedb = File.join(ENV["HOME"], ".sincedb")
+      end
       if File.exists?(old_sincedb)
         @logger.info("Renaming old ~/.sincedb to new one", :old => old_sincedb,
                      :new => @sincedb_path)
