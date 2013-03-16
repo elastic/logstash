@@ -204,7 +204,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   # If true, ensure the '_grokparsefailure' tag is present when there has been no
   # successful match
-  config :tag_on_failure, :validate => :boolean, :default => true
+  config :tag_on_failure, :validate => :array, :default => ["_grokparsefailure"]
 
   # TODO(sissel): Add this feature?
   # When disabled, any pattern that matches the entire string will not be set.
@@ -393,10 +393,12 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       end # event[field]
     end # patterns.each
 
-    if !matched && @tag_on_failure
+    if !matched
       # Tag this event if we can't parse it. We can use this later to
       # reparse+reindex logs if we improve the patterns given .
-      event.tags << "_grokparsefailure" unless event.tags.include?("_grokparsefailure")
+      @tag_on_failure.each do |tag|
+        event.tags << tag unless event.tags.include?(tag)
+      end
     end
 
     @logger.debug? and @logger.debug("Event now: ", :event => event)
