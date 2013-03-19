@@ -41,7 +41,7 @@ describe "inputs/redis" do
       }
     CONFIG
 
-    before :each { populate(key, event_count) }
+    before(:each) { populate(key, event_count) }
     input { |plugins| process(plugins, event_count) }
   end
 
@@ -60,7 +60,7 @@ describe "inputs/redis" do
       }
     CONFIG
 
-    before :each { populate(key, event_count) }
+    before(:each) { populate(key, event_count) }
     input { |plugins| process(plugins, event_count) }
   end
 end
