@@ -83,9 +83,9 @@ This is what it might look like in your config file:
   <li> The configuration attribute name here is anything that matches the above regular expression. </li>
 <% end -%>
 <% if config[:validate].is_a?(Symbol) -%>
-  <li> Value type is <%= config[:validate] %> </li>
+  <li> Value type is <a href="../configuration#<%= config[:validate] %>"><%= config[:validate] %></a> </li>
 <% elsif config[:validate].nil? -%>
-  <li> Value type is string </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
 <% elsif config[:validate].is_a?(Array) -%>
   <li> Value can be any of: <%= config[:validate].map(&:inspect).join(", ") %> </li>
 <% end -%>
