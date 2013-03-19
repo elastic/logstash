@@ -14,6 +14,6 @@ if [ "$?" -eq 0 -a -z "$USE_JRUBY" ] ; then
 else
   # No ruby found, fetch JRuby and run.
   jruby="vendor/jar/jruby-complete-1.7.2.jar"
-  make build-jruby
-  java -jar $jruby "$basedir/lib/logstash/runner.rb" "$@"
+  [ ! -f "$jruby" ] && make build-jruby
+  java -jar "$jruby" "$basedir/lib/logstash/runner.rb" "$@"
 fi

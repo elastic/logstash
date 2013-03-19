@@ -11,6 +11,8 @@
   - improvement: twitter: supports http proxying now (#276, patch by Richard
     Pijnenburg)
   - improvement: tcp: ssl now supported! (#318, patch by Matthew Richardson)
+  - feature: redis: now supports 'batch_count' option for doing bulk
+    fetches from redis lists. Requires Redis 2.6.0 or higher.
 
   ## filters
   - deprecation: the --grok-patterns-path flag is deprecated and will now
