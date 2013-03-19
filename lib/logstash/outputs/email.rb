@@ -202,8 +202,8 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
             @logger.error("Operator Provided Is Not Found, Currently We Only Support AND/OR Values! - defaulting to OR")
           end
         else
-          hasField = event.fields.has_key?(field)
-          @logger.debug("Does Event Contain Field - ", :hasField => hasField)
+          hasField = event[field]
+          @logger.debug? and @logger.debug("Does Event Contain Field - ", :hasField => hasField)
           isValid = false
           # if we have maching field and value is wildcard - we have a success
           if hasField
@@ -211,8 +211,9 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
               isValid = true
             else
               # we get an array so we need to loop over the values and find if we have a match
-              eventFieldValues = event.fields.fetch(field)
-              @logger.debug("Event Field Values - ", :eventFieldValues => eventFieldValues)
+              eventFieldValues = event[field]
+              @logger.debug? and @logger.debug("Event Field Values - ", :eventFieldValues => eventFieldValues)
+              eventFieldValues = [eventFieldValues] if eventFieldValues.is_a?(String)
               eventFieldValues.each do |eventFieldValue|
                 isValid = validateValue(eventFieldValue, value)
                 if isValid # no need to iterate any further
