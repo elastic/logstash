@@ -8,7 +8,8 @@ fi
 
 export RUBYLIB="$basedir/lib"
 
-if which ruby > /dev/null 2>&1 ; then
+which ruby > /dev/null 2>&1
+if [ "$?" -eq 0 -a -z "$USE_JRUBY" ] ; then
   ruby "$basedir/lib/logstash/runner.rb" "$@"
 else
   # No ruby found, fetch JRuby and run.
