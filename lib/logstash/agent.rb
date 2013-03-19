@@ -29,6 +29,7 @@ class LogStash::Agent
   attr_reader :config_path
   attr_reader :logfile
   attr_reader :verbose
+  attr_reader :configtest
 
   public
   def initialize
@@ -45,6 +46,7 @@ class LogStash::Agent
     @verbose = 0
     @filterworker_count = 1
     @watchdog_timeout = 10
+    @configtest = false
 
     @plugins = {}
     @plugins_mutex = Mutex.new
@@ -102,6 +104,10 @@ class LogStash::Agent
 
     opts.on("-l", "--log FILE", "Log to a given path. Default is stdout.") do |path|
       @logfile = path
+    end
+
+    opts.on("-t", "--configtest", "Test configuration and exit.") do |arg|
+        @configtest = true
     end
 
     opts.on("-v", "Increase verbosity") do
@@ -397,7 +403,7 @@ class LogStash::Agent
 
       # If we are given a config string (run usually with 'agent -e "some config string"')
       # then set up some defaults.
-      if @config_string
+      if @config_string or @configtest
         require "logstash/inputs/stdin"
         require "logstash/outputs/stdout"
 
@@ -409,10 +415,10 @@ class LogStash::Agent
         end
 
         # If no inputs are specified, use stdin by default.
-        @inputs = [LogStash::Inputs::Stdin.new("type" => [ "stdin" ])] if @inputs.length == 0
+        @inputs = [LogStash::Inputs::Stdin.new("type" => [ "stdin" ])] if (@inputs.length == 0 or @configtest)
 
         # If no outputs are specified, use stdout in debug mode.
-        @outputs = [LogStash::Outputs::Stdout.new("debug" => [ "true" ])] if @outputs.length == 0
+        @outputs = [LogStash::Outputs::Stdout.new("debug" => [ "true" ])] if (@outputs.length == 0 or @configtest)
       end
 
       if @inputs.length == 0 or @outputs.length == 0
@@ -486,6 +492,13 @@ class LogStash::Agent
       end
       @logger.info("All plugins are started and registered.")
     end # synchronize
+
+    # exit if configtest
+    if @configtest
+      puts "Config test passed.  Exiting..."
+      shutdown
+      exit (0)
+    end
 
     # yield to a block in case someone's waiting for us to be done setting up
     # like tests, etc.
