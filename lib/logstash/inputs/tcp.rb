@@ -34,7 +34,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   # `client` connects to a server.
   config :mode, :validate => ["server", "client"], :default => "server"
 
-  # Enable ssl (must be set for other `ssl_` options to take effect_
+  # Enable ssl (must be set for other `ssl_` options to take effect)
   config :ssl_enable, :validate => :boolean, :default => false
 
   # Verify the identity of the other end of the ssl connection against the CA

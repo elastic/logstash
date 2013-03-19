@@ -16,7 +16,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   plugin_status "beta"
 
   # The path to the file to use as an input.
-  # You can use globs here, such as "/var/log/*.log"
+  # You can use globs here, such as `/var/log/*.log`
   # Paths must be absolute and cannot be relative.
   config :path, :validate => :array, :required => true
 

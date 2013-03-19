@@ -43,8 +43,8 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #
   # [joda.time.format.DateTimeFormat](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html)
   #
-  # An array with field name first, and format patterns following, [ field,
-  # formats... ]
+  # An array with field name first, and format patterns following, `[ field,
+  # formats... ]`
   #
   # If your time field has multiple possible formats, you can do this:
   #
