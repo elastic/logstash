@@ -82,6 +82,9 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Maximum permissible size of a frame (in bytes) to negotiate with clients
   config :frame_max, :validate => :number, :default => 131072
 
+  # Array of headers (in messages' metadata) to add to fields in the event
+  config :headers_fields, :validate => :array, :default => {}
+  
   public
   def initialize(params)
     super
@@ -135,12 +138,24 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
       @bunnyqueue = @bunny.queue(@queue, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive, :arguments => @arguments_hash })
       @bunnyqueue.bind(@exchange, :key => @key)
 
-      @bunnyqueue.subscribe({:ack => @ack}) do |data|
-        e = to_event(data[:payload], @rabbitmq_url)
-        if e
+      # need to get metadata from data
+      @bunnyqueue.subscribe({:ack => @ack, :block => true}) do |delivery_info, metadata, data|
+        
+        e = to_event(data, @rabbitmq_url)
+        if e          
+          if !@headers_fields.empty?
+            # constructing the hash array of headers to add
+            # select headers from properties if they are in the array @headers_fields
+            headers_add = metadata.headers.select {|k, v| @headers_fields.include?(k)}          
+            @logger.debug("Headers to insert in fields : ", :headers => headers_add)
+             
+            headers_add.each do |added_field, added_value|
+              e[added_field] = added_value              
+            end # headers_add.each do
+          end # if !@headers_fields.empty?
           queue << e
-        end
-      end # @bunnyqueue.subscribe
+        end # if e
+      end # @bunnyqueue.subscribe do
 
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
       @logger.error("RabbitMQ connection error, will reconnect: #{e}")
