@@ -24,8 +24,8 @@ You can also find documentation on the <http://logstash.net> site.
 To work on the code without building a jar, install rvm and run the following:
 
     # Install JRuby with rvm
-    rvm install jruby-1.7.1
-    rvm use jruby-1.7.1
+    rvm install jruby-1.7.2
+    rvm use jruby-1.7.2
 
     # Install logstash dependencies
     ruby gembag.rb logstash.gemspec
