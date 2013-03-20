@@ -29,6 +29,13 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # The fields to perform 'key=value' searching on
   config :fields, :validate => :array
 
+  # Decides whether all possible fields are parsed or not
+  config :catchall, :validate => :boolean, :default => true
+
+  # An array that includes all the fields which will be parsed
+  config :include_fields, :validate => :array, :default => []
+
+  #
   # A string of characters to trim from the value. This is useful if your
   # values are wrapped in brackets or are terminated by comma (like postfix
   # logs)
@@ -166,7 +173,14 @@ class LogStash::Filters::KV < LogStash::Filters::Base
         value = value.gsub(@trim_re, "")
       end
       key = @prefix + key
-      kv_keys[key] = value
+      @logger.warn(catchall)
+      if catchall
+        kv_keys[key] = value
+      else
+        if @include_fields.include? @prefix + key
+          kv_keys[key] = value
+        end
+      end
     end
     return kv_keys
   end
