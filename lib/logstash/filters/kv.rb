@@ -29,10 +29,17 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # The fields to perform 'key=value' searching on
   config :fields, :validate => :array
 
-  # Decides whether all possible fields are parsed or not
-  config :catchall, :validate => :boolean, :default => true
-
   # An array that includes all the fields which will be parsed
+  # If this is present, only the specified keys will be parsed.
+  #
+  # for ex, if a string is: "Hey, from=<abc>, to=def foo=bar"
+  #
+  #     filter {
+  #       kv {
+  #         include_fields = [ "from", "to" ]
+  #       }
+  #
+  # Key "foo" will automatically be ignored.
   config :include_fields, :validate => :array, :default => []
 
   #
@@ -130,6 +137,10 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       @fields << @source
     end
 
+    #Check if all key value pairs need to be parsed
+    @catch_all_keys = true
+    @catch_all_keys = false if include_fields.length > 0
+
   end # def register
 
   def filter(event)
@@ -173,8 +184,8 @@ class LogStash::Filters::KV < LogStash::Filters::Base
         value = value.gsub(@trim_re, "")
       end
       key = @prefix + key
-      @logger.warn(catchall)
-      if catchall
+
+      if @catch_all_keys
         kv_keys[key] = value
       else
         if @include_fields.include? @prefix + key
