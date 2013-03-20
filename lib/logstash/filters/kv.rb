@@ -18,7 +18,7 @@ require "logstash/namespace"
 # * error: REFUSED
 #
 # This is great for postfix, iptables, and other types of logs that
-# tend towards 'key=value' syntax. 
+# tend towards 'key=value' syntax.
 #
 # Further, this can often be used to parse query parameters like
 # 'foo=bar&baz=fizz' by setting the field_split to "&"
@@ -34,9 +34,9 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # logs)
   #
   # Example, to strip '<' '>' and ',' characters from values:
-  # 
-  #     filter { 
-  #       kv { 
+  #
+  #     filter {
+  #       kv {
   #         trim => "<>,"
   #       }
   #     }
@@ -52,7 +52,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #
   #     filter {
   #       kv {
-  #         field_split => "&?" 
+  #         field_split => "&?"
   #       }
   #     }
   #
@@ -71,7 +71,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #
   # Example, to identify key-values such as
   # 'key1:value1 key2:value2':
-  # 
+  #
   #     filter { kv { value_split => ":" } }
   config :value_split, :validate => :string, :default => '='
 
@@ -82,7 +82,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     filter { kv { prefix => "arg_" } }
   config :prefix, :validate => :string, :default => ''
 
-  # The name of the container to put all of the key-value pairs into 
+  # The name of the container to put all of the key-value pairs into
   #
   # Example, to place all keys into container kv:
   #
@@ -96,7 +96,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     filter { kv { source => "@message" } }
   config :source, :validate => :string, :default => '@message'
 
-  # The name of the container to put all of the key-value pairs into 
+  # The name of the container to put all of the key-value pairs into
   #
   # Example, to place all keys into field kv:
   #
@@ -138,7 +138,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
         when nil; #Nothing to do
         when String; kv_keys = parse(value, event, kv_keys)
         when Array; value.each { |v| kv_keys = parse(v, event, kv_keys) }
-        else 
+        else
           @logger.warn("kv filter has no support for this type of data",
                        :type => value.class, :value => value)
       end # case value
