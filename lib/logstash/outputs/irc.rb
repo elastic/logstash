@@ -51,7 +51,7 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
       c.user = @user
       c.realname = @real
       c.channels = @channels
-      c.password = @password
+      c.password = @password.value rescue nil
     end
     Thread.new(@bot) do |bot|
       bot.start

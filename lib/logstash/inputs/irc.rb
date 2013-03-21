@@ -56,7 +56,7 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
       c.realname = @real
       c.user = @user
       c.channels = @channels
-      c.password = @password
+      c.password = @password.value rescue nil
       c.ssl.use = @secure
     end
     queue = @irc_queue
