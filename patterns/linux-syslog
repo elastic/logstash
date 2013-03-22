@@ -7,7 +7,7 @@ CRONLOG %{SYSLOGBASE} \(%{USER:user}\) %{CRON_ACTION:action} \(%{DATA:message}\)
 SYSLOGLINE %{SYSLOGBASE2} %{GREEDYDATA:message}
 
 # IETF 5424 syslog(8) format (see http://www.rfc-editor.org/info/rfc5424)
-IETF_SYSLOG_PRI (?:\<%{NONNEGINT<192}\>)
-IETF_SYSLOG_SD (?:\[%{DATA}\]+|-)
+SYSLOG5424PRI (?:\<%{NONNEGINT}\>)
+SYSLOG5424SD (?:\[%{DATA}\]+|-)
 
-IETF_SYSLOG_LINE %{IETF_SYSLOG_PRI:ietf_syslog_pri}%{NONNEGINT:ietf_syslog_ver} (%{TIMESTAMP_ISO8601:ietf_syslog_ts}|-) (%{HOSTNAME:ietf_syslog_host}|-) (%{WORD:ietf_syslog_app}|-) (%{WORD:ietf_syslog_proc}|-) (%{WORD:ietf_syslog_msgid}|-) %{IETF_SYSLOG_SD:ietf_syslog_sd} %{GREEDYDATA:ietf_syslog_msg}
+SYSLOG5424LINE %{SYSLOG5424PRI:ietf_syslog_pri}%{NONNEGINT:syslog5424_ver} (%{TIMESTAMP_ISO8601:syslog5424_ts}|-) (%{HOSTNAME:syslog5424_host}|-) (%{WORD:syslog5424_app}|-) (%{WORD:syslog5424_proc}|-) (%{WORD:syslog5424_msgid}|-) %{SYSLOG5424SD:syslog5424_sd} %{GREEDYDATA:ietf_syslog_msg}
