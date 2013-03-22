@@ -1,7 +1,7 @@
 require "test_utils"
 require "logstash/filters/grok"
 
-describe LogStash::Filters::Grok do 
+describe LogStash::Filters::Grok do
   extend LogStash::RSpec
 
   describe "simple syslog line" do
@@ -26,7 +26,33 @@ describe LogStash::Filters::Grok do
     end
   end
 
-  describe "parsing an event with multiple messages (array of strings)" do 
+  describe "ietf 5424 syslog line" do
+    # The logstash config goes here.
+    # At this time, only filters are supported.
+    config <<-CONFIG
+      filter {
+        grok {
+          pattern => "%{IETF_SYSLOG LINE}"
+          singles => true
+        }
+      }
+    CONFIG
+
+    sample "<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug 4123 - [id1 foo="bar"][id2 baz="something"] Hello, syslog." do
+      reject { subject["@tags"] }.include?("_grokparsefailure")
+      insist { subject["ietf_syslog_pri"] } == "<191>"
+      insist { subject["ietf_syslog_ver"] } == "1"
+      insist { subject["ietf_syslog_ts"] } == "2009-06-30T18:30:00+02:00"
+      insist { subject["ietf_syslog_host"] } == "paxton.local"
+      insist { subject["ietf_syslog_app"] } == "grokdebug"
+      insist { subject["ietf_syslog_proc"] } == "4123"
+      insist { subject["ietf_syslog_msgid"] } == null
+      insist { subject["ietf_syslog_sd"] } == "[id1 foo=\"bar\"][id2 baz=\"something\"]"
+      insist { subject["ietf_syslog_msg"] } == "Hello, syslog."
+    end
+  end
+
+  describe "parsing an event with multiple messages (array of strings)" do
     config <<-CONFIG
       filter {
         grok {
@@ -37,7 +63,7 @@ describe LogStash::Filters::Grok do
     CONFIG
 
     sample({ "@message" => [ "hello 12345", "world 23456" ] }) do
-      insist { subject["NUMBER"] } == [ "12345", "23456" ] 
+      insist { subject["NUMBER"] } == [ "12345", "23456" ]
     end
   end
 
