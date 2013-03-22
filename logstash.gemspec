@@ -61,7 +61,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "jls-lumberjack", [">0"]           #(Apache 2.0 license)
   gem.add_runtime_dependency "geoip", [">= 1.1.0"]              #(GPL license)
   gem.add_runtime_dependency "beefcake", "0.3.7"                #(MIT license)
-  gem.add_runtime_dependency "php-serialize"                    # For input drupal_dblog (unknown license)
+  gem.add_runtime_dependency "php-serialize"                    # For input drupal_dblog (MIT license)
   gem.add_runtime_dependency "murmurhash3"                      #(MIT license)
   gem.add_runtime_dependency "rufus-scheduler"                  #(MIT license)
   gem.add_runtime_dependency "user_agent_parser", [">= 2.0.0"]  #(MIT license)
