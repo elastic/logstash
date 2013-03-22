@@ -1,11 +1,9 @@
 The following is a list of people who have contributed ideas, code, bug
 reports, or in general have helped logstash along its way.
 
-Project Owners
+Contributors:
 * Jordan Sissel (jordansissel)
 * Pete Fritchman (fetep)
-
-Contributors:
 * Brice Figureau (masterzen)
 * Vladimir Vuksan (vvuksan)
 * Alexandre Dulaunoy (adulau)
@@ -68,4 +66,4 @@ Contributors:
 Note: If you've sent me patches, bug reports, or otherwise contributed to
 logstash, and you aren't on the list above and want to be, please let me know
 and I'll make sure you're here. Contributions from folks like you are what make
-open source the bomb.
+open source awesome.
