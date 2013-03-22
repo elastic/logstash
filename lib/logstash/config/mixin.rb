@@ -350,7 +350,7 @@ module LogStash::Config::Mixin
             if value.size > 1 # only one value wanted
               return false, "Expected number, got #{value.inspect}"
             end
-            if value.first.to_s.to_i.to_s != value.first.to_s
+            if value.first.to_s.to_f.to_s != value.first.to_s
               return false, "Expected number, got #{value.first.inspect}"
             end
             result = value.first.to_i
