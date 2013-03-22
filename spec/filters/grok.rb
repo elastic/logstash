@@ -32,7 +32,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          pattern => "%{IETF_SYSLOG LINE}"
+          pattern => "%{SYSLOG5424LINE}"
           singles => true
         }
       }
@@ -40,15 +40,15 @@ describe LogStash::Filters::Grok do
 
     sample "<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug 4123 - [id1 foo="bar"][id2 baz="something"] Hello, syslog." do
       reject { subject["@tags"] }.include?("_grokparsefailure")
-      insist { subject["ietf_syslog_pri"] } == "<191>"
-      insist { subject["ietf_syslog_ver"] } == "1"
-      insist { subject["ietf_syslog_ts"] } == "2009-06-30T18:30:00+02:00"
-      insist { subject["ietf_syslog_host"] } == "paxton.local"
-      insist { subject["ietf_syslog_app"] } == "grokdebug"
-      insist { subject["ietf_syslog_proc"] } == "4123"
-      insist { subject["ietf_syslog_msgid"] } == null
-      insist { subject["ietf_syslog_sd"] } == "[id1 foo=\"bar\"][id2 baz=\"something\"]"
-      insist { subject["ietf_syslog_msg"] } == "Hello, syslog."
+      insist { subject["syslog5424_pri"] } == "<191>"
+      insist { subject["syslog5424_ver"] } == "1"
+      insist { subject["syslog5424_ts"] } == "2009-06-30T18:30:00+02:00"
+      insist { subject["syslog5424_host"] } == "paxton.local"
+      insist { subject["syslog5424_app"] } == "grokdebug"
+      insist { subject["syslog5424_proc"] } == "4123"
+      insist { subject["syslog5424_msgid"] } == nil
+      insist { subject["syslog5424_sd"] } == "[id1 foo=\"bar\"][id2 baz=\"something\"]"
+      insist { subject["syslog5424_msg"] } == "Hello, syslog."
     end
   end
 
