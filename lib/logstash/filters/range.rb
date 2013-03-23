@@ -32,9 +32,12 @@ class LogStash::Filters::Range < LogStash::Filters::Base
   #                     "requests", 0, 10, "tag:to_few_%{@host_source}_requests" ]
   #       }
   #     }
-  # 
-  # TODO(piavlo): The action syntax is ugly at the moment due to logstash grammar limitations arrays grammar should support
-  # TODO(piavlo): support simple not nested hashses as values in addition to numaric and string values to prettify the syntax.
+  #
+  # Supported actions are drop tag or field with specified value.
+  # Added tag names and field names and field values can have %{dynamic} values.
+  #
+  # TODO(piavlo): The action syntax is ugly at the moment due to logstash grammar limitations - arrays grammar should support
+  # TODO(piavlo): simple not nested hashses as values in addition to numaric and string values to prettify the syntax.
   config :ranges, :validate => :array, :default => []
 
   # Negate the range match logic, events should be outsize of the specificed range to match.
