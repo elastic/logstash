@@ -6,8 +6,12 @@ require "logstash/namespace"
 # (using BLPOP)
 #
 # For more information about redis, see <http://redis.io/>
+#
+# ## `batch_count` note
+#
+# If you use the 'batch_count' setting, you *must* use a redis version 2.6.0 or
+# newer. Anything older does not support the operations used by batching.
 class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
-
   config_name "redis"
   plugin_status "beta"
 

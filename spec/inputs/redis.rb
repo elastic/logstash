@@ -54,7 +54,7 @@ describe "inputs/redis" do
           type => "blah"
           key => "#{key}"
           data_type => "list"
-          batch_count => 5
+          batch_count => #{rand(20)+1}
           format => json_event
         }
       }
