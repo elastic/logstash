@@ -34,7 +34,7 @@ describe LogStash::Outputs::Graphite do
                 port => 2003
                 fields_are_metrics => true
                 include_metrics => ["foo"]
-                metrics_format => "foo.bar.sys.data.%{metric}"
+                metrics_format => "foo.bar.sys.data.*"
                 debug => true
             }
           }
@@ -72,7 +72,7 @@ describe LogStash::Outputs::Graphite do
                 port => 2003
                 fields_are_metrics => true
                 include_metrics => [".*"]
-                metrics_format => "foo.bar.sys.data.%{metric}"
+                metrics_format => "foo.bar.sys.data.*"
                 debug => true
             }
           }
@@ -111,7 +111,7 @@ describe LogStash::Outputs::Graphite do
                 port => 2003
                 fields_are_metrics => true
                 include_metrics => ["notmatchinganything"]
-                metrics_format => "foo.bar.sys.data.%{metric}"
+                metrics_format => "foo.bar.sys.data.*"
                 debug => true
             }
           }
@@ -164,8 +164,6 @@ describe LogStash::Outputs::Graphite do
 
         insist { lines.size } == 1
         insist { lines[0] } =~ /^foo 123.0 \d{10,}\n$/
-
-        puts "END - match one key with invalid metric_format"
       end
     end
   end

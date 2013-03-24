@@ -12,8 +12,8 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   config_name "graphite"
   plugin_status "beta"
 
-  DEFAULT_METRICS_FORMAT = "%{metric}"
-  METRIC_PLACEHOLDER = "%{metric}"
+  DEFAULT_METRICS_FORMAT = "*"
+  METRIC_PLACEHOLDER = "*"
 
   # The address of the graphite server.
   config :host, :validate => :string, :default => "localhost"
