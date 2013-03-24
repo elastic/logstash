@@ -49,10 +49,10 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   # Enable debug output
   config :debug, :validate => :boolean, :default => false
 
-  # Defines format of the metric string. The placeholder %{metrics} will be
+  # Defines format of the metric string. The placeholder '*' will be
   # replaced with the name of the actual metric.
   #
-  #     metrics_format => "foo.bar.%{metric}.sum"
+  #     metrics_format => "foo.bar.*.sum"
   #
   # NOTE: If no metrics_format is defined the name of the metric will be used as fallback.
   config :metrics_format, :validate => :string, :default => DEFAULT_METRICS_FORMAT
