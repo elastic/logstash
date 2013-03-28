@@ -129,7 +129,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     end
     @host_idx = 0
 
-    @congestion_check_times = Hash.new { |h,k| h[k] = Time.now.to_i - congestion_interval }
+    @congestion_check_times = Hash.new { |h,k| h[k] = Time.now.to_i - @congestion_interval }
   end # def register
 
   def receive(event)
