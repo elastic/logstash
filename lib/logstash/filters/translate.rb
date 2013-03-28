@@ -18,7 +18,7 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   # array, only the first value will be used.
   config :field, :validate => :string, :required => true
 
-  # In case dstination field already exists should be skip translation(default) or override it with new translation
+  # In case dstination field already exists should we skip translation(default) or override it with new translation
   config :override, :validate => :boolean, :default => false
 
   # Dictionary to use for translation.
@@ -40,16 +40,16 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   # make sure you encase any integer based keys in quotes.
   config :dictionary_path, :validate => :path
 
-  # The destination you wish to populate with the response code.    
-  # default is http_response_code.  set to the same value as source
-  # if you want to do a substitution.
+  # The destination field you wish to populate with the translation code.
+  # default is "translation".
+  # Set to the same value as source if you want to do a substitution, in this case filter will allways succeed.
   config :destination, :validate => :string, :default => "translation"
 
   # set to false if you want to match multiple terms
   # a large dictionary could get expensive if set to false.
   config :exact, :validate => :boolean, :default => true
 
-  # treat dictionary keys are regular expressions to match against, used only then @exact enabled.
+  # treat dictionary keys as regular expressions to match against, used only then @exact enabled.
   config :regex, :validate => :boolean, :default => false
 
   # Incase no translation was made add default translation string
@@ -108,7 +108,7 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
         event[@destination] = @fallback
         matched = true
       end
-      filter_matched(event) if matched
+      filter_matched(event) if matched or @field == @destination
     rescue Exception => e
       @logger.error("Something went wrong when attempting to translate from dictionary", :exception => e, :field => @field, :event => event)
     end
