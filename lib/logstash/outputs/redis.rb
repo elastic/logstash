@@ -174,10 +174,11 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   end
 
   # called from Stud::Buffer#buffer_flush when there are events to flush
-  def flush(events, key)
+  def flush(events, key, teardown=false)
     @redis ||= connect
-    # TODO(piavlo): we should not block due to congestion on teardown, to support this Stud::Buffer#buffer_flush should pass here the :final boolean arg.
-    congestion_check(key)
+    # TODO(piavlo): we should not block due to congestion on teardown
+    # to support this Stud::Buffer#buffer_flush should pass here the :final boolean value.
+    congestion_check(key) unless teardown
     @redis.rpush(key, events)
   end
   # called from Stud::Buffer#buffer_flush when an error occurs
