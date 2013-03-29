@@ -9,7 +9,7 @@ class LogStash::Filters::Metaevent < LogStash::Filters::Base
   config :followed_by_tags, :validate => :array, :required => true
 
   # syntax: `period => 60`
-  config :period, :validate => :number, :default => 30
+  config :period, :validate => :number, :default => 5
 
   def register
     @logger.debug("registering")
@@ -50,7 +50,7 @@ class LogStash::Filters::Metaevent < LogStash::Filters::Base
 
     event = LogStash::Event.new
     event.source_host = Socket.gethostname
-    event["tags"] = @add_tag
+    event.tags = @add_tag
 
     @metaevents << event
     @start_event = nil
