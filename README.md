@@ -31,7 +31,10 @@ To work on the code without building a jar, install rvm and run the following:
     ruby gembag.rb logstash.gemspec
 
     # to use Logstash gems in irb, use the following
-    GEM_HOME=vendor/bundle/jruby/1.9 irb
+    bin/logstash irb
+
+    # or use irb from the jar
+    java -jar ogstash-<version>-monolithic.jar irb
 
     # Run logstash
     bin/logstash agent [options]
