@@ -34,7 +34,7 @@ To work on the code without building a jar, install rvm and run the following:
     bin/logstash irb
 
     # or use irb from the jar
-    java -jar ogstash-<version>-monolithic.jar irb
+    java -jar logstash-<version>-monolithic.jar irb
 
     # Run logstash
     bin/logstash agent [options]
