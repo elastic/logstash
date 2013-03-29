@@ -21,6 +21,8 @@
     tagging events on failure. (#328, patch by Neil Prosser)
   - new: uaparser: parses user agent strings in to structured data based on
     BrowserScope data (#347, patch by Dan Everton)
+  - improvement: kv filter now accepts a include_fields option to selectively
+    include fields instead of parsing all fields
 
   ## outputs
   - fix bug in mongo output that would fail to load bson_java support
@@ -29,7 +31,7 @@
   - bugfix: elasticsearch: Fix a race condition. (#340, patch by Raymond Feng)
   - improvement: http: now supports a custom 'message' format for building your
     own http bodies from an event. (#319, patch by Christian S)
- 
+
 1.1.9 (January 10, 2013)
   ## inputs
   - bugfix: all inputs: fix bug where some @source values were not valid urls
@@ -131,7 +133,7 @@
  - improvement: grok: can now match against number types. Example, if you're
    sending a json format event with { "status": 403 } you can now grok that
    field.  The number is represented as a string "403" before pattern matching.
- - bugfix: date: Fix a bug that would crash the pipeline if no date pattern 
+ - bugfix: date: Fix a bug that would crash the pipeline if no date pattern
    matched. (LOGSTASH-705)
  - feature: kv: Adds field_split, value_split, prefix, and container
    settings. (#225, patch by Alex Wheeler)
@@ -159,7 +161,7 @@
  - feature: mongodb: new setting 'isodate' that, when true, stores the
    @timestamp field as a mongodb date instead of a string. (#224, patch by
    Kevin Amorin)
- - improvement: gelf: Allow full_message gelf property to be overridden (#245, 
+ - improvement: gelf: Allow full_message gelf property to be overridden (#245,
    patch by Sébastien Masset)
  - misc: lumberjack: jls-lumberjack gem updated to 0.0.6
  - feature: nagios: New 'nagios_level' setting to let you change the level
@@ -185,7 +187,7 @@
    now work. (Fixes LOGSTASH-649, LOGSTASH-642, LOGSTASH-655)
  - several plugins received UTF-8-related fixes (file, lumberjack, etc)
    File bugs if you see any UTF-8 related crashes.
- - 'json_event' format inputs will now respect 'tags' (#239, patch by 
+ - 'json_event' format inputs will now respect 'tags' (#239, patch by
    Tim Laszlo)
  - logstash no longer uses nor recommends bundler (see 'gembag.rb'). The
    Gemfile will be purged in the near future.
@@ -253,7 +255,7 @@
 
  ## inputs
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
- - new: lumberjack: for use with the lumberjack log shipper 
+ - new: lumberjack: for use with the lumberjack log shipper
    (https://github.com/jordansissel/lumberjack)
  - new: sqs: Amazon SQS input (Patch by Sean Laurent, #211)
  - new: relp: RELP (rsyslog) plugin (Patch by Mike Worth, #177)
@@ -284,10 +286,10 @@
  - grok patterns: the URIPARAM pattern now includes pipe '|' as a valid
    character. (Patch by Chris Mague)
  - grok patterns: improve haproxy log patterns (Patch by Kevin Nuckolls)
- - grok patterns: include 'FATAL' as a valid LOGLEVEL match 
+ - grok patterns: include 'FATAL' as a valid LOGLEVEL match
    (patch by Corry Haines)
  - grok patterns: 'ZONE' is no longer captured by name in the HTTPDATE pattern
- - new: alter: adds some conditional field modification as well as a 
+ - new: alter: adds some conditional field modification as well as a
    'coalesce' feature which sets the value of a field to the first non-null
    value given in a list. (Patch by Francesco Salbaroli)
  - improvement: date: add TAI64N support
@@ -418,7 +420,7 @@
 
   ## IMPORTANT CHANGES FOR UPGRADES FROM 1.0.x
     - grok filter: named_captures_only now defaults to true
-        This means simple patterns %{NUMBER} without any other name will 
+        This means simple patterns %{NUMBER} without any other name will
         now not be included in the field set. You can revert to the old
         behavior by setting 'named_captures_only => false' in your grok
         filter config.
@@ -508,7 +510,7 @@
 1.0.17 (Aug 12, 2011)
   - Bugs fixed
     - [LOGSTASH-147] - grok filter incorrectly adding fields when a match failed
-    - [LOGSTASH-151] - Fix bug in routing keys on AMQP 
+    - [LOGSTASH-151] - Fix bug in routing keys on AMQP
     - [LOGSTASH-156] - amqp issue with 1.0.16?
 
   - Improvement
@@ -599,7 +601,7 @@
   - bugfix: amqp input now reconnects properly when the amqp broker restarts.
   - bugfix: Fix bug in gelf output when a fields were not arrays but numbers.
     Issue: https://logstash.jira.com/browse/LOGSTASH-113
-  - bugfix: Fix a bug in syslog udp input due to misfeatures in Ruby's URI 
+  - bugfix: Fix a bug in syslog udp input due to misfeatures in Ruby's URI
     class. https://logstash.jira.com/browse/LOGSTASH-115
   - misc: jquery and jquery ui now ship with logstash; previously they were
     loaded externally
@@ -607,7 +609,7 @@
   - testing: fixed logstash-test to now run properly
 
 1.0.12 (Jun 9, 2011)
-  - misc: clean up some excess debugging output 
+  - misc: clean up some excess debugging output
   - feature: for tcp input, allow 'data_timeout => -1' to mean "never time out"
 
 1.0.11 (Jun 9, 2011)
@@ -617,7 +619,7 @@
   - feature: Refactor runner to allow you to run multiple things in a single
     process.  You can end each instance with '--' flag. For example, to run one
     agent and one web instance:
-      % java -jar logstash-blah.jar agent -f myconfig -- web 
+      % java -jar logstash-blah.jar agent -f myconfig -- web
   - feature: Add 'embedded' option to the elasticsearch output:
       elasticsearch { embedded => true }
     Default is false. If true, logstash will run an elasticsearch server
@@ -634,7 +636,7 @@
     multihomed server.
   - feature: The mongodb output now supports authentication
   - bugfix: Fix bug in GELF output that caused the gelf short_message to be set as an
-    array if it came from a grok value. The short_message field should only 
+    array if it came from a grok value. The short_message field should only
     now be a string properly.
   - bugfix: Fix bug in grep filter that would drop/cancel events if you had
     more than one event type flowing through filters and didn't have a grep
@@ -681,7 +683,7 @@
   - Add shutdown processing. Shutdown starts when all inputs finish (like
     stdin) The sequence progresses using the same pipeline as the
     inputs/filters/outputs, so all in-flight events should finish getting
-    processed before the final shutdown event makes it's way to the outputs.  
+    processed before the final shutdown event makes it's way to the outputs.
   - Add retries to unhandled input exceptions (LOGSTASH-84)
 
 1.0.6 (May 11, 2011)

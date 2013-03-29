@@ -18,7 +18,7 @@ require "logstash/namespace"
 # * error: REFUSED
 #
 # This is great for postfix, iptables, and other types of logs that
-# tend towards 'key=value' syntax. 
+# tend towards 'key=value' syntax.
 #
 # Further, this can often be used to parse query parameters like
 # 'foo=bar&baz=fizz' by setting the field_split to "&"
@@ -29,14 +29,28 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # The fields to perform 'key=value' searching on
   config :fields, :validate => :array
 
+  # An array that includes all the fields which will be parsed
+  # If this is present, only the specified keys will be parsed.
+  #
+  # for ex, if a string is: "Hey, from=<abc>, to=def foo=bar"
+  #
+  #     filter {
+  #       kv {
+  #         include_fields = [ "from", "to" ]
+  #       }
+  #
+  # Key "foo" will automatically be ignored.
+  config :include_fields, :validate => :array, :default => []
+
+  #
   # A string of characters to trim from the value. This is useful if your
   # values are wrapped in brackets or are terminated by comma (like postfix
   # logs)
   #
   # Example, to strip '<' '>' and ',' characters from values:
-  # 
-  #     filter { 
-  #       kv { 
+  #
+  #     filter {
+  #       kv {
   #         trim => "<>,"
   #       }
   #     }
@@ -52,7 +66,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #
   #     filter {
   #       kv {
-  #         field_split => "&?" 
+  #         field_split => "&?"
   #       }
   #     }
   #
@@ -71,7 +85,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #
   # Example, to identify key-values such as
   # 'key1:value1 key2:value2':
-  # 
+  #
   #     filter { kv { value_split => ":" } }
   config :value_split, :validate => :string, :default => '='
 
@@ -82,7 +96,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     filter { kv { prefix => "arg_" } }
   config :prefix, :validate => :string, :default => ''
 
-  # The name of the container to put all of the key-value pairs into 
+  # The name of the container to put all of the key-value pairs into
   #
   # Example, to place all keys into container kv:
   #
@@ -96,7 +110,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     filter { kv { source => "@message" } }
   config :source, :validate => :string, :default => '@message'
 
-  # The name of the container to put all of the key-value pairs into 
+  # The name of the container to put all of the key-value pairs into
   #
   # Example, to place all keys into field kv:
   #
@@ -123,6 +137,10 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       @fields << @source
     end
 
+    #Check if all key value pairs need to be parsed
+    @catch_all_keys = true
+    @catch_all_keys = false if include_fields.length > 0
+
   end # def register
 
   def filter(event)
@@ -138,7 +156,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
         when nil; #Nothing to do
         when String; kv_keys = parse(value, event, kv_keys)
         when Array; value.each { |v| kv_keys = parse(v, event, kv_keys) }
-        else 
+        else
           @logger.warn("kv filter has no support for this type of data",
                        :type => value.class, :value => value)
       end # case value
@@ -166,7 +184,14 @@ class LogStash::Filters::KV < LogStash::Filters::Base
         value = value.gsub(@trim_re, "")
       end
       key = @prefix + key
-      kv_keys[key] = value
+
+      if @catch_all_keys
+        kv_keys[key] = value
+      else
+        if @include_fields.include? @prefix + key
+          kv_keys[key] = value
+        end
+      end
     end
     return kv_keys
   end
