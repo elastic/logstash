@@ -5,18 +5,19 @@ class LogStash::Filters::Metaevent < LogStash::Filters::Base
   config_name "metaevent"
   plugin_status "experimental"
 
-  config :followed_by_tags, :validate => :array
+  config :followed_by_tags, :validate => :array, :required => true
 
-  config :period, :validate => :number
+  config :period, :validate => :number, :required => true
 
   def register
+    @logger.debug("registering")
     reset_state
   end
 
   def filter(event)
     if filter?(event)
       start_period(event)
-    else if within_period && followed_by_tags_match(event)
+    elsif within_period && followed_by_tags_match(event)
       trigger(event)
     else
       @logger.debug([@add_tag, "ignoring", event])
@@ -33,7 +34,7 @@ class LogStash::Filters::Metaevent < LogStash::Filters::Base
 
   private
 
-  def start_period
+  def start_period(event)
     @logger.debug([@add_tag, "start_period", event])
     @start_event = event
   end
