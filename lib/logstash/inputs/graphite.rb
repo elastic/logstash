@@ -39,4 +39,4 @@ class LogStash::Inputs::Graphite < LogStash::Inputs::Tcp
 
     @queue  << event
   end
-end
+end # class LogStash::Inputs::Graphite

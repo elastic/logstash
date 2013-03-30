@@ -181,4 +181,4 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     filter_matched(event)
     return [event]
   end
-end # class LogStash::Filter::KV
+end # class LogStash::Filters::Metrics

@@ -61,4 +61,4 @@ class LogStash::Filters::Split < LogStash::Filters::Base
     # Cancel this event, we'll use the newly generated ones above.
     event.cancel
   end # def filter
-end # class LogStash::Filters::Date
+end # class LogStash::Filters::Split
