@@ -86,4 +86,4 @@ class LogStash::Filters::Sleep < LogStash::Filters::Base
     end
     filter_matched(event)
   end # def filter
-end
+end # class LogStash::Filters::Sleep
