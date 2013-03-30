@@ -74,7 +74,11 @@ class LogStash::Filters::Sleep < LogStash::Filters::Base
       clock = event.ruby_timestamp.to_f
       if @last_clock
         delay = clock - @last_clock
-        sleep(delay / time)
+        sleeptime = delay/time
+        if sleeptime > 0
+          @logger.debug? && @logger.debug("Sleeping", :delay => sleeptime)
+          sleep(sleeptime)
+        end
       end
       @last_clock = clock
     else
