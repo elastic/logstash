@@ -44,4 +44,4 @@ class LogStash::Filters::Checksum < LogStash::Filters::Base
     @logger.debug("Digested string", :digested_string => digested_string)
     event.fields['logstash_checksum'] = digested_string
   end
-end
+end # class LogStash::Filters::Checksum

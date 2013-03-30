@@ -32,4 +32,4 @@ class LogStash::Filters::Clone < LogStash::Filters::Base
     end
   end
 
-end
+end # class LogStash::Filters::Clone

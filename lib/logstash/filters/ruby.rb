@@ -38,4 +38,4 @@ class LogStash::Filters::Ruby < LogStash::Filters::Base
 
     filter_matched(event)
   end # def filter
-end
+end # class LogStash::Filters::Ruby
