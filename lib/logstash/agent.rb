@@ -8,6 +8,7 @@ require "logstash/namespace"
 require "logstash/program"
 require "logstash/threadwatchdog"
 require "logstash/util"
+require "stud/task"
 require "optparse"
 require "thread"
 require "uri"
@@ -341,13 +342,9 @@ class LogStash::Agent
     config = read_config
 
     @logger.info("Start thread")
-    @thread = Thread.new do
+    @thread = Stud::Task.new do
       LogStash::Util::set_thread_name(self.class.name)
-      begin
-        run_with_config(config, &block)
-      rescue => e
-        @logger.warn(e.to_s)
-      end
+      run_with_config(config, &block)
     end
 
     return remaining
@@ -355,7 +352,7 @@ class LogStash::Agent
 
   public
   def wait
-    @thread.join
+    @thread.wait
     return 0
   end # def wait
 
