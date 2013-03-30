@@ -354,6 +354,8 @@ class LogStash::Agent
   def wait
     @thread.wait
     return 0
+  rescue LogStash::Plugin::ConfigurationError
+    return 1
   end # def wait
 
   private
