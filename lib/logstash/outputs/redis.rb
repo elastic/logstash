@@ -167,6 +167,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     if (Time.now.to_i - @congestion_check_times[key]) >= @congestion_interval # Check congestion only if enough time has passed since last check.
       @congestion_check_time = Time.now.to_i
         while @redis.llen(key) > @congestion_threshold # Don't push event to redis key which has reached @congestion_threshold.
+          @logger.warn? and @logger.warn("Redis key size has hit a congestion threshold #{@congestion_threshold} suspending output for #{@congestion_interval} seconds")
           sleep @congestion_interval
         end
       end
@@ -176,7 +177,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # called from Stud::Buffer#buffer_flush when there are events to flush
   def flush(events, key, teardown=false)
     @redis ||= connect
-    # TODO(piavlo): we should not block due to congestion on teardown
+    # we should not block due to congestion on teardown
     # to support this Stud::Buffer#buffer_flush should pass here the :final boolean value.
     congestion_check(key) unless teardown
     @redis.rpush(key, events)
