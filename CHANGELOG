@@ -21,6 +21,8 @@
     tagging events on failure. (#328, patch by Neil Prosser)
   - new: uaparser: parses user agent strings in to structured data based on
     BrowserScope data (#347, patch by Dan Everton)
+  - new: sleep: sleeps a given amount of time before passing the event.
+    Useful for rate limiting or replay simulation.
 
   ## outputs
   - fix bug in mongo output that would fail to load bson_java support
