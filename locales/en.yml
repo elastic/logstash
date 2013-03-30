@@ -43,6 +43,7 @@ en:
             %{type} {
               %{plugin} {
                 # This setting must be a %{value_type}
+                # %{note}
                 %{setting} => %{value}
                 ...
               }
