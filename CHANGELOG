@@ -13,6 +13,8 @@
   - improvement: tcp: ssl now supported! (#318, patch by Matthew Richardson)
   - feature: redis: now supports 'batch_count' option for doing bulk
     fetches from redis lists. Requires Redis 2.6.0 or higher.
+  - new: elasticsearch: this input allows you to stream search results from
+    elasticsearch; it uses the Scroll API.
 
   ## filters
   - deprecation: the --grok-patterns-path flag is deprecated and will now
