@@ -23,6 +23,8 @@
     BrowserScope data (#347, patch by Dan Everton)
   - new: sleep: sleeps a given amount of time before passing the event.
     Useful for rate limiting or replay simulation.
+  - new: ruby: experimental ruby plugin that lets you call custom ruby code
+    on every event.
 
   ## outputs
   - fix bug in mongo output that would fail to load bson_java support
