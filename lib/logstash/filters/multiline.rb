@@ -233,4 +233,4 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     @pending.clear
     return events
   end # def flush
-end # class LogStash::Filters::Date
+end # class LogStash::Filters::Multiline

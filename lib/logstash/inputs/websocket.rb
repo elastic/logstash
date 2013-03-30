@@ -44,4 +44,4 @@ class LogStash::Inputs::Websocket < LogStash::Inputs::Base
     end # begin
   end # def run
 
-end # class LogStash::Inputs::Udp
+end # class LogStash::Inputs::Websocket
