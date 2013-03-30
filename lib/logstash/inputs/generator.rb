@@ -84,4 +84,4 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   def teardown
     finished
   end # def teardown
-end # class LogStash::Inputs::Stdin
+end # class LogStash::Inputs::Generator

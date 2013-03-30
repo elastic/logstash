@@ -169,4 +169,4 @@ class LogStash::Filters::Alter < LogStash::Filters::Base
     end # @coalesce_parsed.each
   end # def coalesce
   
-end
+end # class LogStash::Filters::Alter
