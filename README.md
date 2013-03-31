@@ -27,8 +27,14 @@ To work on the code without building a jar, install rvm and run the following:
     rvm install jruby-1.7.2
     rvm use jruby-1.7.2
 
-    # Install logstash dependencies
+    # Install logstash dependencies - installs gems into vendor/bundle/jruby/1.9/
     ruby gembag.rb logstash.gemspec
+
+    # to use Logstash gems in irb, use the following
+    bin/logstash irb
+
+    # or use irb from the jar
+    java -jar logstash-<version>-monolithic.jar irb
 
     # Run logstash
     bin/logstash agent [options]
