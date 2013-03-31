@@ -267,7 +267,8 @@ module LogStash::Config::Mixin
           else
             @logger.error(I18n.t("logstash.agent.configuration.setting_invalid",
                                  :plugin => @plugin_name, :type => @plugin_type,
-                                 :value => value, :value_type => config_val))
+                                 :setting => key, :value => value, :value_type => config_val,
+                                 :note => result))
           end
           #puts "Result: #{key} / #{result.inspect} / #{success}"
           is_valid &&= success
@@ -348,10 +349,11 @@ module LogStash::Config::Mixin
             result = value.first
           when :number
             if value.size > 1 # only one value wanted
-              return false, "Expected number, got #{value.inspect}"
+              return false, "Expected number, got #{value.inspect} (type #{value.class})"
             end
-            if value.first.to_s.to_f.to_s != value.first.to_s
-              return false, "Expected number, got #{value.first.inspect}"
+            if value.first.to_s.to_f.to_s != value.first.to_s \
+               && value.first.to_s.to_i.to_s != value.first.to_s
+              return false, "Expected number, got #{value.first.inspect} (type #{value.first})"
             end
             result = value.first.to_i
           when :boolean
