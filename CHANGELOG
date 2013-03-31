@@ -13,6 +13,8 @@
   - improvement: tcp: ssl now supported! (#318, patch by Matthew Richardson)
   - feature: redis: now supports 'batch_count' option for doing bulk
     fetches from redis lists. Requires Redis 2.6.0 or higher.
+  - new: elasticsearch: this input allows you to stream search results from
+    elasticsearch; it uses the Scroll API.
 
   ## filters
   - deprecation: the --grok-patterns-path flag is deprecated and will now
@@ -21,6 +23,10 @@
     tagging events on failure. (#328, patch by Neil Prosser)
   - new: uaparser: parses user agent strings in to structured data based on
     BrowserScope data (#347, patch by Dan Everton)
+  - new: sleep: sleeps a given amount of time before passing the event.
+    Useful for rate limiting or replay simulation.
+  - new: ruby: experimental ruby plugin that lets you call custom ruby code
+    on every event.
 
   ## outputs
   - fix bug in mongo output that would fail to load bson_java support

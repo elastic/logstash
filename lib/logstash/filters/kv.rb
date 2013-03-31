@@ -170,4 +170,4 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     end
     return kv_keys
   end
-end # class LogStash::Filter::KV
+end # class LogStash::Filters::KV

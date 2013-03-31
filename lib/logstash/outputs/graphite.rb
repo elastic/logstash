@@ -102,7 +102,7 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
     if @fields_are_metrics
       @logger.debug("got metrics event", :metrics => event.fields)
       event.fields.each do |metric,value|
-        next unless @include_metrics.any? {|regexp| metric.match(regexp)}
+        next unless @include_metrics.empty? || @include_metrics.any? { |regexp| metric.match(regexp) }
         next if @exclude_metrics.any? {|regexp| metric.match(regexp)}
         messages << "#{construct_metric_name(metric)} #{event.sprintf(value.to_s).to_f} #{timestamp}"
       end

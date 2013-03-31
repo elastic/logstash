@@ -68,4 +68,4 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
     sleep
   end # def run
 
-end # def class LogStash:Inputs::Xmpp
+end # class LogStash::Inputs::Xmpp
