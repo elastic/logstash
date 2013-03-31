@@ -9,7 +9,7 @@ class LogStash::Inputs::Varnishlog < LogStash::Inputs::Threadable
 
   public
   def register
-    require 'logstash/inputs/varnishlog/varnish'
+    require 'varnish'
     @source = "varnishlog://#{Socket.gethostname}/"
     @vd = Varnish::VSM.VSM_New
     Varnish::VSL.VSL_Setup(@vd)
