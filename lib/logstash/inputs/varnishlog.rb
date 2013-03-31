@@ -24,15 +24,19 @@ class LogStash::Inputs::Varnishlog < LogStash::Inputs::Threadable
 
   private
   def cb(priv, tag, fd, len, spec, ptr, bitmap)
-    str = ptr.read_string(len)
-    event = to_event(str, @source)
-    event["varnish_tag"] = tag
-    event["varnish_fd"] = fd
-    event["varnish_spec"] = spec
-    event["varnish_bitmap"] = bitmap
-    @q << event
-    #rescue => e
-    #  puts "exception in cb: #{e.inspect}"
+    begin
+      str = ptr.read_string(len)
+      event = to_event(str, @source)
+      event["varnish_tag"] = tag
+      event["varnish_fd"] = fd
+      event["varnish_spec"] = spec
+      event["varnish_bitmap"] = bitmap
+      @q << event
+    rescue => e
+      @logger.warn("varnishlog exception: #{e.inspect}")
+    ensure
+      return 0
+    end
   end
   
   public
