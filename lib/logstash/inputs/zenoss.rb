@@ -4,7 +4,7 @@ require "zlib"
 
 # Read Zenoss events from the zenoss.zenevents fanout exchange.
 #
-class LogStash::Inputs::Zenoss < LogStash::Inputs::RabitMQ
+class LogStash::Inputs::Zenoss < LogStash::Inputs::RabbitMQ
 
   config_name "zenoss"
   plugin_status "experimental"
