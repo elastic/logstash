@@ -1,0 +1,162 @@
+#! /bin/sh
+#
+#       /etc/rc.d/init.d/logstash
+#
+#       Starts Logstash as a daemon
+#
+# chkconfig: 2345 20 80
+# description: Starts Logstash as a daemon
+
+### BEGIN INIT INFO
+# Provides: logstash
+# Required-Start: $local_fs $remote_fs
+# Required-Stop: $local_fs $remote_fs
+# Default-Start: 2 3 4 5
+# Default-Stop: S 0 1 6
+# Short-Description: Logstash
+# Description: Starts Logstash as a daemon.
+
+### END INIT INFO
+
+. /etc/rc.d/init.d/functions
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+NAME=logstash
+DESC="Logstash Daemon"
+DEFAULT=/etc/sysconfig/$NAME
+
+if [ `id -u` -ne 0 ]; then
+   echo "You need root privileges to run this script"
+   exit 1
+fi
+
+# The following variables can be overwritten in $DEFAULT
+
+export JAVA_HOME=/usr
+
+# Directory where the logstash all in one jar lives
+LS_HOME=/usr/share/logstash
+
+# Additional Java OPTS
+LS_JAVA_OPTS="-Xmx256m -Djava.io.tmpdir=$LS_HOME/tmp"
+
+# logstash log directory
+LOG_DIR=/var/log/logstash
+
+# logstash configuration directory
+CONF_DIR=/etc/logstash/conf.d
+
+# logstash log file
+LOG_FILE=$LOG_DIR/$NAME.log
+
+# Open File limit
+OPEN_FILES=2048
+
+# Nice level
+NICE=19
+
+# Filter threads
+FILTER_THREADS=1
+
+# Path to sincedb files
+SINCEDB_PATH=/etc/logstash/sincedb/
+
+# End of variables that can be overwritten in $DEFAULT
+
+if [ -f "$DEFAULT" ]; then
+  . "$DEFAULT"
+fi
+
+# Define other required variables
+PID_FILE=/var/run/$NAME.pid
+
+JAVA=`which java`
+JAR="${LS_HOME}/logstash.jar"
+ARGS="${LS_JAVA_OPTS} -jar ${JAR} agent --config ${CONF_DIR} --log ${LOG_FILE} -w ${FILTER_THREADS}"
+
+export SINCEDB_PATH=$SINCEDB_PATH
+
+is_true() {
+    if [ "x$1" = "xtrue" -o "x$1" = "xyes" -o "x$1" = "x1" ] ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+
+  if ! is_true "$START" ; then
+    echo "logstash not configured to start, please edit $DEFAULT to enable"
+    exit 0
+  fi
+
+  if [ -z "$JAVA" ]; then
+    echo "no JDK found - $JAVA"
+    exit 1
+  fi
+
+  if ! test -e "${JAR}"; then
+    echo "Daemon $DAEMON doesn't exist"
+    exit 1
+  fi
+
+  if pidofproc -p "$PID_FILE" >/dev/null; then
+    failure
+    exit 99
+  fi
+
+  ulimit -n $OPEN_FILES
+
+  cd $LS_HOME
+  $JAVA $ARGS > /dev/null 1>&1 &
+
+  RETVAL=$?
+  local PID=`pgrep -f "${DAEMON} ${ARGS}"`
+  echo $PID > $PID_FILE
+  success
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+    killproc -p $PID_FILE $DAEMON
+    RETVAL=$?
+    echo
+    [ $RETVAL = 0 ] && rm -f ${PID_FILE}
+}
+
+case "$1" in
+  start)
+    echo -n "Starting $DESC: "
+    do_start
+    touch /var/lock/subsys/logstash/$NAME
+    ;;
+  stop)
+    echo -n "Stopping $DESC: "
+    do_stop
+    rm /var/lock/subsys/logstash/$NAME
+    ;;
+  restart|reload)
+    echo -n "Restarting $DESC: "
+    do_stop
+    do_start
+    ;;
+  status)
+    echo -n "$DESC"
+    status -p $PID_FILE
+    ;;
+  *)
+    echo "Usage: $SCRIPTNAME {start|stop|status|restart}" >&2
+    exit 3
+    ;;
+esac
+
+echo
+exit 0
