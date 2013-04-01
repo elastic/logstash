@@ -66,6 +66,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "rufus-scheduler"                  #(MIT license)
   gem.add_runtime_dependency "user_agent_parser", [">= 2.0.0"]  #(MIT license)
   gem.add_runtime_dependency "snmp"                             #(ruby license)
+  gem.add_runtime_dependency "varnish-rb"                       #(MIT license)
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
