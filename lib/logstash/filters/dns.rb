@@ -40,7 +40,7 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
 
   # Determine what action to do: append or replace the values in the fields
   # specified under "reverse" and "resolve."
-  config :action, :validate => [ "append", "replace" ], :require => true
+  config :action, :validate => [ "append", "replace" ], :required => true
 
   public
   def register
