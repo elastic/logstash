@@ -91,6 +91,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
           data = unwrap_racob_variant_array(event.Data)
           # Data is an array of signed shorts, so convert to bytes and pack a string
           e["Data"] = data.map{|byte| (byte > 0) ? byte : 256 + byte}.pack("c*")
+          e.message = event.Message
           queue << e
           # Update the newest-record pointer if I'm shipping the newest record in this batch
           next_newest_shipped_event = event.RecordNumber if (event_index += 1) == 1
