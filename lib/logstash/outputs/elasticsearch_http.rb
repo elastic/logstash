@@ -44,6 +44,10 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # elasticsearch with the same ID.
   config :document_id, :validate => :string, :default => nil
 
+  # Enable SSL (you need elasticsearch-jetty set up with SSL)
+  # https://github.com/sonian/elasticsearch-jetty#adding-ssl-support
+  config :secure, :validate => :boolean, :default => false
+
   public
   def register
     require "ftw" # gem ftw
@@ -70,8 +74,13 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     success = false
     while !success
       begin
-        response = @agent.post!("http://#{@host}:#{@port}/#{index}/#{type}",
-                                :body => event.to_json)
+        if @secure
+          response = @agent.post!("https://#{@host}:#{@port}/#{index}/#{type}",
+                                  :body => event.to_json)
+        else
+          response = @agent.post!("http://#{@host}:#{@port}/#{index}/#{type}",
+                                  :body => event.to_json)
+        end
       rescue EOFError
         @logger.warn("EOF while writing request or reading response header from elasticsearch",
                      :host => @host, :port => @port)
@@ -122,8 +131,13 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     # http://www.elasticsearch.org/guide/reference/api/bulk.html
     #  "NOTE: the final line of data must end with a newline character \n."
     begin
-      response = @agent.post!("http://#{@host}:#{@port}/_bulk",
-                              :body => @queue.join("\n") + "\n")
+      if @secure
+        response = @agent.post!("https://#{@host}:#{@port}/_bulk",
+                                :body => @queue.join("\n") + "\n")
+      else
+        response = @agent.post!("http://#{@host}:#{@port}/_bulk",
+                                :body => @queue.join("\n") + "\n")
+      end
     rescue EOFError
       @logger.warn("EOF while writing request or reading response header from elasticsearch",
                    :host => @host, :port => @port)
@@ -179,8 +193,13 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     begin
       success = false
       while !success
-        response = @agent.put!("http://#{@host}:#{@port}/_template/#{template_name}",
-                               :body => template_config.to_json)
+        if @secure
+          response = @agent.put!("https://#{@host}:#{@port}/_template/#{template_name}",
+                                 :body => template_config.to_json)
+        else
+          response = @agent.put!("http://#{@host}:#{@port}/_template/#{template_name}",
+                                 :body => template_config.to_json)
+        end
         if response.error?
           body = ""
           response.read_body { |c| body << c }
