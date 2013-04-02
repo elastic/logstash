@@ -46,6 +46,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   # Enable SSL (you need elasticsearch-jetty set up with SSL)
   # https://github.com/sonian/elasticsearch-jetty#adding-ssl-support
+  # NOTE: Elasticsearch must be set up with a signed cert from a trusted CA
   config :secure, :validate => :boolean, :default => false
 
   public
