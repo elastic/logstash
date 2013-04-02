@@ -27,7 +27,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "i18n"               #(MIT license)
 
   # Web dependencies
-  gem.add_runtime_dependency "ftw", ["~> 0.0.27"] #(Apache 2.0 license)
+  gem.add_runtime_dependency "ftw", ["~> 0.0.28"] #(Apache 2.0 license)
   gem.add_runtime_dependency "haml"               #(MIT license)
   gem.add_runtime_dependency "rack"               #(MIT license)
   gem.add_runtime_dependency "sass"               #(MIT license)
