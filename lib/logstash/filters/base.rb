@@ -52,18 +52,34 @@ class LogStash::Filters::Base < LogStash::Plugin
   config :remove_tag, :validate => :array, :default => []
 
   # If this filter is successful, add any arbitrary fields to this event.
+  # Tags can be dynamic and include parts of the event using the %{field}
   # Example:
   #
   #     filter {
   #       %PLUGIN% {
-  #         add_field => [ "sample", "Hello world, from %{@source}" ]
+  #         add_field => [ "foo_%{somefield}", "Hello world, from %{@source}" ]
   #       }
   #     }
   #
-  #  On success, the %PLUGIN% plugin will then add field 'sample' with the
-  #  value above and the %{@source} piece replaced with that value from the
-  #  event.
+  # If the event has field "somefield" == "hello" this filter, on success,
+  # would add field "foo_hello" if it is present, with the
+  # value above and the %{@source} piece replaced with that value from the
+  # event.
   config :add_field, :validate => :hash, :default => {}
+
+  # If this filter is successful, remove arbitrary fields from this event.
+  # Fields names can be dynamic and include parts of the event using the %{field}
+  # Example:
+  #
+  #     filter {
+  #       %PLUGIN% {
+  #         remove_field => [ "foo_%{somefield}" ]
+  #       }
+  #     }
+  #
+  # If the event has field "somefield" == "hello" this filter, on success,
+  # would remove the field with name "foo_hello" if it is present
+  config :remove_field, :validate => :array, :default => []
 
   RESERVED = ["type", "tags", "add_tag", "remove_tag", "add_field", "exclude_tags"]
 
@@ -98,33 +114,38 @@ class LogStash::Filters::Base < LogStash::Plugin
   # matches the filter's conditions (right type, etc)
   protected
   def filter_matched(event)
-    (@add_field or {}).each do |field, value|
-      event[field] ||= []
-      if value.is_a?(Array)
-        event[field] += value
-      else
+    @add_field.each do |field, value|
+      field = event.sprintf(field)
+      value = event.sprintf(value)
+      if event.include?(field)
         event[field] = [event[field]] if !event[field].is_a?(Array)
-        event[field] << event.sprintf(value)
+        event[field] << value
+      else
+        event[field] = value
       end
-      @logger.debug? and @logger.debug("filters/#{self.class.name}: adding " \
-                                       "value to field", :field => field,
-                                       :value => value)
+      @logger.debug? and @logger.debug("filters/#{self.class.name}: adding value to field",
+                                       :field => field, :value => value)
+    end
+    
+    @remove_field.each do |field|
+      field = event.sprintf(field)
+      @logger.debug? and @logger.debug("filters/#{self.class.name}: removing field",
+                                       :field => field) 
+      event.remove(field)
     end
 
-    (@add_tag or []).each do |tag|
+    @add_tag.each do |tag|
+      tag = event.sprintf(tag)
       @logger.debug? and @logger.debug("filters/#{self.class.name}: adding tag",
                                        :tag => tag)
-      event.tags << event.sprintf(tag)
-      #event.tags |= [ event.sprintf(tag) ]
+      event.tags << tag
     end
 
-    if @remove_tag
-      remove_tags = @remove_tag.map do |tag|
-        event.sprintf(tag)
-      end
-      @logger.debug? and @logger.debug("filters/#{self.class.name}: removing tags",
-                                       :tags => (event.tags & remove_tags))
-      event.tags -= remove_tags
+    @remove_tag.each do |tag|
+      tag = event.sprintf(tag)
+      @logger.debug? and @logger.debug("filters/#{self.class.name}: removing tag",
+                                       :tag => tag)
+      event.tags.delete(tag)
     end
   end # def filter_matched
 
