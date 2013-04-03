@@ -50,7 +50,7 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
   # description, state, metric, ttl, service
   #
   # i.e
-  # riemann_event => ["state", "up", "ttl" => "600", "metric" => %{bytes}]
+  # riemann_event => ["state", "up", "ttl", "600", "metric", "%{bytes}"]
   # Description, by default, will be set to the event message
   # but can be overridden here
   config :riemann_event, :validate => :hash
