@@ -165,11 +165,11 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   def congestion_check(key)
     return if @congestion_threshold == 0
     if (Time.now.to_i - @congestion_check_times[key]) >= @congestion_interval # Check congestion only if enough time has passed since last check.
-      @congestion_check_time = Time.now.to_i
       while @redis.llen(key) > @congestion_threshold # Don't push event to redis key which has reached @congestion_threshold.
         @logger.warn? and @logger.warn("Redis key size has hit a congestion threshold #{@congestion_threshold} suspending output for #{@congestion_interval} seconds")
         sleep @congestion_interval
       end
+      @congestion_check_time = Time.now.to_i
     end
   end
 
