@@ -56,7 +56,7 @@ class LogStash::Filters::Range < LogStash::Filters::Base
       
       raise "#{self.class.name}: range field name value should be a string" if !fieldname.is_a?(String)
       raise "#{self.class.name}: range min value should be a number" if !min.is_a?(Integer) and !min.is_a?(Float)
-      raise "#{self.class.name}: range min value should be a number" if !max.is_a?(Integer) and !max.is_a?(Float)
+      raise "#{self.class.name}: range max value should be a number" if !max.is_a?(Integer) and !max.is_a?(Float)
       raise "#{self.class.name}: range action value should be a string" if !action.is_a?(String)
       
       action = action.split(':')
