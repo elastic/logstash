@@ -17,11 +17,28 @@ class LogStash::Filters::Base < LogStash::Plugin
   # Only handle events with all of these tags.  Note that if you specify
   # a type, the event must also match that type.
   # Optional.
+  # TODO(piavlo): sould we rename/alias this to include_tags for clearness and consistency?
   config :tags, :validate => :array, :default => []
 
   # Only handle events without any of these tags. Note this check is
   # additional to type and tags.
   config :exclude_tags, :validate => :array, :default => []
+
+  # Only handle events with all of these fields present.
+  # Optional.
+  config :include_fields, :validate => :array, :default => []
+
+  # Only handle events with all of these fields present.
+  # Optional.
+  config :exclude_fields, :validate => :array, :default => []
+
+  # Should all or any of the specified tags/fields be present for event to
+  # be handled. Defaults to all.
+  config :include_any, :validate => :boolean, :default => false
+
+  # Should all or any of the specified tags/fields be missing for event to
+  # be handled. Defaults to all.
+  config :exclude_any, :validate => :boolean, :default => true
 
   # If this filter is successful, add arbitrary tags to the event.
   # Tags can be dynamic and include parts of the event using the %{field}
@@ -81,7 +98,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   # would remove the field with name "foo_hello" if it is present
   config :remove_field, :validate => :array, :default => []
 
-  RESERVED = ["type", "tags", "add_tag", "remove_tag", "add_field", "exclude_tags"]
+  RESERVED = ["type", "tags", "exclude_tags", "include_fields", "exclude_fields", "add_tag", "remove_tag", "add_field", "remove_field"]
 
   public
   def initialize(params)
@@ -153,21 +170,39 @@ class LogStash::Filters::Base < LogStash::Plugin
   def filter?(event)
     if !@type.empty?
       if event.type != @type
-        @logger.debug(["Skipping event because type doesn't match #{@type}", event])
+        @logger.debug? and @logger.debug(["Skipping event because type doesn't match #{@type}", event])
         return false
       end
     end
 
+    # TODO(piavlo): It would much nicer to set this in the "raising" register method somehow?
+    include_method = @include_any ? :any? : :all?
+    exclude_method = @exclude_any ? :any? : :all?
+
     if !@tags.empty?
-      if (event.tags & @tags).size != @tags.size
-        @logger.debug(["Skipping event because tags don't match #{@tags.inspect}", event])
+      if !@tags.send(include_method) {|tag| event.tags.include?(tag)}
+        @logger.debug? and @logger.debug(["Skipping event because tags don't match #{@tags.inspect}", event])
         return false
       end
     end
 
     if !@exclude_tags.empty?
-      if (diff_tags = (event.tags & @exclude_tags)).size != 0
-        @logger.debug(["Skipping event because tags contains excluded tags: #{diff_tags.inspect}", event])
+      if @exclude_tags.send(exclude_method) {|tag| event.tags.include?(tag)}
+        @logger.debug? and @logger.debug(["Skipping event because tags contains excluded tags: #{exclude_tags.inspect}", event])
+        return false
+      end
+    end
+
+    if !@include_fields.empty?
+      if !@include_fields.send(include_method) {|field| event.include?(field)}
+        @logger.debug? and @logger.debug(["Skipping event because fields don't match #{@include_fields.inspect}", event])
+        return false
+      end
+    end
+
+    if !@exclude_fields.empty?
+      if @exclude_fields.send(exclude_method) {|field| event.include?(field)}
+        @logger.debug? and @logger.debug(["Skipping event because fields contain excluded fields #{@exclude_fields.inspect}", event])
         return false
       end
     end
