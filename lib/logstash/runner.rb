@@ -1,15 +1,7 @@
-require "logstash/namespace"
-require "logstash/program"
-require "logstash/util"
-require "logstash/JRUBY-6970"
-require "stud/trap"
 
-require "i18n" # gem 'i18n'
-I18n.load_path << File.expand_path(
-  File.join(File.dirname(__FILE__), "../../locales/en.yml")
-)
-
-if ENV["PROFILE_BAD_LOG_CALLS"]
+$START = Time.now
+$DEBUGLIST = (ENV["DEBUG"] || "").split(",")
+if ENV["PROFILE_BAD_LOG_CALLS"] || $DEBUGLIST.include?("log")
   # Set PROFILE_BAD_LOG_CALLS=1 in your environment if you want
   # to track down logger calls that cause performance problems
   #
@@ -44,24 +36,33 @@ if ENV["PROFILE_BAD_LOG_CALLS"]
   end
 end
 
+require "logstash/monkeypatches-for-performance"
+require "logstash/monkeypatches-for-bugs"
+require "logstash/namespace"
+require "logstash/program"
+require "i18n" # gem 'i18n'
+I18n.load_path << File.expand_path(
+  File.join(File.dirname(__FILE__), "../../locales/en.yml")
+)
+
 class LogStash::Runner
   include LogStash::Program
 
   def main(args)
+    require "logstash/util"
+    require "stud/trap"
     @startup_interruption_trap = Stud::trap("INT") { puts "Interrupted"; exit 0 }
+
     LogStash::Util::set_thread_name(self.class.name)
     $: << File.join(File.dirname(__FILE__), "..")
 
     if args.empty?
       $stderr.puts "No arguments given."
-      exit(1)
+      return 1
     end
 
     if RUBY_VERSION < "1.9.2"
       $stderr.puts "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
-      $stderr.puts "Options for fixing this: "
-      $stderr.puts "  * If doing 'ruby bin/logstash ...' add --1.9 flag to 'ruby'"
-      $stderr.puts "  * If doing 'java -jar ... ' add -Djruby.compat.version=RUBY1_9 to java flags"
       return 1
     end
 
