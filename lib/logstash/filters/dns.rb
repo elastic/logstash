@@ -40,7 +40,11 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
 
   # Determine what action to do: append or replace the values in the fields
   # specified under "reverse" and "resolve."
-  config :action, :validate => [ "append", "replace" ], :required => true
+  config :action, :validate => [ "append", "replace" ], :default => "append"
+
+  # TODO(sissel): make 'action' required? This was always the intent, but it
+  # due to a typo it was never enforced. Thus the default behavior in past
+  # versions was 'append' by accident.
 
   public
   def register
