@@ -73,8 +73,8 @@ Gem::Specification.new do |gem|
     gem.platform = RUBY_PLATFORM
     gem.add_runtime_dependency "jruby-elasticsearch", ["0.0.14"]  #(BSD license)
     gem.add_runtime_dependency "jruby-httpclient"                 #(Apache 2.0 license)
-    gem.add_runtime_dependency "bouncy-castle-java", "1.5.0146.1" #(MIT license)
-    gem.add_runtime_dependency "jruby-openssl", "0.8.2"           #(CPL/GPL/LGPL license)
+    gem.add_runtime_dependency "bouncy-castle-java", "1.5.0147"   #(MIT license)
+    gem.add_runtime_dependency "jruby-openssl", "0.8.7"           #(CPL/GPL/LGPL license)
     gem.add_runtime_dependency "jruby-win32ole"                   #(unknown license)
     gem.add_runtime_dependency "jdbc-mysql"                       # For input drupal_dblog (BSD license)
     gem.add_runtime_dependency "msgpack-jruby"                    #(Apache 2.0 license)
