@@ -12,7 +12,7 @@
 require "fileutils"
 require "tmpdir"
 
-class < java.lang.System
+class << java.lang.System
   alias_method :set_property_seriously, :set_property
   def set_property(key, value)
     if key == "racob.dll.path" && value =~ /file:.*\.jar!\//
