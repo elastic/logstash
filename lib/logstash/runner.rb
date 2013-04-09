@@ -38,6 +38,7 @@ end
 
 require "logstash/monkeypatches-for-performance"
 require "logstash/monkeypatches-for-bugs"
+require "logstash/monkeypatches-for-debugging"
 require "logstash/namespace"
 require "logstash/program"
 require "i18n" # gem 'i18n'
