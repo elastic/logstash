@@ -19,7 +19,7 @@ class << java.lang.System
       # Path is set in a jar, we'll need to extract it to a
       # temporary location, then load it.
       filename = File.basename(value)
-      extracted_path = File.join(Dir.tmpdir, filename))
+      extracted_path = File.join(Dir.tmpdir, filename)
       FileUtils.cp(value, extracted_path)
       return set_property_seriously(key, extracted_path)
     else
