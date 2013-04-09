@@ -24,8 +24,11 @@ class << java.lang.System
       # when copying this file. I have not debugged it other
       # than to see it doesn't work. racob_x86.dll is 105kb,
       # but FileUtils.cp only copies 4kb of it.
-      input = File.new(path, "r")
-      output = File.new(extracted_path, "w")
+      
+      # open both files in 'binary' mode (sets encoding to BINARY aka
+      # ASCII-8BIT).
+      input = File.new(path, "rb") 
+      output = File.new(extracted_path, "wb")
       output.write(chunk) while chunk = input.read(16384)
       input.close
       output.close
