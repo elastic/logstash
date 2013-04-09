@@ -11,6 +11,7 @@
   - improvement: twitter: supports http proxying now (#276, patch by Richard
     Pijnenburg)
   - improvement: tcp: ssl now supported! (#318, patch by Matthew Richardson)
+  - bugfix: relp: allow multiple client socket connections to RELP input (LOGSTASH-707, LOGSTASH-736, LOGSTASH-921)
 
   ## filters
   - deprecation: the --grok-patterns-path flag is deprecated and will now
