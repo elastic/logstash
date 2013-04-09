@@ -20,7 +20,16 @@ class << java.lang.System
       # temporary location, then load it.
       filename = File.basename(value)
       extracted_path = File.join(Dir.tmpdir, filename)
-      FileUtils.cp(value, extracted_path)
+      # FileUtils.cp (and copy, and copy_file) are broken
+      # when copying this file. I have not debugged it other
+      # than to see it doesn't work. racob_x86.dll is 105kb,
+      # but FileUtils.cp only copies 4kb of it.
+      input = File.new(path, "r")
+      output = File.new(extracted_path, "w")
+      output.write(chunk) while chunk = input.read(16384)
+      input.close
+      output.close
+
       return set_property_seriously(key, extracted_path)
     else
       return set_property_seriously(key, value)
