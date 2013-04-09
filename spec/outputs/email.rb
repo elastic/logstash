@@ -141,6 +141,33 @@ describe "outputs/email" do
             insist {message_observer.messages[0].body.raw_source} == "Line1\r\nLine2\r\nLine3"
         end
     end
+
+    describe  "match on @source and @message (LOGSTASH-826)" do
+        config <<-CONFIG
+        input {
+            generator {
+                message => "hello world"
+                count => 1
+                type => "generator"
+            }
+        }
+        output{
+            email {
+                to => "me@host"
+                subject => "Hello World"
+                body => "Mail body"
+                match => ["messageAndSourceMatch", "@message,*hello,,and,@source,*generator"]
+                options => ["port", #{@@port}, "authenticationType", "nil"]
+            }
+        }
+        CONFIG
+
+        agent do
+            insist {message_observer.messages.size} == 1
+            insist {message_observer.messages[0].subject} == "Hello World"
+            insist {message_observer.messages[0].body.raw_source} == "Mail body"
+        end
+    end
 end
 
 
