@@ -363,7 +363,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
           end
 
           # Special casing to skip captures that represent the entire log message.
-          if fieldvalue == value and field == "@message"
+          if fieldvalue == value and field == "@message" and key.nil?
             # Skip patterns that match the entire message
             @logger.debug? and @logger.debug("Skipping capture since it matches the whole line.", :field => key)
             next
