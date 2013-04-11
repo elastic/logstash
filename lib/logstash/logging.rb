@@ -13,7 +13,12 @@ class LogStash::Logger
     #subscribe(::Logger.new(*args))
     @target = args[0]
     @channel = Cabin::Channel.get(LogStash)
-    @channel.subscribe(@target)
+
+    # lame hack until cabin's smart enough not to doubley-subscribe something.
+    # without this subscription count check, running the test suite
+    # causes Cabin to subscribe to STDOUT maaaaaany times.
+    subscriptions = @channel.instance_eval { @subscribers.count }
+    @channel.subscribe(@target) unless subscriptions > 0
  
     # Set default loglevel to WARN unless $DEBUG is set (run with 'ruby -d')
     @level = $DEBUG ? :debug : :warn
