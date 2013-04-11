@@ -2,8 +2,8 @@
 #   rsync
 #   wget or curl
 #
-JRUBY_VERSION=1.7.2
-ELASTICSEARCH_VERSION=0.20.2
+JRUBY_VERSION=1.7.3
+ELASTICSEARCH_VERSION=0.20.5
 #VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 VERSION=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb)
 
@@ -74,6 +74,7 @@ copy-ruby-files: | build/ruby
 	@# Copy lib/ and test/ files to the root
 	$(QUIET)rsync -av --include "*/" --include "*.rb" --exclude "*" ./lib/ ./test/ ./build/ruby
 	$(QUIET)rsync -av ./spec ./build/ruby
+	$(QUIET)rsync -av ./locales ./build/ruby
 	@# Delete any empty directories copied by rsync.
 	$(QUIET)find ./build/ruby -type d -empty -delete
 
@@ -231,11 +232,13 @@ build/jar: | build build/flatgems build/monolith
 build/logstash-$(VERSION)-flatjar.jar: | build/jar
 	$(QUIET)rm -f $@
 	$(QUIET)jar cfe $@ logstash.runner -C build/jar .
-	$(QUIET)jar i $@
 	@echo "Created $@"
 
-update-jar: copy-ruby-files
+update-jar: copy-ruby-files compile build/ruby/logstash/runner.class
 	$(QUIET)jar uf build/logstash-$(VERSION)-monolithic.jar -C build/ruby .
+
+update-flatjar: copy-ruby-files compile build/ruby/logstash/runner.class
+	$(QUIET)jar uf build/logstash-$(VERSION)-flatjar.jar -C build/ruby .
 
 .PHONY: test
 test: | $(JRUBY) vendor-elasticsearch

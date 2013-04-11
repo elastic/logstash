@@ -1,3 +1,9 @@
+logstash (1.1.10.dev~1) unstable; urgency=low
+
+  * Dev builds of master.
+
+ -- Jordan Sissel <jls@semicomplete.com>  Tue, 2 Apr 2013 21:55:33 -0700
+
 logstash (1.1.9~1) unstable; urgency=low
 
   * Depend on openjdk.  Don't start daemon by default.

@@ -10,27 +10,13 @@ module Kernel
 
     # JRUBY-7065
     path = File.expand_path(path) if path.include?("/../")
-    return require_JRUBY_6970_hack(path)
-  end
-end
+    rc = require_JRUBY_6970_hack(path)
 
-require "openssl"
-class OpenSSL::SSL::SSLContext
-  alias_method :ca_path_JRUBY_6970=, :ca_path=
-  alias_method :ca_file_JRUBY_6970=, :ca_file=
-
-  def ca_file=(arg)
-    if arg =~ /^jar:file:\//
-      return ca_file_JRUBY_6970=(arg.gsub(/^jar:/, ""))
+    # Only monkeypatch openssl after it's been loaded.
+    if path == "openssl"
+      require "logstash/JRUBY-6970-openssl"
     end
-    return ca_file_JRUBY_6970=(arg)
-  end
-
-  def ca_path=(arg)
-    if arg =~ /^jar:file:\//
-      return ca_path_JRUBY_6970=(arg.gsub(/^jar:/, ""))
-    end
-    return ca_path_JRUBY_6970=(arg)
+    return rc
   end
 end
 

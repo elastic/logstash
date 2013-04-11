@@ -27,7 +27,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "i18n"               #(MIT license)
 
   # Web dependencies
-  gem.add_runtime_dependency "ftw", ["~> 0.0.28"] #(Apache 2.0 license)
+  gem.add_runtime_dependency "ftw", ["~> 0.0.29"] #(Apache 2.0 license)
   gem.add_runtime_dependency "haml"               #(MIT license)
   gem.add_runtime_dependency "rack"               #(MIT license)
   gem.add_runtime_dependency "sass"               #(MIT license)
@@ -38,7 +38,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "awesome_print"                    #(MIT license)
   gem.add_runtime_dependency "aws-sdk"                          #{Apache 2.0 license}
   gem.add_runtime_dependency "heroku"                           #(MIT license)
-  gem.add_runtime_dependency "addressable", ["~> 2.2.6"]        #(Apache 2.0 license)
+  gem.add_runtime_dependency "addressable"                      #(Apache 2.0 license)
   gem.add_runtime_dependency "bunny", [">= 0.9.0.pre6"]         #(MIT license)
   gem.add_runtime_dependency "ffi"                              #(LGPL-3 license)
   gem.add_runtime_dependency "ffi-rzmq", ["0.9.3"]              #(MIT license)
@@ -58,7 +58,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "uuidtools"                        # For generating amqp queue names (Apache 2.0 license)
   gem.add_runtime_dependency "xml-simple"                       #(ruby license?)
   gem.add_runtime_dependency "xmpp4r", ["0.5"]                  #(ruby license)
-  gem.add_runtime_dependency "jls-lumberjack", [">0"]           #(Apache 2.0 license)
+  gem.add_runtime_dependency "jls-lumberjack", [">=0.0.19"]     #(Apache 2.0 license)
   gem.add_runtime_dependency "geoip", [">= 1.1.0"]              #(GPL license)
   gem.add_runtime_dependency "beefcake", "0.3.7"                #(MIT license)
   gem.add_runtime_dependency "php-serialize"                    # For input drupal_dblog (MIT license)
@@ -67,13 +67,14 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "user_agent_parser", [">= 2.0.0"]  #(MIT license)
   gem.add_runtime_dependency "snmp"                             #(ruby license)
   gem.add_runtime_dependency "varnish-rb"                       #(MIT license)
+  gem.add_runtime_dependency "mail"                             #(MIT license)
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
     gem.add_runtime_dependency "jruby-elasticsearch", ["0.0.14"]  #(BSD license)
     gem.add_runtime_dependency "jruby-httpclient"                 #(Apache 2.0 license)
-    gem.add_runtime_dependency "bouncy-castle-java", "1.5.0146.1" #(MIT license)
-    gem.add_runtime_dependency "jruby-openssl", "0.8.2"           #(CPL/GPL/LGPL license)
+    gem.add_runtime_dependency "bouncy-castle-java", "1.5.0147"   #(MIT license)
+    gem.add_runtime_dependency "jruby-openssl", "0.8.7"           #(CPL/GPL/LGPL license)
     gem.add_runtime_dependency "jruby-win32ole"                   #(unknown license)
     gem.add_runtime_dependency "jdbc-mysql"                       # For input drupal_dblog (BSD license)
     gem.add_runtime_dependency "msgpack-jruby"                    #(Apache 2.0 license)
