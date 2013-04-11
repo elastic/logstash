@@ -286,6 +286,7 @@ describe LogStash::Filters::Grok do
       filter {
         grok {
           pattern => "%{DATE_EU:stimestamp}"
+          singles => true
         }
       }
     CONFIG
