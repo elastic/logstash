@@ -68,7 +68,7 @@ describe LogStash::Filters::Prune do
     end
   end
 
-  describe "whitelist field names aggregator" do
+  describe "whitelist field names with interpolation" do
 
     config <<-CONFIG
       filter {
@@ -135,7 +135,7 @@ describe LogStash::Filters::Prune do
     end
   end
 
-  describe "blacklist field names interpolate" do
+  describe "blacklist field names with interpolation" do
 
     config <<-CONFIG
       filter {
@@ -206,7 +206,7 @@ describe LogStash::Filters::Prune do
     end
   end
 
-  describe "whitelist field values interpolate" do
+  describe "whitelist field values with interpolation" do
 
     config <<-CONFIG
       filter {
@@ -281,7 +281,7 @@ describe LogStash::Filters::Prune do
     end
   end
 
-  describe "blacklist field values interpolate" do
+  describe "blacklist field values with interpolation" do
 
     config <<-CONFIG
       filter {
