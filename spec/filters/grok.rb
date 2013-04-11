@@ -280,4 +280,18 @@ describe LogStash::Filters::Grok do
       reject { subject["@tags"] }.include?("_grokparsefailure")
     end
   end
+
+  describe "captures named fields even if the whole text matches" do
+    config <<-CONFIG
+      filter {
+        grok {
+          pattern => "%{DATE_EU:stimestamp}"
+        }
+      }
+    CONFIG
+
+    sample "2011/01/01" do
+      insist { subject["stimestamp"] } == "2011/01/01"
+    end
+  end
 end
