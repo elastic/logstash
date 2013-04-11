@@ -44,6 +44,19 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # elasticsearch with the same ID.
   config :document_id, :validate => :string, :default => nil
 
+  # Enable SSL (you need elasticsearch-jetty set up with SSL)
+  # https://github.com/sonian/elasticsearch-jetty#adding-ssl-support
+  # NOTE: Elasticsearch must be set up with a signed cert from a trusted CA
+  config :secure, :validate => :boolean, :default => false
+
+  # Use basic auth with elastic search. You need elasticsearch-jetty
+  # with the basic auth setup.
+  config :http_auth, :validate => :boolean, :default => false
+
+  # The username/password for http basic auth
+  config :http_user, :validate => :string, :default => nil
+  config :http_pass, :validate => :string, :default => nil
+
   public
   def register
     require "ftw" # gem ftw
@@ -70,8 +83,23 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     success = false
     while !success
       begin
-        response = @agent.post!("http://#{@host}:#{@port}/#{index}/#{type}",
-                                :body => event.to_json)
+        if @secure
+          if @http_auth
+            response = @agent.post!("https://#{@http_user}:#{@http_pass}@#{@host}:#{@port}/#{index}/#{type}",
+                                    :body => event.to_json)
+          else
+            response = @agent.post!("https://#{@host}:#{@port}/#{index}/#{type}",
+                                    :body => event.to_json)
+          end
+        else
+          if @http_auth
+            response = @agent.post!("http://#{@http_user}:#{@http_pass}@#{@host}:#{@port}/#{index}/#{type}",
+                                    :body => event.to_json)
+          else
+            response = @agent.post!("http://#{@host}:#{@port}/#{index}/#{type}",
+                                    :body => event.to_json)
+          end
+        end
       rescue EOFError
         @logger.warn("EOF while writing request or reading response header from elasticsearch",
                      :host => @host, :port => @port)
@@ -122,8 +150,23 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     # http://www.elasticsearch.org/guide/reference/api/bulk.html
     #  "NOTE: the final line of data must end with a newline character \n."
     begin
-      response = @agent.post!("http://#{@host}:#{@port}/_bulk",
-                              :body => @queue.join("\n") + "\n")
+      if @secure
+        if @http_auth
+          response = @agent.post!("https://#{@http_user}:#{@http_pass}@#{@host}:#{@port}/_bulk",
+                                  :body => @queue.join("\n") + "\n")
+        else
+          response = @agent.post!("https://#{@host}:#{@port}/_bulk",
+                                  :body => @queue.join("\n") + "\n")
+        end
+      else
+        if @http_auth
+          response = @agent.post!("http://#{@http_user}:#{@http_pass}@#{@host}:#{@port}/_bulk",
+                                  :body => @queue.join("\n") + "\n")
+        else
+          response = @agent.post!("http://#{@host}:#{@port}/_bulk",
+                                  :body => @queue.join("\n") + "\n")
+        end
+      end
     rescue EOFError
       @logger.warn("EOF while writing request or reading response header from elasticsearch",
                    :host => @host, :port => @port)
@@ -179,8 +222,23 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     begin
       success = false
       while !success
-        response = @agent.put!("http://#{@host}:#{@port}/_template/#{template_name}",
-                               :body => template_config.to_json)
+        if @secure
+          if @http_auth
+            response = @agent.put!("https://#{@http_user}:#{@http_pass}@#{@host}:#{@port}/_template/#{template_name}",
+                                   :body => template_config.to_json)
+          else
+            response = @agent.put!("https://#{@host}:#{@port}/_template/#{template_name}",
+                                   :body => template_config.to_json)
+          end
+        else
+          if @http_auth
+            response = @agent.put!("http://#{@http_user}:#{@http_pass}@#{@host}:#{@port}/_template/#{template_name}",
+                                   :body => template_config.to_json)
+          else
+            response = @agent.put!("http://#{@host}:#{@port}/_template/#{template_name}",
+                                   :body => template_config.to_json)
+          end
+        end
         if response.error?
           body = ""
           response.read_body { |c| body << c }
