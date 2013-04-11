@@ -16,56 +16,52 @@
   - Improved error feedback logstash gives to you as a user.
 
   ## inputs
-  - improvement: twitter: supports http proxying now (#276, patch by Richard
-    Pijnenburg)
-  - improvement: loggly: supports http proxying now (#276, patch by Richard
-    Pijnenburg)
-  - feature: tcp: ssl now supported! (#318, patch by Matthew Richardson)
-  - feature: redis: now supports 'batch_count' option for doing bulk
-    fetches from redis lists. Requires Redis 2.6.0 or higher. (#320, patch by
-    Piavlo)
   - new: elasticsearch: this input allows you to stream search results from
     elasticsearch; it uses the Scroll API.
-  - New input: websocket
-  - New input: snmptrap, to receive SNMP traps (patch by Paul Czar)
-  - Make log4j input respect add_fields (LOGSTASH-904, #358)
-  - bugfix: the eventlog input should now work
-  - The irc input will use SSL now if you set 'secure' (#393, patch by Tomas
-    Doran)
-  - bugfix: irc passwords now work (#412, Nick Ethier)
+  - new: websocket. Currently supports acting as a websocket client.
+  - new: snmptrap, to receive SNMP traps (patch by Paul Czar)
   - new: varnishlog input to read from the Varnish Cache server's shared memory
     log (LOGSTASH-978, #422; Louis Zuckerman)
   - new: graphite input. Supports the plain text carbon tcp protocol.
   - new: imap input. Read mail! 
+  - feature: twitter: supports http proxying now (#276, patch by Richard
+    Pijnenburg)
+  - feature: loggly: supports http proxying now (#276, patch by Richard
+    Pijnenburg)
+  - feature: tcp: ssl now supported! (#318, patch by Matthew Richardson)
+  - feature: redis: now supports 'batch_count' option for doing bulk fetches
+    from redis lists. Requires Redis 2.6.0 or higher. (#320, patch by Piavlo)
+  - feature: irc: will use ssl if you set 'secure' (#393, patch by Tomas Doran)
+  - bugfix: log4j: respect add_fields (LOGSTASH-904, #358)
+  - bugfix: eventlog: input should now work
+  - bugfix: irc: passwords now work (#412, Nick Ethier)
 
   ## filters
-  - deprecation: the --grok-patterns-path flag is deprecated and will now
-    warn you if you use it. (LOGSTASH-803)
-  - feature: grok: Adds tag_on_failure setting so you can prevent grok from
-    tagging events on failure. (#328, patch by Neil Prosser)
-  - improvement: grok: deprecated the --grok-patterns-path flag (LOGSTASH-803)
   - new: useragent: parses user agent strings in to structured data based on
     BrowserScope data (#347, patch by Dan Everton)
   - new: sleep: sleeps a given amount of time before passing the event.
     Useful for rate limiting or replay simulation.
   - new: ruby: experimental ruby plugin that lets you call custom ruby code
     on every event.
-  - improvement: date: nested field access is allowed now
-  - improvement: csv, xml, kv, json, geoip: new common settings! 
+  - new: translate: for mapping values (#335, patch by Paul Czar)
+  - new: clone: creates a copy of the event.
+  - feature: grok: Adds tag_on_failure setting so you can prevent grok from
+    tagging events on failure. (#328, patch by Neil Prosser)
+  - deprecated: grok: deprecated the --grok-patterns-path flag (LOGSTASH-803)
+  - feature: date: nested field access is allowed now
+  - feature: csv, xml, kv, json, geoip: new common settings! 
     (LOGSTASH-756, #310, #311, #312, #383, #396; patches by Richard Pijnenburg)
       source - what field the text comes from
       target - where to store the parse result.
-  - improvement: csv: new setting: columns - labels for each column parsed.
+  - feature: csv: new setting: columns - labels for each column parsed.
   - bugfix: geoip: The built-in geoip database should work now (#326, patch
     by Vincent Batts)
-  - New filter 'translate' for mapping values (#335, patch by Paul Czar)
-  - New filter: clone, creates a copy of the event.
-  - The kv filter now respects add_tag, etc (LOGSTASH-935)
+  - bugfix: kv filter now respects add_tag, etc (LOGSTASH-935)
 
   ## outputs
-  - fix bug in mongo output that would fail to load bson_java support
-    (LOGSTASH-849)
-  - Added tag support to gelf output. Returns tags as _tags field
+  - new: hipchat output (#428, Cameron Stokes) 
+  - bugfix: mongo would fail to load bson_java support (LOGSTASH-849)
+  - bugfix: tags support to gelf output. Returns tags as _tags field
     (LOGSTASH-880, patch by James Turnbull)
   - bugfix: elasticsearch: Fix a race condition. (#340, patch by Raymond Feng)
   - improvement: http: now supports a custom 'message' format for building your
@@ -83,7 +79,6 @@
     it appears nothing is consuming from redis, the output will stall
     until that problem is resolved. This helps prevent a dead reader
     from letting redis fill up memory. (Piavlo)
-  - New: hipchat output (#428, Cameron Stokes) 
   - feature: boundary: New 'auto' setting. (#413, Alden Jole)
  
 1.1.9 (January 10, 2013)
