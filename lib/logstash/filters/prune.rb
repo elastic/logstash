@@ -33,21 +33,29 @@ class LogStash::Filters::Prune < LogStash::Filters::Base
   config :blacklist_names, :validate => :array, :default => [ "%\{[^}]+\}" ]
 
   # Include specified fields only if their values match regexps.
+  # In case field values are arrays, the fields are pruned on per array item
+  # thus only matching array items will be included.
   # 
   #     filter { 
   #       %PLUGIN% { 
   #         tags             => [ "apache-accesslog" ]
-  #         whitelist_values => [ "uripath", "/index.php", method", "(GET|POST)", "status", "^[^2]" ]
+  #         whitelist_values => [ "uripath", "/index.php",
+  #                               "method", "(GET|POST)",
+  #                               "status", "^[^2]" ]
   #       }
   #     }
   config :whitelist_values, :validate => :hash, :default => {}
 
   # Exclude specified fields if their values match regexps.
+  # In case field values are arrays, the fields are pruned on per array item
+  # in case all array items are matched whole field will be deleted.
   #
   #     filter { 
   #       %PLUGIN% { 
   #         tags             => [ "apache-accesslog" ]
-  #         blacklist_values => [ "uripath", "/index.php", "method", "(HEAD|OPTIONS)", "status", "^[^2]" ]
+  #         blacklist_values => [ "uripath", "/index.php",
+  #                               "method", "(HEAD|OPTIONS)",
+  #                               "status", "^[^2]" ]
   #       }
   #     }
   config :blacklist_values, :validate => :hash, :default => {}
@@ -94,19 +102,41 @@ class LogStash::Filters::Prune < LogStash::Filters::Base
         key = event.sprintf(key)
         value = Regexp.new(event.sprintf(value))
       end
-      fields_to_remove << key if event.fields[key] and not event.fields[key].match(value)
+      if event.fields[key]
+        if event.fields[key].is_a?(Array)
+          subvalues_to_remove = event.fields[key].find_all{|x| not x.match(value)}
+          unless subvalues_to_remove.empty?
+            fields_to_remove << (subvalues_to_remove.length == event.fields[key].length ? key : { :key => key, :values => subvalues_to_remove })
+          end
+        else
+          fields_to_remove << key if not event.fields[key].match(value)
+        end
+      end
     end
 
-    @blacklist_values.each do |key,value|
+    @blacklist_values.each do |key, value|
       if @interpolate
         key = event.sprintf(key)
         value = Regexp.new(event.sprintf(value))
       end
-      fields_to_remove << key if event.fields[key] and event.fields[key].match(value)
+      if event.fields[key]
+        if event.fields[key].is_a?(Array)
+          subvalues_to_remove = event.fields[key].find_all{|x| x.match(value)}
+          unless subvalues_to_remove.empty?
+            fields_to_remove << (subvalues_to_remove.length == event.fields[key].length ? key : { :key => key, :values => subvalues_to_remove })
+          end
+        else
+          fields_to_remove << key if event.fields[key].match(value)
+        end
+      end
     end
 
     fields_to_remove.each do |field|
-      event.remove(field)
+      if field.is_a?(Hash)
+        event.fields[field[:key]] = event.fields[field[:key]] - field[:values]
+      else
+        event.remove(field)
+      end
     end
 
     filter_matched(event)

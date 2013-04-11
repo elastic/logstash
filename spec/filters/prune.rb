@@ -39,7 +39,7 @@ describe LogStash::Filters::Prune do
 
     config <<-CONFIG
       filter {
-        prune { 
+        prune {
           whitelist_names => [ "firstname", "(hobby|status)", "%{firstname}_saying" ]
         }
       }
@@ -72,7 +72,7 @@ describe LogStash::Filters::Prune do
 
     config <<-CONFIG
       filter {
-        prune { 
+        prune {
           whitelist_names => [ "firstname", "(hobby|status)", "%{firstname}_saying" ]
           interpolate     => true
         }
@@ -106,7 +106,7 @@ describe LogStash::Filters::Prune do
 
     config <<-CONFIG
       filter {
-        prune { 
+        prune {
           blacklist_names => [ "firstname", "(hobby|status)", "%{firstname}_saying" ]
         }
       }
@@ -139,7 +139,7 @@ describe LogStash::Filters::Prune do
 
     config <<-CONFIG
       filter {
-        prune { 
+        prune {
           blacklist_names => [ "firstname", "(hobby|status)", "%{firstname}_saying" ]
           interpolate     => true
         }
@@ -173,7 +173,7 @@ describe LogStash::Filters::Prune do
 
     config <<-CONFIG
       filter {
-        prune { 
+        prune {
           whitelist_values => [ "firstname", "^Borat$",
                                 "fullname", "%{firstname} Sagdiyev",
                                 "location", "no no no",
@@ -210,7 +210,7 @@ describe LogStash::Filters::Prune do
 
     config <<-CONFIG
       filter {
-        prune { 
+        prune {
           whitelist_values => [ "firstname", "^Borat$",
                                 "fullname", "%{firstname} Sagdiyev",
                                 "location", "no no no",
@@ -248,7 +248,7 @@ describe LogStash::Filters::Prune do
 
     config <<-CONFIG
       filter {
-        prune { 
+        prune {
           blacklist_values => [ "firstname", "^Borat$",
                                 "fullname", "%{firstname} Sagdiyev",
                                 "location", "no no no",
@@ -285,7 +285,7 @@ describe LogStash::Filters::Prune do
 
     config <<-CONFIG
       filter {
-        prune { 
+        prune {
           blacklist_values => [ "firstname", "^Borat$",
                                 "fullname", "%{firstname} Sagdiyev",
                                 "location", "no no no",
@@ -316,6 +316,108 @@ describe LogStash::Filters::Prune do
       insist { subject["status"] } == nil
       insist { subject["Borat_saying"] } == nil
       insist { subject["%{hmm}"] } == nil
+    end
+  end
+
+  describe "whitelist field values on fields witn array values" do
+
+    config <<-CONFIG
+      filter {
+        prune {
+          whitelist_values => [ "status", "^(1|2|3)",
+                                "xxx", "3",
+                                "error", "%{blah}" ]
+        }
+      }
+    CONFIG
+
+    sample "@fields" => {
+      "blah"   => "foo",
+      "xxx" => [ "1 2 3", "3 4 5" ],
+      "status" => [ "100", "200", "300", "400", "500" ],
+      "error"  => [ "This is foolish" , "Need smthing smart too" ]
+    } do
+      insist { subject["blah"] } == "foo"
+      insist { subject["error"] } == nil
+      insist { subject["xxx"] } == [ "1 2 3", "3 4 5" ]
+      insist { subject["status"] } == [ "100", "200", "300" ]
+    end
+  end
+
+  describe "blacklist field values on fields witn array values" do
+
+    config <<-CONFIG
+      filter {
+        prune {
+          blacklist_values => [ "status", "^(1|2|3)",
+                                "xxx", "3",
+                                "error", "%{blah}" ]
+        }
+      }
+    CONFIG
+
+    sample "@fields" => {
+      "blah"   => "foo",
+      "xxx" => [ "1 2 3", "3 4 5" ],
+      "status" => [ "100", "200", "300", "400", "500" ],
+      "error"  => [ "This is foolish", "Need smthing smart too" ]
+    } do
+      insist { subject["blah"] } == "foo"
+      insist { subject["error"] } == [ "This is foolish", "Need smthing smart too" ]
+      insist { subject["xxx"] } == nil
+      insist { subject["status"] } == [ "400", "500" ]
+    end
+  end
+
+  describe "whitelist field values with interpolation on fields witn array values" do
+ 
+    config <<-CONFIG
+      filter {
+        prune {
+          whitelist_values => [ "status", "^(1|2|3)",
+                                "xxx", "3",
+                                "error", "%{blah}" ]
+          interpolate      => true
+        }
+      }
+    CONFIG
+
+    sample "@fields" => {
+      "blah"   => "foo",
+      "xxx" => [ "1 2 3", "3 4 5" ],
+      "status" => [ "100", "200", "300", "400", "500" ],
+      "error"  => [ "This is foolish" , "Need smthing smart too" ]
+    } do
+      insist { subject["blah"] } == "foo"
+      insist { subject["error"] } == [ "This is foolish" ]
+      insist { subject["xxx"] } == [ "1 2 3", "3 4 5" ]
+      insist { subject["status"] } == [ "100", "200", "300" ]
+    end
+  end
+
+  describe "blacklist field values with interpolation on fields witn array values" do
+
+    config <<-CONFIG
+      filter {
+        prune {
+          blacklist_values => [ "status", "^(1|2|3)",
+                                "xxx", "3",
+                                "error", "%{blah}" ]
+          interpolate      => true
+        }
+      }
+    CONFIG
+
+    sample "@fields" => {
+      "blah"   => "foo",
+      "xxx" => [ "1 2 3", "3 4 5" ],
+      "status" => [ "100", "200", "300", "400", "500" ],
+      "error"  => [ "This is foolish" , "Need smthing smart too" ]
+    } do
+      insist { subject["blah"] } == "foo"
+      insist { subject["error"] } == [ "Need smthing smart too" ]
+      insist { subject["xxx"] } == nil
+      insist { subject["status"] } == [ "400", "500" ]
     end
   end
 
