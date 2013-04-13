@@ -41,7 +41,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "addressable"                      #(Apache 2.0 license)
   gem.add_runtime_dependency "bunny", [">= 0.9.0.pre6"]         #(MIT license)
   gem.add_runtime_dependency "ffi"                              #(LGPL-3 license)
-  gem.add_runtime_dependency "ffi-rzmq", ["0.9.3"]              #(MIT license)
+  gem.add_runtime_dependency "ffi-rzmq", ["1.0.0"]              #(MIT license)
   gem.add_runtime_dependency "filewatch", ["0.5.1"]             #(BSD license)
   gem.add_runtime_dependency "gelfd", ["0.2.0"]                 #(Apache 2.0 license)
   gem.add_runtime_dependency "gelf", ["1.3.2"]                  #(MIT license)
@@ -68,6 +68,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "snmp"                             #(ruby license)
   gem.add_runtime_dependency "varnish-rb"                       #(MIT license)
   gem.add_runtime_dependency "mail"                             #(MIT license)
+  gem.add_runtime_dependency "rbnacl"                           #(MIT license)
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
