@@ -159,7 +159,7 @@ grouped by type and two outputs.
       }
 
       file {
-        type => "linux-syslog"
+        type => "syslog"
 
         # Wildcards work, here :)
         path => [ "/var/log/*.log", "/var/log/messages", "/var/log/syslog" ]
