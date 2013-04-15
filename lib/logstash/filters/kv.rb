@@ -103,6 +103,30 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     filter { kv { target => "kv" } }
   config :target, :validate => :string, :default => '@fields'
 
+  # An array that specifies the parsed keys which should be added to event.
+  # By default all keys will be added.
+  #
+  # Example, to include only "from" and "to" from a source like "Hey, from=<abc>, to=def foo=bar"
+  # while "foo" key will not be added to event.
+  #
+  #     filter {
+  #       kv {
+  #         include_fields = [ "from", "to" ]
+  #       }
+  config :include_keys, :validate => :array, :default => []
+
+  # An array that specifies the parsed keys which should not be added to event.
+  # By default no keys will be excluded.
+  #
+  # Example, to exclude "from" and "to" from a source like "Hey, from=<abc>, to=def foo=bar"
+  # while "foo" key will be added to event.
+  #
+  #     filter {
+  #       kv {
+  #         exclude_fields = [ "from", "to" ]
+  #       }
+  config :exclude_keys, :validate => :array, :default => []
+
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
 
@@ -119,7 +143,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       if @fields
         logger.error("'fields' and 'source' are the same setting, but 'fields' is deprecated. Please use only 'source'")
       end
-      @fields=Array.new if @fields.nil?
+      @fields = Array.new if @fields.nil?
       @fields << @source
     end
 
@@ -128,7 +152,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   def filter(event)
     return unless filter?(event)
 
-    kv_keys=Hash.new
+    kv_keys = Hash.new
 
     #TODO(electrical): Remove this loop when we remove the fields variable
     @fields.each do |fieldname|
@@ -148,7 +172,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       if !event[@target].nil?
         event[@target].merge!(kv_keys)
       else
-        event[@target]= kv_keys
+        event[@target] = kv_keys
       end
       filter_matched(event)
     end
@@ -162,11 +186,10 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)["+@value_split+"](?:\"([^\"]+)\"|'([^']+)'|((?:\\\\ |[^"+@field_split+"])+))")
     text.scan(scan_re) do |key, v1, v2, v3|
       value = v1 || v2 || v3
-      if !@trim.nil?
-        value = value.gsub(@trim_re, "")
-      end
       key = @prefix + key
-      kv_keys[key] = value
+      next if not @include_keys.empty? and not @include_keys.include?(key)
+      next if @exclude_keys.include?(key)
+      kv_keys[key] = @trim.nil? ? value : value.gsub(@trim_re, "")
     end
     return kv_keys
   end
