@@ -400,9 +400,9 @@ module LogStash::Config::Mixin
             end
 
             # Paths must be absolute
-            if !Pathname.new(value.first).absolute?
-              return false, "Require absolute path, got relative path #{value.first}?"
-            end
+            #if !Pathname.new(value.first).absolute?
+              #return false, "Require absolute path, got relative path #{value.first}?"
+            #end
 
             if !File.exists?(value.first) # Check if the file exists
               return false, "File does not exist or cannot be opened #{value.first}"
