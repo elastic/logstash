@@ -320,4 +320,55 @@ describe LogStash::Filters::KV do
     end
   end
 
+  describe "test include_keys" do
+    config <<-CONFIG
+      filter {
+        kv {
+          include_keys => [ "foo", "singlequoted" ]
+        }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["foo"] } == "bar"
+      insist { subject["singlequoted"] } == "hello world"
+      insist {subject['@fields'].count } == 2
+    end
+
+  end
+
+  describe "test exclude_keys" do
+    config <<-CONFIG
+      filter {
+        kv {
+          exclude_keys => [ "foo", "singlequoted" ]
+        }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["hello"] } == "world"
+      insist { subject["baz"] } == "fizz"
+      insist { subject["doublequoted"] } == "hello world"
+      insist {subject['@fields'].count } == 3
+    end
+
+  end
+
+  describe "test include_keys and exclude_keys" do
+    config <<-CONFIG
+      filter {
+        kv {
+          include_keys => [ "foo", "singlequoted" ]
+          exclude_keys => [ "foo", "singlequoted" ]
+        }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist {subject['@fields'].count } == 0
+    end
+
+  end
+
 end
