@@ -8,27 +8,29 @@ class LogStash::Filters::Base < LogStash::Plugin
 
   config_name "filter"
 
+  # Note that all of the specified routing options (type,tags.exclude_tags,include_fields,exclude_fields)
+  # must be met in order for the event to be handled by the filter.
+
   # The type to act on. If a type is given, then this filter will only
   # act on messages with the same type. See any input plugin's "type"
   # attribute for more.
   # Optional.
   config :type, :validate => :string, :default => ""
 
-  # Only handle events with all of these tags.  Note that if you specify
-  # a type, the event must also match that type.
+  # Only handle events with all/any (controlled by include_any config option) of these tags.
   # Optional.
   # TODO(piavlo): sould we rename/alias this to include_tags for clearness and consistency?
   config :tags, :validate => :array, :default => []
 
-  # Only handle events without any of these tags. Note this check is
-  # additional to type and tags.
+  # Only handle events without all/any (controlled by exclude_any config option) of these tags.
+  # Optional.
   config :exclude_tags, :validate => :array, :default => []
 
-  # Only handle events with all of these fields present.
+  # Only handle events with all/any (controlled by include_any config option) of these fields.
   # Optional.
   config :include_fields, :validate => :array, :default => []
 
-  # Only handle events with all of these fields present.
+  # Only handle events without all/any (controlled by exclude_any config option) of these fields.
   # Optional.
   config :exclude_fields, :validate => :array, :default => []
 
