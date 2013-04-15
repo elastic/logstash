@@ -46,6 +46,7 @@ class LogStash::Agent
     # flag/config defaults
     @verbose = 0
     @filterworker_count = 1
+    @queue_size = 10
     @watchdog_timeout = 10
     @configtest = false
 
@@ -98,6 +99,11 @@ class LogStash::Agent
         raise ArgumentError, "filter worker count must be > 0"
       end
     end # -w
+
+    opts.on("--queue-size COUNT", Integer,
+            "Set internal input->filter and filter->output queue size") do
+      @queue_size = arg
+    end
 
     opts.on("--watchdog-timeout TIMEOUT", "Set watchdog timeout value") do |arg|
       @watchdog_timeout = arg.to_f
@@ -385,7 +391,7 @@ class LogStash::Agent
   private
   def start_output(output)
     @logger.debug? and @logger.debug("Starting output", :plugin => output)
-    queue = LogStash::SizedQueue.new(10 * @filterworker_count)
+    queue = LogStash::SizedQueue.new(@queue_size * @filterworker_count)
     queue.logger = @logger
     @output_queue.add_queue(queue)
     @output_plugin_queues[output] = queue
@@ -425,7 +431,7 @@ class LogStash::Agent
       end
 
       # NOTE(petef) we should have config params for queue size
-      @filter_queue = LogStash::SizedQueue.new(10 * @filterworker_count)
+      @filter_queue = LogStash::SizedQueue.new(@queue_size * @filterworker_count)
       @filter_queue.logger = @logger
       @output_queue = LogStash::MultiQueue.new
       @output_queue.logger = @logger
