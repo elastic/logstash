@@ -94,24 +94,17 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
   def register
     require "mail"
     if @via == "smtp"
-      debug = @options.fetch("debug", false)
-      smtpIporHost = @options.fetch("smtpIporHost", "localhost")
-      domain = @options.fetch("domain", "localhost")
-      port = @options.fetch("port", 25)
-      tls = @options.fetch("starttls", false)
-      pass = @options.fetch("password", nil)
-      userName = @options.fetch("userName", nil)
-      authenticationType = @options.fetch("authenticationType", nil)
-
       Mail.defaults do
-        delivery_method :smtp , { :address   => smtpIporHost,
-                                  :port      => port,
-                                  :domain    => domain,
-                                  :user_name => userName,
-                                  :password  => pass,
-                                  :authentication => authenticationType,
-                                  :enable_starttls_auto => tls,
-                                  :debug => debug }
+        delivery_method :smtp, {
+          :address              => @options.fetch("smtpIporHost", "localhost"),
+          :port                 => @options.fetch("port", 25),
+          :domain               => @options.fetch("domain", "localhost"),
+          :user_name            => @options.fetch("userName", nil),
+          :password             => @options.fetch("password", nil),
+          :authentication       => @options.fetch("authenticationType", nil),
+          :enable_starttls_auto => @options.fetch("starttls", false),
+          :debug                => @options.fetch("debug", false)
+        }
       end
     elsif @via == 'sendmail'
       Mail.defaults do
