@@ -1,6 +1,7 @@
 #!/bin/bash
 
-VERSION=1.1.9
+
+VERSION="$(awk -F\" '/LOGSTASH_VERSION/ {print $2}' $(dirname $0)/../lib/logstash/version.rb)"
 
 if [ "$#" -ne 2 ] ; then
   echo "Usage: $0 <os> <release>"
@@ -12,6 +13,8 @@ fi
 os=$1
 release=$2
 
+echo "Building package for $os $release"
+
 destdir=build/
 prefix=/opt/logstash
 
@@ -21,13 +24,15 @@ fi
 
 mkdir -p $destdir/$prefix
 
+
 # install logstash.jar
-if [ ! -f "$(dirname $0)/../build/logstash-$VERSION-flatjar.jar" ] ; then
-  echo "Unable to find logstash-$VERSION-flatjar.jar"
+jar="$(dirname $0)/../build/logstash-$VERSION-flatjar.jar" 
+if [ ! -f "$jar" ] ; then
+  echo "Unable to find $jar"
   exit 1
 fi
 
-cp $(dirname $0)/../build/logstash-$VERSION-flatjar $destdir/$prefix
+cp $jar $destdir/$prefix/
 
 case $os@$release in
   centos@*)
@@ -73,7 +78,7 @@ case $os in
       --before-install centos/before-install.sh \
       --before-remove centos/before-remove.sh \
       --after-install centos/after-install.sh \
-      -C $destdir .
+      -f -C $destdir .
     ;;
   ubuntu|debian) 
     fpm -s dir -t deb -n logstash -v "$VERSION" \
@@ -82,6 +87,6 @@ case $os in
       --before-install ubuntu/before-install.sh \
       --before-remove ubuntu/before-remove.sh \
       --after-install ubuntu/after-install.sh \
-      -C $destdir .
+      -f -C $destdir .
     ;;
 esac
