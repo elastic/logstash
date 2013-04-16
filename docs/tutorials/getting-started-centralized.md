@@ -76,7 +76,7 @@ Download the monolithic logstash release package. By 'monolithic' I mean the
 package contains all required dependencies to save you time chasing down
 requirements.
 
-Follow [this link to download logstash-%VERSION%](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-monolithic.jar).
+Follow [this link to download logstash-%VERSION%](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-flatjar.jar).
 
 Since we're doing a centralized configuration, you'll have two main logstash
 agent roles: a shipper and an indexer. You will ship logs from all servers via Redis and have another agent receive those messages, parse
@@ -99,7 +99,7 @@ As with the simple example, we're going to start simple to ensure that events ar
 
 Put this in a file and call it 'shipper.conf' (or anything, really), and run: 
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f shipper.conf
+    java -jar logstash-%VERSION%-flatjar.jar agent -f shipper.conf
 
 This will take anything you type into this console and display it on the console. Additionally it will save events to Redis in a `list` named after the `key` value you provided.
 
@@ -167,7 +167,7 @@ The above configuration will attach to Redis and issue a `BLPOP` against the `lo
 
 Start the indexer the same way as the agent but specifying the `indexer.conf` file:
 
-`java -jar logstash-%VERSION%-monolithic.jar agent -f indexer.conf`
+`java -jar logstash-%VERSION%-flatjar.jar agent -f indexer.conf`
 
 To verify that your Logstash indexer is connecting to Elasticsearch properly, you should see a message in your Elasticsearch window similar to the following:
 
@@ -199,7 +199,7 @@ Run this on the same server as your elasticsearch server.
 To run the logstash web server, just run the jar with 'web' as the first
 argument. 
 
-    java -jar logstash-%VERSION%-monolithic.jar web --backend elasticsearch://127.0.0.1/
+    java -jar logstash-%VERSION%-flatjar.jar web --backend elasticsearch://127.0.0.1/
 
 As with the indexer, you should see the Logstash web interface connection:
 
