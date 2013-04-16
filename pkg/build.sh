@@ -22,7 +22,12 @@ fi
 mkdir -p $destdir/$prefix
 
 # install logstash.jar
-cp $(dirname $0)/../build/logstash-$VERSION-monolithic.jar $destdir/$prefix
+if [ ! -f "$(dirname $0)/../build/logstash-$VERSION-flatjar.jar" ] ; then
+  echo "Unable to find logstash-$VERSION-flatjar.jar"
+  exit 1
+fi
+
+cp $(dirname $0)/../build/logstash-$VERSION-flatjar $destdir/$prefix
 
 case $os@$release in
   centos@*)
