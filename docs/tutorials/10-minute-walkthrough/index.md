@@ -8,7 +8,7 @@ layout: content_right
 
 ### Download logstash:
 
-* [logstash-%VERSION%-flatjar.jar](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-monolithic.jar)
+* [logstash-%VERSION%-flatjar.jar](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-flatjar.jar)
 
 ### Requirements:
 
