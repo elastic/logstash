@@ -58,9 +58,6 @@ NICE=19
 # Filter threads
 FILTER_THREADS=1
 
-# Path to sincedb files
-SINCEDB_PATH=/etc/logstash/sincedb/
-
 # End of variables that can be overwritten in $DEFAULT
 
 if [ -f "$DEFAULT" ]; then
@@ -73,8 +70,6 @@ PID_FILE=/var/run/$NAME.pid
 JAVA=`which java`
 JAR="${LS_HOME}/logstash.jar"
 ARGS="${LS_JAVA_OPTS} -jar ${JAR} agent --config ${CONF_DIR} --log ${LOG_FILE} -w ${FILTER_THREADS}"
-
-export SINCEDB_PATH=$SINCEDB_PATH
 
 is_true() {
     if [ "x$1" = "xtrue" -o "x$1" = "xyes" -o "x$1" = "x1" ] ; then
