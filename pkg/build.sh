@@ -44,7 +44,7 @@ case $os@$release in
     install -m644 logrotate.conf $destdir/etc/logrotate.d/
     install -m755 logstash.upstart.ubuntu $destdir/etc/init/logstash.conf
     ;;
-  debian@*
+  debian@*)
     mkdir -p $destdir/etc/logrotate.d
     mkdir -p $destdir/etc/init.d
     mkdir -p $destdir/var/lib/logstash
@@ -52,6 +52,7 @@ case $os@$release in
     mkdir -p $destdir/var/log/logstash
     install -m644 logrotate.conf $destdir/etc/logrotate.d/
     install -m755 logstash.sysv.debian $destdir/etc/init.d/logstash
+    ;;
   *) 
     echo "Unknown OS: $os $release"
     exit 1
@@ -62,7 +63,7 @@ description="logstash is a system for managing and processing events and logs"
 case $os in
   centos|fedora|redhat) 
     fpm -s dir -t rpm -n logstash -v "$VERSION" \
-      -a noarch --iteration 1-$os \
+      -a noarch --iteration 1_$os \
       -d "jre >= 1.6.0" \
       --before-install centos/before-install.sh \
       --before-remove centos/before-remove.sh \
