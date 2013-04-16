@@ -335,7 +335,7 @@ releaseNote:
 
 package:
 	[ ! -f build/logstash-$(VERSION)-flatjar.jar ] \
-		&& make build/logstash-$(VERSION)-flatjar.jar 
+		&& make build/logstash-$(VERSION)-flatjar.jar ; \
 	(cd pkg; \
 		./build.sh ubuntu 12.10; \
 		./build.sh centos 6; \
