@@ -72,9 +72,9 @@ build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
 .PHONY: copy-ruby-files
 copy-ruby-files: | build/ruby
 	@# Copy lib/ and test/ files to the root
-	$(QUIET)rsync -av --include "*/" --include "*.rb" --exclude "*" ./lib/ ./test/ ./build/ruby
-	$(QUIET)rsync -av ./spec ./build/ruby
-	$(QUIET)rsync -av ./locales ./build/ruby
+	$(QUIET)rsync -a --include "*/" --include "*.rb" --exclude "*" ./lib/ ./test/ ./build/ruby
+	$(QUIET)rsync -a ./spec ./build/ruby
+	$(QUIET)rsync -a ./locales ./build/ruby
 	@# Delete any empty directories copied by rsync.
 	$(QUIET)find ./build/ruby -type d -empty -delete
 
@@ -196,15 +196,15 @@ build/logstash-$(VERSION)-monolithic.jar:
 build/flatgems: | build vendor/bundle
 	mkdir $@
 	for i in $(VENDOR_DIR)/gems/*/lib $(VENDOR_DIR)/gems/*/data; do \
-		rsync -av $$i/ $@/$$(basename $$i) ; \
+		rsync -a $$i/ $@/$$(basename $$i) ; \
 	done
 	@# Until I implement something that looks at the 'require_paths' from
 	@# all the gem specs.
-	$(QUIET)rsync -av $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
-	$(QUIET)rsync -av $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
+	$(QUIET)rsync -a $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
+	$(QUIET)rsync -a $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
 	@# Other lame hacks to get crap to work.
-	$(QUIET)rsync -av $(VENDOR_DIR)/gems/sass-*/VERSION_NAME $@/root/
-	$(QUIET)rsync -av $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
+	$(QUIET)rsync -a $(VENDOR_DIR)/gems/sass-*/VERSION_NAME $@/root/
+	$(QUIET)rsync -a $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
 
 flatjar-test:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
@@ -223,11 +223,11 @@ jar-test-and-report:
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
-	$(QUIET)rsync -av --delete build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
-	$(QUIET)rsync -av --delete build/flatgems/data build/jar/
-	$(QUIET)(cd lib; rsync -av --delete logstash/web/public ../build/jar/logstash/web/public)
-	$(QUIET)(cd lib; rsync -av --delete logstash/web/views ../build/jar/logstash/web/views)
-	$(QUIET)(cd lib; rsync -av --delete logstash/certs ../build/jar/logstash/certs)
+	$(QUIET)rsync -a --delete build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
+	$(QUIET)rsync -a --delete build/flatgems/data build/jar/
+	$(QUIET)(cd lib; rsync -a --delete logstash/web/public ../build/jar/logstash/web/public)
+	$(QUIET)(cd lib; rsync -a --delete logstash/web/views ../build/jar/logstash/web/views)
+	$(QUIET)(cd lib; rsync -a --delete logstash/certs ../build/jar/logstash/certs)
 
 build/logstash-$(VERSION)-flatjar.jar: | build/jar
 	$(QUIET)rm -f $@
