@@ -36,6 +36,8 @@ Now add the code:
       #   foo { ... }
       # }
       config_name "foo"
+      # need to set a plugin_status
+      plugin_status "experimental"
 
       # Replace the message with this value.
       config :message, :validate => :string
