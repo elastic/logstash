@@ -1,4 +1,4 @@
-1.1.10 (????)
+1.1.10 (April 16, 2013)
   ## general
   - On linux, all threads will set their process names so you can identify
     threads in tools like top(1).
