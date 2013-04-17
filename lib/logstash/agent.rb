@@ -101,7 +101,7 @@ class LogStash::Agent
     end # -w
 
     opts.on("--queue-size COUNT", Integer,
-            "Set internal input->filter and filter->output queue size") do
+            "Set internal input->filter and filter->output queue size") do |arg|
       @queue_size = arg
     end
 
