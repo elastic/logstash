@@ -42,7 +42,7 @@ for easy downloading of ElasticSearch:
 
     ES_PACKAGE=elasticsearch-%ELASTICSEARCH_VERSION%.zip
     ES_DIR=${ES_PACKAGE%%.zip}
-    SITE=https://github.com/downloads/elasticsearch/elasticsearch
+    SITE=https://download.elasticsearch.org/elasticsearch/elasticsearch
     if [ ! -d "$ES_DIR" ] ; then
       wget --no-check-certificate $SITE/$ES_PACKAGE
       unzip $ES_PACKAGE
