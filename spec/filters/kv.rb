@@ -334,7 +334,6 @@ describe LogStash::Filters::KV do
       insist { subject["singlequoted"] } == "hello world"
       insist {subject['@fields'].count } == 2
     end
-
   end
 
   describe "test exclude_keys" do
@@ -352,7 +351,6 @@ describe LogStash::Filters::KV do
       insist { subject["doublequoted"] } == "hello world"
       insist {subject['@fields'].count } == 3
     end
-
   end
 
   describe "test include_keys and exclude_keys" do
@@ -368,7 +366,28 @@ describe LogStash::Filters::KV do
     sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
       insist {subject['@fields'].count } == 0
     end
+  end
 
+
+  describe "test default_keys" do
+    config <<-CONFIG
+      filter {
+        kv {
+          default_keys => [ "foo", "xxx",
+                            "goo", "yyy" ]
+        }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["hello"] } == "world"
+      insist { subject["foo"] } == "bar"
+      insist { subject["goo"] } == "yyy"
+      insist { subject["baz"] } == "fizz"
+      insist { subject["doublequoted"] } == "hello world"
+      insist { subject["singlequoted"] } == "hello world"
+      insist {subject['@fields'].count } == 6
+    end
   end
 
 end
