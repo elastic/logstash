@@ -129,7 +129,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     }
   config :exclude_keys, :validate => :array, :default => []
 
-  # A hash that specifies the default keys and their values that should not be added to event
+  # A hash that specifies the default keys and their values that should be added to event
   # in case these keys do no exist in the source field being parsed.
   #
   #     filter {
