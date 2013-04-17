@@ -132,9 +132,6 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # A hash that specifies the default keys and their values that should not be added to event
   # in case these keys do no exist in the source field being parsed.
   #
-  # Example, to exclude "from" and "to" from a source like "Hey, from=<abc>, to=def foo=bar"
-  # while "foo" key will be added to event.
-  #
   #     filter {
   #       kv {
   #         default_keys = [ "from", "logstash@example.com",
