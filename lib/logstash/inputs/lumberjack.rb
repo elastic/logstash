@@ -54,7 +54,7 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
       #l.each do |key, value|
         #event[key] = value
       #end
-      event.fields.merge(l)
+      event.fields.merge!(l)
 
       output_queue << event
     end
