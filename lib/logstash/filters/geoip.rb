@@ -105,9 +105,9 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
       event["geoip"] = {} if event["geoip"].nil?
       geo_data_hash.each do |key, value|
         # Check if we have an array for specific fields
-        if !fields.empty?
+        if !@fields.empty?
           # Check if the key is in our fields array
-          if fields.include?(key.to_s)
+          if @fields.include?(key.to_s)
             # convert key to string (normally a Symbol)
             event["geoip"][key.to_s] = value
           end
