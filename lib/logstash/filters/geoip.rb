@@ -35,7 +35,7 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   # Possible fields depend on the database type
   # For the built in GeoLiteCity database:
   # city_name, continent_code, country_code2, country_code3, country_name, dma_code, ip, latitude, longitude, postal_code, region_name, timezone
-  config :fields, :validate => :array
+  config :fields, :validate => :array, :default => []
 
   public
   def register
