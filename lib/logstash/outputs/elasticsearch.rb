@@ -20,6 +20,11 @@ require "logstash/outputs/base"
 # elasticsearch's cluster health status.
 #
 # You can learn more about elasticsearch at <http://elasticsearch.org>
+#
+# ## Operational Notes
+#
+# Your firewalls will need to permit port 9300 in *both* directions (from
+# logstash to elasticsearch, and elasticsearch to logstash)
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   config_name "elasticsearch"
