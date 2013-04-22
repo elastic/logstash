@@ -2,6 +2,9 @@
   ## inputs
   - bugfix: lumberjack now respects field data again (lumberjack --field foo=bar)
 
+  ## outputs
+  - feature: irc output now supports 'secure' setting to use ssl (LOGSTASH-139)
+
 1.1.10 (April 16, 2013)
   ## general
   - On linux, all threads will set their process names so you can identify
