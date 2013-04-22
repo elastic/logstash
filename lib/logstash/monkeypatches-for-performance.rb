@@ -45,7 +45,7 @@ class << File
     @jarcache ||= Hash.new { |h,k| h[k] = {} }
 
     if @jarcache[jarpath].empty?
-      puts "Caching file entries for #{jarpath}"
+      #puts "Caching file entries for #{jarpath}"
       s = Time.now
       zip = java.util.zip.ZipFile.new(jarpath)
       zip.entries.each do |entry|
