@@ -5,6 +5,6 @@ fi
 
 # create logstash user
 if ! getent passwd logstash >/dev/null; then
-  useradd -r -g logstash -d %{base_install_dir} \
+  useradd -r -g logstash -d /opt/logstash \
     -s /sbin/nologin -c "logstash" logstash
 fi
