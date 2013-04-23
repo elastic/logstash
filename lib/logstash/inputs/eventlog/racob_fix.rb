@@ -29,7 +29,9 @@ class << java.lang.System
       # ASCII-8BIT).
       input = File.new(value, "rb") 
       output = File.new(extracted_path, "wb")
-      output.write(chunk) while chunk = input.read(16384)
+      while chunk = input.read(16384)
+        output.write(chunk) 
+      end
       input.close
       output.close
 
