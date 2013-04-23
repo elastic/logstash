@@ -32,7 +32,7 @@ class File
 
     def expand_path(path, dir=nil)
       if path =~ /(jar:)?file:\/.*\.jar!/
-        p :expand_path_path => [path, dir]
+        #p :expand_path_path => [path, dir]
         jar, resource = path.split("!", 2)
         #p :expand_path => [jar, resource]
         if resource.nil? || resource == ""
