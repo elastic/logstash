@@ -42,7 +42,7 @@ case $os@$release in
     mkdir -p $destdir/var/lib/logstash
     mkdir -p $destdir/var/run/logstash
     mkdir -p $destdir/var/log/logstash
-    touch $destdir/etc/sysconfig/logstash
+    cp $os/sysconfig $destdir/etc/sysconfig/logstash
     install -m644 logrotate.conf $destdir/etc/logrotate.d/
     install -m755 logstash.sysv.redhat $destdir/etc/init.d/logstash
     ;;
