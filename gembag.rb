@@ -30,6 +30,8 @@ deps = [spec.development_dependencies, spec.runtime_dependencies].flatten
 # target for now
 rubymajor = RUBY_VERSION.split(".")[0..1].join(".")
 target = "vendor/bundle/#{RUBY_ENGINE}/#{rubymajor}/"
+ENV["GEM_HOME"] = target
+ENV["GEM_PATH"] = ""
 
 deps.each do |dep|
   # TODO(sissel): Hack for now
