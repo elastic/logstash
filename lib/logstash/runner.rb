@@ -34,7 +34,7 @@ if ENV["PROFILE_BAD_LOG_CALLS"] || $DEBUGLIST.include?("log")
       end
     end
   end
-end
+end # PROFILE_BAD_LOG_CALLS
 
 require "logstash/monkeypatches-for-performance"
 require "logstash/monkeypatches-for-bugs"
