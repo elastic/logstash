@@ -9,9 +9,6 @@ if [ -d "$basedir/.git" ] ; then
 fi
 
 export RUBYLIB="$basedir/lib"
-echo $GEM_HOME
-
-gem list i18n
 
 which ruby > /dev/null 2>&1
 if [ "$?" -eq 0 -a -z "$USE_JRUBY" ] ; then
