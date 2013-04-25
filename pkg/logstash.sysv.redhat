@@ -146,6 +146,7 @@ case "$1" in
   status)
     echo -n "$DESC"
     status -p $PID_FILE
+    exit $?
     ;;
   *)
     echo "Usage: $SCRIPTNAME {start|stop|status|restart}" >&2
