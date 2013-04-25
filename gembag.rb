@@ -20,7 +20,7 @@ def install_gem(name, requirement, target)
   installer.options[:install_dir] = target
  
   # ruby 2.0.0 / rubygems 2.x; disable documentation generation
-  installer.options[:document].clear
+  installer.options[:document] = []
   begin
     installer.execute
   rescue Gem::SystemExitException => e
