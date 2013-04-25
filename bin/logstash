@@ -3,8 +3,8 @@
 basedir=$(cd `dirname $0`/..; pwd)
 if [ -d "$basedir/.git" ] ; then
   RUBY=${RUBY=jruby}
-  RUBYVER=1.9
-  export GEM_HOME="$basedir/vendor/bundle/${RUBY}/1.9"
+  RUBYVER=${RUBYVER=1.9}
+  export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
   export GEM_PATH=
 fi
 
