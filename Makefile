@@ -341,3 +341,12 @@ package:
 		./build.sh centos 6; \
 		./build.sh debian 6; \
 	)
+
+kibana: | build
+	$(QUIET)mkdir build/kibana || true
+	$(QUIET)[ -f build/kibana/kibana.gemspec ] || $(QUIET)$(DOWNLOAD_COMMAND) - https://github.com/rashidkpc/Kibana/archive/v0.2.0.tar.gz | tar -C build/kibana --strip-components 1 -zx 
+	$(QUIET)grep -v thin build/kibana/kibana.gemspec > build/kibana/kibanablah.gemspec
+	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb build/kibana/kibanablah.gemspec
+
+kibana-flatjar: | kibana
+	$(QUIET)jar uf build/logstash-$(VERSION)-flatjar.jar -C build/kibana .
