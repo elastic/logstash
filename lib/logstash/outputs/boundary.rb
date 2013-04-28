@@ -51,7 +51,7 @@ class LogStash::Outputs::Boundary < LogStash::Outputs::Base
   # of the event. Any field explicitly set by config options will
   # override these.
   # ['type', 'subtype', 'creation_time', 'end_time', 'links', 'tags', 'loc']
-  config :auto, :validate => :bool, :default => false
+  config :auto, :validate => :boolean, :default => false
 
   public
   def register
