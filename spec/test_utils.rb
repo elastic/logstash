@@ -1,6 +1,7 @@
 require "insist"
 require "logstash/agent"
 require "logstash/event"
+require "logstash/logging"
 require "insist"
 require "stud/try"
 
@@ -13,9 +14,11 @@ if RUBY_VERSION < "1.9.2"
   raise LoadError
 end
 
+$logger = LogStash::Logger.new(STDOUT)
 if ENV["TEST_DEBUG"]
-  Cabin::Channel.get.level = :debug 
-  Cabin::Channel.get.subscribe(STDOUT)
+  $logger.level = :debug
+else
+  $logger.level = :error
 end
 
 module LogStash
@@ -43,9 +46,11 @@ module LogStash
       default_tags = @default_tags || []
       config = get_config
       agent = LogStash::Agent.new
+      agent.instance_eval { parse_options(["--quiet"]) }
       @inputs, @filters, @outputs = agent.instance_eval { parse_config(config) }
       [@inputs, @filters, @outputs].flatten.each do |plugin|
-        plugin.logger = Cabin::Channel.get
+        plugin.logger = $logger
+        plugin.logger.level = :error
         plugin.register
       end
 
@@ -107,6 +112,7 @@ module LogStash
     def input(&block)
       config = get_config
       agent = LogStash::Agent.new
+      agent.instance_eval { parse_options(["--quiet"]) }
       it "looks good" do
         inputs, filters, outputs = agent.instance_eval { parse_config(config) }
         block.call(inputs)
@@ -133,7 +139,7 @@ module LogStash
         before :each do
           start = ::Time.now
           @agent = LogStash::Agent.new
-          @agent.run(["-e", config_str])
+          @agent.run(["--quiet", "-e", config_str])
           @agent.wait
           @duration = ::Time.now - start
         end
