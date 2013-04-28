@@ -121,6 +121,22 @@ class LogStash::Agent
       @verbose += 1
     end
 
+    opts.on("--verbose", "Use verbose logging") do
+      @verbose = 1
+    end
+
+    opts.on("--debug", "Use debug logging") do
+      @verbose = 2
+    end
+
+    opts.on("-q", "--quiet", "Quieter logging; only errors will be logged") do
+      @verbose = -1
+    end
+
+    opts.on("--silent", "Silent logging. Nothing should get logged") do
+      @verbose = -2
+    end
+
     opts.on("-V", "--version", "Show the version of logstash") do
       require "logstash/version"
       puts "logstash #{LOGSTASH_VERSION}"
@@ -249,8 +265,12 @@ class LogStash::Agent
       @logger.level = :debug
     elsif @verbose == 1 # logstash info logs
       @logger.level = :info
-    else # Default log level
-      @logger.level = :warn
+    elsif @verbose == 0 # Default log level
+      @logger.level = :warn 
+    elsif @verbose == -1 # Default log level
+      @logger.level = :error
+    elsif @verbose == -2 # Default log level
+      @logger.level = :fatal
     end
   end # def configure
 
