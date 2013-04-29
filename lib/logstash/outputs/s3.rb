@@ -137,7 +137,13 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  
  # The event format you want to store in files. Defaults to plain text.
  config :format, :validate => [ "json", "plain", "nil" ], :default => "plain"
- 
+
+ ## IMPORTANT: if you use multiple instance of s3, you should specify on one of them the "restore=> true" and on the others "restore => false".
+ ## This is hack for not destroy the new files after restoring the initial files. 
+ ## If you do not specify "restore => true" when logstash crashes or is restarted, the files are not sent into the bucket,
+ ## for example if you have single Instance. 
+ config :restore, :validate => :boolean, :default => false
+
  # Method to set up the aws configuration and establish connection
  def aws_s3_config
   
@@ -244,8 +250,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
    if (@tags.size != 0)
        @tag_path = ""
        for i in (0..@tags.size-1)
-          @tag_path += @tags[i].to_s+"."
-          @logger.warn @tag_path.to_s 
+          @tag_path += @tags[i].to_s+"." 
        end
    end
 
@@ -256,9 +261,12 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     @logger.debug "S3: Directory "+@temp_directory+" exist, nothing to do"
    end 
    
-   @logger.debug "S3: is attempting to verify previous crashes..."
+   if (@restore == true )
+     @logger.debug "S3: is attempting to verify previous crashes..."
    
-   upFile(true, "*.txt")    
+     upFile(true, "*.txt")    
+   end
+   
    newFile(true)
    
    if (time_file != 0)
