@@ -51,6 +51,9 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
   # logstash internal variables.
   config :nagios_service, :validate => :string, :default => "LOGSTASH"
 
+  # The message format to send in the alert
+  config :message_format, :validate => :string, :default => "%{@timestamp} %{@source}: %{@message}"
+
   public
   def register
     #nothing for now
@@ -80,7 +83,7 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
 
     # escape basic things in the log message
     # TODO: find a way to escape the message correctly
-    msg = event.to_s
+    msg = event.sprintf(@message_format)
     msg.gsub!("\n", "<br/>")
     msg.gsub!("'", "&#146;")
 
