@@ -38,6 +38,9 @@ To work on the code without building a jar, install rvm and run the following:
 
     # Run logstash
     bin/logstash agent [options]
+    
+    # If running bin/logstash agent yields complaints about log4j/other things
+    make vendor-elasticsearch
 
 ## Building
 
