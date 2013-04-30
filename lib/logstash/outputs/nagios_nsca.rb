@@ -51,7 +51,9 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
   # logstash internal variables.
   config :nagios_service, :validate => :string, :default => "LOGSTASH"
 
-  # The message format to send in the alert
+  # The format to use when writing events to nagios. This value
+  # supports any string and can include %{name} and other dynamic
+  # strings.
   config :message_format, :validate => :string, :default => "%{@timestamp} %{@source}: %{@message}"
 
   public
