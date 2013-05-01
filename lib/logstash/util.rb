@@ -8,13 +8,15 @@ module LogStash::Util
     else; RbConfig::CONFIG["host_os"]
   end
 
-  module LibC
-    extend FFI::Library
-    if UNAME == "linux"
-      ffi_lib 'c'
+  if UNAME == "linux"
+    module LibC
+      extend FFI::Library
+      if UNAME == "linux"
+        ffi_lib 'c'
 
-      # Ok so the 2nd arg isn't really a string... but whaatever
-      attach_function :prctl, [:int, :string, :long, :long, :long], :int
+        # Ok so the 2nd arg isn't really a string... but whaatever
+        attach_function :prctl, [:int, :string, :long, :long, :long], :int
+      end
     end
   end
 
@@ -27,7 +29,7 @@ module LogStash::Util
     
     if UNAME == "linux"
       # prctl PR_SET_NAME allows up to 16 bytes for a process name
-      # since MRI 1.9 and JRuby use system threads for this.
+      # since MRI 1.9, JRuby, and Rubinius use system threads for this.
       LibC.prctl(PR_SET_NAME, name[0..16], 0, 0, 0)
     end
   end # def set_thread_name
