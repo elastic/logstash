@@ -1,22 +1,16 @@
 require "logstash/namespace"
-require "ffi" # gem ffi
 
 module LogStash::Util
   PR_SET_NAME = 15
 
-  # This can throw an exception, if it does, we're probably not on linux.
-  # It certainly throws an exception on Windows; I don't know how
-  # to work around it other than this hack.
-  begin
-    require "sys/uname" # gem sys-uname
-    UNAME = Sys::Uname.uname.sysname
-  rescue LoadError, FFI::NotFoundError
-    UNAME = "unknown"
+  UNAME = case RbConfig::CONFIG["host_os"]
+    when /^linux/; "linux"
+    else; RbConfig::CONFIG["host_os"]
   end
 
   module LibC
     extend FFI::Library
-    if UNAME == "Linux"
+    if UNAME == "linux"
       ffi_lib 'c'
 
       # Ok so the 2nd arg isn't really a string... but whaatever
@@ -31,7 +25,7 @@ module LogStash::Util
     end
     Thread.current[:name] = name
     
-    if UNAME == "Linux"
+    if UNAME == "linux"
       # prctl PR_SET_NAME allows up to 16 bytes for a process name
       # since MRI 1.9 and JRuby use system threads for this.
       LibC.prctl(PR_SET_NAME, name[0..16], 0, 0, 0)
