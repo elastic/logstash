@@ -8,15 +8,14 @@ module LogStash::Util
     else; RbConfig::CONFIG["host_os"]
   end
 
-  if UNAME == "linux"
-    module LibC
+  module LibC
+    if UNAME == "linux"
+      require "ffi"
       extend FFI::Library
-      if UNAME == "linux"
-        ffi_lib 'c'
+      ffi_lib 'c'
 
-        # Ok so the 2nd arg isn't really a string... but whaatever
-        attach_function :prctl, [:int, :string, :long, :long, :long], :int
-      end
+      # Ok so the 2nd arg isn't really a string... but whaatever
+      attach_function :prctl, [:int, :string, :long, :long, :long], :int
     end
   end
 
