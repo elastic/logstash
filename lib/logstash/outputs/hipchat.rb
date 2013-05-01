@@ -18,7 +18,7 @@ class LogStash::Outputs::HipChat < LogStash::Outputs::Base
   config :from, :validate => :string, :default => "logstash"
 
   # Whether or not this message should trigger a notification for people in the room.
-  config :notify, :validate => :boolean, :default => false
+  config :alert, :validate => :boolean, :default => false
 
   # Background color for message.
   # HipChat currently supports one of "yellow", "red", "green", "purple",
@@ -47,7 +47,7 @@ class LogStash::Outputs::HipChat < LogStash::Outputs::Base
     hipchat_data['room_id'] = @room_id
     hipchat_data['from']    = @from
     hipchat_data['color']   = @color
-    hipchat_data['notify']  = @notify ? "1" : "0"
+    hipchat_data['notify']  = @alert ? "1" : "0"
     hipchat_data['message'] = event.sprintf(@format)
 
     @logger.debug("HipChat data", :hipchat_data => hipchat_data)
