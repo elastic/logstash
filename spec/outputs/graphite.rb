@@ -10,6 +10,38 @@ describe LogStash::Outputs::Graphite do
     TCPSocket.expects(:new).with("localhost", 2003).returns(@mock)
   end
 
+  describe "defaults should include all metrics" do
+    config <<-CONFIG
+      input {
+        generator {
+          message => "foo=fancy bar=42"
+          count => 1
+          type => "generator"
+        }
+      }
+
+      filter {
+        kv { }
+      }
+
+      output {
+        graphite {
+          host => "localhost"
+          port => 2003
+          metrics => [ "hurray.%{foo}", "%{bar}" ]
+        }
+      }
+    CONFIG
+
+    agent do
+      @mock.rewind
+      lines = @mock.readlines.delete_if { |l| l =~ /\.sequence \d+/ }
+
+      insist { lines.size } == 1
+      insist { lines }.any? { |l| l =~ /^hurray.fancy 42.0 \d{10,}\n$/ }
+    end
+  end
+
   describe "fields_are_metrics => true" do
     describe "metrics_format => ..." do
       describe "match one key" do
