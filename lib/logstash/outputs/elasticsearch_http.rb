@@ -58,7 +58,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # and at the end of the series of keys must be a hash/object/map.
   # If the schema changes such that @fields no longer exists, adjust
   # your document path by removing @fields.
-  config :document_path, :validate => :list, :default => []
+  config :document_path, :validate => :array, :default => []
 
   public
   def register
