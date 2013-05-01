@@ -6,6 +6,8 @@
   - bugfix: lumberjack now respects field data again (lumberjack --field foo=bar)
   - bugfix: rabbitmq was broken by the previous release (LOGSTASH-1003,
     LOGSTASH-1038; Patch by Jason Koppe)
+  - bugfix: relp: allow multiple client socket connections to RELP input
+    (LOGSTASH-707, LOGSTASH-736, LOGSTASH-921)
 
   ## filters
   - bugfix: geoip was broken by the previous release (LOGSTASH-1013)
