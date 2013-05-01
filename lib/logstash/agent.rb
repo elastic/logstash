@@ -476,7 +476,7 @@ class LogStash::Agent
         if @filterworker_count > 1
           @filters.each do |filter|
             if ! filter.threadsafe?
-                raise "fail"
+                raise "The filter #{filter.class} is not threadsafe. Cannot use more than 1 filter worker"
             end
           end
         end
