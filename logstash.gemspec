@@ -22,7 +22,6 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "minitest"           # for running the tests from the jar, (MIT license)
   gem.add_runtime_dependency "pry"                #(ruby license)
   gem.add_runtime_dependency "stud"               #(Apache 2.0 license)
-  gem.add_runtime_dependency "sys-uname"          # for platform detection (Artistic 2.0 license)
   gem.add_runtime_dependency "clamp"              # for command line args/flags (MIT license)
   gem.add_runtime_dependency "i18n"               #(MIT license)
 
