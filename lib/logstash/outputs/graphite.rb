@@ -41,7 +41,7 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   config :fields_are_metrics, :validate => :boolean, :default => false
 
   # Include only regex matched metric names
-  config :include_metrics, :validate => :array, :default => []
+  config :include_metrics, :validate => :array, :default => [ ".*" ]
 
   # Exclude regex matched metric names, by default exclude unresolved %{field} strings
   config :exclude_metrics, :validate => :array, :default => [ "%\{[^}]+\}" ]
