@@ -74,11 +74,11 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #       mutate {
   #         gsub => [
   #           # replace all forward slashes with underscore
-  #           "fieldname", "\\/", "_",
+  #           "fieldname", "/", "_",
   #
-  #           # replace backslashes, question marks, hashes and minuses with
-  #           # underscore
-  #           "fieldname", "[\\?#-]", "_"
+  #           # replace backslashes, question marks, hashes, and minuses with
+  #           # dot
+  #           "fieldname2", "[\\?#-]", "."
   #         ]
   #       }
   #     }
@@ -323,6 +323,9 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     @split.each do |field, separator|
       if event[field].is_a?(String)
         event[field] = event[field].split(separator)
+      else 
+        @logger.debug("Can't split something that isn't a string",
+                      :field => field, :value => event[field])
       end
     end
   end

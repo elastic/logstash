@@ -25,7 +25,7 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
 
   # The CSV data in the value of the source field will be expanded into a
   # datastructure.
-  # This deprecates the regexp '[A-Za-z0-9_-]' variable.
+  # This deprecates the regexp `[A-Za-z0-9_-]` variable.
   config :source, :validate => :string
 
   # Define a list of column names (in the order they appear in the CSV,

@@ -58,12 +58,13 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     # TODO(sissel): Check if we should rotate the file.
 
     if @message_format
-      output = event.sprintf(@message_format) + "\n"
+      output = event.sprintf(@message_format)
     else
       output = event.to_json
     end
 
-    fd.puts(output)
+    fd.write(output)
+    fd.write("\n")
 
     flush(fd)
     close_stale_files

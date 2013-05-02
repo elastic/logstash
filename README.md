@@ -24,14 +24,23 @@ You can also find documentation on the <http://logstash.net> site.
 To work on the code without building a jar, install rvm and run the following:
 
     # Install JRuby with rvm
-    rvm install jruby-1.7.1
-    rvm use jruby-1.7.1
+    rvm install jruby-1.7.3
+    rvm use jruby-1.7.3
 
-    # Install logstash dependencies
+    # Install logstash dependencies - installs gems into vendor/bundle/jruby/1.9/
     ruby gembag.rb logstash.gemspec
+
+    # to use Logstash gems in irb, use the following
+    bin/logstash irb
+
+    # or use irb from the jar
+    java -jar logstash-<version>-monolithic.jar irb
 
     # Run logstash
     bin/logstash agent [options]
+    
+    # If running bin/logstash agent yields complaints about log4j/other things
+    make vendor-elasticsearch
 
 ## Building
 

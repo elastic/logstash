@@ -1,0 +1,20 @@
+# logstash - agent instance
+#
+
+description     "logstash agent"
+
+start on virtual-filesystems
+stop on runlevel [06]
+
+# Respawn it if the process exits
+respawn
+
+limit nofile 65550 65550
+setuid logstash
+setgid logstash
+
+# You need to chdir somewhere writable because logstash needs to unpack a few
+# temporary files on startup.
+chdir /home/logstash
+console log
+exec /usr/bin/java -jar logstash.jar agent -f /etc/logstash/agent.conf

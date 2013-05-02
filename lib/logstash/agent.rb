@@ -8,6 +8,7 @@ require "logstash/namespace"
 require "logstash/program"
 require "logstash/threadwatchdog"
 require "logstash/util"
+require "stud/task"
 require "optparse"
 require "thread"
 require "uri"
@@ -29,6 +30,7 @@ class LogStash::Agent
   attr_reader :config_path
   attr_reader :logfile
   attr_reader :verbose
+  attr_reader :configtest
 
   public
   def initialize
@@ -44,7 +46,9 @@ class LogStash::Agent
     # flag/config defaults
     @verbose = 0
     @filterworker_count = 1
+    @queue_size = 10
     @watchdog_timeout = 10
+    @configtest = false
 
     @plugins = {}
     @plugins_mutex = Mutex.new
@@ -96,6 +100,11 @@ class LogStash::Agent
       end
     end # -w
 
+    opts.on("--queue-size COUNT", Integer,
+            "Set internal input->filter and filter->output queue size") do |arg|
+      @queue_size = arg
+    end
+
     opts.on("--watchdog-timeout TIMEOUT", "Set watchdog timeout value") do |arg|
       @watchdog_timeout = arg.to_f
     end # --watchdog-timeout
@@ -104,8 +113,28 @@ class LogStash::Agent
       @logfile = path
     end
 
+    opts.on("-t", "--configtest", "Test configuration and exit.") do |arg|
+        @configtest = true
+    end
+
     opts.on("-v", "Increase verbosity") do
       @verbose += 1
+    end
+
+    opts.on("--verbose", "Use verbose logging") do
+      @verbose = 1
+    end
+
+    opts.on("--debug", "Use debug logging") do
+      @verbose = 2
+    end
+
+    opts.on("-q", "--quiet", "Quieter logging; only errors will be logged") do
+      @verbose = -1
+    end
+
+    opts.on("--silent", "Silent logging. Nothing should get logged") do
+      @verbose = -2
     end
 
     opts.on("-V", "--version", "Show the version of logstash") do
@@ -236,8 +265,12 @@ class LogStash::Agent
       @logger.level = :debug
     elsif @verbose == 1 # logstash info logs
       @logger.level = :info
-    else # Default log level
-      @logger.level = :warn
+    elsif @verbose == 0 # Default log level
+      @logger.level = :warn 
+    elsif @verbose == -1 # Default log level
+      @logger.level = :error
+    elsif @verbose == -2 # Default log level
+      @logger.level = :fatal
     end
   end # def configure
 
@@ -258,6 +291,7 @@ class LogStash::Agent
       is_yaml = false
       concatconfig = []
       paths.each do |path|
+        next if File.directory?(path)
         file = File.new(path)
         if File.extname(file) == '.yaml'
           # assume always YAML if even one file is
@@ -334,13 +368,9 @@ class LogStash::Agent
     config = read_config
 
     @logger.info("Start thread")
-    @thread = Thread.new do
+    @thread = Stud::Task.new do
       LogStash::Util::set_thread_name(self.class.name)
-      begin
-        run_with_config(config, &block)
-      rescue => e
-        @logger.warn(e.to_s)
-      end
+      run_with_config(config, &block)
     end
 
     return remaining
@@ -348,8 +378,10 @@ class LogStash::Agent
 
   public
   def wait
-    @thread.join
+    @thread.wait
     return 0
+  rescue LogStash::Plugin::ConfigurationError
+    return 1
   end # def wait
 
   private
@@ -379,7 +411,7 @@ class LogStash::Agent
   private
   def start_output(output)
     @logger.debug? and @logger.debug("Starting output", :plugin => output)
-    queue = LogStash::SizedQueue.new(10 * @filterworker_count)
+    queue = LogStash::SizedQueue.new(@queue_size * @filterworker_count)
     queue.logger = @logger
     @output_queue.add_queue(queue)
     @output_plugin_queues[output] = queue
@@ -396,7 +428,7 @@ class LogStash::Agent
 
       # If we are given a config string (run usually with 'agent -e "some config string"')
       # then set up some defaults.
-      if @config_string
+      if @config_string or @configtest
         require "logstash/inputs/stdin"
         require "logstash/outputs/stdout"
 
@@ -408,10 +440,10 @@ class LogStash::Agent
         end
 
         # If no inputs are specified, use stdin by default.
-        @inputs = [LogStash::Inputs::Stdin.new("type" => [ "stdin" ])] if @inputs.length == 0
+        @inputs = [LogStash::Inputs::Stdin.new("type" => [ "stdin" ])] if (@inputs.length == 0 or @configtest)
 
         # If no outputs are specified, use stdout in debug mode.
-        @outputs = [LogStash::Outputs::Stdout.new("debug" => [ "true" ])] if @outputs.length == 0
+        @outputs = [LogStash::Outputs::Stdout.new("debug" => [ "true" ])] if (@outputs.length == 0 or @configtest)
       end
 
       if @inputs.length == 0 or @outputs.length == 0
@@ -419,7 +451,7 @@ class LogStash::Agent
       end
 
       # NOTE(petef) we should have config params for queue size
-      @filter_queue = LogStash::SizedQueue.new(10 * @filterworker_count)
+      @filter_queue = LogStash::SizedQueue.new(@queue_size * @filterworker_count)
       @filter_queue.logger = @logger
       @output_queue = LogStash::MultiQueue.new
       @output_queue.logger = @logger
@@ -444,7 +476,7 @@ class LogStash::Agent
         if @filterworker_count > 1
           @filters.each do |filter|
             if ! filter.threadsafe?
-                raise "fail"
+                raise "The filter #{filter.class} is not threadsafe. Cannot use more than 1 filter worker"
             end
           end
         end
@@ -485,6 +517,13 @@ class LogStash::Agent
       end
       @logger.info("All plugins are started and registered.")
     end # synchronize
+
+    # exit if configtest
+    if @configtest
+      puts "Config test passed.  Exiting..."
+      shutdown
+      exit (0)
+    end
 
     # yield to a block in case someone's waiting for us to be done setting up
     # like tests, etc.

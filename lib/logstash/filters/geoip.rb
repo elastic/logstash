@@ -20,11 +20,25 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   #
   # If not specified, this will default to the GeoLiteCity database that ships
   # with logstash.
-  config :database, :validate => :string
+  config :database, :validate => :path
 
   # The field containing IP address, hostname is also OK. If this field is an
   # array, only the first value will be used.
-  config :field, :validate => :string, :required => true
+  config :field, :validate => :string, :deprecated => true
+
+  # The field containing IP address, hostname is also OK. If this field is an
+  # array, only the first value will be used.
+  config :source, :validate => :string
+
+  # Array of geoip fields that we want to be included in our event.
+  # 
+  # Possible fields depend on the database type. By default, all geoip fields
+  # are included in the event.
+  #
+  # For the built in GeoLiteCity database, the following are available:
+  # city_name, continent_code, country_code2, country_code3, country_name,
+  # dma_code, ip, latitude, longitude, postal_code, region_name, timezone
+  config :fields, :validate => :array
 
   public
   def register
@@ -64,30 +78,49 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
     else
       raise RuntimeException.new "This GeoIP database is not currently supported"
     end
+
+    #TODO(electrical): Remove this when removing the field variable
+    if @field
+      if @source
+        logger.error("'field' and 'source' are the same setting, but 'field' is deprecated. Please use only 'source'")
+      end
+      @source = @field
+    end
+
   end # def register
 
   public
   def filter(event)
     return unless filter?(event)
     geo_data = nil
+
     begin
-      ip = event[@field]
+      ip = event[@source]
       ip = ip.first if ip.is_a? Array
       geo_data = @geoip.send(@geoip_type, ip)
     rescue SocketError => e
       @logger.error("IP Field contained invalid IP address or hostname", :field => @field, :event => event)
     rescue Exception => e
-      @logger.error("Uknown error while looking up GeoIP data", :exception => e, :field => @field, :event => event)
+      @logger.error("Unknown error while looking up GeoIP data", :exception => e, :field => @field, :event => event)
     end
-    unless geo_data.nil?
-      geo_data_hash = geo_data.to_hash
-      geo_data_hash.delete(:request)
-      event["geoip"] = {} if event["geoip"].nil?
-      geo_data_hash.each do |key, value|
+
+    return if geo_data.nil?
+
+    geo_data_hash = geo_data.to_hash
+    geo_data_hash.delete(:request)
+    event["geoip"] = {} if event["geoip"].nil?
+    geo_data_hash.each do |key, value|
+      if @fields.nil? || @fields.empty?
+        # no fields requested, so add all geoip hash items to
+        # the event's fields.
+        # convert key to string (normally a Symbol)
+        event["geoip"][key.to_s] = value
+      elsif @fields.include?(key.to_s)
+        # Check if the key is in our fields array
         # convert key to string (normally a Symbol)
         event["geoip"][key.to_s] = value
       end
-      filter_matched(event)
-    end
+    end # geo_data_hash.each
+    filter_matched(event)
   end # def filter
 end # class LogStash::Filters::GeoIP

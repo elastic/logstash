@@ -65,10 +65,10 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   plugin_status "stable"
 
   # The regular expression to match
-  config :pattern, :validate => :string, :require => true
+  config :pattern, :validate => :string, :required => true
 
   # If the pattern matched, does event belong to the next or previous event?
-  config :what, :validate => ["previous", "next"], :require => true
+  config :what, :validate => ["previous", "next"], :required => true
 
   # Negate the regexp pattern ('if not matched')
   config :negate, :validate => :boolean, :default => false
@@ -233,4 +233,4 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     @pending.clear
     return events
   end # def flush
-end # class LogStash::Filters::Date
+end # class LogStash::Filters::Multiline

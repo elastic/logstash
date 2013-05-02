@@ -9,6 +9,7 @@ class LogStash::FilterWorker < LogStash::Plugin
   include Stud
   attr_accessor :logger
   attr_accessor :filters
+  attr_reader	:after_filter
 
   Exceptions = [Exception]
   Exceptions << java.lang.Exception if RUBY_ENGINE == "jruby"
@@ -19,6 +20,13 @@ class LogStash::FilterWorker < LogStash::Plugin
     @output_queue = output_queue
     @shutdown_requested = false
   end # def initialize
+
+  #This block is called after each filter is done on an event. 
+  #The filtered event and filter class name is passed to the block.
+  #This could be used to add metrics in the future?
+  def after_filter(&block)
+    @after_filter = block
+  end
 
   def run
     # TODO(sissel): Run a flusher thread for each plugin requesting flushes
@@ -47,7 +55,10 @@ class LogStash::FilterWorker < LogStash::Plugin
       # Filter any events generated so far in this flush.
       events.each do |event|
         # TODO(sissel): watchdog on flush filtration?
-        filter.filter(event) unless event.cancelled?
+        unless event.cancelled?
+          filter.filter(event)
+          @after_filter.call(event,filter) unless @after_filter.nil?
+        end
       end
 
       # TODO(sissel): watchdog on flushes?
@@ -99,6 +110,7 @@ class LogStash::FilterWorker < LogStash::Plugin
                                            :filter => filter.class)
           break
         end
+        @after_filter.call(event,filter) unless @after_filter.nil?
       end # @filters.each
 
       @logger.debug? and @logger.debug("Event finished filtering", :event => event,
