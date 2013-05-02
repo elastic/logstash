@@ -18,6 +18,8 @@
   - bugfix: elasticsearch_http was broken in 1.1.10 (LOGSTASH-1004)
   - bugfix: rabbitmq was broken by the previous release (LOGSTASH-1003,
     LOGSTASH-1038; Patch by Jason Koppe)
+  - bugfix: emails: restored initial really useful documentation
+  - improvement: emails: allow @message, @source, @... in match (LOGSTASH-826, LOGSTASH-823)  
 
 1.1.10 (April 16, 2013)
   ## general
@@ -89,7 +91,7 @@
     own http bodies from an event. (#319, patch by Christian S)
   - bugfix: Fix opentsdb output (LOGSTASH-689, #317; patch by Emmet Murphy)
   - improvement: http output now supports a custom message format with
-    the 'message' setting (Patch by Christian Schröder)
+    the 'message' setting (Patch by Christian Schröder)
   - graphite output now lets you ship the whole (or part) of an event's fields 
     to graphite as metric updates. (#350, patch by Piavlo)
   - email output now correctly defaults to not using authentication
