@@ -12,6 +12,9 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   config_name "graphite"
   plugin_status "beta"
 
+  DEFAULT_METRICS_FORMAT = "*"
+  METRIC_PLACEHOLDER = "*"
+
   # The address of the graphite server.
   config :host, :validate => :string, :default => "localhost"
 
@@ -28,7 +31,7 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   # for metric names and also for values. This is a hash field with key 
   # of the metric name, value of the metric value. Example:
   #
-  #     [ "%{@source_host}/uptime", %{uptime_1m} " ]
+  #     [ "%{@source_host}/uptime", "%{uptime_1m}" ]
   #
   # The value will be coerced to a floating point value. Values which cannot be
   # coerced will zero (0)
@@ -38,7 +41,7 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   config :fields_are_metrics, :validate => :boolean, :default => false
 
   # Include only regex matched metric names
-  config :include_metrics, :validate => :array, :default => []
+  config :include_metrics, :validate => :array, :default => [ ".*" ]
 
   # Exclude regex matched metric names, by default exclude unresolved %{field} strings
   config :exclude_metrics, :validate => :array, :default => [ "%\{[^}]+\}" ]
@@ -46,9 +49,24 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   # Enable debug output
   config :debug, :validate => :boolean, :default => false
 
+  # Defines format of the metric string. The placeholder '*' will be
+  # replaced with the name of the actual metric.
+  #
+  #     metrics_format => "foo.bar.*.sum"
+  #
+  # NOTE: If no metrics_format is defined the name of the metric will be used as fallback.
+  config :metrics_format, :validate => :string, :default => DEFAULT_METRICS_FORMAT
+
   def register
     @include_metrics.collect!{|regexp| Regexp.new(regexp)}
     @exclude_metrics.collect!{|regexp| Regexp.new(regexp)}
+
+    if @metrics_format && !@metrics_format.include?(METRIC_PLACEHOLDER)
+      @logger.warn("metrics_format does not include placeholder #{METRIC_PLACEHOLDER} .. falling back to default format: #{DEFAULT_METRICS_FORMAT.inspect}")
+
+      @metrics_format = DEFAULT_METRICS_FORMAT
+    end
+
     connect
   end # def register
 
@@ -64,10 +82,18 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
     end
   end # def connect
 
+  def construct_metric_name(metric)
+    if @metrics_format
+      return @metrics_format.gsub(METRIC_PLACEHOLDER, metric)
+    end
+
+    metric
+  end
+
   public
   def receive(event)
     return unless output?(event)
-    
+
     # Graphite message format: metric value timestamp\n
 
     messages = []
@@ -76,9 +102,9 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
     if @fields_are_metrics
       @logger.debug("got metrics event", :metrics => event.fields)
       event.fields.each do |metric,value|
-        next unless @include_metrics.any? {|regexp| metric.match(regexp)}
+        next unless @include_metrics.empty? || @include_metrics.any? { |regexp| metric.match(regexp) }
         next if @exclude_metrics.any? {|regexp| metric.match(regexp)}
-        messages << "#{metric} #{value.to_f} #{timestamp}"
+        messages << "#{construct_metric_name(metric)} #{event.sprintf(value.to_s).to_f} #{timestamp}"
       end
     else
       @metrics.each do |metric, value|
@@ -86,11 +112,13 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
         metric = event.sprintf(metric)
         next unless @include_metrics.any? {|regexp| metric.match(regexp)}
         next if @exclude_metrics.any? {|regexp| metric.match(regexp)}
-        messages << "#{event.sprintf(metric)} #{event.sprintf(value).to_f} #{timestamp}"
+        messages << "#{construct_metric_name(event.sprintf(metric))} #{event.sprintf(value).to_f} #{timestamp}"
       end
     end
 
-    unless messages.empty?
+    if messages.empty?
+      @logger.debug("Message is empty, not sending anything to graphite", :messages => messages, :host => @host, :port => @port)
+    else
       message = messages.join("\n")
       @logger.debug("Sending carbon messages", :messages => messages, :host => @host, :port => @port)
 
@@ -106,6 +134,6 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
         retry if @resend_on_failure
       end
     end
-    
+
   end # def receive
-end # class LogStash::Outputs::Statsd
+end # class LogStash::Outputs::Graphite

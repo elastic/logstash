@@ -69,14 +69,16 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
         event[@target] = {} if event[@target].nil?
 
         event[@target]["name"] = ua_data.name
-        event[@target]["os"] = ua_data.os if not ua_data.os.nil?
-        event[@target]["device"] = ua_data.device if not ua_data.device.nil?
+        event[@target]["os"] = ua_data.os.to_s if not ua_data.os.nil?
+        event[@target]["device"] = ua_data.device.to_s if not ua_data.device.nil?
 
         if not ua_data.version.nil?
           ua_version = ua_data.version
 
           event[@target]["major"] = ua_version.major
           event[@target]["minor"] = ua_version.minor
+          event[@target]["patch"] = ua_version.patch
+          event[@target]["build"] = ua_version.patch_minor
         end
 
       filter_matched(event)

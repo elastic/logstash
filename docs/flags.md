@@ -18,7 +18,7 @@ from the directory in alphabetical order. </dd>
 config file. If not input is specified, 'stdin { type => stdin }' is
 default. If no output is specified, 'stdout { debug => true }}' is
 default. </dd>
-<dt> -w, --filterworks COUNT </dt>
+<dt> -w, --filterworkers COUNT </dt>
 <dd> Run COUNT filter workers (default: 1) </dd>
 <dt> --watchdog-timeout TIMEOUT </dt>
 <dd> Set watchdog timeout value. </dd>

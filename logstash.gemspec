@@ -17,78 +17,82 @@ Gem::Specification.new do |gem|
   gem.version       = LOGSTASH_VERSION
 
   # Core dependencies
-  gem.add_runtime_dependency "cabin", ["0.5.0"]
-  gem.add_runtime_dependency "json"
-  gem.add_runtime_dependency "minitest" # for running the tests from the jar
-  gem.add_runtime_dependency "pry"
-  gem.add_runtime_dependency "stud"
-  gem.add_runtime_dependency "sys-uname" # for platform detection
-  gem.add_runtime_dependency "clamp" # for command line args/flags
-  gem.add_runtime_dependency "i18n"
+  gem.add_runtime_dependency "cabin", ["0.5.0"]   #(Apache 2.0 license)
+  gem.add_runtime_dependency "json"               #(ruby license)
+  gem.add_runtime_dependency "minitest"           # for running the tests from the jar, (MIT license)
+  gem.add_runtime_dependency "pry"                #(ruby license)
+  gem.add_runtime_dependency "stud"               #(Apache 2.0 license)
+  gem.add_runtime_dependency "clamp"              # for command line args/flags (MIT license)
+  gem.add_runtime_dependency "i18n"               #(MIT license)
 
   # Web dependencies
-  gem.add_runtime_dependency "ftw", ["~> 0.0.26"]
-  gem.add_runtime_dependency "haml"
-  gem.add_runtime_dependency "rack"
-  gem.add_runtime_dependency "sass"
-  gem.add_runtime_dependency "sinatra"
+  gem.add_runtime_dependency "ftw", ["~> 0.0.29"] #(Apache 2.0 license)
+  gem.add_runtime_dependency "haml"               #(MIT license)
+  gem.add_runtime_dependency "rack"               #(MIT license)
+  gem.add_runtime_dependency "sass"               #(MIT license)
+  gem.add_runtime_dependency "sinatra"            #(MIT license)
 
   # Input/Output/Filter dependencies
   #TODO Can these be optional?
-  gem.add_runtime_dependency "aws-sdk"
-  gem.add_runtime_dependency "heroku"
-  gem.add_runtime_dependency "addressable", ["~> 2.2.6"]
-  gem.add_runtime_dependency "bunny", [">= 0.9.0.pre6"]
-  gem.add_runtime_dependency "ffi"
-  gem.add_runtime_dependency "ffi-rzmq", ["0.9.3"]
-  gem.add_runtime_dependency "filewatch", ["0.5.1"]
-  gem.add_runtime_dependency "gelfd", ["0.2.0"]
-  gem.add_runtime_dependency "gelf", ["1.3.2"]
-  gem.add_runtime_dependency "gmetric", ["0.1.3"]
-  gem.add_runtime_dependency "jls-grok", ["0.10.10"]
-  gem.add_runtime_dependency "mail"
-  gem.add_runtime_dependency "mongo"
-  gem.add_runtime_dependency "metriks"
-  gem.add_runtime_dependency "onstomp"
-  gem.add_runtime_dependency "redis"
-  gem.add_runtime_dependency "riak-client", ["1.0.3"]
-  gem.add_runtime_dependency "riemann-client", ["0.0.6"]
-  gem.add_runtime_dependency "statsd-ruby", ["0.3.0"]
-  gem.add_runtime_dependency "uuidtools" # For generating amqp queue names
-  gem.add_runtime_dependency "xml-simple"
-  gem.add_runtime_dependency "xmpp4r", ["0.5"]
-  gem.add_runtime_dependency "jls-lumberjack", [">0"]
-  gem.add_runtime_dependency "geoip", [">= 1.1.0"]
-  gem.add_runtime_dependency "beefcake", "0.3.7"
-  gem.add_runtime_dependency "php-serialize" # For input drupal_dblog
-  gem.add_runtime_dependency "murmurhash3"
-  gem.add_runtime_dependency "rufus-scheduler"
-  gem.add_runtime_dependency "user_agent_parser", [">= 2.0.0"]
-  gem.add_runtime_dependency "snmp"
+  gem.add_runtime_dependency "awesome_print"                    #(MIT license)
+  gem.add_runtime_dependency "aws-sdk"                          #{Apache 2.0 license}
+  gem.add_runtime_dependency "heroku"                           #(MIT license)
+  gem.add_runtime_dependency "addressable"                      #(Apache 2.0 license)
+  gem.add_runtime_dependency "bunny", [">= 0.9.0.pre9"]         #(MIT license)
+  gem.add_runtime_dependency "ffi"                              #(LGPL-3 license)
+  gem.add_runtime_dependency "ffi-rzmq", ["1.0.0"]              #(MIT license)
+  gem.add_runtime_dependency "filewatch", ["0.5.1"]             #(BSD license)
+  gem.add_runtime_dependency "gelfd", ["0.2.0"]                 #(Apache 2.0 license)
+  gem.add_runtime_dependency "gelf", ["1.3.2"]                  #(MIT license)
+  gem.add_runtime_dependency "gmetric", ["0.1.3"]               #(MIT license)
+  gem.add_runtime_dependency "jls-grok", ["0.10.10"]            #(BSD license)
+  gem.add_runtime_dependency "mail"                             #(MIT license)
+  gem.add_runtime_dependency "mongo"                            #(Apache 2.0 license)
+  gem.add_runtime_dependency "metriks"                          #(MIT license)
+  gem.add_runtime_dependency "onstomp"                          #(Apache 2.0 license)
+  gem.add_runtime_dependency "redis"                            #(MIT license)
+  gem.add_runtime_dependency "riak-client", ["1.0.3"]           #(Apache 2.0 license)
+  gem.add_runtime_dependency "riemann-client", ["0.2.1"]        #(MIT license)
+  gem.add_runtime_dependency "statsd-ruby", ["0.3.0"]           #(MIT license)
+  gem.add_runtime_dependency "uuidtools"                        # For generating amqp queue names (Apache 2.0 license)
+  gem.add_runtime_dependency "xml-simple"                       #(ruby license?)
+  gem.add_runtime_dependency "xmpp4r", ["0.5"]                  #(ruby license)
+  gem.add_runtime_dependency "jls-lumberjack", [">=0.0.19"]     #(Apache 2.0 license)
+  gem.add_runtime_dependency "geoip", [">= 1.1.0"]              #(GPL license)
+  gem.add_runtime_dependency "beefcake", "0.3.7"                #(MIT license)
+  gem.add_runtime_dependency "php-serialize"                    # For input drupal_dblog (MIT license)
+  gem.add_runtime_dependency "murmurhash3"                      #(MIT license)
+  gem.add_runtime_dependency "rufus-scheduler"                  #(MIT license)
+  gem.add_runtime_dependency "user_agent_parser", [">= 2.0.0"]  #(MIT license)
+  gem.add_runtime_dependency "snmp"                             #(ruby license)
+  gem.add_runtime_dependency "varnish-rb"                       #(MIT license)
+  gem.add_runtime_dependency "mail"                             #(MIT license)
+  gem.add_runtime_dependency "rbnacl"                           #(MIT license)
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
-    gem.add_runtime_dependency "jruby-elasticsearch", ["0.0.14"]
-    gem.add_runtime_dependency "jruby-httpclient"
-    gem.add_runtime_dependency "jruby-openssl"
-    gem.add_runtime_dependency "jruby-win32ole"
-    gem.add_runtime_dependency "jdbc-mysql" # For input drupal_dblog
-    gem.add_runtime_dependency "msgpack-jruby"
+    gem.add_runtime_dependency "jruby-elasticsearch", ["0.0.14"]  #(BSD license)
+    gem.add_runtime_dependency "jruby-httpclient"                 #(Apache 2.0 license)
+    gem.add_runtime_dependency "bouncy-castle-java", "1.5.0147"   #(MIT license)
+    gem.add_runtime_dependency "jruby-openssl", "0.8.7"           #(CPL/GPL/LGPL license)
+    gem.add_runtime_dependency "jruby-win32ole"                   #(unknown license)
+    gem.add_runtime_dependency "jdbc-mysql"                       # For input drupal_dblog (BSD license)
+    gem.add_runtime_dependency "msgpack-jruby"                    #(Apache 2.0 license)
   else
-    gem.add_runtime_dependency "excon"
-    gem.add_runtime_dependency "mysql2" # For input drupal_dblog
-    gem.add_runtime_dependency "msgpack"
+    gem.add_runtime_dependency "excon"    #(MIT license)
+    gem.add_runtime_dependency "mysql2"   # For input drupal_dblog (MIT license)
+    gem.add_runtime_dependency "msgpack"  #(Apache 2.0 license)
   end
 
   if RUBY_VERSION >= '1.9.1'
-    gem.add_runtime_dependency "cinch" # cinch requires 1.9.1+
+    gem.add_runtime_dependency "cinch" # cinch requires 1.9.1+ #(MIT license)
   end
 
   # These are runtime-deps so you can do 'java -jar logstash.jar rspec <test>'
-  gem.add_runtime_dependency "spoon"
-  gem.add_runtime_dependency "mocha"
-  gem.add_runtime_dependency "shoulda"
-  gem.add_runtime_dependency "rspec"
-  gem.add_runtime_dependency "insist", "0.0.8"
-  gem.add_runtime_dependency "rumbster" # For faking smtp in email tests
+  gem.add_runtime_dependency "spoon"            #(Apache 2.0 license)
+  gem.add_runtime_dependency "mocha"            #(MIT license)
+  gem.add_runtime_dependency "shoulda"          #(MIT license)
+  gem.add_runtime_dependency "rspec"            #(MIT license)
+  gem.add_runtime_dependency "insist", "0.0.8"  #(Apache 2.0 license)
+  gem.add_runtime_dependency "rumbster"         # For faking smtp in email tests (Apache 2.0 license)
 end

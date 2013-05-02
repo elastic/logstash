@@ -36,6 +36,9 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
   # Message format to send, event tokens are usable here
   config :format, :validate => :string, :default => "%{@message}"
 
+  # Set this to true to enable SSL.
+  config :secure, :validate => :boolean, :default => false
+
   public
   def register
     require "cinch"
@@ -51,7 +54,8 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
       c.user = @user
       c.realname = @real
       c.channels = @channels
-      c.password = @password
+      c.password = @password.value rescue nil
+      c.ssl.use = @secure
     end
     Thread.new(@bot) do |bot|
       bot.start

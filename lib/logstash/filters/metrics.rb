@@ -95,10 +95,10 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   config_name "metrics"
   plugin_status "experimental"
 
-  # syntax: meter => [ "name of metric", "name of metric" ]
+  # syntax: `meter => [ "name of metric", "name of metric" ]`
   config :meter, :validate => :array, :default => []
 
-  # syntax: timer => [ "name of metric", "%{time_value}" ]
+  # syntax: `timer => [ "name of metric", "%{time_value}" ]`
   config :timer, :validate => :hash, :default => {}
 
   # Don't track events that have @timestamp older than some number of seconds. 
@@ -128,7 +128,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   def filter(event)
     return unless filter?(event)
 
-    if @past_seconds > 0 && Time.now - event.ruby_timestamp > @past_seconds
+    if @ignore_older_than > 0 && Time.now - event.ruby_timestamp > @ignore_older_than
       @logger.debug("Skipping metriks for old event", :event => event)
       return
     end
@@ -181,4 +181,4 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     filter_matched(event)
     return [event]
   end
-end # class LogStash::Filter::KV
+end # class LogStash::Filters::Metrics

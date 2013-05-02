@@ -42,7 +42,7 @@ JAVA=/usr/bin/java
 LS_HOME=/var/lib/logstash
 
 # Additional Java OPTS
-#LS_HOME/bin/java/JAVA/g_OPTS=
+LS_JAVA_OPTS=" -Djava.io.tmpdir=/var/logstash/"
 
 # logstash log directory
 LOG_DIR=/var/log/logstash
@@ -57,7 +57,6 @@ LOG_FILE=$LOG_DIR/$NAME.log
 OPEN_FILES=2048
 
 
-LS_JAVA_OPTS=" -Djava.io.tmpdir=/var/logstash/"
 
 # Nice level
 NICE=19

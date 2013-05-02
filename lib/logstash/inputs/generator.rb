@@ -43,7 +43,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   # Set how many messages should be generated.
   #
   # The default, 0, means generate an unlimited number of events.
-  config :count, :validate => :integer, :default => 0
+  config :count, :validate => :number, :default => 0
 
   public
   def register
@@ -72,7 +72,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
           queue << event
         end
       else
-        event = to_event(@message, source)
+        event = to_event(@message.clone, source)
         event["sequence"] = number
         queue << event
       end
@@ -84,4 +84,4 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   def teardown
     finished
   end # def teardown
-end # class LogStash::Inputs::Stdin
+end # class LogStash::Inputs::Generator

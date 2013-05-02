@@ -35,11 +35,11 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
   config :port, :validate => :number, :default => 5667
 
   # The path to the 'send_nsca' binary on the local host.
-  config :send_nsca_bin, :validate => :string, :default => "/usr/sbin/send_nsca"
+  config :send_nsca_bin, :validate => :path, :default => "/usr/sbin/send_nsca"
 
   # The path to the send_nsca config file on the local host.
   # Leave blank if you don't want to provide a config file.
-  config :send_nsca_config, :validate => :string
+  config :send_nsca_config, :validate => :path
 
   # The nagios 'host' you want to submit a passive check result to. This
   # parameter accepts interpolation, e.g. you can use @source_host or other
@@ -50,6 +50,11 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
   # parameter accepts interpolation, e.g. you can use @source_host or other
   # logstash internal variables.
   config :nagios_service, :validate => :string, :default => "LOGSTASH"
+
+  # The format to use when writing events to nagios. This value
+  # supports any string and can include %{name} and other dynamic
+  # strings.
+  config :message_format, :validate => :string, :default => "%{@timestamp} %{@source}: %{@message}"
 
   public
   def register
@@ -80,7 +85,7 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
 
     # escape basic things in the log message
     # TODO: find a way to escape the message correctly
-    msg = event.to_s
+    msg = event.sprintf(@message_format)
     msg.gsub!("\n", "<br/>")
     msg.gsub!("'", "&#146;")
 

@@ -23,7 +23,7 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   config :isodate, :validate => :boolean, :default => false
 
   # Number of seconds to wait after failure before retrying
-  config :waitTime, :validate => :number, :default => 3, :required => false
+  config :retry_delay, :validate => :number, :default => 3, :required => false
 
   # If true, a _id field will be added to the document before insertion.
   # The _id field will use the timestamp of the event and overwrite an existing
@@ -61,8 +61,8 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
       end
       @db.collection(event.sprintf(@collection)).insert(document)
     rescue => e
-      @logger.warn("Failed to send event to MongoDB", :event => event,
-                   :exception => e, :backtrace => e.backtrace)
+      @logger.warn("Failed to send event to MongoDB", :event => event, :exception => e,
+                   :backtrace => e.backtrace)
       if e.error_code == 11000
           # On a duplicate key error, skip the insert.
           # We could check if the duplicate key err is the _id key
@@ -70,7 +70,7 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
           # If the duplicate key error is on another field, we have no way
           # to fix the issue.
       else
-        sleep @waitTime
+        sleep @retry_delay
         retry
       end
     end

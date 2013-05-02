@@ -5,6 +5,7 @@ require "logstash/logging"
 require "logstash/util/password"
 require "logstash/version"
 require "i18n"
+require "pathname"
 
 # This module is meant as a mixin to classes wishing to be configurable from
 # config files
@@ -158,6 +159,7 @@ module LogStash::Config::Mixin
         end
       end
       subclass.instance_variable_set("@config", subconfig)
+      @@status_notice_given = false
     end # def inherited
 
     def validate(params)
@@ -179,11 +181,11 @@ module LogStash::Config::Mixin
       docmsg = "For more information about plugin statuses, see http://logstash.net/docs/#{LOGSTASH_VERSION}/plugin-status "
       case @plugin_status
       when "unsupported"
-        @logger.warn("Using unsupported plugin '#{@config_name}'. This plugin isn't well supported by the community and likely has no maintainer. #{docmsg}")
+        @@status_notice_given || @logger.warn("Using unsupported plugin '#{@config_name}'. This plugin isn't well supported by the community and likely has no maintainer. #{docmsg}")
       when "experimental"
-        @logger.warn("Using experimental plugin '#{@config_name}'. This plugin is untested and may change in the future. #{docmsg}")
+        @@status_notice_given || @logger.warn("Using experimental plugin '#{@config_name}'. This plugin is untested and may change in the future. #{docmsg}")
       when "beta"
-        @logger.info("Using beta plugin '#{@config_name}'. #{docmsg}")
+        @@status_notice_given || @logger.info("Using beta plugin '#{@config_name}'. #{docmsg}")
       when "stable"
         # This is cool. Nothing worth logging.
       when nil
@@ -191,6 +193,7 @@ module LogStash::Config::Mixin
       else
         raise "#{@config_name} set an invalid plugin status #{@plugin_status}. Valid values are unsupported, experimental, beta and stable. #{docmsg}"
       end
+      @@status_notice_given = true
       return true
     end
 
@@ -266,7 +269,8 @@ module LogStash::Config::Mixin
           else
             @logger.error(I18n.t("logstash.agent.configuration.setting_invalid",
                                  :plugin => @plugin_name, :type => @plugin_type,
-                                 :value => value, :value_type => config_val))
+                                 :setting => key, :value => value, :value_type => config_val,
+                                 :note => result))
           end
           #puts "Result: #{key} / #{result.inspect} / #{success}"
           is_valid &&= success
@@ -347,10 +351,11 @@ module LogStash::Config::Mixin
             result = value.first
           when :number
             if value.size > 1 # only one value wanted
-              return false, "Expected number, got #{value.inspect}"
+              return false, "Expected number, got #{value.inspect} (type #{value.class})"
             end
-            if value.first.to_s.to_i.to_s != value.first.to_s
-              return false, "Expected number, got #{value.first.inspect}"
+            if value.first.to_s.to_f.to_s != value.first.to_s \
+               && value.first.to_s.to_i.to_s != value.first.to_s
+              return false, "Expected number, got #{value.first.inspect} (type #{value.first})"
             end
             result = value.first.to_i
           when :boolean
@@ -391,6 +396,21 @@ module LogStash::Config::Mixin
             end
 
             result = ::LogStash::Util::Password.new(value.first)
+          when :path
+            if value.size > 1 # Only 1 value wanted
+              return false, "Expected path (one value), got #{value.size} values?"
+            end
+
+            # Paths must be absolute
+            #if !Pathname.new(value.first).absolute?
+              #return false, "Require absolute path, got relative path #{value.first}?"
+            #end
+
+            if !File.exists?(value.first) # Check if the file exists
+              return false, "File does not exist or cannot be opened #{value.first}"
+            end
+
+            result = value.first
         end # case validator
       else
         return false, "Unknown validator #{validator.class}"

@@ -54,7 +54,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
 
   config :host, :validate => :string, :default => "localhost"
   config :port, :validate => :number, :default => 10051
-  config :zabbix_sender, :validate => :string, :default => "/usr/local/bin/zabbix_sender"
+  config :zabbix_sender, :validate => :path, :default => "/usr/local/bin/zabbix_sender"
  
   public
   def register

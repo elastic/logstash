@@ -114,7 +114,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       "user" => [@user],
       "password" => [@password],
       "exchange_type" => [@exchange_type],
-      "name" => [@exchange],
+      "exchange" => [@exchange],
       "key" => [@key],
       "vhost" => [@vhost],
       "durable" => [@durable.to_s],
