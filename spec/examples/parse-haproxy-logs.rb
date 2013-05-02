@@ -10,8 +10,8 @@ describe "haproxy httplog format" do
     grok {
       pattern => "%{HAPROXYHTTP}"
     }
-    mutate {
-      replace => ['@timestamp', '%{accept_date}']
+    date {
+      match => ["accept_date", "dd/MMM/yyyy:HH:mm:ss.SSS"]
     }
   }
   CONFIG
@@ -114,7 +114,7 @@ describe "haproxy httplog format" do
     insist{ subject["http_request"] } == ["/index.html"]
     insist{ subject["http_version"] } == ["1.1"]
     # Verify date parsing
-    insist { subject.timestamp } == "06/Feb/2009:12:14:14.655"
+    insist { subject.timestamp } == "2009-02-06T20:14:14.655Z"
   end
 
 end
