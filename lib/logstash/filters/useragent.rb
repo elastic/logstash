@@ -77,8 +77,12 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
 
           event[@target]["major"] = ua_version.major
           event[@target]["minor"] = ua_version.minor
-          event[@target]["patch"] = ua_version.patch
-          event[@target]["build"] = ua_version.patch_minor
+          if ua_version.patch
+            event[@target]["patch"] = ua_version.patch
+          end
+          if ua_version.patch_minor 
+            event[@target]["build"] = ua_version.patch_minor 
+          end
         end
 
       filter_matched(event)
