@@ -26,20 +26,17 @@ class LogStash::Filters::Sleep < LogStash::Filters::Base
   #     }
   config :time, :validate => :string
 
-  # Sleep on every N'th even where unslept_count=N, defaults to every event.
-  # This option is ignored in replay mode.
+  # Sleep on every N'th. This option is ignored in replay mode.
   #
   # Example:
   #
   #     filter {
   #       sleep {
-  #         # Sleep 1 second on every 10'th event.
-  #         time => "1"
-  #         count => 10
+  #         time => "1"   # Sleep 1 second 
+  #         every => 10   # on every 10th event
   #       }
   #     }
-  config :unslept_count, :validate => :string, :default => 1
-
+  config :every, :validate => :string, :default => 1
 
   # Enable replay mode.
   #
@@ -73,12 +70,16 @@ class LogStash::Filters::Sleep < LogStash::Filters::Base
       # Default time multiplier is 1 when replay is set.
       @time = 1
     end
-    @events_unslept = 0
+    if @time.nil?
+      raise ArgumentError, "Missing required parameter 'time' for input/eventlog"
+    end
+    @count = 0
   end # def register
 
   public
   def filter(event)
     return unless filter?(event)
+    @count += 1
 
     case @time
       when Fixnum, Float; time = @time
@@ -90,18 +91,18 @@ class LogStash::Filters::Sleep < LogStash::Filters::Base
       clock = event.ruby_timestamp.to_f
       if @last_clock
         delay = clock - @last_clock
-        sleeptime = delay/time
+        time = delay/time
         if sleeptime > 0
-          @logger.debug? && @logger.debug("Sleeping", :delay => sleeptime)
-          sleep(sleeptime)
+          @logger.debug? && @logger.debug("Sleeping", :delay => time)
+          sleep(time)
         end
       end
       @last_clock = clock
     else
-      @events_unslept += 1
-      if @events_unslept >= @unslept_count
+      if @count >= @every
+        @count = 0
+        @logger.debug? && @logger.debug("Sleeping", :delay => time)
         sleep(time)
-        @events_unslept = 0
       end
     end
     filter_matched(event)

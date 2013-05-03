@@ -15,9 +15,12 @@
   ## outputs
   - feature: irc output now supports 'secure' setting to use ssl (LOGSTASH-139)
   - feature: nagios_nsca has new setting 'message_format'
+  - bugfix: fix graphite plugin broken in 1.1.10 (LOGSTASH-968)
   - bugfix: elasticsearch_http was broken in 1.1.10 (LOGSTASH-1004)
   - bugfix: rabbitmq was broken by the previous release (LOGSTASH-1003,
     LOGSTASH-1038; Patch by Jason Koppe)
+  - feature: hipchat 'notify' setting now called 'trigger_notify' (#467, patch
+    by Richard Pijnenburg)
 
 1.1.10 (April 16, 2013)
   ## general
