@@ -18,6 +18,7 @@
   - bugfix: useragent filter now ships with a default regexes.yaml file
     that is used by default unless you otherwise specify (LOGSTASH-1051)
   - bugfix: add_field now correctly sets top-level fields like @message
+  - feature: specify timezone in date filter
 
   ## outputs
   - feature: irc output now supports 'secure' setting to use ssl (LOGSTASH-139)
