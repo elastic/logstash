@@ -11,6 +11,13 @@
 
   ## filters
   - bugfix: geoip was broken by the previous release (LOGSTASH-1013)
+  - feature: sleep now accepts an 'every' setting which causes it to
+    sleep every N events. Example; sleep every 10 events: every => 10.
+  - feature: grok now permits dashes and dots in captures, such as
+    %{WORD:foo-bar}.
+  - bugfix: useragent filter now ships with a default regexes.yaml file
+    that is used by default unless you otherwise specify (LOGSTASH-1051)
+  - bugfix: add_field now correctly sets top-level fields like @message
 
   ## outputs
   - feature: irc output now supports 'secure' setting to use ssl (LOGSTASH-139)
