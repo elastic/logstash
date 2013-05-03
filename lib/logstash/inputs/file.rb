@@ -58,17 +58,6 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   config :start_position, :validate => [ "beginning", "end"], :default => "end"
 
   public
-  def initialize(params)
-    super
-    
-    @path.each do |path|
-      if Pathname.new(path).relative?
-        raise ArgumentError.new("File paths must be absolute, relative path specified: #{path}")
-      end
-    end
-  end
-
-  public
   def register
     require "addressable/uri"
     require "filewatch/tail"
@@ -83,6 +72,12 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       :sincedb_write_interval => @sincedb_write_interval,
       :logger => @logger,
     }
+
+    @path.each do |path|
+      if Pathname.new(path).relative?
+        raise ArgumentError.new("File paths must be absolute, relative path specified: #{path}")
+      end
+    end
 
     if @sincedb_path.nil?
       if ENV["HOME"].nil?
