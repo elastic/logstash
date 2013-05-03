@@ -37,10 +37,10 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
         begin
           # Running from a flatjar which has a different layout
           jar_path = [__FILE__.split("!").first, "/vendor/ua-parser/regexes.yaml"].join("!")
-          tmp_file = Tempfile.new('logstash-uaparser-regexes')
-          tmp_file.write(File.read(jar_path))
-          tmp_file.close # this file is reaped when ruby exits
-          @parser = UserAgentParser::Parser.new(:patterns_path => tmp_file.path)
+          #tmp_file = Tempfile.new('logstash-uaparser-regexes')
+          #tmp_file.write(File.read(jar_path))
+          #tmp_file.close # this file is reaped when ruby exits
+          @parser = UserAgentParser::Parser.new(:patterns_path => jar_path)
         rescue => ex
           raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
         end
