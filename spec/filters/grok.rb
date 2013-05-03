@@ -295,4 +295,19 @@ describe LogStash::Filters::Grok do
       insist { subject["stimestamp"] } == "2011/01/01"
     end
   end
+
+  describe "allow dashes in capture names" do
+    config <<-CONFIG
+      filter {
+        grok {
+          pattern => "%{WORD:foo-bar}"
+          singles => true
+        }
+      }
+    CONFIG
+
+    sample "hello world" do
+      insist { subject["foo-bar"] } == "hello"
+    end
+  end
 end
