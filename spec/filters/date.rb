@@ -242,4 +242,28 @@ describe LogStash::Filters::Date do
     end
   end
 
+  describe "parsing with timezone parameter" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => ["mydate", "yyyy MMM dd HH:mm:ss"]
+          timezone => "America/Los_Angeles"
+        }
+      }
+    CONFIG
+
+    require 'java'
+    times = {
+      "2013 Nov 24 01:29:01" => "2013-11-24T09:29:01.000Z",
+      "2013 Jun 24 01:29:01" => "2013-06-24T08:29:01.000Z",
+    }
+    times.each do |input, output|
+      sample({"@fields" => {"mydate" => input}}) do
+        insist { subject["mydate"] } == input
+        insist { subject.timestamp } == output
+        insist { subject["@timestamp"] } == output
+      end
+    end # times.each
+  end
+
 end
