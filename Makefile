@@ -152,6 +152,7 @@ build/ruby: | build
 # Run this one always? Hmm..
 .PHONY: build/monolith
 build/monolith: $(ELASTICSEARCH) $(JRUBY) $(GEOIP) vendor-gems | build
+build/monolith: vendor/ua-parser/regexes.yaml
 build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
@@ -171,7 +172,15 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)rm -f $@/META-INF/*.SF
 	-$(QUIET)rm -f $@/META-INF/NOTICE $@/META-INF/NOTICE.txt
 	-$(QUIET)rm -f $@/META-INF/LICENSE $@/META-INF/LICENSE.txt
+	-$(QUIET)mkdir -p $@/vendor/ua-parser
+	-$(QUIET)cp vendor/ua-parser/regexes.yaml $@/vendor/ua-parser
 	$(QUIET)cp $(GEOIP) $@/
+
+vendor/ua-parser/: | build
+	$(QUIET)mkdir $@
+
+vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
+	$(QUIET)$(DOWNLOAD_COMMAND) $@ https://raw.github.com/tobie/ua-parser/master/regexes.yaml
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
@@ -223,8 +232,7 @@ jar-test-and-report:
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
-	$(QUIET)rsync -a --delete build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
-	$(QUIET)rsync -a --delete build/flatgems/data build/jar/
+	$(QUIET)rsync -va build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/flatgems/data build/jar/
 	$(QUIET)(cd lib; rsync -a --delete logstash/web/public ../build/jar/logstash/web/public)
 	$(QUIET)(cd lib; rsync -a --delete logstash/web/views ../build/jar/logstash/web/views)
 	$(QUIET)(cd lib; rsync -a --delete logstash/certs ../build/jar/logstash/certs)
