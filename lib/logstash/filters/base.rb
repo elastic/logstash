@@ -34,11 +34,11 @@ class LogStash::Filters::Base < LogStash::Plugin
   # Optional.
   config :exclude_fields, :validate => :array, :default => []
 
-  # Should all or any of the specified tags/fields be present for event to
+  # Should all or any of the specified tags/include_fields be present for event to
   # be handled. Defaults to all.
   config :include_any, :validate => :boolean, :default => false
 
-  # Should all or any of the specified tags/fields be missing for event to
+  # Should all or any of the specified exclude_tags/exclude_fields be missing for event to
   # be handled. Defaults to all.
   config :exclude_any, :validate => :boolean, :default => true
 
