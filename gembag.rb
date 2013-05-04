@@ -1,5 +1,11 @@
 #!/usr/bin/env ruby
 
+# target for now
+rubymajor = RUBY_VERSION.split(".")[0..1].join(".")
+target = "#{Dir.pwd}/vendor/bundle/#{RUBY_ENGINE}/#{rubymajor}/"
+ENV["GEM_HOME"] = target
+ENV["GEM_PATH"] = ""
+
 require "rubygems/specification"
 require "rubygems/commands/install_command"
 
@@ -12,6 +18,9 @@ def install_gem(name, requirement, target)
   installer.options[:version] = requirement
   installer.options[:args] = [name]
   installer.options[:install_dir] = target
+ 
+  # ruby 2.0.0 / rubygems 2.x; disable documentation generation
+  installer.options[:document] = []
   begin
     installer.execute
   rescue Gem::SystemExitException => e
@@ -26,9 +35,6 @@ gemspec = ARGV.shift || "logstash.gemspec"
 
 spec = Gem::Specification.load(gemspec)
 deps = [spec.development_dependencies, spec.runtime_dependencies].flatten
-
-# target for now
-target = "vendor/bundle/jruby/1.9/"
 
 deps.each do |dep|
   # TODO(sissel): Hack for now

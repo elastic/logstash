@@ -39,8 +39,8 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   config :discover_interval, :validate => :number, :default => 15
 
   # Where to write the since database (keeps track of the current
-  # position of monitored log files). Defaults to the value of
-  # environment variable "$SINCEDB_PATH" or "$HOME/.sincedb".
+  # position of monitored log files). The default will write
+  # sincedb files to some path matching "$HOME/.sincedb*"
   config :sincedb_path, :validate => :string
 
   # How often to write a since database with the current position of
@@ -58,17 +58,6 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   config :start_position, :validate => [ "beginning", "end"], :default => "end"
 
   public
-  def initialize(params)
-    super
-    
-    @path.each do |path|
-      if Pathname.new(path).relative?
-        raise ArgumentError.new("File paths must be absolute, relative path specified: #{path}")
-      end
-    end
-  end
-
-  public
   def register
     require "addressable/uri"
     require "filewatch/tail"
@@ -83,6 +72,12 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       :sincedb_write_interval => @sincedb_write_interval,
       :logger => @logger,
     }
+
+    @path.each do |path|
+      if Pathname.new(path).relative?
+        raise ArgumentError.new("File paths must be absolute, relative path specified: #{path}")
+      end
+    end
 
     if @sincedb_path.nil?
       if ENV["HOME"].nil?
@@ -125,8 +120,9 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     hostname = Socket.gethostname
 
     @tail.subscribe do |path, line|
-      source = Addressable::URI.new(:scheme => "file", :host => hostname, :path => path).to_s
-      @logger.debug("Received line", :path => path, :line => line)
+      #source = Addressable::URI.new(:scheme => "file", :host => hostname, :path => path).to_s
+      source = "file://#{hostname}/#{path.gsub("\\","/")}"
+      @logger.debug? && @logger.debug("Received line", :path => path, :line => line)
       e = to_event(line, source)
       if e
         queue << e

@@ -227,4 +227,19 @@ describe LogStash::Filters::Date do
       insist { subject["@timestamp"] } == "2013-01-01T00:00:00.000Z"
     end
   end
+
+  describe "failing to parse should not throw an exception" do
+    config <<-CONFIG
+      filter { 
+        date {
+          match => [ "thedate", "yyyy/MM/dd" ]
+        }
+      }
+    CONFIG
+
+    sample({ "@fields" => { "thedate" => "2013/Apr/21" } }) do
+      insist { subject["@timestamp"] } != "2013-04-21T00:00:00.000Z"
+    end
+  end
+
 end

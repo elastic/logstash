@@ -53,8 +53,8 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
       c.server = @host
       c.port = @port
       c.nick = @nick
-      c.realname = @real
       c.user = @user
+      c.realname = @real
       c.channels = @channels
       c.password = @password.value rescue nil
       c.ssl.use = @secure

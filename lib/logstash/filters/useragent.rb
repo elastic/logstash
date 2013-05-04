@@ -35,12 +35,14 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
         @parser = UserAgentParser::Parser.new()
       rescue Exception => e
         begin
-          # Running from a flatjar which has a different layout
-          jar_path = [__FILE__.split("!").first, "/vendor/ua-parser/regexes.yaml"].join("!")
-          tmp_file = Tempfile.new('logstash-uaparser-regexes')
-          tmp_file.write(File.read(jar_path))
-          tmp_file.close # this file is reaped when ruby exits
-          @parser = UserAgentParser::Parser.new(:patterns_path => tmp_file.path)
+          if __FILE__ =~ /file:\/.*\.jar!/
+            # Running from a flatjar which has a different layout
+            regexes_file = [__FILE__.split("!").first, "/vendor/ua-parser/regexes.yaml"].join("!")
+            @parser = UserAgentParser::Parser.new(:patterns_path => jar_path)
+          else
+            # assume operating from the git checkout
+            @parser = UserAgentParser::Parser.new(:patterns_path => "vendor/ua-parser/regexes.yaml")
+          end
         rescue => ex
           raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
         end
@@ -69,14 +71,20 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
         event[@target] = {} if event[@target].nil?
 
         event[@target]["name"] = ua_data.name
-        event[@target]["os"] = ua_data.os if not ua_data.os.nil?
-        event[@target]["device"] = ua_data.device if not ua_data.device.nil?
+        event[@target]["os"] = ua_data.os.to_s if not ua_data.os.nil?
+        event[@target]["device"] = ua_data.device.to_s if not ua_data.device.nil?
 
         if not ua_data.version.nil?
           ua_version = ua_data.version
 
           event[@target]["major"] = ua_version.major
           event[@target]["minor"] = ua_version.minor
+          if ua_version.patch
+            event[@target]["patch"] = ua_version.patch
+          end
+          if ua_version.patch_minor 
+            event[@target]["build"] = ua_version.patch_minor 
+          end
         end
 
       filter_matched(event)

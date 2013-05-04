@@ -159,6 +159,7 @@ module LogStash::Config::Mixin
         end
       end
       subclass.instance_variable_set("@config", subconfig)
+      @@status_notice_given = false
     end # def inherited
 
     def validate(params)
@@ -180,11 +181,11 @@ module LogStash::Config::Mixin
       docmsg = "For more information about plugin statuses, see http://logstash.net/docs/#{LOGSTASH_VERSION}/plugin-status "
       case @plugin_status
       when "unsupported"
-        @logger.warn("Using unsupported plugin '#{@config_name}'. This plugin isn't well supported by the community and likely has no maintainer. #{docmsg}")
+        @@status_notice_given || @logger.warn("Using unsupported plugin '#{@config_name}'. This plugin isn't well supported by the community and likely has no maintainer. #{docmsg}")
       when "experimental"
-        @logger.warn("Using experimental plugin '#{@config_name}'. This plugin is untested and may change in the future. #{docmsg}")
+        @@status_notice_given || @logger.warn("Using experimental plugin '#{@config_name}'. This plugin is untested and may change in the future. #{docmsg}")
       when "beta"
-        @logger.info("Using beta plugin '#{@config_name}'. #{docmsg}")
+        @@status_notice_given || @logger.info("Using beta plugin '#{@config_name}'. #{docmsg}")
       when "stable"
         # This is cool. Nothing worth logging.
       when nil
@@ -192,6 +193,7 @@ module LogStash::Config::Mixin
       else
         raise "#{@config_name} set an invalid plugin status #{@plugin_status}. Valid values are unsupported, experimental, beta and stable. #{docmsg}"
       end
+      @@status_notice_given = true
       return true
     end
 
@@ -400,9 +402,9 @@ module LogStash::Config::Mixin
             end
 
             # Paths must be absolute
-            if !Pathname.new(value.first).absolute?
-              return false, "Require absolute path, got relative path #{value.first}?"
-            end
+            #if !Pathname.new(value.first).absolute?
+              #return false, "Require absolute path, got relative path #{value.first}?"
+            #end
 
             if !File.exists?(value.first) # Check if the file exists
               return false, "File does not exist or cannot be opened #{value.first}"

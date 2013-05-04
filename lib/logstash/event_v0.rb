@@ -158,7 +158,7 @@ module LogStash::EventV0
   
   public
   def []=(key, value)
-    if @data.has_key?(key)
+    if @data.has_key?(key) || key[0,1] == "@"
       @data[key] = value
     else
       @data["@fields"][key] = value

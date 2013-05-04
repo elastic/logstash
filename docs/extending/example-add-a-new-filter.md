@@ -36,6 +36,8 @@ Now add the code:
       #   foo { ... }
       # }
       config_name "foo"
+      # need to set a plugin_status
+      plugin_status "experimental"
 
       # Replace the message with this value.
       config :message, :validate => :string
@@ -89,20 +91,20 @@ plugin tree is. In our case, it's the current directory.
 If you use the monolith jar release of logstash, you have an additional option
 - you can include the plugin right in the jar file.
 
-    % jar -uf logstash-%VERSION%-monolithic.jar logstash/filters/foo.rb
+    % jar -uf logstash-%VERSION%-flatjar.jar logstash/filters/foo.rb
 
     # Verify it's in the right location in the jar!
-    % jar tf logstash-%VERSION%-monolithic.jar | grep foo.rb
+    % jar tf logstash-%VERSION%-flatjar.jar | grep foo.rb
     logstash/filters/foo.rb
 
-    % java -jar logstash-%VERSION%-monolithic.jar agent -f example.conf
+    % java -jar logstash-%VERSION%-flatjar.jar agent -f example.conf
 
 ## Example running
 
 In the example below, I typed in "the quick brown fox" after running the java
 command.
 
-    % java -jar logstash-%VERSION%-monolithic.jar agent -f example.conf
+    % java -jar logstash-%VERSION%-flatjar.jar agent -f example.conf
     the quick brown fox   
     2011-05-12T01:05:09.495000Z stdin://snack.home/: Hello world!
 
