@@ -46,6 +46,7 @@ class LogStash::Agent
     # flag/config defaults
     @verbose = 0
     @filterworker_count = 1
+    @queue_size = 10
     @watchdog_timeout = 10
     @configtest = false
 
@@ -99,6 +100,11 @@ class LogStash::Agent
       end
     end # -w
 
+    opts.on("--queue-size COUNT", Integer,
+            "Set internal input->filter and filter->output queue size") do |arg|
+      @queue_size = arg
+    end
+
     opts.on("--watchdog-timeout TIMEOUT", "Set watchdog timeout value") do |arg|
       @watchdog_timeout = arg.to_f
     end # --watchdog-timeout
@@ -113,6 +119,22 @@ class LogStash::Agent
 
     opts.on("-v", "Increase verbosity") do
       @verbose += 1
+    end
+
+    opts.on("--verbose", "Use verbose logging") do
+      @verbose = 1
+    end
+
+    opts.on("--debug", "Use debug logging") do
+      @verbose = 2
+    end
+
+    opts.on("-q", "--quiet", "Quieter logging; only errors will be logged") do
+      @verbose = -1
+    end
+
+    opts.on("--silent", "Silent logging. Nothing should get logged") do
+      @verbose = -2
     end
 
     opts.on("-V", "--version", "Show the version of logstash") do
@@ -243,8 +265,12 @@ class LogStash::Agent
       @logger.level = :debug
     elsif @verbose == 1 # logstash info logs
       @logger.level = :info
-    else # Default log level
-      @logger.level = :warn
+    elsif @verbose == 0 # Default log level
+      @logger.level = :warn 
+    elsif @verbose == -1 # Default log level
+      @logger.level = :error
+    elsif @verbose == -2 # Default log level
+      @logger.level = :fatal
     end
   end # def configure
 
@@ -385,7 +411,7 @@ class LogStash::Agent
   private
   def start_output(output)
     @logger.debug? and @logger.debug("Starting output", :plugin => output)
-    queue = LogStash::SizedQueue.new(10 * @filterworker_count)
+    queue = LogStash::SizedQueue.new(@queue_size * @filterworker_count)
     queue.logger = @logger
     @output_queue.add_queue(queue)
     @output_plugin_queues[output] = queue
@@ -425,7 +451,7 @@ class LogStash::Agent
       end
 
       # NOTE(petef) we should have config params for queue size
-      @filter_queue = LogStash::SizedQueue.new(10 * @filterworker_count)
+      @filter_queue = LogStash::SizedQueue.new(@queue_size * @filterworker_count)
       @filter_queue.logger = @logger
       @output_queue = LogStash::MultiQueue.new
       @output_queue.logger = @logger
@@ -450,7 +476,7 @@ class LogStash::Agent
         if @filterworker_count > 1
           @filters.each do |filter|
             if ! filter.threadsafe?
-                raise "fail"
+                raise "The filter #{filter.class} is not threadsafe. Cannot use more than 1 filter worker"
             end
           end
         end

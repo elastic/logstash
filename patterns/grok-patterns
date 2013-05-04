@@ -32,9 +32,7 @@ HOSTPORT (?:%{IPORHOST=~/\./}:%{POSINT})
 PATH (?:%{UNIXPATH}|%{WINPATH})
 UNIXPATH (?>/(?>[\w_%!$@:.,-]+|\\.)*)+
 #UNIXPATH (?<![\w\/])(?:/[^\/\s?*]*)+
-LINUXTTY (?>/dev/pts/%{NONNEGINT})
-BSDTTY (?>/dev/tty[pq][a-z0-9])
-TTY (?:%{BSDTTY}|%{LINUXTTY})
+TTY (?:/dev/(pts|tty([pq])?)(\w+)?/?(?:[0-9]+))
 WINPATH (?>[A-Za-z]+:|\\)(?:\\[^\\?*]*)+
 URIPROTO [A-Za-z]+(\+[A-Za-z+]+)?
 URIHOST %{IPORHOST}(?::%{POSINT:port})?

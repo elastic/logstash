@@ -1,21 +1,51 @@
 require "test_utils"
 require "logstash/outputs/graphite"
-
-require "mocha"
+require "mocha/api"
 
 describe LogStash::Outputs::Graphite do
   extend LogStash::RSpec
 
-  def self.run_agent(config_str)
-    agent = LogStash::Agent.new
-    agent.run(["-e", config_str])
-    agent.wait
+  before :each do
+    @mock = StringIO.new
+    TCPSocket.expects(:new).with("localhost", 2003).returns(@mock)
   end
 
-  describe "fields are metrics = true" do
-    describe "metrics_format set" do
+  describe "defaults should include all metrics" do
+    config <<-CONFIG
+      input {
+        generator {
+          message => "foo=fancy bar=42"
+          count => 1
+          type => "generator"
+        }
+      }
+
+      filter {
+        kv { }
+      }
+
+      output {
+        graphite {
+          host => "localhost"
+          port => 2003
+          metrics => [ "hurray.%{foo}", "%{bar}" ]
+        }
+      }
+    CONFIG
+
+    agent do
+      @mock.rewind
+      lines = @mock.readlines.delete_if { |l| l =~ /\.sequence \d+/ }
+
+      insist { lines.size } == 1
+      insist { lines }.any? { |l| l =~ /^hurray.fancy 42.0 \d{10,}\n$/ }
+    end
+  end
+
+  describe "fields_are_metrics => true" do
+    describe "metrics_format => ..." do
       describe "match one key" do
-        config_str = <<-CONFIG
+        config <<-CONFIG
           input {
             generator {
               message => "foo=123"
@@ -40,20 +70,16 @@ describe LogStash::Outputs::Graphite do
           }
         CONFIG
 
-        mock = StringIO.new
-        TCPSocket.expects(:new).with("localhost", 2003).returns(mock)
-
-        run_agent(config_str)
-
-        mock.rewind
-        lines = mock.readlines
-
-        insist { lines.size } == 1
-        insist { lines[0] } =~ /^foo.bar.sys.data.foo 123.0 \d{10,}\n$/
+        agent do
+          @mock.rewind
+          lines = @mock.readlines
+          insist { lines.size } == 1
+          insist { lines[0] } =~ /^foo.bar.sys.data.foo 123.0 \d{10,}\n$/
+        end
       end
 
       describe "match all keys" do
-        config_str = <<-CONFIG
+        config <<-CONFIG
           input {
             generator {
               message => "foo=123 bar=42"
@@ -78,21 +104,18 @@ describe LogStash::Outputs::Graphite do
           }
         CONFIG
 
-        mock = StringIO.new
-        TCPSocket.expects(:new).with("localhost", 2003).returns(mock)
+        agent do
+          @mock.rewind
+          lines = @mock.readlines.delete_if { |l| l =~ /\.sequence \d+/ }
 
-        run_agent(config_str)
-
-        mock.rewind
-        lines = mock.readlines.delete_if { |l| l =~ /\.sequence \d+/ }
-
-        insist { lines.size } == 2
-        insist { lines.any? { |l| l =~ /^foo.bar.sys.data.foo 123.0 \d{10,}\n$/ } }
-        insist { lines.any? { |l| l =~ /^foo.bar.sys.data.bar 42.0 \d{10,}\n$/ } }
+          insist { lines.size } == 2
+          insist { lines }.any? { |l| l =~ /^foo.bar.sys.data.foo 123.0 \d{10,}\n$/ }
+          insist { lines }.any? { |l| l =~ /^foo.bar.sys.data.bar 42.0 \d{10,}\n$/ }
+        end
       end
 
       describe "no match" do
-        config_str = <<-CONFIG
+        config <<-CONFIG
           input {
             generator {
               message => "foo=123 bar=42"
@@ -107,29 +130,25 @@ describe LogStash::Outputs::Graphite do
 
           output {
             graphite {
-                host => "localhost"
-                port => 2003
-                fields_are_metrics => true
-                include_metrics => ["notmatchinganything"]
-                metrics_format => "foo.bar.sys.data.*"
-                debug => true
+              host => "localhost"
+              port => 2003
+              fields_are_metrics => true
+              include_metrics => ["notmatchinganything"]
+              metrics_format => "foo.bar.sys.data.*"
+              debug => true
             }
           }
         CONFIG
 
-        mock = StringIO.new
-        TCPSocket.expects(:new).with("localhost", 2003).returns(mock)
-
-        run_agent(config_str)
-
-        mock.rewind
-        lines = mock.readlines
-
-        insist { lines.size } == 0
+        agent do
+          @mock.rewind
+          lines = @mock.readlines
+          insist { lines.size } == 0
+        end
       end
 
       describe "match one key with invalid metric_format" do
-        config_str = <<-CONFIG
+        config <<-CONFIG
           input {
             generator {
               message => "foo=123"
@@ -154,16 +173,12 @@ describe LogStash::Outputs::Graphite do
           }
         CONFIG
 
-        mock = StringIO.new
-        TCPSocket.expects(:new).with("localhost", 2003).returns(mock)
-
-        run_agent(config_str)
-
-        mock.rewind
-        lines = mock.readlines
-
-        insist { lines.size } == 1
-        insist { lines[0] } =~ /^foo 123.0 \d{10,}\n$/
+        agent do
+          @mock.rewind
+          lines = @mock.readlines
+          insist { lines.size } == 1
+          insist { lines[0] } =~ /^foo 123.0 \d{10,}\n$/
+        end
       end
     end
   end
@@ -171,7 +186,7 @@ describe LogStash::Outputs::Graphite do
   describe "fields are metrics = false" do
     describe "metrics_format not set" do
       describe "match one key with metrics list" do
-        config_str = <<-CONFIG
+        config <<-CONFIG
           input {
             generator {
               message => "foo=123"
@@ -196,16 +211,13 @@ describe LogStash::Outputs::Graphite do
           }
         CONFIG
 
-        mock = StringIO.new
-        TCPSocket.expects(:new).with("localhost", 2003).returns(mock)
+        agent do
+          @mock.rewind
+          lines = @mock.readlines
 
-        run_agent(config_str)
-
-        mock.rewind
-        lines = mock.readlines
-
-        insist { lines.size } == 1
-        insist { lines[0] } =~ /^custom.foo 123.0 \d{10,}\n$/
+          insist { lines.size } == 1
+          insist { lines[0] } =~ /^custom.foo 123.0 \d{10,}\n$/
+        end
       end
 
     end

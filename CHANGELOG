@@ -1,40 +1,116 @@
-1.1.10 (????)
+1.1.11 (???)
+  ## general
+  - Support for Rubinius and MRI exists once again.
+
+  ## inputs
+  - bugfix: lumberjack now respects field data again (lumberjack --field foo=bar)
+  - bugfix: rabbitmq was broken by the previous release (LOGSTASH-1003,
+    LOGSTASH-1038; Patch by Jason Koppe)
+  - bugfix: relp: allow multiple client socket connections to RELP input
+    (LOGSTASH-707, LOGSTASH-736, LOGSTASH-921)
+
+  ## filters
+  - bugfix: geoip was broken by the previous release (LOGSTASH-1013)
+  - feature: sleep now accepts an 'every' setting which causes it to
+    sleep every N events. Example; sleep every 10 events: every => 10.
+  - feature: grok now permits dashes and dots in captures, such as
+    %{WORD:foo-bar}.
+  - bugfix: useragent filter now ships with a default regexes.yaml file
+    that is used by default unless you otherwise specify (LOGSTASH-1051)
+  - bugfix: add_field now correctly sets top-level fields like @message
+
+  ## outputs
+  - feature: irc output now supports 'secure' setting to use ssl (LOGSTASH-139)
+  - feature: nagios_nsca has new setting 'message_format'
+  - bugfix: fix graphite plugin broken in 1.1.10 (LOGSTASH-968)
+  - bugfix: elasticsearch_http was broken in 1.1.10 (LOGSTASH-1004)
+  - bugfix: rabbitmq was broken by the previous release (LOGSTASH-1003,
+    LOGSTASH-1038; Patch by Jason Koppe)
+  - feature: hipchat 'notify' setting now called 'trigger_notify' (#467, patch
+    by Richard Pijnenburg)
+
+1.1.10 (April 16, 2013)
   ## general
   - On linux, all threads will set their process names so you can identify
     threads in tools like top(1).
   - Java 5 is no longer supported (You must use Java 6 or newer).
   - Windows line terminators (CRLF) are now accepted in config files.
+  - All AWS-related plugins now have the same configuration options:
+    region, access_key_id, secret_access_key, use_ssl, and
+    aws_credentials_file. Affected plugins: cloudwatch output,
+    sns output, sqs output, sqs input. (LOGSTASH-805)
+  - Lots of documentation fixes (James Turnbull, et al)
+  - The amqp plugins are now named 'rabbitmq' because it *only* works
+    with rabbitmq. The old 'amqp' name should still work, but it will
+    be removed soon while 'rabbitmq' will stay. (Patches by Michael Zaccari)
+  - New flag '--configtest' to test config and exit. (Patch by Darren Patterson)
+  - Improved error feedback logstash gives to you as a user.
 
   ## inputs
-  - improvement: loggly: supports http proxying now (#276, patch by Richard
-    Pijnenburg)
-  - improvement: twitter: supports http proxying now (#276, patch by Richard
-    Pijnenburg)
-  - improvement: tcp: ssl now supported! (#318, patch by Matthew Richardson)
-  - feature: redis: now supports 'batch_count' option for doing bulk
-    fetches from redis lists. Requires Redis 2.6.0 or higher.
   - new: elasticsearch: this input allows you to stream search results from
     elasticsearch; it uses the Scroll API.
+  - new: websocket. Currently supports acting as a websocket client.
+  - new: snmptrap, to receive SNMP traps (patch by Paul Czar)
+  - new: varnishlog input to read from the Varnish Cache server's shared memory
+    log (LOGSTASH-978, #422; Louis Zuckerman)
+  - new: graphite input. Supports the plain text carbon tcp protocol.
+  - new: imap input. Read mail! 
+  - feature: twitter: supports http proxying now (#276, patch by Richard
+    Pijnenburg)
+  - feature: loggly: supports http proxying now (#276, patch by Richard
+    Pijnenburg)
+  - feature: tcp: ssl now supported! (#318, patch by Matthew Richardson)
+  - feature: redis: now supports 'batch_count' option for doing bulk fetches
+    from redis lists. Requires Redis 2.6.0 or higher. (#320, patch by Piavlo)
+  - feature: irc: will use ssl if you set 'secure' (#393, patch by Tomas Doran)
+  - bugfix: log4j: respect add_fields (LOGSTASH-904, #358)
+  - bugfix: eventlog: input should now work
+  - bugfix: irc: passwords now work (#412, Nick Ethier)
 
   ## filters
-  - deprecation: the --grok-patterns-path flag is deprecated and will now
-    warn you if you use it. (LOGSTASH-803)
-  - feature: grok: Adds tag_on_failure setting so you can prevent grok from
-    tagging events on failure. (#328, patch by Neil Prosser)
-  - new: uaparser: parses user agent strings in to structured data based on
+  - new: useragent: parses user agent strings in to structured data based on
     BrowserScope data (#347, patch by Dan Everton)
   - new: sleep: sleeps a given amount of time before passing the event.
     Useful for rate limiting or replay simulation.
   - new: ruby: experimental ruby plugin that lets you call custom ruby code
     on every event.
+  - new: translate: for mapping values (#335, patch by Paul Czar)
+  - new: clone: creates a copy of the event.
+  - feature: grok: Adds tag_on_failure setting so you can prevent grok from
+    tagging events on failure. (#328, patch by Neil Prosser)
+  - deprecated: grok: deprecated the --grok-patterns-path flag (LOGSTASH-803)
+  - feature: date: nested field access is allowed now
+  - feature: csv, xml, kv, json, geoip: new common settings! 
+    (LOGSTASH-756, #310, #311, #312, #383, #396; patches by Richard Pijnenburg)
+      source - what field the text comes from
+      target - where to store the parse result.
+  - feature: csv: new setting: columns - labels for each column parsed.
+  - bugfix: geoip: The built-in geoip database should work now (#326, patch
+    by Vincent Batts)
+  - bugfix: kv filter now respects add_tag, etc (LOGSTASH-935)
 
   ## outputs
-  - fix bug in mongo output that would fail to load bson_java support
-    (LOGSTASH-849)
-  - Added tag support to gelf output. Returns tags as _tags field (LOGSTASH-880)
+  - new: hipchat output (#428, Cameron Stokes) 
+  - bugfix: mongo would fail to load bson_java support (LOGSTASH-849)
+  - bugfix: tags support to gelf output. Returns tags as _tags field
+    (LOGSTASH-880, patch by James Turnbull)
   - bugfix: elasticsearch: Fix a race condition. (#340, patch by Raymond Feng)
   - improvement: http: now supports a custom 'message' format for building your
     own http bodies from an event. (#319, patch by Christian S)
+  - bugfix: Fix opentsdb output (LOGSTASH-689, #317; patch by Emmet Murphy)
+  - improvement: http output now supports a custom message format with
+    the 'message' setting (Patch by Christian Schröder)
+  - graphite output now lets you ship the whole (or part) of an event's fields 
+    to graphite as metric updates. (#350, patch by Piavlo)
+  - email output now correctly defaults to not using authentication
+    (LOGSTASH-559, #365; patch by Stian Mathiassen)
+  - bugfix: file output now works correctly on fifos
+  - bugfix: irc passwords now work (#412, Nick Ethier)
+  - improvement: redis output now supports congestion detection. If
+    it appears nothing is consuming from redis, the output will stall
+    until that problem is resolved. This helps prevent a dead reader
+    from letting redis fill up memory. (Piavlo)
+  - feature: boundary: New 'auto' setting. (#413, Alden Jole)
  
 1.1.9 (January 10, 2013)
   ## inputs

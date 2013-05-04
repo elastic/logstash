@@ -28,7 +28,7 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   config :isodate, :validate => :boolean, :default => false
 
   # Number of seconds to wait after failure before retrying
-  config :waitTime, :validate => :number, :default => 3, :required => false
+  config :retry_delay, :validate => :number, :default => 3, :required => false
 
   public
   def register
@@ -61,7 +61,7 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
     rescue => e
       @logger.warn("Failed to send event to MongoDB", :event => event, :exception => e,
                    :backtrace => e.backtrace)
-      sleep @waitTime
+      sleep @retry_delay
       retry
     end
   end # def receive

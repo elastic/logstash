@@ -2,7 +2,9 @@
 
 basedir=$(cd `dirname $0`/..; pwd)
 if [ -d "$basedir/.git" ] ; then
-  export GEM_HOME="$basedir/vendor/bundle/jruby/1.9"
+  RUBY=${RUBY=jruby}
+  RUBYVER=${RUBYVER=1.9}
+  export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
   export GEM_PATH=
 fi
 
@@ -13,7 +15,7 @@ if [ "$?" -eq 0 -a -z "$USE_JRUBY" ] ; then
   ruby "$basedir/lib/logstash/runner.rb" "$@"
 else
   # No ruby found, fetch JRuby and run.
-  jruby="vendor/jar/jruby-complete-1.7.2.jar"
+  jruby="vendor/jar/jruby-complete-1.7.3.jar"
   [ ! -f "$jruby" ] && make build-jruby
   java -jar "$jruby" "$basedir/lib/logstash/runner.rb" "$@"
 fi

@@ -38,7 +38,7 @@ describe LogStash::Filters::Grok do
       }
     CONFIG
 
-    sample "<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug 4123 - [id1 foo="bar"][id2 baz="something"] Hello, syslog." do
+    sample "<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug 4123 - [id1 foo=\"bar\"][id2 baz=\"something\"] Hello, syslog." do
       reject { subject["@tags"] }.include?("_grokparsefailure")
       insist { subject["syslog5424_pri"] } == "<191>"
       insist { subject["syslog5424_ver"] } == "1"
@@ -278,6 +278,36 @@ describe LogStash::Filters::Grok do
 
     sample "this will not be matched" do
       reject { subject["@tags"] }.include?("_grokparsefailure")
+    end
+  end
+
+  describe "captures named fields even if the whole text matches" do
+    config <<-CONFIG
+      filter {
+        grok {
+          pattern => "%{DATE_EU:stimestamp}"
+          singles => true
+        }
+      }
+    CONFIG
+
+    sample "2011/01/01" do
+      insist { subject["stimestamp"] } == "2011/01/01"
+    end
+  end
+
+  describe "allow dashes in capture names" do
+    config <<-CONFIG
+      filter {
+        grok {
+          pattern => "%{WORD:foo-bar}"
+          singles => true
+        }
+      }
+    CONFIG
+
+    sample "hello world" do
+      insist { subject["foo-bar"] } == "hello"
     end
   end
 end

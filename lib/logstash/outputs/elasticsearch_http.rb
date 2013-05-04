@@ -22,13 +22,10 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # similar events to the same 'type'. String expansion '%{foo}' works here.
   config :index_type, :validate => :string, :default => "%{@type}"
 
-  # The name/address of the host to use for ElasticSearch unicast discovery
-  # This is only required if the normal multicast/cluster discovery stuff won't
-  # work in your environment.
+  # The hostname or ip address to reach your elasticsearch server.
   config :host, :validate => :string
 
-  # The port for ElasticSearch transport to use. This is *not* the ElasticSearch
-  # REST API port (normally 9200).
+  # The port for ElasticSearch HTTP interface to use.
   config :port, :validate => :number, :default => 9200
 
   # Set the number of events to queue up before writing to elasticsearch.

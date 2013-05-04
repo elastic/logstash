@@ -2,8 +2,8 @@
 #   rsync
 #   wget or curl
 #
-JRUBY_VERSION=1.7.2
-ELASTICSEARCH_VERSION=0.20.2
+JRUBY_VERSION=1.7.3
+ELASTICSEARCH_VERSION=0.20.5
 #VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 VERSION=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb)
 
@@ -30,7 +30,7 @@ else
 TAR_OPTS=--wildcards
 endif
 
-TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/event.rb)
+TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/event.rb spec/outputs/graphite.rb)
 default: jar
 
 # Figure out if we're using wget or curl
@@ -72,8 +72,9 @@ build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
 .PHONY: copy-ruby-files
 copy-ruby-files: | build/ruby
 	@# Copy lib/ and test/ files to the root
-	$(QUIET)rsync -av --include "*/" --include "*.rb" --exclude "*" ./lib/ ./test/ ./build/ruby
-	$(QUIET)rsync -av ./spec ./build/ruby
+	$(QUIET)rsync -a --include "*/" --include "*.rb" --exclude "*" ./lib/ ./test/ ./build/ruby
+	$(QUIET)rsync -a ./spec ./build/ruby
+	$(QUIET)rsync -a ./locales ./build/ruby
 	@# Delete any empty directories copied by rsync.
 	$(QUIET)find ./build/ruby -type d -empty -delete
 
@@ -151,6 +152,7 @@ build/ruby: | build
 # Run this one always? Hmm..
 .PHONY: build/monolith
 build/monolith: $(ELASTICSEARCH) $(JRUBY) $(GEOIP) vendor-gems | build
+build/monolith: vendor/ua-parser/regexes.yaml
 build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
@@ -170,7 +172,15 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)rm -f $@/META-INF/*.SF
 	-$(QUIET)rm -f $@/META-INF/NOTICE $@/META-INF/NOTICE.txt
 	-$(QUIET)rm -f $@/META-INF/LICENSE $@/META-INF/LICENSE.txt
+	-$(QUIET)mkdir -p $@/vendor/ua-parser
+	-$(QUIET)cp vendor/ua-parser/regexes.yaml $@/vendor/ua-parser
 	$(QUIET)cp $(GEOIP) $@/
+
+vendor/ua-parser/: | build
+	$(QUIET)mkdir $@
+
+vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
+	$(QUIET)$(DOWNLOAD_COMMAND) $@ https://raw.github.com/tobie/ua-parser/master/regexes.yaml
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
@@ -195,15 +205,15 @@ build/logstash-$(VERSION)-monolithic.jar:
 build/flatgems: | build vendor/bundle
 	mkdir $@
 	for i in $(VENDOR_DIR)/gems/*/lib $(VENDOR_DIR)/gems/*/data; do \
-		rsync -av $$i/ $@/$$(basename $$i) ; \
+		rsync -a $$i/ $@/$$(basename $$i) ; \
 	done
 	@# Until I implement something that looks at the 'require_paths' from
 	@# all the gem specs.
-	$(QUIET)rsync -av $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
-	$(QUIET)rsync -av $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
+	$(QUIET)rsync -a $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
+	#$(QUIET)rsync -a $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
 	@# Other lame hacks to get crap to work.
-	$(QUIET)rsync -av $(VENDOR_DIR)/gems/sass-*/VERSION_NAME $@/root/
-	$(QUIET)rsync -av $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
+	$(QUIET)rsync -a $(VENDOR_DIR)/gems/sass-*/VERSION_NAME $@/root/
+	$(QUIET)rsync -a $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
 
 flatjar-test:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
@@ -222,20 +232,21 @@ jar-test-and-report:
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
-	$(QUIET)rsync -av --delete build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/jar/
-	$(QUIET)rsync -av --delete build/flatgems/data build/jar/
-	$(QUIET)(cd lib; rsync -av --delete logstash/web/public ../build/jar/logstash/web/public)
-	$(QUIET)(cd lib; rsync -av --delete logstash/web/views ../build/jar/logstash/web/views)
-	$(QUIET)(cd lib; rsync -av --delete logstash/certs ../build/jar/logstash/certs)
+	$(QUIET)rsync -va build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/flatgems/data build/jar/
+	$(QUIET)(cd lib; rsync -a --delete logstash/web/public ../build/jar/logstash/web/public)
+	$(QUIET)(cd lib; rsync -a --delete logstash/web/views ../build/jar/logstash/web/views)
+	$(QUIET)(cd lib; rsync -a --delete logstash/certs ../build/jar/logstash/certs)
 
 build/logstash-$(VERSION)-flatjar.jar: | build/jar
 	$(QUIET)rm -f $@
 	$(QUIET)jar cfe $@ logstash.runner -C build/jar .
-	$(QUIET)jar i $@
 	@echo "Created $@"
 
-update-jar: copy-ruby-files
+update-jar: copy-ruby-files compile build/ruby/logstash/runner.class
 	$(QUIET)jar uf build/logstash-$(VERSION)-monolithic.jar -C build/ruby .
+
+update-flatjar: copy-ruby-files compile build/ruby/logstash/runner.class
+	$(QUIET)jar uf build/logstash-$(VERSION)-flatjar.jar -C build/ruby .
 
 .PHONY: test
 test: | $(JRUBY) vendor-elasticsearch
@@ -329,3 +340,21 @@ releaseNote:
 	-$(QUIET)rm releaseNote.html
 	$(QUIET)curl -si "https://logstash.jira.com/secure/ReleaseNote.jspa?version=$(JIRA_VERSION_ID)&projectId=10020" | sed -n '/<textarea.*>/,/<\/textarea>/p' | grep textarea -v >> releaseNote.html
 	$(QUIET)ruby pull_release_note.rb
+
+package:
+	[ ! -f build/logstash-$(VERSION)-flatjar.jar ] \
+		&& make build/logstash-$(VERSION)-flatjar.jar ; \
+	(cd pkg; \
+		./build.sh ubuntu 12.10; \
+		./build.sh centos 6; \
+		./build.sh debian 6; \
+	)
+
+kibana: | build
+	$(QUIET)mkdir build/kibana || true
+	$(QUIET)[ -f build/kibana/kibana.gemspec ] || $(QUIET)$(DOWNLOAD_COMMAND) - https://github.com/rashidkpc/Kibana/archive/v0.2.0.tar.gz | tar -C build/kibana --strip-components 1 -zx 
+	$(QUIET)grep -v thin build/kibana/kibana.gemspec > build/kibana/kibanablah.gemspec
+	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb build/kibana/kibanablah.gemspec
+
+kibana-flatjar: | kibana
+	$(QUIET)jar uf build/logstash-$(VERSION)-flatjar.jar -C build/kibana .

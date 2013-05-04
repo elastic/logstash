@@ -8,7 +8,7 @@ layout: content_right
 
 ### Download logstash:
 
-* [logstash-%VERSION%-monolithic.jar](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-monolithic.jar)
+* [logstash-%VERSION%-flatjar.jar](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-flatjar.jar)
 
 ### Requirements:
 
@@ -29,7 +29,7 @@ I bake as much as possible into the single release file.
 
 ### Run it:
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f hello.conf
+    java -jar logstash-%VERSION%-flatjar.jar agent -f hello.conf
 
 Type stuff on standard input. Press enter. Watch what event logstash sees.
 Press ^C to kill it.
@@ -42,7 +42,7 @@ Press ^C to kill it.
 
 ### Run it:
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f hello-search.conf
+    java -jar logstash-%VERSION%-flatjar.jar agent -f hello-search.conf
 
 Same config as step 2, but now we are also writing events to ElasticSearch. Do
 a search for `*` (all):
@@ -57,7 +57,7 @@ The same config as step 3 is used.
 
 ### Run it:
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f hello-search.conf -- web --backend 'elasticsearch://localhost/'
+    java -jar logstash-%VERSION%-flatjar.jar agent -f hello-search.conf -- web --backend 'elasticsearch://localhost/'
 
 The above runs both the agent and the logstash web interface in the same
 process. Useful for simple deploys.
@@ -81,7 +81,7 @@ Use the ['grok'](../../filters/grok) logstash filter to parse logs.
 
 ### Run it
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f apache-parse.conf
+    java -jar logstash-%VERSION%-flatjar.jar agent -f apache-parse.conf
 
 Logstash will now be listening on TCP port 3333. Send an apache log message at it:
 
@@ -100,7 +100,7 @@ Same as the previous step, but we'll output to ElasticSearch now.
 
 ### Run it
 
-    java -jar logstash-%VERSION%-monolithic.jar agent -f apache-elasticsearch.conf -- web --backend 'elasticsearch://localhost/'
+    java -jar logstash-%VERSION%-flatjar.jar agent -f apache-elasticsearch.conf -- web --backend 'elasticsearch://localhost/'
 
 Logstash should be all set for you now. Start feeding it logs:
 

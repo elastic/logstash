@@ -148,12 +148,12 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
       if @bunnyexchange
         if @headers_add.empty?
           #tags2headers is empty, so we send the message normally
-          @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
-          @bunnyexchange.publish(message, :persistent => @persistent, :key => key)
+          @logger.debug(["Publishing message", { :destination => to_s, :message => message, :routing_key => key }])
+          @bunnyexchange.publish(message, :persistent => @persistent, :routing_key => key)
         else
           #publishing messages WITH headers, that are stored in "headers_add"
-          @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key , :headers => @headers_add.inspect}])
-          @bunnyexchange.publish(message, :persistent => @persistent, :key => key, :headers => @headers_add)
+          @logger.debug(["Publishing message", { :destination => to_s, :message => message, :routing_key => key , :headers => @headers_add.inspect}])
+          @bunnyexchange.publish(message, :persistent => @persistent, :routing_key => key, :headers => @headers_add)
           
         end # if @headers2headers.empty?
       else
