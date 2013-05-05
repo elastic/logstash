@@ -100,7 +100,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   # would remove the field with name "foo_hello" if it is present
   config :remove_field, :validate => :array, :default => []
 
-  RESERVED = ["type", "tags", "exclude_tags", "include_fields", "exclude_fields", "add_tag", "remove_tag", "add_field", "remove_field"]
+  RESERVED = ["type", "tags", "exclude_tags", "include_fields", "exclude_fields", "add_tag", "remove_tag", "add_field", "remove_field", "include_any", "exclude_any"]
 
   public
   def initialize(params)
