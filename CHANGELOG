@@ -1,5 +1,7 @@
 1.1.11 (???)
   ## general
+  - This release is primarily a bugfix release for bugs introduced by the
+    previous release.
   - Support for Rubinius and MRI exists once again.
 
   ## inputs
