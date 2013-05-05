@@ -199,7 +199,7 @@ describe LogStash::Filters::KV do
 
       sample "hello=world" do
         insist { subject["hello"] } == "world"
-        insist { subject["whoa"] } == [ "fancypants" ]
+        insist { subject["whoa"] } == "fancypants"
       end
     end
 
@@ -211,7 +211,7 @@ describe LogStash::Filters::KV do
       CONFIG
 
       sample "this is not key value" do
-        reject { subject["whoa"] } == [ "fancypants" ]
+        reject { subject["whoa"] } == "fancypants"
       end
     end
   end
