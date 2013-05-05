@@ -121,7 +121,7 @@ describe LogStash::Filters::Grep do
 
     sample ({"@fields" => {"str" => "test"}}) do
       reject { subject }.nil?
-      insist { subject["new_field"]} == ["new_value"]
+      insist { subject["new_field"]} == "new_value"
     end
   end
 
@@ -137,7 +137,7 @@ describe LogStash::Filters::Grep do
 
     sample ({"@type" => "grepper", "@fields" => {"str" => "test"}}) do
       reject { subject }.nil?
-      insist { subject["new_field"]} == [subject.type]
+      insist { subject["new_field"]} == subject.type
     end
   end
 
