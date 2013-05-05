@@ -132,7 +132,7 @@ describe LogStash::Filters::Grok do
 
     sample "matchme 1234" do
       reject { subject["@tags"] }.include?("_grokparsefailure")
-      insist { subject["new_field"] } == ["1234"]
+      insist { subject["new_field"] } == "1234"
     end
 
     sample "this will not be matched" do
