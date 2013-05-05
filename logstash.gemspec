@@ -38,7 +38,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "aws-sdk"                          #{Apache 2.0 license}
   gem.add_runtime_dependency "heroku"                           #(MIT license)
   gem.add_runtime_dependency "addressable"                      #(Apache 2.0 license)
-  gem.add_runtime_dependency "bunny", [">= 0.9.0.pre9"]         #(MIT license)
+  gem.add_runtime_dependency "bunny", ["0.8.0"]                 #(MIT license)
   gem.add_runtime_dependency "ffi"                              #(LGPL-3 license)
   gem.add_runtime_dependency "ffi-rzmq", ["1.0.0"]              #(MIT license)
   gem.add_runtime_dependency "filewatch", ["0.5.1"]             #(BSD license)

@@ -12,25 +12,29 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
 
   config_name "rabbitmq"
-  plugin_status "beta"
+  plugin_status "unsupported"
 
-  # Your rabbitmq server address
+  # Your amqp server address
   config :host, :validate => :string, :required => true
 
-  # The rabbitmq port to connect on
+  # The AMQP port to connect on
   config :port, :validate => :number, :default => 5672
 
-  # Your rabbitmq username
+  # Your amqp username
   config :user, :validate => :string, :default => "guest"
 
-  # Your rabbitmq password
+  # Your amqp password
   config :password, :validate => :password, :default => "guest"
 
-  # The name of the exchange
-  config :exchange, :validate => :string, :required => true
-  
   # The exchange type (fanout, topic, direct)
   config :exchange_type, :validate => [ "fanout", "direct", "topic"], :required => true
+
+  # The name of the exchange. Depricated due to conflicts with puppet naming convention.
+  # Replaced by 'exchange' variable. See LOGSTASH-755
+  config :name, :validate => :string, :deprecated => true
+
+  # The name of the exchange
+  config :exchange, :validate => :string # TODO(sissel): Make it required when 'name' is gone
 
   # Key to route to by default. Defaults to 'logstash'
   #
@@ -43,7 +47,7 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   # Is this exchange durable? (aka; Should it survive a broker restart?)
   config :durable, :validate => :boolean, :default => true
 
-  # Should messages persist to disk on the rabbitmq broker until they are read by a
+  # Should messages persist to disk on the AMQP broker until they are read by a
   # consumer?
   config :persistent, :validate => :boolean, :default => true
 
@@ -56,15 +60,16 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   # Validate SSL certificate
   config :verify_ssl, :validate => :boolean, :default => false
 
-  # Maximum permissible size of a frame (in bytes) to negotiate with clients
-  config :frame_max, :validate => :number, :default => 131072
-
-  # Array of fields to add to headers in messages' metadata
-  config :fields_headers, :validate => :array, :default => {}
-  
   public
   def register
-    require "bunny"
+    require "bunny" # rubygem 'bunny'
+
+    if @name
+      if @exchange
+        @logger.error("'name' and 'exchange' are the same setting, but 'name' is deprecated. Please use only 'exchange'")
+      end
+      @exchange = @name
+    end
 
     @logger.info("Registering output", :plugin => self)
     connect
@@ -72,29 +77,27 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
 
   public
   def connect
-    
-    rabbitmq_settings = {
+    amqpsettings = {
       :vhost => @vhost,
       :host => @host,
       :port => @port,
       :logging => @debug,
     }
-    rabbitmq_settings[:user] = @user if @user
-    rabbitmq_settings[:pass] = @password.value if @password
-    rabbitmq_settings[:ssl] = @ssl if @ssl
-    rabbitmq_settings[:verify_ssl] = @verify_ssl if @verify_ssl
-    rabbitmq_settings[:frame_max] = @frame_max if @frame_max
+    amqpsettings[:user] = @user if @user
+    amqpsettings[:pass] = @password.value if @password
+    amqpsettings[:ssl] = @ssl if @ssl
+    amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
 
     begin
-      @logger.debug("Connecting to RabbitMQ", :settings => rabbitmq_settings,
+      @logger.debug("Connecting to AMQP", :settings => amqpsettings,
                     :exchange_type => @exchange_type, :name => @exchange)
-      @bunny = Bunny.new(rabbitmq_settings)
+      @bunny = Bunny.new(amqpsettings)
       @bunny.start
     rescue => e
       if terminating?
         return
       else
-        @logger.error("RabbitMQ connection error (during connect), will reconnect",
+        @logger.error("AMQP connection error (during connect), will reconnect",
                       :exception => e, :backtrace => e.backtrace)
         sleep(1)
         retry
@@ -115,24 +118,6 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
     @logger.debug("Sending event", :destination => to_s, :event => event,
                   :key => key)
     key = event.sprintf(@key) if @key
-    
-   
-    # Adding headers from fields' attribute
-    @headers_add = event.fields.select {|k, v| @fields_headers.include?(k)}
-    @logger.debug("Adding headers from Fields attributes : #{@headers_add.inspect}")
-            
-    # Adding headers from "original" attributes 
-    # Iteration on each field name specified in fields_headers
-    @fields_headers.each do |added_field|
-      # Verify if added_field is in the list of tags     
-      if event.include?(added_field)
-        @headers_add[added_field] = event[added_field]
-        @logger.debug("Adding native field #{added_field} to headers")
-      else
-        @logger.debug("Not Adding tag #{added_field} to headers because missing")
-      end # if event.include?(added_field)
-    end # :fields_headers.each do |added_field|
-    
     begin
       receive_raw(event.to_json, key)
     rescue JSON::GeneratorError => e
@@ -146,30 +131,22 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   def receive_raw(message, key=@key)
     begin
       if @bunnyexchange
-        if @headers_add.empty?
-          #tags2headers is empty, so we send the message normally
-          @logger.debug(["Publishing message", { :destination => to_s, :message => message, :routing_key => key }])
-          @bunnyexchange.publish(message, :persistent => @persistent, :routing_key => key)
-        else
-          #publishing messages WITH headers, that are stored in "headers_add"
-          @logger.debug(["Publishing message", { :destination => to_s, :message => message, :routing_key => key , :headers => @headers_add.inspect}])
-          @bunnyexchange.publish(message, :persistent => @persistent, :routing_key => key, :headers => @headers_add)
-          
-        end # if @headers2headers.empty?
+        @logger.debug(["Publishing message", { :destination => to_s, :message => message, :key => key }])
+        @bunnyexchange.publish(message, :persistent => @persistent, :key => key)
       else
-        @logger.warn("Tried to send message, but not connected to rabbitmq yet.")
-      end  # if @bunnyexchange
+        @logger.warn("Tried to send message, but not connected to amqp yet.")
+      end
     rescue *[Bunny::ServerDownError, Errno::ECONNRESET] => e
-      @logger.error("RabbitMQ connection error (during publish), will reconnect: #{e}")
+      @logger.error("AMQP connection error (during publish), will reconnect: #{e}")
       connect
       retry
-    end # begin
-  end # def receive_raw
+    end
+  end
 
   public
   def to_s
     return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@exchange}\##{@key}"
-  end # def to_s
+  end
 
   public
   def teardown

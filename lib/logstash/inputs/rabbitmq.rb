@@ -15,29 +15,32 @@ require "cgi" # for CGI.escape
 class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
   config_name "rabbitmq"
-  plugin_status "beta"
+  plugin_status "unsupported"
 
-  # Custom arguments. For example, mirrored queues in RabbitMQ 2.x:  [ "x-ha-policy", "all" ]
-  # RabbitMQ 3.x mirrored queues are set by policy. More information can be found
-  # here: http://www.rabbitmq.com/blog/2012/11/19/breaking-things-with-rabbitmq-3-0/
+  # Your amqp broker's custom arguments. For mirrored queues in RabbitMQ: [ "x-ha-policy", "all" ]
   config :arguments, :validate => :array, :default => []
 
-  # Your rabbitmq server address
+  # Your amqp server address
   config :host, :validate => :string, :required => true
 
-  # The rabbitmq port to connect on
+  # The AMQP port to connect on
   config :port, :validate => :number, :default => 5672
 
-  # Your rabbitmq username
+  # Your amqp username
   config :user, :validate => :string, :default => "guest"
 
-  # Your rabbitmq password
+  # Your amqp password
   config :password, :validate => :password, :default => "guest"
+
+  # The name of the queue. Depricated due to conflicts with puppet naming convention.
+  # Replaced by 'queue' variable. See LOGSTASH-755
+  config :name, :validate => :string, :deprecated => true
 
   # The name of the queue.
   config :queue, :validate => :string, :default => ""
 
-  # The name of the exchange to bind the queue.
+  # The name of the exchange to bind the queue. This is analogous to the 'amqp
+  # output' [config 'name'](../outputs/amqp)
   config :exchange, :validate => :string, :required => true
 
   # The routing key to use. This is only valid for direct or fanout exchanges
@@ -64,20 +67,10 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Is the queue exclusive? (aka: Will other clients connect to this named queue?)
   config :exclusive, :validate => :boolean, :default => true
 
-  # Using the prefetch_count option means that if ack is true, the server will
-  # only send the number of messages specified in the prefetch_count option
-  # to logstash and then the server will wait until logstash acknowledges
-  # a message prior to the server sending logstash more messages.  In practice,
-  # if ack is true, logstash acknowledges each message.  So increasing
-  # prefetch_count might not yield any practical benefit today.
-  # Must be 0 or a positive integer.
+  # Prefetch count. Number of messages to prefetch
   config :prefetch_count, :validate => :number, :default => 1
 
-  # Enable message acknowledgement. The ack only matters if prefetch_count is
-  # more than 0.  Message acknowledgement improves reliablity but it reduces
-  # throughput since logstash needs to tell rabbitmq-server that logstash
-  # received the message.  Logstash will acknowledge only after it is able to
-  # process the message into a Logstash Event
+  # Enable message acknowledgement
   config :ack, :validate => :boolean, :default => true
 
   # Enable or disable debugging
@@ -88,13 +81,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
   # Validate SSL certificate
   config :verify_ssl, :validate => :boolean, :default => false
-  
-  # Maximum permissible size of a frame (in bytes) to negotiate with clients
-  config :frame_max, :validate => :number, :default => 131072
 
-  # Array of headers (in messages' metadata) to add to fields in the event
-  config :headers_fields, :validate => :array, :default => {}
-  
   public
   def initialize(params)
     super
@@ -104,86 +91,61 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   end # def initialize
 
   public
-  def register   
+  def register
+
+    if @name
+      if @queue
+        @logger.error("'name' and 'queue' are the same setting, but 'name' is deprecated. Please use only 'queue'")
+      end
+      @queue = @name
+    end   
 
     @logger.info("Registering input #{@url}")
-    require "bunny"
-    
+    require "bunny" # rubygem 'bunny'
     @vhost ||= "/"
     @port ||= 5672
     @key ||= "#"
-    
-    @rabbitmq_settings = {
+    @amqpsettings = {
       :vhost => @vhost,
       :host => @host,
       :port => @port,
     }
-    
-    @rabbitmq_settings[:user] = @user if @user
-    @rabbitmq_settings[:pass] = @password.value if @password
-    @rabbitmq_settings[:logging] = @debug
-    @rabbitmq_settings[:ssl] = @ssl if @ssl
-    @rabbitmq_settings[:verify_ssl] = @verify_ssl if @verify_ssl
-    @rabbitmq_settings[:frame_max] = @frame_max if @frame_max
-    
-    @rabbitmq_url = "amqp://"
+    @amqpsettings[:user] = @user if @user
+    @amqpsettings[:pass] = @password.value if @password
+    @amqpsettings[:logging] = @debug
+    @amqpsettings[:ssl] = @ssl if @ssl
+    @amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
+    @amqpurl = "amqp://"
     if @user
-      @rabbitmq_url << @user if @user
-      @rabbitmq_url << ":#{CGI.escape(@password.to_s)}" if @password
-      @rabbitmq_url << "@"
+      @amqpurl << @user if @user
+      @amqpurl << ":#{CGI.escape(@password.to_s)}" if @password
+      @amqpurl << "@"
     end
-    @rabbitmq_url += "#{@host}:#{@port}#{@vhost}/#{@queue}"
-
-    if @prefetch_count < 0
-      raise RuntimeError.new(
-        "Cannot specify prefetch_count less than 0"
-      )
-    end
+    @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@queue}"
   end # def register
 
   def run(queue)
     begin
-      @logger.debug("Connecting with RabbitMQ settings #{@rabbitmq_settings.inspect} to set up queue #{@queue.inspect}")
-      @bunny = Bunny.new(@rabbitmq_settings)
+      @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up queue #{@queue.inspect}")
+      @bunny = Bunny.new(@amqpsettings)
       return if terminating?
       @bunny.start
-      @bunny.default_channel.prefetch(@prefetch_count)
+      @bunny.qos({:prefetch_count => @prefetch_count})
 
       @arguments_hash = Hash[*@arguments]
 
       @bunnyqueue = @bunny.queue(@queue, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive, :arguments => @arguments_hash })
-      @bunnyqueue.bind(@exchange, :routing_key => @key)
+      @bunnyqueue.bind(@exchange, :key => @key)
 
-      # need to get metadata from data
-      @bunnyqueue.subscribe({:ack => @ack, :block => true}) do |delivery_info, metadata, data|
-        
-        e = to_event(data, @rabbitmq_url)
-        if e          
-          if !@headers_fields.empty?
-            # constructing the hash array of headers to add
-            # select headers from properties if they are in the array @headers_fields
-            headers_add = metadata.headers.select {|k, v| @headers_fields.include?(k)}          
-            @logger.debug("Headers to insert in fields : ", :headers => headers_add)
-             
-            headers_add.each do |added_field, added_value|
-              e[added_field] = added_value              
-            end # headers_add.each do
-          end # if !@headers_fields.empty?
+      @bunnyqueue.subscribe({:ack => @ack}) do |data|
+        e = to_event(data[:payload], @amqpurl)
+        if e
           queue << e
-
-          # if these conditions are met, the server won't send any more
-          # messages until we specifically ack this message
-          # TODO(jkoppe): to improve throughput, we could ack less often
-          # but, I definitely want to get community buy-in before enabling
-          # one method or another.
-          if @ack and @prefetch_count > 0
-            @bunny.default_channel.ack(delivery_info[:delivery_tag])
-          end
-        end # if e
-      end # @bunnyqueue.subscribe do
+        end
+      end # @bunnyqueue.subscribe
 
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
-      @logger.error("RabbitMQ connection error, will reconnect: #{e}")
+      @logger.error("AMQP connection error, will reconnect: #{e}")
       # Sleep for a bit before retrying.
       # TODO(sissel): Write 'backoff' method?
       sleep(1)
