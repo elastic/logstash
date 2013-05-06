@@ -20,6 +20,10 @@
   - bugfix: useragent filter now ships with a default regexes.yaml file
     that is used by default unless you otherwise specify (LOGSTASH-1051)
   - bugfix: add_field now correctly sets top-level fields like @message
+  - bugfix: mutate 'replace' now sets a field regardless of whether or not
+    it exists.
+  - feature: new mutate 'update' setting to change a field's value but
+    only if that field exists already.
 
   ## outputs
   - feature: irc output now supports 'secure' setting to use ssl (LOGSTASH-139)
