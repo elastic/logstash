@@ -117,7 +117,7 @@ module LogStash::EventV0
 
   public
   def tags; @data["@tags"]; end # def tags
-  def tags=(val); @data["@tags"] = val; end # def tags=
+  def tags=(val); @data["@tags"] = val.to_set; end # def tags=
 
   def id; @data["@id"]; end # def id
   def id=(val); @data["@id"] = val; end # def id=
