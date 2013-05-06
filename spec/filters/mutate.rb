@@ -13,6 +13,8 @@ describe LogStash::Filters::Mutate do
           convert => [ "intme", "integer", "floatme", "float" ]
           rename => [ "rename1", "rename2" ]
           replace => [ "replaceme", "hello world" ]
+          replace => [ "newfield", "newnew" ]
+          update => [ "nosuchfield", "weee" ]
           remove => [ "removeme" ]
         }
       }
@@ -37,6 +39,10 @@ describe LogStash::Filters::Mutate do
       reject { subject }.include?("rename1")
       insist { subject["rename2"] } == [ "hello world" ]
       reject { subject }.include?("removeme")
+
+      insist { subject }.include?("newfield")
+      insist { subject["newfield"] } == "newnew"
+      reject { subject }.include?("nosuchfield")
     end
   end
 

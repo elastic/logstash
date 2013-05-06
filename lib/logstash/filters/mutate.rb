@@ -45,6 +45,18 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #     }
   config :replace, :validate => :hash
 
+  # Update an existing field with a new value. If the field does not exist,
+  # then no action will be taken.
+  #
+  # Example:
+  # 
+  #     filter {
+  #       mutate {
+  #         update => [ "sample", "My new message" ]
+  #       }
+  #     }
+  config :update, :validate => :hash
+
   # Convert a field's value to a different type, like turning a string to an
   # integer. If the field value is an array, all members will be converted.
   # If the field is a hash, no action will be taken.
@@ -220,10 +232,16 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   end # def rename
 
   private
-  def replace(event)
-    # TODO(sissel): use event.sprintf on the field names?
-    @replace.each do |field, newvalue|
+  def update(event)
+    @update.each do |field, newvalue|
       next unless event.include?(field)
+      event[field] = event.sprintf(newvalue)
+    end
+  end # def update
+
+  private
+  def replace(event)
+    @replace.each do |field, newvalue|
       event[field] = event.sprintf(newvalue)
     end
   end # def replace
