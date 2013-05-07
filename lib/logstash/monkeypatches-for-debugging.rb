@@ -3,8 +3,8 @@ if $DEBUGLIST.include?("require")
     alias_method :require_debug, :require
 
     def require(path)
-      puts "require(\"#{path}\")"
-      return require_debug(path)
+      result = require_debug(path)
+      puts "require(\"#{path}\") => #{result} (from: #{caller[1]})"
     end
 
     alias_method :load_debug, :load
