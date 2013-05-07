@@ -38,7 +38,7 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
           if __FILE__ =~ /file:\/.*\.jar!/
             # Running from a flatjar which has a different layout
             regexes_file = [__FILE__.split("!").first, "/vendor/ua-parser/regexes.yaml"].join("!")
-            @parser = UserAgentParser::Parser.new(:patterns_path => jar_path)
+            @parser = UserAgentParser::Parser.new(:patterns_path => regexes_file)
           else
             # assume operating from the git checkout
             @parser = UserAgentParser::Parser.new(:patterns_path => "vendor/ua-parser/regexes.yaml")
