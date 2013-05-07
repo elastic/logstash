@@ -88,7 +88,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     # TODO(sissel): find a better way of declaring where the elasticsearch
     # libraries are
     # TODO(sissel): can skip this step if we're running from a jar.
-    jarpath = File.join(File.dirname(__FILE__), "../../../vendor/**/*.jar")
+    jarpath = File.join(File.dirname(__FILE__), "../../../vendor/jar/elasticsearch*/lib/*.jar")
     Dir[jarpath].each do |jar|
         require jar
     end
