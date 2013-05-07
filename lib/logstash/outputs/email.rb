@@ -93,17 +93,22 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
   public
   def register
     require "mail"
+
+    # Mail uses instance_eval which changes the scope of self so @options is
+    # inaccessible from inside 'Mail.defaults'. So set a local variable instead.
+    options = @options
+
     if @via == "smtp"
       Mail.defaults do
         delivery_method :smtp, {
-          :address              => @options.fetch("smtpIporHost", "localhost"),
-          :port                 => @options.fetch("port", 25),
-          :domain               => @options.fetch("domain", "localhost"),
-          :user_name            => @options.fetch("userName", nil),
-          :password             => @options.fetch("password", nil),
-          :authentication       => @options.fetch("authenticationType", nil),
-          :enable_starttls_auto => @options.fetch("starttls", false),
-          :debug                => @options.fetch("debug", false)
+          :address              => options.fetch("smtpIporHost", "localhost"),
+          :port                 => options.fetch("port", 25),
+          :domain               => options.fetch("domain", "localhost"),
+          :user_name            => options.fetch("userName", nil),
+          :password             => options.fetch("password", nil),
+          :authentication       => options.fetch("authenticationType", nil),
+          :enable_starttls_auto => options.fetch("starttls", false),
+          :debug                => options.fetch("debug", false)
         }
       end
     elsif @via == 'sendmail'
@@ -112,7 +117,7 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
       end
     else
       Mail.defaults do
-        delivery_method :@via, @options
+        delivery_method :@via, options
       end
     end # @via tests
     @logger.debug("Email Output Registered!", :config => @config)
