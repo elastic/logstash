@@ -106,6 +106,12 @@ class LogStash::Runner
         @runners << web
         return web.run(args)
       end,
+      "kibana" => lambda do
+        require "logstash/kibana"
+        kibana = LogStash::Kibana::Runner.new
+        @runners << kibana
+        return kibana.run(args)
+      end,
       "test" => lambda do
         $: << File.join(File.dirname(__FILE__), "..", "..", "test")
         require "logstash/test"
