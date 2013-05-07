@@ -14,7 +14,7 @@ logstash](.) overview.
 Let's write a 'hello world' filter. This filter will replace the 'message' in
 the event with "Hello world!"
 
-First, logstash expects plugins in a certain directory structure: logstash/TYPE/PLUGIN_NAME.rb
+First, logstash expects plugins in a certain directory structure: `logstash/TYPE/PLUGIN_NAME.rb`
 
 Since we're creating a filter, let's mkdir this:
 
@@ -88,9 +88,11 @@ plugin tree is. In our case, it's the current directory.
 
     % logstash --pluginpath . -f example.conf
 
-If you use the monolith jar release of logstash, you have an additional option
-- you can include the plugin right in the jar file.
+If you use the jar release of logstash, you have an additional option - you can
+include the plugin right in the jar file.
 
+    # This command will take your 'logstash/filters/foo.rb' file
+    # and add it into the jar file.
     % jar -uf logstash-%VERSION%-flatjar.jar logstash/filters/foo.rb
 
     # Verify it's in the right location in the jar!
@@ -112,8 +114,3 @@ The output is the standard logstash stdout output, but in this case our "the
 quick brown fox" message was replaced with "Hello world!"
 
 All done! :)
-
-
-
-
-
