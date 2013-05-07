@@ -16,6 +16,7 @@ ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
+KIBANA_URL=https://github.com/elasticsearch/kibana3/archive/master.tar.gz
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 QUIET=@
 
@@ -153,6 +154,7 @@ build/ruby: | build
 .PHONY: build/monolith
 build/monolith: $(ELASTICSEARCH) $(JRUBY) $(GEOIP) vendor-gems | build
 build/monolith: vendor/ua-parser/regexes.yaml
+build/monolith: vendor/kibana
 build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)mkdir -p $@
 	@# Unpack all the 3rdparty jars and any jars in gems
@@ -175,6 +177,7 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)mkdir -p $@/vendor/ua-parser
 	-$(QUIET)cp vendor/ua-parser/regexes.yaml $@/vendor/ua-parser
 	$(QUIET)cp $(GEOIP) $@/
+	-$(QUIET)rsync vendor/kibana/ $@/vendor/kibana/
 
 vendor/ua-parser/: | build
 	$(QUIET)mkdir $@
@@ -350,11 +353,6 @@ package:
 		./build.sh debian 6; \
 	)
 
-kibana: | build
-	$(QUIET)mkdir build/kibana || true
-	$(QUIET)[ -f build/kibana/kibana.gemspec ] || $(QUIET)$(DOWNLOAD_COMMAND) - https://github.com/rashidkpc/Kibana/archive/v0.2.0.tar.gz | tar -C build/kibana --strip-components 1 -zx 
-	$(QUIET)grep -v thin build/kibana/kibana.gemspec > build/kibana/kibanablah.gemspec
-	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb build/kibana/kibanablah.gemspec
-
-kibana-flatjar: | kibana
-	$(QUIET)jar uf build/logstash-$(VERSION)-flatjar.jar -C build/kibana .
+vendor/kibana: | build
+	$(QUIET)mkdir vendor/kibana || true
+	$(DOWNLOAD_COMMAND) - $(KIBANA_URL) | tar -C $@ -zx --strip-components=1
