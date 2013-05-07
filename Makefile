@@ -30,7 +30,7 @@ else
 TAR_OPTS=--wildcards
 endif
 
-TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/event.rb spec/outputs/graphite.rb)
+TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/event.rb spec/outputs/graphite.rb spec/outputs/email.rb)
 default: jar
 
 # Figure out if we're using wget or curl
