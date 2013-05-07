@@ -1,3 +1,8 @@
+1.1.12 (May 7, 2013)
+  ## filters
+  - bugfix: useragent filter now works correctly with the built-in regexes.yaml
+  - bugfix: mail output with smtp now works again
+
 1.1.11 (May 7, 2013)
   ## general
   - This release is primarily a bugfix release for bugs introduced by the
