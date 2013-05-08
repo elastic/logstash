@@ -81,10 +81,10 @@ module LogStash::Kibana
           settings.port = port.to_i
         end
 
-        opts.on("-b", "--backend host",
-                "The backend host to use. Default is 'localhost'") do |host|
-          settings.backend = host
-        end
+        #opts.on("-b", "--backend host",
+                #"The backend host to use. Default is 'localhost'") do |host|
+          #settings.backend = host
+        #end
       end
 
       args = opts.parse(args)
