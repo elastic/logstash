@@ -15,6 +15,7 @@ describe LogStash::Filters::Mutate do
           replace => [ "replaceme", "hello world" ]
           replace => [ "newfield", "newnew" ]
           update => [ "nosuchfield", "weee" ]
+          update => [ "updateme", "updated" ]
           remove => [ "removeme" ]
         }
       }
@@ -26,6 +27,7 @@ describe LogStash::Filters::Mutate do
       "intme" => [ "1234", "7890.4", "7.9" ],
       "floatme" => [ "1234.455" ],
       "rename1" => [ "hello world" ],
+      "updateme" => [ "who cares" ],
       "replaceme" => [ "who cares" ],
       "removeme" => [ "something" ]
       }
@@ -43,6 +45,7 @@ describe LogStash::Filters::Mutate do
       insist { subject }.include?("newfield")
       insist { subject["newfield"] } == "newnew"
       reject { subject }.include?("nosuchfield")
+      insist { subject["updateme"] } == "updated"
     end
   end
 
