@@ -80,7 +80,11 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
       line, client = @udp.recvfrom(8192)
       # Ruby uri sucks, so don't use it.
       source = "gelf://#{client[3]}/"
-      data = Gelfd::Parser.parse(line)
+      begin
+        data = Gelfd::Parser.parse(line)
+      rescue => ex
+        @logger.warn("Gelfd failed to parse a message skipping", :exception => ex, :backtrace => ex.backtrace)
+      end
 
       # The nil guard is needed to deal with chunked messages.
       # Gelfd::Parser.parse will only return the message when all chunks are
