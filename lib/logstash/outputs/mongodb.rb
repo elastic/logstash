@@ -27,6 +27,11 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
   # http://www.mongodb.org/display/DOCS/Dates
   config :isodate, :validate => :boolean, :default => false
 
+  # If true, remove the leading "@" sign on top level hash keys
+  # which will create MongoDB documents with Javascript/V8 compatible
+  # variable names (which cannot start with "@").
+  config :atchop, :validate => :boolean, :default => false
+
   # Number of seconds to wait after failure before retrying
   config :retry_delay, :validate => :number, :default => 3, :required => false
 
@@ -54,10 +59,16 @@ class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
         # the mongodb driver wants time values as a ruby Time object.
         # set the @timestamp value of the document to a ruby Time object, then.
         document = event.to_hash.merge("@timestamp" => event.ruby_timestamp)
-        @mongodb.collection(event.sprintf(@collection)).insert(document)
       else
-        @mongodb.collection(event.sprintf(@collection)).insert(event.to_hash)
+        document = event.to_hash
       end
+      if @atchop
+        d = {}
+        document.each { |key, value| d[key.sub(/^@/, '')] = value }
+        document.replace(d)
+      end
+
+      @mongodb.collection(event.sprintf(@collection)).insert(document)
     rescue => e
       @logger.warn("Failed to send event to MongoDB", :event => event, :exception => e,
                    :backtrace => e.backtrace)
