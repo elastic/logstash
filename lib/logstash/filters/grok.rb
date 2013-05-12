@@ -152,21 +152,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   #
   config :match, :validate => :hash, :default => {}
 
-  # Shorthand for `match`.
-  #
-  #     filter {
-  #       grok {
-  #         # This configuration
-  #         match => [ "foo", "some pattern" ]
-  #
-  #         # is the same as this:
-  #         foo => "some pattern"
-  #       }
-  #     }
-  #
-  # It is preferable to use the `match` setting instead of this.
-  config /[A-Za-z0-9_-]+/, :validate => :string, :deprecated => true
-
   #
   # logstash ships by default with a bunch of patterns, so you don't
   # necessarily need to define this yourself unless you are adding additional
@@ -221,13 +206,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     @@patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
   end
 
-  # This flag becomes `--grok-patterns-path`
-  @@deprecated_flag_used = false
-  flag("--patterns-path PATH", "Colon-delimited path of patterns to load") do |val|
-    @@deprecated_flag_used = true
-    @@patterns_path += val.split(":")
-  end
-
   public
   def initialize(params)
     super(params)
@@ -238,12 +216,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   public
   def register
     require "grok-pure" # rubygem 'jls-grok'
-
-    if @@deprecated_flag_used
-      @logger.warn("The --grok-patterns-path flag is deprecated. This flag " \
-                   "is going away in the next release. Use the " \
-                   "'patterns_dir' setting in your logstash config instead")
-    end
 
     @patternfiles = []
 
@@ -273,22 +245,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
     @logger.info? and @logger.info("Match data", :match => @match)
 
-    # TODO(sissel): This can be removed once the 'field => [patterns]' syntax is removed.
-    @config.each do |field, pattern|
-      next if (RESERVED + ["match", "patterns_dir",
-               "drop_if_match", "named_captures_only", "pattern",
-               "keep_empty_captures", "break_on_match", "singles", "tag_on_failure"]).include?(field)
-      @logger.warn("#{self.class.config_name}: You used a deprecated setting '#{field} => \"#{pattern}\"'. You should use 'match => [ \"#{field}\", \"#{pattern}\" ]'")
-    end
-
-    # TODO(sissel): Hash.merge  actually overrides, not merges arrays.
-    # Work around it by implementing our own?
-    # TODO(sissel): Check if 'match' is empty?
-    @match.merge(@config).each do |field, patterns|
-      # Skip known config names
-      next if (RESERVED + ["match", "patterns_dir",
-               "drop_if_match", "named_captures_only", "pattern",
-               "keep_empty_captures", "break_on_match", "singles", "tag_on_failure"]).include?(field)
+    @match.each do |field, patterns|
       patterns = [patterns] if patterns.is_a?(String)
 
       if !@patterns.include?(field)
