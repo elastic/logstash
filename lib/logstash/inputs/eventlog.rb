@@ -17,15 +17,8 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
   config_name "eventlog"
   plugin_status "beta"
 
-  # Event Log Name. Depricated due to conflicts with puppet naming convention.
-  # Replaced by 'logfile' variable. See LOGSTASH-755
-  config :name, :validate => :string, :deprecated => true
-
   # Event Log Name
-  config :logfile, :validate => :string
-  #:required => true, :default => "System"
-
-  # TODO(sissel): Make 'logfile' required after :name is gone.
+  config :logfile, :validate => :string, :required => true, :default => "System"
 
   public
   def initialize(params)
@@ -35,14 +28,6 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
   public
   def register
-
-    if @name
-      @logger.warn("Please use 'logfile' instead of the 'name' setting")
-      if @logfile
-        @logger.error("'name' and 'logfile' are the same setting, but 'name' is deprecated. Please use only 'logfile'")
-      end
-      @logfile = @name
-    end
 
     if @logfile.nil?
       raise ArgumentError, "Missing required parameter 'logfile' for input/eventlog"

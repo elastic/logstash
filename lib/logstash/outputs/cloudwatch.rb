@@ -79,12 +79,6 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   COUNT_UNIT = "Count"
   NONE = "None"
 
-  # The `access_key` option is deprecated, please update your configuration to use `access_key_id` instead
-  config :access_key, :validate => :string, :deprecated => true
-
-  # The `secret_key` option is deprecated, please update your configuration to use `secret_access_key` instead
-  config :secret_key, :validate => :string, :deprecated => true
-
   # How often to send data to CloudWatch   
   # This does not affect the event timestamps, events will always have their
   # actual timestamp (to-the-minute) sent to CloudWatch.
@@ -169,12 +163,6 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
     require "thread"
     require "rufus/scheduler"
     require "aws"
-
-    # This should be removed when the deprecated aws credential options are removed
-    if (@access_key && @secret_key) 
-      @access_key_id = @access_key
-      @secret_access_key = @secret_key
-    end
 
     @cw = AWS::CloudWatch.new(aws_options_hash)
 
