@@ -32,7 +32,7 @@ if [ ! -f "$jar" ] ; then
   exit 1
 fi
 
-cp $jar $destdir/$prefix/
+cp $jar $destdir/$prefix/logstash.jar
 
 case $os@$release in
   centos@*)
