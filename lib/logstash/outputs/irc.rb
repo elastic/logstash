@@ -39,6 +39,9 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
   # Set this to true to enable SSL.
   config :secure, :validate => :boolean, :default => false
 
+  # Limit the rate of messages sent to IRC in messages per second.
+  config :messages_per_second, :validate => :number, :default => 0.5
+
   public
   def register
     require "cinch"
@@ -56,6 +59,7 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
       c.channels = @channels
       c.password = @password.value rescue nil
       c.ssl.use = @secure
+      c.messages_per_second = @messages_per_second if @messages_per_second
     end
     Thread.new(@bot) do |bot|
       bot.start
