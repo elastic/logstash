@@ -32,7 +32,12 @@ TAR_OPTS=--wildcards
 endif
 
 TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/event.rb spec/outputs/graphite.rb spec/outputs/email.rb)
-default: jar
+default: 
+	@echo "Make targets you might be interested in:"
+	@echo "  flatjar -- builds the flatjar jar"
+	@echo "  flatjar-test -- runs the test suite against the flatjar"
+	@echo "  jar -- builds the monolithic jar"
+	@echo "  jar-test -- runs the test suite against the monolithic jar"
 
 # Figure out if we're using wget or curl
 .PHONY: wget-or-curl
@@ -176,7 +181,7 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)rm -f $@/META-INF/LICENSE $@/META-INF/LICENSE.txt
 	-$(QUIET)mkdir -p $@/vendor/ua-parser
 	-$(QUIET)cp vendor/ua-parser/regexes.yaml $@/vendor/ua-parser
-	$(QUIET)cp $(GEOIP) $@/
+	#$(QUIET)cp $(GEOIP) $@/
 	-$(QUIET)rsync -a vendor/kibana/ $@/vendor/kibana/
 
 vendor/ua-parser/: | build
@@ -236,9 +241,9 @@ flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
 	$(QUIET)rsync -va build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/flatgems/data build/jar/
-	$(QUIET)(cd lib; rsync -a --delete logstash/web/public ../build/jar/logstash/web/public)
-	$(QUIET)(cd lib; rsync -a --delete logstash/web/views ../build/jar/logstash/web/views)
-	$(QUIET)(cd lib; rsync -a --delete logstash/certs ../build/jar/logstash/certs)
+	$(QUIET)(cd lib; rsync -a --delete logstash/web/public/ ../build/jar/logstash/web/public)
+	$(QUIET)(cd lib; rsync -a --delete logstash/web/views/ ../build/jar/logstash/web/views)
+	$(QUIET)(cd lib; rsync -a --delete logstash/certs/ ../build/jar/logstash/certs)
 
 build/logstash-$(VERSION)-flatjar.jar: | build/jar
 	$(QUIET)rm -f $@
