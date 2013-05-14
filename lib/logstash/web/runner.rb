@@ -52,17 +52,14 @@ class LogStash::Web::Runner
       end
     end
 
-    $stderr.puts :parse
     args = opts.parse(args)
 
-    $stderr.puts :logfile
     if settings.logfile
       logfile = File.open(settings.logfile, "w")
       STDOUT.reopen(logfile)
       STDERR.reopen(logfile)
     end
 
-    $stderr.puts :thread
     @thread = Thread.new do
       Cabin::Channel.get.info("Starting web server", :settings => settings)
       Rack::Handler::FTW.run(LogStash::Web::Server.new(settings),
@@ -70,7 +67,6 @@ class LogStash::Web::Runner
                              :Port => settings.port)
     end
 
-    $stderr.puts :remaining
     return args
   end # def run
 
