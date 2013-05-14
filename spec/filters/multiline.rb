@@ -33,8 +33,8 @@ describe LogStash::Filters::Multiline do
     CONFIG
 
     sample [ "120913 12:04:33 first line", "second line", "third line" ] do
-      insist { subject.length } == 1
-      insist { subject[0].message } ==  "120913 12:04:33 first line\nsecond line\nthird line"
+      reject { subject}.is_a? Array
+      insist { subject.message } ==  "120913 12:04:33 first line\nsecond line\nthird line"
     end
   end
 
