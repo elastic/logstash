@@ -4,6 +4,7 @@ require "date"
 require "logstash/time_addon"
 require "logstash/namespace"
 require "uri"
+require "set"
 
 # General event type. 
 # Basically a light wrapper on top of a hash.
@@ -17,7 +18,7 @@ module LogStash::EventV0
 
     @data = {
       "@source" => "unknown",
-      "@tags" => [],
+      "@tags" => Set.new,
       "@fields" => {},
     }
     @data.merge!(data) unless data.nil?
@@ -111,7 +112,7 @@ module LogStash::EventV0
 
   public
   def tags; @data["@tags"]; end # def tags
-  def tags=(val); @data["@tags"] = val; end # def tags=
+  def tags=(val); @data["@tags"] = val.to_set; end # def tags=
 
   def id; @data["@id"]; end # def id
   def id=(val); @data["@id"] = val; end # def id=
