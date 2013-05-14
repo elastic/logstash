@@ -54,8 +54,6 @@ module LogStash
         plugin.register
       end
 
-      multiple_events = event.is_a?(Array)
-
       filters = @filters
       name = event.to_s
       name = name[0..50] + "..." if name.length > 50
@@ -76,7 +74,9 @@ module LogStash
           event.each do |e|
             filters.each do |filter|
               next if e.cancelled?
-              filter.filter(e)
+              filter.filter(e) do |newevent|
+                event << newevent
+              end
             end
             results << e unless e.cancelled?
           end
@@ -100,11 +100,7 @@ module LogStash
           @results = results
         end # before :all
 
-        if multiple_events
-          subject { @results }
-        else
-          subject { @results.first }
-        end
+        subject { @results.length > 1 ? @results: @results.first }
         it("when processed", &block)
       end
     end # def sample
