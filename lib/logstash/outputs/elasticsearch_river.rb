@@ -86,13 +86,6 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
   public
   def register
 
-    if @name
-      if @queue
-        @logger.error("'name' and 'queue' are the same setting, but 'name' is deprecated. Please use only 'queue'")
-      end
-      @queue = @name
-    end
-
     # TODO(sissel): find a better way of declaring where the elasticsearch
     # libraries are
     # TODO(sissel): can skip this step if we're running from a jar.

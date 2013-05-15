@@ -26,9 +26,6 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   config_name "kv"
   plugin_status "beta"
 
-  # The fields to perform 'key=value' searching on
-  config :fields, :validate => :array
-
   # A string of characters to trim from the value. This is useful if your
   # values are wrapped in brackets or are terminated by comma (like postfix
   # logs)
@@ -82,13 +79,6 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     filter { kv { prefix => "arg_" } }
   config :prefix, :validate => :string, :default => ''
 
-  # The name of the container to put all of the key-value pairs into 
-  #
-  # Example, to place all keys into container kv:
-  #
-  #     filter { kv { container => "kv" } }
-  config :container, :validate => :string, :deprecated => true
-
   # The fields to perform 'key=value' searching on
   #
   # Example, to use the @message field:
@@ -106,23 +96,6 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
 
-    #TODO(electrical): Remove this when removing the container variable
-    if @container
-      if @target
-        logger.error("'container' and 'target' are the same setting, but 'container' is deprecated. Please use only 'target'")
-      end
-      @target = @container
-    end
-
-    #TODO(electrical): Remove this when removing the fields variable
-    if @source
-      if @fields
-        logger.error("'fields' and 'source' are the same setting, but 'fields' is deprecated. Please use only 'source'")
-      end
-      @fields=Array.new if @fields.nil?
-      @fields << @source
-    end
-
   end # def register
 
   def filter(event)
@@ -130,19 +103,17 @@ class LogStash::Filters::KV < LogStash::Filters::Base
 
     kv_keys=Hash.new
 
-    #TODO(electrical): Remove this loop when we remove the fields variable
-    @fields.each do |fieldname|
-      value = event[fieldname]
+    value = event[@source]
 
-      case value
-        when nil; #Nothing to do
-        when String; kv_keys = parse(value, event, kv_keys)
-        when Array; value.each { |v| kv_keys = parse(v, event, kv_keys) }
-        else 
-          @logger.warn("kv filter has no support for this type of data",
-                       :type => value.class, :value => value)
-      end # case value
-    end
+    case value
+      when nil; #Nothing to do
+      when String; kv_keys = parse(value, event, kv_keys)
+      when Array; value.each { |v| kv_keys = parse(v, event, kv_keys) }
+      else 
+        @logger.warn("kv filter has no support for this type of data",
+                     :type => value.class, :value => value)
+    end # case value
+
     # If we have any keys, create/append the hash
     if kv_keys.length > 0
       if !event[@target].nil?
