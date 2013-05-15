@@ -166,4 +166,24 @@ describe LogStash::Filters::Anonymize do
     end
   end
 
+  describe "Test field with multiple values" do
+    # The logstash config goes here.
+    # At this time, only filters are supported.
+    config <<-CONFIG
+      filter {
+        anonymize {
+          fields => ["clientip"]
+          key => "longencryptionkey"
+          algorithm => 'MD5'
+        }
+      }
+    CONFIG
+
+    sample "@fields" => {"clientip" => [ "123.123.123.123", "223.223.223.223" ]} do
+      insist { subject["clientip"]} == [ "9336c879e305c9604a3843fc3e75948f", "7a6c66b8d3f42a7d650e3354af508df3" ]
+    end
+  end
+
+  
+
 end
