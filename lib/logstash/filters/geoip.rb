@@ -24,10 +24,6 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
 
   # The field containing IP address, hostname is also OK. If this field is an
   # array, only the first value will be used.
-  config :field, :validate => :string, :deprecated => true
-
-  # The field containing IP address, hostname is also OK. If this field is an
-  # array, only the first value will be used.
   config :source, :validate => :string
 
   # Array of geoip fields that we want to be included in our event.
@@ -77,14 +73,6 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
       :isp
     else
       raise RuntimeException.new "This GeoIP database is not currently supported"
-    end
-
-    #TODO(electrical): Remove this when removing the field variable
-    if @field
-      if @source
-        logger.error("'field' and 'source' are the same setting, but 'field' is deprecated. Please use only 'source'")
-      end
-      @source = @field
     end
 
   end # def register

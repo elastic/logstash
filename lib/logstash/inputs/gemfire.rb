@@ -17,9 +17,6 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
   plugin_status "experimental"
 
   # Your client cache name
-  config :name, :validate => :string, :deprecated => true
-
-  # Your client cache name
   config :cache_name, :validate => :string, :default => "logstash"
 
   # The path to a GemFire client cache XML file.
@@ -53,13 +50,6 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
 
   # How the message is serialized in the cache. Can be one of "json" or "plain"; default is plain
   config :serialization, :validate => :string, :default => nil
-
-  if @name
-    if @cache_name
-      @logger.error("'name' and 'cache_name' are the same setting, but 'name' is deprecated. Please use only 'cache_name'")
-    end
-    @cache_name = @name
-  end
 
   public
   def initialize(params)
