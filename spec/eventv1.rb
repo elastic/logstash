@@ -9,7 +9,6 @@ describe LogStash::Event do
             "d" => "f",
             "e" => {"f" => "g"}
         }, 
-        "c" => { "d" => "e" },
         "f" => {"g" => { 
                 "h" => "i" 
             }
@@ -62,7 +61,7 @@ describe LogStash::Event do
     end
     it "should fetch fields" do
       insist { @event["a"] } == "b"
-      insist { @event['c']['d'] } == "e"
+      insist { @event['c']['d'] } == "f"
     end
     it "should fetch deep fields" do
       insist { @event["[j][k1]"] } == "v"
