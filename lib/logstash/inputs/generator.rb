@@ -55,6 +55,8 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   end # def register
 
   def run(queue)
+    super(queue)
+    
     number = 0
     source = "generator://#{@host}/"
 
@@ -67,14 +69,10 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
     while !finished? && (@count <= 0 || number < @count)
       if @lines
         @lines.each do |line|
-          event = to_event(line, source)
-          event["sequence"] = number
-          queue << event
+          @codec.decode(line, "source" => source, "sequence" => number)
         end
       else
-        event = to_event(@message.clone, source)
-        event["sequence"] = number
-        queue << event
+        @codec.decode(@message.clone, "source" => source, "sequence" => number)
       end
       number += 1
     end # loop

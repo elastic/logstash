@@ -31,7 +31,7 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
               finished
               return
             end
-            @print_method.call(event.to_hash)
+            @print_method.call(event)
           end
         when "json"
           define_singleton_method(:receive) do |event|
