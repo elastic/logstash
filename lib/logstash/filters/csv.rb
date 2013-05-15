@@ -11,7 +11,7 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
 
   # The CSV data in the value of the source field will be expanded into a
   # datastructure.
-  config :source, :validate => :string, :required => true
+  config :source, :validate => :string, :default => '@message'
 
   # Define a list of column names (in the order they appear in the CSV,
   # as if it were a header line). If this is not specified or there
