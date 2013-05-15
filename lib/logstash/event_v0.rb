@@ -49,12 +49,7 @@ module LogStash::EventV0
   # Create a deep-ish copy of this event.
   public
   def clone
-    newdata = @data.clone
-    newdata["@fields"] = {}
-    fields.each do |k,v|
-      newdata["@fields"][k] = v.clone
-    end
-    return LogStash::Event.new(newdata)
+    return LogStash::Event.new(Marshal.load(Marshal.dump(@data)))
   end # def clone
 
   public
