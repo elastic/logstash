@@ -8,7 +8,7 @@ describe LogStash::Filters::Date do
     config <<-CONFIG
       filter {
         date {
-          mydate => "ISO8601"
+          match => [ "mydate", "ISO8601" ]
         }
       }
     CONFIG
@@ -44,7 +44,7 @@ describe LogStash::Filters::Date do
     config <<-CONFIG
       filter {
         date {
-          mydate => "MMM dd HH:mm:ss Z"
+          match => [ "mydate", "MMM dd HH:mm:ss Z" ]
         }
       }
     CONFIG
@@ -69,7 +69,7 @@ describe LogStash::Filters::Date do
     config <<-CONFIG
       filter {
         date {
-          mydate => "UNIX"
+          match => [ "mydate", "UNIX" ]
         }
       }
     CONFIG
@@ -95,7 +95,7 @@ describe LogStash::Filters::Date do
     config <<-CONFIG
       filter {
         date {
-          mydate => "UNIX"
+          match => [ "mydate", "UNIX" ]
         }
       }
     CONFIG
@@ -109,7 +109,7 @@ describe LogStash::Filters::Date do
     config <<-CONFIG
       filter {
         date {
-          mydate => "UNIX_MS"
+          match => [ "mydate", "UNIX_MS" ]
         }
       }
     CONFIG
@@ -148,7 +148,7 @@ describe LogStash::Filters::Date do
       }
       filter {
         date {
-          mydate => [ "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+          match => [ "mydate", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
         }
       }
       output { 

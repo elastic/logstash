@@ -29,12 +29,8 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   # The exchange type (fanout, topic, direct)
   config :exchange_type, :validate => [ "fanout", "direct", "topic"], :required => true
 
-  # The name of the exchange. Depricated due to conflicts with puppet naming convention.
-  # Replaced by 'exchange' variable. See LOGSTASH-755
-  config :name, :validate => :string, :deprecated => true
-
   # The name of the exchange
-  config :exchange, :validate => :string # TODO(sissel): Make it required when 'name' is gone
+  config :exchange, :validate => :string, :required => true
 
   # Key to route to by default. Defaults to 'logstash'
   #
@@ -63,13 +59,6 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   public
   def register
     require "bunny" # rubygem 'bunny'
-
-    if @name
-      if @exchange
-        @logger.error("'name' and 'exchange' are the same setting, but 'name' is deprecated. Please use only 'exchange'")
-      end
-      @exchange = @name
-    end
 
     @logger.info("Registering output", :plugin => self)
     connect

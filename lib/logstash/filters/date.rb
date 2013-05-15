@@ -33,11 +33,6 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #
   config :locale, :validate => :string
 
-  # This is short-hand for `match => [ "fieldname", "dateformat" ]`
-  #
-  # It is deprecated. Please use 'match' instead.
-  config /[A-Za-z0-9_-]+/, :validate => :array, :deprecated => true
-
   # The date formats allowed are anything allowed by Joda-Time (java time
   # library): You can see the docs for this format here:
   #
@@ -118,14 +113,6 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     # TODO(sissel): Need a way of capturing regexp configs better.
     locale = parseLocale(@config["locale"][0]) if @config["locale"] != nil and @config["locale"][0] != nil
     missing = []
-    @config.each do |field, value|
-      next if (RESERVED + ["locale", "match"]).include?(field)
-
-      recommended_setting = value.map { |v| "\"#{v}\"" }.join(", ")
-      @logger.warn("#{self.class.config_name}: You used a deprecated setting '#{field} => #{value}'. You should use 'match => [ \"#{field}\", #{recommended_setting} ]'")
-      # values here are an array of format strings for the given field.
-      setupMatcher(field, locale, missing, value) # value.each
-    end # @config.each
     setupMatcher(@config["match"].shift, locale, missing, @config["match"] )
   end
 
