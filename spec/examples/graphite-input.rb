@@ -21,7 +21,7 @@ describe "receive graphite input" do
       }
       date {
         type => "graphite"
-        ts => UNIX
+        match => ["ts", UNIX]
       }
       mutate {
         type => "graphite"
