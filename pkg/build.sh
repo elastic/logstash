@@ -39,6 +39,8 @@ case $os@$release in
     mkdir -p $destdir/etc/logrotate.d
     mkdir -p $destdir/etc/sysconfig
     mkdir -p $destdir/etc/init.d
+	mkdir -p $destdir/etc/logstash/conf.d
+	mkdir -p $destdir/opt/logstash
     mkdir -p $destdir/var/lib/logstash
     mkdir -p $destdir/var/run/logstash
     mkdir -p $destdir/var/log/logstash
