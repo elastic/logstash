@@ -12,7 +12,7 @@ describe "apache common log format" do
         singles => true
       }
       date {
-        timestamp => "dd/MMM/yyyy:HH:mm:ss Z"
+        match => ["timestamp", "dd/MMM/yyyy:HH:mm:ss Z"]
       }
     }
   CONFIG

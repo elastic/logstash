@@ -17,7 +17,7 @@ describe "parse syslog" do
       }
       date {
           type => "syslog"
-          syslog_timestamp => [ "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+          match => ["syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
       }
       mutate {
           type => "syslog"
