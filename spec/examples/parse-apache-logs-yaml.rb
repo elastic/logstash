@@ -11,7 +11,7 @@ describe "apache common log format" do
           pattern: "%{COMBINEDAPACHELOG}"
           singles: true
       - date:
-          timestamp: "dd/MMM/yyyy:HH:mm:ss Z"
+          match: [timestamp, "dd/MMM/yyyy:HH:mm:ss Z"]
   CONFIG
 
   # Here we provide a sample log event for the testing suite.

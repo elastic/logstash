@@ -45,22 +45,20 @@ describe "https://groups.google.com/forum/?fromgroups=#!topic/logstash-users/Ec8
 
   # Try with a proper multiline event
   sample [ line1, line2 ] do
-    insist { subject.count } == 1
+    reject { subject }.is_a? Array
 
-    event = subject.first # get the first event.
-
-    insist { event.tags }.include?("dev")
-    insist { event.tags }.include?("console")
-    insist { event.tags }.include?("multiline")
+    insist { subject.tags }.include?("dev")
+    insist { subject.tags }.include?("console")
+    insist { subject.tags }.include?("multiline")
 
     # grok shouldn't fail.
-    reject { event.tags }.include?("_grokparsefailure")
+    reject { subject.tags }.include?("_grokparsefailure")
 
     # Verify grok is working and pulling out certain fields
-    insist { event.tags }.include?("mytag")
-    insist { event["log_time"] } == "2012-11-13 13:55:37,706"
-    insist { event["thread"] } == "appname.connector.http.mule.default.receiver.14"
-    insist { event["log_level"] } == "INFO"
-    insist { event["class_name"] } == "LoggerMessageProcessor"
+    insist { subject.tags }.include?("mytag")
+    insist { subject["log_time"] } == "2012-11-13 13:55:37,706"
+    insist { subject["thread"] } == "appname.connector.http.mule.default.receiver.14"
+    insist { subject["log_level"] } == "INFO"
+    insist { subject["class_name"] } == "LoggerMessageProcessor"
   end
 end
