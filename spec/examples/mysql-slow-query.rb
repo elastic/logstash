@@ -32,7 +32,7 @@ describe "parse mysql slow query log" do
       }
 
       date {
-        timestamp => UNIX
+        match => ["timestamp", UNIX]
       }
 
       mutate {
@@ -51,20 +51,19 @@ SELECT option_name, option_value FROM wp_options WHERE autoload = 'yes';
 MYSQL_SLOW_LOGS
 
   sample lines.split("\n") do
-    insist { subject.size } == 1 # 1 event
-    event = subject.first
-    insist { event.message.split("\n").size } == 5 # 5 lines
+    reject { subject }.is_a? Array # 1 event expected
+    insist { subject.message.split("\n").size } == 5 # 5 lines
 
     lines.split("\n")[1..5].each_with_index do |line, i|
-      insist { event.message.split("\n")[i] } == line
+      insist { subject.message.split("\n")[i] } == line
     end
 
-    insist { event["user"] } == "someuser"
-    insist { event["host"] } == "db.example.com"
-    insist { event["ip"] } == "1.2.3.4"
-    insist { event["duration"] } == 0.018143
-    insist { event["lock_wait"] } == 0.000042
-    insist { event["results"] } == 237
-    insist { event["scanned"] } == 286
+    insist { subject["user"] } == "someuser"
+    insist { subject["host"] } == "db.example.com"
+    insist { subject["ip"] } == "1.2.3.4"
+    insist { subject["duration"] } == 0.018143
+    insist { subject["lock_wait"] } == 0.000042
+    insist { subject["results"] } == 237
+    insist { subject["scanned"] } == 286
   end
 end
