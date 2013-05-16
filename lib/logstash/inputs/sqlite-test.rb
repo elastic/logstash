@@ -31,7 +31,7 @@ require "jdbc/sqlite3"
         init_placeholder(db, table) 
         return 0
       else
-        p "placeholder already exists"
+        p "placeholder already exists, it is #{x[:place]}"
         return x[:place][:place]
       end
     end
@@ -39,7 +39,7 @@ require "jdbc/sqlite3"
     public
     def update_placeholder(db, table, place)
       since = db[:since_table]
-      since.insert(:table => table, :place => place)
+      since.where(:table => table).update(:place => place)
     end
       
     public 
@@ -51,7 +51,9 @@ require "jdbc/sqlite3"
     
     public
     def get_n_rows_from_table(db, table, offset, limit)
-      return db["SELECT * FROM #{table} WHERE ('id' > #{offset}) ORDER BY 'id' LIMIT #{limit}"].map { |row| row }
+      p "Selecting from #{table} where id is at leasat #{offset}"
+      dataset = db["SELECT * FROM #{table}"]
+      return db["SELECT * FROM #{table} WHERE (id >= #{offset}) ORDER BY 'id' LIMIT #{limit}"].map { |row| row }
     end
       
     @DB = Sequel.connect("jdbc:sqlite:/home/ec2-user/u2/log/log.db") 
@@ -59,18 +61,21 @@ require "jdbc/sqlite3"
     tables = get_all_tables(@DB)
 
     #init table stuff
+    table_data = Hash.new
     tables.each{ |table|
       init_placeholder_table(@DB)
       last_place = get_placeholder(@DB, table)
-      puts table
-      #puts last_place
+      table_data[table] = { :name => table, :place => last_place }
+      #puts table
     }
 
     #looped tabled stuff
-    tables.each{ |table|
-      offset = 10
+    table_data.each{ |k, table|
+      puts table
+      offset = table[:place]
       limit = 5
-      #puts get_n_rows_from_table(@DB, table, offset, limit)
-      #update_placeholder(@DB, table, offset+limit)
+      table_name = table[:name]
+      puts get_n_rows_from_table(@DB, table_name, offset, limit)
+      update_placeholder(@DB, table_name, offset+limit)
     }
 
