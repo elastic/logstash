@@ -18,14 +18,14 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
   end # def register
 
   def run(queue)
+    enable_codecs(queue)
     while true
       begin
-        e = to_event($stdin.readline.chomp, "stdin://#{@host}/")
+        @codec.decode($stdin.readline.chomp, "source" => "stdin://#{@host}/")
       rescue EOFError => ex
         # stdin closed, finish
         break
       end
-      queue << e if e
     end # while true
     finished
   end # def run

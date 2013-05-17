@@ -114,6 +114,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
   public
   def run(queue)
+    enable_codecs(queue)
     @tail = FileWatch::Tail.new(@tail_config)
     @tail.logger = @logger
     @path.each { |path| @tail.tail(path) }
@@ -123,10 +124,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       #source = Addressable::URI.new(:scheme => "file", :host => hostname, :path => path).to_s
       source = "file://#{hostname}/#{path.gsub("\\","/")}"
       @logger.debug? && @logger.debug("Received line", :path => path, :line => line)
-      e = to_event(line, source)
-      if e
-        queue << e
-      end
+      @codec.decode line, "source" => source
     end
     finished
   end # def run

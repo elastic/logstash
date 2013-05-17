@@ -55,8 +55,8 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   end # def register
 
   def run(queue)
-    super(queue)
-    
+    enable_codecs(queue)
+
     number = 0
     source = "generator://#{@host}/"
 
