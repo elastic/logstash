@@ -73,12 +73,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
   end # def initialize
 
   public
-  def set_queue(queue)
-    @codec = LogStash::Codecs.for(@codec).new(queue)
-    @codec.charset = @charset
-  end #set_queue
-
-  public
   def register
     raise "#{self.class}#register must be overidden"
   end # def register
@@ -89,7 +83,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   end # def tag
 
   protected
-  def run(queue)
+  def enable_codecs(queue)
     @codec = LogStash::Codecs.for(@codec).new(queue)
     @codec.charset = @charset
   end

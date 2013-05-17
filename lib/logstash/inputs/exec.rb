@@ -32,14 +32,13 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
 
   public
   def run(queue)
+    enable_codecs(queue)
     loop do
       start = Time.now
       @logger.info("Running exec", :command => @command) if @debug
       out = IO.popen(@command)
       # out.read will block until the process finishes.
-      e = to_event(out.read, "exec://#{Socket.gethostname}/")
-      e["command"] = @command
-      queue << e
+      @codec.decode(out.read, "source" => "exec://#{Socket.gethostname}", "command" => @command)
 
       duration = Time.now - start
       if @debug

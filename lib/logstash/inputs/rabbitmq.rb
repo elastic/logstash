@@ -83,7 +83,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
     super
 
     @format ||= "json_event"
-
+    @codec = "json"
   end # def initialize
 
   public
@@ -114,6 +114,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   end # def register
 
   def run(queue)
+    enable_codecs(queue)
     begin
       @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up queue #{@queue.inspect}")
       @bunny = Bunny.new(@amqpsettings)
@@ -127,10 +128,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
       @bunnyqueue.bind(@exchange, :key => @key)
 
       @bunnyqueue.subscribe({:ack => @ack}) do |data|
-        e = to_event(data[:payload], @amqpurl)
-        if e
-          queue << e
-        end
+        @codec.decode(data[:payload, "source" => @amqpurl])
       end # @bunnyqueue.subscribe
 
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
