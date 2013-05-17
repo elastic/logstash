@@ -17,9 +17,4 @@ class LogStash::Codecs::Plain < LogStash::Codecs::Base
     event.to_s
   end # def encode
 
-  public
-  def on_event(&block)
-    @on_event = block
-  end
-
 end # class LogStash::Codecs::Plain
