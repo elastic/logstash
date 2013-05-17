@@ -13,9 +13,4 @@ class LogStash::Codecs::Json < LogStash::Codecs::Base
     @on_event.call event.to_json
   end # def encode
 
-  public
-  def on_event(&block)
-    @on_event = block
-  end
-
 end # class LogStash::Codecs::Json
