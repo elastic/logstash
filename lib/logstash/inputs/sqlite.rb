@@ -19,7 +19,7 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
           Int    :place
         end
       rescue
-        p 'since tables already exists'
+        @logger.debug('since tables already exists')
       end
     end
 
@@ -33,21 +33,21 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
         init_placeholder(db, table) 
         return 0
       else
-        p "placeholder already exists, it is #{x[:place]}"
+        @logger.debug("placeholder already exists, it is #{x[:place]}")
         return x[:place][:place]
       end
     end
 
     public 
     def init_placeholder(db, table)
-      p "init placeholder for #{table}"
+      @logger.debug("init placeholder for #{table}")
       since = db[:since_table]
       since.insert(:table => table, :place => 1)
     end
 
     public
     def update_placeholder(db, table, place)
-      @logger.info("set placeholder to #{place}")
+      @logger.debug("set placeholder to #{place}")
       since = db[:since_table]
       since.where(:table => table).update(:place => place)
     end
@@ -61,7 +61,7 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
     
     public
     def get_n_rows_from_table(db, table, offset, limit)
-      @logger.info("Selecting from #{table} where id is at leasat #{offset}")
+      #@logger.debug("Selecting from #{table} where id is at least #{offset}")
       dataset = db["SELECT * FROM #{table}"]
       return db["SELECT * FROM #{table} WHERE (id >= #{offset}) ORDER BY 'id' LIMIT #{limit}"].map { |row| row }
     end
@@ -71,7 +71,6 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
       require "digest/md5"
       LogStash::Util::set_thread_name("input|sqlite|#{dbfile}")
       @logger.info("Registering sqlite input", :database => @dbfile)
-      @logger.debug("connecting to sqlite db'#{@dbfile}'")
       @DB = Sequel.connect("jdbc:sqlite:#{dbfile}") 
       @tables = get_all_tables(@DB)
       @table_data = Hash.new
@@ -93,10 +92,16 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
             offset = table[:place]
             limit = 5
             @logger.debug("offset is #{offset}")
-            #@logger.info(get_n_rows_from_table(@DB, table_name, offset, limit))
-            line = get_n_rows_from_table(@DB, table_name, offset, limit)
-            @logger.info(line)
-            e = to_event('line', "sqlite://#{@db}")
+            lines = get_n_rows_from_table(@DB, table_name, offset, limit)
+            lines.each{ |line| 
+                line.delete(:id)
+                @logger.debug(line)
+                entry = {
+                   "@timestamp" => line[:time],
+                   "@tags" => [],
+                }
+                e = to_event(JSON.dump(entry), "sqlite://#{@db}")
+            }
             update_placeholder(@DB, table_name, offset+limit)
             @table_data[k][:place] = offset+limit
           }
