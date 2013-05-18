@@ -61,7 +61,6 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
     
     public
     def get_n_rows_from_table(db, table, offset, limit)
-      #@logger.debug("Selecting from #{table} where id is at least #{offset}")
       dataset = db["SELECT * FROM #{table}"]
       return db["SELECT * FROM #{table} WHERE (id >= #{offset}) ORDER BY 'id' LIMIT #{limit}"].map { |row| row }
     end
@@ -96,7 +95,6 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
             lines = get_n_rows_from_table(@DB, table_name, offset, limit)
             lines.each{ |line| 
                 line.delete(:id)
-                #@logger.debug(line.class)
                 entry = {}
                 line.each { |name,element|
                   entry["@#{name}"] = element
