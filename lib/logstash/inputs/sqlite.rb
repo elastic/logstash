@@ -5,7 +5,7 @@ require "jdbc/sqlite3"
 
 class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
     config_name "sqlite"
-    plugin_status "beta"
+    plugin_status "experimental"
 
     config :dbfile, :validate => :string, :required => true
     config :exclude, :validate => :array
@@ -71,6 +71,7 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
       require "digest/md5"
       LogStash::Util::set_thread_name("input|sqlite|#{dbfile}")
       @logger.info("Registering sqlite input", :database => @dbfile)
+      @format = "json_event"
       @DB = Sequel.connect("jdbc:sqlite:#{dbfile}") 
       @tables = get_all_tables(@DB)
       @table_data = Hash.new
@@ -95,12 +96,19 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
             lines = get_n_rows_from_table(@DB, table_name, offset, limit)
             lines.each{ |line| 
                 line.delete(:id)
-                @logger.debug(line)
-                entry = {
-                   "@timestamp" => line[:time],
-                   "@tags" => [],
+                #@logger.debug(line.class)
+                entry = {}
+                line.each { |name,element|
+                  entry["@#{name}"] = element
                 }
-                e = to_event(JSON.dump(entry), "sqlite://#{@db}")
+
+                begin
+                  e = to_event(JSON.dump(entry), "sqlite://#{@dbfile}")
+                rescue EOFError => ex
+                  # stdin closed, finish
+                  break
+                end
+                queue << e if e
             }
             update_placeholder(@DB, table_name, offset+limit)
             @table_data[k][:place] = offset+limit
