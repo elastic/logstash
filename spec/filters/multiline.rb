@@ -90,4 +90,27 @@ describe LogStash::Filters::Multiline do
       end
     end
   end
+
+  describe "multiline add/remove tags and fields only when matched" do
+    config <<-CONFIG
+      filter {
+        mutate {
+          add_tag => "dummy"
+        }
+        multiline {
+          add_tag => [ "nope" ]
+          remove_tag => "dummy"
+          add_field => [ "dummy2", "value" ]
+          pattern => "an unlikely match"
+          what => previous
+        }
+      }
+    CONFIG
+
+    sample [ "120913 12:04:33 first line", "120913 12:04:33 second line" ] do
+      subject.each do |s|
+        insist { s.tags.find_index("nope").nil? && s.tags.find_index("dummy") != nil && !s.fields.has_key?("dummy2") } == true
+      end
+    end
+  end
 end
