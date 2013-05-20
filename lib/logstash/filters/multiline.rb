@@ -217,7 +217,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
       @logger.warn("Unknown multiline 'what' value.", :what => @what)
     end # case @what
 
-    if !event.cancelled?
+    if match and !event.cancelled?
       filter_matched(event)
     end
   end # def filter
