@@ -10,14 +10,14 @@ class LogStash::Filters::Cipher < LogStash::Filters::Base
 
   # The field to perform filter
   #
-  # Example, to use the @message field:
+  # Example, to use the @message field (default) :
   #
   #     filter { cipher { source => "@message" } }
   config :source, :validate => :string, :default => '@message'
 
   # The name of the container to put the result
   #
-  # Example, to place the reqult into crypt :
+  # Example, to place the result into crypt :
   #
   #     filter { cipher { target => "crypt" } }
   config :target, :validate => :string, :default => '@message'
@@ -57,10 +57,18 @@ class LogStash::Filters::Cipher < LogStash::Filters::Base
   # Valid values are encrypt or decrypt
   config :mode, :validate => :string, :required => true
 
-  # Cypher padding to use
+  # Cypher padding to use. Enables or disables padding. 
+  #
+  # By default encryption operations are padded using standard block padding 
+  # and the padding is checked and removed when decrypting. If the pad 
+  # parameter is zero then no padding is performed, the total amount of data 
+  # encrypted or decrypted must then be a multiple of the block size or an 
+  # error will occur.
+  #
+  # See EVP_CIPHER_CTX_set_padding for further information.
   #
   # We are using Openssl jRuby which uses default padding to PKCS5Padding
-  # If you want to change it, set this paramter. If you want to change
+  # If you want to change it, set this parameter. If you want to disable
   # it, Set this parameter to 0
   #     filter { cipher { padding => 0 }}
   config :cipher_padding, :validate => :string
@@ -75,7 +83,7 @@ class LogStash::Filters::Cipher < LogStash::Filters::Base
 
   def register
     require 'base64' if @base64
-    # TODO : check if bad encryption fail the plugin
+    #Cipher init
     @cipher = OpenSSL::Cipher.new(@algorithm)
     if @mode == "encrypt"
       @cipher.encrypt
@@ -86,6 +94,8 @@ class LogStash::Filters::Cipher < LogStash::Filters::Base
       raise "Bad configuration, aborting."
     end
 
+    #The key size depends of the cypher algotythm, 
+    #the size is fixed and need to be padded or reduced if the size of the given key doesn't fit.
     if @key.length != @key_size
       @logger.debug("key length is " + @key.length.to_s + ", padding it to " + @key_size.to_s + " with '" + @key_pad.to_s + "'")
       @key = @key[0,32].ljust(32,@key_pad)
@@ -104,6 +114,8 @@ class LogStash::Filters::Cipher < LogStash::Filters::Base
   def filter(event)
     return unless filter?(event)
 
+
+    #If decrypt or encrypt fails, we keep it it intact.
     begin
       #@logger.debug("Event to filter", :event => event)
       data = event[@source]
@@ -119,6 +131,7 @@ class LogStash::Filters::Cipher < LogStash::Filters::Base
     else
       event[@target]= result
       #Is it necessary to add 'if !result.nil?' ? exception have been already catched.
+      #In doubt, I keep it.
       filter_matched(event) if !result.nil?
     end
   end # def filter
