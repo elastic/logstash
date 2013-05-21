@@ -83,33 +83,9 @@ class LogStash::Filters::Cipher < LogStash::Filters::Base
 
   def register
     require 'base64' if @base64
-    #Cipher init
-    @cipher = OpenSSL::Cipher.new(@algorithm)
-    if @mode == "encrypt"
-      @cipher.encrypt
-    elsif @mode == "decrypt"
-      @cipher.decrypt
-    else
-      @logger.error("Invalid cipher mode. Valid values are \"encrypt\" or \"decrypt\"", :mode => @mode)
-      raise "Bad configuration, aborting."
-    end
-
-    #The key size depends of the cypher algotythm, 
-    #the size is fixed and need to be padded or reduced if the size of the given key doesn't fit.
-    if @key.length != @key_size
-      @logger.debug("key length is " + @key.length.to_s + ", padding it to " + @key_size.to_s + " with '" + @key_pad.to_s + "'")
-      @key = @key[0,32].ljust(32,@key_pad)
-    end
-
-    @cipher.key = @key
-
-    @cipher.iv = @iv if @iv
-
-    @cipher.padding = @cipher_padding if @cipher_padding
-
-    #@logger.debug(:mode => @mode, :key => @key, :iv => @iv, :cipher_padding => @cipher_padding)
-
+    init_cipher
   end # def register
+
 
   def filter(event)
     return unless filter?(event)
@@ -133,6 +109,36 @@ class LogStash::Filters::Cipher < LogStash::Filters::Base
       #Is it necessary to add 'if !result.nil?' ? exception have been already catched.
       #In doubt, I keep it.
       filter_matched(event) if !result.nil?
+      #Too much bad result can be a problem, reinit cipher prevent this.
+      init_cipher
     end
   end # def filter
+
+  def init_cipher
+
+    @cipher = OpenSSL::Cipher.new(@algorithm)
+    if @mode == "encrypt"
+      @cipher.encrypt
+    elsif @mode == "decrypt"
+      @cipher.decrypt
+    else
+      @logger.error("Invalid cipher mode. Valid values are \"encrypt\" or \"decrypt\"", :mode => @mode)
+      raise "Bad configuration, aborting."
+    end
+
+    if @key.length != @key_size
+      @logger.debug("key length is " + @key.length.to_s + ", padding it to " + @key_size.to_s + " with '" + @key_pad.to_s + "'")
+      @key = @key[0,32].ljust(32,@key_pad)
+    end
+
+    @cipher.key = @key
+
+    @cipher.iv = @iv if @iv
+
+    @cipher.padding = @cipher_padding if @cipher_padding
+
+    @logger.debug("Cipher initialisation done", :mode => @mode, :key => @key, :iv => @iv, :cipher_padding => @cipher_padding)
+  end # def init_cipher
+
+
 end # class LogStash::Filters::Cipher
