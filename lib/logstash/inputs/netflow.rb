@@ -98,28 +98,28 @@ end
 
 class TemplateFlowset < BinData::Record
   endian :big
-  array  :flowset_templates, :read_until => lambda { array.num_bytes == flowset_length - 4 } do
-    uint16 :flowset_template_id
-    uint16 :flowset_field_count
-    array  :flowset_fields, :initial_length => :flowset_field_count do
-      uint16 :flowset_field_type
-      uint16 :flowset_field_length
+  array  :templates, :read_until => lambda { array.num_bytes == flowset_length - 4 } do
+    uint16 :template_id
+    uint16 :field_count
+    array  :fields, :initial_length => :field_count do
+      uint16 :field_type
+      uint16 :field_length
     end
   end
 end
 
 class OptionFlowset < BinData::Record
   endian :big
-  uint16 :flowset_template_id
-  uint16 :flowset_scope_length
-  uint16 :flowset_option_length
-  array  :flowset_scope_fields, :initial_length => lambda { flowset_scope_length / 4 } do
-    uint16 :flowset_scope_field_type
-    uint16 :flowset_scope_field_length
+  uint16 :template_id
+  uint16 :scope_length
+  uint16 :option_length
+  array  :scope_fields, :initial_length => lambda { scope_length / 4 } do
+    uint16 :field_type
+    uint16 :field_length
   end
-  array  :flowset_option_fields, :initial_length => lambda { flowset_option_length / 4 } do
-    uint16 :flowset_option_field_type
-    uint16 :flowset_option_field_length
+  array  :option_fields, :initial_length => lambda { option_length / 4 } do
+    uint16 :field_type
+    uint16 :field_length
   end
   skip   :length => 2
 end
@@ -331,19 +331,18 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
           case record.flowset_id
           when 0
             # Template flowset
-            record.flowset_data.flowset_templates.each do |template|
+            record.flowset_data.templates.each do |template|
               catch (:field) do
                 fields = []
-                template.flowset_fields.each do |field|
-                  length = field.flowset_field_length
+                template.fields.each do |field|
                   # Worlds longest case statement begins...
-                  case field.flowset_field_type
+                  case field.field_type
                   when 1
-                    fields << [uint_field(length), :in_bytes]
+                    fields << [uint_field(field.field_length), :in_bytes]
                   when 2
-                    fields << [uint_field(length), :in_pkts]
+                    fields << [uint_field(field.field_length), :in_pkts]
                   when 3
-                    fields << [uint_field(length), :flows]
+                    fields << [uint_field(field.field_length), :flows]
                   when 4
                     fields << [:uint8, :protocol]
                   when 5
@@ -357,7 +356,7 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
                   when 9
                     fields << [:uint8, :src_mask]
                   when 10
-                    fields << [uint_field(length), :input_snmp]
+                    fields << [uint_field(field.field_length), :input_snmp]
                   when 11
                     fields << [:uint16, :l4_dst_port]
                   when 12
@@ -365,27 +364,27 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
                   when 13
                     fields << [:uint8, :dst_mask]
                   when 14
-                    fields << [uint_field(length), :output_snmp]
+                    fields << [uint_field(field.field_length), :output_snmp]
                   when 15
                     fields << [:ip4_addr, :ipv4_next_hop]
                   when 16
-                    fields << [uint_field(length), :src_as]
+                    fields << [uint_field(field.field_length), :src_as]
                   when 17
-                    fields << [uint_field(length), :dst_as]
+                    fields << [uint_field(field.field_length), :dst_as]
                   when 18
                     fields << [:ip4_addr, :bgp_ipv4_next_hop]
                   when 19
-                    fields << [uint_field(length), :mul_dst_pkts]
+                    fields << [uint_field(field.field_length), :mul_dst_pkts]
                   when 20
-                    fields << [uint_field(length), :mul_dst_bytes]
+                    fields << [uint_field(field.field_length), :mul_dst_bytes]
                   when 21
                     fields << [:uint32, :last_switched]
                   when 22
                     fields << [:uint32, :first_switched]
                   when 23
-                    fields << [uint_field(length), :out_bytes]
+                    fields << [uint_field(field.field_length), :out_bytes]
                   when 24
-                    fields << [uint_field(length), :out_pkts]
+                    fields << [uint_field(field.field_length), :out_pkts]
                   when 25
                     fields << [:uint16, :min_pkt_length]
                   when 26
@@ -417,11 +416,11 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
                   when 39
                     fields << [:uint8, :engine_id]
                   when 40
-                    fields << [uint_field(length), :total_bytes_exp]
+                    fields << [uint_field(field.field_length), :total_bytes_exp]
                   when 41
-                    fields << [uint_field(length), :total_pkts_exp]
+                    fields << [uint_field(field.field_length), :total_pkts_exp]
                   when 42
-                    fields << [uint_field(length), :total_flows_exp]
+                    fields << [uint_field(field.field_length), :total_flows_exp]
                   when 44
                     fields << [:ip4_addr, :ipv4_src_prefix]
                   when 45
@@ -435,12 +434,12 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
                   when 81
                     fields << [:mac_addr, :out_src_mac]
                   else
-                    @logger.warn("Unsupported field type #{field.flowset_field_type}")
+                    @logger.warn("Unsupported field type #{field.field_type}")
                     throw :field
                   end
                 end
                 # We get this far, we have a list of fields
-                key = "#{flowset.source_id}|#{client[3]}|#{template.flowset_template_id}"
+                key = "#{flowset.source_id}|#{client[3]}|#{template.template_id}"
                 @templates[key, @cache_ttl] = BinData::Struct.new(:endian => :big, :fields => fields)
 
                 # Purge any expired templates
