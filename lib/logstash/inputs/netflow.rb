@@ -110,18 +110,20 @@ end
 
 class OptionFlowset < BinData::Record
   endian :big
-  uint16 :template_id
-  uint16 :scope_length
-  uint16 :option_length
-  array  :scope_fields, :initial_length => lambda { scope_length / 4 } do
-    uint16 :field_type
-    uint16 :field_length
+  array  :templates, :read_until => lambda { flowset_length - 4 - array.num_bytes <= 2 } do
+    uint16 :template_id
+    uint16 :scope_length
+    uint16 :option_length
+    array  :scope_fields, :initial_length => lambda { scope_length / 4 } do
+      uint16 :field_type
+      uint16 :field_length
+    end
+    array  :option_fields, :initial_length => lambda { option_length / 4 } do
+      uint16 :field_type
+      uint16 :field_length
+    end
   end
-  array  :option_fields, :initial_length => lambda { option_length / 4 } do
-    uint16 :field_type
-    uint16 :field_length
-  end
-  skip   :length => 2
+  skip   :length => lambda { flowset_length % 4 }
 end
 
 class Netflow9PDU < BinData::Record
@@ -132,7 +134,7 @@ class Netflow9PDU < BinData::Record
   uint32 :unix_sec
   uint32 :flow_seq_num
   uint32 :source_id
-  array  :records, :initial_length => :flow_records do
+  array  :records, :read_until => :eof do
     uint16 :flowset_id
     uint16 :flowset_length
     choice :flowset_data, :selection => :flowset_id do
