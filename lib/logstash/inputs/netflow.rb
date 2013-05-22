@@ -123,7 +123,7 @@ class OptionFlowset < BinData::Record
       uint16 :field_length
     end
   end
-  skip   :length => lambda { flowset_length % 4 }
+  skip   :length => lambda { templates.length.odd? ? 2 : 0 }
 end
 
 class Netflow9PDU < BinData::Record
@@ -260,8 +260,134 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
 
   private
   def uint_field(length, default)
-    # If length is 4, return :uint32, etc. and use default is length is 0
+    # If length is 4, return :uint32, etc. and use default if length is 0
     ("uint" + (((length > 0) ? length : default) * 8).to_s).to_sym
+  end
+
+  def netflow_field_for(type, length)
+    case type
+    when 1
+      [[uint_field(length, 4), :in_bytes]]
+    when 2
+      [[uint_field(length, 4), :in_pkts]]
+    when 3
+      [[uint_field(length, 4), :flows]]
+    when 4
+      [[:uint8, :protocol]]
+    when 5
+      [[:uint8, :src_tos]]
+    when 6
+      [[:uint8, :tcp_flags]]
+    when 7
+      [[:uint16, :l4_src_port]]
+    when 8
+      [[:ip4_addr, :ipv4_src_addr]]
+    when 9
+      [[:uint8, :src_mask]]
+    when 10
+      [[uint_field(length, 2), :input_snmp]]
+    when 11
+      [[:uint16, :l4_dst_port]]
+    when 12
+      [[:ip4_addr, :ipv4_dst_addr]]
+    when 13
+      [[:uint8, :dst_mask]]
+    when 14
+      [[uint_field(length, 2), :output_snmp]]
+    when 15
+      [[:ip4_addr, :ipv4_next_hop]]
+    when 16
+      [[uint_field(length, 2), :src_as]]
+    when 17
+      [[uint_field(length, 2), :dst_as]]
+    when 18
+      [[:ip4_addr, :bgp_ipv4_next_hop]]
+    when 19
+      [[uint_field(length, 4), :mul_dst_pkts]]
+    when 20
+      [[uint_field(length, 4), :mul_dst_bytes]]
+    when 21
+      [[:uint32, :last_switched]]
+    when 22
+      [[:uint32, :first_switched]]
+    when 23
+      [[uint_field(length, 4), :out_bytes]]
+    when 24
+      [[uint_field(length, 4), :out_pkts]]
+    when 25
+      [[:uint16, :min_pkt_length]]
+    when 26
+      [[:uint16, :max_pkg_length]]
+    when 27
+      [[:ip6_addr, :ipv6_src_addr]]
+    when 28
+      [[:ip6_addr, :ipv6_dst_addr]]
+    when 29
+      [[:uint8, :ipv6_src_mask]]
+    when 30
+      [[:uint8, :ipv6_dst_mask]]
+    when 31
+      [[:uint24, :ipv6_flow_label]]
+    when 32
+      [[:uint16, :icmp_type]]
+    when 33
+      [[:uint8, :mul_igmp_type]]
+    when 34
+      [[:uint32, :sampling_interval]]
+    when 35
+      [[:uint8, :sampling_algorithm]]
+    when 36
+      [[:uint16, :flow_active_timeout]]
+    when 37
+      [[:uint16, :flow_inactive_timeout]]
+    when 38
+      [[:uint8, :engine_type]]
+    when 39
+      [[:uint8, :engine_id]]
+    when 40
+      [[uint_field(length, 4), :total_bytes_exp]]
+    when 41
+      [[uint_field(length, 4), :total_pkts_exp]]
+    when 42
+      [[uint_field(length, 4), :total_flows_exp]]
+    when 44
+      [[:ip4_addr, :ipv4_src_prefix]]
+    when 45
+      [[:ip4_addr, :ipv4_dst_prefix]]
+    when 46
+      [[:uint8, :mpls_top_label_type]]
+    when 47
+      [[:uint32, :mpls_top_label_ip_addr]]
+    when 48
+      [[:uint8, :flow_sampler_id]]
+    when 49
+      [[:uint8, :flow_sampler_mode]]
+    when 50
+      [[:uint32, :flow_sampler_random_interval]]
+    when 52
+      [[:uint8, :min_ttl]]
+    when 53
+      [[:uint8, :max_ttl]]
+    when 54
+      [[:uint16, :ipv4_ident]]
+    when 55
+      [[:uint8, :dst_tos]]
+    when 56
+      [[:mac_addr, :in_src_mac]]
+    when 57
+      [[:mac_addr, :out_dst_mac]]
+    when 80
+      [[:mac_addr, :in_dst_mac]]
+    when 81
+      [[:mac_addr, :out_src_mac]]
+    when 82
+      [[:string, :if_name, {:length => length, :trim_padding => true}]]
+    when 83
+      [[:string, :if_desc, {:length => length, :trim_padding => true}]]
+    else
+      @logger.warn("Unsupported field type #{type}")
+      nil
+    end
   end
 
   def udp_listener(output_queue)
@@ -337,109 +463,11 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
               catch (:field) do
                 fields = []
                 template.fields.each do |field|
-                  length = field.field_length
-                  # Worlds longest case statement begins...
-                  case field.field_type
-                  when 1
-                    fields << [uint_field(length, 4), :in_bytes]
-                  when 2
-                    fields << [uint_field(length, 4), :in_pkts]
-                  when 3
-                    fields << [uint_field(length, 4), :flows]
-                  when 4
-                    fields << [:uint8, :protocol]
-                  when 5
-                    fields << [:uint8, :src_tos]
-                  when 6
-                    fields << [:uint8, :tcp_flags]
-                  when 7
-                    fields << [:uint16, :l4_src_port]
-                  when 8
-                    fields << [:ip4_addr, :ipv4_src_addr]
-                  when 9
-                    fields << [:uint8, :src_mask]
-                  when 10
-                    fields << [uint_field(length, 2), :input_snmp]
-                  when 11
-                    fields << [:uint16, :l4_dst_port]
-                  when 12
-                    fields << [:ip4_addr, :ipv4_dst_addr]
-                  when 13
-                    fields << [:uint8, :dst_mask]
-                  when 14
-                    fields << [uint_field(length, 2), :output_snmp]
-                  when 15
-                    fields << [:ip4_addr, :ipv4_next_hop]
-                  when 16
-                    fields << [uint_field(length, 2), :src_as]
-                  when 17
-                    fields << [uint_field(length, 2), :dst_as]
-                  when 18
-                    fields << [:ip4_addr, :bgp_ipv4_next_hop]
-                  when 19
-                    fields << [uint_field(length, 4), :mul_dst_pkts]
-                  when 20
-                    fields << [uint_field(length, 4), :mul_dst_bytes]
-                  when 21
-                    fields << [:uint32, :last_switched]
-                  when 22
-                    fields << [:uint32, :first_switched]
-                  when 23
-                    fields << [uint_field(length, 4), :out_bytes]
-                  when 24
-                    fields << [uint_field(length, 4), :out_pkts]
-                  when 25
-                    fields << [:uint16, :min_pkt_length]
-                  when 26
-                    fields << [:uint16, :max_pkg_length]
-                  when 27
-                    fields << [:ip6_addr, :ipv6_src_addr]
-                  when 28
-                    fields << [:ip6_addr, :ipv6_dst_addr]
-                  when 29
-                    fields << [:uint8, :ipv6_src_mask]
-                  when 30
-                    fields << [:uint8, :ipv6_dst_mask]
-                  when 31
-                    fields << [:uint24, :ipv6_flow_label]
-                  when 32
-                    fields << [:uint16, :icmp_type]
-                  when 33
-                    fields << [:uint8, :mul_igmp_type]
-                  when 34
-                    fields << [:uint32, :sampling_interval]
-                  when 35
-                    fields << [:uint8, :sampling_algorithm]
-                  when 36
-                    fields << [:uint16, :flow_active_timeout]
-                  when 37
-                    fields << [:uint16, :flow_inactive_timeout]
-                  when 38
-                    fields << [:uint8, :engine_type]
-                  when 39
-                    fields << [:uint8, :engine_id]
-                  when 40
-                    fields << [uint_field(length, 4), :total_bytes_exp]
-                  when 41
-                    fields << [uint_field(length, 4), :total_pkts_exp]
-                  when 42
-                    fields << [uint_field(length, 4), :total_flows_exp]
-                  when 44
-                    fields << [:ip4_addr, :ipv4_src_prefix]
-                  when 45
-                    fields << [:ip4_addr, :ipv4_dst_prefix]
-                  when 56
-                    fields << [:mac_addr, :in_src_mac]
-                  when 57
-                    fields << [:mac_addr, :out_dst_mac]
-                  when 80
-                    fields << [:mac_addr, :in_dst_mac]
-                  when 81
-                    fields << [:mac_addr, :out_src_mac]
-                  else
-                    @logger.warn("Unsupported field type #{field.field_type}")
+                  entry = netflow_field_for(field.field_type, field.field_length)
+                  if ! entry
                     throw :field
                   end
+                  fields += entry
                 end
                 # We get this far, we have a list of fields
                 key = "#{flowset.source_id}|#{client[3]}|#{template.template_id}"
@@ -451,6 +479,24 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
             end
           when 1
             # Options template flowset
+            record.flowset_data.templates.each do |template|
+              catch (:field) do
+                fields = []
+                template.option_fields.each do |field|
+                  entry = netflow_field_for(field.field_type, field.field_length)
+                  if ! entry
+                    throw :field
+                  end
+                  fields += entry
+                end
+                # We get this far, we have a list of fields
+                key = "#{flowset.source_id}|#{client[3]}|#{template.template_id}"
+                @templates[key, @cache_ttl] = BinData::Struct.new(:endian => :big, :fields => fields)
+
+                # Purge any expired templates
+                @templates.cleanup!
+              end
+            end
           when 256..65535
             # Data flowset
             key = "#{flowset.source_id}|#{client[3]}|#{record.flowset_id}"
@@ -465,7 +511,7 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
 
             # There should be at most 3 padding bytes
             if ! (length % template.num_bytes).between?(0, 3)
-              @logger.warn("Template length doesn't fit cleanly into flowset")
+              @logger.warn("Template length doesn't fit cleanly into flowset", :record_length => length, :template_length => template.num_bytes)
               next
             end
 
