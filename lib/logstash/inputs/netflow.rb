@@ -435,7 +435,7 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
                   when 81
                     fields << [:mac_addr, :out_src_mac]
                   else
-                    @loger.warn("Unsupported field type #{field.flowset_field_type}")
+                    @logger.warn("Unsupported field type #{field.flowset_field_type}")
                     throw :field
                   end
                 end
