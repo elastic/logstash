@@ -259,9 +259,9 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
   end # def run
 
   private
-  def uint_field(length)
-    # If length is 4, return :uint32, etc.
-    ("uint" + (length * 8).to_s).to_sym
+  def uint_field(length, default)
+    # If length is 4, return :uint32, etc. and use default is length is 0
+    ("uint" + (((length > 0) ? length : default) * 8).to_s).to_sym
   end
 
   def udp_listener(output_queue)
@@ -337,14 +337,15 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
               catch (:field) do
                 fields = []
                 template.fields.each do |field|
+                  length = field.field_length
                   # Worlds longest case statement begins...
                   case field.field_type
                   when 1
-                    fields << [uint_field(field.field_length), :in_bytes]
+                    fields << [uint_field(length, 4), :in_bytes]
                   when 2
-                    fields << [uint_field(field.field_length), :in_pkts]
+                    fields << [uint_field(length, 4), :in_pkts]
                   when 3
-                    fields << [uint_field(field.field_length), :flows]
+                    fields << [uint_field(length, 4), :flows]
                   when 4
                     fields << [:uint8, :protocol]
                   when 5
@@ -358,7 +359,7 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
                   when 9
                     fields << [:uint8, :src_mask]
                   when 10
-                    fields << [uint_field(field.field_length), :input_snmp]
+                    fields << [uint_field(length, 2), :input_snmp]
                   when 11
                     fields << [:uint16, :l4_dst_port]
                   when 12
@@ -366,27 +367,27 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
                   when 13
                     fields << [:uint8, :dst_mask]
                   when 14
-                    fields << [uint_field(field.field_length), :output_snmp]
+                    fields << [uint_field(length, 2), :output_snmp]
                   when 15
                     fields << [:ip4_addr, :ipv4_next_hop]
                   when 16
-                    fields << [uint_field(field.field_length), :src_as]
+                    fields << [uint_field(length, 2), :src_as]
                   when 17
-                    fields << [uint_field(field.field_length), :dst_as]
+                    fields << [uint_field(length, 2), :dst_as]
                   when 18
                     fields << [:ip4_addr, :bgp_ipv4_next_hop]
                   when 19
-                    fields << [uint_field(field.field_length), :mul_dst_pkts]
+                    fields << [uint_field(length, 4), :mul_dst_pkts]
                   when 20
-                    fields << [uint_field(field.field_length), :mul_dst_bytes]
+                    fields << [uint_field(length, 4), :mul_dst_bytes]
                   when 21
                     fields << [:uint32, :last_switched]
                   when 22
                     fields << [:uint32, :first_switched]
                   when 23
-                    fields << [uint_field(field.field_length), :out_bytes]
+                    fields << [uint_field(length, 4), :out_bytes]
                   when 24
-                    fields << [uint_field(field.field_length), :out_pkts]
+                    fields << [uint_field(length, 4), :out_pkts]
                   when 25
                     fields << [:uint16, :min_pkt_length]
                   when 26
@@ -418,11 +419,11 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
                   when 39
                     fields << [:uint8, :engine_id]
                   when 40
-                    fields << [uint_field(field.field_length), :total_bytes_exp]
+                    fields << [uint_field(length, 4), :total_bytes_exp]
                   when 41
-                    fields << [uint_field(field.field_length), :total_pkts_exp]
+                    fields << [uint_field(length, 4), :total_pkts_exp]
                   when 42
-                    fields << [uint_field(field.field_length), :total_flows_exp]
+                    fields << [uint_field(length, 4), :total_flows_exp]
                   when 44
                     fields << [:ip4_addr, :ipv4_src_prefix]
                   when 45
