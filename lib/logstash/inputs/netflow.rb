@@ -364,6 +364,8 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
       [[:uint8, :flow_sampler_mode]]
     when 50
       [[:uint32, :flow_sampler_random_interval]]
+    when 51 # Vendor specific field
+      [[:skip, nil, {:length => length}]]
     when 52
       [[:uint8, :min_ttl]]
     when 53
@@ -376,6 +378,8 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
       [[:mac_addr, :in_src_mac]]
     when 57
       [[:mac_addr, :out_dst_mac]]
+    when 61
+      [[:uint8, :direction]]
     when 80
       [[:mac_addr, :in_dst_mac]]
     when 81
@@ -385,7 +389,7 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
     when 83
       [[:string, :if_desc, {:length => length, :trim_padding => true}]]
     else
-      @logger.warn("Unsupported field type #{type}")
+      @logger.warn("Unsupported field", :type => type, :length => length)
       nil
     end
   end
