@@ -350,6 +350,8 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
       [[uint_field(length, 4), :total_pkts_exp]]
     when 42
       [[uint_field(length, 4), :total_flows_exp]]
+    when 43 # Vendor specific field
+      [[:skip, nil, {:length => length}]]
     when 44
       [[:ip4_addr, :ipv4_src_prefix]]
     when 45
@@ -378,8 +380,22 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
       [[:mac_addr, :in_src_mac]]
     when 57
       [[:mac_addr, :out_dst_mac]]
+    when 58
+      [[:uint16, :src_vlan]]
+    when 59
+      [[:uint16, :dst_vlan]]
+    when 60
+      [[:uint8, :ip_protocol_version]]
     when 61
       [[:uint8, :direction]]
+    when 62
+      [[:ip6_addr, :ipv6_next_hop]]
+    when 63
+      [[:ip6_addr, :bgp_ipv6_next_hop]]
+    when 64
+      [[:uint32, :ipv6_option_headers]]
+    when 65..69 # Vendor specific fields
+      [[:skip, nil, {:length => length}]]
     when 80
       [[:mac_addr, :in_dst_mac]]
     when 81
