@@ -36,6 +36,11 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   # dma_code, ip, latitude, longitude, postal_code, region_name, timezone
   config :fields, :validate => :array
 
+  # Specify into what field you want the geoip data.
+  # This can be useful for example if you have a src_ip and dst_ip and want
+  # information of both IP's
+  config :target, :validate => :string, :default => 'geoip'
+
   public
   def register
     require "geoip"
@@ -96,17 +101,17 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
 
     geo_data_hash = geo_data.to_hash
     geo_data_hash.delete(:request)
-    event["geoip"] = {} if event["geoip"].nil?
+    event[@target] = {} if event[@target].nil?
     geo_data_hash.each do |key, value|
       if @fields.nil? || @fields.empty?
         # no fields requested, so add all geoip hash items to
         # the event's fields.
         # convert key to string (normally a Symbol)
-        event["geoip"][key.to_s] = value
+        event[@target][key.to_s] = value
       elsif @fields.include?(key.to_s)
         # Check if the key is in our fields array
         # convert key to string (normally a Symbol)
-        event["geoip"][key.to_s] = value
+        event[@target][key.to_s] = value
       end
     end # geo_data_hash.each
     filter_matched(event)
