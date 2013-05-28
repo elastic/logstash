@@ -233,9 +233,8 @@ flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
 	$(QUIET)rsync -va build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/flatgems/data build/jar/
-	$(QUIET)(cd lib; rsync -a --delete logstash/web/public ../build/jar/logstash/web/public)
-	$(QUIET)(cd lib; rsync -a --delete logstash/web/views ../build/jar/logstash/web/views)
-	$(QUIET)(cd lib; rsync -a --delete logstash/certs ../build/jar/logstash/certs)
+	$(QUIET)(cd lib; rsync -a --delete logstash/web/public logstash/web/views ../build/jar/logstash/web)
+	$(QUIET)(cd lib; rsync -a --delete logstash/certs ../build/jar/logstash)
 
 build/logstash-$(VERSION)-flatjar.jar: | build/jar
 	$(QUIET)rm -f $@
