@@ -1,4 +1,5 @@
 require "sinatra/base"
+require "mime/type"
 
 class LogStash::Web::Server < Sinatra::Base
   get '/js/*' do static_file end
@@ -15,15 +16,7 @@ class LogStash::Web::Server < Sinatra::Base
     #p :static => path
     if File.exists?(path)
       ext = path.split(".").last
-      case ext
-        when "js"; content_type "application/javascript"
-        when "css"; content_type "text/css"
-        when "jpg"; content_type "image/jpeg"
-        when "jpeg"; content_type "image/jpeg"
-        when "png"; content_type "image/png"
-        when "gif"; content_type "image/gif"
-      end
-
+      content_type MIME::Types.type_for(ext).first.to_s
       body File.new(path, "r").read
     else
       status 404
