@@ -2,6 +2,7 @@
 *.gem
 *.class
 Gemfile.lock
+.rbx
 *.tar.gz
 *.jar
 .bundle
