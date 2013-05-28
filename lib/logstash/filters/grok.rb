@@ -146,7 +146,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   #
   #     filter {
   #       grok {
-  #         match => [ "@message", "Duration: %{NUMBER:duration} ]
+  #         match => [ "@message", "Duration: %{NUMBER:duration}" ]
   #       }
   #     }
   #
