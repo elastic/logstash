@@ -1,6 +1,7 @@
 .*.swp
 *.gem
 *.class
+.rbx
 Gemfile.lock
 .rbx
 *.tar.gz
