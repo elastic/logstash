@@ -128,7 +128,7 @@ class LogStash::Filters::Cipher < LogStash::Filters::Base
 
     if @key.length != @key_size
       @logger.debug("key length is " + @key.length.to_s + ", padding it to " + @key_size.to_s + " with '" + @key_pad.to_s + "'")
-      @key = @key[0,32].ljust(32,@key_pad)
+      @key = @key[0,@key_size].ljust(@key_size,@key_pad)
     end
 
     @cipher.key = @key
