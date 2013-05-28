@@ -2,6 +2,7 @@ require "rack/handler/ftw" # gem ftw
 require "ftw" # gem ftw
 require "sinatra/base" # gem sinatra
 require "optparse"
+require "mime/type"
 
 class Rack::Handler::FTW
   alias_method :handle_connection_, :handle_connection
@@ -41,15 +42,7 @@ module LogStash::Kibana
       path = File.join(docroot, *request.path_info.split("/"))
       if File.exists?(path)
         ext = path.split(".").last
-        case ext
-          when "js"; content_type "application/javascript"
-          when "css"; content_type "text/css"
-          when "jpg"; content_type "image/jpeg"
-          when "jpeg"; content_type "image/jpeg"
-          when "png"; content_type "image/png"
-          when "gif"; content_type "image/gif"
-        end
-
+        content_type MIME::Types.type_for(ext).first.to_s
         body File.new(path, "r").read
       else
         status 404
