@@ -529,9 +529,10 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
 
             length = record.flowset_length - 4
 
-            # There should be at most 3 padding bytes
-            if ! (length % template.num_bytes).between?(0, 3)
-              @logger.warn("Template length doesn't fit cleanly into flowset", :record_length => length, :template_length => template.num_bytes)
+            # Template shouldn't be longer than the record and there should
+            # be at most 3 padding bytes
+            if template.num_bytes > length or ! (length % template.num_bytes).between?(0, 3)
+              @logger.warn("Template length doesn't fit cleanly into flowset", :template_id => record.flowset_id, :template_length => template.num_bytes, :record_length => length)
               next
             end
 
