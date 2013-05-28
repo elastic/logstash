@@ -30,13 +30,6 @@ require "uri"
 module LogStash::EventV1
   class DeprecatedMethod < StandardError; end
 
-  if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
-    @@date_parser = Java::org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
-  else
-    # TODO(sissel): LOGSTASH-217
-    @@date_parser ||= nil
-  end
-
   public
   def initialize(data={})
     @cancelled = false
