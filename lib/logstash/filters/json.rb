@@ -56,7 +56,7 @@ class LogStash::Filters::Json < LogStash::Filters::Base
     key = @source
     dest = @target
 
-    next unless event[key]
+    return unless event[key]
     if event[key].is_a?(String)
       event[key] = [event[key]]
     end
@@ -64,7 +64,7 @@ class LogStash::Filters::Json < LogStash::Filters::Base
     if event[key].length > 1
       @logger.warn("JSON filter only works on single fields (not lists)",
                    :key => key, :value => event[key])
-      next
+      return
     end
 
     raw = event[key].first
@@ -75,7 +75,7 @@ class LogStash::Filters::Json < LogStash::Filters::Base
       event.tags << "_jsonparsefailure"
       @logger.warn("Trouble parsing json", :key => key, :raw => raw,
                     :exception => e)
-      next
+      return
     end
 
     @logger.debug("Event after json filter", :event => event)
