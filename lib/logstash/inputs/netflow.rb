@@ -361,7 +361,7 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
     when 47
       [[:uint32, :mpls_top_label_ip_addr]]
     when 48
-      [[:uint8, :flow_sampler_id]]
+      [[uint_field(length, 4), :flow_sampler_id]]
     when 49
       [[:uint8, :flow_sampler_mode]]
     when 50
