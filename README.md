@@ -40,7 +40,35 @@ To work on the code without building a jar, install rvm and run the following:
     bin/logstash agent [options]
     
     # If running bin/logstash agent yields complaints about log4j/other things
+    # This will download the elasticsearch jars so logstash can use them.
     make vendor-elasticsearch
+
+## Testing
+
+There are a few ways to run the tests. For development, using `bin/logstash
+rspec <some spec>` will suffice:
+
+    % bin/logstash rspec spec/filters/grok.rb 
+    ...................
+
+    Finished in 0.123 seconds
+    19 examples, 0 failures
+
+Alternately, if you have just built the flatjar or jar, you can run the tests
+specifically on those like so:
+
+    % make flatjar-test
+    # or ...
+    % make jar-test
+
+Finally, like 'bin/logstash rspec' above, you can invoke the jar to run a test
+like so:
+
+    % java -jar logstash.jar rspec spec/filters/grok.rb
+    ...................
+
+    Finished in 0.346 seconds
+    19 examples, 0 failures
 
 ## Building
 
