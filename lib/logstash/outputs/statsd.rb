@@ -61,6 +61,9 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # Enable debugging output?
   config :debug, :validate => :boolean, :default => false
 
+  # Don't send events that have @timestamp older than specified number of seconds.
+  config :ignore_older_than, :validate => :number, :default => 0
+
   public
   def register
     require "statsd"
@@ -71,11 +74,17 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
+    # TODO(piavlo): This should probably move to base output plugin?
+    if @ignore_older_than > 0 && Time.now - event.ruby_timestamp > @ignore_older_than
+      @logger.debug? and @logger.debug("Skipping metriks for old event", :event => event)
+      return
+    end
+
     @client.namespace = event.sprintf(@namespace) if not @namespace.empty?
-    logger.debug("Original sender: #{@sender}")
+    @logger.debug? and @logger.debug("Original sender: #{@sender}")
     sender = event.sprintf(@sender)
-    logger.debug("Munged sender: #{sender}")
-    logger.debug("Event: #{event}")
+    @logger.debug? and @logger.debug("Munged sender: #{sender}")
+    @logger.debug? and @logger.debug("Event: #{event}")
     @increment.each do |metric|
       @client.increment(build_stat(event.sprintf(metric), sender), @sample_rate)
     end
@@ -95,7 +104,7 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   def build_stat(metric, sender=@sender)
     sender = sender.gsub('::','.').gsub(RESERVED_CHARACTERS_REGEX, '_').gsub(".", "_")
     metric = metric.gsub('::','.').gsub(RESERVED_CHARACTERS_REGEX, '_')
-    @logger.debug("Formatted value", :sender => sender, :metric => metric)
+    @logger.debug? and @logger.debug("Formatted value", :sender => sender, :metric => metric)
     return "#{sender}.#{metric}"
   end
 end # class LogStash::Outputs::Statsd
