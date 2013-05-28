@@ -21,16 +21,23 @@ You can also find documentation on the <http://logstash.net> site.
 
 ## Developing
 
-To work on the code without building a jar, install rvm and run the following:
+If you don't have JRuby already (or don't use rvm, rbenv, etc), you can have `bin/logstash` fetch it for you by setting `USE_JRUBY`:
+
+    USE_JRUBY=1 bin/logstash ...
+
+Otherwise, here's how to get started with rvm: 
 
     # Install JRuby with rvm
-    rvm install jruby-1.7.3
-    rvm use jruby-1.7.3
+    rvm install jruby-1.7.4
+    rvm use jruby-1.7.4
 
-    # Install logstash dependencies - installs gems into vendor/bundle/jruby/1.9/
+Now install dependencies:
+
+    # Install logstash ruby dependencies
     ruby gembag.rb logstash.gemspec
 
-    # to use Logstash gems in irb, use the following
+    # to use logstash gems or libraries in irb, use the following
+    # this gets you an 'irb' shell with logstash's environment
     bin/logstash irb
 
     # or use irb from the jar
