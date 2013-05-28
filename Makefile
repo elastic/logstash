@@ -166,8 +166,11 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	$(QUIET)find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
 	| (cd $@; xargs -n1 jar xf)
 	@# Merge all service file in all 3rdparty jars
-	$(QUITE)./merge_services_files.sh $@ vendor/bundle vendor/jar
-	@# copy openssl/lib/shared folders/files to root of jar - need this for openssl to work with JRuby
+	$(QUIET)mkdir -p $@/META-INF/services/
+	$(QUIET)find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
+	| xargs $(JRUBY_CMD) extract_services.rb -o $@/META-INF/services
+	@# copy openssl/lib/shared folders/files to root of jar 
+	@#- need this for openssl to work with JRuby
 	$(QUIET)mkdir -p $@/openssl
 	$(QUIET)mkdir -p $@/jopenssl
 	$(QUIET)cp -r $$PWD/vendor/bundle/jruby/1.9/gems/jruby-openss*/lib/shared/openssl/* $@/openssl
