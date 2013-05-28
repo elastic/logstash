@@ -5,6 +5,9 @@
   ## inputs
   - bugfix: gelf: work around gelf parser errors (#476, patch by Chris McCoy)
 
+  ## filters
+  - bugfix: grep: allow repeating a field in the hash config (LOGSTASH-919)
+
   ## outputs
   - feature: irc: add messages_per_second tunable (LOGSTASH-962)
 
