@@ -439,7 +439,7 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
       flowset.records.each do |record|
         if flowset.version == 5
           # I wonder how much use the original packet is?
-          e = to_event(line, source)
+          e = to_event("", source)
 
           # FIXME Probably not doing this right WRT JRuby?
           #
@@ -447,9 +447,11 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
           # residual nanoseconds so we can set @timestamp to that easily
           e.timestamp = Time.at(flowset.unix_sec, flowset.unix_nsec / 1000).utc.to_s
 
+          e['netflow'] = {} if e['netflow'].nil?
+
           # Copy some of the pertinent fields in the header to the event
           ['version', 'flow_seq_num', 'engine_type', 'engine_id', 'sampling_algorithm', 'sampling_interval'].each do |f|
-            e[f] = flowset[f]
+            e['netflow'][f] = flowset[f]
           end
 
           # Create fields in the event from each field in the flow record
@@ -468,9 +470,9 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
                 micros += 1000000
               end
               # FIXME Again, probably doing this wrong WRT JRuby?
-              e[k.to_s] = Time.at(seconds, micros).utc.to_s
+              e['netflow'][k.to_s] = Time.at(seconds, micros).utc.to_s
             else
-              e[k.to_s] = v
+              e['netflow'][k.to_s] = v
             end
           end
 
@@ -541,14 +543,18 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
             records = array.read(record.flowset_data)
 
             records.each do |r|
-              e = to_event(line, source)
+              e = to_event("", source)
 
               e.timestamp = Time.at(flowset.unix_sec).utc.to_s
 
+              e['netflow'] = {} if e['netflow'].nil?
+
               # Fewer fields in the v9 header
               ['version', 'flow_seq_num'].each do |f|
-                e[f] = flowset[f]
+                e['netflow'][f] = flowset[f]
               end
+
+              e['netflow']['flowset_id'] = record.flowset_id
 
               r.each_pair do |k,v|
                 case k.to_s
@@ -557,9 +563,9 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
                   seconds = flowset.unix_sec - (millis / 1000)
                   # v9 did away with the nanosecs field
                   micros = 1000000 - (millis % 1000)
-                  e[k.to_s] = Time.at(seconds, micros).utc.to_s
+                  e['netflow'][k.to_s] = Time.at(seconds, micros).utc.to_s
                 else
-                  e[k.to_s] = v
+                  e['netflow'][k.to_s] = v
                 end
               end
 
