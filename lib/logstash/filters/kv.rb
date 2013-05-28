@@ -93,20 +93,56 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     filter { kv { target => "kv" } }
   config :target, :validate => :string, :default => '@fields'
 
+  # An array that specifies the parsed keys which should be added to event.
+  # By default all keys will be added.
+  #
+  # Example, to include only "from" and "to" from a source like "Hey, from=<abc>, to=def foo=bar"
+  # while "foo" key will not be added to event.
+  #
+  #     filter {
+  #       kv {
+  #         include_keys = [ "from", "to" ]
+  #       }
+  #     }
+  config :include_keys, :validate => :array, :default => []
+
+  # An array that specifies the parsed keys which should not be added to event.
+  # By default no keys will be excluded.
+  #
+  # Example, to exclude "from" and "to" from a source like "Hey, from=<abc>, to=def foo=bar"
+  # while "foo" key will be added to event.
+  #
+  #     filter {
+  #       kv {
+  #         exclude_keys = [ "from", "to" ]
+  #       }
+  #     }
+  config :exclude_keys, :validate => :array, :default => []
+
+  # A hash that specifies the default keys and their values that should be added to event
+  # in case these keys do no exist in the source field being parsed.
+  #
+  #     filter {
+  #       kv {
+  #         default_keys = [ "from", "logstash@example.com",
+  #                          "to", "default@dev.null" ]
+  #       }
+  #     }
+  config :default_keys, :validate => :hash, :default => {}
+
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
-
   end # def register
 
   def filter(event)
     return unless filter?(event)
 
-    kv_keys=Hash.new
+    kv_keys = Hash.new
 
     value = event[@source]
 
     case value
-      when nil; #Nothing to do
+      when nil; # Nothing to do
       when String; kv_keys = parse(value, event, kv_keys)
       when Array; value.each { |v| kv_keys = parse(v, event, kv_keys) }
       else 
@@ -114,12 +150,15 @@ class LogStash::Filters::KV < LogStash::Filters::Base
                      :type => value.class, :value => value)
     end # case value
 
+    # Add default key-values for missing keys
+    kv_keys = @default_keys.merge(kv_keys)
+
     # If we have any keys, create/append the hash
     if kv_keys.length > 0
       if !event[@target].nil?
         event[@target].merge!(kv_keys)
       else
-        event[@target]= kv_keys
+        event[@target] = kv_keys
       end
       filter_matched(event)
     end
@@ -133,11 +172,10 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)["+@value_split+"](?:\"([^\"]+)\"|'([^']+)'|((?:\\\\ |[^"+@field_split+"])+))")
     text.scan(scan_re) do |key, v1, v2, v3|
       value = v1 || v2 || v3
-      if !@trim.nil?
-        value = value.gsub(@trim_re, "")
-      end
       key = @prefix + key
-      kv_keys[key] = value
+      next if not @include_keys.empty? and not @include_keys.include?(key)
+      next if @exclude_keys.include?(key)
+      kv_keys[key] = @trim.nil? ? value : value.gsub(@trim_re, "")
     end
     return kv_keys
   end

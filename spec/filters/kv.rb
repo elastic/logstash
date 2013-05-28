@@ -106,38 +106,6 @@ describe LogStash::Filters::KV do
 
   end
 
-  describe "test container (deprecated test)" do
-    config <<-CONFIG
-      filter {
-        kv { container => 'kv' }
-      }
-    CONFIG
-
-    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
-      insist { subject["kv"]["hello"] } == "world"
-      insist { subject["kv"]["foo"] } == "bar"
-      insist { subject["kv"]["baz"] } == "fizz"
-      insist { subject["kv"]["doublequoted"] } == "hello world"
-      insist { subject["kv"]["singlequoted"] } == "hello world"
-      insist {subject['@fields']["kv"].count } == 5
-    end
-
-  end
-
-  describe "test empty container (deprecated test)" do
-    config <<-CONFIG
-      filter {
-        kv { container => 'kv' }
-      }
-    CONFIG
-
-    sample "hello:world:foo:bar:baz:fizz" do
-      insist { subject["kv"] } == nil
-      insist {subject['@fields'].count } == 0
-    end
-
-  end
-
   describe "speed test" do
     count = 10000 + rand(3000)
     config <<-CONFIG
@@ -317,6 +285,76 @@ describe LogStash::Filters::KV do
     sample "" do
       insist { subject["non-exisiting-field"] } == nil
       insist { subject["kv"] } == nil
+    end
+  end
+
+  describe "test include_keys" do
+    config <<-CONFIG
+      filter {
+        kv {
+          include_keys => [ "foo", "singlequoted" ]
+        }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["foo"] } == "bar"
+      insist { subject["singlequoted"] } == "hello world"
+      insist {subject['@fields'].count } == 2
+    end
+  end
+
+  describe "test exclude_keys" do
+    config <<-CONFIG
+      filter {
+        kv {
+          exclude_keys => [ "foo", "singlequoted" ]
+        }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["hello"] } == "world"
+      insist { subject["baz"] } == "fizz"
+      insist { subject["doublequoted"] } == "hello world"
+      insist {subject['@fields'].count } == 3
+    end
+  end
+
+  describe "test include_keys and exclude_keys" do
+    config <<-CONFIG
+      filter {
+        kv {
+          include_keys => [ "foo", "singlequoted" ]
+          exclude_keys => [ "foo", "singlequoted" ]
+        }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist {subject['@fields'].count } == 0
+    end
+  end
+
+
+  describe "test default_keys" do
+    config <<-CONFIG
+      filter {
+        kv {
+          default_keys => [ "foo", "xxx",
+                            "goo", "yyy" ]
+        }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["hello"] } == "world"
+      insist { subject["foo"] } == "bar"
+      insist { subject["goo"] } == "yyy"
+      insist { subject["baz"] } == "fizz"
+      insist { subject["doublequoted"] } == "hello world"
+      insist { subject["singlequoted"] } == "hello world"
+      insist {subject['@fields'].count } == 6
     end
   end
 
