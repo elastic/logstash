@@ -1,4 +1,7 @@
-1.1.13 (???) 
+1.1.13 (May 28, 2013)
+  ## general
+  - fixed bug in static file serving for logstash web (LOGSTASH-1067)
+
   ## outputs
   - feature: irc: add messages_per_second tunable (LOGSTASH-962)
 
