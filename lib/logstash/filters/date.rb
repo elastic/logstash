@@ -25,6 +25,15 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   config_name "date"
   plugin_status "stable"
 
+  # specify a timezone canonical ID to be used for date parsing.
+  # The valid ID are listed on http://joda-time.sourceforge.net/timezones.html
+  # Useful in case the timezone cannot be extracted from the value,
+  # and is not the platform default
+  # If this is not specified the platform default will be used.
+  # Canonical ID is good as it takes care of daylight saving time for you
+  # For example, America/Los_Angeles or Europe/France are valid IDs
+  config :timezone, :validate => :string
+
   # specify a locale to be used for date parsing. If this is not specified the
   # platform default will be used
   #
@@ -120,7 +129,12 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     value.each do |format|
       case format
         when "ISO8601"
-          joda_parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser.withOffsetParsed
+          joda_parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser
+          if @timezone
+            joda_parser = joda_parser.withZone(org.joda.time.DateTimeZone.forID(@timezone))
+          else
+            joda_parser = joda_parser.withOffsetParsed
+          end
           parser = lambda { |date| joda_parser.parseDateTime(date) }
         when "UNIX" # unix epoch
           parser = lambda { |date| org.joda.time.Instant.new((date.to_f * 1000).to_i).toDateTime }
@@ -134,7 +148,12 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             org.joda.time.Instant.new((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).toDateTime 
           end
         else
-          joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withOffsetParsed
+          joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format)
+          if @timezone
+            joda_parser = joda_parser.withZone(org.joda.time.DateTimeZone.forID(@timezone))
+          else
+            joda_parser = joda_parser.withOffsetParsed
+          end
           if (locale != nil)
             joda_parser = joda_parser.withLocale(locale)
           end
