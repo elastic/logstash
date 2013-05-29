@@ -10,9 +10,6 @@ describe "haproxy httplog format" do
     grok {
       pattern => "%{HAPROXYHTTP}"
     }
-    date {
-      match => ["accept_date", "dd/MMM/yyyy:HH:mm:ss.SSS"]
-    }
   }
   CONFIG
   # Here we provide a sample log event for the testing suite.
@@ -113,8 +110,6 @@ describe "haproxy httplog format" do
     insist{ subject["http_verb"] } == ["GET"]
     insist{ subject["http_request"] } == ["/index.html"]
     insist{ subject["http_version"] } == ["1.1"]
-    # Verify date parsing
-    insist { subject.timestamp } == "2009-02-06T20:14:14.655Z"
   end
 
 end
