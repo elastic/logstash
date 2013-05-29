@@ -157,7 +157,7 @@ class LogStash::Filters::Base < LogStash::Plugin
       tag = event.sprintf(tag)
       @logger.debug? and @logger.debug("filters/#{self.class.name}: adding tag",
                                        :tag => tag)
-      event.tags << tag
+      (event["tags"] ||= []) << tag
     end
 
     @remove_tag.each do |tag|

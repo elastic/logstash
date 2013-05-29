@@ -62,7 +62,7 @@ require "set"
 #     filter {
 #       grok {
 #         type => "examplehttp"
-#         pattern => "%{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}"
+#         match => [ "message", "%{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}" ]
 #       }
 #     }
 #
@@ -116,7 +116,7 @@ require "set"
 #     filter {
 #       grok {
 #         patterns_dir => "./patterns"
-#         pattern => "%{SYSLOGBASE} %{POSTFIX_QUEUEID:queue_id}: %{GREEDYDATA:message}"
+#         match => [ "message", "%{SYSLOGBASE} %{POSTFIX_QUEUEID:queue_id}: %{GREEDYDATA:message}" ]
 #       }
 #     }
 #
@@ -134,11 +134,11 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   config_name "grok"
   plugin_status "stable"
 
-  # Specify a pattern to parse with. This will match the '@message' field.
+  # Specify a pattern to parse with. This will match the 'message' field.
   #
-  # If you want to match other fields than @message, use the 'match' setting.
+  # If you want to match other fields than message, use the 'match' setting.
   # Multiple patterns is fine.
-  config :pattern, :validate => :array
+  config :pattern, :validate => :array, :deprecated => true
 
   # A hash of matches of field => value
   #
@@ -146,7 +146,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   #
   #     filter {
   #       grok {
-  #         match => [ "@message", "Duration: %{NUMBER:duration}" ]
+  #         match => [ "message", "Duration: %{NUMBER:duration}" ]
   #       }
   #     }
   #
@@ -191,12 +191,26 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # successful match
   config :tag_on_failure, :validate => :array, :default => ["_grokparsefailure"]
 
-  # TODO(sissel): Add this feature?
-  # When disabled, any pattern that matches the entire string will not be set.
-  # This is useful if you have named patterns like COMBINEDAPACHELOG that will
-  # match entire events and you really don't want to add a field
-  # `COMBINEDAPACHELOG` that is set to the whole event line.
-  #config :capture_full_match_patterns, :validate => :boolean, :default => false
+  # The fields to overwrite.
+  #
+  # This allows you to overwrite a value in a field that already exists.
+  #
+  # For example, if you have a syslog line in the 'message' field, you can
+  # overwrite the 'message' field with part of the match like so:
+  #
+  #     filter {
+  #       grok {
+  #         match => [ 
+  #           "message",
+  #           "%{SYSLOGBASE} %{DATA:message}
+  #         ]
+  #         overwrite => [ "message" ]
+  #       }
+  #     }
+  #
+  #  In this case, a line like "May 29 16:37:11 sadness logger: hello world"
+  #  will be parsed and 'hello world' will overwrite the original message.
+  config :overwrite, :validate => :array, :default => []
 
   # Detect if we are running from a jarfile, pick the right path.
   @@patterns_path ||= Set.new
@@ -209,8 +223,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   public
   def initialize(params)
     super(params)
-    @match["@message"] ||= []
-    @match["@message"] += @pattern if @pattern # the config 'pattern' value (array)
+    @match["message"] ||= []
+    @match["message"] += @pattern if @pattern # the config 'pattern' value (array)
   end
 
   public
@@ -320,7 +334,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
           end
 
           # Special casing to skip captures that represent the entire log message.
-          if fieldvalue == value and field == "@message" and key.nil?
+          if fieldvalue == value and key.nil?
             # Skip patterns that match the entire message
             @logger.debug? and @logger.debug("Skipping capture since it matches the whole line.", :field => key)
             next
@@ -331,24 +345,28 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
             next
           end
 
-          if event.fields[key].is_a?(String)
-            event.fields[key] = [event.fields[key]]
-          end
+          if event.include?(key) && @overwrite.include?(key) && !value.nil?
+            event[key] = value
+          else
+            if event[key].is_a?(String)
+              event[key] = [event[key]]
+            end
 
-          if @keep_empty_captures && event.fields[key].nil?
-            event.fields[key] = []
-          end
+            if @keep_empty_captures && event[key].nil?
+              event[key] = []
+            end
 
-          # If value is not nil, or responds to empty and is not empty, add the
-          # value to the event.
-          if !value.nil? && (!value.empty? rescue true)
-            # Store fields as an array unless otherwise instructed with the
-            # 'singles' config option
-            if !event.fields.include?(key) and @singles
-              event.fields[key] = value
-            else
-              event.fields[key] ||= []
-              event.fields[key] << value
+            # If value is not nil, or responds to empty and is not empty, add the
+            # value to the event.
+            if !value.nil? && (!value.empty? rescue true)
+              # Store fields as an array unless otherwise instructed with the
+              # 'singles' config option
+              if !event.include?(key) and @singles
+                event[key] = value
+              else
+                event[key] ||= []
+                event[key] << value
+              end
             end
           end
         end # match.each_capture
@@ -361,7 +379,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       # Tag this event if we can't parse it. We can use this later to
       # reparse+reindex logs if we improve the patterns given .
       @tag_on_failure.each do |tag|
-        event.tags << tag unless event.tags.include?(tag)
+        event["tags"] ||= []
+        event["tags"] << tag unless event["tags"].include?(tag)
       end
     end
 

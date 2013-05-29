@@ -43,7 +43,7 @@ module LogStash
 
     def sample(event, &block)
       default_type = @default_type || "default"
-      default_tags = @default_tags || []
+      default_tags = @default_tags || nil
       config = get_config
       agent = LogStash::Agent.new
       agent.instance_eval { parse_options(["--quiet"]) }
@@ -63,11 +63,9 @@ module LogStash
           event = [event] unless event.is_a?(Array)
           event = event.collect do |e| 
             if e.is_a?(String)
-              LogStash::Event.new("@message" => e, "@type" => default_type,
-                                  "@tags" => default_tags)
-            else
-              LogStash::Event.new(e)
+              e = { "message" => e, "type" => default_type }
             end
+            next LogStash::Event.new(e)
           end
           
           results = []
