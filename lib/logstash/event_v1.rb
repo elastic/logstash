@@ -173,7 +173,9 @@ module LogStash::EventV1
         next @data["@timestamp"].to_i
       elsif key[0,1] == "+"
         t = @data["@timestamp"]
-        next org.joda.time.Instant.new(t.tv_sec * 1000 + t.tv_usec / 1000).format(key[1 .. -1])
+        formatter = org.joda.time.format.DateTimeFormat.forPattern(key[1 .. -1])\
+          .withZone(org.joda.time.DateTimeZone::UTC)
+        next org.joda.time.Instant.new(t.tv_sec * 1000 + t.tv_usec / 1000).toDateTime.toString(formatter)
       else
         value = self[key]
         case value
