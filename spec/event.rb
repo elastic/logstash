@@ -37,30 +37,30 @@ describe LogStash::Event do
     end
   
     it "should report fields with %{field} syntax" do
-      insist { subject.sprintf("%{@type}") } == "sprintf"
-      insist { subject.sprintf("%{@message}") } == subject["@message"]
+      insist { subject.sprintf("%{type}") } == "sprintf"
+      insist { subject.sprintf("%{message}") } == subject["message"]
     end
     
     it "should print deep fields" do
-      insist { subject.sprintf("%{j.k1}") } == "v"
-      insist { subject.sprintf("%{j.k2.0}") } == "w"
+      insist { subject.sprintf("%{[j][k1]}") } == "v"
+      insist { subject.sprintf("%{[j][k2][0]}") } == "w"
     end
   end
   
   context "#[]" do
     it "should fetch data" do
-      insist { subject["@type"] } == "sprintf"
+      insist { subject["type"] } == "sprintf"
     end
     it "should fetch fields" do
       insist { subject["a"] } == "b"
-      insist { subject['c\.d'] } == "e"
+      insist { subject["c.d"] } == "e"
     end
     it "should fetch deep fields" do
-      insist { subject["j.k1"] } == "v"
-      insist { subject["c.d"] } == "f"
-      insist { subject['f\.g.h'] } == "i"
-      insist { subject['j.k3\.4'] } == "m"
-      insist { subject['j.5'] } == 7
+      insist { subject["[j][k1]"] } == "v"
+      insist { subject["[c][d]"] } == "f"
+      insist { subject["[f.g][h]"] } == "i"
+      insist { subject["[j][k3.4]"] } == "m"
+      insist { subject["[j][5]"] } == 7
 
     end
   end
