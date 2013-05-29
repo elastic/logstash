@@ -23,6 +23,9 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   # Example: "/topic/logstash"
   config :destination, :validate => :string, :required => true
 
+  # The vhost to use
+  config :vhost, :validate => :string, :default => nil
+
   # Enable debugging output?
   config :debug, :validate => :boolean, :default => false
 
@@ -42,8 +45,9 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   def register
     require "onstomp"
     @client = OnStomp::Client.new("stomp://#{@host}:#{@port}", :login => @user, :passcode => @password.value)
+    @client.host = @vhost if @vhost
     @stomp_url = "stomp://#{@user}:#{@password}@#{@host}:#{@port}/#{@destination}"
-    
+
     # Handle disconnects 
     @client.on_connection_closed {
       connect
