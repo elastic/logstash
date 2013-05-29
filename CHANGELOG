@@ -1,6 +1,10 @@
 1.2.0 (???)
   # general
-  - elasticsearch version 0.20.6 is included.
+  - THE LOGSTASH EVENT SCHEMA HAS CHANGED.
+      TODO(sissel): Document what this means, etc.
+  - Kibana is now available for launching:
+      java -jar logstash.jar kibana
+  - elasticsearch version 0.90.0 is included.
 
   ## inputs
   - bugfix: gelf: work around gelf parser errors (#476, patch by Chris McCoy)
@@ -8,6 +12,8 @@
   ## filters
   - bugfix: grep: allow repeating a field in the hash config (LOGSTASH-919)
   - feature: specify timezone in date filter (#470, patch by Philippe Weber)
+  - feature: grok setting 'overwrite' now lets you overwrite fields instead
+    of appending to them.
 
   ## outputs
   - feature: irc: add messages_per_second tunable (LOGSTASH-962)
