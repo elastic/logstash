@@ -32,4 +32,38 @@ module LogStash::Util
       LibC.prctl(PR_SET_NAME, name[0..16], 0, 0, 0)
     end
   end # def set_thread_name
+
+  # Merge hash 'src' into 'dst' nondestructively
+  #
+  # Duplicate keys will become array values
+  #
+  # [ src["foo"], dst["foo"] ]
+  def self.hash_merge(dst, src)
+    src.each do |name, svalue|
+      if dst.include?(name)
+        dvalue = dst[name]
+        if dvalue.is_a?(Hash) && svalue.is_a?(Hash)
+          dvalue = hash_merge(dvalue, svalue)
+        elsif svalue.is_a?(Array) 
+          if dvalue.is_a?(Array)
+            # merge arrays without duplicates.
+            dvalue |= svalue
+          else
+            dvalue = [dvalue] | svalue
+          end
+        else
+          if dvalue.is_a?(Array)
+            dvalue << svalue unless dvalue.include?(svalue)
+          else
+            dvalue = [dvalue, svalue] unless dvalue == svalue
+          end
+        end
+
+        dst[name] = dvalue
+      else
+        # dst doesn't have this key, just set it.
+        dst[name] = svalue
+      end
+    end
+  end # def self.hash_merge
 end # module LogStash::Util

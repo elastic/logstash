@@ -35,7 +35,7 @@ module LogStash::EventV1
     @cancelled = false
 
     @data = data
-    @data["@timestamp"] = LogStash::Time.now if !@data.include?("@timestamp")
+    @data["@timestamp"] = ::Time.now if !@data.include?("@timestamp")
     @data["@version"] = "1" if !@data.include?("@version")
   end # def initialize
 
@@ -85,12 +85,24 @@ module LogStash::EventV1
   # field-related access
   public
   def [](key)
-    # TODO(sissel): Implement
+    if key[0] == '['
+      val = @data
+      key.gsub(/(?<=\[).+?(?=\])/).each do |tok|
+        if val.is_a? Array
+          val = val[tok.to_i]
+        else
+          val = val[tok]
+        end
+      end
+      return val
+    else
+      return @data[key]
+    end
   end # def []
   
   public
   def []=(key, value)
-    # TODO(sissel): Implement
+    @data[key] = value
   end # def []=
 
   public
@@ -104,7 +116,7 @@ module LogStash::EventV1
   end # def to_json
 
   def to_hash
-    raise DeprecatedMethod
+    return @data
   end # def to_hash
 
   public
@@ -120,8 +132,9 @@ module LogStash::EventV1
   # Append an event to this one.
   public
   def append(event)
-    raise NotImplementedError, "LogStash::EventV1#append needs implementing"
-  end
+    # non-destructively merge that event with ourselves.
+    LogStash::Util.hash_merge(@data, event.to_hash)
+  end # append
 
   # Remove a field. Returns the value of that field when deleted
   public
@@ -157,40 +170,30 @@ module LogStash::EventV1
 
       if key == "+%s"
         # Got %{+%s}, support for unix epoch time
-        if RUBY_ENGINE != "jruby"
-          # This is really slow. See LOGSTASH-217
-          Time.parse(self.timestamp).to_i
-        else
-          datetime = @@date_parser.parseDateTime(self.timestamp)
-          (datetime.getMillis / 1000).to_i
-        end
+        next @data["@timestamp"].to_i
       elsif key[0,1] == "+"
-        # We got a %{+TIMEFORMAT} so use joda to format it.
-        if RUBY_ENGINE != "jruby"
-          # This is really slow. See LOGSTASH-217
-          datetime = Date.parse(self.timestamp)
-          format = key[1 .. -1]
-          datetime.strftime(format)
-        else
-          datetime = @@date_parser.parseDateTime(self.timestamp)
-          format = key[1 .. -1]
-          datetime.toString(format) # return requested time format
-        end
+        t = @data["@timestamp"]
+        next org.joda.time.Instant.new(t.tv_sec * 1000 + t.tv_usec / 1000).format(key[1 .. -1])
       else
-        # Use an event field.
         value = self[key]
-
         case value
-        when nil
-          tok # leave the %{foo} if this field does not exist in this event.
-        when Array
-          value.join(",") # Join by ',' if value is an array
-        when Hash
-          value.to_json # Convert hashes to json
-        else
-          value # otherwise return the value
-        end
-      end
-    end
+          when nil
+            tok # leave the %{foo} if this field does not exist in this event.
+          when Array
+            value.join(",") # Join by ',' if value is an array
+          when Hash
+            value.to_json # Convert hashes to json
+          else
+            value # otherwise return the value
+        end # case value
+      end # 'key' checking
+    end # format.gsub...
   end # def sprintf
+
+  # Shims to remove after event v1 is the default.
+  def tags=(value); self["tags"] = value; end
+  def message=(value); self["message"] = value; end
+  def source=(value); self["source"] = value; end
+  def type=(value); self["type"] = value; end
+  def type; return self["type"]; end
 end # module LogStash::EventV1
