@@ -32,13 +32,15 @@ if [ ! -f "$jar" ] ; then
   exit 1
 fi
 
-cp $jar $destdir/$prefix/
+cp $jar $destdir/$prefix/logstash.jar
 
 case $os@$release in
   centos@*)
     mkdir -p $destdir/etc/logrotate.d
     mkdir -p $destdir/etc/sysconfig
     mkdir -p $destdir/etc/init.d
+	mkdir -p $destdir/etc/logstash/conf.d
+	mkdir -p $destdir/opt/logstash/tmp
     mkdir -p $destdir/var/lib/logstash
     mkdir -p $destdir/var/run/logstash
     mkdir -p $destdir/var/log/logstash
