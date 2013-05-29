@@ -194,8 +194,10 @@ module LogStash::EventV1
 
   # Shims to remove after event v1 is the default.
   def tags=(value); self["tags"] = value; end
+  def tags; return self["tags"]; end
   def message=(value); self["message"] = value; end
   def source=(value); self["source"] = value; end
   def type=(value); self["type"] = value; end
   def type; return self["type"]; end
+  def fields; return self.to_hash; end
 end # module LogStash::EventV1
