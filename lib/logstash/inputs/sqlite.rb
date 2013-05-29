@@ -86,7 +86,6 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
   def get_placeholder(db, table)
     since = db[SINCE_TABLE]
     x = since.where(:table => "#{table}")
-    p x
     if x[:place].nil?
       init_placeholder(db, table) 
       return 0
@@ -100,7 +99,7 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
   def init_placeholder(db, table)
     @logger.debug("init placeholder for #{table}")
     since = db[SINCE_TABLE]
-    since.insert(:table => table, :place => 1)
+    since.insert(:table => table, :place => 0)
   end
 
   public
