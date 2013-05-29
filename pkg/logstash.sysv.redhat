@@ -131,12 +131,12 @@ case "$1" in
   start)
     echo -n "Starting $DESC: "
     do_start
-    touch /var/lock/subsys/logstash/$NAME
+    touch /var/run/logstash/$NAME
     ;;
   stop)
     echo -n "Stopping $DESC: "
     do_stop
-    rm /var/lock/subsys/logstash/$NAME
+    rm /var/run/logstash/$NAME
     ;;
   restart|reload)
     echo -n "Restarting $DESC: "
