@@ -24,6 +24,8 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
   # SNMP Community String to listen for.
   config :community, :validate => :string, :default => "public"
 
+  # directory of YAML MIB maps  (same format ruby-snmp uses)
+  config :yamlmibdir, :validate => :string
 
   def initialize(*args)
     super(*args)
@@ -33,6 +35,15 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
   def register
     require "snmp"
     @snmptrap = nil
+    if @yamlmibdir
+      @logger.info("checking #{@yamlmibdir} for MIBs")
+      Dir["#{@yamlmibdir}/*.yaml"].each do |yamlfile|
+        mib_name = File.basename(yamlfile, ".*")
+        @yaml_mibs ||= []
+        @yaml_mibs << mib_name
+      end
+      @logger.info("found MIBs: #{@yaml_mibs.join(',')}") if @yaml_mibs
+    end
   end # def register
 
   public
@@ -50,8 +61,13 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
 
   private
   def snmptrap_listener(output_queue)
-    @logger.info("It's a Trap!", :host => @host, :port => @port, :community => @community)
-    @snmptrap = SNMP::TrapListener.new(:Port => @port, :Community => @community, :Host => @host) 
+    traplistener_opts = {:Port => @port, :Community => @community, :Host => @host}
+    if !@yaml_mibs.empty?
+      traplistener_opts.merge!({:MibDir => @yamlmibdir, :MibModules => @yaml_mibs})
+    end
+    @logger.info("It's a Trap!", traplistener_opts.dup)
+    @snmptrap = SNMP::TrapListener.new(traplistener_opts)
+
     @snmptrap.on_trap_default do |trap|
       begin
         event = to_event(trap.inspect, trap.source_ip)
