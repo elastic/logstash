@@ -8,20 +8,39 @@ class LogStash::Filters::Base < LogStash::Plugin
 
   config_name "filter"
 
+  # Note that all of the specified routing options (type,tags.exclude_tags,include_fields,exclude_fields)
+  # must be met in order for the event to be handled by the filter.
+
   # The type to act on. If a type is given, then this filter will only
   # act on messages with the same type. See any input plugin's "type"
   # attribute for more.
   # Optional.
   config :type, :validate => :string, :default => ""
 
-  # Only handle events with all of these tags.  Note that if you specify
-  # a type, the event must also match that type.
+  # Only handle events with all/any (controlled by include_any config option) of these tags.
   # Optional.
+  # TODO(piavlo): sould we rename/alias this to include_tags for clearness and consistency?
   config :tags, :validate => :array, :default => []
 
-  # Only handle events without any of these tags. Note this check is
-  # additional to type and tags.
+  # Only handle events without all/any (controlled by exclude_any config option) of these tags.
+  # Optional.
   config :exclude_tags, :validate => :array, :default => []
+
+  # Only handle events with all/any (controlled by include_any config option) of these fields.
+  # Optional.
+  config :include_fields, :validate => :array, :default => []
+
+  # Only handle events without all/any (controlled by exclude_any config option) of these fields.
+  # Optional.
+  config :exclude_fields, :validate => :array, :default => []
+
+  # Should all or any of the specified tags/include_fields be present for event to
+  # be handled. Defaults to all.
+  config :include_any, :validate => :boolean, :default => false
+
+  # Should all or any of the specified exclude_tags/exclude_fields be missing for event to
+  # be handled. Defaults to all.
+  config :exclude_any, :validate => :boolean, :default => true
 
   # If this filter is successful, add arbitrary tags to the event.
   # Tags can be dynamic and include parts of the event using the %{field}
@@ -52,20 +71,36 @@ class LogStash::Filters::Base < LogStash::Plugin
   config :remove_tag, :validate => :array, :default => []
 
   # If this filter is successful, add any arbitrary fields to this event.
+  # Tags can be dynamic and include parts of the event using the %{field}
   # Example:
   #
   #     filter {
   #       %PLUGIN% {
-  #         add_field => [ "sample", "Hello world, from %{@source}" ]
+  #         add_field => [ "foo_%{somefield}", "Hello world, from %{@source}" ]
   #       }
   #     }
   #
-  #  On success, the %PLUGIN% plugin will then add field 'sample' with the
-  #  value above and the %{@source} piece replaced with that value from the
-  #  event.
+  # If the event has field "somefield" == "hello" this filter, on success,
+  # would add field "foo_hello" if it is present, with the
+  # value above and the %{@source} piece replaced with that value from the
+  # event.
   config :add_field, :validate => :hash, :default => {}
 
-  RESERVED = ["type", "tags", "add_tag", "remove_tag", "add_field", "exclude_tags"]
+  # If this filter is successful, remove arbitrary fields from this event.
+  # Fields names can be dynamic and include parts of the event using the %{field}
+  # Example:
+  #
+  #     filter {
+  #       %PLUGIN% {
+  #         remove_field => [ "foo_%{somefield}" ]
+  #       }
+  #     }
+  #
+  # If the event has field "somefield" == "hello" this filter, on success,
+  # would remove the field with name "foo_hello" if it is present
+  config :remove_field, :validate => :array, :default => []
+
+  RESERVED = ["type", "tags", "exclude_tags", "include_fields", "exclude_fields", "add_tag", "remove_tag", "add_field", "remove_field", "include_any", "exclude_any"]
 
   public
   def initialize(params)
@@ -98,33 +133,38 @@ class LogStash::Filters::Base < LogStash::Plugin
   # matches the filter's conditions (right type, etc)
   protected
   def filter_matched(event)
-    (@add_field or {}).each do |field, value|
-      event[field] ||= []
-      if value.is_a?(Array)
-        event[field] += value
-      else
+    @add_field.each do |field, value|
+      field = event.sprintf(field)
+      value = event.sprintf(value)
+      if event.include?(field)
         event[field] = [event[field]] if !event[field].is_a?(Array)
-        event[field] << event.sprintf(value)
+        event[field] << value
+      else
+        event[field] = value
       end
-      @logger.debug? and @logger.debug("filters/#{self.class.name}: adding " \
-                                       "value to field", :field => field,
-                                       :value => value)
+      @logger.debug? and @logger.debug("filters/#{self.class.name}: adding value to field",
+                                       :field => field, :value => value)
+    end
+    
+    @remove_field.each do |field|
+      field = event.sprintf(field)
+      @logger.debug? and @logger.debug("filters/#{self.class.name}: removing field",
+                                       :field => field) 
+      event.remove(field)
     end
 
-    (@add_tag or []).each do |tag|
+    @add_tag.each do |tag|
+      tag = event.sprintf(tag)
       @logger.debug? and @logger.debug("filters/#{self.class.name}: adding tag",
                                        :tag => tag)
-      event.tags << event.sprintf(tag)
-      #event.tags |= [ event.sprintf(tag) ]
+      event.tags << tag
     end
 
-    if @remove_tag
-      remove_tags = @remove_tag.map do |tag|
-        event.sprintf(tag)
-      end
-      @logger.debug? and @logger.debug("filters/#{self.class.name}: removing tags",
-                                       :tags => (event.tags & remove_tags))
-      event.tags -= remove_tags
+    @remove_tag.each do |tag|
+      tag = event.sprintf(tag)
+      @logger.debug? and @logger.debug("filters/#{self.class.name}: removing tag",
+                                       :tag => tag)
+      event.tags.delete(tag)
     end
   end # def filter_matched
 
@@ -132,21 +172,39 @@ class LogStash::Filters::Base < LogStash::Plugin
   def filter?(event)
     if !@type.empty?
       if event.type != @type
-        @logger.debug(["Skipping event because type doesn't match #{@type}", event])
+        @logger.debug? and @logger.debug(["Skipping event because type doesn't match #{@type}", event])
         return false
       end
     end
 
+    # TODO(piavlo): It would much nicer to set this in the "raising" register method somehow?
+    include_method = @include_any ? :any? : :all?
+    exclude_method = @exclude_any ? :any? : :all?
+
     if !@tags.empty?
-      if (event.tags & @tags).size != @tags.size
-        @logger.debug(["Skipping event because tags don't match #{@tags.inspect}", event])
+      if !@tags.send(include_method) {|tag| event.tags.include?(tag)}
+        @logger.debug? and @logger.debug(["Skipping event because tags don't match #{@tags.inspect}", event])
         return false
       end
     end
 
     if !@exclude_tags.empty?
-      if (diff_tags = (event.tags & @exclude_tags)).size != 0
-        @logger.debug(["Skipping event because tags contains excluded tags: #{diff_tags.inspect}", event])
+      if @exclude_tags.send(exclude_method) {|tag| event.tags.include?(tag)}
+        @logger.debug? and @logger.debug(["Skipping event because tags contains excluded tags: #{exclude_tags.inspect}", event])
+        return false
+      end
+    end
+
+    if !@include_fields.empty?
+      if !@include_fields.send(include_method) {|field| event.include?(field)}
+        @logger.debug? and @logger.debug(["Skipping event because fields don't match #{@include_fields.inspect}", event])
+        return false
+      end
+    end
+
+    if !@exclude_fields.empty?
+      if @exclude_fields.send(exclude_method) {|field| event.include?(field)}
+        @logger.debug? and @logger.debug(["Skipping event because fields contain excluded fields #{@exclude_fields.inspect}", event])
         return false
       end
     end
