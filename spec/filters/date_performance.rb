@@ -21,15 +21,17 @@ describe LogStash::Filters::Date do
       }
       filter {
         date {
-          mydate => "MMM dd HH:mm:ss Z"
+          match => [ "mydate", "MMM dd HH:mm:ss Z" ]
         }
       }
       output { null { } }
     CONFIG
 
-    agent do
-      puts "date parse rate: #{event_count / @duration}"
-      insist { @duration } < max_duration
+    2.times do
+      agent do
+        puts "date parse rate: #{event_count / @duration}"
+        insist { @duration } < max_duration
+      end
     end
   end
 end
