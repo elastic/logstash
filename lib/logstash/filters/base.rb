@@ -107,6 +107,9 @@ class LogStash::Filters::Base < LogStash::Plugin
     super
     config_init(params)
     @threadsafe = true
+
+    @include_method = @include_any ? :any? : :all?
+    @exclude_method = @exclude_any ? :any? : :all?
   end # def initialize
 
   public
@@ -177,33 +180,29 @@ class LogStash::Filters::Base < LogStash::Plugin
       end
     end
 
-    # TODO(piavlo): It would much nicer to set this in the "raising" register method somehow?
-    include_method = @include_any ? :any? : :all?
-    exclude_method = @exclude_any ? :any? : :all?
-
     if !@tags.empty?
-      if !@tags.send(include_method) {|tag| event.tags.include?(tag)}
+      if !@tags.send(@include_method) {|tag| event.tags.include?(tag)}
         @logger.debug? and @logger.debug(["Skipping event because tags don't match #{@tags.inspect}", event])
         return false
       end
     end
 
     if !@exclude_tags.empty?
-      if @exclude_tags.send(exclude_method) {|tag| event.tags.include?(tag)}
+      if @exclude_tags.send(@exclude_method) {|tag| event.tags.include?(tag)}
         @logger.debug? and @logger.debug(["Skipping event because tags contains excluded tags: #{exclude_tags.inspect}", event])
         return false
       end
     end
 
     if !@include_fields.empty?
-      if !@include_fields.send(include_method) {|field| event.include?(field)}
+      if !@include_fields.send(@include_method) {|field| event.include?(field)}
         @logger.debug? and @logger.debug(["Skipping event because fields don't match #{@include_fields.inspect}", event])
         return false
       end
     end
 
     if !@exclude_fields.empty?
-      if @exclude_fields.send(exclude_method) {|field| event.include?(field)}
+      if @exclude_fields.send(@exclude_method) {|field| event.include?(field)}
         @logger.debug? and @logger.debug(["Skipping event because fields contain excluded fields #{@exclude_fields.inspect}", event])
         return false
       end
