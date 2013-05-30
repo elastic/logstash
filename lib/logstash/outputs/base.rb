@@ -27,12 +27,36 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   # Only handle events with all of these fields.
   # Optional.
-  config :fields, :validate => :array, :default => []
+  config :fields, :validate => :array, :deprecated => true
+
+  # Only handle events with all/any (controlled by include_any config option) of these fields.
+  # Optional.
+  config :include_fields, :validate => :array, :default => []
+
+  # Only handle events without all/any (controlled by exclude_any config option) of these fields.
+  # Optional.
+  config :exclude_fields, :validate => :array, :default => []
+
+  # Should all or any of the specified tags/include_fields be present for event to
+  # be handled. Defaults to all.
+  config :include_any, :validate => :boolean, :default => false
+
+  # Should all or any of the specified exclude_tags/exclude_fields be missing for event to
+  # be handled. Defaults to all.
+  config :exclude_any, :validate => :boolean, :default => true
 
   public
   def initialize(params)
     super
     config_init(params)
+
+    @include_method = @include_any ? :any? : :all?
+    @exclude_method = @exclude_any ? :any? : :all?
+
+    # TODO(piavlo): Remove this once fields config will be removed
+    if @include_fields.empty? and not @fields.empty?
+      @include_fields = @fields
+    end
   end
 
   public
@@ -65,22 +89,29 @@ class LogStash::Outputs::Base < LogStash::Plugin
     end
 
     if !@tags.empty?
-      if (event.tags & @tags).size != @tags.size
+      if !@tags.send(@include_method) {|tag| event.tags.include?(tag)}
         @logger.debug? and @logger.debug(["Dropping event because tags don't match #{@tags.inspect}", event])
         return false
       end
     end
 
     if !@exclude_tags.empty?
-      if (diff_tags = (event.tags & @exclude_tags)).size != 0
-        @logger.debug? and @logger.debug(["Dropping event because tags contains excluded tags: #{diff_tags.inspect}", event])
+      if @exclude_tags.send(@exclude_method) {|tag| event.tags.include?(tag)}
+        @logger.debug? and @logger.debug(["Dropping event because tags contains excluded tags: #{exclude_tags.inspect}", event])
         return false
       end
     end
-        
-    if !@fields.empty?
-      if (event.fields.keys & @fields).size != @fields.size
-        @logger.debug? and @logger.debug(["Dropping event because type doesn't match #{@fields.inspect}", event])
+
+    if !@include_fields.empty?
+      if !@include_fields.send(@include_method) {|field| event.include?(field)}
+        @logger.debug? and @logger.debug(["Dropping event because fields don't match #{@include_fields.inspect}", event])
+        return false
+      end
+    end
+
+    if !@exclude_fields.empty?
+      if @exclude_fields.send(@exclude_method) {|field| event.include?(field)}
+        @logger.debug? and @logger.debug(["Dropping event because fields contain excluded fields #{@exclude_fields.inspect}", event])
         return false
       end
     end
