@@ -45,6 +45,9 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # be handled. Defaults to all.
   config :exclude_any, :validate => :boolean, :default => true
 
+  # Don't send events that have @timestamp older than specified number of seconds.
+  config :ignore_older_than, :validate => :number, :default => 0
+
   public
   def initialize(params)
     super
@@ -114,6 +117,11 @@ class LogStash::Outputs::Base < LogStash::Plugin
         @logger.debug? and @logger.debug(["Dropping event because fields contain excluded fields #{@exclude_fields.inspect}", event])
         return false
       end
+    end
+
+    if @ignore_older_than > 0 && Time.now - event.ruby_timestamp > @ignore_older_than
+      @logger.debug? and @logger.debug("Skipping metriks for old event", :event => event)
+      return
     end
 
     return true
