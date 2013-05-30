@@ -32,7 +32,8 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #       }
   #     }
   #
-  # This option is deprecated, instead use remove_field option available in all filters.
+  # This option is deprecated, instead use remove_field option available in all
+  # filters.
   config :remove, :validate => :array, :deprecated => true
 
   # Replace a field with a new value. The new value can include %{foo} strings
