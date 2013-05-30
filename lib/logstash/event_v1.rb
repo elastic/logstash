@@ -39,10 +39,18 @@ module LogStash::EventV1
     @data["@version"] = "1" if !@data.include?("@version")
   end # def initialize
 
+  # Add class methods on inclusion.
   public
-  def self.from_json(json)
-    return self.new(JSON.parse(json))
-  end # def self.from_json
+  def self.included(klass)
+    klass.extend(ClassMethods)
+  end # def included
+
+  module ClassMethods
+    public
+    def from_json(json)
+      return self.new(JSON.parse(json))
+    end # def from_json
+  end
 
   public
   def cancel

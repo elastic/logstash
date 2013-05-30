@@ -20,7 +20,10 @@ require "logstash/time_addon"
 # set in the event. For example, with file input, the timestamp is set to the
 # time of each read.
 class LogStash::Filters::Date < LogStash::Filters::Base
-  JavaException = java.lang.Exception if RUBY_ENGINE == "jruby"
+  if RUBY_ENGINE == "jruby"
+    JavaException = java.lang.Exception
+    UTC = org.joda.time.DateTimeZone.forID("UTC")
+  end
 
   config_name "date"
   plugin_status "stable"
@@ -184,8 +187,6 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   def filter(event)
     @logger.debug? && @logger.debug("Date filter: received event", :type => event.type)
     return unless filter?(event)
-    now = Time.now
-
     @parsers.each do |field, fieldparsers|
       @logger.debug? && @logger.debug("Date filter looking for field",
                                       :type => event.type, :field => field)
@@ -224,7 +225,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             missing.each do |t|
               case t
               when "y"
-                time = time.withYear(now.year)
+                time = time.withYear(Time.now.year)
               when "S"
                 # TODO(sissel): Old behavior was to default to fractional sec == 0
                 #time.setMillisOfSecond(now.usec / 1000)
@@ -238,10 +239,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             end
           end
           #@logger.info :JodaTime => time.to_s
-          time = time.withZone(org.joda.time.DateTimeZone.forID("UTC"))
-          event.timestamp = time.to_s 
-          #event.timestamp = LogStash::Time.to_iso8601(time)
-          @logger.debug? && @logger.debug("Date parsing done", :value => value, :timestamp => event.timestamp)
+          time = time.withZone(UTC)
+          event["@timestamp"] = Time.utc(
+            time.getYear, time.getMonthOfYear, time.getDayOfMonth,
+            time.getHourOfDay, time.getMinuteOfHour, time.getSecondOfMinute,
+            time.getMillisOfSecond * 1000
+          )
+          @logger.debug? && @logger.debug("Date parsing done", :value => value, :timestamp => event["@timestamp"])
         rescue StandardError, JavaException => e
           @logger.warn("Failed parsing date from field", :field => field,
                        :value => value, :exception => e)
