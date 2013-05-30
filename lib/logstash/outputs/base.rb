@@ -27,7 +27,23 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   # Only handle events with all of these fields.
   # Optional.
-  config :fields, :validate => :array, :default => []
+  config :fields, :validate => :array, :deprecated => true
+
+  # Only handle events with all/any (controlled by include_any config option) of these fields.
+  # Optional.
+  config :include_fields, :validate => :array, :default => []
+
+  # Only handle events without all/any (controlled by exclude_any config option) of these fields.
+  # Optional.
+  config :exclude_fields, :validate => :array, :default => []
+
+  # Should all or any of the specified tags/include_fields be present for event to
+  # be handled. Defaults to all.
+  config :include_any, :validate => :boolean, :default => false
+
+  # Should all or any of the specified exclude_tags/exclude_fields be missing for event to
+  # be handled. Defaults to all.
+  config :exclude_any, :validate => :boolean, :default => true
 
   public
   def initialize(params)
@@ -36,6 +52,11 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
     @include_method = @include_any ? :any? : :all?
     @exclude_method = @exclude_any ? :any? : :all?
+
+    # TODO(piavlo): Remove this once fields config will be removed
+    if @include_fields.empty? and not @fields.empty?
+      @include_fields = @fields
+    end
   end
 
   public
