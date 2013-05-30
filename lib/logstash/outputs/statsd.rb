@@ -61,9 +61,6 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # Enable debugging output?
   config :debug, :validate => :boolean, :default => false
 
-  # Don't send events that have @timestamp older than specified number of seconds.
-  config :ignore_older_than, :validate => :number, :default => 0
-
   public
   def register
     require "statsd"
@@ -73,12 +70,6 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   public
   def receive(event)
     return unless output?(event)
-
-    # TODO(piavlo): This should probably move to base output plugin?
-    if @ignore_older_than > 0 && Time.now - event.ruby_timestamp > @ignore_older_than
-      @logger.debug? and @logger.debug("Skipping metriks for old event", :event => event)
-      return
-    end
 
     @client.namespace = event.sprintf(@namespace) if not @namespace.empty?
     @logger.debug? and @logger.debug("Original sender: #{@sender}")
