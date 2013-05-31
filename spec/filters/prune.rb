@@ -12,7 +12,7 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
     
-    sample "@fields" => {
+    sample(
       "firstname"    => "Borat",
       "lastname"     => "Sagdiyev",
       "fullname"     => "Borat Sagdiyev",
@@ -22,7 +22,7 @@ describe LogStash::Filters::Prune do
       "status"       => "200",
       "Borat_saying" => "Cloud is not ready for enterprise if is not integrate with single server running Active Directory.",
       "%{hmm}"       => "doh"
-    } do
+    ) do
       insist { subject["firstname"] } == "Borat"
       insist { subject["lastname"] } == "Sagdiyev"
       insist { subject["fullname"] } == "Borat Sagdiyev"
@@ -45,7 +45,7 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
     
-    sample "@fields" => {
+    sample(
       "firstname"    => "Borat",
       "lastname"     => "Sagdiyev",
       "fullname"     => "Borat Sagdiyev",
@@ -55,7 +55,7 @@ describe LogStash::Filters::Prune do
       "status"       => "200",
       "Borat_saying" => "Cloud is not ready for enterprise if is not integrate with single server running Active Directory.",
       "%{hmm}"       => "doh"
-    } do
+    ) do
       insist { subject["firstname"] } == "Borat"
       insist { subject["lastname"] } == nil
       insist { subject["fullname"] } == nil
@@ -79,7 +79,7 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
     
-    sample "@fields" => {
+    sample(
       "firstname"    => "Borat",
       "lastname"     => "Sagdiyev",
       "fullname"     => "Borat Sagdiyev",
@@ -89,7 +89,7 @@ describe LogStash::Filters::Prune do
       "status"       => "200",
       "Borat_saying" => "Cloud is not ready for enterprise if is not integrate with single server running Active Directory.",
       "%{hmm}"       => "doh"
-    } do
+    ) do
       insist { subject["firstname"] } == "Borat"
       insist { subject["lastname"] } == nil
       insist { subject["fullname"] } == nil
@@ -112,7 +112,7 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
 
-    sample "@fields" => {
+    sample(
       "firstname"    => "Borat",
       "lastname"     => "Sagdiyev",
       "fullname"     => "Borat Sagdiyev",
@@ -122,7 +122,7 @@ describe LogStash::Filters::Prune do
       "status"       => "200",
       "Borat_saying" => "Cloud is not ready for enterprise if is not integrate with single server running Active Directory.",
       "%{hmm}"       => "doh"
-    } do
+    ) do
       insist { subject["firstname"] } == nil
       insist { subject["lastname"] } == "Sagdiyev"
       insist { subject["fullname"] } == "Borat Sagdiyev"
@@ -146,7 +146,7 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
 
-    sample "@fields" => {
+    sample(
       "firstname"    => "Borat",
       "lastname"     => "Sagdiyev",
       "fullname"     => "Borat Sagdiyev",
@@ -156,7 +156,7 @@ describe LogStash::Filters::Prune do
       "status"       => "200",
       "Borat_saying" => "Cloud is not ready for enterprise if is not integrate with single server running Active Directory.",
       "%{hmm}"       => "doh"
-    } do
+    ) do
       insist { subject["firstname"] } == nil
       insist { subject["lastname"] } == "Sagdiyev"
       insist { subject["fullname"] } == "Borat Sagdiyev"
@@ -183,7 +183,7 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
 
-    sample "@fields" => {
+    sample(
       "firstname"    => "Borat",
       "lastname"     => "Sagdiyev",
       "fullname"     => "Borat Sagdiyev",
@@ -193,7 +193,7 @@ describe LogStash::Filters::Prune do
       "status"       => "200",
       "Borat_saying" => "Cloud is not ready for enterprise if is not integrate with single server running Active Directory.",
       "%{hmm}"       => "doh"
-    } do
+    ) do
       insist { subject["firstname"] } == "Borat"
       insist { subject["lastname"] } == "Sagdiyev"
       insist { subject["fullname"] } == nil
@@ -221,7 +221,7 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
 
-    sample "@fields" => {
+    sample(
       "firstname"    => "Borat",
       "lastname"     => "Sagdiyev",
       "fullname"     => "Borat Sagdiyev",
@@ -231,7 +231,7 @@ describe LogStash::Filters::Prune do
       "status"       => "200",
       "Borat_saying" => "Cloud is not ready for enterprise if is not integrate with single server running Active Directory.",
       "%{hmm}"       => "doh"
-    } do
+    ) do
       insist { subject["firstname"] } == "Borat"
       insist { subject["lastname"] } == "Sagdiyev"
       insist { subject["fullname"] } == "Borat Sagdiyev"
@@ -258,7 +258,7 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
 
-    sample "@fields" => {
+    sample(
       "firstname"    => "Borat",
       "lastname"     => "Sagdiyev",
       "fullname"     => "Borat Sagdiyev",
@@ -268,7 +268,7 @@ describe LogStash::Filters::Prune do
       "status"       => "200",
       "Borat_saying" => "Cloud is not ready for enterprise if is not integrate with single server running Active Directory.",
       "%{hmm}"       => "doh"
-    } do
+    ) do
       insist { subject["firstname"] } == nil
       insist { subject["lastname"] } == "Sagdiyev"
       insist { subject["fullname"] } == "Borat Sagdiyev"
@@ -296,7 +296,7 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
 
-    sample "@fields" => {
+    sample(
       "firstname"    => "Borat",
       "lastname"     => "Sagdiyev",
       "fullname"     => "Borat Sagdiyev",
@@ -306,7 +306,7 @@ describe LogStash::Filters::Prune do
       "status"       => "200",
       "Borat_saying" => "Cloud is not ready for enterprise if is not integrate with single server running Active Directory.",
       "%{hmm}"       => "doh"
-    } do
+    ) do
       insist { subject["firstname"] } == nil
       insist { subject["lastname"] } == "Sagdiyev"
       insist { subject["fullname"] } == nil
@@ -331,12 +331,12 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
 
-    sample "@fields" => {
+    sample(
       "blah"   => "foo",
       "xxx" => [ "1 2 3", "3 4 5" ],
       "status" => [ "100", "200", "300", "400", "500" ],
       "error"  => [ "This is foolish" , "Need smthing smart too" ]
-    } do
+    ) do
       insist { subject["blah"] } == "foo"
       insist { subject["error"] } == nil
       insist { subject["xxx"] } == [ "1 2 3", "3 4 5" ]
@@ -356,12 +356,12 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
 
-    sample "@fields" => {
+    sample(
       "blah"   => "foo",
       "xxx" => [ "1 2 3", "3 4 5" ],
       "status" => [ "100", "200", "300", "400", "500" ],
       "error"  => [ "This is foolish", "Need smthing smart too" ]
-    } do
+    ) do
       insist { subject["blah"] } == "foo"
       insist { subject["error"] } == [ "This is foolish", "Need smthing smart too" ]
       insist { subject["xxx"] } == nil
@@ -382,12 +382,12 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
 
-    sample "@fields" => {
+    sample(
       "blah"   => "foo",
       "xxx" => [ "1 2 3", "3 4 5" ],
       "status" => [ "100", "200", "300", "400", "500" ],
       "error"  => [ "This is foolish" , "Need smthing smart too" ]
-    } do
+    ) do
       insist { subject["blah"] } == "foo"
       insist { subject["error"] } == [ "This is foolish" ]
       insist { subject["xxx"] } == [ "1 2 3", "3 4 5" ]
@@ -408,12 +408,12 @@ describe LogStash::Filters::Prune do
       }
     CONFIG
 
-    sample "@fields" => {
+    sample(
       "blah"   => "foo",
       "xxx" => [ "1 2 3", "3 4 5" ],
       "status" => [ "100", "200", "300", "400", "500" ],
       "error"  => [ "This is foolish" , "Need smthing smart too" ]
-    } do
+    ) do
       insist { subject["blah"] } == "foo"
       insist { subject["error"] } == [ "Need smthing smart too" ]
       insist { subject["xxx"] } == nil

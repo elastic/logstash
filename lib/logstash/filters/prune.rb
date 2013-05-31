@@ -8,7 +8,8 @@ class LogStash::Filters::Prune < LogStash::Filters::Base
   config_name "prune"
   plugin_status "experimental"
 
-  # Trigger whether configation fields and values should be interpolated for dynamic values.
+  # Trigger whether configation fields and values should be interpolated for
+  # dynamic values.
   # Probably adds some performance overhead. Defaults to false.
   config :interpolate, :validate => :boolean, :default => false
 
@@ -78,21 +79,24 @@ class LogStash::Filters::Prune < LogStash::Filters::Base
   def filter(event)
     return unless filter?(event)
 
-    # We need to collect fields which needs to be remove ,and only in the end actually remove it
-    # since then interpolation mode you can get unexpected results as fields with dynamic values will not match
-    # since the fields to which they refer have already been removed.
+    hash = event.to_hash
+
+    # We need to collect fields which needs to be remove ,and only in the end
+    # actually remove it since then interpolation mode you can get unexpected
+    # results as fields with dynamic values will not match since the fields to
+    # which they refer have already been removed.
     fields_to_remove = []
 
     unless @whitelist_names.empty?
       @whitelist_names_regexp = Regexp.union(@whitelist_names.map {|x| Regexp.new(event.sprintf(x))}) if @interpolate
-      event.fields.each_key do |field|
+      hash.each_key do |field|
         fields_to_remove << field unless field.match(@whitelist_names_regexp)
       end
     end
 
     unless @blacklist_names.empty?
       @blacklist_names_regexp = Regexp.union(@blacklist_names.map {|x| Regexp.new(event.sprintf(x))}) if @interpolate
-      event.fields.each_key do |field|
+      hash.each_key do |field|
         fields_to_remove << field if field.match(@blacklist_names_regexp)
       end
     end
@@ -102,14 +106,14 @@ class LogStash::Filters::Prune < LogStash::Filters::Base
         key = event.sprintf(key)
         value = Regexp.new(event.sprintf(value))
       end
-      if event.fields[key]
-        if event.fields[key].is_a?(Array)
-          subvalues_to_remove = event.fields[key].find_all{|x| not x.match(value)}
+      if hash[key]
+        if hash[key].is_a?(Array)
+          subvalues_to_remove = hash[key].find_all{|x| not x.match(value)}
           unless subvalues_to_remove.empty?
-            fields_to_remove << (subvalues_to_remove.length == event.fields[key].length ? key : { :key => key, :values => subvalues_to_remove })
+            fields_to_remove << (subvalues_to_remove.length == hash[key].length ? key : { :key => key, :values => subvalues_to_remove })
           end
         else
-          fields_to_remove << key if not event.fields[key].match(value)
+          fields_to_remove << key if not hash[key].match(value)
         end
       end
     end
@@ -119,23 +123,23 @@ class LogStash::Filters::Prune < LogStash::Filters::Base
         key = event.sprintf(key)
         value = Regexp.new(event.sprintf(value))
       end
-      if event.fields[key]
-        if event.fields[key].is_a?(Array)
-          subvalues_to_remove = event.fields[key].find_all{|x| x.match(value)}
+      if hash[key]
+        if hash[key].is_a?(Array)
+          subvalues_to_remove = hash[key].find_all{|x| x.match(value)}
           unless subvalues_to_remove.empty?
-            fields_to_remove << (subvalues_to_remove.length == event.fields[key].length ? key : { :key => key, :values => subvalues_to_remove })
+            fields_to_remove << (subvalues_to_remove.length == hash[key].length ? key : { :key => key, :values => subvalues_to_remove })
           end
         else
-          fields_to_remove << key if event.fields[key].match(value)
+          fields_to_remove << key if hash[key].match(value)
         end
       end
     end
 
     fields_to_remove.each do |field|
       if field.is_a?(Hash)
-        event.fields[field[:key]] = event.fields[field[:key]] - field[:values]
+        hash[field[:key]] = hash[field[:key]] - field[:values]
       else
-        event.remove(field)
+        hash.delete(field)
       end
     end
 
