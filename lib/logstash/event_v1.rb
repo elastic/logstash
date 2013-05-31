@@ -208,4 +208,10 @@ module LogStash::EventV1
   def type=(value); self["type"] = value; end
   def type; return self["type"]; end
   def fields; return self.to_hash; end
+
+  def tag(value)
+    # Generalize this method for more usability
+    self["tags"] ||= []
+    self["tags"] << value unless self["tags"].include?(value)
+  end
 end # module LogStash::EventV1

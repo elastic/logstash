@@ -23,9 +23,10 @@ class LogStash::Filters::Json < LogStash::Filters::Base
   # The above would parse the xml from the @message field
   config :source, :validate => :string, :required => true
 
-  # Define target for placing the data
+  # Define target for placing the data. If this setting is omitted,
+  # the json data will be stored at the root of the event.
   #
-  # for example if you want the data to be put in the 'doc' field:
+  # For example if you want the data to be put in the 'doc' field:
   #
   #     filter {
   #       json {
@@ -35,14 +36,13 @@ class LogStash::Filters::Json < LogStash::Filters::Base
   #
   # json in the value of the source field will be expanded into a
   # datastructure in the "target" field.
-  # Note: if the "target" field already exists, it will be overridden
-  config :target, :validate => :string, :required => true
+  #
+  # Note: if the "target" field already exists, it will be overwritten.
+  config :target, :validate => :string
 
   public
   def register
-
     # Nothing to do here
-
   end # def register
 
   public
@@ -51,29 +51,26 @@ class LogStash::Filters::Json < LogStash::Filters::Base
 
     @logger.debug("Running json filter", :event => event)
 
-    matches = 0
+    return unless event[@source]
 
-    key = @source
-    dest = @target
-
-    return unless event[key]
-    if event[key].is_a?(String)
-      event[key] = [event[key]]
+    if @target.nil?
+      # Default is to write to the root of the event.
+      dest = event.to_hash
+    else
+      dest = event[@target] ||= {}
     end
 
-    if event[key].length > 1
-      @logger.warn("JSON filter only works on single fields (not lists)",
-                   :key => key, :value => event[key])
-      return
-    end
-
-    raw = event[key].first
+    raw = event[@source]
     begin
-      event[dest] = JSON.parse(raw)
+      # TODO(sissel): Note, this will not successfully handle json lists
+      # like your text is '[ 1,2,3 ]' JSON.parse gives you an array (correctly)
+      # which won't merge into a hash. If someone needs this, we can fix it
+      # later.
+      dest.merge!(JSON.parse(raw))
       filter_matched(event)
     rescue => e
-      event.tags << "_jsonparsefailure"
-      @logger.warn("Trouble parsing json", :key => key, :raw => raw,
+      event.tag("_jsonparsefailure")
+      @logger.warn("Trouble parsing json", :source => @source, :raw => raw,
                     :exception => e)
       return
     end
