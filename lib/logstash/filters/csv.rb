@@ -11,14 +11,12 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
 
   # The CSV data in the value of the source field will be expanded into a
   # datastructure.
-  config :source, :validate => :string, :default => '@message'
+  config :source, :validate => :string, :default => "message"
 
   # Define a list of column names (in the order they appear in the CSV,
   # as if it were a header line). If this is not specified or there
   # are not enough columns specified, the default column name is "columnX"
   # (where X is the field number, starting from 1).
-  # This deprecates the 'fields' variable.
-  # Optional.
   config :columns, :validate => :array, :default => []
 
   # Define the column separator value. If this is not specified the default
@@ -27,9 +25,8 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
   config :separator, :validate => :string, :default => ","
 
   # Define target for placing the data
-  # Defaults to @fields
-  # Optional
-  config :target, :validate => :string, :default => "@fields"
+  # Defaults to writing to the root of the event.
+  config :target, :validate => :string
 
   public
   def register
@@ -46,37 +43,39 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
 
     matches = 0
 
-    key = @source
-    dest = @target
-
-    if event[key]
-      if event[key].is_a?(String)
-        event[key] = [event[key]]
+    if event[@source]
+      if event[@source].is_a?(String)
+        event[@source] = [event[@source]]
       end
 
-      if event[key].length > 1
+      if event[@source].length > 1
         @logger.warn("csv filter only works on fields of length 1",
-                     :key => key, :value => event[key],
+                     :source => @source, :value => event[@source],
                      :event => event)
         next
       end
 
-      raw = event[key].first
+      raw = event[@source].first
       begin
-        values = CSV.parse_line(raw, {:col_sep => @separator})
-        data = {}
-        values.each_index do |i|
-          field_name = @columns[i] || "column#{i+1}"
-          data[field_name] = values[i]
+        values = CSV.parse_line(raw, :col_sep => @separator)
+
+        if @target.nil?
+          # Default is to write to the root of the event.
+          dest = event
+        else
+          dest = event[@target] ||= {}
         end
 
-        event[dest] = data
+        values.each_index do |i|
+          field_name = @columns[i] || "column#{i+1}"
+          dest[field_name] = values[i]
+        end
 
         filter_matched(event)
       rescue => e
         event.tags << "_csvparsefailure"
-        @logger.warn("Trouble parsing csv", :key => key, :raw => raw,
-                      :exception => e, :backtrace => e.backtrace)
+        @logger.warn("Trouble parsing csv", :source => @source, :raw => raw,
+                      :exception => e)
         next
       end # begin
     end # if event

@@ -80,7 +80,7 @@ describe LogStash::Filters::CSV do
       }
     CONFIG
 
-    sample({"@fields" => {"datafield" => "val1,val2,val3"}}) do
+    sample("datafield" => "val1,val2,val3") do
       insist { subject["custom1"] } == "val1"
       insist { subject["custom2"] } == "val2"
       insist { subject["custom3"] } == "val3"
@@ -117,7 +117,7 @@ describe LogStash::Filters::CSV do
       }
     CONFIG
 
-    sample({"@fields" => {"datain" => "big,bird,sesame street"}}) do
+    sample("datain" => "big,bird,sesame street") do
       insist { subject["data"]["column1"] } == "big"
       insist { subject["data"]["column2"] } == "bird"
       insist { subject["data"]["column3"] } == "sesame street"
