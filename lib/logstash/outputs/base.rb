@@ -57,7 +57,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
     @exclude_method = @exclude_any ? :any? : :all?
 
     # TODO(piavlo): Remove this once fields config will be removed
-    if @include_fields.empty? and not @fields.empty?
+    if @include_fields.empty? && !@fields.nil? && !@fields.empty?
       @include_fields = @fields
     end
   end
