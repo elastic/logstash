@@ -41,6 +41,25 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # elasticsearch with the same ID.
   config :document_id, :validate => :string, :default => nil
 
+  # Remove all null/nil values from the document.
+  # ElasticSearch does better with no null values.
+  # This will traverse the entire document.
+  config :exclude_nulls, :validate => :boolean, :default => false
+
+  # Remove all empty list values from the document.
+  # ElasticSearch does better with no empty lists.
+  # This will traverse the entire document.
+  config :exclude_empty_lists, :validate => :boolean, :default => false
+
+  # A list of keys to follow down the event hash to what will
+  # be used as the ElasticSearch document. If you want just the @fields,
+  # the document_path would be ["@fields"]. ["@fields", "foo", "bar", "baz"]
+  # would pull the document from several levels down. The item at each level
+  # and at the end of the series of keys must be a hash/object/map.
+  # If the schema changes such that @fields no longer exists, adjust
+  # your document path by removing @fields.
+  config :document_path, :validate => :array, :default => []
+
   public
   def register
     require "ftw" # gem ftw
@@ -56,19 +75,38 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     index = event.sprintf(@index)
     type = event.sprintf(@index_type)
 
-    if @flush_size == 1
-      receive_single(event, index, type)
-    else
-      receive_bulk(event, index, type)
-    end #
+    document = event
+    for x in @document_path
+      document = document[x]
+      return @logger.error("Invalid document_path in elasticsearch_http config",
+        :event => event, :document_path => @document_path,
+      ) unless document.is_a? Hash
+    end
+
+    def reject(x)
+      return true if @exclude_nulls && x == nil
+      return true if @exclude_empty_lists && x == []
+      return false
+    end
+
+    def filter(x)
+      return x.reject {|k,v| reject(filter v)} if x.is_a? Hash
+      return x.select {|v| !reject(filter v)} if x.is_a? Array
+      return x
+    end
+
+    document = filter document if @exclude_empty_lists || @exclude_nulls
+    return receive_single(event, document, index, type) if @flush_size == 1
+    return receive_bulk(event, document, index, type)
+
   end # def receive
 
-  def receive_single(event, index, type)
+  def receive_single(event, document, index, type)
     success = false
     while !success
       begin
         response = @agent.post!("http://#{@host}:#{@port}/#{index}/#{type}",
-                                :body => event.to_json)
+                                :body => document.to_json)
       rescue EOFError
         @logger.warn("EOF while writing request or reading response header from elasticsearch",
                      :host => @host, :port => @port)
@@ -95,15 +133,10 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     end
   end # def receive_single
 
-  def receive_bulk(event, index, type)
+  def receive_bulk(event, document, index, type)
     header = { "index" => { "_index" => index, "_type" => type } }
-    if !@document_id.nil?
-      header["index"]["_id"] = event.sprintf(@document_id)
-    end
-    @queue << [
-      header.to_json, event.to_json
-    ].join("\n")
-
+    header["index"]["_id"] = event.sprintf(@document_id) if !@document_id.nil?
+    @queue << [ header.to_json, document.to_json ].join("\n")
     # Keep trying to flush while the queue is full.
     # This will cause retries in flushing if the flush fails.
     flush while @queue.size >= @flush_size
