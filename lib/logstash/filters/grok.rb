@@ -185,7 +185,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   # If true, make single-value fields simply that value, not an array
   # containing that one value.
-  config :singles, :validate => :boolean, :default => false
+  config :singles, :validate => :boolean, :default => true
 
   # If true, ensure the '_grokparsefailure' tag is present when there has been no
   # successful match
