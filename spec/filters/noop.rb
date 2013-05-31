@@ -30,12 +30,12 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@type" => "noop"}) do
-      insist { subject.tags } == ["test"]
+    sample("type" => "noop") do
+      insist { subject["tags"] } == ["test"]
     end
 
-    sample({"@type" => "not_noop"}) do
-      insist { subject.tags } == []
+    sample("type" => "not_noop") do
+      insist { subject["tags"] }.nil?
     end
   end
 
@@ -50,12 +50,12 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@type" => "noop"}) do
-      insist { subject.tags } == []
+    sample("type" => "noop") do
+      insist { subject["tags"] }.nil?
     end
 
-    sample({"@type" => "noop", "@tags" => ["t1", "t2"]}) do
-      insist { subject.tags } == ["t1", "t2", "test"]
+    sample("type" => "noop", "tags" => ["t1", "t2"]) do
+      insist { subject["tags"] } == ["t1", "t2", "test"]
     end
   end
 
@@ -70,20 +70,20 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@type" => "noop"}) do
-      insist { subject.tags } == []
+    sample("type" => "noop") do
+      insist { subject["tags"] }.nil?
     end
 
-    sample({"@type" => "noop", "@tags" => ["t1"]}) do
-      insist { subject.tags } == ["t1"]
+    sample("type" => "noop", "tags" => ["t1"]) do
+      insist { subject["tags"] } == ["t1"]
     end
 
-    sample({"@type" => "noop", "@tags" => ["t1", "t2"]}) do
-      insist { subject.tags } == ["t1", "t2", "test"]
+    sample("type" => "noop", "tags" => ["t1", "t2"]) do
+      insist { subject["tags"] } == ["t1", "t2", "test"]
     end
 
-    sample({"@type" => "noop", "@tags" => ["t1", "t2", "t3"]}) do
-      insist { subject.tags } == ["t1", "t2", "t3", "test"]
+    sample("type" => "noop", "tags" => ["t1", "t2", "t3"]) do
+      insist { subject["tags"] } == ["t1", "t2", "t3", "test"]
     end
   end
 
@@ -99,16 +99,16 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@type" => "noop"}) do
-      insist { subject.tags } == []
+    sample("type" => "noop") do
+      insist { subject["tags"] }.nil?
     end
 
-    sample({"@type" => "noop", "@tags" => ["t1"]}) do
-      insist { subject.tags } == ["t1", "test"]
+    sample("type" => "noop", "tags" => ["t1"]) do
+      insist { subject["tags"] } == ["t1", "test"]
     end
 
-    sample({"@type" => "noop", "@tags" => ["t1", "t2"]}) do
-      insist { subject.tags } == ["t1", "t2"]
+    sample("type" => "noop", "tags" => ["t1", "t2"]) do
+      insist { subject["tags"] } == ["t1", "t2"]
     end
   end
 
@@ -124,16 +124,16 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@type" => "noop", "@tags" => ["t1", "t2", "t4"]}) do
-      insist { subject.tags } == ["t1", "t2", "t4"]
+    sample("type" => "noop", "tags" => ["t1", "t2", "t4"]) do
+      insist { subject["tags"] } == ["t1", "t2", "t4"]
     end
 
-    sample({"@type" => "noop", "@tags" => ["t1", "t3", "t4"]}) do
-      insist { subject.tags } == ["t1", "t3", "t4"]
+    sample("type" => "noop", "tags" => ["t1", "t3", "t4"]) do
+      insist { subject["tags"] } == ["t1", "t3", "t4"]
     end
 
-    sample({"@type" => "noop", "@tags" => ["t1", "t4", "t5"]}) do
-      insist { subject.tags } == ["t1", "t4", "t5", "test"]
+    sample("type" => "noop", "tags" => ["t1", "t4", "t5"]) do
+      insist { subject["tags"] } == ["t1", "t4", "t5", "test"]
     end
   end
 
@@ -148,16 +148,16 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@type" => "noop", "@tags" => ["t4"]}) do
-      insist { subject.tags } == ["t4"]
+    sample("type" => "noop", "tags" => ["t4"]) do
+      insist { subject["tags"] } == ["t4"]
     end
 
-    sample({"@type" => "noop", "@tags" => ["t1", "t2", "t3"]}) do
-      insist { subject.tags } == ["t1"]
+    sample("type" => "noop", "tags" => ["t1", "t2", "t3"]) do
+      insist { subject["tags"] } == ["t1"]
     end
 
-    sample({"@type" => "noop", "@tags" => ["t1", "t2"]}) do
-      insist { subject.tags } == ["t1"]
+    sample("type" => "noop", "tags" => ["t1", "t2"]) do
+      insist { subject["tags"] } == ["t1"]
     end
   end
 
@@ -172,8 +172,8 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@type" => "noop", "@tags" => ["t1", "goaway", "t3"], "@fields" => {"blackhole" => "goaway"}}) do
-      insist { subject.tags } == ["t1", "t3"]
+    sample("type" => "noop", "tags" => ["t1", "goaway", "t3"], "blackhole" => "goaway") do
+      insist { subject["tags"] } == ["t1", "t3"]
     end
   end
 
@@ -187,19 +187,19 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@type" => "noop", "@fields" => {"t4" => "four"}}) do
-      insist { subject["@fields"] }.include?("t4")
+    sample("type" => "noop", "t4" => "four") do
+      insist { subject }.include?("t4")
     end
 
-    sample({"@type" => "noop", "@fields" => {"t1" => "one", "t2" => "two", "t3" => "three"}}) do
-      insist { subject["@fields"] }.include?("t1")
-      reject { subject["@fields"] }.include?("t2")
-      reject { subject["@fields"] }.include?("t3")
+    sample("type" => "noop", "t1" => "one", "t2" => "two", "t3" => "three") do
+      insist { subject }.include?("t1")
+      reject { subject }.include?("t2")
+      reject { subject }.include?("t3")
     end
 
-    sample({"@type" => "noop", "@fields" => {"t1" => "one", "t2" => "two"}}) do
-      insist { subject["@fields"] }.include?("t1")
-      reject { subject["@fields"] }.include?("t2")
+    sample("type" => "noop", "t1" => "one", "t2" => "two") do
+      insist { subject }.include?("t1")
+      reject { subject }.include?("t2")
     end
   end
 
@@ -213,9 +213,9 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@type" => "noop", "@fields" => {"blackhole" => "go", "go" => "away"}}) do
-      insist { subject["@fields"] }.include?("blackhole")
-      reject { subject["@fields"] }.include?("go")
+    sample("type" => "noop", "blackhole" => "go", "go" => "away") do
+      insist { subject }.include?("blackhole")
+      reject { subject }.include?("go")
     end
   end
 
@@ -230,16 +230,16 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@tags" => ["one", "two", "three", "four", "five"]}) do
-      insist { subject.tags }.include?("match")
+    sample("tags" => ["one", "two", "three", "four", "five"]) do
+      insist { subject["tags"] }.include?("match")
     end
 
-    sample({"@tags" => ["one", "two", "four", "five"]}) do
-      reject { subject.tags }.include?("match")
+    sample("tags" => ["one", "two", "four", "five"]) do
+      reject { subject["tags"] }.include?("match")
     end
 
     sample({}) do
-      reject { subject.tags }.include?("match")
+      insist { subject["tags"] }.nil?
     end
   end
 
@@ -254,16 +254,16 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@tags" => ["one1", "two2", "three", "four4", "five5"]}) do
-      insist { subject.tags }.include?("match")
+    sample("tags" => ["one1", "two2", "three", "four4", "five5"]) do
+      insist { subject["tags"] }.include?("match")
     end
 
-    sample({"@tags" => ["one1", "two2", "three3", "four4", "five5"]}) do
-      reject { subject.tags }.include?("match")
+    sample("tags" => ["one1", "two2", "three3", "four4", "five5"]) do
+      reject { subject["tags"] }.include?("match")
     end
 
     sample({}) do
-      reject { subject.tags }.include?("match")
+      insist { subject["tags"] }.nil?
     end
   end
 
@@ -278,16 +278,16 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@fields" => {"one" => "1", "two" => "2", "three" => "3", "four" => "4", "five" => "5"}}) do
-      insist { subject.tags }.include?("match")
+    sample("one" => "1", "two" => "2", "three" => "3", "four" => "4", "five" => "5") do
+      insist { subject["tags"] }.include?("match")
     end
 
-    sample({"@fields" => {"one" => "1", "two" => "2", "four" => "4", "five" => "5"}}) do
-      reject { subject.tags }.include?("match")
+    sample("one" => "1", "two" => "2", "four" => "4", "five" => "5") do
+      insist { subject["tags"] }.nil?
     end
 
     sample({}) do
-      reject { subject.tags }.include?("match")
+      insist { subject["tags"] }.nil?
     end
   end
 
@@ -302,16 +302,16 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@fields" => {"one1" => "1", "two2" => "2", "three" => "3", "four4" => "4", "five5" => "5"}}) do
-      insist { subject.tags }.include?("match")
+    sample("one1" => "1", "two2" => "2", "three" => "3", "four4" => "4", "five5" => "5") do
+      insist { subject["tags"] }.include?("match")
     end
 
-    sample({"@fields" => {"one1" => "1", "two2" => "2", "three3" => "3", "four4" => "4", "five5" => "5"}}) do
-      reject { subject.tags }.include?("match")
+    sample("one1" => "1", "two2" => "2", "three3" => "3", "four4" => "4", "five5" => "5") do
+      insist { subject["tags"] }.nil?
     end
 
     sample({}) do
-      reject { subject.tags }.include?("match")
+      insist { subject["tags"] }.nil?
     end
   end
 
@@ -326,16 +326,16 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@tags" => ["one", "two", "three", "four", "five"]}) do
-      reject { subject.tags }.include?("match")
+    sample("tags" => ["one", "two", "three", "four", "five"]) do
+      reject { subject["tags"] }.include?("match")
     end
 
-    sample({"@tags" => ["one", "two", "four", "five"]}) do
-      insist { subject.tags }.include?("match")
+    sample("tags" => ["one", "two", "four", "five"]) do
+      insist { subject["tags"] }.include?("match")
     end
 
     sample({}) do
-      insist { subject.tags }.include?("match")
+      insist { subject["tags"] }.include?("match")
     end
   end
 
@@ -350,20 +350,20 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@tags" => ["one", "two", "three", "four", "five"]}) do
-      reject { subject.tags }.include?("match")
+    sample("tags" => ["one", "two", "three", "four", "five"]) do
+      reject { subject["tags"] }.include?("match")
     end
 
-    sample({"@tags" => ["one1", "two2", "three", "four4", "five5"]}) do
-      reject { subject.tags }.include?("match")
+    sample("tags" => ["one1", "two2", "three", "four4", "five5"]) do
+      reject { subject["tags"] }.include?("match")
     end
 
-    sample({"@tags" => ["one1", "two2", "three3", "four4", "five5"]}) do
-      insist { subject.tags }.include?("match")
+    sample("tags" => ["one1", "two2", "three3", "four4", "five5"]) do
+      insist { subject["tags"] }.include?("match")
     end
 
     sample({}) do
-      insist { subject.tags }.include?("match")
+      insist { subject["tags"] }.include?("match")
     end
   end
 
@@ -378,16 +378,16 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@fields" => {"one" => "1", "two" => "2", "three" => "3", "four" => "4", "five" => "5"}}) do
-      reject { subject.tags }.include?("match")
+    sample("one" => "1", "two" => "2", "three" => "3", "four" => "4", "five" => "5") do
+      insist { subject["tags"] }.nil?
     end
 
-    sample({"@fields" => {"one" => "1", "two" => "2", "four" => "4", "five" => "5"}}) do
-      insist { subject.tags }.include?("match")
+    sample("one" => "1", "two" => "2", "four" => "4", "five" => "5") do
+      insist { subject["tags"] }.include?("match")
     end
 
     sample({}) do
-      insist { subject.tags }.include?("match")
+      insist { subject["tags"] }.include?("match")
     end
   end
 
@@ -402,16 +402,16 @@ describe LogStash::Filters::NOOP do
     }
     CONFIG
 
-    sample({"@fields" => {"one1" => "1", "two2" => "2", "three" => "3", "four4" => "4", "five5" => "5"}}) do
-      reject { subject.tags }.include?("match")
+    sample("one1" => "1", "two2" => "2", "three" => "3", "four4" => "4", "five5" => "5") do
+      insist { subject["tags"] }.nil?
     end
 
-    sample({"@fields" => {"one1" => "1", "two2" => "2", "three3" => "3", "four4" => "4", "five5" => "5"}}) do
-      insist { subject.tags }.include?("match")
+    sample("one1" => "1", "two2" => "2", "three3" => "3", "four4" => "4", "five5" => "5") do
+      insist { subject["tags"] }.include?("match")
     end
 
     sample({}) do
-      insist { subject.tags }.include?("match")
+      insist { subject["tags"] }.include?("match")
     end
   end
 end
