@@ -19,7 +19,6 @@ describe LogStash::Filters::KV do
       insist { subject["baz"] } == "fizz"
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
-      insist {subject['@fields'].count } == 5
     end
 
   end
@@ -50,7 +49,6 @@ describe LogStash::Filters::KV do
       insist { subject["baz="] } == "fizz"
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
-      insist {subject['@fields'].count } == 5
     end
 
   end
@@ -69,7 +67,6 @@ describe LogStash::Filters::KV do
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
       insist { subject["foo12"] } == "bar12"
-      insist {subject['@fields'].count } == 6
     end
 
   end
@@ -101,7 +98,6 @@ describe LogStash::Filters::KV do
       insist { subject["__baz"] } == "fizz"
       insist { subject["__doublequoted"] } == "hello world"
       insist { subject["__singlequoted"] } == "hello world"
-      insist {subject['@fields'].count } == 5
     end
 
   end
@@ -141,7 +137,7 @@ describe LogStash::Filters::KV do
 
       sample "hello=world" do
         insist { subject["hello"] } == "world"
-        insist { subject["@tags"] }.include?("hello")
+        insist { subject["tags"] }.include?("hello")
       end
     end
     context "should not activate when failing" do
@@ -152,7 +148,7 @@ describe LogStash::Filters::KV do
       CONFIG
 
       sample "this is not key value" do
-        reject { subject["@tags"] }.include?("hello")
+        insist { subject["tags"] }.nil?
       end
     end
   end
@@ -198,7 +194,7 @@ describe LogStash::Filters::KV do
       insist { subject["kv"]["baz"] } == "fizz"
       insist { subject["kv"]["doublequoted"] } == "hello world"
       insist { subject["kv"]["singlequoted"] } == "hello world"
-      insist {subject['@fields']["kv"].count } == 5
+      insist {subject["kv"].count } == 5
     end
 
   end
@@ -212,7 +208,6 @@ describe LogStash::Filters::KV do
 
     sample "hello:world:foo:bar:baz:fizz" do
       insist { subject["kv"] } == nil
-      insist {subject['@fields'].count } == 0
     end
   end
 
@@ -225,13 +220,12 @@ describe LogStash::Filters::KV do
         }
       }
     CONFIG
-    sample({"@fields" => {"data" => "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'"}}) do
+    sample("data" => "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'") do
       insist { subject["hello"] } == "world"
       insist { subject["foo"] } == "bar"
       insist { subject["baz"] } == "fizz"
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
-      insist { subject['@fields'].count } == 6
     end
   end
 
@@ -249,7 +243,6 @@ describe LogStash::Filters::KV do
       insist { subject["baz"] } == "fizz"
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
-      insist { subject['@fields'].count } == 5
     end
   end
 
@@ -263,13 +256,13 @@ describe LogStash::Filters::KV do
         }
       }
     CONFIG
-    sample({"@fields" => {"data" => "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'"}}) do
+    sample("data" => "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'") do
       insist { subject["kv"]["hello"] } == "world"
       insist { subject["kv"]["foo"] } == "bar"
       insist { subject["kv"]["baz"] } == "fizz"
       insist { subject["kv"]["doublequoted"] } == "hello world"
       insist { subject["kv"]["singlequoted"] } == "hello world"
-      insist { subject['@fields']["kv"].count } == 5
+      insist { subject["kv"].count } == 5
     end
   end
 
@@ -300,7 +293,6 @@ describe LogStash::Filters::KV do
     sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
       insist { subject["foo"] } == "bar"
       insist { subject["singlequoted"] } == "hello world"
-      insist {subject['@fields'].count } == 2
     end
   end
 
@@ -317,7 +309,6 @@ describe LogStash::Filters::KV do
       insist { subject["hello"] } == "world"
       insist { subject["baz"] } == "fizz"
       insist { subject["doublequoted"] } == "hello world"
-      insist {subject['@fields'].count } == 3
     end
   end
 
@@ -325,6 +316,7 @@ describe LogStash::Filters::KV do
     config <<-CONFIG
       filter {
         kv {
+          # This should exclude everything as a result of both settings.
           include_keys => [ "foo", "singlequoted" ]
           exclude_keys => [ "foo", "singlequoted" ]
         }
@@ -332,10 +324,11 @@ describe LogStash::Filters::KV do
     CONFIG
 
     sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
-      insist {subject['@fields'].count } == 0
+      %w(hello foo baz doublequoted singlequoted).each do |field|
+        reject { subject }.include?(field)
+      end
     end
   end
-
 
   describe "test default_keys" do
     config <<-CONFIG
@@ -354,7 +347,6 @@ describe LogStash::Filters::KV do
       insist { subject["baz"] } == "fizz"
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
-      insist {subject['@fields'].count } == 6
     end
   end
 

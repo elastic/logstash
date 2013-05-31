@@ -39,7 +39,6 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     }
   config :trim, :validate => :string
 
-
   # A string of characters to use as delimiters for parsing out key-value pairs.
   #
   # #### Example with URL Query Strings
@@ -81,17 +80,20 @@ class LogStash::Filters::KV < LogStash::Filters::Base
 
   # The fields to perform 'key=value' searching on
   #
-  # Example, to use the @message field:
+  # Example, to use the message field:
   #
-  #     filter { kv { source => "@message" } }
-  config :source, :validate => :string, :default => '@message'
+  #     filter { kv { source => "message" } }
+  config :source, :validate => :string, :default => "message"
 
   # The name of the container to put all of the key-value pairs into 
+  #
+  # If this setting is omitted, fields will be written to the root of the
+  # event.
   #
   # Example, to place all keys into field kv:
   #
   #     filter { kv { target => "kv" } }
-  config :target, :validate => :string, :default => '@fields'
+  config :target, :validate => :string
 
   # An array that specifies the parsed keys which should be added to event.
   # By default all keys will be added.
@@ -137,29 +139,32 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   def filter(event)
     return unless filter?(event)
 
-    kv_keys = Hash.new
+    kv = Hash.new
 
     value = event[@source]
 
     case value
       when nil; # Nothing to do
-      when String; kv_keys = parse(value, event, kv_keys)
-      when Array; value.each { |v| kv_keys = parse(v, event, kv_keys) }
+      when String; kv = parse(value, event, kv)
+      when Array; value.each { |v| kv = parse(v, event, kv) }
       else 
         @logger.warn("kv filter has no support for this type of data",
                      :type => value.class, :value => value)
     end # case value
 
     # Add default key-values for missing keys
-    kv_keys = @default_keys.merge(kv_keys)
+    kv = @default_keys.merge(kv)
 
     # If we have any keys, create/append the hash
-    if kv_keys.length > 0
-      if !event[@target].nil?
-        event[@target].merge!(kv_keys)
+    if kv.length > 0
+      if @target.nil?
+        # Default is to write to the root of the event.
+        dest = event.to_hash
       else
-        event[@target] = kv_keys
+        dest = event[@target] ||= {}
       end
+
+      dest.merge!(kv)
       filter_matched(event)
     end
   end # def filter
