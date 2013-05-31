@@ -13,7 +13,7 @@ describe LogStash::Filters::GeoIP do
       }
     CONFIG
 
-    sample({ "@fields" => { "ip" => "8.8.8.8" } }) do
+    sample("ip" => "8.8.8.8") do
       insist { subject }.include?("geoip")
 
       expected_fields = %w(ip country_code2 country_code3 country_name
@@ -24,7 +24,7 @@ describe LogStash::Filters::GeoIP do
       end
     end
 
-    sample({ "@fields" => { "ip" => "127.0.0.1" } }) do
+    sample("ip" => "127.0.0.1") do
       # assume geoip fails on localhost lookups
       reject { subject }.include?("geoip")
     end
@@ -41,7 +41,7 @@ describe LogStash::Filters::GeoIP do
       }
     CONFIG
 
-    sample({ "@fields" => { "ip" => "8.8.8.8" } }) do
+    sample("ip" => "8.8.8.8") do
       insist { subject }.include?("src_ip")
 
       expected_fields = %w(ip country_code2 country_code3 country_name
@@ -52,7 +52,7 @@ describe LogStash::Filters::GeoIP do
       end
     end
 
-    sample({ "@fields" => { "ip" => "127.0.0.1" } }) do
+    sample("ip" => "127.0.0.1") do
       # assume geoip fails on localhost lookups
       reject { subject }.include?("src_ip")
     end
