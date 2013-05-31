@@ -5,11 +5,15 @@
   - Kibana is now available for launching:
       java -jar logstash.jar kibana
   - elasticsearch version 0.90.0 is included.
+  - grok now defaults 'singles' to true, meaning captured fields are
+    stored as single values in most cases instead of the old behavior
+    of being captured as an array of values.
 
   ## inputs
   - bugfix: gelf: work around gelf parser errors (#476, patch by Chris McCoy)
 
   ## filters
+  - feature: grok: 'singles' now defaults to true.
   - bugfix: grep: allow repeating a field in the hash config (LOGSTASH-919)
   - feature: specify timezone in date filter (#470, patch by Philippe Weber)
   - feature: grok setting 'overwrite' now lets you overwrite fields instead
