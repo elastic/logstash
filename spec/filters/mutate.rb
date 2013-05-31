@@ -141,7 +141,7 @@ describe LogStash::Filters::Mutate do
     CONFIG
 
     sample "HELLO WORLD" do
-      insist { subject["foo"] } == ['hello']
+      insist { subject["foo"] } == "hello"
     end
   end
 
