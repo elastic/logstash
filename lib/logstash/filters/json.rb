@@ -60,13 +60,12 @@ class LogStash::Filters::Json < LogStash::Filters::Base
       dest = event[@target] ||= {}
     end
 
-    raw = event[@source]
     begin
       # TODO(sissel): Note, this will not successfully handle json lists
       # like your text is '[ 1,2,3 ]' JSON.parse gives you an array (correctly)
       # which won't merge into a hash. If someone needs this, we can fix it
       # later.
-      dest.merge!(JSON.parse(raw))
+      dest.merge!(JSON.parse(event[@source]))
       filter_matched(event)
     rescue => e
       event.tag("_jsonparsefailure")
