@@ -24,7 +24,7 @@ describe LogStash::Filters::Clone do
         else
           insist { s.type } == "clone"
         end
-        insist { s["@message"] } == "hello world"
+        insist { s["message"] } == "hello world"
       end
     end
   end
@@ -42,7 +42,7 @@ describe LogStash::Filters::Clone do
       }
     CONFIG
 
-    sample ({"@type" => "nginx-access", "@tags" => ['TESTLOG'], "@message" => "hello world"}) do
+    sample("type" => "nginx-access", "tags" => ["TESTLOG"], "message" => "hello world") do
       insist { subject }.is_a? Array
       insist { subject.length } == 3
       insist { subject[0].type } == "nginx-access"
