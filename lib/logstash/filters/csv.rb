@@ -52,7 +52,7 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
         @logger.warn("csv filter only works on fields of length 1",
                      :source => @source, :value => event[@source],
                      :event => event)
-        next
+        return
       end
 
       raw = event[@source].first
@@ -76,7 +76,7 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
         event.tags << "_csvparsefailure"
         @logger.warn("Trouble parsing csv", :source => @source, :raw => raw,
                       :exception => e)
-        next
+        return
       end # begin
     end # if event
 
