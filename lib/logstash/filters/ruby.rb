@@ -27,14 +27,14 @@ class LogStash::Filters::Ruby < LogStash::Filters::Base
   def register
     # TODO(sissel): Compile the ruby code
     eval(@init, binding, "(ruby filter init)") if @init
-    eval("def codeblock(event)\n#{@code}\nend", binding, "(ruby filter code)")
+    eval("@codeblock = lambda { |event| #{@code} }", binding, "(ruby filter code)")
   end # def register
 
   public
   def filter(event)
     return unless filter?(event)
 
-    codeblock(event)
+    @codeblock.call(event)
 
     filter_matched(event)
   end # def filter
