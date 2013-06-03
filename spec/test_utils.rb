@@ -64,6 +64,7 @@ module LogStash
           event = event.collect do |e| 
             if e.is_a?(String)
               e = { "message" => e, "type" => default_type }
+              e["tags"] = default_tags.clone unless default_tags.nil?
             end
             next LogStash::Event.new(e)
           end
