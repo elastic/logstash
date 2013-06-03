@@ -13,9 +13,9 @@ describe LogStash::Filters::Split do
 
     sample "big\nbird\nsesame street" do
       insist { subject.length } == 3
-      insist { subject[0]["@message"] } == "big"
-      insist { subject[1]["@message"] } == "bird"
-      insist { subject[2]["@message"] } == "sesame street"
+      insist { subject[0]["message"] } == "big"
+      insist { subject[1]["message"] } == "bird"
+      insist { subject[2]["message"] } == "sesame street"
     end
   end
 
@@ -30,9 +30,9 @@ describe LogStash::Filters::Split do
 
     sample "big\tbird\tsesame street" do
       insist { subject.length } == 3
-      insist { subject[0]["@message"] } == "big"
-      insist { subject[1]["@message"] } == "bird"
-      insist { subject[2]["@message"] } == "sesame street"
+      insist { subject[0]["message"] } == "big"
+      insist { subject[1]["message"] } == "bird"
+      insist { subject[2]["message"] } == "sesame street"
     end
   end
 
@@ -45,7 +45,7 @@ describe LogStash::Filters::Split do
       }
     CONFIG
 
-    sample ({"@fields" => { "custom" => "big\nbird\nsesame street", "do_not_touch" => "1\n2\n3"}}) do
+    sample("custom" => "big\nbird\nsesame street", "do_not_touch" => "1\n2\n3") do
       insist { subject.length } == 3
       subject.each do |s|
          insist { s["do_not_touch"] } == "1\n2\n3"
