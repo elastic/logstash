@@ -20,9 +20,7 @@ describe LogStash::Filters::Translate do
       }
     CONFIG
 
-    sample "@fields" => {
-      "status" => 200
-    } do
+    sample("status" => 200) do
       insist { subject["translation"] } == "OK"
     end
   end
@@ -43,9 +41,7 @@ describe LogStash::Filters::Translate do
       }
     CONFIG
 
-    sample "@fields" => {
-     "status" => "200 & 500"
-    } do
+    sample("status" => "200 & 500") do
       insist { subject["translation"] } == "OK & Server Error"
     end
   end
@@ -66,9 +62,7 @@ describe LogStash::Filters::Translate do
       }
     CONFIG
 
-    sample "@fields" => {
-      "status" => "200"
-    } do
+    sample("status" => "200") do
       insist { subject["translation"] } == "OK"
     end
   end
