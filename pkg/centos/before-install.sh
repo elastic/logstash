@@ -1,10 +1,7 @@
-# create logstash group
-if ! getent group logstash >/dev/null; then
-  groupadd -r logstash
-fi
+#!/bin/sh
 
-# create logstash user
+# create logstash user and group
 if ! getent passwd logstash >/dev/null; then
-  useradd -r -g logstash -d /opt/logstash \
-    -s /sbin/nologin -c "logstash" logstash
+  useradd -r -U -m -d /opt/logstash \
+  -s /sbin/nologin -c "logstash" logstash
 fi
