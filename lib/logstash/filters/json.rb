@@ -51,7 +51,7 @@ class LogStash::Filters::Json < LogStash::Filters::Base
 
     @logger.debug("Running json filter", :event => event)
 
-    return unless event[@source]
+    return unless event.include?(@source)
 
     if @target.nil?
       # Default is to write to the root of the event.
@@ -69,8 +69,8 @@ class LogStash::Filters::Json < LogStash::Filters::Base
       filter_matched(event)
     rescue => e
       event.tag("_jsonparsefailure")
-      @logger.warn("Trouble parsing json", :source => @source, :raw => raw,
-                    :exception => e)
+      @logger.warn("Trouble parsing json", :source => @source,
+                   :raw => event[@source], :exception => e)
       return
     end
 
