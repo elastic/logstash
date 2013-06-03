@@ -14,11 +14,9 @@ describe LogStash::Filters::Range do
       }
     CONFIG
 
-    sample "@fields" => {
-      "duration" => 50
-    } do
-      insist { subject["@tags"] }.include?("cool")
-      reject { subject["@tags"] }.include?("boring")
+    sample("duration" => 50) do
+      insist { subject["tags"] }.include?("cool")
+      reject { subject["tags"] }.include?("boring")
     end
   end
 
@@ -32,11 +30,9 @@ describe LogStash::Filters::Range do
       }
     CONFIG
 
-    sample "@fields" => {
-      "duration" => 50.0
-    } do
-      insist { subject["@tags"] }.include?("cool")
-      reject { subject["@tags"] }.include?("boring")
+    sample("duration" => 50.0) do
+      insist { subject["tags"] }.include?("cool")
+      reject { subject["tags"] }.include?("boring")
     end
   end
 
@@ -50,11 +46,9 @@ describe LogStash::Filters::Range do
       }
     CONFIG
 
-    sample "@fields" => {
-      "length" => "123456789"
-    } do
-      insist { subject["@tags"] }.include?("cool")
-      reject { subject["@tags"] }.include?("boring")
+    sample("length" => "123456789") do
+      insist { subject["tags"] }.include?("cool")
+      reject { subject["tags"] }.include?("boring")
     end
   end
 
@@ -69,11 +63,9 @@ describe LogStash::Filters::Range do
       }
     CONFIG
 
-    sample "@fields" => {
-      "length" => "123456789"
-    } do
-      reject { subject["@tags"] }.include?("cool")
-      insist { subject["@tags"] }.include?("boring")
+    sample("length" => "123456789") do
+      reject { subject["tags"] }.include?("cool")
+      insist { subject["tags"] }.include?("boring")
     end
   end
 
@@ -86,9 +78,7 @@ describe LogStash::Filters::Range do
       }
     CONFIG
 
-    sample "@fields" => {
-      "length" => "123456789"
-    } do
+    sample("length" => "123456789") do
       insist { subject }.nil?
     end
   end
@@ -103,12 +93,10 @@ describe LogStash::Filters::Range do
       }
     CONFIG
 
-    sample "@fields" => {
-      "duration" => 50
-    } do
-      insist { subject["@fields"] }.include?("cool")
-      insist { subject["@fields"]["cool"] } == "foo"
-      reject { subject["@fields"] }.include?("boring")
+    sample("duration" => 50) do
+      insist { subject }.include?("cool")
+      insist { subject["cool"] } == "foo"
+      reject { subject }.include?("boring")
     end
   end
 
@@ -122,12 +110,10 @@ describe LogStash::Filters::Range do
       }
     CONFIG
 
-    sample "@fields" => {
-      "duration" => 50
-    } do
-      insist { subject["@fields"] }.include?("cool")
-      insist { subject["@fields"]["cool"] } == 666
-      reject { subject["@fields"] }.include?("boring")
+    sample("duration" => 50) do
+      insist { subject }.include?("cool")
+      insist { subject["cool"] } == 666
+      reject { subject }.include?("boring")
     end
   end
 
@@ -141,12 +127,10 @@ describe LogStash::Filters::Range do
       }
     CONFIG
 
-    sample "@fields" => {
-      "duration" => 50
-    } do
-      insist { subject["@fields"] }.include?("cool")
-      insist { subject["@fields"]["cool"] } == 3.14
-      reject { subject["@fields"] }.include?("boring")
+    sample("duration" => 50) do
+      insist { subject }.include?("cool")
+      insist { subject["cool"] } == 3.14
+      reject { subject }.include?("boring")
     end
   end
 
@@ -160,12 +144,9 @@ describe LogStash::Filters::Range do
       }
     CONFIG
 
-    sample "@fields" => {
-      "duration" => 50,
-      "dynamic" => "and"
-    } do
-      insist { subject["@tags"] }.include?("cool_and_dynamic")
-      reject { subject["@tags"] }.include?("boring_and_dynamic")
+    sample("duration" => 50, "dynamic" => "and") do
+      insist { subject["tags"] }.include?("cool_and_dynamic")
+      reject { subject["tags"] }.include?("boring_and_dynamic")
     end
   end
 
@@ -179,13 +160,10 @@ describe LogStash::Filters::Range do
       }
     CONFIG
 
-    sample "@fields" => {
-      "duration" => 50,
-      "dynamic" => "and"
-    } do
-      insist { subject["@fields"] }.include?("cool_and_dynamic")
-      insist { subject["@fields"]["cool_and_dynamic"] } == "foo_and_bar"
-      reject { subject["@fields"] }.include?("boring_and_dynamic")
+    sample("duration" => 50, "dynamic" => "and") do
+      insist { subject }.include?("cool_and_dynamic")
+      insist { subject["cool_and_dynamic"] } == "foo_and_bar"
+      reject { subject }.include?("boring_and_dynamic")
     end
   end
 end
