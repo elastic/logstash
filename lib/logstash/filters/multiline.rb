@@ -66,7 +66,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   # The regular expression to match
   config :pattern, :validate => :string, :required => true
 
-  # The field to use for matching
+  # The field to use for matching a multiline event.
   config :source, :validate => :string, :default => "message"
 
   # If the pattern matched, does event belong to the next or previous event?
@@ -160,6 +160,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   public
   def filter(event)
     return unless filter?(event)
+    return unless event.include?(@source)
 
     if event[@source].is_a?(Array)
       match = @grok.match(event[@source].first)
