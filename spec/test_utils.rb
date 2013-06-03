@@ -69,11 +69,12 @@ module LogStash
           end
           
           results = []
+          count = 0
           event.each do |e|
             filters.each do |filter|
               next if e.cancelled?
               filter.filter(e) do |newevent|
-                event << newevent
+                results << newevent unless e.cancelled?
               end
             end
             results << e unless e.cancelled?
