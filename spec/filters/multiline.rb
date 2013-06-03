@@ -16,8 +16,8 @@ describe LogStash::Filters::Multiline do
 
     sample [ "hello world", "   second line", "another first line" ] do
       insist { subject.length } == 2
-      insist { subject[0].message } == "hello world\n   second line"
-      insist { subject[1].message } == "another first line"
+      insist { subject[0]["message"] } == "hello world\n   second line"
+      insist { subject[1]["message"] } == "another first line"
     end
   end
 
@@ -33,8 +33,8 @@ describe LogStash::Filters::Multiline do
     CONFIG
 
     sample [ "120913 12:04:33 first line", "second line", "third line" ] do
-      reject { subject}.is_a? Array
-      insist { subject.message } ==  "120913 12:04:33 first line\nsecond line\nthird line"
+      reject { subject }.is_a? Array
+      insist { subject["message"] } ==  "120913 12:04:33 first line\nsecond line\nthird line"
     end
   end
 
@@ -61,9 +61,7 @@ describe LogStash::Filters::Multiline do
         [ "hello world #{stream}" ] \
         + rand(5).times.collect { |n| id += 1; "   extra line #{n} in #{stream} event #{id}" }
       ) .collect do |line|
-        LogStash::Event.new("@message" => line,
-                            "@source" => stream, "@type" => stream,
-                            "@fields" => { "event" => i })
+        { "message" => line, "source" => stream, "type" => stream, "event" => i }
       end
     end
 
@@ -77,7 +75,7 @@ describe LogStash::Filters::Multiline do
       index = rand(eventstream.count)
       event = eventstream[index].shift
       eventstream.delete_at(index) if eventstream[index].empty?
-      event
+      next event
     end
 
     sample concurrent_stream do 
@@ -86,7 +84,7 @@ describe LogStash::Filters::Multiline do
         #puts "#{i}/#{event["event"]}: #{event.to_json}"
         #insist { event.type } == stream
         #insist { event.source } == stream
-        insist { event.message.split("\n").first } =~ /hello world /
+        insist { event["message"].split("\n").first } =~ /hello world /
       end
     end
   end
