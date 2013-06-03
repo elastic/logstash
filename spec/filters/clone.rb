@@ -19,10 +19,10 @@ describe LogStash::Filters::Clone do
       insist { subject}.is_a? Array
       insist { subject.length } == 4
       subject.each_with_index do |s,i|
-        if i == 0
-          insist { s.type } == "original"
+        if i == 3 # last one should be 'original'
+          insist { s["type"] } == "original"
         else
-          insist { s.type } == "clone"
+          insist { s["type"]} == "clone"
         end
         insist { s["message"] } == "hello world"
       end
@@ -45,21 +45,22 @@ describe LogStash::Filters::Clone do
     sample("type" => "nginx-access", "tags" => ["TESTLOG"], "message" => "hello world") do
       insist { subject }.is_a? Array
       insist { subject.length } == 3
-      insist { subject[0].type } == "nginx-access"
-      #Initial event remains unchanged
-      insist { subject[0].tags }.include? "TESTLOG"
-      reject { subject[0].tags }.include? "RABBIT"
-      reject { subject[0].tags }.include? "NO_ES"
       #All clones go through filter_matched
-      insist { subject[1].type } == "nginx-access-clone1"
+      insist { subject[0].type } == "nginx-access-clone1"
+      reject { subject[0].tags }.include? "TESTLOG"
+      insist { subject[0].tags }.include? "RABBIT"
+      insist { subject[0].tags }.include? "NO_ES"
+
+      insist { subject[1].type } == "nginx-access-clone2"
       reject { subject[1].tags }.include? "TESTLOG"
       insist { subject[1].tags }.include? "RABBIT"
       insist { subject[1].tags }.include? "NO_ES"
 
-      insist { subject[2].type } == "nginx-access-clone2"
-      reject { subject[2].tags }.include? "TESTLOG"
-      insist { subject[2].tags }.include? "RABBIT"
-      insist { subject[2].tags }.include? "NO_ES"
+      insist { subject[2].type } == "nginx-access"
+      #Initial event remains unchanged
+      insist { subject[2].tags }.include? "TESTLOG"
+      reject { subject[2].tags }.include? "RABBIT"
+      reject { subject[2].tags }.include? "NO_ES"
     end
   end
 end
