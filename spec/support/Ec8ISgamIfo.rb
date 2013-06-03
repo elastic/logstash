@@ -19,7 +19,7 @@ describe "https://groups.google.com/forum/?fromgroups=#!topic/logstash-users/Ec8
         tags => [ "dev", "console", "multiline" ]
         singles => true
         add_tag => "mytag"
-        match => [ "@message", "^%{DATESTAMP:log_time}%{SPACE}\[%{PROG:thread}\]%{SPACE}%{LOGLEVEL:log_level}%{SPACE}%{WORD:class_name}%{GREEDYDATA}"]
+        match => [ "message", "^%{DATESTAMP:log_time}%{SPACE}\[%{PROG:thread}\]%{SPACE}%{LOGLEVEL:log_level}%{SPACE}%{WORD:class_name}%{GREEDYDATA}"]
       }
     }
   CONFIG

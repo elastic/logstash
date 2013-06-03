@@ -9,7 +9,7 @@ describe "pull #375" do
     config <<-CONFIG
       filter {
         grok { pattern => "%{URIPATH:mypath}%{URIPARAM:myparams}" }
-        kv { fields => [ "myparams" ] field_split => "&?" }
+        kv { source => "myparams" field_split => "&?" }
       }
     CONFIG
 
