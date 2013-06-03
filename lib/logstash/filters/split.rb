@@ -20,7 +20,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   config :terminator, :validate => :string, :default => "\n"
 
   # The field which value is split by the terminator
-  config :field, :validate => :string, :default => "@message"
+  config :field, :validate => :string, :default => "message"
 
   public
   def register
