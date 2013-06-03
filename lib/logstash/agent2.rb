@@ -3,7 +3,6 @@ require "logstash/plugin"
 require "logstash/pipeline"
 require "clamp" # gem 'clamp'
 require "cabin" # gem 'cabin'
-require "sys/uname" # gem 'sys-uname'
 
 class LogStash::Agent2 < Clamp::Command
   class ConfigurationError < StandardError; end
