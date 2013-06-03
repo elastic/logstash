@@ -13,15 +13,11 @@ describe LogStash::Filters::Alter do
     }
     CONFIG
 
-    sample "@fields" => {
-      "rewrite-me"  => "hello"
-    } do
+    sample("rewrite-me"  => "hello") do
       insist { subject["rewrite-me"] } == "goodbye"
     end
 
-    sample "@fields" => {
-      "rewrite-me"  => "greetings"
-    } do
+    sample("rewrite-me"  => "greetings") do
       insist { subject["rewrite-me"] } == "greetings"
     end
   end
@@ -35,40 +31,24 @@ describe LogStash::Filters::Alter do
     }
     CONFIG
 
-    sample "@fields" => {
-      "rewrite-me"  => "hello",
-      "test" => "hello",
-      "rewrite-value" => "goodbye"
-    } do
+    sample("rewrite-me"  => "hello", "test" => "hello",
+           "rewrite-value" => "goodbye") do
       insist { subject["rewrite-me"] } == "goodbye"
     end
 
-    sample "@fields" => {
-      "rewrite-me"  => "hello"
-      #Missing test and rewrite fields
-    } do
+    sample("rewrite-me"  => "hello") do
       insist { subject["rewrite-me"] } == "hello"
     end
 
-    sample "@fields" => {
-      "rewrite-me"  => "%{test}"
-      #Missing test and rewrite fields
-    } do
+    sample("rewrite-me"  => "%{test}") do
       insist { subject["rewrite-me"] } == "%{rewrite-value}"
     end
 
-    sample "@fields" => {
-      "rewrite-me"  => "hello",
-      "test" => "hello"
-      #Missing rewrite value
-    } do
+    sample("rewrite-me"  => "hello", "test" => "hello") do
       insist { subject["rewrite-me"] } == "%{rewrite-value}"
     end
 
-    sample "@fields" => {
-      "rewrite-me"  => "greetings",
-      "test" => "hello"
-    } do
+    sample("rewrite-me"  => "greetings", "test" => "hello") do
       insist { subject["rewrite-me"] } == "greetings"
     end
   end
@@ -82,29 +62,20 @@ describe LogStash::Filters::Alter do
     }
     CONFIG
 
-    sample "@fields" => {
-      "test-me"  => "hello"
-    } do
+    sample("test-me"  => "hello") do
       insist { subject["rewrite-me"] } == "goodbye"
     end
 
-    sample "@fields" => {
-      "test-me"  => "hello",
-      "rewrite-me"  => "hello2"
-    } do
+    sample("test-me"  => "hello", "rewrite-me"  => "hello2") do
       insist { subject["rewrite-me"] } == "goodbye"
     end
 
-    sample "@fields" => {
-      "test-me"  => "greetings"
-    } do
+    sample("test-me"  => "greetings") do
       insist { subject["rewrite-me"] }.nil?
     end
 
-    sample "@fields" => {
-      "test-me"  => "greetings",
-      "rewrite-me"  => "hello2"
-    } do
+    sample("test-me"  => "greetings",
+      "rewrite-me"  => "hello2") do
       insist { subject["rewrite-me"] } == "hello2"
     end
   end
@@ -118,9 +89,7 @@ describe LogStash::Filters::Alter do
     }
     CONFIG
 
-    sample "@fields" => {
-      "coalesce-me"  => "Hello"
-    } do
+    sample("coalesce-me"  => "Hello") do
       insist { subject["coalesce-me"] } == "mydefault" 
     end
   end
