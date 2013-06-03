@@ -70,7 +70,12 @@ module LogStash::EventV1
   # Create a deep-ish copy of this event.
   public
   def clone
-    return self.class.new(@data.clone)
+    copy = {}
+    @data.each do |k,v|
+      # TODO(sissel): Recurse if this is a hash/array?
+      copy[k] = v.clone
+    end
+    return self.class.new(copy)
   end # def clone
 
   public
