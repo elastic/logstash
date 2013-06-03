@@ -8,7 +8,8 @@ describe LogStash::Filters::UserAgent do
     config <<-CONFIG
       filter {
         useragent {
-          source => "@message"
+          source => "message"
+          target => "ua"
         }
       }
     CONFIG
@@ -22,12 +23,11 @@ describe LogStash::Filters::UserAgent do
     end
   end
 
-  describe "target => '@fields'" do
+  describe "" do
     config <<-CONFIG
       filter {
         useragent {
-          source => "@message"
-          target => "@fields"
+          source => "message"
         }
       }
     CONFIG
