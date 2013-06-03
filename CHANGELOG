@@ -8,6 +8,8 @@
   - grok now defaults 'singles' to true, meaning captured fields are
     stored as single values in most cases instead of the old behavior
     of being captured as an array of values.
+  - Many deprecated features have been removed.
+    TODO(sissel): Document what these were.
 
   ## inputs
   - bugfix: gelf: work around gelf parser errors (#476, patch by Chris McCoy)
@@ -18,11 +20,14 @@
   - feature: specify timezone in date filter (#470, patch by Philippe Weber)
   - feature: grok setting 'overwrite' now lets you overwrite fields instead
     of appending to them.
+  - feature: the useragent filter now defaults to writing results to the top
+    level of the event instead of "ua"
 
   ## outputs
   - feature: irc: add messages_per_second tunable (LOGSTASH-962)
   - bugfix: emails: restored initial really useful documentation
-  - improvement: emails: allow @message, @source, @... in match (LOGSTASH-826, LOGSTASH-823) 
+  - improvement: emails: allow @message, @source, @... in match (LOGSTASH-826,
+    LOGSTASH-823) 
 
 1.1.13 (May 28, 2013)
   ## general
