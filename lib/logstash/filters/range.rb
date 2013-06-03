@@ -21,10 +21,10 @@ class LogStash::Filters::Range < LogStash::Filters::Base
   #
   #     filter {
   #       %PLUGIN% {
-  #         ranges => [ "@message", 0, 10, "tag:short",
-  #                     "@message", 11, 100, "tag:medium",
-  #                     "@message", 101, 1000, "tag:long",
-  #                     "@message", 1001, 1e1000, "drop",
+  #         ranges => [ "message", 0, 10, "tag:short",
+  #                     "message", 11, 100, "tag:medium",
+  #                     "message", 101, 1000, "tag:long",
+  #                     "message", 1001, 1e1000, "drop",
   #                     "duration", 0, 100, "field:latency:fast",
   #                     "duration", 101, 200, "field:latency:normal",
   #                     "duration", 201, 1000, "field:latency:slow",
@@ -120,7 +120,7 @@ class LogStash::Filters::Range < LogStash::Filters::Base
           when :add_tag
             @logger.debug? and @logger.debug("#{self.class.name}: adding tag due to range match",
                                              :event => event, :tag => range[:action][:tag] )
-            event.tags << event.sprintf(range[:action][:tag])
+            event.tag(event.sprintf(range[:action][:tag]))
           when :add_field
             @logger.debug? and @logger.debug("#{self.class.name}: adding field due to range match",
                                               :event => event, :field => range[:action][:field], :value => range[:action][:value])
