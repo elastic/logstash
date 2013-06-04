@@ -83,8 +83,8 @@ class LogStash::Inputs::Base < LogStash::Plugin
   end # def tag
 
   protected
-  def enable_codecs(queue)
-    @codec = LogStash::Codecs.for(@codec).new(queue)
+  def enable_codecs
+    @codec = LogStash::Codecs.for(@codec).new
     @codec.charset = @charset
   end
 

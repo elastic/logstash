@@ -88,7 +88,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
   public
   def register
-
+    enable_codecs
     @logger.info("Registering input #{@url}")
     require "bunny" # rubygem 'bunny'
     @vhost ||= "/"
@@ -114,7 +114,6 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   end # def register
 
   def run(queue)
-    enable_codecs(queue)
     begin
       @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up queue #{@queue.inspect}")
       @bunny = Bunny.new(@amqpsettings)
@@ -128,7 +127,10 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
       @bunnyqueue.bind(@exchange, :key => @key)
 
       @bunnyqueue.subscribe({:ack => @ack}) do |data|
-        @codec.decode(data[:payload, "source" => @amqpurl])
+        @codec.decode(data[:payload]) do |event|
+          event["source"] = @amqpurl
+          queue << event
+        end
       end # @bunnyqueue.subscribe
 
     rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e

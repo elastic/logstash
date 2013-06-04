@@ -26,20 +26,24 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
   
   public
   def register
+    enable_codecs
     @logger.info("Registering Exec Input", :type => @type,
                  :command => @command, :interval => @interval)
   end # def register
 
   public
   def run(queue)
-    enable_codecs(queue)
     loop do
       start = Time.now
       @logger.info("Running exec", :command => @command) if @debug
       out = IO.popen(@command)
       # out.read will block until the process finishes.
-      @codec.decode(out.read, "source" => "exec://#{Socket.gethostname}", "command" => @command)
-
+      @codec.decode(out.read) do |event|
+        event["source"] => "exec://#{Socket.gethostname}"
+        event["command"] => @command
+        queue << event
+      end
+      
       duration = Time.now - start
       if @debug
         @logger.info("Command completed", :command => @command,
