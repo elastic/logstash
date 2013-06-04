@@ -92,8 +92,9 @@ know.
 
 ## Project Principles
 
-* Software: Make it work, then make it right, then make it fast.
 * Community: If a newbie has a bad time, it's a bug.
+* Software: Make it work, then make it right, then make it fast.
+* Technology: If it doesn't do a thing today, we can make it do it tomorrow.
 
 ## Contributing
 
