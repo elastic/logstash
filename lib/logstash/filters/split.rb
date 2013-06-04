@@ -1,6 +1,5 @@
 require "logstash/filters/base"
 require "logstash/namespace"
-require "logstash/time_addon"
 
 # The split filter is for splitting multiline messages into separate events.
 #
