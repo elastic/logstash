@@ -3,17 +3,17 @@
 #   > means 'scalar block' but it chomps all newlines. Useful 
 #     for unformatted text.
 en:
-  unexpected-exception: |-
-    +-------------------------------------------------------
-    | An unexpected error occurred. This is probably a bug.
-    | You can find help with this problem in a few places:
-    | 
-    | * chat: #logstash IRC channel on freenode irc. To get
-    |         to IRC on the web, go here: http://goo.gl/TI4Ro
-    | * email: logstash-users@googlegroups.com 
-    | * bug system: https://logstash.jira.com/
-    |
-    +-------------------------------------------------------
+  oops: |-
+    +---------------------------------------------------------+
+    | An unexpected error occurred. This is probably a bug.   |
+    | You can find help with this problem in a few places:    |
+    |                                                         |
+    | * chat: #logstash IRC channel on freenode irc.          |
+    |     IRC via the web: http://goo.gl/TI4Ro                |
+    | * email: logstash-users@googlegroups.com                |
+    | * bug system: https://logstash.jira.com/                |
+    |                                                         |
+    +---------------------------------------------------------+
     The error reported is: 
       %{error}
   logstash:
@@ -23,17 +23,23 @@ en:
           Plugin: %{plugin}
           Error: %{error}
     agent:
+      missing-configuration: |-
+        No configuration file was specified. Perhaps you forgot to provide
+        the '-f yourlogstash.conf' flag?
       error: |-
         Error: %{error}
       interrupted: |-
         Interrupt received. Shutting down the pipeline.
       configuration:
+        file-not-found: |-
+          No config files found: %{path}
+          Can you make sure this path is a logstash config file?
         setting_missing: |-
           Missing a required setting for the %{plugin} %{type} plugin:
 
             %{type} {
               %{plugin} {
-                %{setting} => # MISSING
+                %{setting} => # SETTING MISSING
                 ...
               }
             }
@@ -62,8 +68,8 @@ en:
           This is often a permissions issue, or the wrong 
           path was specified?
       flag:
-        # Wrap these at 45 chars so they display nicely when clamp emits them in
-        # an 80-character terminal
+        # Note: Wrap these at 45 chars so they display nicely when clamp emits
+        # them in an 80-character terminal
         config: |-
           Load the logstash config from a specific file
           or directory.  If a direcory is given, all
@@ -75,7 +81,7 @@ en:
         config-string: |-
           Use the given string as the configuration
           data. Same syntax as the config file. If not
-          input is specified, then 'stdin { type =|-
+          input is specified, then 'stdin { type =>
           stdin }' is the default input. If no output
           is specified, then 'stdout { debug => true
           }}' is default output.

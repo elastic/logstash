@@ -78,7 +78,7 @@ class LogStash::Runner
     end
 
     # Avoid running test/unit's at_exit crap
-    if status.empty?
+    if status.empty? || status.first.nil?
       exit(0)
     else
       exit(status.first)

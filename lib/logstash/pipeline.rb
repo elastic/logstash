@@ -152,8 +152,8 @@ class LogStash::Pipeline
         begin
           output.receive(event)
         rescue => e
-          @logger.error("Exception in plugin #{plugin.class}",
-                        "plugin" => plugin.inspect, "exception" => e)
+          @logger.error("Exception in plugin #{output.class}",
+                        "plugin" => output.inspect, "exception" => e)
         end
       end # @outputs.each
     end # while true
