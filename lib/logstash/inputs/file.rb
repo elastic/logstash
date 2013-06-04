@@ -62,6 +62,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     require "addressable/uri"
     require "filewatch/tail"
     require "digest/md5"
+    enable_codecs
     LogStash::Util::set_thread_name("input|file|#{path.join(":")}")
     @logger.info("Registering file input", :path => @path)
 
@@ -114,7 +115,6 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
   public
   def run(queue)
-    enable_codecs(queue)
     @tail = FileWatch::Tail.new(@tail_config)
     @tail.logger = @logger
     @path.each { |path| @tail.tail(path) }
@@ -124,7 +124,9 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       #source = Addressable::URI.new(:scheme => "file", :host => hostname, :path => path).to_s
       source = "file://#{hostname}/#{path.gsub("\\","/")}"
       @logger.debug? && @logger.debug("Received line", :path => path, :line => line)
-      @codec.decode line, "source" => source
+      @codec.decode(line) do |event|
+        event["source"] = source
+      end
     end
     finished
   end # def run

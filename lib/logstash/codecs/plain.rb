@@ -5,13 +5,13 @@ class LogStash::Codecs::Plain < LogStash::Codecs::Base
   attr_accessor :format
 
   public
-  def decode(data, opts = {})
+  def decode(data)
     data.force_encoding(@charset)
     if @charset != "UTF-8"
       # Convert to UTF-8 if not in that character set.
       data = data.encode("UTF-8", :invalid => :replace, :undef => :replace)
     end
-    @queue << LogStash::Event.new(opts.merge({"message" => data}))
+    yield LogStash::Event.new({"message" => data})
   end # def decode
 
   public

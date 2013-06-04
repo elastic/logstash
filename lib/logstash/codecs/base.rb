@@ -23,16 +23,11 @@ module LogStash::Codecs
 
   class Base < LogStash::Plugin
 
-    attr_reader :queue, :on_event
+    attr_reader :on_event
     attr_accessor :charset
 
     public
-    def initialize(queue=nil)
-      @queue = queue
-    end # def initialize
-
-    public
-    def decode(data, opts = {})
+    def decode(data)
       raise "#{self.class}#decode must be overidden"
     end # def decode
 

@@ -47,6 +47,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
 
   public
   def register
+    enable_codecs
     @host = Socket.gethostname
 
     if @count.is_a?(Array)
@@ -55,7 +56,6 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   end # def register
 
   def run(queue)
-    enable_codecs(queue)
 
     number = 0
     source = "generator://#{@host}/"
@@ -69,10 +69,18 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
     while !finished? && (@count <= 0 || number < @count)
       if @lines
         @lines.each do |line|
-          @codec.decode(line, "source" => source, "sequence" => number)
+          @codec.decode(line) do |event|
+            event["source"] = source
+            event["sequence"] = number
+            queue << event
+          end
         end
       else
-        @codec.decode(@message.clone, "source" => source, "sequence" => number)
+        @codec.decode(@message.clone) do |event|
+          event["source"] = source
+          event["sequence"] = number
+          queue << event
+        end
       end
       number += 1
     end # loop

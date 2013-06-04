@@ -5,9 +5,9 @@ class LogStash::Codecs::Spool < LogStash::Codecs::Base
   attr_reader :buffer
 
   public
-  def decode(data, opts = {})
+  def decode(data)
     data.each do |event|
-      @queue << event
+      yield event
     end
   end # def decode
 
