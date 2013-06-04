@@ -83,12 +83,12 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
     super
 
     @format ||= "json_event"
-
+    @codec = "json"
   end # def initialize
 
   public
   def register
-
+    enable_codecs
     @logger.info("Registering input #{@url}")
     require "bunny" # rubygem 'bunny'
     @vhost ||= "/"
@@ -127,9 +127,9 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
       @bunnyqueue.bind(@exchange, :key => @key)
 
       @bunnyqueue.subscribe({:ack => @ack}) do |data|
-        e = to_event(data[:payload], @amqpurl)
-        if e
-          queue << e
+        @codec.decode(data[:payload]) do |event|
+          event["source"] = @amqpurl
+          queue << event
         end
       end # @bunnyqueue.subscribe
 
