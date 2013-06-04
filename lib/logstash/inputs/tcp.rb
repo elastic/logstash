@@ -57,6 +57,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
   public
   def register
+    enable_codecs
     require "socket"
     require "timeout"
     if @ssl_enable
@@ -94,7 +95,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   end # def register
 
   private
-  def handle_socket(socket, output_queue, event_source)
+  def handle_socket(socket, event_source, output_queue)
     begin
       loop do
         buf = nil
@@ -108,12 +109,10 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
             buf = readline(socket)
           end
         end
-        e = self.to_event(buf, event_source)
-        if e
-          if @ssl_enable && @ssl_verify
-            e.fields["sslsubject"] = socket.peer_cert.subject
-          end
-          output_queue << e
+        @codec.decode(buf) do |event|
+          event["source"] = event_source
+          event["sslsubject"] = socket.peer_cert.subject if @ssl_enable && @ssl_verify
+          output_queue << event
         end
       end # loop do
     rescue => e
@@ -158,7 +157,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
             @logger.debug("Accepted connection", :client => s.peer,
                           :server => "#{@host}:#{@port}")
             begin
-              handle_socket(s, output_queue, "tcp://#{s.peer}/")
+              handle_socket(s, "tcp://#{s.peer}/", output_queue)
             rescue Interrupted
               s.close rescue nil
             end
@@ -198,7 +197,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         end
         client_socket.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
         @logger.debug("Opened connection", :client => "#{client_socket.peer}")
-        handle_socket(client_socket, output_queue, "tcp://#{client_socket.peer}/server")
+        handle_socket(client_socket, "tcp://#{client_socket.peer}/server", output_queue)
       end # loop
     end
   end # def run
