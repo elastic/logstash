@@ -2,6 +2,8 @@ require "logstash/codecs/base"
 
 # This is the base class for logstash codecs.
 class LogStash::Codecs::Plain < LogStash::Codecs::Base
+  attr_accessor :format
+
   public
   def decode(data, opts = {})
     data.force_encoding(@charset)
@@ -13,8 +15,12 @@ class LogStash::Codecs::Plain < LogStash::Codecs::Base
   end # def decode
 
   public
-  def encode(event)
-    event.to_s
+  def encode(data)
+    if data.is_a? LogStash::Event and !@format.nil?
+      @on_event.call data.sprintf(@format)
+    else
+      @on_event.call data.to_s
+    end
   end # def encode
 
 end # class LogStash::Codecs::Plain

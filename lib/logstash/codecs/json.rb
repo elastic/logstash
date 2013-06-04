@@ -9,8 +9,8 @@ class LogStash::Codecs::Json < LogStash::Codecs::Base
   end # def decode
 
   public
-  def encode(event)
-    @on_event.call event.to_json
+  def encode(data)
+    @on_event.call data.to_json
   end # def encode
 
 end # class LogStash::Codecs::Json

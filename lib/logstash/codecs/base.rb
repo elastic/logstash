@@ -2,6 +2,7 @@ require "logstash/namespace"
 require "logstash/event"
 require "logstash/plugin"
 require "logstash/logging"
+require "extlib"
 
 # This is the base class for logstash codecs.
 module LogStash::Codecs
@@ -13,7 +14,7 @@ module LogStash::Codecs
     plugin = File.join('logstash', 'codecs', codec) + ".rb"
     #@logger.info "Loading codec", :codec => plugin
     require plugin
-    klass_name = codec.capitalize
+    klass_name = codec.camel_case
     if LogStash::Codecs.const_defined?(klass_name)
       return LogStash::Codecs.const_get(klass_name)
     end
