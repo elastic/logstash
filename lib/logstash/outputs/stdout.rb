@@ -17,7 +17,7 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   config :debug_format, :default => "ruby", :validate => ["ruby", "json", "dots"]
 
   # The message to emit to stdout.
-  config :message, :validate => :string, :default => "%{@timestamp} %{@source}: %{@message}"
+  config :message, :validate => :string, :default => "%{+yyyy-MM-dd'T'HH:mm:ss.SSSZ} %{host}: %{message}"
 
   public
   def register
