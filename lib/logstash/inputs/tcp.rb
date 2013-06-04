@@ -197,7 +197,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         end
         client_socket.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
         @logger.debug("Opened connection", :client => "#{client_socket.peer}")
-        handle_socket(client_socket, "tcp://#{client_socket.peer}/server")
+        handle_socket(client_socket, "tcp://#{client_socket.peer}/server", output_queue)
       end # loop
     end
   end # def run
