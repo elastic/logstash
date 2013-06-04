@@ -188,7 +188,12 @@ module LogStash::EventV1
         t = @data["@timestamp"]
         formatter = org.joda.time.format.DateTimeFormat.forPattern(key[1 .. -1])\
           .withZone(org.joda.time.DateTimeZone::UTC)
-        next org.joda.time.Instant.new(t.tv_sec * 1000 + t.tv_usec / 1000).toDateTime.toString(formatter)
+        #next org.joda.time.Instant.new(t.tv_sec * 1000 + t.tv_usec / 1000).toDateTime.toString(formatter)
+        # Invoke a specific Instant constructor to avoid this warning in JRuby
+        #  > ambiguous Java methods found, using org.joda.time.Instant(long)
+        org.joda.time.Instant.java_class.constructor(Java::long).new_instance(
+          t.tv_sec * 1000 + t.tv_usec / 1000
+        ).to_java.toDateTime.toString(formatter)
       else
         value = self[key]
         case value
