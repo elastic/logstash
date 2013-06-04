@@ -48,6 +48,9 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Don't send events that have @timestamp older than specified number of seconds.
   config :ignore_older_than, :validate => :number, :default => 0
 
+  # The codec used for output data
+  config :codec, :validate => :string, :default => 'plain'
+
   public
   def initialize(params)
     super
@@ -71,6 +74,11 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def receive(event)
     raise "#{self.class}#receive must be overidden"
   end # def receive
+
+  protected
+  def enable_codecs
+    @codec = LogStash::Codecs.for(@codec).new
+  end
 
   public
   def handle(event)
