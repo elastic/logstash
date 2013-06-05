@@ -1,8 +1,5 @@
-require "date"
-require "logstash/inputs/base"
+require "logstash/filters/base"
 require "logstash/namespace"
-require "logstash/time_addon" # should really use the filters/date.rb bits
-require "socket"
 require "bindata"
 require "ipaddr"
 
@@ -13,7 +10,7 @@ class IP4Addr < BinData::Primitive
   def set(val)
     ip = IPAddr.new(val)
     if ! ip.ipv4?
-      raise ArgumentError, "invalid IPv4 address `#{val}'"
+      raise ArgumentError, "invalid IPv4 address '#{val}'"
     end
     self.storage = ip.to_i
   end
@@ -214,56 +211,191 @@ class Vash < Hash
   end
 end
 
-# Read messages as events over the network via udp.
-#
-class LogStash::Inputs::Netflow < LogStash::Inputs::Base
+class LogStash::Filters::Netflow < LogStash::Filters::Base
+
   config_name "netflow"
   plugin_status "experimental"
-
-  # The address to listen on
-  config :host, :validate => :string, :default => "0.0.0.0"
-
-  # The port to listen on. Remember that ports less than 1024 (privileged
-  # ports) may require root to use.
-  config :port, :validate => :number, :default => 2055
-
-  # Buffer size
-  config :buffer_size, :validate => :number, :default => 8192
 
   # Netflow v9 template cache TTL (minutes)
   config :cache_ttl, :validate => :number, :default => 4000
 
   public
   def initialize(params)
-    super
-    BasicSocket.do_not_reverse_lookup = true
-  end # def initialize
+    super(params)
+
+    @threadsafe = false
+  end
 
   public
   def register
-    @udp = nil
     @templates = Vash.new()
   end # def register
 
   public
-  def run(output_queue)
-    LogStash::Util::set_thread_name("input|netflow|#{@port}")
-    begin
-      # udp server
-      udp_listener(output_queue)
-    rescue => e
-      @logger.warn("UDP listener died", :exception => e, :backtrace => e.backtrace)
-      sleep(5)
-      retry
-    end # begin
-  end # def run
+  def filter(event)
+    header = Header.read(event.message)
+
+    if header.version == 5
+      flowset = Netflow5PDU.read(line)
+    elsif header.version == 9
+      flowset = Netflow9PDU.read(line)
+    else
+      @logger.warn("Unsupported Netflow version v#{header.version}")
+      return
+    end
+
+    flowset.records.each do |record|
+      if flowset.version == 5
+        clone = event.clone
+        clone.message = ""
+
+        # FIXME Probably not doing this right WRT JRuby?
+        #
+        # The flowset header gives us the UTC epoch seconds along with
+        # residual nanoseconds so we can set @timestamp to that easily
+        clone.timestamp = Time.at(flowset.unix_sec, flowset.unix_nsec / 1000).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
+        clone['netflow'] = {} if clone['netflow'].nil?
+
+        # Copy some of the pertinent fields in the header to the event
+        ['version', 'flow_seq_num', 'engine_type', 'engine_id', 'sampling_algorithm', 'sampling_interval'].each do |f|
+          clone['netflow'][f] = flowset[f]
+        end
+
+        # Create fields in the event from each field in the flow record
+        record.each_pair do |k,v|
+          case k.to_s
+          when /_switched$/
+            # The flow record sets the first and last times to the device
+            # uptime in milliseconds. Given the actual uptime is provided
+            # in the flowset header along with the epoch seconds we can
+            # convert these into absolute times
+            millis = flowset.uptime - v
+            seconds = flowset.unix_sec - (millis / 1000)
+            micros = (flowset.unix_nsec / 1000) - (millis % 1000)
+            if micros < 0
+              seconds--
+              micros += 1000000
+            end
+            # FIXME Again, probably doing this wrong WRT JRuby?
+            clone['netflow'][k.to_s] = Time.at(seconds, micros).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
+          else
+            clone['netflow'][k.to_s] = v
+          end
+        end
+
+        filter_matched(clone)
+        yield clone
+      elsif flowset.version == 9
+        case record.flowset_id
+        when 0
+          # Template flowset
+          record.flowset_data.templates.each do |template|
+            catch (:field) do
+              fields = []
+              template.fields.each do |field|
+                entry = netflow_field_for(field.field_type, field.field_length)
+                if ! entry
+                  throw :field
+                end
+                fields += entry
+              end
+              # We get this far, we have a list of fields
+              key = "#{flowset.source_id}|#{event.source_host}|#{template.template_id}"
+              @templates[key, @cache_ttl] = BinData::Struct.new(:endian => :big, :fields => fields)
+              # Purge any expired templates
+              @templates.cleanup!
+            end
+          end
+        when 1
+          # Options template flowset
+          record.flowset_data.templates.each do |template|
+            catch (:field) do
+              fields = []
+              template.option_fields.each do |field|
+                entry = netflow_field_for(field.field_type, field.field_length)
+                if ! entry
+                  throw :field
+                end
+                fields += entry
+              end
+              # We get this far, we have a list of fields
+              key = "#{flowset.source_id}|#{event.source_host}|#{template.template_id}"
+              @templates[key, @cache_ttl] = BinData::Struct.new(:endian => :big, :fields => fields)
+              # Purge any expired templates
+              @templates.cleanup!
+            end
+          end 
+        when 256..65535
+          # Data flowset
+          key = "#{flowset.source_id}|#{event.source_host}|#{record.flowset_id}"
+          template = @templates[key]
+
+          if ! template
+            @logger.warn("No matching template for flow id #{record.flowset_id} from #{event.source_host}")
+            next
+          end
+
+          length = record.flowset_length - 4
+
+          # Template shouldn't be longer than the record and there should
+          # be at most 3 padding bytes
+          if template.num_bytes > length or ! (length % template.num_bytes).between?(0, 3)
+            @logger.warn("Template length doesn't fit cleanly into flowset", :template_id => record.flowset_id, :template_length => template.num_bytes, :record_length => length) 
+            next
+          end
+
+          array = BinData::Array.new(:type => template, :initial_length => length / template.num_bytes)
+
+          records = array.read(record.flowset_data)
+
+          records.each do |r|
+            clone = event.clone
+            clone.message = ""
+
+            clone.timestamp = Time.at(flowset.unix_sec).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
+
+            clone['netflow'] = {} if clone['netflow'].nil?
+
+            # Fewer fields in the v9 header
+            ['version', 'flow_seq_num'].each do |f|
+              clone['netflow'][f] = flowset[f]
+            end
+
+            clone['netflow']['flowset_id'] = record.flowset_id
+
+            r.each_pair do |k,v|
+              case k.to_s
+              when /_switched$/
+                millis = flowset.uptime - v
+                seconds = flowset.unix_sec - (millis / 1000)
+                # v9 did away with the nanosecs field
+                micros = 1000000 - (millis % 1000)
+                clone['netflow'][k.to_s] = Time.at(seconds, micros).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
+              else
+                clone['netflow'][k.to_s] = v
+              end
+            end
+
+            filter_matched(clone)
+            yield clone
+          end
+        else
+          @logger.warn("Unsupported flowset id #{record.flowset_id}")
+        end
+      end
+    end
+
+    # Drop the original event
+    event.cancel
+  end # def filter
 
   private
   def uint_field(length, default)
     # If length is 4, return :uint32, etc. and use default if length is 0
     ("uint" + (((length > 0) ? length : default) * 8).to_s).to_sym
-  end
+  end # def uint_field
 
+  private
   def netflow_field_for(type, length)
     case type
     when 1
@@ -408,180 +540,5 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
       @logger.warn("Unsupported field", :type => type, :length => length)
       nil
     end
-  end
-
-  def udp_listener(output_queue)
-    @logger.info("Starting UDP listener", :address => "#{@host}:#{@port}")
-
-    if @udp && ! @udp.closed?
-      @udp.close
-    end
-
-    @udp = UDPSocket.new(Socket::AF_INET)
-    @udp.bind(@host, @port)
-
-    loop do
-      line, client = @udp.recvfrom(@buffer_size)
-      # Ruby uri sucks, so don't use it.
-      source = "udp://#{client[3]}:#{client[1]}/"
-
-      header = Header.read(line)
-
-      if header.version == 5
-        flowset = Netflow5PDU.read(line)
-      elsif header.version == 9
-        flowset = Netflow9PDU.read(line)
-      else
-        @logger.warn("Unsupported Netflow version v#{header.version}")
-        next
-      end
-
-      flowset.records.each do |record|
-        if flowset.version == 5
-          # I wonder how much use the original packet is?
-          e = to_event("", source)
-
-          # FIXME Probably not doing this right WRT JRuby?
-          #
-          # The flowset header gives us the UTC epoch seconds along with
-          # residual nanoseconds so we can set @timestamp to that easily
-          e.timestamp = Time.at(flowset.unix_sec, flowset.unix_nsec / 1000).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
-
-          e['netflow'] = {} if e['netflow'].nil?
-
-          # Copy some of the pertinent fields in the header to the event
-          ['version', 'flow_seq_num', 'engine_type', 'engine_id', 'sampling_algorithm', 'sampling_interval'].each do |f|
-            e['netflow'][f] = flowset[f]
-          end
-
-          # Create fields in the event from each field in the flow record
-          record.each_pair do |k,v|
-            case k.to_s
-            when /_switched$/
-              # The flow record sets the first and last times to the device
-              # uptime in milliseconds. Given the actual uptime is provided
-              # in the flowset header along with the epoch seconds we can
-              # convert these into absolute times
-              millis = flowset.uptime - v
-              seconds = flowset.unix_sec - (millis / 1000)
-              micros = (flowset.unix_nsec / 1000) - (millis % 1000)
-              if micros < 0
-                seconds--
-                micros += 1000000
-              end
-              # FIXME Again, probably doing this wrong WRT JRuby?
-              e['netflow'][k.to_s] = Time.at(seconds, micros).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
-            else
-              e['netflow'][k.to_s] = v
-            end
-          end
-
-          output_queue << e if e
-        elsif flowset.version == 9
-          case record.flowset_id
-          when 0
-            # Template flowset
-            record.flowset_data.templates.each do |template|
-              catch (:field) do
-                fields = []
-                template.fields.each do |field|
-                  entry = netflow_field_for(field.field_type, field.field_length)
-                  if ! entry
-                    throw :field
-                  end
-                  fields += entry
-                end
-                # We get this far, we have a list of fields
-                key = "#{flowset.source_id}|#{client[3]}|#{template.template_id}"
-                @templates[key, @cache_ttl] = BinData::Struct.new(:endian => :big, :fields => fields)
-
-                # Purge any expired templates
-                @templates.cleanup!
-              end
-            end
-          when 1
-            # Options template flowset
-            record.flowset_data.templates.each do |template|
-              catch (:field) do
-                fields = []
-                template.option_fields.each do |field|
-                  entry = netflow_field_for(field.field_type, field.field_length)
-                  if ! entry
-                    throw :field
-                  end
-                  fields += entry
-                end
-                # We get this far, we have a list of fields
-                key = "#{flowset.source_id}|#{client[3]}|#{template.template_id}"
-                @templates[key, @cache_ttl] = BinData::Struct.new(:endian => :big, :fields => fields)
-
-                # Purge any expired templates
-                @templates.cleanup!
-              end
-            end
-          when 256..65535
-            # Data flowset
-            key = "#{flowset.source_id}|#{client[3]}|#{record.flowset_id}"
-            template = @templates[key]
-
-            if ! template
-              @logger.warn("No matching template for flow id #{record.flowset_id} from #{client[3]}")
-              next
-            end
-
-            length = record.flowset_length - 4
-
-            # Template shouldn't be longer than the record and there should
-            # be at most 3 padding bytes
-            if template.num_bytes > length or ! (length % template.num_bytes).between?(0, 3)
-              @logger.warn("Template length doesn't fit cleanly into flowset", :template_id => record.flowset_id, :template_length => template.num_bytes, :record_length => length)
-              next
-            end
-
-            array = BinData::Array.new(:type => template, :initial_length => length / template.num_bytes)
-
-            records = array.read(record.flowset_data)
-
-            records.each do |r|
-              e = to_event("", source)
-
-              e.timestamp = Time.at(flowset.unix_sec).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
-
-              e['netflow'] = {} if e['netflow'].nil?
-
-              # Fewer fields in the v9 header
-              ['version', 'flow_seq_num'].each do |f|
-                e['netflow'][f] = flowset[f]
-              end
-
-              e['netflow']['flowset_id'] = record.flowset_id
-
-              r.each_pair do |k,v|
-                case k.to_s
-                when /_switched$/
-                  millis = flowset.uptime - v
-                  seconds = flowset.unix_sec - (millis / 1000)
-                  # v9 did away with the nanosecs field
-                  micros = 1000000 - (millis % 1000)
-                  e['netflow'][k.to_s] = Time.at(seconds, micros).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
-                else
-                  e['netflow'][k.to_s] = v
-                end
-              end
-
-              output_queue << e if e
-            end
-          else
-            @logger.warn("Unsupported flowset id #{record.flowset_id}")
-          end
-        end
-      end
-    end
-  ensure
-    if @udp
-      @udp.close_read rescue nil
-      @udp.close_write rescue nil
-    end
-  end # def udp_listener
-
-end # class LogStash::Inputs::Netflow
+  end # def netflow_field_for
+end # class LogStash::Filters::Netflow
