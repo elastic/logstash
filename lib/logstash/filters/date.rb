@@ -205,6 +205,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           end
 
           time = time.withZone(UTC)
+          # Convert joda DateTime to a ruby Time
           event["@timestamp"] = Time.utc(
             time.getYear, time.getMonthOfYear, time.getDayOfMonth,
             time.getHourOfDay, time.getMinuteOfHour, time.getSecondOfMinute,
