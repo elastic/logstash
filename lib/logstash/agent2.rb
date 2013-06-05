@@ -1,8 +1,4 @@
-require "logstash/config/file"
-require "logstash/plugin"
-require "logstash/pipeline"
 require "clamp" # gem 'clamp'
-require "cabin" # gem 'cabin'
 
 class LogStash::Agent2 < Clamp::Command
   class ConfigurationError < StandardError; end
@@ -27,18 +23,14 @@ class LogStash::Agent2 < Clamp::Command
     I18n.t("logstash.agent.flag.log"),
     :attribute_name => :log_file
 
-  verbosity = 0
+  # Old support for the '-v' flag'
   option "-v", :flag, 
     I18n.t("logstash.agent.flag.verbosity"),
-    :default => :warn, :attribute_name => :verbosity do
-    verbosity += 1
+    :attribute_name => :verbosity, :multivalued => true
 
-    if verbosity == 1
-      next :info
-    else
-      next :debug
-    end
-  end # -v
+  option "--quiet", :flag, I18n.t("logstash.agent.flag.quiet")
+  option "--verbose", :flag, I18n.t("logstash.agent.flag.verbose")
+  option "--debug", :flag, I18n.t("logstash.agent.flag.debug")
 
   option ["-V", "--version"], :flag,
     I18n.t("logstash.agent.flag.version")
@@ -62,6 +54,9 @@ class LogStash::Agent2 < Clamp::Command
   # Run the agent. This method is invoked after clamp parses the
   # flags given to this program.
   def execute
+    require "logstash/pipeline"
+    require "cabin" # gem 'cabin'
+    require "logstash/plugin"
     @logger = Cabin::Channel.get(LogStash)
 
     if version?
@@ -166,7 +161,25 @@ class LogStash::Agent2 < Clamp::Command
   # Point logging at a specific path.
   def configure_logging(path)
     # Set with the -v (or -vv...) flag
-    @logger.level = verbosity?
+    if verbosity? 
+      # this is an array with length of how many times the flag is given
+      if verbosity?.length == 1
+        @logger.level = :info
+      else
+        @logger.level = :debug
+      end
+    end
+
+    if quiet?
+      @logger.level = :error
+    elsif verbose?
+      @logger.level = :info
+    elsif debug?
+      @logger.level = :debug
+    else
+      @logger.level = :warn
+    end
+
     if !log_file.nil?
       # TODO(sissel): Implement file output/rotation in Cabin.
       # TODO(sissel): Catch exceptions, report sane errors.
