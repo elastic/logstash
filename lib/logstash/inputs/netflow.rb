@@ -445,7 +445,7 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
           #
           # The flowset header gives us the UTC epoch seconds along with
           # residual nanoseconds so we can set @timestamp to that easily
-          e.timestamp = Time.at(flowset.unix_sec, flowset.unix_nsec / 1000).utc.to_s
+          e.timestamp = Time.at(flowset.unix_sec, flowset.unix_nsec / 1000).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
 
           e['netflow'] = {} if e['netflow'].nil?
 
@@ -470,7 +470,7 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
                 micros += 1000000
               end
               # FIXME Again, probably doing this wrong WRT JRuby?
-              e['netflow'][k.to_s] = Time.at(seconds, micros).utc.to_s
+              e['netflow'][k.to_s] = Time.at(seconds, micros).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
             else
               e['netflow'][k.to_s] = v
             end
@@ -545,7 +545,7 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
             records.each do |r|
               e = to_event("", source)
 
-              e.timestamp = Time.at(flowset.unix_sec).utc.to_s
+              e.timestamp = Time.at(flowset.unix_sec).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
 
               e['netflow'] = {} if e['netflow'].nil?
 
@@ -563,7 +563,7 @@ class LogStash::Inputs::Netflow < LogStash::Inputs::Base
                   seconds = flowset.unix_sec - (millis / 1000)
                   # v9 did away with the nanosecs field
                   micros = 1000000 - (millis % 1000)
-                  e['netflow'][k.to_s] = Time.at(seconds, micros).utc.to_s
+                  e['netflow'][k.to_s] = Time.at(seconds, micros).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
                 else
                   e['netflow'][k.to_s] = v
                 end
