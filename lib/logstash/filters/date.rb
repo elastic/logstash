@@ -123,11 +123,10 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     require "java"
     # TODO(sissel): Need a way of capturing regexp configs better.
     locale = parseLocale(@config["locale"][0]) if @config["locale"] != nil and @config["locale"][0] != nil
-    missing = []
-    setupMatcher(@config["match"].shift, locale, missing, @config["match"] )
+    setupMatcher(@config["match"].shift, locale, @config["match"] )
   end
 
-  def setupMatcher(field, locale, missing, value)
+  def setupMatcher(field, locale, value)
     value.each do |format|
       case format
         when "ISO8601"
@@ -150,7 +149,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             org.joda.time.Instant.new((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).toDateTime 
           end
         else
-          joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format)
+          joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withDefaultYear(Time.new.year)
           if @timezone
             joda_parser = joda_parser.withZone(org.joda.time.DateTimeZone.forID(@timezone))
           else
@@ -160,22 +159,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             joda_parser = joda_parser.withLocale(locale)
           end
           parser = lambda { |date| joda_parser.parseDateTime(date) }
-
-          # Joda's time parser doesn't assume 'current time' for unparsed values.
-          # That is, if you parse with format "mmm dd HH:MM:SS" (no year) then
-          # the year is assumed to be unix epoch year, 1970, rather than
-          # current year. This sucks, so try and keep track of fields that
-          # are not specified so we can inject them later. (jordansissel)
-          # LOGSTASH-34
-          missing = DATEPATTERNS.reject { |p| format.include?(p) }
       end
 
       @logger.debug("Adding type with date config", :type => @type,
                     :field => field, :format => format)
       @parsers[field] << {
-          :parser => parser,
-          :missing => missing,
-          :format => format
+        :parser => parser,
+        :format => format
       }
     end
   end
@@ -197,14 +187,10 @@ class LogStash::Filters::Date < LogStash::Filters::Base
         next if value.nil?
         begin
           time = nil
-          missing = []
           success = false
           last_exception = RuntimeError.new "Unknown"
           fieldparsers.each do |parserconfig|
             parser = parserconfig[:parser]
-            missing = parserconfig[:missing]
-            #@logger.info :Missing => missing
-            #p :parser => parser
             begin
               time = parser.call(value)
               success = true
@@ -218,26 +204,6 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             raise last_exception
           end
 
-          # Perform workaround for LOGSTASH-34
-          if !missing.empty?
-            # Inject any time values missing from the time parser format
-            missing.each do |t|
-              case t
-              when "y"
-                time = time.withYear(Time.now.year)
-              when "S"
-                # TODO(sissel): Old behavior was to default to fractional sec == 0
-                #time.setMillisOfSecond(now.usec / 1000)
-                time = time.withMillisOfSecond(0)
-              #when "Z"
-                # Ruby 'time.gmt_offset' is in seconds.
-                # timezone is missing, so let's add in our localtime offset.
-                #time = time.plusSeconds(now.gmt_offset)
-                # TODO(sissel): not clear if we need to do this...
-              end # case t
-            end
-          end
-          #@logger.info :JodaTime => time.to_s
           time = time.withZone(UTC)
           event["@timestamp"] = Time.utc(
             time.getYear, time.getMonthOfYear, time.getDayOfMonth,
