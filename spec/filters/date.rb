@@ -253,4 +253,18 @@ describe LogStash::Filters::Date do
     end # times.each
   end
 
+  describe "LOGSTASH-34 - Default year should be this year" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "message", "EEE MMM dd HH:mm:ss" ]
+        }
+      }
+    CONFIG
+
+    sample "Sun Jun 02 20:38:03" do
+      insist { subject["@timestamp"].year } == Time.now.year
+    end
+  end
+
 end
