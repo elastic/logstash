@@ -36,6 +36,9 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # The codec used for input data
   config :codec, :validate => :string, :default => 'plain'
 
+  # Optional arguments to get passed into the codec
+  config :codec_args, :validate => :hash, :default => {}
+
   # The character encoding used in this input. Examples include "UTF-8"
   # and "cp1252"
   #
@@ -85,7 +88,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   protected
   def enable_codecs
-    @codec = LogStash::Codecs.for(@codec).new
+    @codec = LogStash::Codecs.for(@codec).new(@codec_args)
     @codec.charset = @charset
   end
 

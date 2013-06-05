@@ -51,6 +51,9 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # The codec used for output data
   config :codec, :validate => :string, :default => 'plain'
 
+  # Optional arguments to get passed into the codec
+  config :codec_args, :validate => :hash, :default => {}
+
   public
   def initialize(params)
     super
@@ -77,12 +80,13 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   protected
   def enable_codecs
-    @codec = LogStash::Codecs.for(@codec).new
+    @codec = LogStash::Codecs.for(@codec).new(@codec_args)
   end
 
   public
   def handle(event)
     if event == LogStash::SHUTDOWN
+      @codec.teardown if @codec.is_a? LogStash::Codecs::Base
       finished
       return
     end

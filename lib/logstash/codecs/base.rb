@@ -22,9 +22,18 @@ module LogStash::Codecs
   end
 
   class Base < LogStash::Plugin
+    include LogStash::Config::Mixin
+    config_name "codec"
 
     attr_reader :on_event
     attr_accessor :charset
+
+    public
+    def initialize(params={})
+      super
+      config_init(params)
+
+    end
 
     public
     def decode(data)
@@ -37,6 +46,9 @@ module LogStash::Codecs
     def encode(data)
       raise "#{self.class}#encode must be overidden"
     end # def encode
+
+    public 
+    def teardown; end;
 
     public
     def on_event(&block)

@@ -3,6 +3,10 @@ require "json"
 
 # This is the base class for logstash codecs.
 class LogStash::Codecs::Json < LogStash::Codecs::Base
+  config_name "json"
+
+  plugin_status "experimental"
+
   public
   def decode(data)
     yield LogStash::Event.new(JSON.parse(data.force_encoding("UTF-8")))
