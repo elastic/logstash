@@ -1,6 +1,10 @@
 require "logstash/codecs/base"
 
 class LogStash::Codecs::Noop < LogStash::Codecs::Base
+  config_name "noop"
+
+  plugin_status "experimental"
+  
   public
   def decode(data)
     yield data

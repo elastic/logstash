@@ -2,8 +2,12 @@ require "logstash/codecs/base"
 
 # This is the base class for logstash codecs.
 class LogStash::Codecs::Plain < LogStash::Codecs::Base
-  attr_accessor :format
+  config_name "plain"
 
+  plugin_status "experimental"
+
+  config :format, :validate => :string, :default => nil
+  
   public
   def decode(data)
     data.force_encoding(@charset)
