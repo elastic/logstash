@@ -1,9 +1,16 @@
 require "json"
 require "time"
 require "date"
-require "logstash/time_addon"
 require "logstash/namespace"
 require "uri"
+
+# Use a custom serialization for jsonifying Time objects.
+# TODO(sissel): Put this in a separate file.
+class Time
+  def to_json(*args)
+    return iso8601(3).to_json(*args)
+  end
+end
 
 # the logstash event object.
 #
@@ -35,7 +42,7 @@ module LogStash::EventV1
     @cancelled = false
 
     @data = data
-    @data["@timestamp"] = ::Time.now if !@data.include?("@timestamp")
+    @data["@timestamp"] = ::Time.now.utc if !@data.include?("@timestamp")
     @data["@version"] = "1" if !@data.include?("@version")
   end # def initialize
 
