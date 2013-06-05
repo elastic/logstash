@@ -10,6 +10,7 @@
     of being captured as an array of values.
   - Many deprecated features have been removed.
     TODO(sissel): Document what these were.
+  - 'type' is no longer a required setting on inputs.
 
   ## inputs
   - bugfix: gelf: work around gelf parser errors (#476, patch by Chris McCoy)
