@@ -22,8 +22,6 @@ if [ "$destdir/$prefix" != "/" -a -d "$destdir/$prefix" ] ; then
   rm -rf "$destdir/$prefix"
 fi
 
-mkdir -p $destdir/$prefix
-
 
 # install logstash.jar
 jar="$(dirname $0)/../build/logstash-$VERSION-flatjar.jar" 
@@ -32,7 +30,8 @@ if [ ! -f "$jar" ] ; then
   exit 1
 fi
 
-cp $jar $destdir/$prefix/logstash.jar
+mkdir -p $destdir/$prefix
+install -m644 $jar $destdir/$prefix/logstash.jar
 
 case $os@$release in
   centos@*)
