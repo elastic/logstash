@@ -66,7 +66,7 @@ class LogStash::Pipeline
   end # def parse_config
 
   def run
-    start = Time.now
+    #start = Time.now
 
     # one thread per input
     @input_threads = @inputs.collect do |input|
@@ -90,8 +90,8 @@ class LogStash::Pipeline
     @input_threads.each(&:join)
 
     # All input plugins have completed, send a shutdown signal.
-    duration = Time.now - start
-    puts "Duration: #{duration}"
+    #duration = Time.now - start
+    #puts "Duration: #{duration}"
 
     @input_to_filter.push(ShutdownSignal)
 
