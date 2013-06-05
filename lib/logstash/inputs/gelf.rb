@@ -1,7 +1,6 @@
 require "date"
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "logstash/time_addon" # should really use the filters/date.rb bits
 require "socket"
 
 # Read gelf messages as events over the network.
