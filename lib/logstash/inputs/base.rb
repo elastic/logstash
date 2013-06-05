@@ -10,7 +10,8 @@ class LogStash::Inputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
   config_name "input"
 
-  # Label this input with a type.
+  # Add a 'type' field to all events handled by this input.
+  #
   # Types are used mainly for filter activation.
   #
   # If you create an input with type "foobar", then only filters
@@ -24,7 +25,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # a new input will not override the existing type. A type set at 
   # the shipper stays with that event for its life even
   # when sent to another LogStash server.
-  config :type, :validate => :string, :required => true
+  config :type, :validate => :string
 
   # Set this to true to enable debugging on an input.
   config :debug, :validate => :boolean, :default => false
@@ -170,12 +171,15 @@ class LogStash::Inputs::Base < LogStash::Plugin
       raise "unknown event format #{@format}, this should never happen"
     end
 
-    event.type ||= @type
+    event["type"] = @type if @type
 
     @add_field.each do |field, value|
-       event[field] ||= []
-       event[field] = [event[field]] if !event[field].is_a?(Array)
-       event[field] << event.sprintf(value)
+      if event.include?(field)
+        event[field] = [event[field]] if !event[field].is_a?(Array)
+        event[field] << value
+      else
+        event[field] = value
+      end
     end
 
     @logger.debug? and @logger.debug("Received new event", :source => source, :event => event)
