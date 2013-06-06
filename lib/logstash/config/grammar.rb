@@ -3,7 +3,7 @@
 require "logstash/namespace"
 
 
-# line 150 "grammar.rl"
+# line 153 "grammar.rl"
 
 
 class LogStash::Config::Grammar
@@ -39,10 +39,10 @@ self._logstash_config_key_offsets = [
 	38, 51, 57, 59, 61, 74, 78, 84, 
 	90, 92, 94, 95, 112, 116, 129, 142, 
 	144, 146, 150, 150, 163, 174, 174, 176, 
-	178, 182, 182, 184, 199, 214, 230, 234, 
-	241, 248, 250, 252, 265, 265, 267, 269, 
-	273, 273, 275, 284, 298, 298, 300, 302, 
-	312, 314, 316
+	178, 182, 182, 184, 199, 214, 231, 235, 
+	242, 249, 251, 253, 269, 271, 273, 277, 
+	277, 279, 288, 301, 315, 315, 317, 319, 
+	319, 321, 323, 333, 335, 337
 ]
 
 class << self
@@ -77,20 +77,23 @@ self._logstash_config_trans_keys = [
 	10, 48, 57, 65, 90, 97, 122, 13, 
 	32, 34, 35, 39, 95, 125, 9, 10, 
 	48, 57, 65, 90, 97, 122, 13, 32, 
-	34, 35, 39, 43, 45, 95, 9, 10, 
-	48, 57, 65, 90, 97, 122, 10, 13, 
-	34, 92, 13, 32, 35, 44, 93, 9, 
-	10, 13, 32, 35, 44, 93, 9, 10, 
-	10, 13, 10, 13, 13, 32, 34, 35, 
-	39, 95, 125, 9, 10, 65, 90, 97, 
-	122, 10, 13, 10, 13, 10, 13, 39, 
-	92, 48, 57, 13, 32, 35, 44, 93, 
-	9, 10, 48, 57, 13, 32, 35, 44, 
-	93, 95, 9, 10, 48, 57, 65, 90, 
-	97, 122, 10, 13, 10, 13, 13, 32, 
-	35, 95, 9, 10, 65, 90, 97, 122, 
-	10, 13, 10, 13, 13, 32, 35, 95, 
-	9, 10, 65, 90, 97, 122, 0
+	34, 35, 39, 43, 45, 93, 95, 9, 
+	10, 48, 57, 65, 90, 97, 122, 10, 
+	13, 34, 92, 13, 32, 35, 44, 93, 
+	9, 10, 13, 32, 35, 44, 93, 9, 
+	10, 10, 13, 10, 13, 13, 32, 34, 
+	35, 39, 43, 45, 95, 9, 10, 48, 
+	57, 65, 90, 97, 122, 10, 13, 10, 
+	13, 10, 13, 39, 92, 48, 57, 13, 
+	32, 35, 44, 93, 9, 10, 48, 57, 
+	13, 32, 34, 35, 39, 95, 125, 9, 
+	10, 65, 90, 97, 122, 13, 32, 35, 
+	44, 93, 95, 9, 10, 48, 57, 65, 
+	90, 97, 122, 10, 13, 10, 13, 10, 
+	13, 10, 13, 13, 32, 35, 95, 9, 
+	10, 65, 90, 97, 122, 10, 13, 10, 
+	13, 13, 32, 35, 95, 9, 10, 65, 
+	90, 97, 122, 0
 ]
 
 class << self
@@ -102,10 +105,10 @@ self._logstash_config_single_lengths = [
 	5, 4, 2, 2, 7, 4, 4, 4, 
 	2, 2, 1, 9, 4, 7, 7, 2, 
 	2, 4, 0, 5, 5, 0, 2, 2, 
-	4, 0, 0, 7, 7, 8, 4, 5, 
-	5, 2, 2, 7, 0, 2, 2, 4, 
-	0, 0, 5, 6, 0, 2, 2, 4, 
-	2, 2, 4
+	4, 0, 0, 7, 7, 9, 4, 5, 
+	5, 2, 2, 8, 2, 2, 4, 0, 
+	0, 5, 7, 6, 0, 2, 2, 0, 
+	2, 2, 4, 2, 2, 4
 ]
 
 class << self
@@ -118,9 +121,9 @@ self._logstash_config_range_lengths = [
 	0, 0, 0, 4, 0, 3, 3, 0, 
 	0, 0, 0, 4, 3, 0, 0, 0, 
 	0, 0, 1, 4, 4, 4, 0, 1, 
-	1, 0, 0, 3, 0, 0, 0, 0, 
-	0, 1, 2, 4, 0, 0, 0, 3, 
-	0, 0, 3
+	1, 0, 0, 4, 0, 0, 0, 0, 
+	1, 2, 3, 4, 0, 0, 0, 0, 
+	0, 0, 3, 0, 0, 3
 ]
 
 class << self
@@ -132,10 +135,10 @@ self._logstash_config_index_offsets = [
 	37, 47, 53, 56, 59, 70, 75, 81, 
 	87, 90, 93, 95, 109, 114, 125, 136, 
 	139, 142, 147, 148, 158, 167, 168, 171, 
-	174, 179, 180, 182, 194, 206, 219, 224, 
-	231, 238, 241, 244, 255, 256, 259, 262, 
-	267, 268, 270, 278, 289, 290, 293, 296, 
-	304, 307, 310
+	174, 179, 180, 182, 194, 206, 220, 225, 
+	232, 239, 242, 245, 258, 261, 264, 269, 
+	270, 272, 280, 291, 302, 303, 306, 309, 
+	310, 313, 316, 324, 327, 330
 ]
 
 class << self
@@ -146,13 +149,13 @@ self._logstash_config_trans_targs = [
 	2, 2, 3, 1, 5, 2, 1, 1, 
 	1, 0, 2, 2, 3, 5, 2, 0, 
 	2, 2, 4, 2, 2, 4, 5, 5, 
-	6, 8, 58, 5, 8, 8, 0, 5, 
+	6, 8, 61, 5, 8, 8, 0, 5, 
 	5, 7, 5, 5, 7, 9, 9, 10, 
 	8, 12, 9, 8, 8, 8, 0, 9, 
 	9, 10, 12, 9, 0, 9, 9, 11, 
-	9, 9, 11, 12, 12, 13, 53, 25, 
+	9, 9, 11, 12, 12, 13, 56, 25, 
 	27, 28, 12, 27, 27, 0, 0, 0, 
-	14, 52, 13, 15, 15, 16, 18, 15, 
+	14, 55, 13, 15, 15, 16, 18, 15, 
 	0, 15, 15, 16, 18, 15, 0, 15, 
 	15, 17, 15, 15, 17, 19, 0, 19, 
 	19, 20, 30, 32, 34, 34, 37, 36, 
@@ -163,26 +166,29 @@ self._logstash_config_trans_targs = [
 	22, 22, 24, 22, 22, 24, 0, 0, 
 	14, 26, 25, 25, 15, 15, 16, 18, 
 	27, 15, 27, 27, 27, 0, 5, 5, 
-	6, 8, 58, 5, 8, 8, 0, 20, 
+	6, 8, 61, 5, 8, 8, 0, 20, 
 	19, 19, 31, 19, 19, 31, 0, 0, 
 	21, 33, 32, 32, 35, 0, 22, 22, 
 	13, 23, 25, 27, 28, 22, 35, 27, 
 	27, 0, 22, 22, 13, 23, 25, 36, 
 	28, 22, 36, 36, 36, 0, 37, 37, 
-	38, 45, 47, 49, 49, 51, 37, 50, 
-	51, 51, 0, 0, 0, 39, 44, 38, 
-	40, 40, 41, 37, 43, 40, 0, 40, 
-	40, 41, 37, 43, 40, 0, 40, 40, 
-	42, 40, 40, 42, 22, 22, 13, 23, 
-	25, 27, 28, 22, 27, 27, 0, 38, 
-	37, 37, 46, 37, 37, 46, 0, 0, 
-	39, 48, 47, 47, 50, 0, 40, 40, 
-	41, 37, 43, 40, 50, 0, 40, 40, 
-	41, 37, 43, 51, 40, 51, 51, 51, 
-	0, 13, 12, 12, 54, 12, 12, 54, 
-	55, 55, 56, 1, 55, 1, 1, 0, 
-	55, 55, 57, 55, 55, 57, 55, 55, 
-	56, 1, 55, 1, 1, 0, 0
+	38, 53, 46, 48, 48, 50, 51, 37, 
+	49, 51, 51, 0, 0, 0, 39, 52, 
+	38, 40, 40, 41, 43, 50, 40, 0, 
+	40, 40, 41, 43, 50, 40, 0, 40, 
+	40, 42, 40, 40, 42, 43, 43, 38, 
+	44, 46, 48, 48, 51, 43, 49, 51, 
+	51, 0, 43, 43, 45, 43, 43, 45, 
+	0, 0, 39, 47, 46, 46, 49, 0, 
+	40, 40, 41, 43, 50, 40, 49, 0, 
+	22, 22, 13, 23, 25, 27, 28, 22, 
+	27, 27, 0, 40, 40, 41, 43, 50, 
+	51, 40, 51, 51, 51, 0, 38, 37, 
+	37, 54, 37, 37, 54, 13, 12, 12, 
+	57, 12, 12, 57, 58, 58, 59, 1, 
+	58, 1, 1, 0, 58, 58, 60, 58, 
+	58, 60, 58, 58, 59, 1, 58, 1, 
+	1, 0, 0
 ]
 
 class << self
@@ -216,20 +222,23 @@ self._logstash_config_trans_actions = [
 	51, 24, 51, 51, 24, 24, 0, 51, 
 	51, 19, 27, 27, 55, 27, 55, 0, 
 	27, 27, 0, 0, 0, 19, 0, 0, 
-	1, 0, 1, 1, 1, 1, 0, 1, 
-	1, 1, 19, 19, 19, 0, 0, 0, 
-	7, 7, 7, 7, 7, 7, 19, 0, 
-	0, 0, 0, 0, 0, 19, 1, 1, 
-	1, 0, 0, 0, 36, 36, 63, 36, 
-	63, 63, 36, 36, 63, 63, 19, 0, 
-	1, 1, 1, 0, 0, 0, 19, 19, 
-	0, 0, 0, 0, 0, 19, 3, 3, 
-	3, 3, 3, 3, 0, 19, 5, 5, 
-	5, 5, 5, 0, 5, 0, 0, 0, 
-	19, 0, 1, 1, 1, 0, 0, 0, 
-	0, 0, 0, 1, 0, 1, 1, 19, 
-	1, 1, 1, 0, 0, 0, 15, 15, 
-	15, 45, 15, 45, 45, 19, 0
+	1, 0, 1, 1, 1, 0, 1, 0, 
+	1, 1, 1, 19, 19, 19, 0, 0, 
+	0, 7, 7, 7, 7, 7, 7, 19, 
+	0, 0, 0, 0, 0, 0, 19, 1, 
+	1, 1, 0, 0, 0, 0, 0, 1, 
+	0, 1, 1, 1, 1, 0, 1, 1, 
+	1, 19, 1, 1, 1, 0, 0, 0, 
+	19, 19, 0, 0, 0, 0, 0, 19, 
+	3, 3, 3, 3, 3, 3, 0, 19, 
+	36, 36, 63, 36, 63, 63, 36, 36, 
+	63, 63, 19, 5, 5, 5, 5, 5, 
+	0, 5, 0, 0, 0, 19, 0, 1, 
+	1, 1, 0, 0, 0, 0, 1, 1, 
+	1, 0, 0, 0, 0, 0, 0, 1, 
+	0, 1, 1, 19, 1, 1, 1, 0, 
+	0, 0, 15, 15, 15, 45, 15, 45, 
+	45, 19, 0
 ]
 
 class << self
@@ -243,18 +252,18 @@ self._logstash_config_eof_actions = [
 	19, 19, 19, 19, 19, 19, 19, 19, 
 	19, 19, 19, 19, 19, 19, 19, 19, 
 	19, 19, 19, 19, 19, 19, 19, 19, 
-	19, 19, 19, 19, 19, 19, 19, 17, 
-	21, 17, 48
+	19, 19, 19, 19, 19, 19, 19, 19, 
+	19, 19, 17, 21, 17, 48
 ]
 
 class << self
 	attr_accessor :logstash_config_start
 end
-self.logstash_config_start = 55;
+self.logstash_config_start = 58;
 class << self
 	attr_accessor :logstash_config_first_final
 end
-self.logstash_config_first_final = 55;
+self.logstash_config_first_final = 58;
 class << self
 	attr_accessor :logstash_config_error
 end
@@ -263,10 +272,10 @@ self.logstash_config_error = 0;
 class << self
 	attr_accessor :logstash_config_en_main
 end
-self.logstash_config_en_main = 55;
+self.logstash_config_en_main = 58;
 
 
-# line 159 "grammar.rl"
+# line 162 "grammar.rl"
     # END RAGEL DATA
 
     @tokenstack = Array.new
@@ -286,20 +295,20 @@ self.logstash_config_en_main = 55;
 
     # BEGIN RAGEL INIT
     
-# line 290 "grammar.rb"
+# line 299 "grammar.rb"
 begin
 	p ||= 0
 	pe ||= data.length
 	cs = logstash_config_start
 end
 
-# line 178 "grammar.rl"
+# line 181 "grammar.rl"
     # END RAGEL INIT
 
     begin 
       # BEGIN RAGEL EXEC 
       
-# line 303 "grammar.rb"
+# line 312 "grammar.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	_goto_level = 0
@@ -335,9 +344,9 @@ begin
 	        break if _upper < _lower
 	        _mid = _lower + ( (_upper - _lower) >> 1 )
 
-	        if data[p] < _logstash_config_trans_keys[_mid]
+	        if data[p].ord < _logstash_config_trans_keys[_mid]
 	           _upper = _mid - 1
-	        elsif data[p] > _logstash_config_trans_keys[_mid]
+	        elsif data[p].ord > _logstash_config_trans_keys[_mid]
 	           _lower = _mid + 1
 	        else
 	           _trans += (_mid - _keys)
@@ -356,9 +365,9 @@ begin
 	     loop do
 	        break if _upper < _lower
 	        _mid = _lower + (((_upper-_lower) >> 1) & ~1)
-	        if data[p] < _logstash_config_trans_keys[_mid]
+	        if data[p].ord < _logstash_config_trans_keys[_mid]
 	          _upper = _mid - 2
-	        elsif data[p] > _logstash_config_trans_keys[_mid+1]
+	        elsif data[p].ord > _logstash_config_trans_keys[_mid+1]
 	          _lower = _mid + 2
 	        else
 	          _trans += ((_mid - _keys) >> 1)
@@ -487,14 +496,14 @@ when 10 then
     #puts "Config component: #{name}"
   		end
 when 12 then
-# line 145 "grammar.rl"
+# line 148 "grammar.rl"
 		begin
  
             # Compute line and column of the cursor (p)
             $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           		end
-# line 498 "grammar.rb"
+# line 507 "grammar.rb"
 			end # action switch
 		end
 	end
@@ -539,18 +548,18 @@ when 10 then
     #puts "Config component: #{name}"
   		end
 when 11 then
-# line 144 "grammar.rl"
+# line 147 "grammar.rl"
 		begin
  puts "END" 		end
 when 12 then
-# line 145 "grammar.rl"
+# line 148 "grammar.rl"
 		begin
  
             # Compute line and column of the cursor (p)
             $stderr.puts "Error at line #{self.line(string, p)}, column #{self.column(string, p)}: #{string[p .. -1].inspect}"
             # TODO(sissel): Note what we were expecting?
           		end
-# line 554 "grammar.rb"
+# line 563 "grammar.rb"
 		end # eof action switch
 	end
 	if _trigger_goto
@@ -564,7 +573,7 @@ end
 	end
 	end
 
-# line 183 "grammar.rl"
+# line 186 "grammar.rl"
       # END RAGEL EXEC
     rescue => e
       # Compute line and column of the cursor (p)
