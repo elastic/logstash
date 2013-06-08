@@ -1,5 +1,6 @@
 require "logstash/namespace"
 require "logstash/config/grammar"
+require "logstash/config/config_ast"
 require "logstash/config/registry"
 require "logger"
 
@@ -26,14 +27,21 @@ class LogStash::Config::File
   end
 
   def _get_config(data)
-    grammar = LogStash::Config::Grammar.new
-    grammar.parse(data)
-    grammar.config
+    #grammar = LogStash::Config::Grammar.new
+    grammar = LogStashConfigParser.new
+    result = grammar.parse(data)
+    if result.nil?
+      raise grammar.failure_reason
+    end
+    return result
   end
 
   public
   def parse
     @config = _get_config(_get_config_data);
+
+    require "pry"
+    binding.pry
 
     registry = LogStash::Config::Registry::registry
     each do |o|
