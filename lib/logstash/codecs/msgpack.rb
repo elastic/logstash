@@ -12,17 +12,17 @@ class LogStash::Codecs::Msgpack < LogStash::Codecs::Base
   def decode(data)
     begin
       # Msgpack does not care about UTF-8
-      event = LogStash::Event.new(MessagePack.unpack(raw))
+      event = LogStash::Event.new(MessagePack.unpack(data))
+      event["@timestamp"] = Time.at(event["@timestamp"]).utc if event["@timestamp"].is_a? Float
       event["tags"] ||= []
       if @format
         event.message ||= event.sprintf(@format)
       end
     rescue => e
-      ## TODO(sissel): Instead of dropping the event, should we treat it as
-      ## plain text and try to do the best we can with it?
+      # Treat as plain text and try to do the best we can with it?
       @logger.warn("Trouble parsing msgpack input, falling back to plain text",
-                   :input => raw, :exception => e)
-      event.message = raw
+                   :input => data, :exception => e)
+      event.message = data
       event["tags"] ||= []
       event["tags"] << "_msgpackparsefailure"
     end
@@ -31,6 +31,7 @@ class LogStash::Codecs::Msgpack < LogStash::Codecs::Base
 
   public
   def encode(event)
+    event["@timestamp"] = event["@timestamp"].to_f
     @on_event.call event.to_hash.to_msgpack
   end # def encode
 
