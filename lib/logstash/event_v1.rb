@@ -42,7 +42,14 @@ module LogStash::EventV1
     @cancelled = false
 
     @data = data
-    @data["@timestamp"] = ::Time.now.utc if !@data.include?("@timestamp")
+    if (@data.include?("@timestamp"))
+      if (@data["@timestamp"].is_a?(String))
+        p = @data["@timestamp"].split(/[\/T:+Z\-]/)
+        @data["@timestamp"] = Time.utc(p[0], p[1], p[2], p[3], p[4], p[5])
+      end
+    else
+      @data["@timestamp"] = ::Time.now.utc
+    end
     @data["@version"] = "1" if !@data.include?("@version")
   end # def initialize
 
