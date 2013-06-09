@@ -20,11 +20,13 @@ describe LogStash::Codecs::Spool do
 
   context "#encode" do
     it "should return a spooled event" do
+      spool_size = Random.rand(10)
+      subject.spool_size = spool_size
       got_event = false
       subject.on_event do |data|
         got_event = true
       end
-      50.times do
+      spool_size.times do
         subject.encode(LogStash::Event.new)
       end
       insist { got_event }
