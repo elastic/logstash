@@ -1,8 +1,7 @@
 require "clamp" # gem 'clamp'
+require "logstash/errors"
 
 class LogStash::Agent2 < Clamp::Command
-  class ConfigurationError < StandardError; end
-
   option ["-f", "--config"], "CONFIG_PATH",
     I18n.t("logstash.agent.flag.config"),
     :attribute_name => :config_path
@@ -43,12 +42,12 @@ class LogStash::Agent2 < Clamp::Command
   # Emit a warning message.
   def warn(message)
     # For now, all warnings are fatal.
-    raise ConfigurationError, message
+    raise LogStash::ConfigurationError, message
   end # def warn
 
   # Emit a failure message and abort.
   def fail(message)
-    raise ConfigurationError, message
+    raise LogStash::ConfigurationError, message
   end # def fail
 
   # Run the agent. This method is invoked after clamp parses the
@@ -91,7 +90,7 @@ class LogStash::Agent2 < Clamp::Command
     # TODO(sissel): Get pipeline completion status.
     pipeline.run
     return 0
-  rescue ConfigurationError, LogStash::Plugin::ConfigurationError => e
+  rescue LogStash::ConfigurationError => e
     puts I18n.t("logstash.agent.error", :error => e)
     return 1
   rescue => e
