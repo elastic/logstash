@@ -34,10 +34,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   config :format, :validate => ["plain", "json", "json_event", "msgpack_event"], :deprecated => true
 
   # The codec used for input data
-  config :codec, :validate => :string, :default => 'plain'
-
-  # Optional arguments to get passed into the codec
-  config :codec_args, :validate => :hash, :default => {}
+  config :codec, :validate => :codec, :default => "plain"
 
   # The character encoding used in this input. Examples include "UTF-8"
   # and "cp1252"
@@ -69,7 +66,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   attr_accessor :threadable
 
   public
-  def initialize(params)
+  def initialize(params={})
     super
     @threadable = false
     config_init(params)
@@ -85,12 +82,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
   def tag(newtag)
     @tags << newtag
   end # def tag
-
-  protected
-  def enable_codecs
-    @codec = LogStash::Codecs.for(@codec).new(@codec_args)
-    @codec.charset = @charset
-  end
 
   protected
   def to_event(raw, source)

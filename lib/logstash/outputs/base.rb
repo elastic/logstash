@@ -49,13 +49,10 @@ class LogStash::Outputs::Base < LogStash::Plugin
   config :ignore_older_than, :validate => :number, :default => 0
 
   # The codec used for output data
-  config :codec, :validate => :string, :default => 'plain'
-
-  # Optional arguments to get passed into the codec
-  config :codec_args, :validate => :hash, :default => {}
+  config :codec, :validate => :codec, :default => "plain"
 
   public
-  def initialize(params)
+  def initialize(params={})
     super
     config_init(params)
 
@@ -77,11 +74,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def receive(event)
     raise "#{self.class}#receive must be overidden"
   end # def receive
-
-  protected
-  def enable_codecs
-    @codec = LogStash::Codecs.for(@codec).new(@codec_args)
-  end
 
   public
   def handle(event)

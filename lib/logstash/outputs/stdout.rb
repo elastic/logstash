@@ -11,7 +11,7 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   plugin_status "stable"
 
   # Enable debugging. Tries to pretty-print the entire event object.
-  config :debug, :validate => :boolean
+  config :debug, :validate => :boolean, :default => false
 
   # Debug output format: ruby (default), json
   config :debug_format, :default => "ruby", :validate => ["ruby", "dots"]
@@ -21,11 +21,6 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
 
   public
   def register
-    enable_codecs
-    begin
-      @codec.format = @message
-    rescue NoMethodError
-    end
     @print_method = method(:ap) rescue method(:p)
     if @debug
       case @debug_format

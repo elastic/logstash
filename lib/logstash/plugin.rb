@@ -4,8 +4,6 @@ require "logstash/config/mixin"
 require "cabin"
 
 class LogStash::Plugin
-  class ConfigurationError < StandardError; end
-
   attr_accessor :params
   attr_accessor :logger
 
@@ -119,4 +117,28 @@ class LogStash::Plugin
       return "<#{self.class.name} --->"
     end
   end
+
+  # Look up a plugin by type and name.
+  public
+  def self.lookup(type, name)
+    # Try to load the plugin requested.
+    # For example, load("filter", "grok") will try to require
+    #   logstash/filters/grok
+    #
+    # And expects to find LogStash::Filters::Grok (or something similar based
+    # on pattern matching
+    path = "logstash/#{type}s/#{name}"
+    require(path)
+
+    base = LogStash.const_get("#{type.capitalize}s")
+    klass_sym = base.constants.find { |c| c.to_s =~ /^#{Regexp.quote(name)}$/i }
+    raise LoadError if klass_sym.nil?
+
+    klass = base.const_get(klass_sym)
+    return klass
+  rescue LoadError => e
+    puts e.backtrace
+    raise LogStash::PluginLoadingError,
+      I18n.t("logstash.pipeline.plugin-loading-error", :type => type, :name => name, :path => path)
+  end # def load
 end # class LogStash::Plugin

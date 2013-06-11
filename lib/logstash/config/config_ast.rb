@@ -52,20 +52,24 @@ module LogStash; module Config; module AST
       return "#{name.text_value} {\n" << attributes.elements.collect(&:generate_config).join("") << "}\n"
     end
 
+    def plugin_type
+      return recursive_select_parent { |e| e.is_a?(PluginSection) }.first.plugin_type.text_value
+    end
     def compile
-      # Search up the stack for the PluginSection we're in
-      plugin_type = recursive_select_parent { |e| e.is_a?(PluginSection) }.first.plugin_type.text_value.inspect
-
       # Unless we're inside a Plugin, then any 'plugin object is actually a
       # codec.
       is_codec = recursive_select_parent { |e| e.is_a?(Plugin) }.any?
 
-      plugin_type = "codec".inspect if is_codec
+      if is_codec
+        type = "codec"
+      else
+        type = plugin_type
+      end
 
       if attributes.elements.nil?
-        return "plugin(#{plugin_type}, #{name.text_value.inspect})" << (is_codec ? "" : "\n")
+        return "plugin(#{type.inspect}, #{name.text_value.inspect})" << (is_codec ? "" : "\n")
       else
-        return "plugin(#{plugin_type}, #{name.text_value.inspect}, " << attributes.recursive_select { |e| e.is_a?(Attribute) }.collect(&:compile).reject(&:empty?).join(", ") << ")" << (is_codec ? "" : "\n")
+        return "plugin(#{type.inspect}, #{name.text_value.inspect}, " << attributes.recursive_select { |e| e.is_a?(Attribute) }.collect(&:compile).reject(&:empty?).join(", ") << ")" << (is_codec ? "" : "\n")
       end
     end
   end

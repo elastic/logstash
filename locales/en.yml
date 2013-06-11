@@ -22,6 +22,33 @@ en:
         A plugin had an unrecoverable error. Will restart this plugin.
           Plugin: %{plugin}
           Error: %{error}
+      worker-error-debug: |-
+        A plugin had an unrecoverable error. Will restart this plugin.
+          Plugin: %{plugin}
+          Error: %{error}
+          Stack: %{stacktrace}
+      plugin-loading-error: |-
+        Couldn't find any %{type} plugin named '%{name}'. Are you 
+        sure this is correct?
+      plugin-type-loading-error: |-
+        Could not find any plugin type named '%{type}'. Check for typos.
+        Valid plugin types are 'input' 'filter' and 'output'
+    plugin:
+      unsupported: |-
+        Using unsupported %{type} plugin '%{name}'. This plugin isn't well
+        supported by the commnity and likely has no maintainer.
+        For more information on plugin statuses, see
+        http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin_status
+      experimental: |-
+        Using experimental %{type} plugin '%{name}'. This plugin should work,
+        but would benefit from use by folks like you. Please let us know if you
+        find bugs or have suggestions on how to improve this plugin.  For more
+        information on plugin statuses, see
+        http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin_status
+      beta: |-
+        Using beta %{type} plugin '%{name}'.
+        For more information on plugin statuses, see
+        http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin_status
     agent:
       missing-configuration: |-
         No configuration file was specified. Perhaps you forgot to provide

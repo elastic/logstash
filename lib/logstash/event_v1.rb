@@ -87,7 +87,7 @@ module LogStash::EventV1
 
   public
   def to_s
-    return self.sprintf("%{@timestamp} %{source_host} %{message}")
+    return self.sprintf("%{+yyyy-MM-dd'T'HH:mm:ss.SSSZ} %{source} %{message}")
   end # def to_s
 
   public
