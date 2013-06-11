@@ -52,6 +52,9 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # A count metric. metric_name => count as hash
   config :count, :validate => :hash, :default => {}
 
+  # A set metric. metric_name => string to append as hash
+  config :set, :validate => :hash, :default => {}
+
   # The sample rate for the metric
   config :sample_rate, :validate => :number, :default => 1
 
@@ -89,6 +92,10 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
     @timing.each do |metric, val|
       @client.timing(build_stat(event.sprintf(metric), sender),
                      event.sprintf(val).to_f, @sample_rate)
+    end
+    @set.each do |metric, val|
+      @client.set(build_stat(event.sprintf(metric), sender),
+                    event.sprintf(val), @sample_rate)
     end
   end # def receive
 
