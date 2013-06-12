@@ -10,14 +10,14 @@ class LogStash::Pipeline
   class ShutdownSignal < StandardError; end
 
   def initialize(configstr)
-    # hacks for now to parse a config string
     @config = LogStash::Config::File.new(configstr)
     @input_to_filter = SizedQueue.new(20)
-    @filter_to_output = SizedQueue.new(20)
 
     # If no filters, pipe inputs directly to outputs
     if @config.none? { |p| p.is_a?(LogStash::Filters::Base) }
-      @input_to_filter = @filter_to_output
+      @filter_to_output = @input_to_filter
+    else
+      @filter_to_output = SizedQueue.new(20)
     end
 
     @logger = Cabin::Channel.get(LogStash)
@@ -28,6 +28,21 @@ class LogStash::Pipeline
   end # def initialize
 
   def run
+    # For each input plugin, instantiate it and run as many as required by the
+    # 'threads' setting.
+    #
+    # For filters, generate code to execute the filters as declared
+    # For outputs, generate code to execute the outputs as declared
+    
+    inputs.each do |input|
+      Thread.new(input) do |input|
+        input.run(queue)
+      end
+    end
+
+    filterworker_count.times do
+
+    end
     start_inputs
     start_filters
     start_outputs

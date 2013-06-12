@@ -1,15 +1,17 @@
 require "treetop"
+require "logstash/config/config_ast"
+
 grammar LogStashConfig
   rule config
     _ plugin_section _ (_ plugin_section)* _ <LogStash::Config::AST::Config>
   end
 
   rule comment
-    (_ "#" [^\r\n]+ "\r"? "\n")+ <LogStash::Config::AST::Comment>
+    (whitespace? "#" [^\r\n]+ "\r"? "\n")+ <LogStash::Config::AST::Comment>
   end
 
   rule _
-    (whitespace)? <LogStash::Config::AST::Whitespace>
+    (comment / whitespace)? <LogStash::Config::AST::Whitespace>
   end
 
   rule whitespace
@@ -17,15 +19,14 @@ grammar LogStashConfig
   end
 
   rule plugin_section
-    comment?
     plugin_type _ "{"
-      comment?
-      _
-      (branch / plugins)
-      _
-      comment?
+      (_ branch_or_plugin _)*
     "}"
     <LogStash::Config::AST::PluginSection>
+  end
+
+  rule branch_or_plugin
+    branch / plugin
   end
 
   rule plugin_type
@@ -38,13 +39,11 @@ grammar LogStashConfig
   end
 
   rule plugin 
-    comment?
     name _ "{" 
-      comment?  _ 
+      _
       attributes:( attribute (whitespace attribute)*)? 
-      comment? _
+      _
     "}"
-    comment?
     <LogStash::Config::AST::Plugin>
   end
 
@@ -54,9 +53,7 @@ grammar LogStashConfig
   end
 
   rule attribute
-    comment?
     name _ "=>" _ value
-    comment?
     <LogStash::Config::AST::Attribute>
   end
 
@@ -85,12 +82,10 @@ grammar LogStashConfig
 
   rule array
     "[" 
-    comment?
     _ 
     (
-      value (_ "," comment? _ value)*
+      value (_ "," _ value)*
     )? 
-    comment?
     _ 
     "]"
     <LogStash::Config::AST::Array>
@@ -98,17 +93,15 @@ grammar LogStashConfig
 
   rule hash
     "{" 
-      comment?
       _ 
       hashentries?
-      comment?
       _ 
     "}"
     <LogStash::Config::AST::Hash>
   end
 
   rule hashentries
-    hashentry (comment? whitespace hashentry)*
+    hashentry (whitespace hashentry)*
     <LogStash::Config::AST::HashEntries>
   end
 
@@ -124,17 +117,17 @@ grammar LogStashConfig
   end
 
   rule if
-    "if" _ condition _ "{" _ plugins _ "}"
+    "if" _ condition _ "{" (_ branch_or_plugin _)* "}"
     <LogStash::Config::AST::If>
   end
 
   rule elsif
-    "elsif" _ condition _ "{" _ plugins _ "}"
+    "elsif" _ condition _ "{" (_ branch_or_plugin _)* "}"
     <LogStash::Config::AST::Elsif>
   end
 
   rule else
-    "else" _ "{" _ plugins _ "}"
+    "else" _ "{" (_ branch_or_plugin _)* "}"
     <LogStash::Config::AST::Else>
   end
 
@@ -144,24 +137,41 @@ grammar LogStashConfig
   end
 
   rule expression
-    "(" _ condition _ ")"
-    / "!" _ condition
-    / rvalue _ comparison _ rvalue
-    <LogStash::Config::AST::Expression>
+    (
+        ("(" _ condition _ ")")
+      / ("!" _ condition)
+      / (rvalue _ comparison _ rvalue)
+      / (rvalue)
+    ) <LogStash::Config::AST::Expression>
   end
 
   rule rvalue
-    string / number / array
+    string / number / selector / array / method_call
+  end
+
+  rule method_call
+    (
+      method _ "(" _ 
+        ( 
+          rvalue ( _ "," _ rvalue )* 
+        )? 
+      _ ")"
+    ) 
+    <LogStash::Config::AST::MethodCall>
+  end
+
+  rule method
+    bareword
   end
 
   rule comparison
-    "==" / "!=" / "<" / ">" / "<=" / ">=" / "=~" / "!~" / "in"
-    <LogStash::Config::AST::Comparison>
+    ("==" / "!=" / "<" / ">" / "<=" / ">=" / "=~" / "!~" / "in")
+    <LogStash::Config::AST::ComparisonOperator>
   end
 
   rule boolean_operator
-    "and" / "or" / "xor" / "nand"
-    <LogStash::Config::AST::Boolean_operator>
+    ("and" / "or" / "xor" / "nand")
+    <LogStash::Config::AST::BooleanOperator>
   end
 
   rule selector
@@ -170,7 +180,7 @@ grammar LogStashConfig
   end
 
   rule selector_element
-    "[" (!"]")+ "]"
+    "[" [^\]]+ "]"
     <LogStash::Config::AST::SelectorElement>
   end
   
