@@ -117,17 +117,17 @@ grammar LogStashConfig
   end
 
   rule if
-    "if" _ condition _ "{" (_ branch_or_plugin _)* "}"
+    "if" _ condition _ "{" _ (branch_or_plugin _)* "}"
     <LogStash::Config::AST::If>
   end
 
   rule elsif
-    "elsif" _ condition _ "{" (_ branch_or_plugin _)* "}"
+    "elsif" _ condition _ "{" _ ( branch_or_plugin _)* "}"
     <LogStash::Config::AST::Elsif>
   end
 
   rule else
-    "else" _ "{" (_ branch_or_plugin _)* "}"
+    "else" _ "{" _ (branch_or_plugin _)* "}"
     <LogStash::Config::AST::Else>
   end
 
@@ -150,13 +150,11 @@ grammar LogStashConfig
   end
 
   rule method_call
-    (
       method _ "(" _ 
         ( 
           rvalue ( _ "," _ rvalue )* 
         )? 
       _ ")"
-    ) 
     <LogStash::Config::AST::MethodCall>
   end
 
@@ -180,7 +178,7 @@ grammar LogStashConfig
   end
 
   rule selector_element
-    "[" [^\]]+ "]"
+    "[" [^\], ]+ "]"
     <LogStash::Config::AST::SelectorElement>
   end
   

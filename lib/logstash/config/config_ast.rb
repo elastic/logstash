@@ -163,7 +163,7 @@ module LogStash; module Config; module AST
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
       return "if #{condition.compile}\n" \
-        << "  #{children.collect(&:compile).join("\n")}"
+        << children.collect(&:compile).map { |s| "  " + s }.join("")
     end
   end
   class Elsif < Node
@@ -195,8 +195,8 @@ module LogStash; module Config; module AST
   end
   class MethodCall < Node
     def compile
-      p :method_call => recursive_select(Node).count
-      return "#{method.text_value}(" << recursive_select(Node).collect(&:compile).join(", ") << ")"
+      arguments = recursive_inject { |e| [String, Number, Selector, Array, MethodCall].any? { |c| e.is_a?(c) } }
+      return "#{method.text_value}(" << arguments.collect(&:compile).join(", ") << ")"
     end
   end
   module ComparisonOperator 
@@ -209,7 +209,11 @@ module LogStash; module Config; module AST
       return " #{text_value} "
     end
   end
-  class Selector < Node; end
+  class Selector < Node
+    def compile
+      return "event[#{text_value.inspect}]"
+    end
+  end
   class SelectorElement < Node; end
 end; end; end
 
