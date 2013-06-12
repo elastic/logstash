@@ -2,6 +2,8 @@
 
 
 require "treetop"
+require "logstash/config/config_ast"
+
 module LogStashConfig
   include Treetop::Runtime
 
@@ -103,10 +105,6 @@ module LogStashConfig
   end
 
   module Comment0
-    def _
-      elements[0]
-    end
-
   end
 
   def _nt_comment
@@ -123,62 +121,67 @@ module LogStashConfig
     s0, i0 = [], index
     loop do
       i1, s1 = index, []
-      r2 = _nt__
+      r3 = _nt_whitespace
+      if r3
+        r2 = r3
+      else
+        r2 = instantiate_node(SyntaxNode,input, index...index)
+      end
       s1 << r2
       if r2
         if has_terminal?("#", false, index)
-          r3 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
           @index += 1
         else
           terminal_parse_failure("#")
-          r3 = nil
+          r4 = nil
         end
-        s1 << r3
-        if r3
-          s4, i4 = [], index
+        s1 << r4
+        if r4
+          s5, i5 = [], index
           loop do
             if has_terminal?('\G[^\\r\\n]', true, index)
-              r5 = true
+              r6 = true
               @index += 1
             else
-              r5 = nil
+              r6 = nil
             end
-            if r5
-              s4 << r5
+            if r6
+              s5 << r6
             else
               break
             end
           end
-          if s4.empty?
-            @index = i4
-            r4 = nil
+          if s5.empty?
+            @index = i5
+            r5 = nil
           else
-            r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
+            r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
           end
-          s1 << r4
-          if r4
+          s1 << r5
+          if r5
             if has_terminal?("\r", false, index)
-              r7 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              r8 = instantiate_node(SyntaxNode,input, index...(index + 1))
               @index += 1
             else
               terminal_parse_failure("\r")
-              r7 = nil
+              r8 = nil
             end
-            if r7
-              r6 = r7
+            if r8
+              r7 = r8
             else
-              r6 = instantiate_node(SyntaxNode,input, index...index)
+              r7 = instantiate_node(SyntaxNode,input, index...index)
             end
-            s1 << r6
-            if r6
+            s1 << r7
+            if r7
               if has_terminal?("\n", false, index)
-                r8 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
                 @index += 1
               else
                 terminal_parse_failure("\n")
-                r8 = nil
+                r9 = nil
               end
-              s1 << r8
+              s1 << r9
             end
           end
         end
@@ -219,7 +222,19 @@ module LogStashConfig
       return cached
     end
 
-    r1 = _nt_whitespace
+    i1 = index
+    r2 = _nt_comment
+    if r2
+      r1 = r2
+    else
+      r3 = _nt_whitespace
+      if r3
+        r1 = r3
+      else
+        @index = i1
+        r1 = nil
+      end
+    end
     if r1
       r0 = r1
     else
@@ -269,20 +284,26 @@ module LogStashConfig
   end
 
   module PluginSection0
-    def plugin_type
+    def _1
+      elements[0]
+    end
+
+    def branch_or_plugin
       elements[1]
     end
 
-    def _1
+    def _2
       elements[2]
     end
+  end
 
-    def _2
-      elements[5]
+  module PluginSection1
+    def plugin_type
+      elements[0]
     end
 
-    def _3
-      elements[7]
+    def _
+      elements[1]
     end
 
   end
@@ -299,92 +320,101 @@ module LogStashConfig
     end
 
     i0, s0 = index, []
-    r2 = _nt_comment
-    if r2
-      r1 = r2
-    else
-      r1 = instantiate_node(SyntaxNode,input, index...index)
-    end
+    r1 = _nt_plugin_type
     s0 << r1
     if r1
-      r3 = _nt_plugin_type
-      s0 << r3
-      if r3
-        r4 = _nt__
-        s0 << r4
-        if r4
-          if has_terminal?("{", false, index)
-            r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
-            @index += 1
-          else
-            terminal_parse_failure("{")
-            r5 = nil
-          end
-          s0 << r5
-          if r5
-            r7 = _nt_comment
-            if r7
-              r6 = r7
-            else
-              r6 = instantiate_node(SyntaxNode,input, index...index)
-            end
-            s0 << r6
+      r2 = _nt__
+      s0 << r2
+      if r2
+        if has_terminal?("{", false, index)
+          r3 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure("{")
+          r3 = nil
+        end
+        s0 << r3
+        if r3
+          s4, i4 = [], index
+          loop do
+            i5, s5 = index, []
+            r6 = _nt__
+            s5 << r6
             if r6
-              r8 = _nt__
-              s0 << r8
-              if r8
-                i9 = index
-                r10 = _nt_branch
-                if r10
-                  r9 = r10
-                else
-                  r11 = _nt_plugins
-                  if r11
-                    r9 = r11
-                  else
-                    @index = i9
-                    r9 = nil
-                  end
-                end
-                s0 << r9
-                if r9
-                  r12 = _nt__
-                  s0 << r12
-                  if r12
-                    r14 = _nt_comment
-                    if r14
-                      r13 = r14
-                    else
-                      r13 = instantiate_node(SyntaxNode,input, index...index)
-                    end
-                    s0 << r13
-                    if r13
-                      if has_terminal?("}", false, index)
-                        r15 = instantiate_node(SyntaxNode,input, index...(index + 1))
-                        @index += 1
-                      else
-                        terminal_parse_failure("}")
-                        r15 = nil
-                      end
-                      s0 << r15
-                    end
-                  end
-                end
+              r7 = _nt_branch_or_plugin
+              s5 << r7
+              if r7
+                r8 = _nt__
+                s5 << r8
               end
             end
+            if s5.last
+              r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+              r5.extend(PluginSection0)
+            else
+              @index = i5
+              r5 = nil
+            end
+            if r5
+              s4 << r5
+            else
+              break
+            end
+          end
+          r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
+          s0 << r4
+          if r4
+            if has_terminal?("}", false, index)
+              r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
+            else
+              terminal_parse_failure("}")
+              r9 = nil
+            end
+            s0 << r9
           end
         end
       end
     end
     if s0.last
       r0 = instantiate_node(LogStash::Config::AST::PluginSection,input, i0...index, s0)
-      r0.extend(PluginSection0)
+      r0.extend(PluginSection1)
     else
       @index = i0
       r0 = nil
     end
 
     node_cache[:plugin_section][start_index] = r0
+
+    r0
+  end
+
+  def _nt_branch_or_plugin
+    start_index = index
+    if node_cache[:branch_or_plugin].has_key?(index)
+      cached = node_cache[:branch_or_plugin][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0 = index
+    r1 = _nt_branch
+    if r1
+      r0 = r1
+    else
+      r2 = _nt_plugin
+      if r2
+        r0 = r2
+      else
+        @index = i0
+        r0 = nil
+      end
+    end
+
+    node_cache[:branch_or_plugin][start_index] = r0
 
     r0
   end
@@ -536,23 +566,23 @@ module LogStashConfig
 
   module Plugin2
     def name
-      elements[1]
+      elements[0]
     end
 
     def _1
-      elements[2]
+      elements[1]
     end
 
     def _2
-      elements[5]
+      elements[3]
     end
 
     def attributes
-      elements[6]
+      elements[4]
     end
 
     def _3
-      elements[8]
+      elements[5]
     end
 
   end
@@ -569,114 +599,78 @@ module LogStashConfig
     end
 
     i0, s0 = index, []
-    r2 = _nt_comment
-    if r2
-      r1 = r2
-    else
-      r1 = instantiate_node(SyntaxNode,input, index...index)
-    end
+    r1 = _nt_name
     s0 << r1
     if r1
-      r3 = _nt_name
-      s0 << r3
-      if r3
-        r4 = _nt__
-        s0 << r4
-        if r4
-          if has_terminal?("{", false, index)
-            r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
-            @index += 1
-          else
-            terminal_parse_failure("{")
-            r5 = nil
-          end
-          s0 << r5
-          if r5
-            r7 = _nt_comment
+      r2 = _nt__
+      s0 << r2
+      if r2
+        if has_terminal?("{", false, index)
+          r3 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure("{")
+          r3 = nil
+        end
+        s0 << r3
+        if r3
+          r4 = _nt__
+          s0 << r4
+          if r4
+            i6, s6 = index, []
+            r7 = _nt_attribute
+            s6 << r7
             if r7
-              r6 = r7
-            else
-              r6 = instantiate_node(SyntaxNode,input, index...index)
-            end
-            s0 << r6
-            if r6
-              r8 = _nt__
-              s0 << r8
-              if r8
-                i10, s10 = index, []
-                r11 = _nt_attribute
-                s10 << r11
-                if r11
-                  s12, i12 = [], index
-                  loop do
-                    i13, s13 = index, []
-                    r14 = _nt_whitespace
-                    s13 << r14
-                    if r14
-                      r15 = _nt_attribute
-                      s13 << r15
-                    end
-                    if s13.last
-                      r13 = instantiate_node(SyntaxNode,input, i13...index, s13)
-                      r13.extend(Plugin0)
-                    else
-                      @index = i13
-                      r13 = nil
-                    end
-                    if r13
-                      s12 << r13
-                    else
-                      break
-                    end
-                  end
-                  r12 = instantiate_node(SyntaxNode,input, i12...index, s12)
-                  s10 << r12
-                end
-                if s10.last
-                  r10 = instantiate_node(SyntaxNode,input, i10...index, s10)
-                  r10.extend(Plugin1)
-                else
-                  @index = i10
-                  r10 = nil
-                end
+              s8, i8 = [], index
+              loop do
+                i9, s9 = index, []
+                r10 = _nt_whitespace
+                s9 << r10
                 if r10
-                  r9 = r10
+                  r11 = _nt_attribute
+                  s9 << r11
+                end
+                if s9.last
+                  r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+                  r9.extend(Plugin0)
                 else
-                  r9 = instantiate_node(SyntaxNode,input, index...index)
+                  @index = i9
+                  r9 = nil
                 end
-                s0 << r9
                 if r9
-                  r17 = _nt_comment
-                  if r17
-                    r16 = r17
-                  else
-                    r16 = instantiate_node(SyntaxNode,input, index...index)
-                  end
-                  s0 << r16
-                  if r16
-                    r18 = _nt__
-                    s0 << r18
-                    if r18
-                      if has_terminal?("}", false, index)
-                        r19 = instantiate_node(SyntaxNode,input, index...(index + 1))
-                        @index += 1
-                      else
-                        terminal_parse_failure("}")
-                        r19 = nil
-                      end
-                      s0 << r19
-                      if r19
-                        r21 = _nt_comment
-                        if r21
-                          r20 = r21
-                        else
-                          r20 = instantiate_node(SyntaxNode,input, index...index)
-                        end
-                        s0 << r20
-                      end
-                    end
-                  end
+                  s8 << r9
+                else
+                  break
                 end
+              end
+              r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+              s6 << r8
+            end
+            if s6.last
+              r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+              r6.extend(Plugin1)
+            else
+              @index = i6
+              r6 = nil
+            end
+            if r6
+              r5 = r6
+            else
+              r5 = instantiate_node(SyntaxNode,input, index...index)
+            end
+            s0 << r5
+            if r5
+              r12 = _nt__
+              s0 << r12
+              if r12
+                if has_terminal?("}", false, index)
+                  r13 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                  @index += 1
+                else
+                  terminal_parse_failure("}")
+                  r13 = nil
+                end
+                s0 << r13
               end
             end
           end
@@ -735,21 +729,20 @@ module LogStashConfig
 
   module Attribute0
     def name
-      elements[1]
+      elements[0]
     end
 
     def _1
-      elements[2]
+      elements[1]
     end
 
     def _2
-      elements[4]
+      elements[3]
     end
 
     def value
-      elements[5]
+      elements[4]
     end
-
   end
 
   def _nt_attribute
@@ -764,44 +757,26 @@ module LogStashConfig
     end
 
     i0, s0 = index, []
-    r2 = _nt_comment
-    if r2
-      r1 = r2
-    else
-      r1 = instantiate_node(SyntaxNode,input, index...index)
-    end
+    r1 = _nt_name
     s0 << r1
     if r1
-      r3 = _nt_name
-      s0 << r3
-      if r3
-        r4 = _nt__
-        s0 << r4
-        if r4
-          if has_terminal?("=>", false, index)
-            r5 = instantiate_node(SyntaxNode,input, index...(index + 2))
-            @index += 2
-          else
-            terminal_parse_failure("=>")
-            r5 = nil
-          end
-          s0 << r5
-          if r5
-            r6 = _nt__
-            s0 << r6
-            if r6
-              r7 = _nt_value
-              s0 << r7
-              if r7
-                r9 = _nt_comment
-                if r9
-                  r8 = r9
-                else
-                  r8 = instantiate_node(SyntaxNode,input, index...index)
-                end
-                s0 << r8
-              end
-            end
+      r2 = _nt__
+      s0 << r2
+      if r2
+        if has_terminal?("=>", false, index)
+          r3 = instantiate_node(SyntaxNode,input, index...(index + 2))
+          @index += 2
+        else
+          terminal_parse_failure("=>")
+          r3 = nil
+        end
+        s0 << r3
+        if r3
+          r4 = _nt__
+          s0 << r4
+          if r4
+            r5 = _nt_value
+            s0 << r5
           end
         end
       end
@@ -1154,11 +1129,11 @@ module LogStashConfig
     end
 
     def _2
-      elements[3]
+      elements[2]
     end
 
     def value
-      elements[4]
+      elements[3]
     end
   end
 
@@ -1171,11 +1146,11 @@ module LogStashConfig
 
   module Array2
     def _1
-      elements[2]
+      elements[1]
     end
 
     def _2
-      elements[5]
+      elements[3]
     end
 
   end
@@ -1201,104 +1176,77 @@ module LogStashConfig
     end
     s0 << r1
     if r1
-      r3 = _nt_comment
-      if r3
-        r2 = r3
-      else
-        r2 = instantiate_node(SyntaxNode,input, index...index)
-      end
+      r2 = _nt__
       s0 << r2
       if r2
-        r4 = _nt__
-        s0 << r4
-        if r4
-          i6, s6 = index, []
-          r7 = _nt_value
-          s6 << r7
-          if r7
-            s8, i8 = [], index
-            loop do
-              i9, s9 = index, []
-              r10 = _nt__
-              s9 << r10
-              if r10
-                if has_terminal?(",", false, index)
-                  r11 = instantiate_node(SyntaxNode,input, index...(index + 1))
-                  @index += 1
-                else
-                  terminal_parse_failure(",")
-                  r11 = nil
-                end
-                s9 << r11
-                if r11
-                  r13 = _nt_comment
-                  if r13
-                    r12 = r13
-                  else
-                    r12 = instantiate_node(SyntaxNode,input, index...index)
-                  end
-                  s9 << r12
-                  if r12
-                    r14 = _nt__
-                    s9 << r14
-                    if r14
-                      r15 = _nt_value
-                      s9 << r15
-                    end
-                  end
-                end
-              end
-              if s9.last
-                r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
-                r9.extend(Array0)
+        i4, s4 = index, []
+        r5 = _nt_value
+        s4 << r5
+        if r5
+          s6, i6 = [], index
+          loop do
+            i7, s7 = index, []
+            r8 = _nt__
+            s7 << r8
+            if r8
+              if has_terminal?(",", false, index)
+                r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                @index += 1
               else
-                @index = i9
+                terminal_parse_failure(",")
                 r9 = nil
               end
+              s7 << r9
               if r9
-                s8 << r9
-              else
-                break
-              end
-            end
-            r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
-            s6 << r8
-          end
-          if s6.last
-            r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
-            r6.extend(Array1)
-          else
-            @index = i6
-            r6 = nil
-          end
-          if r6
-            r5 = r6
-          else
-            r5 = instantiate_node(SyntaxNode,input, index...index)
-          end
-          s0 << r5
-          if r5
-            r17 = _nt_comment
-            if r17
-              r16 = r17
-            else
-              r16 = instantiate_node(SyntaxNode,input, index...index)
-            end
-            s0 << r16
-            if r16
-              r18 = _nt__
-              s0 << r18
-              if r18
-                if has_terminal?("]", false, index)
-                  r19 = instantiate_node(SyntaxNode,input, index...(index + 1))
-                  @index += 1
-                else
-                  terminal_parse_failure("]")
-                  r19 = nil
+                r10 = _nt__
+                s7 << r10
+                if r10
+                  r11 = _nt_value
+                  s7 << r11
                 end
-                s0 << r19
               end
             end
+            if s7.last
+              r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
+              r7.extend(Array0)
+            else
+              @index = i7
+              r7 = nil
+            end
+            if r7
+              s6 << r7
+            else
+              break
+            end
+          end
+          r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+          s4 << r6
+        end
+        if s4.last
+          r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
+          r4.extend(Array1)
+        else
+          @index = i4
+          r4 = nil
+        end
+        if r4
+          r3 = r4
+        else
+          r3 = instantiate_node(SyntaxNode,input, index...index)
+        end
+        s0 << r3
+        if r3
+          r12 = _nt__
+          s0 << r12
+          if r12
+            if has_terminal?("]", false, index)
+              r13 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
+            else
+              terminal_parse_failure("]")
+              r13 = nil
+            end
+            s0 << r13
           end
         end
       end
@@ -1318,11 +1266,11 @@ module LogStashConfig
 
   module Hash0
     def _1
-      elements[2]
+      elements[1]
     end
 
     def _2
-      elements[5]
+      elements[3]
     end
 
   end
@@ -1348,46 +1296,28 @@ module LogStashConfig
     end
     s0 << r1
     if r1
-      r3 = _nt_comment
-      if r3
-        r2 = r3
-      else
-        r2 = instantiate_node(SyntaxNode,input, index...index)
-      end
+      r2 = _nt__
       s0 << r2
       if r2
-        r4 = _nt__
-        s0 << r4
+        r4 = _nt_hashentries
         if r4
-          r6 = _nt_hashentries
-          if r6
-            r5 = r6
-          else
-            r5 = instantiate_node(SyntaxNode,input, index...index)
-          end
+          r3 = r4
+        else
+          r3 = instantiate_node(SyntaxNode,input, index...index)
+        end
+        s0 << r3
+        if r3
+          r5 = _nt__
           s0 << r5
           if r5
-            r8 = _nt_comment
-            if r8
-              r7 = r8
+            if has_terminal?("}", false, index)
+              r6 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
             else
-              r7 = instantiate_node(SyntaxNode,input, index...index)
+              terminal_parse_failure("}")
+              r6 = nil
             end
-            s0 << r7
-            if r7
-              r9 = _nt__
-              s0 << r9
-              if r9
-                if has_terminal?("}", false, index)
-                  r10 = instantiate_node(SyntaxNode,input, index...(index + 1))
-                  @index += 1
-                else
-                  terminal_parse_failure("}")
-                  r10 = nil
-                end
-                s0 << r10
-              end
-            end
+            s0 << r6
           end
         end
       end
@@ -1407,11 +1337,11 @@ module LogStashConfig
 
   module Hashentries0
     def whitespace
-      elements[1]
+      elements[0]
     end
 
     def hashentry
-      elements[2]
+      elements[1]
     end
   end
 
@@ -1440,20 +1370,11 @@ module LogStashConfig
       s2, i2 = [], index
       loop do
         i3, s3 = index, []
-        r5 = _nt_comment
-        if r5
-          r4 = r5
-        else
-          r4 = instantiate_node(SyntaxNode,input, index...index)
-        end
+        r4 = _nt_whitespace
         s3 << r4
         if r4
-          r6 = _nt_whitespace
-          s3 << r6
-          if r6
-            r7 = _nt_hashentry
-            s3 << r7
-          end
+          r5 = _nt_hashentry
+          s3 << r5
         end
         if s3.last
           r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
@@ -1672,6 +1593,20 @@ module LogStashConfig
 
   module If0
     def _1
+      elements[0]
+    end
+
+    def branch_or_plugin
+      elements[1]
+    end
+
+    def _2
+      elements[2]
+    end
+  end
+
+  module If1
+    def _1
       elements[1]
     end
 
@@ -1681,18 +1616,6 @@ module LogStashConfig
 
     def _2
       elements[3]
-    end
-
-    def _3
-      elements[5]
-    end
-
-    def plugins
-      elements[6]
-    end
-
-    def _4
-      elements[7]
     end
 
   end
@@ -1736,25 +1659,43 @@ module LogStashConfig
             end
             s0 << r5
             if r5
-              r6 = _nt__
-              s0 << r6
-              if r6
-                r7 = _nt_plugins
-                s0 << r7
-                if r7
-                  r8 = _nt__
-                  s0 << r8
-                  if r8
-                    if has_terminal?("}", false, index)
-                      r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
-                      @index += 1
-                    else
-                      terminal_parse_failure("}")
-                      r9 = nil
-                    end
-                    s0 << r9
+              s6, i6 = [], index
+              loop do
+                i7, s7 = index, []
+                r8 = _nt__
+                s7 << r8
+                if r8
+                  r9 = _nt_branch_or_plugin
+                  s7 << r9
+                  if r9
+                    r10 = _nt__
+                    s7 << r10
                   end
                 end
+                if s7.last
+                  r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
+                  r7.extend(If0)
+                else
+                  @index = i7
+                  r7 = nil
+                end
+                if r7
+                  s6 << r7
+                else
+                  break
+                end
+              end
+              r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+              s0 << r6
+              if r6
+                if has_terminal?("}", false, index)
+                  r11 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                  @index += 1
+                else
+                  terminal_parse_failure("}")
+                  r11 = nil
+                end
+                s0 << r11
               end
             end
           end
@@ -1763,7 +1704,7 @@ module LogStashConfig
     end
     if s0.last
       r0 = instantiate_node(LogStash::Config::AST::If,input, i0...index, s0)
-      r0.extend(If0)
+      r0.extend(If1)
     else
       @index = i0
       r0 = nil
@@ -1776,6 +1717,20 @@ module LogStashConfig
 
   module Elsif0
     def _1
+      elements[0]
+    end
+
+    def branch_or_plugin
+      elements[1]
+    end
+
+    def _2
+      elements[2]
+    end
+  end
+
+  module Elsif1
+    def _1
       elements[1]
     end
 
@@ -1785,18 +1740,6 @@ module LogStashConfig
 
     def _2
       elements[3]
-    end
-
-    def _3
-      elements[5]
-    end
-
-    def plugins
-      elements[6]
-    end
-
-    def _4
-      elements[7]
     end
 
   end
@@ -1840,25 +1783,43 @@ module LogStashConfig
             end
             s0 << r5
             if r5
-              r6 = _nt__
-              s0 << r6
-              if r6
-                r7 = _nt_plugins
-                s0 << r7
-                if r7
-                  r8 = _nt__
-                  s0 << r8
-                  if r8
-                    if has_terminal?("}", false, index)
-                      r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
-                      @index += 1
-                    else
-                      terminal_parse_failure("}")
-                      r9 = nil
-                    end
-                    s0 << r9
+              s6, i6 = [], index
+              loop do
+                i7, s7 = index, []
+                r8 = _nt__
+                s7 << r8
+                if r8
+                  r9 = _nt_branch_or_plugin
+                  s7 << r9
+                  if r9
+                    r10 = _nt__
+                    s7 << r10
                   end
                 end
+                if s7.last
+                  r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
+                  r7.extend(Elsif0)
+                else
+                  @index = i7
+                  r7 = nil
+                end
+                if r7
+                  s6 << r7
+                else
+                  break
+                end
+              end
+              r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+              s0 << r6
+              if r6
+                if has_terminal?("}", false, index)
+                  r11 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                  @index += 1
+                else
+                  terminal_parse_failure("}")
+                  r11 = nil
+                end
+                s0 << r11
               end
             end
           end
@@ -1867,7 +1828,7 @@ module LogStashConfig
     end
     if s0.last
       r0 = instantiate_node(LogStash::Config::AST::Elsif,input, i0...index, s0)
-      r0.extend(Elsif0)
+      r0.extend(Elsif1)
     else
       @index = i0
       r0 = nil
@@ -1880,19 +1841,21 @@ module LogStashConfig
 
   module Else0
     def _1
+      elements[0]
+    end
+
+    def branch_or_plugin
       elements[1]
     end
 
     def _2
-      elements[3]
+      elements[2]
     end
+  end
 
-    def plugins
-      elements[4]
-    end
-
-    def _3
-      elements[5]
+  module Else1
+    def _
+      elements[1]
     end
 
   end
@@ -1930,32 +1893,50 @@ module LogStashConfig
         end
         s0 << r3
         if r3
-          r4 = _nt__
-          s0 << r4
-          if r4
-            r5 = _nt_plugins
-            s0 << r5
-            if r5
-              r6 = _nt__
-              s0 << r6
-              if r6
-                if has_terminal?("}", false, index)
-                  r7 = instantiate_node(SyntaxNode,input, index...(index + 1))
-                  @index += 1
-                else
-                  terminal_parse_failure("}")
-                  r7 = nil
-                end
-                s0 << r7
+          s4, i4 = [], index
+          loop do
+            i5, s5 = index, []
+            r6 = _nt__
+            s5 << r6
+            if r6
+              r7 = _nt_branch_or_plugin
+              s5 << r7
+              if r7
+                r8 = _nt__
+                s5 << r8
               end
             end
+            if s5.last
+              r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+              r5.extend(Else0)
+            else
+              @index = i5
+              r5 = nil
+            end
+            if r5
+              s4 << r5
+            else
+              break
+            end
+          end
+          r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
+          s0 << r4
+          if r4
+            if has_terminal?("}", false, index)
+              r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
+            else
+              terminal_parse_failure("}")
+              r9 = nil
+            end
+            s0 << r9
           end
         end
       end
     end
     if s0.last
       r0 = instantiate_node(LogStash::Config::AST::Else,input, i0...index, s0)
-      r0.extend(Else0)
+      r0.extend(Else1)
     else
       @index = i0
       r0 = nil
@@ -2151,6 +2132,7 @@ module LogStashConfig
     end
     if r1
       r0 = r1
+      r0.extend(LogStash::Config::AST::Expression)
     else
       i7, s7 = index, []
       if has_terminal?("!", false, index)
@@ -2178,6 +2160,7 @@ module LogStashConfig
       end
       if r7
         r0 = r7
+        r0.extend(LogStash::Config::AST::Expression)
       else
         i11, s11 = index, []
         r12 = _nt_rvalue
@@ -2199,7 +2182,7 @@ module LogStashConfig
           end
         end
         if s11.last
-          r11 = instantiate_node(LogStash::Config::AST::Expression,input, i11...index, s11)
+          r11 = instantiate_node(SyntaxNode,input, i11...index, s11)
           r11.extend(Expression2)
         else
           @index = i11
@@ -2207,9 +2190,16 @@ module LogStashConfig
         end
         if r11
           r0 = r11
+          r0.extend(LogStash::Config::AST::Expression)
         else
-          @index = i0
-          r0 = nil
+          r17 = _nt_rvalue
+          if r17
+            r0 = r17
+            r0.extend(LogStash::Config::AST::Expression)
+          else
+            @index = i0
+            r0 = nil
+          end
         end
       end
     end
@@ -2239,17 +2229,202 @@ module LogStashConfig
       if r2
         r0 = r2
       else
-        r3 = _nt_array
+        r3 = _nt_selector
         if r3
           r0 = r3
         else
-          @index = i0
-          r0 = nil
+          r4 = _nt_array
+          if r4
+            r0 = r4
+          else
+            r5 = _nt_method_call
+            if r5
+              r0 = r5
+            else
+              @index = i0
+              r0 = nil
+            end
+          end
         end
       end
     end
 
     node_cache[:rvalue][start_index] = r0
+
+    r0
+  end
+
+  module MethodCall0
+    def _1
+      elements[0]
+    end
+
+    def _2
+      elements[2]
+    end
+
+    def rvalue
+      elements[3]
+    end
+  end
+
+  module MethodCall1
+    def rvalue
+      elements[0]
+    end
+
+  end
+
+  module MethodCall2
+    def method
+      elements[0]
+    end
+
+    def _1
+      elements[1]
+    end
+
+    def _2
+      elements[3]
+    end
+
+    def _3
+      elements[5]
+    end
+
+  end
+
+  def _nt_method_call
+    start_index = index
+    if node_cache[:method_call].has_key?(index)
+      cached = node_cache[:method_call][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    r1 = _nt_method
+    s0 << r1
+    if r1
+      r2 = _nt__
+      s0 << r2
+      if r2
+        if has_terminal?("(", false, index)
+          r3 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure("(")
+          r3 = nil
+        end
+        s0 << r3
+        if r3
+          r4 = _nt__
+          s0 << r4
+          if r4
+            i6, s6 = index, []
+            r7 = _nt_rvalue
+            s6 << r7
+            if r7
+              s8, i8 = [], index
+              loop do
+                i9, s9 = index, []
+                r10 = _nt__
+                s9 << r10
+                if r10
+                  if has_terminal?(",", false, index)
+                    r11 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                    @index += 1
+                  else
+                    terminal_parse_failure(",")
+                    r11 = nil
+                  end
+                  s9 << r11
+                  if r11
+                    r12 = _nt__
+                    s9 << r12
+                    if r12
+                      r13 = _nt_rvalue
+                      s9 << r13
+                    end
+                  end
+                end
+                if s9.last
+                  r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+                  r9.extend(MethodCall0)
+                else
+                  @index = i9
+                  r9 = nil
+                end
+                if r9
+                  s8 << r9
+                else
+                  break
+                end
+              end
+              r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+              s6 << r8
+            end
+            if s6.last
+              r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+              r6.extend(MethodCall1)
+            else
+              @index = i6
+              r6 = nil
+            end
+            if r6
+              r5 = r6
+            else
+              r5 = instantiate_node(SyntaxNode,input, index...index)
+            end
+            s0 << r5
+            if r5
+              r14 = _nt__
+              s0 << r14
+              if r14
+                if has_terminal?(")", false, index)
+                  r15 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                  @index += 1
+                else
+                  terminal_parse_failure(")")
+                  r15 = nil
+                end
+                s0 << r15
+              end
+            end
+          end
+        end
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(MethodCall2)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:method_call][start_index] = r0
+
+    r0
+  end
+
+  def _nt_method
+    start_index = index
+    if node_cache[:method].has_key?(index)
+      cached = node_cache[:method][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    r0 = _nt_bareword
+
+    node_cache[:method][start_index] = r0
 
     r0
   end
@@ -2275,6 +2450,7 @@ module LogStashConfig
     end
     if r1
       r0 = r1
+      r0.extend(LogStash::Config::AST::ComparisonOperator)
     else
       if has_terminal?("!=", false, index)
         r2 = instantiate_node(SyntaxNode,input, index...(index + 2))
@@ -2285,6 +2461,7 @@ module LogStashConfig
       end
       if r2
         r0 = r2
+        r0.extend(LogStash::Config::AST::ComparisonOperator)
       else
         if has_terminal?("<", false, index)
           r3 = instantiate_node(SyntaxNode,input, index...(index + 1))
@@ -2295,6 +2472,7 @@ module LogStashConfig
         end
         if r3
           r0 = r3
+          r0.extend(LogStash::Config::AST::ComparisonOperator)
         else
           if has_terminal?(">", false, index)
             r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
@@ -2305,6 +2483,7 @@ module LogStashConfig
           end
           if r4
             r0 = r4
+            r0.extend(LogStash::Config::AST::ComparisonOperator)
           else
             if has_terminal?("<=", false, index)
               r5 = instantiate_node(SyntaxNode,input, index...(index + 2))
@@ -2315,6 +2494,7 @@ module LogStashConfig
             end
             if r5
               r0 = r5
+              r0.extend(LogStash::Config::AST::ComparisonOperator)
             else
               if has_terminal?(">=", false, index)
                 r6 = instantiate_node(SyntaxNode,input, index...(index + 2))
@@ -2325,6 +2505,7 @@ module LogStashConfig
               end
               if r6
                 r0 = r6
+                r0.extend(LogStash::Config::AST::ComparisonOperator)
               else
                 if has_terminal?("=~", false, index)
                   r7 = instantiate_node(SyntaxNode,input, index...(index + 2))
@@ -2335,6 +2516,7 @@ module LogStashConfig
                 end
                 if r7
                   r0 = r7
+                  r0.extend(LogStash::Config::AST::ComparisonOperator)
                 else
                   if has_terminal?("!~", false, index)
                     r8 = instantiate_node(SyntaxNode,input, index...(index + 2))
@@ -2345,9 +2527,10 @@ module LogStashConfig
                   end
                   if r8
                     r0 = r8
+                    r0.extend(LogStash::Config::AST::ComparisonOperator)
                   else
                     if has_terminal?("in", false, index)
-                      r9 = instantiate_node(LogStash::Config::AST::Comparison,input, index...(index + 2))
+                      r9 = instantiate_node(SyntaxNode,input, index...(index + 2))
                       @index += 2
                     else
                       terminal_parse_failure("in")
@@ -2355,6 +2538,7 @@ module LogStashConfig
                     end
                     if r9
                       r0 = r9
+                      r0.extend(LogStash::Config::AST::ComparisonOperator)
                     else
                       @index = i0
                       r0 = nil
@@ -2394,6 +2578,7 @@ module LogStashConfig
     end
     if r1
       r0 = r1
+      r0.extend(LogStash::Config::AST::BooleanOperator)
     else
       if has_terminal?("or", false, index)
         r2 = instantiate_node(SyntaxNode,input, index...(index + 2))
@@ -2404,6 +2589,7 @@ module LogStashConfig
       end
       if r2
         r0 = r2
+        r0.extend(LogStash::Config::AST::BooleanOperator)
       else
         if has_terminal?("xor", false, index)
           r3 = instantiate_node(SyntaxNode,input, index...(index + 3))
@@ -2414,9 +2600,10 @@ module LogStashConfig
         end
         if r3
           r0 = r3
+          r0.extend(LogStash::Config::AST::BooleanOperator)
         else
           if has_terminal?("nand", false, index)
-            r4 = instantiate_node(LogStash::Config::AST::Boolean_operator,input, index...(index + 4))
+            r4 = instantiate_node(SyntaxNode,input, index...(index + 4))
             @index += 4
           else
             terminal_parse_failure("nand")
@@ -2424,6 +2611,7 @@ module LogStashConfig
           end
           if r4
             r0 = r4
+            r0.extend(LogStash::Config::AST::BooleanOperator)
           else
             @index = i0
             r0 = nil
@@ -2495,19 +2683,11 @@ module LogStashConfig
     if r1
       s2, i2 = [], index
       loop do
-        i3 = index
-        if has_terminal?("]", false, index)
-          r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
+        if has_terminal?('\G[^\\]]', true, index)
+          r3 = true
           @index += 1
         else
-          terminal_parse_failure("]")
-          r4 = nil
-        end
-        if r4
           r3 = nil
-        else
-          @index = i3
-          r3 = instantiate_node(SyntaxNode,input, index...index)
         end
         if r3
           s2 << r3
@@ -2524,13 +2704,13 @@ module LogStashConfig
       s0 << r2
       if r2
         if has_terminal?("]", false, index)
-          r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
           @index += 1
         else
           terminal_parse_failure("]")
-          r5 = nil
+          r4 = nil
         end
-        s0 << r5
+        s0 << r4
       end
     end
     if s0.last
