@@ -49,12 +49,16 @@ Now add the code:
 
       public
       def filter(event)
+        # return nothing unless there's an actual filter event
+        return unless filter?(event)
         if @message
           # Replace the event message with our message as configured in the
           # config file.
           # If no message is specified, do nothing.
           event.message = @message
         end
+        # filter_matched should go in the last line of our successful code 
+        filter_matched(event)
       end # def filter
     end # class LogStash::Filters::Foo
 
