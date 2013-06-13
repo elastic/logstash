@@ -111,7 +111,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
   def to_timestamp(wmi_time)
     result = ""
     # parse the utc date string
-    /(?<w_date>\d{8})(?<w_time>\d{6})\.\d{6}(?<w_sign>[+-])(?<w_diff>\d{3})/ =~ wmi_time
+    /(?<w_date>\d{8})(?<w_time>\d{6})\.\d{6}(?<w_sign>[\+-])(?<w_diff>\d{3})/ =~ wmi_time
     result = "#{w_date}T#{w_time}#{w_sign}"
     # the offset is represented by the difference, in minutes, 
     # between the local time zone and Greenwich Mean Time (GMT).
