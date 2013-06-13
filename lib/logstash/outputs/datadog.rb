@@ -25,7 +25,7 @@ class LogStash::Outputs::Datadog < LogStash::Outputs::Base
   config :date_happened, :validate => :string
 
   # Source type name
-  config :source_type_name, :validate => ["nagios", "hudson", "jenkins", "user", "my apps", "feed", "chef", "puppet", "git", "bitbucket"], :default => "my apps"
+  config :source_type_name, :validate => ["nagios", "hudson", "jenkins", "user", "my apps", "feed", "chef", "puppet", "git", "bitbucket", "fabric", "capistrano"], :default => "my apps"
  
   # Alert type
   config :alert_type, :validate => ["info", "error", "warning", "success"]
