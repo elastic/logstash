@@ -16,6 +16,7 @@ require "socket"
 #       }
 #       wmi {
 #         query => "select PercentProcessorTime from Win32_PerfFormattedData_PerfOS_Processor where name = '_Total'"
+#       }
 #     }
 class LogStash::Inputs::WMI < LogStash::Inputs::Base
 
