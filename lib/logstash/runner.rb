@@ -91,12 +91,6 @@ class LogStash::Runner
     command = args.shift
     commands = {
       "version" => lambda { emit_version(args) },
-      "agent" => lambda do
-        require "logstash/agent"
-        agent = LogStash::Agent.new
-        @runners << agent
-        return agent.run(args)
-      end,
       "web" => lambda do
         require "logstash/web/runner"
         web = LogStash::Web::Runner.new
@@ -173,7 +167,7 @@ class LogStash::Runner
         require "pry"
         return binding.pry
       end,
-      "agent2" => lambda do
+      "agent" => lambda do
         require "logstash/agent2"
         # Hack up a runner
         runner = Class.new do
@@ -182,7 +176,7 @@ class LogStash::Runner
           end
           def run
             @thread = Thread.new do
-              @result = LogStash::Agent2.run($0, @args)
+              @result = LogStash::Agent.run($0, @args)
             end
           end
           def wait
