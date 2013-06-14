@@ -22,23 +22,8 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   public
   def register
     @print_method = method(:ap) rescue method(:p)
-    if @debug
-      case @debug_format
-        when "ruby"
-          @codec.on_event do |event|
-            @print_method.call(event)
-          end
-        when "dots"
-          @codec.on_event do |event|
-            $stdout.write(".")
-          end
-        else
-          raise "unknown debug_format #{@debug_format}, this should never happen"
-      end
-    else
-      @codec.on_event do |event|
-        puts event
-      end
+    @codec.on_event do |event|
+      $stdout.write(event)
     end
   end
 
