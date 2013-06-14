@@ -166,13 +166,7 @@ class LogStash::Pipeline
       event = @filter_to_output.pop
       break if event == ShutdownSignal
 
-      begin
-        output(event)
-      rescue => e
-          @logger.error("Exception in plugin #{output.class}",
-                        "plugin" => output.inspect,
-                        "exception" => e, "stack" => e.backtrace)
-      end
+      output(event)
     end # while true
     @outputs.each(&:teardown)
   end # def filterworker
@@ -194,6 +188,7 @@ class LogStash::Pipeline
   end # def shutdown
 
   def plugin(plugin_type, name, *args)
+    args << {} if args.empty?
     klass = LogStash::Plugin.lookup(plugin_type, name)
     return klass.new(*args)
   end
