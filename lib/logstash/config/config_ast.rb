@@ -51,12 +51,8 @@ module LogStash; module Config; module AST
     def compile_initializer
       generate_variables
       code = []
-      code << "@inputs = []"
-      code << "@filters = []"
-      code << "@outputs = []"
       @variables.collect do |plugin, name|
         code << "#{name} = #{plugin.compile_initializer}"
-        code << "#{name}.register"
         code << "@#{plugin.plugin_type}s << #{name}"
       end
       return code.join("\n")
