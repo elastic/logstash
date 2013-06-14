@@ -1,7 +1,7 @@
 require "clamp" # gem 'clamp'
 require "logstash/errors"
 
-class LogStash::Agent2 < Clamp::Command
+class LogStash::Agent < Clamp::Command
   option ["-f", "--config"], "CONFIG_PATH",
     I18n.t("logstash.agent.flag.config"),
     :attribute_name => :config_path
@@ -241,4 +241,4 @@ class LogStash::Agent2 < Clamp::Command
     end
     return config
   end # def load_config
-end # class LogStash::Agent2
+end # class LogStash::Agent
