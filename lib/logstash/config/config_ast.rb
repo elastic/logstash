@@ -18,8 +18,8 @@ class Treetop::Runtime::SyntaxNode
     return results
   end
 
-  def recursive_select(results=[], klass)
-    return recursive_inject(results) { |e| e.is_a?(klass) }
+  def recursive_select(klass)
+    return recursive_inject { |e| e.is_a?(klass) }
   end
 
   def recursive_inject_parent(results=[], &block)
@@ -46,37 +46,40 @@ module LogStash; module Config; module AST
   class Comment < Node; end
   class Whitespace < Node; end
   class PluginSection < Node
-
+    @@i = 0
     # Generate ruby code to initialize all the plugins.
     def compile_initializer
-      @variables = generate_variables
-      return @variables.collect do |name, plugin|
-        "#{name} = #{plugin.compile}"
-      end.join("")
+      generate_variables
+      code = []
+      code << "@inputs = []"
+      code << "@filters = []"
+      code << "@outputs = []"
+      @variables.collect do |plugin, name|
+        code << "#{name} = #{plugin.compile_initializer}"
+        code << "#{name}.register"
+        code << "@#{plugin.plugin_type}s << #{name}"
+      end
+      return code.join("\n")
+    end
+
+    def variable(object)
+      generate_variables
+      return @variables[object]
     end
 
     def generate_variables
-      variables = {}
+      return if !@variables.nil?
+      @variables = {}
       plugins = recursive_select(Plugin)
-      i = 0
 
       plugins.each do |plugin|
-        i += 1
-        var = "#{plugin.plugin_type}_#{plugin.plugin_name}_#{i}"
-        variables[var] = plugin
+        # Unique number for every plugin.
+        @@i += 1
+        # store things as ivars, like @filter_grok_3
+        var = "@#{plugin.plugin_type}_#{plugin.plugin_name}_#{@@i}"
+        @variables[plugin] = var
       end
-      return variables
-    end
-
-    def compile_exec
-      if plugin_type.text_value == "input"
-        # Generate list of plugins
-      elsif ["filter", "output"].include?(plugin_type.text_value)
-        # Generate code for 
-
-      else
-        # TODO(sissel): Fail, unknown plugin type
-      end
+      return @variables
     end
   end
 
@@ -90,25 +93,42 @@ module LogStash; module Config; module AST
       return name.text_value
     end
 
-    def compile
-      # Unless we're inside a Plugin, then any 'plugin object is actually a
-      # codec.
-      is_codec = recursive_select_parent(Plugin).any?
+    def variable_name
+      return recursive_select_parent(PluginSection).first.variable(self)
+    end
 
-      if is_codec
+    def compile_initializer
+      # If any parent is a Plugin, this must be a codec.
+      if recursive_select_parent(Plugin).any?
         type = "codec"
       else
         type = plugin_type
       end
 
       if attributes.elements.nil?
-        return "plugin(#{type.inspect}, #{plugin_name.inspect})" << (is_codec ? "" : "\n")
+        return "plugin(#{type.inspect}, #{plugin_name.inspect})" << (type == "codec" ? "" : "\n")
       else
-        return "plugin(#{type.inspect}, #{plugin_name.inspect}, " << attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?).join(", ") << ")" << (is_codec ? "" : "\n")
+        return "plugin(#{type.inspect}, #{plugin_name.inspect}, " << attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?).join(", ") << ")" << (type == "codec" ? "" : "\n")
       end
     end
 
+    def compile
+      case plugin_type
+        when "input"
+          return "start_input(#{variable_name})"
+        when "filter"
+          return [
+            "#{variable_name}.filter(event)",
+            "return if event.cancelled?"
+          ].join("\n")
+        when "output"
+          return [
+            "#{variable_name}.receive(event)",
+          ].join("\n")
+      end
+    end
   end
+
   class Name < Node
     def compile
       return text_value.inspect
@@ -163,21 +183,21 @@ module LogStash; module Config; module AST
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
       return "if #{condition.compile}\n" \
-        << children.collect(&:compile).map { |s| "  " + s }.join("")
+        << children.collect(&:compile).map { |s| s.split("\n").map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
   class Elsif < Node
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
       return "elsif #{condition.compile}\n" \
-        << "  #{children.collect(&:compile).join("\n")}"
+        << children.collect(&:compile).map { |s| s.split("\n").map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
   class Else < Node
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
       return "else\n" \
-        << "  #{children.collect(&:compile).join("\n")}"
+        << children.collect(&:compile).map { |s| s.split("\n").map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
 

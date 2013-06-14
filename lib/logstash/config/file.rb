@@ -30,14 +30,9 @@ class LogStash::Config::File
     return klass.new(*args)
   end
 
-  def each(type=nil, &block)
-    plugins = @config.recursive_select { |e| e.is_a?(LogStash::Config::AST::Plugin) }
-    plugins.each do |ast|
-      next if !type.nil? && type != ast.plugin_type
-      yield eval(ast.compile)
-    end
-  end # def each
-
+  def each
+    @config.recursive_select(LogStash::Config::AST::Plugin)
+  end
 end #  class LogStash::Config::Parser
 
 #agent.config(cfg)
