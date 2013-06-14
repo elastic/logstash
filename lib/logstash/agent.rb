@@ -111,7 +111,9 @@ class LogStash::Agent < Clamp::Command
     end
 
     # Was the -v or --v flag given? Show all gems, too.
-    show_gems if [:info, :debug].include?(verbosity?)
+    if [:info, :debug].include?(verbosity?) || debug? || verbose?
+      show_gems 
+    end
   end # def show_version
 
   def show_version_logstash
