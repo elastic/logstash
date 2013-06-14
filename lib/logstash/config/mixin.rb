@@ -233,6 +233,8 @@ module LogStash::Config::Mixin
       is_valid = true
 
       # string/symbols are first, then regexes.
+      # TODO(sissel): this can probably go away now that regexp 'params' are no
+      # longer desired.
       config_keys = @config.keys.sort do |a,b|
         CONFIGSORT[a.class] <=> CONFIGSORT[b.class] 
       end
