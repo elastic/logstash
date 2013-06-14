@@ -2,7 +2,7 @@ require "rack/handler/ftw" # gem ftw
 require "ftw" # gem ftw
 require "sinatra/base" # gem sinatra
 require "optparse"
-require "mime/type"
+require "mime/types"
 
 class Rack::Handler::FTW
   alias_method :handle_connection_, :handle_connection

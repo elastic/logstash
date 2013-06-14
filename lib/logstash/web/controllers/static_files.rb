@@ -1,5 +1,5 @@
 require "sinatra/base"
-require "mime/type"
+require "mime/types"
 
 class LogStash::Web::Server < Sinatra::Base
   get '/js/*' do static_file end
