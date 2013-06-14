@@ -168,7 +168,7 @@ class LogStash::Runner
         return binding.pry
       end,
       "agent" => lambda do
-        require "logstash/agent2"
+        require "logstash/agent"
         # Hack up a runner
         runner = Class.new do
           def initialize(args)
