@@ -1,6 +1,8 @@
 
 $START = Time.now
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
+
+Thread.abort_on_exception = true
 if ENV["PROFILE_BAD_LOG_CALLS"] || $DEBUGLIST.include?("log")
   # Set PROFILE_BAD_LOG_CALLS=1 in your environment if you want
   # to track down logger calls that cause performance problems
