@@ -12,6 +12,7 @@ module LogStash::Codecs
     def initialize(params={})
       super
       config_init(params)
+      register if respond_to?(:register)
     end
 
     public
