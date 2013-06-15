@@ -56,13 +56,17 @@ module LogStash
             e = { "message" => e } if e.is_a?(String)
             next LogStash::Event.new(e)
           end
-          
+
           results = []
           count = 0
           pipeline.instance_eval { @filters.each(&:register) }
           event.each do |e|
-            pipeline.filter(e)
-            results << e unless e.cancelled?
+            extra = []
+            pipeline.filter(e) do |new_event|
+              extra << new_event
+            end
+            results << e if !e.cancelled?
+            results += extra.reject(&:cancelled?)
           end
 
           # TODO(sissel): pipeline flush needs to be implemented.
@@ -87,7 +91,7 @@ module LogStash
 
     def agent(&block)
       @agent_count ||= 0
-      require "logstash/agent"
+      require "logstash/pipeline"
 
       # scoping is hard, let's go shopping!
       config_str = @config_str

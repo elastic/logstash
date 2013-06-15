@@ -59,12 +59,16 @@ module LogStash; module Config; module AST
       ["filter", "output"].each do |type|
         definitions << "def #{type}(event)"
         if type == "filter"
-          definitions << "  events = [event]"
+          definitions << "  extra_events = []"
         end
 
         definitions << "  @logger.info(\"#{type} received\", :event => event)"
         sections.select { |s| s.plugin_type.text_value == type }.each do |s|
           definitions << s.compile.split("\n").map { |e| "  #{e}" }.join("\n")
+        end
+
+        if type == "filter"
+          definitions << "  extra_events.each { |e| yield e }"
         end
         definitions << "end"
       end
@@ -114,7 +118,11 @@ module LogStash; module Config; module AST
   class Plugins < Node; end
   class Plugin < Node
     def plugin_type
-      return recursive_select_parent(PluginSection).first.plugin_type.text_value
+      if recursive_select_parent(Plugin).any?
+        return "codec"
+      else
+        return recursive_select_parent(PluginSection).first.plugin_type.text_value
+      end
     end
 
     def plugin_name
@@ -127,19 +135,14 @@ module LogStash; module Config; module AST
 
     def compile_initializer
       # If any parent is a Plugin, this must be a codec.
-      if recursive_select_parent(Plugin).any?
-        type = "codec"
-      else
-        type = plugin_type
-      end
 
       if attributes.elements.nil?
-        return "plugin(#{type.inspect}, #{plugin_name.inspect})" << (type == "codec" ? "" : "\n")
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect})" << (plugin_type == "codec" ? "" : "\n")
       else
         settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
 
         attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
-        return "plugin(#{type.inspect}, #{plugin_name.inspect}, #{attributes_code})" << (type == "codec" ? "" : "\n")
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})" << (plugin_type == "codec" ? "" : "\n")
       end
     end
 
@@ -150,17 +153,27 @@ module LogStash; module Config; module AST
         when "filter"
           return [
             "newevents = []",
-            "events.each do |event|",
+            "extra_events.each do |event|",
             "  #{variable_name}.filter(event) do |newevent|",
             "    newevents << newevent",
             "  end",
             "end",
-            "events += newevents",
-            "events = events.reject(&:cancelled?)",
-            "return if events.empty?",
+            "extra_events += newevents",
+
+            "#{variable_name}.filter(event) do |newevent|",
+            "  extra_events << newevent",
+            "end",
+            "if event.cancelled?",
+            "  extra_events.each { |e| yield e }",
+            "  return",
+            "end",
           ].map { |l| "#{l}\n" }.join("")
         when "output"
           return "#{variable_name}.receive(event)"
+        when "codec"
+          settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
+          attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
+          return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})"
       end
     end
   end

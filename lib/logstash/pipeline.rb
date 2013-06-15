@@ -10,14 +10,21 @@ class LogStash::Pipeline
   class ShutdownSignal < StandardError; end
 
   def initialize(configstr)
+    @logger = Cabin::Channel.get(LogStash)
     grammar = LogStashConfigParser.new
     @config = grammar.parse(configstr)
     if @config.nil?
       raise LogStash::ConfigurationError, grammar.failure_reason
     end
 
-    #puts (@config.compile)
-    eval(@config.compile)
+    # This will compile the config to ruby and evaluate the resulting code.
+    # The code will initialize all the plugins and define the
+    # filter and output methods.
+    code = @config.compile
+    # The config code is hard to represent as a log message...
+    # So just print it.
+    puts code if @logger.debug?
+    eval(code)
 
     @input_to_filter = SizedQueue.new(20)
 
@@ -27,8 +34,6 @@ class LogStash::Pipeline
     else
       @filter_to_output = SizedQueue.new(20)
     end
-
-    @logger = Cabin::Channel.get(LogStash)
 
   end # def initialize
 
@@ -139,9 +144,15 @@ class LogStash::Pipeline
       while true
         event = @input_to_filter.pop
         break if event == ShutdownSignal
-        filter(event)
-        next if event.cancelled?
-        @filter_to_output.push(event)
+
+        events = []
+        filter(event) do |newevent|
+          events << newevent
+        end
+        events.each do |event|
+          next if event.cancelled?
+          @filter_to_output.push(event)
+        end
       end
     rescue => e
       @logger.error("Exception in plugin #{plugin.class}",
