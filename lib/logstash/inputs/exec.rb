@@ -26,7 +26,6 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
   
   public
   def register
-    enable_codecs
     @logger.info("Registering Exec Input", :type => @type,
                  :command => @command, :interval => @interval)
   end # def register

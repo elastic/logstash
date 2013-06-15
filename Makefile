@@ -56,7 +56,7 @@ endif
 # Compile config grammar (ragel -> ruby)
 .PHONY: compile-grammar
 compile-grammar: lib/logstash/config/grammar.rb
-lib/logstash/config/grammar.rb: lib/logstash/config/grammar.rl
+lib/logstash/config/grammar.rb: lib/logstash/config/grammar.treetop
 	$(QUIET)$(MAKE) -C lib/logstash/config grammar.rb
 
 .PHONY: clean

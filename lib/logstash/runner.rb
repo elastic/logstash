@@ -1,6 +1,8 @@
 
 $START = Time.now
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
+
+Thread.abort_on_exception = true
 if ENV["PROFILE_BAD_LOG_CALLS"] || $DEBUGLIST.include?("log")
   # Set PROFILE_BAD_LOG_CALLS=1 in your environment if you want
   # to track down logger calls that cause performance problems
@@ -89,12 +91,6 @@ class LogStash::Runner
     command = args.shift
     commands = {
       "version" => lambda { emit_version(args) },
-      "agent" => lambda do
-        require "logstash/agent"
-        agent = LogStash::Agent.new
-        @runners << agent
-        return agent.run(args)
-      end,
       "web" => lambda do
         require "logstash/web/runner"
         web = LogStash::Web::Runner.new
@@ -171,8 +167,8 @@ class LogStash::Runner
         require "pry"
         return binding.pry
       end,
-      "agent2" => lambda do
-        require "logstash/agent2"
+      "agent" => lambda do
+        require "logstash/agent"
         # Hack up a runner
         runner = Class.new do
           def initialize(args)
@@ -180,7 +176,7 @@ class LogStash::Runner
           end
           def run
             @thread = Thread.new do
-              @result = LogStash::Agent2.run($0, @args)
+              @result = LogStash::Agent.run($0, @args)
             end
           end
           def wait

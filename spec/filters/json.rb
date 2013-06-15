@@ -33,7 +33,6 @@ describe LogStash::Filters::Json do
     CONFIG
 
     sample '{ "hello": "world", "list": [ 1, 2, 3 ], "hash": { "k": "v" } }' do
-      puts subject.to_json
       insist { subject["data"]["hello"] } == "world"
       insist { subject["data"]["list" ] } == [1,2,3]
       insist { subject["data"]["hash"] } == { "k" => "v" }

@@ -102,7 +102,7 @@ describe LogStash::Filters::Grok do
     end
   end
 
-  describe "processing fields other than @message" do
+  describe "processing selected fields" do
     config <<-CONFIG
       filter {
         grok {
