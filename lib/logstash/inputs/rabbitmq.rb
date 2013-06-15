@@ -88,7 +88,6 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
   public
   def register
-    enable_codecs
     @logger.info("Registering input #{@url}")
     require "bunny" # rubygem 'bunny'
     @vhost ||= "/"

@@ -47,7 +47,6 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
 
   public
   def register
-    enable_codecs
     @host = Socket.gethostname
 
     if @count.is_a?(Array)

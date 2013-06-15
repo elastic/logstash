@@ -57,7 +57,6 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
   public
   def register
-    enable_codecs
     require "socket"
     require "timeout"
     if @ssl_enable

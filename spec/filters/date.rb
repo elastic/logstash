@@ -1,7 +1,8 @@
 require "test_utils"
 require "logstash/filters/date"
 
-describe LogStash::Filters::Date do
+puts "Skipping date performance tests because this ruby is not jruby" if RUBY_ENGINE != "jruby"
+RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
   extend LogStash::RSpec
 
   describe "parsing with ISO8601" do
@@ -168,7 +169,7 @@ describe LogStash::Filters::Date do
     config <<-'CONFIG'
       filter {
         date {
-          match => [ t,  TAI64N ]
+          match => [ "t",  TAI64N ]
         }
       }
     CONFIG
