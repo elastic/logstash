@@ -291,7 +291,6 @@ module LogStash::Config::Mixin
       elsif validator.is_a?(Symbol)
         # TODO(sissel): Factor this out into a coersion method?
         # TODO(sissel): Document this stuff.
-        p :value => value
         value = hash_or_array(value)
 
         case validator
@@ -304,7 +303,6 @@ module LogStash::Config::Mixin
               return true, value
             end
           when :hash
-            p :hash? => value
             if value.is_a?(Hash)
               return true, value
             end

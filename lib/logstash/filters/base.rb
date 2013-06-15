@@ -91,9 +91,6 @@ class LogStash::Filters::Base < LogStash::Plugin
     super
     config_init(params)
     @threadsafe = true
-
-    @include_method = @include_any ? :any? : :all?
-    @exclude_method = @exclude_any ? :any? : :all?
   end # def initialize
 
   public
@@ -165,16 +162,20 @@ class LogStash::Filters::Base < LogStash::Plugin
     end
 
     if !@tags.empty?
-      return false if event["tags"].nil?
-      if !@tags.send(@include_method) { |tag| event.tags.include?(tag) }
-        @logger.debug? and @logger.debug(["Skipping event because tags don't match #{@tags.inspect}", event])
+      # this filter has only works on events with certain tags,
+      # and this event has no tags.
+      return false if !event["tags"]
+
+      # Is @tags a subset of the event's tags? If not, skip it.
+      if (event["tags"] & @tags).size != @tags.size
+        @logger.debug(["Skipping event because tags don't match #{@tags.inspect}", event])
         return false
       end
     end
 
-    if !@exclude_tags.empty? && !event["tags"].nil?
-      if @exclude_tags.send(@exclude_method) {|tag| event.tags.include?(tag)}
-        @logger.debug? and @logger.debug(["Skipping event because tags contains excluded tags: #{exclude_tags.inspect}", event])
+    if !@exclude_tags.empty? && event["tags"]
+      if (diff_tags = (event["tags"] & @exclude_tags)).size != 0
+        @logger.debug(["Skipping event because tags contains excluded tags: #{diff_tags.inspect}", event])
         return false
       end
     end
