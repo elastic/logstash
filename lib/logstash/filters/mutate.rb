@@ -259,9 +259,13 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
       if original.nil?
         next
       elsif original.is_a?(Hash)
-        @logger.debug("I don't know how to type convert a hash, skipping",
-                      :field => field, :value => original)
-        next
+        if type == "string"
+          value = converter.call(JSON.generate(original))
+        else
+          @logger.debug("I don't know how to type convert a hash, skipping",
+                        :field => field, :value => original)
+          next
+        end
       elsif original.is_a?(Array)
         value = original.map { |v| converter.call(v) }
       else
