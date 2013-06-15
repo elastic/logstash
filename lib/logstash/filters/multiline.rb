@@ -1,5 +1,6 @@
 require "logstash/filters/base"
 require "logstash/namespace"
+require "logstash/version"
 require "logstash/errors"
 
 # ## This filter was replaced by a codec.
@@ -21,7 +22,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   public
   def register
-    raise LogStash::ConfigurationError, "The multiline filter has been replaced by the multiline codec. Please see http://logstash.net/docs/%VERSION%/codecs/multiline.\n"
+    raise LogStash::ConfigurationError, "The multiline filter has been replaced by the multiline codec. Please see http://logstash.net/docs/#{LOGSTASH_VERSION}/codecs/multiline.\n"
   end # def register
 
   public
