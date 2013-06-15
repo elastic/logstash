@@ -159,5 +159,20 @@ describe LogStash::Filters::Mutate do
       reject { subject.fields }.include?("hello")
     end
   end
+
+  describe "convert should work on nested fields" do
+    config <<-CONFIG
+      filter {
+        mutate {
+          convert => [ "[foo][bar]", "integer" ]
+        }
+      }
+    CONFIG
+
+    sample({ "foo" => { "bar" => "1000" } }) do
+      insist { subject["[foo][bar]"] } == 1000
+      insist { subject["[foo][bar]"] }.is_a?(Fixnum)
+    end
+  end
 end
 

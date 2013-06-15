@@ -84,10 +84,17 @@ class LogStash::Event
     return self.class.new(copy)
   end # def clone
 
-  public
-  def to_s
-    return self.sprintf("%{+yyyy-MM-dd'T'HH:mm:ss.SSSZ} %{source} %{message}")
-  end # def to_s
+  if RUBY_ENGINE == "jruby"
+    public
+    def to_s
+      return self.sprintf("%{+yyyy-MM-dd'T'HH:mm:ss.SSSZ} %{source} %{message}")
+    end # def to_s
+  else
+    public
+    def to_s
+      return self.sprintf("#{self["@timestamp"].iso8601} %{source} %{message}")
+    end # def to_s
+  end
 
   public
   def timestamp; return @data["@timestamp"]; end # def timestamp
@@ -121,7 +128,22 @@ class LogStash::Event
   
   public
   def []=(key, value)
-    @data[key] = value
+    if key[0] == '['
+      val = @data
+      keys = key.scan(/(?<=\[).+?(?=\])/)
+      last = keys.pop
+
+      keys.each do |tok|
+        if val.is_a? Array
+          val = val[tok.to_i]
+        else
+          val = val[tok]
+        end
+      end
+      val[last] = value
+    else
+      @data[key] = value
+    end
   end # def []=
 
   public
@@ -192,6 +214,9 @@ class LogStash::Event
         next @data["@timestamp"].to_i
       elsif key[0,1] == "+"
         t = @data["@timestamp"]
+        puts "*" * 80
+        puts caller.join("\n")
+        puts "*" * 80
         formatter = org.joda.time.format.DateTimeFormat.forPattern(key[1 .. -1])\
           .withZone(org.joda.time.DateTimeZone::UTC)
         #next org.joda.time.Instant.new(t.tv_sec * 1000 + t.tv_usec / 1000).toDateTime.toString(formatter)

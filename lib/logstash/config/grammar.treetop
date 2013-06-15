@@ -11,7 +11,7 @@ grammar LogStashConfig
   end
 
   rule _
-    (comment / whitespace)? <LogStash::Config::AST::Whitespace>
+    (comment / whitespace)* <LogStash::Config::AST::Whitespace>
   end
 
   rule whitespace
@@ -62,17 +62,20 @@ grammar LogStashConfig
     #<LogStash::Config::AST::Value>
   end
 
+  rule array_value
+    bareword / string / number / array / hash
+  end
+
   rule bareword
     [A-Za-z_] [A-Za-z0-9_]+
     <LogStash::Config::AST::Bareword>
   end
 
   rule string
-    '"' 
-      ('\"' / !'"' .)*
-    '"'
-    <LogStash::Config::AST::String>
-    #/ ("'" (("'" / !"'" .)*) "'")
+    ( 
+      ( '"' ( '\"' / !'"' . )* '"'  <LogStash::Config::AST::String>)
+      / ( "'" ( "\\'" / !"'" . )* "'"  <LogStash::Config::AST::String> )
+    )
   end
 
   rule number
@@ -85,7 +88,7 @@ grammar LogStashConfig
     _ 
     (
       value (_ "," _ value)*
-    )? 
+    )?
     _ 
     "]"
     <LogStash::Config::AST::Array>

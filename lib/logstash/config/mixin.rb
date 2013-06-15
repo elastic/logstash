@@ -232,15 +232,8 @@ module LogStash::Config::Mixin
       #   config /foo.*/ => ... 
       is_valid = true
 
-      # string/symbols are first, then regexes.
-      # TODO(sissel): this can probably go away now that regexp 'params' are no
-      # longer desired.
-      config_keys = @config.keys.sort do |a,b|
-        CONFIGSORT[a.class] <=> CONFIGSORT[b.class] 
-      end
-
       params.each do |key, value|
-        config_keys.each do |config_key|
+        @config.keys.each do |config_key|
           next unless (config_key.is_a?(Regexp) && key =~ config_key) \
                       || (config_key.is_a?(String) && key == config_key)
           config_val = @config[config_key][:validate]
@@ -298,6 +291,7 @@ module LogStash::Config::Mixin
       elsif validator.is_a?(Symbol)
         # TODO(sissel): Factor this out into a coersion method?
         # TODO(sissel): Document this stuff.
+        p :value => value
         value = hash_or_array(value)
 
         case validator
@@ -310,6 +304,7 @@ module LogStash::Config::Mixin
               return true, value
             end
           when :hash
+            p :hash? => value
             if value.is_a?(Hash)
               return true, value
             end
