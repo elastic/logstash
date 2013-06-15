@@ -179,20 +179,6 @@ class LogStash::Filters::Base < LogStash::Plugin
       end
     end
 
-    if !@include_fields.empty?
-      if !@include_fields.send(@include_method) {|field| event.include?(field)}
-        @logger.debug? and @logger.debug(["Skipping event because fields don't match #{@include_fields.inspect}", event])
-        return false
-      end
-    end
-
-    if !@exclude_fields.empty?
-      if @exclude_fields.send(@exclude_method) {|field| event.include?(field)}
-        @logger.debug? and @logger.debug(["Skipping event because fields contain excluded fields #{@exclude_fields.inspect}", event])
-        return false
-      end
-    end
-
     return true
   end
 end # class LogStash::Filters::Base

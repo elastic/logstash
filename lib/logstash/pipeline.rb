@@ -16,6 +16,9 @@ class LogStash::Pipeline
       raise LogStash::ConfigurationError, grammar.failure_reason
     end
 
+    #puts (@config.compile)
+    eval(@config.compile)
+
     @input_to_filter = SizedQueue.new(20)
 
     # If no filters, pipe inputs directly to outputs
@@ -27,40 +30,10 @@ class LogStash::Pipeline
 
     @logger = Cabin::Channel.get(LogStash)
 
-    puts compile_config
-    eval(compile_config)
   end # def initialize
 
   def filters?
-    return @config.recursive_select(LogStash::Config::AST::Plugin).any? { |p| p.plugin_type == "filter" }
-  end
-
-  def compile_config
-    code = []
-    code << "@inputs = []"
-    code << "@filters = []"
-    code << "@outputs = []"
-    sections = @config.recursive_select(LogStash::Config::AST::PluginSection)
-    sections.each do |s|
-      code << s.compile_initializer
-    end
-
-    # start inputs
-    code << "class << self"
-    definitions = []
-      
-    ["filter", "output"].each do |type|
-      definitions << "def #{type}(event)"
-      definitions << "  @logger.info(\"#{type} received\", :event => event)"
-      sections.select { |s| s.plugin_type.text_value == type }.each do |s|
-        definitions << s.compile.split("\n").map { |e| "  #{e}" }.join("\n")
-      end
-      definitions << "end"
-    end
-
-    code += definitions.collect { |l| "  #{l}" }
-    code << "end"
-    return code.join("\n")
+    return @filters.any?
   end
 
   def run
@@ -71,8 +44,10 @@ class LogStash::Pipeline
 
     @logger.info("Pipeline started")
     wait_inputs
-    shutdown_filters
-    wait_filters
+    if filters?
+      shutdown_filters
+      wait_filters
+    end
     shutdown_outputs
     wait_outputs
 
@@ -174,6 +149,7 @@ class LogStash::Pipeline
     end
 
     @filters.each(&:teardown)
+    @filter_to_output.push(ShutdownSignal)
   end # def filterworker
 
   def outputworker

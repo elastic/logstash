@@ -41,6 +41,38 @@ end
 module LogStash; module Config; module AST 
   class Node < Treetop::Runtime::SyntaxNode; end
   class Config < Node
+    def compile
+      # TODO(sissel): Move this into config/config_ast.rb
+      code = []
+      code << "@inputs = []"
+      code << "@filters = []"
+      code << "@outputs = []"
+      sections = recursive_select(LogStash::Config::AST::PluginSection)
+      sections.each do |s|
+        code << s.compile_initializer
+      end
+
+      # start inputs
+      code << "class << self"
+      definitions = []
+        
+      ["filter", "output"].each do |type|
+        definitions << "def #{type}(event)"
+        if type == "filter"
+          definitions << "  events = [event]"
+        end
+
+        definitions << "  @logger.info(\"#{type} received\", :event => event)"
+        sections.select { |s| s.plugin_type.text_value == type }.each do |s|
+          definitions << s.compile.split("\n").map { |e| "  #{e}" }.join("\n")
+        end
+        definitions << "end"
+      end
+
+      code += definitions.join("\n").split("\n").collect { |l| "  #{l}" }
+      code << "end"
+      return code.join("\n")
+    end
   end
 
   class Comment < Node; end
@@ -104,7 +136,10 @@ module LogStash; module Config; module AST
       if attributes.elements.nil?
         return "plugin(#{type.inspect}, #{plugin_name.inspect})" << (type == "codec" ? "" : "\n")
       else
-        return "plugin(#{type.inspect}, #{plugin_name.inspect}, " << attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?).join(", ") << ")" << (type == "codec" ? "" : "\n")
+        settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
+
+        attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
+        return "plugin(#{type.inspect}, #{plugin_name.inspect}, #{attributes_code})" << (type == "codec" ? "" : "\n")
       end
     end
 
@@ -114,13 +149,18 @@ module LogStash; module Config; module AST
           return "start_input(#{variable_name})"
         when "filter"
           return [
-            "#{variable_name}.filter(event)",
-            "return if event.cancelled?"
-          ].join("\n")
+            "newevents = []",
+            "events.each do |event|",
+            "  #{variable_name}.filter(event) do |newevent|",
+            "    newevents << newevent",
+            "  end",
+            "end",
+            "events += newevents",
+            "events = events.reject(&:cancelled?)",
+            "return if events.empty?",
+          ].map { |l| "#{l}\n" }.join("")
         when "output"
-          return [
-            "#{variable_name}.receive(event)",
-          ].join("\n")
+          return "#{variable_name}.receive(event)"
       end
     end
   end

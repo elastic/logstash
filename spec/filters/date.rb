@@ -168,7 +168,7 @@ describe LogStash::Filters::Date do
     config <<-'CONFIG'
       filter {
         date {
-          match => [ t,  TAI64N ]
+          match => [ "t",  TAI64N ]
         }
       }
     CONFIG

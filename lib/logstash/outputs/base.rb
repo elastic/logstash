@@ -32,14 +32,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def initialize(params={})
     super
     config_init(params)
-
-    @include_method = @include_any ? :any? : :all?
-    @exclude_method = @exclude_any ? :any? : :all?
-
-    # TODO(piavlo): Remove this once fields config will be removed
-    if @include_fields.empty? && !@fields.nil? && !@fields.empty?
-      @include_fields = @fields
-    end
   end
 
   public
@@ -84,25 +76,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
         @logger.debug? and @logger.debug(["Dropping event because tags contains excluded tags: #{exclude_tags.inspect}", event])
         return false
       end
-    end
-
-    if !@include_fields.empty?
-      if !@include_fields.send(@include_method) {|field| event.include?(field)}
-        @logger.debug? and @logger.debug(["Dropping event because fields don't match #{@include_fields.inspect}", event])
-        return false
-      end
-    end
-
-    if !@exclude_fields.empty?
-      if @exclude_fields.send(@exclude_method) {|field| event.include?(field)}
-        @logger.debug? and @logger.debug(["Dropping event because fields contain excluded fields #{@exclude_fields.inspect}", event])
-        return false
-      end
-    end
-
-    if @ignore_older_than > 0 && Time.now - event.ruby_timestamp > @ignore_older_than
-      @logger.debug? and @logger.debug("Skipping metriks for old event", :event => event)
-      return
     end
 
     return true

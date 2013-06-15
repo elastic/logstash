@@ -65,5 +65,52 @@ module LogStash::Util
         dst[name] = svalue
       end
     end
+
+    return dst
   end # def self.hash_merge
+ 
+  # Merge hash 'src' into 'dst' nondestructively
+  #
+  # Duplicate keys will become array values
+  # Arrays merged will simply be appended.
+  #
+  # [ src["foo"], dst["foo"] ]
+  def self.hash_merge_with_dups(dst, src)
+    src.each do |name, svalue|
+      if dst.include?(name)
+        dvalue = dst[name]
+        if dvalue.is_a?(Hash) && svalue.is_a?(Hash)
+          dvalue = hash_merge(dvalue, svalue)
+        elsif svalue.is_a?(Array) 
+          if dvalue.is_a?(Array)
+            # merge arrays without duplicates.
+            dvalue += svalue
+          else
+            dvalue = [dvalue] + svalue
+          end
+        else
+          if dvalue.is_a?(Array)
+            dvalue << svalue unless dvalue.include?(svalue)
+          else
+            dvalue = [dvalue, svalue] unless dvalue == svalue
+          end
+        end
+
+        dst[name] = dvalue
+      else
+        # dst doesn't have this key, just set it.
+        dst[name] = svalue
+      end
+    end
+
+    return dst
+  end # def self.hash_merge
+
+  def self.hash_merge_many(*hashes)
+    dst = {}
+    hashes.each do |hash|
+      hash_merge_with_dups(dst, hash)
+    end
+    return dst
+  end # def hash_merge_many
 end # module LogStash::Util
