@@ -153,12 +153,16 @@ module LogStash::EventV0
   
   public
   def []=(key, value)
-    subkeys = key.split(".")
-    lastkey = subkeys.pop
-    subhash = subkeys.inject(@data["@fields"]) do |hash, k|
-      hash[k]
+    if @data.has_key?(key) || key[0,1] == "@"
+      @data[key] = value
+    else
+      subkeys = key.split(".")
+      lastkey = subkeys.pop
+      subhash = subkeys.inject(@data["@fields"]) do |hash, k|
+        hash[k]
+      end
+      subhash[lastkey] = value
     end
-    subhash[lastkey] = value
   end # def []=
 
   def fields; return @data["@fields"] end # def fields
