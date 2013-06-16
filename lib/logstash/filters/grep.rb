@@ -41,6 +41,11 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
   # a regular expression.
   config :match, :validate => :hash, :default => {}
 
+  # Use case-insensitive matching. Similar to 'grep -i'
+  #
+  # If enabled, ignore case distinctions in the patterns.
+  config :ignore_case, :validate => :boolean, :default => false
+
   public
   def register
     @patterns = Hash.new { |h,k| h[k] = [] }
@@ -50,7 +55,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
 
       pattern = [pattern] if pattern.is_a?(String)
       pattern.each do |p|
-        re = Regexp.new(p)
+        re = Regexp.new(p, @ignore_case ? Regexp::IGNORECASE : 0)
         @patterns[field] << re
         @logger.debug? and @logger.debug("Registered grep", :type => @type, :field => field,
                     :pattern => p, :regexp => re)
