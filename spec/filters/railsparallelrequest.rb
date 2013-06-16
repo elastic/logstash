@@ -44,7 +44,7 @@ describe LogStash::Filters::Railsparallelrequest do
       insist { filter.flush.size } == 0
     end
 
-    it "should handle interlaced messages and merge based on UUID" do
+    it "should handle interleaved messages and merge based on UUID" do
       filter = LogStash::Filters::Railsparallelrequest.new
       filter.filter event({"message" => "[UUID1]hello"})
       filter.filter event({"message" => "[UUID2]new"})
