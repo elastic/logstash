@@ -64,7 +64,7 @@ module LogStash; module Config; module AST
 
         definitions << "  @logger.info(\"#{type} received\", :event => event)"
         sections.select { |s| s.plugin_type.text_value == type }.each do |s|
-          definitions << s.compile.split("\n").map { |e| "  #{e}" }.join("\n")
+          definitions << s.compile.split("\n", -1).map { |e| "  #{e}" }.join("\n")
         end
 
         if type == "filter"
@@ -73,7 +73,7 @@ module LogStash; module Config; module AST
         definitions << "end"
       end
 
-      code += definitions.join("\n").split("\n").collect { |l| "  #{l}" }
+      code += definitions.join("\n").split("\n", -1).collect { |l| "  #{l}" }
       code << "end"
       return code.join("\n")
     end
@@ -232,21 +232,21 @@ module LogStash; module Config; module AST
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
       return "if #{condition.compile}\n" \
-        << children.collect(&:compile).map { |s| s.split("\n").map { |l| "  " + l }.join("\n") }.join("") << "\n"
+        << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
   class Elsif < Node
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
       return "elsif #{condition.compile}\n" \
-        << children.collect(&:compile).map { |s| s.split("\n").map { |l| "  " + l }.join("\n") }.join("") << "\n"
+        << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
   class Else < Node
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
       return "else\n" \
-        << children.collect(&:compile).map { |s| s.split("\n").map { |l| "  " + l }.join("\n") }.join("") << "\n"
+        << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
 
