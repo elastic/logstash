@@ -2,7 +2,7 @@ require "logstash/codecs/base"
 
 class LogStash::Codecs::RubyDebug < LogStash::Codecs::Base
   config_name "rubydebug"
-  milestone 1
+  milestone 3
 
   def register
     require "ap"
