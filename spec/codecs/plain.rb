@@ -3,10 +3,6 @@ require "logstash/event"
 require "insist"
 
 describe LogStash::Codecs::Plain do
-  subject do
-    next LogStash::Codecs::Plain.new
-  end
-
   context "#decode" do
     it "should return a valid event" do
       subject.decode("Testing decoding.") do |event|
@@ -24,5 +20,16 @@ describe LogStash::Codecs::Plain do
       end
       subject.encode(event)
     end
+
+    it "should respect the format setting" do
+      format = "%{[hello]} %{[something][fancy]}"
+      codec = LogStash::Codecs::Plain.new("format" => format)
+      event = LogStash::Event.new("hello" => "world", "something" => { "fancy" => 123 })
+      codec.on_event do |data|
+        insist { data } == event.sprintf(format)
+      end
+      codec.encode(event)
+    end
+
   end
 end

@@ -3,11 +3,10 @@ require "logstash/codecs/base"
 # This is the base class for logstash codecs.
 class LogStash::Codecs::Plain < LogStash::Codecs::Base
   config_name "plain"
+  milestone 3
 
-  milestone 1
-
-  # TODO(sissel): Document.
-  config :format, :validate => :string, :default => nil
+  # Set the desired text format for encoding.
+  config :format, :validate => :string
 
   # The character encoding used in this input. Examples include "UTF-8"
   # and "cp1252"
@@ -30,7 +29,7 @@ class LogStash::Codecs::Plain < LogStash::Codecs::Base
 
   public
   def encode(data)
-    if data.is_a? LogStash::Event and !@format.nil?
+    if data.is_a? LogStash::Event and @format
       @on_event.call(data.sprintf(@format))
     else
       @on_event.call(data.to_s)
