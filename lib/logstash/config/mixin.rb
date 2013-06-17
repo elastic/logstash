@@ -50,6 +50,15 @@ module LogStash::Config::Mixin
     # store the plugin type, turns LogStash::Inputs::Base into 'input'
     @plugin_type = self.class.ancestors.find { |a| a.name =~ /::Base$/ }.config_name
 
+    # warn about deprecated variable use
+    params.each do |name, value|
+      opts = self.class.get_config[name]
+      if opts && opts[:deprecated]
+        @logger.warn("Deprecated config item #{name.inspect} set " +
+                     "in #{self.class.name}", :name => name, :plugin => self)
+      end
+    end
+
     # Set defaults from 'config :foo, :default => somevalue'
     self.class.get_config.each do |name, opts|
       next if params.include?(name.to_s)
@@ -61,15 +70,6 @@ module LogStash::Config::Mixin
     if !self.class.validate(params)
       raise LogStash::ConfigurationError,
         I18n.t("logstash.agent.configuration.invalid_plugin_settings")
-    end
-
-    # warn about deprecated variable use
-    params.each do |name, value|
-      opts = self.class.get_config[name]
-      if opts && opts[:deprecated]
-        @logger.warn("Deprecated config item #{name.inspect} set " +
-                     "in #{self.class.name}", :name => name, :plugin => self)
-      end
     end
 
     # set instance variables like '@foo'  for each config value given.
