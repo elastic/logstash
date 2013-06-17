@@ -172,13 +172,20 @@ module LogStash::Config::Mixin
       return true if @@status_notice_given
       docmsg = "For more information about plugin statuses, see http://logstash.net/docs/#{LOGSTASH_VERSION}/plugin-status "
       plugin_type = ancestors.find { |a| a.name =~ /::Base$/ }.config_name
+      log_data = { :type => plugin_type, :name => @config_name, :LOGSTASH_VERSION => LOGSTASH_VERSION }
       case @plugin_status
-        when "unsupported"; @logger.warn(I18n.t("logstash.plugin.unsupported", :type => plugin_type, :name => @config_name, :LOGSTASH_VERSION => LOGSTASH_VERSION))
-        when "experimental"; @logger.warn(I18n.t("logstash.plugin.experimental", :type => plugin_type, :name => @config_name, :LOGSTASH_VERSION => LOGSTASH_VERSION))
-        when "beta"; @logger.warn(I18n.t("logstash.plugin.beta", :type => plugin_type, :name => @config_name, :LOGSTASH_VERSION => LOGSTASH_VERSION))
-        when "stable"; # This is cool. Nothing worth logging.
-        when nil; raise "#{@config_name} must set a plugin_status. #{docmsg}"
-        else; raise "#{@config_name} set an invalid plugin status #{@plugin_status}. Valid values are unsupported, experimental, beta and stable. #{docmsg}"
+        when LogStash::Plugin::MILESTONE_0
+          @logger.warn(I18n.t("logstash.plugin.milestone.0", log_data)
+        when LogStash::PLugin::MILESTONE_1
+          @logger.warn(I18n.t("logstash.plugin.milestone.1", log_data)
+        when LogStash::PLugin::MILESTONE_2
+          @logger.warn(I18n.t("logstash.plugin.milestone.2", log_data)
+        when LogStash::PLugin::MILESTONE_3
+          # No message to log, this plugin is of good quality with tests, etc.
+        when nil
+          raise "#{@config_name} must set a plugin_status. #{docmsg}"
+        else
+          raise "#{@config_name} set an invalid plugin status #{@plugin_status}. Valid values are unsupported, experimental, beta and stable. #{docmsg}"
       end
       @@status_notice_given = true
       return true

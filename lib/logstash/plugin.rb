@@ -7,6 +7,11 @@ class LogStash::Plugin
   attr_accessor :params
   attr_accessor :logger
 
+  MILESTONE_0 = "milestone 0"
+  MILESTONE_1 = "milestone 1"
+  MILESTONE_2 = "milestone 2"
+  MILESTONE_3 = "milestone 3"
+
   public
   def hash
     params.hash ^
