@@ -56,7 +56,7 @@ require "socket"
 #
 class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
   config_name "sqlite"
-  plugin_status "experimental"
+  milestone 1
 
   # The path to the sqlite database file.
   config :path, :validate => :string, :required => true

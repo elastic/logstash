@@ -12,7 +12,7 @@ require "tempfile"
 # <https://github.com/tobie/ua-parser/>.
 class LogStash::Filters::UserAgent < LogStash::Filters::Base
   config_name "useragent"
-  plugin_status "experimental"
+  milestone 1
 
   # The field containing the user agent string. If this field is an
   # array, only the first value will be used.

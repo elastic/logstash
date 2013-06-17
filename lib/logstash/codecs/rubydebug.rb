@@ -2,7 +2,7 @@ require "logstash/codecs/base"
 
 class LogStash::Codecs::RubyDebug < LogStash::Codecs::Base
   config_name "rubydebug"
-  plugin_status "experimental"
+  milestone 1
 
   def register
     require "ap"

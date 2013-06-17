@@ -58,7 +58,7 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   include LogStash::PluginMixins::AwsConfig
   
   config_name "sqs"
-  plugin_status "experimental"
+  milestone 1
 
   # Name of the SQS Queue name to pull messages from. Note that this is just the name of the queue, not the URL or ARN.
   config :queue, :validate => :string, :required => true

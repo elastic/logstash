@@ -20,7 +20,7 @@ require "logstash/util/socket_peer"
 # * TODO(sissel): Option to keep the index, type, and doc id so we can do reindexing?
 class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
   config_name "elasticsearch"
-  plugin_status "experimental"
+  milestone 1
 
   # When mode is `server`, the address to listen on.
   # When mode is `client`, the address to connect to.

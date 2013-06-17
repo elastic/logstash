@@ -2,9 +2,7 @@ require "logstash/codecs/base"
 
 class LogStash::Codecs::Spool < LogStash::Codecs::Base
   config_name 'spool'
-
-  plugin_status 'experimental'
-
+  milestone 1
   config :spool_size, :validate => :number, :default => 50
 
   attr_reader :buffer

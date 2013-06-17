@@ -16,7 +16,7 @@ require "logstash/namespace"
 #     }
 class LogStash::Inputs::Heroku < LogStash::Inputs::Base
   config_name "heroku"
-  plugin_status "experimental"
+  milestone 1
 
   # The name of your heroku application. This is usually the first part of the 
   # the domain name 'my-app-name.herokuapp.com'

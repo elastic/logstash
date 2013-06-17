@@ -11,7 +11,7 @@ require "logstash/outputs/base"
 class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   config_name "elasticsearch_http"
-  plugin_status "beta"
+  milestone 2
 
   # The index to write events to. This can be dynamic using the %{foo} syntax.
   # The default value will partition your indices by day so you can more easily

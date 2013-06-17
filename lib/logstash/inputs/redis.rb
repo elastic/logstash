@@ -13,7 +13,7 @@ require "logstash/namespace"
 # newer. Anything older does not support the operations used by batching.
 class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   config_name "redis"
-  plugin_status "beta"
+  milestone 2
 
   # Name is used for logging in case there are multiple instances.
   # This feature has no real function and will be removed in future versions.

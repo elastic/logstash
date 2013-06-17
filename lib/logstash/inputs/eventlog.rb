@@ -15,7 +15,7 @@ require "socket"
 class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
   config_name "eventlog"
-  plugin_status "beta"
+  milestone 2
 
   # Event Log Name
   config :logfile, :validate => :array, :default => [ "Application", "Security", "System" ]

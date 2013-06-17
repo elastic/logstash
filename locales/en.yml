@@ -38,19 +38,19 @@ en:
         0: >-
           Using milestone 0 %{type} plugin '%{name}'. This plugin isn't well
           supported by the commnity and likely has no maintainer. For more
-          information on plugin statuses, see
-          http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin_status
+          information on plugin milestones, see
+          http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin-milestones
         1: >-
           Using milestone 1 %{type} plugin '%{name}'. This plugin should work,
           but would benefit from use by folks like you. Please let us know if you
           find bugs or have suggestions on how to improve this plugin.  For more
-          information on plugin statuses, see
-          http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin_status
+          information on plugin milestones, see
+          http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin-milestones
         2: >-
           Using milestone 2 %{type} plugin '%{name}'. This plugin should be
           stable, but if you see strange behavior, please let us know!
-          For more information on plugin statuses, see
-          http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin_status
+          For more information on plugin milestones, see
+          http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin-milestones
     agent:
       sighup: >-
         SIGHUP received.

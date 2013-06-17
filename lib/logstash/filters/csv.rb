@@ -7,7 +7,7 @@ require "csv"
 # and stores it as individual fields (can optionally specify the names).
 class LogStash::Filters::CSV < LogStash::Filters::Base
   config_name "csv"
-  plugin_status "beta"
+  milestone 2
 
   # The CSV data in the value of the source field will be expanded into a
   # datastructure.

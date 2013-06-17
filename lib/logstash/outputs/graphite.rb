@@ -10,7 +10,7 @@ require "socket"
 # I can capture the metric values from the logs and emit them to graphite.
 class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   config_name "graphite"
-  plugin_status "beta"
+  milestone 2
 
   DEFAULT_METRICS_FORMAT = "*"
   METRIC_PLACEHOLDER = "*"

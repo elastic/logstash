@@ -11,7 +11,7 @@ class LogStash::Filters::Syslog_pri < LogStash::Filters::Base
   config_name "syslog_pri"
 
   # set the status to experimental/beta/stable
-  plugin_status "experimental"
+  milestone 1
 
   # Add human-readable names after parsing severity and facility from PRI
   config :use_labels, :validate => :boolean, :default => true

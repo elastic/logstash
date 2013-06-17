@@ -8,7 +8,7 @@ require "socket" # for Socket.gethostname
 # to the trash.
 class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   config_name "imap"
-  plugin_status "experimental"
+  milestone 1
   ISO8601_STRFTIME = "%04d-%02d-%02dT%02d:%02d:%02d.%06d%+03d:00".freeze
 
   config :host, :validate => :string, :required => true

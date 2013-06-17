@@ -7,7 +7,7 @@ require "thread"
 class LogStash::Inputs::Irc < LogStash::Inputs::Base
 
   config_name "irc"
-  plugin_status "experimental"
+  milestone 1
 
   # Host of the IRC Server to connect to.
   config :host, :validate => :string, :required => true

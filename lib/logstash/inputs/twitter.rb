@@ -8,7 +8,7 @@ require "json"
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
   config_name "twitter"
-  plugin_status "beta"
+  milestone 2
 
   # Your twitter username
   config :user, :validate => :string, :required => true

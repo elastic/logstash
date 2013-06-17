@@ -10,7 +10,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   include Stud::Buffer
 
   config_name "redis"
-  plugin_status "beta"
+  milestone 2
 
   # Name is used for logging in case there are multiple instances.
   # TODO: delete

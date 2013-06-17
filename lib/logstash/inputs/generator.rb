@@ -9,7 +9,7 @@ require "socket" # for Socket.gethostname
 # An event is generated first
 class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   config_name "generator"
-  plugin_status "beta"
+  milestone 2
 
   # The message string to use in the event.
   #

@@ -17,7 +17,7 @@ require "logstash/namespace"
 # "debug". This will cause all events matching to be dropped.
 class LogStash::Filters::Drop < LogStash::Filters::Base
   config_name "drop"
-  plugin_status "experimental"
+  milestone 1
 
   public
   def register

@@ -15,7 +15,7 @@ require "logstash/namespace"
 #
 class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
   config_name "drupal_dblog"
-  plugin_status "experimental"
+  milestone 1
 
   # Specify all drupal databases that you whish to import from.
   # This can be as many as you whish.

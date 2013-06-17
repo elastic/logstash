@@ -96,8 +96,12 @@ module LogStash::Config::Mixin
     end
 
     def plugin_status(status=nil)
-      @plugin_status = status if !status.nil?
-      return @plugin_status
+      milestone(status)
+    end
+
+    def milestone(m=nil)
+      @milestone = m if !m.nil?
+      return @milestone
     end
 
     # Define a new configuration setting
@@ -151,7 +155,7 @@ module LogStash::Config::Mixin
         end
       end
       subclass.instance_variable_set("@config", subconfig)
-      @@status_notice_given = false
+      @@milestone_notice_given = false
     end # def inherited
 
     def validate(params)
@@ -160,7 +164,7 @@ module LogStash::Config::Mixin
       @logger = Cabin::Channel.get(LogStash)
       is_valid = true
 
-      is_valid &&= validate_plugin_status
+      is_valid &&= validate_milestone
       is_valid &&= validate_check_invalid_parameter_names(params)
       is_valid &&= validate_check_required_parameter_names(params)
       is_valid &&= validate_check_parameter_values(params)
@@ -168,26 +172,23 @@ module LogStash::Config::Mixin
       return is_valid
     end # def validate
 
-    def validate_plugin_status
-      return true if @@status_notice_given
-      docmsg = "For more information about plugin statuses, see http://logstash.net/docs/#{LOGSTASH_VERSION}/plugin-status "
+    def validate_milestone
+      return true if @@milestone_notice_given
+      docmsg = "For more information about plugin milestones, see http://logstash.net/docs/#{LOGSTASH_VERSION}/plugin-milestones "
       plugin_type = ancestors.find { |a| a.name =~ /::Base$/ }.config_name
-      log_data = { :type => plugin_type, :name => @config_name, :LOGSTASH_VERSION => LOGSTASH_VERSION }
-      case @plugin_status
-        when LogStash::Plugin::MILESTONE_0
-          @logger.warn(I18n.t("logstash.plugin.milestone.0", log_data)
-        when LogStash::PLugin::MILESTONE_1
-          @logger.warn(I18n.t("logstash.plugin.milestone.1", log_data)
-        when LogStash::PLugin::MILESTONE_2
-          @logger.warn(I18n.t("logstash.plugin.milestone.2", log_data)
-        when LogStash::PLugin::MILESTONE_3
-          # No message to log, this plugin is of good quality with tests, etc.
+      case @milestone
+        when 0,1,2
+          @logger.warn(I18n.t("logstash.plugin.milestone.#{@milestone}", 
+                              :type => plugin_type, :name => @config_name,
+                              :LOGSTASH_VERSION => LOGSTASH_VERSION))
+        when 3
+          # No message to log for milestone 3 plugins.
         when nil
-          raise "#{@config_name} must set a plugin_status. #{docmsg}"
+          raise "#{@config_name} must set a milestone. #{docmsg}"
         else
-          raise "#{@config_name} set an invalid plugin status #{@plugin_status}. Valid values are unsupported, experimental, beta and stable. #{docmsg}"
+          raise "#{@config_name} set an invalid plugin status #{@milestone}. Valid values are 0, 1, 2, or 3. #{docmsg}"
       end
-      @@status_notice_given = true
+      @@milestone_notice_given = true
       return true
     end
 

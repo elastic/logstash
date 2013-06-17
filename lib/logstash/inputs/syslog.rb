@@ -20,7 +20,7 @@ require "socket"
 # Note: this input will start listeners on both TCP and UDP
 class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   config_name "syslog"
-  plugin_status "experimental"
+  milestone 1
 
   # The address to listen on
   config :host, :validate => :string, :default => "0.0.0.0"

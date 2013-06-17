@@ -63,7 +63,7 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   include LogStash::PluginMixins::AwsConfig
   
   config_name "cloudwatch"
-  plugin_status "experimental"
+  milestone 1
 
   # Constants
   # aggregate_key members

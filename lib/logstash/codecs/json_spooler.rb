@@ -4,7 +4,7 @@ require "logstash/codecs/spool"
 # This is the base class for logstash codecs.
 class LogStash::Codecs::JsonSpooler < LogStash::Codecs::Spool
   config_name "json_spooler"
-  plugin_status 'experimental'
+  milestone 1
 
   public
   def decode(data)

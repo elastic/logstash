@@ -25,7 +25,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   end
 
   config_name "date"
-  plugin_status "stable"
+  milestone 3
 
   # specify a timezone canonical ID to be used for date parsing.
   # The valid ID are listed on http://joda-time.sourceforge.net/timezones.html

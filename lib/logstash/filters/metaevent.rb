@@ -3,7 +3,7 @@ require "logstash/namespace"
 
 class LogStash::Filters::Metaevent < LogStash::Filters::Base
   config_name "metaevent"
-  plugin_status "experimental"
+  milestone 1
 
   # syntax: `followed_by_tags => [ "tag", "tag" ]`
   config :followed_by_tags, :validate => :array, :required => true

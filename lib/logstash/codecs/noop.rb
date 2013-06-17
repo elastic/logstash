@@ -3,7 +3,7 @@ require "logstash/codecs/base"
 class LogStash::Codecs::Noop < LogStash::Codecs::Base
   config_name "noop"
 
-  plugin_status "experimental"
+  milestone 1
   
   public
   def decode(data)

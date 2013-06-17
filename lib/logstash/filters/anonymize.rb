@@ -4,7 +4,7 @@ require "logstash/namespace"
 # Anonymize fields using by replacing values with a consistent hash.
 class LogStash::Filters::Anonymize < LogStash::Filters::Base
   config_name "anonymize"
-  plugin_status "experimental"
+  milestone 1
 
   # The fields to be anonymized
   config :fields, :validate => :array, :required => true

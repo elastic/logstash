@@ -4,7 +4,7 @@ require 'pp'
 
 class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   config_name "stomp"
-  plugin_status "beta"
+  milestone 2
 
   # The address of the STOMP server.
   config :host, :validate => :string, :default => "localhost", :required => true
