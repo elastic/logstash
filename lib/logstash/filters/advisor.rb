@@ -35,7 +35,7 @@ require "logstash/namespace"
 class LogStash::Filters::Advisor < LogStash::Filters::Base
 
  config_name "advisor"
- plugin_status "experimental"
+ milestone 1
 
  # If you do not set time_adv the plugin does nothing.
  config :time_adv, :validate => :number, :default => 0

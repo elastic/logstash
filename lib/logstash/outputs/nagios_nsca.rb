@@ -23,7 +23,7 @@ require "logstash/namespace"
 class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
 
   config_name "nagios_nsca"
-  plugin_status "experimental"
+  milestone 1
 
   # The status to send to nagios. Should be 0 = OK, 1 = WARNING, 2 = CRITICAL, 3 = UNKNOWN
   config :nagios_status, :validate => :string, :required => true

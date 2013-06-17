@@ -7,7 +7,7 @@ require "logstash/namespace"
 class LogStash::Filters::Clone < LogStash::Filters::Base
 
   config_name "clone"
-  plugin_status "beta"
+  milestone 2
 
   # A new clone will be created with the given type for each type in this list.
   config :clones, :validate => :array, :default => []

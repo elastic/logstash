@@ -25,7 +25,7 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   ## Regex stolen from statsd code
   RESERVED_CHARACTERS_REGEX = /[\:\|\@]/
   config_name "statsd"
-  plugin_status "beta"
+  milestone 2
 
   # The address of the Statsd server.
   config :host, :validate => :string, :default => "localhost"

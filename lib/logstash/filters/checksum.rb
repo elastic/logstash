@@ -11,7 +11,7 @@ require "yaml"
 class LogStash::Filters::Checksum < LogStash::Filters::Base
 
   config_name "checksum"
-  plugin_status "experimental"
+  milestone 1
 
   # A list of keys to use in creating the string to checksum
   # Keys will be sorted before building the string

@@ -13,7 +13,7 @@ require "logstash/namespace"
 class LogStash::Outputs::Gemfire < LogStash::Outputs::Base
 
   config_name "gemfire"
-  plugin_status "experimental"
+  milestone 1
 
   # Your client cache name
   config :cache_name, :validate => :string, :default => "logstash"

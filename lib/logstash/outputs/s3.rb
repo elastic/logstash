@@ -1,6 +1,5 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
-require "aws-sdk"
 
 # TODO integrate aws_config in the future 
 #require "logstash/plugin_mixins/aws_config"
@@ -108,7 +107,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  #  include LogStash::PluginMixins::AwsConfig
 
  config_name "s3"
- plugin_status "experimental"
+ milestone 1
 
  # Aws access_key.
  config :access_key_id, :validate => :string
@@ -245,6 +244,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
  public
  def register
+   require "aws-sdk"
    @temp_directory = "/opt/logstash/S3_temp/"
 
    if (@tags.size != 0)

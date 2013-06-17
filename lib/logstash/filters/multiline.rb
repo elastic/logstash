@@ -8,7 +8,7 @@ require "logstash/errors"
 # See the multiline codec instead.
 class LogStash::Filters::Multiline < LogStash::Filters::Base
   config_name "multiline"
-  plugin_status "stable"
+  milestone 3
 
   # Leave these config settings until we remove this filter entirely.
   # THe idea is that we want the register method to cause an abort

@@ -12,7 +12,7 @@ require "logstash/namespace"
 
 class LogStash::Filters::Translate < LogStash::Filters::Base
   config_name "translate"
-  plugin_status "experimental"
+  milestone 1
 
   # The field containing a response code If this field is an
   # array, only the first value will be used.

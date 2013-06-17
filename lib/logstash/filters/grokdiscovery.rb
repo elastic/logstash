@@ -6,7 +6,7 @@ require "logstash/namespace"
 class LogStash::Filters::Grokdiscovery < LogStash::Filters::Base
 
   config_name "grokdiscovery"
-  plugin_status "experimental"
+  milestone 1
 
   public
   def initialize(config = {})

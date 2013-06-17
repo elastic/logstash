@@ -8,7 +8,7 @@ require "logstash/outputs/base"
 class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   config_name "gelf"
-  plugin_status "beta"
+  milestone 2
 
   # graylog2 server address
   config :host, :validate => :string, :required => true

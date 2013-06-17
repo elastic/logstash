@@ -12,7 +12,7 @@ require "logstash/namespace"
 class LogStash::Filters::Split < LogStash::Filters::Base
 
   config_name "split"
-  plugin_status "beta"
+  milestone 2
 
   # The string to split on. This is usually a line terminator, but can be any
   # string.

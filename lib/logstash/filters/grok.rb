@@ -132,7 +132,7 @@ require "set"
 # SYSLOGBASE pattern which itself is defined by other patterns.
 class LogStash::Filters::Grok < LogStash::Filters::Base
   config_name "grok"
-  plugin_status "stable"
+  milestone 3
 
   # Specify a pattern to parse with. This will match the 'message' field.
   #

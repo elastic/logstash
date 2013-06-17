@@ -18,7 +18,7 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   class Interrupted < StandardError; end
 
   config_name "relp"
-  plugin_status "experimental"
+  milestone 1
 
   # The address to listen on.
   config :host, :validate => :string, :default => "0.0.0.0"

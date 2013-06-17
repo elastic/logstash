@@ -4,7 +4,7 @@ require "logstash/codecs/base"
 class LogStash::Codecs::Plain < LogStash::Codecs::Base
   config_name "plain"
 
-  plugin_status "experimental"
+  milestone 1
 
   # TODO(sissel): Document.
   config :format, :validate => :string, :default => nil

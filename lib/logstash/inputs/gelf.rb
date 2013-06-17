@@ -12,7 +12,7 @@ require "socket"
 #
 class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   config_name "gelf"
-  plugin_status "beta"
+  milestone 2
 
   # The address to listen on
   config :host, :validate => :string, :default => "0.0.0.0"

@@ -15,7 +15,7 @@ require "logstash/namespace"
 # value as the field's value.
 class LogStash::Inputs::Graphite < LogStash::Inputs::Tcp
   config_name "graphite"
-  plugin_status "experimental"
+  milestone 1
 
   ISO8601_STRFTIME = "%04d-%02d-%02dT%02d:%02d:%02d.%06d%+03d:00".freeze
 

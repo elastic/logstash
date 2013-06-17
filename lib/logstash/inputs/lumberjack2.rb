@@ -8,7 +8,7 @@ require "logstash/namespace"
 class LogStash::Inputs::Lumberjack2 < LogStash::Inputs::Base
 
   config_name "lumberjack2"
-  plugin_status "experimental"
+  milestone 1
 
   # The address to listen on.
   config :host, :validate => :string, :default => "0.0.0.0"

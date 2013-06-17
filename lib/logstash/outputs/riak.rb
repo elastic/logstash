@@ -6,7 +6,7 @@ require "logstash/namespace"
 
 class LogStash::Outputs::Riak < LogStash::Outputs::Base
   config_name "riak"
-  plugin_status "experimental"
+  milestone 1
 
   # The nodes of your Riak cluster
   # This can be a single host or

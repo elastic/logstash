@@ -9,7 +9,7 @@ require "zlib"
 class LogStash::Outputs::File < LogStash::Outputs::Base
 
   config_name "file"
-  plugin_status "beta"
+  milestone 2
 
   # The path to the file to write. Event fields can be used here, 
   # like "/var/log/logstash/%{@source_host}/%{application}"

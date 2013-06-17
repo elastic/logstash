@@ -10,7 +10,7 @@ class LogStash::Outputs::Http < LogStash::Outputs::Base
   # event json itself.
 
   config_name "http"
-  plugin_status "experimental"
+  milestone 1
 
   # URL to use
   config :url, :validate => :string, :required => :true

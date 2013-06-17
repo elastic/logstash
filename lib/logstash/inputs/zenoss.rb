@@ -7,7 +7,7 @@ require "zlib"
 class LogStash::Inputs::Zenoss < LogStash::Inputs::RabbitMQ
 
   config_name "zenoss"
-  plugin_status "experimental"
+  milestone 1
 
   # Your rabbitmq server address
   config :host, :validate => :string, :default => "localhost"

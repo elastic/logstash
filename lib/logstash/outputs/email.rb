@@ -38,7 +38,7 @@ require "logstash/namespace"
 class LogStash::Outputs::Email < LogStash::Outputs::Base
 
   config_name "email"
-  plugin_status "experimental"
+  milestone 1
 
   # The registered fields that we want to monitor
   # A hash of matches of field => value
