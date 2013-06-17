@@ -9,7 +9,7 @@ require "logstash/namespace"
 class LogStash::Filters::Grep < LogStash::Filters::Base
 
   config_name "grep"
-  milestone 2
+  milestone 3
 
   # Drop events that don't match
   #
@@ -48,6 +48,8 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
 
   public
   def register
+    @logger.warn("The 'grep' plugin is no longer necessary now that you can do if/elsif/else in logstash configs. This plugin will be removed in the future. If you need to drop events, please use the drop filter. If you need to take action based on a match, use an 'if' block and the mutate filter. See the following URL for details on how to use if/elsif/else in your logstash configs:http://logstash.net/docs/#{LOGSTASH_VERSION}/configuration")
+
     @patterns = Hash.new { |h,k| h[k] = [] }
 
       # TODO(sissel): 
