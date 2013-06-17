@@ -50,6 +50,8 @@ en:
         For more information on plugin statuses, see
         http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin_status
     agent:
+      sighup: >-
+        SIGHUP received.
       missing-configuration: >-
         No configuration file was specified. Perhaps you forgot to provide
         the '-f yourlogstash.conf' flag?

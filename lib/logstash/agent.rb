@@ -96,6 +96,11 @@ class LogStash::Agent < Clamp::Command
       pipeline.shutdown
     end
 
+    Stud::trap("HUP") do
+      @logger.info(I18n.t("logstash.agent.sighup"))
+      configure_logging(log_file)
+    end
+
     # TODO(sissel): Get pipeline completion status.
     pipeline.run
     return 0
@@ -201,7 +206,8 @@ class LogStash::Agent < Clamp::Command
       end
 
       puts "Sending all output to #{path}."
-      @logger.subscribe(file)
+      @logger.unsubscribe(@logger_subscription) if @logger_subscription
+      @logger_subscription = @logger.subscribe(file)
     else
       @logger.subscribe(STDOUT)
     end
