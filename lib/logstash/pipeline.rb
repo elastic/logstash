@@ -95,6 +95,7 @@ class LogStash::Pipeline
     @inputs += moreinputs
 
     @inputs.each do |input|
+      input.register
       start_input(input)
     end
   end
