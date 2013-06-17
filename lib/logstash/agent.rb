@@ -1,5 +1,6 @@
 require "clamp" # gem 'clamp'
 require "logstash/errors"
+require "i18n"
 
 class LogStash::Agent < Clamp::Command
   option ["-f", "--config"], "CONFIG_PATH",
