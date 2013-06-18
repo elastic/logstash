@@ -10,7 +10,7 @@ a given plugin could have between logstash releases.
 
 The desire here is to allow plugin developers to quickly iterate on possible
 new plugins while conveying to the end-user a set of expectations about that
-plugin. 
+plugin.
 
 ## Milestone 1
 
@@ -28,8 +28,8 @@ milestone.
 ## Milestone 3
 
 Plugins at this milestone have strong promises towards backwards-compatibility.
-This is enforced by tests to ensure behavior and configuration are changing
-wildly across releases.
+This is enforced by tests to ensure behavior and configuration are consistent
+across releases.
 
 ## Milestone 0
 
