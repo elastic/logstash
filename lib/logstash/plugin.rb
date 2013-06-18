@@ -131,22 +131,19 @@ class LogStash::Plugin
     require(path)
 
     base = LogStash.const_get("#{type.capitalize}s")
-    klass_sym = base.constants.find { |c| c.to_s =~ /^#{Regexp.quote(name)}$/i }
     klass = nil
-    if klass_sym.nil?
-      base.constants.each do |k|
-        k = base.const_get(k)
-        klass = k if k.config_name == name
-      end
-    else
-      klass = base.const_get(klass_sym)
-    end
+    #klass_sym = base.constants.find { |c| c.to_s =~ /^#{Regexp.quote(name)}$/i }
+    #if klass_sym.nil?
+    
+    # Look for a plugin by the config_name
+    klass_sym = base.constants.find { |k| base.const_get(k).config_name == name }
+    klass = base.const_get(klass_sym)
 
     raise LoadError if klass.nil?
 
     return klass
   rescue LoadError => e
-    puts e.backtrace
+    puts e
     raise LogStash::PluginLoadingError,
       I18n.t("logstash.pipeline.plugin-loading-error", :type => type, :name => name, :path => path)
   end # def load
