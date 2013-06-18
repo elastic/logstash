@@ -31,7 +31,7 @@ else
 TAR_OPTS=--wildcards
 endif
 
-TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/event.rb spec/outputs/graphite.rb spec/outputs/email.rb)
+TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/outputs/graphite.rb spec/outputs/email.rb)
 default: 
 	@echo "Make targets you might be interested in:"
 	@echo "  flatjar -- builds the flatjar jar"
