@@ -132,9 +132,18 @@ class LogStash::Plugin
 
     base = LogStash.const_get("#{type.capitalize}s")
     klass_sym = base.constants.find { |c| c.to_s =~ /^#{Regexp.quote(name)}$/i }
-    raise LoadError if klass_sym.nil?
+    klass = nil
+    if klass_sym.nil?
+      base.constants.each do |k|
+        k = base.const_get(k)
+        klass = k if k.config_name == name
+      end
+    else
+      klass = base.const_get(klass_sym)
+    end
 
-    klass = base.const_get(klass_sym)
+    raise LoadError if klass.nil?
+
     return klass
   rescue LoadError => e
     puts e.backtrace
