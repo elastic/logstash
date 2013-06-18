@@ -34,8 +34,14 @@ class LogStash::Pipeline
     else
       @filter_to_output = SizedQueue.new(20)
     end
-
+    @settings = {
+      "filter-workers" => 1,
+    }
   end # def initialize
+
+  def configure(setting, value)
+    @settings[setting] = value
+  end
 
   def filters?
     return @filters.any?
@@ -76,11 +82,12 @@ class LogStash::Pipeline
 
   def shutdown_outputs
     # nothing, filters will do this
+    @filter_to_output.push(ShutdownSignal)
   end
 
   def wait_outputs
     # Wait for the outputs to stop
-    @output_thread.join
+    @output_threads.each(&:join)
   end
 
   def start_inputs
@@ -101,15 +108,15 @@ class LogStash::Pipeline
   end
 
   def start_filters
-    @filter_threads = [
+    @filter_threads = @settings["filter-workers"].times.collect do
       Thread.new { filterworker }
-    ]
+    end
   end
 
   def start_outputs
-    @output_thread = Thread.new do 
-      outputworker
-    end
+    @output_threads = [
+      Thread.new { outputworker }
+    ]
   end
 
   def start_input(plugin)
