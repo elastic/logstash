@@ -175,19 +175,19 @@ class LogStash::Runner
             @args = args
           end
           def run
-            @thread = Thread.new do
+            #@thread = Thread.new do
               @result = LogStash::Agent.run($0, @args)
-            end
+            #end
           end
           def wait
-            @thread.join
+            #@thread.join
             return @result
           end
         end
 
         agent = runner.new(args)
         agent.run
-        @runners << agent
+        #@runners << agent
         return []
       end
     } # commands

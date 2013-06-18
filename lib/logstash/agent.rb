@@ -102,6 +102,8 @@ class LogStash::Agent < Clamp::Command
       configure_logging(log_file)
     end
 
+    pipeline.configure("filter-workers", filter_workers)
+
     # TODO(sissel): Get pipeline completion status.
     pipeline.run
     return 0
