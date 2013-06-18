@@ -57,7 +57,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   # The port for ElasticSearch transport to use. This is *not* the ElasticSearch
   # REST API port (normally 9200).
-  config :port, :validate => :number, :default => "9300-9400"
+  config :port, :validate => :number, :default => 9300
 
   # The name/address of the host to bind to for ElasticSearch clustering
   config :bind_host, :validate => :string
@@ -94,7 +94,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     end
 
     # setup log4j properties for elasticsearch
-    @logger.setup_log4j
+    #@logger.setup_log4j
+    # Commented: @logger has no method setup_log4j, it an instance of
+    # Cabin::Channel, not Logstash::Logger
 
     if @embedded
       # Default @host with embedded to localhost. This should help avoid
