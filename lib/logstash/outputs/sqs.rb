@@ -1,6 +1,7 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 require "logstash/plugin_mixins/aws_config"
+require "stud/buffer"
 
 # Push events to an Amazon Web Services Simple Queue Service (SQS) queue.
 #
@@ -57,12 +58,23 @@ require "logstash/plugin_mixins/aws_config"
 #
 class LogStash::Outputs::SQS < LogStash::Outputs::Base
   include LogStash::PluginMixins::AwsConfig
+  include Stud::Buffer
 
   config_name "sqs"
   milestone 1
 
   # Name of SQS queue to push messages into. Note that this is just the name of the queue, not the URL or ARN.
   config :queue, :validate => :string, :required => true
+
+  # Set to true if you want send messages to SQS in batches with batch_send
+  # from the amazon sdk
+  config :batch, :validate => :boolean, :default => false
+
+  # If batch is set to true, the number of events we queue up for a batch_send.
+  config :batch_events, :validate => :number, :default => 10
+
+  # If batch is set to true, the maximum amount of time between batch_send commands when there are pending events to flush.
+  config :batch_timeout, :validate => :number, :default => 5
 
   public
   def aws_service_endpoint(region)
@@ -77,6 +89,14 @@ class LogStash::Outputs::SQS < LogStash::Outputs::Base
 
     @sqs = AWS::SQS.new(aws_options_hash)
 
+    if @batch
+      buffer_initialize(
+        :max_items => @batch_events,
+        :max_interval => @batch_timeout,
+        :logger => @logger
+      )
+    end
+
     begin
       @logger.debug("Connecting to AWS SQS queue '#{@queue}'...")
       @sqs_queue = @sqs.queues.named(@queue)
@@ -89,11 +109,21 @@ class LogStash::Outputs::SQS < LogStash::Outputs::Base
 
   public
   def receive(event)
+    if @batch
+      buffer_receive(event.to_json)
+      return
+    end
     @sqs_queue.send_message(event.to_json)
   end # def receive
 
+  # called from Stud::Buffer#buffer_flush when there are events to flush
+  def flush(events, teardown=false)
+    @sqs_queue.batch_send(events)
+  end
+
   public
   def teardown
+    buffer_flush(:final => true)
     @sqs_queue = nil
     finished
   end # def teardown
