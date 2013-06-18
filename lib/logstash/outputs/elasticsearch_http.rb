@@ -1,5 +1,6 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
+require "stud/buffer"
 
 # This output lets you store logs in elasticsearch.
 #
@@ -9,6 +10,7 @@ require "logstash/outputs/base"
 #
 # You can learn more about elasticsearch at <http://elasticsearch.org>
 class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
+  include Stud::Buffer
 
   config_name "elasticsearch_http"
   milestone 2
@@ -20,7 +22,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   # The index type to write events to. Generally you should try to write only
   # similar events to the same 'type'. String expansion '%{foo}' works here.
-  config :index_type, :validate => :string, :default => "%{@type}"
+  config :index_type, :validate => :string
 
   # The hostname or ip address to reach your elasticsearch server.
   config :host, :validate => :string
@@ -41,86 +43,54 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # elasticsearch with the same ID.
   config :document_id, :validate => :string, :default => nil
 
+  # The amount of time since last flush before a flush is forced.
+  config :idle_flush_time, :validate => :number, :default => 1
+
   public
   def register
     require "ftw" # gem ftw
     @agent = FTW::Agent.new
     @queue = []
 
+    buffer_initialize(
+      :max_items => @flush_size,
+      :max_interval => @idle_flush_time,
+      :logger => @logger
+    )
   end # def register
 
   public
   def receive(event)
     return unless output?(event)
-
     index = event.sprintf(@index)
-    type = event.sprintf(@index_type)
-
-    if @flush_size == 1
-      receive_single(event, index, type)
+    if @index_type.nil?
+      type = "logs"
     else
-      receive_bulk(event, index, type)
-    end #
+      type = event.sprintf(@index_type)
+    end
+    buffer_receive(event, [index, type])
   end # def receive
 
-  def receive_single(event, index, type)
-    success = false
-    while !success
-      begin
-        response = @agent.post!("http://#{@host}:#{@port}/#{index}/#{type}",
-                                :body => event.to_json)
-      rescue EOFError
-        @logger.warn("EOF while writing request or reading response header from elasticsearch",
-                     :host => @host, :port => @port)
-        next # try again
-      end
+  def flush(events, key, teardown=false)
+    @logger.debug? && @logger.debug("Flushing events to elasticsearch",
+                                    :count => events.count)
+    index, type = key
 
+    body = events.collect do |event|
+      header = { "index" => { "_index" => index, "_type" => type } }
+      header["index"]["_id"] = event.sprintf(@document_id) if !@document_id.nil?
+      # Generate the body of the bulk request w/ a trailing newline.
+      # http://www.elasticsearch.org/guide/reference/api/bulk.html
+      #  "NOTE: the final line of data must end with a newline character \n."
+      [ header, event ]
+    end.flatten.collect(&:to_json).join("\n") + "\n"
 
-      begin
-        # We must read the body to free up this connection for reuse.
-        body = "";
-        response.read_body { |chunk| body += chunk }
-      rescue EOFError
-        @logger.warn("EOF while reading response body from elasticsearch",
-                     :host => @host, :port => @port)
-        next # try again
-      end
-
-      if response.status != 201
-        @logger.error("Error writing to elasticsearch",
-                      :response => response, :response_body => body)
-      else
-        success = true
-      end
-    end
-  end # def receive_single
-
-  def receive_bulk(event, index, type)
-    header = { "index" => { "_index" => index, "_type" => type } }
-    if !@document_id.nil?
-      header["index"]["_id"] = event.sprintf(@document_id)
-    end
-    @queue << [
-      header.to_json, event.to_json
-    ].join("\n")
-
-    # Keep trying to flush while the queue is full.
-    # This will cause retries in flushing if the flush fails.
-    flush while @queue.size >= @flush_size
+    post(body)
   end # def receive_bulk
 
-  def flush
-    @logger.debug? && @logger.debug("Flushing events to elasticsearch",
-                                    :count => @queue.count)
-    # If we don't tack a trailing newline at the end, elasticsearch
-    # doesn't seem to process the last event in this bulk index call.
-    #
-    # as documented here:
-    # http://www.elasticsearch.org/guide/reference/api/bulk.html
-    #  "NOTE: the final line of data must end with a newline character \n."
+  def post(body)
     begin
-      response = @agent.post!("http://#{@host}:#{@port}/_bulk",
-                              :body => @queue.join("\n") + "\n")
+      response = @agent.post!("http://#{@host}:#{@port}/_bulk", :body => body)
     rescue EOFError
       @logger.warn("EOF while writing request or reading response header from elasticsearch",
                    :host => @host, :port => @port)
@@ -144,55 +114,9 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
                     :request_body => @queue.join("\n"))
       return
     end
-
-    # Clear the queue on success only.
-    @queue.clear
-  end # def flush
+  end # def post
 
   def teardown
-    flush while @queue.size > 0
+    buffer_flush(:final => true)
   end # def teardown
-
-  # THIS IS NOT USED YET. SEE LOGSTASH-592
-  def setup_index_template
-    template_name = "logstash-template"
-    template_wildcard = @index.gsub(/%{[^}+]}/, "*")
-    template_config = {
-      "template" => template_wildcard,
-      "settings" => {
-        "number_of_shards" => 5,
-        "index.compress.stored" => true,
-        "index.query.default_field" => "@message"
-      },
-      "mappings" => {
-        "_default_" => {
-          "_all" => { "enabled" => false }
-        }
-      }
-    } # template_config
-
-    @logger.info("Setting up index template", :name => template_name,
-                 :config => template_config)
-    begin
-      success = false
-      while !success
-        response = @agent.put!("http://#{@host}:#{@port}/_template/#{template_name}",
-                               :body => template_config.to_json)
-        if response.error?
-          body = ""
-          response.read_body { |c| body << c }
-          @logger.warn("Failure setting up elasticsearch index template, will retry...",
-                       :status => response.status, :response => body)
-          sleep(1)
-        else
-          success = true
-        end
-      end
-    rescue => e
-      @logger.warn("Failure setting up elasticsearch index template, will retry...",
-                   :exception => e)
-      sleep(1)
-      retry
-    end
-  end # def setup_index_template
 end # class LogStash::Outputs::ElasticSearchHTTP
