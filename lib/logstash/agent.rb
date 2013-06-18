@@ -77,7 +77,7 @@ class LogStash::Agent < Clamp::Command
     else
       # include a default stdin input if no inputs given
       if @config_string !~ /input *{/
-        @config_string += "input { stdin { } }"
+        @config_string += "input { stdin { type => stdin } }"
       end
       # include a default stdout output if no outputs given
       if @config_string !~ /output *{/
