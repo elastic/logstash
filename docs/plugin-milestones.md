@@ -28,8 +28,8 @@ milestone.
 ## Milestone 3
 
 Plugins at this milestone have strong promises towards backwards-compatibility.
-This is enforced by tests to ensure behavior and configuration are consistent
-across releases.
+This is enforced with automated tests to ensure behavior and configuration are
+consistent across releases.
 
 ## Milestone 0
 
