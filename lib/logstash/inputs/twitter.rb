@@ -8,115 +8,76 @@ require "json"
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
   config_name "twitter"
-  milestone 2
+  milestone 1
 
-  # Your twitter username
-  config :user, :validate => :string, :required => true
+  # Your twitter app's consumer key
+  #
+  # Don't know what this is? You need to create an "application"
+  # on twitter, see this url: <https://dev.twitter.com/apps/new>
+  config :consumer_key, :validate => :string, :required => true
 
-  # Your twitter password
-  config :password, :validate => :password, :required => true
+  # Your twitter app's consumer secret
+  #
+  # If you don't have one of these, you can create one by
+  # registering a new application with twitter:
+  # <https://dev.twitter.com/apps/new>
+  config :consumer_secret, :validate => :password, :required => true
+
+  # Your oauth token.
+  #
+  # To get this, login to twitter with whatever account you want,
+  # then visit <https://dev.twitter.com/apps>
+  #
+  # Click on your app (used with the consumer_key and consumer_secret settings)
+  # Then at the bottom of the page, click 'Create my access token' which
+  # will create an oauth token and secret bound to your account and that
+  # application.
+  config :oauth_token, :validate => :string, :required => true
+  
+  # Your oauth token secret.
+  #
+  # To get this, login to twitter with whatever account you want,
+  # then visit <https://dev.twitter.com/apps>
+  #
+  # Click on your app (used with the consumer_key and consumer_secret settings)
+  # Then at the bottom of the page, click 'Create my access token' which
+  # will create an oauth token and secret bound to your account and that
+  # application.
+  config :oauth_token_secret, :validate => :password, :required => true
 
   # Any keywords to track in the twitter stream
   config :keywords, :validate => :array, :required => true
 
-  # Proxy Host
-  config :proxy_host, :validate => :string
-
-  # Proxy Port
-  config :proxy_port, :validate => :number
-
-  # Proxy Username
-  config :proxy_user, :validate => :string
-
-  # Proxy Password
-  config :proxy_password, :validate => :password
-
-  public
-  def initialize(params)
-    super
-
-    # Force format to plain. Other values don't make any sense here.
-    @format = "plain"
-  end # def initialize
-
   public
   def register
-    # TODO(sissel): put buftok in logstash, too
-    @logger.info("Registering twitter input")
-    v = require("filewatch/buftok")
-    @logger.info("Required buftok #{v}")
-    #require "tweetstream" # rubygem 'tweetstream'
+    require "tweetstream"
+    TweetStream.configure do |c|
+      c.consumer_key = @consumer_key
+      c.consumer_secret = @consumer_secret.value
+      c.oauth_token = @oauth_token
+      c.oauth_token_secret = @oauth_token_secret.value
+      c.auth_method = :oauth
+    end
   end
 
   public
   def run(queue)
-    loop do
-      #stream = TweetStream::Client.new(@user, @password.value)
-      #stream.track(*@keywords) do |status|
-      track(*@keywords) do |status|
-        @logger.debug("twitter keyword track status", :status => status)
-        #@logger.debug("Got twitter status from @#{status[:user][:screen_name]}")
-        @logger.info("Got twitter status", :user => status["user"]["screen_name"])
-        e = to_event(status["text"], "http://twitter.com/#{status["user"]["screen_name"]}/status/#{status["id"]}")
-        next unless e
+    client = TweetStream::Client.new
+    @logger.info("Starting twitter tracking", :keywords => @keywords)
+    client.track(*@keywords) do |status|
+      p status
+      @logger.info? && @logger.info("Got tweet", :user => status.user.screen_name, :text => status.text)
+      event = LogStash::Event.new(
+        "user" => status.user.screen_name,
+        "client" => status.source,
+        "retweeted" => status.retweeted
+      )
+      event["in-reply-to"] = status.in_reply_to_status_id  if status.in_reply_to_status_id
 
-        e.fields.merge!(
-          "user" => (status["user"]["screen_name"] rescue nil),
-          "client" => (status["source"] rescue nil),
-          "retweeted" => (status["retweeted"] rescue nil)
-        )
+      urls = tweet.urls.collect(&:expanded_url)
+      event["urls"] = urls if urls.size > 0
 
-        e.fields["in-reply-to"] = status["in_reply_to_status_id"] if status["in_reply_to_status_id"]
-
-        urls = status["entities"]["urls"] rescue []
-        if urls.size > 0
-          e.fields["urls"] = urls.collect { |u| u["url"] }
-        end
-
-        queue << e
-      end # stream.track
-
-      # Some closure or error occured, sleep and try again.
-      @logger.warn("An error occured? Retrying twitter in 30 seconds")
-      sleep 30
-    end # loop
+      queue << event
+    end # client.track
   end # def run
-
-  private
-  def track(*keywords)
-    uri = URI.parse("https://stream.twitter.com/1/statuses/filter.json")
-    #params = {
-      #"track" => keywords
-    #}
-
-    http = Net::HTTP::Proxy(@proxy_host, @proxy_port, @proxy_user, @proxy_password.value).new(uri.host, uri.port)
-    http.use_ssl = true
-
-    # TODO(sissel): Load certs.
-    http.ca_file = File.join(File.dirname(__FILE__), "..", "certs", "cacert.pem")
-    http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-    http.verify_depth = 5
-
-    request = Net::HTTP::Post.new(uri.path)
-    request.body = "track=#{keywords.join(",")}"
-    request.basic_auth @user, @password.value
-    buffer = FileWatch::BufferedTokenizer.new("\r\n")
-    http.request(request) do |response|
-      response.read_body do |chunk|
-        #@logger.info("Twitter: #{chunk.inspect}")
-        buffer.extract(chunk).each do |line|
-          @logger.info("Twitter line", :line => line)
-          begin 
-            # Ignore blank lines twitter sometimes sends
-            next if line == ""
-            status = JSON.parse(line)
-            yield status
-          rescue => e
-            @logger.error("Error parsing json from twitter", :exception => e,
-                          :backtrace => e.backtrace);
-          end
-        end # buffer.extract
-      end # response.read_body
-    end # http.request
-  end # def track
 end # class LogStash::Inputs::Twitter
