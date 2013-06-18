@@ -5,7 +5,7 @@ require "json"
 class LogStash::Codecs::Json < LogStash::Codecs::Base
   config_name "json"
 
-  plugin_status "experimental"
+  milestone 1
 
   public
   def decode(data)

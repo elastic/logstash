@@ -13,7 +13,7 @@ class LogStash::Outputs::Boundary < LogStash::Outputs::Base
   #
 
   config_name "boundary"
-  plugin_status "experimental"
+  milestone 1
 
   # Your Boundary API key
   config :api_key, :validate => :string, :required => true

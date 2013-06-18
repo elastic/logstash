@@ -14,7 +14,7 @@ require "logstash/namespace"
 class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
 
   config_name "gemfire"
-  plugin_status "experimental"
+  milestone 1
 
   # Your client cache name
   config :cache_name, :validate => :string, :default => "logstash"

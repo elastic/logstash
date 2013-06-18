@@ -10,7 +10,7 @@ require "logstash/namespace"
 class LogStash::Inputs::Unix < LogStash::Inputs::Base
   class Interrupted < StandardError; end
   config_name "unix"
-  plugin_status "beta"
+  milestone 2
 
   # When mode is `server`, the path to listen on.
   # When mode is `client`, the path to connect to.

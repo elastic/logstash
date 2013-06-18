@@ -25,7 +25,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   end
 
   config_name "date"
-  plugin_status "stable"
+  milestone 3
 
   # specify a timezone canonical ID to be used for date parsing.
   # The valid ID are listed on http://joda-time.sourceforge.net/timezones.html
@@ -138,15 +138,19 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           end
           parser = lambda { |date| joda_parser.parseDateTime(date) }
         when "UNIX" # unix epoch
-          parser = lambda { |date| org.joda.time.Instant.new((date.to_f * 1000).to_i).toDateTime }
+          joda_instant = org.joda.time.Instant.java_class.constructor(Java::long).method(:new_instance)
+          parser = lambda { |date| joda_instant.call((date.to_f * 1000).to_i).to_java.toDateTime }
         when "UNIX_MS" # unix epoch in ms
-          parser = lambda { |date| org.joda.time.Instant.new(date.to_i).toDateTime }
+          joda_instant = org.joda.time.Instant.java_class.constructor(Java::long).method(:new_instance)
+          parser = lambda do |date| 
+            return joda_instant.call(date.to_i).to_java.toDateTime
+          end
         when "TAI64N" # TAI64 with nanoseconds, -10000 accounts for leap seconds
+          joda_instant = org.joda.time.Instant.java_class.constructor(Java::long).method(:new_instance)
           parser = lambda do |date| 
             # Skip leading "@" if it is present (common in tai64n times)
             date = date[1..-1] if date[0, 1] == "@"
-
-            org.joda.time.Instant.new((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).toDateTime 
+            return joda_instant.call((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).to_java.toDateTime 
           end
         else
           joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withDefaultYear(Time.new.year)
@@ -200,9 +204,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             end
           end # fieldparsers.each
 
-          if !success
-            raise last_exception
-          end
+          raise last_exception unless success
 
           time = time.withZone(UTC)
           # Convert joda DateTime to a ruby Time

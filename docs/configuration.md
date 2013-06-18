@@ -80,17 +80,10 @@ The above makes 'path' a 3-element array including all 3 strings.
 
 ### <a name="hash"></a>Hash
 
-A 'hash' is currently represented using the same syntax as an array (see above).
+A 'hash' is basically the same syntax as Ruby hashes. 
 The 'key' and 'value' are simply pairs, such as:
 
-    match => [ "field1", "pattern1", "field2", "pattern2" ]
-
-The above would internally be represented as this hash: `{ "field1" =>
-"pattern1", "field2" => "pattern2" }`
-
-Why this syntax? Well frankly it was easier than adding additional grammar to
-the config language. Logstash may support ruby- or json-like hash syntax in the
-future, but not today.
+    match => { "field1" => "value1", "field2" => "value2", ... }
 
 ## Further reading
 

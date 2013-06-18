@@ -11,7 +11,7 @@ require "logstash/util/socket_peer"
 class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   class Interrupted < StandardError; end
   config_name "tcp"
-  plugin_status "beta"
+  milestone 2
 
   # When mode is `server`, the address to listen on.
   # When mode is `client`, the address to connect to.
@@ -57,7 +57,6 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
   public
   def register
-    enable_codecs
     require "socket"
     require "timeout"
     if @ssl_enable

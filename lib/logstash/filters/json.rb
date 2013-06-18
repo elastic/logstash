@@ -6,7 +6,7 @@ require "logstash/namespace"
 class LogStash::Filters::Json < LogStash::Filters::Base
 
   config_name "json"
-  plugin_status "beta"
+  milestone 2
 
   # Config for json is:
   #

@@ -15,7 +15,7 @@ require "socket"
 class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
   config_name "eventlog"
-  plugin_status "beta"
+  milestone 2
 
   # Event Log Name
   config :logfile, :validate => :array, :default => [ "Application", "Security", "System" ]
@@ -36,6 +36,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
     @logger.info("Registering input eventlog://#{@hostname}/#{@logfile}")
 
     if RUBY_PLATFORM == "java"
+      require "logstash/inputs/eventlog/racob_fix"
       require "jruby-win32ole"
     else
       require "win32ole"
@@ -57,8 +58,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
         notification = events.NextEvent
         event = notification.TargetInstance
 
-        timestamp = DateTime.strptime(event.TimeGenerated, "%Y%m%d%H%M%S").iso8601
-        timestamp[19..-1] = DateTime.now.iso8601[19..-1] # Copy over the correct TZ offset
+        timestamp = to_timestamp(event.TimeGenerated)
 
         e = LogStash::Event.new({
             "@source" => "eventlog://#{@hostname}/#{@logfile}",
@@ -105,5 +105,26 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
     variants.map {|v| (v.respond_to? :getValue) ? v.getValue : v}
   end # def unwrap_racob_variant_array
 
+  # the event log timestamp is a utc string in the following format: yyyymmddHHMMSS.xxxxxx±UUU
+  # http://technet.microsoft.com/en-us/library/ee198928.aspx
+  private
+  def to_timestamp(wmi_time)
+    result = ""
+    # parse the utc date string
+    /(?<w_date>\d{8})(?<w_time>\d{6})\.\d{6}(?<w_sign>[\+-])(?<w_diff>\d{3})/ =~ wmi_time
+    result = "#{w_date}T#{w_time}#{w_sign}"
+    # the offset is represented by the difference, in minutes, 
+    # between the local time zone and Greenwich Mean Time (GMT).
+    if w_diff.to_i > 0
+      # calculate the timezone offset in hours and minutes
+      h_offset = w_diff.to_i / 60
+      m_offset = w_diff.to_i - (h_offset * 60)
+      result.concat("%02d%02d" % [h_offset, m_offset])
+    else
+      result.concat("0000")
+    end
+  
+    return DateTime.strptime(result, "%Y%m%dT%H%M%S%z").iso8601
+  end
 end # class LogStash::Inputs::EventLog
 

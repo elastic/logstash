@@ -9,7 +9,7 @@ require "logstash/outputs/base"
 # If no clients are connected, any messages received are ignored.
 class LogStash::Outputs::WebSocket < LogStash::Outputs::Base
   config_name "websocket"
-  plugin_status "experimental"
+  milestone 1
 
   # The address to serve websocket data from
   config :host, :validate => :string, :default => "0.0.0.0"

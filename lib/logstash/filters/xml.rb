@@ -6,7 +6,7 @@ require "logstash/namespace"
 class LogStash::Filters::Xml < LogStash::Filters::Base
 
   config_name "xml"
-  plugin_status "experimental"
+  milestone 1
 
   # Config for xml to hash is:
   #
@@ -87,22 +87,22 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
     if event[key].length > 1
       @logger.warn("XML filter only works on fields of length 1",
                    :key => key, :value => event[key])
-      next
+      return
     end
 
     raw = event[key].first
 
     # for some reason, an empty string is considered valid XML
-    next if raw.strip.length == 0
+    return if raw.strip.length == 0
 
-     if @xpath
+    if @xpath
       begin
         doc = Nokogiri::XML(raw)
       rescue => e
         event.tag("_xmlparsefailure")
         @logger.warn("Trouble parsing xml", :key => key, :raw => raw,
                      :exception => e, :backtrace => e.backtrace)
-        next
+        return
       end
 
       @xpath.each do |xpath_src, xpath_dest|
@@ -115,7 +115,7 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
         normalized_nodeset.each do |value|
           # some XPath functions return empty arrays as string
           if value.is_a?(Array)
-            next if value.length == 0
+            return if value.length == 0
           end
 
           unless value.nil?
@@ -135,7 +135,7 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
         event.tag("_xmlparsefailure")
         @logger.warn("Trouble parsing xml with XmlSimple", :key => key,
                      :raw => raw, :exception => e, :backtrace => e.backtrace)
-        next
+        return
       end
     end # if @store_xml
 

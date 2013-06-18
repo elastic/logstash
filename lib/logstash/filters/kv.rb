@@ -24,7 +24,7 @@ require "logstash/namespace"
 # 'foo=bar&baz=fizz' by setting the field_split to "&"
 class LogStash::Filters::KV < LogStash::Filters::Base
   config_name "kv"
-  plugin_status "beta"
+  milestone 2
 
   # A string of characters to trim from the value. This is useful if your
   # values are wrapped in brackets or are terminated by comma (like postfix

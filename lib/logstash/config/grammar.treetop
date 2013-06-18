@@ -1,0 +1,188 @@
+require "treetop"
+require "logstash/config/config_ast"
+
+grammar LogStashConfig
+  rule config
+    _ plugin_section _ (_ plugin_section)* _ <LogStash::Config::AST::Config>
+  end
+
+  rule comment
+    (whitespace? "#" [^\r\n]+ "\r"? "\n")+ <LogStash::Config::AST::Comment>
+  end
+
+  rule _
+    (comment / whitespace)* <LogStash::Config::AST::Whitespace>
+  end
+
+  rule whitespace
+    [ \t\r\n]+ <LogStash::Config::AST::Whitespace>
+  end
+
+  rule plugin_section
+    plugin_type _ "{"
+      (_ branch_or_plugin _)*
+    "}"
+    <LogStash::Config::AST::PluginSection>
+  end
+
+  rule branch_or_plugin
+    branch / plugin
+  end
+
+  rule plugin_type
+    ("input" / "filter" / "output")
+  end
+
+  rule plugins
+    (plugin (_ plugin)*)?
+    <LogStash::Config::AST::Plugins>
+  end
+
+  rule plugin 
+    name _ "{" 
+      _
+      attributes:( attribute (whitespace attribute)*)? 
+      _
+    "}"
+    <LogStash::Config::AST::Plugin>
+  end
+
+  rule name
+    [A-Za-z0-9_-]+
+    <LogStash::Config::AST::Name>
+  end
+
+  rule attribute
+    name _ "=>" _ value
+    <LogStash::Config::AST::Attribute>
+  end
+
+  rule value
+    plugin / bareword / string / number / array / hash
+    #<LogStash::Config::AST::Value>
+  end
+
+  rule array_value
+    bareword / string / number / array / hash
+  end
+
+  rule bareword
+    [A-Za-z_] [A-Za-z0-9_]+
+    <LogStash::Config::AST::Bareword>
+  end
+
+  rule string
+    ( 
+      ( '"' ( '\"' / !'"' . )* '"'  <LogStash::Config::AST::String>)
+      / ( "'" ( "\\'" / !"'" . )* "'"  <LogStash::Config::AST::String> )
+    )
+  end
+
+  rule number
+    "-"? [0-9]+ ("." [0-9]*)? 
+    <LogStash::Config::AST::Number>
+  end
+
+  rule array
+    "[" 
+    _ 
+    (
+      value (_ "," _ value)*
+    )?
+    _ 
+    "]"
+    <LogStash::Config::AST::Array>
+  end
+
+  rule hash
+    "{" 
+      _ 
+      hashentries?
+      _ 
+    "}"
+    <LogStash::Config::AST::Hash>
+  end
+
+  rule hashentries
+    hashentry (whitespace hashentry)*
+    <LogStash::Config::AST::HashEntries>
+  end
+
+  rule hashentry
+    name:(number / bareword / string) _ "=>" _ value 
+    <LogStash::Config::AST::HashEntry>
+  end
+
+  # Conditions
+  rule branch
+    if (_ elsif)* (_ else)?
+    <LogStash::Config::AST::Branch>
+  end
+
+  rule if
+    "if" _ condition _ "{" _ (branch_or_plugin _)* "}"
+    <LogStash::Config::AST::If>
+  end
+
+  rule elsif
+    "elsif" _ condition _ "{" _ ( branch_or_plugin _)* "}"
+    <LogStash::Config::AST::Elsif>
+  end
+
+  rule else
+    "else" _ "{" _ (branch_or_plugin _)* "}"
+    <LogStash::Config::AST::Else>
+  end
+
+  rule condition
+    expression (_ boolean_operator _ expression)*
+    <LogStash::Config::AST::Condition>
+  end
+
+  rule expression
+    (
+        ("(" _ condition _ ")")
+      / ("!" _ condition)
+      / (rvalue _ comparison _ rvalue)
+      / (rvalue)
+    ) <LogStash::Config::AST::Expression>
+  end
+
+  rule rvalue
+    string / number / selector / array / method_call
+  end
+
+  rule method_call
+      method _ "(" _ 
+        ( 
+          rvalue ( _ "," _ rvalue )* 
+        )? 
+      _ ")"
+    <LogStash::Config::AST::MethodCall>
+  end
+
+  rule method
+    bareword
+  end
+
+  rule comparison
+    ("==" / "!=" / "<" / ">" / "<=" / ">=" / "=~" / "!~" / "in")
+    <LogStash::Config::AST::ComparisonOperator>
+  end
+
+  rule boolean_operator
+    ("and" / "or" / "xor" / "nand")
+    <LogStash::Config::AST::BooleanOperator>
+  end
+
+  rule selector
+    selector_element+
+    <LogStash::Config::AST::Selector>
+  end
+
+  rule selector_element
+    "[" [^\], ]+ "]"
+    <LogStash::Config::AST::SelectorElement>
+  end
+  
+end

@@ -13,7 +13,7 @@ require "tempfile"
 # <http://www.maxmind.com/en/geolite>.
 class LogStash::Filters::GeoIP < LogStash::Filters::Base
   config_name "geoip"
-  plugin_status "experimental"
+  milestone 1
 
   # GeoIP database file to use, Country, City, ASN, ISP and organization
   # databases are supported

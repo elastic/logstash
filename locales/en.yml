@@ -22,13 +22,44 @@ en:
         A plugin had an unrecoverable error. Will restart this plugin.
           Plugin: %{plugin}
           Error: %{error}
+      worker-error-debug: |-
+        A plugin had an unrecoverable error. Will restart this plugin.
+          Plugin: %{plugin}
+          Error: %{error}
+          Stack: %{stacktrace}
+      plugin-loading-error: >-
+        Couldn't find any %{type} plugin named '%{name}'. Are you 
+        sure this is correct?
+      plugin-type-loading-error: >-
+        Could not find any plugin type named '%{type}'. Check for typos.
+        Valid plugin types are 'input' 'filter' and 'output'
+    plugin:
+      milestone:
+        "0": >-
+          Using milestone 0 %{type} plugin '%{name}'. This plugin isn't well
+          supported by the commnity and likely has no maintainer. For more
+          information on plugin milestones, see
+          http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin-milestones
+        "1": >-
+          Using milestone 1 %{type} plugin '%{name}'. This plugin should work,
+          but would benefit from use by folks like you. Please let us know if you
+          find bugs or have suggestions on how to improve this plugin.  For more
+          information on plugin milestones, see
+          http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin-milestones
+        "2": >-
+          Using milestone 2 %{type} plugin '%{name}'. This plugin should be
+          stable, but if you see strange behavior, please let us know!
+          For more information on plugin milestones, see
+          http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin-milestones
     agent:
-      missing-configuration: |-
+      sighup: >-
+        SIGHUP received.
+      missing-configuration: >-
         No configuration file was specified. Perhaps you forgot to provide
         the '-f yourlogstash.conf' flag?
-      error: |-
+      error: >-
         Error: %{error}
-      interrupted: |-
+      interrupted: >-
         Interrupt received. Shutting down the pipeline.
       configuration:
         file-not-found: |-
@@ -54,9 +85,9 @@ en:
                 ...
               }
             }
-        invalid_plugin_settings: |-
+        invalid_plugin_settings: >-
           Something is wrong with your configuration.
-        plugin_path_missing: |-
+        plugin_path_missing: >-
           You specified a plugin path that does not exist: %{path}
         no_plugins_found: |-
           Could not find any plugins in "%{path}"
@@ -70,7 +101,7 @@ en:
       flag:
         # Note: Wrap these at 45 chars so they display nicely when clamp emits
         # them in an 80-character terminal
-        config: |-
+        config: |+
           Load the logstash config from a specific file
           or directory.  If a direcory is given, all
           files in that directory will be concatonated
@@ -78,34 +109,34 @@ en:
           single config file. You can also specify
           wildcards (globs) and any matched files will
           be loaded in the order described above.
-        config-string: |-
+        config-string: |+
           Use the given string as the configuration
           data. Same syntax as the config file. If not
           input is specified, then 'stdin { type =>
           stdin }' is the default input. If no output
           is specified, then 'stdout { debug => true
           }}' is default output.
-        filterworkers: |-
+        filterworkers: |+
           Sets the number of filter workers to run.
-        watchdog-timeout: |-
+        watchdog-timeout: |+
           Set the filter watchdog timeout (in seconds).
           This timeout is used to detect stuck filters;
           stuck filters usually symptoms of bugs.
           When a filter takes longer than TIMEOUT
           seconds, it will cause logstash to abort.
-        log: |-
+        log: |+
           Write logstash internal logs to the given
           file. Without this flag, logstash will emit
           logs to standard output.
-        verbosity: |-
+        verbosity: |+
           Increase verbosity of logstash internal logs.
           Specifying once will show 'informational'
           logs. Specifying twice will show 'debug'
           logs.
-        version: |-
+        version: |+
           Emit the version of logstash and its friends,
           then exit.
-        pluginpath: |-
+        pluginpath: |+
           A path of where to find plugins. This flag
           can be given multiple times to include
           multiple paths. Plugins are expected to be
@@ -113,3 +144,12 @@ en:
           'PATH/logstash/TYPE/NAME.rb' where TYPE is
           'input' 'filter' or 'output' and NAME is the
           name of the plugin.
+        quiet: |+
+          Quieter logstash logging. This causes only 
+          errors to be emitted.
+        verbose: |+
+          More verbose logging. This causes 'info' 
+          level logs to be emitted.
+        debug: |+
+          Most verbose logging. This causes 'debug'
+          level logs to be emitted.

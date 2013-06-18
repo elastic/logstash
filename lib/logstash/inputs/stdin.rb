@@ -7,22 +7,21 @@ require "socket" # for Socket.gethostname
 # By default, each event is assumed to be one line. If you
 # want to join lines, you'll want to use the multiline filter.
 class LogStash::Inputs::Stdin < LogStash::Inputs::Base
-
   config_name "stdin"
-
-  plugin_status "beta"
+  milestone 3
 
   public
   def register
-    enable_codecs
     @host = Socket.gethostname
   end # def register
 
   def run(queue) 
+    require "ap"
     while true
       begin
-        @codec.decode($stdin.readline.chomp) do |event|
-          event["source"] = "stdin://#{@host}/"
+        line = $stdin.readline.chomp
+        @codec.decode(line) do |event|
+          event["source"] = @host
           queue << event
         end
       rescue EOFError => ex
@@ -35,7 +34,8 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
 
   public
   def teardown
-    $stdin.close
+    @logger.debug("stdin shutting down.")
+    $stdin.close rescue nil
     finished
   end # def teardown
 end # class LogStash::Inputs::Stdin

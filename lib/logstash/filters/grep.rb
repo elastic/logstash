@@ -9,7 +9,7 @@ require "logstash/namespace"
 class LogStash::Filters::Grep < LogStash::Filters::Base
 
   config_name "grep"
-  plugin_status "beta"
+  milestone 3
 
   # Drop events that don't match
   #
@@ -41,8 +41,15 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
   # a regular expression.
   config :match, :validate => :hash, :default => {}
 
+  # Use case-insensitive matching. Similar to 'grep -i'
+  #
+  # If enabled, ignore case distinctions in the patterns.
+  config :ignore_case, :validate => :boolean, :default => false
+
   public
   def register
+    @logger.warn("The 'grep' plugin is no longer necessary now that you can do if/elsif/else in logstash configs. This plugin will be removed in the future. If you need to drop events, please use the drop filter. If you need to take action based on a match, use an 'if' block and the mutate filter. See the following URL for details on how to use if/elsif/else in your logstash configs:http://logstash.net/docs/#{LOGSTASH_VERSION}/configuration")
+
     @patterns = Hash.new { |h,k| h[k] = [] }
 
       # TODO(sissel): 
@@ -50,7 +57,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
 
       pattern = [pattern] if pattern.is_a?(String)
       pattern.each do |p|
-        re = Regexp.new(p)
+        re = Regexp.new(p, @ignore_case ? Regexp::IGNORECASE : 0)
         @patterns[field] << re
         @logger.debug? and @logger.debug("Registered grep", :type => @type, :field => field,
                     :pattern => p, :regexp => re)

@@ -7,7 +7,7 @@ require "logstash/namespace"
 #
 class LogStash::Filters::Sleep < LogStash::Filters::Base
   config_name "sleep"
-  plugin_status "experimental"
+  milestone 1
 
   # The length of time to sleep, in seconds, for every event.
   #

@@ -7,7 +7,7 @@ class LogStash::Outputs::Circonus < LogStash::Outputs::Base
   # 
 
   config_name "circonus"
-  plugin_status "experimental"
+  milestone 1
 
   # Your Circonus API Token
   config :api_token, :validate => :string, :required => true

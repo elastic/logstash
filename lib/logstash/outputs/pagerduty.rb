@@ -6,7 +6,7 @@ require "logstash/namespace"
 
 class LogStash::Outputs::PagerDuty < LogStash::Outputs::Base
   config_name "pagerduty"
-  plugin_status "experimental"
+  milestone 1
 
   # Service API Key
   config :service_key, :validate => :string, :required => true

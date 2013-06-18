@@ -8,10 +8,10 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   end
 
   config_name "stdout"
-  plugin_status "stable"
+  milestone 3
 
   # Enable debugging. Tries to pretty-print the entire event object.
-  config :debug, :validate => :boolean
+  config :debug, :validate => :boolean, :default => false
 
   # Debug output format: ruby (default), json
   config :debug_format, :default => "ruby", :validate => ["ruby", "dots"]
@@ -21,29 +21,9 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
 
   public
   def register
-    enable_codecs
-    begin
-      @codec.format = @message
-    rescue NoMethodError
-    end
     @print_method = method(:ap) rescue method(:p)
-    if @debug
-      case @debug_format
-        when "ruby"
-          @codec.on_event do |event|
-            @print_method.call(event)
-          end
-        when "dots"
-          @codec.on_event do |event|
-            $stdout.write(".")
-          end
-        else
-          raise "unknown debug_format #{@debug_format}, this should never happen"
-      end
-    else
-      @codec.on_event do |event|
-        puts event
-      end
+    @codec.on_event do |event|
+      $stdout.write(event)
     end
   end
 

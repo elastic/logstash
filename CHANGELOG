@@ -2,16 +2,14 @@
   # general
   - THE LOGSTASH EVENT SCHEMA HAS CHANGED.
       TODO(sissel): Document what this means, etc.
-  - Kibana is now available for launching:
+  - Kibana 3 is now available in jar releases:
       java -jar logstash.jar kibana
   - elasticsearch version 0.90.0 is included.
-  - grok now defaults 'singles' to true, meaning captured fields are
-    stored as single values in most cases instead of the old behavior
-    of being captured as an array of values.
+  - the multiline filter is replaced by the multiline codec.
   - Many deprecated features have been removed.
     TODO(sissel): Document what these were.
   - 'type' is no longer a required setting on inputs.
-  - feature: codecs. Used to abstract serialization/encoding out of 
+  - feature: codecs. Used to abstract encoding/decoding out of
     transports(inputs/outputs)
       TODO(nickethier): Document how to use and how to hack.
 
@@ -26,6 +24,10 @@
     of appending to them.
   - feature: the useragent filter now defaults to writing results to the top
     level of the event instead of "ua"
+  - feature: grok now defaults 'singles' to true, meaning captured fields are
+    stored as single values in most cases instead of the old behavior of being
+    captured as an array of values.
+  - removed: the multiline filter is gone. See the multiline codec instead.
 
   ## outputs
   - feature: irc: add messages_per_second tunable (LOGSTASH-962)

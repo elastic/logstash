@@ -30,7 +30,7 @@ require "logstash/namespace"
 class LogStash::Filters::DNS < LogStash::Filters::Base
 
   config_name "dns"
-  plugin_status "beta"
+  milestone 2
 
   # Reverse resolve one or more fields.
   config :reverse, :validate => :array

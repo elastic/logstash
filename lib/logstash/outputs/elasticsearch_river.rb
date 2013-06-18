@@ -17,7 +17,7 @@ require "net/http"
 class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   config_name "elasticsearch_river"
-  plugin_status "beta"
+  milestone 2
 
   config :debug, :validate => :boolean, :default => false
 

@@ -28,7 +28,7 @@ require "logstash/outputs/base"
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   config_name "elasticsearch"
-  plugin_status "stable"
+  milestone 3
 
   # ElasticSearch server name. This is optional if your server is discoverable.
   config :host, :validate => :string

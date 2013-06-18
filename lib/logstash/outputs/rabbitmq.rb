@@ -12,7 +12,7 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   MQTYPES = [ "fanout", "direct", "topic" ]
 
   config_name "rabbitmq"
-  plugin_status "unsupported"
+  milestone 0
 
   # Your amqp server address
   config :host, :validate => :string, :required => true

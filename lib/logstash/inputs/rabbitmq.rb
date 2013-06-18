@@ -15,7 +15,7 @@ require "cgi" # for CGI.escape
 class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
   config_name "rabbitmq"
-  plugin_status "unsupported"
+  milestone 0
 
   # Your amqp broker's custom arguments. For mirrored queues in RabbitMQ: [ "x-ha-policy", "all" ]
   config :arguments, :validate => :array, :default => []
@@ -88,7 +88,6 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
   public
   def register
-    enable_codecs
     @logger.info("Registering input #{@url}")
     require "bunny" # rubygem 'bunny'
     @vhost ||= "/"

@@ -12,7 +12,7 @@ require "logstash/namespace"
 class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
 
   config_name "zeromq"
-  plugin_status "beta"
+  milestone 2
 
   # 0mq socket address to connect or bind.
   # Please note that `inproc://` will not work with logstashi.

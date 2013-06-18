@@ -324,4 +324,19 @@ describe LogStash::Filters::Grep do
       reject { subject }.nil?
     end
   end
+
+  describe "case-insensitive matching" do
+    config <<-CONFIG
+      filter {
+        grep {
+          ignore_case => true
+          match => [ "str", "test" ]
+        }
+      }
+    CONFIG
+
+    sample("str" => "tEsT: this should still be matched") do
+      reject { subject }.nil?
+    end
+  end
 end

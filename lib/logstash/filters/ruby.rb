@@ -14,7 +14,7 @@ require "logstash/namespace"
 #
 class LogStash::Filters::Ruby < LogStash::Filters::Base
   config_name "ruby"
-  plugin_status "experimental"
+  milestone 1
 
   # Any code to execute at logstash startup-time
   config :init, :validate => :string

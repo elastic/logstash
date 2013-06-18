@@ -13,7 +13,7 @@ require "socket" # for Socket.gethostname
 # is detected and handled by this input.
 class LogStash::Inputs::File < LogStash::Inputs::Base
   config_name "file"
-  plugin_status "beta"
+  milestone 2
 
   # The path to the file to use as an input.
   # You can use globs here, such as `/var/log/*.log`
@@ -62,7 +62,6 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     require "addressable/uri"
     require "filewatch/tail"
     require "digest/md5"
-    enable_codecs
     LogStash::Util::set_thread_name("input|file|#{path.join(":")}")
     @logger.info("Registering file input", :path => @path)
 

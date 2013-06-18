@@ -4,7 +4,7 @@ require "logstash/namespace"
 class LogStash::Outputs::Mongodb < LogStash::Outputs::Base
 
   config_name "mongodb"
-  plugin_status "beta"
+  milestone 2
 
   # a MongoDB URI to connect to
   # See http://docs.mongodb.org/manual/reference/connection-string/
