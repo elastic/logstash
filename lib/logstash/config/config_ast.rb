@@ -64,7 +64,7 @@ module LogStash; module Config; module AST
 
         definitions << "  @logger.info(\"#{type} received\", :event => event)"
         sections.select { |s| s.plugin_type.text_value == type }.each do |s|
-          definitions << s.compile.split("\n", -1).map { |e| "  #{e}" }.join("\n")
+          definitions << s.compile.split("\n", -1).map { |e| "  #{e}" }
         end
 
         if type == "filter"
@@ -112,6 +112,10 @@ module LogStash; module Config; module AST
         @variables[plugin] = var
       end
       return @variables
+    end
+
+    def compile
+      return recursive_select(Plugin).collect(&:compile).join("\n")
     end
   end
 
