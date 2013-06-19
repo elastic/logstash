@@ -142,7 +142,7 @@ describe "outputs/email" do
         end
     end
 
-    describe  "match on @source and @message (LOGSTASH-826)" do
+    describe  "match on source and message (LOGSTASH-826)" do
         config <<-CONFIG
         input {
             generator {
@@ -156,7 +156,7 @@ describe "outputs/email" do
                 to => "me@host"
                 subject => "Hello World"
                 body => "Mail body"
-                match => ["messageAndSourceMatch", "@message,*hello,,and,@source,*generator"]
+                match => ["messageAndSourceMatch", "message,*hello,,and,source,*generator"]
                 options => ["port", #{@@port}, "authenticationType", "nil"]
             }
         }
