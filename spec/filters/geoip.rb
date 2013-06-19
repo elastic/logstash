@@ -8,7 +8,7 @@ describe LogStash::Filters::GeoIP do
       filter {
         geoip { 
           source => "ip"
-          database => "vendor/geoip/GeoLiteCity.dat"
+          #database => "vendor/geoip/GeoLiteCity.dat"
         }
       }
     CONFIG
@@ -35,7 +35,7 @@ describe LogStash::Filters::GeoIP do
       filter {
         geoip { 
           source => "ip"
-          database => "vendor/geoip/GeoLiteCity.dat"
+          #database => "vendor/geoip/GeoLiteCity.dat"
           target => src_ip
         }
       }

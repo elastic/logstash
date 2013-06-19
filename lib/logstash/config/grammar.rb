@@ -152,12 +152,7 @@ module LogStashConfig
               break
             end
           end
-          if s5.empty?
-            @index = i5
-            r5 = nil
-          else
-            r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
-          end
+          r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
           s1 << r5
           if r5
             if has_terminal?("\r", false, index)
@@ -556,8 +551,12 @@ module LogStashConfig
       elements[0]
     end
 
-    def attribute
+    def _
       elements[1]
+    end
+
+    def attribute
+      elements[2]
     end
   end
 
@@ -631,8 +630,12 @@ module LogStashConfig
                 r10 = _nt_whitespace
                 s9 << r10
                 if r10
-                  r11 = _nt_attribute
+                  r11 = _nt__
                   s9 << r11
+                  if r11
+                    r12 = _nt_attribute
+                    s9 << r12
+                  end
                 end
                 if s9.last
                   r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
@@ -664,17 +667,17 @@ module LogStashConfig
             end
             s0 << r5
             if r5
-              r12 = _nt__
-              s0 << r12
-              if r12
+              r13 = _nt__
+              s0 << r13
+              if r13
                 if has_terminal?("}", false, index)
-                  r13 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                  r14 = instantiate_node(SyntaxNode,input, index...(index + 1))
                   @index += 1
                 else
                   terminal_parse_failure("}")
-                  r13 = nil
+                  r14 = nil
                 end
-                s0 << r13
+                s0 << r14
               end
             end
           end

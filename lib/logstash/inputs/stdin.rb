@@ -22,6 +22,8 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
         line = $stdin.readline.chomp
         @codec.decode(line) do |event|
           event["source"] = @host
+          event["type"] = @type if @type
+          @tags && @tags.each { |t| event.tag(t) }
           queue << event
         end
       rescue EOFError => ex
