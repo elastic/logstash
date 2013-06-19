@@ -120,7 +120,7 @@ class LogStash::Runner
             if !File.exists?(arg) && __FILE__ =~ /file:.*\.jar!\//
               # Try inside the jar.
               jar_root = __FILE__.gsub(/!.*/,"!")
-              newpath = File.join(jar_root, args.first)
+              newpath = File.join(jar_root, arg)
 
               # Strip leading 'jar:' path (JRUBY_6970)
               newpath.gsub!(/^jar:/, "")

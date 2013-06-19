@@ -50,6 +50,8 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
   public
   def register
+    raise LogStash::ConfigurationError, "Sorry, this plugin doesn't work anymore. We will fix it eventually, but if you need this plugin, please file a ticket on logstash.jira.com :)"
+
     require "tweetstream"
     TweetStream.configure do |c|
       c.consumer_key = @consumer_key
@@ -65,7 +67,6 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
     client = TweetStream::Client.new
     @logger.info("Starting twitter tracking", :keywords => @keywords)
     client.track(*@keywords) do |status|
-      p status
       @logger.info? && @logger.info("Got tweet", :user => status.user.screen_name, :text => status.text)
       event = LogStash::Event.new(
         "user" => status.user.screen_name,
@@ -73,10 +74,8 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
         "retweeted" => status.retweeted
       )
       event["in-reply-to"] = status.in_reply_to_status_id  if status.in_reply_to_status_id
-
-      urls = tweet.urls.collect(&:expanded_url)
-      event["urls"] = urls if urls.size > 0
-
+      #urls = tweet.urls.collect(&:expanded_url)
+      #event["urls"] = urls if urls.size > 0
       queue << event
     end # client.track
   end # def run
