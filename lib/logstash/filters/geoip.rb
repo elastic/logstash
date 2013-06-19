@@ -59,6 +59,8 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
       else
         if File.exists?("GeoLiteCity.dat")
           @database = "GeoLiteCity.dat"
+        elsif File.exists?("vendor/geoip/GeoLiteCity.dat")
+          @database = "vendor/geoip/GeoLiteCity.dat"
         else
           raise "You must specify 'database => ...' in your geoip filter"
         end
