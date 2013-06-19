@@ -152,12 +152,7 @@ module LogStashConfig
               break
             end
           end
-          if s5.empty?
-            @index = i5
-            r5 = nil
-          else
-            r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
-          end
+          r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
           s1 << r5
           if r5
             if has_terminal?("\r", false, index)
