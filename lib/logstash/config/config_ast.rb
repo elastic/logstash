@@ -62,7 +62,7 @@ module LogStash; module Config; module AST
           definitions << "  extra_events = []"
         end
 
-        definitions << "  @logger.info(\"#{type} received\", :event => event)"
+        definitions << "  @logger.info? && @logger.info(\"#{type} received\", :event => event)"
         sections.select { |s| s.plugin_type.text_value == type }.each do |s|
           definitions << s.compile.split("\n", -1).map { |e| "  #{e}" }
         end
