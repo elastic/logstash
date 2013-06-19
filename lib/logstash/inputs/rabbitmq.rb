@@ -80,10 +80,8 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
   public
   def initialize(params)
+    params["codec"] = "json" if !params["codec"]
     super
-
-    @format ||= "json_event"
-    @codec = "json"
   end # def initialize
 
   public
