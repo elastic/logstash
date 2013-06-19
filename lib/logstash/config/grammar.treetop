@@ -7,7 +7,7 @@ grammar LogStashConfig
   end
 
   rule comment
-    (whitespace? "#" [^\r\n]+ "\r"? "\n")+ <LogStash::Config::AST::Comment>
+    (whitespace? "#" [^\r\n]* "\r"? "\n")+ <LogStash::Config::AST::Comment>
   end
 
   rule _
