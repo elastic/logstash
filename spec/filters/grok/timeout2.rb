@@ -9,7 +9,7 @@ describe "grok known timeout failures" do
     config <<-'CONFIG'
       filter {
         grok { 
-         match  => [ "@message", "%{SYSLOGBASE:ts1} \[\#\|%{TIMESTAMP_ISO8601:ts2}\|%{DATA} for %{PATH:url} = %{POSINT:delay} ms.%{GREEDYDATA}" ]
+         match  => [ "message", "%{SYSLOGBASE:ts1} \[\#\|%{TIMESTAMP_ISO8601:ts2}\|%{DATA} for %{PATH:url} = %{POSINT:delay} ms.%{GREEDYDATA}" ]
         }
       }
     CONFIG

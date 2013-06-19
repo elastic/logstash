@@ -36,7 +36,7 @@ describe LogStash::Filters::Environment do
 
     ENV["MY_ENV_VAR"] = "hello world"
 
-    sample({ "@type" => "bar", "@message" => "fizz", "@fields" => { } }) do
+    sample("type" => "bar", "message" => "fizz") do
       insist { subject["newfield"] }.nil?
     end
   end
