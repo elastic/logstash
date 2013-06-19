@@ -41,7 +41,7 @@ grammar LogStashConfig
   rule plugin 
     name _ "{" 
       _
-      attributes:( attribute (whitespace attribute)*)? 
+      attributes:( attribute (whitespace _ attribute)*)? 
       _
     "}"
     <LogStash::Config::AST::Plugin>
