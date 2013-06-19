@@ -31,12 +31,6 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   config :port, :validate => :number, :default => 9200
 
   # Set the number of events to queue up before writing to elasticsearch.
-  #
-  # If this value is set to 1, the normal ['index
-  # api'](http://www.elasticsearch.org/guide/reference/api/index_.html).
-  # Otherwise, the [bulk
-  # api](http://www.elasticsearch.org/guide/reference/api/bulk.html) will
-  # be used.
   config :flush_size, :validate => :number, :default => 100
 
   # The document ID for the index. Useful for overwriting existing entries in
@@ -62,29 +56,24 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   public
   def receive(event)
     return unless output?(event)
-    index = event.sprintf(@index)
-    if @index_type.nil?
-      type = "logs"
-    else
-      type = event.sprintf(@index_type)
-    end
-    buffer_receive(event, [index, type])
+    buffer_receive([event, index, type])
   end # def receive
 
-  def flush(events, key, teardown=false)
-    @logger.debug? && @logger.debug("Flushing events to elasticsearch",
-                                    :count => events.count)
-    index, type = key
+  def flush(events, teardown=false)
+    body = events.collect do |event, index, type|
+      index = event.sprintf(@index)
 
-    body = events.collect do |event|
+      # Set the 'type' value for the index.
+      if @index_type.nil?
+        type =  event["type"] || "logs"
+      else
+        type = event.sprintf(@index_type)
+      end
       header = { "index" => { "_index" => index, "_type" => type } }
       header["index"]["_id"] = event.sprintf(@document_id) if !@document_id.nil?
-      # Generate the body of the bulk request w/ a trailing newline.
-      # http://www.elasticsearch.org/guide/reference/api/bulk.html
-      #  "NOTE: the final line of data must end with a newline character \n."
-      [ header, event ]
-    end.flatten.collect(&:to_json).join("\n") + "\n"
 
+      [ header, event ]
+    end.flatten.collect(&:to_json).map { |e| "#{e}\n" }
     post(body)
   end # def receive_bulk
 
