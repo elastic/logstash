@@ -68,7 +68,7 @@ class LogStash::Outputs::SQS < LogStash::Outputs::Base
 
   # Set to true if you want send messages to SQS in batches with batch_send
   # from the amazon sdk
-  config :batch, :validate => :boolean, :default => false
+  config :batch, :validate => :boolean, :default => true
 
   # If batch is set to true, the number of events we queue up for a batch_send.
   config :batch_events, :validate => :number, :default => 10
@@ -90,6 +90,15 @@ class LogStash::Outputs::SQS < LogStash::Outputs::Base
     @sqs = AWS::SQS.new(aws_options_hash)
 
     if @batch
+      if @batch_events > 10
+        raise RuntimeError.new(
+          "AWS only allows a batch_events parameter of 10 or less"
+        )
+      elsif @batch_events <= 1
+        raise RuntimeError.new(
+          "batch_events parameter must be greater than 1 (or its not a batch)"
+        )
+      end
       buffer_initialize(
         :max_items => @batch_events,
         :max_interval => @batch_timeout,
