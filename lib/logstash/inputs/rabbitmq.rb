@@ -83,7 +83,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
     super
 
     @format ||= "json_event"
-    @codec = "json"
+
   end # def initialize
 
   public
