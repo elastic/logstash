@@ -17,14 +17,11 @@ describe "receive graphite input" do
       grok {
         pattern => "%{DATA:name} %{NUMBER:value:float} %{POSINT:ts}"
         singles => true
-        type => "graphite"
       }
       date {
-        type => "graphite"
         match => ["ts", UNIX]
       }
       mutate {
-        type => "graphite"
         remove => ts
       }
     }
@@ -32,13 +29,13 @@ describe "receive graphite input" do
 
   type "graphite"
 
-  sample 'foo.bar.baz 4025.34 1364606522' do
+  sample "foo.bar.baz 4025.34 1364606522" do
     insist { subject }.include?("name")
     insist { subject }.include?("value")
 
     insist { subject["name"] } == "foo.bar.baz"
     insist { subject["value"] } == 4025.34
-    insist { subject["@timestamp"] } == "2013-03-30T01:22:02.000Z"
+    insist { subject["@timestamp"] } == Time.iso8601("2013-03-30T01:22:02.000Z")
     
   end
 end
