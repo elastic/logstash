@@ -57,7 +57,7 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
     @scheduler = Rufus::Scheduler.start_new
     @job = @scheduler.every @timeframe do
       @logger.info("Scheduler Activated")
-      #flush_metrics(aggregate({}))
+      flush_metrics
     end
   end # def register
 
@@ -65,12 +65,12 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
     return unless @metric_name && @metric_value && @metric_type
-    return unless ["gauge", "counter"].include? @metric_type
+    return unless ["gauge", "counter"].include? event.sprintf(@metric_type)
 
     dd_metrics = Hash.new
     dd_metrics['metric'] = event.sprintf(@metric_name)
-    dd_metrics['points'] = [to_epoch(event.timestamp), event.sprintf(@metric_value).to_f]
-    dd_metrics['metric_type'] = event.sprintf(@metric_type)
+    dd_metrics['points'] = [[to_epoch(event.timestamp), event.sprintf(@metric_value).to_f]]
+    dd_metrics['type'] = event.sprintf(@metric_type)
     dd_metrics['host'] = event.sprintf(@host)
 
     if @dd_tags
@@ -92,9 +92,22 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
   private
   def flush_metrics
     dd_series = Hash.new
-    dd_series['series'] = dd_metrics_collection
+    dd_series['series'] = []
 
+    while !@event_queue.empty? do
+      begin
+        event = @event_queue.pop(true)
+        dd_series['series'] << event
+      rescue Exception => e
+        @logger.warn("Exception!  Breaking count loop", :exception => e)
+        break
+      end
+    end
 
+    if dd_series['series'].empty?
+        @logger.info("Datadog metrics queue empty. Skipping.")
+        return
+    end
 
     request = Net::HTTP::Post.new("#{@uri.path}?api_key=#{@api_key}")
 
