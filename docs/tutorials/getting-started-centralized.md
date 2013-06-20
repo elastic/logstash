@@ -61,7 +61,7 @@ Redis has no external dependencies and has a much simpler configuration in Logst
 
 Building and installing Redis is fairly straightforward. While normally this would be out of the scope of this document, as the instructions are so simple we'll include them here:
 
-- Download Redis from http://redis.io/download (The latest stable release is like what you want)
+- Download Redis from http://redis.io/download (The latest stable release is likely what you want)
 - Extract the source, change to the directory and run `make`
 - Run Redis with `src/redis-server --loglevel verbose`
 
