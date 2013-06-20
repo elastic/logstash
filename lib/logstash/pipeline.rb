@@ -55,6 +55,8 @@ class LogStash::Pipeline
 
     @logger.info("Pipeline started")
     wait_inputs
+
+    # In theory there's nothing to do to filters to tell them to shutdown?
     if filters?
       shutdown_filters
       wait_filters
@@ -163,12 +165,10 @@ class LogStash::Pipeline
         end
       end
     rescue => e
-      @logger.error("Exception in plugin #{plugin.class}",
-                    "plugin" => plugin.inspect, "exception" => e)
+      @logger.error("Exception in filterworker", "exception" => e, "backtrace" => e.backtrace)
     end
 
     @filters.each(&:teardown)
-    @filter_to_output.push(ShutdownSignal)
   end # def filterworker
 
   def outputworker
