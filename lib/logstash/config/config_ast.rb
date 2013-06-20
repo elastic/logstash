@@ -114,9 +114,6 @@ module LogStash; module Config; module AST
       return @variables
     end
 
-    def compile
-      return recursive_select(Plugin).collect(&:compile).join("\n")
-    end
   end
 
   class Plugins < Node; end
@@ -155,6 +152,10 @@ module LogStash; module Config; module AST
         when "input"
           return "start_input(#{variable_name})"
         when "filter"
+          # This is some pretty stupid code, honestly.
+          # I'd prefer much if it were put into the Pipeline itself
+          # and this should simply compile to 
+          #   #{variable_name}.filter(event)
           return [
             "newevents = []",
             "extra_events.each do |event|",
@@ -173,7 +174,7 @@ module LogStash; module Config; module AST
             "end",
           ].map { |l| "#{l}\n" }.join("")
         when "output"
-          return "#{variable_name}.receive(event)"
+          return "#{variable_name}.receive(event)\n"
         when "codec"
           settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
           attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
