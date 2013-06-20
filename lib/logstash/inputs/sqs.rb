@@ -125,7 +125,7 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
                 e[@md5_field] = message.md5
               end
               if @sent_timestamp_field
-                e[@sent_timestamp_field] = message.sent_timestamp
+                e[@sent_timestamp_field] = message.sent_timestamp.utc
               end
               @logger.debug("Processed SQS message", :message_id => message.id, :message_md5 => message.md5, :sent_timestamp => message.sent_timestamp, :queue => @queue)
               output_queue << e
