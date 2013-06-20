@@ -165,8 +165,7 @@ class LogStash::Pipeline
         end
       end
     rescue => e
-      @logger.error("Exception in plugin #{plugin.class}",
-                    "plugin" => plugin.inspect, "exception" => e)
+      @logger.error("Exception in filterworker", "exception" => e, "backtrace" => e.backtrace)
     end
 
     @filters.each(&:teardown)
