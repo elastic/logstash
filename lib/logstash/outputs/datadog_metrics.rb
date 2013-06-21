@@ -28,7 +28,7 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
   config :host, :validate => :string, :default => "%{@source_host}"
 
   # The name of the device that produced the metric.
-  config :device :validate => :string, :default => "%{metric_device}"
+  config :device, :validate => :string, :default => "%{metric_device}"
 
   # Set any custom tags for this event,
   # default are the Logstash tags if any.
