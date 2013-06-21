@@ -27,6 +27,9 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
   # The name of the host that produced the metric.
   config :host, :validate => :string, :default => "%{@source_host}"
 
+  # The name of the device that produced the metric.
+  config :device :validate => :string, :default => "%{metric_device}"
+
   # Set any custom tags for this event,
   # default are the Logstash tags if any.
   config :dd_tags, :validate => :array
@@ -72,6 +75,7 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
     dd_metrics['points'] = [[to_epoch(event.timestamp), event.sprintf(@metric_value).to_f]]
     dd_metrics['type'] = event.sprintf(@metric_type)
     dd_metrics['host'] = event.sprintf(@host)
+    dd_metrics['device'] = event.sprintf(@device)
 
     if @dd_tags
       tagz = @dd_tags.collect {|x| event.sprintf(x) }
