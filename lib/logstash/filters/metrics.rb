@@ -121,8 +121,11 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     require "metriks"
     require "socket"
     
-    @metric_meters = Hash.new { |h,k| h[k] = Metriks.meter(k) }
-    @metric_timers = Hash.new { |h,k| h[k] = Metriks.timer(k) }
+    @metrics_meters_mutex = Mutex.new
+    @metrics_timers_mutex = Mutex.new
+
+    @metric_meters = Hash.new { |h,k| @metrics_meters_mutex.synchronize { h[k] = Metriks.meter(k) } }
+    @metric_timers = Hash.new { |h,k| @metrics_times_mutex.synchronize { h[k] = Metriks.timer(k) } }
   end # def register
 
   def filter(event)
@@ -148,34 +151,38 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
 
     event = LogStash::Event.new
     event.source_host = Socket.gethostname
-    @metric_meters.each do |name, metric|
-      event["#{name}.count"] = metric.count
-      event["#{name}.rate_1m"] = metric.one_minute_rate
-      event["#{name}.rate_5m"] = metric.five_minute_rate
-      event["#{name}.rate_15m"] = metric.fifteen_minute_rate
+    @metrics_meters_mutex.synchronize do
+      @metric_meters.each do |name, metric|
+        event["#{name}.count"] = metric.count
+        event["#{name}.rate_1m"] = metric.one_minute_rate
+        event["#{name}.rate_5m"] = metric.five_minute_rate
+        event["#{name}.rate_15m"] = metric.fifteen_minute_rate
+      end
     end
 
-    @metric_timers.each do |name, metric|
-      event["#{name}.count"] = metric.count
-      event["#{name}.rate_1m"] = metric.one_minute_rate
-      event["#{name}.rate_5m"] = metric.five_minute_rate
-      event["#{name}.rate_15m"] = metric.fifteen_minute_rate
+    @metrics_timers_mutex.synchronize do
+      @metric_timers.each do |name, metric|
+        event["#{name}.count"] = metric.count
+        event["#{name}.rate_1m"] = metric.one_minute_rate
+        event["#{name}.rate_5m"] = metric.five_minute_rate
+        event["#{name}.rate_15m"] = metric.fifteen_minute_rate
 
-      # These 4 values are not sliding, so they probably are not useful.
-      event["#{name}.min"] = metric.min
-      event["#{name}.max"] = metric.max
-      # timer's stddev currently returns variance, fix it.
-      event["#{name}.stddev"] = metric.stddev ** 0.5
-      event["#{name}.mean"] = metric.mean
+        # These 4 values are not sliding, so they probably are not useful.
+        event["#{name}.min"] = metric.min
+        event["#{name}.max"] = metric.max
+        # timer's stddev currently returns variance, fix it.
+        event["#{name}.stddev"] = metric.stddev ** 0.5
+        event["#{name}.mean"] = metric.mean
 
-      # TODO(sissel): Maybe make this configurable?
-      #   percentiles => [ 0, 1, 5, 95 99 100 ]
-      event["#{name}.p1"] = metric.snapshot.value(0.01)
-      event["#{name}.p5"] = metric.snapshot.value(0.05)
-      event["#{name}.p10"] = metric.snapshot.value(0.10)
-      event["#{name}.p90"] = metric.snapshot.value(0.90)
-      event["#{name}.p95"] = metric.snapshot.value(0.95)
-      event["#{name}.p99"] = metric.snapshot.value(0.99)
+        # TODO(sissel): Maybe make this configurable?
+        #   percentiles => [ 0, 1, 5, 95 99 100 ]
+        event["#{name}.p1"] = metric.snapshot.value(0.01)
+        event["#{name}.p5"] = metric.snapshot.value(0.05)
+        event["#{name}.p10"] = metric.snapshot.value(0.10)
+        event["#{name}.p90"] = metric.snapshot.value(0.90)
+        event["#{name}.p95"] = metric.snapshot.value(0.95)
+        event["#{name}.p99"] = metric.snapshot.value(0.99)
+      end
     end
 
     filter_matched(event)
