@@ -52,7 +52,7 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # A count metric. metric_name => count as hash
   config :count, :validate => :hash, :default => {}
 
-  # A gauge metric. metric_name => guage as hash
+  # A gauge metric. metric_name => gauge as hash
   config :gauge, :validate => :hash, :default => {}
   
   # The sample rate for the metric
