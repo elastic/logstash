@@ -93,6 +93,10 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
       @client.timing(build_stat(event.sprintf(metric), sender),
                      event.sprintf(val).to_f, @sample_rate)
     end
+  @gauge.each do |metric, val|
+      @client.gauge(build_stat(event.sprintf(metric), sender),
+                    event.sprintf(val).to_f, @sample_rate)
+    end
   end # def receive
 
   def build_stat(metric, sender=@sender)
