@@ -35,5 +35,11 @@ module LogStash::Codecs
       @on_event = block
     end
 
+    public
+    def flush(&block)
+      # does nothing by default.
+      # if your codec needs a flush method (like you are spooling things)
+      # you must implement this.
+    end
   end # class LogStash::Codecs::Base
 end
