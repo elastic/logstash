@@ -10,7 +10,7 @@ require "logstash/namespace"
 class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
 
   config_name "datadog_metrics"
-  plugin_status "experimental"
+  milestone 1
 
   # Your DatadogHQ API key. https://app.datadoghq.com/account/settings#api
   config :api_key, :validate => :string, :required => true
