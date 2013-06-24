@@ -52,7 +52,7 @@ describe LogStash::Filters::Mutate do
     config '
       filter {
         mutate {
-          remove => [ "remove-me", "remove-me2", "diedie" ]
+          remove => [ "remove-me", "remove-me2", "diedie", "[one][two]" ]
         }
       }'
 
@@ -60,12 +60,14 @@ describe LogStash::Filters::Mutate do
       "remove-me"  => "Goodbye!",
       "remove-me2" => 1234,
       "diedie"     => [1, 2, 3, 4],
-      "survivor"   => "Hello."
+      "survivor"   => "Hello.",
+      "one" => { "two" => "wee" }
     ) do
       insist { subject["survivor"] } == "Hello."
       reject { subject }.include?("remove-me")
       reject { subject }.include?("remove-me2")
       reject { subject }.include?("diedie")
+      reject { subject["one"] }.include?("two")
     end
   end
 
