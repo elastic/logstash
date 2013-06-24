@@ -7,7 +7,7 @@ grammar LogStashConfig
   end
 
   rule comment
-    (whitespace? "#" [^\r\n]+ "\r"? "\n")+ <LogStash::Config::AST::Comment>
+    (whitespace? "#" [^\r\n]* "\r"? "\n")+ <LogStash::Config::AST::Comment>
   end
 
   rule _
@@ -41,7 +41,7 @@ grammar LogStashConfig
   rule plugin 
     name _ "{" 
       _
-      attributes:( attribute (whitespace attribute)*)? 
+      attributes:( attribute (whitespace _ attribute)*)? 
       _
     "}"
     <LogStash::Config::AST::Plugin>

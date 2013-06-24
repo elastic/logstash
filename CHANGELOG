@@ -9,12 +9,15 @@
   - Many deprecated features have been removed.
     TODO(sissel): Document what these were.
   - 'type' is no longer a required setting on inputs.
-  - feature: codecs. Used to abstract encoding/decoding out of
-    transports(inputs/outputs)
+  - feature: codecs. Used to implement encoding/decoding of events
+    for input and output plugins.
       TODO(nickethier): Document how to use and how to hack.
 
   ## inputs
   - bugfix: gelf: work around gelf parser errors (#476, patch by Chris McCoy)
+  - broken: the twitter input is disabled because the twitter stream v1 api is
+    no longer supported and I couldn't find a replacement library that works
+    under jruby.
 
   ## filters
   - feature: grok: 'singles' now defaults to true.

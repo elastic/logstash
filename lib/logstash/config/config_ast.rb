@@ -62,9 +62,9 @@ module LogStash; module Config; module AST
           definitions << "  extra_events = []"
         end
 
-        definitions << "  @logger.info(\"#{type} received\", :event => event)"
+        definitions << "  @logger.info? && @logger.info(\"#{type} received\", :event => event)"
         sections.select { |s| s.plugin_type.text_value == type }.each do |s|
-          definitions << s.compile.split("\n", -1).map { |e| "  #{e}" }.join("\n")
+          definitions << s.compile.split("\n", -1).map { |e| "  #{e}" }
         end
 
         if type == "filter"
@@ -113,6 +113,7 @@ module LogStash; module Config; module AST
       end
       return @variables
     end
+
   end
 
   class Plugins < Node; end
@@ -151,6 +152,10 @@ module LogStash; module Config; module AST
         when "input"
           return "start_input(#{variable_name})"
         when "filter"
+          # This is some pretty stupid code, honestly.
+          # I'd prefer much if it were put into the Pipeline itself
+          # and this should simply compile to 
+          #   #{variable_name}.filter(event)
           return [
             "newevents = []",
             "extra_events.each do |event|",
@@ -169,7 +174,7 @@ module LogStash; module Config; module AST
             "end",
           ].map { |l| "#{l}\n" }.join("")
         when "output"
-          return "#{variable_name}.receive(event)"
+          return "#{variable_name}.receive(event)\n"
         when "codec"
           settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
           attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"

@@ -143,6 +143,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
 
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
+    @scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)["+@value_split+"](?:\"([^\"]+)\"|'([^']+)'|((?:\\\\ |[^"+@field_split+"])+))")
   end # def register
 
   def filter(event)
@@ -183,8 +184,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     if !event =~ /[@field_split]/
       return kv_keys
     end
-    scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)["+@value_split+"](?:\"([^\"]+)\"|'([^']+)'|((?:\\\\ |[^"+@field_split+"])+))")
-    text.scan(scan_re) do |key, v1, v2, v3|
+    text.scan(@scan_re) do |key, v1, v2, v3|
       value = v1 || v2 || v3
       key = @prefix + key
       next if not @include_keys.empty? and not @include_keys.include?(key)

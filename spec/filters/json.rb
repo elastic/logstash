@@ -8,7 +8,7 @@ describe LogStash::Filters::Json do
     config <<-CONFIG
       filter {
         json {
-          # Parse @message as JSON, store the results in the 'data' field'
+          # Parse message as JSON, store the results in the 'data' field'
           source => "message"
         }
       }
@@ -21,7 +21,7 @@ describe LogStash::Filters::Json do
     end
   end
 
-  describe "parse @message into a target field" do
+  describe "parse message into a target field" do
     config <<-CONFIG
       filter {
         json {

@@ -1,5 +1,4 @@
 require "logstash/codecs/base"
-require "msgpack"
 
 class LogStash::Codecs::Msgpack < LogStash::Codecs::Base
   config_name "json"
@@ -7,6 +6,11 @@ class LogStash::Codecs::Msgpack < LogStash::Codecs::Base
   milestone 1
 
   config :format, :validate => :string, :default => nil
+
+  public
+  def register
+    require "msgpack"
+  end
 
   public
   def decode(data)
