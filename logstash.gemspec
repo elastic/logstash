@@ -55,7 +55,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "redis"                            #(MIT license)
   gem.add_runtime_dependency "riak-client", ["1.0.3"]           #(Apache 2.0 license)
   gem.add_runtime_dependency "riemann-client", ["0.2.1"]        #(MIT license)
-  gem.add_runtime_dependency "statsd-ruby", ["0.3.0"]           #(MIT license)
+  gem.add_runtime_dependency "statsd-ruby", ["1.2.0"]           #(MIT license)
   gem.add_runtime_dependency "uuidtools"                        # For generating amqp queue names (Apache 2.0 license)
   gem.add_runtime_dependency "xml-simple"                       #(ruby license?)
   gem.add_runtime_dependency "xmpp4r", ["0.5"]                  #(ruby license)
