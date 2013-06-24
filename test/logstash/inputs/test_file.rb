@@ -125,5 +125,18 @@ describe LogStash::Inputs::File do
       flunk "An absolute path containing a wildcard should be valid"
     end
   end
+  
+  test "file input should use SINCEDB_DIR environment variable as default sincedb location if it is set" do
+    logfile = Tempfile.new("logstash")
+    the_destination = "/tmp/sincedb"
+    ENV['SINCEDB_DIR'] = the_destination
+    begin
+      @input = LogStash::Inputs::File.new("type" => ["testing"], "path" => [logfile.path])
+      @input.register
+      assert_equal File.dirname(@input.instance_variable_get(:@sincedb_dir)) the_destination
+    ensure
+      logfile.close
+      logfile.unlink
+    end
 
 end # testing for LogStash::Inputs::File
