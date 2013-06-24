@@ -16,6 +16,9 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
   # When mode is `client`, the path to connect to.
   config :path, :validate => :string, :required => true
 
+  # Remove socket file in case of EADDRINUSE failure
+  config :force_unlink, :validate => :boolean, :default => false
+
   # The 'read' timeout in seconds. If a particular connection is idle for
   # more than this timeout period, we will assume it is dead and close it.
   #
@@ -36,10 +39,21 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
     require "timeout"
 
     if server?
-      @logger.info("Starting unix input listener", :address => "#{@path}")
+      @logger.info("Starting unix input listener", :address => "#{@path}", :force_unlink => "#{@force_unlink}")
       begin
         @server_socket = UNIXServer.new(@path)
-      rescue Errno::EADDRINUSE
+      rescue Errno::EADDRINUSE, IOError
+        if @force_unlink
+          File.unlink(@path)
+          begin
+            @server_socket = UNIXServer.new(@path)
+            return
+          rescue Errno::EADDRINUSE, IOError
+            @logger.error("!!!Could not start UNIX server: Address in use",
+                          :path => @path)
+            raise
+          end
+        end
         @logger.error("Could not start UNIX server: Address in use",
                       :path => @path)
         raise
