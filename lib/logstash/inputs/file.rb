@@ -90,7 +90,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       end
 
       #pick SINCEDB_DIR if available, otherwise use HOME
-      sincedb_dir = EVN["SINCEDB_DIR"] || ENV["HOME"]
+      sincedb_dir = ENV["SINCEDB_DIR"] || ENV["HOME"]
 
       # Join by ',' to make it easy for folks to know their own sincedb
       # generated path (vs, say, inspecting the @path array)
