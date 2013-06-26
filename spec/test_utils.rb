@@ -28,11 +28,6 @@ module LogStash
       @config_str = configstr
     end # def config
 
-    def config_yaml(configstr)
-      @config_str = configstr
-      @is_yaml = true
-    end
-
     def type(default_type)
       @default_type = default_type
     end
@@ -80,12 +75,15 @@ module LogStash
     end # def sample
 
     def input(&block)
-      config = get_config
-      agent = LogStash::Agent.new
-      agent.instance_eval { parse_options(["--quiet"]) }
-      it "looks good" do
-        inputs, filters, outputs = agent.instance_eval { parse_config(config) }
-        block.call(inputs)
+      config_str = @config_str
+      it "inputs" do
+        queue = Queue.new
+        pipeline = LogStash::Pipeline.new(config_str)
+        (class << pipeline; self; end).send(:define_method, :output) do |event|
+          queue << event
+        end
+        block.call(pipeline, queue)
+        pipeline.shutdown
       end
     end # def input
 
