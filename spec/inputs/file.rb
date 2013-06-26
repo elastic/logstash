@@ -4,8 +4,6 @@ require "tempfile"
 describe "inputs/file" do
   extend LogStash::RSpec
 
-  @@END_OF_TEST_DATA = "byebye"
-
   describe "starts at the end of an existing file" do
     tmp_file = Tempfile.new('logstash-spec-input-file')
 
@@ -19,49 +17,25 @@ describe "inputs/file" do
       }
     CONFIG
 
-    #This first part of the file should not be read
-    expected_lines = 20
-    File.open(tmp_file, "w") do |f|
-      expected_lines.times do |i|
-        f.write("Not Expected Sample event #{i}")
-        f.write("\n")
+    input do |pipeline, queue|
+      File.open(tmp_file, "a") do |fd|
+        fd.puts("ignore me")
+        fd.puts("ignore me 2")
       end
-    end
+      Thread.new { pipeline.run }
+      sleep 0.1 while !pipeline.ready?
 
-    input do |plugins|
-      sequence = 0
-      file = plugins.first
-      output = Shiftback.new do |event|
-        if event.message == @@END_OF_TEST_DATA
-          file.teardown
-          insist {sequence } == expected_lines
-        else
-          sequence += 1
-          #Test data
-          insist { event.message }.start_with?("Expected")
-        end
+      File.open(tmp_file, "a") do |fd|
+        fd.puts("hello")
+        fd.puts("world")
       end
-      file.register
-      #Launch the input in separate thread
-      thread = Thread.new(file, output) do |*args|
-        file.run(output)
-      end
-      # Need to be sure the input is started, any idea?
-      sleep(2)
-      # Append to the file
-      File.open(tmp_file, "a") do |f|
-        expected_lines.times do |i|
-          f.write("Expected Sample event #{i}")
-          f.write("\n")
-        end
-        f.write(@@END_OF_TEST_DATA)
-        f.write("\n")
-      end
-      thread.join
-    end # input
+      events = 2.times.collect { queue.pop } 
+      insist { events[0]["message"] } == "hello"
+      insist { events[1]["message"] } == "world"
+    end
   end
 
-  describe "starts at the beginning of an existing file" do
+  describe "can start at the beginning of an existing file" do
     tmp_file = Tempfile.new('logstash-spec-input-file')
 
     config <<-CONFIG
@@ -75,46 +49,23 @@ describe "inputs/file" do
       }
     CONFIG
 
-    #This first part of the file should be read
-    expected_lines = 20
-    File.open(tmp_file, "w") do |f|
-      expected_lines.times do |i|
-        f.write("Expected Sample event #{i}")
-        f.write("\n")
+    before(:each) do
+      File.open(tmp_file, "w") do |fd|
+        fd.puts "hello"
+        fd.puts "world"
       end
     end
 
-    input do |plugins|
-      sequence = 0
-      file = plugins.first
-      output = Shiftback.new do |event|
-        if event.message == @@END_OF_TEST_DATA
-          file.teardown
-          insist {sequence } == expected_lines*2
-        else
-          sequence += 1
-          #Test data
-          insist { event.message }.start_with?("Expected")
-        end
-      end
-      file.register
-      #Launch the input in separate thread
-      thread = Thread.new(file, output) do |*args|
-        file.run(output)
-      end
-      # Need to be sure the input is started, any idea?
-      sleep(2)
-      # Append to the file
-      File.open(tmp_file, "a") do |f|
-        expected_lines.times do |i|
-          f.write("Expected Sample event #{i}")
-          f.write("\n")
-        end
-        f.write(@@END_OF_TEST_DATA)
-        f.write("\n")
-      end
-      thread.join
-    end # input
+    after(:each) do
+      tmp_file.close!
+    end
+
+    input do |pipeline, queue|
+      Thread.new { pipeline.run }
+      events = 2.times.collect { queue.pop } 
+      insist { events[0]["message"] } == "hello"
+      insist { events[1]["message"] } == "world"
+    end
   end
 
   describe "restarts at the sincedb value" do
@@ -132,51 +83,25 @@ describe "inputs/file" do
       }
     CONFIG
 
-    #This first part of the file should NOT be read
-    expected_lines = 20
-    File.open(tmp_file, "w") do |f|
-      expected_lines.times do |i|
-        f.write("UnExpected Sample event #{i}")
-        f.write("\n")
+    input do |pipeline, queue|
+      File.open(tmp_file, "a") do |fd|
+        fd.puts "hello"
+        fd.puts "world"
       end
-    end
-    #Manually write the sincedb
-    stat = File::Stat.new(tmp_file)
-    File.open(tmp_sincedb, "w") do |f|
-      f.write("#{stat.ino} #{stat.dev_major} #{stat.dev_minor} #{stat.size}")
-      f.write("\n")
-    end
+      Thread.new { pipeline.run }
+      events = 2.times.collect { queue.pop } 
+      pipeline.shutdown
 
-    input do |plugins|
-      sequence = 0
-      file = plugins.first
-      output = Shiftback.new do |event|
-        if event.message == @@END_OF_TEST_DATA
-          file.teardown
-          insist { sequence } == expected_lines
-        else
-          sequence += 1
-          #Test data
-          insist { event.message }.start_with?("Expected")
-        end
+      File.open(tmp_file, "a") do |fd|
+        fd.puts "foo"
+        fd.puts "bar"
+        fd.puts "baz"
       end
-      file.register
-      #Launch the input in separate thread
-      thread = Thread.new(file, output) do |*args|
-        file.run(output)
-      end
-      # Need to be sure the input is started, any idea?
-      sleep(2)
-      # Append to the file
-      File.open(tmp_file, "a") do |f|
-        expected_lines.times do |i|
-          f.write("Expected SaMple event #{i}")
-          f.write("\n")
-        end
-        f.write(@@END_OF_TEST_DATA)
-        f.write("\n")
-      end
-      thread.join
-    end # input
+      Thread.new { pipeline.run }
+      events = 3.times.collect { queue.pop } 
+      insist { events[0]["message"] } == "foo"
+      insist { events[1]["message"] } == "bar"
+      insist { events[2]["message"] } == "baz"
+    end
   end
 end
