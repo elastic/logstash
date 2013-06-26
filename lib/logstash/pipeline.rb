@@ -39,6 +39,14 @@ class LogStash::Pipeline
     }
   end # def initialize
 
+  def ready?
+    return @ready
+  end
+
+  def started?
+    return @started
+  end
+
   def configure(setting, value)
     @settings[setting] = value
   end
@@ -48,10 +56,13 @@ class LogStash::Pipeline
   end
 
   def run
+    @started = true
     @input_threads = []
     start_inputs
     start_filters if filters?
     start_outputs
+
+    @ready = true
 
     @logger.info("Pipeline started")
     wait_inputs
@@ -191,7 +202,10 @@ class LogStash::Pipeline
       @logger.info("Sending shutdown signal to input thread",
                    :thread => thread)
       thread.raise(ShutdownSignal)
-      thread.wakeup # in case it's in blocked IO or sleeping
+      begin
+        thread.wakeup # in case it's in blocked IO or sleeping
+      rescue ThreadError
+      end
     end
 
     # No need to send the ShutdownSignal to the filters/outputs nor to wait for
