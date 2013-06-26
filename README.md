@@ -83,7 +83,7 @@ Releases are available here: <http://logstash.objects.dreamhost.com/>
 
 If you want to build the jar yourself, run:
 
-    make jar
+    make flatjar
 
 rpm, deb, or other package formats are not currently available, but are easy to
 build with [fpm](https://github.com/jordansissel/fpm). If you are interested in
