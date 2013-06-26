@@ -15,7 +15,7 @@ require "logstash/namespace"
 #     filter {
 #       dns {
 #         type => 'type'
-#         reverse => [ "@source_host", "field_with_address" ]
+#         reverse => [ "source_host", "field_with_address" ]
 #         resolve => [ "field_with_fqdn" ]
 #         action => "replace"
 #       }
