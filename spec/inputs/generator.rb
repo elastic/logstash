@@ -3,14 +3,8 @@ require "test_utils"
 describe "inputs/generator" do
   extend LogStash::RSpec
 
-  class Shiftcount
-    def initialize; @count = 0; end
-    def <<(arg); @count += 1 end
-    attr_reader :count
-  end
-
   describe "generate events" do
-    event_count = 100000 + rand(50)
+    event_count = 100000 + rand(50000)
 
     config <<-CONFIG
       input {
@@ -21,15 +15,16 @@ describe "inputs/generator" do
       }
     CONFIG
 
-    input do |plugins|
-      sequence = 0
-      generator = plugins.first
-      output = Shiftcount.new
-      generator.register
+    input do |pipeline, queue|
       start = Time.now
-      generator.run(output)
+      Thread.new { pipeline.run }
+      event_count.times do |i|
+        event = queue.pop
+        insist { event["sequence"] } == i
+      end
       duration = Time.now - start
       puts "Rate: #{event_count / duration}"
+      pipeline.shutdown
     end # input
   end
 end
