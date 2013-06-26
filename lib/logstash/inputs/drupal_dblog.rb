@@ -313,12 +313,11 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
 
     entry = {
       "@timestamp" => timestamp,
-      "@tags" => [],
-      "@type" => "watchdog",
-      "@source" => @sitename,
-      "@fields" => row,
-      "@message" => msg
-    }
+      "tags" => [],
+      "type" => "watchdog",
+      "source" => @sitename,
+      "message" => msg
+    }.merge(row)
 
     event = to_event(JSON.dump(entry), @sitename)
 

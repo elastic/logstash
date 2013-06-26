@@ -123,11 +123,11 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     hostname = Socket.gethostname
 
     @tail.subscribe do |path, line|
-      #source = Addressable::URI.new(:scheme => "file", :host => hostname, :path => path).to_s
       source = "file://#{hostname}/#{path.gsub("\\","/")}"
       @logger.debug? && @logger.debug("Received line", :path => path, :line => line)
       @codec.decode(line) do |event|
         event["source"] = source
+        queue << event
       end
     end
     finished

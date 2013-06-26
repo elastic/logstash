@@ -17,7 +17,7 @@ class LogStash::Filters::Checksum < LogStash::Filters::Base
   # Keys will be sorted before building the string
   # keys and values will then be concatenated with pipe delimeters
   # and checksummed
-  config :keys, :validate => :array, :default => ["@message", "@source_host", "@timestamp", "@source_path", "@type", "@source"]
+  config :keys, :validate => :array, :default => ["message", "@timestamp", "type"]
 
   config :algorithm, :validate => ["md5", "sha128", "sha256", "sha384"], :default => "sha256"
 

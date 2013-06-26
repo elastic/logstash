@@ -49,7 +49,7 @@ class LogStash::Outputs::Riak < LogStash::Outputs::Base
   # Indices
   # Array of fields to add 2i on
   # e.g.
-  # `indices => ["@source_host", "@type"]
+  # `indices => ["source_host", "type"]
   # Off by default as not everyone runs eleveldb
   config :indices, :validate => :array
 

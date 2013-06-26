@@ -33,7 +33,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
   #
   #     filter {
   #       grep {
-  #         match => [ "@message", "hello world" ]
+  #         match => [ "message", "hello world" ]
   #       }
   #     }
   #

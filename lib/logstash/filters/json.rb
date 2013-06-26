@@ -16,7 +16,7 @@ class LogStash::Filters::Json < LogStash::Filters::Base
   #
   #     filter {
   #       json {
-  #         source => "@message"
+  #         source => "message"
   #       }
   #     }
   #
