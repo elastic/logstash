@@ -69,6 +69,9 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   # Name of the event field in which to store the SQS message MD5 checksum
   config :md5_field, :validate => :string
 
+  # Name of the event field in which to store the  SQS message Sent Timestamp
+  config :sent_timestamp_field, :validate => :string
+
   public
   def aws_service_endpoint(region)
     return {
@@ -104,7 +107,8 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
 
     receive_opts = {
         :limit => 10,
-        :visibility_timeout => 30
+        :visibility_timeout => 30,
+        :attributes => [:sent_at]
     }
 
     continue_polling = true
@@ -120,7 +124,10 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
               if @md5_field
                 e[@md5_field] = message.md5
               end
-              @logger.debug("Processed SQS message", :message_id => message.id, :message_md5 => message.md5, :queue => @queue)
+              if @sent_timestamp_field
+                e[@sent_timestamp_field] = message.sent_timestamp.utc
+              end
+              @logger.debug("Processed SQS message", :message_id => message.id, :message_md5 => message.md5, :sent_timestamp => message.sent_timestamp, :queue => @queue)
               output_queue << e
               message.delete
             end # valid event
