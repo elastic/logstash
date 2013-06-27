@@ -197,16 +197,14 @@ vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
-VENDOR_DIR=$(shell ls -d vendor/bundle/*ruby/*)
+VENDOR_DIR=$(shell ls -d vendor/bundle/jruby/*)
 jar: build/logstash-$(VERSION)-monolithic.jar
 build/logstash-$(VERSION)-monolithic.jar: | build/monolith
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS=-C build/ruby .
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C build/monolith .
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C $(VENDOR_DIR) gems
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C $(VENDOR_DIR) specifications
-build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/web/public
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/certs
-build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/web/views
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
 build/logstash-$(VERSION)-monolithic.jar:
 	$(QUIET)rm -f $@
@@ -245,9 +243,7 @@ jar-test-and-report:
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
 	$(QUIET)mkdir build/jar
-	$(QUIET)rsync -va build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/flatgems/data build/jar/
-	$(QUIET)(cd lib; rsync -a --delete logstash/web/public/ ../build/jar/logstash/web/public)
-	$(QUIET)(cd lib; rsync -a --delete logstash/web/views/ ../build/jar/logstash/web/views)
+	$(QUIET)rsync -a build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/flatgems/data build/jar/
 	$(QUIET)(cd lib; rsync -a --delete logstash/certs/ ../build/jar/logstash/certs)
 
 build/logstash-$(VERSION)-flatjar.jar: | build/jar
