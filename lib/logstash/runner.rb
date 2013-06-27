@@ -92,12 +92,7 @@ class LogStash::Runner
     commands = {
       "version" => lambda { emit_version(args) },
       "web" => lambda do
-        require "logstash/web/runner"
-        web = LogStash::Web::Runner.new
-        @runners << web
-        return web.run(args)
-      end,
-      "kibana" => lambda do
+        # Give them kibana.
         require "logstash/kibana"
         kibana = LogStash::Kibana::Runner.new
         @runners << kibana
