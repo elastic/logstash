@@ -135,6 +135,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
   public
   def teardown
+    @tail.sincedb_write
     @tail.quit
   end # def teardown
 end # class LogStash::Inputs::File
