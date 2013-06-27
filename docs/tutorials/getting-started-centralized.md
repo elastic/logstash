@@ -199,14 +199,12 @@ Run this on the same server as your elasticsearch server.
 To run the logstash web server, just run the jar with 'web' as the first
 argument. 
 
-    java -jar logstash-%VERSION%-flatjar.jar web --backend elasticsearch://127.0.0.1/
-
-As with the indexer, you should see the Logstash web interface connection:
-
-    [2012-07-02 13:28:34,818][INFO ][cluster.service          ] [Baron Samedi] added {[Nebulon][kaO6QIojTIav2liuTjGOsA][inet[/192.168.1.194:9302]]{client=true, data=false},}
+    java -jar logstash-%VERSION%-flatjar.jar web
 
 Just point your browser at the http://127.0.0.1:9292/ and start searching
 logs!
+
+The web interface is called 'kibana' - you can learn more about kibana at <http://kibana.org>
 
 # Distributing the load
 At this point we've been simulating a distributed environment on a single machine. If only the world were so easy.
