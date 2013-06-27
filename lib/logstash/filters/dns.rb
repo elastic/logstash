@@ -49,9 +49,13 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
   # due to a typo it was never enforced. Thus the default behavior in past
   # versions was 'append' by accident.
 
+  # resolv calls will be wrapped in a timeout instance
+  config :timeout, :validate => :int, :default => 2
+
   public
   def register
     require "resolv"
+    require "timeout"
     if @nameserver.nil?
       @resolv = Resolv.new
     else
@@ -65,8 +69,27 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
   def filter(event)
     return unless filter?(event)
 
-    resolve(event) if @resolve
-    reverse(event) if @reverse
+    if @resolve
+      begin
+        status = Timeout::timeout(@timeout) { 
+          resolve(event)
+        }
+      rescue Timeout::Error
+        @logger.debug("DNS: resolve action timed out")
+        return
+      end
+    end
+
+    if @reverse
+      begin
+        status = Timeout::timeout(@timeout) { 
+          reverse(event)
+        }
+      rescue Timeout::Error
+        @logger.debug("DNS: reverse action timed out")
+        return
+      end
+    end
 
     filter_matched(event)
   end
