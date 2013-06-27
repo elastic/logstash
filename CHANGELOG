@@ -2,10 +2,10 @@
   # general
   - THE LOGSTASH EVENT SCHEMA HAS CHANGED.
       TODO(sissel): Document what this means, etc.
-  - Kibana 3 is now available in jar releases:
-      java -jar logstash.jar kibana
-  - elasticsearch version 0.90.0 is included.
-  - the multiline filter is replaced by the multiline codec.
+  - The old logstash web ui has been replaced by Kibana 3. Kibana is a far
+    superior search and analytics interface.
+  - ElasticSearch version 0.90.0 is included.
+  - The multiline filter is replaced by the multiline codec.
   - Many deprecated features have been removed.
     TODO(sissel): Document what these were.
   - 'type' is no longer a required setting on inputs.
