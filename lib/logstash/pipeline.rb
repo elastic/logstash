@@ -5,10 +5,9 @@ require "stud/trap"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
+require "logstash/errors"
 
 class LogStash::Pipeline
-  class ShutdownSignal < StandardError; end
-
   def initialize(configstr)
     @logger = Cabin::Channel.get(LogStash)
     grammar = LogStashConfigParser.new
@@ -86,7 +85,7 @@ class LogStash::Pipeline
   end
 
   def shutdown_filters
-    @input_to_filter.push(ShutdownSignal)
+    @input_to_filter.push(LogStash::ShutdownSignal)
   end
 
   def wait_filters
@@ -95,7 +94,7 @@ class LogStash::Pipeline
 
   def shutdown_outputs
     # nothing, filters will do this
-    @filter_to_output.push(ShutdownSignal)
+    @filter_to_output.push(LogStash::ShutdownSignal)
   end
 
   def wait_outputs
@@ -140,7 +139,7 @@ class LogStash::Pipeline
     LogStash::Util::set_thread_name("<#{plugin.class.config_name}")
     begin
       plugin.run(@input_to_filter)
-    rescue ShutdownSignal
+    rescue LogStash::ShutdownSignal
       plugin.teardown
     rescue => e
       if @logger.debug?
@@ -164,7 +163,7 @@ class LogStash::Pipeline
     begin
       while true
         event = @input_to_filter.pop
-        break if event == ShutdownSignal
+        break if event == LogStash::ShutdownSignal
 
         events = []
         filter(event) do |newevent|
@@ -187,7 +186,7 @@ class LogStash::Pipeline
     @outputs.each(&:register)
     while true
       event = @filter_to_output.pop
-      break if event == ShutdownSignal
+      break if event == LogStash::ShutdownSignal
       output(event)
     end # while true
     @outputs.each(&:teardown)
@@ -201,7 +200,7 @@ class LogStash::Pipeline
       # Interrupt all inputs
       @logger.info("Sending shutdown signal to input thread",
                    :thread => thread)
-      thread.raise(ShutdownSignal)
+      thread.raise(LogStash::ShutdownSignal)
       begin
         thread.wakeup # in case it's in blocked IO or sleeping
       rescue ThreadError
