@@ -88,8 +88,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
     case @format
     when "plain"
-      raw.force_encoding(@charset)
-      if @charset != "UTF-8"
+      if raw.encoding.name != "UTF-8"
         # Convert to UTF-8 if not in that character set.
         raw = raw.encode("UTF-8", :invalid => :replace, :undef => :replace)
       end
