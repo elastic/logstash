@@ -69,7 +69,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Enable message acknowledgement
   config :ack, :validate => :boolean, :default => true
 
-  # Enable or disable debugging
+  # Enable or disable logging
   config :debug, :validate => :boolean, :default => false
 
   # Enable or disable SSL
@@ -78,71 +78,27 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Validate SSL certificate
   config :verify_ssl, :validate => :boolean, :default => false
 
-  public
+
   def initialize(params)
     params["codec"] = "json" if !params["codec"]
+
     super
-  end # def initialize
+  end
 
-  public
-  def register
-    @logger.info("Registering input #{@url}")
-    require "bunny" # rubygem 'bunny'
-    @vhost ||= "/"
-    @port ||= 5672
-    @key ||= "#"
-    @amqpsettings = {
-      :vhost => @vhost,
-      :host => @host,
-      :port => @port,
-    }
-    @amqpsettings[:user] = @user if @user
-    @amqpsettings[:pass] = @password.value if @password
-    @amqpsettings[:logging] = @debug
-    @amqpsettings[:ssl] = @ssl if @ssl
-    @amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
-    @amqpurl = "amqp://"
-    if @user
-      @amqpurl << @user if @user
-      @amqpurl << ":#{CGI.escape(@password.to_s)}" if @password
-      @amqpurl << "@"
-    end
-    @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@queue}"
-  end # def register
+  # Use HotBunnies on JRuby to avoid IO#select CPU spikes
+  # (see github.com/ruby-amqp/bunny/issues/95).
+  #
+  # On MRI, use Bunny 0.9.
+  #
+  # See http://rubybunny.info and http://hotbunnies.info
+  # for the docs.
+  if RUBY_ENGINE == "jruby"
+    require "logstash/inputs/rabbitmq/hot_bunnies"
 
-  def run(queue)
-    begin
-      @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up queue #{@queue.inspect}")
-      @bunny = Bunny.new(@amqpsettings)
-      return if terminating?
-      @bunny.start
-      @bunny.qos({:prefetch_count => @prefetch_count})
+    include HotBunniesImpl
+  else
+    require "logstash/inputs/rabbitmq/bunny"
 
-      @arguments_hash = Hash[*@arguments]
-
-      @bunnyqueue = @bunny.queue(@queue, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive, :arguments => @arguments_hash })
-      @bunnyqueue.bind(@exchange, :key => @key)
-
-      @bunnyqueue.subscribe({:ack => @ack}) do |data|
-        @codec.decode(data[:payload]) do |event|
-          event["source"] = @amqpurl
-          queue << event
-        end
-      end # @bunnyqueue.subscribe
-
-    rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
-      @logger.error("AMQP connection error, will reconnect: #{e}")
-      # Sleep for a bit before retrying.
-      # TODO(sissel): Write 'backoff' method?
-      sleep(1)
-      retry
-    end # begin/rescue
-  end # def run
-
-  def teardown
-    @bunnyqueue.unsubscribe unless @durable == true
-    @bunnyqueue.delete unless @durable == true
-    @bunny.close if @bunny
-    finished
-  end # def teardown
+    include BunnyImpl
+  end
 end # class LogStash::Inputs::RabbitMQ
