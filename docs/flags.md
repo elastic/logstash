@@ -21,7 +21,7 @@ default. </dd>
 <dt> -w, --filterworkers COUNT </dt>
 <dd> Run COUNT filter workers (default: 1) </dd>
 <dt> --watchdog-timeout TIMEOUT </dt>
-<dd> Set watchdog timeout value. </dd>
+<dd> Set watchdog timeout value in seconds. Default is 10.</dd>
 <dt> -l, --log FILE </dt>
 <dd> Log to a given path. Default is to log to stdout </dd>
 <dt> -v </dt>
