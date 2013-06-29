@@ -21,9 +21,6 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # The index type to write events to. Generally you should try to write only
   # similar events to the same 'type'. String expansion '%{foo}' works here.
   config :index_type, :validate => :string, :default => "%{@type}"
-  
-  # The parent of the event. String expansion '%{foo}' works here.
-  config :parent, :validate => :string, :default => nil
 
   # The hostname or ip address to reach your elasticsearch server.
   config :host, :validate => :string
@@ -70,9 +67,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     success = false
     while !success
       begin
-		url = "http://#{@host}:#{@port}/#{index}/#{type}"
-		url += "?parent=" + event.sprintf(@parent) unless @parent.nil?
-        response = @agent.post!(url, :body => event.to_json)
+        response = @agent.post!("http://#{@host}:#{@port}/#{index}/#{type}",
+                                :body => event.to_json)
       rescue EOFError
         @logger.warn("EOF while writing request or reading response header from elasticsearch",
                      :host => @host, :port => @port)
@@ -101,7 +97,6 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   def receive_bulk(event, index, type)
     header = { "index" => { "_index" => index, "_type" => type } }
-	header["index"]["parent"] = event.sprintf(@parent) unless @parent.nil?
     if !@document_id.nil?
       header["index"]["_id"] = event.sprintf(@document_id)
     end
