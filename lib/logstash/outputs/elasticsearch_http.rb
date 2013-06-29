@@ -23,6 +23,9 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # The index type to write events to. Generally you should try to write only
   # similar events to the same 'type'. String expansion '%{foo}' works here.
   config :index_type, :validate => :string
+  
+  # The parent of the event. String expansion '%{foo}' works here.
+  config :parent, :validate => :string, :default => nil
 
   # The hostname or ip address to reach your elasticsearch server.
   config :host, :validate => :string
@@ -70,7 +73,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
         type = event.sprintf(@index_type)
       end
       header = { "index" => { "_index" => index, "_type" => type } }
-      header["index"]["_id"] = event.sprintf(@document_id) if !@document_id.nil?
+      header["index"]["_id"] = event.sprintf(@document_id) unless @document_id.nil?
+	  header["index"]["parent"] = event.sprintf(@parent) unless @parent.nil?
 
       [ header, event ]
     end.flatten.collect(&:to_json).map { |e| "#{e}\n" }

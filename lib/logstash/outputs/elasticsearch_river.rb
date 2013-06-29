@@ -29,6 +29,9 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
   # The index type to write events to. Generally you should try to write only
   # similar events to the same 'type'. String expansion '%{foo}' works here.
   config :index_type, :validate => :string, :default => "%{@type}"
+  
+  # The parent of the event. String expansion '%{foo}' works here.
+  config :parent, :validate => :string, :default => nil
 
   # The name/address of an ElasticSearch host to use for river creation
   config :es_host, :validate => :string, :required => true
@@ -203,10 +206,18 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
     # River events have a format of
     # "action\ndata\n"
     # where 'action' is index or delete, data is the data to index.
-    header = { "index" => { "_index" => event.sprintf(@index), "_type" => event.sprintf(@index_type) } }
-    if !@document_id.nil?
-      header["index"]["_id"] = event.sprintf(@document_id)
-    end
+
+	index = event.sprintf(@index)
+
+	# Set the 'type' value for the index.
+	if @index_type.nil?
+		type =  event["type"] || "logs"
+	else
+		type = event.sprintf(@index_type)
+	end
+	header = { "index" => { "_index" => index, "_type" => type } }
+	header["index"]["_id"] = event.sprintf(@document_id) unless @document_id.nil?
+	header["index"]["parent"] = event.sprintf(@parent) unless @parent.nil?
 
     @mq.receive_raw(header.to_json + "\n" + event.to_json + "\n")
   end # def receive
