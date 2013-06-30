@@ -47,9 +47,9 @@ class LogStash::Inputs::RabbitMQ
         return if terminating?
         @conn.start
 
-        @ch = @conn.create_channel
-
-        @ch.prefetch(@prefetch_count)
+        @ch = @conn.create_channel.tap do |ch|
+          ch.prefetch(@prefetch_count)
+        end
 
         @arguments_hash = Hash[*@arguments]
 
