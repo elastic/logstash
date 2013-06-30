@@ -105,19 +105,19 @@ class LogStash::Outputs::Jira < LogStash::Outputs::Base
     request.basic_auth @user, @password
 
    request.body = '
-    {
-      "fields": {
-           "project":
-           {
-              "key": "LOGSTASH"
-           },
-           "summary": "Always do right. This will gratify some people and astonish the REST.",
-           "description": "Creating an issue while setting custom field values",
-           "issuetype": {
-              "name": "Bug"
-           }
-        }
-    }'
+{
+    "fields": {
+       "project":
+       { 
+          "key": "LOGSTASH"
+       },
+       "summary": "REST ye merry gentlemen.",
+       "description": "Creating of an issue using project keys and issue type names using the REST API",
+       "issuetype": {
+          "name": "Bug"
+       }
+   }
+}'
 #       "customfield_11050" : {"Value that we're putting into a Free Text Field."}       
 #    request.body = event.to_json
 #    request.body = request.template
