@@ -2,22 +2,25 @@ input { stdin { type => "stdin-type"}}
 
 output {
   jira {
-   host => "pm.xyz.com"
-   apikey => "user:password"
-   project => "LOGSTASH"
-#   searchfields => hash { 'field' => 'value', 'field2' => 'value2' }  # only when used with the append method
-#   method => append/new # Create a new ticket with every event or append it based on the search method
-#   fields => hash { 'JiraField1' => 'value1', 'JiraField2' => 'value2' } # Add data to field for the ticket when its created initially
-#   comment => 'string' # Add comment to the ticket ( a new comment is placed all the time when in append method )
+   host => "YOUR HOST NAME"
+   username => "USERNAME"
+   password => "PASSWORD"
+#   project => "LOGSTASH"
+   projectid => "11203" # would have prefered a project key, https://github.com/jstewart/jiralicious/issues/16
+   issuetypeid => "7"
+   summary => "Driven from config file"
+   reporter => "admin"
+   assignee => "admin"
+   priority => "1"
   }
-
+ 
   stdout {
   	debug => true 
 	debug_format => "ruby"
   }
 
-  elasticsearch { 
-    index => "logstash"
-    type => "%{@type}"
-  }
+#  elasticsearch { 
+#    index => "logstash"
+#    type => "%{@type}"
+#  }
 }
