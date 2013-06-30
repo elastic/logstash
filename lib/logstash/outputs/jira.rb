@@ -1,7 +1,10 @@
 # Origin https://groups.google.com/forum/#!msg/logstash-users/exgrB4iQ-mw/R34apku5nXsJ
 # and https://botbot.me/freenode/logstash/msg/4169496/ 
 # via https://gist.github.com/electrical/4660061e8fff11cdcf37#file-jira-rb
-# Settling on jiralicious as the bridge to JIRA
+
+# Uses jiralicious as the bridge to JIRA
+# By Martin Cleaver, Blended Perspectives
+# with a lot of help from 'electrical' in #logstash
 
 require "logstash/outputs/base"
 require "logstash/namespace"
