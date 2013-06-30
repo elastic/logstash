@@ -39,7 +39,10 @@ class LogStash::Outputs::Jira < LogStash::Outputs::Base
   config :project, :validate => :string, :required => true
 
   # The RestAPI key
-  config :apikey, :validate => :string, :required => true
+#  config :apikey, :validate => :string, :required => true
+
+  config :user, :validate => :string, :required => true
+  config :password, :validate => :string, :required => true
 
   # Should the log action be sent over https instead of plain http
   config :proto, :validate => :string, :default => "http"
@@ -89,30 +92,36 @@ class LogStash::Outputs::Jira < LogStash::Outputs::Base
     # Send the event over http.
 # curl -D- -u fred:fred -X POST --data {see below} -H "Content-Type: application/json" http://localhost:8090/rest/api/2/issue/
 # https://developer.atlassian.com/display/JIRADEV/JIRA+REST+API+Example+-+Create+Issue#JIRARESTAPIExample-CreateIssue-Request.3
-    url = URI.parse("#{@proto}://#{@apikey}@#{@host}/rest/api/2/issue")
+    url = URI.parse("#{@proto}://#{@host}/rest/api/2/issue")
     @logger.info("JIRA Rest Url", :url => url)
     http = Net::HTTP::Proxy(@proxy_host, @proxy_port, @proxy_user, @proxy_password.value).new(url.host, url.port)
     if url.scheme == 'https'
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
     end
+#http://stackoverflow.com/questions/10919287/make-this-http-post-request-in-ruby
     request = Net::HTTP::Post.new(url.path)
-    request.template = '{
-      "fields" {
-       "project":
-       { 
-          "key": "#{@project}"
-       },
-       "summary": "Always do right. This will gratify some people and astonish the REST.",
-       "description": "Creating an issue while setting custom field values",
-       "issuetype": {
-          "name": "Bug"
-       },       
-     }
-   }'
+    request.add_field('Content-Type', 'application/json')
+    request.basic_auth @user, @password
+
+   request.body = '
+    {
+      "fields": {
+           "project":
+           {
+              "key": "LOGSTASH"
+           },
+           "summary": "Always do right. This will gratify some people and astonish the REST.",
+           "description": "Creating an issue while setting custom field values",
+           "issuetype": {
+              "name": "Bug"
+           }
+        }
+    }'
 #       "customfield_11050" : {"Value that we're putting into a Free Text Field."}       
 #    request.body = event.to_json
-    request.body = request.template
+#    request.body = request.template
+    @logger.info("request.body", :request_body => request.body)
     response = http.request(request)
     if response.is_a?(Net::HTTPSuccess)
       @logger.info("Event send to JIRA OK!")
