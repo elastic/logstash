@@ -11,7 +11,8 @@ class LogStash::Inputs::RabbitMQ
       @settings = {
         :vhost => @vhost,
         :host  => @host,
-        :port  => @port
+        :port  => @port,
+        :automatically_recover => false
       }
       @settings[:user]      = @user || Bunny::DEFAULT_USER
       @settings[:pass]      = if @password
@@ -41,7 +42,7 @@ class LogStash::Inputs::RabbitMQ
 
     def run(queue)
       begin
-        @connection = Bunny.new(@settings)
+        @conn = Bunny.new(@settings)
 
         @logger.debug("Connecting to RabbitMQ. Settings: #{@settings.inspect}, queue: #{@queue.inspect}")
         return if terminating?
@@ -50,6 +51,7 @@ class LogStash::Inputs::RabbitMQ
         @ch = @conn.create_channel.tap do |ch|
           ch.prefetch(@prefetch_count)
         end
+        @logger.info("Connected to RabbitMQ at #{@settings[:host]}")
 
         @arguments_hash = Hash[*@arguments]
 
@@ -58,18 +60,25 @@ class LogStash::Inputs::RabbitMQ
                        :auto_delete => @auto_delete,
                        :exclusive   => @exclusive,
                        :arguments   => @arguments_hash)
-        @q.bind(@exchange, :routing_key => @key)
 
-        @consumer = @q.subscribe(:manual_ack => @ack) do |delivery_info, properties, data|
+        @logger.info("Will consume events from queue #{@q.name}")
+
+        # we both need to block the caller in Bunny::Queue#subscribe and have
+        # a reference to the consumer so that we can cancel it, so
+        # a consumer manually. MK.
+        @consumer = Bunny::Consumer.new(@ch, @q)
+        @q.subscribe(:manual_ack => @ack, :block => true) do |delivery_info, properties, data|
           @codec.decode(data) do |event|
             event["source"] = @connection_url
             queue << event
           end
-        end
-      rescue Bunny::NetworkFailure, Bunny::ConnectionClosedError, Bunny::ConnectionLevelException => e
-        @logger.error("RabbitMQ connection error, will reconnect: #{e}")
 
-        n = Bunny::DEFAULT_NETWORK_RECOVERY_INTERVAL / 2
+          @ch.acknowledge(delivery_info.delivery_tag) if @ack
+        end
+      rescue Bunny::NetworkFailure, Bunny::ConnectionClosedError, Bunny::ConnectionLevelException, Bunny::TCPConnectionFailed => e
+        n = Bunny::Session::DEFAULT_NETWORK_RECOVERY_INTERVAL * 2
+
+        @logger.error("RabbitMQ connection error: #{e.message}. Will attempt to reconnect in #{n} seconds...")
 
         sleep n
         retry
@@ -80,8 +89,8 @@ class LogStash::Inputs::RabbitMQ
       @consumer.cancel
       @q.delete unless @durable
 
-      @ch.close         if @ch && @ch.open?
-      @connection.close if @connection && @connection.open?
+      @ch.close   if @ch && @ch.open?
+      @conn.close if @conn && @conn.open?
 
       finished
     end
