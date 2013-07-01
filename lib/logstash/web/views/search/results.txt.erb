@@ -1,9 +1,0 @@
-<% 
-  # Sinatra currently doesn't do ERB with newline trimming, so we
-  # have to write this funky mishmosh on one line that is hard to read.
-if @results.error? %>Error: <%= @results.error_message%><% else
-  @results.events.each do |event|
-%><%= event.message || event.to_hash.to_json %>
-<%   end
-   end 
-%>

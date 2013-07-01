@@ -28,15 +28,13 @@ class LogStash::Inputs::Graphite < LogStash::Inputs::Tcp
   # This is a silly hack to make the superclass (Tcp) give us a finished event
   # so that we can parse it accordingly.
   def <<(event)
-    name, value, time = event["@message"].split(" ")
+    name, value, time = event["message"].split(" ")
     event[name] = value.to_f
 
     if time != "N"
-      t = Time.at(time.to_i).gmtime
-      event["@timestamp"] = sprintf(ISO8601_STRFTIME, t.year, t.month, t.day, t.hour,
-                                    t.min, t.sec, t.tv_usec, t.utc_offset / 3600)
+      event["@timestamp"] = Time.at(time.to_i).gmtime
     end
 
-    @queue  << event
+    @queue << event
   end
 end # class LogStash::Inputs::Graphite

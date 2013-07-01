@@ -32,6 +32,9 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
   # <https://github.com/tobie/ua-parser/blob/master/regexes.yaml>
   config :regexes, :validate => :string
 
+  # A string to prepend to all of the extracted keys
+  config :prefix, :validate => :string, :default => ''
+
   public
   def register
     require 'user_agent_parser'
@@ -80,16 +83,16 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
         target = event[@target] ||= {}
       end
 
-      target["name"] = ua_data.name
-      target["os"] = ua_data.os.to_s if not ua_data.os.nil?
-      target["device"] = ua_data.device.to_s if not ua_data.device.nil?
+      target[@prefix + "name"] = ua_data.name
+      target[@prefix + "os"] = ua_data.os.to_s if not ua_data.os.nil?
+      target[@prefix + "device"] = ua_data.device.to_s if not ua_data.device.nil?
 
       if not ua_data.version.nil?
         ua_version = ua_data.version
-        target["major"] = ua_version.major
-        target["minor"] = ua_version.minor
-        target["patch"] = ua_version.patch if ua_version.patch
-        target["build"] = ua_version.patch_minor if ua_version.patch_minor 
+        target[@prefix + "major"] = ua_version.major
+        target[@prefix + "minor"] = ua_version.minor
+        target[@prefix + "patch"] = ua_version.patch if ua_version.patch
+        target[@prefix + "build"] = ua_version.patch_minor if ua_version.patch_minor 
       end
 
       filter_matched(event)

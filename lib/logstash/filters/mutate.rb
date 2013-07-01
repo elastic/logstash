@@ -42,7 +42,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # 
   #     filter {
   #       mutate {
-  #         replace => [ "@message", "%{source_host}: My new message" ]
+  #         replace => [ "message", "%{source_host}: My new message" ]
   #       }
   #     }
   config :replace, :validate => :hash

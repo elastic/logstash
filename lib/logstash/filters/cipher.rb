@@ -12,15 +12,15 @@ class LogStash::Filters::Cipher < LogStash::Filters::Base
   #
   # Example, to use the @message field (default) :
   #
-  #     filter { cipher { source => "@message" } }
-  config :source, :validate => :string, :default => '@message'
+  #     filter { cipher { source => "message" } }
+  config :source, :validate => :string, :default => "message"
 
   # The name of the container to put the result
   #
   # Example, to place the result into crypt :
   #
   #     filter { cipher { target => "crypt" } }
-  config :target, :validate => :string, :default => '@message'
+  config :target, :validate => :string, :default => "message"
 
   # Do we have to perform a base64 decode or encode?
   #

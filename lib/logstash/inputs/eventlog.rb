@@ -60,11 +60,11 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
         timestamp = to_timestamp(event.TimeGenerated)
 
-        e = LogStash::Event.new({
-            "@source" => "eventlog://#{@hostname}/#{@logfile}",
-            "@type" => @type,
-            "@timestamp" => timestamp
-        })
+        e = LogStash::Event.new(
+          "source" => "eventlog://#{@hostname}/#{@logfile}",
+          "type" => @type,
+          "@timestamp" => timestamp
+        )
 
         %w{Category CategoryString ComputerName EventCode EventIdentifier
             EventType Logfile Message RecordNumber SourceName

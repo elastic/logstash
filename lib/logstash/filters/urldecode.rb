@@ -8,7 +8,7 @@ class LogStash::Filters::Urldecode < LogStash::Filters::Base
   milestone 2
 
   # The field which value is urldecoded
-  config :field, :validate => :string, :default => "@message"
+  config :field, :validate => :string, :default => "message"
 
   # Urldecode all fields
   config :all_fields, :validate => :boolean, :default => false
