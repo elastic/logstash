@@ -78,6 +78,11 @@ class LogStash::Inputs::RabbitMQ
       rescue Bunny::NetworkFailure, Bunny::ConnectionClosedError, Bunny::ConnectionLevelException, Bunny::TCPConnectionFailed => e
         n = Bunny::Session::DEFAULT_NETWORK_RECOVERY_INTERVAL * 2
 
+        # Because we manually reconnect instead of letting Bunny
+        # handle failures,
+        # make sure we don't leave any consumer work pool
+        # threads behind. MK.
+        @ch.maybe_kill_consumer_work_pool!
         @logger.error("RabbitMQ connection error: #{e.message}. Will attempt to reconnect in #{n} seconds...")
 
         sleep n
