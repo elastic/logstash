@@ -29,7 +29,7 @@ class LogStash::Inputs::RabbitMQ
 
     def run(queue)
       begin
-        @connection = HotBunnies.connect(@settings)
+        @conn = HotBunnies.connect(@settings)
 
         @logger.debug("Connecting to RabbitMQ. Settings: #{@settings.inspect}, queue: #{@queue.inspect}")
         return if terminating?
@@ -45,7 +45,6 @@ class LogStash::Inputs::RabbitMQ
                        :auto_delete => @auto_delete,
                        :exclusive   => @exclusive,
                        :arguments   => @arguments_hash)
-        @q.bind(@exchange, :routing_key => @key)
 
         # we manually build a consumer here to be able to keep a reference to it
         # in an @ivar even though we use a blocking version of HB::Queue#subscribe
