@@ -57,7 +57,7 @@ class LogStash::Runner
     @startup_interruption_trap = Stud::trap("INT") { puts "Interrupted"; exit 0 }
 
     LogStash::Util::set_thread_name(self.class.name)
-    $LOAD_PATH << File.join(File.dirname(__FILE__), "..")
+    #$LOAD_PATH << File.join(File.dirname(__FILE__), "..")
 
     if RUBY_VERSION < "1.9.2"
       $stderr.puts "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"

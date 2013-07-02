@@ -2,8 +2,8 @@ require "rubygems"
 require "optparse"
 
 # TODO(sissel): Are these necessary anymore?
-$:.unshift "#{File.dirname(__FILE__)}/../lib"
-$:.unshift "#{File.dirname(__FILE__)}/../test"
+#$:.unshift "#{File.dirname(__FILE__)}/../lib"
+#$:.unshift "#{File.dirname(__FILE__)}/../test"
 
 require "logstash/namespace"
 require "logstash/loadlibs"
