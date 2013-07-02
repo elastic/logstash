@@ -61,6 +61,9 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # The sample rate for the metric
   config :sample_rate, :validate => :number, :default => 1
 
+  # Consider fields as metrics, fields are populated by the kv filter
+  config :fields_are_metrics, :validate => :boolean, :default => false
+
   # The final metric sent to statsd will look like the following (assuming defaults)
   # logstash.sender.file_name
   #
@@ -82,6 +85,28 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
     sender = event.sprintf(@sender)
     @logger.debug? and @logger.debug("Munged sender: #{sender}")
     @logger.debug? and @logger.debug("Event: #{event}")
+
+    if @fields_are_metrics
+      @increment.clear; @decrement.clear; @count.clear; @timing.clear
+      @logger.debug("got metrics event", :metrics => event.fields)
+      event.fields.each do |metric,value|
+        case metric
+          when /_increment$/
+            @increment << event.sprintf(metric)
+          when /_decrement$/
+            @decrement << event.sprintf(metric)
+          when /_count$/
+            @count[metric] = "#{event.sprintf(value.to_s).to_f}"
+          when /_timing$/
+            @timing[metric] = "#{event.sprintf(value.to_s).to_f}"
+          when /_set$/
+            @set[metric] = "#{event.sprintf(value.to_s).to_f}"
+          when /_guage$/
+            @guage[metric] = "#{event.sprintf(value.to_s).to_f}"
+        end
+      end
+    end
+
     @increment.each do |metric|
       @client.increment(build_stat(event.sprintf(metric), sender), @sample_rate)
     end
