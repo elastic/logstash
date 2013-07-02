@@ -40,41 +40,12 @@ class LogStash::Inputs::RabbitMQ
       @logger.info("Registering input #{@connection_url}")
     end
 
-    def run(queue)
+    def run(output_queue)
+      @output_queue = output_queue
+
       begin
-        @conn = Bunny.new(@settings)
-
-        @logger.debug("Connecting to RabbitMQ. Settings: #{@settings.inspect}, queue: #{@queue.inspect}")
-        return if terminating?
-        @conn.start
-
-        @ch = @conn.create_channel.tap do |ch|
-          ch.prefetch(@prefetch_count)
-        end
-        @logger.info("Connected to RabbitMQ at #{@settings[:host]}")
-
-        @arguments_hash = Hash[*@arguments]
-
-        @q = @ch.queue(@queue,
-                       :durable     => @durable,
-                       :auto_delete => @auto_delete,
-                       :exclusive   => @exclusive,
-                       :arguments   => @arguments_hash)
-
-        @logger.info("Will consume events from queue #{@q.name}")
-
-        # we both need to block the caller in Bunny::Queue#subscribe and have
-        # a reference to the consumer so that we can cancel it, so
-        # a consumer manually. MK.
-        @consumer = Bunny::Consumer.new(@ch, @q)
-        @q.subscribe(:manual_ack => @ack, :block => true) do |delivery_info, properties, data|
-          @codec.decode(data) do |event|
-            event["source"] = @connection_url
-            queue << event
-          end
-
-          @ch.acknowledge(delivery_info.delivery_tag) if @ack
-        end
+        setup
+        consume
       rescue Bunny::NetworkFailure, Bunny::ConnectionClosedError, Bunny::ConnectionLevelException, Bunny::TCPConnectionFailed => e
         n = Bunny::Session::DEFAULT_NETWORK_RECOVERY_INTERVAL * 2
 
@@ -98,6 +69,44 @@ class LogStash::Inputs::RabbitMQ
       @conn.close if @conn && @conn.open?
 
       finished
+    end
+
+    def setup
+      @conn = Bunny.new(@settings)
+
+      @logger.debug("Connecting to RabbitMQ. Settings: #{@settings.inspect}, queue: #{@queue.inspect}")
+      return if terminating?
+      @conn.start
+
+      @ch = @conn.create_channel.tap do |ch|
+        ch.prefetch(@prefetch_count)
+      end
+      @logger.info("Connected to RabbitMQ at #{@settings[:host]}")
+
+      @arguments_hash = Hash[*@arguments]
+
+      @q = @ch.queue(@queue,
+                     :durable     => @durable,
+                     :auto_delete => @auto_delete,
+                     :exclusive   => @exclusive,
+                     :arguments   => @arguments_hash)
+    end
+
+    def consume
+      @logger.info("Will consume events from queue #{@q.name}")
+
+      # we both need to block the caller in Bunny::Queue#subscribe and have
+      # a reference to the consumer so that we can cancel it, so
+      # a consumer manually. MK.
+      @consumer = Bunny::Consumer.new(@ch, @q)
+      @q.subscribe(:manual_ack => @ack, :block => true) do |delivery_info, properties, data|
+        @codec.decode(data) do |event|
+          event["source"] = @connection_url
+          @output_queue << event
+        end
+
+        @ch.acknowledge(delivery_info.delivery_tag) if @ack
+      end
     end
   end # BunnyImpl
 end
