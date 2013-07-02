@@ -16,18 +16,19 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
   end # def register
 
   def run(queue) 
-    require "ap"
     while true
       begin
-        line = $stdin.readline.chomp
-        @codec.decode(line) do |event|
+        # Based on some testing, there is no way to interrupt an IO.sysread nor
+        # IO.select call in JRuby. Bummer :(
+        data = $stdin.sysread(16384)
+        @codec.decode(data) do |event|
           event["source"] = @host
           event["type"] = @type if @type
           @tags && @tags.each { |t| event.tag(t) }
           queue << event
         end
-      rescue EOFError => ex
-        # stdin closed, finish
+      rescue EOFError, LogStash::ShutdownSignal
+        # stdin closed or a requested shutdown
         break
       end
     end # while true
