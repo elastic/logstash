@@ -214,14 +214,14 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   def process_line(queue, metadata, line)
 
     if /#Version: .+/.match(line)
-      junk, version = line.split(/#Version: .+/)
+      junk, version = line.strip().split(/#Version: (.+)/)
       unless version.nil?
-        metadata[:version] = version.strip()
+        metadata[:version] = version
       end
     elsif /#Fields: .+/.match(line)
-      junk, format = line.split(/#Fields: .+/)
+      junk, format = line.strip().split(/#Fields: (.+)/)
       unless format.nil?
-        metadata[:format] = format.strip()
+        metadata[:format] = format
       end
     else
       @codec.decode(line) do |event|
@@ -239,7 +239,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
   end # def process_line
 
-
   private
   def sincedb_read()
 
@@ -251,7 +250,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     return since
 
   end # def sincedb_read
-
 
   private
   def sincedb_write(since=nil)
