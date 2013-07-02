@@ -110,7 +110,6 @@ class LogStash::Inputs::RabbitMQ
         end
       end
       @q.subscribe_with(@consumer, :manual_ack => @ack, :block => true)
-      @logger.info "Past subscribe_with"
     end
   end # HotBunniesImpl
 end
