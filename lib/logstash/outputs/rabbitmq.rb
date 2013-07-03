@@ -13,7 +13,7 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   EXCHANGE_TYPES = ["fanout", "direct", "topic"]
 
   config_name "rabbitmq"
-  milestone 2
+  milestone 1
 
 
   #
