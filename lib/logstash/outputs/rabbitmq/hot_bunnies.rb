@@ -71,6 +71,8 @@ class LogStash::Outputs::RabbitMQ
     #
 
     def connect
+      return if terminating?
+
       @vhost       ||= "127.0.0.1"
       # 5672. Will be switched to 5671 by Bunny if TLS is enabled.
       @port        ||= 5672
@@ -84,12 +86,6 @@ class LogStash::Outputs::RabbitMQ
                                 @password.value
                               else
                                 "guest"
-                              end
-
-      @settings[:log_level] = if @debug
-                                :debug
-                              else
-                                :error
                               end
 
       @settings[:tls]        = @ssl if @ssl
