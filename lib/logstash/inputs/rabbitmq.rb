@@ -84,18 +84,18 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # (Optional, backwards compatibility) Exchange binding
   #
 
-  # The name of the exchange to bind the queue to.
+  # Optional.
   #
-  # Optional for RabbitMQ input.
+  # The name of the exchange to bind the queue to.
   config :exchange, :validate => :string
 
+  # Optional.
+  #
   # The routing key to use when binding a queue to the exchange.
   # This is only relevant for direct or topic exchanges.
   #
   # * Routing keys are ignored on fanout exchanges.
   # * Wildcards are not valid on direct exchanges.
-  #
-  # Optional for RabbitMQ input.
   config :key, :validate => :string, :default => "logstash"
 
 
