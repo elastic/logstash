@@ -1,6 +1,5 @@
 require "logstash/inputs/threadable"
 require "logstash/namespace"
-require "cgi" # for CGI.escape
 
 # Pull events from a RabbitMQ exchange.
 #
