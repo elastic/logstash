@@ -92,7 +92,7 @@ class LogStash::Event
   else
     public
     def to_s
-      return self.sprintf("#{self["@timestamp"].iso8601} %{source} %{message}")
+      return self.sprintf("#{self["@timestamp"].to_datetime.iso8601} %{source} %{message}")
     end # def to_s
   end
 
