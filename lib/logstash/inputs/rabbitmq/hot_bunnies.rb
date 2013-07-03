@@ -8,7 +8,7 @@ class LogStash::Inputs::RabbitMQ
       @vhost       ||= "127.0.0.1"
       # 5672. Will be switched to 5671 by Bunny if TLS is enabled.
       @port        ||= 5672
-      @routing_key ||= "#"
+      @key         ||= "#"
 
       @settings = {
         :vhost => @vhost,
