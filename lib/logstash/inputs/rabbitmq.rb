@@ -16,39 +16,42 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   config_name "rabbitmq"
   milestone 0
 
-  # Your amqp broker's custom arguments. For mirrored queues in RabbitMQ: [ "x-ha-policy", "all" ]
-  config :arguments, :validate => :array, :default => []
+  #
+  # Connection
+  #
 
-  # Your amqp server address
+  # RabbitMQ server address
   config :host, :validate => :string, :required => true
 
-  # The AMQP port to connect on
+  # RabbitMQ port to connect on
   config :port, :validate => :number, :default => 5672
 
-  # Your amqp username
+  # RabbitMQ username
   config :user, :validate => :string, :default => "guest"
 
-  # Your amqp password
+  # RabbitMQ password
   config :password, :validate => :password, :default => "guest"
-
-  # The name of the queue.
-  config :queue, :validate => :string, :default => ""
-
-  # The name of the exchange to bind the queue. This is analogous to the 'amqp
-  # output' [config 'name'](../outputs/amqp)
-  config :exchange, :validate => :string, :required => true
-
-  # The routing key to use. This is only valid for direct or fanout exchanges
-  #
-  # * Routing keys are ignored on topic exchanges.
-  # * Wildcards are not valid on direct exchanges.
-  config :key, :validate => :string, :default => "logstash"
 
   # The vhost to use. If you don't know what this is, leave the default.
   config :vhost, :validate => :string, :default => "/"
 
-  # Passive queue creation? Useful for checking queue existance without modifying server state
-  config :passive, :validate => :boolean, :default => false
+  # Enable or disable SSL
+  config :ssl, :validate => :boolean, :default => false
+
+  # Validate SSL certificate
+  config :verify_ssl, :validate => :boolean, :default => false
+
+  # Enable or disable logging
+  config :debug, :validate => :boolean, :default => false
+
+
+
+  #
+  # Queue & Consumer
+  #
+
+  # The name of the queue Logstash will consume events from.
+  config :queue, :validate => :string, :default => ""
 
   # Is this queue durable? (aka; Should it survive a broker restart?)
   config :durable, :validate => :boolean, :default => false
@@ -62,20 +65,38 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Is the queue exclusive? (aka: Will other clients connect to this named queue?)
   config :exclusive, :validate => :boolean, :default => true
 
+  # Extra queue arguments as an array.
+  # To make a RabbitMQ queue mirrored, use: ["x-ha-policy", "all"]
+  config :arguments, :validate => :array, :default => []
+
   # Prefetch count. Number of messages to prefetch
   config :prefetch_count, :validate => :number, :default => 64
 
   # Enable message acknowledgement
   config :ack, :validate => :boolean, :default => true
 
-  # Enable or disable logging
-  config :debug, :validate => :boolean, :default => false
+  # Passive queue creation? Useful for checking queue existance without modifying server state
+  config :passive, :validate => :boolean, :default => false
 
-  # Enable or disable SSL
-  config :ssl, :validate => :boolean, :default => false
 
-  # Validate SSL certificate
-  config :verify_ssl, :validate => :boolean, :default => false
+
+  #
+  # (Optional, backwards compatibility) Exchange binding
+  #
+
+  # The name of the exchange to bind the queue to.
+  #
+  # Optional for RabbitMQ input.
+  config :exchange, :validate => :string
+
+  # The routing key to use when binding a queue to the exchange.
+  # This is only relevant for direct or topic exchanges.
+  #
+  # * Routing keys are ignored on fanout exchanges.
+  # * Wildcards are not valid on direct exchanges.
+  #
+  # Optional for RabbitMQ input.
+  config :key, :validate => :string, :default => "logstash"
 
 
   def initialize(params)
@@ -99,5 +120,18 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
     require "logstash/inputs/rabbitmq/bunny"
 
     include BunnyImpl
+  end
+
+  protected
+
+  def normalize_to_hash(arg)
+    case arg
+    when Hash then
+      arg
+    when Array then
+      Hash[*@arguments]
+    else
+      raise ArgumentError.new("expected an array or a hash, got: #{arg.inspect}")
+    end
   end
 end # class LogStash::Inputs::RabbitMQ
