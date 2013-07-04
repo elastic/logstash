@@ -20,7 +20,6 @@ class LogStash::Outputs::RabbitMQ
     def receive(event)
       return unless output?(event)
 
-      @logger.debug("Sending event", :destination => to_s, :event => event, :key => key)
       key = event.sprintf(@key) if @key
 
       begin
@@ -100,8 +99,6 @@ class LogStash::Outputs::RabbitMQ
         @conn = HotBunnies.connect(@settings)
 
         @logger.debug("Connecting to RabbitMQ. Settings: #{@settings.inspect}, queue: #{@queue.inspect}")
-        return if terminating?
-        @conn.start
 
         @ch = @conn.create_channel
         @logger.info("Connected to RabbitMQ at #{@settings[:host]}")
