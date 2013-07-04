@@ -70,7 +70,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   config :arguments, :validate => :array, :default => []
 
   # Prefetch count. Number of messages to prefetch
-  config :prefetch_count, :validate => :number, :default => 64
+  config :prefetch_count, :validate => :number, :default => 256
 
   # Enable message acknowledgement
   config :ack, :validate => :boolean, :default => true
