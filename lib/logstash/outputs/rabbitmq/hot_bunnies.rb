@@ -53,7 +53,9 @@ class LogStash::Outputs::RabbitMQ
         return if terminating?
 
         sleep n
-        retry
+
+        connect
+        declare_exchange
       end
     end
 
@@ -126,6 +128,11 @@ class LogStash::Outputs::RabbitMQ
       @logger.debug("Declaring an exchange", :name => @exchange, :type => @exchange_type,
                     :durable => @durable)
       @x = @ch.exchange(@exchange, :type => @exchange_type.to_sym, :durable => @durable)
+
+      # sets @connected to true during recovery. MK.
+      @connected.set(true)
+
+      @x
     end
 
   end # HotBunniesImpl
