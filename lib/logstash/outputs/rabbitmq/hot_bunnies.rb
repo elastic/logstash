@@ -12,8 +12,12 @@ class LogStash::Outputs::RabbitMQ
 
       @logger.info("Registering output", :plugin => self)
 
+      @connected = java.util.concurrent.atomic.AtomicBoolean.new
+
       connect
       declare_exchange
+
+      @connected.set(true)
     end
 
 
@@ -32,14 +36,15 @@ class LogStash::Outputs::RabbitMQ
 
     def publish_serialized(message, key = @key)
       begin
-        if @x
+        if @connected.get
           @x.publish(message, :routing_key => key, :properties => {
             :persistent => @persistent
           })
         else
-          @logger.warn("Tried to send a message, but not connected to RabbitMQ yet.")
+          @logger.warn("Tried to send a message, but not connected to RabbitMQ.")
         end
       rescue HotBunnies::Exception, com.rabbitmq.client.AlreadyClosedException => e
+        @connected.set(false)
         n = 10
 
         @logger.error("RabbitMQ connection error: #{e.message}. Will attempt to reconnect in #{n} seconds...",
@@ -57,6 +62,7 @@ class LogStash::Outputs::RabbitMQ
     end
 
     def teardown
+      @connected.set(false)
       @conn.close if @conn && @conn.open?
       @conn = nil
 
@@ -103,6 +109,7 @@ class LogStash::Outputs::RabbitMQ
         @ch = @conn.create_channel
         @logger.info("Connected to RabbitMQ at #{@settings[:host]}")
       rescue HotBunnies::Exception => e
+        @connected.set(false)
         n = 10
 
         @logger.error("RabbitMQ connection error: #{e.message}. Will attempt to reconnect in #{n} seconds...",
