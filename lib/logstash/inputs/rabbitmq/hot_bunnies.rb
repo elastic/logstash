@@ -52,6 +52,8 @@ class LogStash::Inputs::RabbitMQ
 
           sleep n
           retry
+        rescue LogStash::ShutdownSignal => ss
+          shutdown_consumer
         end
 
         n = 10
@@ -60,10 +62,7 @@ class LogStash::Inputs::RabbitMQ
     end
 
     def teardown
-      @break_out_of_the_loop.set(true)
-
-      @consumer.cancel
-      @consumer.gracefully_shut_down
+      shutdown_consumer
       @q.delete unless @durable
 
       @ch.close         if @ch && @ch.open?
@@ -91,10 +90,10 @@ class LogStash::Inputs::RabbitMQ
       @arguments_hash = Hash[*@arguments]
 
       @q = @ch.queue(@queue,
-                     :durable     => @durable,
-                     :auto_delete => @auto_delete,
-                     :exclusive   => @exclusive,
-                     :arguments   => normalize_to_hash(@arguments))
+        :durable     => @durable,
+        :auto_delete => @auto_delete,
+        :exclusive   => @exclusive,
+        :arguments   => normalize_to_hash(@arguments))
     end
 
     def consume
@@ -110,6 +109,13 @@ class LogStash::Inputs::RabbitMQ
         end
       end
       @q.subscribe_with(@consumer, :manual_ack => @ack, :block => true)
+    end
+
+    def shutdown_consumer
+      @break_out_of_the_loop.set(true)
+
+      @consumer.cancel
+      @consumer.gracefully_shut_down
     end
   end # HotBunniesImpl
 end
