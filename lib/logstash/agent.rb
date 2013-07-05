@@ -179,15 +179,6 @@ class LogStash::Agent < Clamp::Command
   # Point logging at a specific path.
   def configure_logging(path)
     # Set with the -v (or -vv...) flag
-    if verbosity? 
-      # this is an array with length of how many times the flag is given
-      if verbosity?.length == 1
-        @logger.level = :info
-      else
-        @logger.level = :debug
-      end
-    end
-
     if quiet?
       @logger.level = :error
     elsif verbose?
@@ -195,7 +186,18 @@ class LogStash::Agent < Clamp::Command
     elsif debug?
       @logger.level = :debug
     else
-      @logger.level = :warn
+      # Old support for the -v and -vv stuff.
+      if verbosity?
+        # this is an array with length of how many times the flag is given
+        if verbosity?.length == 1
+          @logger.level = :info
+        else
+          @logger.level = :debug
+        end
+      else
+        @logger.level = :warn
+      end
+
     end
 
     if !log_file.nil?
