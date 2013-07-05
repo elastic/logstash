@@ -66,8 +66,8 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   config :exclusive, :validate => :boolean, :default => true
 
   # Extra queue arguments as an array.
-  # To make a RabbitMQ queue mirrored, use: ["x-ha-policy", "all"]
-  config :arguments, :validate => :array, :default => []
+  # To make a RabbitMQ queue mirrored, use: {"x-ha-policy" => "all"}
+  config :arguments, :validate => :array, :default => {}
 
   # Prefetch count. Number of messages to prefetch
   config :prefetch_count, :validate => :number, :default => 256
@@ -120,18 +120,5 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
     require "logstash/inputs/rabbitmq/bunny"
 
     include BunnyImpl
-  end
-
-  protected
-
-  def normalize_to_hash(arg)
-    case arg
-    when Hash then
-      arg
-    when Array then
-      Hash[*@arguments]
-    else
-      raise ArgumentError.new("expected an array or a hash, got: #{arg.inspect}")
-    end
   end
 end # class LogStash::Inputs::RabbitMQ
