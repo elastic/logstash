@@ -22,8 +22,6 @@ if [ "$destdir/$prefix" != "/" -a -d "$destdir/$prefix" ] ; then
   rm -rf "$destdir/$prefix"
 fi
 
-mkdir -p $destdir/$prefix
-
 
 # install logstash.jar
 jar="$(dirname $0)/../build/logstash-$VERSION-flatjar.jar" 
@@ -32,36 +30,36 @@ if [ ! -f "$jar" ] ; then
   exit 1
 fi
 
-cp $jar $destdir/$prefix/logstash.jar
+mkdir -p $destdir/$prefix
+install -m644 $jar $destdir/$prefix/logstash.jar
 
 case $os@$release in
   centos@*)
     mkdir -p $destdir/etc/logrotate.d
     mkdir -p $destdir/etc/sysconfig
     mkdir -p $destdir/etc/init.d
-    mkdir -p $destdir/etc/logstash/conf.d
-    mkdir -p $destdir/opt/logstash/tmp
     mkdir -p $destdir/var/lib/logstash
     mkdir -p $destdir/var/run/logstash
-    mkdir -p $destdir/var/log/logstash
+    install -m755 -d -o logstash -g logstash $destdir/var/log/logstash
     cp $os/sysconfig $destdir/etc/sysconfig/logstash
     install -m644 logrotate.conf $destdir/etc/logrotate.d/
     install -m755 logstash.sysv.redhat $destdir/etc/init.d/logstash
     ;;
   ubuntu@*)
+    mkdir -p $destdir/etc/logstash
     mkdir -p $destdir/etc/logrotate.d
     mkdir -p $destdir/etc/init
-    mkdir -p $destdir/var/log/logstash
-    touch $destdir/etc/sysconfig/logstash
+    install -m755 -d -o logstash -g logstash $destdir/var/log/logstash
     install -m644 logrotate.conf $destdir/etc/logrotate.d/
     install -m755 logstash.upstart.ubuntu $destdir/etc/init/logstash.conf
     ;;
   debian@*)
+    mkdir -p $destdir/etc/logstash
     mkdir -p $destdir/etc/logrotate.d
     mkdir -p $destdir/etc/init.d
     mkdir -p $destdir/var/lib/logstash
     mkdir -p $destdir/var/run/logstash
-    mkdir -p $destdir/var/log/logstash
+    install -m755 -d -o logstash -g logstash $destdir/var/log/logstash
     install -m644 logrotate.conf $destdir/etc/logrotate.d/
     install -m755 logstash.sysv.debian $destdir/etc/init.d/logstash
     ;;
@@ -86,9 +84,16 @@ case $os in
     fpm -s dir -t deb -n logstash -v "$VERSION" \
       -a all --iteration 1-$os \
       -d "java6-runtime" \
-      --before-install ubuntu/before-install.sh \
-      --before-remove ubuntu/before-remove.sh \
-      --after-install ubuntu/after-install.sh \
+      --before-install debian/before-install.sh \
+      --before-remove debian/before-remove.sh \
+      --license APACHE --vendor logstash \
+      --category admin \
+      --description "tool for managing events and logs
+logstash is a tool for managing events and logs. You can use it to collect logs,
+parse them, and store them for later use (like, for searching). Speaking of
+searching, logstash comes with a web interface for searching and drilling into
+all of your logs." \
+      --url "http://logstash.net/" \
       -f -C $destdir .
     ;;
 esac
