@@ -58,6 +58,9 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
   # The From setting for email - fully qualified email address for the From:
   config :from, :validate => :string, :default => "logstash.alert@nowhere.com"
 
+  # The Reply To setting for email - fully qualified email address for the ReplyTo:
+  config :replyto, :validate => :string, :default => ""
+
   # cc - send to others
   # See *to* field for accepted value description
   config :cc, :validate => :string, :default => ""
@@ -240,6 +243,9 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
       mail = Mail.new
       mail.from = event.sprintf(@from)
       mail.to = event.sprintf(@to)
+      unless @replyto.empty?
+          mail.reply_to = event.sprintf(@replyto)
+      end
       mail.cc = event.sprintf(@cc)
       mail.subject = formatedSubject
       if @htmlbody.empty?
