@@ -1,5 +1,6 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
+require "stud/buffer"
 
 # This output lets you send metrics to
 # DataDogHQ based on Logstash events.
@@ -86,7 +87,7 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
     buffer_receive(dd_metrics)
   end # def receive
 
-  private
+  public
   def flush(events, final=false)
     dd_series = Hash.new
     dd_series['series'] = []
