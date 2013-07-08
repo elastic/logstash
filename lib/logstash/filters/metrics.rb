@@ -10,7 +10,7 @@ require "logstash/namespace"
 #     filter {
 #       metrics {
 #         meter => [ "http.%{response}" ]
-#         add_tag => metric
+#         add_tag => "metric"
 #       }
 #     }
 #
