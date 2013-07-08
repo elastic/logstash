@@ -21,7 +21,7 @@ metrics from logs and ship them to [graphite](http://graphite.wikidot.com/) so
 you can make pretty graphs of those metrics.
 
 One sample logster parser is one that pulls http response codes out of your
-apache logs: [SampleLogster.py](https://github.com/etsy/logster/blob/master/parsers/SampleLogster.py)
+apache logs: [SampleLogster.py](https://github.com/etsy/logster/blob/master/logster/parsers/SampleLogster.py)
 
 The above code is roughly 50 lines of python and only solves one specific
 problem in only apache logs: count http response codes by major number (1xx,
