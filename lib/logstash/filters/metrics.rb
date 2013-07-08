@@ -125,7 +125,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     @metrics_timers_mutex = Mutex.new
 
     @metric_meters = Hash.new { |h,k| @metrics_meters_mutex.synchronize { h[k] = Metriks.meter(k) } }
-    @metric_timers = Hash.new { |h,k| @metrics_times_mutex.synchronize { h[k] = Metriks.timer(k) } }
+    @metric_timers = Hash.new { |h,k| @metrics_timers_mutex.synchronize { h[k] = Metriks.timer(k) } }
   end # def register
 
   def filter(event)
