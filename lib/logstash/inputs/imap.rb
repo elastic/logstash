@@ -80,7 +80,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
     end
 
     event = to_event(message, "imap://#{@user}@#{@host}/#{m.from.first rescue ""}")
-   
+
     # Use the 'Date' field as the timestamp
     t = mail.date.to_time.gmtime
     event["@timestamp"] = sprintf(ISO8601_STRFTIME, t.year, t.month,
