@@ -9,8 +9,7 @@ require "set"
 
 class LogStash::Filters::Railsparallelrequest < LogStash::Filters::Base
 
-  CONFIG_NAME = "railsparallelrequest"
-  config_name CONFIG_NAME
+  config_name "railsparallelrequest"
   plugin_status "experimental"
 
   public
