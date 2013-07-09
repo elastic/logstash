@@ -1,6 +1,5 @@
 require "logstash/inputs/threadable"
 require "logstash/namespace"
-require "cgi" # for CGI.escape
 
 # Pull events from a RabbitMQ exchange.
 #
@@ -15,41 +14,44 @@ require "cgi" # for CGI.escape
 class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
   config_name "rabbitmq"
-  milestone 0
+  milestone 1
 
-  # Your amqp broker's custom arguments. For mirrored queues in RabbitMQ: [ "x-ha-policy", "all" ]
-  config :arguments, :validate => :array, :default => []
+  #
+  # Connection
+  #
 
-  # Your amqp server address
+  # RabbitMQ server address
   config :host, :validate => :string, :required => true
 
-  # The AMQP port to connect on
+  # RabbitMQ port to connect on
   config :port, :validate => :number, :default => 5672
 
-  # Your amqp username
+  # RabbitMQ username
   config :user, :validate => :string, :default => "guest"
 
-  # Your amqp password
+  # RabbitMQ password
   config :password, :validate => :password, :default => "guest"
-
-  # The name of the queue.
-  config :queue, :validate => :string, :default => ""
-
-  # The name of the exchange to bind the queue. This is analogous to the 'amqp
-  # output' [config 'name'](../outputs/amqp)
-  config :exchange, :validate => :string, :required => true
-
-  # The routing key to use. This is only valid for direct or fanout exchanges
-  #
-  # * Routing keys are ignored on topic exchanges.
-  # * Wildcards are not valid on direct exchanges.
-  config :key, :validate => :string, :default => "logstash"
 
   # The vhost to use. If you don't know what this is, leave the default.
   config :vhost, :validate => :string, :default => "/"
 
-  # Passive queue creation? Useful for checking queue existance without modifying server state
-  config :passive, :validate => :boolean, :default => false
+  # Enable or disable SSL
+  config :ssl, :validate => :boolean, :default => false
+
+  # Validate SSL certificate
+  config :verify_ssl, :validate => :boolean, :default => false
+
+  # Enable or disable logging
+  config :debug, :validate => :boolean, :default => false
+
+
+
+  #
+  # Queue & Consumer
+  #
+
+  # The name of the queue Logstash will consume events from.
+  config :queue, :validate => :string, :default => ""
 
   # Is this queue durable? (aka; Should it survive a broker restart?)
   config :durable, :validate => :boolean, :default => false
@@ -63,86 +65,60 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Is the queue exclusive? (aka: Will other clients connect to this named queue?)
   config :exclusive, :validate => :boolean, :default => true
 
+  # Extra queue arguments as an array.
+  # To make a RabbitMQ queue mirrored, use: {"x-ha-policy" => "all"}
+  config :arguments, :validate => :array, :default => {}
+
   # Prefetch count. Number of messages to prefetch
-  config :prefetch_count, :validate => :number, :default => 1
+  config :prefetch_count, :validate => :number, :default => 256
 
   # Enable message acknowledgement
   config :ack, :validate => :boolean, :default => true
 
-  # Enable or disable debugging
-  config :debug, :validate => :boolean, :default => false
+  # Passive queue creation? Useful for checking queue existance without modifying server state
+  config :passive, :validate => :boolean, :default => false
 
-  # Enable or disable SSL
-  config :ssl, :validate => :boolean, :default => false
 
-  # Validate SSL certificate
-  config :verify_ssl, :validate => :boolean, :default => false
 
-  public
+  #
+  # (Optional, backwards compatibility) Exchange binding
+  #
+
+  # Optional.
+  #
+  # The name of the exchange to bind the queue to.
+  config :exchange, :validate => :string
+
+  # Optional.
+  #
+  # The routing key to use when binding a queue to the exchange.
+  # This is only relevant for direct or topic exchanges.
+  #
+  # * Routing keys are ignored on fanout exchanges.
+  # * Wildcards are not valid on direct exchanges.
+  config :key, :validate => :string, :default => "logstash"
+
+
   def initialize(params)
     params["codec"] = "json" if !params["codec"]
+
     super
-  end # def initialize
+  end
 
-  public
-  def register
-    @logger.info("Registering input #{@url}")
-    require "bunny" # rubygem 'bunny'
-    @vhost ||= "/"
-    @port ||= 5672
-    @key ||= "#"
-    @amqpsettings = {
-      :vhost => @vhost,
-      :host => @host,
-      :port => @port,
-    }
-    @amqpsettings[:user] = @user if @user
-    @amqpsettings[:pass] = @password.value if @password
-    @amqpsettings[:logging] = @debug
-    @amqpsettings[:ssl] = @ssl if @ssl
-    @amqpsettings[:verify_ssl] = @verify_ssl if @verify_ssl
-    @amqpurl = "amqp://"
-    if @user
-      @amqpurl << @user if @user
-      @amqpurl << ":#{CGI.escape(@password.to_s)}" if @password
-      @amqpurl << "@"
-    end
-    @amqpurl += "#{@host}:#{@port}#{@vhost}/#{@queue}"
-  end # def register
+  # Use HotBunnies on JRuby to avoid IO#select CPU spikes
+  # (see github.com/ruby-amqp/bunny/issues/95).
+  #
+  # On MRI, use Bunny 0.9.
+  #
+  # See http://rubybunny.info and http://hotbunnies.info
+  # for the docs.
+  if RUBY_ENGINE == "jruby"
+    require "logstash/inputs/rabbitmq/hot_bunnies"
 
-  def run(queue)
-    begin
-      @logger.debug("Connecting with AMQP settings #{@amqpsettings.inspect} to set up queue #{@queue.inspect}")
-      @bunny = Bunny.new(@amqpsettings)
-      return if terminating?
-      @bunny.start
-      @bunny.qos({:prefetch_count => @prefetch_count})
+    include HotBunniesImpl
+  else
+    require "logstash/inputs/rabbitmq/bunny"
 
-      @arguments_hash = Hash[*@arguments]
-
-      @bunnyqueue = @bunny.queue(@queue, {:durable => @durable, :auto_delete => @auto_delete, :exclusive => @exclusive, :arguments => @arguments_hash })
-      @bunnyqueue.bind(@exchange, :key => @key)
-
-      @bunnyqueue.subscribe({:ack => @ack}) do |data|
-        @codec.decode(data[:payload]) do |event|
-          event["source"] = @amqpurl
-          queue << event
-        end
-      end # @bunnyqueue.subscribe
-
-    rescue *[Bunny::ConnectionError, Bunny::ServerDownError] => e
-      @logger.error("AMQP connection error, will reconnect: #{e}")
-      # Sleep for a bit before retrying.
-      # TODO(sissel): Write 'backoff' method?
-      sleep(1)
-      retry
-    end # begin/rescue
-  end # def run
-
-  def teardown
-    @bunnyqueue.unsubscribe unless @durable == true
-    @bunnyqueue.delete unless @durable == true
-    @bunny.close if @bunny
-    finished
-  end # def teardown
+    include BunnyImpl
+  end
 end # class LogStash::Inputs::RabbitMQ
