@@ -118,12 +118,13 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   #     }
   config :ignore_older_than, :validate => :number, :default => 0
 
-  # The flush interval, when the metrics event is created
+  # The flush interval, when the metrics event is created. Must be a multiple of 5s.
   config :flush_interval, :validate => :number, :default => 5
 
   # The clear interval, when all counter are reset.
   #
   # If set to -1, the default value, the metrics will never be cleared.
+  # Otherwise, should be a multiple of 5s.
   config :clear_interval, :validate => :number, :default => -1
 
   def register
