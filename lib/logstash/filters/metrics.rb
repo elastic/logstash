@@ -3,7 +3,7 @@ require "logstash/namespace"
 
 # The metrics filter is useful for aggregating metrics.
 #
-# For example, if you have a field 'response' that is 
+# For example, if you have a field 'response' that is
 # a http response code, and you want to count each
 # kind of response, you can do this:
 #
@@ -14,7 +14,8 @@ require "logstash/namespace"
 #       }
 #     }
 #
-# Metrics are flushed every 5 seconds. Metrics appear as
+# Metrics are flushed every 5 seconds by default or according to
+# 'flush_interval'. Metrics appear as
 # new events in the event stream and go through any filters
 # that occur after as well as outputs.
 #
@@ -101,12 +102,12 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   # syntax: `timer => [ "name of metric", "%{time_value}" ]`
   config :timer, :validate => :hash, :default => {}
 
-  # Don't track events that have @timestamp older than some number of seconds. 
+  # Don't track events that have @timestamp older than some number of seconds.
   #
   # This is useful if you want to only include events that are near real-time
   # in your metrics.
   #
-  # Example, to only count events that are within 10 seconds of real-time, you 
+  # Example, to only count events that are within 10 seconds of real-time, you
   # would do this:
   #
   #     filter {
@@ -117,12 +118,20 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   #     }
   config :ignore_older_than, :validate => :number, :default => 0
 
+  # The flush interval, when the metrics event is created
+  config :flush_interval, :validate => :number, :default => 5
+
+  # The clear interval, when all counter are reset.
+  #
+  # If set to -1, the default value, the metrics will never be cleared.
+  config :clear_interval, :validate => :number, :default => -1
+
   def register
     require "metriks"
     require "socket"
-    
-    @metric_meters = Hash.new { |h,k| h[k] = Metriks.meter(k) }
-    @metric_timers = Hash.new { |h,k| h[k] = Metriks.timer(k) }
+    @last_flush = 0 # how many seconds ago the metrics where flushed.
+    @last_clear = 0 # how many seconds ago the metrics where cleared.
+    initialize_metrics
   end # def register
 
   def filter(event)
@@ -144,8 +153,13 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   end # def filter
 
   def flush
+    # Add 5 seconds to @last_flush and @last_clear counters
+    # since this method is called every 5 seconds.
+    @last_flush += 5
+    @last_clear += 5
+
     # Do nothing if there's nothing to do ;)
-    return if @metric_meters.empty? && @metric_timers.empty?
+    return unless should_flush?
 
     event = LogStash::Event.new
     event["message"] = Socket.gethostname
@@ -154,6 +168,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
       event["#{name}.rate_1m"] = metric.one_minute_rate
       event["#{name}.rate_5m"] = metric.five_minute_rate
       event["#{name}.rate_15m"] = metric.fifteen_minute_rate
+      metric.clear if should_clear?
     end
 
     @metric_timers.each do |name, metric|
@@ -177,9 +192,33 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
       event["#{name}.p90"] = metric.snapshot.value(0.90)
       event["#{name}.p95"] = metric.snapshot.value(0.95)
       event["#{name}.p99"] = metric.snapshot.value(0.99)
+      metric.clear if should_clear?
+    end
+
+    # Reset counter since metrics were flushed
+    @last_flush = 0
+
+    if should_clear?
+      #Reset counter since metrics were cleared
+      @last_clear = 0
+      initialize_metrics
     end
 
     filter_matched(event)
     return [event]
+  end
+
+  private
+  def initialize_metrics
+    @metric_meters = Hash.new { |h,k| h[k] = Metriks.meter(k) }
+    @metric_timers = Hash.new { |h,k| h[k] = Metriks.timer(k) }
+  end
+
+  def should_flush?
+    @last_flush >= @flush_interval && (@metric_meters.any? || @metric_timers.any?)
+  end
+
+  def should_clear?
+    @clear_interval > 0 && @last_clear >= @clear_interval
   end
 end # class LogStash::Filters::Metrics
