@@ -57,7 +57,7 @@ class LogStash::Runner
     @startup_interruption_trap = Stud::trap("INT") { puts "Interrupted"; exit 0 }
 
     LogStash::Util::set_thread_name(self.class.name)
-    $: << File.join(File.dirname(__FILE__), "..")
+    #$LOAD_PATH << File.join(File.dirname(__FILE__), "..")
 
     if RUBY_VERSION < "1.9.2"
       $stderr.puts "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
@@ -99,7 +99,7 @@ class LogStash::Runner
         return kibana.run(args)
       end,
       "test" => lambda do
-        $: << File.join(File.dirname(__FILE__), "..", "..", "test")
+        $LOAD_PATH << File.join(File.dirname(__FILE__), "..", "..", "test")
         require "logstash/test"
         test = LogStash::Test.new
         @runners << test
@@ -122,7 +122,7 @@ class LogStash::Runner
               if File.exists?(newpath)
                 # Add the 'spec' dir to the load path so specs can run
                 specpath = File.join(jar_root, "spec")
-                $: << specpath unless $:.include?(specpath)
+                $LOAD_PATH << specpath unless $LOAD_PATH.include?(specpath)
                 next newpath
               end
             end
@@ -146,7 +146,7 @@ class LogStash::Runner
           end
         end
 
-        $: << File.expand_path("#{File.dirname(__FILE__)}/../../spec")
+        $LOAD_PATH << File.expand_path("#{File.dirname(__FILE__)}/../../spec")
         require "test_utils"
         #p :args => fixedargs
         rspec = runner.new(fixedargs)

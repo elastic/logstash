@@ -5,12 +5,8 @@ require "mocha/api"
 describe LogStash::Outputs::Graphite do
   extend LogStash::RSpec
 
-  before :each do
-    @mock = StringIO.new
-    TCPSocket.expects(:new).with("localhost", 2003).returns(@mock)
-  end
-
   describe "defaults should include all metrics" do
+    port = 4939
     config <<-CONFIG
       input {
         generator {
@@ -27,15 +23,30 @@ describe LogStash::Outputs::Graphite do
       output {
         graphite {
           host => "localhost"
-          port => 2003
+          port => #{port}
           metrics => [ "hurray.%{foo}", "%{bar}" ]
         }
       }
     CONFIG
 
+    let(:queue) { Queue.new }
+    before :each do
+      server = TCPServer.new("127.0.0.1", port)
+      Thread.new do
+        client = server.accept
+        p client
+        while true
+          p :read
+          line = client.readline
+          p :done
+          queue << line
+          p line
+        end
+      end
+    end
+
     agent do
-      @mock.rewind
-      lines = @mock.readlines.delete_if { |l| l =~ /\.sequence \d+/ }
+      lines = queue.pop
 
       insist { lines.size } == 1
       insist { lines }.any? { |l| l =~ /^hurray.fancy 42.0 \d{10,}\n$/ }

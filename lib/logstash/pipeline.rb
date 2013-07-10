@@ -22,7 +22,7 @@ class LogStash::Pipeline
     code = @config.compile
     # The config code is hard to represent as a log message...
     # So just print it.
-    puts code if @logger.debug?
+    @logger.debug? && @logger.debug("Compiled pipeline code", :code => code)
     eval(code)
 
     @input_to_filter = SizedQueue.new(20)

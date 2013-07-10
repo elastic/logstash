@@ -31,11 +31,11 @@ if RUBY_PLATFORM == "java"
       #   - return cached results only
       if RUBY_PLATFORM == "java" 
         m = JAR_RE.match(path)
-        return mpp_file?(path) if !m # not a jar file
+        return mpp_exists?(path) if !m # not a jar file
         c = __zipcache(m[1], m[2]) # m[1] == the jar path
         return !c.nil?
       end
-      return mpp_file?(path)
+      return mpp_exists?(path)
     end
 
     def exists?(path)

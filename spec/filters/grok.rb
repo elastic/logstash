@@ -224,9 +224,9 @@ describe LogStash::Filters::Grok do
         }
       CONFIG
 
-      sample "fancy 2012-12-12 12:12:12" do
+      sample "fancy 12-12-12 12:12:12" do
         insist { subject["tags"] }.nil?
-        insist { subject["timestamp"] } == "2012-12-12 12:12:12"
+        insist { subject["timestamp"] } == "12-12-12 12:12:12"
       end
     end
   end
@@ -292,8 +292,8 @@ describe LogStash::Filters::Grok do
       }
     CONFIG
 
-    sample "2011/01/01" do
-      insist { subject["stimestamp"] } == "2011/01/01"
+    sample "11/01/01" do
+      insist { subject["stimestamp"] } == "11/01/01"
     end
   end
 

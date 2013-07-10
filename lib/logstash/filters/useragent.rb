@@ -52,7 +52,7 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
             @parser = UserAgentParser::Parser.new(:patterns_path => "vendor/ua-parser/regexes.yaml")
           end
         rescue => ex
-          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
+          raise "Failed to cache, due to: #{ex}\n"
         end
       end
     else

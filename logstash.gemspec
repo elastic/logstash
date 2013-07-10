@@ -39,7 +39,6 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "aws-sdk"                          #{Apache 2.0 license}
   gem.add_runtime_dependency "heroku"                           #(MIT license)
   gem.add_runtime_dependency "addressable"                      #(Apache 2.0 license)
-  gem.add_runtime_dependency "bunny", ["0.8.0"]                 #(MIT license)
   gem.add_runtime_dependency "extlib", ["0.9.16"]               #(MIT license)
   gem.add_runtime_dependency "ffi"                              #(LGPL-3 license)
   gem.add_runtime_dependency "ffi-rzmq", ["1.0.0"]              #(MIT license)
@@ -86,6 +85,12 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "excon"    #(MIT license)
     gem.add_runtime_dependency "mysql2"   # For input drupal_dblog (MIT license)
     gem.add_runtime_dependency "msgpack"  #(Apache 2.0 license)
+  end
+
+  if RUBY_PLATFORM != 'java'
+    gem.add_runtime_dependency "bunny",       ["~> 0.9.0.rc2"]  #(MIT license)
+  else
+    gem.add_runtime_dependency "hot_bunnies", ["~> 2.0.0.pre8"] #(MIT license)
   end
 
   if RUBY_VERSION >= '1.9.1'

@@ -16,15 +16,23 @@ class LogStash::Codecs::Plain < LogStash::Codecs::Base
   #
   # This only affects "plain" format logs since json is UTF-8 already.
   config :charset, :validate => ::Encoding.name_list, :default => "UTF-8"
+
+  public
+  def register
+    require "logstash/util/buftok"
+    @buffer = FileWatch::BufferedTokenizer.new
+  end
   
   public
   def decode(data)
-    data.force_encoding(@charset)
-    if @charset != "UTF-8"
-      # Convert to UTF-8 if not in that character set.
-      data = data.encode("UTF-8", :invalid => :replace, :undef => :replace)
+    @buffer.extract(data).each do |line|
+      line.force_encoding(@charset)
+      if @charset != "UTF-8"
+        # Convert to UTF-8 if not in that character set.
+        line = line.encode("UTF-8", :invalid => :replace, :undef => :replace)
+      end
+      yield LogStash::Event.new({"message" => line})
     end
-    yield LogStash::Event.new({"message" => data})
   end # def decode
 
   public

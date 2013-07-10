@@ -31,7 +31,8 @@ else
 TAR_OPTS=--wildcards
 endif
 
-TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/outputs/graphite.rb spec/outputs/email.rb)
+TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
+#spec/outputs/graphite.rb spec/outputs/email.rb)
 default: 
 	@echo "Make targets you might be interested in:"
 	@echo "  flatjar -- builds the flatjar jar"
@@ -227,12 +228,13 @@ build/flatgems: | build vendor/bundle
 	$(QUIET)rsync -a $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
 
 flatjar-test:
-	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-flatjar.jar rspec $(TESTS)
-	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-flatjar.jar rspec spec/jar.rb
+	# chdir away from the project directory to make sure things work in isolation.
+	cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS) --fail-fast
+	#cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-flatjar.jar rspec spec/jar.rb
 
 jar-test:
-	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec $(TESTS)
-	cd build && GEM_HOME= GEM_PATH= java -jar logstash-$(VERSION)-monolithic.jar rspec spec/jar.rb
+	cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --fail-fast
+	#cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-monolithic.jar rspec spec/jar.rb
 
 flatjar-test-and-report:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS) --format h --out build/results.flatjar.html
