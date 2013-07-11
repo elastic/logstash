@@ -92,7 +92,7 @@ class LogStash::Filters::Sleep < LogStash::Filters::Base
       if @last_clock
         delay = clock - @last_clock
         time = delay/time
-        if sleeptime > 0
+        if time > 0
           @logger.debug? && @logger.debug("Sleeping", :delay => time)
           sleep(time)
         end
