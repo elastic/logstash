@@ -1,3 +1,4 @@
+require "securerandom"
 require "logstash/filters/base"
 require "logstash/namespace"
 
@@ -132,6 +133,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     require "socket"
     @last_flush = 0 # how many seconds ago the metrics where flushed.
     @last_clear = 0 # how many seconds ago the metrics where cleared.
+    @random_key_preffix = SecureRandom.hex
     initialize_metrics
   end # def register
 
@@ -211,8 +213,12 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
 
   private
   def initialize_metrics
-    @metric_meters = Hash.new { |h,k| h[k] = Metriks.meter(k) }
-    @metric_timers = Hash.new { |h,k| h[k] = Metriks.timer(k) }
+    @metric_meters = Hash.new { |h,k| h[k] = Metriks.meter metric_key(k) }
+    @metric_timers = Hash.new { |h,k| h[k] = Metriks.timer metric_key(k) }
+  end
+
+  def metric_key(key)
+    "#{@random_key_preffix}_#{key}"
   end
 
   def should_flush?
