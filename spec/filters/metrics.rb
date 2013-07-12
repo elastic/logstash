@@ -74,4 +74,35 @@ describe LogStash::Filters::Metrics do
       insist { events_tag2.first["http.200.count"] } == 2
     end
   end
+
+  context "when a custom flush_interval is set" do
+    it "should flush only when required" do
+      config = {"meter" => ["http.%{response}"], "flush_interval" => 15}
+      filter = LogStash::Filters::Metrics.new config
+      filter.register
+      filter.filter LogStash::Event.new({"response" => 200})
+
+      insist { filter.flush }.nil?        # 5s
+      insist { filter.flush }.nil?        # 10s
+      insist { filter.flush.length } == 1 # 15s
+      insist { filter.flush }.nil?        # 20s
+      insist { filter.flush }.nil?        # 25s
+      insist { filter.flush.length } == 1 # 30s
+    end
+  end
+
+  context "when a custom clear_interval is set" do
+    it "should clear the metrics after interval has passed" do
+      config = {"meter" => ["http.%{response}"], "clear_interval" => 15}
+      filter = LogStash::Filters::Metrics.new config
+      filter.register
+      filter.filter LogStash::Event.new({"response" => 200})
+
+      insist { filter.flush.first["http.200.count"] } == 1 # 5s
+      insist { filter.flush.first["http.200.count"] } == 1 # 10s
+      insist { filter.flush.first["http.200.count"] } == 1 # 15s
+      insist { filter.flush }.nil?                         # 20s
+    end
+  end
+
 end
