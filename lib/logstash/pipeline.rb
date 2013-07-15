@@ -82,6 +82,10 @@ class LogStash::Pipeline
 
   def wait_inputs
     @input_threads.each(&:join)
+  rescue Interrupt
+    # rbx doesn't do SIGINT handling very well, so we catch
+    # Interrupt here and signal a shutdown. For some reason
+    shutdown
   end
 
   def shutdown_filters
