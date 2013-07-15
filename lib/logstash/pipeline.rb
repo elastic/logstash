@@ -83,8 +83,9 @@ class LogStash::Pipeline
   def wait_inputs
     @input_threads.each(&:join)
   rescue Interrupt
-    # rbx doesn't do SIGINT handling very well, so we catch
-    # Interrupt here and signal a shutdown. For some reason
+    # rbx doesn't do SIGINT handling very well, so we catch Interrupt here and
+    # signal a shutdown. For some reason the signal handler isn't invoked it
+    # seems? I dunno, haven't looked much into it.
     shutdown
   end
 
