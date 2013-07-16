@@ -87,7 +87,8 @@ class LogStash::Outputs::RabbitMQ
       @settings = {
         :vhost => @vhost,
         :host  => @host,
-        :port  => @port
+        :port  => @port,
+        :user  => @user
       }
       @settings[:pass]      = if @password
                                 @password.value
