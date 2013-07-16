@@ -1,7 +1,6 @@
 require "logstash/config/file"
 require "logstash/namespace"
 require "thread" # stdlib
-require "stud/trap"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
