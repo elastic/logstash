@@ -160,6 +160,24 @@ module LogStash::EventV0
   def []=(key, value)
     if @data.has_key?(key) || key[0,1] == "@"
       @data[key] = value
+    elsif key.index(/(?<!\\)\./)
+      obj = @data["@fields"]
+      keys = key.split(/(?<!\\)\./)
+      last = keys.pop
+
+      keys.each do |segment|
+        segment.gsub!(/\\\./, ".")
+        if (obj.is_a?(Array) || (obj.is_a?(Hash) && !obj.member?(segment)) )
+          # try to safely cast segment to integer for the 0 in foo.0.bar
+          begin
+            segment = Integer(segment)
+          rescue Exception
+            #not an int, do nothing, segment remains a string
+          end
+        end
+        obj = obj[segment]
+      end # keys.each
+      obj[last] = value  
     else
       @data["@fields"][key] = value
     end
@@ -215,6 +233,24 @@ module LogStash::EventV0
   def remove(field)
     if @data.has_key?(field)
       return @data.delete(field)
+    elsif field.index(/(?<!\\)\./)
+      obj = @data["@fields"]
+      keys = field.split(/(?<!\\)\./)
+      last = keys.pop
+
+      keys.each do |segment|
+        segment.gsub!(/\\\./, ".")
+        if (obj.is_a?(Array) || (obj.is_a?(Hash) && !obj.member?(segment)) )
+          # try to safely cast segment to integer for the 0 in foo.0.bar
+          begin
+            segment = Integer(segment)
+          rescue Exception
+            #not an int, do nothing, segment remains a string
+          end
+        end
+        obj = obj[segment]
+      end # keys.each
+      obj.delete(last)
     else
       return @data["@fields"].delete(field)
     end
