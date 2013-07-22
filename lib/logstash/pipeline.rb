@@ -21,7 +21,7 @@ class LogStash::Pipeline
     code = @config.compile
     # The config code is hard to represent as a log message...
     # So just print it.
-    @logger.debug? && @logger.debug("Compiled pipeline code", :code => code)
+    @logger.debug? && @logger.debug("Compiled pipeline code:\n#{code}")
     eval(code)
 
     @input_to_filter = SizedQueue.new(20)
@@ -82,9 +82,10 @@ class LogStash::Pipeline
   def wait_inputs
     @input_threads.each(&:join)
   rescue Interrupt
-    # rbx doesn't do SIGINT handling very well, so we catch Interrupt here and
-    # signal a shutdown. For some reason the signal handler isn't invoked it
-    # seems? I dunno, haven't looked much into it.
+    # rbx does weird things during do SIGINT that I haven't debugged
+    # so we catch Interrupt here and signal a shutdown. For some reason the
+    # signal handler isn't invoked it seems? I dunno, haven't looked much into
+    # it.
     shutdown
   end
 

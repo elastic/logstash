@@ -79,9 +79,11 @@ module LogStash
       it "inputs" do
         queue = Queue.new
         pipeline = LogStash::Pipeline.new(config_str)
-        (class << pipeline; self; end).send(:define_method, :output) do |event|
-          queue << event
-        end
+        #(class << pipeline; self; end).send(:define_method, :output) do |event|
+          #p :event => event
+          #queue << event
+        #end
+        #p pipeline.method(:output)
         block.call(pipeline, queue)
         pipeline.shutdown
       end
