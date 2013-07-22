@@ -4,14 +4,16 @@
       TODO(sissel): Document what this means, etc.
   - The old logstash web ui has been replaced by Kibana 3. Kibana is a far
     superior search and analytics interface.
+  - TODO(sissel): document new conditionals feature (LOGSTASH-661)
+  - TODO(sissel): document new field selection syntax (LOGSTASH-1153)
   - ElasticSearch version 0.90.0 is included.
-  - The multiline filter is replaced by the multiline codec.
   - Many deprecated features have been removed.
     TODO(sissel): Document what these were.
   - 'type' is no longer a required setting on inputs.
   - feature: codecs. Used to implement encoding/decoding of events
     for input and output plugins.
       TODO(nickethier): Document how to use and how to hack.
+  - The multiline filter is replaced by the multiline codec.
 
   ## inputs
   - bugfix: gelf: work around gelf parser errors (#476, patch by Chris McCoy)
