@@ -32,12 +32,12 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   # are included in the event.
   #
   # For the built in GeoLiteCity database, the following are available:
-  # city_name, continent_code, country_code2, country_code3, country_name,
-  # dma_code, ip, latitude, longitude, postal_code, region_name, timezone
+  # city\_name, continent\_code, country\_code2, country\_code3, country\_name,
+  # dma\_code, ip, latitude, longitude, postal\_code, region\_name, timezone
   config :fields, :validate => :array
 
   # Specify into what field you want the geoip data.
-  # This can be useful for example if you have a src_ip and dst_ip and want
+  # This can be useful for example if you have a src\_ip and dst\_ip and want
   # information of both IP's
   config :target, :validate => :string, :default => 'geoip'
 
