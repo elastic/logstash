@@ -1,7 +1,6 @@
 require "logstash/config/file"
 require "logstash/namespace"
 require "thread" # stdlib
-require "stud/trap"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
@@ -82,6 +81,11 @@ class LogStash::Pipeline
 
   def wait_inputs
     @input_threads.each(&:join)
+  rescue Interrupt
+    # rbx doesn't do SIGINT handling very well, so we catch Interrupt here and
+    # signal a shutdown. For some reason the signal handler isn't invoked it
+    # seems? I dunno, haven't looked much into it.
+    shutdown
   end
 
   def shutdown_filters
@@ -165,7 +169,11 @@ class LogStash::Pipeline
         event = @input_to_filter.pop
         break if event == LogStash::ShutdownSignal
 
-        events = []
+        # TODO(sissel): we can avoid the extra array creation here
+        # if we don't guarantee ordering of origin vs created events.
+        # - origin event is one that comes in naturally to the filter worker.
+        # - created events are emitted by filters like split or metrics
+        events = [event]
         filter(event) do |newevent|
           events << newevent
         end

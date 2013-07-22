@@ -1,6 +1,7 @@
 require "test_utils"
 
-describe "parse mysql slow query log" do
+# Skip until we convert this to use multiline codec
+describe "parse mysql slow query log", :if => false do
   extend LogStash::RSpec
 
   config <<-'CONFIG'
