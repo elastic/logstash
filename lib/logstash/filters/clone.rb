@@ -2,8 +2,13 @@ require "logstash/filters/base"
 require "logstash/namespace"
 
 # The clone filter is for duplicating events.
+#
 # A clone will be made for each type in the clone list.
 # The original event is left unchanged.
+#
+# Newly created event(s) will be submitted to the complete filter chain
+# and might also be eligible to the clone filter.
+# Beware of infinite loop!
 class LogStash::Filters::Clone < LogStash::Filters::Base
 
   config_name "clone"
