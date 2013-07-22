@@ -125,7 +125,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     @tail.subscribe do |path, line|
       source = "file://#{hostname}/#{path.gsub("\\","/")}"
       @logger.debug? && @logger.debug("Received line", :path => path, :line => line)
-      @codec.decode(line) do |event|
+      @codec.decode(line + "\n") do |event|
         event["source"] = source
         queue << event
       end
