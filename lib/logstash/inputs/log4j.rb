@@ -56,8 +56,6 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
         # NOTE: event_raw is org.apache.log4j.spi.LoggingEvent
         event_obj = ois.readObject()
         e = to_event(event_obj.getRenderedMessage(), event_source)
-        e.source_host = socket.peer
-        e.source_path = event_obj.getLoggerName()
         e["priority"] = event_obj.getLevel().toString()
         e["logger_name"] = event_obj.getLoggerName()
         e["thread"] = event_obj.getThreadName()
