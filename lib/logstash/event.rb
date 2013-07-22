@@ -76,12 +76,10 @@ class LogStash::Event
   # Create a deep-ish copy of this event.
   public
   def clone
-    copy = {}
-    @data.each do |k,v|
-      # TODO(sissel): Recurse if this is a hash/array?
-      copy[k] = v.clone
-    end
-    return self.class.new(copy)
+    # Avoid shallow copies of hash and array
+    # See this url for further explanations
+    # http://boonedocks.net/mike/archives/188-Rubys-shallow-copies-of-hashes.html
+    return self.class.new(Marshal.load(Marshal.dump(@data)))
   end # def clone
 
   if RUBY_ENGINE == "jruby"

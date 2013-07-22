@@ -19,7 +19,7 @@ describe LogStash::Filters::Clone do
       insist { subject }.is_a? Array
       insist { subject.length } == 4
       subject.each_with_index do |s,i|
-        if i == 0 # last one should be 'original'
+        if i == 0 # first one should be 'original'
           insist { s["type"] } == "original"
         else
           insist { s["type"]} == "clone"
@@ -61,7 +61,38 @@ describe LogStash::Filters::Clone do
       reject { subject[2].tags }.include? "TESTLOG"
       insist { subject[2].tags }.include? "RABBIT"
       insist { subject[2].tags }.include? "NO_ES"
+    end
+  end
 
+  describe "make deep copies of nested fields" do
+    type "original"
+    config <<-CONFIG
+      filter {
+        clone {
+          type => "original"
+          clones => ["clone"]
+        }
+      }
+    CONFIG
+
+    sample("message" => "hello world", "type" => "original", "hash" => { "nested_hash" => {"value" => "expected"}}) do
+      insist { subject }.is_a? Array
+      insist { subject.length } == 2
+      subject.each_with_index do |s,i|
+        if i == 0 # first one should be 'original'
+          insist { s["type"] } == "original"
+          insist { s["hash"]["nested_hash"]["value"] } == "expected"
+          # Manually mutate the original nested value 
+          #(could not successfully use a filter on nested field)
+          s["hash"]["nested_hash"]["value"] = "mutated"
+          insist { s["hash"]["nested_hash"]["value"] } == "mutated"
+        else
+          insist { s["type"]} == "clone"
+          # Cloned event must not be affected by original event changes
+          insist { s["hash"]["nested_hash"]["value"] } == "expected"
+        end
+        insist { s["message"] } == "hello world"
+      end
     end
   end
 end
