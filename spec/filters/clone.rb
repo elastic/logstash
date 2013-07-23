@@ -95,4 +95,39 @@ describe LogStash::Filters::Clone do
       end
     end
   end
+
+  describe "cloned event should not (?(O_o)?) pass by the complete filter chain" do
+    type "original"
+    config <<-CONFIG
+      filter {
+        noop {
+          add_tag => ["before"]
+        }
+        clone {
+          type => "original"
+          clones => ["clone", "clone", "clone"]
+        }
+        noop {
+          add_tag => ["after"]
+        }
+      }
+    CONFIG
+
+    sample("message" => "hello world", "type" => "original") do
+      insist { subject }.is_a? Array
+      insist { subject.length } == 4
+      subject.each_with_index do |s,i|
+        if i == 0 # first one should be 'original'
+          insist { s["type"] } == "original"
+          insist { s["tags"] }.include?("before")
+          insist { s["tags"] }.include?("after")
+        else
+          insist { s["type"]} == "clone"
+          insist { s["tags"] }.include?("after")
+          reject { s["tags"] }.include?("before")
+        end
+        insist { s["message"] } == "hello world"
+      end
+    end
+  end
 end
