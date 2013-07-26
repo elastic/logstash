@@ -45,6 +45,10 @@ describe LogStash::Event do
       insist { subject.sprintf("%{[j][k1]}") } == "v"
       insist { subject.sprintf("%{[j][k2][0]}") } == "w"
     end
+
+    it "should be able to take a non-string for the format" do
+      insist { subject.sprintf(2) } == "2"
+    end
   end
   
   context "#[]" do
