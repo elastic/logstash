@@ -42,6 +42,21 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     }
   config :trim, :validate => :string
 
+  # A string of characters to trim from the key. This is useful if your
+  # key are wrapped in brackets or starts with space
+  #
+  # These characters form a regex character class and thus you must escape special regex
+  # characters like [ or ] using \.
+  #
+  # Example, to strip '<' '>' '[' ']' and ',' characters from keys:
+  #
+  #     filter {
+  #       kv {
+  #         trimkey => "<>\[\],"
+  #       }
+  #     }
+  config :trimkey, :validate => :string
+
   # A string of characters to use as delimiters for parsing out key-value pairs.
   #
   # These characters form a regex character class and thus you must escape special regex
@@ -143,6 +158,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
 
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
+    @trimkey_re = Regexp.new("[#{@trimkey}]") if !@trimkey.nil?
     @scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)["+@value_split+"](?:\"([^\"]+)\"|'([^']+)'|((?:\\\\ |[^"+@field_split+"])+))")
   end # def register
 
@@ -186,6 +202,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     end
     text.scan(@scan_re) do |key, v1, v2, v3|
       value = v1 || v2 || v3
+      key = @trimkey.nil? ? key : key.gsub(@trimkey_re, "")      
       key = @prefix + key
       next if not @include_keys.empty? and not @include_keys.include?(key)
       next if @exclude_keys.include?(key)
