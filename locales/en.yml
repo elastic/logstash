@@ -37,7 +37,7 @@ en:
       milestone:
         "0": >-
           Using milestone 0 %{type} plugin '%{name}'. This plugin isn't well
-          supported by the commnity and likely has no maintainer. For more
+          supported by the community and likely has no maintainer. For more
           information on plugin milestones, see
           http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin-milestones
         "1": >-
