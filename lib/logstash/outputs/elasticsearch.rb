@@ -32,9 +32,6 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   config_name "elasticsearch"
   milestone 3
 
-  # ElasticSearch server name. This is optional if your server is discoverable.
-  config :host, :validate => :string
-
   # The index to write events to. This can be dynamic using the %{foo} syntax.
   # The default value will partition your indices by day so you can more easily
   # delete old data or only search specific date ranges.
