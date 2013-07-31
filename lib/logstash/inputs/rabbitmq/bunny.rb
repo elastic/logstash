@@ -45,7 +45,7 @@ class LogStash::Inputs::RabbitMQ
 
       begin
         setup
-        consume
+        consume(output_queue)
       rescue Bunny::NetworkFailure, Bunny::ConnectionClosedError, Bunny::ConnectionLevelException, Bunny::TCPConnectionFailed => e
         n = Bunny::Session::DEFAULT_NETWORK_RECOVERY_INTERVAL * 2
 
@@ -86,10 +86,10 @@ class LogStash::Inputs::RabbitMQ
       @arguments_hash = Hash[*@arguments]
 
       @q = @ch.queue(@queue,
-                     :durable     => @durable,
-                     :auto_delete => @auto_delete,
-                     :exclusive   => @exclusive,
-                     :arguments   => @arguments)
+        :durable     => @durable,
+        :auto_delete => @auto_delete,
+        :exclusive   => @exclusive,
+        :arguments   => @arguments)
 
       # exchange binding is optional for the input
       if @exchange
@@ -97,20 +97,29 @@ class LogStash::Inputs::RabbitMQ
       end
     end
 
-    def consume
-      @logger.info("Will consume events from queue #{@q.name}")
-
+    def consume(output_queue)
       # we both need to block the caller in Bunny::Queue#subscribe and have
       # a reference to the consumer so that we can cancel it, so
       # a consumer manually. MK.
       @consumer = Bunny::Consumer.new(@ch, @q)
+      suffix = if @ack
+                 "with message acknowledgements"
+               else
+                 "without message acknowledgements"
+               end
+      @logger.info("Will consume messages from queue #{@q.name} #{suffix}")
       @q.subscribe(:manual_ack => @ack, :block => true) do |delivery_info, properties, data|
-        @codec.decode(data) do |event|
-          event["source"] = @connection_url
-          @output_queue << event
-        end
+        begin
+          if e = to_event(data, @connection_url)
+            output_queue << e
+          else
+            @logger.error "Failed to transform a message to event!"
+          end
 
-        @ch.acknowledge(delivery_info.delivery_tag) if @ack
+          @ch.acknowledge(delivery_info.delivery_tag) if @ack
+        rescue Exception => e
+          @logger.error "Exception when handling a delivery: #{e.message}"
+        end
       end
     end
   end # BunnyImpl
