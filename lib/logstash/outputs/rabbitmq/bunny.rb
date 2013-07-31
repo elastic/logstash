@@ -45,6 +45,8 @@ class LogStash::Outputs::RabbitMQ
         return if terminating?
 
         sleep n
+        connect
+        declare_exchange
         retry
       end
     end
