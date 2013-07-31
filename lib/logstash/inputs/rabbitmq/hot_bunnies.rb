@@ -48,7 +48,7 @@ class LogStash::Inputs::RabbitMQ
       until @break_out_of_the_loop.get do
         begin
           setup
-          consume
+          consume(output_queue)
         rescue HotBunnies::Exception, java.lang.Throwable, com.rabbitmq.client.AlreadyClosedException => e
           n = 10
           @logger.error("RabbitMQ connection error: #{e}. Will reconnect in #{n} seconds...")
@@ -99,18 +99,30 @@ class LogStash::Inputs::RabbitMQ
         :arguments   => @arguments)
     end
 
-    def consume
+    def consume(output_queue)
       return if terminating?
 
       # we manually build a consumer here to be able to keep a reference to it
       # in an @ivar even though we use a blocking version of HB::Queue#subscribe
       @consumer = @q.build_consumer(:block => true) do |metadata, data|
-        @codec.decode(data) do |event|
-          event["source"] = @connection_url
-          @output_queue << event if event
+        begin
+          if e = to_event(data, @connection_url)
+            output_queue << e
+          else
+            @logger.error "Failed to transform a message to event!"
+          end
+
           @ch.ack(metadata.delivery_tag) if @ack
+        rescue Exception => e
+          @logger.error "Exception in HB consumer: #{e.message}"
         end
       end
+      suffix = if @ack
+                 "with message acknowledgements"
+               else
+                 "without message acknowledgements"
+               end
+      @logger.info("Will consume messages from queue #{@q.name} #{suffix}")
       @q.subscribe_with(@consumer, :manual_ack => @ack, :block => true)
     end
 
