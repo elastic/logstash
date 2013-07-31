@@ -114,7 +114,7 @@ class LogStash::Inputs::RabbitMQ
 
           @ch.ack(metadata.delivery_tag) if @ack
         rescue Exception => e
-          @logger.error "Exception in HB consumer: #{e.message}"
+          @logger.error "Exception when handling a delivery: #{e.message}"
         end
       end
       suffix = if @ack
