@@ -156,7 +156,8 @@ class LogStash::Runner
       end,
       "irb" => lambda do
         require "irb"
-        return IRB.start(__FILE__)
+        IRB.start(__FILE__)
+        return []
       end,
       "pry" => lambda do
         require "pry"
