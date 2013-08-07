@@ -9,6 +9,10 @@ require "logstash/namespace"
 #
 # The end result of each split is a complete copy of the event 
 # with only the current split section of the given field changed.
+#
+# Newly created event(s) will be submitted to the complete filter chain
+# and might also be eligible to the split filter.
+# Beware of infinite loop!
 class LogStash::Filters::Split < LogStash::Filters::Base
 
   config_name "split"
