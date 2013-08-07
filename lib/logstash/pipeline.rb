@@ -199,7 +199,7 @@ class LogStash::Pipeline
       output(event)
     end # while true
     @outputs.each(&:teardown)
-  end # def filterworker
+  end # def outputworker
 
   # Shutdown this pipeline.
   #
