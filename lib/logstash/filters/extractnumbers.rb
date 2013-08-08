@@ -1,15 +1,6 @@
 require 'logstash/namespace'
 require 'logstash/filters/base'
 
-class String
-  def as_integer
-    Integer(self) rescue nil
-  end
-
-  def as_float
-    Float(self) rescue nil
-  end
-end
 
 # This filter automatically extracts all numbers found inside a string
 #
@@ -49,7 +40,7 @@ class LogStash::Filters::ExtractNumbers < LogStash::Filters::Base
 
     fields = msg.split
     for elem in fields
-      int = elem.as_integer
+      int = str_as_integer(elem)
       if int != nil
         if not integers
           integers = Array.new
@@ -57,7 +48,7 @@ class LogStash::Filters::ExtractNumbers < LogStash::Filters::Base
         integers.push(int)
         next
       end
-      f = elem.as_float
+      f = str_as_float(elem)
       if f != nil
         if not floats
           floats = Array.new
@@ -80,5 +71,13 @@ class LogStash::Filters::ExtractNumbers < LogStash::Filters::Base
         event["float" + index.to_s] = f
       end
     end
+  end
+
+  def str_as_integer(str)
+    Integer(str) rescue nil
+  end
+
+  def str_as_float(str)
+    Float(str) rescue nil
   end
 end # class LogStash::Filters::ExtractNumbers
