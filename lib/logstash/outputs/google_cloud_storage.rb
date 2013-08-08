@@ -15,8 +15,6 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 require "zlib"
 
-# TODO(rdc): call this class/config gcs or google_cloud_storage?
-#
 # Summary: plugin to upload log events to Google Cloud Storage (GCS), rolling
 # files based on the date pattern provided as a configuration setting. Events
 # are written to files locally and, once file is closed, this plugin uploads
@@ -38,7 +36,7 @@ require "zlib"
 # This is an example of logstash config:
 #
 # output {
-#    gcs {
+#    google_cloud_storage {
 #      bucket => "my_bucket"                                     (required)
 #      key_path => "/path/to/privatekey.p12"                     (required)
 #      service_account => "1234@developer.gserviceaccount.com"   (required)
@@ -60,8 +58,8 @@ require "zlib"
 # - Allow user to configure file name.
 # - Allow parallel uploads for heavier loads (+ connection configuration if
 # exposed by Ruby API client)
-class LogStash::Outputs::Gcs < LogStash::Outputs::Base
-  config_name "gcs"
+class LogStash::Outputs::GoogleCloudStorage < LogStash::Outputs::Base
+  config_name "google_cloud_storage"
   milestone 1
 
   # GCS bucket name, without "gs://" or any other prefix.
