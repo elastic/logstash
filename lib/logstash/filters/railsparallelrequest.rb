@@ -26,9 +26,9 @@ class LogStash::Filters::Railsparallelrequest < LogStash::Filters::Base
 
   def filter(event)
     return unless filter?(event)
-    return if event.tags.include? CONFIG_NAME
+    return if event.tags.include? self.class.config_name
 
-    event.tags << CONFIG_NAME
+    event.tags << self.class.config_name
 
     line = event["message"]
 
