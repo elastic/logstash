@@ -1,13 +1,6 @@
-require "logstash/util/fieldeval"
+require "logstash/util/fieldreference"
 
-describe LogStash::Util::HashEval do
-  it "xxx" do
-    str = "[hello][world]"
-    #puts subject.compile(str)
-  end
-end
-
-describe LogStash::Util::HashEval, :if => true do
+describe LogStash::Util::FieldReference, :if => true do
   it "should permit simple key names" do
     str = "hello"
     m = eval(subject.compile(str))

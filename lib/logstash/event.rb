@@ -2,7 +2,7 @@ require "json"
 require "time"
 require "date"
 require "logstash/namespace"
-require "logstash/util/fieldeval"
+require "logstash/util/fieldreference"
 
 # Use a custom serialization for jsonifying Time objects.
 # TODO(sissel): Put this in a separate file.
@@ -114,20 +114,20 @@ class LogStash::Event
   def [](str)
     if str[0,1] == "+"
     else
-      return LogStash::Util::HashEval.exec(str, @data)
+      return LogStash::Util::FieldReference.exec(str, @data)
     end
   end # def []
   
   public
   def []=(str, value)
-    r = LogStash::Util::HashEval.exec(str, @data) do |obj, key|
+    r = LogStash::Util::FieldReference.exec(str, @data) do |obj, key|
       obj[key] = value
     end
 
     # The assignment can fail if the given field reference (str) does not exist
     # In this case, we'll want to set the value manually.
     if r.nil?
-      # TODO(sissel): Implement this in LogStash::Util::HashEval
+      # TODO(sissel): Implement this in LogStash::Util::FieldReference
       if str[0,1] != "["
         return @data[str] = value
       end
@@ -181,7 +181,7 @@ class LogStash::Event
   # Remove a field. Returns the value of that field when deleted
   public
   def remove(field)
-    return LogStash::Util::HashEval.exec(str, @data) do |obj, key|
+    return LogStash::Util::FieldReference.exec(str, @data) do |obj, key|
       obj.delete(key)
     end
   end # def remove
