@@ -1,7 +1,7 @@
 require "logstash/namespace"
 require "logstash/util"
 
-module LogStash::Util::HashEval
+module LogStash::Util::FieldReference
   def compile(str)
     if str[0,1] != '['
       return <<-"CODE"
@@ -45,4 +45,4 @@ module LogStash::Util::HashEval
   end
 
   extend self
-end # module LogStash::Util::HashEval
+end # module LogStash::Util::FieldReference
