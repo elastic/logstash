@@ -1,5 +1,4 @@
-require "logstash/event"
-require "insist"
+require "test_utils"
 
 describe LogStash::Event do
   subject do
@@ -73,6 +72,15 @@ describe LogStash::Event do
     end
   end
 
+  context "#remove" do
+    it "should remove nested field" do
+      subject.remove('c.d')
+      insist { subject['c.d']}.nil?
+      #Leave field with literal dot untouched
+      insist { subject['c\.d']} == "e"
+    end
+  end
+  
   context "#append" do
     it "should append strings to an array" do
       subject.append(LogStash::Event.new("message" => "another thing"))
