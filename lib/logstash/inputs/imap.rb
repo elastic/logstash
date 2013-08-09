@@ -1,5 +1,6 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "stud/interval"
 require "socket" # for Socket.gethostname
 
 # Read mail from IMAP servers
@@ -53,7 +54,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
     # EOFError, OpenSSL::SSL::SSLError
     imap = connect
     imap.select("INBOX")
-    ids = imap.search("ALL")
+    ids = imap.search("NOT SEEN")
 
     ids.each_slice(@fetch_count) do |id_set|
       items = imap.fetch(id_set, "RFC822")
@@ -61,6 +62,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
         mail = Mail.read_from_string(item.attr["RFC822"])
         queue << mail_to_event(mail)
       end
+      imap.store(id_set, '+FLAGS', :Seen)
     end
 
     imap.close
@@ -79,7 +81,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
     end
 
     event = to_event(message, "imap://#{@user}@#{@host}/#{m.from.first rescue ""}")
-   
+
     # Use the 'Date' field as the timestamp
     t = mail.date.to_time.gmtime
     event["@timestamp"] = sprintf(ISO8601_STRFTIME, t.year, t.month,
