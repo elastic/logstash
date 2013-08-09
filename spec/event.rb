@@ -65,9 +65,11 @@ describe LogStash::Event do
     end
 
     it "should be fast?" do
-      start = Time.now
-      100000.times { subject["[j][k1]"] }
-      puts "Duration: #{Time.now - start}"
+      2.times do
+        start = Time.now
+        100000.times { subject["[j][k1]"] }
+        puts "Duration: #{Time.now - start}"
+      end
     end
   end
 
