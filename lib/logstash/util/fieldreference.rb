@@ -6,7 +6,7 @@ module LogStash::Util::FieldReference
     if str[0,1] != '['
       return <<-"CODE"
         lambda do |e, &block|
-          block.call(e, #{str.inspect}) unless block.nil?
+          return block.call(e, #{str.inspect}) unless block.nil?
           return e[#{str.inspect}]
         end
       CODE
@@ -20,7 +20,7 @@ module LogStash::Util::FieldReference
      
       if last
         code << <<-"CODE"
-          block.call(e, #{tok.inspect}) unless block.nil?
+          return block.call(e, #{tok.inspect}) unless block.nil?
         CODE
       end
 
