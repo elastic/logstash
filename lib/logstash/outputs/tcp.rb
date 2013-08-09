@@ -25,6 +25,10 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
   # Mode to operate in. `server` listens for client connections,
   # `client` connects to a server.
   config :mode, :validate => ["server", "client"], :default => "client"
+  
+  # When mode is `client`, the connection idle timeout.  if the connection
+  # has been idle for `timeout` ms, then we close it and reopen a new one
+  config :timeout, :validate => :number, :default => 30000
 
   # The format to use when writing events to the file. This value
   # supports any string and can include %{name} and other dynamic
@@ -40,6 +44,8 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
       @socket = socket
       @logger = logger
       @queue  = Queue.new
+      @last_request_time = nil
+      @idle_time = 0
     end
 
     public
@@ -111,12 +117,19 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
       @client_threads.reject! {|t| !t.alive? }
     else
       begin
+        now = Time.now.to_f
+        @idle_time = ((now - @last_request_time) * 1000).to_i if @last_request_time
+        @last_request_time = now
+        @client_socket = nil if @idle_time >= @timeout
+        
         connect unless @client_socket
         @client_socket.write(output)
       rescue => e
         @logger.warn("tcp output exception", :host => @host, :port => @port,
                      :exception => e, :backtrace => e.backtrace)
         @client_socket = nil
+        @last_request_time = nil
+        @idle_time = 0
       end
     end
   end # def receive
