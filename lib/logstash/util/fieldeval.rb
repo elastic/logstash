@@ -3,8 +3,13 @@ require "logstash/util"
 
 module LogStash::Util::HashEval
   def compile(str)
-    if str[0] != '['
-      return "lambda { |e, &block| return e[#{str.inspect}] }"
+    if str[0,1] != '['
+      return <<-"CODE"
+        lambda do |e, &block|
+          block.call(e, #{str.inspect}) unless block.nil?
+          return e[#{str.inspect}]
+        end
+      CODE
     end
 
     code = "lambda do |e, &block|\n"
@@ -29,6 +34,7 @@ module LogStash::Util::HashEval
       
     end
     code << "return e\nend"
+    #puts code
     return code
   end # def compile
 
