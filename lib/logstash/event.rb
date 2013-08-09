@@ -181,7 +181,9 @@ class LogStash::Event
   # Remove a field. Returns the value of that field when deleted
   public
   def remove(field)
-    return @data.delete(field)
+    return LogStash::Util::HashEval.exec(str, @data) do |obj, key|
+      obj.delete(key)
+    end
   end # def remove
 
   # sprintf. This could use a better method name.
