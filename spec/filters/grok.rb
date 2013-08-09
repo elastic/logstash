@@ -311,4 +311,35 @@ describe LogStash::Filters::Grok do
       insist { subject["foo-bar"] } == "hello"
     end
   end
+
+  describe "performance test" do
+    event_count = 100000
+    min_rate = 4000
+
+    max_duration = event_count / min_rate
+    input = "Nov 24 01:29:01 -0800"
+    config <<-CONFIG
+      input {
+        generator {
+          count => #{event_count}
+          message => "Mar 16 00:01:25 evita postfix/smtpd[1713]: connect from camomile.cloud9.net[168.100.1.3]"
+        }
+      }
+      filter {
+        grok {
+          match => [ "message", "%{SYSLOGLINE}" ]
+          singles => true
+          overwrite => [ "message" ]
+        }
+      }
+      output { null { } }
+    CONFIG
+
+    2.times do
+      agent do
+        puts "grok parse rate: #{event_count / @duration}"
+        insist { @duration } < max_duration
+      end
+    end
+  end
 end
