@@ -134,7 +134,6 @@ class LogStash::Event
 
       # No existing element was found, so let's set one.
       *parents, key = str.scan(/(?<=\[)[^\]]+(?=\])/)
-      p parents => key
       obj = @data
       parents.each do |p|
         if obj.include?(p)
