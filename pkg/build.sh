@@ -15,7 +15,7 @@ release=$2
 
 echo "Building package for $os $release"
 
-destdir=build/
+destdir=build/$(echo "$os" | tr ' ' '_')
 prefix=/opt/logstash
 
 if [ "$destdir/$prefix" != "/" -a -d "$destdir/$prefix" ] ; then
@@ -52,6 +52,7 @@ case $os@$release in
     mkdir -p $destdir/etc/logrotate.d
     mkdir -p $destdir/etc/init
     mkdir -p $destdir/var/log/logstash
+    mkdir -p $destdir/etc/sysconfig
     touch $destdir/etc/sysconfig/logstash
     install -m644 logrotate.conf $destdir/etc/logrotate.d/
     install -m755 logstash.upstart.ubuntu $destdir/etc/init/logstash.conf
