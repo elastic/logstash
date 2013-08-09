@@ -38,4 +38,13 @@ describe LogStash::Util::HashEval, :if => true do
     # Make sure the "world" key is removed.
     insist { data["hello"] } == { "bar" => "baz" }
   end
+
+  it "should permit blocks #2" do
+    str = "simple"
+    code = subject.compile(str)
+    m = eval(subject.compile(str))
+    data = { "simple" => "things" }
+    m.call(data) { |obj, key| obj.delete(key) }
+    insist { data }.empty?
+  end
 end
