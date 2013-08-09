@@ -65,7 +65,7 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    if !File.exists?(@commandfile)
+    if !File.exists?(@commandfile) && !File.pipe?(@commandfile)
       @logger.warn("Skipping nagios output; command file is missing",
                    :commandfile => @commandfile, :missed_event => event)
       return
