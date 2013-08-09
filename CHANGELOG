@@ -5,8 +5,8 @@
   - The old logstash web ui has been replaced by Kibana 3. Kibana is a far
     superior search and analytics interface.
   - TODO(sissel): document new conditionals feature (LOGSTASH-661)
-  - TODO(sissel): document new field selection syntax (LOGSTASH-1153)
-  - ElasticSearch version 0.90.0 is included.
+  - TODO(sissel): document new field reference syntax (LOGSTASH-1153)
+  - ElasticSearch version 0.90.2 is included.
   - Many deprecated features have been removed.
     TODO(sissel): Document what these were.
   - 'type' is no longer a required setting on inputs.
