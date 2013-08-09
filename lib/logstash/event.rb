@@ -178,11 +178,12 @@ class LogStash::Event
     LogStash::Util.hash_merge(@data, event.to_hash)
   end # append
 
-  # Remove a field. Returns the value of that field when deleted
+  # Remove a field or field reference. Returns the value of that field when
+  # deleted
   public
-  def remove(field)
+  def remove(str)
     return LogStash::Util::FieldReference.exec(str, @data) do |obj, key|
-      obj.delete(key)
+      next obj.delete(key)
     end
   end # def remove
 
