@@ -63,6 +63,12 @@ describe LogStash::Event do
       insist { subject['[j][5]'] } == 7
 
     end
+
+    it "should be fast?" do
+      start = Time.now
+      100000.times { subject["[j][k1]"] }
+      puts "Duration: #{Time.now - start}"
+    end
   end
 
   context "#append" do
