@@ -2,6 +2,7 @@ require "json"
 require "time"
 require "date"
 require "logstash/namespace"
+require "logstash/util/fieldeval"
 
 # Use a custom serialization for jsonifying Time objects.
 # TODO(sissel): Put this in a separate file.
@@ -110,40 +111,41 @@ class LogStash::Event
   
   # field-related access
   public
-  def [](key)
-    if key[0] == '['
-      val = @data
-      key.gsub(/(?<=\[).+?(?=\])/).each do |tok|
-        if val.is_a? Array
-          val = val[tok.to_i]
-        else
-          val = val[tok]
-        end
-      end
-      return val
+  def [](str)
+    if str[0,1] == "+"
     else
-      return @data[key]
+      return LogStash::Util::HashEval.exec(str, @data)
     end
   end # def []
   
   public
-  def []=(key, value)
-    if key[0] == '['
-      val = @data
-      keys = key.scan(/(?<=\[).+?(?=\])/)
-      last = keys.pop
+  def []=(str, value)
+    r = LogStash::Util::HashEval.exec(str, @data) do |obj, key|
+      obj[key] = value
+    end
 
-      keys.each do |tok|
-        if val.is_a? Array
-          val = val[tok.to_i]
+    # The assignment can fail if the given field reference (str) does not exist
+    # In this case, we'll want to set the value manually.
+    if r.nil?
+      # TODO(sissel): Implement this in LogStash::Util::HashEval
+      if str[0,1] != "["
+        return @data[str] = value
+      end
+
+      # No existing element was found, so let's set one.
+      *parents, key = str.scan(/(?<=\[)[^\]]+(?=\])/)
+      p parents => key
+      obj = @data
+      parents.each do |p|
+        if obj.include?(p)
+          obj = obj[p]
         else
-          val = val[tok]
+          obj[p] = {}
         end
       end
-      val[last] = value
-    else
-      @data[key] = value
+      obj[key] = value
     end
+    return value
   end # def []=
 
   public

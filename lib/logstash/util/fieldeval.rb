@@ -20,9 +20,8 @@ module LogStash::Util::HashEval
       end
 
       code << <<-"CODE"
-        v = e[#{tok.inspect}]
-        if v.is_a?(Array)
-          e = v[#{tok.to_i}]
+        if e.is_a?(Array)
+          e = e[#{tok.to_i}]
         else
           e = e[#{tok.inspect}]
         end
@@ -31,6 +30,13 @@ module LogStash::Util::HashEval
     end
     code << "return e\nend"
     return code
-  end # def []
+  end # def compile
+
+  def exec(str, obj, &block)
+    @__fieldeval_cache ||= {}
+    @__fieldeval_cache[str] ||= eval(compile(str))
+    return @__fieldeval_cache[str].call(obj, &block)
+  end
+
   extend self
 end # module LogStash::Util::HashEval
