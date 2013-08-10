@@ -22,6 +22,15 @@ class LogStash::Pipeline
     # The config code is hard to represent as a log message...
     # So just print it.
     @logger.debug? && @logger.debug("Compiled pipeline code:\n#{code}")
+
+    if $logstash_example == :graphite && ENV['REMOVE_GRAPHITE_GROK_PLUGIN']
+      problematic_line = code.lines.find do |line|
+        line.start_with?('@filter_grok_1 = plugin("filter", "grok", LogStash::Util.hash_merge_many(')
+      end
+
+      code.sub!(problematic_line, '')
+    end
+
     eval(code)
 
     @input_to_filter = SizedQueue.new(20)
