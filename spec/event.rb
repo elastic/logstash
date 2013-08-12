@@ -28,7 +28,12 @@ describe LogStash::Event do
             "k3.4" => "m",
             5 => 6,
             "5" => 7
-        } 
+        },
+        "s" => "t",
+        "u.v" => "w",
+        "u" => {
+          "v" => "w"
+        }
     }
   end
 
@@ -71,6 +76,25 @@ describe LogStash::Event do
       insist { @event['j.k3\.4'] } == "m"
       insist { @event['j.5'] } == 7
 
+    end
+  end
+
+  context "#[]=" do
+    it "should store data" do
+      @event["@type"] = "sprintf2"
+      insist { @event["@type"] } == "sprintf2"
+    end
+    it "should store fields" do
+      @event["o"] = "p"
+      insist { @event["o"] } == "p"
+    end
+    it "should store fields with escaped dotted names" do
+      @event["c\.d"] = "g"
+      insist { @event["c\.d"] } == "g"
+    end
+    it "should store deep fields" do
+      @event["c.d"] = "h"
+      insist { @event["c.d"] } == "h"
     end
   end
 
@@ -131,6 +155,21 @@ describe LogStash::Event do
         subject.append(LogStash::Event.new("@fields" => {"field1" => [ "append1","original1" ]}))
         insist { subject[ "field1" ] } == [ "original1", "original2", "append1" ]
       end
+    end
+  end
+
+  context "#remove" do
+    it "should remove fields" do
+      @event.remove("s")
+      insist { @event["s"] }.nil?
+    end
+    it "should remove fields with escaped dotted names" do
+      @event.remove("u\.v")
+      insist { @event["u\.v"] }.nil?
+    end
+    it "should store deep fields" do
+      @event.remove("u.v")
+      insist { @event["u.v"] }.nil?
     end
   end
 end
