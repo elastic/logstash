@@ -1,5 +1,7 @@
 .*.swp
 *.gem
+pkg/*.deb
+pkg/*.rpm
 *.class
 .rbx
 Gemfile.lock
