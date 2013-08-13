@@ -49,21 +49,26 @@ case $os@$release in
     install -m755 logstash.sysv.redhat $destdir/etc/init.d/logstash
     ;;
   ubuntu@*)
+    mkdir -p $destdir/etc/logstash/conf.d
     mkdir -p $destdir/etc/logrotate.d
     mkdir -p $destdir/etc/init
     mkdir -p $destdir/var/log/logstash
-    mkdir -p $destdir/etc/sysconfig
-    touch $destdir/etc/sysconfig/logstash
-    install -m644 logrotate.conf $destdir/etc/logrotate.d/
+    mkdir -p $destdir/etc/default
+    touch $destdir/etc/default/logstash
+    install -m644 logrotate.conf $destdir/etc/logrotate.d/logstash
+    install -m644 logstash.default $destdir/etc/default/logstash
     install -m755 logstash.upstart.ubuntu $destdir/etc/init/logstash.conf
     ;;
   debian@*)
+    mkdir -p $destdir/etc/logstash/conf.d
     mkdir -p $destdir/etc/logrotate.d
     mkdir -p $destdir/etc/init.d
     mkdir -p $destdir/var/lib/logstash
-    mkdir -p $destdir/var/run/logstash
     mkdir -p $destdir/var/log/logstash
-    install -m644 logrotate.conf $destdir/etc/logrotate.d/
+    mkdir -p $destdir/etc/default
+    touch $destdir/etc/default/logstash
+    install -m644 logrotate.conf $destdir/etc/logrotate.d/logstash
+    install -m644 logstash.default $destdir/etc/default/logstash
     install -m755 logstash.sysv.debian $destdir/etc/init.d/logstash
     ;;
   *) 
@@ -87,9 +92,10 @@ case $os in
     fpm -s dir -t deb -n logstash -v "$VERSION" \
       -a all --iteration 1-$os \
       -d "java6-runtime" \
-      --before-install ubuntu/before-install.sh \
-      --before-remove ubuntu/before-remove.sh \
-      --after-install ubuntu/after-install.sh \
+      --deb-user root --deb-group root \
+      --before-install $os/before-install.sh \
+      --before-remove $os/before-remove.sh \
+      --after-install $os/after-install.sh \
       -f -C $destdir .
     ;;
 esac

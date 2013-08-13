@@ -56,7 +56,8 @@ LOG_FILE=$LOG_DIR/$NAME.log
 # Open File limit
 OPEN_FILES=2048
 
-
+# LogStash options
+LS_OPTS="--log ${LOG_DIR}/${NAME}.log"
 
 # Nice level
 NICE=19
@@ -71,7 +72,7 @@ fi
 # Define other required variables
 PID_FILE=/var/run/$NAME.pid
 DAEMON=$LS_JAR
-DAEMON_OPTS="agent -f ${CONF_DIR} --log ${LOG_FILE}"
+DAEMON_OPTS="agent -f ${CONF_DIR} ${LS_OPTS}"
 
 is_true() {
     if [ "x$1" = "xtrue" -o "x$1" = "xyes" -o "x$1" = "x1" ] ; then
