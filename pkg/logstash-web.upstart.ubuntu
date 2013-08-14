@@ -1,0 +1,18 @@
+# logstash-web - web server
+#
+
+description "logstash-web web server"
+
+start on virtual-filesystems
+stop on runlevel [06]
+
+# Respawn it if the process exits
+respawn
+
+setuid logstash
+setgid logstash
+
+# Change into a writable directory
+chdir /var/lib/logstash
+console log
+exec /usr/bin/java -jar /opt/logstash/logstash.jar web
