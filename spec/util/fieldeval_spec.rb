@@ -1,3 +1,4 @@
+require "test_utils"
 require "logstash/util/fieldreference"
 
 describe LogStash::Util::FieldReference, :if => true do
