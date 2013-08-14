@@ -25,5 +25,7 @@ Gem::Specification.new do |gem|
   gem.version       = LOGSTASH_VERSION
   
   gem.add_development_dependency "rspec"
+  gem.add_development_dependency "guard"
+  gem.add_development_dependency "guard-rspec"
   gem.add_development_dependency "insist", "0.0.8"
 end
