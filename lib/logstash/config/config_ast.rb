@@ -53,11 +53,12 @@ module LogStash; module Config; module AST
       end
 
       # start inputs
-      code << "class << self"
+      #code << "class << self"
       definitions = []
         
       ["filter", "output"].each do |type|
-        definitions << "def #{type}(event)"
+        #definitions << "def #{type}(event)"
+        definitions << "@#{type}_func = lambda do |event|"
         if type == "filter"
           definitions << "  extra_events = []"
         end
@@ -74,7 +75,7 @@ module LogStash; module Config; module AST
       end
 
       code += definitions.join("\n").split("\n", -1).collect { |l| "  #{l}" }
-      code << "end"
+      #code << "end"
       return code.join("\n")
     end
   end

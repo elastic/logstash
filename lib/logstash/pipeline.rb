@@ -225,4 +225,12 @@ class LogStash::Pipeline
     klass = LogStash::Plugin.lookup(plugin_type, name)
     return klass.new(*args)
   end
+
+  def filter(event, &block)
+    @filter_func.call(event, &block)
+  end
+
+  def output(event)
+    @output_func.call(event)
+  end
 end # class Pipeline
