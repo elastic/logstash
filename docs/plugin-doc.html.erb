@@ -51,7 +51,7 @@ This is what it might look like in your config file:
      end
      annotation += ", default: #{config[:default].inspect}" if config.include?(:default)
 -%>
-    <a href="#setting_<%= name %>"><%= name %></a> => ... # <%= annotation %>
+    <a href="#<%= name %>"><%= name %></a> => ... # <%= annotation %>
 <% end -%>
   }
 }
@@ -69,7 +69,7 @@ This is what it might look like in your config file:
      end
 -%>
 <h4> 
-  <a name="setting_<%= name %>">
+  <a name="<%= name %>">
     <%= name %><%= " (required setting)" if config[:required] %>
     <%= " <strong>DEPRECATED</strong>" if config[:deprecated] %>
 </a>
