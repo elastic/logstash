@@ -9,7 +9,7 @@ describe "conditionals" do
         mutate { add_field => { "always" => "awesome" } }
         if [foo] == "bar" {
           mutate { add_field => { "hello" => "world" } }
-        } elsif [bar] == "baz" {
+        } else if [bar] == "baz" {
           mutate { add_field => { "fancy" => "pants" } }
         } else {
           mutate { add_field => { "free" => "hugs" } }
@@ -46,7 +46,7 @@ describe "conditionals" do
           mutate { add_field => { "always" => "awesome" } }
           if [foo] == "bar" {
             mutate { add_field => { "hello" => "world" } }
-          } elsif [bar] == "baz" {
+          } else if [bar] == "baz" {
             mutate { add_field => { "fancy" => "pants" } }
           } else {
             mutate { add_field => { "free" => "hugs" } }
