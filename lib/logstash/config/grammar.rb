@@ -1652,7 +1652,7 @@ module LogStashConfig
       elements[0]
     end
 
-    def elsif
+    def else_if
       elements[1]
     end
   end
@@ -1695,7 +1695,7 @@ module LogStashConfig
         r4 = _nt__
         s3 << r4
         if r4
-          r5 = _nt_elsif
+          r5 = _nt_else_if
           s3 << r5
         end
         if s3.last
@@ -1873,7 +1873,7 @@ module LogStashConfig
     r0
   end
 
-  module Elsif0
+  module ElseIf0
     def branch_or_plugin
       elements[0]
     end
@@ -1883,29 +1883,33 @@ module LogStashConfig
     end
   end
 
-  module Elsif1
+  module ElseIf1
     def _1
       elements[1]
-    end
-
-    def condition
-      elements[2]
     end
 
     def _2
       elements[3]
     end
 
+    def condition
+      elements[4]
+    end
+
     def _3
       elements[5]
     end
 
+    def _4
+      elements[7]
+    end
+
   end
 
-  def _nt_elsif
+  def _nt_else_if
     start_index = index
-    if node_cache[:elsif].has_key?(index)
-      cached = node_cache[:elsif][index]
+    if node_cache[:else_if].has_key?(index)
+      cached = node_cache[:else_if][index]
       if cached
         cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
         @index = cached.interval.end
@@ -1914,11 +1918,11 @@ module LogStashConfig
     end
 
     i0, s0 = index, []
-    if has_terminal?("elsif", false, index)
-      r1 = instantiate_node(SyntaxNode,input, index...(index + 5))
-      @index += 5
+    if has_terminal?("else", false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 4))
+      @index += 4
     else
-      terminal_parse_failure("elsif")
+      terminal_parse_failure("else")
       r1 = nil
     end
     s0 << r1
@@ -1926,57 +1930,71 @@ module LogStashConfig
       r2 = _nt__
       s0 << r2
       if r2
-        r3 = _nt_condition
+        if has_terminal?("if", false, index)
+          r3 = instantiate_node(SyntaxNode,input, index...(index + 2))
+          @index += 2
+        else
+          terminal_parse_failure("if")
+          r3 = nil
+        end
         s0 << r3
         if r3
           r4 = _nt__
           s0 << r4
           if r4
-            if has_terminal?("{", false, index)
-              r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
-              @index += 1
-            else
-              terminal_parse_failure("{")
-              r5 = nil
-            end
+            r5 = _nt_condition
             s0 << r5
             if r5
               r6 = _nt__
               s0 << r6
               if r6
-                s7, i7 = [], index
-                loop do
-                  i8, s8 = index, []
-                  r9 = _nt_branch_or_plugin
-                  s8 << r9
-                  if r9
-                    r10 = _nt__
-                    s8 << r10
-                  end
-                  if s8.last
-                    r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
-                    r8.extend(Elsif0)
-                  else
-                    @index = i8
-                    r8 = nil
-                  end
-                  if r8
-                    s7 << r8
-                  else
-                    break
-                  end
+                if has_terminal?("{", false, index)
+                  r7 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                  @index += 1
+                else
+                  terminal_parse_failure("{")
+                  r7 = nil
                 end
-                r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
                 s0 << r7
                 if r7
-                  if has_terminal?("}", false, index)
-                    r11 = instantiate_node(SyntaxNode,input, index...(index + 1))
-                    @index += 1
-                  else
-                    terminal_parse_failure("}")
-                    r11 = nil
+                  r8 = _nt__
+                  s0 << r8
+                  if r8
+                    s9, i9 = [], index
+                    loop do
+                      i10, s10 = index, []
+                      r11 = _nt_branch_or_plugin
+                      s10 << r11
+                      if r11
+                        r12 = _nt__
+                        s10 << r12
+                      end
+                      if s10.last
+                        r10 = instantiate_node(SyntaxNode,input, i10...index, s10)
+                        r10.extend(ElseIf0)
+                      else
+                        @index = i10
+                        r10 = nil
+                      end
+                      if r10
+                        s9 << r10
+                      else
+                        break
+                      end
+                    end
+                    r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+                    s0 << r9
+                    if r9
+                      if has_terminal?("}", false, index)
+                        r13 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                        @index += 1
+                      else
+                        terminal_parse_failure("}")
+                        r13 = nil
+                      end
+                      s0 << r13
+                    end
                   end
-                  s0 << r11
                 end
               end
             end
@@ -1986,13 +2004,13 @@ module LogStashConfig
     end
     if s0.last
       r0 = instantiate_node(LogStash::Config::AST::Elsif,input, i0...index, s0)
-      r0.extend(Elsif1)
+      r0.extend(ElseIf1)
     else
       @index = i0
       r0 = nil
     end
 
-    node_cache[:elsif][start_index] = r0
+    node_cache[:else_if][start_index] = r0
 
     r0
   end

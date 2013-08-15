@@ -115,7 +115,7 @@ grammar LogStashConfig
 
   # Conditions
   rule branch
-    if (_ elsif)* (_ else)?
+    if (_ else_if)* (_ else)?
     <LogStash::Config::AST::Branch>
   end
 
@@ -124,8 +124,8 @@ grammar LogStashConfig
     <LogStash::Config::AST::If>
   end
 
-  rule elsif
-    "elsif" _ condition _ "{" _ ( branch_or_plugin _)* "}"
+  rule else_if
+    "else" _ "if" _ condition _ "{" _ ( branch_or_plugin _)* "}"
     <LogStash::Config::AST::Elsif>
   end
 
