@@ -3,6 +3,8 @@ require "test_utils"
 describe "receive graphite input" do
   extend LogStash::RSpec
 
+  $logstash_example = :graphite
+
   # The logstash config goes here.
   # At this time, only filters are supported.
   config <<-CONFIG
@@ -38,4 +40,6 @@ describe "receive graphite input" do
     insist { subject["@timestamp"] } == Time.iso8601("2013-03-30T01:22:02.000Z")
     
   end
+
+  $logstash_example = nil
 end

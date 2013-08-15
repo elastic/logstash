@@ -3,6 +3,8 @@ require "test_utils"
 describe "apache common log format" do
   extend LogStash::RSpec
 
+  $logstash_example = :apache
+
   # The logstash config goes here.
   # At this time, only filters are supported.
   config <<-CONFIG
@@ -63,4 +65,6 @@ describe "apache common log format" do
   sample '72.14.164.185 - - [25/Sep/2012:12:05:02 -0400] "GET /robots.txt HTTP/1.1" 200 - "www.brandimensions.com" "BDFetch"' do
     insist { subject["tags"] }.nil?
   end
+
+  $logstash_example = :nil
 end
