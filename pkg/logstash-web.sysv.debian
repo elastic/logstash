@@ -3,20 +3,20 @@
 # /etc/init.d/logstash -- startup script for LogStash.
 #
 ### BEGIN INIT INFO
-# Provides:          logstash
+# Provides:          logstash-web
 # Required-Start:    $all
 # Required-Stop:     $all
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Starts logstash
-# Description:       Starts logstash using start-stop-daemon
+# Short-Description: Starts the LogStash web server
+# Description:       Starts logstash-web using start-stop-daemon
 ### END INIT INFO
 
 set -e
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
-NAME=logstash
-DESC="Logstash Daemon"
+NAME=logstash-web
+DESC="Logstash Web Server"
 DEFAULT=/etc/default/$NAME
 
 if [ `id -u` -ne 0 ]; then
@@ -56,8 +56,7 @@ LOG_FILE=$LOG_DIR/$NAME.log
 # Open File limit
 OPEN_FILES=2048
 
-# LogStash options
-LS_OPTS="--log ${LOG_DIR}/${NAME}.log"
+
 
 # Nice level
 NICE=19
@@ -72,7 +71,7 @@ fi
 # Define other required variables
 PID_FILE=/var/run/$NAME.pid
 DAEMON=$LS_JAR
-DAEMON_OPTS="agent -f ${CONF_DIR} ${LS_OPTS}"
+DAEMON_OPTS="web"
 
 is_true() {
     if [ "x$1" = "xtrue" -o "x$1" = "xyes" -o "x$1" = "x1" ] ; then
