@@ -66,6 +66,7 @@ clean:
 	-$(QUIET)rm -rf .bundle
 	-$(QUIET)rm -rf build
 	-$(QUIET)rm -rf vendor
+	-$(QUIET)rm -f pkg/*.deb
 
 .PHONY: compile
 compile: compile-grammar compile-runner | build/ruby
