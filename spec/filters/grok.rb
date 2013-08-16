@@ -263,6 +263,34 @@ describe LogStash::Filters::Grok do
     end
   end
 
+  describe "grok on %{LOGLEVEL}" do
+    config <<-'CONFIG'
+      filter {
+        grok {
+          pattern => "%{LOGLEVEL:level}: error!"
+        }
+      }
+    CONFIG
+
+    log_level_names = %w(
+      trace Trace TRACE
+      debug Debug DEBUG
+      notice Notice Notice
+      info Info INFO
+      warn warning Warn Warning WARN WARNING
+      err error Err Error ERR ERROR
+      crit critical Crit Critical CRIT CRITICAL
+      fatal Fatal FATAL
+      severe Severe SEVERE
+      emerg emergency Emerg Emergency EMERG EMERGENCY
+    )
+    log_level_names.each do |level_name|
+      sample "#{level_name}: error!" do
+        insist { subject['level'] } == level_name
+      end
+    end
+  end
+
   describe "tagging on failure" do
     config <<-CONFIG
       filter {
