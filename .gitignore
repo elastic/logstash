@@ -17,3 +17,5 @@ vendor
 data
 .buildpath
 .project
+.DS_Store
+*.pyc
