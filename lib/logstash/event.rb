@@ -205,6 +205,7 @@ class LogStash::Event
   # is an array (or hash?) should be. Join by comma? Something else?
   public
   def sprintf(format)
+    format = format.to_s
     if format.index("%").nil?
       return format
     end
