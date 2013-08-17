@@ -89,7 +89,7 @@ class Netflow5PDU < BinData::Record
     uint16   :dst_as
     uint8    :src_mask
     uint8    :dst_mask
-    skip     :length => 1
+    skip     :length => 2
   end
 end
 
@@ -214,7 +214,7 @@ end
 class LogStash::Filters::Netflow < LogStash::Filters::Base
 
   config_name "netflow"
-  plugin_status "experimental"
+  milestone 1
 
   # Netflow v9 template cache TTL (minutes)
   config :cache_ttl, :validate => :number, :default => 4000
@@ -233,12 +233,12 @@ class LogStash::Filters::Netflow < LogStash::Filters::Base
 
   public
   def filter(event)
-    header = Header.read(event.message)
+    header = Header.read(event["message"])
 
     if header.version == 5
-      flowset = Netflow5PDU.read(line)
+      flowset = Netflow5PDU.read(event["message"])
     elsif header.version == 9
-      flowset = Netflow9PDU.read(line)
+      flowset = Netflow9PDU.read(event["message"])
     else
       @logger.warn("Unsupported Netflow version v#{header.version}")
       return
@@ -253,11 +253,11 @@ class LogStash::Filters::Netflow < LogStash::Filters::Base
         #
         # The flowset header gives us the UTC epoch seconds along with
         # residual nanoseconds so we can set @timestamp to that easily
-        clone.timestamp = Time.at(flowset.unix_sec, flowset.unix_nsec / 1000).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
+        clone.timestamp = Time.at(flowset.unix_sec, flowset.unix_nsec / 1000).utc
         clone['netflow'] = {} if clone['netflow'].nil?
 
         # Copy some of the pertinent fields in the header to the event
-        ['version', 'flow_seq_num', 'engine_type', 'engine_id', 'sampling_algorithm', 'sampling_interval'].each do |f|
+        ['version', 'flow_seq_num', 'engine_type', 'engine_id', 'sampling_algorithm', 'sampling_interval', 'flow_records'].each do |f|
           clone['netflow'][f] = flowset[f]
         end
 
@@ -300,7 +300,7 @@ class LogStash::Filters::Netflow < LogStash::Filters::Base
                 fields += entry
               end
               # We get this far, we have a list of fields
-              key = "#{flowset.source_id}|#{event.source_host}|#{template.template_id}"
+              key = "#{flowset.source_id}|#{event["source"]}|#{template.template_id}"
               @templates[key, @cache_ttl] = BinData::Struct.new(:endian => :big, :fields => fields)
               # Purge any expired templates
               @templates.cleanup!
@@ -319,7 +319,7 @@ class LogStash::Filters::Netflow < LogStash::Filters::Base
                 fields += entry
               end
               # We get this far, we have a list of fields
-              key = "#{flowset.source_id}|#{event.source_host}|#{template.template_id}"
+              key = "#{flowset.source_id}|#{event["source"]}|#{template.template_id}"
               @templates[key, @cache_ttl] = BinData::Struct.new(:endian => :big, :fields => fields)
               # Purge any expired templates
               @templates.cleanup!
@@ -327,11 +327,11 @@ class LogStash::Filters::Netflow < LogStash::Filters::Base
           end 
         when 256..65535
           # Data flowset
-          key = "#{flowset.source_id}|#{event.source_host}|#{record.flowset_id}"
+          key = "#{flowset.source_id}|#{event["source"]}|#{record.flowset_id}"
           template = @templates[key]
 
           if ! template
-            @logger.warn("No matching template for flow id #{record.flowset_id} from #{event.source_host}")
+            @logger.warn("No matching template for flow id #{record.flowset_id} from #{event["source"]}")
             next
           end
 
@@ -352,7 +352,7 @@ class LogStash::Filters::Netflow < LogStash::Filters::Base
             clone = event.clone
             clone.message = ""
 
-            clone.timestamp = Time.at(flowset.unix_sec).utc.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
+            clone.timestamp = Time.at(flowset.unix_sec).utc
 
             clone['netflow'] = {} if clone['netflow'].nil?
 
