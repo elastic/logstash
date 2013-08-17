@@ -97,4 +97,34 @@ describe "conditionals" do
       insist { subject["tags"] }.include?("woot")
     end
   end
+
+  describe "the 'in' operator" do
+    config <<-CONFIG
+      filter {
+        if [foo] in [foobar] {
+          mutate { add_tag => "field in field" }
+        }
+        if [foo] in "foo" {
+          mutate { add_tag => "field in string" }
+        }
+        if "hello" in [greeting] {
+          mutate { add_tag => "string in field" }
+        }
+        if [foo] in ["hello", "world", "foo"] {
+          mutate { add_tag => "field in list" }
+        }
+        if [missing] in [alsomissing] {
+          mutate { add_tag => "shouldnotexist" }
+        }
+      }
+    CONFIG
+
+    sample("foo" => "foo", "foobar" => "foobar", "greeting" => "hello world") do
+      insist { subject["tags"] }.include?("field in field")
+      insist { subject["tags"] }.include?("field in string")
+      insist { subject["tags"] }.include?("string in field")
+      insist { subject["tags"] }.include?("field in list")
+      reject { subject["tags"] }.include?("shouldnotexist")
+    end
+  end
 end

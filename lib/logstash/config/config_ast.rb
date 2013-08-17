@@ -269,8 +269,10 @@ module LogStash; module Config; module AST
       cmp = recursive_select(LogStash::Config::AST::ComparisonOperator)
       if cmp.count == 1 && cmp.first.text_value == "in"
         # item 'in' list
+        # technically anything that responds to #include? is accepted.
         item, list = recursive_select(LogStash::Config::AST::RValue)
-        return "#{list.compile}.include?(#{item.compile})"
+        return "(x = #{list.compile}; x.respond_to?(:include?) && x.include?(#{item.compile}))"
+        #return "#{list.compile}.include?(#{item.compile})"
       end
       return "(#{super})"
     end
