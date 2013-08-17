@@ -69,13 +69,9 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "varnish-rb"                       #(MIT license)
   gem.add_runtime_dependency "mail"                             #(MIT license)
   gem.add_runtime_dependency "rbnacl"                           #(MIT license)
-<<<<<<< HEAD
   gem.add_runtime_dependency "sequel"                           #(MIT license)
   gem.add_runtime_dependency "jdbc-sqlite3"                     #(MIT license)
-  gem.add_runtime_dependency "bindata"                          #(ruby license)
-=======
   gem.add_runtime_dependency "bindata", [">= 1.5.0"]            #(ruby license)
->>>>>>> Require at least BinData 1.5.0 for needed functionality.
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
