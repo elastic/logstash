@@ -34,6 +34,9 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   # For the built in GeoLiteCity database, the following are available:
   # city\_name, continent\_code, country\_code2, country\_code3, country\_name,
   # dma\_code, ip, latitude, longitude, postal\_code, region\_name, timezone
+  #
+  # The lonlat field is manually added to ease integration with
+  # GeoJSON apps, like Kibana3's bettermap panel.
   config :fields, :validate => :array
 
   # Specify into what field you want the geoip data.
@@ -104,6 +107,7 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
     geo_data_hash = geo_data.to_hash
     geo_data_hash.delete(:request)
     event[@target] = {} if event[@target].nil?
+    geo_data_hash[:lonlat] = [geo_data[:longitude], geo_data[:latitude]]
     geo_data_hash.each do |key, value|
       if @fields.nil? || @fields.empty?
         # no fields requested, so add all geoip hash items to
