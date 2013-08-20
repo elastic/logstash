@@ -1,4 +1,5 @@
 #!/bin/sh
 
-mkdir -p /home/logstash
-chown logstash:logstash /home/logstash
+chown -R logstash:logstash /opt/logstash
+chown logstash /var/log/logstash
+chown logstash:logstash /var/lib/logstash

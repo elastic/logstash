@@ -56,6 +56,7 @@ class LogStash::Outputs::RabbitMQ
 
         connect
         declare_exchange
+        retry
       end
     end
 

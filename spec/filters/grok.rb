@@ -263,6 +263,34 @@ describe LogStash::Filters::Grok do
     end
   end
 
+  describe "grok on %{LOGLEVEL}" do
+    config <<-'CONFIG'
+      filter {
+        grok {
+          pattern => "%{LOGLEVEL:level}: error!"
+        }
+      }
+    CONFIG
+
+    log_level_names = %w(
+      trace Trace TRACE
+      debug Debug DEBUG
+      notice Notice Notice
+      info Info INFO
+      warn warning Warn Warning WARN WARNING
+      err error Err Error ERR ERROR
+      crit critical Crit Critical CRIT CRITICAL
+      fatal Fatal FATAL
+      severe Severe SEVERE
+      emerg emergency Emerg Emergency EMERG EMERGENCY
+    )
+    log_level_names.each do |level_name|
+      sample "#{level_name}: error!" do
+        insist { subject['level'] } == level_name
+      end
+    end
+  end
+
   describe "tagging on failure" do
     config <<-CONFIG
       filter {
@@ -309,6 +337,37 @@ describe LogStash::Filters::Grok do
 
     sample "hello world" do
       insist { subject["foo-bar"] } == "hello"
+    end
+  end
+
+  describe "performance test" do
+    event_count = 100000
+    min_rate = 4000
+
+    max_duration = event_count / min_rate
+    input = "Nov 24 01:29:01 -0800"
+    config <<-CONFIG
+      input {
+        generator {
+          count => #{event_count}
+          message => "Mar 16 00:01:25 evita postfix/smtpd[1713]: connect from camomile.cloud9.net[168.100.1.3]"
+        }
+      }
+      filter {
+        grok {
+          match => [ "message", "%{SYSLOGLINE}" ]
+          singles => true
+          overwrite => [ "message" ]
+        }
+      }
+      output { null { } }
+    CONFIG
+
+    2.times do
+      agent do
+        puts "grok parse rate: #{event_count / @duration}"
+        insist { @duration } < max_duration
+      end
     end
   end
 end

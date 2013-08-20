@@ -5,21 +5,20 @@
   - The old logstash web ui has been replaced by Kibana 3. Kibana is a far
     superior search and analytics interface.
   - TODO(sissel): document new conditionals feature (LOGSTASH-661)
-  - TODO(sissel): document new field selection syntax (LOGSTASH-1153)
-  - ElasticSearch version 0.90.0 is included.
+  - TODO(sissel): document new field reference syntax (LOGSTASH-1153)
+  - ElasticSearch version 0.90.2 is included.
   - Many deprecated features have been removed.
     TODO(sissel): Document what these were.
   - 'type' is no longer a required setting on inputs.
-  - feature: codecs. Used to implement encoding/decoding of events
-    for input and output plugins.
+  - feature: codecs. Used to implement decoding of events for inputs and
+    encoding of events for outputs.
       TODO(nickethier): Document how to use and how to hack.
-  - The multiline filter is replaced by the multiline codec.
 
   ## inputs
   - bugfix: gelf: work around gelf parser errors (#476, patch by Chris McCoy)
   - broken: the twitter input is disabled because the twitter stream v1 api is
     no longer supported and I couldn't find a replacement library that works
-    under jruby.
+    under JRuby.
 
   ## filters
   - feature: grok: 'singles' now defaults to true.

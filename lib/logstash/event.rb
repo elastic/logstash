@@ -2,6 +2,7 @@ require "json"
 require "time"
 require "date"
 require "logstash/namespace"
+require "logstash/util/fieldreference"
 
 # Use a custom serialization for jsonifying Time objects.
 # TODO(sissel): Put this in a separate file.
@@ -110,40 +111,40 @@ class LogStash::Event
   
   # field-related access
   public
-  def [](key)
-    if key[0] == '['
-      val = @data
-      key.gsub(/(?<=\[).+?(?=\])/).each do |tok|
-        if val.is_a? Array
-          val = val[tok.to_i]
-        else
-          val = val[tok]
-        end
-      end
-      return val
+  def [](str)
+    if str[0,1] == "+"
     else
-      return @data[key]
+      return LogStash::Util::FieldReference.exec(str, @data)
     end
   end # def []
   
   public
-  def []=(key, value)
-    if key[0] == '['
-      val = @data
-      keys = key.scan(/(?<=\[).+?(?=\])/)
-      last = keys.pop
+  def []=(str, value)
+    r = LogStash::Util::FieldReference.exec(str, @data) do |obj, key|
+      obj[key] = value
+    end
 
-      keys.each do |tok|
-        if val.is_a? Array
-          val = val[tok.to_i]
+    # The assignment can fail if the given field reference (str) does not exist
+    # In this case, we'll want to set the value manually.
+    if r.nil?
+      # TODO(sissel): Implement this in LogStash::Util::FieldReference
+      if str[0,1] != "["
+        return @data[str] = value
+      end
+
+      # No existing element was found, so let's set one.
+      *parents, key = str.scan(/(?<=\[)[^\]]+(?=\])/)
+      obj = @data
+      parents.each do |p|
+        if obj.include?(p)
+          obj = obj[p]
         else
-          val = val[tok]
+          obj[p] = {}
         end
       end
-      val[last] = value
-    else
-      @data[key] = value
+      obj[key] = value
     end
+    return value
   end # def []=
 
   public
@@ -177,10 +178,13 @@ class LogStash::Event
     LogStash::Util.hash_merge(@data, event.to_hash)
   end # append
 
-  # Remove a field. Returns the value of that field when deleted
+  # Remove a field or field reference. Returns the value of that field when
+  # deleted
   public
-  def remove(field)
-    return @data.delete(field)
+  def remove(str)
+    return LogStash::Util::FieldReference.exec(str, @data) do |obj, key|
+      next obj.delete(key)
+    end
   end # def remove
 
   # sprintf. This could use a better method name.
@@ -201,6 +205,7 @@ class LogStash::Event
   # is an array (or hash?) should be. Join by comma? Something else?
   public
   def sprintf(format)
+    format = format.to_s
     if format.index("%").nil?
       return format
     end

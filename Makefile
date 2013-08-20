@@ -3,7 +3,7 @@
 #   wget or curl
 #
 JRUBY_VERSION=1.7.4
-ELASTICSEARCH_VERSION=0.90.0
+ELASTICSEARCH_VERSION=0.90.2
 #VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 VERSION=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb)
 
@@ -66,6 +66,7 @@ clean:
 	-$(QUIET)rm -rf .bundle
 	-$(QUIET)rm -rf build
 	-$(QUIET)rm -rf vendor
+	-$(QUIET)rm -f pkg/*.deb
 
 .PHONY: compile
 compile: compile-grammar compile-runner | build/ruby
@@ -364,3 +365,4 @@ package:
 vendor/kibana: | build
 	$(QUIET)mkdir vendor/kibana || true
 	$(DOWNLOAD_COMMAND) - $(KIBANA_URL) | tar -C $@ -zx --strip-components=1
+	$(QUIET)mv vendor/kibana/dashboards/logstash.json vendor/kibana/dashboards/default.json

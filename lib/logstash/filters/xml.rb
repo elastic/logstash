@@ -71,36 +71,30 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
   public
   def filter(event)
     return unless filter?(event)
-
     matched = false
 
     @logger.debug("Running xml filter", :event => event)
 
-    key = @source
-    dest = @target
+    return unless event.include?(@source)
 
-    return unless event.include?(key)
-    if event[key].is_a?(String)
-      event[key] = [event[key]]
-    end
+    value = event[@source]
 
-    if event[key].length > 1
+    if value.is_a?(Array) && value.length > 1
       @logger.warn("XML filter only works on fields of length 1",
-                   :key => key, :value => event[key])
+                   :source => @source, :value => value)
       return
     end
 
-    raw = event[key].first
-
-    # for some reason, an empty string is considered valid XML
-    return if raw.strip.length == 0
+    # Do nothing with an empty string.
+    return if value.strip.length == 0
 
     if @xpath
       begin
-        doc = Nokogiri::XML(raw)
+        doc = Nokogiri::XML(value)
       rescue => e
+        p :failed => value
         event.tag("_xmlparsefailure")
-        @logger.warn("Trouble parsing xml", :key => key, :raw => raw,
+        @logger.warn("Trouble parsing xml", :source => @source, :value => value,
                      :exception => e, :backtrace => e.backtrace)
         return
       end
@@ -129,12 +123,12 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
 
     if @store_xml
       begin
-        event[dest] = XmlSimple.xml_in(raw)
+        event[@target] = XmlSimple.xml_in(value)
         matched = true
       rescue => e
         event.tag("_xmlparsefailure")
-        @logger.warn("Trouble parsing xml with XmlSimple", :key => key,
-                     :raw => raw, :exception => e, :backtrace => e.backtrace)
+        @logger.warn("Trouble parsing xml with XmlSimple", :source => @source,
+                     :value => value, :exception => e, :backtrace => e.backtrace)
         return
       end
     end # if @store_xml

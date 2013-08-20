@@ -25,7 +25,7 @@ describe "haproxy httplog format" do
     # See http://rubydoc.info/gems/insist for more info.
 
     # Require that grok does not fail to parse this event.
-    reject { subject["@tags"] }.include?("_grokparsefailure")
+    insist { subject["tags"] }.nil?
 
 
     # Ensure that grok captures certain expected fields.
@@ -71,45 +71,45 @@ describe "haproxy httplog format" do
 
 #    # Ensure that those fields match expected values from the event.
 
-    insist{ subject["syslog_timestamp"] } == ["Feb  6 12:14:14"]
-    insist{ subject["syslog_server"] } == ["localhost"]
-    insist{ subject["program"] } == ["haproxy"]
-    insist{ subject["pid"] } == ["14389"]
-    insist{ subject["client_ip"] } == ["10.0.1.2"]
-    insist{ subject["client_port"] } == ["33317"]
-    insist{ subject["accept_date"] } == ["06/Feb/2009:12:14:14.655"]
-    insist{ subject["haproxy_monthday"] } == ["06"]
-    insist{ subject["haproxy_month"] } == ["Feb"]
-    insist{ subject["haproxy_year"] } == ["2009"]
-    insist{ subject["haproxy_time"] } == ["12:14:14"]
-    insist{ subject["haproxy_hour"] } == ["12"]
-    insist{ subject["haproxy_minute"] } == ["14"]
-    insist{ subject["haproxy_second"] } == ["14"]
-    insist{ subject["haproxy_milliseconds"] } == ["655"]
-    insist{ subject["frontend_name"] } == ["http-in"]
-    insist{ subject["backend_name"] } == ["static"]
-    insist{ subject["server_name"] } == ["srv1"]
-    insist{ subject["time_request"] } == ["10"]
-    insist{ subject["time_queue"] } == ["0"]
-    insist{ subject["time_backend_connect"] } == ["30"]
-    insist{ subject["time_backend_response"] } == ["69"]
-    insist{ subject["time_duration"] } == ["109"]
-    insist{ subject["http_status_code"] } == ["200"]
-    insist{ subject["bytes_read"] } == ["2750"]
-    insist{ subject["captured_request_cookie"] } == ["-"]
-    insist{ subject["captured_response_cookie"] } == ["-"]
-    insist{ subject["termination_state"] } == ["----"]
-    insist{ subject["actconn"] } == ["1"]
-    insist{ subject["feconn"] } == ["1"]
-    insist{ subject["beconn"] } == ["1"]
-    insist{ subject["srvconn"] } == ["1"]
-    insist{ subject["retries"] } == ["0"]
-    insist{ subject["srv_queue"] } == ["0"]
-    insist{ subject["backend_queue"] } == ["0"]
-    insist{ subject["captured_request_headers"] } == ["1wt.eu"]
-    insist{ subject["http_verb"] } == ["GET"]
-    insist{ subject["http_request"] } == ["/index.html"]
-    insist{ subject["http_version"] } == ["1.1"]
+    insist{ subject["syslog_timestamp"] } == "Feb  6 12:14:14"
+    insist{ subject["syslog_server"] } == "localhost"
+    insist{ subject["program"] } == "haproxy"
+    insist{ subject["pid"] } == "14389"
+    insist{ subject["client_ip"] } == "10.0.1.2"
+    insist{ subject["client_port"] } == "33317"
+    insist{ subject["accept_date"] } == "06/Feb/2009:12:14:14.655"
+    insist{ subject["haproxy_monthday"] } == "06"
+    insist{ subject["haproxy_month"] } == "Feb"
+    insist{ subject["haproxy_year"] } == "2009"
+    insist{ subject["haproxy_time"] } == "12:14:14"
+    insist{ subject["haproxy_hour"] } == "12"
+    insist{ subject["haproxy_minute"] } == "14"
+    insist{ subject["haproxy_second"] } == "14"
+    insist{ subject["haproxy_milliseconds"] } == "655"
+    insist{ subject["frontend_name"] } == "http-in"
+    insist{ subject["backend_name"] } == "static"
+    insist{ subject["server_name"] } == "srv1"
+    insist{ subject["time_request"] } == "10"
+    insist{ subject["time_queue"] } == "0"
+    insist{ subject["time_backend_connect"] } == "30"
+    insist{ subject["time_backend_response"] } == "69"
+    insist{ subject["time_duration"] } == "109"
+    insist{ subject["http_status_code"] } == "200"
+    insist{ subject["bytes_read"] } == "2750"
+    insist{ subject["captured_request_cookie"] } == "-"
+    insist{ subject["captured_response_cookie"] } == "-"
+    insist{ subject["termination_state"] } == "----"
+    insist{ subject["actconn"] } == "1"
+    insist{ subject["feconn"] } == "1"
+    insist{ subject["beconn"] } == "1"
+    insist{ subject["srvconn"] } == "1"
+    insist{ subject["retries"] } == "0"
+    insist{ subject["srv_queue"] } == "0"
+    insist{ subject["backend_queue"] } == "0"
+    insist{ subject["captured_request_headers"] } == "1wt.eu"
+    insist{ subject["http_verb"] } == "GET"
+    insist{ subject["http_request"] } == "/index.html"
+    insist{ subject["http_version"] } == "1.1"
   end
 
 end
