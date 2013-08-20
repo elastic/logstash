@@ -45,6 +45,10 @@ describe LogStash::Event do
       insist { subject.sprintf("%{[j][k1]}") } == "v"
       insist { subject.sprintf("%{[j][k2][0]}") } == "w"
     end
+
+    it "should be able to take a non-string for the format" do
+      insist { subject.sprintf(2) } == "2"
+    end
   end
   
   context "#[]" do
@@ -62,6 +66,14 @@ describe LogStash::Event do
       insist { subject['[j][k3][4]'] } == "m"
       insist { subject['[j][5]'] } == 7
 
+    end
+
+    it "should be fast?" do
+      2.times do
+        start = Time.now
+        100000.times { subject["[j][k1]"] }
+        puts "Duration: #{Time.now - start}"
+      end
     end
   end
 

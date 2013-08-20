@@ -1,5 +1,6 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
+require "stud/buffer"
 
 # This output lets you send metrics to
 # DataDogHQ based on Logstash events.
@@ -8,6 +9,8 @@ require "logstash/namespace"
 # If you do not use Datadog for alerting, consider raising these thresholds.
 
 class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
+
+  include Stud::Buffer
 
   config_name "datadog_metrics"
   milestone 1
@@ -38,13 +41,11 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
   # prior to schedule set in @timeframe
   config :queue_size, :validate => :number, :default => 10
 
-  # How often to flush queued events to Datadog
-  config :timeframe, :validate => :string, :default => "10s"
+  # How often (in seconds) to flush queued events to Datadog
+  config :timeframe, :validate => :number, :default => 10
 
   public
   def register
-    require "thread"
-    require "rufus/scheduler"
     require 'time'
     require "net/https"
     require "uri"
@@ -55,13 +56,11 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
     @client.use_ssl = true
     @client.verify_mode = OpenSSL::SSL::VERIFY_NONE
     @logger.debug("Client", :client => @client.inspect)
-
-    @event_queue = SizedQueue.new(@queue_size)
-    @scheduler = Rufus::Scheduler.start_new
-    @job = @scheduler.every @timeframe do
-      @logger.info("Scheduler Activated")
-      flush_metrics
-    end
+    buffer_initialize(
+      :max_items => @queue_size,
+      :max_interval => @timeframe,
+      :logger => @logger
+    )
   end # def register
 
   public
@@ -84,33 +83,22 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
     end
     dd_metrics['tags'] = tagz if tagz
 
-    if (@event_queue.length >= @event_queue.max)
-      @job.trigger
-      @logger.warn("Event queue full! Flushing before schedule. Consider increasing queue_size.")
-    end
-
     @logger.info("Queueing event", :event => dd_metrics)
-    @event_queue << dd_metrics
+    buffer_receive(dd_metrics)
   end # def receive
 
-  private
-  def flush_metrics
+  public
+  def flush(events, final=false)
     dd_series = Hash.new
     dd_series['series'] = []
 
-    while !@event_queue.empty? do
+    events.each do |event|
       begin
-        event = @event_queue.pop(true)
         dd_series['series'] << event
-      rescue Exception => e
-        @logger.warn("Exception!  Breaking count loop", :exception => e)
-        break
+      rescue
+        @logger.warn("Error adding event to series!", :exception => e)
+        next
       end
-    end
-
-    if dd_series['series'].empty?
-        @logger.info("Datadog metrics queue empty. Skipping.")
-        return
     end
 
     request = Net::HTTP::Post.new("#{@uri.path}?api_key=#{@api_key}")
@@ -124,7 +112,7 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
     rescue Exception => e
       @logger.warn("Unhandled exception", :request => request.inspect, :response => response.inspect, :exception => e.inspect)
     end
-  end # def flush_metrics
+  end # def flush
 
   private
   def to_epoch(t)

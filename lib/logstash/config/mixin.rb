@@ -62,7 +62,14 @@ module LogStash::Config::Mixin
     self.class.get_config.each do |name, opts|
       next if params.include?(name.to_s)
       if opts.include?(:default) and (name.is_a?(Symbol) or name.is_a?(String))
-        params[name.to_s] = opts[:default] unless params.include?(name.to_s)
+        # default values should be cloned if possible
+        # cloning prevents 
+        case opts[:default]
+          when FalseClass, TrueClass, NilClass, Fixnum
+            params[name.to_s] = opts[:default]
+          else
+            params[name.to_s] = opts[:default].clone
+        end
       end
     end
 

@@ -1,0 +1,11 @@
+MYSQL_ERROR_TIMESTAMP %{NUMBER:date} %{TIME}
+MYSQL_ERORR_LOG_CONTENT_P1 \[%{WORD:mysql_error_log_level}\] %{GREEDYDATA:mysql_error_log_content}
+MYSQL_ERORR_LOG_CONTENT_P2 %{GREEDYDATA:mysql_error_log_content}
+MYSQL_ERROR_LOG %{MYSQL_ERROR_TIMESTAMP} (%{MYSQL_ERORR_LOG_CONTENT_P1}|%{MYSQL_ERORR_LOG_CONTENT_P2})
+
+MYSQL_SLOW_FROM ^# User@Host: %{USER:user}\[[^\]]+\] @ %{HOST:host} \[%{IP:ip_addr}?]
+MYSQL_SLOW_STAT ^# Query_time: %{NUMBER:duration:float} \s*Lock_time: %{NUMBER:lock_wait:float} \s*Rows_sent: %{NUMBER:results:int} \s*Rows_examined: %{NUMBER:scanned:int}
+MYSQL_SLOW_TIMESTAMP ^SET timestamp=%{NUMBER:timestamp};
+MYSQL_SLOW_DB ^use %{WORD:db_name};
+MYSQL_SLOW_QUERY ^%{WORD:action}%{SPACE}%{GREEDYDATA};
+

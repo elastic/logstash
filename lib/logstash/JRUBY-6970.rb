@@ -41,16 +41,7 @@ class File
           return expand_path_JRUBY_6970(path, dir)
         else
           resource = expand_path_JRUBY_6970(resource, dir)
-          # TODO(sissel): use LogStash::Util::UNAME
-          if RbConfig::CONFIG["host_os"] == "mswin32"
-            # 'expand_path' on "/" will return "C:/" on windows.
-            # So like.. we don't want that because technically this
-            # is the root of the jar, not of a disk.
-            puts :expand_path => [path, "#{jar}!#{resource.gsub(/^[A-Za-z]:/, "")}"]
-            return "#{jar}!#{resource.gsub(/^[A-Za-z]:/, "")}"
-          else
-            return "#{jar}!#{resource}"
-          end
+          return fix_jar_path(jar, resource)
         end
       elsif dir =~ /(jar:)?file:\/.*\.jar!/
         jar, dir = dir.split("!", 2)
@@ -58,11 +49,26 @@ class File
           # sometimes the original dir is just 'file:/foo.jar!'
           return File.join("#{jar}!", path) 
         end
-        return "#{jar}!#{expand_path_JRUBY_6970(path, dir)}"
+        dir = expand_path_JRUBY_6970(path, dir)
+        return fix_jar_path(jar, dir)
       else
         return expand_path_JRUBY_6970(path, dir)
       end
     end
   end
-end
 
+  protected
+
+  def self.fix_jar_path(jar, resource)
+    # TODO(sissel): use LogStash::Util::UNAME
+    if RbConfig::CONFIG["host_os"] == "mswin32"
+      # 'expand_path' on "/" will return "C:/" on windows.
+      # So like.. we don't want that because technically this
+      # is the root of the jar, not of a disk.
+      puts :fix_jar_path => ["#{jar}!#{resource.gsub(/^[A-Za-z]:/, "")}"]
+      return "#{jar}!#{resource.gsub(/^[A-Za-z]:/, "")}"
+    else
+      return "#{jar}!#{resource}"
+    end
+  end
+end

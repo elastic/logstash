@@ -53,11 +53,12 @@ module LogStash; module Config; module AST
       end
 
       # start inputs
-      code << "class << self"
+      #code << "class << self"
       definitions = []
         
       ["filter", "output"].each do |type|
-        definitions << "def #{type}(event)"
+        #definitions << "def #{type}(event)"
+        definitions << "@#{type}_func = lambda do |event, &block|"
         if type == "filter"
           definitions << "  extra_events = []"
         end
@@ -68,13 +69,13 @@ module LogStash; module Config; module AST
         end
 
         if type == "filter"
-          definitions << "  extra_events.each { |e| yield e }"
+          definitions << "  extra_events.each(&block)"
         end
         definitions << "end"
       end
 
       code += definitions.join("\n").split("\n", -1).collect { |l| "  #{l}" }
-      code << "end"
+      #code << "end"
       return code.join("\n")
     end
   end
@@ -169,7 +170,7 @@ module LogStash; module Config; module AST
             "  extra_events << newevent",
             "end",
             "if event.cancelled?",
-            "  extra_events.each { |e| yield e }",
+            "  extra_events.each(&block)",
             "  return",
             "end",
           ].map { |l| "#{l}\n" }.join("")
@@ -193,7 +194,8 @@ module LogStash; module Config; module AST
       return %Q(#{name.compile} => #{value.compile})
     end
   end
-  class Value < Node; end
+  class RValue < Node; end
+  class Value < RValue; end
   class Bareword < Value
     def compile
       return text_value.inspect
@@ -262,10 +264,18 @@ module LogStash; module Config; module AST
   end
   module Expression
     def compile
+      # Hack for compiling 'in' support.
+      # This really belongs elsewhere, I think.
+      cmp = recursive_select(LogStash::Config::AST::ComparisonOperator)
+      if cmp.count == 1 && cmp.first.text_value == "in"
+        # item 'in' list
+        # technically anything that responds to #include? is accepted.
+        item, list = recursive_select(LogStash::Config::AST::RValue)
+        return "(x = #{list.compile}; x.respond_to?(:include?) && x.include?(#{item.compile}))"
+        #return "#{list.compile}.include?(#{item.compile})"
+      end
       return "(#{super})"
     end
-  end
-  class Rvalue < Node
   end
   class MethodCall < Node
     def compile
@@ -283,7 +293,7 @@ module LogStash; module Config; module AST
       return " #{text_value} "
     end
   end
-  class Selector < Node
+  class Selector < RValue
     def compile
       return "event[#{text_value.inspect}]"
     end

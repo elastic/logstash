@@ -199,7 +199,7 @@ class LogStash::Pipeline
       output(event)
     end # while true
     @outputs.each(&:teardown)
-  end # def filterworker
+  end # def outputworker
 
   # Shutdown this pipeline.
   #
@@ -224,5 +224,13 @@ class LogStash::Pipeline
     args << {} if args.empty?
     klass = LogStash::Plugin.lookup(plugin_type, name)
     return klass.new(*args)
+  end
+
+  def filter(event, &block)
+    @filter_func.call(event, &block)
+  end
+
+  def output(event)
+    @output_func.call(event)
   end
 end # class Pipeline
