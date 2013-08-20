@@ -129,13 +129,13 @@ nested if you need that.
 
 The syntax is follows:
 
-  if EXPRESSION {
-    ...
-  } else if EXPRESSION {
-    ...
-  } else {
-    ...
-  }
+    if EXPRESSION {
+      ...
+    } else if EXPRESSION {
+      ...
+    } else {
+      ...
+    }
 
 What's an expression? Comparison tests, boolean logic, etc!
 
