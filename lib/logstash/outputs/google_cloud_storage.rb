@@ -39,6 +39,7 @@ require "zlib"
 #    google_cloud_storage {
 #      bucket => "my_bucket"                                     (required)
 #      key_path => "/path/to/privatekey.p12"                     (required)
+#      key_password => "notasecret"                              (optional)
 #      service_account => "1234@developer.gserviceaccount.com"   (required)
 #      temp_directory => "/tmp/logstash-gcs"                     (optional)
 #      log_file_prefix => "logstash_gcs"                         (optional)
@@ -47,6 +48,7 @@ require "zlib"
 #      date_pattern => "%Y-%m-%dT%H:00"                          (optional)
 #      flush_interval_secs => 2                                  (optional)
 #      gzip => false                                             (optional)
+#      uploader_interval_secs => 60                              (optional)
 #    }
 # }
 #
@@ -67,6 +69,9 @@ class LogStash::Outputs::GoogleCloudStorage < LogStash::Outputs::Base
 
   # GCS path to private key file.
   config :key_path, :validate => :string, :required => true
+
+  # GCS private key password.
+  config :key_password, :validate => :string, :default => "notasecret"
 
   # GCS service account.
   config :service_account, :validate => :string, :required => true
@@ -90,11 +95,16 @@ class LogStash::Outputs::GoogleCloudStorage < LogStash::Outputs::Base
   config :date_pattern, :validate => :string, :default => "%Y-%m-%dT%H:00"
 
   # Flush interval in seconds for flushing writes to log files. 0 will flush
-  # on every meesage.
+  # on every message.
   config :flush_interval_secs, :validate => :number, :default => 2
 
   # Gzip output stream when writing events to log files.
   config :gzip, :validate => :boolean, :default => false
+
+  # Uploader interval when uploading new files to GCS. Adjust time based
+  # on your time pattern (for example, for hourly files, this interval can be
+  # around one hour).
+  config :uploader_interval_secs, :validate => :number, :default => 60
 
   public
   def register
@@ -185,6 +195,8 @@ class LogStash::Outputs::GoogleCloudStorage < LogStash::Outputs::Base
 
   ##
   # Creates temporary directory, if it does not exist.
+  #
+  # A random suffix is appended to the temporary directory
   def initialize_temp_directory
     if @temp_directory.empty?
       # From:
@@ -221,7 +233,7 @@ class LogStash::Outputs::GoogleCloudStorage < LogStash::Outputs::Base
             @upload_queue << filename
             # If we got here, it means that older files were uploaded, so let's
             # wait another minute before checking on this file again.
-            sleep 60
+            sleep @uploader_interval_secs
             next
           else
             @logger.debug("GCS: flush and close file to be uploaded.",
@@ -236,7 +248,7 @@ class LogStash::Outputs::GoogleCloudStorage < LogStash::Outputs::Base
         @logger.debug("GCS: delete local temporary file ",
                       :filename => filename)
         File.delete(filename)
-        sleep 60
+        sleep @uploader_interval_secs
       end
     end
   end
@@ -347,7 +359,7 @@ class LogStash::Outputs::GoogleCloudStorage < LogStash::Outputs::Base
                                     :application_version => '0.1')
     @storage = @client.discovered_api('storage', 'v1beta1')
 
-    key = Google::APIClient::PKCS12.load_key(@key_path, 'notasecret')
+    key = Google::APIClient::PKCS12.load_key(@key_path, @key_password)
     service_account = Google::APIClient::JWTAsserter.new(@service_account,
                                                          'https://www.googleapis.com/auth/devstorage.read_write',
                                                          key)
