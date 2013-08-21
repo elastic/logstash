@@ -10,6 +10,8 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
   config_name "stdin"
   milestone 3
 
+  default :codec, "line"
+
   public
   def register
     @host = Socket.gethostname

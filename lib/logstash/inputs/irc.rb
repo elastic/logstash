@@ -9,6 +9,8 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
   config_name "irc"
   milestone 1
 
+  default :codec, "plain"
+
   # Host of the IRC Server to connect to.
   config :host, :validate => :string, :required => true
 

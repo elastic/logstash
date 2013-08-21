@@ -14,6 +14,8 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
 
   config_name "exec"
   milestone 2
+
+  default :codec, "plain"
   
   # Set this to true to enable debugging on an input.
   config :debug, :validate => :boolean, :default => false

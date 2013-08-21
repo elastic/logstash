@@ -9,6 +9,8 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
   config_name "udp"
   milestone 2
 
+  default :codec, "plain"
+
   # The address to listen on
   config :host, :validate => :string, :default => "0.0.0.0"
 

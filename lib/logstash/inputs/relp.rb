@@ -20,6 +20,8 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
   config_name "relp"
   milestone 1
 
+  default :codec, "plain"
+
   # The address to listen on.
   config :host, :validate => :string, :default => "0.0.0.0"
 

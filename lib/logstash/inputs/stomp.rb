@@ -6,6 +6,8 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   config_name "stomp"
   milestone 2
 
+  default :codec, "plain"
+
   # The address of the STOMP server.
   config :host, :validate => :string, :default => "localhost", :required => true
 
