@@ -43,7 +43,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # or in another character set other than UTF-8.
   #
   # This only affects "plain" format logs since json is UTF-8 already.
-  config :charset, :validate => ::Encoding.name_list, :default => "UTF-8"
+  config :charset, :validate => ::Encoding.name_list, :deprecated => true
 
   # If format is "json", an event sprintf string to build what
   # the display @message should be given (defaults to the raw JSON).
@@ -71,6 +71,16 @@ class LogStash::Inputs::Base < LogStash::Plugin
     @threadable = false
     config_init(params)
     @tags ||= []
+
+    if @charset && @codec.class.get_config.include?("charset")
+      # charset is deprecated on inputs, but provide backwards compatibility
+      # by copying the charset setting into the codec.
+
+      @logger.warn("Copying input's charset setting into codec", :input => self, :codec => @codec)
+      charset = @charset
+      @codec.instance_eval { @charset = charset }
+    end
+
   end # def initialize
 
   public
