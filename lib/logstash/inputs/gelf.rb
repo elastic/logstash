@@ -14,6 +14,8 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   config_name "gelf"
   milestone 2
 
+  default :codec, "plain"
+
   # The address to listen on
   config :host, :validate => :string, :default => "0.0.0.0"
 
@@ -38,10 +40,6 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   def initialize(params)
     super
     BasicSocket.do_not_reverse_lookup = true
-
-    # nothing else makes sense here
-    # gelf messages ARE json
-    @format = "json"
   end # def initialize
 
   public
