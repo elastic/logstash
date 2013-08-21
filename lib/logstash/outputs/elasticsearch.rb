@@ -87,6 +87,11 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # The amount of time since last flush before a flush is forced.
   config :idle_flush_time, :validate => :number, :default => 1
 
+  # Drop events that fail to index after they fail repeatedly.
+  # This option is useful if you can tolerate some data loss and prefer it
+  # to indexing getting stuck when a single item fails to index.
+  config :drop_on_repeated_failure, :validate => :boolean, :default => false
+
   public
   def register
     # TODO(sissel): find a better way of declaring where the elasticsearch
@@ -155,26 +160,63 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   end # def receive
 
   def flush(events, teardown=false)
-    request = @client.bulk
-    events.each do |event, index, type|
-      index = event.sprintf(@index)
+    with_bisect_and_retry_on_error(events) do |events|
+      request = @client.bulk
+      events.each do |event, index, type|
+        index = event.sprintf(@index)
 
-      # Set the 'type' value for the index.
-      if @index_type.nil?
-        type =  event["type"] || "logs"
-      else
-        type = event.sprintf(@index_type)
+        # Set the 'type' value for the index.
+        if @index_type.nil?
+          type =  event["type"] || "logs"
+        else
+          type = event.sprintf(@index_type)
+        end
+
+        if @document_id
+          request.index(index, type, event.sprintf(@document_id), event.to_json)
+        else
+          request.index(index, type, nil, event.to_json)
+        end
       end
 
-      if @document_id
-        request.index(index, type, event.sprintf(@document_id), event.to_json)
-      else
-        request.index(index, type, nil, event.to_json)
+      request.on(:success) { }
+      request.execute
+    end
+  end # def flush
+
+  private
+
+  # The underlying Stud::Buffer doesn't handle failures smartly; when an
+  # exception is raised from #flush, it will sleep for one second and blindly
+  # retry, infinitely.
+  # This method allows us to bisect the chunk we're working with into smaller
+  # bits, eventually isolating the failing event and dropping it after multiple
+  # retry attempts.
+  def with_bisect_and_retry_on_error(events, &block)
+    yield(events)
+  rescue #TODO: be specific in what gets rescued.
+    raise unless @drop_on_repeated_failure
+    if events.size == 1
+      attempts_remaining = 3
+      begin
+        attempts_remaining -= 1
+        yield(events)
+      rescue
+        message = "Flushing event failed (#{idx}) time(s): #{e.inspect}"
+        if attempts_remaining.zero?
+          @logger.error "#{message}. Dropping event <#{events.first.inspect}>"
+        else
+          @logger.warn message
+          sleep 1
+          retry
+        end
+      end
+    else
+      @logger.warn "Buffer flush of (#{events.size}) failed; splitting."
+      events.each_slice(Rational(events.size, 2).ceil) do |subevents|
+        with_bisect_and_retry_on_error(subevents, &block)
       end
     end
-
-    request.on(:success) { }
-    request.execute
-  end # def flush
+  end # def with_bisect_and_retry_on_error
 
 end # class LogStash::Outputs::Elasticsearch
