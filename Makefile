@@ -262,8 +262,8 @@ update-flatjar: copy-ruby-files compile build/ruby/logstash/runner.class
 
 .PHONY: test
 test: | $(JRUBY) vendor-elasticsearch
-	@#$(JRUBY_CMD) bin/logstash test
-	GEM_HOME= GEM_PATH= bin/logstash rspec $(TESTS)
+	GEM_HOME= GEM_PATH= bin/logstash rspec --order rand --fail-fast $(TESTS)
+
 
 .PHONY: docs
 docs: docgen doccopy docindex
