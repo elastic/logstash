@@ -52,14 +52,6 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
   config :serialization, :validate => :string, :default => nil
 
   public
-  def initialize(params)
-    super
-
-    @format ||= "plain"
-
-  end # def initialize
-
-  public
   def register
     import com.gemstone.gemfire.cache.AttributesMutator
     import com.gemstone.gemfire.cache.InterestResultPolicy
@@ -148,9 +140,9 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
 
   def process_event(event, event_name, source)
     message = deserialize_message(event)
-    e = to_event(message, source)
-    if e
-      @logstash_queue << e
+    @codec.decode(message) do |event|
+      event["source"] = source
+      @logstash_queue << event
     end
   end
 

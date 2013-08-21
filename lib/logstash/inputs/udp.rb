@@ -55,13 +55,13 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
     @udp.bind(@host, @port)
 
     loop do
-      line, client = @udp.recvfrom(@buffer_size)
+      payload, client = @udp.recvfrom(@buffer_size)
       # Ruby uri sucks, so don't use it.
       source = "udp://#{client[3]}:#{client[1]}/"
 
-      e = to_event(line, source)
-      if e
-        output_queue << e
+      @codec.decode(payload) do |event|
+        event["source"] = "#{client[3]}:#{client[1]}"
+        output_queue << event
       end
     end
   ensure

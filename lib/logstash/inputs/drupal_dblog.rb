@@ -319,9 +319,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
       "message" => msg
     }.merge(row)
 
-    event = to_event(JSON.dump(entry), @sitename)
-
-    return event
+    return LogStash::Event.new(entry)
   end # def build_event
 
 end # class LogStash::Inputs::DrupalDblog

@@ -131,8 +131,9 @@ EOF
   private
   def queue_event(msg, output_queue)
     begin
-      event = to_event msg, identity
-      output_queue << event if event
+      @codec.decode(msg) do |event|
+        output_queue << event
+      end
     rescue => e # parse or event creation error
       @logger.error("Failed to create event", :message => msg, :exception => e,
                     :backtrace => e.backtrace);

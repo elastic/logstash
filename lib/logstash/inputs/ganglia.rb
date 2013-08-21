@@ -71,7 +71,7 @@ class LogStash::Inputs::Ganglia < LogStash::Inputs::Base
       # Ruby uri sucks, so don't use it.
       source = "ganglia://#{client[3]}/"
 
-      e = packet_to_event(packet,source)
+      e = parse_packet(packet,source)
       unless e.nil?
         output_queue << e
       end
@@ -99,7 +99,7 @@ class LogStash::Inputs::Ganglia < LogStash::Inputs::Base
   end
 
   public
-  def packet_to_event(packet,source)
+  def parse_packet(packet,source)
 
     gmonpacket=GmonPacket.new(packet)
     if gmonpacket.meta?
@@ -115,26 +115,22 @@ class LogStash::Inputs::Ganglia < LogStash::Inputs::Base
       data=gmonpacket.parse_data(@metadata)
 
       # Check if it was a valid data request
-      unless data.nil?
+      return nil unless data
 
-        event=LogStash::Event.new
-        #event['@timestamp'] = Time.now.to_i
-        event.source = source
-        event.type = @config["type"]
+      event=LogStash::Event.new
+      #event['@timestamp'] = Time.now.to_i
+      event["source"] = source
+      event["type"] = @type
 
-        data['program'] = "ganglia"
-        event['@fields'] = data
-        event['@fields']['log_host'] =  data['hostname']
-        %w{dmax tmax slope type units}.each do |info|
-          event.fields[info] = @metadata[data['name']][info]
-        end
-        return event
+      data["program"] = "ganglia"
+      event["log_host"] = data["hostname"]
+      %w{dmax tmax slope type units}.each do |info|
+        event[info] = @metadata[data["name"]][info]
       end
+      return event
     else
       # Skipping unknown packet types
       return nil
     end
-
-
-  end # def packet_to_event
+  end # def parse_packet
 end # class LogStash::Inputs::Ganglia

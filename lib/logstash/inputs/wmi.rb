@@ -50,13 +50,14 @@ class LogStash::Inputs::WMI < LogStash::Inputs::Base
     begin
       @logger.debug("Executing WMI query '#{@query}'")
       loop do
-        @wmi.ExecQuery(@query).each do |event|
+        @wmi.ExecQuery(@query).each do |wmiobj|
           # create a single event for all properties in the collection
-          e = to_event("", "wmi://#{@host}/#{@query}")
-          event.Properties_.each do |prop|
-            e[prop.name] = prop.value
+          event = LogStash::Event.new
+          event["source"] = @host
+          wmiobj.Properties_.each do |prop|
+            event[prop.name] = prop.value
           end
-          queue << e
+          queue << event
         end
         sleep @interval
       end # loop
