@@ -68,7 +68,7 @@ describe LogStash::Event do
 
     end
 
-    it "should be fast?" do
+    it "should be fast?", :if => ENV["SPEEDTEST"] do
       2.times do
         start = Time.now
         100000.times { subject["[j][k1]"] }
