@@ -5,23 +5,21 @@ def populate(key, event_count)
   require "logstash/event"
   redis = Redis.new(:host => "localhost")
   event_count.times do |value|
-    event = LogStash::Event.new("@fields" => { "sequence" => value })
+    event = LogStash::Event.new("sequence" => value)
     Stud::try(10.times) do
       redis.rpush(key, event.to_json)
     end
   end
 end
 
-def process(plugins, event_count)
+def process(pipeline, queue, event_count)
   sequence = 0
-  redis = plugins.first
-  output = Shiftback.new do |event|
-    insist { event["sequence"] } == sequence
-    sequence += 1
-    redis.teardown if sequence == event_count
+  Thread.new { pipeline.run }
+  event_count.times do |i|
+    event = queue.pop
+    insist { event["sequence"] } == i
   end
-  redis.register
-  redis.run(output)
+  pipeline.shutdown
 end # process
 
 describe "inputs/redis" do
@@ -36,13 +34,13 @@ describe "inputs/redis" do
           type => "blah"
           key => "#{key}"
           data_type => "list"
-          format => json_event
         }
       }
     CONFIG
 
     before(:each) { populate(key, event_count) }
-    input { |plugins| process(plugins, event_count) }
+
+    input { |pipeline, queue| process(pipeline, queue, event_count) }
   end
 
   describe "read events from a list with batch_count=5" do
@@ -55,12 +53,11 @@ describe "inputs/redis" do
           key => "#{key}"
           data_type => "list"
           batch_count => #{rand(20)+1}
-          format => json_event
         }
       }
     CONFIG
 
     before(:each) { populate(key, event_count) }
-    input { |plugins| process(plugins, event_count) }
+    input { |pipeline, queue| process(pipeline, queue, event_count) }
   end
 end
