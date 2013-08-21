@@ -71,7 +71,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
       return
     end
  
-    host = event.fields["zabbix_host"]
+    host = event["zabbix_host"]
     if !host
       @logger.warn("Skipping zabbix output; zabbix_host field is missing",
                    :missed_event => event)
@@ -79,7 +79,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
     end
     host = host.first if host.is_a?(Array)
  
-    item = event.fields["zabbix_item"]
+    item = event["zabbix_item"]
     if !item
       @logger.warn("Skipping zabbix output; zabbix_item field is missing",
                    :missed_event => event)

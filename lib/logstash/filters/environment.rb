@@ -19,7 +19,7 @@ class LogStash::Filters::Environment < LogStash::Filters::Base
   def filter(event)
     return unless filter?(event)
     @add_field_from_env.each do |field, env|
-      event.fields[field] = ENV[env]
+      event[field] = ENV[env]
     end
     filter_matched(event)
   end # def filter

@@ -70,12 +70,12 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    arn     = Array(event.fields["sns"]).first || @arn
+    arn     = Array(event["sns"]).first || @arn
 
     raise "An SNS ARN required." unless arn
 
-    message = Array(event.fields["sns_message"]).first
-    subject = Array(event.fields["sns_subject"]).first || event.source
+    message = Array(event["sns_message"]).first
+    subject = Array(event["sns_subject"]).first || event.source
 
     # Ensure message doesn't exceed the maximum size.
     if message
@@ -111,11 +111,11 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
   end
 
   def self.format_message(event)
-    message =  "Date: #{event.timestamp}\n"
-    message << "Source: #{event.source}\n"
-    message << "Tags: #{event.tags.join(', ')}\n"
-    message << "Fields: #{event.fields.inspect}\n"
-    message << "Message: #{event.message}"
+    message =  "Date: #{event["@timestamp"]}\n"
+    message << "Source: #{event["source"]}\n"
+    message << "Tags: #{event["tags"].join(', ')}\n"
+    message << "Fields: #{event.to_hash.inspect}\n"
+    message << "Message: #{event["message"]}"
 
     # TODO: Utilize `byteslice` in JRuby 1.7: http://jira.codehaus.org/browse/JRUBY-5547
     message.slice(0, MAX_MESSAGE_SIZE_IN_BYTES)
