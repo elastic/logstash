@@ -22,7 +22,12 @@ class LogStash::Pipeline
     # The config code is hard to represent as a log message...
     # So just print it.
     @logger.debug? && @logger.debug("Compiled pipeline code:\n#{code}")
-    eval(code)
+    begin
+      eval(code)
+    rescue => e
+      p e.backtrace[1]
+      raise
+    end
 
     @input_to_filter = SizedQueue.new(20)
 
@@ -149,7 +154,8 @@ class LogStash::Pipeline
     rescue => e
       if @logger.debug?
         @logger.error(I18n.t("logstash.pipeline.worker-error-debug",
-                             :plugin => plugin.inspect, :error => e,
+                             :plugin => plugin.inspect, :error => e.to_s,
+                             :exception => e.class,
                              :stacktrace => e.backtrace.join("\n")))
       else
         @logger.error(I18n.t("logstash.pipeline.worker-error",
