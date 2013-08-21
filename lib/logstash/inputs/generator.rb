@@ -11,6 +11,8 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   config_name "generator"
   milestone 3
 
+  default :codec, "plain"
+
   # The message string to use in the event.
   #
   # If you set this to 'stdin' then this plugin will read a single line from
@@ -53,7 +55,6 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   end # def register
 
   def run(queue)
-
     number = 0
     source = "generator://#{@host}/"
 
