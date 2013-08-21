@@ -60,8 +60,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
     @date_filter = LogStash::Filters::Date.new({
       "type"          => [@config["type"]],
-      "timestamp"     => ["MMM  d HH:mm:ss", "MMM dd HH:mm:ss"],
-      "timestamp8601" => ["ISO8601"],
+      "match" => [ "timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss", "ISO8601"]
     })
 
     @grok_filter.register
@@ -210,10 +209,11 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       priority = event.fields["priority"].first.to_i rescue 13
       severity = priority & 7   # 7 is 111 (3 bits)
       facility = priority >> 3
-      event.fields["priority"] = priority
-      event.fields["severity"] = severity
-      event.fields["facility"] = facility
+      event["priority"] = priority
+      event["severity"] = severity
+      event["facility"] = facility
 
+      event["timestamp"] = event["timestamp8601"] if event.include?("timestamp8601")
       @date_filter.filter(event)
     else
       @logger.info("NOT SYSLOG", :message => event.message)
