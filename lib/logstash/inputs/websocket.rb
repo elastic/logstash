@@ -7,6 +7,8 @@ class LogStash::Inputs::Websocket < LogStash::Inputs::Base
   config_name "websocket"
   milestone 1
 
+  default :codec, "json"
+
   # The url to connect to or serve from
   config :url, :validate => :string, :default => "0.0.0.0"
 
@@ -21,7 +23,6 @@ class LogStash::Inputs::Websocket < LogStash::Inputs::Base
   config :mode, :validate => [ "server", "client" ], :default => "client"
 
   def register
-    @format ||= "json_event"
     require "ftw"
   end # def register
 

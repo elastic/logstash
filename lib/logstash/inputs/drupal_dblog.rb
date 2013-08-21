@@ -17,6 +17,8 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
   config_name "drupal_dblog"
   milestone 1
 
+  default :codec, "plain"
+
   # Specify all drupal databases that you whish to import from.
   # This can be as many as you whish.
   # The format is a hash, with a unique site name as the key, and a databse
@@ -52,12 +54,6 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
   # The type is also stored as part of the event itself, so you
   # can also use the type to search for in the web interface.
   config :type, :validate => :string, :default => 'watchdog'
-
-  public
-  def initialize(params)
-    super
-    @format = "json_event"
-  end # def initialize
 
   public
   def register

@@ -60,6 +60,8 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   config_name "sqs"
   milestone 1
 
+  default :codec, "json"
+
   # Name of the SQS Queue name to pull messages from. Note that this is just the name of the queue, not the URL or ARN.
   config :queue, :validate => :string, :required => true
 
@@ -78,11 +80,6 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
         :sqs_endpoint => "sqs.#{region}.amazonaws.com"
     }
   end
-
-  def initialize(params)
-    super
-    @format ||= "json_event"
-  end # def initialize
 
   public
   def register

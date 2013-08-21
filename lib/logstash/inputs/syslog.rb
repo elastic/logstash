@@ -22,6 +22,8 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   config_name "syslog"
   milestone 1
 
+  default :codec, "plain"
+
   # The address to listen on
   config :host, :validate => :string, :default => "0.0.0.0"
 
@@ -45,9 +47,6 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     super
     @shutdown_requested = false
     BasicSocket.do_not_reverse_lookup = true
-
-    # force "plain" format. others don't make sense here.
-    @format = "plain"
   end # def initialize
 
   public
