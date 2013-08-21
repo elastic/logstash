@@ -159,6 +159,10 @@ class LogStash::Runner
         IRB.start(__FILE__)
         return []
       end,
+      "ruby" => lambda do
+        require(args[0])
+        return []
+      end,
       "pry" => lambda do
         require "pry"
         return binding.pry
