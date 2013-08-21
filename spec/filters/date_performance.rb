@@ -2,10 +2,10 @@ require "test_utils"
 require "logstash/filters/date"
 
 puts "Skipping date tests because this ruby is not jruby" if RUBY_ENGINE != "jruby"
-RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
+describe LogStash::Filters::Date, :if => RUBY_ENGINE == "jruby" do
   extend LogStash::RSpec
 
-  describe "performance test of java syntax parsing" do
+  describe "performance test of java syntax parsing", :if => ENV["SPEEDTEST"] do
 
     event_count = 100000
     min_rate = 4000

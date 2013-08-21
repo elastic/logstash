@@ -102,7 +102,7 @@ describe LogStash::Filters::KV do
 
   end
 
-  describe "speed test" do
+  describe "speed test", :if => ENV["SPEEDTEST"] do
     count = 10000 + rand(3000)
     config <<-CONFIG
       input {
