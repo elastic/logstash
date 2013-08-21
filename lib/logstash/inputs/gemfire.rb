@@ -16,6 +16,8 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
   config_name "gemfire"
   milestone 1
 
+  default :codec, "plain"
+
   # Your client cache name
   config :cache_name, :validate => :string, :default => "logstash"
 

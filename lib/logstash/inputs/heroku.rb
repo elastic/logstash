@@ -18,6 +18,8 @@ class LogStash::Inputs::Heroku < LogStash::Inputs::Base
   config_name "heroku"
   milestone 1
 
+  default :codec, "plain"
+
   # The name of your heroku application. This is usually the first part of the 
   # the domain name 'my-app-name.herokuapp.com'
   config :app, :validate => :string, :required => true

@@ -13,6 +13,9 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   config_name "tcp"
   milestone 2
 
+  # XXX Refactor this to use the 'line' codec by default.
+  default :codec => "plain"
+
   # When mode is `server`, the address to listen on.
   # When mode is `client`, the address to connect to.
   config :host, :validate => :string, :default => "0.0.0.0"

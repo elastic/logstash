@@ -11,6 +11,10 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
   config_name "pipe"
   milestone 1
 
+  # TODO(sissel): This should switch to use the 'line' codec by default
+  # once we switch away from doing 'readline'
+  default :codec, "plain"
+
   # Command to run and read events from, one line at a time.
   #
   # Example:
