@@ -141,9 +141,9 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
           msg = m2
         end
         @sender ||= "zmq+#{@topology}://#{host}/#{@type}"
-        e = self.to_event(msg, @sender)
-        if e
-          output_queue << e
+
+        @codec.decode(msg) do |event|
+          output_queue << event
         end
       end
     rescue => e

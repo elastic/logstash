@@ -54,29 +54,28 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
       ois = JRubyObjectInputStream.new(java.io.BufferedInputStream.new(socket.to_inputstream))
       loop do
         # NOTE: event_raw is org.apache.log4j.spi.LoggingEvent
-        event_obj = ois.readObject()
-        e = to_event(event_obj.getRenderedMessage(), event_source)
-        e.source_host = socket.peer
-        e.source_path = event_obj.getLoggerName()
-        e["priority"] = event_obj.getLevel().toString()
-        e["logger_name"] = event_obj.getLoggerName()
-        e["thread"] = event_obj.getThreadName()
-        e["class"] = event_obj.getLocationInformation().getClassName()
-        e["file"] = event_obj.getLocationInformation().getFileName() + ":" + event_obj.getLocationInformation().getLineNumber(),
-        e["method"] = event_obj.getLocationInformation().getMethodName()
-        e["NDC"] = event_obj.getNDC() if event_obj.getNDC()
-        e["stack_trace"] = event_obj.getThrowableStrRep().to_a.join("\n") if event_obj.getThrowableInformation()
+        log4j_obj = ois.readObject
+        event = LogStash::Event.new("message" => log4j_obj.getRenderedMessage,
+                                    "source" => event_source)
+        event["source_host"] = socket.peer
+        event["source_path"] = log4j_obj.getLoggerName
+        event["priority"] = log4j_obj.getLevel.toString
+        event["logger_name"] = log4j_obj.getLoggerName
+        event["thread"] = log4j_obj.getThreadName
+        event["class"] = log4j_obj.getLocationInformation.getClassName
+        event["file"] = log4j_obj.getLocationInformation.getFileName + ":" + log4j_obj.getLocationInformation.getLineNumber,
+        event["method"] = log4j_obj.getLocationInformation.getMethodName
+        event["NDC"] = log4j_obj.getNDC if log4j_obj.getNDC
+        event["stack_trace"] = log4j_obj.getThrowableStrRep.to_a.join("\n") if log4j_obj.getThrowableInformation
         
         # Add the MDC context properties to '@fields'
-        if event_obj.getProperties()
-          event_obj.getPropertyKeySet().each do |key|
-            e[key] = event_obj.getProperty(key)
+        if log4j_obj.getProperties
+          log4j_obj.getPropertyKeySet.each do |key|
+            event[key] = log4j_obj.getProperty(key)
           end  
         end  
 
-        if e
-          output_queue << e
-        end
+        output_queue << e
       end # loop do
     rescue => e
       @logger.debug("Closing connection", :client => socket.peer,

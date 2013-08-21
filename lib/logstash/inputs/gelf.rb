@@ -88,11 +88,10 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
       # The nil guard is needed to deal with chunked messages.
       # Gelfd::Parser.parse will only return the message when all chunks are
       # completed
-      e = to_event(data, source) unless data.nil?
-      if e
-        remap_gelf(e) if @remap
-        output_queue << e
-      end
+      event = LogStash::Event.new(data)
+      event["source"] = client[3]
+      remap_gelf(event) if @remap
+      output_queue << event
     end
   ensure
     if @udp

@@ -33,8 +33,9 @@ class LogStash::Inputs::Websocket < LogStash::Inputs::Base
     begin
       websocket = agent.websocket!(@url)
       websocket.each do |payload|
-        event = to_event(payload, @url)
-        output_queue << event
+        @codec.decode(payload) do |event|
+          output_queue << event
+        end
       end
     rescue => e
       @logger.warn("websocket input client threw exception, restarting",

@@ -76,8 +76,8 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
             buf = readline(socket)
           end
         end
-        e = self.to_event(buf, event_source)
-        if e
+        @codec.decode(buf) do |event|
+          event["source"] = event_source
           output_queue << e
         end
       end # loop do

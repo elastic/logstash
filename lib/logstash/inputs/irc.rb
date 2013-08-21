@@ -73,10 +73,12 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
     loop do
       msg = @irc_queue.pop
       if msg.user
-        event = self.to_event(msg.message, "irc://#{@host}:#{@port}/#{msg.channel}")
-        event["channel"] = msg.channel
-        event["nick"] = msg.user.nick
-        output_queue << event
+        @codec.decode(msg.message) do |event|
+          event["channel"] = msg.channel
+          event["nick"] = msg.user.nick
+          event["server"] = "#{@host}:#{@port}"
+          output_queue << event
+        end
       end
     end
   end # def run
