@@ -81,6 +81,13 @@ class LogStash::Inputs::Base < LogStash::Plugin
       @codec.instance_eval { @charset = charset }
     end
 
+    # Backwards compat for the 'format' setting
+    case @format
+      when "plain"; # do nothing
+      when "json"; @codec = LogStash::Codecs::JSON.new
+      when "json_event"; @codec = LogStash::Codecs::OldLogStashJSON.new
+    end
+
   end # def initialize
 
   public
