@@ -38,40 +38,10 @@ describe LogStash::Outputs::Redis do
         id, element = redis.blpop(key, 0)
         event = LogStash::Event.new(JSON.parse(element))
         insist { event["sequence"] } == value
-        insist { event.message } == "hello world"
-        insist { event.type } == "generator"
+        insist { event["message"] } == "hello world"
       end
 
       # The list should now be empty
-      insist { redis.llen(key) } == 0
-    end # agent
-  end
-
-  describe "skips a message which can't be encoded as json" do
-    key = 10.times.collect { rand(10).to_s }.join("")
-
-    config <<-CONFIG
-      input {
-        generator {
-          message => "\xAD\u0000"
-          count => 1
-          type => "generator"
-        }
-      }
-      output {
-        redis {
-          host => "127.0.0.1"
-          key => "#{key}"
-          data_type => list
-        }
-      }
-    CONFIG
-
-    agent do
-      # Query redis directly and inspect the goodness.
-      redis = Redis.new(:host => "127.0.0.1")
-
-      # The list should contain no elements.
       insist { redis.llen(key) } == 0
     end # agent
   end
@@ -116,8 +86,7 @@ describe LogStash::Outputs::Redis do
         id, element = redis.blpop(key, 0)
         event = LogStash::Event.new(JSON.parse(element))
         insist { event["sequence"] } == value
-        insist { event.message } == "hello world"
-        insist { event.type } == "generator"
+        insist { event["message"] } == "hello world"
       end
 
       # The list should now be empty

@@ -13,6 +13,10 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   config_name "s3"
   milestone 1
 
+  # TODO(sissel): refactor to use 'line' codec (requires removing both gzip
+  # support and readline usage). Support gzip through a gzip codec! ;)
+  default :codec, "plain"
+
   # The credentials of the AWS account used to access the bucket.
   # Credentials can be specified:
   # - As an ["id","secret"] array

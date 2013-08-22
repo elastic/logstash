@@ -128,8 +128,8 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     m = Hash.new
 
     m["short_message"] = event.message
-    if event.fields[@short_message]
-      v = event.fields[@short_message]
+    if event[@short_message]
+      v = event[@short_message]
       short_message = (v.is_a?(Array) && v.length == 1) ? v.first : v
       short_message = short_message.to_s
       if !short_message.empty?
@@ -145,7 +145,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     m["line"] = m["line"].to_i if m["line"].is_a?(String) and m["line"] === /^[\d]+$/
 
     if @ship_metadata
-      event.fields.each do |name, value|
+      event.to_hash.each do |name, value|
         next if value == nil
 
         # Trim leading '_' in the event

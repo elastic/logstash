@@ -70,12 +70,12 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
 
     @snmptrap.on_trap_default do |trap|
       begin
-        event = to_event(trap.inspect, trap.source_ip)
+        event = LogStash::Event.new("message" => trap.inspect, "source" => trap.source_ip)
         trap.each_varbind do |vb|
           event[vb.name.to_s] = vb.value.to_s
         end
         @logger.debug("SNMP Trap received: ", :trap_object => trap.inspect)
-        output_queue << event if event
+        output_queue << event
       rescue => event
         @logger.error("Failed to create event", :trap_object => trap.inspect)
       end

@@ -11,6 +11,8 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
   config_name "xmpp"
   milestone 2
 
+  default :codec, "plain"
+
   # The user or resource ID, like foo@example.com.
   config :user, :validate => :string, :required => :true
 
@@ -50,8 +52,11 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
         @muc = Jabber::MUC::SimpleMUCClient.new(@client)
         @muc.join(room)
         @muc.on_message do |time,from,body|
-          e = to_event(body, "#{room}/#{from}")
-          queue << e if e
+          @codec.decode(body) do |event|
+            event["room"] = room
+            event["from"] = from
+            queue << event
+          end
         end # @muc.on_message
       end # @rooms.each
     end # if @rooms
@@ -61,8 +66,10 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
 
       # accept normal msgs (skip presence updates, etc)
       if msg.body != nil
-        e = to_event(msg.body, source)
-        queue << e
+        @codec.decode(msg.body) do |event|
+          event["from"] = "#{msg.from.node}@#{msg.from.domain}/#{msg.from.resource}"
+          queue << event
+        end
       end
     end # @client.add_message_callback
     sleep

@@ -71,6 +71,11 @@ module LogStash::Config::Mixin
             params[name.to_s] = opts[:default].clone
         end
       end
+
+      # Allow plugins to override default values of config settings
+      if self.class.default?(name)
+        params[name.to_s] = self.class.get_default(name)
+      end
     end
 
     if !self.class.validate(params)
@@ -124,19 +129,22 @@ module LogStash::Config::Mixin
       end
     end # def config
 
+    def default(name, value)
+      @defaults ||= {}
+      @defaults[name.to_s] = value
+    end
+
     def get_config
       return @config
     end # def get_config
 
-    # Define a flag 
-    def flag(*args, &block)
-      @flags ||= []
+    def get_default(name)
+      return @defaults && @defaults[name]
+    end
 
-      @flags << {
-        :args => args,
-        :block => block
-      }
-    end # def flag
+    def default?(name)
+      return @defaults && @defaults.include?(name)
+    end
 
     def options(opts)
       # add any options from this class

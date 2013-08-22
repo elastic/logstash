@@ -15,6 +15,10 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   config_name "file"
   milestone 2
 
+  # TODO(sissel): This should switch to use the 'line' codec by default
+  # once file following
+  default :codec, "plain"
+
   # The path to the file to use as an input.
   # You can use globs here, such as `/var/log/*.log`
   # Paths must be absolute and cannot be relative.

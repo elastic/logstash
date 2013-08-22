@@ -7,6 +7,8 @@ class LogStash::Inputs::Websocket < LogStash::Inputs::Base
   config_name "websocket"
   milestone 1
 
+  default :codec, "json"
+
   # The url to connect to or serve from
   config :url, :validate => :string, :default => "0.0.0.0"
 
@@ -21,7 +23,6 @@ class LogStash::Inputs::Websocket < LogStash::Inputs::Base
   config :mode, :validate => [ "server", "client" ], :default => "client"
 
   def register
-    @format ||= "json_event"
     require "ftw"
   end # def register
 
@@ -33,8 +34,9 @@ class LogStash::Inputs::Websocket < LogStash::Inputs::Base
     begin
       websocket = agent.websocket!(@url)
       websocket.each do |payload|
-        event = to_event(payload, @url)
-        output_queue << event
+        @codec.decode(payload) do |event|
+          output_queue << event
+        end
       end
     rescue => e
       @logger.warn("websocket input client threw exception, restarting",
