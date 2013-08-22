@@ -26,6 +26,7 @@ en:
         A plugin had an unrecoverable error. Will restart this plugin.
           Plugin: %{plugin}
           Error: %{error}
+          Exception: %{exception}
           Stack: %{stacktrace}
       plugin-loading-error: >-
         Couldn't find any %{type} plugin named '%{name}'. Are you 

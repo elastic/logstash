@@ -12,6 +12,8 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
   config_name "unix"
   milestone 2
 
+  default :codec, "line"
+
   # When mode is `server`, the path to listen on.
   # When mode is `client`, the path to connect to.
   config :path, :validate => :string, :required => true
@@ -70,14 +72,14 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
         # or socket dies
         # TODO(sissel): Why do we have a timeout here? What's the point?
         if @data_timeout == -1
-          buf = readline(socket)
+          buf = socket.readpartial(16384
         else
           Timeout::timeout(@data_timeout) do
-            buf = readline(socket)
+            buf = socket.readpartial(16384)
           end
         end
-        e = self.to_event(buf, event_source)
-        if e
+        @codec.decode(buf) do |event|
+          event["source"] = event_source
           output_queue << e
         end
       end # loop do
@@ -101,11 +103,6 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
   def server?
     @mode == "server"
   end # def server?
-
-  private
-  def readline(socket)
-    line = socket.readline
-  end # def readline
 
   public
   def run(output_queue)

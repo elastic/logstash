@@ -6,6 +6,8 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   config_name "stomp"
   milestone 2
 
+  default :codec, "plain"
+
   # The address of the STOMP server.
   config :host, :validate => :string, :default => "localhost", :required => true
 
@@ -59,8 +61,9 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   private
   def subscription_handler
     @client.subscribe(@destination) do |msg|
-      e = to_event(msg.body, @stomp_url)
-      @output_queue << e if e
+      @codec.decode(msg.body) do |event|
+        @output_queue << event
+      end
     end
     #In the event that there is only Stomp input plugin instances
     #the process ends prematurely. The above code runs, and return

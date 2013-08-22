@@ -60,6 +60,8 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   config_name "sqs"
   milestone 1
 
+  default :codec, "json"
+
   # Name of the SQS Queue name to pull messages from. Note that this is just the name of the queue, not the URL or ARN.
   config :queue, :validate => :string, :required => true
 
@@ -78,11 +80,6 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
         :sqs_endpoint => "sqs.#{region}.amazonaws.com"
     }
   end
-
-  def initialize(params)
-    super
-    @format ||= "json_event"
-  end # def initialize
 
   public
   def register
@@ -116,21 +113,21 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
       continue_polling = run_with_backoff(60, 1) do
         @sqs_queue.receive_message(receive_opts) do |message|
           if message
-            e = to_event(message.body, @sqs_queue)
-            if e
+            @codec.decode(message.body) do |event|
+              event["source"] = @sqs_queue
               if @id_field
-                e[@id_field] = message.id
+                event[@id_field] = message.id
               end
               if @md5_field
-                e[@md5_field] = message.md5
+                event[@md5_field] = message.md5
               end
               if @sent_timestamp_field
-                e[@sent_timestamp_field] = message.sent_timestamp.utc
+                event[@sent_timestamp_field] = message.sent_timestamp.utc
               end
-              @logger.debug("Processed SQS message", :message_id => message.id, :message_md5 => message.md5, :sent_timestamp => message.sent_timestamp, :queue => @queue)
-              output_queue << e
+              @logger.debug? && @logger.debug("Processed SQS message", :message_id => message.id, :message_md5 => message.md5, :sent_timestamp => message.sent_timestamp, :queue => @queue)
+              output_queue << event
               message.delete
-            end # valid event
+            end # codec.decode
           end # valid SQS message
         end # receive_message
       end # run_with_backoff

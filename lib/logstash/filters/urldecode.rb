@@ -24,8 +24,8 @@ class LogStash::Filters::Urldecode < LogStash::Filters::Base
 
     # If all_fields is true then try to decode them all
     if @all_fields
-      event.fields.each do |name, value|
-        event.fields[name] = urldecode(value)
+      event.to_hash.each do |name, value|
+        event[name] = urldecode(value)
       end
     # Else decode the specified field
     else

@@ -11,6 +11,10 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
   config_name "pipe"
   milestone 1
 
+  # TODO(sissel): This should switch to use the 'line' codec by default
+  # once we switch away from doing 'readline'
+  default :codec, "plain"
+
   # Command to run and read events from, one line at a time.
   #
   # Example:
@@ -32,10 +36,10 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
     @pipe.each do |line|
       line = line.chomp
       source = "pipe://#{hostname}/#{command}"
-      @logger.debug("Received line", :command => command, :line => line)
-      e = to_event(line, source)
-      if e
-        queue << e
+      @logger.debug? && @logger.debug("Received line", :command => command, :line => line)
+      @codec.decode(line) do |event|
+        event["source"] = source
+        queue << event
       end
     end
   end # def run

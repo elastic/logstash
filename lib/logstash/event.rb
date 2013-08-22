@@ -42,8 +42,15 @@ class LogStash::Event
     @cancelled = false
 
     @data = data
-    @data["@timestamp"] = ::Time.now.utc if !@data.include?("@timestamp")
-    @data["@version"] = "1" if !@data.include?("@version")
+    if data.include?("@timestamp")
+      t = data["@timestamp"]
+      if t.is_a?(String)
+        data["@timestamp"] = Time.parse(t).gmtime
+      end
+    else
+      data["@timestamp"] = ::Time.now.utc 
+    end
+    data["@version"] = "1" if !@data.include?("@version")
   end # def initialize
 
   # Add class methods on inclusion.

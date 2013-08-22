@@ -77,33 +77,24 @@ module LogStash
 
     def input(&block)
       it "inputs" do
-        queue = Queue.new
         pipeline = LogStash::Pipeline.new(config)
-        #(class << pipeline; self; end).send(:define_method, :output) do |event|
-          #p :event => event
-          #queue << event
-        #end
-        #p pipeline.method(:output)
+        queue = Queue.new
+        pipeline.instance_eval do 
+          @output_func = lambda { |event| queue << event }
+        end
         block.call(pipeline, queue)
         pipeline.shutdown
       end
     end # def input
 
     def agent(&block)
-      @agent_count ||= 0
       require "logstash/pipeline"
 
-      # scoping is hard, let's go shopping!
-      describe "agent(#{@agent_count}) #{caller[1]}" do
-        before :each do
-          start = ::Time.now
-          pipeline = LogStash::Pipeline.new(config)
-          pipeline.run
-          @duration = ::Time.now - start
-        end
-        it("looks good", &block)
+      it("agent(#{caller[0].gsub(/ .*/, "")}) runs") do
+        pipeline = LogStash::Pipeline.new(config)
+        pipeline.run
+        block.call
       end
-      @agent_count += 1
     end # def agent
 
   end # module RSpec

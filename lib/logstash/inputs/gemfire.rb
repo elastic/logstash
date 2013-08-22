@@ -16,6 +16,8 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
   config_name "gemfire"
   milestone 1
 
+  default :codec, "plain"
+
   # Your client cache name
   config :cache_name, :validate => :string, :default => "logstash"
 
@@ -50,14 +52,6 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
 
   # How the message is serialized in the cache. Can be one of "json" or "plain"; default is plain
   config :serialization, :validate => :string, :default => nil
-
-  public
-  def initialize(params)
-    super
-
-    @format ||= "plain"
-
-  end # def initialize
 
   public
   def register
@@ -148,9 +142,9 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
 
   def process_event(event, event_name, source)
     message = deserialize_message(event)
-    e = to_event(message, source)
-    if e
-      @logstash_queue << e
+    @codec.decode(message) do |event|
+      event["source"] = source
+      @logstash_queue << event
     end
   end
 

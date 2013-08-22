@@ -15,6 +15,8 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   config_name "redis"
   milestone 2
 
+  default :codec, "json"
+
   # Name is used for logging in case there are multiple instances.
   # This feature has no real function and will be removed in future versions.
   config :name, :validate => :string, :default => "default", :deprecated => true
@@ -50,13 +52,6 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
 
   # How many events to return from redis using EVAL
   config :batch_count, :validate => :number, :default => 1
-
-  public
-  def initialize(params)
-    super
-
-    @format ||= "json_event"
-  end # def initialize
 
   public
   def register
@@ -131,8 +126,9 @@ EOF
   private
   def queue_event(msg, output_queue)
     begin
-      event = to_event msg, identity
-      output_queue << event if event
+      @codec.decode(msg) do |event|
+        output_queue << event
+      end
     rescue => e # parse or event creation error
       @logger.error("Failed to create event", :message => msg, :exception => e,
                     :backtrace => e.backtrace);

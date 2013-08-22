@@ -154,14 +154,13 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
           rows = get_n_rows_from_table(@db, table_name, offset, @batch)
           count += rows.count
           rows.each do |row| 
-            e = to_event("", "sqlite://#{@host}/#{@path}")
-
+            event = LogStash::Event.new("host" => @host, "db" => @db)
             # store each column as a field in the event.
             row.each do |column, element|
               next if column == :id
-              e[column.to_s] = element
+              event[column.to_s] = element
             end
-            queue << e
+            queue << event
             @table_data[k][:place] = row[:id]
           end
           # Store the last-seen row in the database
