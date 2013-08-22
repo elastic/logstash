@@ -16,6 +16,8 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   config_name "zeromq"
   milestone 2
 
+  default :codec, "json"
+
   # 0mq socket address to connect or bind
   # Please note that `inproc://` will not work with logstash
   # as each we use a context per thread.
@@ -72,7 +74,6 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   def register
     require "ffi-rzmq"
     require "logstash/util/zeromq"
-    @format ||= "json_event"
     self.class.send(:include, LogStash::Util::ZeroMQ)
 
     case @topology
@@ -141,9 +142,9 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
           msg = m2
         end
         @sender ||= "zmq+#{@topology}://#{host}/#{@type}"
-        e = self.to_event(msg, @sender)
-        if e
-          output_queue << e
+
+        @codec.decode(msg) do |event|
+          output_queue << event
         end
       end
     rescue => e

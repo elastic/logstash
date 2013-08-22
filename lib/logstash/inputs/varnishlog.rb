@@ -26,7 +26,7 @@ class LogStash::Inputs::Varnishlog < LogStash::Inputs::Threadable
   def cb(priv, tag, fd, len, spec, ptr, bitmap)
     begin
       str = ptr.read_string(len)
-      event = to_event(str, @source)
+      event = LogStash::Event.new("message" => str, "source" => @source)
       event["varnish_tag"] = tag
       event["varnish_fd"] = fd
       event["varnish_spec"] = spec

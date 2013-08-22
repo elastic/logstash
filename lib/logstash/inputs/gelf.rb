@@ -14,6 +14,8 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   config_name "gelf"
   milestone 2
 
+  default :codec, "plain"
+
   # The address to listen on
   config :host, :validate => :string, :default => "0.0.0.0"
 
@@ -38,10 +40,6 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   def initialize(params)
     super
     BasicSocket.do_not_reverse_lookup = true
-
-    # nothing else makes sense here
-    # gelf messages ARE json
-    @format = "json"
   end # def initialize
 
   public
@@ -88,11 +86,10 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
       # The nil guard is needed to deal with chunked messages.
       # Gelfd::Parser.parse will only return the message when all chunks are
       # completed
-      e = to_event(data, source) unless data.nil?
-      if e
-        remap_gelf(e) if @remap
-        output_queue << e
-      end
+      event = LogStash::Event.new(data)
+      event["source"] = client[3]
+      remap_gelf(event) if @remap
+      output_queue << event
     end
   ensure
     if @udp
@@ -103,17 +100,17 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
 
   private
   def remap_gelf(event)
-    if event.fields["full_message"]
-      event.message = event.fields["full_message"].dup
-    elsif event.fields["short_message"]
-      event.message = event.fields["short_message"].dup
+    if event["full_message"]
+      event.message = event["full_message"].dup
+    elsif event["short_message"]
+      event.message = event["short_message"].dup
     end
-    if event.fields["host"]
-      event.source_host = event.fields["host"]
+    if event["host"]
+      event.source_host = event["host"]
     end
-    if event.fields["file"]
-      event.source_path = event.fields["file"]
+    if event["file"]
+      event.source_path = event["file"]
     end
-    event.source = "gelf://#{event.fields["host"]}/#{event.fields["file"]}"
+    event.source = "gelf://#{event["host"]}/#{event["file"]}"
   end # def remap_gelf
 end # class LogStash::Inputs::Gelf

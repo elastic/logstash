@@ -17,14 +17,10 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
   config_name "eventlog"
   milestone 2
 
+  default :codec, "plain"
+
   # Event Log Name
   config :logfile, :validate => :array, :default => [ "Application", "Security", "System" ]
-
-  public
-  def initialize(params)
-    super
-    @format ||= "json_event"
-  end # def initialize
 
   public
   def register

@@ -22,6 +22,8 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
   config_name "elasticsearch"
   milestone 1
 
+  default :codec, "json"
+
   # When mode is `server`, the address to listen on.
   # When mode is `client`, the address to connect to.
   config :host, :validate => :string, :default => "0.0.0.0"
@@ -44,7 +46,6 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
       "size" => "1000",
     }
     @url = "http://#{@host}:#{@port}/#{@index}/_search?#{encode(params)}"
-    @format ||= "json_event"
   end # def register
 
   private
