@@ -131,6 +131,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       @logger.debug? && @logger.debug("Received line", :path => path, :line => line)
       @codec.decode(line + "\n") do |event|
         event["source"] = source
+        event["type"] = @type if @type
         queue << event
       end
     end
