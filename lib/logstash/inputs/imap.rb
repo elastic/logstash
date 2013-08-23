@@ -22,6 +22,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   config :fetch_count, :validate => :number, :default => 50
   config :lowercase_headers, :validate => :boolean, :default => true
   config :check_interval, :validate => :number, :default => 300
+  config :delete, :validate => :boolean, :default => false
 
   public
   def register
@@ -62,7 +63,8 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
         mail = Mail.read_from_string(item.attr["RFC822"])
         queue << parse_mail(mail)
       end
-      imap.store(id_set, '+FLAGS', :Seen)
+
+      imap.store(id_set, '+FLAGS', @delete ? :Deleted : :Seen)
     end
 
     imap.close
