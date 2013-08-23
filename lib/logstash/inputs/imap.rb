@@ -79,7 +79,8 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
       message = mail.body.decoded
     else
       # Multipart message; use the first text/plain part we find
-      message = mail.parts.find { |p| p.content_type =~ /^text\/plain/ }.decoded
+      part = mail.parts.find { |p| p.content_type =~ /^text\/plain/ } || mail.parts.first
+      message = part.decoded
     end
 
     event = LogStash::Event.new("message" => message)
