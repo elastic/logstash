@@ -41,7 +41,7 @@ describe LogStash::Filters::Grok do
 
     sample "<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug 4123 - [id1 foo=\"bar\"][id2 baz=\"something\"] Hello, syslog." do
       insist { subject["tags"] }.nil?
-      insist { subject["syslog5424_pri"] } == "<191>"
+      insist { subject["syslog5424_pri"] } == "191"
       insist { subject["syslog5424_ver"] } == "1"
       insist { subject["syslog5424_ts"] } == "2009-06-30T18:30:00+02:00"
       insist { subject["syslog5424_host"] } == "paxton.local"
@@ -54,7 +54,7 @@ describe LogStash::Filters::Grok do
 
     sample "<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug - - [id1 foo=\"bar\"] No process ID." do
       insist { subject["tags"] }.nil?
-      insist { subject["syslog5424_pri"] } == "<191>"
+      insist { subject["syslog5424_pri"] } == "191"
       insist { subject["syslog5424_ver"] } == "1"
       insist { subject["syslog5424_ts"] } == "2009-06-30T18:30:00+02:00"
       insist { subject["syslog5424_host"] } == "paxton.local"
@@ -67,7 +67,7 @@ describe LogStash::Filters::Grok do
 
     sample "<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug 4123 - - No structured data." do
       insist { subject["tags"] }.nil?
-      insist { subject["syslog5424_pri"] } == "<191>"
+      insist { subject["syslog5424_pri"] } == "191"
       insist { subject["syslog5424_ver"] } == "1"
       insist { subject["syslog5424_ts"] } == "2009-06-30T18:30:00+02:00"
       insist { subject["syslog5424_host"] } == "paxton.local"
@@ -80,7 +80,7 @@ describe LogStash::Filters::Grok do
 
     sample "<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug - - - No PID or SD." do
       insist { subject["tags"] }.nil?
-      insist { subject["syslog5424_pri"] } == "<191>"
+      insist { subject["syslog5424_pri"] } == "191"
       insist { subject["syslog5424_ver"] } == "1"
       insist { subject["syslog5424_ts"] } == "2009-06-30T18:30:00+02:00"
       insist { subject["syslog5424_host"] } == "paxton.local"
