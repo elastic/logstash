@@ -209,6 +209,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     gsub(event) if @gsub
     uppercase(event) if @uppercase
     lowercase(event) if @lowercase
+    strip(event) if @strip
     remove(event) if @remove
     split(event) if @split
     join(event) if @join
