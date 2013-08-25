@@ -38,7 +38,7 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
 
   # The name of the sender.
   # Dots will be replaced with underscores
-  config :sender, :validate => :string, :default => "%{@source_host}"
+  config :sender, :validate => :string, :default => "%{source}"
 
   # An increment metric. metric names as array.
   config :increment, :validate => :array, :default => []
