@@ -268,7 +268,8 @@ module LogStash::Config::Mixin
           else
             @logger.error(I18n.t("logstash.agent.configuration.setting_invalid",
                                  :plugin => @plugin_name, :type => @plugin_type,
-                                 :setting => key, :value => value, :value_type => config_val,
+                                 :setting => key, :value => value.inspect,
+                                 :value_type => config_val,
                                  :note => result))
           end
           #puts "Result: #{key} / #{result.inspect} / #{success}"
