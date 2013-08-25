@@ -24,16 +24,16 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
 
   default :codec, "json"
 
-  # When mode is `server`, the address to listen on.
-  # When mode is `client`, the address to connect to.
-  config :host, :validate => :string, :default => "0.0.0.0"
+  # The address of your elasticsearch server
+  config :host, :validate => :string, :required => true
 
-  # When mode is `server`, the port to listen on.
-  # When mode is `client`, the port to connect to.
+  # The http port of your elasticsearch server's REST interface
   config :port, :validate => :number, :default => 9200
 
-  config :index, :validate => :string, :default => "*"
+  # The index to search
+  config :index, :validate => :string, :default => "logstash-*"
 
+  # The query to use
   config :query, :validate => :string, :default => "*"
 
   public
