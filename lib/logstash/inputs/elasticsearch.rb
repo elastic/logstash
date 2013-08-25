@@ -73,8 +73,12 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
       break if hits.empty?
 
       result["hits"]["hits"].each do |hit|
-        event = LogStash::Event.new(hit["_source"])
-        output_queue << event
+        event = hit["_source"]
+
+        # Hack to make codecs work
+        @codec.decode(event.to_json) do |event|
+          output_queue << event
+        end
       end
 
       # Fetch until we get no hits
