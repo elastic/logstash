@@ -1,58 +1,27 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-# https://github.com/mikel/mail
-# supports equal(default), not equal(!), greater than(>), less than(<), greater than or equal(>=), less than or equal(<=), contains(*), does not contain(!*)
-# you must provide a matchName - which is the key.  Then provide your query values - again in key value pairs, separated by a ',' in the value spot.
-# You can say this : 
-# [ "response errors", "response,501,,or,response,301" ] 
-# I hate making requirements like this but this is the format that is the most flexible for making fine selections over data. 
-# NOTE: In the above example we are using just an equality test - so the two values must be exact for matches to be made. You must provide an AND/OR block 
-# between conditions so we know how to deal with them.  Please see below for an example where you wanted an AND instead of the OR default - this would require both to be valid. 
-# [ "response errors", "response,501,,and,response,301" ] 
-# as you can see you can just seperate the Operator logic with a blank key and the operator of your liking - AND/OR 
-# IMPORTANT : you MUST provide a "matchName". This is so I can easily be able to provide a label of sorts for the alert.  
-# In addition, we break after we find  the first valid match. 
-#
-#   email {
-#        tags => [ "sometag" ]
-#        match => [ "response errors", "response,501,,or,response,301",
-#                   "multiple response errors", "response,501,,and,response,301" ] 
-#        to => "main.contact@domain.com"
-#        from => "alert.account@domain.com" # default: logstash.alert@nowhere.com
-#        cc => "" # provide additional recipients
-#        options => [ "smtpIporHost", "smtp.gmail.com",
-#                     "port", "587",
-#                     "domain", "yourDomain", # optional
-#                     "userName", "yourSMTPUsername", 
-#                     "password", "PASS", 
-#                     "starttls", "true",
-#                     "authenticationType", "plain",
-#                     "debug", "true" # optional
-#                   ]
-#        via => "smtp" # or pop or sendmail
-#        subject => "Found '%{matchName}' Alert on %{@source_host}"
-#        body => "Here is the event line %{@message}"
-#        htmlbody => "<h2>%{matchName}</h2><br/><br/><h3>Full Event</h3><br/><br/><div align='center'>%{@message}</div>"
-#    }
+# Send email when any event is received.
 class LogStash::Outputs::Email < LogStash::Outputs::Base
 
   config_name "email"
   milestone 1
 
-  # The registered fields that we want to monitor
-  # A hash of matches of field => value
-  # Takes the form of:
+  # This setting is deprecated in favor of logstash's "conditionals" feature
+  # If you were using this setting previously, please use conditionals instead.
   #
-  #    { "match name", "field.in.event,value.expected, , operand(and/or),field.in.event,value.expected, , or...",
-  #    "match name", "..." }
-  #
-  # The match name can be referenced using the `%{matchName}` field.
-  config :match, :validate => :hash, :required => true
+  # If you need help converting your older 'match' setting to a conditional,
+  # I welcome you to join the #logstash irc channel on freenode or to email
+  # the logstash-users@googlegroups.com mailling list and ask for help! :)
+  config :match, :validate => :hash, :deprecated => true
 
-  # The To address setting - fully qualified email address to send to
-  # This field also accept a comma separated list of emails like "me@host.com, you@host.com"
-  # You can also use dynamic field from the event with the %{fieldname} syntax
+  # Who to send this email to?
+  # A fully qualified email address to send to
+  #
+  # This field also accept a comma separated list of emails like 
+  # "me@host.com, you@host.com"
+  #
+  # You can also use dynamic field from the event with the %{fieldname} syntax.
   config :to, :validate => :string, :required => true
 
   # The From setting for email - fully qualified email address for the From:
@@ -62,9 +31,10 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
   # here.
   config :replyto, :validate => :string
 
-  # cc - send to others
-  # See *to* field for accepted value description
-  config :cc, :validate => :string, :default => ""
+  # Who to CC on this email?
+  #
+  # See "to" setting for what is valid here.
+  config :cc, :validate => :string
 
   # how to send email: either smtp or sendmail - default to 'smtp'
   config :via, :validate => :string, :default => "smtp"
@@ -171,11 +141,13 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
          return
       end
 
-    @logger.debug("Match data for Email - ", :match => @match)
+    @logger.debug? && @logger.debug("Match data for Email - ", :match => @match)
     successful = false
     matchName = ""
     operator = ""
-    @match.each do |name, query|
+
+    # TODO(sissel): Delete this once match support is removed.
+    @match && @match.each do |name, query|
       if successful
         break
       else
@@ -231,11 +203,15 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
       end
     end # @match.each do
 
-    @logger.debug("Email Did we match any alerts for event : ", :successful => successful)
+    # The 'match' setting is deprecated and optional. If not set,
+    # default to success.
+    successful = true if @match.nil?
+
+    @logger.debug? && @logger.debug("Email Did we match any alerts for event : ", :successful => successful)
 
     if successful
       # first add our custom field - matchName - so we can use it in the sprintf function
-      event["matchName"] = matchName
+      event["matchName"] = matchName unless matchName.empty?
       @logger.debug? and @logger.debug("Creating mail with these settings : ", :via => @via, :options => @options, :from => @from, :to => @to, :cc => @cc, :subject => @subject, :body => @body, :content_type => @contenttype, :htmlbody => @htmlbody, :attachments => @attachments, :to => to, :to => to)
       formatedSubject = event.sprintf(@subject)
       formattedBody = event.sprintf(@body)
