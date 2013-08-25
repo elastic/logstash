@@ -10,6 +10,10 @@ class Time
   def to_json(*args)
     return iso8601(3).to_json(*args)
   end
+
+  def inspect
+    return to_json
+  end
 end
 
 # the logstash event object.
