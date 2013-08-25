@@ -208,8 +208,7 @@ class LogStash::Runner
       $stderr.puts "Available commands:"
       $stderr.puts "  agent - runs the logstash agent"
       $stderr.puts "  version - emits version info about this logstash"
-      $stderr.puts "  web - runs the logstash web ui"
-      $stderr.puts "  kibana - runs the kibana web ui"
+      $stderr.puts "  web - runs the logstash web ui (called Kibana)"
       $stderr.puts "  rspec - runs tests"
       #$stderr.puts commands.keys.map { |s| "  #{s}" }.join("\n")
       exit 1
