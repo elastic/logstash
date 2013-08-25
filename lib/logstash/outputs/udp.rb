@@ -2,6 +2,9 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 require "socket"
 
+# Send events over UDP
+#
+# Keep in mind that UDP will lose messages.
 class LogStash::Outputs::UDP < LogStash::Outputs::Base
   config_name "udp"
   milestone 1
