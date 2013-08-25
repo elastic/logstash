@@ -26,7 +26,7 @@ class LogStash::Outputs::HipChat < LogStash::Outputs::Base
   config :color, :validate => :string, :default => "yellow"
 
   # Message format to send, event tokens are usable here.
-  config :format, :validate => :string, :default => "%{@message}"
+  config :format, :validate => :string, :default => "%{message}"
 
   public
   def register

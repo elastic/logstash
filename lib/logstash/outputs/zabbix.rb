@@ -24,7 +24,7 @@ require "logstash/outputs/base"
 #          match => [ "@message", "(error|ERROR|CRITICAL)" ]
 #          add_tag => [ "zabbix-sender" ]
 #          add_field => [
-#            "zabbix_host", "%{@source_host}",
+#            "zabbix_host", "%{source_host}",
 #            "zabbix_item", "item.key"
 #          ]
 #       }

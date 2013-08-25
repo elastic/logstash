@@ -43,12 +43,12 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   config :password, :validate => :password
 
   # The name of the redis queue (we'll use RPUSH on this). Dynamic names are
-  # valid here, for example "logstash-%{@type}"
+  # valid here, for example "logstash-%{type}"
   # TODO: delete
   config :queue, :validate => :string, :deprecated => true
 
   # The name of a redis list or channel. Dynamic names are
-  # valid here, for example "logstash-%{@type}".
+  # valid here, for example "logstash-%{type}".
   # TODO set required true
   config :key, :validate => :string, :required => false
 

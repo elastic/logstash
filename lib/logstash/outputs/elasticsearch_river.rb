@@ -28,7 +28,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   # The index type to write events to. Generally you should try to write only
   # similar events to the same 'type'. String expansion '%{foo}' works here.
-  config :index_type, :validate => :string, :default => "%{@type}"
+  config :index_type, :validate => :string, :default => "%{type}"
 
   # The name/address of an ElasticSearch host to use for river creation
   config :es_host, :validate => :string, :required => true

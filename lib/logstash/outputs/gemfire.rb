@@ -38,7 +38,7 @@ class LogStash::Outputs::Gemfire < LogStash::Outputs::Base
   config :region_name, :validate => :string, :default => "Logstash"
 
   # A sprintf format to use when building keys
-  config :key_format, :validate => :string, :default => "%{@source}-%{@timestamp}"
+  config :key_format, :validate => :string, :default => "%{source}-%{@timestamp}"
 
   public
   def register

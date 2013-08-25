@@ -13,7 +13,7 @@ class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
   # The port to connect on your ganglia server.
   config :port, :validate => :number, :default => 8649
 
-  # The metric to use. This supports dynamic strings like `%{@source_host}`
+  # The metric to use. This supports dynamic strings like `%{host}`
   config :metric, :validate => :string, :required => true
 
   # The value to use. This supports dynamic strings like `%{bytes}`

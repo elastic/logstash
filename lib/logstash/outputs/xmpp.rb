@@ -26,7 +26,7 @@ class LogStash::Outputs::Xmpp < LogStash::Outputs::Base
   # the host on the user/identity is used. (foo.com for user@foo.com)
   config :host, :validate => :string
 
-  # The message to send. This supports dynamic strings like %{@source_host}
+  # The message to send. This supports dynamic strings like %{source}
   config :message, :validate => :string, :required => true
 
   public

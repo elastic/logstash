@@ -12,7 +12,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   milestone 2
 
   # The path to the file to write. Event fields can be used here, 
-  # like "/var/log/logstash/%{@source_host}/%{application}"
+  # like "/var/log/logstash/%{host}/%{application}"
   # One may also utilize the path option for date-based log 
   # rotation via the joda time format. This will use the event
   # timestamp.
