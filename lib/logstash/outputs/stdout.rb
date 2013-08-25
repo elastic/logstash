@@ -9,6 +9,8 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
 
   config_name "stdout"
   milestone 3
+  
+  default :codec, "line"
 
   # Enable debugging. Tries to pretty-print the entire event object.
   config :debug, :validate => :boolean, :default => false
