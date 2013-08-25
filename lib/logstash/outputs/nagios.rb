@@ -21,27 +21,13 @@ require "logstash/outputs/base"
 #    CRITICAL and can be overriden by setting the "nagios_level" field to one
 #    of "OK", "WARNING", "CRITICAL", or "UNKNOWN" 
 #
-# The easiest way to use this output is with the grep filter.
-# Presumably, you only want certain events matching a given pattern
-# to send events to nagios. So use grep to match and also to add the required
-# fields.
-#
-#     filter {
-#       grep {
-#         type => "linux-syslog"
-#         match => [ "@message", "(error|ERROR|CRITICAL)" ]
-#         add_tag => [ "nagios-update" ]
-#         add_field => [
-#           "nagios_host", "%{@source_host}",
-#           "nagios_service", "the name of your nagios service check"
-#         ]
-#       }
-#     }
+#         match => [ "message", "(error|ERROR|CRITICAL)" ]
 #
 #     output{
-#       nagios {
-#         # only process events with this tag
-#         tags => "nagios-update"
+#       if [message] =~ /(error|ERROR|CRITICAL)/ {
+#         nagios {
+#           # your config here
+#         }
 #       }
 #     }
 class LogStash::Outputs::Nagios < LogStash::Outputs::Base

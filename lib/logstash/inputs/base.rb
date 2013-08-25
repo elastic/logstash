@@ -47,7 +47,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   # If format is "json", an event sprintf string to build what
   # the display @message should be given (defaults to the raw JSON).
-  # sprintf format strings look like %{fieldname} or %{@metadata}.
+  # sprintf format strings look like %{fieldname}
   #
   # If format is "json_event", ALL fields except for @type
   # are expected to be present. Not receiving all fields

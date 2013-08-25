@@ -44,7 +44,7 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
   # The nagios 'host' you want to submit a passive check result to. This
   # parameter accepts interpolation, e.g. you can use @source_host or other
   # logstash internal variables.
-  config :nagios_host, :validate => :string, :default => "%{@source_host}"
+  config :nagios_host, :validate => :string, :default => "%{host}"
 
   # The nagios 'service' you want to submit a passive check result to. This
   # parameter accepts interpolation, e.g. you can use @source_host or other
@@ -54,7 +54,7 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
   # The format to use when writing events to nagios. This value
   # supports any string and can include %{name} and other dynamic
   # strings.
-  config :message_format, :validate => :string, :default => "%{@timestamp} %{@source}: %{@message}"
+  config :message_format, :validate => :string, :default => "%{@timestamp} %{source}: %{message}"
 
   public
   def register

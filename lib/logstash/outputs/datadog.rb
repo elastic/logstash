@@ -16,10 +16,10 @@ class LogStash::Outputs::Datadog < LogStash::Outputs::Base
   config :api_key, :validate => :string, :required => true
 
   # Title
-  config :title, :validate => :string, :default => "Logstash event for %{@source_host}"
+  config :title, :validate => :string, :default => "Logstash event for %{source}"
 
   # Text
-  config :text, :validate => :string, :default => "%{@message}"
+  config :text, :validate => :string, :default => "%{message}"
 
   # Date Happened
   config :date_happened, :validate => :string

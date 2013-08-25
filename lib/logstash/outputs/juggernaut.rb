@@ -31,7 +31,7 @@ class LogStash::Outputs::Juggernaut < LogStash::Outputs::Base
   config :password, :validate => :password
 
   # List of channels to which to publish. Dynamic names are
-  # valid here, for example "logstash-%{@type}".
+  # valid here, for example "logstash-%{type}".
   config :channels, :validate => :array, :required => true
 
   # How should the message be formatted before pushing to the websocket.

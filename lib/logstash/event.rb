@@ -203,9 +203,9 @@ class LogStash::Event
   # any format values, delimited by %{foo} where 'foo' is a field or
   # metadata member.
   #
-  # For example, if the event has @type == "foo" and @source == "bar"
+  # For example, if the event has type == "foo" and source == "bar"
   # then this string:
-  #   "type is %{@type} and source is %{@source}"
+  #   "type is %{type} and source is %{source}"
   # will return
   #   "type is foo and source is bar"
   #

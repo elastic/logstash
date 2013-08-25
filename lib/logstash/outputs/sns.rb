@@ -16,7 +16,7 @@ require "logstash/plugin_mixins/aws_config"
 #  * sns - If no ARN is found in the configuration file, this will be used as
 #  the ARN to publish.
 #  * sns_subject - The subject line that should be used.
-#  Optional. The "%{@source}" will be used if not present and truncated at
+#  Optional. The "%{source}" will be used if not present and truncated at
 #  MAX_SUBJECT_SIZE_IN_CHARACTERS.
 #  * sns_message - The message that should be
 #  sent. Optional. The event serialzed as JSON will be used if not present and
