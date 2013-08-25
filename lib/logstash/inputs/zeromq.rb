@@ -1,6 +1,5 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "timeout"
 require "socket"
 
 # Read events over a 0MQ SUB socket.
@@ -154,8 +153,6 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
       @logger.debug("ZMQ Error", :subscriber => @zsocket,
                     :exception => e)
       retry
-    rescue Timeout::Error
-      @logger.debug("Read timeout", subscriber => @zsocket)
     end # begin
   end # def run
 
