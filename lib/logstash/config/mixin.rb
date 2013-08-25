@@ -65,7 +65,7 @@ module LogStash::Config::Mixin
         # default values should be cloned if possible
         # cloning prevents 
         case opts[:default]
-          when FalseClass, TrueClass, NilClass, Fixnum
+          when FalseClass, TrueClass, NilClass, Numeric
             params[name.to_s] = opts[:default]
           else
             params[name.to_s] = opts[:default].clone
