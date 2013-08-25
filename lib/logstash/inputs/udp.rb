@@ -58,14 +58,13 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
 
     loop do
       payload, client = @udp.recvfrom(@buffer_size)
-      # Ruby uri sucks, so don't use it.
-      source = "udp://#{client[3]}:#{client[1]}/"
-
       @codec.decode(payload) do |event|
         event["source"] = "#{client[3]}:#{client[1]}"
         output_queue << event
       end
     end
+  rescue LogStash::ShutdownSignal
+    # shutdown
   ensure
     if @udp
       @udp.close_read rescue nil
