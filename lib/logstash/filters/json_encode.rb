@@ -47,7 +47,7 @@ class LogStash::Filters::JsonEncode < LogStash::Filters::Base
         event[dest] = JSON.pretty_generate(event[key])
         filter_matched(event)
       rescue => e
-        event.tags << "_jsongeneratefailure"
+        event.tag "_jsongeneratefailure"
         @logger.warn("Trouble encoding JSON", :key => key, :raw => event[key],
                       :exception => e)
         next
