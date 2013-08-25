@@ -13,7 +13,7 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
   config :host, :validate => :string, :required => true
 
   # Port on host to connect to.
-  config :port, :validate => :number, :required => true
+  config :port, :validate => :number, :default => 6667
 
   # IRC Nickname
   config :nick, :validate => :string, :default => "logstash"
@@ -34,7 +34,7 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
   config :channels, :validate => :array, :required => true
 
   # Message format to send, event tokens are usable here
-  config :format, :validate => :string, :default => "%{@message}"
+  config :format, :validate => :string, :default => "%{message}"
 
   # Set this to true to enable SSL.
   config :secure, :validate => :boolean, :default => false
