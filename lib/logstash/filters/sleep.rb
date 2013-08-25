@@ -88,7 +88,7 @@ class LogStash::Filters::Sleep < LogStash::Filters::Base
     end
 
     if @replay
-      clock = event.ruby_timestamp.to_f
+      clock = event["@timestamp"].to_f
       if @last_clock
         delay = clock - @last_clock
         time = delay/time
