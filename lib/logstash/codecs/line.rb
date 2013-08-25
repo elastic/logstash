@@ -45,6 +45,12 @@ class LogStash::Codecs::Line < LogStash::Codecs::Base
   end # def decode
 
   public
+  def flush(&block)
+    remainder = @buffer.flush
+    block.call(LogStash::Event.new({"message" => remainder})) if remainder
+  end
+
+  public
   def encode(data)
     if data.is_a? LogStash::Event and @format
       @on_event.call(data.sprintf(@format) + "\n")
