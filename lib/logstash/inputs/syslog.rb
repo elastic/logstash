@@ -51,7 +51,6 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
   public
   def register
-    @logger.warn("ATTENTION: THIS PLUGIN WILL BE REMOVED IN LOGSTASH 1.2.0. YOU MAY CONTINUE USING IT. WHEN REMOVED, TO LEARN HOW TO REPLACE THIS PLUGIN, SEE THIS URL: http://cookbook.logstash.net/recipes/syslog-pri/")
     @grok_filter = LogStash::Filters::Grok.new({
       "type"    => [@config["type"]],
       "pattern" => ["<%{POSINT:priority}>%{SYSLOGLINE}"],
@@ -196,13 +195,13 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   # Following RFC3164 where sane, we'll try to parse a received message
   # as if you were relaying a syslog message to it.
   # If the message cannot be recognized (see @grok_filter), we'll
-  # treat it like the whole event.message is correct and try to fill
+  # treat it like the whole event["message"] is correct and try to fill
   # the missing pieces (host, priority, etc)
   public
   def syslog_relay(event)
     @grok_filter.filter(event)
 
-    if !event.tags.include?("_grokparsefailure")
+    if !event["tags"].include?("_grokparsefailure")
       # Per RFC3164, priority = (facility * 8) + severity
       #                       = (facility << 3) & (severity)
       priority = event["priority"].first.to_i rescue 13
@@ -215,16 +214,13 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       event["timestamp"] = event["timestamp8601"] if event.include?("timestamp8601")
       @date_filter.filter(event)
     else
-      @logger.info("NOT SYSLOG", :message => event.message)
+      @logger.info? && @logger.info("NOT SYSLOG", :message => event["message"])
 
       # RFC3164 says unknown messages get pri=13
       priority = 13
       event["priority"] = 13
       event["severity"] = 5   # 13 & 7 == 5
       event["facility"] = 1   # 13 >> 3 == 1
-
-      # Don't need to modify the message, here.
-      # event.message = ...
     end
 
     # Apply severity and facility metadata if
