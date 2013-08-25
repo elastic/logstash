@@ -126,7 +126,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
       loop do
         # Here's the unified receiver
         # Get the first part as the msg
-        m1 = ''
+        m1 = ""
         rc = @zsocket.recv_string(m1)
         error_check(rc, "in recv_string")
         @logger.debug("ZMQ receiving", :event => m1)
@@ -147,9 +147,13 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
           output_queue << event
         end
       end
+    rescue LogStash::ShutdownSignal
+      # shutdown
+      return
     rescue => e
       @logger.debug("ZMQ Error", :subscriber => @zsocket,
-                    :exception => e, :backtrace => e.backtrace)
+                    :exception => e)
+      retry
     rescue Timeout::Error
       @logger.debug("Read timeout", subscriber => @zsocket)
     end # begin
