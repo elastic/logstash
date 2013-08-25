@@ -109,13 +109,12 @@ class LogStash::Outputs::Nagios < LogStash::Outputs::Base
       end
     end
 
-    cmd = "[#{Time.now.to_i}] PROCESS_SERVICE_CHECK_RESULT;#{host[0]};#{service[0]};#{level};"
+    cmd = "[#{Time.now.to_i}] PROCESS_SERVICE_CHECK_RESULT;#{host};#{service};#{level};"
     if annotation
-      cmd += "#{annotation[0]}: "
+      cmd += "#{annotation}: "
     end
-    cmd += "#{event.source}: "
     # In the multi-line case, escape the newlines for the nagios command file
-    cmd += event.message.gsub("\n", "\\n")
+    cmd += (event["message"] || "<no message>").gsub("\n", "\\n")
 
     @logger.debug("Opening nagios command file", :commandfile => @commandfile,
                   :nagios_command => cmd)
