@@ -25,7 +25,7 @@ describe LogStash::Codecs::Json do
       event = LogStash::Event.new(data)
       got_event = false
       subject.on_event do |d|
-        insist { d } == LogStash::Event.new(data).to_json
+        insist { d.chomp } == LogStash::Event.new(data).to_json
         insist { JSON.parse(d)["foo"] } == data["foo"]
         insist { JSON.parse(d)["baz"] } == data["baz"]
         insist { JSON.parse(d)["bah"] } == data["bah"]
