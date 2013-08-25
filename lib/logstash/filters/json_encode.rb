@@ -5,7 +5,7 @@ require "logstash/namespace"
 class LogStash::Filters::JsonEncode < LogStash::Filters::Base
 
   config_name "json_encode"
-  plugin_status "beta"
+  milestone 2
 
   # Config for json_encode is:
   # 

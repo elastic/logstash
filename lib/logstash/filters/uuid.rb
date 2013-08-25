@@ -9,7 +9,7 @@ require "securerandom"
 #
 class LogStash::Filters::Uuid < LogStash::Filters::Base
   config_name "uuid"
-  plugin_status "beta"
+  milestone 2
 
   # Add a UUID to a field.
   #
