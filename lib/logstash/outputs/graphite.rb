@@ -12,6 +12,8 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   config_name "graphite"
   milestone 2
 
+  EXCLUDE_ALWAYS = [ "@timestamp", "@version" ]
+
   DEFAULT_METRICS_FORMAT = "*"
   METRIC_PLACEHOLDER = "*"
 
@@ -102,6 +104,7 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
     if @fields_are_metrics
       @logger.debug("got metrics event", :metrics => event.to_hash)
       event.to_hash.each do |metric,value|
+        next if EXCLUDE_ALWAYS.include?(metric)
         next unless @include_metrics.empty? || @include_metrics.any? { |regexp| metric.match(regexp) }
         next if @exclude_metrics.any? {|regexp| metric.match(regexp)}
         messages << "#{construct_metric_name(metric)} #{event.sprintf(value.to_s).to_f} #{timestamp}"
