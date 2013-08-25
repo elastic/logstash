@@ -23,7 +23,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # want to use something other than the event's source host as the
   # "sender" of an event. A common case for this is using the application name
   # instead of the hostname.
-  config :sender, :validate => :string, :default => "%{@source_host}"
+  config :sender, :validate => :string, :default => "%{source}"
 
   # The GELF message level. Dynamic values like %{level} are permitted here;
   # useful if you want to parse the 'log level' from an event and use that
@@ -49,7 +49,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   # The GELF file; this is usually the source code file in your program where
   # the log event originated. Dynamic values like %{foo} are permitted here.
-  config :file, :validate => :string, :default => "%{@source_path}"
+  config :file, :validate => :string, :default => "%{path}"
 
   # Ship metadata within event object? This will cause logstash to ship
   # any fields in the event (such as those created by grok) in the GELF
@@ -62,7 +62,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   # Ignore these fields when ship_metadata is set. Typically this lists the
   # fields used in dynamic values for GELF fields.
-  config :ignore_metadata, :validate => :array, :default => [ "severity", "source_host", "source_path", "short_message" ]
+  config :ignore_metadata, :validate => :array, :default => [ "@timestamp", "@version", "severity", "source_host", "source_path", "short_message" ]
 
   # The GELF custom field mappings. GELF supports arbitrary attributes as custom
   # fields. This exposes that. Exclude the `_` portion of the field name
@@ -71,7 +71,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   config :custom_fields, :validate => :hash, :default => {}
 
   # The GELF full message. Dynamic values like %{foo} are permitted here.
-  config :full_message, :validate => :string, :default => "%{@message}"
+  config :full_message, :validate => :string, :default => "%{message}"
 
   # The GELF short message field name. If the field does not exist or is empty,
   # the event message is taken instead.
@@ -127,7 +127,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     # with a specific format.
     m = Hash.new
 
-    m["short_message"] = event.message
+    m["short_message"] = event["message"]
     if event[@short_message]
       v = event[@short_message]
       short_message = (v.is_a?(Array) && v.length == 1) ? v.first : v
@@ -147,6 +147,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     if @ship_metadata
       event.to_hash.each do |name, value|
         next if value == nil
+        next if name == "message"
 
         # Trim leading '_' in the event
         name = name[1..-1] if name.start_with?('_')
@@ -165,7 +166,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     end
 
     if @ship_tags
-      m["_tags"] = event.tags.join(', ')
+      m["_tags"] = event["tags"].join(', ') if event["tags"]
     end
 
     if @custom_fields
@@ -194,7 +195,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
     @logger.debug(["Sending GELF event", m])
     begin
-      @gelf.notify!(m, :timestamp => event.unix_timestamp.to_f)
+      @gelf.notify!(m, :timestamp => event["@timestamp"].to_f)
     rescue
       @logger.warn("Trouble sending GELF event", :gelf_event => m,
                    :event => event, :error => $!)
