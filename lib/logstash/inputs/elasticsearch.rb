@@ -94,5 +94,7 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
         break
       end
     end
+  rescue LogStash::ShutdownSignal
+    # Do nothing, let us quit.
   end # def run
 end # class LogStash::Inputs::Elasticsearch
