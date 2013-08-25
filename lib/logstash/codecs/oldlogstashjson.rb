@@ -11,12 +11,14 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
     h  = {}
 
     # Convert the old logstash schema to the new one.
-    basics = %w(@timestamp @message @source_host @source_path @source
+    basics = %w(@message @source_host @source_path @source
                 @tags @type)
     basics.each do |key|
       # Convert '@message' to 'message', etc
       h[key[1..-1]] = obj[key] if obj.include?(key)
     end
+
+    h["@timestamp"] = obj["@timestamp"] if obj.include?("@timestamp")
 
     h.merge!(obj["@fields"]) if obj["@fields"].is_a?(Hash)
     yield LogStash::Event.new(h)
