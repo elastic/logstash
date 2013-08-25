@@ -52,7 +52,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # If format is "json_event", ALL fields except for @type
   # are expected to be present. Not receiving all fields
   # will cause unexpected results.
-  config :message_format, :validate => :string
+  config :message_format, :validate => :string, :deprecated => true
 
   # Add any number of arbitrary tags to your event.
   #
