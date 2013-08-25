@@ -10,7 +10,7 @@ require "set"
 class LogStash::Filters::Railsparallelrequest < LogStash::Filters::Base
 
   config_name "railsparallelrequest"
-  plugin_status "experimental"
+  milestone 1
 
   public
   def initialize(config = {})
