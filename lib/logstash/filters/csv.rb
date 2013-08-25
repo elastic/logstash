@@ -73,7 +73,7 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
 
         filter_matched(event)
       rescue => e
-        event.tags << "_csvparsefailure"
+        event.tag "_csvparsefailure"
         @logger.warn("Trouble parsing csv", :source => @source, :raw => raw,
                       :exception => e)
         return
