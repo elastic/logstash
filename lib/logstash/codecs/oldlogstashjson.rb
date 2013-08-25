@@ -14,11 +14,12 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
     basics = %w(@timestamp @message @source_host @source_path @source
                 @tags @type)
     basics.each do |key|
-      h[key] = obj[key] if obj.include?(key)
+      # Convert '@message' to 'message', etc
+      h[key[1..-1]] = obj[key] if obj.include?(key)
     end
 
     h.merge!(obj["@fields"]) if obj["@fields"].is_a?(Hash)
-    event = LogStash::Event.new(h)
+    yield LogStash::Event.new(h)
   end # def decode
 
   public
