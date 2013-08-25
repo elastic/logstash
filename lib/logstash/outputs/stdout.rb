@@ -23,7 +23,7 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   def register
     @print_method = method(:ap) rescue method(:p)
     @codec.on_event do |event|
-      $stdout.puts(event)
+      $stdout.write(event)
     end
   end
 
