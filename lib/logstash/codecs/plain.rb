@@ -1,13 +1,17 @@
 require "logstash/codecs/base"
 
-# This is the base class for logstash codecs.
+# The "plain" codec is for plain text with no delimiting between events.
+#
+# This is mainly useful on inputs and outputs that already have a defined
+# framing in their transport protocol (such as zeromq, rabbitmq, redis, etc)
 class LogStash::Codecs::Plain < LogStash::Codecs::Base
   config_name "plain"
   milestone 3
 
-  # Set the desired text format for encoding.
+  # Set the message you which to emit for each event. This supports sprintf
+  # strings.
   #
-  # This setting only affects encoding.
+  # This setting only affects outputs (encoding of events).
   config :format, :validate => :string
 
   # The character encoding used in this input. Examples include "UTF-8"
