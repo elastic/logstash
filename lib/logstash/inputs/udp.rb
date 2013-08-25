@@ -15,8 +15,8 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
   config :host, :validate => :string, :default => "0.0.0.0"
 
   # The port to listen on. Remember that ports less than 1024 (privileged
-  # ports) may require root to use.
-  config :port, :validate => :number, :default => 9999
+  # ports) may require root or elevated privileges to use.
+  config :port, :validate => :number, :required => true
 
   # Buffer size
   config :buffer_size, :validate => :number, :default => 8192
