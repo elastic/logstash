@@ -69,8 +69,11 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
   public
   def receive(event)
     return unless output?(event)
+    @logger.debug("Sending message to channels", :event => event)
+    text = event.sprintf(@format)
     @bot.channels.each do |channel|
-      channel.msg(event.sprintf(@format))
+      @logger.debug("Sending to...", :channel => channel, :text => text)
+      channel.msg(text)
     end # channels.each
   end # def receive
 end # class LogStash::Outputs::Irc
