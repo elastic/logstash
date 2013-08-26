@@ -43,3 +43,7 @@ LS_OPTS="--log ${LOG_FILE}"
 
 # Set a home directory
 HOME=/var/lib/logstash
+
+# Set a JAVA_HOME - this can cause some strange behaviour if not set
+JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64
+
