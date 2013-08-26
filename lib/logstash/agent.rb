@@ -112,7 +112,7 @@ class LogStash::Agent < Clamp::Command
     return 1
   rescue => e
     puts I18n.t("oops", :error => e)
-    puts e.backtrace if @logger.debug?
+    puts e.backtrace if @logger.debug? || $DEBUGLIST.include?("stacktrace")
     return 1
   ensure
     Stud::untrap("INT", trap_id) unless trap_id.nil?
