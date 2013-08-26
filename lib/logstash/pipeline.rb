@@ -130,6 +130,7 @@ class LogStash::Pipeline
   end
 
   def start_filters
+    @filters.each(&:register)
     @filter_threads = @settings["filter-workers"].times.collect do
       Thread.new { filterworker }
     end
@@ -170,11 +171,14 @@ class LogStash::Pipeline
 
   def filterworker
     LogStash::Util::set_thread_name("|worker")
-    @filters.each(&:register)
     begin
       while true
         event = @input_to_filter.pop
-        break if event == LogStash::ShutdownSignal
+        if event == LogStash::ShutdownSignal
+          @input_to_filter.push(event)
+          break
+        end
+
 
         # TODO(sissel): we can avoid the extra array creation here
         # if we don't guarantee ordering of origin vs created events.
