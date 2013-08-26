@@ -20,7 +20,7 @@ class LogStash::Filters::Json < LogStash::Filters::Base
   #       }
   #     }
   #
-  # The above would parse the xml from the @message field
+  # The above would parse the json from the @message field
   config :source, :validate => :string, :required => true
 
   # Define target for placing the data. If this setting is omitted,
