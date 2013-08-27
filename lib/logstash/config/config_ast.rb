@@ -272,13 +272,17 @@ module LogStash; module Config; module AST
       # Hack for compiling 'in' support.
       # This really belongs elsewhere, I think.
       cmp = recursive_select(LogStash::Config::AST::ComparisonOperator)
+
+      # Hack for '!' operator support.
+      not_op = text_value =~ /^!/ ? '!' : ''
+
       if cmp.count == 1 
         operator = cmp.first.text_value
         if operator == "in"
           # item 'in' list
           # technically anything that responds to #include? is accepted.
           item, list = recursive_select(LogStash::Config::AST::RValue)
-          return "(x = #{list.compile}; x.respond_to?(:include?) && x.include?(#{item.compile}))"
+          return "#{not_op}(x = #{list.compile}; x.respond_to?(:include?) && x.include?(#{item.compile}))"
           #return "#{list.compile}.include?(#{item.compile})"
         elsif ["=~", "!~"].include?(operator)
           item, regexp = recursive_select(LogStash::Config::AST::RValue)
@@ -287,10 +291,10 @@ module LogStash; module Config; module AST
           else
             regexp = regexp.compile
           end
-          return "(#{item.compile} #{operator} #{regexp})"
+          return "#{not_op}(#{item.compile} #{operator} #{regexp})"
         end
       end
-      return "(#{super})"
+      return "#{not_op}(#{super})"
     end
   end
   class MethodCall < Node

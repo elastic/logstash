@@ -36,6 +36,12 @@ describe "conditionals" do
         } else {
           mutate { add_field => { "free" => "hugs" } }
         }
+        if ![foo] != "bar" {
+          mutate { add_field => { "not" => "works" } }
+        }
+        if !([foo] != "bar") {
+          mutate { add_field => { "not2" => "works too" } }
+        }
       }
     CONFIG
 
@@ -44,6 +50,8 @@ describe "conditionals" do
       insist { subject["hello"] } == "world"
       insist { subject["fancy"] }.nil?
       insist { subject["free"] }.nil?
+      insist { subject["not"] } == "works"
+      insist { subject["not2"] } == "works too"
     end
 
     sample({"notfoo" => "bar"}) do
@@ -51,6 +59,8 @@ describe "conditionals" do
       insist { subject["hello"] }.nil?
       insist { subject["fancy"] }.nil?
       insist { subject["free"] } == "hugs"
+      insist { subject["not"] }.nil?
+      insist { subject["not2"] }.nil?
     end
 
     sample({"bar" => "baz"}) do
@@ -58,6 +68,8 @@ describe "conditionals" do
       insist { subject["hello"] }.nil?
       insist { subject["fancy"] } == "pants"
       insist { subject["free"] }.nil?
+      insist { subject["not"] }.nil?
+      insist { subject["not2"] }.nil?
     end
   end
 
@@ -132,6 +144,9 @@ describe "conditionals" do
         if "hello" in [greeting] {
           mutate { add_tag => "string in field" }
         }
+        if !("oink" in [greeting]) {
+          mutate { add_tag => "string not in field" }
+        }
         if [foo] in ["hello", "world", "foo"] {
           mutate { add_tag => "field in list" }
         }
@@ -145,6 +160,7 @@ describe "conditionals" do
       insist { subject["tags"] }.include?("field in field")
       insist { subject["tags"] }.include?("field in string")
       insist { subject["tags"] }.include?("string in field")
+      insist { subject["tags"] }.include?("string not in field")
       insist { subject["tags"] }.include?("field in list")
       reject { subject["tags"] }.include?("shouldnotexist")
     end
