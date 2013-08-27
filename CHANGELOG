@@ -40,6 +40,8 @@
   - improvement: stomp: vhost support (#490, patch by Matt Dainty)
   - new: unix: unix socket input (#496, patch by Nikolay Bryskin)
   - new: wmi: for querying wmi (windows). (#497, patch by Philip Seidel)
+  - improvement: sqs: new id_field and md5_field settings (LOGSTASH-1118, Louis
+    Zuckerman)
 
   ## filters
   - feature: grok: 'singles' now defaults to true.
