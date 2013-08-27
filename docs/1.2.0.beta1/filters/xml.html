@@ -1,0 +1,294 @@
+---
+title: logstash docs for filters/xml
+layout: content_right
+---
+<h2>xml</h2>
+<h3>Milestone: <a href="../plugin-milestones">1</a></h3>
+
+<p>XML filter. Takes a field that contains XML and expands it into
+an actual datastructure.</p>
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>filter {
+  xml {
+    <a href="#add_field">add_field</a> => ... # hash (optional), default: {}
+    <a href="#add_tag">add_tag</a> => ... # array (optional), default: []
+    <a href="#remove_field">remove_field</a> => ... # array (optional), default: []
+    <a href="#remove_tag">remove_tag</a> => ... # array (optional), default: []
+    <a href="#source">source</a> => ... # string (optional)
+    <a href="#store_xml">store_xml</a> => ... # boolean (optional), default: true
+    <a href="#target">target</a> => ... # string (optional)
+    <a href="#xpath">xpath</a> => ... # hash (optional), default: {}
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="add_field">
+    add_field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#hash">hash</a> </li>
+  <li> Default value is {} </li>
+</ul>
+
+<p>If this filter is successful, add any arbitrary fields to this event.
+Tags can be dynamic and include parts of the event using the %{field}
+Example:</p>
+
+<pre><code>filter {
+  xml {
+    add_field =&gt; [ "foo_%{somefield}", "Hello world, from %{source}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would add field "foo_hello" if it is present, with the
+value above and the %{source} piece replaced with that value from the
+event.</p>
+
+<h4> 
+  <a name="add_tag">
+    add_tag
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, add arbitrary tags to the event.
+Tags can be dynamic and include parts of the event using the %{field}
+syntax. Example:</p>
+
+<pre><code>filter {
+  xml {
+    add_tag =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would add a tag "foo_hello"</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without all/any (controlled by exclude_any config
+option) of these tags.
+Optional.</p>
+
+<h4> 
+  <a name="remove_field">
+    remove_field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, remove arbitrary fields from this event.
+Fields names can be dynamic and include parts of the event using the %{field}
+Example:</p>
+
+<pre><code>filter {
+  xml {
+    remove_field =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would remove the field with name "foo_hello" if it is present</p>
+
+<h4> 
+  <a name="remove_tag">
+    remove_tag
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, remove arbitrary tags from the event.
+Tags can be dynamic and include parts of the event using the %{field}
+syntax. Example:</p>
+
+<pre><code>filter {
+  xml {
+    remove_tag =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would remove the tag "foo_hello" if it is present</p>
+
+<h4> 
+  <a name="source">
+    source
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Config for xml to hash is:</p>
+
+<pre><code>source =&gt; source_field
+</code></pre>
+
+<p>For example, if you have the whole xml document in your @message field:</p>
+
+<pre><code>filter {
+  xml {
+    source =&gt; "message"
+  }
+}
+</code></pre>
+
+<p>The above would parse the xml from the @message field</p>
+
+<h4> 
+  <a name="store_xml">
+    store_xml
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#boolean">boolean</a> </li>
+  <li> Default value is true </li>
+</ul>
+
+<p>By default the filter will store the whole parsed xml in the destination
+field as described above. Setting this to false will prevent that.</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all/any (controlled by include_any config option) of these tags.
+Optional.</p>
+
+<h4> 
+  <a name="target">
+    target
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Define target for placing the data</p>
+
+<p>for example if you want the data to be put in the 'doc' field:</p>
+
+<pre><code>filter {
+  xml {
+    target =&gt; "doc"
+  }
+}
+</code></pre>
+
+<p>XML in the value of the source field will be expanded into a
+datastructure in the "target" field.
+Note: if the "target" field already exists, it will be overridden
+Required</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>Note that all of the specified routing options (type,tags.exclude<em>tags,include</em>fields,exclude_fields)
+must be met in order for the event to be handled by the filter.
+The type to act on. If a type is given, then this filter will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+<h4> 
+  <a name="xpath">
+    xpath
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#hash">hash</a> </li>
+  <li> Default value is {} </li>
+</ul>
+
+<p>xpath will additionally select string values (.to_s on whatever is selected)
+from parsed XML (using each source field defined using the method above)
+and place those values in the destination fields. Configuration:</p>
+
+<p>xpath => [ "xpath-syntax", "destination-field" ]</p>
+
+<p>Values returned by XPath parsring from xpath-synatx will be put in the
+destination field. Multiple values returned will be pushed onto the
+destination field as an array. As such, multiple matches across
+multiple source fields will produce duplicate entries in the field</p>
+
+<p>More on xpath: http://www.w3schools.com/xpath/</p>
+
+<p>The xpath functions are particularly powerful:
+http://www.w3schools.com/xpath/xpath_functions.asp</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/filters/xml.rb">lib/logstash/filters/xml.rb</a>

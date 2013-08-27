@@ -1,0 +1,256 @@
+---
+title: logstash docs for filters/syslog_pri
+layout: content_right
+---
+<h2>syslog_pri</h2>
+<h3>Milestone: <a href="../plugin-milestones">1</a></h3>
+
+<p>Filter plugin for logstash to parse the PRI field from the front
+of a Syslog (RFC3164) message.  If no priority is set, it will
+default to 13 (per RFC).</p>
+
+<p>This filter is based on the original syslog.rb code shipped
+with logstash.</p>
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>filter {
+  syslog_pri {
+    <a href="#add_field">add_field</a> => ... # hash (optional), default: {}
+    <a href="#add_tag">add_tag</a> => ... # array (optional), default: []
+    <a href="#facility_labels">facility_labels</a> => ... # array (optional), default: ["kernel", "user-level", "mail", "daemon", "security/authorization", "syslogd", "line printer", "network news", "uucp", "clock", "security/authorization", "ftp", "ntp", "log audit", "log alert", "clock", "local0", "local1", "local2", "local3", "local4", "local5", "local6", "local7"]
+    <a href="#remove_field">remove_field</a> => ... # array (optional), default: []
+    <a href="#remove_tag">remove_tag</a> => ... # array (optional), default: []
+    <a href="#severity_labels">severity_labels</a> => ... # array (optional), default: ["emergency", "alert", "critical", "error", "warning", "notice", "informational", "debug"]
+    <a href="#syslog_pri_field_name">syslog_pri_field_name</a> => ... # string (optional), default: "syslog_pri"
+    <a href="#use_labels">use_labels</a> => ... # boolean (optional), default: true
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="add_field">
+    add_field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#hash">hash</a> </li>
+  <li> Default value is {} </li>
+</ul>
+
+<p>If this filter is successful, add any arbitrary fields to this event.
+Tags can be dynamic and include parts of the event using the %{field}
+Example:</p>
+
+<pre><code>filter {
+  syslog_pri {
+    add_field =&gt; [ "foo_%{somefield}", "Hello world, from %{source}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would add field "foo_hello" if it is present, with the
+value above and the %{source} piece replaced with that value from the
+event.</p>
+
+<h4> 
+  <a name="add_tag">
+    add_tag
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, add arbitrary tags to the event.
+Tags can be dynamic and include parts of the event using the %{field}
+syntax. Example:</p>
+
+<pre><code>filter {
+  syslog_pri {
+    add_tag =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would add a tag "foo_hello"</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without all/any (controlled by exclude_any config
+option) of these tags.
+Optional.</p>
+
+<h4> 
+  <a name="facility_labels">
+    facility_labels
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is ["kernel", "user-level", "mail", "daemon", "security/authorization", "syslogd", "line printer", "network news", "uucp", "clock", "security/authorization", "ftp", "ntp", "log audit", "log alert", "clock", "local0", "local1", "local2", "local3", "local4", "local5", "local6", "local7"] </li>
+</ul>
+
+<p>Labels for facility levels. This comes from RFC3164.</p>
+
+<h4> 
+  <a name="remove_field">
+    remove_field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, remove arbitrary fields from this event.
+Fields names can be dynamic and include parts of the event using the %{field}
+Example:</p>
+
+<pre><code>filter {
+  syslog_pri {
+    remove_field =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would remove the field with name "foo_hello" if it is present</p>
+
+<h4> 
+  <a name="remove_tag">
+    remove_tag
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, remove arbitrary tags from the event.
+Tags can be dynamic and include parts of the event using the %{field}
+syntax. Example:</p>
+
+<pre><code>filter {
+  syslog_pri {
+    remove_tag =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would remove the tag "foo_hello" if it is present</p>
+
+<h4> 
+  <a name="severity_labels">
+    severity_labels
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is ["emergency", "alert", "critical", "error", "warning", "notice", "informational", "debug"] </li>
+</ul>
+
+<p>Labels for severity levels. This comes from RFC3164.</p>
+
+<h4> 
+  <a name="syslog_pri_field_name">
+    syslog_pri_field_name
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "syslog_pri" </li>
+</ul>
+
+<p>Name of field which passes in the extracted PRI part of the syslog message</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all/any (controlled by include_any config option) of these tags.
+Optional.</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>Note that all of the specified routing options (type,tags.exclude<em>tags,include</em>fields,exclude_fields)
+must be met in order for the event to be handled by the filter.
+The type to act on. If a type is given, then this filter will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+<h4> 
+  <a name="use_labels">
+    use_labels
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#boolean">boolean</a> </li>
+  <li> Default value is true </li>
+</ul>
+
+<p>set the status to experimental/beta/stable
+Add human-readable names after parsing severity and facility from PRI</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/filters/syslog_pri.rb">lib/logstash/filters/syslog_pri.rb</a>

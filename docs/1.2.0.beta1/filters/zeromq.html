@@ -1,0 +1,280 @@
+---
+title: logstash docs for filters/zeromq
+layout: content_right
+---
+<h2>zeromq</h2>
+<h3>Milestone: <a href="../plugin-milestones">1</a></h3>
+
+<p>ZeroMQ filter. This is the best way to send an event externally for filtering
+It works much like an exec filter would by sending the event "offsite"
+for processing and waiting for a response</p>
+
+<p>The protocol here is:
+  * REQ sent with JSON-serialized logstash event
+  * REP read expected to be the full JSON 'filtered' event
+  * - if reply read is an empty string, it will cancel the event.</p>
+
+<p>Note that this is a limited subset of the zeromq functionality in
+inputs and outputs. The only topology that makes sense here is:
+REQ/REP.</p>
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>filter {
+  zeromq {
+    <a href="#add_field">add_field</a> => ... # hash (optional), default: {}
+    <a href="#add_tag">add_tag</a> => ... # array (optional), default: []
+    <a href="#address">address</a> => ... # string (optional), default: "tcp://127.0.0.1:2121"
+    <a href="#field">field</a> => ... # string (optional)
+    <a href="#mode">mode</a> => ... # string, one of ["server", "client"] (optional), default: "client"
+    <a href="#remove_field">remove_field</a> => ... # array (optional), default: []
+    <a href="#remove_tag">remove_tag</a> => ... # array (optional), default: []
+    <a href="#sockopt">sockopt</a> => ... # hash (optional)
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="add_field">
+    add_field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#hash">hash</a> </li>
+  <li> Default value is {} </li>
+</ul>
+
+<p>If this filter is successful, add any arbitrary fields to this event.
+Tags can be dynamic and include parts of the event using the %{field}
+Example:</p>
+
+<pre><code>filter {
+  zeromq {
+    add_field =&gt; [ "foo_%{somefield}", "Hello world, from %{source}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would add field "foo_hello" if it is present, with the
+value above and the %{source} piece replaced with that value from the
+event.</p>
+
+<h4> 
+  <a name="add_tag">
+    add_tag
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, add arbitrary tags to the event.
+Tags can be dynamic and include parts of the event using the %{field}
+syntax. Example:</p>
+
+<pre><code>filter {
+  zeromq {
+    add_tag =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would add a tag "foo_hello"</p>
+
+<h4> 
+  <a name="address">
+    address
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "tcp://127.0.0.1:2121" </li>
+</ul>
+
+<p>0mq socket address to connect or bind
+Please note that inproc:// will not work with logstash
+as we use a context per thread
+By default, filters connect</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without all/any (controlled by exclude_any config
+option) of these tags.
+Optional.</p>
+
+<h4> 
+  <a name="field">
+    field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>The field to send off-site for processing
+If this is unset, the whole event will be sent
+TODO (lusis)
+Allow filtering multiple fields</p>
+
+<h4> 
+  <a name="mode">
+    mode
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value can be any of: "server", "client" </li>
+  <li> Default value is "client" </li>
+</ul>
+
+<p>0mq mode
+server mode binds/listens
+client mode connects</p>
+
+<h4> 
+  <a name="remove_field">
+    remove_field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, remove arbitrary fields from this event.
+Fields names can be dynamic and include parts of the event using the %{field}
+Example:</p>
+
+<pre><code>filter {
+  zeromq {
+    remove_field =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would remove the field with name "foo_hello" if it is present</p>
+
+<h4> 
+  <a name="remove_tag">
+    remove_tag
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, remove arbitrary tags from the event.
+Tags can be dynamic and include parts of the event using the %{field}
+syntax. Example:</p>
+
+<pre><code>filter {
+  zeromq {
+    remove_tag =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would remove the tag "foo_hello" if it is present</p>
+
+<h4> 
+  <a name="sockopt">
+    sockopt
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#hash">hash</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>0mq socket options
+This exposes zmq_setsockopt
+for advanced tuning
+see http://api.zeromq.org/2-1:zmq-setsockopt for details</p>
+
+<p>This is where you would set values like:
+ZMQ::HWM - high water mark
+ZMQ::IDENTITY - named queues
+ZMQ::SWAP_SIZE - space for disk overflow
+ZMQ::SUBSCRIBE - topic filters for pubsub</p>
+
+<p>example: sockopt => ["ZMQ::HWM", 50, "ZMQ::IDENTITY", "my<em>named</em>queue"]</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all/any (controlled by include_any config option) of these tags.
+Optional.</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>Note that all of the specified routing options (type,tags.exclude<em>tags,include</em>fields,exclude_fields)
+must be met in order for the event to be handled by the filter.
+The type to act on. If a type is given, then this filter will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/filters/zeromq.rb">lib/logstash/filters/zeromq.rb</a>

@@ -1,0 +1,220 @@
+---
+title: logstash docs for outputs/datadog
+layout: content_right
+---
+<h2>datadog</h2>
+<h3>Milestone: <a href="../plugin-milestones">1</a></h3>
+
+
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>output {
+  datadog {
+    <a href="#alert_type">alert_type</a> => ... # string, one of ["info", "error", "warning", "success"] (optional)
+    <a href="#api_key">api_key</a> => ... # string (required)
+    <a href="#codec">codec</a> => ... # codec (optional), default: "plain"
+    <a href="#date_happened">date_happened</a> => ... # string (optional)
+    <a href="#dd_tags">dd_tags</a> => ... # array (optional)
+    <a href="#priority">priority</a> => ... # string, one of ["normal", "low"] (optional)
+    <a href="#source_type_name">source_type_name</a> => ... # string, one of ["nagios", "hudson", "jenkins", "user", "my apps", "feed", "chef", "puppet", "git", "bitbucket", "fabric", "capistrano"] (optional), default: "my apps"
+    <a href="#text">text</a> => ... # string (optional), default: "%{message}"
+    <a href="#title">title</a> => ... # string (optional), default: "Logstash event for %{source}"
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="alert_type">
+    alert_type
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value can be any of: "info", "error", "warning", "success" </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Alert type</p>
+
+<h4> 
+  <a name="api_key">
+    api_key (required setting)
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>This output lets you send events (for now. soon metrics) to
+DataDogHQ based on Logstash events</p>
+
+<p>Note that since Logstash maintains no state
+these will be one-shot events</p>
+
+<p>Your DatadogHQ API key</p>
+
+<h4> 
+  <a name="codec">
+    codec
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#codec">codec</a> </li>
+  <li> Default value is "plain" </li>
+</ul>
+
+<p>The codec used for output data</p>
+
+<h4> 
+  <a name="date_happened">
+    date_happened
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Date Happened</p>
+
+<h4> 
+  <a name="dd_tags">
+    dd_tags
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Tags
+Set any custom tags for this event
+Default are the Logstash tags if any</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without any of these tags. Note this check is additional to type and tags.</p>
+
+<h4> 
+  <a name="priority">
+    priority
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value can be any of: "normal", "low" </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Priority</p>
+
+<h4> 
+  <a name="source_type_name">
+    source_type_name
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value can be any of: "nagios", "hudson", "jenkins", "user", "my apps", "feed", "chef", "puppet", "git", "bitbucket", "fabric", "capistrano" </li>
+  <li> Default value is "my apps" </li>
+</ul>
+
+<p>Source type name</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all of these tags.  Note that if you specify
+a type, the event must also match that type.
+Optional.</p>
+
+<h4> 
+  <a name="text">
+    text
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "%{message}" </li>
+</ul>
+
+<p>Text</p>
+
+<h4> 
+  <a name="title">
+    title
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "Logstash event for %{source}" </li>
+</ul>
+
+<p>Title</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>The type to act on. If a type is given, then this output will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/outputs/datadog.rb">lib/logstash/outputs/datadog.rb</a>

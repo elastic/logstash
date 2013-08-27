@@ -1,0 +1,294 @@
+---
+title: logstash docs for filters/dns
+layout: content_right
+---
+<h2>dns</h2>
+<h3>Milestone: <a href="../plugin-milestones">2</a></h3>
+
+<p>DNS Filter</p>
+
+<p>This filter will resolve any IP addresses from a field of your choosing.</p>
+
+<p>The DNS filter performs a lookup (either an A record/CNAME record lookup
+or a reverse lookup at the PTR record) on records specified under the
+"reverse" and "resolve" arrays.</p>
+
+<p>The config should look like this:</p>
+
+<pre><code>filter {
+  dns {
+    type =&gt; 'type'
+    reverse =&gt; [ "source_host", "field_with_address" ]
+    resolve =&gt; [ "field_with_fqdn" ]
+    action =&gt; "replace"
+  }
+}
+</code></pre>
+
+<p>Caveats: at the moment, there's no way to tune the timeout with the 'resolv'
+core library.  It does seem to be fixed in here:</p>
+
+<p>  http://redmine.ruby-lang.org/issues/5100</p>
+
+<p>but isn't currently in JRuby.</p>
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>filter {
+  dns {
+    <a href="#action">action</a> => ... # string, one of ["append", "replace"] (optional), default: "append"
+    <a href="#add_field">add_field</a> => ... # hash (optional), default: {}
+    <a href="#add_tag">add_tag</a> => ... # array (optional), default: []
+    <a href="#nameserver">nameserver</a> => ... # string (optional)
+    <a href="#remove_field">remove_field</a> => ... # array (optional), default: []
+    <a href="#remove_tag">remove_tag</a> => ... # array (optional), default: []
+    <a href="#resolve">resolve</a> => ... # array (optional)
+    <a href="#reverse">reverse</a> => ... # array (optional)
+    <a href="#timeout">timeout</a> => ... # int (optional), default: 2
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="action">
+    action
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value can be any of: "append", "replace" </li>
+  <li> Default value is "append" </li>
+</ul>
+
+<p>Determine what action to do: append or replace the values in the fields
+specified under "reverse" and "resolve."</p>
+
+<h4> 
+  <a name="add_field">
+    add_field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#hash">hash</a> </li>
+  <li> Default value is {} </li>
+</ul>
+
+<p>If this filter is successful, add any arbitrary fields to this event.
+Tags can be dynamic and include parts of the event using the %{field}
+Example:</p>
+
+<pre><code>filter {
+  dns {
+    add_field =&gt; [ "foo_%{somefield}", "Hello world, from %{source}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would add field "foo_hello" if it is present, with the
+value above and the %{source} piece replaced with that value from the
+event.</p>
+
+<h4> 
+  <a name="add_tag">
+    add_tag
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, add arbitrary tags to the event.
+Tags can be dynamic and include parts of the event using the %{field}
+syntax. Example:</p>
+
+<pre><code>filter {
+  dns {
+    add_tag =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would add a tag "foo_hello"</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without all/any (controlled by exclude_any config
+option) of these tags.
+Optional.</p>
+
+<h4> 
+  <a name="nameserver">
+    nameserver
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Use custom nameserver.</p>
+
+<h4> 
+  <a name="remove_field">
+    remove_field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, remove arbitrary fields from this event.
+Fields names can be dynamic and include parts of the event using the %{field}
+Example:</p>
+
+<pre><code>filter {
+  dns {
+    remove_field =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would remove the field with name "foo_hello" if it is present</p>
+
+<h4> 
+  <a name="remove_tag">
+    remove_tag
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, remove arbitrary tags from the event.
+Tags can be dynamic and include parts of the event using the %{field}
+syntax. Example:</p>
+
+<pre><code>filter {
+  dns {
+    remove_tag =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would remove the tag "foo_hello" if it is present</p>
+
+<h4> 
+  <a name="resolve">
+    resolve
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Forward resolve one or more fields.</p>
+
+<h4> 
+  <a name="reverse">
+    reverse
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Reverse resolve one or more fields.</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all/any (controlled by include_any config option) of these tags.
+Optional.</p>
+
+<h4> 
+  <a name="timeout">
+    timeout
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#int">int</a> </li>
+  <li> Default value is 2 </li>
+</ul>
+
+<p>TODO(sissel): make 'action' required? This was always the intent, but it
+due to a typo it was never enforced. Thus the default behavior in past
+versions was 'append' by accident.
+resolv calls will be wrapped in a timeout instance</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>Note that all of the specified routing options (type,tags.exclude<em>tags,include</em>fields,exclude_fields)
+must be met in order for the event to be handled by the filter.
+The type to act on. If a type is given, then this filter will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/filters/dns.rb">lib/logstash/filters/dns.rb</a>

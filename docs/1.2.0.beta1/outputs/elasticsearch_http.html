@@ -1,0 +1,207 @@
+---
+title: logstash docs for outputs/elasticsearch_http
+layout: content_right
+---
+<h2>elasticsearch_http</h2>
+<h3>Milestone: <a href="../plugin-milestones">2</a></h3>
+
+<p>This output lets you store logs in elasticsearch.</p>
+
+<p>This plugin uses the HTTP/REST interface to ElasticSearch, which usually
+lets you use any version of elasticsearch server. It is known to work
+with elasticsearch 0.90.3</p>
+
+<p>You can learn more about elasticsearch at <a href="http://elasticsearch.org">http://elasticsearch.org</a></p>
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>output {
+  elasticsearch_http {
+    <a href="#codec">codec</a> => ... # codec (optional), default: "plain"
+    <a href="#document_id">document_id</a> => ... # string (optional), default: nil
+    <a href="#flush_size">flush_size</a> => ... # number (optional), default: 100
+    <a href="#host">host</a> => ... # string (optional)
+    <a href="#idle_flush_time">idle_flush_time</a> => ... # number (optional), default: 1
+    <a href="#index">index</a> => ... # string (optional), default: "logstash-%{+YYYY.MM.dd}"
+    <a href="#index_type">index_type</a> => ... # string (optional)
+    <a href="#port">port</a> => ... # number (optional), default: 9200
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="codec">
+    codec
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#codec">codec</a> </li>
+  <li> Default value is "plain" </li>
+</ul>
+
+<p>The codec used for output data</p>
+
+<h4> 
+  <a name="document_id">
+    document_id
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is nil </li>
+</ul>
+
+<p>The document ID for the index. Useful for overwriting existing entries in
+elasticsearch with the same ID.</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without any of these tags. Note this check is additional to type and tags.</p>
+
+<h4> 
+  <a name="flush_size">
+    flush_size
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 100 </li>
+</ul>
+
+<p>Set the number of events to queue up before writing to elasticsearch.</p>
+
+<h4> 
+  <a name="host">
+    host
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>The hostname or ip address to reach your elasticsearch server.</p>
+
+<h4> 
+  <a name="idle_flush_time">
+    idle_flush_time
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 1 </li>
+</ul>
+
+<p>The amount of time since last flush before a flush is forced.</p>
+
+<h4> 
+  <a name="index">
+    index
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "logstash-%{+YYYY.MM.dd}" </li>
+</ul>
+
+<p>The index to write events to. This can be dynamic using the %{foo} syntax.
+The default value will partition your indices by day so you can more easily
+delete old data or only search specific date ranges.</p>
+
+<h4> 
+  <a name="index_type">
+    index_type
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>The index type to write events to. Generally you should try to write only
+similar events to the same 'type'. String expansion '%{foo}' works here.</p>
+
+<h4> 
+  <a name="port">
+    port
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 9200 </li>
+</ul>
+
+<p>The port for ElasticSearch HTTP interface to use.</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all of these tags.  Note that if you specify
+a type, the event must also match that type.
+Optional.</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>The type to act on. If a type is given, then this output will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/outputs/elasticsearch_http.rb">lib/logstash/outputs/elasticsearch_http.rb</a>

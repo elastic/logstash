@@ -1,0 +1,232 @@
+---
+title: logstash docs for outputs/datadog_metrics
+layout: content_right
+---
+<h2>datadog_metrics</h2>
+<h3>Milestone: <a href="../plugin-milestones">1</a></h3>
+
+<p>This output lets you send metrics to
+DataDogHQ based on Logstash events.
+Default queue_size and timeframe are low in order to provide near realtime alerting.
+If you do not use Datadog for alerting, consider raising these thresholds.</p>
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>output {
+  datadog_metrics {
+    <a href="#api_key">api_key</a> => ... # string (required)
+    <a href="#codec">codec</a> => ... # codec (optional), default: "plain"
+    <a href="#dd_tags">dd_tags</a> => ... # array (optional)
+    <a href="#device">device</a> => ... # string (optional), default: "%{metric_device}"
+    <a href="#host">host</a> => ... # string (optional), default: "%{source}"
+    <a href="#metric_name">metric_name</a> => ... # string (optional), default: "%{metric_name}"
+    <a href="#metric_type">metric_type</a> => ... # string, one of ["gauge", "counter"] (optional), default: "%{metric_type}"
+    <a href="#metric_value">metric_value</a> => ... #  (optional), default: "%{metric_value}"
+    <a href="#queue_size">queue_size</a> => ... # number (optional), default: 10
+    <a href="#timeframe">timeframe</a> => ... # number (optional), default: 10
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="api_key">
+    api_key (required setting)
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Your DatadogHQ API key. https://app.datadoghq.com/account/settings#api</p>
+
+<h4> 
+  <a name="codec">
+    codec
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#codec">codec</a> </li>
+  <li> Default value is "plain" </li>
+</ul>
+
+<p>The codec used for output data</p>
+
+<h4> 
+  <a name="dd_tags">
+    dd_tags
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Set any custom tags for this event,
+default are the Logstash tags if any.</p>
+
+<h4> 
+  <a name="device">
+    device
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "%{metric_device}" </li>
+</ul>
+
+<p>The name of the device that produced the metric.</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without any of these tags. Note this check is additional to type and tags.</p>
+
+<h4> 
+  <a name="host">
+    host
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "%{source}" </li>
+</ul>
+
+<p>The name of the host that produced the metric.</p>
+
+<h4> 
+  <a name="metric_name">
+    metric_name
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "%{metric_name}" </li>
+</ul>
+
+<p>The name of the time series.</p>
+
+<h4> 
+  <a name="metric_type">
+    metric_type
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value can be any of: "gauge", "counter" </li>
+  <li> Default value is "%{metric_type}" </li>
+</ul>
+
+<p>The type of the metric.</p>
+
+<h4> 
+  <a name="metric_value">
+    metric_value
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "%{metric_value}" </li>
+</ul>
+
+<p>The value.</p>
+
+<h4> 
+  <a name="queue_size">
+    queue_size
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 10 </li>
+</ul>
+
+<p>How many events to queue before flushing to Datadog
+prior to schedule set in @timeframe</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all of these tags.  Note that if you specify
+a type, the event must also match that type.
+Optional.</p>
+
+<h4> 
+  <a name="timeframe">
+    timeframe
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 10 </li>
+</ul>
+
+<p>How often (in seconds) to flush queued events to Datadog</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>The type to act on. If a type is given, then this output will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/outputs/datadog_metrics.rb">lib/logstash/outputs/datadog_metrics.rb</a>

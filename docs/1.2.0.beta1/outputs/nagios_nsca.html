@@ -1,0 +1,238 @@
+---
+title: logstash docs for outputs/nagios_nsca
+layout: content_right
+---
+<h2>nagios_nsca</h2>
+<h3>Milestone: <a href="../plugin-milestones">1</a></h3>
+
+<p>The nagios_nsca output is used for sending passive check results to Nagios
+through the NSCA protocol.</p>
+
+<p>This is useful if your Nagios server is not the same as the source host from
+where you want to send logs or alerts. If you only have one server, this
+output is probably overkill # for you, take a look at the 'nagios' output
+instead.</p>
+
+<p>Here is a sample config using the nagios_nsca output:</p>
+
+<pre><code>output {
+  nagios_nsca {
+    # specify the hostname or ip of your nagios server
+    host =&gt; "nagios.example.com"
+
+    # specify the port to connect to
+    port =&gt; 5667
+  }
+}
+</code></pre>
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>output {
+  nagios_nsca {
+    <a href="#codec">codec</a> => ... # codec (optional), default: "plain"
+    <a href="#host">host</a> => ... # string (optional), default: "localhost"
+    <a href="#message_format">message_format</a> => ... # string (optional), default: "%{@timestamp} %{source}: %{message}"
+    <a href="#nagios_host">nagios_host</a> => ... # string (optional), default: "%{host}"
+    <a href="#nagios_service">nagios_service</a> => ... # string (optional), default: "LOGSTASH"
+    <a href="#nagios_status">nagios_status</a> => ... # string (required)
+    <a href="#port">port</a> => ... # number (optional), default: 5667
+    <a href="#send_nsca_bin">send_nsca_bin</a> => ... # a valid filesystem path (optional), default: "/usr/sbin/send_nsca"
+    <a href="#send_nsca_config">send_nsca_config</a> => ... # a valid filesystem path (optional)
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="codec">
+    codec
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#codec">codec</a> </li>
+  <li> Default value is "plain" </li>
+</ul>
+
+<p>The codec used for output data</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without any of these tags. Note this check is additional to type and tags.</p>
+
+<h4> 
+  <a name="host">
+    host
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "localhost" </li>
+</ul>
+
+<p>The nagios host or IP to send logs to. It should have a NSCA daemon running.</p>
+
+<h4> 
+  <a name="message_format">
+    message_format
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "%{@timestamp} %{source}: %{message}" </li>
+</ul>
+
+<p>The format to use when writing events to nagios. This value
+supports any string and can include %{name} and other dynamic
+strings.</p>
+
+<h4> 
+  <a name="nagios_host">
+    nagios_host
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "%{host}" </li>
+</ul>
+
+<p>The nagios 'host' you want to submit a passive check result to. This
+parameter accepts interpolation, e.g. you can use @source_host or other
+logstash internal variables.</p>
+
+<h4> 
+  <a name="nagios_service">
+    nagios_service
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "LOGSTASH" </li>
+</ul>
+
+<p>The nagios 'service' you want to submit a passive check result to. This
+parameter accepts interpolation, e.g. you can use @source_host or other
+logstash internal variables.</p>
+
+<h4> 
+  <a name="nagios_status">
+    nagios_status (required setting)
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>The status to send to nagios. Should be 0 = OK, 1 = WARNING, 2 = CRITICAL, 3 = UNKNOWN</p>
+
+<h4> 
+  <a name="port">
+    port
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 5667 </li>
+</ul>
+
+<p>The port where the NSCA daemon on the nagios host listens.</p>
+
+<h4> 
+  <a name="send_nsca_bin">
+    send_nsca_bin
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#path">path</a> </li>
+  <li> Default value is "/usr/sbin/send_nsca" </li>
+</ul>
+
+<p>The path to the 'send_nsca' binary on the local host.</p>
+
+<h4> 
+  <a name="send_nsca_config">
+    send_nsca_config
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#path">path</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>The path to the send_nsca config file on the local host.
+Leave blank if you don't want to provide a config file.</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all of these tags.  Note that if you specify
+a type, the event must also match that type.
+Optional.</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>The type to act on. If a type is given, then this output will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/outputs/nagios_nsca.rb">lib/logstash/outputs/nagios_nsca.rb</a>

@@ -1,0 +1,457 @@
+---
+title: logstash docs for outputs/cloudwatch
+layout: content_right
+---
+<h2>cloudwatch</h2>
+<h3>Milestone: <a href="../plugin-milestones">1</a></h3>
+
+<p>This output lets you aggregate and send metric data to AWS CloudWatch</p>
+
+<h4>Summary:</h4>
+
+<p>This plugin is intended to be used on a logstash indexer agent (but that
+is not the only way, see below.)  In the intended scenario, one cloudwatch
+output plugin is configured, on the logstash indexer node, with just AWS API
+credentials, and possibly a region and/or a namespace.  The output looks
+for fields present in events, and when it finds them, it uses them to
+calculate aggregate statistics.  If the <code>metricname</code> option is set in this
+output, then any events which pass through it will be aggregated &amp; sent to
+CloudWatch, but that is not recommended.  The intended use is to NOT set the
+metricname option here, and instead to add a <code>CW_metricname</code> field (and other
+fields) to only the events you want sent to CloudWatch.</p>
+
+<p>When events pass through this output they are queued for background
+aggregation and sending, which happens every minute by default.  The
+queue has a maximum size, and when it is full aggregated statistics will be
+sent to CloudWatch ahead of schedule. Whenever this happens a warning
+message is written to logstash's log.  If you see this you should increase
+the <code>queue_size</code> configuration option to avoid the extra API calls.  The queue
+is emptied every time we send data to CloudWatch.</p>
+
+<p>Note: when logstash is stopped the queue is destroyed before it can be processed.
+This is a known limitation of logstash and will hopefully be addressed in a
+future version.</p>
+
+<h4>Details:</h4>
+
+<p>There are two ways to configure this plugin, and they can be used in
+combination: event fields &amp; per-output defaults</p>
+
+<p>Event Field configuration...
+You add fields to your events in inputs &amp; filters and this output reads
+those fields to aggregate events.  The names of the fields read are
+configurable via the <code>field_*</code> options.</p>
+
+<p>Per-output defaults...
+You set universal defaults in this output plugin's configuration, and
+if an event does not have a field for that option then the default is
+used.</p>
+
+<p>Notice, the event fields take precedence over the per-output defaults.</p>
+
+<p>At a minimum events must have a "metric name" to be sent to CloudWatch.
+This can be achieved either by providing a default here OR by adding a
+<code>CW_metricname</code> field. By default, if no other configuration is provided
+besides a metric name, then events will be counted (Unit: Count, Value: 1)
+by their metric name (either a default or from their <code>CW_metricname</code> field)</p>
+
+<p>Other fields which can be added to events to modify the behavior of this
+plugin are, <code>CW_namespace</code>, <code>CW_unit</code>, <code>CW_value</code>, and
+<code>CW_dimensions</code>.  All of these field names are configurable in
+this output.  You can also set per-output defaults for any of them.
+See below for details.</p>
+
+<p>Read more about <a href="http://aws.amazon.com/cloudwatch/">AWS CloudWatch</a>,
+and the specific of API endpoint this output uses,
+<a href="http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_PutMetricData.html">PutMetricData</a></p>
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>output {
+  cloudwatch {
+    <a href="#access_key_id">access_key_id</a> => ... # string (optional)
+    <a href="#aws_credentials_file">aws_credentials_file</a> => ... # string (optional)
+    <a href="#codec">codec</a> => ... # codec (optional), default: "plain"
+    <a href="#dimensions">dimensions</a> => ... # hash (optional)
+    <a href="#field_dimensions">field_dimensions</a> => ... # string (optional), default: "CW_dimensions"
+    <a href="#field_metricname">field_metricname</a> => ... # string (optional), default: "CW_metricname"
+    <a href="#field_namespace">field_namespace</a> => ... # string (optional), default: "CW_namespace"
+    <a href="#field_unit">field_unit</a> => ... # string (optional), default: "CW_unit"
+    <a href="#field_value">field_value</a> => ... # string (optional), default: "CW_value"
+    <a href="#metricname">metricname</a> => ... # string (optional)
+    <a href="#namespace">namespace</a> => ... # string (optional), default: "Logstash"
+    <a href="#queue_size">queue_size</a> => ... # number (optional), default: 10000
+    <a href="#region">region</a> => ... # string, one of ["us-east-1", "us-west-1", "us-west-2", "eu-west-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "sa-east-1", "us-gov-west-1"] (optional), default: "us-east-1"
+    <a href="#secret_access_key">secret_access_key</a> => ... # string (optional)
+    <a href="#timeframe">timeframe</a> => ... # string (optional), default: "1m"
+    <a href="#unit">unit</a> => ... # string, one of ["Seconds", "Microseconds", "Milliseconds", "Bytes", "Kilobytes", "Megabytes", "Gigabytes", "Terabytes", "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits", "Percent", "Count", "Bytes/Second", "Kilobytes/Second", "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second", "Bits/Second", "Kilobits/Second", "Megabits/Second", "Gigabits/Second", "Terabits/Second", "Count/Second", "None"] (optional), default: "Count"
+    <a href="#use_ssl">use_ssl</a> => ... # boolean (optional), default: true
+    <a href="#value">value</a> => ... # string (optional), default: "1"
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="access_key_id">
+    access_key_id
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>This plugin uses the AWS SDK and supports several ways to get credentials, which will be tried in this order... <br/>
+1. Static configuration, using <code>access_key_id</code> and <code>secret_access_key</code> params in logstash plugin config <br/>
+2. External credentials file specified by <code>aws_credentials_file</code> <br/>
+3. Environment variables <code>AWS_ACCESS_KEY_ID</code> and <code>AWS_SECRET_ACCESS_KEY</code> <br/>
+4. Environment variables <code>AMAZON_ACCESS_KEY_ID</code> and <code>AMAZON_SECRET_ACCESS_KEY</code> <br/>
+5. IAM Instance Profile (available when running inside EC2)</p>
+
+<h4> 
+  <a name="aws_credentials_file">
+    aws_credentials_file
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Path to YAML file containing a hash of AWS credentials. <br/>
+This file will only be loaded if <code>access_key_id</code> and
+<code>secret_access_key</code> aren't set. The contents of the
+file should look like this:</p>
+
+<pre><code>:access_key_id: "12345"
+:secret_access_key: "54321"
+</code></pre>
+
+<h4> 
+  <a name="codec">
+    codec
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#codec">codec</a> </li>
+  <li> Default value is "plain" </li>
+</ul>
+
+<p>The codec used for output data</p>
+
+<h4> 
+  <a name="dimensions">
+    dimensions
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#hash">hash</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>The default dimensions [ name, value, ... ] to use for events which do not have a <code>CW_dimensions</code> field</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without any of these tags. Note this check is additional to type and tags.</p>
+
+<h4> 
+  <a name="field_dimensions">
+    field_dimensions
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "CW_dimensions" </li>
+</ul>
+
+<p>The name of the field used to set the dimensions on an event metric <br/>
+The field named here, if present in an event, must have an array of
+one or more key &amp; value pairs, for example...</p>
+
+<pre><code>add_field =&gt; [ "CW_dimensions", "Environment", "CW_dimensions", "prod" ]
+</code></pre>
+
+<p>or, equivalently...</p>
+
+<pre><code>add_field =&gt; [ "CW_dimensions", "Environment" ]
+add_field =&gt; [ "CW_dimensions", "prod" ]
+</code></pre>
+
+<h4> 
+  <a name="field_metricname">
+    field_metricname
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "CW_metricname" </li>
+</ul>
+
+<p>The name of the field used to set the metric name on an event <br/>
+The author of this plugin recommends adding this field to events in inputs &amp;
+filters rather than using the per-output default setting so that one output
+plugin on your logstash indexer can serve all events (which of course had
+fields set on your logstash shippers.)</p>
+
+<h4> 
+  <a name="field_namespace">
+    field_namespace
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "CW_namespace" </li>
+</ul>
+
+<p>The name of the field used to set a different namespace per event <br/>
+Note: Only one namespace can be sent to CloudWatch per API call
+so setting different namespaces will increase the number of API calls
+and those cost money.</p>
+
+<h4> 
+  <a name="field_unit">
+    field_unit
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "CW_unit" </li>
+</ul>
+
+<p>The name of the field used to set the unit on an event metric</p>
+
+<h4> 
+  <a name="field_value">
+    field_value
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "CW_value" </li>
+</ul>
+
+<p>The name of the field used to set the value (float) on an event metric</p>
+
+<h4> 
+  <a name="metricname">
+    metricname
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>The default metric name to use for events which do not have a <code>CW_metricname</code> field. <br/>
+Beware: If this is provided then all events which pass through this output will be aggregated and
+sent to CloudWatch, so use this carefully.  Furthermore, when providing this option, you
+will probably want to also restrict events from passing through this output using event
+type, tag, and field matching</p>
+
+<h4> 
+  <a name="namespace">
+    namespace
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "Logstash" </li>
+</ul>
+
+<p>The default namespace to use for events which do not have a <code>CW_namespace</code> field</p>
+
+<h4> 
+  <a name="queue_size">
+    queue_size
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 10000 </li>
+</ul>
+
+<p>How many events to queue before forcing a call to the CloudWatch API ahead of <code>timeframe</code> schedule <br/>
+Set this to the number of events-per-timeframe you will be sending to CloudWatch to avoid extra API calls</p>
+
+<h4> 
+  <a name="region">
+    region
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value can be any of: "us-east-1", "us-west-1", "us-west-2", "eu-west-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "sa-east-1", "us-gov-west-1" </li>
+  <li> Default value is "us-east-1" </li>
+</ul>
+
+<p>The AWS Region</p>
+
+<h4> 
+  <a name="secret_access_key">
+    secret_access_key
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>The AWS Secret Access Key</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all of these tags.  Note that if you specify
+a type, the event must also match that type.
+Optional.</p>
+
+<h4> 
+  <a name="timeframe">
+    timeframe
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "1m" </li>
+</ul>
+
+<p>Constants
+aggregate_key members
+Units
+How often to send data to CloudWatch <br/>
+This does not affect the event timestamps, events will always have their
+actual timestamp (to-the-minute) sent to CloudWatch.</p>
+
+<p>We only call the API if there is data to send.</p>
+
+<p>See the Rufus Scheduler docs for an <a href="https://github.com/jmettraux/rufus-scheduler#the-time-strings-understood-by-rufus-scheduler">explanation of allowed values</a></p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>The type to act on. If a type is given, then this output will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+<h4> 
+  <a name="unit">
+    unit
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value can be any of: "Seconds", "Microseconds", "Milliseconds", "Bytes", "Kilobytes", "Megabytes", "Gigabytes", "Terabytes", "Bits", "Kilobits", "Megabits", "Gigabits", "Terabits", "Percent", "Count", "Bytes/Second", "Kilobytes/Second", "Megabytes/Second", "Gigabytes/Second", "Terabytes/Second", "Bits/Second", "Kilobits/Second", "Megabits/Second", "Gigabits/Second", "Terabits/Second", "Count/Second", "None" </li>
+  <li> Default value is "Count" </li>
+</ul>
+
+<p>The default unit to use for events which do not have a <code>CW_unit</code> field <br/>
+If you set this option you should probably set the "value" option along with it</p>
+
+<h4> 
+  <a name="use_ssl">
+    use_ssl
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#boolean">boolean</a> </li>
+  <li> Default value is true </li>
+</ul>
+
+<p>Should we require (true) or disable (false) using SSL for communicating with the AWS API <br/>
+The AWS SDK for Ruby defaults to SSL so we preserve that</p>
+
+<h4> 
+  <a name="value">
+    value
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "1" </li>
+</ul>
+
+<p>The default value to use for events which do not have a <code>CW_value</code> field <br/>
+If provided, this must be a string which can be converted to a float, for example...</p>
+
+<pre><code>"1", "2.34", ".5", and "0.67"
+</code></pre>
+
+<p>If you set this option you should probably set the <code>unit</code> option along with it</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/outputs/cloudwatch.rb">lib/logstash/outputs/cloudwatch.rb</a>

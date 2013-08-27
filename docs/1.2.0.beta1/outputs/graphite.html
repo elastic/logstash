@@ -1,0 +1,261 @@
+---
+title: logstash docs for outputs/graphite
+layout: content_right
+---
+<h2>graphite</h2>
+<h3>Milestone: <a href="../plugin-milestones">2</a></h3>
+
+<p>This output allows you to pull metrics from your logs and ship them to
+graphite. Graphite is an open source tool for storing and graphing metrics.</p>
+
+<p>An example use case: At loggly, some of our applications emit aggregated
+stats in the logs every 10 seconds. Using the grok filter and this output,
+I can capture the metric values from the logs and emit them to graphite.</p>
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>output {
+  graphite {
+    <a href="#codec">codec</a> => ... # codec (optional), default: "plain"
+    <a href="#debug">debug</a> => ... # boolean (optional), default: false
+    <a href="#exclude_metrics">exclude_metrics</a> => ... # array (optional), default: ["%{[^}]+}"]
+    <a href="#fields_are_metrics">fields_are_metrics</a> => ... # boolean (optional), default: false
+    <a href="#host">host</a> => ... # string (optional), default: "localhost"
+    <a href="#include_metrics">include_metrics</a> => ... # array (optional), default: [".*"]
+    <a href="#metrics">metrics</a> => ... # hash (optional), default: {}
+    <a href="#metrics_format">metrics_format</a> => ... # string (optional), default: "*"
+    <a href="#port">port</a> => ... # number (optional), default: 2003
+    <a href="#reconnect_interval">reconnect_interval</a> => ... # number (optional), default: 2
+    <a href="#resend_on_failure">resend_on_failure</a> => ... # boolean (optional), default: false
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="codec">
+    codec
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#codec">codec</a> </li>
+  <li> Default value is "plain" </li>
+</ul>
+
+<p>The codec used for output data</p>
+
+<h4> 
+  <a name="debug">
+    debug
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#boolean">boolean</a> </li>
+  <li> Default value is false </li>
+</ul>
+
+<p>Enable debug output</p>
+
+<h4> 
+  <a name="exclude_metrics">
+    exclude_metrics
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is ["%{[^}]+}"] </li>
+</ul>
+
+<p>Exclude regex matched metric names, by default exclude unresolved %{field} strings</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without any of these tags. Note this check is additional to type and tags.</p>
+
+<h4> 
+  <a name="fields_are_metrics">
+    fields_are_metrics
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#boolean">boolean</a> </li>
+  <li> Default value is false </li>
+</ul>
+
+<p>Indicate that the event @fields should be treated as metrics and will be sent as is to graphite</p>
+
+<h4> 
+  <a name="host">
+    host
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "localhost" </li>
+</ul>
+
+<p>The address of the graphite server.</p>
+
+<h4> 
+  <a name="include_metrics">
+    include_metrics
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [".*"] </li>
+</ul>
+
+<p>Include only regex matched metric names</p>
+
+<h4> 
+  <a name="metrics">
+    metrics
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#hash">hash</a> </li>
+  <li> Default value is {} </li>
+</ul>
+
+<p>The metric(s) to use. This supports dynamic strings like %{source}
+for metric names and also for values. This is a hash field with key
+of the metric name, value of the metric value. Example:</p>
+
+<pre><code>[ "%{source}/uptime", "%{uptime_1m}" ]
+</code></pre>
+
+<p>The value will be coerced to a floating point value. Values which cannot be
+coerced will zero (0)</p>
+
+<h4> 
+  <a name="metrics_format">
+    metrics_format
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "*" </li>
+</ul>
+
+<p>Defines format of the metric string. The placeholder '*' will be
+replaced with the name of the actual metric.</p>
+
+<pre><code>metrics_format =&gt; "foo.bar.*.sum"
+</code></pre>
+
+<p>NOTE: If no metrics_format is defined the name of the metric will be used as fallback.</p>
+
+<h4> 
+  <a name="port">
+    port
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 2003 </li>
+</ul>
+
+<p>The port to connect on your graphite server.</p>
+
+<h4> 
+  <a name="reconnect_interval">
+    reconnect_interval
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 2 </li>
+</ul>
+
+<p>Interval between reconnect attempts to carboon</p>
+
+<h4> 
+  <a name="resend_on_failure">
+    resend_on_failure
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#boolean">boolean</a> </li>
+  <li> Default value is false </li>
+</ul>
+
+<p>Should metrics be resend on failure?</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all of these tags.  Note that if you specify
+a type, the event must also match that type.
+Optional.</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>The type to act on. If a type is given, then this output will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/outputs/graphite.rb">lib/logstash/outputs/graphite.rb</a>

@@ -1,0 +1,342 @@
+---
+title: logstash docs for outputs/s3
+layout: content_right
+---
+<h2>s3</h2>
+<h3>Milestone: <a href="../plugin-milestones">1</a></h3>
+
+<p>TODO integrate aws<em>config in the future
+INFORMATION:
+This plugin was created for store the logstash's events into Amazon Simple Storage Service (Amazon S3).
+For use it you needs authentications and an s3 bucket.
+Be careful to have the permission to write file on S3's bucket and run logstash with super user for establish connection.
+S3 plugin allows you to do something complex, let's explain:)
+S3 outputs create temporary files into "/opt/logstash/S3</em>temp/". If you want, you can change the path at the start of register method.
+This files have a special name, for example:
+ls.s3.ip-10-228-27-95.2013-04-18T10.00.tag<em>hello.part0.txt
+ls.s3 : indicate logstash plugin s3
+"ip-10-228-27-95" : indicate you ip machine, if you have more logstash and writing on the same bucket for example.
+"2013-04-18T10.00" : represents the time whenever you specify time</em>file.
+"tag<em>hello" : this indicate the event's tag, you can collect events with the same tag.
+"part0" : this means if you indicate size</em>file then it will generate more parts if you file.size > size_file.</p>
+
+<pre><code>      When a file is full it will pushed on bucket and will be deleted in temporary directory. 
+      If a file is empty is not pushed, but deleted.
+</code></pre>
+
+<p>This plugin have a system to restore the previous temporary files if something crash.
+INFORMATION ABOUT CLASS:
+I tried to comment the class at best i could do.
+I think there are much thing to improve, but if you want some points to develop here a list:
+TODO Integrate aws_config in the future
+TODO Find a method to push them all files when logtstash close the session.
+TODO Integrate @field on the path file
+TODO Permanent connection or on demand? For now on demand, but isn't a good implementation.</p>
+
+<pre><code> Use a while or a thread to try the connection before break a time_out and signal an error.
+</code></pre>
+
+<p>TODO If you have bugs report or helpful advice contact me, but remember that this code is much mine as much as yours,</p>
+
+<pre><code> try to work on it if you want :)
+</code></pre>
+
+<p>The programmer's question is:  "Why you fuck you use name ls.s3....  you kidding me, motherfucker?
+The answer is simple, s3 not allow special characters like "/" "[,]", very useful in date format,
+because if you use them s3 dosen't know no more the key and send you to hell!
+For example "/" in s3 means you can specify a subfolder on bucket.
+USAGE:
+This is an example of logstash config:
+output {
+   s3{</p>
+
+<pre><code> access_key_id =&gt; "crazy_key"             (required)
+ secret_access_key =&gt; "monkey_access_key" (required)
+ endpoint_region =&gt; "eu-west-1"           (required)
+ bucket =&gt; "boss_please_open_your_bucket" (required)         
+ size_file =&gt; 2048                        (optional)
+ time_file =&gt; 5                           (optional)
+ format =&gt; "plain"                        (optional) 
+</code></pre>
+
+<p>   }
+}
+We analize this:
+access<em>key</em>id => "crazy<em>key"
+Amazon will give you the key for use their service if you buy it or try it. (not very much open source anyway)
+secret</em>access<em>key => "monkey</em>access<em>key"
+Amazon will give you the secret</em>access<em>key for use their service if you buy it or try it . (not very much open source anyway).
+endpoint</em>region => "eu-west-1"
+When you make a contract with Amazon, you should know where the services you use.
+bucket => "boss<em>please</em>open<em>your</em>bucket"
+Be careful you have the permission to write on bucket and know the name.
+size<em>file => 2048
+Means the size, in KB, of files who can store on temporary directory before you will be pushed on bucket.
+Is useful if you have a little server with poor space on disk and you don't want blow up the server with unnecessary temporary log files.
+time</em>file => 5
+Means, in minutes, the time  before the files will be pushed on bucket. Is useful if you want to push the files every specific time.
+format => "plain"
+Means the format of events you want to store in the files
+LET'S ROCK AND ROLL ON THE CODE!</p>
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>output {
+  s3 {
+    <a href="#access_key_id">access_key_id</a> => ... # string (optional)
+    <a href="#aws_credentials_file">aws_credentials_file</a> => ... #  (optional)
+    <a href="#bucket">bucket</a> => ... # string (optional)
+    <a href="#codec">codec</a> => ... # codec (optional), default: "plain"
+    <a href="#endpoint_region">endpoint_region</a> => ... # string, one of ["us_east_1", "us-west-1", "us-west-2", "eu-west-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "sa-east-1", "us-gov-west-1"] (optional), default: "us_east_1"
+    <a href="#format">format</a> => ... # string, one of ["json", "plain", "nil"] (optional), default: "plain"
+    <a href="#region">region</a> => ... #  (optional)
+    <a href="#restore">restore</a> => ... # boolean (optional), default: false
+    <a href="#secret_access_key">secret_access_key</a> => ... # string (optional)
+    <a href="#size_file">size_file</a> => ... # number (optional), default: 0
+    <a href="#time_file">time_file</a> => ... # number (optional), default: 0
+    <a href="#use_ssl">use_ssl</a> => ... #  (optional)
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="access_key_id">
+    access_key_id
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p> include LogStash::PluginMixins::AwsConfig
+Aws access_key.</p>
+
+<h4> 
+  <a name="aws_credentials_file">
+    aws_credentials_file
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Path to YAML file containing a hash of AWS credentials. <br/>
+This file will only be loaded if <code>access_key_id</code> and
+<code>secret_access_key</code> aren't set. The contents of the
+file should look like this:</p>
+
+<pre><code>:access_key_id: "12345"
+:secret_access_key: "54321"
+</code></pre>
+
+<h4> 
+  <a name="bucket">
+    bucket
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>S3 bucket</p>
+
+<h4> 
+  <a name="codec">
+    codec
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#codec">codec</a> </li>
+  <li> Default value is "plain" </li>
+</ul>
+
+<p>The codec used for output data</p>
+
+<h4> 
+  <a name="endpoint_region">
+    endpoint_region
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value can be any of: "us_east_1", "us-west-1", "us-west-2", "eu-west-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "sa-east-1", "us-gov-west-1" </li>
+  <li> Default value is "us_east_1" </li>
+</ul>
+
+<p>Aws endpoint_region</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without any of these tags. Note this check is additional to type and tags.</p>
+
+<h4> 
+  <a name="format">
+    format
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value can be any of: "json", "plain", "nil" </li>
+  <li> Default value is "plain" </li>
+</ul>
+
+<p>The event format you want to store in files. Defaults to plain text.</p>
+
+<h4> 
+  <a name="region">
+    region
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>The AWS Region</p>
+
+<h4> 
+  <a name="restore">
+    restore
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#boolean">boolean</a> </li>
+  <li> Default value is false </li>
+</ul>
+
+
+
+<h4> 
+  <a name="secret_access_key">
+    secret_access_key
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Aws secret<em>access</em>key</p>
+
+<h4> 
+  <a name="size_file">
+    size_file
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 0 </li>
+</ul>
+
+<p>Set the size of file in KB, this means that files on bucket when have dimension > file_size, they are stored in two or more file.
+If you have tags then it will generate a specific size file for every tags</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all of these tags.  Note that if you specify
+a type, the event must also match that type.
+Optional.</p>
+
+<h4> 
+  <a name="time_file">
+    time_file
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 0 </li>
+</ul>
+
+<p>Set the time, in minutes, to close the current sub<em>time</em>section of bucket.
+If you define file<em>size you have a number of files in consideration of the section and the current tag.
+0 stay all time on listerner, beware if you specific 0 and size</em>file 0, because you will not put the file on bucket,
+for now the only thing this plugin can do is to put the file when logstash restart.</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>The type to act on. If a type is given, then this output will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+<h4> 
+  <a name="use_ssl">
+    use_ssl
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Should we require (true) or disable (false) using SSL for communicating with the AWS API <br/>
+The AWS SDK for Ruby defaults to SSL so we preserve that</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/outputs/s3.rb">lib/logstash/outputs/s3.rb</a>
