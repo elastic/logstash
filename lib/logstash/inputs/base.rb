@@ -76,7 +76,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
       # charset is deprecated on inputs, but provide backwards compatibility
       # by copying the charset setting into the codec.
 
-      @logger.warn("Copying input's charset setting into codec", :input => self, :codec => @codec)
+      @logger.info("Copying input's charset setting into codec", :input => self, :codec => @codec)
       charset = @charset
       @codec.instance_eval { @charset = charset }
     end
