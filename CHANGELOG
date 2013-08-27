@@ -1,18 +1,18 @@
 1.2.0 (???)
   # general
-  - THE LOGSTASH EVENT SCHEMA HAS CHANGED.
-      TODO(sissel): Document what this means, etc.
+  - The logstash json schema has changed. It is smaller now.
   - The old logstash web ui has been replaced by Kibana 3. Kibana is a far
     superior search and analytics interface.
   - TODO(sissel): document new conditionals feature (LOGSTASH-661)
   - TODO(sissel): document new field reference syntax (LOGSTASH-1153)
-  - ElasticSearch version 0.90.2 is included.
+  - ElasticSearch version 0.90.3 is included.
   - Many deprecated features have been removed.
     TODO(sissel): Document what these were.
   - 'type' is no longer a required setting on inputs.
   - feature: codecs. Used to implement decoding of events for inputs and
-    encoding of events for outputs.
-      TODO(nickethier): Document how to use and how to hack.
+    encoding of events for outputs. Codecs allow us to separate transport
+    (like tcp, redis, rabbitmq) from serialization (gzip text, json, msgpack,
+    etc).
 
   ## inputs
   - bugfix: gelf: work around gelf parser errors (#476, patch by Chris McCoy)
