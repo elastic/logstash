@@ -273,7 +273,7 @@ module LogStash; module Config; module AST
       # This really belongs elsewhere, I think.
       cmp = recursive_select(LogStash::Config::AST::ComparisonOperator)
       if cmp.count == 1 
-        operator = cmp.first
+        operator = cmp.first.text_value
         if operator == "in"
           # item 'in' list
           # technically anything that responds to #include? is accepted.
