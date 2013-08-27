@@ -3,11 +3,14 @@
   - The logstash json schema has changed. It is smaller now.
   - The old logstash web ui has been replaced by Kibana 3. Kibana is a far
     superior search and analytics interface.
-  - TODO(sissel): document new conditionals feature (LOGSTASH-661)
+  - New feature: conditionals! You can now make "if this, then ..." decisions
+    in your filters or outputs. See the docs here:
+    https://logstash.net/docs/latest/configuration#conditionals
   - TODO(sissel): document new field reference syntax (LOGSTASH-1153)
   - ElasticSearch version 0.90.3 is included.
-  - Many deprecated features have been removed.
-    TODO(sissel): Document what these were.
+  - Many deprecated features have been removed. If your config caused
+    deprecation warnings on startup in logstash v1.1.13, there is a good
+    chance that these deprecated settings are now absent.
   - 'type' is no longer a required setting on inputs.
   - feature: codecs. Used to implement decoding of events for inputs and
     encoding of events for outputs. Codecs allow us to separate transport
