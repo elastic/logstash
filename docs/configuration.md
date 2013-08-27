@@ -118,6 +118,59 @@ The key and value are simply pairs, such as:
 
     match => { "field1" => "value1", "field2" => "value2", ... }
 
+## <a name="fieldreferences"></a>Field References
+
+All events have properties. For example, an apache access log would have things
+like status code, request path, http verb, client ip, etc. Logstash calls these
+properties "fields." 
+
+In many cases, it is useful to be able to refer to a field by name. To do this,
+you can use the logstash field reference syntax.
+
+By way of example, let us suppose we have this event:
+
+    {
+      "agent": "Mozilla/5.0 (compatible; MSIE 9.0)",
+      "ip": "192.168.24.44",
+      "request": "/index.html"
+      "response": {
+        "status": 200,
+        "bytes": 52353
+      },
+      "ua": {
+        "os": "Windows 7"
+      }
+    }
+
+The syntax to access fields is `[fieldname]`. If you are only referring to a
+top-level field, you can omit the `[]` and simply say `fieldname`. In the case
+of nested fields,
+like the "os" field above, you need the full path to that field: `[ua][os]`.
+
+## <a name="sprintf"></a>sprintf format
+
+This syntax is also used in what logstash calls 'sprintf format'. This format
+allows you to refer to field values from within other strings. For example, the
+statsd output has an 'increment' setting, to allow you to keep a count of
+apache logs by status code:
+
+    output {
+      statsd {
+        increment => "apache.%{[response][status]}"
+      }
+    }
+
+You can also do time formatting in this sprintf format. Instead of specifying a field name, use the `+FORMAT` syntax where `FORMAT` is a [time format](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html). 
+
+For example, if you want to use the file output to write to logs based on the
+hour and the 'type' field:
+
+    output {
+      file {
+        path => "/var/log/%{type}.%{+yyyy.MM.dd.HH}"
+      }
+    }
+
 ## <a name="conditionals"></a>Conditionals
 
 Sometimes you only want a filter or output to process an even under
