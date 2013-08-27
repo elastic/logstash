@@ -90,7 +90,7 @@ Gem::Specification.new do |gem|
   if RUBY_PLATFORM != 'java'
     gem.add_runtime_dependency "bunny",       ["~> 0.9.8"]  #(MIT license)
   else
-    gem.add_runtime_dependency "hot_bunnies", ["~> 2.0.0.pre9"] #(MIT license)
+    gem.add_runtime_dependency "hot_bunnies", ["~> 2.0.0.pre12"] #(MIT license)
   end
 
   if RUBY_VERSION >= '1.9.1'
