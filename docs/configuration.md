@@ -118,7 +118,7 @@ The key and value are simply pairs, such as:
 
     match => { "field1" => "value1", "field2" => "value2", ... }
 
-## Conditionals
+## <a name="conditionals"></a>Conditionals
 
 Sometimes you only want a filter or output to process an even under
 certain conditions. For that, you'll want to use a conditional!
