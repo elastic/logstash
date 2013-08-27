@@ -1,27 +1,45 @@
 1.2.0 (???)
   # general
-  - The logstash json schema has changed. It is smaller now.
+  - The logstash json schema has changed. (LOGSTASH-675)
+    For prior logstash users, you will be impacted one of several ways:
+    * You should check your elasticsearch templates and update them accordingly.
+    * If you want to reindex old data from elasticsearch with the new schema,
+      you should be able to do this with the elasticsearch input. Just make
+      sure you set 'codec => oldlogstashjson' in your elasticsearch input.
   - The old logstash web ui has been replaced by Kibana 3. Kibana is a far
     superior search and analytics interface.
   - New feature: conditionals! You can now make "if this, then ..." decisions
     in your filters or outputs. See the docs here:
     https://logstash.net/docs/latest/configuration#conditionals
-  - TODO(sissel): document new field reference syntax (LOGSTASH-1153)
-  - ElasticSearch version 0.90.3 is included.
+  - A new syntax exists for referencing fields (LOGSTASH-1153). This replaces
+    the prior and undocumented syntax for field access (was 'foo.bar' and is
+    now '[foo][bar]'). Learn more about this here:
+    https://logstash.net/docs/latest/configuration#fieldreferences
+  - ElasticSearch version 0.90.3 is included. (#486, Gang Chen)
+  - The elasticsearch plugin now uses the bulk index api which should result
+    in lower cpu usage as well as higher performance than the previous 
+    logstash version.
   - Many deprecated features have been removed. If your config caused
     deprecation warnings on startup in logstash v1.1.13, there is a good
     chance that these deprecated settings are now absent.
   - 'type' is no longer a required setting on inputs.
-  - feature: codecs. Used to implement decoding of events for inputs and
-    encoding of events for outputs. Codecs allow us to separate transport
-    (like tcp, redis, rabbitmq) from serialization (gzip text, json, msgpack,
-    etc).
+  - New plugin type: codec. Used to implement decoding of events for inputs and
+    encoding of events for outputs. Codecs allow us to separate transport (like
+    tcp, redis, rabbitmq) from serialization (gzip text, json, msgpack, etc).
+  - Improved error messages that try to be helpful. If you see bad or confusing
+    error messages, it is a bug, so let us know! (Patch by Nick Ethier)
 
   ## inputs
   - bugfix: gelf: work around gelf parser errors (#476, patch by Chris McCoy)
   - broken: the twitter input is disabled because the twitter stream v1 api is
     no longer supported and I couldn't find a replacement library that works
     under JRuby.
+  - new: sqlite input (#484, patch by Evan Livingston)
+  - improvement: snmptrap: new 'yamlmibdir' setting for specifying an external
+    source for MIB definitions. (#477, patch by Dick Davies)
+  - improvement: stomp: vhost support (#490, patch by Matt Dainty)
+  - new: unix: unix socket input (#496, patch by Nikolay Bryskin)
+  - new: wmi: for querying wmi (windows). (#497, patch by Philip Seidel)
 
   ## filters
   - feature: grok: 'singles' now defaults to true.
@@ -34,15 +52,26 @@
   - feature: grok now defaults 'singles' to true, meaning captured fields are
     stored as single values in most cases instead of the old behavior of being
     captured as an array of values.
-  - removed: the multiline filter is gone. See the multiline codec instead.
   - new: json_encoder filter (Ralph Meijer)
+  - new: cipher: gives you many options for encrypting fields (#493, patch by
+    saez0pub)
+  - feature: kv: new settings include_fields and exclude_fields. (patch by
+    Piavlo)
+  - feature: geoip: new 'target' setting for where to write geoip results.
+    (#491, patch by Richard Pijnenburg)
+  - feature: dns: now accepts custom nameservers to query (#495, patch by
+    Nikolay Bryskin)
+  - bugfix: ruby: multiple ruby filter instances now work (#501, patch by
+    Nikolay Bryskin)
 
   ## outputs
+  - improvement: stomp: vhost support (Patch by Matt Dainty)
   - feature: irc: add messages_per_second tunable (LOGSTASH-962)
   - bugfix: emails: restored initial really useful documentation
   - improvement: emails: allow @message, @source, @... in match (LOGSTASH-826,
     LOGSTASH-823) 
-  - feature: mongodb: replica sets are supported (Mathias Gug)
+  - feature: mongodb: replica sets are supported (#389, patch by Mathias Gug)
+  - new: s3: New plugin to write to amazon S3 (#439, patch by Mattia Peterle)
 
 1.1.13 (May 28, 2013)
   ## general
