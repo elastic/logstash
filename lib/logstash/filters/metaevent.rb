@@ -50,7 +50,7 @@ class LogStash::Filters::Metaevent < LogStash::Filters::Base
 
     event = LogStash::Event.new
     event["source"] = Socket.gethostname
-    event["tags"] = [@add_tag
+    event["tags"] = [@add_tag]
 
     @metaevents << event
     @start_event = nil

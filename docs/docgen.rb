@@ -8,6 +8,7 @@ $: << File.join(File.dirname(__FILE__), "..", "lib")
 
 require "logstash/config/mixin"
 require "logstash/inputs/base"
+require "logstash/codecs/base"
 require "logstash/filters/base"
 require "logstash/outputs/base"
 require "logstash/version"
@@ -18,7 +19,7 @@ class LogStashConfigDocGenerator
   def initialize
     @rules = {
       COMMENT_RE => lambda { |m| add_comment(m[1]) },
-      /^ *class.*< *LogStash::(Outputs|Filters|Inputs)::(Base|Threadable)/ => \
+      /^ *class.*< *LogStash::(Outputs|Filters|Inputs|Codecs)::(Base|Threadable)/ => \
         lambda { |m| set_class_description },
       /^ *config +[^=].*/ => lambda { |m| add_config(m[0]) },
       /^ *milestone .*/ => lambda { |m| set_milestone(m[0]) },
@@ -184,6 +185,8 @@ class LogStashConfigDocGenerator
       section = "filter"
     elsif klass.ancestors.include?(LogStash::Outputs::Base)
       section = "output"
+    elsif klass.ancestors.include?(LogStash::Codecs::Base)
+      section = "codec"
     end
 
     template_file = File.join(File.dirname(__FILE__), "plugin-doc.html.erb")
@@ -198,6 +201,9 @@ class LogStashConfigDocGenerator
     sorted_attributes = @attributes.sort { |a,b| a.first.to_s <=> b.first.to_s }
     klassname = LogStash::Config::Registry.registry[@name].to_s
     name = @name
+
+    synopsis_file = File.join(File.dirname(__FILE__), "plugin-synopsis.html.erb")
+    synopsis = ERB.new(File.new(synopsis_file).read, nil, "-").result(binding)
 
     if settings[:output]
       dir = File.join(settings[:output], section + "s")

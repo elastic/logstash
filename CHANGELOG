@@ -1,18 +1,18 @@
 1.2.0 (???)
   # general
-  - THE LOGSTASH EVENT SCHEMA HAS CHANGED.
-      TODO(sissel): Document what this means, etc.
+  - The logstash json schema has changed. It is smaller now.
   - The old logstash web ui has been replaced by Kibana 3. Kibana is a far
     superior search and analytics interface.
   - TODO(sissel): document new conditionals feature (LOGSTASH-661)
   - TODO(sissel): document new field reference syntax (LOGSTASH-1153)
-  - ElasticSearch version 0.90.2 is included.
+  - ElasticSearch version 0.90.3 is included.
   - Many deprecated features have been removed.
     TODO(sissel): Document what these were.
   - 'type' is no longer a required setting on inputs.
   - feature: codecs. Used to implement decoding of events for inputs and
-    encoding of events for outputs.
-      TODO(nickethier): Document how to use and how to hack.
+    encoding of events for outputs. Codecs allow us to separate transport
+    (like tcp, redis, rabbitmq) from serialization (gzip text, json, msgpack,
+    etc).
 
   ## inputs
   - bugfix: gelf: work around gelf parser errors (#476, patch by Chris McCoy)
@@ -32,12 +32,14 @@
     stored as single values in most cases instead of the old behavior of being
     captured as an array of values.
   - removed: the multiline filter is gone. See the multiline codec instead.
+  - new: json_encoder filter (Ralph Meijer)
 
   ## outputs
   - feature: irc: add messages_per_second tunable (LOGSTASH-962)
   - bugfix: emails: restored initial really useful documentation
   - improvement: emails: allow @message, @source, @... in match (LOGSTASH-826,
     LOGSTASH-823) 
+  - feature: mongodb: replica sets are supported (Mathias Gug)
 
 1.1.13 (May 28, 2013)
   ## general

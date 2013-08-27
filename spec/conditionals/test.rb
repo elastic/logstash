@@ -1,7 +1,29 @@
 require "test_utils"
 
+module ConditionalFancines
+  def description
+    return example.metadata[:example_group][:description_args][0]
+  end
+
+  def conditional(expression, &block)
+    describe(expression) do
+      config <<-CONFIG
+        filter {
+          if #{expression} {
+            mutate { add_tag => "success" }
+          } else {
+            mutate { add_tag => "failure" }
+          }
+        }
+      CONFIG
+      instance_eval(&block)
+    end
+  end
+end
+
 describe "conditionals" do
   extend LogStash::RSpec
+  extend ConditionalFancines
 
   describe "simple" do
     config <<-CONFIG
@@ -125,6 +147,52 @@ describe "conditionals" do
       insist { subject["tags"] }.include?("string in field")
       insist { subject["tags"] }.include?("field in list")
       reject { subject["tags"] }.include?("shouldnotexist")
+    end
+  end
+
+  describe "operators" do
+    conditional "[message] == 'sample'" do
+      sample("sample") { insist { subject["tags"] }.include?("success") }
+      sample("different") { insist { subject["tags"] }.include?("failure") }
+    end 
+
+    conditional "[message] != 'sample'" do
+      sample("sample") { insist { subject["tags"] }.include?("failure") }
+      sample("different") { insist { subject["tags"] }.include?("success") }
+    end 
+
+    conditional "[message] < 'sample'" do
+      sample("apple") { insist { subject["tags"] }.include?("success") }
+      sample("zebra") { insist { subject["tags"] }.include?("failure") }
+    end
+
+    conditional "[message] > 'sample'" do
+      sample("zebra") { insist { subject["tags"] }.include?("success") }
+      sample("apple") { insist { subject["tags"] }.include?("failure") }
+    end
+
+    conditional "[message] <= 'sample'" do
+      sample("apple") { insist { subject["tags"] }.include?("success") }
+      sample("zebra") { insist { subject["tags"] }.include?("failure") }
+      sample("sample") { insist { subject["tags"] }.include?("success") }
+    end
+
+    conditional "[message] >= 'sample'" do
+      sample("zebra") { insist { subject["tags"] }.include?("success") }
+      sample("sample") { insist { subject["tags"] }.include?("success") }
+      sample("apple") { insist { subject["tags"] }.include?("failure") }
+    end
+
+    conditional "[message] =~ /sample/" do
+      sample("apple") { insist { subject["tags"] }.include?("failure") }
+      sample("sample") { insist { subject["tags"] }.include?("success") }
+      sample("some sample") { insist { subject["tags"] }.include?("success") }
+    end
+
+    conditional "[message] !~ /sample/" do
+      sample("apple") { insist { subject["tags"] }.include?("success") }
+      sample("sample") { insist { subject["tags"] }.include?("failure") }
+      sample("some sample") { insist { subject["tags"] }.include?("failure") }
     end
   end
 end

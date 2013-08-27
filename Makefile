@@ -17,7 +17,7 @@ ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
 KIBANA_URL=https://github.com/elasticsearch/kibana/archive/master.tar.gz
-PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
+PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters|codecs)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 QUIET=@
 
 WGET=$(shell which wget 2>/dev/null)
@@ -276,7 +276,7 @@ docgen: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGI
 build/docs: build
 	-$(QUIET)mkdir $@
 
-build/docs/inputs build/docs/filters build/docs/outputs: | build/docs
+build/docs/inputs build/docs/filters build/docs/outputs build/docs/codecs: | build/docs
 	-$(QUIET)mkdir $@
 
 # bluecloth gem doesn't work on jruby. Use ruby.
@@ -292,6 +292,9 @@ build/docs/outputs/%.html: lib/logstash/outputs/%.rb docs/docgen.rb docs/plugin-
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
 	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
+build/docs/codecs/%.html: lib/logstash/codecs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/codecs
+	$(QUIET)ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
 
 build/docs/%: docs/% lib/logstash/version.rb Makefile
 	@echo "Copying $< (to $@)"

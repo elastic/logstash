@@ -10,6 +10,8 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   config_name "lumberjack"
   milestone 1
 
+  default :codec, "plain"
+
   # the address to listen on.
   config :host, :validate => :string, :default => "0.0.0.0"
 
@@ -40,15 +42,10 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   public
   def run(output_queue)
     @lumberjack.run do |l|
-      line = l.delete("line")
-      #if file[0,1] == "/"
-        #source = "lumberjack://#{l.delete("host")}#{file}"
-      #else
-        #source = "lumberjack://#{l.delete("host")}/#{file}"
-      #end
-      event = LogStash::Event.new(l)
-      event["message"] = line
-      output_queue << event
+      @codec.decode(l.delete("line")) do |event|
+        l.each { |k,v| event[k] = v }
+        output_queue << event
+      end
     end
   end # def run
 end # class LogStash::Inputs::Lumberjack

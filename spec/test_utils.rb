@@ -42,6 +42,7 @@ module LogStash
       name = name[0..50] + "..." if name.length > 50
 
       describe "\"#{name}\"" do
+        extend LogStash::RSpec
         let(:pipeline) { LogStash::Pipeline.new(config) }
         let(:event) do
           sample_event = [sample_event] unless sample_event.is_a?(Array)
