@@ -151,21 +151,13 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   public
   def receive(event)
     return unless output?(event)
-    buffer_receive([event, index, type])
+    buffer_receive([event, event.sprintf(@index), event.sprintf(@index_type)])
   end # def receive
 
   def flush(events, teardown=false)
     request = @client.bulk
     events.each do |event, index, type|
-      index = event.sprintf(@index)
-
-      # Set the 'type' value for the index.
-      if @index_type.nil?
-        type =  event["type"] || "logs"
-      else
-        type = event.sprintf(@index_type)
-      end
-
+      type = "logs" if type.empty?
       if @document_id
         request.index(index, type, event.sprintf(@document_id), event.to_json)
       else
@@ -173,7 +165,6 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       end
     end
 
-    request.on(:success) { }
     request.execute
   end # def flush
 
