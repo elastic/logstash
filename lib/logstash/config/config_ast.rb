@@ -206,6 +206,11 @@ module LogStash; module Config; module AST
       return text_value[1...-1].inspect
     end
   end
+  class RegExp < Value
+    def compile
+      return text_value
+    end
+  end
   class Number < Value
     def compile
       return text_value
@@ -267,12 +272,24 @@ module LogStash; module Config; module AST
       # Hack for compiling 'in' support.
       # This really belongs elsewhere, I think.
       cmp = recursive_select(LogStash::Config::AST::ComparisonOperator)
-      if cmp.count == 1 && cmp.first.text_value == "in"
-        # item 'in' list
-        # technically anything that responds to #include? is accepted.
-        item, list = recursive_select(LogStash::Config::AST::RValue)
-        return "(x = #{list.compile}; x.respond_to?(:include?) && x.include?(#{item.compile}))"
-        #return "#{list.compile}.include?(#{item.compile})"
+      if cmp.count == 1 
+        operator = cmp.first
+        if operator == "in"
+          # item 'in' list
+          # technically anything that responds to #include? is accepted.
+          item, list = recursive_select(LogStash::Config::AST::RValue)
+          return "(x = #{list.compile}; x.respond_to?(:include?) && x.include?(#{item.compile}))"
+          #return "#{list.compile}.include?(#{item.compile})"
+        elsif ["=~", "!~"].include?(operator)
+          item, regexp = recursive_select(LogStash::Config::AST::RValue)
+          if regexp.is_a?(LogStash::Config::AST::String)
+            regexp = "/#{regexp.text_value[1..-1]}/"
+          else
+            regexp = regexp.compile
+          end
+          ::File.write("/tmp/x",  "(#{item.compile} #{operator} #{regexp})")
+          return "(#{item.compile} #{operator} #{regexp})"
+        end
       end
       return "(#{super})"
     end
