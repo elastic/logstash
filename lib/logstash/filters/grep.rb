@@ -25,6 +25,13 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
   # through.
   config :negate, :validate => :boolean, :default => false
 
+  #Negate the entire expression
+  #
+  #If this is set to true the entire match expression is negated instead of
+  #the individual components.  This allows for dropping lines where all of the
+  #components are false insead of just one of them.
+  config :negate_expression, :validate => :boolean, :default => false
+
   # A hash of matches of field => regexp.  If multiple matches are specified,
   # all must match for the grep to be considered successful.  Normal regular
   # expressions are supported here.
@@ -135,7 +142,7 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
       end # match["match"].each
     end # @patterns.each
 
-    if matches == @patterns.length
+    if (matches == @patterns.length) ^ @negate_expression
       filter_matched(event)
     else
       if @drop == true
