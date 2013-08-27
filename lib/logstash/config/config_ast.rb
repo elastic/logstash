@@ -287,7 +287,6 @@ module LogStash; module Config; module AST
           else
             regexp = regexp.compile
           end
-          ::File.write("/tmp/x",  "(#{item.compile} #{operator} #{regexp})")
           return "(#{item.compile} #{operator} #{regexp})"
         end
       end
