@@ -1,0 +1,389 @@
+---
+title: logstash docs for filters/cipher
+layout: content_right
+---
+<h2>cipher</h2>
+<h3>Milestone: <a href="../plugin-milestones">1</a></h3>
+
+<p>This filter parses a source and apply a cipher or decipher before
+storing it in the target.</p>
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>filter {
+  cipher {
+    <a href="#add_field">add_field</a> => ... # hash (optional), default: {}
+    <a href="#add_tag">add_tag</a> => ... # array (optional), default: []
+    <a href="#algorithm">algorithm</a> => ... # string (required)
+    <a href="#base64">base64</a> => ... # boolean (optional), default: true
+    <a href="#cipher_padding">cipher_padding</a> => ... # string (optional)
+    <a href="#iv">iv</a> => ... # string (optional)
+    <a href="#key">key</a> => ... # string (optional)
+    <a href="#key_pad">key_pad</a> => ... #  (optional), default: "\x00"
+    <a href="#key_size">key_size</a> => ... # number (optional), default: 32
+    <a href="#mode">mode</a> => ... # string (required)
+    <a href="#remove_field">remove_field</a> => ... # array (optional), default: []
+    <a href="#remove_tag">remove_tag</a> => ... # array (optional), default: []
+    <a href="#source">source</a> => ... # string (optional), default: "message"
+    <a href="#target">target</a> => ... # string (optional), default: "message"
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="add_field">
+    add_field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#hash">hash</a> </li>
+  <li> Default value is {} </li>
+</ul>
+
+<p>If this filter is successful, add any arbitrary fields to this event.
+Tags can be dynamic and include parts of the event using the %{field}
+Example:</p>
+
+<pre><code>filter {
+  cipher {
+    add_field =&gt; [ "foo_%{somefield}", "Hello world, from %{source}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would add field "foo_hello" if it is present, with the
+value above and the %{source} piece replaced with that value from the
+event.</p>
+
+<h4> 
+  <a name="add_tag">
+    add_tag
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, add arbitrary tags to the event.
+Tags can be dynamic and include parts of the event using the %{field}
+syntax. Example:</p>
+
+<pre><code>filter {
+  cipher {
+    add_tag =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would add a tag "foo_hello"</p>
+
+<h4> 
+  <a name="algorithm">
+    algorithm (required setting)
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>The cipher algorythm</p>
+
+<p>A list of supported algorithms can be obtained by</p>
+
+<pre><code>puts OpenSSL::Cipher.ciphers
+</code></pre>
+
+<h4> 
+  <a name="base64">
+    base64
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#boolean">boolean</a> </li>
+  <li> Default value is true </li>
+</ul>
+
+<p>Do we have to perform a base64 decode or encode?</p>
+
+<p>If we are decrypting, base64 decode will be done before.
+If we are encrypting, base64 will be done after.</p>
+
+<h4> 
+  <a name="cipher_padding">
+    cipher_padding
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Cypher padding to use. Enables or disables padding.</p>
+
+<p>By default encryption operations are padded using standard block padding
+and the padding is checked and removed when decrypting. If the pad
+parameter is zero then no padding is performed, the total amount of data
+encrypted or decrypted must then be a multiple of the block size or an
+error will occur.</p>
+
+<p>See EVP<em>CIPHER</em>CTX<em>set</em>padding for further information.</p>
+
+<p>We are using Openssl jRuby which uses default padding to PKCS5Padding
+If you want to change it, set this parameter. If you want to disable
+it, Set this parameter to 0</p>
+
+<pre><code>filter { cipher { padding =&gt; 0 }}
+</code></pre>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without all/any (controlled by exclude_any config
+option) of these tags.
+Optional.</p>
+
+<h4> 
+  <a name="iv">
+    iv
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>The initialization vector to use</p>
+
+<p>The cipher modes CBC, CFB, OFB and CTR all need an "initialization
+vector", or short, IV. ECB mode is the only mode that does not require
+an IV, but there is almost no legitimate use case for this mode
+because of the fact that it does not sufficiently hide plaintext patterns.</p>
+
+<h4> 
+  <a name="key">
+    key
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>The key to use</p>
+
+<h4> 
+  <a name="key_pad">
+    key_pad
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "\x00" </li>
+</ul>
+
+<p>The character used to pad the key</p>
+
+<h4> 
+  <a name="key_size">
+    key_size
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 32 </li>
+</ul>
+
+<p>The key size to pad</p>
+
+<p>It depends of the cipher algorythm.I your key don't need
+padding, don't set this parameter</p>
+
+<p>Example, for AES-256, we must have 32 char long key</p>
+
+<pre><code>filter { cipher { key_size =&gt; 32 }
+</code></pre>
+
+<h4> 
+  <a name="mode">
+    mode (required setting)
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>Encrypting or decrypting some data</p>
+
+<p>Valid values are encrypt or decrypt</p>
+
+<h4> 
+  <a name="remove_field">
+    remove_field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, remove arbitrary fields from this event.
+Fields names can be dynamic and include parts of the event using the %{field}
+Example:</p>
+
+<pre><code>filter {
+  cipher {
+    remove_field =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would remove the field with name "foo_hello" if it is present</p>
+
+<h4> 
+  <a name="remove_tag">
+    remove_tag
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, remove arbitrary tags from the event.
+Tags can be dynamic and include parts of the event using the %{field}
+syntax. Example:</p>
+
+<pre><code>filter {
+  cipher {
+    remove_tag =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would remove the tag "foo_hello" if it is present</p>
+
+<h4> 
+  <a name="source">
+    source
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "message" </li>
+</ul>
+
+<p>The field to perform filter</p>
+
+<p>Example, to use the @message field (default) :</p>
+
+<pre><code>filter { cipher { source =&gt; "message" } }
+</code></pre>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all/any (controlled by include_any config option) of these tags.
+Optional.</p>
+
+<h4> 
+  <a name="target">
+    target
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "message" </li>
+</ul>
+
+<p>The name of the container to put the result</p>
+
+<p>Example, to place the result into crypt :</p>
+
+<pre><code>filter { cipher { target =&gt; "crypt" } }
+</code></pre>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>Note that all of the specified routing options (type,tags.exclude<em>tags,include</em>fields,exclude_fields)
+must be met in order for the event to be handled by the filter.
+The type to act on. If a type is given, then this filter will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/filters/cipher.rb">lib/logstash/filters/cipher.rb</a>

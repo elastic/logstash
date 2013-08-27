@@ -1,0 +1,107 @@
+{
+  "@source"      => "tcp://0.0.0.0:3333/client/127.0.0.1:35019",
+  "@type"        => "apache",
+  "@tags"        => [],
+  "@fields"      => {
+    "COMBINEDAPACHELOG" => [
+      [0] "129.92.249.70 - - [18/Aug/2011:06:00:14 -0700] \"GET /style2.css HTTP/1.1\" 200 1820 \"http://www.semicomplete.com/blog/geekery/bypassing-captive-portals.html\" \"Mozilla/5.0 (iPad; U; CPU OS 4_3_5 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8L1 Safari/6533.18.5\""
+    ],
+    "clientip"          => [
+      [0] "129.92.249.70"
+    ],
+    "HOSTNAME"          => [
+      [0] "129.92.249.70",
+      [1] "www.semicomplete.com"
+    ],
+    "IP"                => [],
+    "ident"             => [
+      [0] "-"
+    ],
+    "USERNAME"          => [
+      [0] "-",
+      [1] "-"
+    ],
+    "auth"              => [
+      [0] "-"
+    ],
+    "timestamp"         => [
+      [0] "18/Aug/2011:06:00:14 -0700"
+    ],
+    "MONTHDAY"          => [
+      [0] "18"
+    ],
+    "MONTH"             => [
+      [0] "Aug"
+    ],
+    "YEAR"              => [
+      [0] "2011"
+    ],
+    "TIME"              => [
+      [0] "06:00:14"
+    ],
+    "HOUR"              => [
+      [0] "06"
+    ],
+    "MINUTE"            => [
+      [0] "00"
+    ],
+    "SECOND"            => [
+      [0] "14"
+    ],
+    "ZONE"              => [
+      [0] "-0700"
+    ],
+    "verb"              => [
+      [0] "GET"
+    ],
+    "request"           => [
+      [0] "/style2.css"
+    ],
+    "URIPATH"           => [
+      [0] "/style2.css",
+      [1] "/blog/geekery/bypassing-captive-portals.html"
+    ],
+    "URIPARAM"          => [],
+    "httpversion"       => [
+      [0] "1.1"
+    ],
+    "BASE10NUM"         => [
+      [0] "1.1",
+      [1] "200",
+      [2] "1820"
+    ],
+    "response"          => [
+      [0] "200"
+    ],
+    "bytes"             => [
+      [0] "1820"
+    ],
+    "referrer"          => [
+      [0] "http://www.semicomplete.com/blog/geekery/bypassing-captive-portals.html"
+    ],
+    "URIPROTO"          => [
+      [0] "http"
+    ],
+    "USER"              => [],
+    "URIHOST"           => [
+      [0] "www.semicomplete.com"
+    ],
+    "IPORHOST"          => [
+      [0] "www.semicomplete.com"
+    ],
+    "POSINT"            => [],
+    "URIPATHPARAM"      => [
+      [0] "/blog/geekery/bypassing-captive-portals.html"
+    ],
+    "agent"             => [
+      [0] "\"Mozilla/5.0 (iPad; U; CPU OS 4_3_5 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8L1 Safari/6533.18.5\""
+    ],
+    "QUOTEDSTRING"      => [
+      [0] "\"Mozilla/5.0 (iPad; U; CPU OS 4_3_5 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8L1 Safari/6533.18.5\""
+    ]
+  },
+  "@timestamp"   => "2011-08-18T13:00:14.000Z",
+  "@source_host" => "0.0.0.0",
+  "@source_path" => "/client/127.0.0.1:35019",
+  "@message"     => "129.92.249.70 - - [18/Aug/2011:06:00:14 -0700] \"GET /style2.css HTTP/1.1\" 200 1820 \"http://www.semicomplete.com/blog/geekery/bypassing-captive-portals.html\" \"Mozilla/5.0 (iPad; U; CPU OS 4_3_5 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8L1 Safari/6533.18.5\"\n"
+}

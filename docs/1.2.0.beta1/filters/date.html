@@ -1,0 +1,298 @@
+---
+title: logstash docs for filters/date
+layout: content_right
+---
+<h2>date</h2>
+<h3>Milestone: <a href="../plugin-milestones">3</a></h3>
+
+<p>The date filter is used for parsing dates from fields and using that
+date or timestamp as the timestamp for the event.</p>
+
+<p>For example, syslog events usually have timestamps like this:</p>
+
+<pre><code>"Apr 17 09:32:01"
+</code></pre>
+
+<p>You would use the date format "MMM dd HH:mm:ss" to parse this.</p>
+
+<p>The date filter is especially important for sorting events and for
+backfilling old data. If you don't get the date correct in your
+event, then searching for them later will likely sort out of order.</p>
+
+<p>In the absence of this filter, logstash will choose a timestamp based on the
+first time it sees the event (at input time), if the timestamp is not already
+set in the event. For example, with file input, the timestamp is set to the
+time of each read.</p>
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>filter {
+  date {
+    <a href="#add_field">add_field</a> => ... # hash (optional), default: {}
+    <a href="#add_tag">add_tag</a> => ... # array (optional), default: []
+    <a href="#locale">locale</a> => ... # string (optional)
+    <a href="#match">match</a> => ... # array (optional), default: []
+    <a href="#remove_field">remove_field</a> => ... # array (optional), default: []
+    <a href="#remove_tag">remove_tag</a> => ... # array (optional), default: []
+    <a href="#timezone">timezone</a> => ... # string (optional)
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="add_field">
+    add_field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#hash">hash</a> </li>
+  <li> Default value is {} </li>
+</ul>
+
+<p>If this filter is successful, add any arbitrary fields to this event.
+Tags can be dynamic and include parts of the event using the %{field}
+Example:</p>
+
+<pre><code>filter {
+  date {
+    add_field =&gt; [ "foo_%{somefield}", "Hello world, from %{source}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would add field "foo_hello" if it is present, with the
+value above and the %{source} piece replaced with that value from the
+event.</p>
+
+<h4> 
+  <a name="add_tag">
+    add_tag
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, add arbitrary tags to the event.
+Tags can be dynamic and include parts of the event using the %{field}
+syntax. Example:</p>
+
+<pre><code>filter {
+  date {
+    add_tag =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would add a tag "foo_hello"</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without all/any (controlled by exclude_any config
+option) of these tags.
+Optional.</p>
+
+<h4> 
+  <a name="locale">
+    locale
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>specify a locale to be used for date parsing. If this is not specified the
+platform default will be used</p>
+
+<p>The locale is mostly necessary to be set for parsing month names and
+weekday names</p>
+
+<h4> 
+  <a name="match">
+    match
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>The date formats allowed are anything allowed by Joda-Time (java time
+library): You can see the docs for this format here:</p>
+
+<p><a href="http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html">joda.time.format.DateTimeFormat</a></p>
+
+<p>An array with field name first, and format patterns following, <code>[ field,
+formats... ]</code></p>
+
+<p>If your time field has multiple possible formats, you can do this:</p>
+
+<pre><code>match =&gt; [ "logdate", "MMM dd YYY HH:mm:ss",
+          "MMM  d YYY HH:mm:ss", "ISO8601" ]
+</code></pre>
+
+<p>The above will match a syslog (rfc3164) or iso8601 timestamp.</p>
+
+<p>There are a few special exceptions, the following format literals exist
+to help you save time and ensure correctness of date parsing.</p>
+
+<ul>
+<li>"ISO8601" - should parse any valid ISO8601 timestamp, such as
+2011-04-19T03:44:01.103Z</li>
+<li>"UNIX" - will parse unix time in seconds since epoch</li>
+<li>"UNIX_MS" - will parse unix time in milliseconds since epoch</li>
+<li>"TAI64N" - will parse tai64n time values</li>
+</ul>
+
+
+<p>For example, if you have a field 'logdate' and with a value that looks like
+'Aug 13 2010 00:03:44', you would use this configuration:</p>
+
+<pre><code>filter {
+  date {
+    match =&gt; [ "logdate", "MMM dd YYYY HH:mm:ss" ]
+  }
+}
+</code></pre>
+
+<h4> 
+  <a name="remove_field">
+    remove_field
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, remove arbitrary fields from this event.
+Fields names can be dynamic and include parts of the event using the %{field}
+Example:</p>
+
+<pre><code>filter {
+  date {
+    remove_field =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would remove the field with name "foo_hello" if it is present</p>
+
+<h4> 
+  <a name="remove_tag">
+    remove_tag
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>If this filter is successful, remove arbitrary tags from the event.
+Tags can be dynamic and include parts of the event using the %{field}
+syntax. Example:</p>
+
+<pre><code>filter {
+  date {
+    remove_tag =&gt; [ "foo_%{somefield}" ]
+  }
+}
+</code></pre>
+
+<p>If the event has field "somefield" == "hello" this filter, on success,
+would remove the tag "foo_hello" if it is present</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all/any (controlled by include_any config option) of these tags.
+Optional.</p>
+
+<h4> 
+  <a name="timezone">
+    timezone
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>specify a timezone canonical ID to be used for date parsing.
+The valid ID are listed on http://joda-time.sourceforge.net/timezones.html
+Useful in case the timezone cannot be extracted from the value,
+and is not the platform default
+If this is not specified the platform default will be used.
+Canonical ID is good as it takes care of daylight saving time for you
+For example, America/Los_Angeles or Europe/France are valid IDs</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>Note that all of the specified routing options (type,tags.exclude<em>tags,include</em>fields,exclude_fields)
+must be met in order for the event to be handled by the filter.
+The type to act on. If a type is given, then this filter will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/filters/date.rb">lib/logstash/filters/date.rb</a>

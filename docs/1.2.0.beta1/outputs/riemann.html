@@ -1,0 +1,225 @@
+---
+title: logstash docs for outputs/riemann
+layout: content_right
+---
+<h2>riemann</h2>
+<h3>Milestone: <a href="../plugin-milestones">1</a></h3>
+
+<p>Riemann is a network event stream processing system.</p>
+
+<p>While Riemann is very similar conceptually to Logstash, it has
+much more in terms of being a monitoring system replacement.</p>
+
+<p>Riemann is used in Logstash much like statsd or other metric-related
+outputs</p>
+
+<p>You can learn about Riemann here:</p>
+
+<ul>
+<li><a href="http://aphyr.github.com/riemann/">http://aphyr.github.com/riemann/</a>
+You can see the author talk about it here:</li>
+<li><a href="http://vimeo.com/38377415">http://vimeo.com/38377415</a></li>
+</ul>
+
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>output {
+  riemann {
+    <a href="#codec">codec</a> => ... # codec (optional), default: "plain"
+    <a href="#debug">debug</a> => ... # boolean (optional), default: false
+    <a href="#host">host</a> => ... # string (optional), default: "localhost"
+    <a href="#port">port</a> => ... # number (optional), default: 5555
+    <a href="#protocol">protocol</a> => ... # string, one of ["tcp", "udp"] (optional), default: "tcp"
+    <a href="#riemann_event">riemann_event</a> => ... # hash (optional)
+    <a href="#sender">sender</a> => ... # string (optional), default: "%{host}"
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="codec">
+    codec
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#codec">codec</a> </li>
+  <li> Default value is "plain" </li>
+</ul>
+
+<p>The codec used for output data</p>
+
+<h4> 
+  <a name="debug">
+    debug
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#boolean">boolean</a> </li>
+  <li> Default value is false </li>
+</ul>
+
+<p>Enable debugging output?</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without any of these tags. Note this check is additional to type and tags.</p>
+
+<h4> 
+  <a name="host">
+    host
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "localhost" </li>
+</ul>
+
+<p>The address of the Riemann server.</p>
+
+<h4> 
+  <a name="port">
+    port
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#number">number</a> </li>
+  <li> Default value is 5555 </li>
+</ul>
+
+<p>The port to connect to on your Riemann server.</p>
+
+<h4> 
+  <a name="protocol">
+    protocol
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value can be any of: "tcp", "udp" </li>
+  <li> Default value is "tcp" </li>
+</ul>
+
+<p>The protocol to use
+UDP is non-blocking
+TCP is blocking</p>
+
+<p>Logstash's default output behaviour
+is to never lose events
+As such, we use tcp as default here</p>
+
+<h4> 
+  <a name="riemann_event">
+    riemann_event
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#hash">hash</a> </li>
+  <li> There is no default value for this setting. </li>
+</ul>
+
+<p>A Hash to set Riemann event fields
+(<a href="http://aphyr.github.com/riemann/concepts.html">http://aphyr.github.com/riemann/concepts.html</a>).</p>
+
+<p>The following event fields are supported:
+<code>description</code>, <code>state</code>, <code>metric</code>, <code>ttl</code>, <code>service</code></p>
+
+<p>Example:</p>
+
+<pre><code>riemann {
+    riemann_event =&gt; [ 
+        "metric", "%{metric}",
+        "service", "%{service}"
+    ]
+}
+</code></pre>
+
+<p><code>metric</code> and <code>ttl</code> values will be coerced to a floating point value.
+Values which cannot be coerced will zero (0.0).</p>
+
+<p><code>description</code>, by default, will be set to the event message
+but can be overridden here.</p>
+
+<h4> 
+  <a name="sender">
+    sender
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "%{host}" </li>
+</ul>
+
+<p>The name of the sender.
+This sets the <code>host</code> value
+in the Riemann event</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all of these tags.  Note that if you specify
+a type, the event must also match that type.
+Optional.</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>The type to act on. If a type is given, then this output will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/outputs/riemann.rb">lib/logstash/outputs/riemann.rb</a>

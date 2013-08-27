@@ -1,0 +1,161 @@
+---
+title: logstash docs for outputs/nagios
+layout: content_right
+---
+<h2>nagios</h2>
+<h3>Milestone: <a href="../plugin-milestones">2</a></h3>
+
+<p>The nagios output is used for sending passive check results to nagios via the
+nagios command file.</p>
+
+<p>For this output to work, your event must have the following fields:</p>
+
+<ul>
+<li>"nagios_host"</li>
+<li>"nagios_service"</li>
+</ul>
+
+
+<p>These fields are supported, but optional:</p>
+
+<ul>
+<li>"nagios_annotation"</li>
+<li>"nagios_level"</li>
+</ul>
+
+
+<p>There are two configuration options:</p>
+
+<ul>
+<li>commandfile - The location of the Nagios external command file</li>
+<li><p>nagios<em>level - Specifies the level of the check to be sent. Defaults to
+CRITICAL and can be overriden by setting the "nagios</em>level" field to one
+of "OK", "WARNING", "CRITICAL", or "UNKNOWN"</p>
+
+<pre><code> match =&gt; [ "message", "(error|ERROR|CRITICAL)" ]
+</code></pre>
+
+<p> output{
+   if [message] =~ /(error|ERROR|CRITICAL)/ {
+     nagios {
+       # your config here
+     }
+   }
+ }</p></li>
+</ul>
+
+
+
+<h3> Synopsis </h3>
+
+This is what it might look like in your config file:
+
+<pre><code>output {
+  nagios {
+    <a href="#codec">codec</a> => ... # codec (optional), default: "plain"
+    <a href="#commandfile">commandfile</a> => ... # a valid filesystem path (optional), default: "/var/lib/nagios3/rw/nagios.cmd"
+    <a href="#nagios_level">nagios_level</a> => ... # string, one of ["0", "1", "2", "3"] (optional), default: "2"
+}
+
+}
+</code></pre>
+
+<h3> Details </h3>
+
+<h4> 
+  <a name="codec">
+    codec
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#codec">codec</a> </li>
+  <li> Default value is "plain" </li>
+</ul>
+
+<p>The codec used for output data</p>
+
+<h4> 
+  <a name="commandfile">
+    commandfile
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value type is <a href="../configuration#path">path</a> </li>
+  <li> Default value is "/var/lib/nagios3/rw/nagios.cmd" </li>
+</ul>
+
+<p>The path to your nagios command file</p>
+
+<h4> 
+  <a name="exclude_tags">
+    exclude_tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events without any of these tags. Note this check is additional to type and tags.</p>
+
+<h4> 
+  <a name="nagios_level">
+    nagios_level
+    
+</a>
+</h4>
+
+<ul>
+  <li> Value can be any of: "0", "1", "2", "3" </li>
+  <li> Default value is "2" </li>
+</ul>
+
+<p>The Nagios check level. Should be one of 0=OK, 1=WARNING, 2=CRITICAL,
+3=UNKNOWN. Defaults to 2 - CRITICAL.</p>
+
+<h4> 
+  <a name="tags">
+    tags
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#array">array</a> </li>
+  <li> Default value is [] </li>
+</ul>
+
+<p>Only handle events with all of these tags.  Note that if you specify
+a type, the event must also match that type.
+Optional.</p>
+
+<h4> 
+  <a name="type">
+    type
+     <strong>DEPRECATED</strong>
+</a>
+</h4>
+
+<ul>
+  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> Value type is <a href="../configuration#string">string</a> </li>
+  <li> Default value is "" </li>
+</ul>
+
+<p>The type to act on. If a type is given, then this output will only
+act on messages with the same type. See any input plugin's "type"
+attribute for more.
+Optional.</p>
+
+
+<hr>
+
+This is documentation from <a href="https://github.com/logstash/logstash/blob/v1.2.0.beta1/lib/logstash/outputs/nagios.rb">lib/logstash/outputs/nagios.rb</a>
