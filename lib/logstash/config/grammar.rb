@@ -1172,6 +1172,118 @@ module LogStashConfig
     r0
   end
 
+  module Regexp0
+  end
+
+  module Regexp1
+  end
+
+  def _nt_regexp
+    start_index = index
+    if node_cache[:regexp].has_key?(index)
+      cached = node_cache[:regexp][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?('/', false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      @index += 1
+    else
+      terminal_parse_failure('/')
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      s2, i2 = [], index
+      loop do
+        i3 = index
+        if has_terminal?('\/', false, index)
+          r4 = instantiate_node(SyntaxNode,input, index...(index + 2))
+          @index += 2
+        else
+          terminal_parse_failure('\/')
+          r4 = nil
+        end
+        if r4
+          r3 = r4
+        else
+          i5, s5 = index, []
+          i6 = index
+          if has_terminal?('/', false, index)
+            r7 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            @index += 1
+          else
+            terminal_parse_failure('/')
+            r7 = nil
+          end
+          if r7
+            r6 = nil
+          else
+            @index = i6
+            r6 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s5 << r6
+          if r6
+            if index < input_length
+              r8 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
+            else
+              terminal_parse_failure("any character")
+              r8 = nil
+            end
+            s5 << r8
+          end
+          if s5.last
+            r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+            r5.extend(Regexp0)
+          else
+            @index = i5
+            r5 = nil
+          end
+          if r5
+            r3 = r5
+          else
+            @index = i3
+            r3 = nil
+          end
+        end
+        if r3
+          s2 << r3
+        else
+          break
+        end
+      end
+      r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+      s0 << r2
+      if r2
+        if has_terminal?('/', false, index)
+          r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure('/')
+          r9 = nil
+        end
+        s0 << r9
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(LogStash::Config::AST::RegExp,input, i0...index, s0)
+      r0.extend(Regexp1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:regexp][start_index] = r0
+
+    r0
+  end
+
   module Number0
   end
 
@@ -2417,8 +2529,13 @@ module LogStashConfig
             if r5
               r0 = r5
             else
-              @index = i0
-              r0 = nil
+              r6 = _nt_regexp
+              if r6
+                r0 = r6
+              else
+                @index = i0
+                r0 = nil
+              end
             end
           end
         end
@@ -2639,44 +2756,44 @@ module LogStashConfig
         r0 = r2
         r0.extend(LogStash::Config::AST::ComparisonOperator)
       else
-        if has_terminal?("<", false, index)
-          r3 = instantiate_node(SyntaxNode,input, index...(index + 1))
-          @index += 1
+        if has_terminal?("<=", false, index)
+          r3 = instantiate_node(SyntaxNode,input, index...(index + 2))
+          @index += 2
         else
-          terminal_parse_failure("<")
+          terminal_parse_failure("<=")
           r3 = nil
         end
         if r3
           r0 = r3
           r0.extend(LogStash::Config::AST::ComparisonOperator)
         else
-          if has_terminal?(">", false, index)
-            r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
-            @index += 1
+          if has_terminal?(">=", false, index)
+            r4 = instantiate_node(SyntaxNode,input, index...(index + 2))
+            @index += 2
           else
-            terminal_parse_failure(">")
+            terminal_parse_failure(">=")
             r4 = nil
           end
           if r4
             r0 = r4
             r0.extend(LogStash::Config::AST::ComparisonOperator)
           else
-            if has_terminal?("<=", false, index)
-              r5 = instantiate_node(SyntaxNode,input, index...(index + 2))
-              @index += 2
+            if has_terminal?("<", false, index)
+              r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
             else
-              terminal_parse_failure("<=")
+              terminal_parse_failure("<")
               r5 = nil
             end
             if r5
               r0 = r5
               r0.extend(LogStash::Config::AST::ComparisonOperator)
             else
-              if has_terminal?(">=", false, index)
-                r6 = instantiate_node(SyntaxNode,input, index...(index + 2))
-                @index += 2
+              if has_terminal?(">", false, index)
+                r6 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                @index += 1
               else
-                terminal_parse_failure(">=")
+                terminal_parse_failure(">")
                 r6 = nil
               end
               if r6

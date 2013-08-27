@@ -72,7 +72,7 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
         # or socket dies
         # TODO(sissel): Why do we have a timeout here? What's the point?
         if @data_timeout == -1
-          buf = socket.readpartial(16384
+          buf = socket.readpartial(16384)
         else
           Timeout::timeout(@data_timeout) do
             buf = socket.readpartial(16384)
