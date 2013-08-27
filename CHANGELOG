@@ -32,12 +32,14 @@
     stored as single values in most cases instead of the old behavior of being
     captured as an array of values.
   - removed: the multiline filter is gone. See the multiline codec instead.
+  - new: json_encoder filter (Ralph Meijer)
 
   ## outputs
   - feature: irc: add messages_per_second tunable (LOGSTASH-962)
   - bugfix: emails: restored initial really useful documentation
   - improvement: emails: allow @message, @source, @... in match (LOGSTASH-826,
     LOGSTASH-823) 
+  - feature: mongodb: replica sets are supported (Mathias Gug)
 
 1.1.13 (May 28, 2013)
   ## general
