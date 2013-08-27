@@ -78,6 +78,10 @@ grammar LogStashConfig
     )
   end
 
+  rule regexp
+    ( '/' ( '\/' / !'/' . )* '/'  <LogStash::Config::AST::RegExp>)
+  end
+
   rule number
     "-"? [0-9]+ ("." [0-9]*)? 
     <LogStash::Config::AST::Number>
@@ -149,7 +153,7 @@ grammar LogStashConfig
   end
 
   rule rvalue
-    string / number / selector / array / method_call
+    string / number / selector / array / method_call / regexp
   end
 
   rule method_call
@@ -166,7 +170,7 @@ grammar LogStashConfig
   end
 
   rule comparison
-    ("==" / "!=" / "<" / ">" / "<=" / ">=" / "=~" / "!~" / "in")
+    ("==" / "!=" / "<=" / ">=" / "<" / ">" / "=~" / "!~" / "in")
     <LogStash::Config::AST::ComparisonOperator>
   end
 
