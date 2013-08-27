@@ -17,6 +17,7 @@ end # def plugins
 basedir = ARGV[0]
 docs = {
   "inputs" => plugins(File.join(basedir, "inputs/*.html")),
+  "codecs" => plugins(File.join(basedir, "codecs/*.html")),
   "filters" => plugins(File.join(basedir, "filters/*.html")),
   "outputs" => plugins(File.join(basedir, "outputs/*.html")),
 }
