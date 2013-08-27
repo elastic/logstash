@@ -1,7 +1,7 @@
 require "logstash/codecs/base"
 
 class LogStash::Codecs::Msgpack < LogStash::Codecs::Base
-  config_name "json"
+  config_name "msgpack"
 
   milestone 1
 
