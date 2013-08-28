@@ -125,7 +125,6 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     options[:type] = :node
 
     @client = ElasticSearch::Client.new(options)
-    # TODO(sissel): Set up the bulkstream.
 
     buffer_initialize(
       :max_items => @flush_size,
@@ -165,6 +164,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       end
     end
 
+    request.on(:success) { }
     request.execute
   end # def flush
 
