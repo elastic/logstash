@@ -152,6 +152,7 @@ class LogStash::Agent < Clamp::Command
       end
     end
 
+    $stdout.write("Elasticsearch: ");
     org.elasticsearch.Version::main([])
   end # def show_version_elasticsearch
 
