@@ -194,5 +194,54 @@ describe "conditionals" do
       sample("sample") { insist { subject["tags"] }.include?("failure") }
       sample("some sample") { insist { subject["tags"] }.include?("failure") }
     end
+
+  end
+
+  describe "value as an expression" do
+    # testing that a field has a value should be true.
+    conditional "[message]" do
+      sample("apple") { insist { subject["tags"] }.include?("success") }
+      sample("sample") { insist { subject["tags"] }.include?("success") }
+      sample("some sample") { insist { subject["tags"] }.include?("success") }
+    end
+
+    # testing that a missing field has a value should be false.
+    conditional "[missing]" do
+      sample("apple") { insist { subject["tags"] }.include?("failure") }
+      sample("sample") { insist { subject["tags"] }.include?("failure") }
+      sample("some sample") { insist { subject["tags"] }.include?("failure") }
+    end
+  end
+
+  describe "logic operators" do
+    describe "and" do
+      conditional "[message] and [message]" do
+        sample("whatever") { insist { subject["tags"] }.include?("success") }
+      end
+      conditional "[message] and ![message]" do
+        sample("whatever") { insist { subject["tags"] }.include?("failure") }
+      end
+      conditional "![message] and [message]" do
+        sample("whatever") { insist { subject["tags"] }.include?("failure") }
+      end
+      conditional "![message] and ![message]" do
+        sample("whatever") { insist { subject["tags"] }.include?("failure") }
+      end
+    end
+
+    describe "or" do
+      conditional "[message] or [message]" do
+        sample("whatever") { insist { subject["tags"] }.include?("success") }
+      end
+      conditional "[message] or ![message]" do
+        sample("whatever") { insist { subject["tags"] }.include?("success") }
+      end
+      conditional "![message] or [message]" do
+        sample("whatever") { insist { subject["tags"] }.include?("success") }
+      end
+      conditional "![message] or ![message]" do
+        sample("whatever") { insist { subject["tags"] }.include?("failure") }
+      end
+    end
   end
 end
