@@ -51,15 +51,13 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
   public
   def register
-    @grok_filter = LogStash::Filters::Grok.new({
-      "type"    => [@config["type"]],
-      "pattern" => ["<%{POSINT:priority}>%{SYSLOGLINE}"],
-    })
+    @grok_filter = LogStash::Filters::Grok.new(
+      "match" => { "message" => "<%{POSINT:priority}>%{SYSLOGLINE}" },
+    )
 
-    @date_filter = LogStash::Filters::Date.new({
-      "type"          => [@config["type"]],
+    @date_filter = LogStash::Filters::Date.new(
       "match" => [ "timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss", "ISO8601"]
-    })
+    )
 
     @grok_filter.register
     @date_filter.register
@@ -201,7 +199,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   def syslog_relay(event)
     @grok_filter.filter(event)
 
-    if !event["tags"].include?("_grokparsefailure")
+    if event["tags"].nil? || !event["tags"].include?("_grokparsefailure")
       # Per RFC3164, priority = (facility * 8) + severity
       #                       = (facility << 3) & (severity)
       priority = event["priority"].first.to_i rescue 13
