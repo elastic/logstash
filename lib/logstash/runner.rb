@@ -90,7 +90,15 @@ class LogStash::Runner
   def run(args)
     command = args.shift
     commands = {
-      "version" => lambda { emit_version(args) },
+      "version" => lambda do
+        require "logstash/agent"
+        agent_args = ["--version"]
+        if args.include?("--verbose") 
+          agent_args << "--verbose"
+        end
+        LogStash::Agent.run($0, agent_args)
+        return []
+      end,
       "web" => lambda do
         # Give them kibana.
         require "logstash/kibana"
@@ -220,11 +228,6 @@ class LogStash::Runner
     return args
   end # def run
 
-  def emit_version(args)
-    require "logstash/version"
-    puts "logstash #{LOGSTASH_VERSION}"
-    return []
-  end # def emit_version
 end # class LogStash::Runner
 
 if $0 == __FILE__
