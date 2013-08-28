@@ -267,6 +267,7 @@ module LogStash; module Config; module AST
       return "(#{super})"
     end
   end
+
   module Expression
     def compile
       # Hack for compiling 'in' support.
@@ -293,6 +294,13 @@ module LogStash; module Config; module AST
       return "(#{super})"
     end
   end
+
+  module NegativeExpression
+    def compile
+      return "!(#{super})"
+    end
+  end
+
   class MethodCall < Node
     def compile
       arguments = recursive_inject { |e| [String, Number, Selector, Array, MethodCall].any? { |c| e.is_a?(c) } }

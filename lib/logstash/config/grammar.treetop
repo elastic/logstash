@@ -146,10 +146,17 @@ grammar LogStashConfig
   rule expression
     (
         ("(" _ condition _ ")")
-      / ("!" _ condition)
+      / negative_expression
       / (rvalue _ comparison _ rvalue)
       / (rvalue)
     ) <LogStash::Config::AST::Expression>
+  end
+
+  rule negative_expression
+    (
+        ("!" _ "(" _ condition _ ")")
+      / ("!" _ selector)
+    ) <LogStash::Config::AST::NegativeExpression>
   end
 
   rule rvalue
