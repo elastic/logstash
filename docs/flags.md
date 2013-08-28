@@ -30,3 +30,14 @@ default. </dd>
 <dt> --pluginpath PLUGIN_PATH </dt>
 <dd> A colon-delimted path to find other logstash plugins in </dd>
 </dl>
+
+
+## Web
+
+<dl>
+<dt> -a, --address ADDRESS </dt>
+<dd>Address on which to start webserver. Default is 0.0.0.0.</dd>
+<dt> -p, --port PORT</dt>
+<dd>Port on which to start webserver. Default is 9292.</dd>
+</dl>
+
