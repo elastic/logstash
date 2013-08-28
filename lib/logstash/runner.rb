@@ -198,7 +198,10 @@ class LogStash::Runner
       if command.nil?
         $stderr.puts "No command given"
       else
-        $stderr.puts "No such command #{command.inspect}"
+        if !%w(--help -h help).include?(command)
+          # Emit 'no such command' if it's not someone asking for help.
+          $stderr.puts "No such command #{command.inspect}"
+        end
       end
       $stderr.puts "Usage: logstash <command> [command args]"
       $stderr.puts "Run a command with the --help flag to see the arguments."
@@ -220,8 +223,6 @@ class LogStash::Runner
   def emit_version(args)
     require "logstash/version"
     puts "logstash #{LOGSTASH_VERSION}"
-
-    # '-v' can be the only argument, end processing args now.
     return []
   end # def emit_version
 end # class LogStash::Runner
