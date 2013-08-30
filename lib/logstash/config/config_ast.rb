@@ -173,6 +173,7 @@ module LogStash; module Config; module AST
             "  extra_events.each(&block)",
             "  return",
             "end",
+            "return if event.done?",
           ].map { |l| "#{l}\n" }.join("")
         when "output"
           return "#{variable_name}.receive(event)\n"

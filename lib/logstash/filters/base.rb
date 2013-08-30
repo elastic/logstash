@@ -84,7 +84,19 @@ class LogStash::Filters::Base < LogStash::Plugin
   # would remove the field with name "foo_hello" if it is present
   config :remove_field, :validate => :array, :default => []
 
-  RESERVED = ["type", "tags", "exclude_tags", "include_fields", "exclude_fields", "add_tag", "remove_tag", "add_field", "remove_field", "include_any", "exclude_any"]
+  # If this filter is successful, event is good to output
+  # This will save unneed/unwanted filter treatments
+  # Example:
+  #
+  #     filter {
+  #       %PLUGIN% {
+  #         done => true
+  #       }
+  #     }
+  #
+  config :done, :validate => :boolean, :default => false
+
+  RESERVED = ["type", "tags", "exclude_tags", "include_fields", "exclude_fields", "add_tag", "remove_tag", "add_field", "remove_field", "include_any", "exclude_any", "done_on_success"]
 
   public
   def initialize(params)
@@ -152,6 +164,11 @@ class LogStash::Filters::Base < LogStash::Plugin
       @logger.debug? and @logger.debug("filters/#{self.class.name}: removing tag",
                                        :tag => tag)
       event.tags.delete(tag)
+    end
+
+    if @done
+      event.done
+      @logger.debug? and @logger.debug("filters/#{self.class.name}: event is done")
     end
   end # def filter_matched
 
