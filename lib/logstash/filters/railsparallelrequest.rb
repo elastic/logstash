@@ -30,7 +30,7 @@ class LogStash::Filters::Railsparallelrequest < LogStash::Filters::Base
 
     event.tags << self.class.config_name
 
-    line = event["message"]
+    line = event["@message"]
 
     if line =~ /^\[(.*?)\]/
       uuid = $1
@@ -79,7 +79,7 @@ class LogStash::Filters::Railsparallelrequest < LogStash::Filters::Base
 
   private
   def merge_events(dest, source, uuid)
-    source["message"].gsub!("[#{uuid}]", "")
+    source["@message"].gsub!("[#{uuid}]", "")
     dest.append(source)
   end
 end
