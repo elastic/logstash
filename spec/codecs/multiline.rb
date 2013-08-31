@@ -16,7 +16,24 @@ describe LogStash::Codecs::Multiline do
       codec.flush { |e| events << e }
       insist { events.size } == 2
       insist { events[0]["message"] } == "hello world\n   second line"
+      insist { events[0]["tags"] }.include?("multiline")
       insist { events[1]["message"] } == "another first line"
+      insist { events[1]["tags"] }.nil?
+    end
+
+    it "should allow custom tag added to multiline events" do
+      codec = LogStash::Codecs::Multiline.new("pattern" => "^\\s", "what" => "previous", "multiline_tag" => "hurray" )
+      lines = [ "hello world", "   second line", "another first line" ]
+      events = []
+      lines.each do |line|
+        codec.decode(line) do |event|
+          events << event
+        end
+      end
+      codec.flush { |e| events << e }
+      insist { events.size } == 2
+      insist { events[0]["tags"] }.include?("hurray")
+      insist { events[1]["tags"] }.nil?
     end
 
     it "should allow grok patterns to be used" do

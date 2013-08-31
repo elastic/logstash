@@ -94,6 +94,10 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
   # This only affects "plain" format logs since json is UTF-8 already.
   config :charset, :validate => ::Encoding.name_list, :default => "UTF-8"
 
+  # Tag multiline events with a given tag. This tag will only be added
+  # to events that actually have multiple lines in them.
+  config :multiline_tag, :validate => :string, :default => "multiline"
+
   public
   def register
     require "grok-pure" # rubygem 'jls-grok'
@@ -156,7 +160,11 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
 
   def flush(&block)
     if @buffer.any?
-      yield LogStash::Event.new("@timestamp" => @time, "message" => @buffer.join("\n"))
+      event = LogStash::Event.new("@timestamp" => @time, "message" => @buffer.join("\n"))
+      # Tag multiline events
+      event.tag @multiline_tag if @multiline_tag && @buffer.size > 1
+
+      yield event
       @buffer = []
     end
   end
