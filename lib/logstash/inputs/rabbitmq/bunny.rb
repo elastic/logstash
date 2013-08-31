@@ -107,7 +107,6 @@ class LogStash::Inputs::RabbitMQ
       @q.subscribe(:manual_ack => @ack, :block => true) do |delivery_info, properties, data|
         @codec.decode(data) do |event|
           decorate(event)
-          event["source"] = @connection_url
           @output_queue << event
         end
 

@@ -140,11 +140,10 @@ class LogStash::Inputs::Gemfire < LogStash::Inputs::Threadable
     end
   end
 
-  def process_event(event, event_name, source)
+  def process_event(event, event_name)
     message = deserialize_message(event)
     @codec.decode(message) do |event|
       decorate(event)
-      event["source"] = source
       @logstash_queue << event
     end
   end

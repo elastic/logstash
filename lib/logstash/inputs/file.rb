@@ -131,7 +131,6 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
         decorate(event)
         event["host"] = hostname
         event["path"] = path
-        event["source"] = source
         queue << event
       end
     end

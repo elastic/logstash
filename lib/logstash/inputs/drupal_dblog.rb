@@ -312,7 +312,7 @@ class LogStash::Inputs::DrupalDblog < LogStash::Inputs::Base
       "@timestamp" => timestamp,
       "tags" => [],
       "type" => "watchdog",
-      "source" => @sitename,
+      "site" => @sitename,
       "message" => msg
     }.merge(row)
 
