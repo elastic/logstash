@@ -117,10 +117,9 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     loop do
       payload, client = @udp.recvfrom(9000)
       # Ruby uri sucks, so don't use it.
-      source = "syslog://#{client[3]}/"
       @codec.decode(payload) do |event|
         decorate(event)
-        event["source"] = client[3]
+        event["host"] = client[3]
         syslog_relay(event)
         output_queue << event
       end
@@ -142,16 +141,10 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
         ip, port = client.peeraddr[3], client.peeraddr[1]
         @logger.info("new connection", :client => "#{ip}:#{port}")
         LogStash::Util::set_thread_name("input|syslog|tcp|#{ip}:#{port}}")
-        if ip.include?(":") # ipv6
-          source = "syslog://[#{ip}]/"
-        else
-          source = "syslog://#{ip}/"
-        end
-
         begin
           client.each do |line|
             @codec.decode(line) do |event|
-              event["source"] = ip
+              event["host"] = ip
               syslog_relay(event)
               output_queue << event
             end

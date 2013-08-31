@@ -56,7 +56,6 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
 
   def run(queue)
     number = 0
-    source = "generator://#{@host}/"
 
     if @message == "stdin"
       @logger.info("Generator plugin reading a line from stdin")
@@ -68,7 +67,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
       @lines.each do |line|
         @codec.decode(line.clone) do |event|
           decorate(event)
-          event["source"] = source
+          event["host"] = @host
           event["sequence"] = number
           queue << event
         end
@@ -78,7 +77,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
 
     if @codec.respond_to?(:flush)
       @codec.flush do |event|
-        event["source"] = source
+        event["host"] = @hos
         queue << event
       end
     end

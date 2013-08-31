@@ -32,7 +32,7 @@ class LogStash::Inputs::WMI < LogStash::Inputs::Base
   def register
 
     @host = Socket.gethostname
-    @logger.info("Registering input wmi://#{@host}/#{@query}")
+    @logger.info("Registering wmi input", :query => @query)
 
     if RUBY_PLATFORM == "java"
       # make use of the same fix used for the eventlog input
@@ -53,7 +53,8 @@ class LogStash::Inputs::WMI < LogStash::Inputs::Base
         @wmi.ExecQuery(@query).each do |wmiobj|
           # create a single event for all properties in the collection
           event = LogStash::Event.new
-          event["source"] = @host
+          event["host"] = @host
+          decorate(event)
           wmiobj.Properties_.each do |prop|
             event[prop.name] = prop.value
           end

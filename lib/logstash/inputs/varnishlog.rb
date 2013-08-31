@@ -10,7 +10,6 @@ class LogStash::Inputs::Varnishlog < LogStash::Inputs::Threadable
   public
   def register
     require 'varnish'
-    @source = "varnishlog://#{Socket.gethostname}/"
     @vd = Varnish::VSM.VSM_New
     Varnish::VSL.VSL_Setup(@vd)
     Varnish::VSL.VSL_Open(@vd, 1)
@@ -19,6 +18,7 @@ class LogStash::Inputs::Varnishlog < LogStash::Inputs::Threadable
 
   def run(queue)
     @q = queue
+    @hostname = Socket.gethostname
     Varnish::VSL.VSL_Dispatch(@vd, self.method(:cb).to_proc, FFI::MemoryPointer.new(:pointer))
   end # def run
 
@@ -26,7 +26,7 @@ class LogStash::Inputs::Varnishlog < LogStash::Inputs::Threadable
   def cb(priv, tag, fd, len, spec, ptr, bitmap)
     begin
       str = ptr.read_string(len)
-      event = LogStash::Event.new("message" => str, "source" => @source)
+      event = LogStash::Event.new("message" => str, "host" => @host)
       event["varnish_tag"] = tag
       event["varnish_fd"] = fd
       event["varnish_spec"] = spec

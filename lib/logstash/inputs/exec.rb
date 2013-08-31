@@ -34,6 +34,7 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
 
   public
   def run(queue)
+    hostname = Socket.gethostname
     loop do
       start = Time.now
       @logger.info("Running exec", :command => @command) if @debug
@@ -41,7 +42,7 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
       # out.read will block until the process finishes.
       @codec.decode(out.read) do |event|
         decorate(event)
-        event["source"] = "exec://#{Socket.gethostname}"
+        event["host"] = hostname
         event["command"] = @command
         queue << event
       end

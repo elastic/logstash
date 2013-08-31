@@ -63,11 +63,11 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
     end # if @rooms
 
     @client.add_message_callback do |msg| # handle direct/private messages
-      source = "xmpp://#{msg.from.node}@#{msg.from.domain}/#{msg.from.resource}"
-
       # accept normal msgs (skip presence updates, etc)
       if msg.body != nil
         @codec.decode(msg.body) do |event|
+          # Maybe "from" should just be a hash: 
+          # { "node" => ..., "domain" => ..., "resource" => ... }
           event["from"] = "#{msg.from.node}@#{msg.from.domain}/#{msg.from.resource}"
           queue << event
         end

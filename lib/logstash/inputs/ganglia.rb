@@ -67,11 +67,10 @@ class LogStash::Inputs::Ganglia < LogStash::Inputs::Base
 
     loop do
       packet, client = @udp.recvfrom(9000)
-      # Ruby uri sucks, so don't use it.
-      source = "ganglia://#{client[3]}/"
-
+      # TODO(sissel): make this a codec...
       e = parse_packet(packet,source)
       unless e.nil?
+        e["host"] = client[3] # the IP address
         output_queue << e
       end
     end
