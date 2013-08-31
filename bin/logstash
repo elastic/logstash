@@ -22,7 +22,7 @@ export RUBYLIB="$basedir/lib"
 # help logstash run.
 setup() {
   if [ -d "$basedir/.git" ] ; then
-    if [ $1 = "jruby" ] ; then
+    if [ "$1" = "jruby" ] ; then
       RUBY=${RUBY=jruby}
     else
       RUBY=${RUBY=$(ruby -e 'puts RUBY_ENGINE')}
@@ -33,7 +33,7 @@ setup() {
   fi
 }
 
-if [ $1 = "deps" ] ; then
+if [ "$1" = "deps" ] ; then
   program="$basedir/gembag.rb"
   set -- "$basedir/logstash.gemspec"
 else
