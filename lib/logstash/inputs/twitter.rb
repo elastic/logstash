@@ -73,6 +73,7 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
         "client" => status.source,
         "retweeted" => status.retweeted
       )
+      decorate(event)
       event["in-reply-to"] = status.in_reply_to_status_id  if status.in_reply_to_status_id
       #urls = tweet.urls.collect(&:expanded_url)
       #event["urls"] = urls if urls.size > 0

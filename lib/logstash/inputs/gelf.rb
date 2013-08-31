@@ -88,6 +88,7 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
         event.remove("timestamp")
       end
       remap_gelf(event) if @remap
+      decorate(event)
       output_queue << event
     end
   rescue LogStash::ShutdownSignal

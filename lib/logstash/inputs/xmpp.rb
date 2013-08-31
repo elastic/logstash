@@ -66,6 +66,7 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
       # accept normal msgs (skip presence updates, etc)
       if msg.body != nil
         @codec.decode(msg.body) do |event|
+          decorate(event)
           # Maybe "from" should just be a hash: 
           # { "node" => ..., "domain" => ..., "resource" => ... }
           event["from"] = "#{msg.from.node}@#{msg.from.domain}/#{msg.from.resource}"

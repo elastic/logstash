@@ -154,6 +154,7 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
           count += rows.count
           rows.each do |row| 
             event = LogStash::Event.new("host" => @host, "db" => @db)
+            decorate(event)
             # store each column as a field in the event.
             row.each do |column, element|
               next if column == :id

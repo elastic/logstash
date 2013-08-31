@@ -142,6 +142,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
         begin
           client.each do |line|
             @codec.decode(line) do |event|
+              decorate(event)
               event["host"] = ip
               syslog_relay(event)
               output_queue << event
