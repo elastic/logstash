@@ -36,7 +36,6 @@ class LogStash::Inputs::Ganglia < LogStash::Inputs::Base
   def run(output_queue)
     # udp server
     Thread.new do
-      LogStash::Util::set_thread_name("input|ganglia|udp")
       begin
         udp_listener(output_queue)
       rescue => e

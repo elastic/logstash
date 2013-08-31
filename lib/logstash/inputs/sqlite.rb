@@ -125,7 +125,6 @@ class LogStash::Inputs::Sqlite < LogStash::Inputs::Base
     require "sequel"
     require "jdbc/sqlite3" 
     @host = Socket.gethostname
-    LogStash::Util::set_thread_name("input|sqlite|#{@path}")
     @logger.info("Registering sqlite input", :database => @path)
     @db = Sequel.connect("jdbc:sqlite:#{@path}") 
     @tables = get_all_tables(@db)

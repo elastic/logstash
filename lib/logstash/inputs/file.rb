@@ -66,7 +66,6 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     require "addressable/uri"
     require "filewatch/tail"
     require "digest/md5"
-    LogStash::Util::set_thread_name("input|file|#{path.join(":")}")
     @logger.info("Registering file input", :path => @path)
 
     @tail_config = {

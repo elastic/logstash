@@ -29,7 +29,6 @@ class LogStash::Inputs::Websocket < LogStash::Inputs::Base
   public
   def run(output_queue)
     # TODO(sissel): Implement server mode.
-    LogStash::Util::set_thread_name("<websocket")
     agent = FTW::Agent.new
     begin
       websocket = agent.websocket!(@url)
