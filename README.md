@@ -34,7 +34,9 @@ Otherwise, here's how to get started with rvm:
 Now install dependencies:
 
     # Install logstash ruby dependencies
-    ruby gembag.rb logstash.gemspec
+    bin/logstash deps
+
+Other commands:
 
     # to use logstash gems or libraries in irb, use the following
     # this gets you an 'irb' shell with logstash's environment
@@ -61,15 +63,17 @@ rspec <some spec>` will suffice:
     Finished in 0.123 seconds
     19 examples, 0 failures
 
-Alternately, if you have just built the flatjar or jar, you can run the tests
+Alternately, if you have just built the flatjar, you can run the tests
 specifically on those like so:
 
-    % make flatjar-test
-    # or ...
-    % make jar-test
+    make flatjar-test
 
-Finally, like 'bin/logstash rspec' above, you can invoke the jar to run a test
-like so:
+If you want to run all the tests from source (not compiled jar), do:
+
+    make test
+
+Finally, like 'bin/logstash rspec' above, you can invoke the jar to run a
+specific test like so:
 
     % java -jar logstash.jar rspec spec/filters/grok.rb
     ...................
@@ -85,10 +89,9 @@ If you want to build the jar yourself, run:
 
     make flatjar
 
-rpm, deb, or other package formats are not currently available, but are easy to
-build with [fpm](https://github.com/jordansissel/fpm). If you are interested in
-seeing future releases include your favorite packaging format, please let me
-know.
+You can build rpms and debs, if you need those. Building rpms requires you have [fpm](github.com/jordansissel/fpm), then do this:
+
+    make package
 
 ## Project Principles
 
