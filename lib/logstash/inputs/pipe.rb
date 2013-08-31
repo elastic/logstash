@@ -24,7 +24,6 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
 
   public
   def register
-    LogStash::Util::set_thread_name("input|pipe|#{command}")
     @logger.info("Registering pipe input", :command => @command)
   end # def register
 

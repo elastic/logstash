@@ -53,7 +53,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
   public
   def register
-    LogStash::Util::set_thread_name("input|s3|#{bucket}");
     @logger.info("Registering s3 input", :bucket => @bucket)
 
     if @credentials.nil?

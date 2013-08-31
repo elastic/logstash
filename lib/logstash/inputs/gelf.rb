@@ -50,7 +50,6 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
 
   public
   def run(output_queue)
-    LogStash::Util::set_thread_name("input|gelf")
     begin
       # udp server
       udp_listener(output_queue)

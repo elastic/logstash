@@ -48,7 +48,6 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
 
   public
   def run(output_queue)
-    LogStash::Util::set_thread_name("input|snmptrap|#{@community}")
     begin
       # snmp trap server
       snmptrap_listener(output_queue)

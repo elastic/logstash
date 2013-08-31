@@ -69,7 +69,6 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   def run(output_queue)
     # udp server
     udp_thr = Thread.new do
-      LogStash::Util::set_thread_name("input|syslog|udp")
       begin
         udp_listener(output_queue)
       rescue => e
@@ -84,7 +83,6 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
     # tcp server
     tcp_thr = Thread.new do
-      LogStash::Util::set_thread_name("input|syslog|tcp")
       begin
         tcp_listener(output_queue)
       rescue => e
