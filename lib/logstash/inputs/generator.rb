@@ -77,6 +77,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
 
     if @codec.respond_to?(:flush)
       @codec.flush do |event|
+        decorate(event)
         event["host"] = @hos
         queue << event
       end
@@ -87,6 +88,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   public
   def teardown
     @codec.flush do |event|
+      decorate(event)
       event["source"] = source
       queue << event
     end

@@ -84,6 +84,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
         e.message = event.Message
 
+        decorate(e)
         queue << e
 
       end # while

@@ -113,6 +113,8 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
       end
     end # mail.header_fields.each
 
+    decorate(event)
+
     return event
   end # def handle
 

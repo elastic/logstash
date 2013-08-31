@@ -83,6 +83,7 @@ class LogStash::Inputs::Zenoss < LogStash::Inputs::RabbitMQ
           "host" => occurrence.actor.element_title,
           "message" => occurrence.message,
         )
+        decorate(event)
 
         # Direct mappings from summary.
         %w{uuid}.each do |property|
