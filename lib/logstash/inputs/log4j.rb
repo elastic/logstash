@@ -57,6 +57,7 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
         log4j_obj = ois.readObject
         event = LogStash::Event.new("message" => log4j_obj.getRenderedMessage,
                                     "source" => event_source)
+        decorate(event)
         event["host"] = socket.peer
         event["path"] = log4j_obj.getLoggerName
         event["priority"] = log4j_obj.getLevel.toString
