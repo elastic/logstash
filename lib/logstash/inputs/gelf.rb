@@ -33,7 +33,6 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   # * event["message"] becomes full_message
   #   if no full_message, use event["message"] becomes short_message
   #   if no short_message, event["message"] is the raw json input
-  # * host + file to event["source"]
   config :remap, :validate => :boolean, :default => true
 
   public

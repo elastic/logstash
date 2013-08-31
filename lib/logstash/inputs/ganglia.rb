@@ -115,7 +115,6 @@ class LogStash::Inputs::Ganglia < LogStash::Inputs::Base
       return nil unless data
 
       event=LogStash::Event.new
-      event["source"] = source
 
       data["program"] = "ganglia"
       event["log_host"] = data["hostname"]
