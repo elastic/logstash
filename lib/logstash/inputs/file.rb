@@ -130,8 +130,8 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       source = "file://#{hostname}/#{path.gsub("\\","/")}"
       @logger.debug? && @logger.debug("Received line", :path => path, :line => line)
       @codec.decode(line) do |event|
+        decorate(event)
         event["source"] = source
-        event["type"] = @type if @type
         queue << event
       end
     end

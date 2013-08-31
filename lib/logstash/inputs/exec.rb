@@ -40,6 +40,7 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
       out = IO.popen(@command)
       # out.read will block until the process finishes.
       @codec.decode(out.read) do |event|
+        decorate(event)
         event["source"] = "exec://#{Socket.gethostname}"
         event["command"] = @command
         queue << event

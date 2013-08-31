@@ -143,6 +143,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
         @sender ||= "zmq+#{@topology}://#{host}/#{@type}"
 
         @codec.decode(msg) do |event|
+          decorate(event)
           output_queue << event
         end
       end

@@ -43,6 +43,7 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   def run(output_queue)
     @lumberjack.run do |l|
       @codec.decode(l.delete("line")) do |event|
+        decorate(event)
         l.each { |k,v| event[k] = v }
         output_queue << event
       end

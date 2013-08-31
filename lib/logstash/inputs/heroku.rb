@@ -41,6 +41,7 @@ class LogStash::Inputs::Heroku < LogStash::Inputs::Base
     # this to 0 makes it fetch *all* events, not what I want.
     client.read_logs(@app, ["tail=1", "num=1"]) do |chunk|
       @codec.decode(chunk).each do |event|
+        decorate(event)
         event["app"] = @app
         queue << event
       end
