@@ -57,7 +57,8 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
         timestamp = to_timestamp(event.TimeGenerated)
 
         e = LogStash::Event.new(
-          "source" => "eventlog://#{@hostname}/#{@logfile}",
+          "host" => @hostname,
+          "path" => @logfile,
           "type" => @type,
           "@timestamp" => timestamp
         )

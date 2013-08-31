@@ -1,5 +1,6 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "socket"
 
 # Read events over a UNIX socket.
 #
@@ -64,8 +65,9 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
   end # def register
 
   private
-  def handle_socket(socket, output_queue, event_source)
+  def handle_socket(socket, output_queue)
     begin
+      hostname = Socket.gethostname
       loop do
         buf = nil
         # NOTE(petef): the timeout only hits after the line is read
@@ -80,7 +82,8 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
         end
         @codec.decode(buf) do |event|
           decorate(event)
-          event["source"] = event_source
+          event["host"] = hostname
+          event["path"] = @path
           output_queue << e
         end
       end # loop do
@@ -119,7 +122,7 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
             @logger.debug("Accepted connection",
                           :server => "#{@path}")
             begin
-              handle_socket(s, output_queue, "unix://#{@path}/")
+              handle_socket(s, output_queue)
             rescue Interrupted
               s.close rescue nil
             end
@@ -142,8 +145,8 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
       loop do
         client_socket = UNIXSocket.new(@path)
         client_socket.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
-        @logger.debug("Opened connection", :client => "#{@path}")
-        handle_socket(client_socket, output_queue, "unix://#{@path}/server")
+        @logger.debug("Opened connection", :client => @path)
+        handle_socket(client_socket, output_queue)
       end # loop
     end
   end # def run

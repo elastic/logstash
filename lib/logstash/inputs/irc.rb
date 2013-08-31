@@ -38,11 +38,6 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
   # "#logstash".
   config :channels, :validate => :array, :required => true
 
-
-  def initialize(*args)
-    super(*args)
-  end # def initialize
-
   public
   def register
     require "cinch"

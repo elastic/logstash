@@ -83,7 +83,7 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
       end
 
       event = LogStash::Event.new(JSON.parse(data))
-      event["source"] = client[3]
+      event["host"] = client[3]
       if event["timestamp"].is_a?(Numeric)
         event["@timestamp"] = Time.at(event["timestamp"]).gmtime
         event.remove("timestamp")

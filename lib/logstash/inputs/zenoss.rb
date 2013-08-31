@@ -73,16 +73,16 @@ class LogStash::Inputs::Zenoss < LogStash::Inputs::RabbitMQ
         next unless summary.occurrence.length > 0
 
         occurrence = summary.occurrence[0]
-        timestamp = DateTime.strptime(occurrence.created_time.to_s, "%Q").to_s
+        #timestamp = DateTime.strptime(occurrence.created_time.to_s, "%Q").to_s
+        timestamp = Time.at(occurrence.created_time / 1000.0)
 
         # LogStash event properties.
-        event = LogStash::Event.new({
-          "@source" => @rabbitmq_url,
-          "@type" => @type,
+        event = LogStash::Event.new(
           "@timestamp" => timestamp,
-          "@source_host" => occurrence.actor.element_title,
-          "@message" => occurrence.message,
-          })
+          "type" => @type,
+          "host" => occurrence.actor.element_title,
+          "message" => occurrence.message,
+        )
 
         # Direct mappings from summary.
         %w{uuid}.each do |property|

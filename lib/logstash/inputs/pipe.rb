@@ -30,16 +30,17 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
 
   public
   def run(queue)
-    @pipe = IO.popen(command, mode="r")
+    @pipe = IO.popen(@command, mode="r")
     hostname = Socket.gethostname
 
     @pipe.each do |line|
       line = line.chomp
-      source = "pipe://#{hostname}/#{command}"
-      @logger.debug? && @logger.debug("Received line", :command => command, :line => line)
+      source = "pipe://#{hostname}/#{@command}"
+      @logger.debug? && @logger.debug("Received line", :command => @command, :line => line)
       @codec.decode(line) do |event|
+        event["host"] = hostname
+        event["command"] = @command
         decorate(event)
-        event["source"] = source
         queue << event
       end
     end
