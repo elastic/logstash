@@ -119,6 +119,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       # Ruby uri sucks, so don't use it.
       source = "syslog://#{client[3]}/"
       @codec.decode(payload) do |event|
+        decorate(event)
         event["source"] = client[3]
         syslog_relay(event)
         output_queue << event

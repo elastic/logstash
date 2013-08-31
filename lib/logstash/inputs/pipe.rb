@@ -38,6 +38,7 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
       source = "pipe://#{hostname}/#{command}"
       @logger.debug? && @logger.debug("Received line", :command => command, :line => line)
       @codec.decode(line) do |event|
+        decorate(event)
         event["source"] = source
         queue << event
       end

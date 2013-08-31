@@ -79,6 +79,7 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
           end
         end
         @codec.decode(buf) do |event|
+          decorate(event)
           event["source"] = event_source
           output_queue << e
         end

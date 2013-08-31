@@ -110,6 +110,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         end
       end
       codec.decode(buf) do |event|
+        decorate(event)
         event["source"] = event_source
         event["sslsubject"] = socket.peer_cert.subject if @ssl_enable && @ssl_verify
         output_queue << event

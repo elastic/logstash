@@ -53,6 +53,7 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
         @muc.join(room)
         @muc.on_message do |time,from,body|
           @codec.decode(body) do |event|
+            decorate(event)
             event["room"] = room
             event["from"] = from
             queue << event

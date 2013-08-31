@@ -43,6 +43,7 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
     loop do
       frame = relpserver.syslog_read(socket)
       @codec.decode(frame["message"]) do |event|
+        decorate(event)
         event["source"] = event_source
         output_queue << event
       end

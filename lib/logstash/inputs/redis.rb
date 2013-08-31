@@ -127,6 +127,7 @@ EOF
   def queue_event(msg, output_queue)
     begin
       @codec.decode(msg) do |event|
+        decorate(event)
         output_queue << event
       end
     rescue => e # parse or event creation error
