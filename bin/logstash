@@ -1,21 +1,56 @@
 #!/bin/sh
+# Run logstash from source
+#
+# This is most useful when done from a git checkout.
+#
+# Usage:
+#     bin/logstash <command> [arguments]
+#
+# See 'bin/logstash help' for a list of commands.
+#
+# NOTE: One extra command is available 'deps'
+# The 'deps' command will install dependencies for logstash.
+#
+# If you do not have ruby installed, you can set "USE_JRUBY=1"
+# in your environment and this script will download and use
+# a release of JRuby for you.
 
 basedir=$(cd `dirname $0`/..; pwd)
-if [ -d "$basedir/.git" ] ; then
-  RUBY=${RUBY=$(ruby -e 'puts RUBY_ENGINE')}
-  RUBYVER=${RUBYVER=1.9}
-  export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
-  export GEM_PATH=
-fi
-
 export RUBYLIB="$basedir/lib"
+
+# Setup will configure any environmental settings necessary to
+# help logstash run.
+setup() {
+  if [ -d "$basedir/.git" ] ; then
+    if [ $1 = "jruby" ] ; then
+      RUBY=${RUBY=jruby}
+    else
+      RUBY=${RUBY=$(ruby -e 'puts RUBY_ENGINE')}
+    fi
+    RUBYVER=${RUBYVER=1.9}
+    export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
+    export GEM_PATH=
+  fi
+}
+
+if [ $1 = "deps" ] ; then
+  program="$basedir/gembag.rb"
+  set -- "$basedir/logstash.gemspec"
+else
+  program="$basedir/lib/logstash/runner.rb"
+fi
 
 which ruby > /dev/null 2>&1
 if [ "$?" -eq 0 -a -z "$USE_JRUBY" ] ; then
-  exec ruby "$basedir/lib/logstash/runner.rb" "$@"
+  set -- ruby "$program" "$@"
+  setup
 else
   # No ruby found, fetch JRuby and run.
-  jruby="vendor/jar/jruby-complete-1.7.4.jar"
-  [ ! -f "$jruby" ] && make build-jruby
-  exec java -jar "$jruby" "$basedir/lib/logstash/runner.rb" "$@"
+  jruby="$basedir/vendor/jar/jruby-complete-1.7.4.jar"
+  [ ! -f "$jruby" ] && make -C $basedir build-jruby
+  set -- java -jar "$jruby" "$program" "$@"
+  setup jruby
 fi
+
+exec "$@"
+
