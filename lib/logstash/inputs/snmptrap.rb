@@ -70,6 +70,7 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
     @snmptrap.on_trap_default do |trap|
       begin
         event = LogStash::Event.new("message" => trap.inspect, "host" => trap.source_ip)
+        decorate(event)
         trap.each_varbind do |vb|
           event[vb.name.to_s] = vb.value.to_s
         end

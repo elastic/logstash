@@ -27,6 +27,7 @@ class LogStash::Inputs::Varnishlog < LogStash::Inputs::Threadable
     begin
       str = ptr.read_string(len)
       event = LogStash::Event.new("message" => str, "host" => @host)
+      decorate(event)
       event["varnish_tag"] = tag
       event["varnish_fd"] = fd
       event["varnish_spec"] = spec
