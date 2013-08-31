@@ -43,13 +43,18 @@ require "logstash/codecs/base"
 #     
 # This says that any line starting with whitespace belongs to the previous line.
 #
-# Another example is C line continuations (backslash). Here's how to do that:
+# Another example is to merge lines not starting with a date up to the previous
+# line..
 #
-#     filter {
-#       multiline {
-#         type => "somefiletype "
-#         pattern => "\\$"
-#         what => "next"
+#     input {
+#       file {
+#         path => "/var/log/someapp.log"
+#         codec => multiline {
+#           # Grok pattern names are valid! :)
+#           pattern => "^%{TIMESTAMP_ISO8601} "
+#           negate => true
+#           what => previous
+#         }
 #       }
 #     }
 #     
