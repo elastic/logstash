@@ -36,8 +36,9 @@ Now add the code:
       #   foo { ... }
       # }
       config_name "foo"
-      # need to set a plugin_status
-      plugin_status "experimental"
+
+      # New plugins should start life at milestone 1.
+      milestone 1
 
       # Replace the message with this value.
       config :message, :validate => :string
@@ -54,8 +55,7 @@ Now add the code:
         if @message
           # Replace the event message with our message as configured in the
           # config file.
-          # If no message is specified, do nothing.
-          event.message = @message
+          event["message"] = @message
         end
         # filter_matched should go in the last line of our successful code 
         filter_matched(event)
@@ -71,9 +71,10 @@ The config file looks like this:
       stdin { type => "foo" } 
     }
     filter {
-      foo {
-        type => "foo"
-        message => "Hello world!"
+      if [type] == "foo" {
+        foo {
+          message => "Hello world!"
+        }
       }
     }
     output {
