@@ -151,7 +151,7 @@ class LogStash::Filters::Base < LogStash::Plugin
       tag = event.sprintf(tag)
       @logger.debug? and @logger.debug("filters/#{self.class.name}: removing tag",
                                        :tag => tag)
-      event.tags.delete(tag)
+      event["tags"].delete(tag)
     end
   end # def filter_matched
 

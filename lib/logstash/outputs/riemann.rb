@@ -79,7 +79,7 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
     r_event = Hash.new
     r_event[:host] = event.sprintf(@sender)
     # riemann doesn't handle floats so we reduce the precision here
-    r_event[:time] = event.unix_timestamp.to_i
+    r_event[:time] = event["@timestamp"].to_i
     r_event[:description] = event["message"]
     if @riemann_event
       @riemann_event.each do |key, val|

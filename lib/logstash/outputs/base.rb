@@ -65,14 +65,14 @@ class LogStash::Outputs::Base < LogStash::Plugin
     end
 
     if !@tags.empty?
-      if !@tags.send(@include_method) {|tag| event.tags.include?(tag)}
+      if !@tags.send(@include_method) {|tag| event["tags"].include?(tag)}
         @logger.debug? and @logger.debug("Dropping event because tags don't match #{@tags.inspect}", event)
         return false
       end
     end
 
     if !@exclude_tags.empty?
-      if @exclude_tags.send(@exclude_method) {|tag| event.tags.include?(tag)}
+      if @exclude_tags.send(@exclude_method) {|tag| event["tags"].include?(tag)}
         @logger.debug? and @logger.debug("Dropping event because tags contains excluded tags: #{exclude_tags.inspect}", event)
         return false
       end

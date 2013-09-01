@@ -65,13 +65,13 @@ class LogStash::Outputs::Datadog < LogStash::Outputs::Base
     if @date_happened
       dd_event['date_happened'] = event.sprintf(@date_happened)
     else
-      dd_event['date_happened'] = event.unix_timestamp.to_i
+      dd_event['date_happened'] = event["@timestamp"].to_i
     end
 
     if @dd_tags
       tagz = @dd_tags.collect {|x| event.sprintf(x) }
     else
-      tagz = event.tags
+      tagz = event["tags"]
     end
     dd_event['tags'] = tagz if tagz
 

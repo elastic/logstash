@@ -57,7 +57,7 @@ class LogStash::Filters::Metaevent < LogStash::Filters::Base
   end
 
   def followed_by_tags_match(event)
-    (event.tags & @followed_by_tags).size == @followed_by_tags.size
+    (event["tags"] & @followed_by_tags).size == @followed_by_tags.size
   end
 
   def within_period(event)

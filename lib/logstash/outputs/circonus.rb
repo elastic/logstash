@@ -23,7 +23,7 @@ class LogStash::Outputs::Circonus < LogStash::Outputs::Base
   # Annotations
   # Registers an annotation with Circonus
   # The only required field is `title` and `description`.
-  # `start` and `stop` will be set to `event.unix_timestamp`
+  # `start` and `stop` will be set to `event["@timestamp"]`
   # You can add any other optional annotation values as well.
   # All values will be passed through `event.sprintf`
   #
@@ -58,8 +58,8 @@ class LogStash::Outputs::Circonus < LogStash::Outputs::Base
     annotation_path = "#{@uri.path}annotation"
     @logger.warn("Annotation path", :data => annotation_path)
     request = Net::HTTP::Post.new(annotation_path)
-    annotation_event['start'] = event.unix_timestamp.to_i unless annotation_event['start']
-    annotation_event['stop'] = event.unix_timestamp.to_i unless annotation_event['stop']
+    annotation_event['start'] = event["@timestamp"].to_i unless annotation_event['start']
+    annotation_event['stop'] = event["@timestamp"].to_i unless annotation_event['stop']
     @logger.warn("Annotation event", :data => annotation_event)
     annotation_array << annotation_event
     begin
