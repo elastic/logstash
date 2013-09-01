@@ -87,7 +87,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
     end
     item = item.first if item.is_a?(Array)
  
-    zmsg = event.message
+    zmsg = event["message"]
     zmsg = zmsg.gsub("\n", "\\n")
     zmsg = zmsg.gsub(/"/, "\\\"")
  
