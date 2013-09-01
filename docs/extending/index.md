@@ -17,7 +17,7 @@ If you're looking to extend logstash today, please look at the existing plugins.
 ## Common concepts
 
 * The `config_name` sets the name used in the config file.
-* The `plugin_status` sets the status of the plugin for example `beta`.
+* The `milestone` sets the milestone number of the plugin. See <../plugin-milestones> for more info.
 * The `config` lines define config options.
 * The `register` method is called per plugin instantiation. Do any of your initialization here.
 
@@ -32,9 +32,9 @@ All plugins should require the Logstash module.
 Every plugin must have a name set with the `config_name` method. If this
 is not specified plugins will fail to load with an error.
 
-### Plugin status
+### Milestones
 
-Every plugin needs a status set using `plugin_status`. Valid values are
+Every plugin needs a status set using `milestone`. Valid values are
 `stable`, `beta`, `experimental`, and `unsupported`. Plugins with either
 the `experimental` and `unsupported` status will generate warnings when
 used.
