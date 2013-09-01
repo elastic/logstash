@@ -135,7 +135,7 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
     return unless output?(event)
       @logger.debug("Event being tested for Email", :tags => @tags, :event => event)
       # Set Intersection - returns a new array with the items that are the same between the two
-      if !@tags.empty? && (event.tags & @tags).size == 0
+      if !@tags.empty? && (event["tags"] & @tags).size == 0
          # Skip events that have no tags in common with what we were configured
          @logger.debug("No Tags match for Email Output!")
          return

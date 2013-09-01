@@ -25,14 +25,14 @@ class LogStash::Outputs::Boundary < LogStash::Outputs::Base
   # Override the start time
   # Note that Boundary requires this to be seconds since epoch
   # If overriding, it is your responsibility to type this correctly
-  # By default this is set to `event.unix_timestamp.to_i`
+  # By default this is set to `event["@timestamp"].to_i`
   config :start_time, :validate => :string
 
   # End time
   # Override the stop time
   # Note that Boundary requires this to be seconds since epoch
   # If overriding, it is your responsibility to type this correctly
-  # By default this is set to `event.unix_timestamp.to_i`
+  # By default this is set to `event["@timestamp"].to_i`
   config :end_time, :validate => :string
 
   # Type
@@ -86,10 +86,10 @@ class LogStash::Outputs::Boundary < LogStash::Outputs::Base
     boundary_event = {
       'type' => event.sprintf("%{message}"),
       'subtype' => event.sprintf("%{type}"),
-      'start_time' => event.unix_timestamp.to_i,
-      'end_time' => event.unix_timestamp.to_i,
+      'start_time' => event["@timestamp"].to_i,
+      'end_time' => event["@timestamp"].to_i,
       'links' => [],
-      'tags' => event.tags,
+      'tags' => event["tags"],
     }.merge boundary_event
 
     request = Net::HTTP::Post.new(@uri.path)

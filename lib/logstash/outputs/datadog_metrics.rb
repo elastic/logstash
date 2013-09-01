@@ -79,7 +79,7 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
     if @dd_tags
       tagz = @dd_tags.collect {|x| event.sprintf(x) }
     else
-      tagz = event.tags
+      tagz = event["tags"]
     end
     dd_metrics['tags'] = tagz if tagz
 

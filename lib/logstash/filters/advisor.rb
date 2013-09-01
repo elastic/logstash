@@ -127,10 +127,9 @@ class LogStash::Filters::Advisor < LogStash::Filters::Base
       
         if (@first == true)
           event = LogStash::Event.new
-          event.source_host = Socket.gethostname
+          event["host"] = Socket.gethostname
           event["message"] = @message
-          event.tags << "advisor_first"
-          event.source = Socket.gethostname+" advisor_plugin"
+          event.tag "advisor_first"
           filter_matched(event)
          
           @first = false

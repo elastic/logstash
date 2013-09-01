@@ -148,7 +148,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     return if @metric_meters.empty? && @metric_timers.empty?
 
     event = LogStash::Event.new
-    event.source_host = Socket.gethostname
+    event["message"] = Socket.gethostname
     @metric_meters.each do |name, metric|
       event["#{name}.count"] = metric.count
       event["#{name}.rate_1m"] = metric.one_minute_rate
