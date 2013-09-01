@@ -123,11 +123,11 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
 
     if rfc3164?
        timestamp = DateTime.iso8601(event.sprintf(@timestamp)).strftime("%b %e %H:%M:%S")
-       syslog_msg = "<"+priority.to_s()+">"+timestamp+" "+sourcehost+" "+appname+"["+procid+"]: "+event.message
+       syslog_msg = "<"+priority.to_s()+">"+timestamp+" "+sourcehost+" "+appname+"["+procid+"]: "+event["message"]
     else
        msgid = event.sprintf(@msgid)
        timestamp = DateTime.iso8601(event.sprintf(@timestamp)).rfc3339()
-       syslog_msg = "<"+priority.to_s()+">1 "+timestamp+" "+sourcehost+" "+appname+" "+procid+" "+msgid+" - "+event.message
+       syslog_msg = "<"+priority.to_s()+">1 "+timestamp+" "+sourcehost+" "+appname+" "+procid+" "+msgid+" - "+event["message"]
     end
 
     begin

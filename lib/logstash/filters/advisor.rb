@@ -89,7 +89,7 @@ class LogStash::Filters::Advisor < LogStash::Filters::Base
   if(!(@time_adv == 0))
 
     new_event = true
-    @message = event.message
+    @message = event["message"]
     
     # control if the events are new or they are came before
     for i in (0..@sarray.size-1)
@@ -128,7 +128,7 @@ class LogStash::Filters::Advisor < LogStash::Filters::Base
         if (@first == true)
           event = LogStash::Event.new
           event.source_host = Socket.gethostname
-          event.message = @message
+          event["message"] = @message
           event.tags << "advisor_first"
           event.source = Socket.gethostname+" advisor_plugin"
           filter_matched(event)
@@ -155,10 +155,9 @@ class LogStash::Filters::Advisor < LogStash::Filters::Base
           end
          
           event = LogStash::Event.new
-          event.source_host = Socket.gethostname 
-          event.message = message  
-          event.tags << "advisor_info"
-          event.source = Socket.gethostname+" advisor_plugin"
+          event["host"] = Socket.gethostname 
+          event["message"] = message  
+          event.tag << "advisor_info"
           filter_matched(event)
    
           # reset flag and counter 

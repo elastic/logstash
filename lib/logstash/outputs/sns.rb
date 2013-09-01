@@ -104,7 +104,7 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
     # Truncate only the message if the JSON structure is too large.
     if json_size > MAX_MESSAGE_SIZE_IN_BYTES
       # TODO: Utilize `byteslice` in JRuby 1.7: http://jira.codehaus.org/browse/JRUBY-5547
-      event.message = event.message.slice(0, (event.message.bytesize - (json_size - MAX_MESSAGE_SIZE_IN_BYTES)))
+      event["message"] = event["message"].slice(0, (event["message"].bytesize - (json_size - MAX_MESSAGE_SIZE_IN_BYTES)))
     end
 
     event.to_json
