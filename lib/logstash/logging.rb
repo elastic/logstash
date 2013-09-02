@@ -2,7 +2,7 @@ require "logstash/namespace"
 require "cabin"
 require "logger"
 
-class LogStash::Logger 
+class LogStash::Logger
   attr_accessor :target
 
   public
@@ -19,7 +19,7 @@ class LogStash::Logger
     # causes Cabin to subscribe to STDOUT maaaaaany times.
     subscriptions = @channel.instance_eval { @subscribers.count }
     @channel.subscribe(@target) unless subscriptions > 0
- 
+
     # Set default loglevel to WARN unless $DEBUG is set (run with 'ruby -d')
     @level = $DEBUG ? :debug : :warn
     if ENV["LOGSTASH_DEBUG"]
@@ -74,7 +74,7 @@ class LogStash::Logger
       else
         p.setProperty("log4j.appender.logstash",
                       "org.apache.log4j.FileAppender")
-        p.setProperty("log4j.appender.logstash.File", target)
+        p.setProperty("log4j.appender.logstash.File", target.path)
     end # case target
 
     p.setProperty("log4j.appender.logstash.layout",
