@@ -69,7 +69,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
   def initialize(params={})
     super
     @threadable = false
-    puts caller.join("\n")
     config_init(params)
     @tags ||= []
 
