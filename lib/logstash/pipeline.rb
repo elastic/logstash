@@ -25,7 +25,6 @@ class LogStash::Pipeline
     begin
       eval(code)
     rescue => e
-      p e.backtrace[1]
       raise
     end
 
