@@ -138,6 +138,9 @@ describe "conditionals" do
         if [missing] in [alsomissing] {
           mutate { add_tag => "shouldnotexist" }
         }
+        if !("foo" in ["hello", "world"]) {
+          mutate { add_tag => "shouldexist" }
+        }
       }
     CONFIG
 
@@ -147,6 +150,7 @@ describe "conditionals" do
       insist { subject["tags"] }.include?("string in field")
       insist { subject["tags"] }.include?("field in list")
       reject { subject["tags"] }.include?("shouldnotexist")
+      insist { subject["tags"] }.include?("shouldexist")
     end
   end
 
