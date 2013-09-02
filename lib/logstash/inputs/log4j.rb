@@ -63,7 +63,7 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
         event["logger_name"] = log4j_obj.getLoggerName
         event["thread"] = log4j_obj.getThreadName
         event["class"] = log4j_obj.getLocationInformation.getClassName
-        event["file"] = log4j_obj.getLocationInformation.getFileName + ":" + log4j_obj.getLocationInformation.getLineNumber,
+        event["file"] = log4j_obj.getLocationInformation.getFileName + ":" + log4j_obj.getLocationInformation.getLineNumber
         event["method"] = log4j_obj.getLocationInformation.getMethodName
         event["NDC"] = log4j_obj.getNDC if log4j_obj.getNDC
         event["stack_trace"] = log4j_obj.getThrowableStrRep.to_a.join("\n") if log4j_obj.getThrowableInformation
