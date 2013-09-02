@@ -1,6 +1,6 @@
 require "test_utils"
 
-describe "parse syslog" do
+describe "parse syslog", :if => RUBY_ENGINE == "jruby" do
   extend LogStash::RSpec
 
   config <<-'CONFIG'
