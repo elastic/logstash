@@ -33,7 +33,7 @@ endif
 
 TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
 #spec/outputs/graphite.rb spec/outputs/email.rb)
-default: 
+default:
 	@echo "Make targets you might be interested in:"
 	@echo "  flatjar -- builds the flatjar jar"
 	@echo "  flatjar-test -- runs the test suite against the flatjar"
@@ -116,8 +116,8 @@ $(ELASTICSEARCH): $(ELASTICSEARCH).tar.gz | vendor/jar
 vendor/geoip: | vendor
 	$(QUIET)mkdir $@
 
-$(GEOIP): | vendor/geoip
-	$(QUIET)wget -q -O - $(GEOIP_URL) | gzip -dc - > $@
+$(GEOIP): | wget-or-curl vendor/geoip
+	$(QUIET)$(DOWNLOAD_COMMAND) %@ $(GEOIP_URL) | gzip -dc - > $@
 
 # Always run vendor/bundle
 .PHONY: fix-bundler
@@ -134,7 +134,7 @@ vendor/bundle: | vendor $(JRUBY)
 	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec
 	@# Purge old version of json
 	#$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall json -v 1.6.5
-	@# Purge old versions of gems installed because gembag doesn't do 
+	@# Purge old versions of gems installed because gembag doesn't do
 	@# dependency resolution correctly.
 	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall addressable -v 2.2.8
 	@# uninstall the newer ffi (1.1.5 vs 1.3.1) because that's what makes
@@ -171,7 +171,7 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	$(QUIET)mkdir -p $@/META-INF/services/
 	$(QUIET)find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
 	| xargs $(JRUBY_CMD) extract_services.rb -o $@/META-INF/services
-	@# copy openssl/lib/shared folders/files to root of jar 
+	@# copy openssl/lib/shared folders/files to root of jar
 	@#- need this for openssl to work with JRuby
 	$(QUIET)mkdir -p $@/openssl
 	$(QUIET)mkdir -p $@/jopenssl
@@ -330,7 +330,7 @@ sync-jira-components: $(addprefix create/jiracomponent/,$(subst lib/logstash/,,$
 	-$(QUIET)$(JIRACLI) --action run --file tmp_jira_action_list --continue > /dev/null 2>&1
 	$(QUIET)rm tmp_jira_action_list
 
-create/jiracomponent/%: 
+create/jiracomponent/%:
 	$(QUIET)echo "--action addComponent --project LOGSTASH --name $(subst create/jiracomponent/,,$@)" >> tmp_jira_action_list
 
 ## Release note section (up to you if/how/when to integrate in docs)
@@ -339,19 +339,19 @@ create/jiracomponent/%:
 #  - issues for FixVersion from JIRA
 
 # Note on used Github logic
-# We parse the commit between the last tag (should be the last release) and HEAD 
+# We parse the commit between the last tag (should be the last release) and HEAD
 # to extract all the notice about merged pull requests.
 
 # Note on used JIRA release note URL
-# The JIRA Release note list all issues (even open ones) 
+# The JIRA Release note list all issues (even open ones)
 # with Fix Version assigned to target version
 # So one must verify manually that there is no open issue left (TODO use JIRACLI)
 
-# This is the ID for a version item in jira, can be obtained by CLI 
+# This is the ID for a version item in jira, can be obtained by CLI
 # or through the Version URL https://logstash.jira.com/browse/LOGSTASH/fixforversion/xxx
 JIRA_VERSION_ID=10820
 
-releaseNote: 
+releaseNote:
 	-$(QUIET)rm releaseNote.html
 	$(QUIET)curl -si "https://logstash.jira.com/secure/ReleaseNote.jspa?version=$(JIRA_VERSION_ID)&projectId=10020" | sed -n '/<textarea.*>/,/<\/textarea>/p' | grep textarea -v >> releaseNote.html
 	$(QUIET)ruby pull_release_note.rb
