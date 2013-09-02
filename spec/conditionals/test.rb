@@ -201,6 +201,53 @@ describe "conditionals" do
 
   end
 
+  describe "negated expressions" do
+    conditional "!([message] == 'sample')" do
+      sample("sample") { reject { subject["tags"] }.include?("success") }
+      sample("different") { reject { subject["tags"] }.include?("failure") }
+    end 
+
+    conditional "!([message] != 'sample')" do
+      sample("sample") { reject { subject["tags"] }.include?("failure") }
+      sample("different") { reject { subject["tags"] }.include?("success") }
+    end 
+
+    conditional "!([message] < 'sample')" do
+      sample("apple") { reject { subject["tags"] }.include?("success") }
+      sample("zebra") { reject { subject["tags"] }.include?("failure") }
+    end
+
+    conditional "!([message] > 'sample')" do
+      sample("zebra") { reject { subject["tags"] }.include?("success") }
+      sample("apple") { reject { subject["tags"] }.include?("failure") }
+    end
+
+    conditional "!([message] <= 'sample')" do
+      sample("apple") { reject { subject["tags"] }.include?("success") }
+      sample("zebra") { reject { subject["tags"] }.include?("failure") }
+      sample("sample") { reject { subject["tags"] }.include?("success") }
+    end
+
+    conditional "!([message] >= 'sample')" do
+      sample("zebra") { reject { subject["tags"] }.include?("success") }
+      sample("sample") { reject { subject["tags"] }.include?("success") }
+      sample("apple") { reject { subject["tags"] }.include?("failure") }
+    end
+
+    conditional "!([message] =~ /sample/)" do
+      sample("apple") { reject { subject["tags"] }.include?("failure") }
+      sample("sample") { reject { subject["tags"] }.include?("success") }
+      sample("some sample") { reject { subject["tags"] }.include?("success") }
+    end
+
+    conditional "!([message] !~ /sample/)" do
+      sample("apple") { reject { subject["tags"] }.include?("success") }
+      sample("sample") { reject { subject["tags"] }.include?("failure") }
+      sample("some sample") { reject { subject["tags"] }.include?("failure") }
+    end
+
+  end
+
   describe "value as an expression" do
     # testing that a field has a value should be true.
     conditional "[message]" do
