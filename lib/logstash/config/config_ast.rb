@@ -270,27 +270,6 @@ module LogStash; module Config; module AST
 
   module Expression
     def compile
-      # Hack for compiling 'in' support.
-      # This really belongs elsewhere, I think.
-      cmp = recursive_select(LogStash::Config::AST::ComparisonOperator)
-      if cmp.count == 1 
-        operator = cmp.first.text_value
-        if operator == "in"
-          # item 'in' list
-          # technically anything that responds to #include? is accepted.
-          item, list = recursive_select(LogStash::Config::AST::RValue)
-          return "(x = #{list.compile}; x.respond_to?(:include?) && x.include?(#{item.compile}))"
-          #return "#{list.compile}.include?(#{item.compile})"
-        elsif ["=~", "!~"].include?(operator)
-          item, regexp = recursive_select(LogStash::Config::AST::RValue)
-          if regexp.is_a?(LogStash::Config::AST::String)
-            regexp = "/#{regexp.text_value[1..-1]}/"
-          else
-            regexp = regexp.compile
-          end
-          return "(#{item.compile} #{operator} #{regexp})"
-        end
-      end
       return "(#{super})"
     end
   end
@@ -301,13 +280,42 @@ module LogStash; module Config; module AST
     end
   end
 
+  module ComparisonExpression; end
+
+  module InExpression
+    def compile
+      item, list = recursive_select(LogStash::Config::AST::RValue)
+      return "(x = #{list.compile}; x.respond_to?(:include?) && x.include?(#{item.compile}))"
+    end
+  end
+
   class MethodCall < Node
     def compile
       arguments = recursive_inject { |e| [String, Number, Selector, Array, MethodCall].any? { |c| e.is_a?(c) } }
       return "#{method.text_value}(" << arguments.collect(&:compile).join(", ") << ")"
     end
   end
+
+  class RegexpExpression < Node
+    def compile
+      operator = recursive_select(LogStash::Config::AST::RegExpOperator).first.text_value
+      item, regexp = recursive_select(LogStash::Config::AST::RValue)
+      # Compile strings to regexp's
+      if regexp.is_a?(LogStash::Config::AST::String)
+        regexp = "/#{regexp.text_value[1..-2]}/"
+      else
+        regexp = regexp.compile
+      end
+      return "(#{item.compile} #{operator} #{regexp})"
+    end
+  end
+
   module ComparisonOperator 
+    def compile
+      return " #{text_value} "
+    end
+  end
+  module RegExpOperator
     def compile
       return " #{text_value} "
     end

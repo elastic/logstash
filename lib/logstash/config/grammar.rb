@@ -2336,28 +2336,6 @@ module LogStashConfig
 
   end
 
-  module Expression1
-    def rvalue1
-      elements[0]
-    end
-
-    def _1
-      elements[1]
-    end
-
-    def comparison
-      elements[2]
-    end
-
-    def _2
-      elements[3]
-    end
-
-    def rvalue2
-      elements[4]
-    end
-  end
-
   def _nt_expression
     start_index = index
     if node_cache[:expression].has_key?(index)
@@ -2417,43 +2395,30 @@ module LogStashConfig
         r0 = r7
         r0.extend(LogStash::Config::AST::Expression)
       else
-        i8, s8 = index, []
-        r9 = _nt_rvalue
-        s8 << r9
-        if r9
-          r10 = _nt__
-          s8 << r10
-          if r10
-            r11 = _nt_comparison
-            s8 << r11
-            if r11
-              r12 = _nt__
-              s8 << r12
-              if r12
-                r13 = _nt_rvalue
-                s8 << r13
-              end
-            end
-          end
-        end
-        if s8.last
-          r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
-          r8.extend(Expression1)
-        else
-          @index = i8
-          r8 = nil
-        end
+        r8 = _nt_in_expression
         if r8
           r0 = r8
           r0.extend(LogStash::Config::AST::Expression)
         else
-          r14 = _nt_rvalue
-          if r14
-            r0 = r14
+          r9 = _nt_compare_expression
+          if r9
+            r0 = r9
             r0.extend(LogStash::Config::AST::Expression)
           else
-            @index = i0
-            r0 = nil
+            r10 = _nt_regexp_expression
+            if r10
+              r0 = r10
+              r0.extend(LogStash::Config::AST::Expression)
+            else
+              r11 = _nt_rvalue
+              if r11
+                r0 = r11
+                r0.extend(LogStash::Config::AST::Expression)
+              else
+                @index = i0
+                r0 = nil
+              end
+            end
           end
         end
       end
@@ -2595,6 +2560,95 @@ module LogStashConfig
     end
 
     node_cache[:negative_expression][start_index] = r0
+
+    r0
+  end
+
+  module InExpression0
+    def rvalue1
+      elements[0]
+    end
+
+    def _1
+      elements[1]
+    end
+
+    def in_operator
+      elements[2]
+    end
+
+    def _2
+      elements[3]
+    end
+
+    def rvalue2
+      elements[4]
+    end
+  end
+
+  def _nt_in_expression
+    start_index = index
+    if node_cache[:in_expression].has_key?(index)
+      cached = node_cache[:in_expression][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    r1 = _nt_rvalue
+    s0 << r1
+    if r1
+      r2 = _nt__
+      s0 << r2
+      if r2
+        r3 = _nt_in_operator
+        s0 << r3
+        if r3
+          r4 = _nt__
+          s0 << r4
+          if r4
+            r5 = _nt_rvalue
+            s0 << r5
+          end
+        end
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(LogStash::Config::AST::InExpression,input, i0...index, s0)
+      r0.extend(InExpression0)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:in_expression][start_index] = r0
+
+    r0
+  end
+
+  def _nt_in_operator
+    start_index = index
+    if node_cache[:in_operator].has_key?(index)
+      cached = node_cache[:in_operator][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    if has_terminal?("in", false, index)
+      r0 = instantiate_node(SyntaxNode,input, index...(index + 2))
+      @index += 2
+    else
+      terminal_parse_failure("in")
+      r0 = nil
+    end
+
+    node_cache[:in_operator][start_index] = r0
 
     r0
   end
@@ -2824,10 +2878,75 @@ module LogStashConfig
     r0
   end
 
-  def _nt_comparison
+  module CompareExpression0
+    def rvalue1
+      elements[0]
+    end
+
+    def _1
+      elements[1]
+    end
+
+    def compare_operator
+      elements[2]
+    end
+
+    def _2
+      elements[3]
+    end
+
+    def rvalue2
+      elements[4]
+    end
+  end
+
+  def _nt_compare_expression
     start_index = index
-    if node_cache[:comparison].has_key?(index)
-      cached = node_cache[:comparison][index]
+    if node_cache[:compare_expression].has_key?(index)
+      cached = node_cache[:compare_expression][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    r1 = _nt_rvalue
+    s0 << r1
+    if r1
+      r2 = _nt__
+      s0 << r2
+      if r2
+        r3 = _nt_compare_operator
+        s0 << r3
+        if r3
+          r4 = _nt__
+          s0 << r4
+          if r4
+            r5 = _nt_rvalue
+            s0 << r5
+          end
+        end
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(LogStash::Config::AST::ComparisonExpression,input, i0...index, s0)
+      r0.extend(CompareExpression0)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:compare_expression][start_index] = r0
+
+    r0
+  end
+
+  def _nt_compare_operator
+    start_index = index
+    if node_cache[:compare_operator].has_key?(index)
+      cached = node_cache[:compare_operator][index]
       if cached
         cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
         @index = cached.interval.end
@@ -2902,44 +3021,8 @@ module LogStashConfig
                 r0 = r6
                 r0.extend(LogStash::Config::AST::ComparisonOperator)
               else
-                if has_terminal?("=~", false, index)
-                  r7 = instantiate_node(SyntaxNode,input, index...(index + 2))
-                  @index += 2
-                else
-                  terminal_parse_failure("=~")
-                  r7 = nil
-                end
-                if r7
-                  r0 = r7
-                  r0.extend(LogStash::Config::AST::ComparisonOperator)
-                else
-                  if has_terminal?("!~", false, index)
-                    r8 = instantiate_node(SyntaxNode,input, index...(index + 2))
-                    @index += 2
-                  else
-                    terminal_parse_failure("!~")
-                    r8 = nil
-                  end
-                  if r8
-                    r0 = r8
-                    r0.extend(LogStash::Config::AST::ComparisonOperator)
-                  else
-                    if has_terminal?("in", false, index)
-                      r9 = instantiate_node(SyntaxNode,input, index...(index + 2))
-                      @index += 2
-                    else
-                      terminal_parse_failure("in")
-                      r9 = nil
-                    end
-                    if r9
-                      r0 = r9
-                      r0.extend(LogStash::Config::AST::ComparisonOperator)
-                    else
-                      @index = i0
-                      r0 = nil
-                    end
-                  end
-                end
+                @index = i0
+                r0 = nil
               end
             end
           end
@@ -2947,7 +3030,125 @@ module LogStashConfig
       end
     end
 
-    node_cache[:comparison][start_index] = r0
+    node_cache[:compare_operator][start_index] = r0
+
+    r0
+  end
+
+  module RegexpExpression0
+    def rvalue
+      elements[0]
+    end
+
+    def _1
+      elements[1]
+    end
+
+    def regexp_operator
+      elements[2]
+    end
+
+    def _2
+      elements[3]
+    end
+
+  end
+
+  def _nt_regexp_expression
+    start_index = index
+    if node_cache[:regexp_expression].has_key?(index)
+      cached = node_cache[:regexp_expression][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    r1 = _nt_rvalue
+    s0 << r1
+    if r1
+      r2 = _nt__
+      s0 << r2
+      if r2
+        r3 = _nt_regexp_operator
+        s0 << r3
+        if r3
+          r4 = _nt__
+          s0 << r4
+          if r4
+            i5 = index
+            r6 = _nt_string
+            if r6
+              r5 = r6
+            else
+              r7 = _nt_regexp
+              if r7
+                r5 = r7
+              else
+                @index = i5
+                r5 = nil
+              end
+            end
+            s0 << r5
+          end
+        end
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(LogStash::Config::AST::RegexpExpression,input, i0...index, s0)
+      r0.extend(RegexpExpression0)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:regexp_expression][start_index] = r0
+
+    r0
+  end
+
+  def _nt_regexp_operator
+    start_index = index
+    if node_cache[:regexp_operator].has_key?(index)
+      cached = node_cache[:regexp_operator][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0 = index
+    if has_terminal?("=~", false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 2))
+      @index += 2
+    else
+      terminal_parse_failure("=~")
+      r1 = nil
+    end
+    if r1
+      r0 = r1
+      r0.extend(LogStash::Config::AST::RegExpOperator)
+    else
+      if has_terminal?("!~", false, index)
+        r2 = instantiate_node(SyntaxNode,input, index...(index + 2))
+        @index += 2
+      else
+        terminal_parse_failure("!~")
+        r2 = nil
+      end
+      if r2
+        r0 = r2
+        r0.extend(LogStash::Config::AST::RegExpOperator)
+      else
+        @index = i0
+        r0 = nil
+      end
+    end
+
+    node_cache[:regexp_operator][start_index] = r0
 
     r0
   end

@@ -59,7 +59,6 @@ grammar LogStashConfig
 
   rule value
     plugin / bareword / string / number / array / hash
-    #<LogStash::Config::AST::Value>
   end
 
   rule array_value
@@ -147,8 +146,10 @@ grammar LogStashConfig
     (
         ("(" _ condition _ ")")
       / negative_expression
-      / (rvalue _ comparison _ rvalue)
-      / (rvalue)
+      / in_expression
+      / compare_expression
+      / regexp_expression
+      / rvalue
     ) <LogStash::Config::AST::Expression>
   end
 
@@ -157,6 +158,15 @@ grammar LogStashConfig
         ("!" _ "(" _ condition _ ")")
       / ("!" _ selector)
     ) <LogStash::Config::AST::NegativeExpression>
+  end
+
+  rule in_expression
+    rvalue _ in_operator _ rvalue
+    <LogStash::Config::AST::InExpression>
+  end
+
+  rule in_operator
+    "in"
   end
 
   rule rvalue
@@ -176,10 +186,25 @@ grammar LogStashConfig
     bareword
   end
 
-  rule comparison
-    ("==" / "!=" / "<=" / ">=" / "<" / ">" / "=~" / "!~" / "in")
+  rule compare_expression
+    rvalue _ compare_operator _ rvalue
+    <LogStash::Config::AST::ComparisonExpression>
+  end
+  
+  rule compare_operator 
+    ("==" / "!=" / "<=" / ">=" / "<" / ">") 
     <LogStash::Config::AST::ComparisonOperator>
   end
+
+  rule regexp_expression
+    rvalue _  regexp_operator _ (string / regexp)
+    <LogStash::Config::AST::RegexpExpression>
+  end
+
+  rule regexp_operator
+    ("=~" / "!~") <LogStash::Config::AST::RegExpOperator>
+  end
+
 
   rule boolean_operator
     ("and" / "or" / "xor" / "nand")
