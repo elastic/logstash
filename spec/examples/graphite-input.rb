@@ -1,6 +1,6 @@
 require "test_utils"
 
-describe "receive graphite input" do
+describe "receive graphite input", :if => RUBY_ENGINE == "jruby" do
   extend LogStash::RSpec
 
   # The logstash config goes here.
