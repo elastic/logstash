@@ -84,6 +84,7 @@
     Pablo Barrera)
 
   ## outputs
+  - new: jira: create jira tickets from an event (#536, patch by Martin Cleaver)
   - feature: rabbitmq: now well-supported again (patches by Michael Klishin)
   - improvement: stomp: vhost support (Patch by Matt Dainty)
   - feature: elasticsearch: now uses the bulk index api and supports
