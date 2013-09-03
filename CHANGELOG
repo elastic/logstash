@@ -15,6 +15,8 @@
     the prior and undocumented syntax for field access (was 'foo.bar' and is
     now '[foo][bar]'). Learn more about this here:
     https://logstash.net/docs/latest/configuration#fieldreferences
+  - A saner hash syntax in the logstash config is now supported. It uses the
+    perl/ruby hash-rocket syntax: { "key" => "value", ... } (LOGSTASH-728)
   - ElasticSearch version 0.90.3 is included. (#486, Gang Chen)
   - The elasticsearch plugin now uses the bulk index api which should result
     in lower cpu usage as well as higher performance than the previous 
@@ -28,8 +30,16 @@
     tcp, redis, rabbitmq) from serialization (gzip text, json, msgpack, etc).
   - Improved error messages that try to be helpful. If you see bad or confusing
     error messages, it is a bug, so let us know! (Patch by Nick Ethier)
+  - The old 'plugin status' concept has been replaced by 'milestones'
+    (LOGSTASH-1137)
+  - SIGHUP should cause logstash to reopen it's logfile if you are using the
+    --log flag
 
   ## inputs
+  - new: s3: reads files from s3 (#537, patch by Mathieu Guillaume)
+  - feature: imap: now marks emails as read (#542, Raffael Schmid)
+  - feature: imap: lets you delete read email (#591, Jonathan Van Eenwyk)
+  - feature: rabbitmq: now well-supported again (patches by Michael Klishin)
   - bugfix: gelf: work around gelf parser errors (#476, patch by Chris McCoy)
   - broken: the twitter input is disabled because the twitter stream v1 api is
     no longer supported and I couldn't find a replacement library that works
@@ -54,7 +64,7 @@
   - feature: grok now defaults 'singles' to true, meaning captured fields are
     stored as single values in most cases instead of the old behavior of being
     captured as an array of values.
-  - new: json_encoder filter (Ralph Meijer)
+  - new: json_encoder filter (#554, patch by Ralph Meijer)
   - new: cipher: gives you many options for encrypting fields (#493, patch by
     saez0pub)
   - feature: kv: new settings include_fields and exclude_fields. (patch by
@@ -63,17 +73,32 @@
     (#491, patch by Richard Pijnenburg)
   - feature: dns: now accepts custom nameservers to query (#495, patch by
     Nikolay Bryskin)
+  - feature: dns: now accepts a timeout setting (#507, patch by Jay Luker)
   - bugfix: ruby: multiple ruby filter instances now work (#501, patch by
     Nikolay Bryskin)
+  - feature: uuid: new filter to add a uuid to each event (#531, Tomas Doran)
+  - feature: useragent: added 'prefix' setting to prefix field names created
+    by this filter. (#524, patch by Jay Luker)
+  - bugfix: mutate: strip works now (#590, Jonathan Van Eenwyk)
 
   ## outputs
+  - feature: rabbitmq: now well-supported again (patches by Michael Klishin)
   - improvement: stomp: vhost support (Patch by Matt Dainty)
+  - feature: elasticsearch: now uses the bulk index api and supports
+    a tunable bulk flushing size.
+  - feature: elasticsearch_http: will now flush when idle instead of always
+    waiting for a full buffer. This helps in slow-sender situations such
+    as testing by hand.
   - feature: irc: add messages_per_second tunable (LOGSTASH-962)
-  - bugfix: emails: restored initial really useful documentation
+  - bugfix: email: restored initial really useful documentation
   - improvement: emails: allow @message, @source, @... in match (LOGSTASH-826,
     LOGSTASH-823) 
+  - feature: email: can now set Reply-To (#540, Tim Meighen) 
   - feature: mongodb: replica sets are supported (#389, patch by Mathias Gug)
   - new: s3: New plugin to write to amazon S3 (#439, patch by Mattia Peterle)
+  - feature: statsd: now supports 'set' metrics (#513, patch by David Warden)
+  - feature: sqs: now supports batching (#522, patch by AaronTheApe)
+  - feature: ganglia: add slope and group settings (#583, patch by divanikus) 
 
 1.1.13 (May 28, 2013)
   ## general

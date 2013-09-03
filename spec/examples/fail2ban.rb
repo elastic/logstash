@@ -1,6 +1,6 @@
 require "test_utils"
 
-describe "fail2ban logs" do
+describe "fail2ban logs", :if => RUBY_ENGINE == "jruby"  do
   extend LogStash::RSpec
 
   # The logstash config goes here.

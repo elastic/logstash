@@ -1,6 +1,6 @@
 require "test_utils"
 
-describe "apache common log format" do
+describe "apache common log format", :if => RUBY_ENGINE == "jruby" do
   extend LogStash::RSpec
 
   # The logstash config goes here.
