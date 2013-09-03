@@ -72,7 +72,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "mail"                             #(MIT license)
   gem.add_runtime_dependency "rbnacl"                           #(MIT license)
   gem.add_runtime_dependency "sequel"                           #(MIT license)
-  gem.add_runtime_dependency "jdbc-sqlite3"                      #(MIT license)
+  gem.add_runtime_dependency "jdbc-sqlite3"                     #(MIT license)
+  gem.add_runtime_dependency "bindata", [">= 1.5.0"]            #(ruby license)
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
