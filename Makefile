@@ -117,7 +117,8 @@ vendor/geoip: | vendor
 	$(QUIET)mkdir $@
 
 $(GEOIP): | vendor/geoip
-	$(QUIET)wget -q -O - $(GEOIP_URL) | gzip -dc - > $@
+	$(QUIET)wget -q -O - $(GEOIP_URL) | gzip -dc - > $@.tmp
+	$(QUIET)mv $@.tmp $@
 
 # Always run vendor/bundle
 .PHONY: fix-bundler
