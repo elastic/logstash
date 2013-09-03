@@ -708,25 +708,37 @@ module LogStashConfig
       return cached
     end
 
-    s0, i0 = [], index
+    i0 = index
+    s1, i1 = [], index
     loop do
       if has_terminal?('\G[A-Za-z0-9_-]', true, index)
-        r1 = true
+        r2 = true
         @index += 1
       else
-        r1 = nil
+        r2 = nil
       end
-      if r1
-        s0 << r1
+      if r2
+        s1 << r2
       else
         break
       end
     end
-    if s0.empty?
-      @index = i0
-      r0 = nil
+    if s1.empty?
+      @index = i1
+      r1 = nil
     else
-      r0 = instantiate_node(LogStash::Config::AST::Name,input, i0...index, s0)
+      r1 = instantiate_node(LogStash::Config::AST::Name,input, i1...index, s1)
+    end
+    if r1
+      r0 = r1
+    else
+      r3 = _nt_string
+      if r3
+        r0 = r3
+      else
+        @index = i0
+        r0 = nil
+      end
     end
 
     node_cache[:name][start_index] = r0
@@ -954,16 +966,228 @@ module LogStashConfig
     r0
   end
 
-  module String0
+  module DoubleQuotedString0
   end
 
-  module String1
+  module DoubleQuotedString1
   end
 
-  module String2
+  def _nt_double_quoted_string
+    start_index = index
+    if node_cache[:double_quoted_string].has_key?(index)
+      cached = node_cache[:double_quoted_string][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?('"', false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      @index += 1
+    else
+      terminal_parse_failure('"')
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      s2, i2 = [], index
+      loop do
+        i3 = index
+        if has_terminal?('\"', false, index)
+          r4 = instantiate_node(SyntaxNode,input, index...(index + 2))
+          @index += 2
+        else
+          terminal_parse_failure('\"')
+          r4 = nil
+        end
+        if r4
+          r3 = r4
+        else
+          i5, s5 = index, []
+          i6 = index
+          if has_terminal?('"', false, index)
+            r7 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            @index += 1
+          else
+            terminal_parse_failure('"')
+            r7 = nil
+          end
+          if r7
+            r6 = nil
+          else
+            @index = i6
+            r6 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s5 << r6
+          if r6
+            if index < input_length
+              r8 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
+            else
+              terminal_parse_failure("any character")
+              r8 = nil
+            end
+            s5 << r8
+          end
+          if s5.last
+            r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+            r5.extend(DoubleQuotedString0)
+          else
+            @index = i5
+            r5 = nil
+          end
+          if r5
+            r3 = r5
+          else
+            @index = i3
+            r3 = nil
+          end
+        end
+        if r3
+          s2 << r3
+        else
+          break
+        end
+      end
+      r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+      s0 << r2
+      if r2
+        if has_terminal?('"', false, index)
+          r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure('"')
+          r9 = nil
+        end
+        s0 << r9
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(LogStash::Config::AST::String,input, i0...index, s0)
+      r0.extend(DoubleQuotedString1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:double_quoted_string][start_index] = r0
+
+    r0
   end
 
-  module String3
+  module SingleQuotedString0
+  end
+
+  module SingleQuotedString1
+  end
+
+  def _nt_single_quoted_string
+    start_index = index
+    if node_cache[:single_quoted_string].has_key?(index)
+      cached = node_cache[:single_quoted_string][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?("'", false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      @index += 1
+    else
+      terminal_parse_failure("'")
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      s2, i2 = [], index
+      loop do
+        i3 = index
+        if has_terminal?("\\'", false, index)
+          r4 = instantiate_node(SyntaxNode,input, index...(index + 2))
+          @index += 2
+        else
+          terminal_parse_failure("\\'")
+          r4 = nil
+        end
+        if r4
+          r3 = r4
+        else
+          i5, s5 = index, []
+          i6 = index
+          if has_terminal?("'", false, index)
+            r7 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            @index += 1
+          else
+            terminal_parse_failure("'")
+            r7 = nil
+          end
+          if r7
+            r6 = nil
+          else
+            @index = i6
+            r6 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s5 << r6
+          if r6
+            if index < input_length
+              r8 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
+            else
+              terminal_parse_failure("any character")
+              r8 = nil
+            end
+            s5 << r8
+          end
+          if s5.last
+            r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+            r5.extend(SingleQuotedString0)
+          else
+            @index = i5
+            r5 = nil
+          end
+          if r5
+            r3 = r5
+          else
+            @index = i3
+            r3 = nil
+          end
+        end
+        if r3
+          s2 << r3
+        else
+          break
+        end
+      end
+      r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+      s0 << r2
+      if r2
+        if has_terminal?("'", false, index)
+          r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure("'")
+          r9 = nil
+        end
+        s0 << r9
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(LogStash::Config::AST::String,input, i0...index, s0)
+      r0.extend(SingleQuotedString1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:single_quoted_string][start_index] = r0
+
+    r0
   end
 
   def _nt_string
@@ -978,189 +1202,13 @@ module LogStashConfig
     end
 
     i0 = index
-    i1, s1 = index, []
-    if has_terminal?('"', false, index)
-      r2 = instantiate_node(SyntaxNode,input, index...(index + 1))
-      @index += 1
-    else
-      terminal_parse_failure('"')
-      r2 = nil
-    end
-    s1 << r2
-    if r2
-      s3, i3 = [], index
-      loop do
-        i4 = index
-        if has_terminal?('\"', false, index)
-          r5 = instantiate_node(SyntaxNode,input, index...(index + 2))
-          @index += 2
-        else
-          terminal_parse_failure('\"')
-          r5 = nil
-        end
-        if r5
-          r4 = r5
-        else
-          i6, s6 = index, []
-          i7 = index
-          if has_terminal?('"', false, index)
-            r8 = instantiate_node(SyntaxNode,input, index...(index + 1))
-            @index += 1
-          else
-            terminal_parse_failure('"')
-            r8 = nil
-          end
-          if r8
-            r7 = nil
-          else
-            @index = i7
-            r7 = instantiate_node(SyntaxNode,input, index...index)
-          end
-          s6 << r7
-          if r7
-            if index < input_length
-              r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
-              @index += 1
-            else
-              terminal_parse_failure("any character")
-              r9 = nil
-            end
-            s6 << r9
-          end
-          if s6.last
-            r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
-            r6.extend(String0)
-          else
-            @index = i6
-            r6 = nil
-          end
-          if r6
-            r4 = r6
-          else
-            @index = i4
-            r4 = nil
-          end
-        end
-        if r4
-          s3 << r4
-        else
-          break
-        end
-      end
-      r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
-      s1 << r3
-      if r3
-        if has_terminal?('"', false, index)
-          r10 = instantiate_node(SyntaxNode,input, index...(index + 1))
-          @index += 1
-        else
-          terminal_parse_failure('"')
-          r10 = nil
-        end
-        s1 << r10
-      end
-    end
-    if s1.last
-      r1 = instantiate_node(LogStash::Config::AST::String,input, i1...index, s1)
-      r1.extend(String1)
-    else
-      @index = i1
-      r1 = nil
-    end
+    r1 = _nt_double_quoted_string
     if r1
       r0 = r1
     else
-      i11, s11 = index, []
-      if has_terminal?("'", false, index)
-        r12 = instantiate_node(SyntaxNode,input, index...(index + 1))
-        @index += 1
-      else
-        terminal_parse_failure("'")
-        r12 = nil
-      end
-      s11 << r12
-      if r12
-        s13, i13 = [], index
-        loop do
-          i14 = index
-          if has_terminal?("\\'", false, index)
-            r15 = instantiate_node(SyntaxNode,input, index...(index + 2))
-            @index += 2
-          else
-            terminal_parse_failure("\\'")
-            r15 = nil
-          end
-          if r15
-            r14 = r15
-          else
-            i16, s16 = index, []
-            i17 = index
-            if has_terminal?("'", false, index)
-              r18 = instantiate_node(SyntaxNode,input, index...(index + 1))
-              @index += 1
-            else
-              terminal_parse_failure("'")
-              r18 = nil
-            end
-            if r18
-              r17 = nil
-            else
-              @index = i17
-              r17 = instantiate_node(SyntaxNode,input, index...index)
-            end
-            s16 << r17
-            if r17
-              if index < input_length
-                r19 = instantiate_node(SyntaxNode,input, index...(index + 1))
-                @index += 1
-              else
-                terminal_parse_failure("any character")
-                r19 = nil
-              end
-              s16 << r19
-            end
-            if s16.last
-              r16 = instantiate_node(SyntaxNode,input, i16...index, s16)
-              r16.extend(String2)
-            else
-              @index = i16
-              r16 = nil
-            end
-            if r16
-              r14 = r16
-            else
-              @index = i14
-              r14 = nil
-            end
-          end
-          if r14
-            s13 << r14
-          else
-            break
-          end
-        end
-        r13 = instantiate_node(SyntaxNode,input, i13...index, s13)
-        s11 << r13
-        if r13
-          if has_terminal?("'", false, index)
-            r20 = instantiate_node(SyntaxNode,input, index...(index + 1))
-            @index += 1
-          else
-            terminal_parse_failure("'")
-            r20 = nil
-          end
-          s11 << r20
-        end
-      end
-      if s11.last
-        r11 = instantiate_node(LogStash::Config::AST::String,input, i11...index, s11)
-        r11.extend(String3)
-      else
-        @index = i11
-        r11 = nil
-      end
-      if r11
-        r0 = r11
+      r2 = _nt_single_quoted_string
+      if r2
+        r0 = r2
       else
         @index = i0
         r0 = nil
