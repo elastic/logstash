@@ -6,6 +6,8 @@
   ## filters
 
   ## outputs
+  - new: google_cloud_storage: archive logs to Google Cloud Storage (#572,
+    Rodrigo De Castro)
 
 1.2.0 (September 3, 2013)
   # general
