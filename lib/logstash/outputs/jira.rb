@@ -8,7 +8,6 @@
 
 require "logstash/outputs/base"
 require "logstash/namespace"
-require "jiralicious" # 0.2.2 works for me
 
 #
 # This is so is most useful so you can use logstash to parse and structure
@@ -66,6 +65,7 @@ class LogStash::Outputs::Jira < LogStash::Outputs::Base
 
   public
   def register
+    require "jiralicious" # 0.2.2 works for me
     # nothing to do
   end
 
