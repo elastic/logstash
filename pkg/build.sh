@@ -52,6 +52,7 @@ case $os@$release in
     mkdir -p $destdir/etc/logstash/conf.d
     mkdir -p $destdir/etc/logrotate.d
     mkdir -p $destdir/etc/init
+    mkdir -p $destdir/var/lib/logstash
     mkdir -p $destdir/var/log/logstash
     mkdir -p $destdir/etc/default
     touch $destdir/etc/default/logstash
