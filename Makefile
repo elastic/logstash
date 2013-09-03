@@ -117,7 +117,8 @@ vendor/geoip: | vendor
 	$(QUIET)mkdir $@
 
 $(GEOIP): | vendor/geoip
-	$(QUIET)wget -q -O - $(GEOIP_URL) | gzip -dc - > $@.tmp
+	$(QUIET)wget -q -O $@.tmp.gz $(GEOIP_URL) 
+	$(QUIET)gzip -dc $@.tmp.gz > $@.tmp
 	$(QUIET)mv $@.tmp $@
 
 # Always run vendor/bundle
