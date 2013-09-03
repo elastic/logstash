@@ -1,4 +1,4 @@
-1.2.0 (???)
+1.2.0 (September 3, 2013)
   # general
   - The logstash json schema has changed. (LOGSTASH-675)
     For prior logstash users, you will be impacted one of several ways:
