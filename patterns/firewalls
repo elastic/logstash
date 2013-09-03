@@ -16,7 +16,7 @@ CISCOFW106015 (?<action>Deny) (?<protocol>TCP) \((?<policy_id>no connection)\) f
 # ASA-1-106021
 CISCOFW106021 (?<action>Deny) %{WORD:protocol} reverse path check from %{IP:src_ip} to %{IP:dst_ip} on interface %{GREEDYDATA:interface}
 # ASA-4-106023
-CISCOFW106023 (?<action>Deny) (?<protocol>tcp|udp|icmp) src %{DATA:src_interface}:%{IP:src_ip}(/%{INT:src_port})?(\(%{DATA:src_fwuser}\))? dst %{DATA:dst_interface}:%{IP:dst_ip}(/%{INT:dst_port})?(\(%{DATA:dst_fwuser}\))?( \(type %{INT:icmp_type}, code %{INT:icmp_code}\))? by access-group %{DATA:policy_id}
+CISCOFW106023 (?<action>Deny) (?<protocol>tcp|udp|icmp) src %{DATA:src_interface}:%{IP:src_ip}(/%{INT:src_port})?(\(%{DATA:src_fwuser}\))? dst %{DATA:dst_interface}:%{IP:dst_ip}(/%{INT:dst_port})?(\(%{DATA:dst_fwuser}\))?( \(type %{INT:icmp_type}, code %{INT:icmp_code}\))? by access-group %{DATA:policy_id} \[%{DATA:hashcode1}, %{DATA:hashcode2}\]
 # ASA-5-106100
 CISCOFW106100 access-list %{WORD:policy_id} %{WORD:action} %{WORD:protocol} %{DATA:src_interface}/%{IP:src_ip}\(%{INT:src_port}\)(\(%{DATA:src_fwuser}\))? -> %{DATA:dst_interface}/%{IP:dst_ip}\(%{INT:dst_port}\)(\(%{DATA:src_fwuser}\))? hit-cnt %{INT:hit_count} (?<interval>(first hit)|(%{INT}-second interval)) \[%{DATA:hashcode1}, %{DATA:hashcode2}\]
 # ASA-6-110002
