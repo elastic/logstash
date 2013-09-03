@@ -80,6 +80,8 @@
   - feature: useragent: added 'prefix' setting to prefix field names created
     by this filter. (#524, patch by Jay Luker)
   - bugfix: mutate: strip works now (#590, Jonathan Van Eenwyk)
+  - new: extractnumbers: extract all numbers from a message (#579, patch by
+    Pablo Barrera)
 
   ## outputs
   - feature: rabbitmq: now well-supported again (patches by Michael Klishin)
