@@ -30,6 +30,7 @@ module LogStash::Util::FieldReference
         else
           e = e[#{tok.inspect}]
         end
+        return e if e.nil?
       CODE
       
     end

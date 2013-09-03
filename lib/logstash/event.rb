@@ -151,6 +151,7 @@ class LogStash::Event
           obj = obj[p]
         else
           obj[p] = {}
+          obj = obj[p]
         end
       end
       obj[key] = value
