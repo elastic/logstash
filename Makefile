@@ -116,6 +116,8 @@ $(ELASTICSEARCH): $(ELASTICSEARCH).tar.gz | vendor/jar
 vendor/geoip: | vendor
 	$(QUIET)mkdir $@
 
+.PHONY: vendor-geoip
+vendor-geoip: $(GEOIP)
 $(GEOIP): | vendor/geoip
 	$(QUIET)$(DOWNLOAD_COMMAND) $@.tmp.gz $(GEOIP_URL)
 	$(QUIET)gzip -dc $@.tmp.gz > $@.tmp
@@ -263,7 +265,8 @@ update-flatjar: copy-ruby-files compile build/ruby/logstash/runner.class
 	$(QUIET)jar uf build/logstash-$(VERSION)-flatjar.jar -C build/ruby .
 
 .PHONY: test
-test: | $(JRUBY) vendor-elasticsearch
+test: | $(JRUBY) vendor-elasticsearch vendor-geoip
+	GEM_HOME= GEM_PATH= bin/logstash deps
 	GEM_HOME= GEM_PATH= bin/logstash rspec --order rand --fail-fast $(TESTS)
 
 
