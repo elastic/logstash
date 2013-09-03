@@ -4,6 +4,8 @@
     Eenwyk)
 
   ## filters
+  - new: netflow: process netflow data (#580, patches by Nikolay Bryskin and
+    Matt Dainty)
 
   ## outputs
   - new: google_cloud_storage: archive logs to Google Cloud Storage (#572,
