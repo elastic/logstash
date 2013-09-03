@@ -30,7 +30,7 @@ describe LogStash::Event do
       insist { subject.sprintf("%{+%s}") } == "1356998400"
     end
     
-    it "should report a time with %{+format} syntax" do
+    it "should report a time with %{+format} syntax", :if => RUBY_ENGINE == "jruby" do
       insist { subject.sprintf("%{+YYYY}") } == "2013"
       insist { subject.sprintf("%{+MM}") } == "01"
       insist { subject.sprintf("%{+HH}") } == "00"

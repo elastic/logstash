@@ -1,6 +1,6 @@
 require "test_utils"
 
-describe "http dates" do
+describe "http dates", :if => RUBY_ENGINE == "jruby" do
   extend LogStash::RSpec
 
   config <<-'CONFIG'

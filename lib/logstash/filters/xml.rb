@@ -92,7 +92,6 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
       begin
         doc = Nokogiri::XML(value)
       rescue => e
-        p :failed => value
         event.tag("_xmlparsefailure")
         @logger.warn("Trouble parsing xml", :source => @source, :value => value,
                      :exception => e, :backtrace => e.backtrace)
