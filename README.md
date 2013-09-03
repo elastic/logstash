@@ -51,6 +51,10 @@ Other commands:
     # If running bin/logstash agent yields complaints about log4j/other things
     # This will download the elasticsearch jars so logstash can use them.
     make vendor-elasticsearch
+    
+    # If running make test yeilds the following error:
+    # "You must specify 'database => ...' in your geoip filter"
+    make vendor/geoip/GeoLiteCity.dat
 
 ## Testing
 
