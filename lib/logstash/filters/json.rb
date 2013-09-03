@@ -38,7 +38,7 @@ class LogStash::Filters::Json < LogStash::Filters::Base
   # datastructure in the "target" field.
   #
   # Note: if the "target" field already exists, it will be overwritten.
-  config :target, :validate => :string
+  config :target, :validate => :string, :required => true
 
   public
   def register
