@@ -28,7 +28,7 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
   config :metric_type, :validate => ["gauge", "counter"], :default => "%{metric_type}"
 
   # The name of the host that produced the metric.
-  config :host, :validate => :string, :default => "%{source}"
+  config :host, :validate => :string, :default => "%{host}"
 
   # The name of the device that produced the metric.
   config :device, :validate => :string, :default => "%{metric_device}"

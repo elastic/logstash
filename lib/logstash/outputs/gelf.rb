@@ -23,7 +23,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # want to use something other than the event's source host as the
   # "sender" of an event. A common case for this is using the application name
   # instead of the hostname.
-  config :sender, :validate => :string, :default => "%{source}"
+  config :sender, :validate => :string, :default => "%{host}"
 
   # The GELF message level. Dynamic values like %{level} are permitted here;
   # useful if you want to parse the 'log level' from an event and use that

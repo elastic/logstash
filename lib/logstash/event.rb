@@ -99,12 +99,12 @@ class LogStash::Event
   if RUBY_ENGINE == "jruby"
     public
     def to_s
-      return self.sprintf("%{+yyyy-MM-dd'T'HH:mm:ss.SSSZ} %{source} %{message}")
+      return self.sprintf("%{+yyyy-MM-dd'T'HH:mm:ss.SSSZ} %{host} %{message}")
     end # def to_s
   else
     public
     def to_s
-      return self.sprintf("#{self["@timestamp"].iso8601} %{source} %{message}")
+      return self.sprintf("#{self["@timestamp"].iso8601} %{host} %{message}")
     end # def to_s
   end
 
@@ -206,7 +206,7 @@ class LogStash::Event
   #
   # For example, if the event has type == "foo" and source == "bar"
   # then this string:
-  #   "type is %{type} and source is %{source}"
+  #   "type is %{type} and source is %{host}"
   # will return
   #   "type is foo and source is bar"
   #

@@ -64,7 +64,7 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
   config :severity, :validate => SEVERITY_LABELS, :required => true
 
   # source host for syslog message
-  config :sourcehost, :validate => :string, :default => "%{source}"
+  config :sourcehost, :validate => :string, :default => "%{host}"
 
   # timestamp for syslog message
   config :timestamp, :validate => :string, :default => "%{@timestamp}"

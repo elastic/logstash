@@ -60,13 +60,13 @@ class LogStash::Filters::Base < LogStash::Plugin
   #
   #     filter {
   #       %PLUGIN% {
-  #         add_field => [ "foo_%{somefield}", "Hello world, from %{source}" ]
+  #         add_field => [ "foo_%{somefield}", "Hello world, from %{host}" ]
   #       }
   #     }
   #
   # If the event has field "somefield" == "hello" this filter, on success,
   # would add field "foo_hello" if it is present, with the
-  # value above and the %{source} piece replaced with that value from the
+  # value above and the %{host} piece replaced with that value from the
   # event.
   config :add_field, :validate => :hash, :default => {}
 
