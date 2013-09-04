@@ -79,6 +79,10 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #
   config :match, :validate => :array, :default => []
 
+  # Store the matching timestamp into the given target field.  If not provided,
+  # default to updating the @timestamp field of the event.
+  config :target, :validate => :string, :default => "@timestamp"
+
   # LOGSTASH-34
   DATEPATTERNS = %w{ y d H m s S } 
 
@@ -208,12 +212,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
           time = time.withZone(UTC)
           # Convert joda DateTime to a ruby Time
-          event["@timestamp"] = Time.utc(
+          event[@target] = Time.utc(
             time.getYear, time.getMonthOfYear, time.getDayOfMonth,
             time.getHourOfDay, time.getMinuteOfHour, time.getSecondOfMinute,
             time.getMillisOfSecond * 1000
           )
-          @logger.debug? && @logger.debug("Date parsing done", :value => value, :timestamp => event["@timestamp"])
+
+          @logger.debug? && @logger.debug("Date parsing done", :value => value, :timestamp => event[@target])
         rescue StandardError, JavaException => e
           @logger.warn("Failed parsing date from field", :field => field,
                        :value => value, :exception => e)
