@@ -16,20 +16,20 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   config :debug, :validate => :boolean, :default => false
 
   # Debug output format: ruby (default), json
-  config :debug_format, :default => "ruby", :validate => ["ruby", "dots"], :deprecated => true
+  config :debug_format, :default => "ruby", :validate => ["ruby", "dots", "json"], :deprecated => true
 
   # The message to emit to stdout.
   config :message, :validate => :string, :default => "%{+yyyy-MM-dd'T'HH:mm:ss.SSSZ} %{host}: %{message}"
 
   public
   def register
-    @print_method = method(:ap) rescue method(:p)
-
     if @debug
       require "logstash/codecs/rubydebug"
       require "logstash/codecs/dots"
+      require "logstash/codecs/json"
       case @debug_format
         when "ruby"; @codec = LogStash::Codecs::RubyDebug.new
+        when "json"; @codec = LogStash::Codecs::JSON.new
         when "dots"; @codec = LogStash::Codecs::Dots.new
       end
     end
