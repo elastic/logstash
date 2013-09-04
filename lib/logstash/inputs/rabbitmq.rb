@@ -81,7 +81,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
 
   #
-  # (Optional, backwards compatibility) Exchange binding
+  # (Optional) Exchange binding
   #
 
   # Optional.
