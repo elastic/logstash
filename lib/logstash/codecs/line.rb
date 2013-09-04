@@ -47,7 +47,9 @@ class LogStash::Codecs::Line < LogStash::Codecs::Base
   public
   def flush(&block)
     remainder = @buffer.flush
-    block.call(LogStash::Event.new({"message" => remainder})) if remainder
+    if !remainder.empty?
+      block.call(LogStash::Event.new({"message" => remainder}))
+    end
   end
 
   public
