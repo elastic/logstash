@@ -44,7 +44,7 @@ class LogStash::Inputs::Relp < LogStash::Inputs::Base
       frame = relpserver.syslog_read(socket)
       @codec.decode(frame["message"]) do |event|
         decorate(event)
-        event["host"] = _addressevent_source
+        event["host"] = client_address
         output_queue << event
       end
 
