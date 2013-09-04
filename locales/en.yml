@@ -29,8 +29,9 @@ en:
           Exception: %{exception}
           Stack: %{stacktrace}
       plugin-loading-error: >-
-        Couldn't find any %{type} plugin named '%{name}'. Are you 
-        sure this is correct?
+        Couldn't find any %{type} plugin named '%{name}'. Are you
+        sure this is correct? Trying to load the %{name} %{type} plugin
+        resulted in this error: %{error}
       plugin-type-loading-error: >-
         Could not find any plugin type named '%{type}'. Check for typos.
         Valid plugin types are 'input' 'filter' and 'output'
