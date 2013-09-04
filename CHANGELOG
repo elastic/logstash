@@ -6,6 +6,9 @@
   ## filters
   - new: netflow: process netflow data (#580, patches by Nikolay Bryskin and
     Matt Dainty)
+  - feature: kv: now captures duplicate field names as a list, so 'foo=bar
+    foo=baz' becomes the field 'foo' with value ['bar', 'baz'] (an array).
+    (#622, patch by Matt Dainty)
 
   ## outputs
   - new: google_cloud_storage: archive logs to Google Cloud Storage (#572,
