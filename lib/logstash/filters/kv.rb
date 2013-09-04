@@ -206,7 +206,16 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       key = @prefix + key
       next if not @include_keys.empty? and not @include_keys.include?(key)
       next if @exclude_keys.include?(key)
-      kv_keys[key] = @trim.nil? ? value : value.gsub(@trim_re, "")
+      value = @trim.nil? ? value : value.gsub(@trim_re, "")
+      if kv_keys.has_key?(key)
+        if kv_keys[key].is_a? Array
+          kv_keys[key].push(value)
+        else
+          kv_keys[key] = [kv_keys[key], value]
+        end
+      else
+        kv_keys[key] = value
+      end
     end
     return kv_keys
   end
