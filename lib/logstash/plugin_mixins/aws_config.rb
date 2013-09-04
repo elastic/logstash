@@ -2,8 +2,7 @@ require "logstash/config/mixin"
 
 module LogStash::PluginMixins::AwsConfig
 
-  @logger = LogStash::Logger.new(STDOUT)
-  @logger.level = $DEBUG ? :debug : :warn
+  @logger = Cabin::Channel.get(LogStash)
 
   # This method is called when someone includes this module
   def self.included(base)
