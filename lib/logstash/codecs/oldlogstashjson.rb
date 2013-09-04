@@ -42,4 +42,4 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
     @on_event.call(h)
   end # def encode
 
-end # class LogStash::Codecs::Json
+end # class LogStash::Codecs::OldLogStashJSON
