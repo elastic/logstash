@@ -23,7 +23,7 @@ class LogStash::Outputs::Http < LogStash::Outputs::Base
   config :http_method, :validate => ["put", "post"], :required => :true
 
   # Custom headers to use
-  # format is `headers => ["X-My-Header", "%{source}"]
+  # format is `headers => ["X-My-Header", "%{host}"]
   config :headers, :validate => :hash
 
   # Content type
@@ -39,7 +39,7 @@ class LogStash::Outputs::Http < LogStash::Outputs::Base
   #
   # For example:
   #
-  #    mapping => ["foo", "%{source}", "bar", "%{type}"]
+  #    mapping => ["foo", "%{host}", "bar", "%{type}"]
   config :mapping, :validate => :hash
 
   # Set the format of the http body.

@@ -54,7 +54,7 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
   # The format to use when writing events to nagios. This value
   # supports any string and can include %{name} and other dynamic
   # strings.
-  config :message_format, :validate => :string, :default => "%{@timestamp} %{source}: %{message}"
+  config :message_format, :validate => :string, :default => "%{@timestamp} %{host}: %{message}"
 
   public
   def register

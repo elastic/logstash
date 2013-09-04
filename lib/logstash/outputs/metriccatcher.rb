@@ -13,7 +13,7 @@ require "json"
 #         port => "1420"
 #         type => "apache-access"
 #         fields => [ "response" ]
-#         meter => [ "%{source}.apache.response.%{response}", "1" ]
+#         meter => [ "%{host}.apache.response.%{response}", "1" ]
 #     }
 class LogStash::Outputs::MetricCatcher < LogStash::Outputs::Base
   config_name "metriccatcher"
@@ -24,7 +24,7 @@ class LogStash::Outputs::MetricCatcher < LogStash::Outputs::Base
   # The port to connect on your MetricCatcher
   config :port, :validate => :number, :default => 1420
 
-  # The metrics to send. This supports dynamic strings like %{source}
+  # The metrics to send. This supports dynamic strings like %{host}
   # for metric names and also for values. This is a hash field with key
   # of the metric name, value of the metric value.
   #
@@ -32,17 +32,17 @@ class LogStash::Outputs::MetricCatcher < LogStash::Outputs::Base
   # coerced will zero (0)
   config :gauge, :validate => :hash
 
-  # The metrics to send. This supports dynamic strings like %{source}
+  # The metrics to send. This supports dynamic strings like %{host}
   # for metric names and also for values. This is a hash field with key
   # of the metric name, value of the metric value. Example:
   #
-  #   counter => [ "%{source}.apache.hits.%{response}, "1" ]
+  #   counter => [ "%{host}.apache.hits.%{response}, "1" ]
   #
   # The value will be coerced to a floating point value. Values which cannot be
   # coerced will zero (0)
   config :counter, :validate => :hash
 
-  # The metrics to send. This supports dynamic strings like %{source}
+  # The metrics to send. This supports dynamic strings like %{host}
   # for metric names and also for values. This is a hash field with key
   # of the metric name, value of the metric value.
   #
@@ -50,7 +50,7 @@ class LogStash::Outputs::MetricCatcher < LogStash::Outputs::Base
   # coerced will zero (0)
   config :meter, :validate => :hash
 
-  # The metrics to send. This supports dynamic strings like %{source}
+  # The metrics to send. This supports dynamic strings like %{host}
   # for metric names and also for values. This is a hash field with key
   # of the metric name, value of the metric value.
   #
@@ -58,7 +58,7 @@ class LogStash::Outputs::MetricCatcher < LogStash::Outputs::Base
   # coerced will zero (0)
   config :biased, :validate => :hash
 
-  # The metrics to send. This supports dynamic strings like %{source}
+  # The metrics to send. This supports dynamic strings like %{host}
   # for metric names and also for values. This is a hash field with key
   # of the metric name, value of the metric value.
   #
@@ -66,11 +66,11 @@ class LogStash::Outputs::MetricCatcher < LogStash::Outputs::Base
   # coerced will zero (0)
   config :uniform, :validate => :hash
 
-  # The metrics to send. This supports dynamic strings like %{source}
+  # The metrics to send. This supports dynamic strings like %{host}
   # for metric names and also for values. This is a hash field with key
   # of the metric name, value of the metric value. Example:
   #
-  #   timer => [ "%{source}.apache.response_time, "%{response_time}" ]
+  #   timer => [ "%{host}.apache.response_time, "%{response_time}" ]
   #
   # The value will be coerced to a floating point value. Values which cannot be
   # coerced will zero (0)

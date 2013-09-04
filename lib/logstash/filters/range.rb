@@ -29,7 +29,7 @@ class LogStash::Filters::Range < LogStash::Filters::Base
   #                     "duration", 101, 200, "field:latency:normal",
   #                     "duration", 201, 1000, "field:latency:slow",
   #                     "duration", 1001, 1e1000, "field:latency:outlier" 
-  #                     "requests", 0, 10, "tag:to_few_%{source}_requests" ]
+  #                     "requests", 0, 10, "tag:to_few_%{host}_requests" ]
   #       }
   #     }
   #
