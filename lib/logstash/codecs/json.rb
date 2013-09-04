@@ -2,7 +2,7 @@ require "logstash/codecs/base"
 require "json"
 
 # This codec will encode and decode JSON.
-class LogStash::Codecs::Json < LogStash::Codecs::Base
+class LogStash::Codecs::JSON < LogStash::Codecs::Base
   config_name "json"
 
   milestone 1
@@ -43,4 +43,4 @@ class LogStash::Codecs::Json < LogStash::Codecs::Base
     @on_event.call(data.to_json + "\n")
   end # def encode
 
-end # class LogStash::Codecs::Json
+end # class LogStash::Codecs::JSON
