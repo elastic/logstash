@@ -2,9 +2,9 @@ require "logstash/codecs/json"
 require "logstash/event"
 require "insist"
 
-describe LogStash::Codecs::Json do
+describe LogStash::Codecs::JSON do
   subject do
-    next LogStash::Codecs::Json.new
+    next LogStash::Codecs::JSON.new
   end
 
   context "#decode" do
