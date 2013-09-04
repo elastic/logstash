@@ -13,7 +13,8 @@ Gem::Specification.new do |gem|
     lib/logstash-event.rb
     lib/logstash/event.rb
     lib/logstash/namespace.rb
-    lib/logstash/version.rb
+    lib/logstash/util/fieldreference.rb
+    lib/logstash/util.rb
     spec/event.rb
     LICENSE
   }
@@ -21,7 +22,7 @@ Gem::Specification.new do |gem|
   gem.test_files    = []
   gem.name          = "logstash-event"
   gem.require_paths = ["lib"]
-  gem.version       = LOGSTASH_VERSION
+  gem.version       = "1.2.01"
   
   gem.add_development_dependency "rspec"
   gem.add_development_dependency "guard"
