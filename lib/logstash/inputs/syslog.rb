@@ -52,6 +52,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   public
   def register
     @grok_filter = LogStash::Filters::Grok.new(
+      "overwrite" => "message",
       "match" => { "message" => "<%{POSINT:priority}>%{SYSLOGLINE}" },
     )
 
