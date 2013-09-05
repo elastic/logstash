@@ -325,6 +325,63 @@ describe LogStash::Filters::Grep do
     end
   end
 
+  describe "repeat a field in match config, negate the entire match expression not the individual components" do
+    config <<-CONFIG
+    filter {
+      grep {
+        match => ["message", "hello", "message", "world"]
+        negate_expression => true
+      }
+    }
+    CONFIG
+
+    #both match
+    sample "hello world" do
+      insist { subject }.nil?
+    end
+    #one match
+    sample "bye world" do
+      reject { subject }.nil?
+    end
+    #one match
+    sample "hello Jordan" do
+      reject { subject }.nil?
+    end
+    #no match
+    sample "WTF" do
+      reject { subject }.nil?
+    end
+  end
+
+  describe "repeat a field in match config, negate expression and components results in or" do
+    config <<-CONFIG
+    filter {
+      grep {
+        match => ["message", "hello", "message", "world"]
+        negate_expression => true
+        negate => true
+      }
+    }
+    CONFIG
+
+    #both match
+    sample "hello world" do
+      reject { subject }.nil?
+    end
+    #one match
+    sample "bye world" do
+      reject { subject }.nil?
+    end
+    #one match
+    sample "hello Jordan" do
+      reject { subject }.nil?
+    end
+    #no match
+    sample "WTF" do
+      insist { subject }.nil?
+    end
+  end
+
   describe "case-insensitive matching" do
     config <<-CONFIG
       filter {
