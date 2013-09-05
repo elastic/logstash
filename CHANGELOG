@@ -2,6 +2,7 @@
   ## inputs
   - feature: pipe: reopen the pipe and retry on any error. (#619, Jonathan Van
     Eenwyk)
+  - bugfix: syslog: 'message' field no longer appears as an array.
 
   ## filters
   - new: netflow: process netflow data (#580, patches by Nikolay Bryskin and
