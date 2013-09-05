@@ -59,7 +59,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def output?(event)
     if !@type.empty?
       if event.type != @type
-        @logger.debug? and @logger.debug(["Dropping event because type doesn't match #{@type}", event])
+        @logger.debug? and @logger.debug(["outputs/#{self.class.name}: Dropping event because type doesn't match #{@type}", event])
         return false
       end
     end
@@ -67,14 +67,14 @@ class LogStash::Outputs::Base < LogStash::Plugin
     if !@tags.empty?
       return false if !event["tags"]
       if !@tags.send(@include_method) {|tag| event["tags"].include?(tag)}
-        @logger.debug? and @logger.debug("Dropping event because tags don't match #{@tags.inspect}", event)
+        @logger.debug? and @logger.debug("outputs/#{self.class.name}: Dropping event because tags don't match #{@tags.inspect}", event)
         return false
       end
     end
 
     if !@exclude_tags.empty? && event["tags"]
       if @exclude_tags.send(@exclude_method) {|tag| event["tags"].include?(tag)}
-        @logger.debug? and @logger.debug("Dropping event because tags contains excluded tags: #{exclude_tags.inspect}", event)
+        @logger.debug? and @logger.debug("outputs/#{self.class.name}: Dropping event because tags contains excluded tags: #{exclude_tags.inspect}", event)
         return false
       end
     end
