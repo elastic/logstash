@@ -25,5 +25,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "rspec"
   gem.add_development_dependency "guard"
   gem.add_development_dependency "guard-rspec"
-  gem.add_development_dependency "insist", "0.0.8"
+  gem.add_development_dependency "insist", "1.0.0"
 end
