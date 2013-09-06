@@ -40,6 +40,10 @@ class LogStash::Agent < Clamp::Command
     :multivalued => true,
     :attribute_name => :plugin_paths
 
+  option ["-t", "--configtest"], :flag,
+    I18n.t("logstash.agent.flag.configtest"),
+    :attribute_name => :config_test
+
   # Emit a warning message.
   def warn(message)
     # For now, all warnings are fatal.
@@ -101,6 +105,12 @@ class LogStash::Agent < Clamp::Command
       pipeline = LogStash::Pipeline.new(@config_string)
     rescue LoadError => e
       fail("Configuration problem.")
+    end
+
+    # Stop now if we are only asking for a config test.
+    if config_test?
+      report "Configuration OK"
+      return
     end
 
     # Make SIGINT shutdown the pipeline.
