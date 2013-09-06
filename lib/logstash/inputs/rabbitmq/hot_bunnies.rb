@@ -95,6 +95,11 @@ class LogStash::Inputs::RabbitMQ
         :auto_delete => @auto_delete,
         :exclusive   => @exclusive,
         :arguments   => @arguments)
+
+      # exchange binding is optional for the input
+      if @exchange
+        @q.bind(@exchange, :routing_key => @key)
+      end
     end
 
     def consume
