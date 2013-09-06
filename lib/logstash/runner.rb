@@ -54,6 +54,7 @@ class LogStash::Runner
   def main(args)
     require "logstash/util"
     require "stud/trap"
+    require "stud/task"
     @startup_interruption_trap = Stud::trap("INT") { puts "Interrupted"; exit 0 }
 
     LogStash::Util::set_thread_name(self.class.name)
@@ -178,25 +179,20 @@ class LogStash::Runner
       "agent" => lambda do
         require "logstash/agent"
         # Hack up a runner
-        runner = Class.new do
-          def initialize(args)
-            @args = args
-          end
-          def run
-            #@thread = Thread.new do
-              @result = LogStash::Agent.run($0, @args)
-            #end
-          end
-          def wait
-            #@thread.join
-            return @result
-          end
+        agent = LogStash::Agent.new($0)
+        begin
+          agent.parse(args)
+        rescue Clamp::UsageError => e
+          # If 'too many arguments' then give the arguments to
+          # the next command. Otherwise it's a real error.
+          raise if e.message != "too many arguments"
+          remaining = agent.remaining_arguments
         end
 
-        agent = runner.new(args)
-        agent.run
-        #@runners << agent
-        return []
+        #require "pry"
+        #binding.pry
+        @runners << Stud::Task.new { agent.execute }
+        return remaining
       end
     } # commands
 
