@@ -70,7 +70,7 @@ class LogStash::Runner
     args = [nil] if args.empty?
 
     @runners = []
-    while !args.empty?
+    while args != nil && !args.empty?
       args = run(args)
     end
 
