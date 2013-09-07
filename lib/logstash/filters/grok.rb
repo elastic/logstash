@@ -345,27 +345,29 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
             next
           end
 
-          if event.include?(key) && @overwrite.include?(key) && !value.nil?
-            event[key] = value
-          else
-            if event[key].is_a?(String)
-              event[key] = [event[key]]
-            end
+          if @keep_empty_captures && event[key].nil?
+            event[key] = []
+          end
 
-            if @keep_empty_captures && event[key].nil?
-              event[key] = []
-            end
+          if value
+            if event.include?(key) && @overwrite.include?(key)
+              event[key] = value
+            else
+              if event[key].is_a?(String)
+                event[key] = [event[key]]
+              end
 
-            # If value is not nil, or responds to empty and is not empty, add the
-            # value to the event.
-            if !value.nil? && (!value.empty? rescue true)
-              # Store fields as an array unless otherwise instructed with the
-              # 'singles' config option
-              if !event.include?(key) and @singles
-                event[key] = value
-              else
-                event[key] ||= []
-                event[key] << value
+              # If value is not nil, or responds to empty and is not empty, add the
+              # value to the event.
+              if !value.nil? && (!value.empty? rescue true)
+                # Store fields as an array unless otherwise instructed with the
+                # 'singles' config option
+                if !event.include?(key) and @singles
+                  event[key] = value
+                else
+                  event[key] ||= []
+                  event[key] << value
+                end
               end
             end
           end
