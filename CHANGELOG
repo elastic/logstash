@@ -3,6 +3,10 @@
   - web: kibana's default dashboard now works with the new logstash 1.2 schema.
   - docs: updated the tutorials to work in logstash 1.2.x
   - agent: Restored the --configtest flag (unintentionally removed from 1.2.0)
+  - deprecation: Using deprecated plugin settings can now advise you on a
+    corrective path to take. One example is the 'type' setting on filters and
+    outputs will now advise you to use conditionals and give an example.
+
 
   ## inputs
   - feature: pipe: reopen the pipe and retry on any error. (#619, Jonathan Van
