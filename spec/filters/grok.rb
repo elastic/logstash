@@ -409,4 +409,23 @@ describe LogStash::Filters::Grok do
       end
     end
   end
+
+  describe "singles with duplicate-named fields" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => [ "message", "%{INT:foo}|%{WORD:foo}" ]
+          singles => true
+        }
+      }
+    CONFIG
+
+    sample "hello world" do
+      insist { subject["foo"] }.is_a?(String)
+    end
+
+    sample "123 world" do
+      insist { subject["foo"] }.is_a?(String)
+    end
+  end
 end
