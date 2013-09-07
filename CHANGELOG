@@ -1,5 +1,6 @@
 1.2.1 (September 6, 2013)
   # general
+  - This is primarily a bugfix/stability release based on feedback from 1.2.0
   - web: kibana's default dashboard now works with the new logstash 1.2 schema.
   - docs: updated the tutorials to work in logstash 1.2.x
   - agent: Restored the --configtest flag (unintentionally removed from 1.2.0)
@@ -9,7 +10,7 @@
   - conditionals: The "not in" operator is now supported.
 
   ## inputs
-  - feature: pipe: reopen the pipe and retry on any error. (#619, Jonathan Van
+  - bugfix: pipe: reopen the pipe and retry on any error. (#619, Jonathan Van
     Eenwyk)
   - bugfix: syslog: 'message' field no longer appears as an array.
   - bugfix: rabbitmq: can now bind the queue to the exchange (#624, #628,
