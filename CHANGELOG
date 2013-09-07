@@ -1,4 +1,7 @@
 1.2.1 (???)
+  # general
+  - web: kibana's default dashboard now works with the new logstash 1.2 schema.
+
   ## inputs
   - feature: pipe: reopen the pipe and retry on any error. (#619, Jonathan Van
     Eenwyk)
