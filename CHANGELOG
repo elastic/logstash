@@ -4,6 +4,11 @@
     Eenwyk)
   - bugfix: syslog: 'message' field no longer appears as an array.
 
+  ## codecs
+  - compatibility: json: if data given is not valid as json will now be used as
+    the "message" of an event . This restores the older behavior when using
+    1.1.13's "format => json" feature on inputs.
+
   ## filters
   - new: netflow: process netflow data (#580, patches by Nikolay Bryskin and
     Matt Dainty)
