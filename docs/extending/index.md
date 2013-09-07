@@ -34,11 +34,9 @@ is not specified plugins will fail to load with an error.
 
 ### Milestones
 
-Every plugin needs a status set using `milestone`. Valid values are
-`stable`, `beta`, `experimental`, and `unsupported`. Plugins with either
-the `experimental` and `unsupported` status will generate warnings when
-used.
-  
+Every plugin needs a milestone set using `milestone`. See
+<../plugin-milestones> for more info.
+
 ### Config lines
 
 The `config` lines define configuration options and are constructed like
