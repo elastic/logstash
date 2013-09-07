@@ -53,8 +53,15 @@ module LogStash::Config::Mixin
     params.each do |name, value|
       opts = self.class.get_config[name]
       if opts && opts[:deprecated]
-        @logger.warn("Deprecated config item #{name.inspect} set " +
-                     "in #{self.class.name}", :name => name, :plugin => self)
+        extra = opts[:deprecated].is_a?(String) ? opts[:deprecated] : ""
+        extra.gsub!("%PLUGIN%", self.class.config_name)
+        @logger.warn("You are using a deprecated config setting " +
+                     "#{name.inspect} set in #{self.class.config_name}. " +
+                     "Deprecated settings will continue to work, " +
+                     "but are scheduled for removal from logstash " +
+                     "in the future. #{extra} If you have any questions " +
+                     "about this, please visit the #logstash channel " +
+                     "on freenode irc.", :name => name, :plugin => self)
       end
     end
 

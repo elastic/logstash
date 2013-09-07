@@ -15,16 +15,16 @@ class LogStash::Filters::Base < LogStash::Plugin
   # act on messages with the same type. See any input plugin's "type"
   # attribute for more.
   # Optional.
-  config :type, :validate => :string, :default => "", :deprecated => true
+  config :type, :validate => :string, :default => "", :deprecated => "You can achieve this same behavior with the new conditionals, like: `if [type] == \"sometype\" { %PLUGIN% { ... } }`."
 
   # Only handle events with all/any (controlled by include_any config option) of these tags.
   # Optional.
-  config :tags, :validate => :array, :default => [], :deprecated => true
+  config :tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if \"sometag\" in [tags] { %PLUGIN% { ... } }`"
 
   # Only handle events without all/any (controlled by exclude_any config
   # option) of these tags.
   # Optional.
-  config :exclude_tags, :validate => :array, :default => [], :deprecated => true
+  config :exclude_tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if !(\"sometag\" in [tags]) { %PLUGIN% { ... } }`"
 
   # If this filter is successful, add arbitrary tags to the event.
   # Tags can be dynamic and include parts of the event using the %{field}
