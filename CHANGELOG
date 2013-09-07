@@ -13,6 +13,8 @@
     1.1.13's "format => json" feature on inputs.
 
   ## filters
+  - bugfix: multiline: the multiline filter returns! It was unintentionally
+    removed from the previous (1.2.0) release.
   - new: netflow: process netflow data (#580, patches by Nikolay Bryskin and
     Matt Dainty)
   - feature: kv: now captures duplicate field names as a list, so 'foo=bar
