@@ -88,12 +88,12 @@ As with the simple example, we're going to start simple to ensure that events ar
 
     input {
       stdin {
-        type => "stdin-type"
+        type => "example"
       }
     }
 
     output {
-      stdout { debug => true debug_format => "json"}
+      stdout { codec => rubydebug }
       redis { host => "127.0.0.1" data_type => "list" key => "logstash" }
     }
 
@@ -120,10 +120,9 @@ Once connected, run the following commands:
     redis 127.0.0.1:6379> llen logstash
     (integer) 1
     redis 127.0.0.1:6379> lpop logstash
-    "{\"@source\":\"stdin://jvstratusmbp.local/\",\"@type\":\"stdin-type\",\"@tags\":[],\"@fields\":{},\"@timestamp\":\"2012-07-02T17:01:12.278000Z\",\"@source_host\":\"jvstratusmbp.local\",\"@source_path\":\"/\",\"@message\":\"test\"}"
+    "{\"message\":\"hello\",\"@timestamp\":\"2013-09-07T00:59:28.383Z\",\"@version\":\"1\",\"type\":\"stdin\",\"host\":\"pork\"}"
     redis 127.0.0.1:6379> llen logstash
     (integer) 0
-    redis 127.0.0.1:6379>
 
 What we've just done is check the length of the list, read and removed the oldest item in the list, and checked the length again.
 
@@ -145,13 +144,13 @@ sample config based on the previous section. Save this as `indexer.conf`
     input {
       redis {
         host => "127.0.0.1"
-        type => "redis-input"
         # these settings should match the output of the agent
         data_type => "list"
         key => "logstash"
 
-        # We use json_event here since the sender is a logstash agent
-        format => "json_event"
+        # We use the 'json' codec here because we expect to read
+        # json events from redis.
+        codec => json
       }
     }
     
@@ -187,7 +186,7 @@ In your Elasticsearch window, you should see something like the following:
 Since indexes are created dynamically, this is the first sign that Logstash was able to write to ES. Let's use curl to verify our data is there:
 Using our curl command from the simple tutorial should let us see the data:
 
-`curl -s -XGET http://localhost:9200/logstash-2012.07.02/_search?q=@type:stdin-type`
+`curl -gs -XGET http://localhost:9200/logstash-*/_search?q=type:example`
 
 You may need to modify the date as this is based on the date this guide was written.
 

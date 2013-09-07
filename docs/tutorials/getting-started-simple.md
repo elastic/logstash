@@ -48,7 +48,7 @@ Save this to a file called `logstash-simple.conf` and run it like so:
     java -jar logstash-%VERSION%-flatjar.jar agent -f logstash-simple.conf
 
 After a few seconds, type something in the console where you started logstash.
-Maybe `test`.  You should get some output like so:
+Maybe `hello`.  You should get some output like so:
 
     {
       "message"    => "hello",
@@ -67,7 +67,7 @@ Elasticsearch for storage.
 
 Using our configuration above, let's change it to look like so:
 
-    input { stdin { } }
+    input { stdin { type => example } }
     output { 
       stdout { codec => rubydebug }
       elasticsearch { embedded => true }
@@ -93,27 +93,20 @@ You should get back some output like so:
 
 This means Logstash created a new index based on today's date. Likely your data is in there as well:
 
-`curl -s -XGET http://localhost:9200/logstash-2012.07.02/_search?q=@type:stdin`
+`curl -gs -XGET "http://localhost:9200/logstash-*/_search?pretty&q=type:example"`
 
 This will return a rather large JSON output. We're only concerned with a subset:
 
-    "_index": "logstash-2012.07.02",
-    "_type": "stdin",
-    "_id": "JdRaI5R6RT2do_WhCYM-qg",
-    "_score": 0.30685282,
-    "_source": {
-        "@source": "stdin://dist/",
-        "@type": "stdin",
-        "@tags": [
-            "tag1",
-            "tag2"
-        ],
-        "@fields": {},
-        "@timestamp": "2012-07-02T06:17:48.533000Z",
-        "@source_host": "dist",
-        "@source_path": "/",
-        "@message": "test"
-    }
+      "_index" : "logstash-2013.09.07",
+      "_type" : "logs",
+      "_id" : "iARTN3MtQ-Kaf_x0fZaFwQ",
+      "_score" : 1.4054651, "_source" : {
+        "message": "fizzle",
+        "@timestamp": "2013-09-07T00:42:23.453Z",
+        "@version": "1",
+        "type": "example",
+        "host": "pork"
+      }
 
 Your output may look a little different.
 The reason we're going about it this way is to make absolutely sure that we have all the bits working before adding more complexity.
