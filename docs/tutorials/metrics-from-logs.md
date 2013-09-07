@@ -82,6 +82,3 @@ that logstash is a general-purpose log management and pipelining tool and that
 while you can centralize logs with logstash, you can read, modify, and write
 them to and from just about anywhere.
 
-## A full use case
-
-TODO(sissel): include sample logs, show custom grok format, output to statsd and/or graphite.
