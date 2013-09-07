@@ -6,7 +6,7 @@
   - deprecation: Using deprecated plugin settings can now advise you on a
     corrective path to take. One example is the 'type' setting on filters and
     outputs will now advise you to use conditionals and give an example.
-
+  - conditionals: The "not in" operator is now supported.
 
   ## inputs
   - feature: pipe: reopen the pipe and retry on any error. (#619, Jonathan Van

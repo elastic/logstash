@@ -154,6 +154,29 @@ describe "conditionals" do
     end
   end
 
+  describe "the 'not in' operator" do
+    config <<-CONFIG
+      filter {
+        if "foo" not in "baz" { mutate { add_tag => "baz" } }
+        if "foo" not in "foo" { mutate { add_tag => "foo" } }
+        if !("foo" not in "foo") { mutate { add_tag => "notfoo" } }
+        if "foo" not in [somelist] { mutate { add_tag => "notsomelist" } } 
+        if "one" not in [somelist] { mutate { add_tag => "somelist" } }
+      }
+    CONFIG
+
+    sample("foo" => "foo", "somelist" => [ "one", "two" ], "foobar" => "foobar", "greeting" => "hello world", "tags" => [ "fancypantsy" ]) do
+      # verify the original exists
+      insist { subject["tags"] }.include?("fancypantsy")
+
+      insist { subject["tags"] }.include?("baz")
+      reject { subject["tags"] }.include?("foo")
+      insist { subject["tags"] }.include?("notfoo")
+      insist { subject["tags"] }.include?("notsomelist")
+      reject { subject["tags"] }.include?("somelist")
+    end
+  end
+
   describe "operators" do
     conditional "[message] == 'sample'" do
       sample("sample") { insist { subject["tags"] }.include?("success") }

@@ -154,6 +154,7 @@ grammar LogStashConfig
         ("(" _ condition _ ")")
       / negative_expression
       / in_expression
+      / not_in_expression
       / compare_expression
       / regexp_expression
       / rvalue
@@ -172,8 +173,17 @@ grammar LogStashConfig
     <LogStash::Config::AST::InExpression>
   end
 
+  rule not_in_expression
+    rvalue _ not_in_operator _ rvalue
+    <LogStash::Config::AST::NotInExpression>
+  end
+
   rule in_operator
     "in"
+  end
+
+  rule not_in_operator
+    "not " _ "in"
   end
 
   rule rvalue

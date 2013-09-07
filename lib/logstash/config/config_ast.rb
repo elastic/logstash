@@ -289,6 +289,13 @@ module LogStash; module Config; module AST
     end
   end
 
+  module NotInExpression
+    def compile
+      item, list = recursive_select(LogStash::Config::AST::RValue)
+      return "(x = #{list.compile}; x.respond_to?(:include?) && !x.include?(#{item.compile}))"
+    end
+  end
+
   class MethodCall < Node
     def compile
       arguments = recursive_inject { |e| [String, Number, Selector, Array, MethodCall].any? { |c| e.is_a?(c) } }
