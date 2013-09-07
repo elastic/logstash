@@ -2448,23 +2448,29 @@ module LogStashConfig
           r0 = r8
           r0.extend(LogStash::Config::AST::Expression)
         else
-          r9 = _nt_compare_expression
+          r9 = _nt_not_in_expression
           if r9
             r0 = r9
             r0.extend(LogStash::Config::AST::Expression)
           else
-            r10 = _nt_regexp_expression
+            r10 = _nt_compare_expression
             if r10
               r0 = r10
               r0.extend(LogStash::Config::AST::Expression)
             else
-              r11 = _nt_rvalue
+              r11 = _nt_regexp_expression
               if r11
                 r0 = r11
                 r0.extend(LogStash::Config::AST::Expression)
               else
-                @index = i0
-                r0 = nil
+                r12 = _nt_rvalue
+                if r12
+                  r0 = r12
+                  r0.extend(LogStash::Config::AST::Expression)
+                else
+                  @index = i0
+                  r0 = nil
+                end
               end
             end
           end
@@ -2677,6 +2683,71 @@ module LogStashConfig
     r0
   end
 
+  module NotInExpression0
+    def rvalue1
+      elements[0]
+    end
+
+    def _1
+      elements[1]
+    end
+
+    def not_in_operator
+      elements[2]
+    end
+
+    def _2
+      elements[3]
+    end
+
+    def rvalue2
+      elements[4]
+    end
+  end
+
+  def _nt_not_in_expression
+    start_index = index
+    if node_cache[:not_in_expression].has_key?(index)
+      cached = node_cache[:not_in_expression][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    r1 = _nt_rvalue
+    s0 << r1
+    if r1
+      r2 = _nt__
+      s0 << r2
+      if r2
+        r3 = _nt_not_in_operator
+        s0 << r3
+        if r3
+          r4 = _nt__
+          s0 << r4
+          if r4
+            r5 = _nt_rvalue
+            s0 << r5
+          end
+        end
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(LogStash::Config::AST::NotInExpression,input, i0...index, s0)
+      r0.extend(NotInExpression0)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:not_in_expression][start_index] = r0
+
+    r0
+  end
+
   def _nt_in_operator
     start_index = index
     if node_cache[:in_operator].has_key?(index)
@@ -2697,6 +2768,60 @@ module LogStashConfig
     end
 
     node_cache[:in_operator][start_index] = r0
+
+    r0
+  end
+
+  module NotInOperator0
+    def _
+      elements[1]
+    end
+
+  end
+
+  def _nt_not_in_operator
+    start_index = index
+    if node_cache[:not_in_operator].has_key?(index)
+      cached = node_cache[:not_in_operator][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?("not ", false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 4))
+      @index += 4
+    else
+      terminal_parse_failure("not ")
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      r2 = _nt__
+      s0 << r2
+      if r2
+        if has_terminal?("in", false, index)
+          r3 = instantiate_node(SyntaxNode,input, index...(index + 2))
+          @index += 2
+        else
+          terminal_parse_failure("in")
+          r3 = nil
+        end
+        s0 << r3
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(NotInOperator0)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:not_in_operator][start_index] = r0
 
     r0
   end

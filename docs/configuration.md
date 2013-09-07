@@ -195,8 +195,8 @@ What's an expression? Comparison tests, boolean logic, etc!
 The following comparison operators  are supported:
 
 * equality, etc: ==  !=  <  >  <=  >= 
-* regexp: =~  !~ 
-* inclusion: in
+* regexp: =~ !~ 
+* inclusion: in, not in
 
 The following boolean operators are supported:
 
@@ -207,7 +207,8 @@ The following unary operators are supported:
 * !
 
 Expressions may contain expressions. Expressions may be negated with `!`.
-Expressions may be grouped with parentheses `(...)`.
+Expressions may be grouped with parentheses `(...)`. Expressions can be long
+and complex.
 
 For example, if we want to remove the field `secret` if the field
 `action` has a value of `login`:
@@ -239,6 +240,17 @@ How about telling nagios of any http event that has a status code of 5xx?
         }
 
         statsd { increment => "apache.%{status}" }
+      }
+    }
+
+You can also do multiple expressions in a single condition:
+
+    output {
+      # Send production errors to pagerduty
+      if [loglevel] == "ERROR" and [deployment] == "production" {
+        pagerduty {
+          ...
+        }
       }
     }
 
