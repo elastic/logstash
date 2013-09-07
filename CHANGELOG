@@ -20,13 +20,13 @@
   - compatibility: json: if data given is not valid as json will now be used as
     the "message" of an event . This restores the older behavior when using
     1.1.13's "format => json" feature on inputs. (LOGSTASH-1299)
+  - new: netflow: process netflow data (#580, patches by Nikolay Bryskin and
+    Matt Dainty)
 
   ## filters
   - bugfix: multiline: the multiline filter returns! It was unintentionally
     removed from the previous (1.2.0) release.
   - bugfix: json_encode: fix a syntax error in the code. (LOGSTASH-1296)
-  - new: netflow: process netflow data (#580, patches by Nikolay Bryskin and
-    Matt Dainty)
   - feature: kv: now captures duplicate field names as a list, so 'foo=bar
     foo=baz' becomes the field 'foo' with value ['bar', 'baz'] (an array).
     (#622, patch by Matt Dainty)
