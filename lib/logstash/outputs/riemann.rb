@@ -90,7 +90,7 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
         end
       end
     end
-    r_event[:tags] = @tags if @tags
+    r_event[:tags] = event["tags"] if event["tags"].is_a?(Array)
     @logger.debug("Riemann event: ", :riemann_event => r_event)
     begin
       proto_client = @client.instance_variable_get("@#{@protocol}")
