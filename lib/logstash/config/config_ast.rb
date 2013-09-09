@@ -196,19 +196,26 @@ module LogStash; module Config; module AST
   end
   class RValue < Node; end
   class Value < RValue; end
+
+  module Unicode
+    def self.wrap(text)
+      return "(" + text.inspect + ".force_encoding(\"UTF-8\")" + ")"
+    end
+  end
+
   class Bareword < Value
     def compile
-      return text_value.inspect
+      return Unicode.wrap(text_value)
     end
   end
   class String < Value
     def compile
-      return text_value[1...-1].inspect
+      return Unicode.wrap(text_value[1...-1])
     end
   end
   class RegExp < Value
     def compile
-      return text_value
+      return "Regexp.new(" + Unicode.wrap(text_value[1...-1]) + ")"
     end
   end
   class Number < Value
