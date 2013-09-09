@@ -12,7 +12,7 @@ describe "parse mysql slow query log", :if => false do
         # I have seen) a 'SET timestamp=123456789' line in each query event, so
         # I use that as the timestamp instead.
         #
-        # mysql logs are fucked up, so this is pretty much best effort.
+        # mysql logs are messed up, so this is pretty much best effort.
         match => [ "@message", "^# Time: " ]
         negate => true
       }

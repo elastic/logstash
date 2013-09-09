@@ -55,10 +55,6 @@ require "logstash/namespace"
 # TODO If you have bugs report or helpful advice contact me, but remember that this code is much mine as much as yours, 
 #      try to work on it if you want :)
 
-# The programmer's question is:  "Why you fuck you use name ls.s3....  you kidding me, motherfucker? 
-# The answer is simple, s3 not allow special characters like "/" "[,]", very useful in date format, 
-# because if you use them s3 dosen't know no more the key and send you to hell!
-# For example "/" in s3 means you can specify a subfolder on bucket. 
 
 # USAGE:
 
@@ -220,7 +216,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
        end
      end
 
-     @logger.debug "S3: let's destroying the temporary shit file "+name_file
      File.delete (file)
 
    end
