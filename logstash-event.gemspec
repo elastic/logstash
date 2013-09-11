@@ -20,7 +20,7 @@ Gem::Specification.new do |gem|
   gem.test_files    = []
   gem.name          = "logstash-event"
   gem.require_paths = ["lib"]
-  gem.version       = "1.2.01"
+  gem.version       = "1.2.02"
   
   gem.add_development_dependency "rspec"
   gem.add_development_dependency "guard"
