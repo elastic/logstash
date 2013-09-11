@@ -115,9 +115,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  config :bucket, :validate => :string
 
  # Aws endpoint_region
- config :endpoint_region, :validate => ["us_east_1", "us-west-1", "us-west-2",
+ config :endpoint_region, :validate => ["us-east-1", "us-west-1", "us-west-2",
                                         "eu-west-1", "ap-southeast-1", "ap-southeast-2",
-                                        "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us_east_1"
+                                        "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
  
  # Set the size of file in KB, this means that files on bucket when have dimension > file_size, they are stored in two or more file. 
  # If you have tags then it will generate a specific size file for every tags
@@ -143,10 +143,13 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  def aws_s3_config
   
   @logger.debug "S3: waiting for establishing connection..."
+
+  @endpoint_region == 'us-east-1' ? @endpoint_region = 's3.amazonaws.com' : @endpoint_region = 's3-'+@endpoint_region+'.amazonaws.com'
+
   AWS.config(
     :access_key_id => @access_key_id,
     :secret_access_key => @secret_access_key,
-    :s3_endpoint => 's3-'+@endpoint_region+'.amazonaws.com'
+    :s3_endpoint => @endpoint_region
   )
   @s3 = AWS::S3.new 
 
