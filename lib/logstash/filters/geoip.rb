@@ -105,6 +105,7 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
     geo_data_hash.delete(:request)
     event[@target] = {} if event[@target].nil?
     geo_data_hash.each do |key, value|
+      next if value.nil? || (value.is_a?(String) && value.empty?)
       if @fields.nil? || @fields.empty?
         # no fields requested, so add all geoip hash items to
         # the event's fields.
