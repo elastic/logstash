@@ -28,7 +28,9 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   config :bucket, :validate => :string, :required => true
 
   # The AWS region for your bucket.
-  config :region, :validate => :string, :default => 'us-east-1'
+  config :region, :validate => ["us-east-1", "us-west-1", "us-west-2",
+                                "eu-west-1", "ap-southeast-1", "ap-southeast-2",
+                                "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
 
   # If specified, the prefix the filenames in the bucket must match (not a regexp)
   config :prefix, :validate => :string, :default => nil
@@ -54,6 +56,8 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   public
   def register
     @logger.info("Registering s3 input", :bucket => @bucket)
+
+    require "digest/md5"
 
     if @credentials.nil?
       @access_key_id = ENV['AWS_ACCESS_KEY_ID']
