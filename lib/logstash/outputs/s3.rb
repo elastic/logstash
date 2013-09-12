@@ -115,9 +115,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  config :bucket, :validate => :string
 
  # Aws endpoint_region
- config :endpoint_region, :validate => ["us_east_1", "us-west-1", "us-west-2",
+ config :endpoint_region, :validate => ["us-east-1", "us-west-1", "us-west-2",
                                         "eu-west-1", "ap-southeast-1", "ap-southeast-2",
-                                        "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us_east_1"
+                                        "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
  
  # Set the size of file in KB, this means that files on bucket when have dimension > file_size, they are stored in two or more file. 
  # If you have tags then it will generate a specific size file for every tags
