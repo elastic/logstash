@@ -1,3 +1,9 @@
+1.2.2 (???)
+  # general
+  ## filters
+  - bugfix: geoip: empty values (nil, empty string) are not put into the event
+    anymore.
+
 1.2.1 (September 7, 2013)
   # general
   - This is primarily a bugfix/stability release based on feedback from 1.2.0
