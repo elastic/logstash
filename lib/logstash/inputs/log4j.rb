@@ -74,8 +74,9 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
             event[key] = log4j_obj.getProperty(key)
           end  
         end  
-
-        output_queue << e
+        if event
+          output_queue << event
+        end 
       end # loop do
     rescue => e
       @logger.debug("Closing connection", :client => socket.peer,
