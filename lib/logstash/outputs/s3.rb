@@ -62,8 +62,8 @@ require "logstash/namespace"
 
 # output {
 #    s3{ 
-#      access_key_id => "crazy_key"             (required)
-#      secret_access_key => "monkey_access_key" (required)
+#      access_key_id => "crazy_key"             (required if secret_access_key is specified)
+#      secret_access_key => "monkey_access_key" (required if access_key_id is specified)
 #      endpoint_region => "eu-west-1"           (required)
 #      bucket => "boss_please_open_your_bucket" (required)         
 #      size_file => 2048                        (optional)
@@ -105,11 +105,18 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  config_name "s3"
  milestone 1
 
- # Aws access_key.
- config :access_key_id, :validate => :string
+ # Aws access keys:
+ #
+ # You can either specify both access keys to use explicit credentials or none at all.
+ # If you don't specify the access keys AWS will fallback to environment variable settings,
+ # EC2 instance metadata, and more. 
+ # See http://ruby.awsblog.com/blog/tag/credentials
+
+ # Aws access_key
+ config :access_key_id, :validate => :string, :default => "undefined"
  
  # Aws secret_access_key
- config :secret_access_key, :validate => :string
+ config :secret_access_key, :validate => :string, :default => "undefined"
 
  # S3 bucket
  config :bucket, :validate => :string
@@ -143,11 +150,21 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  def aws_s3_config
   
   @logger.debug "S3: waiting for establishing connection..."
-  AWS.config(
-    :access_key_id => @access_key_id,
-    :secret_access_key => @secret_access_key,
-    :s3_endpoint => 's3-'+@endpoint_region+'.amazonaws.com'
-  )
+
+  s3_endpoint = 's3-'+@endpoint_region+'.amazonaws.com'
+  
+  if ( @has_specified_credentials )
+   AWS.config(
+     :access_key_id => @access_key_id,
+     :secret_access_key => @secret_access_key,
+     :s3_endpoint => s3_endpoint
+   )
+  else
+   AWS.config(
+     :s3_endpoint => s3_endpoint
+   )
+  end
+
   @s3 = AWS::S3.new 
 
  end
@@ -248,6 +265,17 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
           @tag_path += @tags[i].to_s+"." 
        end
    end
+
+
+   is_access_key_defined = @access_key_id != "undefined"
+   is_secret_access_key_defined = @secret_access_key != "undefined"
+
+   # If only one key is specified
+   if ( is_access_key_defined ^ is_secret_access_key_defined )
+    raise "S3: You specified only one of the AWS access keys. If you want to use explicit credentials, specify both keys. If you want to fallback to environment variables or EC2 instance metadata, specify none. Also see http://ruby.awsblog.com/blog/tag/credentials."
+   end
+
+   @has_specified_credentials = is_access_key_defined && is_secret_access_key_defined
 
    if !(File.directory? @temp_directory)
     @logger.debug "S3: Directory "+@temp_directory+" doesn't exist, let's make it!"
