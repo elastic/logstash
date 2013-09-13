@@ -40,6 +40,12 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
     require "java"
     require "jruby/serialization"
 
+    if __FILE__ !~ /^(jar:)?file:\/\//
+      if File.exists?("vendor/jar/elasticsearch-0.90.3/lib/log4j-1.2.17.jar")
+        require "vendor/jar/elasticsearch-0.90.3/lib/log4j-1.2.17.jar"
+      end
+    end
+
     if server?
       @logger.info("Starting Log4j input listener", :address => "#{@host}:#{@port}")
       @server_socket = TCPServer.new(@host, @port)
@@ -75,16 +81,16 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
           end  
         end  
 
-        output_queue << e
+        output_queue << event
       end # loop do
     rescue => e
       @logger.debug("Closing connection", :client => socket.peer,
-                    :exception => e, :backtrace => e.backtrace)
+                    :exception => e)
     rescue Timeout::Error
       @logger.debug("Closing connection after read timeout",
                     :client => socket.peer)
     end # begin
-
+  ensure
     begin
       socket.close
     rescue IOError
