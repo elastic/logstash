@@ -154,7 +154,7 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
   end # def decode
 
   def buffer(text)
-    @time = Time.now if @buffer.empty?
+    @time = Time.now.utc if @buffer.empty?
     @buffer << text
   end
 
