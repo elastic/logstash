@@ -69,6 +69,7 @@ require "logstash/namespace"
 #      size_file => 2048                        (optional)
 #      time_file => 5                           (optional)
 #      format => "plain"                        (optional) 
+#      canned_acl => "private"                  (optional. Options are "private", "public_read", "public_read_write", "authenticated_read". Defaults to "private" )
 #    }
 # }
 
@@ -95,6 +96,9 @@ require "logstash/namespace"
  
 # format => "plain"
 # Means the format of events you want to store in the files
+
+# canned_acl => "private"
+# The S3 canned ACL to use when putting the file. Defaults to "private".
 
 # LET'S ROCK AND ROLL ON THE CODE!
 
@@ -139,6 +143,10 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  ## for example if you have single Instance. 
  config :restore, :validate => :boolean, :default => false
 
+ # Aws canned ACL
+ config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
+        :default => "private"
+
  # Method to set up the aws configuration and establish connection
  def aws_s3_config
   
@@ -181,9 +189,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   # prepare for write the file
   object = bucket.objects[file_basename]
-  object.write(:file => file_data, :acl => :public_read)
+  object.write(:file => file_data, :acl => @canned_acl)
  
-  @logger.debug "S3: has written "+file_basename+" in bucket "+@bucket
+  @logger.debug "S3: has written "+file_basename+" in bucket "+@bucket + " with canned ACL \"" + @canned_acl + "\""
 
  end
   
