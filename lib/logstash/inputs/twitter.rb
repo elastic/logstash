@@ -1,8 +1,6 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "net/http"
 require "json"
-#require "net/https"
 
 # Read events from the twitter streaming api.
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
@@ -50,34 +48,34 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
 
   public
   def register
-    raise LogStash::ConfigurationError, "Sorry, this plugin doesn't work anymore. We will fix it eventually, but if you need this plugin, please file a ticket on logstash.jira.com :)"
-
-    require "tweetstream"
-    TweetStream.configure do |c|
+    require "twitter"
+    @client = Twitter::Streaming::Client.new do |c|
       c.consumer_key = @consumer_key
       c.consumer_secret = @consumer_secret.value
-      c.oauth_token = @oauth_token
-      c.oauth_token_secret = @oauth_token_secret.value
-      c.auth_method = :oauth
+      c.access_token = @oauth_token
+      c.access_token_secret = @oauth_token_secret.value
     end
   end
 
   public
   def run(queue)
-    client = TweetStream::Client.new
     @logger.info("Starting twitter tracking", :keywords => @keywords)
-    client.track(*@keywords) do |status|
-      @logger.info? && @logger.info("Got tweet", :user => status.user.screen_name, :text => status.text)
+    @client.filter(:track => @keywords.join(",")) do |tweet|
+      @logger.info? && @logger.info("Got tweet", :user => tweet.user.screen_name, :text => tweet.text)
       event = LogStash::Event.new(
-        "user" => status.user.screen_name,
-        "client" => status.source,
-        "retweeted" => status.retweeted
+        "@timestamp" => tweet.created_at.gmtime,
+        "text" => tweet.full_text,
+        "user" => tweet.user.screen_name,
+        "client" => tweet.source,
+        "retweeted" => tweet.retweeted?,
+        "source" => "http://twitter.com/#{tweet.user.screen_name}/status/#{tweet.id}"
       )
       decorate(event)
-      event["in-reply-to"] = status.in_reply_to_status_id  if status.in_reply_to_status_id
-      #urls = tweet.urls.collect(&:expanded_url)
-      #event["urls"] = urls if urls.size > 0
+      event["in-reply-to"] = tweet.in_reply_to_status_id if tweet.reply?
+      unless tweet.urls.empty?
+        event["urls"] = tweet.urls.map(&:expanded_url).map(&:to_s)
+      end
       queue << event
-    end # client.track
+    end # client.filter
   end # def run
 end # class LogStash::Inputs::Twitter
