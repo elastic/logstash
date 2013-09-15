@@ -64,7 +64,7 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
       @logger.info? && @logger.info("Got tweet", :user => tweet.user.screen_name, :text => tweet.text)
       event = LogStash::Event.new(
         "@timestamp" => tweet.created_at.gmtime,
-        "text" => tweet.full_text,
+        "message" => tweet.full_text,
         "user" => tweet.user.screen_name,
         "client" => tweet.source,
         "retweeted" => tweet.retweeted?,
