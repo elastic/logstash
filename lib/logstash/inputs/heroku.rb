@@ -40,7 +40,7 @@ class LogStash::Inputs::Heroku < LogStash::Inputs::Base
     # I *think* setting num=1 means we only get 1 historical event. Setting
     # this to 0 makes it fetch *all* events, not what I want.
     client.read_logs(@app, ["tail=1", "num=1"]) do |chunk|
-      @codec.decode(chunk).each do |event|
+      @codec.decode(chunk) do |event|
         decorate(event)
         event["app"] = @app
         queue << event
