@@ -173,7 +173,7 @@ hour and the 'type' field:
 
 ## <a name="conditionals"></a>Conditionals
 
-Sometimes you only want a filter or output to process an even under
+Sometimes you only want a filter or output to process an event under
 certain conditions. For that, you'll want to use a conditional!
 
 Conditionals in logstash look and act the same way they do in programming
