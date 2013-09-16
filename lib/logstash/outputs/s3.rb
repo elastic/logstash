@@ -143,10 +143,13 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  def aws_s3_config
   
   @logger.debug "S3: waiting for establishing connection..."
+
+  @endpoint_region == 'us-east-1' ? @endpoint_region = 's3.amazonaws.com' : @endpoint_region = 's3-'+@endpoint_region+'.amazonaws.com'
+
   AWS.config(
     :access_key_id => @access_key_id,
     :secret_access_key => @secret_access_key,
-    :s3_endpoint => 's3-'+@endpoint_region+'.amazonaws.com'
+    :s3_endpoint => @endpoint_region
   )
   @s3 = AWS::S3.new 
 
