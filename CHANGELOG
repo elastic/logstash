@@ -1,5 +1,8 @@
 1.2.2 (???)
   # general
+  ## inputs
+  - bugfix: udp: respects teardown requests (via SIGINT) (LOGSTASH-1290)
+
   ## filters
   - bugfix: geoip: empty values (nil, empty string) are not put into the event
     anymore.
