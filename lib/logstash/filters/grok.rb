@@ -91,10 +91,10 @@ require "set"
 #
 #     (?<field_name>the pattern here)
 #
-# For example, postfix logs have a 'queue id' that is an 11-character
+# For example, postfix logs have a 'queue id' that is an 10 or 11-character
 # hexadecimal value. I can capture that easily like this:
 #
-#     (?<queue_id>[0-9A-F]{11})
+#     (?<queue_id>[0-9A-F]{10,11})
 #
 # Alternately, you can create a custom patterns file. 
 #
@@ -106,7 +106,7 @@ require "set"
 # For example, doing the postfix queue id example as above:
 #
 #     # in ./patterns/postfix 
-#     POSTFIX_QUEUEID [0-9A-F]{11}
+#     POSTFIX_QUEUEID [0-9A-F]{10,11}
 #
 # Then use the `patterns_dir` setting in this plugin to tell logstash where
 # your custom patterns directory is. Here's a full example with a sample log:
