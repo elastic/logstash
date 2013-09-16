@@ -373,4 +373,4 @@ package:
 vendor/kibana: | build
 	$(QUIET)mkdir vendor/kibana || true
 	$(DOWNLOAD_COMMAND) - $(KIBANA_URL) | tar -C $@ -zx --strip-components=1
-	$(QUIET)sed -e "s/@message/message/g" vendor/kibana/dashboards/logstash.json > vendor/kibana/dashboards/default.json
+	$(QUIET)sed -e "s/@message/message/g" vendor/kibana/src/app/dashboards/logstash.json > vendor/kibana/src/app/dashboards/default.json
