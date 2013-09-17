@@ -350,4 +350,21 @@ describe LogStash::Filters::KV do
     end
   end
 
+  describe "overwriting a string field (often the source)" do
+    config <<-CONFIG
+      filter {
+        kv {
+          source => "happy"
+          target => "happy"
+        }
+      }
+    CONFIG
+
+    sample("happy" => "foo=bar baz=fizz") do
+      insist { subject["[happy][foo]"] } == "bar"
+      insist { subject["[happy][baz]"] } == "fizz"
+    end
+
+  end
+
 end

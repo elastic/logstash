@@ -187,7 +187,12 @@ class LogStash::Filters::KV < LogStash::Filters::Base
         # Default is to write to the root of the event.
         dest = event.to_hash
       else
-        dest = event[@target] ||= {}
+        if !event[@target].is_a?(Hash)
+          @logger.debug("Overwriting existing target field", :target => @target)
+          dest = event[@target] = {}
+        else
+          dest = event[@target]
+        end
       end
 
       dest.merge!(kv)
