@@ -368,6 +368,7 @@ package:
 		./build.sh ubuntu 12.10; \
 		./build.sh centos 6; \
 		./build.sh debian 6; \
+		./build.sh debian 7; \
 	)
 
 vendor/kibana: | build
