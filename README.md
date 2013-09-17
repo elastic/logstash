@@ -111,4 +111,4 @@ see that here.
 It is more important to me that you are able to contribute.
 
 For more information about contributing, see the
-(CONTRIBUTING)[CONTRIBUTING.md] file.
+[CONTRIBUTING](CONTRIBUTING.md) file.
