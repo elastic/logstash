@@ -6,6 +6,8 @@
   ## filters
   - bugfix: geoip: empty values (nil, empty string) are not put into the event
     anymore.
+  - improvement: kv: target will now overwrite any existing fields, including
+    the source. 
 
 1.2.1 (September 7, 2013)
   # general
