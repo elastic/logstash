@@ -60,14 +60,6 @@ class LogStash::Codecs::Graphite < LogStash::Codecs::Base
   
   public
   def decode(data)
-    #data.force_encoding(@charset)
-    #if @charset != "UTF-8"
-      # The user has declared the character encoding of this data is
-      # something other than UTF-8. Let's convert it (as cleanly as possible)
-      # into UTF-8 so we can use it with JSON, etc.
-    #  data = data.encode("UTF-8", :invalid => :replace, :undef => :replace)
-    #end
-
     @lines.decode(data) do |event|
       name, value, time = event["message"].split(" ")
       yield LogStash::Event.new(name => value.to_f, "@timestamp" => Time.at(time.to_i).gmtime)
