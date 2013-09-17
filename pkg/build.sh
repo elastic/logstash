@@ -96,7 +96,7 @@ case $os in
   ubuntu|debian) 
     fpm -s dir -t deb -n logstash -v "$VERSION" \
       -a all --iteration 1-$os \
-      -d "java6-runtime" \
+      -d "default-jre" \
       --deb-user root --deb-group root \
       --before-install $os/before-install.sh \
       --before-remove $os/before-remove.sh \
