@@ -14,7 +14,8 @@ class LogStash::Inputs::RabbitMQ
         :vhost => @vhost,
         :host  => @host,
         :port  => @port,
-        :user  => @user
+        :user  => @user,
+        :automatic_recovery => false
       }
       @settings[:pass]      = @password.value if @password
       @settings[:tls]       = @ssl if @ssl
