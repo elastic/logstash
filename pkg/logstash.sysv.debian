@@ -101,7 +101,7 @@ case "$1" in
       fi
 
       # Check if a config file exists
-      if [ ! "$(ls -A $CONF_DIR/*.conf)" ]; then
+      if [ ! "$(ls -A $CONF_DIR/*.conf 2> /dev/null)" ]; then
          log_failure_msg "There aren't any configuration files in $CONF_DIR"
          exit 1
       fi
