@@ -61,7 +61,7 @@ describe LogStash::Codecs::Graphite do
         insist { event.is_a? String }
         insist { event } == "#{name} #{value} #{timestamp.to_i}\n"
       end
-      subject.encode(LogStash::Event.new)
+      subject.encode(LogStash::Event.new("@timestamp" => timestamp))
     end
     
     it "should treat fields as metrics if fields as metrics flag is set" do
@@ -73,11 +73,11 @@ describe LogStash::Codecs::Graphite do
         insist { event.is_a? String }
         insist { event } == "#{name} #{value} #{timestamp.to_i}\n"
       end
-      subject.encode(LogStash::Event.new({name => value}))
+      subject.encode(LogStash::Event.new({name => value, "@timestamp" => timestamp}))
       
       #even if metrics param is set
       subject.metrics = {"foo" => 4}
-      subject.encode(LogStash::Event.new({name => value}))
+      subject.encode(LogStash::Event.new({name => value, "@timestamp" => timestamp}))
     end
     
     it "should change the metric name format when metrics_format is set" do
@@ -90,7 +90,7 @@ describe LogStash::Codecs::Graphite do
         insist { event.is_a? String }
         insist { event } == "foo.bar.#{name}.baz #{value} #{timestamp.to_i}\n"
       end
-      subject.encode(LogStash::Event.new)
+      subject.encode(LogStash::Event.new("@timestamp" => timestamp))
     end
   end
 end
