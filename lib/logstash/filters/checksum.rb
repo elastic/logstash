@@ -12,6 +12,8 @@ class LogStash::Filters::Checksum < LogStash::Filters::Base
 
   config_name "checksum"
   milestone 1
+  
+  ALGORITHMS = ["md5", "sha", "sha1", "sha256", "sha384",]
 
   # A list of keys to use in creating the string to checksum
   # Keys will be sorted before building the string
@@ -19,7 +21,7 @@ class LogStash::Filters::Checksum < LogStash::Filters::Base
   # and checksummed
   config :keys, :validate => :array, :default => ["message", "@timestamp", "type"]
 
-  config :algorithm, :validate => ["md5", "sha128", "sha256", "sha384"], :default => "sha256"
+  config :algorithm, :validate => ALGORITHMS, :default => "sha256"
 
   public
   def register
