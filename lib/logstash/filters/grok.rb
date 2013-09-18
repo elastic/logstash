@@ -20,7 +20,7 @@ require "set"
 #
 # #### Grok Basics
 #
-# Grok works by using combining text patterns into something that matches your
+# Grok works by combining text patterns into something that matches your
 # logs.
 #
 # The syntax for a grok pattern is `%{SYNTAX:SEMANTIC}`
@@ -31,14 +31,14 @@ require "set"
 #
 # The `SEMANTIC` is the identifier you give to the piece of text being matched.
 # For example, "3.44" could be the duration of an event, so you could call it
-# simply 'duration'. Further, a string "55.3.244.1" might identify the client
+# simply 'duration'. Further, a string "55.3.244.1" might identify the 'client'
 # making a request.
 #
 # Optionally you can add a data type conversion to your grok pattern. By default
-# all semantics are saved as strings. If you wish to convert a semnatic's data type,
+# all semantics are saved as strings. If you wish to convert a semantic's data type,
 # for example change a string to an integer then suffix it with the target data type.
-# For example `${NUMBER:num:int}` which converts the 'num' semantic from a string to an
-# integer. Currently the only supporting conversions are `int` and `float`.
+# For example `%{NUMBER:num:int}` which converts the 'num' semantic from a string to an
+# integer. Currently the only supported conversions are `int` and `float`.
 #
 # #### Example
 #
@@ -56,12 +56,10 @@ require "set"
 #     input {
 #       file {
 #         path => "/var/log/http.log"
-#         type => "examplehttp"
 #       }
 #     }
 #     filter {
 #       grok {
-#         type => "examplehttp"
 #         match => [ "message", "%{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}" ]
 #       }
 #     }
@@ -116,7 +114,7 @@ require "set"
 #     filter {
 #       grok {
 #         patterns_dir => "./patterns"
-#         match => [ "message", "%{SYSLOGBASE} %{POSTFIX_QUEUEID:queue_id}: %{GREEDYDATA:message}" ]
+#         match => [ "message", "%{SYSLOGBASE} %{POSTFIX_QUEUEID:queue_id}: %{GREEDYDATA:syslog_message}" ]
 #       }
 #     }
 #
@@ -127,6 +125,7 @@ require "set"
 # * program: postfix/cleanup
 # * pid: 21403
 # * queue_id: BEF25A72965
+# * syslog_message: message-id=<20130101142543.5828399CCAF@mailserver14.example.com
 #
 # The `timestamp`, `logsource`, `program`, and `pid` fields come from the
 # SYSLOGBASE pattern which itself is defined by other patterns.
@@ -187,7 +186,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # containing that one value.
   config :singles, :validate => :boolean, :default => true
 
-  # If true, ensure the '_grokparsefailure' tag is present when there has been no
+  # Append values to the 'tags' field when there has been no
   # successful match
   config :tag_on_failure, :validate => :array, :default => ["_grokparsefailure"]
 
@@ -273,7 +272,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
         @logger.debug? and @logger.debug("regexp: #{@type}/#{field}", :pattern => pattern)
         @patterns[field].compile(pattern)
       end
-    end # @config.each
+    end # @match.each
   end # def register
 
   public
@@ -375,11 +374,11 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
         filter_matched(event)
       end # event[field]
-    end # patterns.each
+    end # @patterns.each
 
     if !matched
       # Tag this event if we can't parse it. We can use this later to
-      # reparse+reindex logs if we improve the patterns given .
+      # reparse+reindex logs if we improve the patterns given.
       @tag_on_failure.each do |tag|
         event["tags"] ||= []
         event["tags"] << tag unless event["tags"].include?(tag)
@@ -392,7 +391,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   private
   def add_patterns_from_files(paths, pile)
     paths.each { |path| add_patterns_from_file(path, pile) }
-  end
+  end # def add_patterns_from_files
 
   private
   def add_patterns_from_file(path, pile)
@@ -412,5 +411,5 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     else
       pile.add_patterns_from_file(path)
     end
-  end # def add_patterns
+  end # def add_patterns_from_file
 end # class LogStash::Filters::Grok
