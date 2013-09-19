@@ -11,7 +11,7 @@ require "logstash/namespace"
 #
 # You can learn about Riemann here:
 #
-# * <http://aphyr.github.com/riemann/>
+# * <http://riemann.io/>
 # You can see the author talk about it here:
 # * <http://vimeo.com/38377415>
 #
@@ -39,22 +39,27 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
   # in the Riemann event
   config :sender, :validate => :string, :default => "%{host}"
 
-  # A Hash to set Riemann event fields 
-  # (<http://aphyr.github.com/riemann/concepts.html>).
+  # A Hash to set Riemann event fields
+  # (<http://riemann.io/concepts.html>).
   #
   # The following event fields are supported:
   # `description`, `state`, `metric`, `ttl`, `service`
   #
+  # Tags found on the Logstash event will automatically be added to the
+  # Riemann event.
+  #
+  # Any other field set here will be passed to Riemann as an event attribute.
+  #
   # Example:
   #
   #     riemann {
-  #         riemann_event => [ 
-  #             "metric", "%{metric}",
-  #             "service", "%{service}"
-  #         ]
+  #         riemann_event => {
+  #             "metric"  => "%{metric}"
+  #             "service" => "%{service}"
+  #         }
   #     }
   #
-  # `metric` and `ttl` values will be coerced to a floating point value. 
+  # `metric` and `ttl` values will be coerced to a floating point value.
   # Values which cannot be coerced will zero (0.0).
   #
   # `description`, by default, will be set to the event message
@@ -74,7 +79,7 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
   public
   def receive(event)
     return unless output?(event)
-    
+
     # Let's build us an event, shall we?
     r_event = Hash.new
     r_event[:host] = event.sprintf(@sender)
@@ -90,7 +95,7 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
         end
       end
     end
-    r_event[:tags] = @tags if @tags
+    r_event[:tags] = event["tags"] if event["tags"].is_a?(Array)
     @logger.debug("Riemann event: ", :riemann_event => r_event)
     begin
       proto_client = @client.instance_variable_get("@#{@protocol}")
