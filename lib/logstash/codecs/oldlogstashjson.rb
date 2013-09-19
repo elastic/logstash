@@ -11,12 +11,16 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
     h  = {}
 
     # Convert the old logstash schema to the new one.
-    basics = %w(@message @source_host @source_path @source
-                @tags @type)
+    basics = %w(@message @tags @type)
     basics.each do |key|
       # Convert '@message' to 'message', etc
       h[key[1..-1]] = obj[key] if obj.include?(key)
     end
+
+    # fix other mappings
+    h["host"] = obj["@source_host"]
+    h["path"] = obj["@source_path"]
+    # Note: @source is gone and has no similar field.
 
     h["@timestamp"] = obj["@timestamp"] if obj.include?("@timestamp")
 
