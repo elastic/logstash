@@ -84,7 +84,15 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
       end
 
       target[@prefix + "name"] = ua_data.name
-      target[@prefix + "os"] = ua_data.os.to_s if not ua_data.os.nil?
+
+      #OSX, Andriod and maybe iOS parse correctly, ua-agent parsing for Windows does not provide this level of detail
+      unless ua_data.os.nil?
+        target[@prefix + "os"] = ua_data.os.to_s
+        target[@prefix + "os_name"] = ua_data.os.name.to_s
+        target[@prefix + "os_major"] = ua_data.os.version.major.to_s unless ua_data.os.version.nil?
+        target[@prefix + "os_minor"] = ua_data.os.version.minor.to_s unless ua_data.os.version.nil?
+      end
+
       target[@prefix + "device"] = ua_data.device.to_s if not ua_data.device.nil?
 
       if not ua_data.version.nil?
