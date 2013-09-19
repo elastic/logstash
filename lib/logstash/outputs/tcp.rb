@@ -68,6 +68,7 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
 
   public
   def register
+    require "stud/try"
     if server?
       @logger.info("Starting tcp output listener", :address => "#{@host}:#{@port}")
       @server_socket = TCPServer.new(@host, @port)
@@ -117,7 +118,9 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
 
   private
   def connect
-    @client_socket = TCPSocket.new(@host, @port)
+    Stud::try do
+      return TCPSocket.new(@host, @port)
+    end
   end # def connect
 
   private
