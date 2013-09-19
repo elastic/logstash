@@ -126,7 +126,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     hostname = Socket.gethostname
 
     @tail.subscribe do |path, line|
-      @logger.debug? && @logger.debug("Received line", :path => path, :line => line)
+      @logger.debug? && @logger.debug("Received line", :path => path, :text => line)
       @codec.decode(line) do |event|
         decorate(event)
         event["host"] = hostname
