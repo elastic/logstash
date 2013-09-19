@@ -2,7 +2,6 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 require "thread"
 
-
 # Write events over a TCP socket.
 #
 # Each event json is separated by a newline.
