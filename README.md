@@ -89,6 +89,11 @@ If you want to build the jar yourself, run:
 
     make flatjar
 
+To update a flat jar previously built with 'make flatjar', run:
+
+    make update-flatjar
+
+
 You can build rpms and debs, if you need those. Building rpms requires you have [fpm](github.com/jordansissel/fpm), then do this:
 
     make package
