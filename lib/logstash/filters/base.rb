@@ -158,7 +158,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   protected
   def filter?(event)
     if !@type.empty?
-      if event.type != @type
+      if event["type"] != @type
         @logger.debug? and @logger.debug(["filters/#{self.class.name}: Skipping event because type doesn't match #{@type}", event])
         return false
       end
