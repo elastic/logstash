@@ -248,7 +248,7 @@ describe LogStash::Filters::Grok do
         }
       CONFIG
       sample "hello world" do
-        insist { subject.tags }.nil?
+        insist { subject["tags"] }.nil?
         insist { subject["foo"] } == "hello"
       end
     end
@@ -281,8 +281,8 @@ describe LogStash::Filters::Grok do
     CONFIG
 
     sample("status" => 403) do
-      reject { subject.tags }.include?("_grokparsefailure")
-      insist { subject.tags }.include?("four_oh_three")
+      reject { subject["tags"] }.include?("_grokparsefailure")
+      insist { subject["tags"] }.include?("four_oh_three")
     end
   end
 
@@ -298,7 +298,7 @@ describe LogStash::Filters::Grok do
 
     sample("version" => 1.0) do
       insist { subject["tags"] }.include?("one_point_oh")
-      insist { subject.tags }.include?("one_point_oh")
+      insist { subject["tags"] }.include?("one_point_oh")
     end
   end
 

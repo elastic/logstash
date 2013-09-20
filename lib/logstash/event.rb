@@ -57,10 +57,10 @@ class LogStash::Event
     data["@version"] = "1" if !@data.include?("@version")
   end # def initialize
 
-  public
-  def self.from_json(json)
-    return self.new(JSON.parse(json))
-  end # def from_json
+  #public
+  #def self.from_json(json)
+  #  return self.new(JSON.parse(json))
+  #end # def from_json
 
   public
   def cancel
@@ -248,13 +248,13 @@ class LogStash::Event
   end # def sprintf
 
   # Shims to remove after event v1 is the default.
-  def tags=(value); self["tags"] = value; end
-  def tags; return self["tags"]; end
-  def message=(value); self["message"] = value; end
-  def source=(value); self["source"] = value; end
-  def type=(value); self["type"] = value; end
-  def type; return self["type"]; end
-  def fields; return self.to_hash; end
+  #def tags=(value); self["tags"] = value; end
+  #def tags; return self["tags"]; end
+  #def message=(value); self["message"] = value; end
+  #def source=(value); self["source"] = value; end
+  #def type=(value); self["type"] = value; end
+  #def type; return self["type"]; end
+  #def fields; return self.to_hash; end#
 
   def tag(value)
     # Generalize this method for more usability
