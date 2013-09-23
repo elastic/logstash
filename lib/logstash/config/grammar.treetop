@@ -20,7 +20,7 @@ grammar LogStashConfig
 
   rule plugin_section
     plugin_type _ "{"
-      (_ branch_or_plugin _)*
+      _ (branch_or_plugin _)*
     "}"
     <LogStash::Config::AST::PluginSection>
   end
