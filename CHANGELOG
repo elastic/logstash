@@ -2,7 +2,7 @@
   # general
   ## inputs
   - bugfix: udp: respects teardown requests (via SIGINT) (LOGSTASH-1290)
-  - bugfix: rabbitmq: disable automatic connection recovery (LGOSTASH-1350)
+  - bugfix: rabbitmq: disable automatic connection recovery (LOGSTASH-1350)
     (#641)
   - bugfix: twitter: update gem to latest api version (#640)
 
@@ -19,9 +19,9 @@
     setting flush rates and when to clear metrics (#545)
 
   ## outputs
-  - bugfix: rabbitmq: disable automatic connection recovery (LGOSTASH-1350)
+  - bugfix: rabbitmq: disable automatic connection recovery (LOGSTASH-1350)
     (#642)
-  - bugfix: reimann: fixed tagging of riemann events (#631)
+  - bugfix: riemann: fixed tagging of riemann events (#631)
 
   ## patterns
   - improvement: added IPV6 suppot to IP pattern (#623)
