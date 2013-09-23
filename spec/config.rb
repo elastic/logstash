@@ -18,4 +18,14 @@ describe LogStashConfigParser do
 
     reject { config }.nil?
   end
+
+  it "should permit empty plugin sections" do
+    parser = LogStashConfigParser.new
+    config = parser.parse(%q(
+      filter {
+      }
+    ))
+
+    reject { config }.nil?
+  end
 end
