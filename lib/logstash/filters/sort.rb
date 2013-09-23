@@ -31,7 +31,7 @@ require "logstash/namespace"
 class LogStash::Filters::Sort < LogStash::Filters::Base
 
   config_name "sort"
-  plugin_status "experimental"
+  milestone 3
 
   config :sortSize, :validate => :number, :default => 1000
   config :sortInterval, :validate => :string, :default => "1m"
@@ -64,20 +64,23 @@ class LogStash::Filters::Sort < LogStash::Filters::Base
       return
     end
 
-    # if the event is sorted, a "sorted" tag will be marked.
-    if (!event.tags.include?"sorted")
+    # if the event is sorted, a "sorted" tag will be marked, so for those unsorted event, cancel them first.
+    if event.tags.nil? || !event.tags.include?("sorted")
       event.cancel
     else
       return
     end
 
     @mutex.synchronize{
+      @sortingArray.push(event.clone)
+
       if (@sortingArray.length == @sortSize)
         sort
       end
 
       if (@sortingDone)
         while sortedEvent = @sortingArray.pop
+          sortedEvent.tags = Array.new if sortedEvent.tags.nil?
           sortedEvent.tags << "sorted"
           filter_matched(sortedEvent)
           yield sortedEvent
@@ -85,8 +88,6 @@ class LogStash::Filters::Sort < LogStash::Filters::Base
         # reset sortingDone flag
         @sortingDone = false
       end
-
-      @sortingArray.push(event.clone)
     }
   end # def filter
 
