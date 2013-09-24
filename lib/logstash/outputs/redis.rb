@@ -219,10 +219,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       @current_host = $1
       @current_port = $2
     else
-      @current_host = @host[@host_idx]
+      @current_host, @current_port = @host[@host_idx].split(':')
     end
-
-    # @current_host, @current_port = @host[@host_idx].split(':')
+    
     @host_idx = @host_idx + 1 >= @host.length ? 0 : @host_idx + 1
 
     if not @current_port
