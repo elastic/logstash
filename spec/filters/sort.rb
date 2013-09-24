@@ -80,6 +80,11 @@ describe LogStash::Filters::Sort do
     end
   end
 
+  # (Ignored) Currently this case can't pass because of the case depends on the flush function of the filter in the test, 
+  # there was a TODO marked in the code (test_utils.rb, # TODO(sissel): pipeline flush needs to be implemented.), 
+  # and the case wants to test the scenario which sort was triggered by a scheduler, so in this case, it needs to sleep few seconds 
+  # waiting the scheduler triggered, and after the events were flushed, then the result can be checked.
+
   # describe "sort when sort interval reached" do
   #   config <<-CONFIG
   #     filter {
