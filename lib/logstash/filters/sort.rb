@@ -1,15 +1,10 @@
-# sort filter
-#
-# This filter will sort messages by timestamp.
-# 
-
 require "logstash/filters/base"
 require "logstash/namespace"
 
 # The sort filter is for sorting a amount of events or a period of events by timestamp.
 #
 # The original goal of this filter was to merge the logs from different sources by the time of log,
-# for example, in real-time log collection, logs can be sorted by amount of 1000 logs or 
+# for example, in real-time log collection, logs can be sorted by amount of 3000 logs or 
 # can be sorted in 30 seconds.
 #
 # The config looks like this:
@@ -21,20 +16,18 @@ require "logstash/namespace"
 #         sortBy => "asce"
 #       }
 #     }
-# 
-# The 'sortSize' is the window size which how many logs should be sorted.(default 1000)
-#
-# The 'sortInterval' is the time window which how long the logs should be sorted. (default 1m)
-#
-# The 'sortBy' can only be "asce" or "desc" (defaults asce), sorted by timestamp asce or desc.
-#
 class LogStash::Filters::Sort < LogStash::Filters::Base
 
   config_name "sort"
-  milestone 3
+  milestone 1
 
+  # The 'sortSize' is the window size which how many logs should be sorted.(default 1000)
   config :sortSize, :validate => :number, :default => 1000
+
+  # The 'sortInterval' is the time window which how long the logs should be sorted. (default 1m)
   config :sortInterval, :validate => :string, :default => "1m"
+
+  # The 'sortBy' can only be "asce" or "desc" (defaults asce), sorted by timestamp asce or desc.
   config :sortBy, :validate => ["asce", "desc"], :default => "asce"
 
   public
