@@ -1,3 +1,4 @@
+require 'coveralls' and Coveralls.wear! if ENV['COVERAGE']
 require "insist"
 require "logstash/agent"
 require "logstash/pipeline"

@@ -108,4 +108,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "rspec"            #(MIT license)
   gem.add_runtime_dependency "insist", "1.0.0"  #(Apache 2.0 license)
   gem.add_runtime_dependency "rumbster"         # For faking smtp in email tests (Apache 2.0 license)
+  
+  #Development Deps
+  gem.add_development_dependency "coveralls"
 end

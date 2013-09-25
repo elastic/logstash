@@ -1,7 +1,12 @@
-language: java
+language: ruby
+rvm:
+  - jruby-19mode
+jdk:
+  - oraclejdk7
+  - openjdk7
 
 script:
-  - make jar-test flatjar-test
-
-before_install: 
-  - make jar flatjar
+  - JRUBY_OPTS=--debug COVERAGE=true GEM_HOME=./vendor/bundle/jruby/1.9 GEM_PATH= ./vendor/bundle/jruby/1.9/bin/rspec spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb 
+install: 
+  - ruby gembag.rb
+  - make vendor-geoip
