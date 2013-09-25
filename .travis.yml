@@ -8,5 +8,6 @@ jdk:
 script:
   - COVERAGE=true GEM_HOME=./vendor/bundle/jruby/1.9 GEM_PATH= rspec spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb
 
-before_install: 
+install: 
   - ruby gembag.rb
+  - make vendor-geoip
