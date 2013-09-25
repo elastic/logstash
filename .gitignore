@@ -20,3 +20,4 @@ data
 .DS_Store
 *.pyc
 etc/jira-output.conf
+coverage/*
