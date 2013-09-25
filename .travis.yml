@@ -6,8 +6,7 @@ jdk:
   - openjdk7
 
 script:
-  - COVERAGE=true GEM_HOME=./vendor/bundle/jruby/1.9 GEM_PATH= rspec spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb
-
+  - JRUBY_OPTS=--debug COVERAGE=true GEM_HOME=./vendor/bundle/jruby/1.9 GEM_PATH= ./vendor/bundle/jruby/1.9/bin/rspec spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb 
 install: 
   - ruby gembag.rb
   - make vendor-geoip
