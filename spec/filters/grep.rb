@@ -141,7 +141,7 @@ describe LogStash::Filters::Grep do
 
     sample("type" => "grepper", "str" => "test") do
       reject { subject }.nil?
-      insist { subject["new_field"]} == subject.type
+      insist { subject["new_field"]} == subject["type"]
     end
   end
 
@@ -180,7 +180,7 @@ describe LogStash::Filters::Grep do
 
     sample("tags" => ["tag"], "str" => "test") do
       reject { subject }.nil?
-      insist { subject.tags} == ["tag", "new_tag"]
+      insist { subject["tags"]} == ["tag", "new_tag"]
     end
   end
 
@@ -197,7 +197,7 @@ describe LogStash::Filters::Grep do
 
     sample("tags" => ["tag"], "str" => "test") do
       reject { subject }.nil?
-      insist { subject.tags} == ["tag", "new_tag"]
+      insist { subject["tags"]} == ["tag", "new_tag"]
     end
   end
 
@@ -214,7 +214,7 @@ describe LogStash::Filters::Grep do
 
     sample("tags" => ["tag"], "str" => "non-matching") do
       reject { subject }.nil?
-      insist { subject.tags} == ["tag"]
+      insist { subject["tags"]} == ["tag"]
     end
   end
 
@@ -230,7 +230,7 @@ describe LogStash::Filters::Grep do
 
     sample("tags" => ["tag"], "str" => "test") do
       reject { subject }.nil?
-      insist { subject.tags} == ["tag", subject["str"]]
+      insist { subject["tags"]} == ["tag", subject["str"]]
     end
   end
 

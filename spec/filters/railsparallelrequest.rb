@@ -8,11 +8,11 @@ describe LogStash::Filters::Railsparallelrequest do
     it "should not process same event twice" do
       filter = LogStash::Filters::Railsparallelrequest.new
       event = LogStash::Event.new({message: "hello world"})
-      event.tags=[]
+      event["tags"]=[]
       filter.filter event
-      insist { event.tags } == ["railsparallelrequest"]
+      insist { event["tags"] } == ["railsparallelrequest"]
       filter.filter event
-      insist { event.tags } == ["railsparallelrequest"]
+      insist { event["tags"] } == ["railsparallelrequest"]
     end
 
     it "should merge multiple events into single event based on unique UUID" do
@@ -106,7 +106,7 @@ describe LogStash::Filters::Railsparallelrequest do
 end
 def event data
   event = LogStash::Event.new(data)
-  event.tags=[]
+  event["tags"]=[]
   event
 end
 
