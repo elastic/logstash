@@ -72,7 +72,7 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
       hits = result["hits"]["hits"]
       break if hits.empty?
 
-      result["hits"]["hits"].each do |hit|
+      hits.each do |hit|
         event = hit["_source"]
 
         # Hack to make codecs work
@@ -83,6 +83,11 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
       end
 
       # Fetch until we get no hits
+      scroll_id = result["_scroll_id"]
+      scroll_params = {
+        "scroll_id" => scroll_id
+      }
+      scroll_url = "http://#{@host}:#{@port}/_search/scroll?#{encode(scroll_params)}"
 
       response = @agent.get!(scroll_url)
       json = ""
