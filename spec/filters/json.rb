@@ -51,7 +51,7 @@ describe LogStash::Filters::Json do
     CONFIG
 
     sample "invalid json" do
-      insist { subject.tags }.include?("_jsonparsefailure")
+      insist { subject["tags"] }.include?("_jsonparsefailure")
     end
   end
 end
