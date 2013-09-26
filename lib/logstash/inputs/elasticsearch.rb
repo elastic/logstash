@@ -36,15 +36,29 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
   # The query to use
   config :query, :validate => :string, :default => "*"
 
+  # Enable the scan search_type.
+  # This will disable sorting but increase speed and performance.
+  config :scan, :validate => :boolean, :default => true
+
+  # This allows you to set the number of items you get back per scroll
+  config :size, :validate => :number, :default => 1000
+
+  # this parameter controls the keep alive time of the scrolling request and initiates the scrolling process.
+  # The timeout applies per round trip (i.e. between the previous scan scroll request, to the next).
+  config :scroll, :validate => :string, :default => "1m"
+
   public
   def register
     require "ftw"
     @agent = FTW::Agent.new
     params = {
       "q" => @query,
-      "scroll" => "5m",
-      "size" => "1000",
+      "scroll" => @scroll,
+      "size" => "#{@size}",
     }
+
+    params['search_type'] = "scan" if @scan
+
     @url = "http://#{@host}:#{@port}/#{@index}/_search?#{encode(params)}"
   end # def register
 
@@ -57,22 +71,37 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
 
   public
   def run(output_queue)
+
+    # Execute the search request
     response = @agent.get!(@url)
     json = ""
     response.read_body { |c| json << c }
     result = JSON.parse(json)
     scroll_id = result["_scroll_id"]
 
-    scroll_params = {
-      "scroll_id" => scroll_id
-    }
-    scroll_url = "http://#{@host}:#{@port}/_search/scroll?#{encode(scroll_params)}"
+    # When using the search_type=scan we don't get an initial result set.
+    # So we do it here.
+    if @scan
+
+      scroll_params = {
+        "scroll_id" => scroll_id,
+        "scroll" => @scroll
+      }
+
+      scroll_url = "http://#{@host}:#{@port}/_search/scroll?#{encode(scroll_params)}"
+      response = @agent.get!(scroll_url)
+      json = ""
+      response.read_body { |c| json << c }
+      result = JSON.parse(json)
+
+    end
+
     while true
       break if result.nil?
       hits = result["hits"]["hits"]
       break if hits.empty?
 
-      result["hits"]["hits"].each do |hit|
+      hits.each do |hit|
         event = hit["_source"]
 
         # Hack to make codecs work
@@ -82,7 +111,15 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
         end
       end
 
-      # Fetch until we get no hits
+      # Get the scroll id from the previous result set and use it for getting the next data set
+      scroll_id = result["_scroll_id"]
+
+      # Fetch the next result set
+      scroll_params = {
+        "scroll_id" => scroll_id,
+        "scroll" => @scroll
+      }
+      scroll_url = "http://#{@host}:#{@port}/_search/scroll?#{encode(scroll_params)}"
 
       response = @agent.get!(scroll_url)
       json = ""
@@ -94,6 +131,7 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
         # TODO(sissel): raise an error instead of breaking
         break
       end
+
     end
   rescue LogStash::ShutdownSignal
     # Do nothing, let us quit.
