@@ -58,7 +58,7 @@ class LogStash::Filters::Sort < LogStash::Filters::Base
     end
 
     # if the event is sorted, a "sorted" tag will be marked, so for those unsorted event, cancel them first.
-    if event.tags.nil? || !event.tags.include?("sorted")
+    if event["tags"].nil? || !event.tags.include?("sorted")
       event.cancel
     else
       return
@@ -73,8 +73,8 @@ class LogStash::Filters::Sort < LogStash::Filters::Base
 
       if (@sortingDone)
         while sortedEvent = @sortingArray.pop
-          sortedEvent.tags = Array.new if sortedEvent.tags.nil?
-          sortedEvent.tags << "sorted"
+          sortedEvent["tags"] = Array.new if sortedEvent["tags"].nil?
+          sortedEvent["tags"] << "sorted"
           filter_matched(sortedEvent)
           yield sortedEvent
         end # while @sortingArray.pop
@@ -101,7 +101,7 @@ class LogStash::Filters::Sort < LogStash::Filters::Base
     if (@sortingDone)
       @mutex.synchronize{
         while sortedEvent = @sortingArray.pop
-          sortedEvent.tags << "sorted"
+          sortedEvent["tags"] << "sorted"
           events << sortedEvent
         end # while @sortingArray.pop
       }
