@@ -157,8 +157,8 @@ describe LogStash::Filters::Mutate do
     CONFIG
 
     sample "whatever" do
-      reject { subject.fields }.include?("nosuchfield")
-      reject { subject.fields }.include?("hello")
+      reject { subject }.include?("nosuchfield")
+      reject { subject }.include?("hello")
     end
   end
 
