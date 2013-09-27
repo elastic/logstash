@@ -19,7 +19,7 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   config :debug_format, :default => "ruby", :validate => ["ruby", "dots", "json"], :deprecated => true
 
   # The message to emit to stdout.
-  config :message, :validate => :string, :default => "%{+yyyy-MM-dd'T'HH:mm:ss.SSSZ} %{host}: %{message}"
+  config :message, :validate => :string, :deprecated => "You can use the 'line' codec instead. For example: output { stdout { codec => line { format => \"%{somefield} your message\" } } }"
 
   public
   def register
@@ -32,6 +32,8 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
         when "json"; @codec = LogStash::Codecs::JSON.new
         when "dots"; @codec = LogStash::Codecs::Dots.new
       end
+    elsif @message
+      @codec = LogStash::Codecs::Line.new("format" => @message)
     end
     @codec.on_event do |event|
       $stdout.write(event)
