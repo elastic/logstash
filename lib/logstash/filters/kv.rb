@@ -207,10 +207,14 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     end
     text.scan(@scan_re) do |key, v1, v2, v3|
       value = v1 || v2 || v3
-      key = @trimkey.nil? ? key : key.gsub(@trimkey_re, "")      
-      key = event.sprintf(@prefix) + key
+      key = @trimkey.nil? ? key : key.gsub(@trimkey_re, "")
+
+      # Bail out as per the values of @include_keys and @exclude_keys
       next if not @include_keys.empty? and not @include_keys.include?(key)
       next if @exclude_keys.include?(key)
+
+      key = event.sprintf(@prefix) + key
+
       value = @trim.nil? ? value : value.gsub(@trim_re, "")
       if kv_keys.has_key?(key)
         if kv_keys[key].is_a? Array
