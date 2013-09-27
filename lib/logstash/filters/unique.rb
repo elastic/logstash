@@ -19,7 +19,7 @@ class LogStash::Filters::Unique < LogStash::Filters::Base
     return unless filter?(event)
 
     @fields.each do |field|
-      return unless event[field].class == Array
+      continue unless event[field].class == Array
 
       event[field] = event[field].uniq
     end
