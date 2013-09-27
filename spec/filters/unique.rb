@@ -8,7 +8,7 @@ describe LogStash::Filters::Unique do
     config <<-CONFIG
     filter {
       unique {
-        fields => ["noisy_field"]
+        fields => ["noisy_field", "not_an_array"]
       }
     }
     CONFIG
