@@ -1,8 +1,7 @@
-language: ruby
-rvm:
-  - jruby-19mode
+language: java
 
-script: ruby bin/logstash test
+script:
+  - make jar-test flatjar-test
 
 before_install: 
-  - make vendor-elasticsearch
+  - make jar flatjar

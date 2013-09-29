@@ -187,7 +187,12 @@ class LogStash::Filters::KV < LogStash::Filters::Base
         # Default is to write to the root of the event.
         dest = event.to_hash
       else
-        dest = event[@target] ||= {}
+        if !event[@target].is_a?(Hash)
+          @logger.debug("Overwriting existing target field", :target => @target)
+          dest = event[@target] = {}
+        else
+          dest = event[@target]
+        end
       end
 
       dest.merge!(kv)
@@ -203,7 +208,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     text.scan(@scan_re) do |key, v1, v2, v3|
       value = v1 || v2 || v3
       key = @trimkey.nil? ? key : key.gsub(@trimkey_re, "")      
-      key = @prefix + key
+      key = event.sprintf(@prefix) + key
       next if not @include_keys.empty? and not @include_keys.include?(key)
       next if @exclude_keys.include?(key)
       value = @trim.nil? ? value : value.gsub(@trim_re, "")

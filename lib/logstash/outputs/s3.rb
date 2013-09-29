@@ -69,6 +69,7 @@ require "logstash/namespace"
 #      size_file => 2048                        (optional)
 #      time_file => 5                           (optional)
 #      format => "plain"                        (optional) 
+#      canned_acl => "private"                  (optional. Options are "private", "public_read", "public_read_write", "authenticated_read". Defaults to "private" )
 #    }
 # }
 
@@ -96,6 +97,9 @@ require "logstash/namespace"
 # format => "plain"
 # Means the format of events you want to store in the files
 
+# canned_acl => "private"
+# The S3 canned ACL to use when putting the file. Defaults to "private".
+
 # LET'S ROCK AND ROLL ON THE CODE!
 
 class LogStash::Outputs::S3 < LogStash::Outputs::Base
@@ -115,10 +119,10 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  config :bucket, :validate => :string
 
  # Aws endpoint_region
- config :endpoint_region, :validate => ["us_east_1", "us-west-1", "us-west-2",
+ config :endpoint_region, :validate => ["us-east-1", "us-west-1", "us-west-2",
                                         "eu-west-1", "ap-southeast-1", "ap-southeast-2",
-                                        "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us_east_1"
- 
+                                        "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
+
  # Set the size of file in KB, this means that files on bucket when have dimension > file_size, they are stored in two or more file. 
  # If you have tags then it will generate a specific size file for every tags
  ##NOTE: define size of file is the better thing, because generate a local temporary file on disk and then put it in bucket. 
@@ -139,14 +143,21 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  ## for example if you have single Instance. 
  config :restore, :validate => :boolean, :default => false
 
+ # Aws canned ACL
+ config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
+        :default => "private"
+
  # Method to set up the aws configuration and establish connection
  def aws_s3_config
-  
-  @logger.debug "S3: waiting for establishing connection..."
+
+  @region_endpoint == 'us-east-1' ? @region_endpoint = 's3.amazonaws.com' : @region_endpoint = 's3-'+@region_endpoint+'.amazonaws.com'
+
+  @logger.info("Registering s3 output", :bucket => @bucket, :region_endpoint => @region_endpoint)
+
   AWS.config(
     :access_key_id => @access_key_id,
     :secret_access_key => @secret_access_key,
-    :s3_endpoint => 's3-'+@endpoint_region+'.amazonaws.com'
+    :s3_endpoint => @endpoint_region
   )
   @s3 = AWS::S3.new 
 
@@ -181,9 +192,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   # prepare for write the file
   object = bucket.objects[file_basename]
-  object.write(:file => file_data, :acl => :public_read)
+  object.write(:file => file_data, :acl => @canned_acl)
  
-  @logger.debug "S3: has written "+file_basename+" in bucket "+@bucket
+  @logger.debug "S3: has written "+file_basename+" in bucket "+@bucket + " with canned ACL \"" + @canned_acl + "\""
 
  end
   

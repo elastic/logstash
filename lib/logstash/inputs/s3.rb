@@ -28,7 +28,15 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   config :bucket, :validate => :string, :required => true
 
   # The AWS region for your bucket.
-  config :region, :validate => :string, :default => 'us-east-1'
+  config :region, :validate => ["us-east-1", "us-west-1", "us-west-2",
+                                "eu-west-1", "ap-southeast-1", "ap-southeast-2",
+                                "ap-northeast-1", "sa-east-1", "us-gov-west-1"],
+                                :deprecated => "'region' has been deprecated in favor of 'region_endpoint'"
+
+  # The AWS region for your bucket.
+  config :region_endpoint, :validate => ["us-east-1", "us-west-1", "us-west-2",
+                                "eu-west-1", "ap-southeast-1", "ap-southeast-2",
+                                "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
 
   # If specified, the prefix the filenames in the bucket must match (not a regexp)
   config :prefix, :validate => :string, :default => nil
@@ -53,7 +61,13 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
   public
   def register
-    @logger.info("Registering s3 input", :bucket => @bucket)
+    require "digest/md5"
+
+    @region_endpoint = @region if !@region.empty?
+
+    @region_endpoint == 'us-east-1' ? @region_endpoint = 's3.amazonaws.com' : @region_endpoint = 's3-'+@region_endpoint+'.amazonaws.com'
+
+    @logger.info("Registering s3 input", :bucket => @bucket, :region_endpoint => @region_endpoint)
 
     if @credentials.nil?
       @access_key_id = ENV['AWS_ACCESS_KEY_ID']
@@ -100,8 +114,9 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     s3 = AWS::S3.new(
       :access_key_id => @access_key_id,
       :secret_access_key => @secret_access_key,
-      :region => @region
+      :region => @region_endpoint
     )
+
     @s3bucket = s3.buckets[@bucket]
 
     unless @backup_to_bucket.nil?
@@ -263,4 +278,3 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   end # def sincedb_write
 
 end # class LogStash::Inputs::S3
-

@@ -220,7 +220,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     if !event.cancelled?
       event["message"] = event["message"].join("\n") if event["message"].is_a?(Array)
       event["@timestamp"] = event["@timestamp"].first if event["@timestamp"].is_a?(Array)
-      filter_matched(event)
+      filter_matched(event) if match
     end
   end # def filter
 

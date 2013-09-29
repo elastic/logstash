@@ -37,6 +37,8 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
     begin
       # udp server
       udp_listener(output_queue)
+    rescue LogStash::ShutdownSignal
+      # do nothing, shutdown was requested.
     rescue => e
       @logger.warn("UDP listener died", :exception => e, :backtrace => e.backtrace)
       sleep(5)
@@ -63,13 +65,16 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
         output_queue << event
       end
     end
-  rescue LogStash::ShutdownSignal
-    # shutdown
   ensure
     if @udp
       @udp.close_read rescue nil
       @udp.close_write rescue nil
     end
   end # def udp_listener
+
+  public
+  def teardown
+    @udp.close if @udp && !@udp.closed?
+  end
 
 end # class LogStash::Inputs::Udp

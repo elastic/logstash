@@ -227,6 +227,12 @@ class LogStash::Pipeline
         thread.wakeup # in case it's in blocked IO or sleeping
       rescue ThreadError
       end
+
+      # Sometimes an input is stuck in a blocking I/O
+      # so we need to tell it to teardown directly
+      @inputs.each do |input|
+        input.teardown
+      end
     end
 
     # No need to send the ShutdownSignal to the filters/outputs nor to wait for

@@ -2,6 +2,10 @@
 
 
 VERSION="$(awk -F\" '/LOGSTASH_VERSION/ {print $2}' $(dirname $0)/../lib/logstash/version.rb)"
+if ! git show-ref --tags | grep -q "$(git rev-parse HEAD)"; then
+	# HEAD is not tagged, add the date, time and commit hash to the revision
+	REVISION="+$(date +%Y%m%d%H%M)~$(git rev-parse --short HEAD)"
+fi
 
 if [ "$#" -ne 2 ] ; then
   echo "Usage: $0 <os> <release>"
@@ -95,8 +99,10 @@ case $os in
     ;;
   ubuntu|debian) 
     fpm -s dir -t deb -n logstash -v "$VERSION" \
-      -a all --iteration 1-$os \
-      -d "java6-runtime" \
+      -a all --iteration "${os}1${REVISION}" \
+      --url "http://logstash.net" \
+      --description "An extensible logging pipeline" \
+      -d "default-jre" \
       --deb-user root --deb-group root \
       --before-install $os/before-install.sh \
       --before-remove $os/before-remove.sh \

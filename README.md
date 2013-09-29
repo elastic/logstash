@@ -89,6 +89,11 @@ If you want to build the jar yourself, run:
 
     make flatjar
 
+To update a flat jar previously built with 'make flatjar', run:
+
+    make update-flatjar
+
+
 You can build rpms and debs, if you need those. Building rpms requires you have [fpm](github.com/jordansissel/fpm), then do this:
 
     make package
@@ -110,22 +115,5 @@ see that here.
 
 It is more important to me that you are able to contribute.
 
-That said, some basic guidelines, which you are free to ignore :)
-
-* Have a problem you want logstash to solve for you? You can email the
-  [mailing list](http://groups.google.com/group/logstash-users), or
-  join the IRC channel #logstash on irc.freenode.org, or email me personally
-  (jls@semicomplete.com)
-* Have an idea or a feature request? File a ticket on
-  [jira](https://logstash.jira.com/secure/Dashboard.jspa), or email the
-  [mailing list](http://groups.google.com/group/logstash-users), or email
-  me personally (jls@semicomplete.com) if that is more comfortable.
-* If you think you found a bug, it probably is a bug. File it on
-  [jira](https://logstash.jira.com/secure/Dashboard.jspa) or send details to
-  the [mailing list](http://groups.google.com/group/logstash-users).
-* If you want to send patches, best way is to fork this repo and send me a pull
-  request. If you don't know git, I also accept diff(1) formatted patches -
-  whatever is most comfortable for you. 
-* Want to lurk about and see what others are doing? IRC (#logstash on
-  irc.freenode.org) is a good place for this as is the 
-  [mailing list](http://groups.google.com/group/logstash-users)
+For more information about contributing, see the
+[CONTRIBUTING](CONTRIBUTING.md) file.
