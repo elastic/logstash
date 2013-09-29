@@ -73,7 +73,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       header["index"]["_id"] = event.sprintf(@document_id) if !@document_id.nil?
 
       [ header, event ]
-    end.flatten.collect(&:to_json).map { |e| "#{e}\n" }
+    end.flatten.collect(&:to_json).map { |e| "#{e}\n" }.join
     post(body)
   end # def receive_bulk
 
