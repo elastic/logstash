@@ -324,8 +324,9 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
         end
       end
       return success
-    elsif input.is_a?(String)
-      grok, match = grok.match(input)
+    #elsif input.is_a?(String)
+    else
+      grok, match = grok.match(input.to_s)
       return false if !match
 
       match.each_capture do |capture, value|
@@ -380,10 +381,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       code << "  event[field] = value"
     else
       code << "  v = event[field]"
-      #code << "  p :field => field, :v => v, :value => value"
       code << "  if v.nil?"
       code << "    event[field] = value"
-      #code << "    p :initial_set => event.to_hash"
       code << "  elsif v.is_a?(Array)"
       code << "    event[field] << value"
       code << "  elsif v.is_a?(String)"
