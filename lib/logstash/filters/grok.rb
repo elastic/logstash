@@ -137,7 +137,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   #
   # If you want to match other fields than message, use the 'match' setting.
   # Multiple patterns is fine.
-  config :pattern, :validate => :array, :deprecated => true
+  config :pattern, :validate => :array, :deprecated => "You should use this instead: match => { \"message\" => \"your pattern here\" }"
 
   # A hash of matches of field => value
   #
@@ -184,7 +184,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   # If true, make single-value fields simply that value, not an array
   # containing that one value.
-  config :singles, :validate => :boolean, :default => true
+  config :singles, :validate => :boolean, :default => true, :deprecated => "This behavior is the default now, you don't need to set it."
 
   # Append values to the 'tags' field when there has been no
   # successful match
@@ -224,6 +224,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     super(params)
     @match["message"] ||= []
     @match["message"] += @pattern if @pattern # the config 'pattern' value (array)
+    # a cache of capture name handler methods.
+    @handlers = {}
   end
 
   public
@@ -279,104 +281,21 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   def filter(event)
     return unless filter?(event)
 
-    # parse it with grok
     matched = false
+    done = false
 
     @logger.debug? and @logger.debug("Running grok filter", :event => event);
-    done = false
-    @patterns.each do |field, pile|
-      break if done
-      if !event[field]
-        @logger.debug? and @logger.debug("Skipping match object, field not present", 
-                                         :field => field, :event => event)
-        next
-      end
-
-      @logger.debug? and @logger.debug("Trying pattern", :pile => pile, :field => field)
-      (event[field].is_a?(Array) ? event[field] : [event[field]]).each do |fieldvalue|
-        begin
-          # Coerce all field values to string. This turns arrays, hashes, numbers, etc
-          # into strings for grokking. Seems like the best 'do what I mean' thing to do.
-          grok, match = pile.match(fieldvalue.to_s)
-        rescue Exception => e
-          fieldvalue_bytes = []
-          fieldvalue.to_s.bytes.each { |b| fieldvalue_bytes << b }
-          @logger.warn("Grok regexp threw exception", :exception => e.message,
-                       :field => field, :grok_pile => pile,
-                       :fieldvalue_bytes => fieldvalue_bytes)
-        end
-        next unless match
+    @patterns.each do |field, grok|
+      if match(grok, field, event)
         matched = true
-        done = true if @break_on_match
-
-        match.each_capture do |key, value|
-          type_coerce = nil
-          is_named = false
-          if key.include?(":")
-            name, key, type_coerce = key.split(":")
-            is_named = true
-          end
-
-          # http://code.google.com/p/logstash/issues/detail?id=45
-          # Permit typing of captures by giving an additional colon and a type,
-          # like: %{FOO:name:int} for int coercion.
-          if type_coerce
-            @logger.info? and @logger.info("Match type coerce: #{type_coerce}")
-            @logger.info? and @logger.info("Patt: #{grok.pattern}")
-          end
-
-          case type_coerce
-            when "int"
-              value = value.to_i
-            when "float"
-              value = value.to_f
-          end
-
-          # Special casing to skip captures that represent the entire log message.
-          if fieldvalue == value and key.nil?
-            # Skip patterns that match the entire message
-            @logger.debug? and @logger.debug("Skipping capture since it matches the whole line.", :field => key)
-            next
-          end
-
-          if @named_captures_only && !is_named
-            @logger.debug? and @logger.debug("Skipping capture since it is not a named " "capture and named_captures_only is true.", :field => key)
-            next
-          end
-
-          if @keep_empty_captures && event[key].nil?
-            event[key] = []
-          end
-
-          if value
-            if event.include?(key) && @overwrite.include?(key)
-              event[key] = value
-            else
-              if event[key].is_a?(String)
-                event[key] = [event[key]]
-              end
-
-              # If value is not nil, or responds to empty and is not empty, add the
-              # value to the event.
-              if !value.nil? && (!value.empty? rescue true)
-                # Store fields as an array unless otherwise instructed with the
-                # 'singles' config option
-                if !event.include?(key) and @singles
-                  event[key] = value
-                else
-                  event[key] ||= []
-                  event[key] << value
-                end
-              end
-            end
-          end
-        end # match.each_capture
-
-        filter_matched(event)
-      end # event[field]
+        break if @break_on_match
+      end
+      #break if done
     end # @patterns.each
 
-    if !matched
+    if matched
+      filter_matched(event)
+    else
       # Tag this event if we can't parse it. We can use this later to
       # reparse+reindex logs if we improve the patterns given.
       @tag_on_failure.each do |tag|
@@ -387,6 +306,96 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
     @logger.debug? and @logger.debug("Event now: ", :event => event)
   end # def filter
+
+  private
+  def match(grok, field, event)
+    input = event[field]
+    if input.is_a?(Array)
+      success = true
+      input.each do |input|
+        grok, match = grok.match(input)
+        if match
+          match.each_capture do |capture, value|
+            handle(capture, value, event)
+          end
+        else
+          success = false
+        end
+      end
+      return success
+    #elsif input.is_a?(String)
+    else
+      # Convert anything else to string (number, hash, etc)
+      grok, match = grok.match(input.to_s)
+      return false if !match
+
+      match.each_capture do |capture, value|
+        handle(capture, value, event)
+      end
+      return true
+    end
+  rescue StandardError => e
+    @logger.warn("Grok regexp threw exception", :exception => e.message)
+  end
+
+  private
+  def handle(capture, value, event)
+    handler = @handlers[capture] ||= compile_capture_handler(capture)
+    return handler.call(value, event)
+  end
+
+  private
+  def compile_capture_handler(capture)
+    # SYNTAX:SEMANTIC:TYPE
+    syntax, semantic, coerce = capture.split(":")
+
+    # each_capture do |fullname, value|
+    #   capture_handlers[fullname].call(value, event) 
+    # end
+
+    code = []
+    code << "# for capture #{capture}"
+    code << "lambda do |value, event|"
+    #code << "  p :value => value, :event => event"
+    if semantic.nil?
+      if @named_captures_only 
+        # Abort early if we are only keeping named (semantic) captures
+        # and this capture has no semantic name.
+        code << "  return"
+      else
+        field = syntax
+      end
+    else
+      field = semantic
+    end
+    code << "  return if value.nil? || value.empty?" unless @keep_empty_captures
+    if coerce
+      case coerce
+        when "int"; code << "  value = value.to_i"
+        when "float"; code << "  value = value.to_f"
+      end
+    end
+
+    code << "  # field: #{field}"
+    if @overwrite.include?(field)
+      code << "  event[field] = value"
+    else
+      code << "  v = event[field]"
+      code << "  if v.nil?"
+      code << "    event[field] = value"
+      code << "  elsif v.is_a?(Array)"
+      code << "    event[field] << value"
+      code << "  elsif v.is_a?(String)"
+      # Promote to array since we aren't overwriting.
+      code << "    event[field] = [v, value]"
+      code << "  end"
+    end
+    code << "  return"
+    code << "end"
+
+    #puts code
+    return eval(code.join("\n"), binding, "<grok capture #{capture}>")
+  end # def compile_capture_handler
 
   private
   def add_patterns_from_files(paths, pile)
