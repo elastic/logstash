@@ -1,63 +1,90 @@
-# do not repack jar files
-%define __os_install_post %{nil}
-%define __jar_repack %{nil}
-# do not build debug packages
-%define debug_package %{nil}
-%define base_install_dir /usr/share/%{name}
+%define debug_package %{nil}_bindir}
+%define base_install_dir %{_javadir}{%name}
+
+%global bindir %{_bindir}
+%global confdir %{_sysconfdir}/%{name}
+%global jarpath %{_javadir}
+%global lockfile %{_localstatedir}/lock/subsys/%{name}
+%global logdir %{_localstatedir}/log/%{name}
+%global piddir %{_localstatedir}/run/%{name}
+%global sysconfigdir %{_sysconfdir}/sysconfig
 
 Name:           logstash
-Version:        1.1.9
-Release:        2%{?dist}
-Summary:        Logstash is a tool for managing events and logs.
+Version:        1.2.1
+Release:        1%{?dist}
+Summary:        A tool for managing events and logs
 
 Group:          System Environment/Daemons
-License:        Apache License, Version 2.0
+License:        ASL 2.0
 URL:            http://logstash.net
-Source0:        https://logstash.objects.dreamhost.com/release/%{name}-%{version}-monolithic.jar
-Source1:        logstash.init
+Source0:        https://logstash.objects.dreamhost.com/release/%{name}-%{version}-flatjar.jar
+Source1:        logstash.wrapper
 Source2:        logstash.logrotate
-Source3:        logstash.sysconfig
+Source3:        logstash.init
+Source4:        logstash.sysconfig
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildArch:      noarch
+BuildArch:      x86_64 
 
-Requires:       jre >= 1.6.0
+#Requires:       jre7
+Requires:       jpackage-utils
 
 Requires(post): chkconfig initscripts
 Requires(pre):  chkconfig initscripts
 Requires(pre):  shadow-utils
 
 %description
-Logstash is a tool for managing events and logs
+A tool for managing events and logs.
 
 %prep
-true
-
 %build
-true
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%{__mkdir} -p %{buildroot}%{base_install_dir}
-%{__install} -m 755 %{SOURCE0} %{buildroot}%{base_install_dir}/logstash.jar
+# JAR file
+%{__mkdir} -p %{buildroot}%{_javadir}
+%{__install} -p -m 644 %{SOURCE0} %{buildroot}%{jarpath}/%{name}.jar
 
-# plugins & patterns
-%{__mkdir} -p %{buildroot}%{base_install_dir}/plugins
-%{__mkdir} -p %{buildroot}%{_sysconfdir}/%{name}/patterns
+# Config
+%{__mkdir} -p %{buildroot}%{confdir}
 
-# logs
-%{__mkdir} -p %{buildroot}%{_localstatedir}/log/%{name}
-%{__install} -D -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/logrotate.d/logstash
+# Wrapper script
+%{__mkdir} -p %{buildroot}%{_bindir}
+%{__install} -m 755 %{SOURCE1} %{buildroot}%{bindir}/%{name}
+
+%{__sed} -i \
+   -e "s|@@@NAME@@@|%{name}|g" \
+   -e "s|@@@JARPATH@@@|%{jarpath}|g" \
+   %{buildroot}%{bindir}/%{name}
+
+# Logs
+%{__mkdir} -p %{buildroot}%{logdir}
+%{__install} -D -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
+
+# Misc
+%{__mkdir} -p %{buildroot}%{piddir}
 
 # sysconfig and init
-%{__mkdir} -p %{buildroot}%{_sysconfdir}/rc.d/init.d
+%{__mkdir} -p %{buildroot}%{_initddir}
 %{__mkdir} -p %{buildroot}%{_sysconfdir}/sysconfig
-%{__install} -m 755 %{SOURCE1} %{buildroot}%{_sysconfdir}/rc.d/init.d/logstash
-%{__install} -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/sysconfig/logstash
+%{__install} -m 755 %{SOURCE3} %{buildroot}%{_initddir}/%{name}
+%{__install} -m 644 %{SOURCE4} %{buildroot}%{sysconfigdir}/%{name}
 
-%{__mkdir} -p %{buildroot}%{_localstatedir}/run/logstash
-%{__mkdir} -p %{buildroot}%{_localstatedir}/lock/subsys/logstash
-%{__mkdir} -p %{buildroot}%{base_install_dir}/tmp
+%{__sed} -i \
+   -e "s|@@@NAME@@@|%{name}|g" \
+   -e "s|@@@DAEMON@@@|%{bindir}|g" \
+   -e "s|@@@CONFDIR@@@|%{confdir}|g" \
+   -e "s|@@@LOCKFILE@@@|%{lockfile}|g" \
+   -e "s|@@@LOGDIR@@@|%{logdir}|g" \
+   -e "s|@@@PIDDIR@@@|%{piddir}|g" \
+   %{buildroot}%{_initddir}/%{name}
+
+%{__sed} -i \
+   -e "s|@@@NAME@@@|%{name}|g" \
+   -e "s|@@@CONFDIR@@@|%{confdir}|g" \
+   -e "s|@@@LOGDIR@@@|%{logdir}|g" \
+   -e "s|@@@PLUGINDIR@@@|%{_datadir}|g" \
+   %{buildroot}%{sysconfigdir}/%{name}
 
 %pre
 # create logstash group
@@ -67,8 +94,8 @@ fi
 
 # create logstash user
 if ! getent passwd logstash >/dev/null; then
-        useradd -r -g logstash -d %{base_install_dir} \
-            -s /sbin/nologin -c "Logstash" logstash
+        useradd -r -g logstash -d %{_javadir}/%{name} \
+            -s /sbin/nologin -c "You know, for search" logstash
 fi
 
 %post
@@ -85,23 +112,49 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%dir %{base_install_dir}
-%dir %{base_install_dir}/plugins
-%dir %{_sysconfdir}/%{name}/patterns
+# JAR file
+%{_javadir}/%{name}.jar
 
-%{_sysconfdir}/rc.d/init.d/logstash
-%{_sysconfdir}/logrotate.d/logstash
+# Config
+%config(noreplace) %{confdir}/
 
-%{base_install_dir}/logstash.jar
+# Wrapper script
+%{bindir}/*
 
-%config(noreplace) %{_sysconfdir}/sysconfig/logstash
 
-%defattr(-,logstash,logstash,-)
-%{_localstatedir}/run/logstash
-%{base_install_dir}/tmp
-%dir %{_localstatedir}/log/logstash
+# Logrotate
+%config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
+
+# Sysconfig and init
+%{_initddir}/%{name}
+%config(noreplace) %{sysconfigdir}/*
+
+%defattr(-,%{name},%{name},-)
+%dir %{logdir}/
+%dir %{piddir}/
 
 %changelog
+* Mon Sep 16 2013 sjir@basefarm.se 1.2.1
+- Updated version to the new 1.2.1
+- Removed everything related to plugins as it no longer works.
+
+* Wed Sep 04 2013 sjir@basefarm.se 1.2.0
+- Updated version to the new 1.2.0.
+- Fixed a problem with the init.d script not working correctly.
+
+* Fri Jun 14 2013 sjir@basefarm.se 1.1.13-1
+- Updated version to the new 1.1.13-1 and fixed some minor issues with directory structure.
+
+* Fri May 6 2013 sjir@basefarm.se 1.1.10-3
+- Changed from logstash flatjar to the monolith as flatjar is not working correctly yet.
+
+* Fri Apr 19 2013 sjir@basefarm.se 1.1.10-2
+- Fixed a bug
+
+* Fri Apr 19 2013 sjir@basefarm.se 1.1.10-1
+- Added fixes to support RHEL6
+- Update logstash version to 1.1.10
+
 * Sun Mar 17 2013 Richard Pijnenburg <richard@ispavailability.com> - 1.1.9-2
 - Update init script
 - Create patterns dir in correct place
