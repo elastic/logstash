@@ -22,10 +22,11 @@ Source1:        logstash.wrapper
 Source2:        logstash.logrotate
 Source3:        logstash.init
 Source4:        logstash.sysconfig
+Source5:        logstash.conf
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildArch:      x86_64 
+BuildArch:      x86_64 i386 i686 
 
-Requires:       jre7
+Requires:       java
 Requires:       jpackage-utils
 
 Requires(post): chkconfig initscripts
@@ -47,6 +48,7 @@ rm -rf $RPM_BUILD_ROOT
 
 # Config
 %{__mkdir} -p %{buildroot}%{confdir}
+%{__install} -m 644 %{SOURCE5} %{buildroot}%{confdir}/%{name}.conf
 
 # Wrapper script
 %{__mkdir} -p %{buildroot}%{_bindir}
@@ -134,6 +136,11 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{piddir}/
 
 %changelog
+* Fri Sep 27 2013 sbagmeijer@ulyaoth.asia 1.2.1-1
+- Building for Fedora 18, 19 and 20-alpha.
+- Added Source5 for logstash.conf
+- Fixed the BuildArch so it can be build for i386
+
 * Mon Sep 16 2013 sjir@basefarm.se 1.2.1
 - Updated version to the new 1.2.1
 - Removed everything related to plugins as it no longer works.
