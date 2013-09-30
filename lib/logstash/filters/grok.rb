@@ -313,7 +313,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     if input.is_a?(Array)
       success = true
       input.each do |input|
-        #p :checking => input
         grok, match = grok.match(input)
         if match
           match.each_capture do |capture, value|
@@ -326,6 +325,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       return success
     #elsif input.is_a?(String)
     else
+      # Convert anything else to string (number, hash, etc)
       grok, match = grok.match(input.to_s)
       return false if !match
 
@@ -368,7 +368,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     else
       field = semantic
     end
-    code << "  return if value.nil? || value.empty?"
+    code << "  return if value.nil? || value.empty?" unless @keep_empty_captures
     if coerce
       case coerce
         when "int"; code << "  value = value.to_i"
