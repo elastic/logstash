@@ -30,6 +30,12 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # The port for ElasticSearch HTTP interface to use.
   config :port, :validate => :number, :default => 9200
 
+  # The HTTP Basic Auth username used to access your elasticsearch server.
+  config :username, :validate => :string, :default => nil
+
+  # The HTTP Basic Auth password used to access your elasticsearch server.
+  config :password, :validate => :string, :default => nil
+
   # Set the number of events to queue up before writing to elasticsearch.
   config :flush_size, :validate => :number, :default => 100
 
@@ -79,7 +85,9 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   def post(body)
     begin
-      response = @agent.post!("http://#{@host}:#{@port}/_bulk", :body => body)
+      auth = @username && @password ? "#{@username}:#{@password}@" : ""
+      url = "http://#{auth}#{@host}:#{@port}/_bulk"
+      response = @agent.post!(url, :body => body)
     rescue EOFError
       @logger.warn("EOF while writing request or reading response header from elasticsearch",
                    :host => @host, :port => @port)
