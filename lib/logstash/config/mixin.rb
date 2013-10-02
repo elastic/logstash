@@ -29,6 +29,7 @@ require "i18n"
 #
 module LogStash::Config::Mixin
   attr_accessor :config
+  attr_accessor :original_params
 
   CONFIGSORT = {
     Symbol => 0,
@@ -45,6 +46,11 @@ module LogStash::Config::Mixin
   def config_init(params)
     # Validation will modify the values inside params if necessary.
     # For example: converting a string to a number, etc.
+    
+    # Keep a copy of the original config params so that we can later
+    # differentiate between explicit configuration and implicit (default)
+    # configuration.
+    @original_params = params.clone
     
     # store the plugin type, turns LogStash::Inputs::Base into 'input'
     @plugin_type = self.class.ancestors.find { |a| a.name =~ /::Base$/ }.config_name

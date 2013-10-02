@@ -43,6 +43,6 @@ module LogStash::Codecs; class Base < LogStash::Plugin
 
   public
   def clone
-    return self.class.new(@params)
+    return self.class.new(params)
   end
 end; end # class LogStash::Codecs::Base
