@@ -25,7 +25,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   config :index_type, :validate => :string
 
   # The hostname or ip address to reach your elasticsearch server.
-  config :host, :validate => :string
+  config :host, :validate => :string, :required => true
 
   # The port for ElasticSearch HTTP interface to use.
   config :port, :validate => :number, :default => 9200
