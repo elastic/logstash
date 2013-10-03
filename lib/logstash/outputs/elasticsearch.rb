@@ -164,8 +164,10 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       end
     end
 
-    request.on(:success) { }
-    request.execute
+    request.execute!
+    # TODO(sissel): Handle errors. Since bulk requests could mostly succeed
+    # (aka partially fail), we need to figure out what documents need to be
+    # retried.
   end # def flush
 
 end # class LogStash::Outputs::Elasticsearch
