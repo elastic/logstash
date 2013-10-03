@@ -35,6 +35,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # The index to write events to. This can be dynamic using the %{foo} syntax.
   # The default value will partition your indices by day so you can more easily
   # delete old data or only search specific date ranges.
+  # Indexes may not contain uppercase characters.
   config :index, :validate => :string, :default => "logstash-%{+YYYY.MM.dd}"
 
   # The index type to write events to. Generally you should try to write only
