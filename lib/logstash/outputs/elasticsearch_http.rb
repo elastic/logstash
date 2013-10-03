@@ -60,6 +60,9 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   end # def receive
 
   def flush(events, teardown=false)
+    # Avoid creating a new string for newline every time
+    newline = "\n".freeze
+
     body = events.collect do |event, index, type|
       index = event.sprintf(@index)
 
@@ -72,8 +75,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       header = { "index" => { "_index" => index, "_type" => type } }
       header["index"]["_id"] = event.sprintf(@document_id) if !@document_id.nil?
 
-      [ header, event ]
-    end.flatten.collect(&:to_json).map { |e| "#{e}\n" }
+      [ header.to_json, newline, event.to_json, newline ]
+    end.flatten
     post(body)
   end # def receive_bulk
 
