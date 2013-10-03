@@ -5,6 +5,7 @@ require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/errors"
+require "stud/interval" # gem stud
 
 class LogStash::Pipeline
   def initialize(configstr)
@@ -133,6 +134,9 @@ class LogStash::Pipeline
     @filter_threads = @settings["filter-workers"].times.collect do
       Thread.new { filterworker }
     end
+
+    # Set up the periodic flusher thread.
+    @flusher_thread = Thread.new { Stud.interval(5) { filter_flusher } }
   end
 
   def start_outputs
@@ -252,4 +256,29 @@ class LogStash::Pipeline
   def output(event)
     @output_func.call(event)
   end
+
+  def filter_flusher
+    events = []
+    @filters.each do |filter|
+
+      # Filter any events generated so far in this flush.
+      events.each do |event|
+        # TODO(sissel): watchdog on flush filtration?
+        unless event.cancelled?
+          filter.filter(event)
+        end
+      end
+
+      # TODO(sissel): watchdog on flushes?
+      if filter.respond_to?(:flush)
+        flushed = filter.flush
+        events += flushed if !flushed.nil? && flushed.any?
+      end
+    end
+
+    events.each do |event|
+      @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
+      @filter_to_output.push(event) unless event.cancelled?
+    end
+  end # def filter_flusher
 end # class Pipeline
