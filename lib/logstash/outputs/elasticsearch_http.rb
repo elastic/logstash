@@ -77,7 +77,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
       [ header.to_json, newline, event.to_json, newline ]
     end.flatten
-    post(body)
+    post(body.join(""))
   end # def receive_bulk
 
   def post(body)
