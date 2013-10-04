@@ -222,6 +222,8 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
       event["@timestamp"] = event["@timestamp"].first if event["@timestamp"].is_a?(Array)
       filter_matched(event) if match
     end
+  rescue StandardError => e
+    @logger.warn("Multiline regexp threw exception", :exception => e.message)
   end # def filter
 
   # Flush any pending messages. This is generally used for unit testing only.
