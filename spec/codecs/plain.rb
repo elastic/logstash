@@ -1,12 +1,19 @@
 require "logstash/codecs/plain"
 require "logstash/event"
 require "insist"
+require "uri"
 
 describe LogStash::Codecs::Plain do
   context "#decode" do
     it "should return a valid event" do
       subject.decode("Testing decoding.") do |event|
         insist { event.is_a? LogStash::Event }
+      end
+    end
+    
+    it "should handle invalid UTF8 messages" do
+      subject.decode(URI.decode("hello%7F%FF%FF%FF")) do |event|
+        insist { event["message"] } == "hello\u007F"
       end
     end
   end

@@ -32,6 +32,9 @@ class LogStash::Codecs::Plain < LogStash::Codecs::Base
       # into UTF-8 so we can use it with JSON, etc.
       data = data.encode("UTF-8", :invalid => :replace, :undef => :replace)
     end
+    
+    data = data.chars.select{|i| i.valid_encoding?}.join
+    
     yield LogStash::Event.new({"message" => data})
   end # def decode
 
