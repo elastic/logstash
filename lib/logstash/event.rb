@@ -193,7 +193,7 @@ class LogStash::Event
   #
   # For example, if the event has type == "foo" and source == "bar"
   # then this string:
-  #   "type is %{type} and source is %{host}"
+  #   "type is %{type} and source is %{source}"
   # will return
   #   "type is foo and source is bar"
   #

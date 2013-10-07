@@ -107,6 +107,23 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
     end
   end
 
+  private
+  def formatted_timestamp
+    timestamp = event["@timestamp"]
+
+    if timestamp.is_a?(Time)
+      date_time = timestamp.to_datetime
+    else
+      date_time = Time.parse(timestamp).to_datetime
+    end
+
+    if rfc3164?
+      date_time.strftime("%b %e %H:%M:%S")
+    else
+      date_time.rfc3339
+    end
+  end
+
   public
   def receive(event)
     return unless output?(event)
@@ -114,19 +131,17 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
     appname = event.sprintf(@appname)
     procid = event.sprintf(@procid)
     sourcehost = event.sprintf(@sourcehost)
+    timestamp = formatted_timestamp
 
     facility_code = FACILITY_LABELS.index(@facility)
-
     severity_code = SEVERITY_LABELS.index(@severity)
 
     priority = (facility_code * 8) + severity_code
 
     if rfc3164?
-       timestamp = DateTime.iso8601(event.sprintf(@timestamp)).strftime("%b %e %H:%M:%S")
        syslog_msg = "<"+priority.to_s()+">"+timestamp+" "+sourcehost+" "+appname+"["+procid+"]: "+event["message"]
     else
        msgid = event.sprintf(@msgid)
-       timestamp = DateTime.iso8601(event.sprintf(@timestamp)).rfc3339()
        syslog_msg = "<"+priority.to_s()+">1 "+timestamp+" "+sourcehost+" "+appname+" "+procid+" "+msgid+" - "+event["message"]
     end
 
