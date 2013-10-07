@@ -40,12 +40,12 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # The amount of time since last flush before a flush is forced.
   config :idle_flush_time, :validate => :number, :default => 1
 
-  # Make replicated writes asynchronous. If true, this will cause
+  # Set the type of elasticsearch replication to use. If async
   # the index request to elasticsearch to return after the primary
-  # shards have been written. If false (default), index requests
+  # shards have been written. If sync (default), index requests
   # will wait until the primary and the replica shards have been
   # written.
-  config :asynchronous_replication, :validate => :boolean, :default => false
+  config :replication, :validate => ['async', 'sync'], :default => 'sync'
 
   public
   def register
@@ -53,11 +53,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     @agent = FTW::Agent.new
     @queue = []
 
-    if @asynchronous_replication
-      @bulk_url = "http://#{@host}:#{@port}/_bulk?replication=async"
-    else
-      @bulk_url = "http://#{@host}:#{@port}/_bulk"
-    end
+    @bulk_url = "http://#{@host}:#{@port}/_bulk?replication=#{@replication}"
 
     buffer_initialize(
       :max_items => @flush_size,
