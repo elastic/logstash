@@ -40,11 +40,24 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # The amount of time since last flush before a flush is forced.
   config :idle_flush_time, :validate => :number, :default => 1
 
+  # Make replicated writes asynchronous. If true, this will cause
+  # the index request to elasticsearch to return after the primary
+  # shards have been written. If false (default), index requests
+  # will wait until the primary and the replica shards have been
+  # written.
+  config :asynchronous_replication, :validate => :boolean, :default => false
+
   public
   def register
     require "ftw" # gem ftw
     @agent = FTW::Agent.new
     @queue = []
+
+    if @asynchronous_replication
+      @bulk_url = "http://#{@host}:#{@port}/_bulk?replication=async"
+    else
+      @bulk_url = "http://#{@host}:#{@port}/_bulk"
+    end
 
     buffer_initialize(
       :max_items => @flush_size,
@@ -82,7 +95,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   def post(body)
     begin
-      response = @agent.post!("http://#{@host}:#{@port}/_bulk", :body => body)
+      response = @agent.post!(@bulk_url, :body => body)
     rescue EOFError
       @logger.warn("EOF while writing request or reading response header from elasticsearch",
                    :host => @host, :port => @port)
