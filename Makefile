@@ -16,7 +16,7 @@ ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
-KIBANA_URL=https://github.com/elasticsearch/kibana/archive/master.tar.gz
+KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-latest.tar.gz
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters|codecs)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 QUIET=@
 
@@ -373,4 +373,3 @@ package:
 vendor/kibana: | build
 	$(QUIET)mkdir vendor/kibana || true
 	$(DOWNLOAD_COMMAND) - $(KIBANA_URL) | tar -C $@ -zx --strip-components=1
-	$(QUIET)sed -e "s/@message/message/g" vendor/kibana/src/app/dashboards/logstash.json > vendor/kibana/src/app/dashboards/default.json
