@@ -56,7 +56,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   # The port for ElasticSearch transport to use. This is *not* the ElasticSearch
   # REST API port (normally 9200).
-  config :port, :validate => :string, :default => "9300-9400"
+  config :port, :validate => :string, :default => "9300-9305"
 
   # The name/address of the host to bind to for ElasticSearch clustering
   config :bind_host, :validate => :string
