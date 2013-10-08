@@ -366,11 +366,23 @@ module LogStash::Config::Mixin
             if value.size > 1 # only one value wanted
               return false, "Expected number, got #{value.inspect} (type #{value.class})"
             end
-            if value.first.to_s.to_f.to_s != value.first.to_s \
-               && value.first.to_s.to_i.to_s != value.first.to_s
-              return false, "Expected number, got #{value.first.inspect} (type #{value.first})"
-            end
-            result = value.first.to_i
+
+            v = value.first
+            case v
+              when Numeric
+                result = v
+              when String
+                if v.to_s.to_f.to_s != v.to_s \
+                   && v.to_s.to_i.to_s != v.to_s
+                  return false, "Expected number, got #{v.inspect} (type #{v})"
+                end
+                if v.include?(".")
+                  # decimal value, use float.
+                  result = v.to_f
+                else
+                  result = v.to_i
+                end
+            end # case v
           when :boolean
             if value.size > 1 # only one value wanted
               return false, "Expected boolean, got #{value.inspect}"
