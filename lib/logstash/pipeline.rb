@@ -206,6 +206,7 @@ class LogStash::Pipeline
   def outputworker
     LogStash::Util::set_thread_name(">output")
     @outputs.each(&:register)
+    @outputs.each(&:worker_setup)
     while true
       event = @filter_to_output.pop
       break if event == LogStash::ShutdownSignal
