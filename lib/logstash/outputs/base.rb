@@ -28,6 +28,10 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # The codec used for output data
   config :codec, :validate => :codec, :default => "plain"
 
+  # The number of workers to use for this output.
+  # Note that this setting may not be useful for all outputs.
+  config :workers, :validate => :number, :default => 1
+
   public
   def initialize(params={})
     super
@@ -45,15 +49,37 @@ class LogStash::Outputs::Base < LogStash::Plugin
   end # def receive
 
   public
-  def handle(event)
-    if event == LogStash::SHUTDOWN
-      @codec.teardown if @codec.is_a? LogStash::Codecs::Base
-      finished
-      return
-    end
+  def worker_setup
+    #return unless @workers > 1
 
-    receive(event)
+    @worker_queue = SizedQueue.new(20)
+
+    @worker_threads = @workers.times do |i|
+      Thread.new(original_params, @worker_queue) do |params, queue|
+        LogStash::Util::set_thread_name(">#{self.class.config_name}.#{i}")
+        worker_params = params.merge("workers" => 1, "codec" => @codec.clone)
+        worker_plugin = self.class.new(worker_params)
+        worker_plugin.register
+        while true
+          event = queue.pop
+          worker_plugin.receive(event)
+        end
+      end
+    end
+  end
+
+  public
+  def handle(event)
+    #if @worker_queue
+      handle_worker(event)
+    #else
+      #receive(event)
+    #end
   end # def handle
+  
+  def handle_worker(event)
+    @worker_queue.push(event)
+  end
 
   private
   def output?(event)
