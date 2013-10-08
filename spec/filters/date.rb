@@ -145,7 +145,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
             '{ "mydate": "this will not parse" }',
             '{ }'
           ]
-          format => json_event
+          codec => json
           type => foo
           count => 1
         }
