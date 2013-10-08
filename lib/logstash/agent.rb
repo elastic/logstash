@@ -85,7 +85,7 @@ class LogStash::Agent < Clamp::Command
 
     # You must specify a config_string or config_path
     if config_string.nil? && config_path.nil?
-      fail(help + "\n", I18n.t("logstash.agent.missing-configuration"))
+      fail(help + "\n" + I18n.t("logstash.agent.missing-configuration"))
     end
 
     if @config_path
