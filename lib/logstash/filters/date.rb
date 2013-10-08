@@ -182,11 +182,11 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
   public
   def filter(event)
-    @logger.debug? && @logger.debug("Date filter: received event", :type => event.type)
+    @logger.debug? && @logger.debug("Date filter: received event", :type => event["type"])
     return unless filter?(event)
     @parsers.each do |field, fieldparsers|
       @logger.debug? && @logger.debug("Date filter looking for field",
-                                      :type => event.type, :field => field)
+                                      :type => event["type"], :field => field)
       next unless event.include?(field)
 
       fieldvalues = event[field]

@@ -58,7 +58,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   private
   def output?(event)
     if !@type.empty?
-      if event.type != @type
+      if event["type"] != @type
         @logger.debug? and @logger.debug(["outputs/#{self.class.name}: Dropping event because type doesn't match #{@type}", event])
         return false
       end
