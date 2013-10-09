@@ -150,9 +150,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  # Method to set up the aws configuration and establish connection
  def aws_s3_config
 
-  @region_endpoint == 'us-east-1' ? @region_endpoint = 's3.amazonaws.com' : @region_endpoint = 's3-'+@region_endpoint+'.amazonaws.com'
+  @endpoint_region == 'us-east-1' ? @endpoint_region = 's3.amazonaws.com' : @endpoint_region = 's3-'+@endpoint_region+'.amazonaws.com'
 
-  @logger.info("Registering s3 output", :bucket => @bucket, :region_endpoint => @region_endpoint)
+  @logger.info("Registering s3 output", :bucket => @bucket, :endpoint_region => @endpoint_region)
 
   AWS.config(
     :access_key_id => @access_key_id,
