@@ -1,4 +1,5 @@
 require "logstash/codecs/base"
+require "logstash/codecs/line"
 require "json"
 
 # This codec will encode and decode JSON.
@@ -19,20 +20,22 @@ class LogStash::Codecs::JSON < LogStash::Codecs::Base
   config :charset, :validate => ::Encoding.name_list, :default => "UTF-8"
 
   public
+  def initialize(params={})
+    super(params)
+    @lines = LogStash::Codecs::Line.new
+    @lines.charset = @charset
+  end
+  
+  public
   def decode(data)
-    data.force_encoding(@charset)
-    if @charset != "UTF-8"
-      # The user has declared the character encoding of this data is
-      # something other than UTF-8. Let's convert it (as cleanly as possible)
-      # into UTF-8 so we can use it with JSON, etc.
-      data = data.encode("UTF-8", :invalid => :replace, :undef => :replace)
-    end
 
-    begin
-      yield LogStash::Event.new(JSON.parse(data))
-    rescue JSON::ParserError => e
-      @logger.info("JSON parse failure. Falling back to plain-text", :error => e, :data => data)
-      yield LogStash::Event.new("message" => data)
+    @lines.decode(data) do |event|
+      begin
+        yield LogStash::Event.new(JSON.parse(event["message"]))
+      rescue JSON::ParserError => e
+        @logger.info("JSON parse failure. Falling back to plain-text", :error => e, :data => data)
+        yield LogStash::Event.new("message" => data)
+      end
     end
   end # def decode
 
