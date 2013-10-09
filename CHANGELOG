@@ -5,6 +5,9 @@
   - bugfix: rabbitmq: disable automatic connection recovery (LOGSTASH-1350)
     (#641)
   - bugfix: twitter: update gem to latest api version (#640)
+  - compatibility: Restored the old 'format' setting behavior. It is still
+    deprecated, but was accidentally removed in 1.2.0. It will be removed
+    later, but is restored as part of our backwards-compat promise :)
 
   ## codecs
   -new: graphite: parse graphite formated events:
@@ -19,6 +22,20 @@
     setting flush rates and when to clear metrics (#545)
 
   ## outputs
+  - feature: all outputs have a 'worker' setting  now that allows you to
+    perform more work at the same time. This is useful for plugins like
+    elasticsearch_http, redis, etc, which can bottleneck on waiting for requests
+    to complete but would otherwise be happy processing more simultaneous
+    requests.
+  - feature: elasticsearch_http now supports a 'replication' setting to
+    allow you to choose how you wait for the response. THe default is 'sync'
+    which waits for all replica shards to be written. If you set it to 'async'
+    then all index requests will respond once only the primary shards have been
+    written and the replica shards will be written later. This can improve
+    throughput.
+  - bugfix: elasticsearch: the default port range is now 9300-9305; the older
+    range up to 9400 was unnecessary and could cause problems for the
+    elasticsearch cluster in some cases.
   - bugfix: rabbitmq: disable automatic connection recovery (LOGSTASH-1350)
     (#642)
   - bugfix: riemann: fixed tagging of riemann events (#631)
