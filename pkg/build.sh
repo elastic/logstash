@@ -102,7 +102,7 @@ case $os in
       -a all --iteration "${os}1${REVISION}" \
       --url "http://logstash.net" \
       --description "An extensible logging pipeline" \
-      -d "default-jre" \
+      -d "java6-runtime-headless | java7-runtime-headless" \
       --deb-user root --deb-group root \
       --before-install $os/before-install.sh \
       --before-remove $os/before-remove.sh \
