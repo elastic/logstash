@@ -1,14 +1,14 @@
 require "test_utils"
-require "logstash/filters/sort"
+require "logstash/filters/collate"
 
-describe LogStash::Filters::Sort do
+describe LogStash::Filters::Collate do
   extend LogStash::RSpec
 
-  describe "sort when sortSize is full" do
+  describe "collate when count is full" do
     config <<-CONFIG
       filter {
-        sort {
-          sortSize => 2
+        collate {
+          count => 2
         }
       }
     CONFIG
@@ -38,12 +38,12 @@ describe LogStash::Filters::Sort do
     end
   end
 
-  describe "sort by desc" do
+  describe "collate by desc" do
     config <<-CONFIG
       filter {
-        sort {
-          sortSize => 3
-          sortBy => "desc"
+        collate {
+          count => 3
+          order => "descending"
         }
       }
     CONFIG
@@ -82,14 +82,14 @@ describe LogStash::Filters::Sort do
 
   # (Ignored) Currently this case can't pass because of the case depends on the flush function of the filter in the test, 
   # there was a TODO marked in the code (test_utils.rb, # TODO(sissel): pipeline flush needs to be implemented.), 
-  # and the case wants to test the scenario which sort was triggered by a scheduler, so in this case, it needs to sleep few seconds 
+  # and the case wants to test the scenario which collate was triggered by a scheduler, so in this case, it needs to sleep few seconds 
   # waiting the scheduler triggered, and after the events were flushed, then the result can be checked.
 
-  # describe "sort when sort interval reached" do
+  # describe "collate when interval reached" do
   #   config <<-CONFIG
   #     filter {
-  #       sort {
-  #         sortInterval => "1s"
+  #       collate {
+  #         interval => "1s"
   #       }
   #     }
   #   CONFIG
