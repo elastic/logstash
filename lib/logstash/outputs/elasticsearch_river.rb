@@ -208,6 +208,6 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       header["index"]["_id"] = event.sprintf(@document_id)
     end
 
-    @mq.receive_raw(header.to_json + "\n" + event.to_json + "\n")
+    @mq.publish_serialized(header.to_json + "\n" + event.to_json + "\n")
   end # def receive
 end # LogStash::Outputs::ElasticSearchRiver
