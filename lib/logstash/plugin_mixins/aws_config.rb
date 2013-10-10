@@ -35,6 +35,9 @@ module LogStash::PluginMixins::AwsConfig
     # The AWS SDK for Ruby defaults to SSL so we preserve that
     config :use_ssl, :validate => :boolean, :default => true
 
+    # URI to proxy server if required
+    config :proxy_uri, :validate => :string
+
     # Path to YAML file containing a hash of AWS credentials.   
     # This file will only be loaded if `access_key_id` and
     # `secret_access_key` aren't set. The contents of the
@@ -67,6 +70,10 @@ module LogStash::PluginMixins::AwsConfig
     end
 
     opts[:use_ssl] = @use_ssl
+
+    if (@proxy_uri)
+      opts[:proxy_uri] = @proxy_uri
+    end
 
     # The AWS SDK for Ruby doesn't know how to make an endpoint hostname from a region
     # for example us-west-1 -> foosvc.us-west-1.amazonaws.com

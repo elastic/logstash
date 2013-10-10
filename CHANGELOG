@@ -36,6 +36,7 @@
   - bugfix: elasticsearch: the default port range is now 9300-9305; the older
     range up to 9400 was unnecessary and could cause problems for the
     elasticsearch cluster in some cases.
+  - improvement: aws-based outputs (e.g. cloudwatch) now support proxy uri.
   - bugfix: rabbitmq: disable automatic connection recovery (LOGSTASH-1350)
     (#642)
   - bugfix: riemann: fixed tagging of riemann events (#631)
