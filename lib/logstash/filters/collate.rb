@@ -1,34 +1,34 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
-# The sort filter is for sorting a amount of events or a period of events by timestamp.
+# Collate events by time or count.
 #
-# The original goal of this filter was to merge the logs from different sources by the time of log,
-# for example, in real-time log collection, logs can be sorted by amount of 3000 logs or 
-# can be sorted in 30 seconds.
+# The original goal of this filter was to merge the logs from different sources
+# by the time of log, for example, in real-time log collection, logs can be
+# sorted by amount of 3000 logs or can be sorted in 30 seconds.
 #
 # The config looks like this:
 #
 #     filter {
-#       sort {
-#         sortSize => 3000
-#         sortInterval => "30s"
-#         sortBy => "asce"
+#       collate {
+#         size => 3000
+#         interval => "30s"
+#         order => "ascending"
 #       }
 #     }
-class LogStash::Filters::Sort < LogStash::Filters::Base
+class LogStash::Filters::Collate < LogStash::Filters::Base
 
-  config_name "sort"
+  config_name "collate"
   milestone 1
 
-  # The 'sortSize' is the window size which how many logs should be sorted.(default 1000)
-  config :sortSize, :validate => :number, :default => 1000
+  # How many logs should be collated.
+  config :count, :validate => :number, :default => 1000
 
-  # The 'sortInterval' is the time window which how long the logs should be sorted. (default 1m)
-  config :sortInterval, :validate => :string, :default => "1m"
+  # The 'interval' is the time window which how long the logs should be sorted. (default 1m)
+  config :interval, :validate => :string, :default => "1m"
 
-  # The 'sortBy' can only be "asce" or "desc" (defaults asce), sorted by timestamp asce or desc.
-  config :sortBy, :validate => ["asce", "desc"], :default => "asce"
+  # The 'order' collated events should appear in.
+  config :order, :validate => ["ascending", "descending"], :default => "ascending"
 
   public
   def register
@@ -39,7 +39,7 @@ class LogStash::Filters::Sort < LogStash::Filters::Base
     @sortingDone = false
     @sortingArray = Array.new
     @scheduler = Rufus::Scheduler.start_new
-    @job = @scheduler.every @sortInterval do
+    @job = @scheduler.every @interval do
       @logger.info("Scheduler Activated")
       @mutex.synchronize{
         sort
@@ -67,7 +67,7 @@ class LogStash::Filters::Sort < LogStash::Filters::Base
     @mutex.synchronize{
       @sortingArray.push(event.clone)
 
-      if (@sortingArray.length == @sortSize)
+      if (@sortingArray.length == @count)
         sort
       end
 
@@ -86,7 +86,7 @@ class LogStash::Filters::Sort < LogStash::Filters::Base
 
   private
   def sort
-    if (@sortBy == "asce")
+    if (@order == "ascending")
       @sortingArray.sort! { |eventA, eventB| eventB.timestamp <=> eventA.timestamp }
     else 
       @sortingArray.sort! { |eventA, eventB| eventA.timestamp <=> eventB.timestamp }
