@@ -51,29 +51,28 @@ require "logstash/namespace"
 # #### Example: computing event rate
 #
 # For a simple example, let's track how many events per second are running
-# through logstash:
-#
-#     input {
-#       generator {
-#         type => "generated"
-#       }
+# input {
+#   generator {
+#     type => "generated"
+#   }
+# }
+
+# filter {
+#   if [type] == "generated" {
+#     metrics {
+#       meter => ["events"]
+#       add_field => [ "type", "metric" ]
 #     }
-#
-#     filter {
-#       metrics {
-#         type => "generated"
-#         meter => "events"
-#         add_tag => "metric"
-#       }
+#   }
+# }
+
+# output {
+#   if [type] == "metric" {
+#     stdout{
+#       message => "rate: %{events.rate_1m}"
 #     }
-#
-#     output {
-#       stdout {
-#         # only emit events with the 'metric' tag
-#         tags => "metric"
-#         message => "rate: %{events.rate_1m}"
-#       }
-#     }
+#   }
+# }
 #
 # Running the above:
 #
