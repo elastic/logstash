@@ -1,5 +1,13 @@
 1.2.2 (???)
   # general
+  - new 'worker' setting for outputs. This helps improve throughput on
+    request-oriented outputs such as redis, rabbitmq, elasticsearch,
+    elasticsearch_http, etc. Workers run in separate threads each handling
+    events as they come in. This allows you to linearly scale up outputs across
+    cores or as blocking-io permits.
+  - grok performance is up 600%
+  - lots of bug fixes
+
   ## inputs
   - bugfix: udp: respects teardown requests via SIGINT, etc (LOGSTASH-1290,
     Jordan Sissel)
