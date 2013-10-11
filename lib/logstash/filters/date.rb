@@ -125,6 +125,11 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   public
   def register
     require "java"
+    if @match.length < 2
+      raise LogStash::ConfigurationError, I18n.t("logstash.agent.configuration.invalid_plugin_register", 
+        :plugin => "filter", :type => "date",
+        :error => "The match setting should contains first a field name and at least one date format, current value is #{@match}")
+    end
     # TODO(sissel): Need a way of capturing regexp configs better.
     locale = parseLocale(@config["locale"][0]) if @config["locale"] != nil and @config["locale"][0] != nil
     setupMatcher(@config["match"].shift, locale, @config["match"] )
