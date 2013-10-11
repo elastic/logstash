@@ -89,6 +89,10 @@ en:
             }
         invalid_plugin_settings: >-
           Something is wrong with your configuration.
+        invalid_plugin_register: >-
+          Cannot register %{plugin} %{type} plugin.
+          The error reported is: 
+            %{error}
         plugin_path_missing: >-
           You specified a plugin path that does not exist: %{path}
         no_plugins_found: |-
