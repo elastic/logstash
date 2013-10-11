@@ -1,44 +1,95 @@
 1.2.2 (???)
   # general
   ## inputs
-  - bugfix: udp: respects teardown requests (via SIGINT) (LOGSTASH-1290)
-  - bugfix: rabbitmq: disable automatic connection recovery (LOGSTASH-1350)
-    (#641)
-  - bugfix: twitter: update gem to latest api version (#640)
+  - bugfix: udp: respects teardown requests via SIGINT, etc (LOGSTASH-1290,
+    Jordan Sissel)
+  - bugfix: rabbitmq: disable automatic connection recovery (LOGSTASH-1350,
+    #641, #642; Michael Klishin)
+  - bugfix: twitter: works again (#640, Bernd Ahlers)
   - compatibility: Restored the old 'format' setting behavior. It is still
     deprecated, but was accidentally removed in 1.2.0. It will be removed
-    later, but is restored as part of our backwards-compat promise :)
+    later, but is restored as part of our backwards-compat promise (Jordan
+    Sissel)
+  - bugfix: s3: fix LOGSTASH-1321 and LOGSTASH-1319 (Richard Pijnenburg)
+  - bugfix: log4j: fix typo (Jordan Sissel)
+  - bugfix: rabbitmq: disable automatic connection recover because logstash
+    will handle it (LOGSTASH-1350, Michael Klishin)
+  - bugfix: heroku: works again (LOGSTASH-1347, #643; Bernd Ahlers)
+  - bugfix: tcp: improve detection of closed connections to reduce lost events
+    (Jordan Sissel)
+  - bugfix: elasticsearch: now works correctly (#670, Richard Pijnenburg)
+  - improvement: elasticsearch: make size and scroll time configurable (#670,
+    Richard Pijnenburg)
+  - improvement: elasticsearch: tunable search type (#670, Richard Pijnenburg)
+  - compatibility: restore 'format' setting which was accidentally removed in
+    1.2.0. This feature is still deprecated, but it has been restored
+    temporarily as part of our backwards compatibility promise. (#706, Jordan
+    Sissel)
 
   ## codecs
-  -new: graphite: parse graphite formated events:
+  - new: graphite: parse graphite formated events (Nick Ethier)
+  - bugfix: multiline: time is now correctly in UTC. (Jordan Sissel)
+  - bugfix: oldlogstashjson: improved conversion of old logstash json to the
+    new schema (#654, Jordan Sissel)
+  - bugfix: oldlogstashjson: fix typo breaking encoding (#665, Tom Howe)
+  - bugfix: json: now assumes json delimited by newline character
+    (LOGSTASH-1332, #710; Nick Ethier)
 
   ## filters
+  - performance: grok: 6.3x performance improvement (#681, Jordan Sissel)
   - bugfix: geoip: empty values (nil, empty string) are not put into the event
-    anymore.
+    anymore. (Jordan Sissel)
+  - bugfix: geoip: allow using Maxmind's ASN database (LOGSTASH-1394, #694;
+    Bernd Ahlers)
   - improvement: kv: target will now overwrite any existing fields, including
-    the source.
+    the source (Jordan Sissel).
+  - improvement: Kv: 'prefix' setting now respects sprintf (LOGSTASH-913,
+    #647; Richard Pijnenburg)
   - checksum: sha128 was not a valid digest, removed from list
   - feature: metrics: added clear_interval and flush_interval parameters for
     setting flush rates and when to clear metrics (#545)
+  - new: collate: group events by time and/or count into a single event. (#609,
+    Neway Liu)
+  - feature: date: now supports a 'target' field for writing the timestamp into
+    a field other than @timestamp. (#625, Jonathan Van Eenwyk)
+  - bugfix: riemann: event tagging works again (#631, Marc Fournier)
+  - improvement: grok: IPV6 pattern (#623, Matt Dainty)
+  - improvement: metrics: add clear_interval and flush_interval settings (#545,
+    Juarez Bochi)
+  - improvement: useragent: include operating system details (#656, Philip Kubat)
 
   ## outputs
   - feature: all outputs have a 'worker' setting  now that allows you to
     perform more work at the same time. This is useful for plugins like
-    elasticsearch_http, redis, etc, which can bottleneck on waiting for requests
-    to complete but would otherwise be happy processing more simultaneous
-    requests.
+    elasticsearch_http, redis, etc, which can bottleneck on waiting for
+    requests to complete but would otherwise be happy processing more
+    simultaneous requests. (#708, Jordan Sissel)
+  - bugfix: elasticsearch: requests are now synchronous. This avoid overloading
+    the client and server with unlimited in-flight requests. (#688, Jordan
+    Sissel)
+  - bugfix: elasticsearch_http: fix bug when sending multibyte utf-8 events
+    (LOGSTASH-1328, #678, #679, #695; Steve Merrill, Christian Winther,
+    NickEthier, Jordan Sissel)
+  - performance: elasticsearch_http: http client library uses TCP_NODELAY now
+    which dramatically improves performance. (#696, Jordan Sissel)
   - feature: elasticsearch_http now supports a 'replication' setting to
     allow you to choose how you wait for the response. THe default is 'sync'
     which waits for all replica shards to be written. If you set it to 'async'
     then all index requests will respond once only the primary shards have been
     written and the replica shards will be written later. This can improve
-    throughput.
+    throughput. (#700, Nick Ethier, Jordan Sissel)
   - bugfix: elasticsearch: the default port range is now 9300-9305; the older
     range up to 9400 was unnecessary and could cause problems for the
     elasticsearch cluster in some cases.
   - bugfix: rabbitmq: disable automatic connection recovery (LOGSTASH-1350)
     (#642)
   - bugfix: riemann: fixed tagging of riemann events (#631)
+  - bugfix: s3: fix LOGSTASH-1321 and LOGSTASH-1319 (#636, #645; Richard
+    Pijnenburg)
+  - bugfix: mongodb: Fix mongodb auth (LOGSTASH-1371, #659; bitsofinfo)
+  - bugfix: datadog: Fix time conversion (LOGSTASH-1427, #690; Bernd Ahlers)
+  - bugfix: statsd: Permit plain floating point values correctly in the
+    config. Example: sample_rate => 0.5 (LOGSTASH-1441, #705; Jordan Sissel)
 
   ## patterns
   - improvement: added IPV6 suppot to IP pattern (#623)
