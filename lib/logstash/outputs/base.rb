@@ -70,13 +70,13 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   public
   def handle(event)
-    #if @worker_queue
+    if @worker_queue
       handle_worker(event)
-    #else
-      #receive(event)
-    #end
+    else
+      receive(event)
+    end
   end # def handle
-  
+
   def handle_worker(event)
     @worker_queue.push(event)
   end
