@@ -79,7 +79,10 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
         @logger.warn("Gelfd failed to parse a message skipping", :exception => ex, :backtrace => ex.backtrace)
         next
       end
-
+      
+      # Gelfd parser outputs null if it received and cached a non-final chunk
+      next if data.nil?    
+ 
       event = LogStash::Event.new(JSON.parse(data))
       event["host"] = client[3]
       if event["timestamp"].is_a?(Numeric)
