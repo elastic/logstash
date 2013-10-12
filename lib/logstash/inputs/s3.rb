@@ -1,5 +1,6 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "logstash/plugin_mixins/aws_config"
 
 require "aws-sdk"
 require "time"
@@ -10,6 +11,8 @@ require "tmpdir"
 # Each line from each file generates an event.
 # Files ending in '.gz' are handled as gzip'ed files.
 class LogStash::Inputs::S3 < LogStash::Inputs::Base
+  include LogStash::PluginMixins::AwsConfig
+
   config_name "s3"
   milestone 1
 
@@ -17,26 +20,8 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   # support and readline usage). Support gzip through a gzip codec! ;)
   default :codec, "plain"
 
-  # The credentials of the AWS account used to access the bucket.
-  # Credentials can be specified:
-  # - As an ["id","secret"] array
-  # - As a path to a file containing AWS_ACCESS_KEY_ID=... and AWS_SECRET_ACCESS_KEY=...
-  # - In the environment (variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)
-  config :credentials, :validate => :array, :default => nil
-
   # The name of the S3 bucket.
   config :bucket, :validate => :string, :required => true
-
-  # The AWS region for your bucket.
-  config :region, :validate => ["us-east-1", "us-west-1", "us-west-2",
-                                "eu-west-1", "ap-southeast-1", "ap-southeast-2",
-                                "ap-northeast-1", "sa-east-1", "us-gov-west-1"],
-                                :deprecated => "'region' has been deprecated in favor of 'region_endpoint'"
-
-  # The AWS region for your bucket.
-  config :region_endpoint, :validate => ["us-east-1", "us-west-1", "us-west-2",
-                                "eu-west-1", "ap-southeast-1", "ap-southeast-2",
-                                "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
 
   # If specified, the prefix the filenames in the bucket must match (not a regexp)
   config :prefix, :validate => :string, :default => nil
@@ -60,45 +45,17 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   config :interval, :validate => :number, :default => 60
 
   public
+  def aws_service_endpoint(region)
+    return {
+        :s3_endpoint => region == 'us-east-1' ? 's3.amazonaws.com' : 's3-'+ region +'.amazonaws.com'
+    }
+  end
+
+  public
   def register
     require "digest/md5"
 
-    @region_endpoint = @region if !@region.empty?
-
-    @region_endpoint == 'us-east-1' ? @region_endpoint = 's3.amazonaws.com' : @region_endpoint = 's3-'+@region_endpoint+'.amazonaws.com'
-
-    @logger.info("Registering s3 input", :bucket => @bucket, :region_endpoint => @region_endpoint)
-
-    if @credentials.nil?
-      @access_key_id = ENV['AWS_ACCESS_KEY_ID']
-      @secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
-    elsif @credentials.is_a? Array
-      if @credentials.length ==1
-        File.open(@credentials[0]) { |f| f.each do |line|
-          unless (/^\#/.match(line))
-            if(/\s*=\s*/.match(line))
-              param, value = line.split('=', 2)
-              param = param.chomp().strip()
-              value = value.chomp().strip()
-              if param.eql?('AWS_ACCESS_KEY_ID')
-                @access_key_id = value
-              elsif param.eql?('AWS_SECRET_ACCESS_KEY')
-                @secret_access_key = value
-              end
-            end
-          end
-        end
-        }
-      elsif @credentials.length == 2
-        @access_key_id = @credentials[0]
-        @secret_access_key = @credentials[1]
-      else
-        raise ArgumentError.new('Credentials must be of the form "/path/to/file" or ["id", "secret"]')
-      end
-    end
-    if @access_key_id.nil? or @secret_access_key.nil?
-      raise ArgumentError.new('Missing AWS credentials')
-    end
+    @logger.info("Registering s3 input", :bucket => @bucket, :region => @region)
 
     if @bucket.nil?
       raise ArgumentError.new('Missing AWS bucket')
@@ -111,11 +68,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       @sincedb_path = File.join(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest("#{@bucket}+#{@prefix}"))
     end
 
-    s3 = AWS::S3.new(
-      :access_key_id => @access_key_id,
-      :secret_access_key => @secret_access_key,
-      :region => @region_endpoint
-    )
+    s3 = AWS::S3.new(aws_options_hash)
 
     @s3bucket = s3.buckets[@bucket]
 
