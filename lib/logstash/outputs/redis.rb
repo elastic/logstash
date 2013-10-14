@@ -215,16 +215,10 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   private
   def connect
 
-    # if @host[@host_idx] =~ /((?:(?:[0-9]{1,3}\.){3}[0-9]{1,3})|(?:\[[0-9a-fA-F:]+\])):(\d+)/
-    #   @current_host = $1
-    #   @current_port = $2
-    # else
-    #   @current_host, @current_port = @host[@host_idx].split(':')
-    # end
-    if @host[@host_idx] =~ /(?=^.{1,254}$)(^(?:(?!\d+\.|-)[a-zA-Z0-9_\-]{1,63}(?<!-)\.?)+(?:[a-zA-Z]{2,})(:\d+)*$)/i
+    if @host[@host_idx] =~ /(?=^.{1,254}$)(^(?:(?!\d+.|-)[a-zA-Z0-9_-]{1,63}(?<!-).?)+(?:[a-zA-Z]{2,})(:\d+)*$)/i
       @current_host = $1
       if $2
-        @current_port = $2
+        @current_port = $2[1..-1]
       end
     elsif @host[@host_idx] =~ /((?:(?:[0-9]{1,3}\.){3}[0-9]{1,3})|(?:\[[0-9a-fA-F:]+\])):(\d+)/
       @current_host = $1
