@@ -33,6 +33,8 @@
     1.2.0. This feature is still deprecated, but it has been restored
     temporarily as part of our backwards compatibility promise. (#706, Jordan
     Sissel)
+  - bugfix: rabbitmq: honour the passive option when creating queues. 
+    (LOGSTASH-1461, Tim Potter)
 
   ## codecs
   - new: graphite: parse graphite formated events (Nick Ethier)
