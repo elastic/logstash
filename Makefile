@@ -9,7 +9,7 @@ VERSION=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.r
 
 WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
-JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
+JRUBY_URL=http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-complete-$(JRUBY_VERSION).jar
 JRUBY_CMD=java -jar $(JRUBY)
 JRUBYC=$(WITH_JRUBY) jrubyc
 ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
@@ -96,7 +96,7 @@ build-jruby: $(JRUBY)
 
 $(JRUBY): | vendor/jar
 	$(QUIET)echo " ==> Downloading jruby $(JRUBY_VERSION)"
-	$(QUIET)$(DOWNLOAD_COMMAND) $@ http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)/jruby-complete-$(JRUBY_VERSION).jar
+	$(QUIET)$(DOWNLOAD_COMMAND) $@ $(JRUBY_URL)
 
 vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | wget-or-curl vendor/jar
 	@echo "=> Fetching elasticsearch"
