@@ -5,6 +5,18 @@
 
 . ../.VERSION.mk
 
+if ! git show-ref --tags | grep -q "$(git rev-parse HEAD)"; then
+	# HEAD is not tagged, add the date, time and commit hash to the revision
+	GIT_COMMIT="$(git rev-parse --short HEAD)"
+	BUILD_TIME="$(date +%Y%m%d%H%M)"
+	DEB_REVISION="${BUILD_TIME}~${GIT_COMMIT}"
+	RPM_REVISION=".${BUILD_TIME}.${GIT_COMMIT}"
+fi
+
+
+URL="http://logstash.net"
+DESCRIPTION="An extensible logging pipeline"
+
 if [ "$#" -ne 2 ] ; then
   echo "Usage: $0 <os> <release>"
   echo 
@@ -88,7 +100,9 @@ description="logstash is a system for managing and processing events and logs"
 case $os in
   centos|fedora|redhat) 
     fpm -s dir -t rpm -n logstash -v "$VERSION" \
-      -a noarch --iteration 1_$os \
+      -a noarch --iteration "1_${os}${RPM_REVISION}" \
+      --url "$URL" \
+      --description "$DESCRIPTION" \
       -d "jre >= 1.6.0" \
       --before-install centos/before-install.sh \
       --before-remove centos/before-remove.sh \
@@ -106,10 +120,10 @@ case $os in
     fi
 
     fpm -s dir -t deb -n logstash -v "$VERSION" \
-      -a all --iteration "${os}1" \
-      --url "http://logstash.net" \
-      --description "An extensible logging pipeline" \
-      -d "java6-runtime-headless | java7-runtime-headless" \
+      -a all --iteration "1+${os}${DEB_REVISION}" \
+      --url "$URL" \
+      --description "$DESCRIPTION" \
+      -d "default-jre" \
       --deb-user root --deb-group root \
       --before-install $os/before-install.sh \
       --before-remove $os/before-remove.sh \
