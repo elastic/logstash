@@ -93,6 +93,8 @@ case $os in
       --before-install centos/before-install.sh \
       --before-remove centos/before-remove.sh \
       --after-install centos/after-install.sh \
+      --config-files /etc/sysconfig/logstash \
+      --config-files /etc/logrotate.d/logrotate.conf \
       -f -C $destdir .
     ;;
   ubuntu|debian)
@@ -112,6 +114,9 @@ case $os in
       --before-install $os/before-install.sh \
       --before-remove $os/before-remove.sh \
       --after-install $os/after-install.sh \
+      --config-files /etc/default/logstash \
+      --config-files /etc/default/logstash-web \
+      --config-files /etc/logrotate.d/logrotate.conf \
       -f -C $destdir .
     ;;
 esac
