@@ -51,6 +51,20 @@ describe LogStash::Filters::CSV do
     end
   end
 
+  describe "default quote char" do
+    config <<-CONFIG
+      filter {
+        csv {
+        }
+      }
+    CONFIG
+
+    sample 'big,bird,"sesame, street"' do
+      insist { subject["column1"] } == "big"
+      insist { subject["column2"] } == "bird"
+      insist { subject["column3"] } == "sesame, street"
+    end
+  end
   describe "null quote char" do
     config <<-CONFIG
       filter {
