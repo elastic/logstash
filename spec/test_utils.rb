@@ -61,6 +61,12 @@ module LogStash
           sample_event = [sample_event] unless sample_event.is_a?(Array)
           next sample_event.collect do |e|
             e = { "message" => e } if e.is_a?(String)
+            if e["type"].nil? && defined?default_type
+              e["type"] = default_type
+            end
+            if e["tags"].nil? && defined?default_tags
+              e["tags"] = default_tags
+            end
             next LogStash::Event.new(e)
           end
         end
