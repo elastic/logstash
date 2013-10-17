@@ -299,7 +299,7 @@ module LogStash; module Config; module AST
   module NotInExpression
     def compile
       item, list = recursive_select(LogStash::Config::AST::RValue)
-      return "(x = #{list.compile}; x.respond_to?(:include?) && !x.include?(#{item.compile}))"
+      return "(x = #{list.compile}; !x.respond_to?(:include?) || !x.include?(#{item.compile}))"
     end
   end
 
