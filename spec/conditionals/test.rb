@@ -162,6 +162,7 @@ describe "conditionals" do
         if !("foo" not in "foo") { mutate { add_tag => "notfoo" } }
         if "foo" not in [somelist] { mutate { add_tag => "notsomelist" } } 
         if "one" not in [somelist] { mutate { add_tag => "somelist" } }
+        if "foo" not in [alsomissing] { mutate { add_tag => "no string in missing field" } }
       }
     CONFIG
 
@@ -174,6 +175,7 @@ describe "conditionals" do
       insist { subject["tags"] }.include?("notfoo")
       insist { subject["tags"] }.include?("notsomelist")
       reject { subject["tags"] }.include?("somelist")
+      insist { subject["tags"] }.include?("no string in missing field")
     end
   end
 

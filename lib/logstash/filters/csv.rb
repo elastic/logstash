@@ -24,6 +24,11 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
   # Optional.
   config :separator, :validate => :string, :default => ","
 
+  # Define the character used to quote CSV fields. If this is not specified
+  # the default is a double quote '"'
+  # Optional.
+  config :quote_char, :validate => :string, :default => '"'
+
   # Define target for placing the data
   # Defaults to writing to the root of the event.
   config :target, :validate => :string
@@ -57,7 +62,7 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
 
       raw = event[@source].first
       begin
-        values = CSV.parse_line(raw, :col_sep => @separator)
+        values = CSV.parse_line(raw, :col_sep => @separator, :quote_char => @quote_char)
 
         if @target.nil?
           # Default is to write to the root of the event.
