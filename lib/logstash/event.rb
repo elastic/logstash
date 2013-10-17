@@ -44,6 +44,7 @@ class LogStash::Event
   public
   def initialize(data={})
     @cancelled = false
+    @done = false
 
     @data = data
     if data.include?("@timestamp")
@@ -71,6 +72,16 @@ class LogStash::Event
   def cancelled?
     return @cancelled
   end # def cancelled?
+
+  public
+  def done
+    @done = true
+  end # def done
+
+  public
+  def done?
+    return @done
+  end # def done?
 
   # Create a deep-ish copy of this event.
   public
