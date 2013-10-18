@@ -2,7 +2,10 @@ require "logstash/codecs/base"
 require "logstash/codecs/line"
 require "json"
 
-# This codec will encode and decode JSON.
+# The codec should be used to decode full json messages.
+# If you are streaming JSON messages delimited by '\n' then 
+# see the json_lines codec.
+# Encoding will result in a single json string.
 class LogStash::Codecs::JSON < LogStash::Codecs::Base
   config_name "json"
 

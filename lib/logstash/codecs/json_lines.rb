@@ -2,7 +2,9 @@ require "logstash/codecs/base"
 require "logstash/codecs/line"
 require "json"
 
-# This codec will encode and decode JSON.
+# This codec will decode streamed JSON that is newline delimited.
+# For decoding JSON payload in the redis input for example, use the json codec instead.
+# Encoding will emit a single JSON string ending in a '\n'
 class LogStash::Codecs::JSONLines < LogStash::Codecs::Base
   config_name "json_lines"
 
