@@ -62,6 +62,10 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
     require "logstash/util/zeromq"
     self.class.send(:include, LogStash::Util::ZeroMQ)
 
+    if @mode == "server" && @workers > 1
+      workers_not_supported("With 'mode => server', only one zeromq socket may bind to a port and may not be shared among threads. Going to single-worker mode for this plugin!")
+    end
+
     # Translate topology shorthand to socket types
     case @topology
     when "pair"
@@ -106,7 +110,7 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   end # def receive
 
   def publish(payload)
-    @logger.debug("0mq: sending", :event => payload)
+    @logger.debug? && @logger.debug("0mq: sending", :event => payload)
     if @topology == "pubsub"
       # TODO(sissel): Need to figure out how to fit this into the codecs system.
       #@logger.debug("0mq output: setting topic to: #{event.sprintf(@topic)}")
