@@ -45,6 +45,9 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   # You can specify multiple topics here
   config :topic, :validate => :array
 
+  # This adds the 0mq topic as a field 'zmq_topic' in the event
+  config :topic_field, :validate => :bool, :default => true
+
   # mode
   # server mode binds/listens
   # client mode connects
@@ -134,6 +137,8 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
         # and set the message to the second part
         if @zsocket.more_parts?
           @logger.debug("Multipart message detected. Setting @message to second part. First part was: #{m1}")
+          if @topic_field
+            event["zmq_topic"] = m1
           m2 = ''
           rc2 = @zsocket.recv_string(m2)
           error_check(rc2, "in recv_string")
