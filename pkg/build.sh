@@ -59,7 +59,7 @@ case $os@$release in
     mkdir -p $destdir/var/run/logstash
     mkdir -p $destdir/var/log/logstash
     cp $os/sysconfig $destdir/etc/sysconfig/logstash
-    install -m644 logrotate.conf $destdir/etc/logrotate.d/
+    install -m644 logrotate.conf $destdir/etc/logrotate.d/logstash
     install -m755 logstash.sysv.redhat $destdir/etc/init.d/logstash
     ;;
   ubuntu@*)
@@ -108,7 +108,7 @@ case $os in
       --before-remove centos/before-remove.sh \
       --after-install centos/after-install.sh \
       --config-files /etc/sysconfig/logstash \
-      --config-files /etc/logrotate.d/logrotate.conf \
+      --config-files /etc/logrotate.d/logstash \
       -f -C $destdir .
     ;;
   ubuntu|debian)
@@ -130,7 +130,7 @@ case $os in
       --after-install $os/after-install.sh \
       --config-files /etc/default/logstash \
       --config-files /etc/default/logstash-web \
-      --config-files /etc/logrotate.d/logrotate.conf \
+      --config-files /etc/logrotate.d/logstash \
       -f -C $destdir .
     ;;
 esac
