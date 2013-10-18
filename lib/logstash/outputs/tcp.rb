@@ -69,6 +69,8 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
   def register
     require "stud/try"
     if server?
+      workers_not_supported
+
       @logger.info("Starting tcp output listener", :address => "#{@host}:#{@port}")
       @server_socket = TCPServer.new(@host, @port)
       @client_threads = []
