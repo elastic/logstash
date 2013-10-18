@@ -36,9 +36,13 @@ en:
         Could not find any plugin type named '%{type}'. Check for typos.
         Valid plugin types are 'input' 'filter' and 'output'
       output-worker-unsupported: >-
-        %{plugin} output plugin: setting 'workers => %{worker_count}' is not supported by this plugin. I will ignore this setting.
+        %{plugin} output plugin: setting 'workers => %{worker_count}' is not
+        supported by this plugin. I will continue working as if you had not set
+        this setting.
       output-worker-unsupported-with-message: >-
-        %{plugin} output plugin: setting 'workers => %{worker_count}' is not supported by this plugin. I will ignore this setting. Details: %{message}
+        %{plugin} output plugin: setting 'workers => %{worker_count}' is not
+        supported by this plugin. I will continue working as if you had not set
+        this setting.
     plugin:
       milestone:
         "0": >-
