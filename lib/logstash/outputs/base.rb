@@ -33,6 +33,17 @@ class LogStash::Outputs::Base < LogStash::Plugin
   config :workers, :validate => :number, :default => 1
 
   public
+  def workers_not_supported(message=nil)
+    return if @workers == 1
+    if message
+      @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported-with-message", :plugin => self.class.config_name, :worker_count => @workers, :message => message))
+    else
+      @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported", :plugin => self.class.config_name, :worker_count => @workers))
+    end
+    @workers = 1
+  end
+
+  public
   def initialize(params={})
     super
     config_init(params)
@@ -50,8 +61,9 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   public
   def worker_setup
-    #return unless @workers > 1
+    return unless @workers > 1
 
+    define_singleton_method(:handle, method(:handle_worker))
     @worker_queue = SizedQueue.new(20)
 
     @worker_threads = @workers.times do |i|
@@ -62,7 +74,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
         worker_plugin.register
         while true
           event = queue.pop
-          worker_plugin.receive(event)
+          worker_plugin.handle(event)
         end
       end
     end
@@ -70,11 +82,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   public
   def handle(event)
-    #if @worker_queue
-      handle_worker(event)
-    #else
-      #receive(event)
-    #end
+    receive(event)
   end # def handle
   
   def handle_worker(event)
