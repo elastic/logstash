@@ -62,7 +62,7 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
     require "logstash/util/zeromq"
     self.class.send(:include, LogStash::Util::ZeroMQ)
 
-    if @mode == "server" && @workers > 1
+    if @mode == "server"
       workers_not_supported("With 'mode => server', only one zeromq socket may bind to a port and may not be shared among threads. Going to single-worker mode for this plugin!")
     end
 
