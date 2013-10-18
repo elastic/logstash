@@ -34,8 +34,13 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   public
   def workers_not_supported(message=nil)
-    @logger.warn("#{self.class.config_name} output plugin: setting 'workers => #{@workers}' not supported by this plugin: #{message}") if message
-    define_singleton_method(:worker_setup, method(:worker_setup_skip))
+    return if @workers == 1
+    if message
+      @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported-with-message", :plugin => self.class.config_name, :worker_count => @workers, :message => message))
+    else
+      @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported", :plugin => self.class.config_name, :worker_count => @workers))
+    end
+    @workers = 1
   end
 
   public
@@ -53,13 +58,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def receive(event)
     raise "#{self.class}#receive must be overidden"
   end # def receive
-
-  public
-  def worker_setup_skip
-    return unless @workers > 1
-    @logger.warn("Workers are not supported for the #{self.config_name} output plugin. I will ignore this setting for this plugin.")
-    @workers = 1
-  end
 
   public
   def worker_setup
