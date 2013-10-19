@@ -66,6 +66,14 @@ class LogStash::Filters::Json < LogStash::Filters::Base
       # which won't merge into a hash. If someone needs this, we can fix it
       # later.
       dest.merge!(JSON.parse(event[@source]))
+
+      # This is a hack to help folks who are mucking with @timestamp during
+      # their json filter. You aren't supposed to do anything with "@timestamp"
+      # outside of the date filter, but nobody listens... ;)
+      if event["@timestamp"].is_a?(String)
+        event["@timestamp"] = Time.parse(event["@timestamp"]).gmtime
+      end
+
       filter_matched(event)
     rescue => e
       event.tag("_jsonparsefailure")
