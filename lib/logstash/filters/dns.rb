@@ -31,21 +31,8 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
   config_name "dns"
   milestone 2
 
-  # Reverse resolve one or more fields.
-  config :reverse, :validate => :array, :deprecated => "Please use the source and target options."
-
-  # Forward resolve one or more fields.
-  config :resolve, :validate => :array, :deprecated => "Please use the source and target options."
-
-  # Determine what action to do: append or replace the values in the fields
-  # specified under "reverse" and "resolve."
-  config :action, :validate => [ "append", "replace" ], :default => "append",
-    :deprecated => "Please use the source and target options."
-
-  # The field containing the hostname or ip address to look up.
-  # Use of source/target and reverse/resolve/action is mutually exclusive,
-  # source/target take precedence.
-  config :source, :validate => :string
+  # The field containing the hostname or ip address to look up
+  config :source, :validate => :string, :required => true
 
   # The field where the result should be written to.
   config :target, :validate => :string, :default => "dns"
@@ -73,187 +60,53 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
   def filter(event)
     return unless filter?(event)
 
-    if @source
-      raw = event[@source]
-      if raw.is_a?(Array)
-        if raw.length > 1
-          @logger.warn("DNS: skipping resolve, can't deal with multiple values", :field => @source, :value => raw)
-          return
-        end
-        raw = raw.first
-      end
-
-      result = nil
-
-      begin
-        if @ip_validator.match(raw)
-          status = Timeout::timeout(@timeout) {
-            result = @resolv.getname(raw)
-          }
-        else
-          status = Timeout::timeout(@timeout) {
-            result = @resolv.getaddress(raw)
-          }
-        end
-      rescue Resolv::ResolvError
-        @logger.debug("DNS: couldn't resolve.",
-                      :field => @source, :value => raw)
-        return
-      rescue Resolv::ResolvTimeout
-        @logger.debug("DNS: timeout on resolving.",
-                      :field => @source, :value => raw)
-        return
-      rescue SocketError => e
-        @logger.debug("DNS: Encountered SocketError.",
-                      :field => @source, :value => raw)
-        return
-      rescue NoMethodError => e
-        # see JRUBY-5647
-        @logger.debug("DNS: couldn't resolve the hostname.",
-                      :field => @source, :value => raw,
-                      :extra => "NameError instead of ResolvError")
+    raw = event[@source]
+    if raw.is_a?(Array)
+      if raw.length > 1
+        @logger.warn("DNS: skipping resolve, can't deal with multiple values", :field => field, :value => raw)
         return
       end
+      raw = raw.first
+    end
 
-      if @target.empty?
-        event["dns"] = result
+    result = nil
+
+    begin
+      if @ip_validator.match(raw)
+        status = Timeout::timeout(@timeout) {
+          result = @resolv.getname(raw)
+        }
       else
-        event[@target] = result
+        status = Timeout::timeout(@timeout) {
+          result = @resolv.getaddress(raw)
+        }
       end
+    rescue Resolv::ResolvError
+      @logger.debug("DNS: couldn't resolve.",
+                    :field => field, :value => raw)
+      return
+    rescue Resolv::ResolvTimeout
+      @logger.debug("DNS: timeout on resolving.",
+                    :field => field, :value => raw)
+      return
+    rescue SocketError => e
+      @logger.debug("DNS: Encountered SocketError.",
+                    :field => field, :value => raw)
+      return
+    rescue NoMethodError => e
+      # see JRUBY-5647
+      @logger.debug("DNS: couldn't resolve the hostname.",
+                    :field => field, :value => raw,
+                    :extra => "NameError instead of ResolvError")
+      return
+    end
 
+    if @target.empty?
+      event["dns"] = result
     else
-      # 'Old' functionality, remove when deprecating resolve, reverse and action
-      if @resolve
-        begin
-          status = Timeout::timeout(@timeout) { 
-            resolve(event)
-          }
-        rescue Timeout::Error
-          @logger.debug("DNS: resolve action timed out")
-          return
-        end
-      end
-
-      if @reverse
-        begin
-          status = Timeout::timeout(@timeout) { 
-            reverse(event)
-          }
-        rescue Timeout::Error
-          @logger.debug("DNS: reverse action timed out")
-          return
-        end
-      end
-      # Remove until here (and remove the if/else block)
+      event[@target] = result
     end
 
     filter_matched(event)
-  end
-
-  # When deprecating, these functions can be deleted
-  private
-  def resolve(event)
-    @resolve.each do |field|
-      is_array = false
-      raw = event[field]
-      if raw.is_a?(Array)
-        is_array = true
-        if raw.length > 1
-          @logger.warn("DNS: skipping resolve, can't deal with multiple values", :field => field, :value => raw)
-          return
-        end
-        raw = raw.first
-      end
-
-      begin
-        # in JRuby 1.7.11 outputs as US-ASCII
-        address = @resolv.getaddress(raw).force_encoding(Encoding::UTF_8)
-      rescue Resolv::ResolvError
-        @logger.debug("DNS: couldn't resolve the hostname.",
-                      :field => field, :value => raw)
-        return
-      rescue Resolv::ResolvTimeout
-        @logger.debug("DNS: timeout on resolving the hostname.",
-                      :field => field, :value => raw)
-        return
-      rescue SocketError => e
-        @logger.debug("DNS: Encountered SocketError.",
-                      :field => field, :value => raw)
-        return
-      rescue NoMethodError => e
-        # see JRUBY-5647
-        @logger.debug("DNS: couldn't resolve the hostname.",
-                      :field => field, :value => raw,
-                      :extra => "NameError instead of ResolvError")
-        return
-      end
-
-      if @action == "replace"
-        if is_array
-          event[field] = [address]
-        else
-          event[field] = address
-        end
-      else
-        if !is_array
-          event[field] = [event[field], address]
-        else
-          event[field] << address
-        end
-      end
-
-    end
-  end
-
-  private
-  def reverse(event)
-    @reverse.each do |field|
-      raw = event[field]
-      is_array = false
-      if raw.is_a?(Array)
-          is_array = true
-          if raw.length > 1
-            @logger.warn("DNS: skipping reverse, can't deal with multiple values", :field => field, :value => raw)
-            return
-          end
-          raw = raw.first
-      end
-
-      if ! @ip_validator.match(raw)
-        @logger.debug("DNS: not an address",
-                      :field => field, :value => event[field])
-        return
-      end
-      begin
-        # in JRuby 1.7.11 outputs as US-ASCII
-        hostname = @resolv.getname(raw).force_encoding(Encoding::UTF_8)
-      rescue Resolv::ResolvError
-        @logger.debug("DNS: couldn't resolve the address.",
-                      :field => field, :value => raw)
-        return
-      rescue Resolv::ResolvTimeout
-        @logger.debug("DNS: timeout on resolving address.",
-                      :field => field, :value => raw)
-        return
-      rescue SocketError => e
-        @logger.debug("DNS: Encountered SocketError.",
-                      :field => field, :value => raw)
-        return
-      end
-
-      if @action == "replace"
-        if is_array
-          event[field] = [hostname]
-        else
-          event[field] = hostname
-        end
-      else
-        if !is_array
-          event[field] = [event[field], hostname]
-        else
-          event[field] << hostname
-        end
-      end
-    end
   end
 end # class LogStash::Filters::DNS
