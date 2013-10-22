@@ -1,4 +1,4 @@
-1.2.2 (???)
+1.2.2 (October 22, 2013)
   # general
   - new 'worker' setting for outputs. This helps improve throughput on
     request-oriented outputs such as redis, rabbitmq, elasticsearch,
