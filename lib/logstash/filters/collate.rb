@@ -5,7 +5,7 @@ require "logstash/namespace"
 #
 # The original goal of this filter was to merge the logs from different sources
 # by the time of log, for example, in real-time log collection, logs can be
-# sorted by amount of 3000 logs or can be sorted in 30 seconds.
+# collated by amount of 3000 logs or can be collated in 30 seconds.
 #
 # The config looks like this:
 #
@@ -24,7 +24,7 @@ class LogStash::Filters::Collate < LogStash::Filters::Base
   # How many logs should be collated.
   config :count, :validate => :number, :default => 1000
 
-  # The 'interval' is the time window which how long the logs should be sorted. (default 1m)
+  # The 'interval' is the time window which how long the logs should be collated. (default 1m)
   config :interval, :validate => :string, :default => "1m"
 
   # The 'order' collated events should appear in.
@@ -36,77 +36,77 @@ class LogStash::Filters::Collate < LogStash::Filters::Base
     require "rufus/scheduler"
 
     @mutex = Mutex.new
-    @sortingDone = false
-    @sortingArray = Array.new
+    @collatingDone = false
+    @collatingArray = Array.new
     @scheduler = Rufus::Scheduler.start_new
     @job = @scheduler.every @interval do
       @logger.info("Scheduler Activated")
       @mutex.synchronize{
-        sort
+        collate
       }
     end
   end # def register
 
   public
   def filter(event)
-    @logger.info("do sort filter")
+    @logger.info("do collate filter")
     if event == LogStash::SHUTDOWN
       @job.trigger()
       @job.unschedule()
-      @logger.info("sort filter thread shutdown.")
+      @logger.info("collate filter thread shutdown.")
       return
     end
 
-    # if the event is sorted, a "sorted" tag will be marked, so for those unsorted event, cancel them first.
-    if event["tags"].nil? || !event.tags.include?("sorted")
+    # if the event is collated, a "collated" tag will be marked, so for those uncollated event, cancel them first.
+    if event["tags"].nil? || !event.tags.include?("collated")
       event.cancel
     else
       return
     end
 
     @mutex.synchronize{
-      @sortingArray.push(event.clone)
+      @collatingArray.push(event.clone)
 
-      if (@sortingArray.length == @count)
-        sort
+      if (@collatingArray.length == @count)
+        collate
       end
 
-      if (@sortingDone)
-        while sortedEvent = @sortingArray.pop
-          sortedEvent["tags"] = Array.new if sortedEvent["tags"].nil?
-          sortedEvent["tags"] << "sorted"
-          filter_matched(sortedEvent)
-          yield sortedEvent
-        end # while @sortingArray.pop
-        # reset sortingDone flag
-        @sortingDone = false
+      if (@collatingDone)
+        while collatedEvent = @collatingArray.pop
+          collatedEvent["tags"] = Array.new if collatedEvent["tags"].nil?
+          collatedEvent["tags"] << "collated"
+          filter_matched(collatedEvent)
+          yield collatedEvent
+        end # while @collatingArray.pop
+        # reset collatingDone flag
+        @collatingDone = false
       end
     }
   end # def filter
 
   private
-  def sort
+  def collate
     if (@order == "ascending")
-      @sortingArray.sort! { |eventA, eventB| eventB.timestamp <=> eventA.timestamp }
+      @collatingArray.sort! { |eventA, eventB| eventB.timestamp <=> eventA.timestamp }
     else 
-      @sortingArray.sort! { |eventA, eventB| eventA.timestamp <=> eventB.timestamp }
+      @collatingArray.sort! { |eventA, eventB| eventA.timestamp <=> eventB.timestamp }
     end
-    @sortingDone = true
-  end # def sort
+    @collatingDone = true
+  end # def collate
 
   # Flush any pending messages.
   public
   def flush
     events = []
-    if (@sortingDone)
+    if (@collatingDone)
       @mutex.synchronize{
-        while sortedEvent = @sortingArray.pop
-          sortedEvent["tags"] << "sorted"
-          events << sortedEvent
-        end # while @sortingArray.pop
+        while collatedEvent = @collatingArray.pop
+          collatedEvent["tags"] << "collated"
+          events << collatedEvent
+        end # while @collatingArray.pop
       }
-      # reset sortingDone flag.
-      @sortingDone = false
+      # reset collatingDone flag.
+      @collatingDone = false
     end
     return events
   end # def flush
