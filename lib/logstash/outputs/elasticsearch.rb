@@ -72,6 +72,10 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # default.
   config :embedded_http_port, :validate => :string, :default => "9200-9300"
 
+  # If you are running the embedded elasticsearch server, you can edit the default
+  # default data directory here, the default location is inside the working directory
+  config :embedded_data_directory, :validate => :string, :default => Dir.pwd
+
   # This setting no longer does anything. It exists to keep config validation
   # from failing. It will be removed in future versions.
   config :max_inflight_requests, :validate => :number, :default => 50, :deprecated => true
@@ -142,6 +146,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     builder.settings.put("cluster.name", @cluster) if !@cluster.nil?
     builder.settings.put("node.name", @node_name) if !@node_name.nil?
     builder.settings.put("http.port", @embedded_http_port)
+    builder.settings.put("path.data", @embedded_data_directory)
 
     @embedded_elasticsearch = builder.node
     @embedded_elasticsearch.start
