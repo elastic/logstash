@@ -111,6 +111,9 @@
   - bugfix: datadog: Fix time conversion (LOGSTASH-1427, #690; Bernd Ahlers)
   - bugfix: statsd: Permit plain floating point values correctly in the
     config. Example: sample_rate => 0.5 (LOGSTASH-1441, #705; Jordan Sissel)
+  - bugfix: syslog: Fix timestamp date formation. 'timestamp' setting is now
+    deprecated and the format of the time depends on your rfc selection.
+    (LOGSTASH-1423, #692, #739; Jordan Sissel, Bernd Ahlers)
 
   ## patterns
   - improvement: added IPV6 suppot to IP pattern (#623)
