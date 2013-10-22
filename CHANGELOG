@@ -45,7 +45,8 @@
 
   ## codecs
   - new: graphite: parse graphite formated events (Nick Ethier)
-  - new: json_lines: parse streams that are lines of json objects (#731, Nick Ethier)
+  - new: json_lines: parse streams that are lines of json objects (#731, Nick
+    Ethier)
   - bugfix: multiline: time is now correctly in UTC. (Jordan Sissel)
   - bugfix: oldlogstashjson: improved conversion of old logstash json to the
     new schema (#654, Jordan Sissel)
@@ -75,7 +76,8 @@
   - improvement: grok: IPV6 pattern (#623, Matt Dainty)
   - improvement: metrics: add clear_interval and flush_interval settings (#545,
     Juarez Bochi)
-  - improvement: useragent: include operating system details (#656, Philip Kubat)
+  - improvement: useragent: include operating system details (#656, Philip
+    Kubat)
   - improvement: csv: new quote_char setting (#725, Alex Markham)
 
   ## outputs
