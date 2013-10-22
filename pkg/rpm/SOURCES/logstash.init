@@ -96,7 +96,7 @@ do_start()
   fi
 
   if ! test -e "${JAR}"; then
-    echo "Daemon $DAEMON doesn't exist"
+    echo "JAR file $JAR doesn't exist"
     exit 1
   fi
 
@@ -111,7 +111,7 @@ do_start()
   $JAVA $ARGS > /dev/null 1>&1 &
 
   RETVAL=$?
-  local PID=`pgrep -f "${DAEMON} ${ARGS}"`
+  local PID=`pgrep -f "${JAVA} ${ARGS//+/\\+}"`
   echo $PID > $PID_FILE
   success
 }
@@ -121,7 +121,7 @@ do_start()
 #
 do_stop()
 {
-    killproc -p $PID_FILE $DAEMON
+    killproc -p $PID_FILE
     RETVAL=$?
     echo
     [ $RETVAL = 0 ] && rm -f ${PID_FILE}
