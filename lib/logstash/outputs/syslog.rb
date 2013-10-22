@@ -67,7 +67,7 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
   config :sourcehost, :validate => :string, :default => "%{host}"
 
   # timestamp for syslog message
-  config :timestamp, :validate => :string, :default => "%{@timestamp}"
+  config :timestamp, :validate => :string, :default => "%{@timestamp}", :deprecated => "This setting is no longer necessary. The RFC setting will determine what time format is used."
 
   # application name for syslog message
   config :appname, :validate => :string, :default => "LOGSTASH"
@@ -122,12 +122,12 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
     priority = (facility_code * 8) + severity_code
 
     if rfc3164?
-       timestamp = DateTime.iso8601(event.sprintf(@timestamp)).strftime("%b %e %H:%M:%S")
-       syslog_msg = "<"+priority.to_s()+">"+timestamp+" "+sourcehost+" "+appname+"["+procid+"]: "+event["message"]
+      timestamp = event.sprintf("%{+MMM dd HH:mm:ss}")
+      syslog_msg = "<"+priority.to_s()+">"+timestamp+" "+sourcehost+" "+appname+"["+procid+"]: "+event["message"]
     else
-       msgid = event.sprintf(@msgid)
-       timestamp = DateTime.iso8601(event.sprintf(@timestamp)).rfc3339()
-       syslog_msg = "<"+priority.to_s()+">1 "+timestamp+" "+sourcehost+" "+appname+" "+procid+" "+msgid+" - "+event["message"]
+      msgid = event.sprintf(@msgid)
+      timestamp = event.sprintf("%{+YYYY-MM-dd'T'HH:mm:ss.SSSZ}")
+      syslog_msg = "<"+priority.to_s()+">1 "+timestamp+" "+sourcehost+" "+appname+" "+procid+" "+msgid+" - "+event["message"]
     end
 
     begin
@@ -136,7 +136,8 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
     rescue => e
       @logger.warn(@protocol+" output exception", :host => @host, :port => @port,
                  :exception => e, :backtrace => e.backtrace)
-      @client_socket.close
+      @client_socket.close rescue nil
+      @client_socket = nil
     end
   end
 end
