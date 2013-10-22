@@ -126,7 +126,7 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
       syslog_msg = "<"+priority.to_s()+">"+timestamp+" "+sourcehost+" "+appname+"["+procid+"]: "+event["message"]
     else
       msgid = event.sprintf(@msgid)
-      timestamp = event.sprintf("%{+YYYY-MM-ddTHH:mm:ss.SSSZ}")
+      timestamp = event.sprintf("%{+YYYY-MM-dd'T'HH:mm:ss.SSSZ}")
       syslog_msg = "<"+priority.to_s()+">1 "+timestamp+" "+sourcehost+" "+appname+" "+procid+" "+msgid+" - "+event["message"]
     end
 
@@ -136,7 +136,8 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
     rescue => e
       @logger.warn(@protocol+" output exception", :host => @host, :port => @port,
                  :exception => e, :backtrace => e.backtrace)
-      @client_socket.close
+      @client_socket.close rescue nil
+      @client_socket = nil
     end
   end
 end
