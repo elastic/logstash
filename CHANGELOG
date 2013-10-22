@@ -7,6 +7,11 @@
     cores or as blocking-io permits.
   - grok performance is up 600%
   - lots of bug fixes
+  - bugfixes to conditionals (#682, Matt Dainty)
+  - rabbitmq now replaces the old deprecated amqp plugins. amqp plugins are
+    removed.
+  - inputs will now do their best to handle text which is encoded differently
+    than the charset you have specified (LOGSTASH-1443, Jordan Sissel)
 
   ## inputs
   - bugfix: udp: respects teardown requests via SIGINT, etc (LOGSTASH-1290,
@@ -33,15 +38,21 @@
     1.2.0. This feature is still deprecated, but it has been restored
     temporarily as part of our backwards compatibility promise. (#706, Jordan
     Sissel)
+  - bugfix: syslog: fix socket leakage (#704, Bernd Ahlers)
+  - improvement: all aws-related plugins: Add proxy_uri setting (#714, Malthe
+    Borch)
+  - bugfix: unix: fix variable name crash (#720, Nikolay Bryskin)
 
   ## codecs
   - new: graphite: parse graphite formated events (Nick Ethier)
+  - new: json_lines: parse streams that are lines of json objects (#731, Nick Ethier)
   - bugfix: multiline: time is now correctly in UTC. (Jordan Sissel)
   - bugfix: oldlogstashjson: improved conversion of old logstash json to the
     new schema (#654, Jordan Sissel)
   - bugfix: oldlogstashjson: fix typo breaking encoding (#665, Tom Howe)
   - bugfix: json: now assumes json delimited by newline character
     (LOGSTASH-1332, #710; Nick Ethier)
+  - improvements: netflow: new target and versions settings (#686, Matt Dainty)
 
   ## filters
   - performance: grok: 6.3x performance improvement (#681, Jordan Sissel)
@@ -65,6 +76,7 @@
   - improvement: metrics: add clear_interval and flush_interval settings (#545,
     Juarez Bochi)
   - improvement: useragent: include operating system details (#656, Philip Kubat)
+  - improvement: csv: new quote_char setting (#725, Alex Markham)
 
   ## outputs
   - feature: all outputs have a 'worker' setting  now that allows you to
