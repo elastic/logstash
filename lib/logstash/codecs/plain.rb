@@ -1,4 +1,5 @@
 require "logstash/codecs/base"
+require "logstash/util/charset"
 
 # The "plain" codec is for plain text with no delimiting between events.
 #
@@ -22,17 +23,16 @@ class LogStash::Codecs::Plain < LogStash::Codecs::Base
   #
   # This only affects "plain" format logs since json is UTF-8 already.
   config :charset, :validate => ::Encoding.name_list, :default => "UTF-8"
-  
+
+  public
+  def register
+    @converter = LogStash::Util::Charset.new(@charset)
+    @converter.logger = @logger
+  end
+
   public
   def decode(data)
-    data.force_encoding(@charset)
-    if @charset != "UTF-8"
-      # The user has declared the character encoding of this data is
-      # something other than UTF-8. Let's convert it (as cleanly as possible)
-      # into UTF-8 so we can use it with JSON, etc.
-      data = data.encode("UTF-8", :invalid => :replace, :undef => :replace)
-    end
-    yield LogStash::Event.new({"message" => data})
+    yield LogStash::Event.new("message" => @converter.convert(data))
   end # def decode
 
   public
