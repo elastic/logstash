@@ -10,7 +10,7 @@
 %global sysconfigdir %{_sysconfdir}/sysconfig
 
 Name:           logstash
-Version:        1.2.1
+Version:        1.2.2
 Release:        1%{?dist}
 Summary:        A tool for managing events and logs
 
@@ -136,6 +136,9 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{piddir}/
 
 %changelog
+* Wed Okt 23 2013 sjir@basefarm.no 1.2.2-1
+- Update logstash version to 1.2.2-1
+
 * Fri Sep 27 2013 sbagmeijer@ulyaoth.asia 1.2.1-1
 - Building for Fedora 18, 19 and 20-alpha.
 - Added Source5 for logstash.conf
