@@ -136,7 +136,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{piddir}/
 
 %changelog
-* Wed Okt 23 2013 sjir@basefarm.no 1.2.2-1
+* Wed Oct 23 2013 sjir@basefarm.no 1.2.2-1
 - Update logstash version to 1.2.2-1
 
 * Fri Sep 27 2013 sbagmeijer@ulyaoth.asia 1.2.1-1
