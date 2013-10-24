@@ -4,7 +4,7 @@
 #
 #       Starts Logstash as a daemon
 #
-# chkconfig: 2345 20 80
+# chkconfig: 2345 90 10
 # description: Starts Logstash as a daemon
 
 ### BEGIN INIT INFO
