@@ -75,7 +75,7 @@ ready to configure logstash.
 Download the logstash release jar file. The package contains all
 required dependencies to save you time chasing down requirements.
 
-Follow [this link to download logstash-%VERSION%](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-flatjar.jar).
+Follow [this link to download logstash-%VERSION%](https://download.elasticsearch.org/logstash/logstash/logstash-%VERSION%-flatjar.jar).
 
 Since we're doing a centralized configuration, you'll have two main
 logstash agent roles: a shipper and an indexer. You will ship logs from
