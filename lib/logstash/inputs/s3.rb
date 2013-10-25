@@ -63,7 +63,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   def register
     require "digest/md5"
 
-    @region_endpoint = @region if !@region.empty?
+    @region_endpoint = @region if !@region.nil? && !@region.empty?
 
     @region_endpoint == 'us-east-1' ? @region_endpoint = 's3.amazonaws.com' : @region_endpoint = 's3-'+@region_endpoint+'.amazonaws.com'
 
