@@ -6,17 +6,17 @@ require "logstash/namespace"
 # Numbers are checked to be within numeric value range.
 # Strings are checked to be within string length range.
 # More than one range can be specified for same fieldname, actions will be applied incrementally.
-# Then field value is with in a specified range and action will be taken
-# supported actions are drop event add tag or add field with specified value.
+# When field value is within a specified range an action will be taken.
+# Supported actions are drop event, add tag, or add field with specified value.
 #
-# Example usecases are for histogram like tagging of events
+# Example use cases are for histogram-like tagging of events
 # or for finding anomaly values in fields or too big events that should be dropped.
 
 class LogStash::Filters::Range < LogStash::Filters::Base
   config_name "range"
   milestone 1
 
-  # An array of field, min, max ,action tuples.
+  # An array of field, min, max, action tuples.
   # Example:
   #
   #     filter {
@@ -28,8 +28,8 @@ class LogStash::Filters::Range < LogStash::Filters::Base
   #                     "duration", 0, 100, "field:latency:fast",
   #                     "duration", 101, 200, "field:latency:normal",
   #                     "duration", 201, 1000, "field:latency:slow",
-  #                     "duration", 1001, 1e1000, "field:latency:outlier" 
-  #                     "requests", 0, 10, "tag:to_few_%{host}_requests" ]
+  #                     "duration", 1001, 1e1000, "field:latency:outlier",
+  #                     "requests", 0, 10, "tag:too_few_%{host}_requests" ]
   #       }
   #     }
   #
@@ -40,7 +40,7 @@ class LogStash::Filters::Range < LogStash::Filters::Base
   # TODO(piavlo): simple not nested hashses as values in addition to numaric and string values to prettify the syntax.
   config :ranges, :validate => :array, :default => []
 
-  # Negate the range match logic, events should be outsize of the specificed range to match.
+  # Negate the range match logic, events should be outsize of the specified range to match.
   config :negate, :validate => :boolean, :default => false
 
   public
