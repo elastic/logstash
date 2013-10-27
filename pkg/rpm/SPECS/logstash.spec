@@ -136,6 +136,9 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{piddir}/
 
 %changelog
+* Sun Oct 27 2013 <sbagmeijer@ulyaoth.asia> - 1.2.2-2
+- Fixed the bogus date warning
+
 * Wed Oct 23 2013 <sjir@basefarm.no> - 1.2.2-1
 - Update logstash version to 1.2.2-1
 
