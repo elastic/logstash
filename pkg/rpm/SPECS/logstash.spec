@@ -136,32 +136,32 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{piddir}/
 
 %changelog
-* Wed Oct 23 2013 sjir@basefarm.no 1.2.2-1
+* Wed Oct 23 2013 <sjir@basefarm.no> - 1.2.2-1
 - Update logstash version to 1.2.2-1
 
-* Fri Sep 27 2013 sbagmeijer@ulyaoth.asia 1.2.1-1
+* Fri Sep 27 2013 <sbagmeijer@ulyaoth.asia> - 1.2.1-1
 - Building for Fedora 18, 19 and 20-alpha.
 - Added Source5 for logstash.conf
 - Fixed the BuildArch so it can be build for i386
 
-* Mon Sep 16 2013 sjir@basefarm.se 1.2.1
+* Mon Sep 16 2013 <sjir@basefarm.se> - 1.2.1
 - Updated version to the new 1.2.1
 - Removed everything related to plugins as it no longer works.
 
-* Wed Sep 04 2013 sjir@basefarm.se 1.2.0
+* Wed Sep 04 2013 <sjir@basefarm.se> - 1.2.0
 - Updated version to the new 1.2.0.
 - Fixed a problem with the init.d script not working correctly.
 
-* Fri Jun 14 2013 sjir@basefarm.se 1.1.13-1
+* Fri Jun 14 2013 <sjir@basefarm.se> - 1.1.13-1
 - Updated version to the new 1.1.13-1 and fixed some minor issues with directory structure.
 
-* Fri May 6 2013 sjir@basefarm.se 1.1.10-3
+* Mon May 6 2013 <sjir@basefarm.se> - 1.1.10-3
 - Changed from logstash flatjar to the monolith as flatjar is not working correctly yet.
 
-* Fri Apr 19 2013 sjir@basefarm.se 1.1.10-2
+* Fri Apr 19 2013 <sjir@basefarm.se> - 1.1.10-2
 - Fixed a bug
 
-* Fri Apr 19 2013 sjir@basefarm.se 1.1.10-1
+* Fri Apr 19 2013 <sjir@basefarm.se> - 1.1.10-1
 - Added fixes to support RHEL6
 - Update logstash version to 1.1.10
 
@@ -169,9 +169,9 @@ rm -rf $RPM_BUILD_ROOT
 - Update init script
 - Create patterns dir in correct place
 
-* Sat Feb  1 2013 Richard Pijnenburg <richard@ispavailability.com> - 1.1.9-1
+* Fri Feb 1 2013 Richard Pijnenburg <richard@ispavailability.com> - 1.1.9-1
 - Update to latest stable release.
 - New init script
 
-* Fri May  4 2012 Maksim Horbul <max@gorbul.net> - 1.1.0-1
+* Fri May 4 2012 Maksim Horbul <max@gorbul.net> - 1.1.0-1
 - Initial package
