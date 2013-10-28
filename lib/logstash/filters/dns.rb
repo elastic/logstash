@@ -63,7 +63,7 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
     raw = event[@source]
     if raw.is_a?(Array)
       if raw.length > 1
-        @logger.warn("DNS: skipping resolve, can't deal with multiple values", :field => field, :value => raw)
+        @logger.warn("DNS: skipping resolve, can't deal with multiple values", :field => @source, :value => raw)
         return
       end
       raw = raw.first
@@ -83,20 +83,20 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
       end
     rescue Resolv::ResolvError
       @logger.debug("DNS: couldn't resolve.",
-                    :field => field, :value => raw)
+                    :field => @source, :value => raw)
       return
     rescue Resolv::ResolvTimeout
       @logger.debug("DNS: timeout on resolving.",
-                    :field => field, :value => raw)
+                    :field => @source, :value => raw)
       return
     rescue SocketError => e
       @logger.debug("DNS: Encountered SocketError.",
-                    :field => field, :value => raw)
+                    :field => @source, :value => raw)
       return
     rescue NoMethodError => e
       # see JRUBY-5647
       @logger.debug("DNS: couldn't resolve the hostname.",
-                    :field => field, :value => raw,
+                    :field => @source, :value => raw,
                     :extra => "NameError instead of ResolvError")
       return
     end
