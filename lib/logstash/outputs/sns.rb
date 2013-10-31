@@ -47,13 +47,6 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
   config :publish_boot_message_arn, :validate => :string
 
   public
-  def aws_service_endpoint(region)
-    return {
-        :sns_endpoint => "sns.#{region}.amazonaws.com"
-    }
-  end
-
-  public
   def register
     require "aws-sdk"
 
@@ -113,7 +106,7 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
   def self.format_message(event)
     message =  "Date: #{event["@timestamp"]}\n"
     message << "Source: #{event["source"]}\n"
-    message << "Tags: #{event["tags"].join(', ')}\n"
+    message << "Tags: #{event["tags"].join(', ')}\n" if event["tags"]
     message << "Fields: #{event.to_hash.inspect}\n"
     message << "Message: #{event["message"]}"
 
