@@ -478,6 +478,12 @@ class LogStash::Outputs::GoogleBigQuery < LogStash::Outputs::Base
       response = JSON.parse(get_result.response.body)
       @logger.debug("BQ: successfully invoked API.",
                     :response => response)
+
+      if response.has_key?("error")
+        raise response["error"]
+      end
+
+      # Successful invocation
       contents = response["status"]
       return contents
     rescue => e
