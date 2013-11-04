@@ -21,12 +21,12 @@ describe LogStash::Filters::Metrics do
           filter = LogStash::Filters::Metrics.new config
           filter.register
           filter.filter LogStash::Event.new({"response" => 200})
-          filter.filter LogStash::Event.new({"response" => 200})
+          filter.filter LogStash::Event.new({"response" => 200, "count" => 2})
           filter.filter LogStash::Event.new({"response" => 404})
 
           events = filter.flush
           insist { events.length } == 1
-          insist { events.first["http.200.count"] } == 2
+          insist { events.first["http.200.count"] } == 3
           insist { events.first["http.404.count"] } == 1
         end
       end
