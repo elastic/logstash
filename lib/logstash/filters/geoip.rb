@@ -41,6 +41,14 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   # information of both IP's
   config :target, :validate => :string, :default => 'geoip'
 
+  # Create a GeoJSON field from lon/lat
+  # This can also be used by a mapping to create an Elasticsearch geo_point.
+  # http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-geo-point-type.html
+  config :add_geojson, :validate => :boolean, :default => true
+
+  # What name to use for the field indicated by add_geojson
+  config :geojson_name, :validate => :string, :default => 'location'
+
   public
   def register
     require "geoip"
@@ -117,6 +125,11 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
         event[@target][key.to_s] = value
       end
     end # geo_data_hash.each
+    if @add_geojson 
+      if event[@target].key?("latitude") && event[@target].key?("longitude")
+        event[@geojson_name] = [ event[@target]["longitude"].to_f, event[@target]["latitude"].to_f ] 
+      end
+    end
     filter_matched(event)
   end # def filter
 end # class LogStash::Filters::GeoIP
