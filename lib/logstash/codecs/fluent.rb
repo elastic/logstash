@@ -17,6 +17,11 @@ require "logstash/util/charset"
 #     logger = Fluent::Logger::FluentLogger.new(nil, :host => "example.log", :port => 4000)
 #     logger.post("some_tag", { "your" => "data", "here" => "yay!" })
 #
+# Notes:
+#
+# * the fluent uses a second-precision time for events, so you will never see
+#   subsecond precision on events processed by this codec.
+#
 class LogStash::Codecs::Fluent < LogStash::Codecs::Base
   config_name "fluent"
   milestone 1
