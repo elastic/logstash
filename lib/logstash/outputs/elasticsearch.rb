@@ -56,7 +56,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   # The port for ElasticSearch transport to use. This is *not* the ElasticSearch
   # REST API port (normally 9200).
-  config :port, :validate => :string, :default => "9300-9400"
+  config :port, :validate => :string, :default => "9300-9305"
 
   # The name/address of the host to bind to for ElasticSearch clustering
   config :bind_host, :validate => :string
@@ -164,8 +164,10 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       end
     end
 
-    request.on(:success) { }
-    request.execute
+    request.execute!
+    # TODO(sissel): Handle errors. Since bulk requests could mostly succeed
+    # (aka partially fail), we need to figure out what documents need to be
+    # retried.
   end # def flush
 
 end # class LogStash::Outputs::Elasticsearch

@@ -31,7 +31,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   config :debug, :validate => :boolean, :default => false
 
   # The format of input data (plain, json, json_event)
-  config :format, :validate => ["plain", "json", "json_event", "msgpack_event"], :deprecated => true
+  config :format, :validate => ["plain", "json", "json_event", "msgpack_event"], :deprecated => "You should use the newer 'codec' setting instead."
 
   # The codec used for input data
   config :codec, :validate => :codec, :default => "plain"
@@ -79,6 +79,15 @@ class LogStash::Inputs::Base < LogStash::Plugin
       @logger.info("Copying input's charset setting into codec", :input => self, :codec => @codec)
       charset = @charset
       @codec.instance_eval { @charset = charset }
+    end
+
+    # Backwards compat for the 'format' setting
+    case @format
+      when "plain"; # do nothing
+      when "json"
+        @codec = LogStash::Plugin.lookup("codec", "json").new
+      when "json_event"
+        @codec = LogStash::Plugin.lookup("codec", "oldlogstashjson").new
     end
 
   end # def initialize

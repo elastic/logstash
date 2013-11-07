@@ -2,21 +2,21 @@
 #   rsync
 #   wget or curl
 #
-JRUBY_VERSION=1.7.4
+JRUBY_VERSION=1.7.5
 ELASTICSEARCH_VERSION=0.90.3
 #VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
 VERSION=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb)
 
 WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
-JRUBY_URL=http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)
+JRUBY_URL=http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-complete-$(JRUBY_VERSION).jar
 JRUBY_CMD=java -jar $(JRUBY)
 JRUBYC=$(WITH_JRUBY) jrubyc
 ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
-KIBANA_URL=https://github.com/elasticsearch/kibana/archive/master.tar.gz
+KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-latest.tar.gz
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters|codecs)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 QUIET=@
 
@@ -96,7 +96,7 @@ build-jruby: $(JRUBY)
 
 $(JRUBY): | vendor/jar
 	$(QUIET)echo " ==> Downloading jruby $(JRUBY_VERSION)"
-	$(QUIET)$(DOWNLOAD_COMMAND) $@ http://repository.codehaus.org/org/jruby/jruby-complete/$(JRUBY_VERSION)/jruby-complete-$(JRUBY_VERSION).jar
+	$(QUIET)$(DOWNLOAD_COMMAND) $@ $(JRUBY_URL)
 
 vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | wget-or-curl vendor/jar
 	@echo "=> Fetching elasticsearch"
@@ -136,14 +136,6 @@ vendor/bundle: | vendor $(JRUBY)
 	@echo "=> Installing gems to $@..."
 	@#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
 	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec
-	@# Purge old version of json
-	#$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall json -v 1.6.5
-	@# Purge old versions of gems installed because gembag doesn't do
-	@# dependency resolution correctly.
-	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall addressable -v 2.2.8
-	@# uninstall the newer ffi (1.1.5 vs 1.3.1) because that's what makes
-	@#dependencies happy (launchy wants ffi 1.1.x)
-	#$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 -S gem uninstall ffi -v 1.3.1
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
 	-rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
@@ -373,4 +365,3 @@ package:
 vendor/kibana: | build
 	$(QUIET)mkdir vendor/kibana || true
 	$(DOWNLOAD_COMMAND) - $(KIBANA_URL) | tar -C $@ -zx --strip-components=1
-	$(QUIET)sed -e "s/@message/message/g" vendor/kibana/src/app/dashboards/logstash.json > vendor/kibana/src/app/dashboards/default.json

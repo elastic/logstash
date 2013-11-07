@@ -175,7 +175,7 @@ module LogStash; module Config; module AST
             "end",
           ].map { |l| "#{l}\n" }.join("")
         when "output"
-          return "#{variable_name}.receive(event)\n"
+          return "#{variable_name}.handle(event)\n"
         when "codec"
           settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
           attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
@@ -299,7 +299,7 @@ module LogStash; module Config; module AST
   module NotInExpression
     def compile
       item, list = recursive_select(LogStash::Config::AST::RValue)
-      return "(x = #{list.compile}; x.respond_to?(:include?) && !x.include?(#{item.compile}))"
+      return "(x = #{list.compile}; !x.respond_to?(:include?) || !x.include?(#{item.compile}))"
     end
   end
 

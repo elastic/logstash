@@ -1,7 +1,11 @@
 require "logstash/codecs/base"
+require "logstash/codecs/line"
 require "json"
 
-# This codec will encode and decode JSON.
+# The codec should be used to decode full json messages.
+# If you are streaming JSON messages delimited by '\n' then 
+# see the json_lines codec.
+# Encoding will result in a single json string.
 class LogStash::Codecs::JSON < LogStash::Codecs::Base
   config_name "json"
 
@@ -17,17 +21,9 @@ class LogStash::Codecs::JSON < LogStash::Codecs::Base
   #
   # For nxlog users, you'll want to set this to "CP1252"
   config :charset, :validate => ::Encoding.name_list, :default => "UTF-8"
-
+  
   public
   def decode(data)
-    data.force_encoding(@charset)
-    if @charset != "UTF-8"
-      # The user has declared the character encoding of this data is
-      # something other than UTF-8. Let's convert it (as cleanly as possible)
-      # into UTF-8 so we can use it with JSON, etc.
-      data = data.encode("UTF-8", :invalid => :replace, :undef => :replace)
-    end
-
     begin
       yield LogStash::Event.new(JSON.parse(data))
     rescue JSON::ParserError => e
@@ -38,9 +34,7 @@ class LogStash::Codecs::JSON < LogStash::Codecs::Base
 
   public
   def encode(data)
-    # Tack on a \n for now because previously most of logstash's JSON
-    # outputs emitted one per line, and whitespace is OK in json.
-    @on_event.call(data.to_json + "\n")
+    @on_event.call(data.to_json)
   end # def encode
 
 end # class LogStash::Codecs::JSON

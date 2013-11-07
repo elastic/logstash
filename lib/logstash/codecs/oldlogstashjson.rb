@@ -39,10 +39,10 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
     basics = %w(@timestamp @message @source_host @source_path @source
                 @tags @type)
     basics.each do |key|
-      h[key] = obj[key] if obj.include?(key)
+      h[key] = data[key] if data.include?(key)
     end
 
-    h.merge!(obj["@fields"]) if obj["@fields"].is_a?(Hash)
+    h.merge!(data["@fields"]) if data["@fields"].is_a?(Hash)
     @on_event.call(h)
   end # def encode
 

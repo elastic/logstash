@@ -23,7 +23,7 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   # The port to connect on your graphite server.
   config :port, :validate => :number, :default => 2003
 
-  # Interval between reconnect attempts to carboon
+  # Interval between reconnect attempts to Carbon
   config :reconnect_interval, :validate => :number, :default => 2
 
   # Should metrics be resend on failure?

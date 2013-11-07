@@ -47,7 +47,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   # sincedb files to some path matching "$HOME/.sincedb*"
   config :sincedb_path, :validate => :string
 
-  # How often to write a since database with the current position of
+  # How often (in seconds) to write a since database with the current position of
   # monitored log files.
   config :sincedb_write_interval, :validate => :number, :default => 15
 

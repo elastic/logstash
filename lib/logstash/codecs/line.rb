@@ -1,4 +1,5 @@
 require "logstash/codecs/base"
+require "logstash/util/charset"
 
 # Line-oriented text data.
 #
@@ -25,22 +26,14 @@ class LogStash::Codecs::Line < LogStash::Codecs::Base
   def register
     require "logstash/util/buftok"
     @buffer = FileWatch::BufferedTokenizer.new
+    @converter = LogStash::Util::Charset.new(@charset)
+    @converter.logger = @logger
   end
   
   public
   def decode(data)
     @buffer.extract(data).each do |line|
-      line.force_encoding(@charset)
-      if @charset != "UTF-8"
-        # The user has declared the character encoding of this data is
-        # something other than UTF-8. Let's convert it (as cleanly as possible)
-        # into UTF-8 so we can use it with JSON, etc.
-
-        # To convert, we first tell ruby the string is *really* encoded as
-        # somethign else (@charset), then we convert it to UTF-8.
-        data = data.encode("UTF-8", :invalid => :replace, :undef => :replace)
-      end
-      yield LogStash::Event.new({"message" => line})
+      yield LogStash::Event.new("message" => @converter.convert(line))
     end
   end # def decode
 
