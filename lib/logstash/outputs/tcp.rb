@@ -68,6 +68,8 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
   public
   def register
     require "stud/try"
+    require "socket"
+
     if server?
       workers_not_supported
 
@@ -101,7 +103,16 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
           # don't expect any reads, but a readable socket might
           # mean the remote end closed, so read it and throw it away.
           # we'll get an EOFError if it happens.
-          client_socket.sysread(16384) if r.any?
+          begin
+            client_socket.sysread(16384) if r.any?
+          rescue EOFError
+            # Do something with the EOFError
+            client_socket.close rescue nil
+            client_socket = nil
+            @logger.info("tcp output received EOFError. Restarting connection"
+            		 :host => @host, :port => @port)
+            sleep @reconnect_interval
+            retry
 
           # Now send the payload
           client_socket.syswrite(payload) if w.any?
