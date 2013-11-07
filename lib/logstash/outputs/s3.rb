@@ -1,8 +1,8 @@
+require "fileutils"
+
 require "logstash/outputs/base"
 require "logstash/namespace"
-
-# TODO integrate aws_config in the future 
-#require "logstash/plugin_mixins/aws_config"
+require "logstash/plugin_mixins/aws_config"
 
 # INFORMATION:
 
@@ -47,7 +47,6 @@ require "logstash/namespace"
 # I tried to comment the class at best i could do. 
 # I think there are much thing to improve, but if you want some points to develop here a list:
 
-# TODO Integrate aws_config in the future 
 # TODO Find a method to push them all files when logtstash close the session.
 # TODO Integrate @field on the path file
 # TODO Permanent connection or on demand? For now on demand, but isn't a good implementation. 
@@ -64,7 +63,7 @@ require "logstash/namespace"
 #    s3{ 
 #      access_key_id => "crazy_key"             (required)
 #      secret_access_key => "monkey_access_key" (required)
-#      endpoint_region => "eu-west-1"           (required)
+#      region => "eu-west-1"                    (required)
 #      bucket => "boss_please_open_your_bucket" (required)         
 #      size_file => 2048                        (optional)
 #      time_file => 5                           (optional)
@@ -103,25 +102,13 @@ require "logstash/namespace"
 # LET'S ROCK AND ROLL ON THE CODE!
 
 class LogStash::Outputs::S3 < LogStash::Outputs::Base
- #TODO integrate aws_config in the future 
- #  include LogStash::PluginMixins::AwsConfig
+  include LogStash::PluginMixins::AwsConfig
 
  config_name "s3"
  milestone 1
 
- # Aws access_key.
- config :access_key_id, :validate => :string
- 
- # Aws secret_access_key
- config :secret_access_key, :validate => :string
-
  # S3 bucket
  config :bucket, :validate => :string
-
- # Aws endpoint_region
- config :endpoint_region, :validate => ["us-east-1", "us-west-1", "us-west-2",
-                                        "eu-west-1", "ap-southeast-1", "ap-southeast-2",
-                                        "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
 
  # Set the size of file in KB, this means that files on bucket when have dimension > file_size, they are stored in two or more file. 
  # If you have tags then it will generate a specific size file for every tags
@@ -150,16 +137,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  # Method to set up the aws configuration and establish connection
  def aws_s3_config
 
-  @endpoint_region == 'us-east-1' ? @endpoint_region = 's3.amazonaws.com' : @endpoint_region = 's3-'+@endpoint_region+'.amazonaws.com'
-
   @logger.info("Registering s3 output", :bucket => @bucket, :endpoint_region => @endpoint_region)
 
-  AWS.config(
-    :access_key_id => @access_key_id,
-    :secret_access_key => @secret_access_key,
-    :s3_endpoint => @endpoint_region
-  )
-  @s3 = AWS::S3.new 
+  @s3 = AWS::S3.new(aws_options_hash)
 
  end
 
@@ -234,7 +214,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
  # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
  def newFile (flag)
-  
+   
    if (flag == true)
      @current_final_path = getFinalPath
      @sizeCounter = 0
@@ -262,7 +242,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
    if !(File.directory? @temp_directory)
     @logger.debug "S3: Directory "+@temp_directory+" doesn't exist, let's make it!"
-    Dir.mkdir(@temp_directory)
+    FileUtils.mkdir_p @temp_directory
    else
     @logger.debug "S3: Directory "+@temp_directory+" exist, nothing to do"
    end 
@@ -345,7 +325,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  def self.format_message(event)
     message = "Date: #{event["@timestamp"]}\n"
     message << "Source: #{event["source"]}\n"
-    message << "Tags: #{event["tags"].join(', ')}\n"
+    message << "Tags: #{event["tags"].join(', ')}\n" if event["tags"]
     message << "Fields: #{event.to_hash.inspect}\n"
     message << "Message: #{event["message"]}"
  end

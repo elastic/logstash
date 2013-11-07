@@ -75,13 +75,6 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   config :sent_timestamp_field, :validate => :string
 
   public
-  def aws_service_endpoint(region)
-    return {
-        :sqs_endpoint => "sqs.#{region}.amazonaws.com"
-    }
-  end
-
-  public
   def register
     @logger.info("Registering SQS input", :queue => @queue)
     require "aws-sdk"
