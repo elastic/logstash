@@ -112,8 +112,8 @@ class LogStash::Inputs::RabbitMQ
         @codec.decode(data) do |event|
           decorate(event)
           @output_queue << event if event
-          @ch.ack(metadata.delivery_tag) if @ack
         end
+	@ch.ack(metadata.delivery_tag) if @ack
       end
       @q.subscribe_with(@consumer, :manual_ack => @ack, :block => true)
     end
