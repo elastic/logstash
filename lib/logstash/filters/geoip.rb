@@ -41,6 +41,10 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   # information of both IP's
   config :target, :validate => :string, :default => 'geoip'
 
+  # Specify what type of coordinates to use:
+  # geoip (default output of GeoIP), geojson ('location':[lon/lat])
+  config :coordinate_schema, :validate => :string, :default => 'geoip'
+
   public
   def register
     require "geoip"
@@ -67,6 +71,9 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
       end
     end
     @logger.info("Using geoip database", :path => @database)
+    if @coordinate_schema == 'geoip' 
+      @logger.warn("GeoJSON will soon be the default type.  Be sure to hard-code \"coordinate_schema => 'geoip'\" if you desire the GeoIP type.")
+    end
     @geoip = ::GeoIP.new(@database)
 
     @geoip_type = case @geoip.database_type
@@ -117,6 +124,13 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
         event[@target][key.to_s] = value
       end
     end # geo_data_hash.each
+    if @coordinate_schema == 'geojson' 
+      if event[@target].key?('latitude') && event[@target].key?('longitude')
+        event['location'] = [ event[@target]["longitude"].to_f, event[@target]["latitude"].to_f ] 
+        event[@target].delete('longitude')
+        event[@target].delete('latitude') # De-dup now that we have these in 'location'
+      end
+    end
     filter_matched(event)
   end # def filter
 end # class LogStash::Filters::GeoIP
