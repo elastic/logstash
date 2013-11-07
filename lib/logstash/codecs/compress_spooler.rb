@@ -1,14 +1,22 @@
 require "logstash/codecs/base"
 
 class LogStash::Codecs::CompressSpooler < LogStash::Codecs::Base
-  require "msgpack"
-  require "zlib"
   config_name 'compress_spooler'
   milestone 1
   config :spool_size, :validate => :number, :default => 50
   config :compress_level, :validate => :number, :default => 6
 
-  attr_reader :buffer
+
+  public
+  def initialize
+    @buffer = []
+  end
+
+  public
+  def register
+    require "msgpack"
+    require "zlib"
+  end
 
   public
   def decode(data)
@@ -19,24 +27,17 @@ class LogStash::Codecs::CompressSpooler < LogStash::Codecs::Base
     data.each do |event|
       event = LogStash::Event.new(event)
       event["@timestamp"] = Time.at(event["@timestamp"]).utc if event["@timestamp"].is_a? Float
-      event["tags"] ||= []
-      if @format
-        event["message"] ||= event.sprintf(@format)
-      end
       yield event
     end
   end # def decode
 
   public
   def encode(data)
-    @buffer = [] if @buffer.nil?
-    #buffer size is hard coded for now until a 
-    #better way to pass args into codecs is implemented
     if @buffer.length >= @spool_size
       z = Zlib::Deflate.new(@compress_level)
       @on_event.call z.deflate(MessagePack.pack(@buffer), Zlib::FINISH)
       z.close
-      @buffer = []
+      @buffer.clear
     else
       data["@timestamp"] = data["@timestamp"].to_f
       @buffer << data.to_hash
@@ -48,6 +49,6 @@ class LogStash::Codecs::CompressSpooler < LogStash::Codecs::Base
     if !@buffer.nil? and @buffer.length > 0
       @on_event.call @buffer
     end
-    @buffer = []
+    @buffer.clear
   end
 end # class LogStash::Codecs::CompressSpooler
