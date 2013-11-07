@@ -2,10 +2,6 @@
 
 
 VERSION="$(awk -F\" '/LOGSTASH_VERSION/ {print $2}' $(dirname $0)/../lib/logstash/version.rb)"
-if ! git show-ref --tags | grep -q "$(git rev-parse HEAD)"; then
-	# HEAD is not tagged, add the date, time and commit hash to the revision
-	REVISION="+$(date +%Y%m%d%H%M)~$(git rev-parse --short HEAD)"
-fi
 
 if [ "$#" -ne 2 ] ; then
   echo "Usage: $0 <os> <release>"
@@ -97,12 +93,24 @@ case $os in
       --after-install centos/after-install.sh \
       -f -C $destdir .
     ;;
-  ubuntu|debian) 
+  ubuntu|debian)
+    if ! echo $VERSION | grep -q '\.(dev\|rc.*)'; then
+      # This is a dev or RC version... So change the upstream version
+      # example: 1.2.2.dev => 1.2.2~dev
+      # This ensures a clean upgrade path.
+      VERSION="$(echo $VERSION | sed 's/\.\(dev\|rc.*\)/~\1/')"
+    fi
+
+    if ! git show-ref --tags | grep -q "$(git rev-parse HEAD)"; then
+      # HEAD is not tagged, add the date, time and commit hash to the revision
+      REVISION="+$(date -u +%Y%m%d%H%M)~$(git rev-parse --short HEAD)"
+    fi
+
     fpm -s dir -t deb -n logstash -v "$VERSION" \
       -a all --iteration "${os}1${REVISION}" \
       --url "http://logstash.net" \
       --description "An extensible logging pipeline" \
-      -d "default-jre" \
+      -d "java6-runtime-headless | java7-runtime-headless" \
       --deb-user root --deb-group root \
       --before-install $os/before-install.sh \
       --before-remove $os/before-remove.sh \
