@@ -46,7 +46,7 @@ if [ "$?" -eq 0 -a -z "$USE_JRUBY" ] ; then
   setup
 else
   # No ruby found, fetch JRuby and run.
-  jruby="$basedir/vendor/jar/jruby-complete-1.7.4.jar"
+  jruby="$basedir/vendor/jar/jruby-complete-1.7.5.jar"
   [ ! -f "$jruby" ] && make -C $basedir build-jruby
   set -- java -jar "$jruby" "$program" "$@"
   setup jruby

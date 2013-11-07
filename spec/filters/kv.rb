@@ -312,6 +312,39 @@ describe LogStash::Filters::KV do
     end
   end
 
+  describe "test include_keys with prefix" do
+    config <<-CONFIG
+      filter {
+        kv {
+          include_keys => [ "foo", "singlequoted" ]
+          prefix       => "__"
+        }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["__foo"] } == "bar"
+      insist { subject["__singlequoted"] } == "hello world"
+    end
+  end
+
+  describe "test exclude_keys with prefix" do
+    config <<-CONFIG
+      filter {
+        kv {
+          exclude_keys => [ "foo", "singlequoted" ]
+          prefix       => "__"
+        }
+      }
+    CONFIG
+
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+      insist { subject["__hello"] } == "world"
+      insist { subject["__baz"] } == "fizz"
+      insist { subject["__doublequoted"] } == "hello world"
+    end
+  end
+
   describe "test include_keys and exclude_keys" do
     config <<-CONFIG
       filter {

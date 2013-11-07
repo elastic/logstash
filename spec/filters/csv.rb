@@ -35,6 +35,52 @@ describe LogStash::Filters::CSV do
     end
   end
 
+  describe "custom quote char" do
+    config <<-CONFIG
+      filter {
+        csv {
+          quote_char => "'"
+        }
+      }
+    CONFIG
+
+    sample "big,bird,'sesame street'" do
+      insist { subject["column1"] } == "big"
+      insist { subject["column2"] } == "bird"
+      insist { subject["column3"] } == "sesame street"
+    end
+  end
+
+  describe "default quote char" do
+    config <<-CONFIG
+      filter {
+        csv {
+        }
+      }
+    CONFIG
+
+    sample 'big,bird,"sesame, street"' do
+      insist { subject["column1"] } == "big"
+      insist { subject["column2"] } == "bird"
+      insist { subject["column3"] } == "sesame, street"
+    end
+  end
+  describe "null quote char" do
+    config <<-CONFIG
+      filter {
+        csv {
+          quote_char => "\x00"
+        }
+      }
+    CONFIG
+
+    sample 'big,bird,"sesame" street' do
+      insist { subject["column1"] } == 'big'
+      insist { subject["column2"] } == 'bird'
+      insist { subject["column3"] } == '"sesame" street'
+    end
+  end
+
   describe "given columns" do
     # The logstash config goes here.
     # At this time, only filters are supported.

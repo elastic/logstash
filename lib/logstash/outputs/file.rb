@@ -45,6 +45,9 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   public
   def register
     require "fileutils" # For mkdir_p
+
+    workers_not_supported
+
     @files = {}
     now = Time.now
     @last_flush_cycle = now

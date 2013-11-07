@@ -4,6 +4,7 @@ require "logstash/filters/date"
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket"
+require "thread_safe"
 
 # Read syslog messages as events over the network.
 #
@@ -63,7 +64,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     @grok_filter.register
     @date_filter.register
 
-    @tcp_clients = []
+    @tcp_clients = ThreadSafe::Array.new
   end # def register
 
   public
@@ -150,6 +151,8 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
             end
           end
         rescue Errno::ECONNRESET
+        ensure
+          @tcp_clients.delete(client)
         end
       end # Thread.new
     end # loop do

@@ -25,7 +25,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   config :index_type, :validate => :string
 
   # The hostname or ip address to reach your elasticsearch server.
-  config :host, :validate => :string
+  config :host, :validate => :string, :required => true
 
   # The port for ElasticSearch HTTP interface to use.
   config :port, :validate => :number, :default => 9200
@@ -46,11 +46,21 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # The amount of time since last flush before a flush is forced.
   config :idle_flush_time, :validate => :number, :default => 1
 
+  # Set the type of elasticsearch replication to use. If async
+  # the index request to elasticsearch to return after the primary
+  # shards have been written. If sync (default), index requests
+  # will wait until the primary and the replica shards have been
+  # written.
+  config :replication, :validate => ['async', 'sync'], :default => 'sync'
+
   public
   def register
     require "ftw" # gem ftw
     @agent = FTW::Agent.new
     @queue = []
+
+    auth = @username && @password ? "#{@username}:#{@password}@" : ""
+    @bulk_url = "http://#{auth}#{@host}:#{@port}/_bulk?replication=#{@replication}"
 
     buffer_initialize(
       :max_items => @flush_size,
@@ -66,6 +76,9 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   end # def receive
 
   def flush(events, teardown=false)
+    # Avoid creating a new string for newline every time
+    newline = "\n".freeze
+
     body = events.collect do |event, index, type|
       index = event.sprintf(@index)
 
@@ -78,16 +91,14 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       header = { "index" => { "_index" => index, "_type" => type } }
       header["index"]["_id"] = event.sprintf(@document_id) if !@document_id.nil?
 
-      [ header, event ]
-    end.flatten.collect(&:to_json).map { |e| "#{e}\n" }
-    post(body)
+      [ header.to_json, newline, event.to_json, newline ]
+    end.flatten
+    post(body.join(""))
   end # def receive_bulk
 
   def post(body)
     begin
-      auth = @username && @password ? "#{@username}:#{@password}@" : ""
-      url = "http://#{auth}#{@host}:#{@port}/_bulk"
-      response = @agent.post!(url, :body => body)
+      response = @agent.post!(@bulk_url, :body => body)
     rescue EOFError
       @logger.warn("EOF while writing request or reading response header from elasticsearch",
                    :host => @host, :port => @port)

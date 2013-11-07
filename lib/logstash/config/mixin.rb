@@ -29,6 +29,7 @@ require "i18n"
 #
 module LogStash::Config::Mixin
   attr_accessor :config
+  attr_accessor :original_params
 
   CONFIGSORT = {
     Symbol => 0,
@@ -45,6 +46,11 @@ module LogStash::Config::Mixin
   def config_init(params)
     # Validation will modify the values inside params if necessary.
     # For example: converting a string to a number, etc.
+    
+    # Keep a copy of the original config params so that we can later
+    # differentiate between explicit configuration and implicit (default)
+    # configuration.
+    @original_params = params.clone
     
     # store the plugin type, turns LogStash::Inputs::Base into 'input'
     @plugin_type = self.class.ancestors.find { |a| a.name =~ /::Base$/ }.config_name
@@ -366,11 +372,23 @@ module LogStash::Config::Mixin
             if value.size > 1 # only one value wanted
               return false, "Expected number, got #{value.inspect} (type #{value.class})"
             end
-            if value.first.to_s.to_f.to_s != value.first.to_s \
-               && value.first.to_s.to_i.to_s != value.first.to_s
-              return false, "Expected number, got #{value.first.inspect} (type #{value.first})"
-            end
-            result = value.first.to_i
+
+            v = value.first
+            case v
+              when Numeric
+                result = v
+              when String
+                if v.to_s.to_f.to_s != v.to_s \
+                   && v.to_s.to_i.to_s != v.to_s
+                  return false, "Expected number, got #{v.inspect} (type #{v})"
+                end
+                if v.include?(".")
+                  # decimal value, use float.
+                  result = v.to_f
+                else
+                  result = v.to_i
+                end
+            end # case v
           when :boolean
             if value.size > 1 # only one value wanted
               return false, "Expected boolean, got #{value.inspect}"

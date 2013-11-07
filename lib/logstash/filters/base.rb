@@ -148,6 +148,7 @@ class LogStash::Filters::Base < LogStash::Plugin
     end
 
     @remove_tag.each do |tag|
+      break if event["tags"].nil?
       tag = event.sprintf(tag)
       @logger.debug? and @logger.debug("filters/#{self.class.name}: removing tag",
                                        :tag => tag)
