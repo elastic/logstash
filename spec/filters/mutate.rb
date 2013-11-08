@@ -176,5 +176,24 @@ describe LogStash::Filters::Mutate do
       insist { subject["[foo][bar]"] }.is_a?(Fixnum)
     end
   end
+
+  describe "convert should work on globbed nested fields" do
+    config <<-CONFIG
+      filter {
+        mutate {
+          convert => [ "[foo][*]", "integer" ]
+        }
+      }
+    CONFIG
+
+    sample({ "foo" => { "bar" => "1000", "baz" => "2000", "bee" => "3000" } }) do
+      insist { subject["[foo][bar]"] } == 1000
+      insist { subject["[foo][bar]"] }.is_a?(Fixnum)
+      insist { subject["[foo][baz]"] } == 2000
+      insist { subject["[foo][baz]"] }.is_a?(Fixnum)
+      insist { subject["[foo][bee]"] } == 3000
+      insist { subject["[foo][bee]"] }.is_a?(Fixnum)
+    end
+  end
 end
 

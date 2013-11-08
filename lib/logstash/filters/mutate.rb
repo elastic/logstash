@@ -252,23 +252,56 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
 
   def convert(event)
     @convert.each do |field, type|
-      next unless event.include?(field)
-      original = event[field]
+      selectors = field.scan(/(?<=\[).+?(?=\])/)
+      if selectors[-1] == "*"
+        field = selectors[-2]
 
-      # calls convert_{string,integer,float} depending on type requested.
-      converter = method("convert_" + type)
-      if original.nil?
-        next
-      elsif original.is_a?(Hash)
-        @logger.debug("I don't know how to type convert a hash, skipping",
-                      :field => field, :value => original)
-        next
-      elsif original.is_a?(Array)
-        value = original.map { |v| converter.call(v) }
+        event[field].each do |subfield, subvalue|
+          next unless event[field].include?(subfield)
+          original = event[field][subfield]
+
+          # calls convert_{string,integer,float} depending on type requested.
+          converter = method("convert_" + type)
+          if original.nil?
+            next
+          elsif original.is_a?(Hash)
+            if type == "string"
+              value = converter.call(JSON.generate(original))
+            else
+              @logger.debug("I don't know how to type convert a hash, skipping",
+                            :subfield => subfield, :value => original)
+              next
+            end
+          elsif original.is_a?(Array)
+            value = original.map { |v| converter.call(v) }
+          else
+            value = converter.call(original)
+          end
+          event[field][subfield] = value
+        end
       else
-        value = converter.call(original)
+        next unless event.include?(field)
+        original = event[field]
+
+        # calls convert_{string,integer,float} depending on type requested.
+        converter = method("convert_" + type)
+        if original.nil?
+          next
+        elsif original.is_a?(Hash)
+          if type == "string"
+            value = converter.call(JSON.generate(original))
+          else
+            @logger.debug("I don't know how to type convert a hash, skipping",
+                          :field => field, :value => original)
+            next
+          end
+        elsif original.is_a?(Array)
+          value = original.map { |v| converter.call(v) }
+        else
+          value = converter.call(original)
+        end
+        event[field] = value
       end
-      event[field] = value
     end
   end # def convert
 
