@@ -177,6 +177,21 @@ describe LogStash::Filters::Mutate do
     end
   end
 
+  describe "hash convert string should work on nested fields" do
+    config <<-CONFIG
+      filter {
+        mutate {
+          convert => [ "[foo][bar]", "string" ]
+        }
+      }
+    CONFIG
+
+    sample({ "foo" => { "bar" => {"1000" => "1000"} } }) do
+      insist { subject["[foo][bar]"] } == "{\"1000\":\"1000\"}"
+      insist { subject["[foo][bar]"] }.is_a?(String)
+    end
+  end
+
   describe "convert should work on globbed nested fields" do
     config <<-CONFIG
       filter {
@@ -193,6 +208,25 @@ describe LogStash::Filters::Mutate do
       insist { subject["[foo][baz]"] }.is_a?(Fixnum)
       insist { subject["[foo][bee]"] } == 3000
       insist { subject["[foo][bee]"] }.is_a?(Fixnum)
+    end
+  end
+
+  describe "hash convert string should work on globbed nested fields" do
+    config <<-CONFIG
+      filter {
+        mutate {
+          convert => [ "[foo][*]", "string" ]
+        }
+      }
+    CONFIG
+
+    sample({ "foo" => { "bar" => {"1000" => "1000"}, "baz" => {"2000" => "2000"}, "bee" => {"3000" => "3000"} } }) do
+      insist { subject["[foo][bar]"] } == "{\"1000\":\"1000\"}"
+      insist { subject["[foo][bar]"] }.is_a?(String)
+      insist { subject["[foo][baz]"] } == "{\"2000\":\"2000\"}"
+      insist { subject["[foo][baz]"] }.is_a?(String)
+      insist { subject["[foo][bee]"] } == "{\"3000\":\"3000\"}"
+      insist { subject["[foo][bee]"] }.is_a?(String)
     end
   end
 end
