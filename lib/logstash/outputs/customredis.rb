@@ -18,7 +18,6 @@ class LogStash::Outputs::CustomRedis < LogStash::Outputs::Base
   config :password, :validate => :password
   config :queue, :validate => :string, :deprecated => true
   config :key, :validate => :string, :required => true
-  config :batch, :validate => :boolean, :default => true
   config :batch_events, :validate => :number, :default => 50
   config :batch_timeout, :validate => :number, :default => 5
   config :reconnect_interval, :validate => :number, :default => 1
