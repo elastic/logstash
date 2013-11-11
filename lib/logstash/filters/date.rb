@@ -123,31 +123,42 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
   def setupMatcher(field, locale, value)
     value.each do |format|
+      parsers = []
       case format
         when "ISO8601"
-          joda_parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser
+          iso_parser = org.joda.time.format.ISODateTimeFormat.dateTimeParser
+          if @timezone
+            iso_parser = iso_parser.withZone(org.joda.time.DateTimeZone.forID(@timezone))
+          else
+            iso_parser = iso_parser.withOffsetParsed
+          end
+          parsers << lambda { |date| iso_parser.parseDateTime(date) }
+          #Fall back solution of almost ISO8601 date-time
+          almostISOparsers = [
+            org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSZ").getParser(),
+            org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").getParser()
+          ].to_java(org.joda.time.format.DateTimeParser)
+          joda_parser = org.joda.time.format.DateTimeFormatterBuilder.new.append( nil, almostISOparsers ).toFormatter()
           if @timezone
             joda_parser = joda_parser.withZone(org.joda.time.DateTimeZone.forID(@timezone))
           else
             joda_parser = joda_parser.withOffsetParsed
           end
-          parser = lambda { |date| joda_parser.parseMillis(date) }
+          parsers << lambda { |date| joda_parser.parseMillis(date) }
         when "UNIX" # unix epoch
-          parser = lambda do |date|
+          parsers << lambda do |date|
             raise "Invalid UNIX epoch value '#{date}'" unless /^\d+(?:\.\d+)?$/ === date || date.is_a?(Numeric)
             (date.to_f * 1000).to_i
           end
         when "UNIX_MS" # unix epoch in ms
-          parser = lambda do |date|
+          parsers << lambda do |date|
             raise "Invalid UNIX epoch value '#{date}'" unless /^\d+$/ === date || date.is_a?(Numeric)
             date.to_i
           end
         when "TAI64N" # TAI64 with nanoseconds, -10000 accounts for leap seconds
-          joda_instant = org.joda.time.Instant.java_class.constructor(Java::long).method(:new_instance)
-          parser = lambda do |date|
+          parsers << lambda do |date| 
             # Skip leading "@" if it is present (common in tai64n times)
             date = date[1..-1] if date[0, 1] == "@"
-            #return joda_instant.call((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).to_java.toDateTime
             return (date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)
           end
         else
@@ -160,13 +171,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           if (locale != nil)
             joda_parser = joda_parser.withLocale(locale)
           end
-          parser = lambda { |date| joda_parser.parseMillis(date) }
+          parsers << lambda { |date| joda_parser.parseMillis(date) }
       end
 
       @logger.debug("Adding type with date config", :type => @type,
                     :field => field, :format => format)
       @parsers[field] << {
-        :parser => parser,
+        :parser => parsers,
         :format => format
       }
     end
@@ -192,14 +203,16 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           success = false
           last_exception = RuntimeError.new "Unknown"
           fieldparsers.each do |parserconfig|
-            parser = parserconfig[:parser]
-            begin
-              epochmillis = parser.call(value)
-              success = true
-              break # success
-            rescue StandardError, JavaException => e
-              last_exception = e
-            end
+            parserconfig[:parser].each do |parser|
+              begin
+                epochmillis = parser.call(value)
+                success = true
+                break # success
+              rescue StandardError, JavaException => e
+                last_exception = e
+              end
+            end # parserconfig[:parser].each
+            break if success
           end # fieldparsers.each
 
           raise last_exception unless success
