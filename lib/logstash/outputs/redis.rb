@@ -57,6 +57,10 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # TODO set required true
   config :data_type, :validate => [ "list", "channel" ], :required => false
 
+  # When the length of list more then the given value, keep the newest item in list.
+  # Available only when data_type is list.
+  config :max_list_length, :validate => :number, :default => 0
+
   # Set to true if you want redis to batch up values and send 1 RPUSH command
   # instead of one command per value to push on the list.  Note that this only
   # works with data_type="list" mode right now.
@@ -160,6 +164,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       if @data_type == 'list'
         congestion_check(key)
         @redis.rpush(key, payload)
+        if @max_list_length > 0
+          @redis.ltrim(key, -@max_list_length, -1)
+        end
       else
         @redis.publish(key, payload)
       end
@@ -191,6 +198,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     # to support this Stud::Buffer#buffer_flush should pass here the :final boolean value.
     congestion_check(key) unless teardown
     @redis.rpush(key, events)
+    if @max_list_length > 0
+        @redis.ltrim(key, -@max_list_length, -1)
+    end
   end
   # called from Stud::Buffer#buffer_flush when an error occurs
   def on_flush_error(e)
