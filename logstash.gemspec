@@ -86,10 +86,12 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "jruby-win32ole"                   #(unknown license)
     gem.add_runtime_dependency "jdbc-mysql"                       # For input drupal_dblog (BSD license)
     gem.add_runtime_dependency "msgpack-jruby"                    #(Apache 2.0 license)
+    gem.add_runtime_dependency "therubyrhino"                     #(MIT license)
   else
     gem.add_runtime_dependency "excon"    #(MIT license)
     gem.add_runtime_dependency "mysql2"   # For input drupal_dblog (MIT license)
     gem.add_runtime_dependency "msgpack"  #(Apache 2.0 license)
+    gem.add_runtime_dependency "therubyracer"                     #(MIT license)
   end
 
   if RUBY_PLATFORM != 'java'
