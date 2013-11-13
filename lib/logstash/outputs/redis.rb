@@ -57,10 +57,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # TODO set required true
   config :data_type, :validate => [ "list", "channel" ], :required => false
 
-  # When the length of list more then the given value, keep the newest item in list.
-  # Available only when data_type is list.
-  config :max_list_length, :validate => :number, :default => 0
-
   # Set to true if you want redis to batch up values and send 1 RPUSH command
   # instead of one command per value to push on the list.  Note that this only
   # works with data_type="list" mode right now.
@@ -87,6 +83,10 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # Default value of 0 means that this limit is disabled.
   # Only supported for list redis data_type.
   config :congestion_threshold, :validate => :number, :default => 0
+
+  # In case redis list more than @congestion_threshold items, ltrim the oldest items and make it non-blocking.
+  # It will keep @congestion_threshold newest items.
+  config :congestion_keep_recent, :validate => :boolean, :default => false
 
   # How often to check for congestion, defaults to 1 second.
   # Zero means to check on every event.
@@ -164,9 +164,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       if @data_type == 'list'
         congestion_check(key)
         @redis.rpush(key, payload)
-        if @max_list_length > 0
-          @redis.ltrim(key, -@max_list_length, -1)
-        end
       else
         @redis.publish(key, payload)
       end
@@ -183,9 +180,13 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   def congestion_check(key)
     return if @congestion_threshold == 0
     if (Time.now.to_i - @congestion_check_times[key]) >= @congestion_interval # Check congestion only if enough time has passed since last check.
-      while @redis.llen(key) > @congestion_threshold # Don't push event to redis key which has reached @congestion_threshold.
-        @logger.warn? and @logger.warn("Redis key size has hit a congestion threshold #{@congestion_threshold} suspending output for #{@congestion_interval} seconds")
-        sleep @congestion_interval
+      if @congestion_keep_recent
+        @redis.ltrim(key, -@congestion_threshold, -1)
+      else
+        while @redis.llen(key) > @congestion_threshold # Don't push event to redis key which has reached @congestion_threshold.
+          @logger.warn? and @logger.warn("Redis key size has hit a congestion threshold #{@congestion_threshold} suspending output for #{@congestion_interval} seconds")
+          sleep @congestion_interval
+        end
       end
       @congestion_check_time = Time.now.to_i
     end
@@ -198,9 +199,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     # to support this Stud::Buffer#buffer_flush should pass here the :final boolean value.
     congestion_check(key) unless teardown
     @redis.rpush(key, events)
-    if @max_list_length > 0
-        @redis.ltrim(key, -@max_list_length, -1)
-    end
   end
   # called from Stud::Buffer#buffer_flush when an error occurs
   def on_flush_error(e)
