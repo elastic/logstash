@@ -24,9 +24,6 @@ class LogStash::Outputs::CustomRedis < LogStash::Outputs::Base
   config :congestion_threshold, :validate => :number, :default => 0
   config :congestion_interval, :validate => :number, :default => 1
 
-  # TODO set required false and FORCE to "list"
-  config :data_type, :validate => [ "list", "channel" ], :required => false, :default => "list"
-  
   config :luascript, :validate => :string, :required => true
   
   default :codec, "json"
@@ -34,6 +31,7 @@ class LogStash::Outputs::CustomRedis < LogStash::Outputs::Base
   def register
     require 'redis'
 
+    @data_type = "list"
     buffer_initialize(
 	:max_items => @batch_events,
 	:max_interval => @batch_timeout,
