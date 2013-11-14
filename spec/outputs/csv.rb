@@ -54,7 +54,29 @@ describe LogStash::Outputs::CSV do
     end
   end
 
+  describe "missing event fields are empty in csv" do
+    tmpfile = Tempfile.new('logstash-spec-output-csv')
+    config <<-CONFIG
+      input {
+        generator {
+          add_field => ["foo","bar", "baz", "quux"]
+          count => 1
+        }
+      }
+      output {
+        csv {
+          path => "#{tmpfile.path}"
+          fields => ["foo", "not_there", "baz"]
+        }
+      }
+    CONFIG
 
+    agent do
+      lines = File.readlines(tmpfile.path)
+      insist {lines.count} == 1
+      insist {lines[0]} == "bar,,quux\n"
+    end
+  end
 end
 
 
