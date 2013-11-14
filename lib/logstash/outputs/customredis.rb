@@ -74,7 +74,7 @@ class LogStash::Outputs::CustomRedis < LogStash::Outputs::Base
     # we should not block due to congestion on teardown
     # to support this Stud::Buffer#buffer_flush should pass here the :final boolean value.
     congestion_check(key) unless teardown
-    @redis.evalsha(@sha, :keys => [ @key ], :argv => events)
+    @redis.evalsha(@sha, :keys => [ Time.now.to_i ], :argv => events)
   end
   
   # called from Stud::Buffer#buffer_flush when an error occurs
