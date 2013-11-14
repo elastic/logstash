@@ -86,7 +86,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   private
   def list_listener(redis, output_queue)
     begin
-      redis.evalsha(@redis_script_sha, [@key], [@batch_count-1]).each do |item|
+      redis.evalsha(@redis_script_sha, [ Time.now.to_i ], [@batch_count-1]).each do |item|
         queue_event(item, output_queue)
       end
     rescue Redis::CommandError => e
