@@ -1,8 +1,4 @@
-#!/usr/bin/env ruby
+#!/bin/sh
 
-require "rubygems"
-$:.unshift "#{File.dirname(__FILE__)}/../lib"
-require "logstash/runner"
-
-ARGV.unshift("test")
-LogStash::Runner.new.main(ARGV)
+basedir=$(cd `dirname $0`/..; pwd)
+exec $basedir/bin/logstash rspec "$@"
