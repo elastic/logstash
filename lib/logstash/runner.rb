@@ -182,6 +182,8 @@ class LogStash::Runner
         agent = LogStash::Agent.new($0)
         begin
           agent.parse(args)
+        rescue Clamp::HelpWanted => e
+          puts e.command.help
         rescue Clamp::UsageError => e
           # If 'too many arguments' then give the arguments to
           # the next command. Otherwise it's a real error.
