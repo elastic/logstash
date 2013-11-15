@@ -35,6 +35,14 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   #   if no short_message, event["message"] is the raw json input
   config :remap, :validate => :boolean, :default => true
 
+  # Whether or not to remove the leading '_' in GELF fields or leave them
+  # in place. (Logstash < 1.2 did not remove them by default.)
+  #
+  # _foo becomes foo
+  #
+  # Default is true
+  config :strip_leading_underscore, :validate => :boolean, :default => true
+
   public
   def initialize(params)
     super
@@ -80,15 +88,21 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
         next
       end
 
-      event = LogStash::Event.new(JSON.parse(data))
-      event["host"] = client[3]
-      if event["timestamp"].is_a?(Numeric)
-        event["@timestamp"] = Time.at(event["timestamp"]).gmtime
-        event.remove("timestamp")
+      # The nil guard is needed to deal with chunked messages.
+      # Gelfd::Parser.parse will only return the message when all chunks are
+      # completed
+      event = LogStash::Event.new(JSON.parse(data)) unless data.nil?
+      if event
+        event["source_host"] = client[3]
+        if event["timestamp"].is_a?(Numeric)
+          event["@timestamp"] = Time.at(event["timestamp"]).gmtime
+          event.remove("timestamp")
+        end
+        remap_gelf(event) if @remap
+        strip_leading_underscore(event) if @strip_leading_underscore
+        decorate(event)
+        output_queue << event
       end
-      remap_gelf(event) if @remap
-      decorate(event)
-      output_queue << event
     end
   rescue LogStash::ShutdownSignal
     # Do nothing, shutdown.
@@ -111,13 +125,15 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
       event["message"] = event["short_message"].dup
       event.remove("short_message")
     end
-
-
-    # Map all '_foo' fields to simply 'foo'
-    event.to_hash.keys.each do |key|
-      next unless key[0,1] == "_"
-      event[key[1..-1]] = event[key]
-      event.remove(key)
-    end
   end # def remap_gelf
+
+  private
+  def strip_leading_underscore(event)
+     # Map all '_foo' fields to simply 'foo'
+     event.to_hash.keys.each do |key|
+       next unless key[0,1] == "_"
+       event[key[1..-1]] = event[key]
+       event.remove(key)
+     end
+  end # deef removing_leading_underscores
 end # class LogStash::Inputs::Gelf
