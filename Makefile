@@ -43,8 +43,7 @@ default:
 TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
 
 # The 'version' is generated based on the logstash version, git revision, etc.
-.PHONY: .VERSION.mk
-.VERSION.mk: | build
+.VERSION.mk:
 	@REVISION="$$(git rev-parse --short HEAD | tr -d ' ')" ; \
 	RELEASE=$$(awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb | tr -d ' ') ; \
 	if git diff --shortstat --exit-code > /dev/null ; then \
@@ -54,6 +53,7 @@ TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/cod
 	fi > $@
 
 -include .VERSION.mk
+
 version:
 	@echo "Version: $(VERSION)"
 
