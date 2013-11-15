@@ -18,30 +18,30 @@
 basedir=$(cd `dirname $0`/..; pwd)
 export RUBYLIB="$basedir/lib"
 
-# Setup will configure any environmental settings necessary to
-# help logstash run.
 setup() {
-  if [ -d "$basedir/.git" ] ; then
-    if [ "$1" = "jruby" ] ; then
-      RUBY=${RUBY=jruby}
-    else
-      RUBY=${RUBY=$(ruby -e 'puts RUBY_ENGINE')}
-    fi
-    RUBYVER=${RUBYVER=1.9}
-    export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
-    export GEM_PATH=
+  if [ ! -z "$USE_RUBY" ] ; then
+    eval $(ruby -e 'puts "RUBYVER=#{RUBY_VERSION.split(".")[0..1].join(".")}"; puts "RUBY=#{RUBY_ENGINE}"')
+  else
+    RUBYVER=1.9
+    RUBY=jruby
   fi
+
+  export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
+  export GEM_PATH=
 }
 
 if [ "$1" = "deps" ] ; then
-  program="$basedir/gembag.rb"
-  set -- "$basedir/logstash.gemspec"
+  if [ -f "$basedir/logstash.gemspec" ] ; then
+    program="$basedir/gembag.rb"
+    set -- "$basedir/logstash.gemspec"
+  else
+    echo "Cannot install dependencies; missing logstash.gemspec. This 'deps' command only works from a logstash git clone."
+  fi
 else
   program="$basedir/lib/logstash/runner.rb"
 fi
 
-which ruby > /dev/null 2>&1
-if [ "$?" -eq 0 -a -z "$USE_JRUBY" ] ; then
+if [ ! -z "$USE_RUBY" ] ; then
   set -- ruby "$program" "$@"
   setup
 else
