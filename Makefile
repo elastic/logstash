@@ -4,8 +4,6 @@
 #
 JRUBY_VERSION=1.7.5
 ELASTICSEARCH_VERSION=0.90.3
-#VERSION=$(shell ruby -r./lib/logstash/version -e 'puts LOGSTASH_VERSION')
-VERSION=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb)
 
 WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
@@ -31,7 +29,6 @@ else
 TAR_OPTS=--wildcards
 endif
 
-TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
 #spec/outputs/graphite.rb spec/outputs/email.rb)
 default:
 	@echo "Make targets you might be interested in:"
@@ -39,6 +36,23 @@ default:
 	@echo "  flatjar-test -- runs the test suite against the flatjar"
 	@echo "  jar -- builds the monolithic jar"
 	@echo "  jar-test -- runs the test suite against the monolithic jar"
+
+TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
+
+# The 'version' is generated based on the logstash version, git revision, etc.
+.PHONY: .VERSION.mk
+.VERSION.mk: | build
+	@REVISION="$$(git rev-parse --short HEAD | tr -d ' ')" ; \
+	RELEASE=$$(awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb | tr -d ' ') ; \
+	if git diff --shortstat --exit-code > /dev/null ; then \
+		echo "VERSION=$${RELEASE}-$${REVISION}" ; \
+	else \
+		echo "VERSION=$${RELEASE}-$${REVISION}-modified"; \
+	fi > $@
+
+-include .VERSION.mk
+version:
+	@echo "Version: $(VERSION)"
 
 # Figure out if we're using wget or curl
 .PHONY: wget-or-curl
@@ -365,3 +379,28 @@ package:
 vendor/kibana: | build
 	$(QUIET)mkdir vendor/kibana || true
 	$(DOWNLOAD_COMMAND) - $(KIBANA_URL) | tar -C $@ -zx --strip-components=1
+
+build/tarball: | build
+	mkdir $@
+build/tarball/logstash-%: | build/tarball
+	mkdir $@
+
+show:
+	echo $(VERSION)
+
+.PHONY: prepare-tarball
+prepare-tarball tarball: WORKDIR=build/tarball/logstash-$(VERSION)
+prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) $(GEOIP) vendor-gems
+prepare-tarball:
+	@echo "=> Preparing tarball"
+	$(QUIET)$(MAKE) $(WORKDIR)
+	$(QUIET)rsync -a --relative bin lib locales vendor/bundle/jruby LICENSE README.md $(WORKDIR)
+	$(QUIET)sed -i -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
+
+.PHONY: tarball
+tarball: | build/logstash-$(VERSION).tar.gz
+build/logstash-$(VERSION).tar.gz: | prepare-tarball
+	$(QUIET)tar -C $$(dirname $(WORKDIR)) -zcf $@ $$(basename $(WORKDIR))
+	@echo "=> tarball ready: $@"
+
+
