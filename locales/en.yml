@@ -142,7 +142,8 @@ en:
           Increase verbosity of logstash internal logs.
           Specifying once will show 'informational'
           logs. Specifying twice will show 'debug'
-          logs.
+          logs. This flag is deprecated. You should use
+          --verbose or --debug instead.
         version: |+
           Emit the version of logstash and its friends,
           then exit.
