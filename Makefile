@@ -17,6 +17,9 @@ GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.d
 KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-latest.tar.gz
 PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters|codecs)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 QUIET=@
+ifeq (@,$(QUIET))
+	QUIET_OUTPUT=> /dev/null 2>&1
+endif
 
 WGET=$(shell which wget 2>/dev/null)
 CURL=$(shell which curl 2>/dev/null)
@@ -149,16 +152,16 @@ vendor-gems: | vendor/bundle
 vendor/bundle: | vendor $(JRUBY)
 	@echo "=> Installing gems to $@..."
 	@#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
-	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec
+	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec $(QUIET_OUTPUT)
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
-	-rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
+	-$(QUIET)rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
 	@# Purge any rspec or test directories
-	-rm -rf $@/jruby/1.9/gems/*/spec $@/jruby/1.9/gems/*/test
+	-$(QUIET)rm -rf $@/jruby/1.9/gems/*/spec $@/jruby/1.9/gems/*/test
 	@# Purge any comments in ruby code.
 	@#-find $@/jruby/1.9/gems/ -name '*.rb' | xargs -n1 sed -i -re '/^[ \t]*#/d; /^[ \t]*$$/d'
-	touch $@
 
+.PHONY: build
 build:
 	-$(QUIET)mkdir -p $@
 
