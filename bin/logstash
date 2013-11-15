@@ -18,39 +18,53 @@
 basedir=$(cd `dirname $0`/..; pwd)
 export RUBYLIB="$basedir/lib"
 
+setup_ruby() {
+  # Verify ruby works
+  if ! ruby -e 'puts "HURRAY"' 2> /dev/null | grep -q "HURRAY" ; then
+    echo "No ruby program found. Cannot start."
+    exit 1
+  fi
+
+  eval $(ruby -e 'puts "RUBYVER=#{RUBY_VERSION.split(".")[0..1].join(".")}"; puts "RUBY=#{RUBY_ENGINE}"')
+  RUBYCMD="ruby"
+}
+
+setup_vendored_jruby() {
+  RUBYVER=1.9
+  RUBY=jruby
+  RUBYCMD="java -jar $basedir/vendor/jar/jruby-complete-*.jar"
+}
+
 setup() {
-  if [ ! -z "$USE_RUBY" ] ; then
-    eval $(ruby -e 'puts "RUBYVER=#{RUBY_VERSION.split(".")[0..1].join(".")}"; puts "RUBY=#{RUBY_ENGINE}"')
+  if [ -d "$basedir/.git" -o ! -z "$USE_RUBY" ] ; then
+    setup_ruby
   else
-    RUBYVER=1.9
-    RUBY=jruby
+    setup_vendored_jruby
   fi
 
   export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
   export GEM_PATH=
 }
 
-if [ "$1" = "deps" ] ; then
-  if [ -f "$basedir/logstash.gemspec" ] ; then
-    program="$basedir/gembag.rb"
-    set -- "$basedir/logstash.gemspec"
-  else
-    echo "Cannot install dependencies; missing logstash.gemspec. This 'deps' command only works from a logstash git clone."
-  fi
-else
-  program="$basedir/lib/logstash/runner.rb"
-fi
+setup
 
-if [ ! -z "$USE_RUBY" ] ; then
-  set -- ruby "$program" "$@"
-  setup
-else
-  # No ruby found, fetch JRuby and run.
-  jruby="$basedir/vendor/jar/jruby-complete-1.7.5.jar"
-  [ ! -f "$jruby" ] && make -C $basedir build-jruby
-  set -- java -jar "$jruby" "$program" "$@"
-  setup jruby
-fi
-
-exec "$@"
+case $1 in
+  deps)
+    if [ -f "$basedir/logstash.gemspec" ] ; then
+      program="$basedir/gembag.rb"
+      set -- "$basedir/logstash.gemspec"
+      exec $RUBYCMD "$basedir/gembag.rb" "$@"
+    else
+      echo "Cannot install dependencies; missing logstash.gemspec. This 'deps' command only works from a logstash git clone."
+    fi
+    ;;
+  -*)
+    program="$basedir/lib/logstash/runner.rb"
+    exec $RUBYCMD "$program" agent "$@"
+    ;;
+  *)
+    program="$basedir/lib/logstash/runner.rb"
+    exec $RUBYCMD "$program" "$@"
+    ;;
+esac
 
