@@ -220,8 +220,10 @@ class LogStash::Agent < Clamp::Command
       if verbosity? && verbosity?.any?
         # this is an array with length of how many times the flag is given
         if verbosity?.length == 1
+          @logger.warn("The -v flag is deprecated and will be removed in a future release. You should use --verbose instead.")
           @logger.level = :info
         else
+          @logger.warn("The -vv flag is deprecated and will be removed in a future release. You should use --debug instead.")
           @logger.level = :debug
         end
       else
