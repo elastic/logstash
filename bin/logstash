@@ -32,7 +32,14 @@ setup_ruby() {
 setup_vendored_jruby() {
   RUBYVER=1.9
   RUBY=jruby
-  RUBYCMD="java -jar $basedir/vendor/jar/jruby-complete-*.jar"
+
+  # Attempt faster startup; this should be for interactive or "a human is
+  # watching" execution.
+  # TODO(sissel): Add 'server' operation with good flags for that situation.
+  JAVA_OPTS="$JAVA_OPTS -client -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djruby.compile.mode=OFF"
+  JAVA_OPTS="$JAVA_OPTS -Xmx500m"
+
+  RUBYCMD="java $JAVA_OPTS -jar $basedir/vendor/jar/jruby-complete-*.jar"
 }
 
 setup() {
@@ -41,7 +48,6 @@ setup() {
   else
     setup_vendored_jruby
   fi
-
   export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
   export GEM_PATH=
 }
