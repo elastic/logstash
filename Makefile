@@ -397,7 +397,7 @@ prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) $(GEOIP) vendor-gems
 prepare-tarball:
 	@echo "=> Preparing tarball"
 	$(QUIET)$(MAKE) $(WORKDIR)
-	$(QUIET)rsync -a --relative bin lib locales vendor/bundle/jruby LICENSE README.md $(WORKDIR)
+	$(QUIET)rsync -a --relative bin lib locales vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser  LICENSE README.md $(WORKDIR)
 	$(QUIET)sed -i -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
 
 .PHONY: tarball
