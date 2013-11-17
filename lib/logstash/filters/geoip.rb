@@ -95,6 +95,10 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
       geo_data = @geoip.send(@geoip_type, ip)
     rescue SocketError => e
       @logger.error("IP Field contained invalid IP address or hostname", :field => @field, :event => event)
+    rescue NoMethodError => e
+      @logger.error("Reconstruct GeoIP instance.", :event => event)
+      self.register()
+      return self.filter(event)
     rescue Exception => e
       @logger.error("Unknown error while looking up GeoIP data", :exception => e, :field => @field, :event => event)
     end
