@@ -148,15 +148,17 @@ class LogStash::Agent < Clamp::Command
   def show_version
     show_version_logstash
 
-    if RUBY_PLATFORM == "java"
-      show_version_java
-      show_version_jruby
-      show_version_elasticsearch
-    end
-
-    # Was the -v or --v flag given? Show all gems, too.
     if [:info, :debug].include?(verbosity?) || debug? || verbose?
-      show_gems 
+      show_version_ruby
+
+      if RUBY_PLATFORM == "java"
+        show_version_java
+        show_version_elasticsearch
+      end
+
+      if [:debug].include?(verbosity?) || debug?
+        show_gems 
+      end
     end
   end # def show_version
 
@@ -165,12 +167,12 @@ class LogStash::Agent < Clamp::Command
     puts "logstash #{LOGSTASH_VERSION}"
   end # def show_version_logstash
 
-  def show_version_jruby
-    puts "jruby #{JRUBY_VERSION} (ruby #{RUBY_VERSION})"
-  end # def show_version_jruby
+  def show_version_ruby
+    puts RUBY_DESCRIPTION
+  end # def show_version_ruby
 
   def show_version_elasticsearch
-    # Not running in the jar, assume elasticsearch jars are
+    # Not running in the,jar? assume elasticsearch jars are
     # in ../../vendor/jar/...
     if __FILE__ !~ /^(?:jar:)?file:/
       jarpath = File.join(File.dirname(__FILE__), "../../vendor/jar/elasticsearch*/lib/*.jar")
@@ -218,8 +220,10 @@ class LogStash::Agent < Clamp::Command
       if verbosity? && verbosity?.any?
         # this is an array with length of how many times the flag is given
         if verbosity?.length == 1
+          @logger.warn("The -v flag is deprecated and will be removed in a future release. You should use --verbose instead.")
           @logger.level = :info
         else
+          @logger.warn("The -vv flag is deprecated and will be removed in a future release. You should use --debug instead.")
           @logger.level = :debug
         end
       else
