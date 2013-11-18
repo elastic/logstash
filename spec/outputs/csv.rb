@@ -126,9 +126,31 @@ describe LogStash::Outputs::CSV do
       insist {lines[0][0]} == "one\ntwo"
     end
   end
+
+  describe "fields that are are objects are written as JSON" do
+    tmpfile = Tempfile.new('logstash-spec-output-csv')
+    config <<-CONFIG
+      input {
+        generator {
+          message => '{"foo":{"one":"two"},"baz": "quux"}'
+          count => 1
+        }
+      }
+      filter {
+        json { source => "message"}
+      }
+      output {
+        csv {
+          path => "#{tmpfile.path}"
+          fields => ["foo", "baz"]
+        }
+      }
+    CONFIG
+
+    agent do
+      lines = CSV.read(tmpfile.path)
+      insist {lines.count} == 1
+      insist {lines[0][0]} == '{"one":"two"}'
+    end
+  end
 end
-
-
-
-
-
