@@ -18,39 +18,59 @@
 basedir=$(cd `dirname $0`/..; pwd)
 export RUBYLIB="$basedir/lib"
 
-# Setup will configure any environmental settings necessary to
-# help logstash run.
-setup() {
-  if [ -d "$basedir/.git" ] ; then
-    if [ "$1" = "jruby" ] ; then
-      RUBY=${RUBY=jruby}
-    else
-      RUBY=${RUBY=$(ruby -e 'puts RUBY_ENGINE')}
-    fi
-    RUBYVER=${RUBYVER=1.9}
-    export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
-    export GEM_PATH=
+setup_ruby() {
+  # Verify ruby works
+  if ! ruby -e 'puts "HURRAY"' 2> /dev/null | grep -q "HURRAY" ; then
+    echo "No ruby program found. Cannot start."
+    exit 1
   fi
+
+  eval $(ruby -e 'puts "RUBYVER=#{RUBY_VERSION.split(".")[0..1].join(".")}"; puts "RUBY=#{RUBY_ENGINE}"')
+  RUBYCMD="ruby"
 }
 
-if [ "$1" = "deps" ] ; then
-  program="$basedir/gembag.rb"
-  set -- "$basedir/logstash.gemspec"
-else
-  program="$basedir/lib/logstash/runner.rb"
-fi
+setup_vendored_jruby() {
+  RUBYVER=1.9
+  RUBY=jruby
 
-which ruby > /dev/null 2>&1
-if [ "$?" -eq 0 -a -z "$USE_JRUBY" ] ; then
-  set -- ruby "$program" "$@"
-  setup
-else
-  # No ruby found, fetch JRuby and run.
-  jruby="$basedir/vendor/jar/jruby-complete-1.7.5.jar"
-  [ ! -f "$jruby" ] && make -C $basedir build-jruby
-  set -- java -jar "$jruby" "$program" "$@"
-  setup jruby
-fi
+  # Attempt faster startup; this should be for interactive or "a human is
+  # watching" execution.
+  # TODO(sissel): Add 'server' operation with good flags for that situation.
+  JAVA_OPTS="$JAVA_OPTS -client -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djruby.compile.mode=OFF"
+  JAVA_OPTS="$JAVA_OPTS -Xmx500m"
 
-exec "$@"
+  RUBYCMD="java $JAVA_OPTS -jar $basedir/vendor/jar/jruby-complete-*.jar"
+}
+
+setup() {
+  if [ -d "$basedir/.git" -o ! -z "$USE_RUBY" ] ; then
+    setup_ruby
+  else
+    setup_vendored_jruby
+  fi
+  export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
+  export GEM_PATH=
+}
+
+setup
+
+case $1 in
+  deps)
+    if [ -f "$basedir/logstash.gemspec" ] ; then
+      program="$basedir/gembag.rb"
+      set -- "$basedir/logstash.gemspec"
+      exec $RUBYCMD "$basedir/gembag.rb" "$@"
+    else
+      echo "Cannot install dependencies; missing logstash.gemspec. This 'deps' command only works from a logstash git clone."
+    fi
+    ;;
+  -*)
+    program="$basedir/lib/logstash/runner.rb"
+    exec $RUBYCMD "$program" agent "$@"
+    ;;
+  *)
+    program="$basedir/lib/logstash/runner.rb"
+    exec $RUBYCMD "$program" "$@"
+    ;;
+esac
 
