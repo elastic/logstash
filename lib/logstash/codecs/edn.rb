@@ -6,8 +6,6 @@ class LogStash::Codecs::EDN < LogStash::Codecs::Base
 
   milestone 1
 
-  config :charset, :validate => ::Encoding.name_list, :default => "UTF-8"
-
   def register
     require "edn"
   end
