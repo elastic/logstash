@@ -12,7 +12,7 @@ describe LogStash::Codecs::EDN do
     it "should return an event from edn data" do
       data = {"foo" => "bar", "baz" => {"bah" => ["a", "b", "c"]}}
       subject.decode(data.to_edn) do |event|
-        insist { event.is_a? LogStash::Event }
+        insist { event }.is_a?(LogStash::Event)
         insist { event["foo"] } == data["foo"]
         insist { event["baz"] } == data["baz"]
         insist { event["bah"] } == data["bah"]
