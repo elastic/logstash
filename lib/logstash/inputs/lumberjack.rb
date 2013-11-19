@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
 
@@ -44,7 +45,7 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
     @lumberjack.run do |l|
       @codec.decode(l.delete("line")) do |event|
         decorate(event)
-        l.each { |k,v| event[k] = v }
+        l.each { |k,v| event[k] = v; v.force_encoding("UTF-8") }
         output_queue << event
       end
     end

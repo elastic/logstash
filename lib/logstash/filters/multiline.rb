@@ -1,3 +1,4 @@
+# encoding: utf-8
 # multiline filter
 #
 # This filter will collapse multiline messages into a single event.

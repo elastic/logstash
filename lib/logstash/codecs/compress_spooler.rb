@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/codecs/base"
 
 class LogStash::Codecs::CompressSpooler < LogStash::Codecs::Base
