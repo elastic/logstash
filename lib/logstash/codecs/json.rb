@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/codecs/base"
 require "logstash/codecs/line"
 require "json"

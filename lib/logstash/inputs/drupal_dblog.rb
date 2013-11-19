@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "date"
 require "logstash/inputs/base"
 require "logstash/namespace"

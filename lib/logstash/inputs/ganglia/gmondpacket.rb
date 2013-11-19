@@ -1,3 +1,4 @@
+# encoding: utf-8
 # Inspiration
 # https://github.com/fastly/ganglia/blob/master/lib/gm_protocol.x
 # https://github.com/igrigorik/gmetric/blob/master/lib/gmetric.rb

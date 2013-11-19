@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "clamp" # gem 'clamp'
 require "logstash/errors"
 require "i18n"
