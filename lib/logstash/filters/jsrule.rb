@@ -63,12 +63,11 @@ EOS
       context.eval(@jsrule_source)
       context.eval(@rule)
       context.eval("jsrule()").each do |emitted_event_data|
-        #@logger.debug(emitted_event_data)
-        emitted_event_data = emitted_event_data.to_hash
-        emitted_event_data['@timestamp'] = Rhino.to_ruby(emitted_event_data['@timestamp'])
-        emitted_event = LogStash::Event.new(emitted_event_data)
-        filter_matched(emitted_event)
-        yield emitted_event
+      emitted_event_data = emitted_event_data.to_hash
+      emitted_event_data['@timestamp'] = Rhino.to_ruby(emitted_event_data['@timestamp'])
+      emitted_event = LogStash::Event.new(emitted_event_data)
+      filter_matched(emitted_event)
+      yield emitted_event
       end
     end
 
