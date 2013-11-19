@@ -29,21 +29,25 @@ function CloneObject(obj)
 function jsrule()
 {
         _events = []
+	// If there is Function in apply, execute it over the event, otherwise, push in array
         if (rule.apply != "undefined" && rule.apply instanceof Function) {
-                _events = rule.apply(event)
-        } else {
-                _events.push(event)
-        }
+        	tmp = rule.apply(event)
+		// If result is an array, assign it to events, otherwise push in array
+		if (tmp != "undefined" && tmp instanceof Array)
+			_events = tmp
+		else 
+			_events.push(tmp)
+        } else { 
+        	_events.push(event)
+	}
 
         _result = []
+	// For each event, apply condition(s), cloning the object
         for(ev in _events)
           for(cd in rule.conditions) {
 	    _result.push(rule.conditions[cd](CloneObject(_events[ev])))
 	  }
 	
-	// Bug in Date JS to Java - Remove timestamp from output
-	for(r in _result)
-		delete _result[r]['@timestamp']
         return _result
 }
 EOS
@@ -61,8 +65,6 @@ EOS
       context.eval("jsrule()").each do |emitted_event_data|
         #@logger.debug(emitted_event_data)
         emitted_event = LogStash::Event.new(emitted_event_data)
-	# Bug in Date JS to Java - Remove timestamp from output
-	emitted_event["@timestamp"] = event.timestamp
         filter_matched(emitted_event)
         yield emitted_event
       end
