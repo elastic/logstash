@@ -1,3 +1,4 @@
+# encoding: utf-8
 # DNS Filter
 #
 # This filter will resolve any IP addresses from a field of your choosing.

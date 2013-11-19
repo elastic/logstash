@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/inputs/tcp"
 require "logstash/namespace"
 

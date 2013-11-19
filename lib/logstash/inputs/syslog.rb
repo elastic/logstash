@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "date"
 require "logstash/filters/grok"
 require "logstash/filters/date"

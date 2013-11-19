@@ -1,3 +1,4 @@
+# encoding: utf-8
 class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
 
   config_name "lumberjack"
