@@ -119,6 +119,10 @@ class LogStash::Event
   
   public
   def []=(str, value)
+    if str == "@timestamp" && !value.is_a?(Time)
+      raise TypeError, "The field '@timestamp' must be a Time, not a #{value.class} (#{value})"
+    end
+
     r = LogStash::Util::FieldReference.exec(str, @data) do |obj, key|
       obj[key] = value
     end
