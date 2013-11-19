@@ -8,12 +8,30 @@ require "time"
 # Read connectd binary protocol as events over the network via udp.
 # See https://collectd.org/wiki/index.php/Binary_protocol
 #
+# A sample collectd.conf to send to logstash might be:
+#
+#Hostname    "host.example.com"
+#LoadPlugin interface
+#LoadPlugin load
+#LoadPlugin memory
+#LoadPlugin network
+#<Plugin interface>
+#	Interface "eth0"
+#	IgnoreSelected false
+#</Plugin>
+#<Plugin network>
+#	<Server "10.0.0.1" "25826">
+#	</Server>
+#</Plugin>
+#
+
+#
 class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   config_name "collectd"
   milestone 1
 
   # The file path to the collectd typesdb to use. Required.
-  config :typesdb_path, :validate => :string, :require => true
+  config :typesdb_path, :validate => :path, :require => true
 
   # The address to listen on
   config :host, :validate => :string, :default => "0.0.0.0"
@@ -28,10 +46,9 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   def initialize(params)
     super
     BasicSocket.do_not_reverse_lookup = true
-    @i = 0
-    @l = 0
-    @c = 0
-    @t = 0
+    @idbyte = 0
+    @length = 0
+    @typenum = 0
     @cdhost = ''
     @cdtype = ''
     @header = []; @body = []; @line = []
@@ -65,93 +82,69 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     # Get the typesdb
     @logger.info("Getting Collectd typesdb info", :typesdb => "#{path}")
     File.open(path, 'r').each_line do |line|
-      line = line.strip.split
-      if line[0] != '#' # Don't process commented lines
-        tmp = line.slice!(0)
-        v = []
-        for entry in line
-          v << entry.strip.split(':')[0]
-        end
-        @typesdb[tmp] = v
+      typename, *line = line.strip.split
+      if typename[0,1] != '#' # Don't process commented lines
+      v = line.collect { |l| l.strip.split(":")[0] }
+      @typesdb[typename] = v
       end
     end
   end # def get_typesdb
 
   public
   def type_map(id)
-    retval = ''
     case id
-      when 0
-        retval = "host"
-      when 2
-        retval = "plugin"
-      when 3
-        retval = "plugin_instance"
-      when 4
-        retval = "collectd_type"
-      when 5
-        retval = "type_instance"
-      when 6
-        retval = "values"
-      when 8
-        retval = "@timestamp"
+      when 0; return "host"
+      when 2; return "plugin"
+      when 3; return "plugin_instance"
+      when 4; return "collectd_type"
+      when 5; return "type_instance"
+      when 6; return "values"
+      when 8; return "@timestamp"
     end
-    return retval
   end # def type_map
 
   public
   def vt_map(id)
-    retval = 'UNKNOWN'
     case id
-      when 0
-        retval = "COUNTER"
-      when 1
-        retval = "GAUGE"
-      when 2
-        retval = "DERIVE"
-      when 3
-        retval = "ABSOLUTE"
+      when 0; return "COUNTER"
+      when 1; return "GAUGE"
+      when 2; return "DERIVE"
+      when 3; return "ABSOLUTE"
+      else;   return 'UNKNOWN'
     end
-    return retval
   end
 
   public
-  def get_values(id, length, body)
-    l = length - 4 # shorten according to the header
-    string_type = [ 0, 2, 3, 4, 5 ]
+  def get_values(id, body)
     retval = ''
     case id
-      when *string_type
-        retval = body.map {|x| x.chr}.join
+      when 0,2,3,4,5 # String types
+        retval = body.pack("C*")
         retval = retval[0..-2]
-      when 8
-        i1, i2 = body.pack("C*").unpack("NN")
-        retval = Time.at(( ((i1 << 32) + i2) * (2**-30) )).iso8601
-      when 6
+      when 8 # Time
+        # Time here, in bit-shifted format.  Parse bytes into UTC.
+        byte1, byte2 = body.pack("C*").unpack("NN")
+        retval = Time.at(( ((byte1 << 32) + byte2) * (2**-30) )).utc
+      when 6 # Values
         val_bytes = body.slice!(0..1)
         val_count = val_bytes.pack("C*").unpack("n")
-        if body.length % 9 == 0
-          i = 0
+        if body.length % 9 == 0 # Should be 9 fields
+          count = 0
           retval = []
           types = body.slice!(0..((body.length/9)-1))
           while body.length > 0
-            vtype = vt_map(types[i])
-            unsigned = [ 0, 3 ]
-            case types[i]
-              when *unsigned
-                v = body.slice!(0..7).pack("C*").unpack("Q>")[0]
-              when 2
-                v = body.slice!(0..7).pack("C*").unpack("q>")[0]
-              when 1
-                v = body.slice!(0..7).pack("C*").unpack("E")[0]
-              else
-                v = 0
+            vtype = vt_map(types[count])
+            case types[count]
+              when 0, 3; v = body.slice!(0..7).pack("C*").unpack("Q>")[0]
+              when 1;    v = body.slice!(0..7).pack("C*").unpack("E")[0]
+              when 2;    v = body.slice!(0..7).pack("C*").unpack("q>")[0]
+              else;      v = 0
             end
             retval << v
-            i += 1
+            count += 1
           end
         else
-          @logger.error("Incorrect number of data fields for collectd record", :body => "#{body}")
+          @logger.error("Incorrect number of data fields for collectd record", :body => body.to_s)
         end
     end
     return retval
@@ -172,30 +165,30 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     loop do
       payload, client = @udp.recvfrom(@buffer_size)
       payload.each_byte do |byte|
-        if @i < 4
+        if @idbyte < 4
           @header << byte
-        elsif @i == 4
+        elsif @idbyte == 4
           @line = @header
-          @t = (@header[0] << 1) + @header[1]
-          @l = (@header[2] << 1) + @header[3]
+          @typenum = (@header[0] << 1) + @header[1]
+          @length = (@header[2] << 1) + @header[3]
           @line << byte
           @body << byte
-        elsif @i > 4 && @i < @l
+        elsif @idbyte > 4 && @idbyte < @length
           @line << byte
           @body << byte
         end
-        if @l > 0 && @i == @l-1
-          if @t == 0;
-            @cdhost = @body.map {|x| x.chr}.join
+        if @length > 0 && @idbyte == @length-1
+          if @typenum == 0;
+            @cdhost = @body.pack("C*")
             @cdhost = @cdhost[0..-2] #=> Trim trailing null char
             @collectd['host'] = @cdhost
           else
-            fname = type_map(@t)
-            if @t == 4
-              @cdtype = get_values(@t, @l, @body)
+            field = type_map(@typenum)
+            if @typenum == 4
+              @cdtype = get_values(@typenum, @body)
               @collectd['collectd_type'] = @cdtype
             end
-            if @t == 8
+            if @typenum == 8
               if @collectd.length > 1
                 @collectd.delete_if {|k, v| v == "" }
                 if @collectd.has_key?("collectd_type") # This means the full event should be here
@@ -212,22 +205,21 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
                 @collectd['collectd_type'] = @cdtype
               end
             end
-            values = get_values(@t, @l, @body)
+            values = get_values(@typenum, @body)
             if values.kind_of?(Array)
               if values.length > 1              #=> Only do this iteration on multi-value arrays
                 (0..(values.length - 1)).each {|x| @collectd[@typesdb[@collectd['collectd_type']][x]] = values[x]}
               else                              #=> Otherwise it's a single value
                 @collectd['value'] = values[0]  #=> So name it 'value' accordingly
               end
-            elsif fname != ""                 	#=> Not an array, make sure it's non-empty
-              @collectd[fname] = values         #=> Append values to @collectd under key fname
+            elsif field != ""                         #=> Not an array, make sure it's non-empty
+              @collectd[field] = values         #=> Append values to @collectd under key field
             end
           end
-          @i = 0; @l = 0; @header.clear; @body.clear; @line.clear  #=> Reset everything
+          @idbyte = 0; @length = 0; @header.clear; @body.clear; @line.clear  #=> Reset everything
         else
-          @i += 1
+          @idbyte += 1
         end
-        @c += 1
       end
     end
   ensure
