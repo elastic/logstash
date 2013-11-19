@@ -10,19 +10,19 @@ require "time"
 #
 # A sample collectd.conf to send to logstash might be:
 #
-#Hostname    "host.example.com"
-#LoadPlugin interface
-#LoadPlugin load
-#LoadPlugin memory
-#LoadPlugin network
-#<Plugin interface>
-#	Interface "eth0"
-#	IgnoreSelected false
-#</Plugin>
-#<Plugin network>
-#	<Server "10.0.0.1" "25826">
-#	</Server>
-#</Plugin>
+#     Hostname    "host.example.com"
+#     LoadPlugin interface
+#     LoadPlugin load
+#     LoadPlugin memory
+#     LoadPlugin network
+#     <Plugin interface>
+#     	     Interface "eth0"
+#     	     IgnoreSelected false
+#     </Plugin>
+#     <Plugin network>
+#	     <Server "10.0.0.1" "25826">
+#	     </Server>
+#     </Plugin>
 #
 
 #
@@ -30,8 +30,8 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   config_name "collectd"
   milestone 1
 
-  # The file path to the collectd typesdb to use. Required.
-  config :typesdb_path, :validate => :path, :require => true
+  # The file path to the collectd typesdb to use.
+  config :typesdb_path, :validate => :path, :required => true
 
   # The address to listen on
   config :host, :validate => :string, :default => "0.0.0.0"
