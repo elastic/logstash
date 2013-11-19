@@ -12,8 +12,6 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   config_name "collectd"
   milestone 1
 
-  default :codec, "noop"
-
   # The file path to the collectd typesdb to use. Required.
   config :typesdb_path, :validate => :string, :require => true
 
