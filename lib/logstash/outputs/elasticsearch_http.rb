@@ -31,6 +31,12 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # The port for ElasticSearch HTTP interface to use.
   config :port, :validate => :number, :default => 9200
 
+  # The HTTP Basic Auth username used to access your elasticsearch server.
+  config :username, :validate => :string, :default => nil
+
+  # The HTTP Basic Auth password used to access your elasticsearch server.
+  config :password, :validate => :password, :default => nil
+
   # Set the number of events to queue up before writing to elasticsearch.
   config :flush_size, :validate => :number, :default => 100
 
@@ -54,7 +60,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     @agent = FTW::Agent.new
     @queue = []
 
-    @bulk_url = "http://#{@host}:#{@port}/_bulk?replication=#{@replication}"
+    auth = @username && @password ? "#{@username}:#{@password.value}@" : ""
+    @bulk_url = "http://#{auth}#{@host}:#{@port}/_bulk?replication=#{@replication}"
 
     buffer_initialize(
       :max_items => @flush_size,
