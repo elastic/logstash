@@ -30,8 +30,8 @@ describe LogStash::Codecs::OldLogStashJSON do
       event = LogStash::Event.new(data)
       got_event = false
       subject.on_event do |d|
-        insist { !d["@timestamp"].nil? }
-        insist { d["@message"] } == data["message"]
+        insist { !ON.parse(d)["@timestamp"].nil? }
+        insist { JSON.parse(d)["@message"] } == data["message"]
         got_event = true
       end
       subject.encode(event)
