@@ -1,3 +1,4 @@
+# encoding: utf-8
 module ::LogStash::Util::SocketPeer
   public
   def peer

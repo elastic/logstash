@@ -1,3 +1,4 @@
+# encoding: utf-8
 module LogStash
   class Error < ::StandardError; end
   class ConfigurationError < Error; end

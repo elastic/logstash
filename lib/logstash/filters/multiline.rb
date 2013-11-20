@@ -1,3 +1,4 @@
+# encoding: utf-8
 # multiline filter
 #
 # This filter will collapse multiline messages into a single event.
@@ -225,8 +226,10 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   end # def filter
 
   # Flush any pending messages. This is generally used for unit testing only.
+  #
+  # Note: flush is disabled now; it is preferable to use the multiline codec.
   public
-  def flush
+  def __flush
     events = []
     @pending.each do |key, value|
       value.uncancel

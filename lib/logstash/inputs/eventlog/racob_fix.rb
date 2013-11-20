@@ -1,3 +1,4 @@
+# encoding: utf-8
 # The jruby-win32ole gem uses 'java.lang.System.set_property' to
 # tell java(?) where to find the racob dll.
 #

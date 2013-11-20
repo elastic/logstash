@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "rack/handler/ftw" # gem ftw
 require "ftw" # gem ftw
 require "sinatra/base" # gem sinatra

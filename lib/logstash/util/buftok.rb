@@ -1,3 +1,4 @@
+# encoding: utf-8
 # BufferedTokenizer - Statefully split input data by a specifiable token
 #
 # Authors:: Tony Arcieri, Martin Emde

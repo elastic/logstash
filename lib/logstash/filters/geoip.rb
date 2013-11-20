@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/filters/base"
 require "logstash/namespace"
 require "tempfile"
@@ -117,6 +118,10 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
         event[@target][key.to_s] = value
       end
     end # geo_data_hash.each
+    if event[@target].key?('latitude') && event[@target].key?('longitude')
+      # If we have latitude and longitude values, add the location field as GeoJSON array
+      event[@target]['location'] = [ event[@target]["longitude"].to_f, event[@target]["latitude"].to_f ] 
+    end
     filter_matched(event)
   end # def filter
 end # class LogStash::Filters::GeoIP
