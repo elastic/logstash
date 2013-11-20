@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/inputs/threadable"
 require "logstash/namespace"
@@ -223,6 +224,10 @@ EOF
       begin
         @redis ||= connect
         self.send listener, @redis, output_queue
+      rescue Redis::CannotConnectError => e
+        @logger.warn("Redis connection problem", :exception => e)
+        sleep 1
+        @redis = connect
       rescue => e # redis error
         @logger.warn("Failed to get event from redis", :name => @name,
                      :exception => e, :backtrace => e.backtrace)

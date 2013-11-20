@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/config/mixin"
 
 module LogStash::PluginMixins::AwsConfig

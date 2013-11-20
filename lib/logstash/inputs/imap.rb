@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "stud/interval"
@@ -24,6 +25,10 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   config :check_interval, :validate => :number, :default => 300
   config :delete, :validate => :boolean, :default => false
 
+  # For multipart messages, use the first part that has this
+  # content-type as the event message.
+  config :content_type, :validate => :string, :default => "text/plain"
+
   public
   def register
     require "net/imap" # in stdlib
@@ -36,6 +41,8 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
         @port = 143
       end
     end
+
+    @content_type_re = Regexp.new("^" + @content_type)
   end # def register
 
   def connect
@@ -60,6 +67,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
     ids.each_slice(@fetch_count) do |id_set|
       items = imap.fetch(id_set, "RFC822")
       items.each do |item|
+        next unless item.attr.has_key?("RFC822")
         mail = Mail.read_from_string(item.attr["RFC822"])
         queue << parse_mail(mail)
       end
@@ -79,7 +87,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
       message = mail.body.decoded
     else
       # Multipart message; use the first text/plain part we find
-      part = mail.parts.find { |p| p.content_type =~ /^text\/plain/ } || mail.parts.first
+      part = mail.parts.find { |p| p.content_type.match @content_type_re } || mail.parts.first
       message = part.decoded
     end
 

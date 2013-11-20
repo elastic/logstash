@@ -1,3 +1,4 @@
+# encoding: utf-8
 # Monkeypatch for JRUBY-6970
 module Kernel
   alias_method :require_JRUBY_6970_hack, :require

@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/codecs/base"
 
 # The multiline codec is for taking line-oriented text and merging them into a

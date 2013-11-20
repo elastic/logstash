@@ -1,3 +1,8 @@
+# encoding: utf-8
+=======
+# Author: Rodrigo De Castro <rdc@google.com>
+# Date: 2013-09-20
+#
 # Copyright 2013 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -168,7 +173,7 @@ class LogStash::Outputs::GoogleCloudStorage < LogStash::Outputs::Base
   def teardown
     @logger.debug("GCS: teardown method called")
 
-    @temp_file.flush()
+    @temp_file.fsync()
     @temp_file.close()
   end
 
@@ -181,12 +186,12 @@ class LogStash::Outputs::GoogleCloudStorage < LogStash::Outputs::Base
   # Inspired by lib/logstash/outputs/file.rb (flush(fd), flush_pending_files)
   def sync_log_file
     if flush_interval_secs <= 0
-      @temp_file.fsync
+      @temp_file.fsync()
       return
     end
 
     return unless Time.now - @last_flush_cycle >= flush_interval_secs
-    @temp_file.fsync
+    @temp_file.fsync()
     @logger.debug("GCS: flushing file",
                   :path => @temp_file.to_path,
                   :fd => @temp_file)
@@ -198,12 +203,9 @@ class LogStash::Outputs::GoogleCloudStorage < LogStash::Outputs::Base
   #
   # A random suffix is appended to the temporary directory
   def initialize_temp_directory
+    require "stud/temporary"
     if @temp_directory.empty?
-      # From:
-      # http://stackoverflow.com/questions/88311/how-best-to-generate-a-random-string-in-ruby
-      char_map =  [('a'..'z'),('A'..'Z')].map{|i| i.to_a}.flatten()
-      random_suffix  =  (0...8).map{ char_map[rand(char_map.length)] }.join()
-      @temp_directory = "/tmp/logstash-gcs-" + random_suffix
+      @temp_directory = Stud::Temporary.directory("logstash-gcs")
       @logger.info("GCS: temporary directory generated",
                    :directory => @temp_directory)
     end
@@ -238,7 +240,7 @@ class LogStash::Outputs::GoogleCloudStorage < LogStash::Outputs::Base
           else
             @logger.debug("GCS: flush and close file to be uploaded.",
                           :filename => filename)
-            @temp_file.flush()
+            @temp_file.fsync()
             @temp_file.close()
             initialize_next_log()
           end
@@ -301,16 +303,17 @@ class LogStash::Outputs::GoogleCloudStorage < LogStash::Outputs::Base
   # Opens current log file and updates @temp_file with an instance of IOWriter.
   # This method also adds file to the upload queue.
   def open_current_file()
+    path = get_full_path()
     stat = File.stat(path) rescue nil
     if stat and stat.ftype == "fifo" and RUBY_PLATFORM == "java"
-      fd = java.io.FileWriter.new(java.io.File.new(get_full_path()))
+      fd = java.io.FileWriter.new(java.io.File.new(path))
     else
-      fd = File.new(get_full_path(), "a")
+      fd = File.new(path, "a")
     end
     if @gzip
       fd = Zlib::GzipWriter.new(fd)
     end
-    @temp_file = IOWriter.new(fd)
+    @temp_file = GCSIOWriter.new(fd)
     @upload_queue << @temp_file.to_path
   end
 
@@ -399,17 +402,19 @@ end
 # files or GzipWriter.
 #
 # Inspired by lib/logstash/outputs/file.rb.
-class IOWriter
+class GCSIOWriter
   def initialize(io)
     @io = io
   end
   def write(*args)
     @io.write(*args)
   end
-  def flush
-    @io.flush
+  def fsync
     if @io.class == Zlib::GzipWriter
-      @io.to_io.flush
+      @io.flush
+      @io.to_io.fsync
+    else
+      @io.fsync
     end
   end
   def method_missing(method_name, *args, &block)

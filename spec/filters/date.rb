@@ -5,6 +5,21 @@ puts "Skipping date performance tests because this ruby is not jruby" if RUBY_EN
 RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
   extend LogStash::RSpec
 
+  describe "giving an invalid match config, raise a configuration error" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "mydate"]
+        }
+      }
+    CONFIG
+
+    sample "not_really_important" do
+      insist {subject}.raises LogStash::ConfigurationError
+    end
+
+  end
+
   describe "parsing with ISO8601" do
     config <<-CONFIG
       filter {
