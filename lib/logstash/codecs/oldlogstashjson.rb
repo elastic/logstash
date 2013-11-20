@@ -35,7 +35,14 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
       h[key] = data[val] if data.include?(val)
     end
 
-    h.merge!(data["@fields"]) if data["@fields"].is_a?(Hash)
+    data.to_hash.each do |field, val|
+      # TODO: might be better to V1_TO_V0 = V0_TO_V1.invert during
+      # initialization than V0_TO_V1.has_value? within loop
+      next if V0_TO_V1.has_value?(field)
+      h["@fields"] = {} if h["@fields"].nil?
+      h["@fields"][field] = val
+    end
+
     @on_event.call(h.to_json)
   end # def encode
 
