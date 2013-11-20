@@ -61,6 +61,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
     ids.each_slice(@fetch_count) do |id_set|
       items = imap.fetch(id_set, "RFC822")
       items.each do |item|
+        next unless item.attr.has_key?("RFC822")
         mail = Mail.read_from_string(item.attr["RFC822"])
         queue << parse_mail(mail)
       end
