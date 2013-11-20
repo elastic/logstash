@@ -27,7 +27,8 @@ describe LogStash::Codecs::OldLogStashJSON do
     it "should return old (v0) json data" do
       data = {"type" => "t", "message" => "wat!?",
               "host" => "localhost", "path" => "/foo",
-              "tags" => ["a","b","c"]}
+              "tags" => ["a","b","c"],
+              "bah" => "baz"}
       event = LogStash::Event.new(data)
       got_event = false
       subject.on_event do |d|
@@ -37,6 +38,7 @@ describe LogStash::Codecs::OldLogStashJSON do
         insist { JSON.parse(d)["@source_host"] } == data["host"]
         insist { JSON.parse(d)["@source_path"] } == data["path"]
         insist { JSON.parse(d)["@tags"] } == data["tags"]
+        insist { JSON.parse(d)["@fields"]["bah"] } == "baz"
         got_event = true
       end
       subject.encode(event)
