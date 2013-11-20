@@ -30,14 +30,9 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
   def encode(data)
     h  = {}
 
-    h["@timestamp"] = data["@timestamp"]
-    h["@message"] = data["message"] if data.include?("message")
-    h["@source_host"] = data["source_host"] if data.include?("source_host")
-    # Convert the old logstash schema to the new one.
-    basics = %w(@timestamp @message @source_host @source_path @source
-                @tags @type)
-    basics.each do |key|
-      h[key] = data[key] if data.include?(key)
+    # Convert the new logstash schema to the old one.
+    V0_TO_V1.each do |key, val|
+      h[key] = data[val] if data.include?(val)
     end
 
     h.merge!(data["@fields"]) if data["@fields"].is_a?(Hash)
