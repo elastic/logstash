@@ -40,7 +40,7 @@ default:
 	@echo "  jar -- builds the monolithic jar"
 	@echo "  jar-test -- runs the test suite against the monolithic jar"
 
-TESTS=$(wildcard spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
+TESTS=$(wildcard spec/inputs/gelf.rb spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
 
 # The 'version' is generated based on the logstash version, git revision, etc.
 .VERSION.mk:
