@@ -30,8 +30,9 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   config_name "collectd"
   milestone 1
 
-  # The file path to the collectd typesdb to use.
-  config :typesdb_path, :validate => :path, :required => true
+  # File path(s) to collectd typesdb to use.
+  # The last matching pattern wins if you have identical pattern names in multiple files.
+  config :typesdb, :validate => :array, :required => true
 
   # The address to listen on
   config :host, :validate => :string, :default => "0.0.0.0"
@@ -53,7 +54,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     @cdtype = ''
     @header = []; @body = []; @line = []
     @collectd = {}
-    @typesdb = {}
+    @types = {}
   end # def initialize
 
   public
@@ -64,8 +65,8 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   public
   def run(output_queue)
     begin
-      # get typesdb
-      get_typesdb(@typesdb_path)
+      # get types
+      get_types(@typesdb)
       # collectd server
       collectd_listener(output_queue)
     rescue LogStash::ShutdownSignal
@@ -78,17 +79,20 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   end # def run
 
   public
-  def get_typesdb(path)
+  def get_types(paths)
     # Get the typesdb
-    @logger.info("Getting Collectd typesdb info", :typesdb => "#{path}")
-    File.open(path, 'r').each_line do |line|
-      typename, *line = line.strip.split
-      if typename[0,1] != '#' # Don't process commented lines
-      v = line.collect { |l| l.strip.split(":")[0] }
-      @typesdb[typename] = v
+    paths.each do |path|
+      @logger.info("Getting Collectd typesdb info", :typesdb => path.to_s)
+      File.open(path, 'r').each_line do |line|
+        typename, *line = line.strip.split
+        if typename[0,1] != '#' # Don't process commented lines
+        v = line.collect { |l| l.strip.split(":")[0] }
+        @types[typename] = v
+        end
       end
     end
-  end # def get_typesdb
+  @logger.debug("Collectd Types", :types => @types.to_s)
+  end # def get_types
 
   public
   def type_map(id)
@@ -208,7 +212,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
             values = get_values(@typenum, @body)
             if values.kind_of?(Array)
               if values.length > 1              #=> Only do this iteration on multi-value arrays
-                (0..(values.length - 1)).each {|x| @collectd[@typesdb[@collectd['collectd_type']][x]] = values[x]}
+                (0..(values.length - 1)).each {|x| @collectd[@types[@collectd['collectd_type']][x]] = values[x]}
               else                              #=> Otherwise it's a single value
                 @collectd['value'] = values[0]  #=> So name it 'value' accordingly
               end
