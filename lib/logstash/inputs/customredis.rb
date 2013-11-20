@@ -33,9 +33,11 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
 
   config :key, :validate => :string, :required => false, :default => ""
 
-  config :batch_count, :validate => :number, :default => 10
+  config :batch_count, :validate => :number, :default => 100
 
   config :luascript, :validate => :string, :required => true
+
+  config :threads, :validate => :number, :default => 1
 
   public
   def register
@@ -106,6 +108,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
       begin
         @redis ||= connect
         self.send listener, @redis, output_queue
+	sleep 0.1
       rescue Redis::CannotConnectError => e
         @logger.warn("Redis connection problem", :exception => e)
         sleep 1
