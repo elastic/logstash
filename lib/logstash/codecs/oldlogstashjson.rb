@@ -38,7 +38,7 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
     data.to_hash.each do |field, val|
       # TODO: might be better to V1_TO_V0 = V0_TO_V1.invert during
       # initialization than V0_TO_V1.has_value? within loop
-      next if V0_TO_V1.has_value?(field)
+      next if field == "@version" or V0_TO_V1.has_value?(field)
       h["@fields"] = {} if h["@fields"].nil?
       h["@fields"][field] = val
     end
