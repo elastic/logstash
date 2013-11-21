@@ -39,6 +39,7 @@ describe LogStash::Codecs::OldLogStashJSON do
         insist { JSON.parse(d)["@source_path"] } == data["path"]
         insist { JSON.parse(d)["@tags"] } == data["tags"]
         insist { JSON.parse(d)["@fields"]["bah"] } == "baz"
+        insist { JSON.parse(d)["@fields"]["@version"] } == nil
         got_event = true
       end
       subject.encode(event)
