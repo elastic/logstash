@@ -15,42 +15,54 @@ class LogStash::Filters::Ruby < LogStash::Filters::Base
     require 'rhino'
 
     @jsrule_source = <<EOS
-function CloneObject(obj)
-{
-	var target = {}
-	for (var i in obj) {
-		if (obj.hasOwnProperty(i)) {
-			target[i] = obj[i]
-		}
-	}
-	return target
+function CloneObject(obj) {
+    var target = {}, i;
+    for (i in obj) {
+        if (obj.hasOwnProperty(i)) {
+            target[i] = obj[i];
+        }
+    }
+    return target;
 }
 
-function jsrule()
-{
-        _events = []
-	// If there is Function in apply, execute it over the event, otherwise, push in array
-        if (rule.apply != "undefined" && rule.apply instanceof Function) {
-        	tmp = rule.apply(event)
-		// If result is an array, assign it to events, otherwise push in array
-		if (tmp != "undefined" && tmp instanceof Array)
-			_events = tmp
-		else 
-			_events.push(tmp)
-        } else { 
-        	_events.push(event)
-	}
-
-        _result = []
-	// For each event, apply condition(s), cloning the object
-        for(ev in _events)
-          for(cd in rule.conditions) {
-	    _result.push(rule.conditions[cd](CloneObject(_events[ev])))
-	  }
-	
-        return _result
+function JsRule(iRule) {
+	this.rule = iRule;
 }
+
+JsRule.prototype.process = function(iEvent) {
+    var _events = [],
+        tmp_events, result, ev, cd;
+    
+    // If there is Function in apply, execute it over the event, otherwise, push in array
+    if (this.rule.apply !== "undefined" && this.rule.apply instanceof Function) {
+        tmp_events = this.rule.apply(iEvent);
+        // If result is an array, assign it to events, otherwise push in array
+        if (tmp_events !== "undefined" && tmp_events instanceof Array) {
+            _events = tmp_events;
+        } else {
+            _events.push(tmp_events);
+        }
+    } else {
+        _events.push(iEvent);
+    }
+
+    _result = [];
+    // For each event, apply condition(s), cloning the object
+    for (ev = 0; ev < _events.length; ev++) {
+        for (cd = 0; cd < this.rule.conditions.length; cd++) {
+            _result.push(this.rule.conditions[cd](CloneObject(_events[ev])));
+        }
+    }
+    return _result;
+}
+
+jsrule = new JsRule(rule);
 EOS
+  
+  @jscontext = Rhino::Context.new
+  @jscontext.optimization_level = 6
+  @jscontext.eval @rule + @jsrule_source
+  @jsrule = @jscontext['jsrule']
 
   end # def register
 
@@ -58,17 +70,13 @@ EOS
   def filter(event)
     return unless filter?(event)
     event.cancel
-    Rhino::Context.open do |context|
-      context['event'] = event.to_hash
-      context.eval(@jsrule_source)
-      context.eval(@rule)
-      context.eval("jsrule()").each do |emitted_event_data|
-      emitted_event_data = emitted_event_data.to_hash
-      emitted_event_data['@timestamp'] = Rhino.to_ruby(emitted_event_data['@timestamp'])
+    @jsrule.process(event.to_hash).each do |emitted_event_data_js|
+      # TODO The following 2 lines shouldn't be necessary! See https://github.com/cowboyd/therubyrhino/issues/27
+      emitted_event_data = emitted_event_data_js.to_hash
+      emitted_event_data['@timestamp'] = Rhino.to_ruby(emitted_event_data_js['@timestamp'])
       emitted_event = LogStash::Event.new(emitted_event_data)
       filter_matched(emitted_event)
       yield emitted_event
-      end
     end
 
   end # def filter
