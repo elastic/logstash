@@ -70,7 +70,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           tmp_file = Tempfile.new('logstash-types.db')
           tmp_file.write(File.read(jar_path))
           tmp_file.close # this file is reaped when ruby exits
-          @typesdb = Array.new; @typesdb[0] = tmp_file.path
+          @typesdb = [tmp_file.path]
         rescue => ex
           raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
         end
@@ -110,9 +110,9 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
       @logger.info("Getting Collectd typesdb info", :typesdb => path.to_s)
       File.open(path, 'r').each_line do |line|
         typename, *line = line.strip.split
-        if typename[0,1] != '#' # Don't process commented lines
-        v = line.collect { |l| l.strip.split(":")[0] }
-        @types[typename] = v
+        next if typename.nil? || if typename[0,1] != '#' # Don't process commented or blank lines
+          v = line.collect { |l| l.strip.split(":")[0] }
+          @types[typename] = v
         end
       end
     end
