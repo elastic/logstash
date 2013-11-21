@@ -43,7 +43,8 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
       h["@fields"][field] = val
     end
 
-    @on_event.call(h.to_json)
+    # Tack on a \n because JSON outputs 1.1.x had them.
+    @on_event.call(h.to_json + "\n")
   end # def encode
 
 end # class LogStash::Codecs::OldLogStashJSON
