@@ -3,6 +3,7 @@ require "date"
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket"
+require "tempfile"
 require "time"
 
 # Read connectd binary protocol as events over the network via udp.
@@ -30,9 +31,10 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   config_name "collectd"
   milestone 1
 
-  # File path(s) to collectd typesdb to use.
+  # File path(s) to collectd types.db to use.
   # The last matching pattern wins if you have identical pattern names in multiple files.
-  config :typesdb, :validate => :array, :required => true
+  # If no types.db is provided the included types.db will be used.
+  config :typesdb, :validate => :array
 
   # The address to listen on
   config :host, :validate => :string, :default => "0.0.0.0"
@@ -60,6 +62,29 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   public
   def register
     @udp = nil
+    if @typesdb.nil?
+      if __FILE__ =~ /^file:\/.+!.+/
+        begin
+          # Running from a jar, assume types.db is at the root.
+          jar_path = [__FILE__.split("!").first, "/types.db"].join("!")
+          tmp_file = Tempfile.new('logstash-types.db')
+          tmp_file.write(File.read(jar_path))
+          tmp_file.close # this file is reaped when ruby exits
+          @typesdb = Array.new; @typesdb[0] = tmp_file.path
+        rescue => ex
+          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
+        end
+      else
+        if File.exists?("types.db")
+          @typesdb = "types.db"
+        elsif File.exists?("vendor/collectd/types.db")
+          @typesdb = "vendor/collectd/types.db"
+        else
+          raise "You must specify 'typesdb => ...' in your collectd input"
+        end
+      end
+    end
+    @logger.info("Using internal types.db", :typesdb => @typesdb.to_s)
   end # def register
 
   public

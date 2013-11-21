@@ -12,6 +12,8 @@ JRUBY_CMD=java -jar $(JRUBY)
 JRUBYC=$(WITH_JRUBY) jrubyc
 ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
+TYPESDB=vendor/collectd/types.db
+TYPESDB_URL=https://collectd.org/files/collectd-5.4.0.tar.gz
 GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
 KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-latest.tar.gz
@@ -140,6 +142,17 @@ $(GEOIP): | vendor/geoip
 	$(QUIET)gzip -dc $@.tmp.gz > $@.tmp
 	$(QUIET)mv $@.tmp $@
 
+vendor/collectd: | vendor
+	$(QUIET)mkdir $@
+
+.PHONY: vendor-collectd
+vendor-collectd: $(TYPESDB)
+$(TYPESDB): | vendor/collectd
+	$(QUIET)$(DOWNLOAD_COMMAND) $@.tar.gz $(TYPESDB_URL)
+	$(QUIET)mkdir $@.tmpdir
+	$(QUIET)tar zxf $@.tar.gz -C $@.tmpdir
+	$(QUIET)find $@.tmpdir -type f -name types.db -exec mv -i {} $@ \;
+
 # Always run vendor/bundle
 .PHONY: fix-bundler
 fix-bundler:
@@ -172,7 +185,7 @@ build/ruby: | build
 # TODO(sissel): Skip sigar?
 # Run this one always? Hmm..
 .PHONY: build/monolith
-build/monolith: $(ELASTICSEARCH) $(JRUBY) $(GEOIP) vendor-gems | build
+build/monolith: $(ELASTICSEARCH) $(JRUBY) $(GEOIP) $(TYPESDB) vendor-gems | build
 build/monolith: vendor/ua-parser/regexes.yaml
 build/monolith: vendor/kibana
 build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
@@ -202,6 +215,7 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)mkdir -p $@/vendor/ua-parser
 	-$(QUIET)cp vendor/ua-parser/regexes.yaml $@/vendor/ua-parser
 	$(QUIET)cp $(GEOIP) $@/
+	$(QUIET)cp $(TYPESDB) $@/
 	-$(QUIET)rsync -a vendor/kibana/ $@/vendor/kibana/
 
 vendor/ua-parser/: | build
@@ -274,7 +288,7 @@ update-flatjar: copy-ruby-files compile build/ruby/logstash/runner.class
 	$(QUIET)jar uf build/logstash-$(VERSION)-flatjar.jar -C build/ruby .
 
 .PHONY: test
-test: | $(JRUBY) vendor-elasticsearch vendor-geoip
+test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd
 	GEM_HOME= GEM_PATH= bin/logstash deps
 	GEM_HOME= GEM_PATH= bin/logstash rspec --order rand --fail-fast $(TESTS)
 
@@ -393,11 +407,11 @@ show:
 
 .PHONY: prepare-tarball
 prepare-tarball tarball: WORKDIR=build/tarball/logstash-$(VERSION)
-prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) $(GEOIP) vendor-gems
+prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) $(GEOIP) $(TYPESDB) vendor-gems
 prepare-tarball:
 	@echo "=> Preparing tarball"
 	$(QUIET)$(MAKE) $(WORKDIR)
-	$(QUIET)rsync -a --relative bin lib locales vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser  LICENSE README.md $(WORKDIR)
+	$(QUIET)rsync -a --relative bin lib locales vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md $(WORKDIR)
 	$(QUIET)sed -i -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
 
 .PHONY: tarball
