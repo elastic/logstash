@@ -6,10 +6,15 @@ require "socket"
 require "tempfile"
 require "time"
 
-# Read connectd binary protocol as events over the network via udp.
+# Read events from the connectd binary protocol over the network via udp.
 # See https://collectd.org/wiki/index.php/Binary_protocol
 #
-# A sample collectd.conf to send to logstash might be:
+# Configuration in your Logstash configuration file can be as simple as:
+#     input {
+#       collectd {}
+#     }
+#
+# A sample collectd.conf to send to Logstash might be:
 #
 #     Hostname    "host.example.com"
 #     LoadPlugin interface
@@ -25,6 +30,8 @@ require "time"
 #	     </Server>
 #     </Plugin>
 #
+# Be sure to replace "10.0.0.1" with the IP of your Logstash instance.
+#
 
 #
 class LogStash::Inputs::Collectd < LogStash::Inputs::Base
@@ -36,10 +43,10 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   # If no types.db is provided the included types.db will be used.
   config :typesdb, :validate => :array
 
-  # The address to listen on
+  # The address to listen on.  Defaults to all available addresses.
   config :host, :validate => :string, :default => "0.0.0.0"
 
-  # The port to listen on. Collectd defaults to 25826
+  # The port to listen on.  Defaults to the collectd expected port of 25826.
   config :port, :validate => :number, :default => 25826
 
   # Buffer size
