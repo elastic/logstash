@@ -1,4 +1,18 @@
-# logstash
+# BE AWARE! Fork of Logstash
+
+[Why JRuby by Jordan Sissel(htps://gist.github.com/jordansissel/978956)]?
+
+## TODO
+
+- [ ] CustomRedis Input & Output / Catch Exceptions properly
+- [ ] CustomRedis Input & Output / Make LUA Scripts parametrizable using ruby eval
+- [ ] JsRule Filter / Precompile JS to Java (MAKE IT SO)
+- [ ] JsRule Filter / Drop if rule compilation fails
+- [ ] JsRule Filter / Remove extra code when Time conversion will be fixed
+- [ ] JsRule Filter / Make possible to use an init js function
+- [ ] General / Add documentation
+
+logstash
 
 [![Build Status](https://secure.travis-ci.org/logstash/logstash.png)](http://travis-ci.org/logstash/logstash)
 
