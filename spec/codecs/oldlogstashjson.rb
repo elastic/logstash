@@ -13,7 +13,7 @@ describe LogStash::Codecs::OldLogStashJSON do
               "@tags" => ["a","b","c"]}
       subject.decode(data.to_json) do |event|
         insist { event.is_a? LogStash::Event }
-        insist { event["@timestamp"].nil? } == false
+        insist { event["@timestamp"] } != nil
         insist { event["type"] } == data["@type"]
         insist { event["message"] } == data["@message"]
         insist { event["host"] } == data["@source_host"]
@@ -30,7 +30,7 @@ describe LogStash::Codecs::OldLogStashJSON do
       event = LogStash::Event.new(data)
       got_event = false
       subject.on_event do |d|
-        insist { JSON.parse(d)["@timestamp"].nil? } == false
+        insist { JSON.parse(d)["@timestamp"] } != nil
         insist { JSON.parse(d)["@message"] } == data["message"]
         got_event = true
       end
