@@ -44,4 +44,17 @@ describe LogStash::Inputs::IMAP do
     end
   end
 
+  context "when subject is in RFC 2047 encoded-word format" do
+    it "should be decoded" do
+      msg.subject = "=?iso-8859-1?Q?foo_:_bar?="
+      config = {"type" => "imap", "host" => "localhost",
+                "user" => "#{user}", "password" => "#{password}"}
+
+      input = LogStash::Inputs::IMAP.new config
+      input.register
+      event = input.parse_mail(msg)
+      insist { event["subject"] } == "foo : bar"
+    end
+  end
+
 end
