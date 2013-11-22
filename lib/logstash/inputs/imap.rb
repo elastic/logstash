@@ -105,9 +105,11 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
       else
         name = header.name.to_s
       end
-      # Call .to_s on the value just in case it's some weird Mail:: object
-      # thing.
-      value = header.value.to_s
+      # Call .decoded on the header in case it's in encoded-word form.
+      # Details at:
+      #   https://github.com/mikel/mail/blob/master/README.md#encodings
+      #   http://tools.ietf.org/html/rfc2047#section-2
+      value = header.decoded
 
       # Assume we already processed the 'date' above.
       next if name == "Date"
