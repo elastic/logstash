@@ -202,8 +202,8 @@ class LogStash::Pipeline
           event = remainder.first unless done
         end
         events.each do |event|
-            next if event.cancelled?
-            @filter_to_output.push(event)
+          next if event.cancelled?
+          @filter_to_output.push(event)
         end
       end
     rescue => e
