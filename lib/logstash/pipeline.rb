@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/config/file"
 require "logstash/namespace"
 require "thread" # stdlib
