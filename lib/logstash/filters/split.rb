@@ -54,7 +54,6 @@ class LogStash::Filters::Split < LogStash::Filters::Base
     splits.each do |value|
       next if value.empty?
 
-      event_split = nil
       if @reuse_element
         event_split = event.clone
         @logger.debug("Split event", :value => value, :field => @field)
