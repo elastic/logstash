@@ -18,7 +18,7 @@ describe LogStash::Codecs::OldLogStashJSON do
         insist { event["message"] } == data["@message"]
         insist { event["host"] } == data["@source_host"]
         insist { event["tags"] } == data["@tags"]
-        insist { event["path"] } != nil # @source_path not in v0 test data
+        insist { event["path"] } == nil # @source_path not in v0 test data
       end
     end
   end
