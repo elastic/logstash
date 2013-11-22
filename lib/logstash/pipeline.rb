@@ -1,4 +1,3 @@
-# encoding: utf-8
 require "logstash/config/file"
 require "logstash/namespace"
 require "thread" # stdlib
@@ -187,18 +186,24 @@ class LogStash::Pipeline
           break
         end
 
-
         # TODO(sissel): we can avoid the extra array creation here
         # if we don't guarantee ordering of origin vs created events.
         # - origin event is one that comes in naturally to the filter worker.
         # - created events are emitted by filters like split or metrics
         events = [event]
-        filter(event) do |newevent|
-          events << newevent
+        done = false
+        while (!done)
+          filter(event) do |newevent|
+            events << newevent
+          end
+          remainder = events.select { |ev| ev.refilter? && !ev.cancelled? }
+          puts "#{remainder.length} events remaining"
+          done = remainder.empty?
+          event = remainder.first unless done
         end
         events.each do |event|
-          next if event.cancelled?
-          @filter_to_output.push(event)
+            next if event.cancelled?
+            @filter_to_output.push(event)
         end
       end
     rescue => e
@@ -252,6 +257,7 @@ class LogStash::Pipeline
   end
 
   def filter(event, &block)
+    event.set_refilter(false)
     @filter_func.call(event, &block)
   end
 

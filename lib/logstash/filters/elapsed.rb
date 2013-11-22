@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # elapsed filter
 #
 # This filter tracks a pair of start/end events and calculates the elapsed

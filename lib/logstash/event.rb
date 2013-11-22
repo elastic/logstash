@@ -1,4 +1,3 @@
-# encoding: utf-8
 require "json"
 require "time"
 require "date"
@@ -45,6 +44,7 @@ class LogStash::Event
   public
   def initialize(data={})
     @cancelled = false
+    @rerun_filters = false
 
     @data = data
     if data.include?("@timestamp")
@@ -72,6 +72,16 @@ class LogStash::Event
   def cancelled?
     return @cancelled
   end # def cancelled?
+
+  public
+  def set_refilter(filter_setting)
+    @rerun_filters = filter_setting
+  end
+
+  public
+  def refilter?
+    return @rerun_filters
+  end
 
   # Create a deep-ish copy of this event.
   public
