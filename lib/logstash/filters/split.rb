@@ -49,7 +49,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
     end
 
     # Skip filtering if splitting this event resulted in only one thing found
-    return event if splits.length <= 1
+    return if splits.length <= 1
 
     splits.each do |value|
       next if value.empty?
