@@ -21,16 +21,16 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
   config :columns, :validate => :array, :default => []
 
   # Define the column separator value. If this is not specified the default
-  # is a comma ','
+  # is a comma ','.
   # Optional.
   config :separator, :validate => :string, :default => ","
 
   # Define the character used to quote CSV fields. If this is not specified
-  # the default is a double quote '"'
+  # the default is a double quote '"'.
   # Optional.
   config :quote_char, :validate => :string, :default => '"'
 
-  # Define target for placing the data
+  # Define target for placing the data.
   # Defaults to writing to the root of the event.
   config :target, :validate => :string
 

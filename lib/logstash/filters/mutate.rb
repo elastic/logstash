@@ -76,14 +76,14 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   config :convert, :validate => :hash
 
   # Convert a string field by applying a regular expression and a replacement
-  # if the field is not a string, no action will be taken
+  # if the field is not a string, no action will be taken.
   # 
   # This configuration takes an array consisting of 3 elements per
   # field/substitution.
   #
-  # be aware of escaping any backslash in the config file
+  # Be aware of escaping any backslash in the config file.
   #
-  # for example:
+  # Example:
   #
   #     filter {
   #       mutate {
