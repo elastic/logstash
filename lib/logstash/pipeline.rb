@@ -198,7 +198,6 @@ class LogStash::Pipeline
             events << newevent
           end
           remainder = events.select { |ev| ev.refilter? && !ev.cancelled? }
-          puts "#{remainder.length} events remaining"
           done = remainder.empty?
           event = remainder.first unless done
         end
