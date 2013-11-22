@@ -28,13 +28,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   config_name "date"
   milestone 3
 
-  # specify a timezone canonical ID to be used for date parsing.
+  # Specify a timezone canonical ID to be used for date parsing.
   # The valid ID are listed on http://joda-time.sourceforge.net/timezones.html
   # Useful in case the timezone cannot be extracted from the value,
-  # and is not the platform default
+  # and is not the platform default.
   # If this is not specified the platform default will be used.
   # Canonical ID is good as it takes care of daylight saving time for you
-  # For example, America/Los_Angeles or Europe/France are valid IDs
+  # For example, America/Los_Angeles or Europe/France are valid IDs.
   config :timezone, :validate => :string
 
   # specify a locale to be used for date parsing. If this is not specified the
