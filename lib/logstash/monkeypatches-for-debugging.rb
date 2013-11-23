@@ -22,11 +22,12 @@ if $DEBUGLIST.include?("require")
       # Only print require() calls that did actual work.
       # require() returns true on load, false if already loaded.
       if result
-        if origin =~ /^#{ROOT}/
-          puts "#{duration},require(#{path}),origin,#{origin.gsub(/^#{ROOT}/,"")}"
-        else
-          puts "#{duration},require(#{path}),3rdparty,#{origin}"
-        end
+        trace = caller.collect { |c| c.split(":").first }.join(",")
+        #puts "#{duration},#{path},#{trace}"
+        source = caller[0].split(":").first
+        target = $LOADED_FEATURES.grep(/#{path}/).first
+        fontsize = [10, duration * 48].max
+        puts "#{source.inspect} -> #{target.inspect} [label=\"#{duration}\" labelfontsize=#{fontsize}]"
       end
       #puts caller.map { |c| " => #{c}" }.join("\n")
     end
