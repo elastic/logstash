@@ -34,7 +34,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # Single-character versions of these are also valid, "d", "i", "w", "e", "f",
   # "u"
   # The following additional severity_labels from logstash's  syslog_pri filter
-  # are accepted: "emergency", "alert", "critical",  "warning", "notice", and 
+  # are accepted: "emergency", "alert", "critical",  "warning", "notice", and
   # "informational"
   config :level, :validate => :array, :default => [ "%{severity}", "INFO" ]
 
@@ -156,6 +156,10 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
           if value.is_a?(Array)
             # collapse single-element arrays, otherwise leave as array
             m["_#{name}"] = (value.length == 1) ? value.first : value
+          elsif value.is_a?(Hash)
+            value.each do |hash_name, hash_value|
+              m["_#{name}_#{hash_name}"] = hash_value
+            end
           else
             # Non array values should be presented as-is
             # https://logstash.jira.com/browse/LOGSTASH-113
