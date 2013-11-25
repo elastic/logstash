@@ -95,7 +95,7 @@ To update a flat jar previously built with 'make flatjar', run:
     make update-flatjar
 
 
-You can build rpms and debs, if you need those. Building rpms requires you have [fpm](github.com/jordansissel/fpm), then do this:
+You can build rpms and debs, if you need those. Building rpms requires you have [fpm](https://github.com/jordansissel/fpm), then do this:
 
     make package
 
