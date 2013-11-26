@@ -39,17 +39,17 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   config :level, :validate => :array, :default => [ "%{severity}", "INFO" ]
 
   # The GELF facility. Dynamic values like %{foo} are permitted here; this
-  # is useful if you need to use a value from the event as the facility name.
-  config :facility, :validate => :string, :default => "logstash-gelf"
+  # is useful if you need to use a value from the event as the facility name. (deprecated)
+  config :facility, :validate => :string
 
   # The GELF line number; this is usually the line number in your program where
   # the log event originated. Dynamic values like %{foo} are permitted here, but the
-  # value should be a number.
+  # value should be a number. (deprecated)
   config :line, :validate => :string
 
   # The GELF file; this is usually the source code file in your program where
-  # the log event originated. Dynamic values like %{foo} are permitted here.
-  config :file, :validate => :string, :default => "%{path}"
+  # the log event originated. Dynamic values like %{foo} are permitted here. (deprecated)
+  config :file, :validate => :string
 
   # Ship metadata within event object? This will cause logstash to ship
   # any fields in the event (such as those created by grok) in the GELF
@@ -62,7 +62,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   # Ignore these fields when ship_metadata is set. Typically this lists the
   # fields used in dynamic values for GELF fields.
-  config :ignore_metadata, :validate => :array, :default => [ "@timestamp", "@version", "severity", "source_host", "source_path", "short_message" ]
+  config :ignore_metadata, :validate => :array, :default => [ "@timestamp", "@version", "severity", "host", "source_host", "source_path", "short_message" ]
 
   # The GELF custom field mappings. GELF supports arbitrary attributes as custom
   # fields. This exposes that. Exclude the `_` portion of the field name
@@ -140,7 +140,10 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
     m["full_message"] = event.sprintf(@full_message)
 
     m["host"] = event.sprintf(@sender)
-    m["file"] = event.sprintf(@file)
+
+    # deprecated fields
+    m["facility"] = event.sprintf(@facility) if @facility
+    m["file"] = event.sprintf(@file) if @file
     m["line"] = event.sprintf(@line) if @line
     m["line"] = m["line"].to_i if m["line"].is_a?(String) and m["line"] === /^[\d]+$/
 
@@ -154,8 +157,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
         name = "_id" if name == "id"  # "_id" is reserved, so use "__id"
         if !value.nil? and !@ignore_metadata.include?(name)
           if value.is_a?(Array)
-            # collapse single-element arrays, otherwise leave as array
-            m["_#{name}"] = (value.length == 1) ? value.first : value
+            m["_#{name}"] = value.join(' ,')
           elsif value.is_a?(Hash)
             value.each do |hash_name, hash_value|
               m["_#{name}_#{hash_name}"] = hash_value
@@ -178,9 +180,6 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
         m["_#{field_name}"] = field_value unless field_name == 'id'
       end
     end
-
-    # set facility as defined
-    m["facility"] = event.sprintf(@facility)
 
     # Probe severity array levels
     level = nil
