@@ -142,10 +142,11 @@ By way of example, let us suppose we have this event:
       }
     }
 
-The syntax to access fields is `[fieldname]`. If you are only referring to a
-top-level field, you can omit the `[]` and simply say `fieldname`. In the case
-of nested fields,
-like the "os" field above, you need the full path to that field: `[ua][os]`.
+- the syntax to access fields is `[fieldname]`.
+- if you are only referring to a **top-level field**, you can omit the `[]` and
+simply say `fieldname`.
+- in the case of **nested fields**, like the "os" field above, you need
+the full path to that field: `[ua][os]`.
 
 ## <a name="sprintf"></a>sprintf format
 
