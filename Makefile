@@ -2,7 +2,7 @@
 #   rsync
 #   wget or curl
 #
-JRUBY_VERSION=1.7.5
+JRUBY_VERSION=1.7.8
 ELASTICSEARCH_VERSION=0.90.3
 
 WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
