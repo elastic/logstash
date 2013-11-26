@@ -21,7 +21,7 @@ class LogStash::Filters::Uuid < LogStash::Filters::Base
   #         field => "@uuid"
   #       }
   #     }
-  config :field, :validate => :string
+  config :field, :validate => :string, :required => true
 
   # If the value in the field currently (if any) should be overridden
   # by the generated UUID. Defaults to false (i.e. if the field is
