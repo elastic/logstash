@@ -7,10 +7,9 @@
 
 if ! git show-ref --tags | grep -q "$(git rev-parse HEAD)"; then
 	# HEAD is not tagged, add the date, time and commit hash to the revision
-	GIT_COMMIT="$(git rev-parse --short HEAD)"
 	BUILD_TIME="$(date +%Y%m%d%H%M)"
-	DEB_REVISION="${BUILD_TIME}~${GIT_COMMIT}"
-	RPM_REVISION=".${BUILD_TIME}.${GIT_COMMIT}"
+	DEB_REVISION="${BUILD_TIME}~${REVISION}"
+	RPM_REVISION=".${BUILD_TIME}.${REVISION}"
 fi
 
 
@@ -40,7 +39,7 @@ mkdir -p $destdir/$prefix
 
 
 # install logstash.jar
-jar="$(dirname $0)/../build/logstash-$VERSION-flatjar.jar" 
+jar="$(dirname $0)/../build/logstash-$VERSION-flatjar.jar"
 if [ ! -f "$jar" ] ; then
   echo "Unable to find $jar"
   exit 1
@@ -99,7 +98,7 @@ esac
 description="logstash is a system for managing and processing events and logs"
 case $os in
   centos|fedora|redhat) 
-    fpm -s dir -t rpm -n logstash -v "$VERSION" \
+    fpm -s dir -t rpm -n logstash -v "$RELEASE" \
       -a noarch --iteration "1_${os}${RPM_REVISION}" \
       --url "$URL" \
       --description "$DESCRIPTION" \
@@ -112,14 +111,14 @@ case $os in
       -f -C $destdir .
     ;;
   ubuntu|debian)
-    if ! echo $VERSION | grep -q '\.(dev\|rc.*)'; then
+    if ! echo $RELEASE | grep -q '\.(dev\|rc.*)'; then
       # This is a dev or RC version... So change the upstream version
       # example: 1.2.2.dev => 1.2.2~dev
       # This ensures a clean upgrade path.
-      VERSION="$(echo $VERSION | sed 's/\.\(dev\|rc.*\)/~\1/')"
+      RELEASE="$(echo $RELEASE | sed 's/\.\(dev\|rc.*\)/~\1/')"
     fi
 
-    fpm -s dir -t deb -n logstash -v "$VERSION" \
+    fpm -s dir -t deb -n logstash -v "$RELEASE" \
       -a all --iteration "1+${os}${DEB_REVISION}" \
       --url "$URL" \
       --description "$DESCRIPTION" \

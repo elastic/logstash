@@ -48,11 +48,13 @@ TESTS=$(wildcard spec/inputs/gelf.rb spec/support/*.rb spec/filters/*.rb spec/ex
 .VERSION.mk:
 	@REVISION="$$(git rev-parse --short HEAD | tr -d ' ')" ; \
 	RELEASE=$$(awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb | tr -d ' ') ; \
+	echo "RELEASE=$${RELEASE}" > $@ ; \
+	echo "REVISION=$${REVISION}" >> $@ ; \
 	if git diff --shortstat --exit-code > /dev/null ; then \
 		echo "VERSION=$${RELEASE}-$${REVISION}" ; \
 	else \
 		echo "VERSION=$${RELEASE}-$${REVISION}-modified"; \
-	fi > $@
+	fi >> $@
 
 -include .VERSION.mk
 
