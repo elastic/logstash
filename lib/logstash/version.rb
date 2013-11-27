@@ -1,3 +1,4 @@
+# encoding: utf-8
 # The version of logstash.
 LOGSTASH_VERSION = "1.2.3.dev"
 

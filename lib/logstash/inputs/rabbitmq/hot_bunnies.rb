@@ -1,3 +1,4 @@
+# encoding: utf-8
 class LogStash::Inputs::RabbitMQ
   # HotBunnies-based implementation for JRuby
   module HotBunniesImpl

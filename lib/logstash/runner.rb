@@ -1,3 +1,4 @@
+# encoding: utf-8
 
 $START = Time.now
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")

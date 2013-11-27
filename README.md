@@ -83,7 +83,8 @@ specific test like so:
 
 ## Building
 
-Releases are available here: <http://logstash.objects.dreamhost.com/>
+Building is not required. You are highly recommended to download the releases
+we provide from the logstash site!
 
 If you want to build the jar yourself, run:
 

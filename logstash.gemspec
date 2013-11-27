@@ -40,6 +40,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "heroku"                           #(MIT license)
   gem.add_runtime_dependency "addressable"                      #(Apache 2.0 license)
   gem.add_runtime_dependency "extlib", ["0.9.16"]               #(MIT license)
+  gem.add_runtime_dependency "elasticsearch"                    #(Apache 2.0 license)
   gem.add_runtime_dependency "ffi"                              #(LGPL-3 license)
   gem.add_runtime_dependency "ffi-rzmq", ["1.0.0"]              #(MIT license)
   gem.add_runtime_dependency "filewatch", ["0.5.1"]             #(BSD license)
@@ -75,6 +76,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "bindata", [">= 1.5.0"]            #(ruby license)
   gem.add_runtime_dependency "twitter", "5.0.0.rc.1"            #(MIT license)
   gem.add_runtime_dependency "rsolr"                            #(Apache 2.0 license)
+  gem.add_runtime_dependency "edn"                              #(MIT license)
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
