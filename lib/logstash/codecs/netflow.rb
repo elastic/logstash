@@ -16,6 +16,20 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
   config :versions, :validate => :array, :default => [5, 9]
 
   # Override YAML file containing Netflow field definitions
+  #
+  # Each Netflow field is defined like so:
+  #
+  #    ---
+  #    id:
+  #    - default length in bytes
+  #    - :name
+  #    id:
+  #    - :uintN or :ip4_addr or :ip6_addr or :mac_addr or :string
+  #    - :name
+  #    id:
+  #    - :skip
+  #
+  # See <https://github.com/logstash/logstash/tree/v%VERSION%/lib/logstash/codecs/netflow/netflow.yaml> for the base set.
   config :definitions, :validate => :path
 
   public
