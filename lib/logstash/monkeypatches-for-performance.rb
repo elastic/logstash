@@ -1,3 +1,4 @@
+# encoding: utf-8
 if RUBY_PLATFORM == "java"
   class << File
     # mpp == monkey patch for performance

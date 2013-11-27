@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "securerandom"
 require "logstash/filters/base"
 require "logstash/namespace"

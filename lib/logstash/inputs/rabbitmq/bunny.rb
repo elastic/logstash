@@ -1,3 +1,4 @@
+# encoding: utf-8
 class LogStash::Inputs::RabbitMQ
   module BunnyImpl
     def register

@@ -1,3 +1,4 @@
+# encoding: utf-8
 # parallel request filter
 #
 # This filter will separate out the parallel requests into separate events.

@@ -22,4 +22,3 @@ You can also find documentation on the <http://logstash.net> site.
 ## Other information
 
 Refer to the [original repository](http://github.com/logstash/logstash)
-

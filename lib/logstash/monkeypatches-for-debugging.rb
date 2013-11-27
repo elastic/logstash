@@ -1,3 +1,4 @@
+# encoding: utf-8
 if $DEBUGLIST.include?("require")
   module Kernel
     alias_method :require_debug, :require

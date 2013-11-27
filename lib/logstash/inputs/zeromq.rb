@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket"
@@ -142,7 +143,7 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
         end
 
         @codec.decode(msg) do |event|
-          event["host"] = host
+          event["host"] ||= host
           decorate(event)
           output_queue << event
         end

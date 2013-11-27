@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/outputs/base"
 require "logstash/namespace"
 require "stud/buffer"
@@ -25,7 +26,7 @@ class LogStash::Outputs::DatadogMetrics < LogStash::Outputs::Base
   config :metric_value, :default => "%{metric_value}"
 
   # The type of the metric.
-  config :metric_type, :validate => ["gauge", "counter"], :default => "%{metric_type}"
+  config :metric_type, :validate => ["gauge", "counter", "%{metric_type}"], :default => "%{metric_type}"
 
   # The name of the host that produced the metric.
   config :host, :validate => :string, :default => "%{host}"
