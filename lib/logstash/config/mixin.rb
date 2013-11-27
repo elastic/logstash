@@ -1,3 +1,4 @@
+# encoding: utf-8
 
 require "logstash/namespace"
 require "logstash/config/registry"
@@ -442,6 +443,8 @@ module LogStash::Config::Mixin
             end
 
             result = value.first
+          else
+            return false, "Unknown validator symbol #{validator}"
         end # case validator
       else
         return false, "Unknown validator #{validator.class}"

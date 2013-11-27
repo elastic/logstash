@@ -90,6 +90,45 @@ describe LogStash::Filters::Grok do
       insist { subject["syslog5424_sd"] } == nil
       insist { subject["syslog5424_msg"] } == "No PID or SD."
     end
+
+    sample "<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug 4123 -  Missing structured data." do
+      insist { subject["tags"] }.nil?
+      insist { subject["syslog5424_pri"] } == "191"
+      insist { subject["syslog5424_ver"] } == "1"
+      insist { subject["syslog5424_ts"] } == "2009-06-30T18:30:00+02:00"
+      insist { subject["syslog5424_host"] } == "paxton.local"
+      insist { subject["syslog5424_app"] } == "grokdebug"
+      insist { subject["syslog5424_proc"] } == "4123"
+      insist { subject["syslog5424_msgid"] } == nil
+      insist { subject["syslog5424_sd"] } == nil
+      insist { subject["syslog5424_msg"] } == "Missing structured data."
+    end
+
+    sample "<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug  4123 - - Additional spaces." do
+      insist { subject["tags"] }.nil?
+      insist { subject["syslog5424_pri"] } == "191"
+      insist { subject["syslog5424_ver"] } == "1"
+      insist { subject["syslog5424_ts"] } == "2009-06-30T18:30:00+02:00"
+      insist { subject["syslog5424_host"] } == "paxton.local"
+      insist { subject["syslog5424_app"] } == "grokdebug"
+      insist { subject["syslog5424_proc"] } == "4123"
+      insist { subject["syslog5424_msgid"] } == nil
+      insist { subject["syslog5424_sd"] } == nil
+      insist { subject["syslog5424_msg"] } == "Additional spaces."
+    end
+
+    sample "<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug  4123 -  Additional spaces and missing SD." do
+      insist { subject["tags"] }.nil?
+      insist { subject["syslog5424_pri"] } == "191"
+      insist { subject["syslog5424_ver"] } == "1"
+      insist { subject["syslog5424_ts"] } == "2009-06-30T18:30:00+02:00"
+      insist { subject["syslog5424_host"] } == "paxton.local"
+      insist { subject["syslog5424_app"] } == "grokdebug"
+      insist { subject["syslog5424_proc"] } == "4123"
+      insist { subject["syslog5424_msgid"] } == nil
+      insist { subject["syslog5424_sd"] } == nil
+      insist { subject["syslog5424_msg"] } == "Additional spaces and missing SD."
+    end
   end
 
   describe "parsing an event with multiple messages (array of strings)", :if => false do

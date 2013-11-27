@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/namespace"
 
 # Provide our own Time wrapper for ISO8601 support
