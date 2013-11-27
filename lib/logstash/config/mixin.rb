@@ -443,6 +443,8 @@ module LogStash::Config::Mixin
             end
 
             result = value.first
+          else
+            return false, "Unknown validator symbol #{validator}"
         end # case validator
       else
         return false, "Unknown validator #{validator.class}"

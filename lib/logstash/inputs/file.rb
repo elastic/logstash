@@ -85,7 +85,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
 
     if @sincedb_path.nil?
       if ENV["SINCEDB_DIR"].nil? && ENV["HOME"].nil?
-        @logger.error("No SINCE_DB or HOME environment variable set, I don't know where " \
+        @logger.error("No SINCEDB_DIR or HOME environment variable set, I don't know where " \
                       "to keep track of the files I'm watching. Either set " \
                       "HOME or SINCEDB_DIR in your environment, or set sincedb_path in " \
                       "in your logstash config for the file input with " \
