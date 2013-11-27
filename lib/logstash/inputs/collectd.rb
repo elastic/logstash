@@ -183,7 +183,12 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     # Populate some state variables based on their type...
     case id
       when 0; @cdhost = retval
-      when 2; @plugin = retval
+      when 2
+        if @plugin != retval      # Zero-out @plugin_instance when @plugin changes
+          @plugin_instance = ''
+          @collectd.delete('plugin_instance')
+        end
+        @plugin = retval
       when 3; @plugin_instance = retval
       when 4; @cdtype = retval
       when 5; @type_instance = retval
@@ -228,14 +233,17 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           field = type_map(@typenum)              # Get the field name based on type            
           if @typenum == 8                        # Type 8 is "Time (High Resolution)"
             if @collectd.length > 1               # Provided we have more than 1 value in the array
-              @collectd.delete_if {|k, v| v == "" } # Prune empty keys
+              # Prune these *specific* keys if they exist and are empty.
+              # This is better than looping over all keys every time.
+              if @collectd['type_instance'] == ""; @collectd.delete('type_instance'); end
+              if @collectd['plugin_instance'] == ""; @collectd.delete('plugin_instance'); end               
               # New logstash events are created with each new timestamp sent by collectd
               # The actual timestamp will still be added in the code below this conditional
               if @collectd.has_key?("collectd_type") # This means the full event should be here
                 # As crazy as it sounds, this is where we actually send our events to the queue!
                 # After we've gotten a new timestamp event it means another event is coming, so
                 # we flush the existing one to the queue
-                event = LogStash::Event.new({})
+                event = LogStash::Event.new
                 @collectd.each {|k, v| event[k] = @collectd[k]}
                 decorate(event)
                 output_queue << event
@@ -251,11 +259,11 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           values = get_values(@typenum, @body)
           if values.kind_of?(Array)
             if values.length > 1                  # Only do this iteration on multi-value arrays
-              (0..(values.length - 1)).each {|x| @collectd[@types[@collectd['collectd_type']][x]] = values[x]}
+              values.each_with_index {|value, x| @collectd[@types[@collectd['collectd_type']][x]] = values[x]}
             else                                  # Otherwise it's a single value
               @collectd['value'] = values[0]      # So name it 'value' accordingly
             end
-          elsif field != ""                       # Not an array, make sure it's non-empty
+          elsif field != nil                      # Not an array, make sure it's non-empty
             @collectd[field] = values             # Append values to @collectd under key field
           end
           # All bytes in the collectd event have now been processed.  Reset counters, header & body.
