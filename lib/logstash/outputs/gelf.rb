@@ -4,7 +4,7 @@ require "logstash/outputs/base"
 # GELF output. This is most useful if you want to use logstash
 # to output events to graylog2.
 #
-# More information at <http://www.graylog2.org/about/gelf>
+# More information at <http://graylog2.org/gelf#specs>
 class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   config_name "gelf"
@@ -39,17 +39,17 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   config :level, :validate => :array, :default => [ "%{severity}", "INFO" ]
 
   # The GELF facility. Dynamic values like %{foo} are permitted here; this
-  # is useful if you need to use a value from the event as the facility name. (deprecated)
-  config :facility, :validate => :string
+  # is useful if you need to use a value from the event as the facility name.
+  config :facility, :validate => :string, :deprecated => true
 
   # The GELF line number; this is usually the line number in your program where
   # the log event originated. Dynamic values like %{foo} are permitted here, but the
-  # value should be a number. (deprecated)
-  config :line, :validate => :string
+  # value should be a number.
+  config :line, :validate => :string, :deprecated => true
 
   # The GELF file; this is usually the source code file in your program where
-  # the log event originated. Dynamic values like %{foo} are permitted here. (deprecated)
-  config :file, :validate => :string
+  # the log event originated. Dynamic values like %{foo} are permitted here.
+  config :file, :validate => :string, :deprecated => true
 
   # Ship metadata within event object? This will cause logstash to ship
   # any fields in the event (such as those created by grok) in the GELF
