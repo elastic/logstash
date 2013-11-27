@@ -58,10 +58,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     BasicSocket.do_not_reverse_lookup = true
     @idbyte = 0
     @length = 0
-    @typenum = 0
-    @cdhost = ''
-    @cdtype = ''
-    @header = []; @body = []; @line = []
+    @header = []; @body = []
     @collectd = {}
     @types = {}
   end # def initialize
@@ -83,9 +80,9 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
         end
       else
         if File.exists?("types.db")
-          @typesdb = "types.db"
+          @typesdb = ["types.db"]
         elsif File.exists?("vendor/collectd/types.db")
-          @typesdb = "vendor/collectd/types.db"
+          @typesdb = ["vendor/collectd/types.db"]
         else
           raise "You must specify 'typesdb => ...' in your collectd input"
         end
@@ -183,6 +180,19 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           @logger.error("Incorrect number of data fields for collectd record", :body => body.to_s)
         end
     end
+    # Populate some state variables based on their type...
+    case id
+      when 0; @cdhost = retval
+      when 2
+        if @plugin != retval      # Zero-out @plugin_instance when @plugin changes
+          @plugin_instance = ''
+          @collectd.delete('plugin_instance')
+        end
+        @plugin = retval
+      when 3; @plugin_instance = retval
+      when 4; @cdtype = retval
+      when 5; @type_instance = retval
+    end 
     return retval
   end # def get_values
 
@@ -201,63 +211,68 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     loop do
       payload, client = @udp.recvfrom(@buffer_size)
       payload.each_byte do |byte|
+        # According to the documentation for the binary protocol
+        # it takes 4 bytes to define the header:
+        # The first 2 bytes are the type number,
+        # the second 2 bytes are the length of the message.
+        # So, until we have looped 4 times (@idbyte is our counter)
+        # append the byte to the @header
         if @idbyte < 4
           @header << byte
+        # Now that we have looped exactly 4 times...
         elsif @idbyte == 4
-          @line = @header
-          @typenum = (@header[0] << 1) + @header[1]
-          @length = (@header[2] << 1) + @header[3]
-          @line << byte
-          @body << byte
+          @typenum = (@header[0] << 1) + @header[1] # @typenum gets the first 2 bytes
+          @length = (@header[2] << 1) + @header[3]  # @length gets the second 2 bytes
+          @body << byte                             # @body begins with the current byte
+        # And if we've looped more than 4, up until the length of the message (now defined)
         elsif @idbyte > 4 && @idbyte < @length
-          @line << byte
-          @body << byte
+          @body << byte                             # append the current byte to @body
         end
+        # So long as we have @length and we've reached it, it's time to parse
         if @length > 0 && @idbyte == @length-1
-          if @typenum == 0;
-            @cdhost = @body.pack("C*")
-            @cdhost = @cdhost[0..-2] #=> Trim trailing null char
-            @collectd['host'] = @cdhost
-          else
-            field = type_map(@typenum)
-            if @typenum == 4
-              @cdtype = get_values(@typenum, @body)
-              @collectd['collectd_type'] = @cdtype
-            end
-            if @typenum == 8
-              if @collectd.length > 1
-                @collectd.delete_if {|k, v| v == "" }
-                if @collectd.has_key?("collectd_type") # This means the full event should be here
-                  # As crazy as it sounds, this is where we actually send our events to the queue!
-                  # After we've gotten a new timestamp event it means another event is coming, so
-                  # we flush the existing one to the queue
-                  event = LogStash::Event.new({})
-                  @collectd.each {|k, v| event[k] = @collectd[k]}
-                  decorate(event)
-                  output_queue << event
-                end
-                @collectd.clear
-                @collectd['host'] = @cdhost
-                @collectd['collectd_type'] = @cdtype
+          field = type_map(@typenum)              # Get the field name based on type            
+          if @typenum == 8                        # Type 8 is "Time (High Resolution)"
+            if @collectd.length > 1               # Provided we have more than 1 value in the array
+              # Prune these *specific* keys if they exist and are empty.
+              # This is better than looping over all keys every time.
+              @collectd.delete('type_instance') if @collectd['type_instance'] == ""
+              @collectd.delete('plugin_instance') if @collectd['plugin_instance'] == ""              
+              # New logstash events are created with each new timestamp sent by collectd
+              # The actual timestamp will still be added in the code below this conditional
+              if @collectd.has_key?("collectd_type") # This means the full event should be here
+                # As crazy as it sounds, this is where we actually send our events to the queue!
+                # After we've gotten a new timestamp event it means another event is coming, so
+                # we flush the existing one to the queue
+                event = LogStash::Event.new
+                @collectd.each {|k, v| event[k] = @collectd[k]}
+                decorate(event)
+                output_queue << event
               end
-            end
-            values = get_values(@typenum, @body)
-            if values.kind_of?(Array)
-              if values.length > 1              #=> Only do this iteration on multi-value arrays
-                (0..(values.length - 1)).each {|x| @collectd[@types[@collectd['collectd_type']][x]] = values[x]}
-              else                              #=> Otherwise it's a single value
-                @collectd['value'] = values[0]  #=> So name it 'value' accordingly
-              end
-            elsif field != ""                         #=> Not an array, make sure it's non-empty
-              @collectd[field] = values         #=> Append values to @collectd under key field
+              @collectd.clear                     # Empty @collectd
+              @collectd['host'] = @cdhost         # Reset the host from state
+              @collectd['collectd_type'] = @cdtype # Reset the collectd_type from state
+              @collectd['plugin'] = @plugin       # Reset the plugin from state
+              @collectd['plugin_instance'] = @plugin_instance # Reset the plugin from state                
             end
           end
-          @idbyte = 0; @length = 0; @header.clear; @body.clear; @line.clear  #=> Reset everything
-        else
+          # Here is where we actually fill @collectd
+          values = get_values(@typenum, @body)
+          if values.kind_of?(Array)
+            if values.length > 1                  # Only do this iteration on multi-value arrays
+              values.each_with_index {|value, x| @collectd[@types[@collectd['collectd_type']][x]] = values[x]}
+            else                                  # Otherwise it's a single value
+              @collectd['value'] = values[0]      # So name it 'value' accordingly
+            end
+          elsif field != nil                      # Not an array, make sure it's non-empty
+            @collectd[field] = values             # Append values to @collectd under key field
+          end
+          # All bytes in the collectd event have now been processed.  Reset counters, header & body.
+          @idbyte = 0; @length = 0; @header.clear; @body.clear;
+        else # Increment the byte positional counter
           @idbyte += 1
-        end
-      end
-    end
+        end # End of if @length > 0 && @idbyte == @length-1
+      end   # End of payload.each_byte do |byte| loop
+    end     # End of loop do, payload, client = @udp.recvfrom(@buffer_size)  
   ensure
     if @udp
       @udp.close_read rescue nil
