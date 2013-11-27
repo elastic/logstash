@@ -235,8 +235,8 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
             if @collectd.length > 1               # Provided we have more than 1 value in the array
               # Prune these *specific* keys if they exist and are empty.
               # This is better than looping over all keys every time.
-              if @collectd['type_instance'] == ""; @collectd.delete('type_instance'); end
-              if @collectd['plugin_instance'] == ""; @collectd.delete('plugin_instance'); end               
+              @collectd.delete('type_instance') if @collectd['type_instance'] == ""
+              @collectd.delete('plugin_instance') if @collectd['plugin_instance'] == ""              
               # New logstash events are created with each new timestamp sent by collectd
               # The actual timestamp will still be added in the code below this conditional
               if @collectd.has_key?("collectd_type") # This means the full event should be here
