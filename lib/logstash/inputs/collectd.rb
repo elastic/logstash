@@ -40,7 +40,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
 
   # File path(s) to collectd types.db to use.
   # The last matching pattern wins if you have identical pattern names in multiple files.
-  # If no types.db is provided the included types.db will be used.
+  # If no types.db is provided the included types.db will be used (currently 5.4.0).
   config :typesdb, :validate => :array
 
   # The address to listen on.  Defaults to all available addresses.
@@ -48,9 +48,12 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
 
   # The port to listen on.  Defaults to the collectd expected port of 25826.
   config :port, :validate => :number, :default => 25826
+  
+  # Prune interval records.  Defaults to true.
+  config :prune_intervals, :validate => :boolean, :default => true
 
-  # Buffer size
-  config :buffer_size, :validate => :number, :default => 8192
+  # Buffer size. 1452 is the collectd default for v5+
+  config :buffer_size, :validate => :number, :default => 1452
 
   public
   def initialize(params)
@@ -58,7 +61,9 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     BasicSocket.do_not_reverse_lookup = true
     @idbyte = 0
     @length = 0
+    @prev_typenum = 0
     @header = []; @body = []
+    @timestamp = Time.now().utc
     @collectd = {}
     @types = {}
   end # def initialize
@@ -126,13 +131,16 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   public
   def type_map(id)
     case id
-      when 0; return "host"
-      when 2; return "plugin"
-      when 3; return "plugin_instance"
-      when 4; return "collectd_type"
-      when 5; return "type_instance"
-      when 6; return "values"
-      when 8; return "@timestamp"
+      when 0;   return "host"
+      when 1,8; return "@timestamp"
+      when 2;   return "plugin"
+      when 3;   return "plugin_instance"
+      when 4;   return "collectd_type"
+      when 5;   return "type_instance"
+      when 6;   return "values"
+      when 9;   return "interval"
+      when 100; return "message"
+      when 101; return "severity"
     end
   end # def type_map
 
@@ -151,13 +159,22 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   def get_values(id, body)
     retval = ''
     case id
-      when 0,2,3,4,5 # String types
+      when 0,2,3,4,5,100 #=> String types
         retval = body.pack("C*")
         retval = retval[0..-2]
-      when 8 # Time
+      when 1 # Time
+        # Time here, in bit-shifted format.  Parse bytes into UTC.
+        byte1, byte2 = body.pack("C*").unpack("NN")
+        retval = Time.at(( ((byte1 << 32) + byte2))).utc
+      when 7,101 #=> Numeric types
+        retval = body.slice!(0..7).pack("C*").unpack("E")[0]
+      when 8 # Time, Hi-Res
         # Time here, in bit-shifted format.  Parse bytes into UTC.
         byte1, byte2 = body.pack("C*").unpack("NN")
         retval = Time.at(( ((byte1 << 32) + byte2) * (2**-30) )).utc
+      when 9 # Interval, Hi-Res
+        byte1, byte2 = body.pack("C*").unpack("NN")
+        retval = (((byte1 << 32) + byte2) * (2**-30)).to_i
       when 6 # Values
         val_bytes = body.slice!(0..1)
         val_count = val_bytes.pack("C*").unpack("n")
@@ -182,20 +199,34 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     end
     # Populate some state variables based on their type...
     case id
-      when 0; @cdhost = retval
       when 2
         if @plugin != retval      # Zero-out @plugin_instance when @plugin changes
           @plugin_instance = ''
           @collectd.delete('plugin_instance')
         end
         @plugin = retval
-      when 3; @plugin_instance = retval
-      when 4; @cdtype = retval
-      when 5; @type_instance = retval
+      when 0;   @cdhost = retval        
+      when 3;   @plugin_instance = retval
+      when 4;   @cdtype = retval
+      when 5;   @type_instance = retval
+      when 1,8; @timestamp = retval
     end 
     return retval
   end # def get_values
 
+  private
+  def generate_event(data, output_queue)
+    # Prune these *specific* keys if they exist and are empty.
+    # This is better than looping over all keys every time.
+    data.delete('type_instance') if data['type_instance'] == ""
+    data.delete('plugin_instance') if data['plugin_instance'] == ""              
+    # As crazy as it sounds, this is where we actually send our events to the queue!
+    event = LogStash::Event.new
+    data.each {|k, v| event[k] = data[k]}
+    decorate(event)
+    output_queue << event
+  end # def generate_event
+  
   private
   def collectd_listener(output_queue)
 
@@ -222,7 +253,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
         # Now that we have looped exactly 4 times...
         elsif @idbyte == 4
           @typenum = (@header[0] << 1) + @header[1] # @typenum gets the first 2 bytes
-          @length = (@header[2] << 1) + @header[3]  # @length gets the second 2 bytes
+          @length  = (@header[2] << 1) + @header[3] # @length gets the second 2 bytes
           @body << byte                             # @body begins with the current byte
         # And if we've looped more than 4, up until the length of the message (now defined)
         elsif @idbyte > 4 && @idbyte < @length
@@ -231,29 +262,18 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
         # So long as we have @length and we've reached it, it's time to parse
         if @length > 0 && @idbyte == @length-1
           field = type_map(@typenum)              # Get the field name based on type            
-          if @typenum == 8                        # Type 8 is "Time (High Resolution)"
-            if @collectd.length > 1               # Provided we have more than 1 value in the array
-              # Prune these *specific* keys if they exist and are empty.
-              # This is better than looping over all keys every time.
-              @collectd.delete('type_instance') if @collectd['type_instance'] == ""
-              @collectd.delete('plugin_instance') if @collectd['plugin_instance'] == ""              
-              # New logstash events are created with each new timestamp sent by collectd
-              # The actual timestamp will still be added in the code below this conditional
-              if @collectd.has_key?("collectd_type") # This means the full event should be here
-                # As crazy as it sounds, this is where we actually send our events to the queue!
-                # After we've gotten a new timestamp event it means another event is coming, so
-                # we flush the existing one to the queue
-                event = LogStash::Event.new
-                @collectd.each {|k, v| event[k] = @collectd[k]}
-                decorate(event)
-                output_queue << event
-              end
-              @collectd.clear                     # Empty @collectd
-              @collectd['host'] = @cdhost         # Reset the host from state
-              @collectd['collectd_type'] = @cdtype # Reset the collectd_type from state
-              @collectd['plugin'] = @plugin       # Reset the plugin from state
-              @collectd['plugin_instance'] = @plugin_instance # Reset the plugin from state                
+          if @typenum < @prev_typenum             # We've started over, generate an event
+            if @prune_intervals
+              generate_event(@collectd, output_queue) unless @prev_typenum == 7 or @prev_typenum == 9
+            else
+              generate_event(@collectd, output_queue)
             end
+            @collectd.clear                     # Empty @collectd
+            @collectd['host'] = @cdhost         # Reset these from state
+            @collectd['collectd_type'] = @cdtype
+            @collectd['plugin'] = @plugin       
+            @collectd['plugin_instance'] = @plugin_instance
+            @collectd['@timestamp'] = @timestamp
           end
           # Here is where we actually fill @collectd
           values = get_values(@typenum, @body)
@@ -266,6 +286,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           elsif field != nil                      # Not an array, make sure it's non-empty
             @collectd[field] = values             # Append values to @collectd under key field
           end
+          @prev_typenum = @typenum
           # All bytes in the collectd event have now been processed.  Reset counters, header & body.
           @idbyte = 0; @length = 0; @header.clear; @body.clear;
         else # Increment the byte positional counter
