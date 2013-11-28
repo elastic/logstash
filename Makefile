@@ -224,6 +224,7 @@ vendor/ua-parser/: | build
 	$(QUIET)mkdir $@
 
 vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
+	@echo "=> Fetching ua-parser regexes.yaml"
 	$(QUIET)$(DOWNLOAD_COMMAND) $@ https://raw.github.com/tobie/ua-parser/master/regexes.yaml
 
 # Learned how to do pack gems up into the jar mostly from here:
@@ -395,7 +396,8 @@ package:
 		./build.sh debian 6; \
 	)
 
-vendor/kibana: | build
+vendor/kibana: | vendor
+	@echo "=> Fetching kibana"
 	$(QUIET)mkdir vendor/kibana || true
 	$(DOWNLOAD_COMMAND) - $(KIBANA_URL) | tar -C $@ -zx --strip-components=1
 
