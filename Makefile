@@ -9,7 +9,7 @@ WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
 JRUBY_URL=http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-complete-$(JRUBY_VERSION).jar
 JRUBY_CMD=java -jar $(JRUBY)
-JRUBYC=$(WITH_JRUBY) jrubyc
+
 ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 TYPESDB=vendor/collectd/types.db
@@ -93,8 +93,7 @@ compile: compile-grammar compile-runner | build/ruby
 .PHONY: compile-runner
 compile-runner: build/ruby/logstash/runner.class
 build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
-	#$(QUIET)(cd lib; $(JRUBYC) -5 -t ../build/ruby logstash/runner.rb)
-	$(QUIET)(cd lib; $(JRUBYC) -t ../build/ruby logstash/runner.rb)
+	$(QUIET)(cd lib; java -jar ../$(JRUBY) -rjruby/jrubyc -e 'exit JRuby::Compiler::compile_argv(ARGV)' -- -t ../build/ruby logstash/runner.rb)
 
 .PHONY: copy-ruby-files
 copy-ruby-files: | build/ruby
