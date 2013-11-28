@@ -224,6 +224,7 @@ vendor/ua-parser/: | build
 	$(QUIET)mkdir $@
 
 vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
+	@echo "=> Fetching ua-parser regexes.yaml"
 	$(QUIET)$(DOWNLOAD_COMMAND) $@ https://raw.github.com/tobie/ua-parser/master/regexes.yaml
 
 # Learned how to do pack gems up into the jar mostly from here:
@@ -395,7 +396,8 @@ package:
 		./build.sh debian 6; \
 	)
 
-vendor/kibana: | build
+vendor/kibana: | vendor
+	@echo "=> Fetching kibana"
 	$(QUIET)mkdir vendor/kibana || true
 	$(DOWNLOAD_COMMAND) - $(KIBANA_URL) | tar -C $@ -zx --strip-components=1
 
@@ -410,10 +412,11 @@ show:
 .PHONY: prepare-tarball
 prepare-tarball tarball: WORKDIR=build/tarball/logstash-$(VERSION)
 prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) $(GEOIP) $(TYPESDB) vendor-gems
+prepare-tarball: vendor/ua-parser/regexes.yaml
 prepare-tarball:
 	@echo "=> Preparing tarball"
 	$(QUIET)$(MAKE) $(WORKDIR)
-	$(QUIET)rsync -a --relative bin lib locales vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md $(WORKDIR)
+	$(QUIET)rsync -a --relative bin lib spec locales patterns vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md $(WORKDIR)
 	$(QUIET)sed -i -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
 
 .PHONY: tarball
@@ -422,4 +425,9 @@ build/logstash-$(VERSION).tar.gz: | prepare-tarball
 	$(QUIET)tar -C $$(dirname $(WORKDIR)) -zcf $@ $$(basename $(WORKDIR))
 	@echo "=> tarball ready: $@"
 
-
+.PHONY: tarball-test
+tarball-test: #build/logstash-$(VERSION).tar.gz
+	$(QUIET)-rm -rf build/test-tarball/
+	$(QUIET)mkdir -p build/test-tarball/
+	tar -C build/test-tarball --strip-components 1 -xf build/logstash-$(VERSION).tar.gz
+	(cd build/test-tarball; bin/logstash rspec $(TESTS) --fail-fast)
