@@ -425,4 +425,9 @@ build/logstash-$(VERSION).tar.gz: | prepare-tarball
 	$(QUIET)tar -C $$(dirname $(WORKDIR)) -zcf $@ $$(basename $(WORKDIR))
 	@echo "=> tarball ready: $@"
 
-
+.PHONY: tarball-test
+tarball-test: #build/logstash-$(VERSION).tar.gz
+	$(QUIET)-rm -rf build/test-tarball/
+	$(QUIET)mkdir -p build/test-tarball/
+	tar -C build/test-tarball --strip-components 1 -xf build/logstash-$(VERSION).tar.gz
+	(cd build/test-tarball; bin/logstash rspec $(TESTS) --fail-fast)
