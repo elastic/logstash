@@ -11,8 +11,8 @@ describe LogStash::Filters::Punct do
       }
     CONFIG
 
-    sample "PHP Warning:  json_encode() [<a href='function.json-encode'>function.json-encode</a>]: Invalid UTF-8 sequence in argument in /data1/sinawap/code/weibov4_wap/control/h5/main/trends.php on line 233" do
-      insist { subject["punct"] } == ":_()[<='.-'>.-</>]:-////_////."
+    sample "PHP Warning:  json_encode() [<a href='function.json-encode'>function.json-encode</a>]: Invalid UTF-8 sequence in argument in /var/www/htdocs/test.php on line 233" do
+      insist { subject["punct"] } == ":_()[<='.-'>.-</>]:-////."
     end
   end
 end
