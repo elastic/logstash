@@ -43,7 +43,7 @@ module LogStash::Util
           end
         else
           if dvalue.is_a?(Array)
-            dvalue << svalue unless dvalue.include?(svalue)
+            dvalue << svalue
           else
             dvalue = [dvalue, svalue] unless dvalue == svalue
           end
