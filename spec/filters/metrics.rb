@@ -16,18 +16,28 @@ describe LogStash::Filters::Metrics do
 
     context "when events are received" do
       context "on the first flush" do
-        it "should flush counts" do
+        subject {
           config = {"meter" => ["http.%{response}"]}
           filter = LogStash::Filters::Metrics.new config
           filter.register
           filter.filter LogStash::Event.new({"response" => 200})
           filter.filter LogStash::Event.new({"response" => 200})
           filter.filter LogStash::Event.new({"response" => 404})
+          filter.flush
+        }
 
-          events = filter.flush
-          insist { events.length } == 1
-          insist { events.first["http.200.count"] } == 2
-          insist { events.first["http.404.count"] } == 1
+        it "should flush counts" do
+          insist { subject.length } == 1
+          insist { subject.first["http.200.count"] } == 2
+          insist { subject.first["http.404.count"] } == 1
+        end
+
+        it "should include rates and percentiles" do
+          metrics = ["http.200.rate_1m", "http.200.rate_5m", "http.200.rate_15m",
+                     "http.404.rate_1m", "http.404.rate_5m", "http.404.rate_15m"]
+          metrics.each do |metric|
+            insist { subject.first }.include? metric
+          end
         end
       end
 
@@ -74,6 +84,64 @@ describe LogStash::Filters::Metrics do
       insist { events_tag2.first["http.200.count"] } == 2
     end
   end
+
+  context "when metrics are received" do
+    context "on the first flush" do
+      subject {
+        config = {"timer" => ["http.request_time", "request_time"]}
+        filter = LogStash::Filters::Metrics.new config
+        filter.register
+        filter.filter LogStash::Event.new({"request_time" => 1})
+        filter.filter LogStash::Event.new({"request_time" => 2})
+        filter.filter LogStash::Event.new({"request_time" => 3})
+        filter.flush
+      }
+
+      it "should flush counts" do
+        insist { subject.length } == 1
+        insist { subject.first["http.request_time.count"] } == 3
+      end
+
+      it "should include rates and percentiles" do
+        metrics = ["rate_1m", "rate_5m", "rate_15m", "p1", "p5", "p10", "p90", "p95", "p99"]
+        metrics.each do |metric|
+          insist { subject.first }.include? "http.request_time.#{metric}"
+        end
+      end
+    end
+  end
+
+  context "when custom rates and metrics are selected" do
+    context "on the first flush" do
+      subject {
+        config = {
+          "timer" => ["http.request_time", "request_time"],
+          "rates" => [1],
+          "percentiles" => [1]
+        }
+        filter = LogStash::Filters::Metrics.new config
+        filter.register
+        filter.filter LogStash::Event.new({"request_time" => 1})
+        filter.flush
+      }
+
+      it "should flush counts" do
+        insist { subject.length } == 1
+        insist { subject.first["http.request_time.count"] } == 1
+      end
+
+      it "should include only the requested rates and percentiles" do
+        fields = subject.first.to_hash.keys
+
+        rate_fields = fields.select {|field| field.start_with?("http.request_time.rate") }
+        insist { rate_fields } == ["http.request_time.rate_1m"]
+
+        percentile_fields = fields.select {|field| field.start_with?("http.request_time.p") }
+        insist { percentile_fields } == ["http.request_time.p1"]
+      end
+    end
+  end
+
 
   context "when a custom flush_interval is set" do
     it "should flush only when required" do
