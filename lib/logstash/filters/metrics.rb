@@ -129,6 +129,13 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   # Otherwise, should be a multiple of 5s.
   config :clear_interval, :validate => :number, :default => -1
 
+  # The rates that should be measured, in minutes.
+  # Possible values are 1, 5, and 15.
+  config :rates, :validate => :array, :default => [1, 5, 15]
+
+  # The percentiles that should be measured
+  config :percentiles, :validate => :array, :default => [1, 5, 10, 90, 95, 99, 100]
+
   def register
     require "metriks"
     require "socket"
@@ -177,9 +184,9 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
 
     @metric_timers.each do |name, metric|
       event["#{name}.count"] = metric.count
-      event["#{name}.rate_1m"] = metric.one_minute_rate
-      event["#{name}.rate_5m"] = metric.five_minute_rate
-      event["#{name}.rate_15m"] = metric.fifteen_minute_rate
+      event["#{name}.rate_1m"] = metric.one_minute_rate if @rates.include? 1
+      event["#{name}.rate_5m"] = metric.five_minute_rate if @rates.include? 5
+      event["#{name}.rate_15m"] = metric.fifteen_minute_rate if @rates.include? 15
 
       # These 4 values are not sliding, so they probably are not useful.
       event["#{name}.min"] = metric.min
@@ -188,14 +195,9 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
       event["#{name}.stddev"] = metric.stddev ** 0.5
       event["#{name}.mean"] = metric.mean
 
-      # TODO(sissel): Maybe make this configurable?
-      #   percentiles => [ 0, 1, 5, 95 99 100 ]
-      event["#{name}.p1"] = metric.snapshot.value(0.01)
-      event["#{name}.p5"] = metric.snapshot.value(0.05)
-      event["#{name}.p10"] = metric.snapshot.value(0.10)
-      event["#{name}.p90"] = metric.snapshot.value(0.90)
-      event["#{name}.p95"] = metric.snapshot.value(0.95)
-      event["#{name}.p99"] = metric.snapshot.value(0.99)
+      @percentiles.each do |percentile|
+        event["#{name}.p#{percentile}"] = metric.snapshot.value(percentile / 100)
+      end
       metric.clear if should_clear?
     end
 
