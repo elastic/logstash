@@ -175,19 +175,12 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     event = LogStash::Event.new
     event["message"] = Socket.gethostname
     @metric_meters.each do |name, metric|
-      event["#{name}.count"] = metric.count
-      event["#{name}.rate_1m"] = metric.one_minute_rate
-      event["#{name}.rate_5m"] = metric.five_minute_rate
-      event["#{name}.rate_15m"] = metric.fifteen_minute_rate
+      flush_rates event, name, metric
       metric.clear if should_clear?
     end
 
     @metric_timers.each do |name, metric|
-      event["#{name}.count"] = metric.count
-      event["#{name}.rate_1m"] = metric.one_minute_rate if @rates.include? 1
-      event["#{name}.rate_5m"] = metric.five_minute_rate if @rates.include? 5
-      event["#{name}.rate_15m"] = metric.fifteen_minute_rate if @rates.include? 15
-
+      flush_rates event, name, metric
       # These 4 values are not sliding, so they probably are not useful.
       event["#{name}.min"] = metric.min
       event["#{name}.max"] = metric.max
@@ -215,6 +208,13 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   end
 
   private
+  def flush_rates(event, name, metric)
+      event["#{name}.count"] = metric.count
+      event["#{name}.rate_1m"] = metric.one_minute_rate if @rates.include? 1
+      event["#{name}.rate_5m"] = metric.five_minute_rate if @rates.include? 5
+      event["#{name}.rate_15m"] = metric.fifteen_minute_rate if @rates.include? 15
+  end
+
   def initialize_metrics
     @metric_meters = Hash.new { |h,k| h[k] = Metriks.meter metric_key(k) }
     @metric_timers = Hash.new { |h,k| h[k] = Metriks.timer metric_key(k) }
