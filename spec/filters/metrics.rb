@@ -117,7 +117,7 @@ describe LogStash::Filters::Metrics do
         config = {
           "timer" => ["http.request_time", "request_time"],
           "rates" => [1],
-          "percentiles" => [1]
+          "percentiles" => [1, 2]
         }
         filter = LogStash::Filters::Metrics.new config
         filter.register
@@ -130,14 +130,17 @@ describe LogStash::Filters::Metrics do
         insist { subject.first["http.request_time.count"] } == 1
       end
 
-      it "should include only the requested rates and percentiles" do
-        fields = subject.first.to_hash.keys
+      it "should include only the requested rates" do
+        rate_fields = subject.first.to_hash.keys.select {|field| field.start_with?("http.request_time.rate") }
+        insist { rate_fields.length } == 1
+        insist { rate_fields }.include? "http.request_time.rate_1m"
+      end
 
-        rate_fields = fields.select {|field| field.start_with?("http.request_time.rate") }
-        insist { rate_fields } == ["http.request_time.rate_1m"]
-
-        percentile_fields = fields.select {|field| field.start_with?("http.request_time.p") }
-        insist { percentile_fields } == ["http.request_time.p1"]
+      it "should include only the requested percentiles" do
+        percentile_fields = subject.first.to_hash.keys.select {|field| field.start_with?("http.request_time.p") }
+        insist { percentile_fields.length } == 2
+        insist { percentile_fields }.include? "http.request_time.p1"
+        insist { percentile_fields }.include? "http.request_time.p2"
       end
     end
   end
