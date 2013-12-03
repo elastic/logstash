@@ -21,11 +21,25 @@ def install_gem(name, requirement, target)
  
   # ruby 2.0.0 / rubygems 2.x; disable documentation generation
   installer.options[:document] = []
+
+  # Try 10 times to install a given gem. This is to try and
+  # work around https://github.com/rubygems/rubygems.org/issues/615
+  # If #615 is hit, we'll get a Gem::RemoteFetcher::FetchError
+  try = 0
   begin
+    try += 1
     installer.execute
   rescue Gem::SystemExitException => e
     if e.exit_code != 0
       puts "Installation of #{name} failed"
+      raise
+    end
+  rescue Gem::RemoteFetcher::FetchError => e
+    if e.message =~ /bad_record_mac/ && try < 10
+      puts "SSL Error fetching from rubygems. Will retry (try ###{try})"
+      sleep 1
+      retry
+    else
       raise
     end
   end
