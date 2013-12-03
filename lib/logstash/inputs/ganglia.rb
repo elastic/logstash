@@ -66,6 +66,7 @@ class LogStash::Inputs::Ganglia < LogStash::Inputs::Base
       # TODO(sissel): make this a codec...
       e = parse_packet(packet)
       unless e.nil?
+        decorate(e)
         e["host"] = client[3] # the IP address
         output_queue << e
       end
