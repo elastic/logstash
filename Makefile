@@ -87,8 +87,11 @@ clean:
 	@echo "=> Cleaning up"
 	-$(QUIET)rm -rf .bundle
 	-$(QUIET)rm -rf build
-	-$(QUIET)rm -rf vendor
 	-$(QUIET)rm -f pkg/*.deb
+
+.PHONY: clean-vendor
+clean-vendor:
+	-$(QUIET)rm -rf vendor
 
 .PHONY: compile
 compile: compile-grammar compile-runner | build/ruby
@@ -165,9 +168,8 @@ vendor-gems: | vendor/bundle
 
 .PHONY: vendor/bundle
 vendor/bundle: | vendor $(JRUBY)
-	@echo "=> Installing gems to $@..."
-	@#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
-	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec $(QUIET_OUTPUT)
+	@echo "=> Ensuring ruby gems dependencies are in $@..."
+	$(QUIET)bin/logstash deps $(QUIET_OUTPUT)
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
 	-$(QUIET)rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg

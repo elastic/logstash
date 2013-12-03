@@ -1,5 +1,5 @@
-source :rubygems
-gemspec :name => "logstash"
+source "https://rubygems.org"
+gemspec(:name => "logstash", :path => "../")
 
 group :development do
   gem "insist"

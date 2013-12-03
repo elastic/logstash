@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
 
-# target for now
-rubymajor = RUBY_VERSION.split(".")[0..1].join(".")
-target = "#{Dir.pwd}/vendor/bundle/#{RUBY_ENGINE}/#{rubymajor}/"
-ENV["GEM_HOME"] = target
+require "rbconfig"
+
+rubyabi = RbConfig::CONFIG["ruby_version"]
+target = "#{Dir.pwd}/vendor/bundle"
+gemdir = "#{target}/#{RUBY_ENGINE}/#{rubyabi}/"
+ENV["GEM_HOME"] = gemdir
 ENV["GEM_PATH"] = ""
 
 require "rubygems/specification"
@@ -21,74 +23,22 @@ def install_gem(name, requirement, target)
  
   # ruby 2.0.0 / rubygems 2.x; disable documentation generation
   installer.options[:document] = []
-
-  # Try 10 times to install a given gem. This is to try and
-  # work around https://github.com/rubygems/rubygems.org/issues/615
-  # If #615 is hit, we'll get a Gem::RemoteFetcher::FetchError
-  try = 0
   begin
-    try += 1
     installer.execute
   rescue Gem::SystemExitException => e
     if e.exit_code != 0
       puts "Installation of #{name} failed"
       raise
     end
-  rescue Gem::RemoteFetcher::FetchError => e
-    if e.message =~ /bad_record_mac/ && try < 10
-      puts "SSL Error fetching from rubygems. Will retry (try ###{try})"
-      sleep 1
-      retry
-    else
-      raise
-    end
   end
 end # def install_gem
 
-gemspec = ARGV.shift || "logstash.gemspec"
+# Ensure bundler is available.
+begin
+  gem("bundler", ">=1.3.5")
+rescue Gem::LoadError => e
+  install_gem("bundler", ">= 1.3.5", ENV["GEM_HOME"])
+end
 
-spec = Gem::Specification.load(gemspec)
-deps = [spec.development_dependencies, spec.runtime_dependencies].flatten
-
-deps.each do |dep|
-  # TODO(sissel): Hack for now
-  next if "#{dep}" == "addressable (~> 2.2.6)" 
-
-  begin
-    # Check if the gem is available
-    # 'gem' returns 'true' if it loaded it, false if already loaded,
-    # and raises a Gem::LoadError exception on failure.
-    # Skip downloading/installing it if it's already here.
-    gem(dep.name, dep.requirement)
-
-    # If we get here, we have the gem.
-    puts "Gem found matching: #{dep}"
-  rescue Gem::LoadError => e
-    # Not installed, continue.
-    message = e.to_s
-
-    # Sometimes we failed to load because gembag installs too
-    # many things. Like 'shoulda' fails to load because two
-    # conflicting versions of 'mocha' were installed.
-    # Fundamentally, gembag should build a dependency graph and
-    # resolve all version requirements to single nodes to prevent
-    # this madness.
-    #
-    # Possible we can steal bundler's implementation of this,
-    # or just use bundler to do it, but only if bundler doesn't
-    # bite me in the ass again :)
-    case message
-      when /Unable to activate/
-        puts "Gem found, but funky: #{dep} (#{e})"
-      when /Could not find/
-        puts "Gem not found: #{dep}"
-        install_gem(dep.name, dep.requirement, target)
-      else
-        puts "Unexpected error: #{e}"
-        exit 1
-    end # case message
-  end # begin / rescue Gem::LoadError
-end # deps.each
-
-
-
+require "bundler/cli"
+Bundler::CLI.start(["install", "--gemfile=tools/Gemfile", "--path", target, "--clean"])
