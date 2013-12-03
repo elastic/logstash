@@ -25,7 +25,7 @@ setup_ruby() {
     exit 1
   fi
 
-  eval $(ruby -e 'puts "RUBYVER=#{RUBY_VERSION.split(".")[0..1].join(".")}"; puts "RUBY=#{RUBY_ENGINE}"')
+  eval $(ruby -rrbconfig -e 'puts "RUBYVER=#{RbConfig::CONFIG["ruby_version"]}"; puts "RUBY=#{RUBY_ENGINE}"')
   RUBYCMD="ruby"
 }
 
