@@ -46,7 +46,7 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   def register
     require "geoip"
     if @database.nil?
-      if __FILE__ =~ /^file:\/.+!.+/
+      if __FILE__ =~ /^(jar:)?file:\/.+!.+/
         begin
           # Running from a jar, assume GeoLiteCity.dat is at the root.
           jar_path = [__FILE__.split("!").first, "/GeoLiteCity.dat"].join("!")
