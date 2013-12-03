@@ -2,7 +2,7 @@ require "logstash/filters/metrics"
 
 describe LogStash::Filters::Metrics do
 
-  context "with basic config" do
+  context "with basic meter config" do
     context "when no events were received" do
       it "should not flush" do
         config = {"meter" => ["http.%{response}"]}
@@ -85,7 +85,7 @@ describe LogStash::Filters::Metrics do
     end
   end
 
-  context "when metrics are received" do
+  context "with timer config" do
     context "on the first flush" do
       subject {
         config = {"timer" => ["http.request_time", "request_time"]}
@@ -111,7 +111,7 @@ describe LogStash::Filters::Metrics do
     end
   end
 
-  context "when custom rates and metrics are selected" do
+  context "when custom rates and percentiles are selected" do
     context "on the first flush" do
       subject {
         config = {
@@ -172,5 +172,4 @@ describe LogStash::Filters::Metrics do
       insist { filter.flush }.nil?                         # 20s
     end
   end
-
 end
