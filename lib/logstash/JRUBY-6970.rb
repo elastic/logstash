@@ -84,3 +84,17 @@ class File
     end
   end
 end
+
+class Dir
+  class << self
+    alias_method :glob_JRUBY_6970_hack, :glob
+    def glob(path, flags=nil)
+      if path =~ /^jar:file:/
+        # Strip leading 'jar:' (LOGSTASH-1316)
+        return glob_JRUBY_6970_hack(path.gsub(/^jar:/, ""))
+      else
+        return glob_JRUBY_6970_hack(path)
+      end
+    end
+  end
+end
