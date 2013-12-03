@@ -76,10 +76,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
         begin
           # Running from a jar, assume types.db is at the root.
           jar_path = [__FILE__.split("!").first, "/types.db"].join("!")
-          tmp_file = Tempfile.new('logstash-types.db')
-          tmp_file.write(File.read(jar_path))
-          tmp_file.close # this file is reaped when ruby exits
-          @typesdb = [tmp_file.path]
+          @typesdb = [jar_path]
         rescue => ex
           raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
         end
