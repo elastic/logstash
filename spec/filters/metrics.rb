@@ -58,6 +58,29 @@ describe LogStash::Filters::Metrics do
         end
       end
     end
+
+    context "when custom rates and percentiles are selected" do
+      context "on the first flush" do
+        subject {
+          config = {
+            "meter" => ["http.%{response}"],
+            "rates" => [1]
+          }
+          filter = LogStash::Filters::Metrics.new config
+          filter.register
+          filter.filter LogStash::Event.new({"response" => 200})
+          filter.filter LogStash::Event.new({"response" => 200})
+          filter.filter LogStash::Event.new({"response" => 404})
+          filter.flush
+        }
+
+        it "should include only the requested rates" do
+          rate_fields = subject.first.to_hash.keys.select {|field| field.start_with?("http.200.rate") }
+          insist { rate_fields.length } == 1
+          insist { rate_fields }.include? "http.200.rate_1m"
+        end
+      end
+    end
   end
 
   context "with multiple instances" do
@@ -173,6 +196,17 @@ describe LogStash::Filters::Metrics do
       insist { filter.flush.first["http.200.count"] } == 1 # 10s
       insist { filter.flush.first["http.200.count"] } == 1 # 15s
       insist { filter.flush }.nil?                         # 20s
+    end
+  end
+
+  context "when invalid rates are set" do
+    subject {
+      config = {"meter" => ["http.%{response}"], "rates" => [90]}
+      filter = LogStash::Filters::Metrics.new config
+    }
+
+    it "should raise an error" do
+      insist {subject.register }.raises(LogStash::ConfigurationError)
     end
   end
 end

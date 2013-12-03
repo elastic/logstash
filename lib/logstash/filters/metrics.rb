@@ -142,6 +142,9 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     @last_flush = 0 # how many seconds ago the metrics where flushed.
     @last_clear = 0 # how many seconds ago the metrics where cleared.
     @random_key_preffix = SecureRandom.hex
+    unless (@rates - [1, 5, 15]).empty?
+      raise LogStash::ConfigurationError, "Invalid rates configuration. possible rates are 1, 5, 15. Rates: #{rates}."
+    end
     initialize_metrics
   end # def register
 
