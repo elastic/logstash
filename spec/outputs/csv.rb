@@ -153,4 +153,32 @@ describe LogStash::Outputs::CSV do
       insist {lines[0][0]} == '{"one":"two"}'
     end
   end
+
+  describe "can address nested field using field reference syntax" do
+    tmpfile = Tempfile.new('logstash-spec-output-csv')
+    config <<-CONFIG
+      input {
+        generator {
+          message => '{"foo":{"one":"two"},"baz": "quux"}'
+          count => 1
+        }
+      }
+      filter {
+        json { source => "message"}
+      }
+      output {
+        csv {
+          path => "#{tmpfile.path}"
+          fields => ["[foo][one]", "baz"]
+        }
+      }
+    CONFIG
+
+    agent do
+      lines = CSV.read(tmpfile.path)
+      insist {lines.count} == 1
+      insist {lines[0][0]} == "two"
+      insist {lines[0][1]} == "quux"
+    end
+  end
 end
