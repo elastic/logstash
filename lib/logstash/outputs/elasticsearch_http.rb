@@ -25,13 +25,14 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # similar events to the same 'type'. String expansion '%{foo}' works here.
   config :index_type, :validate => :string
   
-  # Starting in Logstash 1.3 (unless you set option "manual_templates") 
+  # Starting in Logstash 1.3 (unless you set option "manage_template" to false) 
   # a default mapping template for Elasticsearch will be applied if you do not 
   # already have one set to match the index pattern defined (default of 
   # "logstash-%{+YYYY.MM.dd}"), minus any variables.  For example, in this case
   # the template will be applied to all indices starting with logstash-* 
   # If you have dynamic templating (e.g. creating indices based on field names)
-  # then you should set "manual_templates" to true and create indices for 
+  # then you should set "manage_template" to false and use the REST API to upload
+  # your templates manually.
   # This configuration option defines how the template is named inside Elasticsearch
   config :template_name, :validate => :string, :default => "logstash_per_index"
   
@@ -43,9 +44,9 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # in the template and template_name directives.
   config :template_overwrite, :validate => :boolean, :default => false
   
-  # Do not alter templates in any way, leaving it up to the end-user
-  # to manually do all such template configuration
-  config :manual_templates, :validate => :boolean, :default => false
+  # Logstash will install the default template unless it finds one pre-existing
+  # or you have set this option to false.
+  config :manage_template, :validate => :boolean, :default => true
 
   # The hostname or ip address to reach your elasticsearch server.
   config :host, :validate => :string, :required => true
@@ -84,8 +85,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
     auth = @username && @password ? "#{@username}:#{@password.value}@" : ""
     @bulk_url = "http://#{auth}#{@host}:#{@port}/_bulk?replication=#{@replication}"
-    if !@manual_templates
-      @logger.info("Automatic template configuration enabled", :manual_templates => @manual_templates.to_s)
+    if @manage_template
+      @logger.info("Automatic template configuration enabled", :manage_template => @manage_template.to_s)
       template_search_url = "http://#{auth}#{@host}:#{@port}/_template/*"
       @template_url = "http://#{auth}#{@host}:#{@port}/_template/#{@template_name}"
       if @template_overwrite
@@ -120,7 +121,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       else #=> Some other status code?
         @logger.error("Could not check for existing template.  Check status code.", :status => response.status.to_s)
       end # end if response.status == 200
-    end # end if !@manual_templates 
+    end # end if @manage_template
     buffer_initialize(
       :max_items => @flush_size,
       :max_interval => @idle_flush_time,
@@ -133,6 +134,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     begin
       if command == 'delete'
         response = @agent.delete!(@template_url)
+        response.discard_body
       elsif command == 'put'
         response = @agent.put!(@template_url, :body => @template_json)
         response.discard_body
