@@ -147,8 +147,11 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
       return
     end
 
+    # If there is a count attached to the event, we increment by that count
+    increment = event["count"].nil? ? 1 : event["count"]
+
     @meter.each do |m|
-      @metric_meters[event.sprintf(m)].mark
+      @metric_meters[event.sprintf(m)].mark(increment)
     end
 
     @timer.each do |name, value|
