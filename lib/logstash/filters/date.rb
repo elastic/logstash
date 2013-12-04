@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/filters/base"
 require "logstash/namespace"
 
@@ -27,13 +28,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   config_name "date"
   milestone 3
 
-  # specify a timezone canonical ID to be used for date parsing.
+  # Specify a timezone canonical ID to be used for date parsing.
   # The valid ID are listed on http://joda-time.sourceforge.net/timezones.html
   # Useful in case the timezone cannot be extracted from the value,
-  # and is not the platform default
+  # and is not the platform default.
   # If this is not specified the platform default will be used.
   # Canonical ID is good as it takes care of daylight saving time for you
-  # For example, America/Los_Angeles or Europe/France are valid IDs
+  # For example, America/Los_Angeles or Europe/France are valid IDs.
   config :timezone, :validate => :string
 
   # specify a locale to be used for date parsing. If this is not specified the
@@ -125,6 +126,11 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   public
   def register
     require "java"
+    if @match.length < 2
+      raise LogStash::ConfigurationError, I18n.t("logstash.agent.configuration.invalid_plugin_register", 
+        :plugin => "filter", :type => "date",
+        :error => "The match setting should contains first a field name and at least one date format, current value is #{@match}")
+    end
     # TODO(sissel): Need a way of capturing regexp configs better.
     locale = parseLocale(@config["locale"][0]) if @config["locale"] != nil and @config["locale"][0] != nil
     setupMatcher(@config["match"].shift, locale, @config["match"] )

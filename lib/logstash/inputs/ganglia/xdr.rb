@@ -1,3 +1,4 @@
+# encoding: utf-8
 # xdr.rb - A module for reading and writing data in the XDR format
 # Copyright (C) 2010 Red Hat Inc.
 #

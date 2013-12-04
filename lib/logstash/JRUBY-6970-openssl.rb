@@ -1,3 +1,4 @@
+# encoding: utf-8
 # TODO(sissel): require "openssl" takes *ages* from the logstash jar
 # TODO(sissel): monkeypatch Kernel.require to apply this monkeypatch only after
 # a 'require "openssl" has occurred.

@@ -1,3 +1,4 @@
+# encoding: utf-8
 # Monkeypatch for JRUBY-6970
 module Kernel
   alias_method :require_JRUBY_6970_hack, :require
@@ -80,6 +81,20 @@ class File
       return "#{jar}!#{resource.gsub(/^[A-Za-z]:/, "")}"
     else
       return "#{jar}!#{resource}"
+    end
+  end
+end
+
+class Dir
+  class << self
+    alias_method :glob_JRUBY_6970_hack, :glob
+    def glob(path, flags=nil)
+      if path =~ /^jar:file:/
+        # Strip leading 'jar:' (LOGSTASH-1316)
+        return glob_JRUBY_6970_hack(path.gsub(/^jar:/, ""))
+      else
+        return glob_JRUBY_6970_hack(path)
+      end
     end
   end
 end

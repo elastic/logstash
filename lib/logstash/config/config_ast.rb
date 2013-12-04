@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "treetop"
 class Treetop::Runtime::SyntaxNode
   def compile

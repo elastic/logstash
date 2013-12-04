@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "java"
 require "rubygems"
 require "jdbc/mysql"

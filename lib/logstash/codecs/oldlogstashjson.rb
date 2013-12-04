@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/codecs/base"
 
 class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
@@ -43,7 +44,7 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
     end
 
     h.merge!(data["@fields"]) if data["@fields"].is_a?(Hash)
-    @on_event.call(h)
+    @on_event.call(h.to_json)
   end # def encode
 
 end # class LogStash::Codecs::OldLogStashJSON

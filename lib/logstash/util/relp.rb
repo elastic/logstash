@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "socket"
 
 class Relp#This isn't much use on its own, but gives RelpServer and RelpClient things
