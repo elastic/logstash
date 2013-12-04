@@ -25,10 +25,13 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # similar events to the same 'type'. String expansion '%{foo}' works here.
   config :index_type, :validate => :string
   
-  # Starting in Logstash 1.3 a default mapping template for Elasticsearch
-  # will be applied if you do not already have one set to match the index
-  # pattern defined (default of "logstash-%{+YYYY.MM.dd}").  For example, in this
-  # case the template will be applied to all indices starting with logstash-*
+  # Starting in Logstash 1.3 (unless you set option "manual_templates") 
+  # a default mapping template for Elasticsearch will be applied if you do not 
+  # already have one set to match the index pattern defined (default of 
+  # "logstash-%{+YYYY.MM.dd}"), minus any variables.  For example, in this case
+  # the template will be applied to all indices starting with logstash-* 
+  # If you have dynamic templating (e.g. creating indices based on field names)
+  # then you should set "manual_templates" to true and create indices for 
   # This configuration option defines how the template is named inside Elasticsearch
   config :template_name, :validate => :string, :default => "logstash_per_index"
   
@@ -39,6 +42,10 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # Overwrite the current template with whatever is configured 
   # in the template and template_name directives.
   config :template_overwrite, :validate => :boolean, :default => false
+  
+  # Do not alter templates in any way, leaving it up to the end-user
+  # to manually do all such template configuration
+  config :manual_templates, :validate => :boolean, :default => false
 
   # The hostname or ip address to reach your elasticsearch server.
   config :host, :validate => :string, :required => true
@@ -77,39 +84,43 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
     auth = @username && @password ? "#{@username}:#{@password.value}@" : ""
     @bulk_url = "http://#{auth}#{@host}:#{@port}/_bulk?replication=#{@replication}"
-    template_search_url = "http://#{auth}#{@host}:#{@port}/_template/*"
-    @template_url = "http://#{auth}#{@host}:#{@port}/_template/#{@template_name}"
-    if template_overwrite
-      response = @agent.get!(@template_url)
-      template_action('delete') if response.status == 200 #=> Purge the old template if it exists
-    end
-    @logger.debug("Template Search URL:", :template_search_url => template_search_url)
-    has_template = false
-    template_idx_name = @index.sub(/%{.*}/,'*')
-    alt_template_idx_name = @index.sub(/-%{.*}/,'*')
-    # Get the template data
-    response = @agent.get!(template_search_url)
-    json = ""
-    if response.status == 404 #=> This condition can occcur when no template has ever been appended
-      @logger.info("No template found in Elasticsearch...")
-      get_template_json
-      template_action('put')
-    elsif response.status == 200
-      begin
-        response.read_body { |c| json << c }
-        results = JSON.parse(json)
-      rescue Exception => e
-        @logger.error("Error parsing JSON", :json => json, :results => results.to_s, :error => e.to_s)
-        raise "Exception in parsing JSON", e
+    if !@manual_templates
+      @logger.info("Automatic template configuration enabled", :manual_templates => @manual_templates.to_s)
+      template_search_url = "http://#{auth}#{@host}:#{@port}/_template/*"
+      @template_url = "http://#{auth}#{@host}:#{@port}/_template/#{@template_name}"
+      if @template_overwrite
+        @logger.info("Template overwrite enabled.  Deleting existing template.", :template_overwrite => @template_overwrite.to_s)
+        response = @agent.get!(@template_url)
+        template_action('delete') if response.status == 200 #=> Purge the old template if it exists
       end
-      if !results.any? { |k,v| v["template"] == template_idx_name || v["template"] == alt_template_idx_name }
-        @logger.debug("No template found in Elasticsearch", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name)
+      @logger.debug("Template Search URL:", :template_search_url => template_search_url)
+      has_template = false
+      template_idx_name = @index.sub(/%{[^}]+}/,'*')
+      alt_template_idx_name = @index.sub(/-%{[^}]+}/,'*')
+      # Get the template data
+      response = @agent.get!(template_search_url)
+      json = ""
+      if response.status == 404 #=> This condition can occcur when no template has ever been appended
+        @logger.info("No template found in Elasticsearch...")
         get_template_json
-        template_action('put')      
-      end
-    else #=> Some other status code?
-      @logger.error("Could not check for existing template.  Check status code.", :status => response.status.to_s)
-    end 
+        template_action('put')
+      elsif response.status == 200
+        begin
+          response.read_body { |c| json << c }
+          results = JSON.parse(json)
+        rescue Exception => e
+          @logger.error("Error parsing JSON", :json => json, :results => results.to_s, :error => e.to_s)
+          raise "Exception in parsing JSON", e
+        end
+        if !results.any? { |k,v| v["template"] == template_idx_name || v["template"] == alt_template_idx_name }
+          @logger.debug("No template found in Elasticsearch", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name)
+          get_template_json
+          template_action('put')      
+        end
+      else #=> Some other status code?
+        @logger.error("Could not check for existing template.  Check status code.", :status => response.status.to_s)
+      end # end if response.status == 200
+    end # end if !@manual_templates 
     buffer_initialize(
       :max_items => @flush_size,
       :max_interval => @idle_flush_time,
