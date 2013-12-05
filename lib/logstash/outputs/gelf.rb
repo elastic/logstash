@@ -158,7 +158,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
         name = "_id" if name == "id"  # "_id" is reserved, so use "__id"
         if !value.nil? and !@ignore_metadata.include?(name)
           if value.is_a?(Array)
-            m["_#{name}"] = value.join(' ,')
+            m["_#{name}"] = value.join(', ')
           elsif value.is_a?(Hash)
             value.each do |hash_name, hash_value|
               m["_#{name}_#{hash_name}"] = hash_value
