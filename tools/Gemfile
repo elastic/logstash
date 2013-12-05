@@ -1,9 +1,14 @@
 source "https://rubygems.org"
-gemspec(:name => "logstash", :path => "../")
+#gemspec(:name => "logstash", :path => "../")
+
+gemspec = File.join(File.dirname(__FILE__), "..", "logstash.gemspec")
+spec = Gem::Specification.load(gemspec)
+spec.runtime_dependencies.each do |dep|
+  gem dep.name, dep.requirement.to_s
+end
 
 group :development do
-  gem "insist"
-  gem "guard"
-  gem "guard-rspec"
-  gem "parallel_tests"
+  spec.development_dependencies.each do |dep|
+    gem dep.name, dep.requirement.to_s
+  end
 end
