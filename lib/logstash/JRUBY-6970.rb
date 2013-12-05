@@ -12,10 +12,14 @@ module Kernel
     end
 
     # Work around slow openssl load times in flatjar. (LOGSTASH-1223)
+    # I don't know why this works, I don't care either. This problem only
+    # exists in the 'jar' builds of logstash which are going to be going away
+    # soon in favor of the much-better tarball/zip releases!
     if __FILE__ =~ /^(?:jar:)?file:.+!.+/ && path == "openssl"
-      old_load_path = $LOAD_PATH.dup
-      # For some reason loading openssl with an empty LOAD_PATH is fast.
-      $LOAD_PATH.clear
+      # Loading shared/jruby-openssl first seems to make openssl load faster
+      # I have no idea. Computers.
+      require_JRUBY_6970_hack "shared/jruby-openssl"
+      return require_JRUBY_6970_hack "openssl"
     end
 
     # JRUBY-7065
@@ -27,8 +31,6 @@ module Kernel
       require "logstash/JRUBY-6970-openssl"
     end
     return rc
-  ensure
-    $LOAD_PATH.replace(old_load_path) if old_load_path
   end
 end
 
