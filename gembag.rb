@@ -52,4 +52,13 @@ module Bundler
     end
   end
 end
+
+if RUBY_ENGINE == "rbx"
+  begin
+    gem("rubysl")
+  rescue Gem::LoadError => e
+    install_gem("rubysl", ">= 0", ENV["GEM_HOME"])
+  end
+end
+
 Bundler::CLI.start(["install", "--gemfile=tools/Gemfile", "--path", target, "--clean"])
