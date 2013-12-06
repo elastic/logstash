@@ -5,6 +5,17 @@
 
 . ../.VERSION.mk
 
+if ! git show-ref --tags | grep -q "$(git rev-parse HEAD)"; then
+	# HEAD is not tagged, add the date, time and commit hash to the revision
+	BUILD_TIME="$(date +%Y%m%d%H%M)"
+	DEB_REVISION="${BUILD_TIME}~${REVISION}"
+	RPM_REVISION=".${BUILD_TIME}.${REVISION}"
+fi
+
+
+URL="http://logstash.net"
+DESCRIPTION="An extensible logging pipeline"
+
 if [ "$#" -ne 2 ] ; then
   echo "Usage: $0 <os> <release>"
   echo 
@@ -28,7 +39,7 @@ mkdir -p $destdir/$prefix
 
 
 # install logstash.jar
-jar="$(dirname $0)/../build/logstash-$VERSION-flatjar.jar" 
+jar="$(dirname $0)/../build/logstash-$VERSION-flatjar.jar"
 if [ ! -f "$jar" ] ; then
   echo "Unable to find $jar"
   exit 1
@@ -47,7 +58,7 @@ case $os@$release in
     mkdir -p $destdir/var/run/logstash
     mkdir -p $destdir/var/log/logstash
     cp $os/sysconfig $destdir/etc/sysconfig/logstash
-    install -m644 logrotate.conf $destdir/etc/logrotate.d/
+    install -m644 logrotate.conf $destdir/etc/logrotate.d/logstash
     install -m755 logstash.sysv.redhat $destdir/etc/init.d/logstash
     ;;
   ubuntu@*)
@@ -87,31 +98,38 @@ esac
 description="logstash is a system for managing and processing events and logs"
 case $os in
   centos|fedora|redhat) 
-    fpm -s dir -t rpm -n logstash -v "$VERSION" \
-      -a noarch --iteration 1_$os \
+    fpm -s dir -t rpm -n logstash -v "$RELEASE" \
+      -a noarch --iteration "1_${os}${RPM_REVISION}" \
+      --url "$URL" \
+      --description "$DESCRIPTION" \
       -d "jre >= 1.6.0" \
       --before-install centos/before-install.sh \
       --before-remove centos/before-remove.sh \
       --after-install centos/after-install.sh \
+      --config-files /etc/sysconfig/logstash \
+      --config-files /etc/logrotate.d/logstash \
       -f -C $destdir .
     ;;
   ubuntu|debian)
-    if ! echo $VERSION | grep -q '\.(dev\|rc.*)'; then
+    if ! echo $RELEASE | grep -q '\.(dev\|rc.*)'; then
       # This is a dev or RC version... So change the upstream version
       # example: 1.2.2.dev => 1.2.2~dev
       # This ensures a clean upgrade path.
-      VERSION="$(echo $VERSION | sed 's/\.\(dev\|rc.*\)/~\1/')"
+      RELEASE="$(echo $RELEASE | sed 's/\.\(dev\|rc.*\)/~\1/')"
     fi
 
-    fpm -s dir -t deb -n logstash -v "$VERSION" \
-      -a all --iteration "${os}1" \
-      --url "http://logstash.net" \
-      --description "An extensible logging pipeline" \
-      -d "java6-runtime-headless | java7-runtime-headless" \
+    fpm -s dir -t deb -n logstash -v "$RELEASE" \
+      -a all --iteration "1+${os}${DEB_REVISION}" \
+      --url "$URL" \
+      --description "$DESCRIPTION" \
+      -d "default-jre-headless" \
       --deb-user root --deb-group root \
       --before-install $os/before-install.sh \
       --before-remove $os/before-remove.sh \
       --after-install $os/after-install.sh \
+      --config-files /etc/default/logstash \
+      --config-files /etc/default/logstash-web \
+      --config-files /etc/logrotate.d/logstash \
       -f -C $destdir .
     ;;
 esac
