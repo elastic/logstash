@@ -236,4 +236,31 @@ describe LogStash::Outputs::CSV do
       insist {lines[0]} == "one|two\n"
     end
   end
+  describe "can choose line seperator" do
+    tmpfile = Tempfile.new('logstash-spec-output-csv')
+    config <<-CONFIG
+      input {
+        generator {
+          message => '{"foo":"one","bar": "two"}'
+          count => 2
+        }
+      }
+      filter {
+        json { source => "message"}
+      }
+      output {
+        csv {
+          path => "#{tmpfile.path}"
+          fields => ["foo", "bar"]
+          csv_options => {"col_sep" => "|" "row_sep" => "\t"}
+        }
+      }
+    CONFIG
+
+    agent do
+      lines = File.readlines(tmpfile.path)
+      insist {lines.count} == 1
+      insist {lines[0]} == "one|two\tone|two\t"
+    end
+  end
 end
