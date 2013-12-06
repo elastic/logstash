@@ -292,6 +292,10 @@ class LogStash::Agent < Clamp::Command
     config = ""
     Dir.glob(path).sort.each do |file|
       next unless File.file?(file)
+      if file.match(/~$/)
+        @logger.debug("NOT reading config file because it is a temp file", :file => file)
+        next
+      end
       @logger.debug("Reading config file", :file => file)
       config << File.read(file) + "\n"
     end
