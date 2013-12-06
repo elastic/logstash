@@ -181,4 +181,31 @@ describe LogStash::Outputs::CSV do
       insist {lines[0][1]} == "quux"
     end
   end
+
+  describe "missing nested field is blank" do
+    tmpfile = Tempfile.new('logstash-spec-output-csv')
+    config <<-CONFIG
+      input {
+        generator {
+          message => '{"foo":{"one":"two"},"baz": "quux"}'
+          count => 1
+        }
+      }
+      filter {
+        json { source => "message"}
+      }
+      output {
+        csv {
+          path => "#{tmpfile.path}"
+          fields => ["[foo][missing]", "baz"]
+        }
+      }
+    CONFIG
+
+    agent do
+      lines = File.readlines(tmpfile.path)
+      insist {lines.count} == 1
+      insist {lines[0]} == ",quux\n"
+    end
+  end
 end

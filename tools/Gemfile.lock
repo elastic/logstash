@@ -1,12 +1,6 @@
 PATH
-  remote: /home/jls/projects/logstash
+  remote: /home/mattg/logstash
   specs:
-    logstash (1.2.3.dev)
-      cabin (>= 0.6.0)
-      i18n
-      json
-      pry
-      stud
     logstash (1.2.3.dev-java)
       addressable
       awesome_print
@@ -15,6 +9,7 @@ PATH
       bindata (>= 1.5.0)
       bouncy-castle-java (= 1.5.0147)
       cabin (>= 0.6.0)
+      ci_reporter
       cinch
       clamp
       edn
@@ -83,11 +78,10 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (3.2.15)
+    activesupport (3.2.16)
       i18n (~> 0.6, >= 0.6.4)
       multi_json (~> 1.0)
     addressable (2.3.5)
-    atomic (1.1.14)
     atomic (1.1.14-java)
     autoparse (0.3.3)
       addressable (>= 2.3.1)
@@ -110,6 +104,8 @@ GEM
     cabin (0.6.1)
     celluloid (0.15.2)
       timers (~> 1.1.0)
+    ci_reporter (1.9.0)
+      builder (>= 2.1.2)
     cinch (2.0.10)
     clamp (0.6.3)
     coderay (1.1.0)
@@ -182,7 +178,6 @@ GEM
       rubyzip
     heroku-api (0.3.15)
       excon (~> 0.25.1)
-    hitimes (1.2.1)
     hitimes (1.2.1-java)
     hot_bunnies (2.0.0.pre13-java)
     http (0.5.0)
@@ -191,7 +186,7 @@ GEM
     httparty (0.11.0)
       multi_json (~> 1.0)
       multi_xml (>= 0.5.2)
-    i18n (0.6.5)
+    i18n (0.6.9)
     insist (1.0.0)
     jdbc-mysql (5.1.27)
     jdbc-sqlite3 (3.7.2.1)
@@ -208,7 +203,6 @@ GEM
     jruby-openssl (0.8.7)
       bouncy-castle-java (>= 1.5.0147)
     jruby-win32ole (0.8.5)
-    json (1.8.1)
     json (1.8.1-java)
     jwt (0.1.8)
       multi_json (>= 1.5)
