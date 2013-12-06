@@ -171,11 +171,11 @@
     superior search and analytics interface.
   - New feature: conditionals! You can now make "if this, then ..." decisions
     in your filters or outputs. See the docs here:
-    https://logstash.net/docs/latest/configuration#conditionals
+    http://logstash.net/docs/latest/configuration#conditionals
   - A new syntax exists for referencing fields (LOGSTASH-1153). This replaces
     the prior and undocumented syntax for field access (was 'foo.bar' and is
     now '[foo][bar]'). Learn more about this here:
-    https://logstash.net/docs/latest/configuration#fieldreferences
+    http://logstash.net/docs/latest/configuration#fieldreferences
   - A saner hash syntax in the logstash config is now supported. It uses the
     perl/ruby hash-rocket syntax: { "key" => "value", ... } (LOGSTASH-728)
   - ElasticSearch version 0.90.3 is included. (#486, Gang Chen)
