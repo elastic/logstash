@@ -208,4 +208,32 @@ describe LogStash::Outputs::CSV do
       insist {lines[0]} == ",quux\n"
     end
   end
+
+  describe "can choose field seperator" do
+    tmpfile = Tempfile.new('logstash-spec-output-csv')
+    config <<-CONFIG
+      input {
+        generator {
+          message => '{"foo":"one","bar": "two"}'
+          count => 1
+        }
+      }
+      filter {
+        json { source => "message"}
+      }
+      output {
+        csv {
+          path => "#{tmpfile.path}"
+          fields => ["foo", "bar"]
+          csv_options => {"col_sep" => "|"}
+        }
+      }
+    CONFIG
+
+    agent do
+      lines = File.readlines(tmpfile.path)
+      insist {lines.count} == 1
+      insist {lines[0]} == "one|two\n"
+    end
+  end
 end
