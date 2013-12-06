@@ -30,25 +30,28 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
 
   public
   def run(queue)
-    begin
-      @pipe = IO.popen(@command, mode="r")
-      hostname = Socket.gethostname
+    loop do
+      begin
+        @pipe = IO.popen(@command, mode="r")
+        hostname = Socket.gethostname
 
-      @pipe.each do |line|
-        line = line.chomp
-        source = "pipe://#{hostname}/#{@command}"
-        @logger.debug? && @logger.debug("Received line", :command => @command, :line => line)
-        @codec.decode(line) do |event|
-          event["host"] = hostname
-          event["command"] = @command
-          decorate(event)
-          queue << event
+        @pipe.each do |line|
+          line = line.chomp
+          source = "pipe://#{hostname}/#{@command}"
+          @logger.debug? && @logger.debug("Received line", :command => @command, :line => line)
+          @codec.decode(line) do |event|
+            event["host"] = hostname
+            event["command"] = @command
+            decorate(event)
+            queue << event
+          end
         end
+      rescue Exception => e
+        @logger.error("Exception while running command", :e => e, :backtrace => e.backtrace)
       end
-    rescue Exception => e
-      @logger.error("Exception while running command", :e => e, :backtrace => e.backtrace)
+
+      # Keep running the command forever.
       sleep(10)
-      retry
     end
   end # def run
 end # class LogStash::Inputs::Pipe
