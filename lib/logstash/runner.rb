@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+Encoding.default_external = "UTF-8"
 $START = Time.now
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
