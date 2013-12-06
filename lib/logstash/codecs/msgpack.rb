@@ -37,7 +37,7 @@ class LogStash::Codecs::Msgpack < LogStash::Codecs::Base
   public
   def encode(event)
     event["@timestamp"] = event["@timestamp"].to_f
-    @on_event.call event.to_hash.to_msgpack
+    @on_event.call MessagePack.pack(event.to_hash)
   end # def encode
 
 end # class LogStash::Codecs::Msgpack
