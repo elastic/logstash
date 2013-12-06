@@ -147,6 +147,7 @@ GEM
       coderay (~> 1.0)
       method_source (~> 0.8)
       slop (~> 3.4)
+    racc (1.4.10)
     rack (1.5.2)
     rack-protection (1.5.1)
       rack
@@ -488,6 +489,7 @@ DEPENDENCIES
   onstomp
   php-serialize
   pry
+  racc
   rack
   rbnacl
   redis
