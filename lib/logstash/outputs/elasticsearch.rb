@@ -129,8 +129,6 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # The amount of time since last flush before a flush is forced.
   config :idle_flush_time, :validate => :number, :default => 1
 
-<<<<<<< HEAD
-=======
   # Choose the protocol used to talk to elasticsearch.
   #
   # The 'node' protocol will connect to the cluster as a normal elasticsearch
@@ -142,7 +140,6 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # in situations where you cannot permit connections outbound from the
   # elasticsearch cluster to this logstash server.
   config :protocol, :validate => [ "node", "transport" ], :default => "node"
->>>>>>> 971d1dfc763142e33413c8e978b1ba6ee0c4e31d
 
   public
   def register
