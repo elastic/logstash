@@ -14,15 +14,15 @@ require "logstash/plugin_mixins/aws_config"
 #
 # This plugin looks for the following fields on events it receives:
 #
-#  * sns - If no ARN is found in the configuration file, this will be used as
+#  * `sns` - If no ARN is found in the configuration file, this will be used as
 #  the ARN to publish.
-#  * sns\_subject - The subject line that should be used.
+#  * `sns_subject` - The subject line that should be used.
 #  Optional. The "%{host}" will be used if not present and truncated at
-#  MAX_SUBJECT_SIZE_IN_CHARACTERS.
-#  * sns\_message - The message that should be
+#  `MAX_SUBJECT_SIZE_IN_CHARACTERS`.
+#  * `sns_message` - The message that should be
 #  sent. Optional. The event serialzed as JSON will be used if not present and
 #  with the @message truncated so that the length of the JSON fits in
-#  MAX_MESSAGE_SIZE_IN_BYTES.
+#  `MAX_MESSAGE_SIZE_IN_BYTES`.
 #
 class LogStash::Outputs::Sns < LogStash::Outputs::Base
   include LogStash::PluginMixins::AwsConfig
