@@ -18,10 +18,10 @@ class LogStash::Filters::Uuid < LogStash::Filters::Base
   #
   #     filter {
   #       uuid {
-  #         field => "@uuid"
+  #         target => "@uuid"
   #       }
   #     }
-  config :field, :validate => :string
+  config :target, :validate => :string, :required => true
 
   # If the value in the field currently (if any) should be overridden
   # by the generated UUID. Defaults to false (i.e. if the field is
@@ -31,7 +31,7 @@ class LogStash::Filters::Uuid < LogStash::Filters::Base
   #
   #    filter {
   #       uuid {
-  #         field     => "@uuid"
+  #         target    => "@uuid"
   #         overwrite => true
   #       }
   #    }
@@ -46,9 +46,9 @@ class LogStash::Filters::Uuid < LogStash::Filters::Base
     return unless filter?(event)
 
     if overwrite
-      event[field] = SecureRandom.uuid
+      event[target] = SecureRandom.uuid
     else
-      event[field] ||= SecureRandom.uuid
+      event[target] ||= SecureRandom.uuid
     end
 
     filter_matched(event)
