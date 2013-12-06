@@ -98,6 +98,11 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # The name/address of the host to bind to for ElasticSearch clustering
   config :bind_host, :validate => :string
 
+  # This is only valid for the 'node' protocol.
+  #
+  # The port for the node to listen on.
+  config :bind_port, :validate => :number
+
   # Run the elasticsearch server embedded in this process.
   # This option is useful if you want to run a single logstash process that
   # handles log processing and indexing; it saves you from needing to run
@@ -124,6 +129,20 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # The amount of time since last flush before a flush is forced.
   config :idle_flush_time, :validate => :number, :default => 1
 
+<<<<<<< HEAD
+=======
+  # Choose the protocol used to talk to elasticsearch.
+  #
+  # The 'node' protocol will connect to the cluster as a normal elasticsearch
+  # node (but will not store data). This allows you to use things like
+  # multicast discovery.
+  #
+  # The 'transport' protocol will connect to the host you specify and will
+  # not show up as a 'node' in the elasticsearch cluster. This is useful
+  # in situations where you cannot permit connections outbound from the
+  # elasticsearch cluster to this logstash server.
+  config :protocol, :validate => [ "node", "transport" ], :default => "node"
+>>>>>>> 971d1dfc763142e33413c8e978b1ba6ee0c4e31d
 
   public
   def register
@@ -159,8 +178,13 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       :node_name => @node_name,
     }
 
-    # TODO(sissel): Support 'transport client'
-    options[:type] = :node
+    # :node or :transport protocols
+    options[:type] = @protocol.to_sym 
+
+    options[:bind_port] = @bind_port unless @bind_port.nil?
+
+    # TransportClient requires a number for a port.
+    options[:port] = options[:port].to_i if options[:type] == :transport
 
     @client = ElasticSearch::Client.new(options)
     
