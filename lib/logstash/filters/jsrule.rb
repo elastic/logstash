@@ -60,6 +60,7 @@ jsrule = new JsRule(rule);
 EOS
   
   @jscontext = Rhino::Context.new
+  # TODO move optimization_level in settings?
   @jscontext.optimization_level = 6
   @jscontext.eval @rule + @jsrule_source
   @jsrule = @jscontext['jsrule']
@@ -70,14 +71,18 @@ EOS
   def filter(event)
     return unless filter?(event)
     event.cancel
-    @jsrule.process(event.to_hash).each do |emitted_event_data_js|
-      # TODO The following 2 lines shouldn't be necessary! See https://github.com/cowboyd/therubyrhino/issues/27
-      emitted_event_data = emitted_event_data_js.to_hash
-      emitted_event_data['@timestamp'] = Rhino.to_ruby(emitted_event_data_js['@timestamp'])
-      emitted_event = LogStash::Event.new(emitted_event_data)
-      filter_matched(emitted_event)
-      yield emitted_event
+    begin
+      @jsrule.process(event.to_hash).each do |emitted_event_data_js|
+        # TODO The following 2 lines shouldn't be necessary! See https://github.com/cowboyd/therubyrhino/issues/27
+        emitted_event_data = emitted_event_data_js.to_hash
+        emitted_event_data['@timestamp'] = Rhino.to_ruby(emitted_event_data_js['@timestamp'])
+        emitted_event = LogStash::Event.new(emitted_event_data)
+        filter_matched(emitted_event)
+        yield emitted_event
+      end
+    rescue => exception
+      # TODO event.tag("_jsrulefailure")
+      @logger.warn("Dropped event due to " + exception.message, :event => event)
     end
-
   end # def filter
 end # class LogStash::Filters::Ruby
