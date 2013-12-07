@@ -116,7 +116,7 @@ vendor:
 vendor/jar: | vendor
 	$(QUIET)mkdir $@
 
-build-jruby: $(JRUBY)
+vendor-jruby: $(JRUBY)
 
 $(JRUBY): | vendor/jar
 	$(QUIET)echo " ==> Downloading jruby $(JRUBY_VERSION)"
