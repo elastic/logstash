@@ -13,7 +13,8 @@ JRUBY_CMD=java -jar $(JRUBY)
 ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 TYPESDB=vendor/collectd/types.db
-TYPESDB_URL=https://collectd.org/files/collectd-5.4.0.tar.gz
+COLLECTD_VERSION=5.4.0
+TYPESDB_URL=https://collectd.org/files/collectd-$(COLLECTD_VERSION).tar.gz
 GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
 KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-latest.tar.gz
@@ -144,6 +145,7 @@ vendor-geoip: $(GEOIP)
 $(GEOIP): | vendor/geoip
 	$(QUIET)$(DOWNLOAD_COMMAND) $@.tmp.gz $(GEOIP_URL)
 	$(QUIET)gzip -dc $@.tmp.gz > $@.tmp
+	$(QUIET)rm "$@.tmp.gz"
 	$(QUIET)mv $@.tmp $@
 
 vendor/collectd: | vendor
@@ -153,9 +155,8 @@ vendor/collectd: | vendor
 vendor-collectd: $(TYPESDB)
 $(TYPESDB): | vendor/collectd
 	$(QUIET)$(DOWNLOAD_COMMAND) $@.tar.gz $(TYPESDB_URL)
-	$(QUIET)mkdir $@.tmpdir
-	$(QUIET)tar zxf $@.tar.gz -C $@.tmpdir
-	$(QUIET)find $@.tmpdir -type f -name types.db -exec mv -i {} $@ \;
+	$(QUIET)tar zxf $@.tar.gz -O "collectd-$(COLLECTD_VERSION)/src/types.db" > $@
+	$(QUIET)rm $@.tar.gz
 
 # Always run vendor/bundle
 .PHONY: fix-bundler
@@ -418,7 +419,7 @@ prepare-tarball: vendor/ua-parser/regexes.yaml
 prepare-tarball:
 	@echo "=> Preparing tarball"
 	$(QUIET)$(MAKE) $(WORKDIR)
-	$(QUIET)rsync -a --relative bin lib spec locales patterns vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md $(WORKDIR)
+	$(QUIET)rsync -a --relative bin lib spec locales patterns vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md --exclude 'vendor/bundle/jruby/1.9/cache' --exclude 'vendor/bundle/jruby/1.9/gems/*/doc' --exclude 'vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz'  $(WORKDIR)
 	$(QUIET)sed -i -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
 
 .PHONY: tarball
