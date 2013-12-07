@@ -83,7 +83,6 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
         queue << event
       end
     end
-    sleep 3
   end # def run
 
   public
