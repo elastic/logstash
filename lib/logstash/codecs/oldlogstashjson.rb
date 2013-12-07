@@ -13,7 +13,13 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
 
   public
   def decode(data)
-    obj = JSON.parse(data.force_encoding("UTF-8"))
+    begin
+      obj = JSON.parse(data.force_encoding("UTF-8"))
+    rescue JSON::ParserError => e
+      @logger.info("JSON parse failure. Falling back to plain-text", :error => e, :data => data)
+      yield LogStash::Event.new("message" => data)
+      return
+    end
 
     h  = {}
 
