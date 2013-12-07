@@ -1,6 +1,0 @@
-PHP_LOG_CONTENT (.+)
-PHP_DATE_TIME %{MONTHDAY}-%{MONTH}-%{YEAR}\s+%{TIME}
-PHP_TZ_NAME [A-Z]{3}
-PHP_ERROR_LOG \s*+\[%{PHP_DATE_TIME:timestamp} %{PHP_TZ_NAME}\] PHP %{LOGLEVEL:php_log_level} error: %{PHP_LOG_CONTENT:php_log_content}
-PHP_FPM_ERROR_LOG \[%{PHP_DATE_TIME:timestamp}\] %{LOGLEVEL:php_log_level}: (\[%{GREEDYDATA:php_fpm_pool}\] child %{POSINT}, %{GREEDYDATA:php_log_content}|%{GREEDYDATA:php_log_content})
-PHP_FPM_SLOW_LOG \[%{GREEDYDATA:stack_addr}\] %{GREEDYDATA:func_name} %{UNIXPATH:script_path}
