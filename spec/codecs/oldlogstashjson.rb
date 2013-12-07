@@ -21,6 +21,12 @@ describe LogStash::Codecs::OldLogStashJSON do
         insist { event["path"] } == nil # @source_path not in v0 test data
       end
     end
+
+    it "should accept invalid json" do
+      subject.decode("some plain text") do |event|
+        insist { event["message"] } == "some plain text"
+      end
+    end
   end
 
   context "#encode" do
