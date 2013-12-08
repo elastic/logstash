@@ -89,7 +89,6 @@ GEM
     heroku-api (0.3.15)
       excon (~> 0.25.1)
     hitimes (1.2.1-java)
-    hot_bunnies (2.0.0.pre13-java)
     http (0.5.0)
       http_parser.rb
     http_parser.rb (0.5.3-java)
@@ -108,7 +107,7 @@ GEM
     jls-grok (0.10.12)
       cabin (>= 0.6.0)
     jls-lumberjack (0.0.19)
-    jruby-elasticsearch (0.0.15)
+    jruby-elasticsearch (0.0.16)
     jruby-httpclient (1.1.1-java)
     jruby-openssl (0.8.7)
       bouncy-castle-java (>= 1.5.0147)
@@ -122,6 +121,7 @@ GEM
       i18n (>= 0.4.0)
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
+    march_hare (2.0.0-java)
     metaclass (0.0.1)
     method_source (0.8.2)
     metriks (0.9.9.5)
@@ -265,7 +265,7 @@ DEPENDENCIES
   ffi
   ffi-rzmq (= 1.0.0)
   filewatch (= 0.5.1)
-  ftw (~> 0.0.36)
+  ftw (~> 0.0.37)
   gelf (= 1.3.2)
   gelfd (= 0.2.0)
   geoip (>= 1.3.2)
@@ -273,7 +273,6 @@ DEPENDENCIES
   google-api-client
   haml
   heroku
-  hot_bunnies (~> 2.0.0.pre12)
   i18n
   insist (= 1.0.0)
   jdbc-mysql
@@ -281,12 +280,13 @@ DEPENDENCIES
   jiralicious (= 0.2.2)
   jls-grok (= 0.10.12)
   jls-lumberjack (>= 0.0.19)
-  jruby-elasticsearch (= 0.0.15)
+  jruby-elasticsearch (= 0.0.16)
   jruby-httpclient
   jruby-openssl (= 0.8.7)
   jruby-win32ole
   json
   mail
+  march_hare (~> 2.0.0)
   metriks
   mime-types
   minitest
