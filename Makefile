@@ -232,7 +232,7 @@ vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
-VENDOR_DIR=$(shell ls -d vendor/bundle/jruby/*)
+VENDOR_DIR=vendor/bundle/jruby/1.9
 jar: build/logstash-$(VERSION)-monolithic.jar
 build/logstash-$(VERSION)-monolithic.jar: | build/monolith
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS=-C build/ruby .

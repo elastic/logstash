@@ -15,56 +15,18 @@
 # in your environment and this script will download and use
 # a release of JRuby for you.
 
+# Defaults you can override with environment variables
+LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
+
 basedir=$(cd `dirname $0`/..; pwd)
-export RUBYLIB="$basedir/lib"
-
-setup_ruby() {
-  # Verify ruby works
-  if ! ruby -e 'puts "HURRAY"' 2> /dev/null | grep -q "HURRAY" ; then
-    echo "No ruby program found. Cannot start."
-    exit 1
-  fi
-
-  eval $(ruby -rrbconfig -e 'puts "RUBYVER=#{RbConfig::CONFIG["ruby_version"]}"; puts "RUBY=#{RUBY_ENGINE}"')
-  RUBYCMD="ruby"
-}
-
-setup_vendored_jruby() {
-  RUBYVER=1.9
-  RUBY=jruby
-
-  # Attempt faster startup; this should be for interactive or "a human is
-  # watching" execution.
-  # TODO(sissel): Add 'server' operation with good flags for that situation.
-  JAVA_OPTS="$JAVA_OPTS -client -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djruby.compile.mode=OFF"
-  JAVA_OPTS="$JAVA_OPTS -Xmx500m"
-
-  RUBYCMD="java $JAVA_OPTS -jar $basedir/vendor/jar/jruby-complete-*.jar"
-}
-
-setup() {
-  if [ -d "$basedir/.git" -o ! -z "$USE_RUBY" ] ; then
-    setup_ruby
-  else
-    setup_vendored_jruby
-  fi
-  export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
-  export GEM_PATH=
-}
+. ${basedir}/bin/logstash.lib.sh
 
 setup
 
 case $1 in
-  deps)
-    if [ -f "$basedir/logstash.gemspec" ] ; then
-      program="$basedir/gembag.rb"
-      set -- "$basedir/logstash.gemspec"
-      exec $RUBYCMD "$basedir/gembag.rb" "$@"
-    else
-      echo "Cannot install dependencies; missing logstash.gemspec. This 'deps' command only works from a logstash git clone."
-    fi
-    ;;
-  -*)
+  deps) install_deps ;;
+  -*) 
+    # is the first argument a flag? If so, assume 'agent'
     program="$basedir/lib/logstash/runner.rb"
     exec $RUBYCMD "$program" agent "$@"
     ;;
@@ -73,4 +35,3 @@ case $1 in
     exec $RUBYCMD "$program" "$@"
     ;;
 esac
-
