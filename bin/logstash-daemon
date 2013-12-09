@@ -1,0 +1,21 @@
+#!/bin/sh
+# Run logstash in the background.
+
+basedir=$(cd `dirname $0`/..; pwd)
+LS_PIDFILE="${LS_PIDFILE:=logstash.pid}"
+
+# Does the pidfile exist and is non-empty?
+# I confess this is a fragile, ineffective, and incorrect way to implement
+# "pidfile" support with locking, but I want this script to be usable on
+# multiple platforms, and there's no simple way to use proper flock(or
+# equivalent) across so many platforms: darwin/freebsd/linux/solaris/etc
+if [ -s "$LS_PIDFILE" ] ; then
+  echo "Pidfile ($LS_PIDFILE) exists. Is logstash already running?"
+  echo "If logstash is not running, please delete this file, and try again."
+  exit 1
+fi
+
+exec $basedir/bin/logstash "$@" < /dev/null > /dev/null 2>&1 &
+
+pid=$!
+echo "$pid" > $LS_PIDFILE

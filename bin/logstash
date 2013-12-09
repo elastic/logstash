@@ -1,19 +1,10 @@
 #!/bin/sh
-# Run logstash from source
-#
-# This is most useful when done from a git checkout.
-#
 # Usage:
-#     bin/logstash <command> [arguments]
+#     bin/logstash [flags]
 #
-# See 'bin/logstash help' for a list of commands.
-#
-# NOTE: One extra command is available 'deps'
-# The 'deps' command will install dependencies for logstash.
-#
-# If you do not have ruby installed, you can set "USE_JRUBY=1"
-# in your environment and this script will download and use
-# a release of JRuby for you.
+# See 'bin/logstash --help' for a list of flags
+# See also 'bin/logstash-daemon' for running logstash
+# in the background.
 
 # Defaults you can override with environment variables
 LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
