@@ -62,10 +62,12 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # disconnects? Set this option to 'false' if you want the queue to remain
   # on the broker, queueing up messages until a consumer comes along to
   # consume them.
-  config :auto_delete, :validate => :boolean, :default => true
+  config :auto_delete, :validate => :boolean, :default => false
 
-  # Is the queue exclusive? (aka: Will other clients connect to this named queue?)
-  config :exclusive, :validate => :boolean, :default => true
+  # Is the queue exclusive? Exclusive queues can only be used by the connection
+  # that declared them and will be deleted when it is closed (e.g. due to a Logstash
+  # restart).
+  config :exclusive, :validate => :boolean, :default => false
 
   # Extra queue arguments as an array.
   # To make a RabbitMQ queue mirrored, use: {"x-ha-policy" => "all"}
