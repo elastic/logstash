@@ -104,6 +104,11 @@ clean:
 	-$(QUIET)rm -f pkg/*.deb
 	-$(QUIET)rm .VERSION.mk
 
+.PHONY: vendor-clean
+vendor-clean:
+	-$(QUIET)rm -rf vendor/kibana vendor/geoip vendor/collectd 
+	-$(QUIET)rm -rf vendor/jar vendor/ua-parser
+
 .PHONY: clean-vendor
 clean-vendor:
 	-$(QUIET)rm -rf vendor
