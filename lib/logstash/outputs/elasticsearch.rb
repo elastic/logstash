@@ -113,7 +113,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # multicast discovery.
   #
   # The 'transport' protocol will connect to the host you specify and will
-  # not show up as a 'node' in the elasticsearch cluster. This is useful # in situations where you cannot permit connections outbound from the
+  # not show up as a 'node' in the elasticsearch cluster. This is useful 
+  # in situations where you cannot permit connections outbound from the
   # elasticsearch cluster to this logstash server.
   config :protocol, :validate => [ "node", "transport" ], :default => "node"
 
