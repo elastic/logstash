@@ -46,15 +46,29 @@ default:
 TESTS=$(wildcard spec/inputs/gelf.rb spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
 
 # The 'version' is generated based on the logstash version, git revision, etc.
+.VERSION.mk: REVISION=$(shell git rev-parse --short HEAD | tr -d ' ')
+.VERSION.mk: RELEASE=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb | tr -d ' ')
+.VERSION.mk: TAGGED=$(shell git tag --points-at HEAD | egrep '^v[0-9]')
+.VERSION.mk: MODIFIED=$(shell git diff --shortstat --exit-code > /dev/null ; echo $$?)
 .VERSION.mk:
-	@REVISION="$$(git rev-parse --short HEAD | tr -d ' ')" ; \
-	RELEASE=$$(awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb | tr -d ' ') ; \
-	echo "RELEASE=$${RELEASE}" > $@ ; \
-	echo "REVISION=$${REVISION}" >> $@ ; \
-	if git diff --shortstat --exit-code > /dev/null ; then \
-		echo "VERSION=$$RELEASE" ; \
+	@echo "${RELEASE},${REVISION},${TAGGED},${MODIFIED}"
+	@echo "RELEASE=${RELEASE}" > $@
+	@echo "REVISION=${REVISION}" >> $@
+	@echo "TAGGED=${TAGGED}" >> $@
+	@echo "MODIFIED=${MODIFIED}" >> $@
+	@# if tagged, don't include revision
+	if [ ! -z "${TAGGED}" ] ; then \
+		if [ "${MODIFIED}" -eq 1 ] ; then \
+			echo "VERSION=${RELEASE}-modified" ; \
+		else \
+			echo "VERSION=${RELEASE}" ; \
+		fi ; \
 	else \
-		echo "VERSION=$${RELEASE}-$${REVISION}-modified"; \
+		if [ "${MODIFIED}" -eq 1 ] ; then \
+			echo "VERSION=${RELEASE}-${REVISION}-modified" ; \
+		else \
+			echo "VERSION=${RELEASE}-${REVISION}" ; \
+		fi ; \
 	fi >> $@
 
 -include .VERSION.mk
@@ -88,6 +102,7 @@ clean:
 	-$(QUIET)rm -rf .bundle
 	-$(QUIET)rm -rf build
 	-$(QUIET)rm -f pkg/*.deb
+	-$(QUIET)rm .VERSION.mk
 
 .PHONY: clean-vendor
 clean-vendor:
