@@ -55,7 +55,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   config :port, :validate => :number, :default => 9200
 
   # The HTTP Basic Auth username used to access your elasticsearch server.
-  config :username, :validate => :string, :default => nil
+  config :user, :validate => :string, :default => nil
 
   # The HTTP Basic Auth password used to access your elasticsearch server.
   config :password, :validate => :password, :default => nil
@@ -83,7 +83,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     @agent = FTW::Agent.new
     @queue = []
 
-    auth = @username && @password ? "#{@username}:#{@password.value}@" : ""
+    auth = @user && @password ? "#{@user}:#{@password.value}@" : ""
     @bulk_url = "http://#{auth}#{@host}:#{@port}/_bulk?replication=#{@replication}"
     if @manage_template
       @logger.info("Automatic template configuration enabled", :manage_template => @manage_template.to_s)
