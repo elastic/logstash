@@ -29,9 +29,6 @@ setup_java() {
   JAVA_OPTS="$JAVA_OPTS -XX:+UseConcMarkSweepGC"
   JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true"
 
-  # Reduce per-thread stack size
-  JAVA_OPTS="$JAVA_OPTS -Xss256k"
-
   JAVA_OPTS="$JAVA_OPTS -XX:CMSInitiatingOccupancyFraction=75"
   JAVA_OPTS="$JAVA_OPTS -XX:+UseCMSInitiatingOccupancyOnly"
 
