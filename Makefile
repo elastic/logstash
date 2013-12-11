@@ -48,16 +48,15 @@ TESTS=$(wildcard spec/inputs/gelf.rb spec/support/*.rb spec/filters/*.rb spec/ex
 # The 'version' is generated based on the logstash version, git revision, etc.
 .VERSION.mk: REVISION=$(shell git rev-parse --short HEAD | tr -d ' ')
 .VERSION.mk: RELEASE=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb | tr -d ' ')
-.VERSION.mk: TAGGED=$(shell git tag --points-at HEAD | egrep '^v[0-9]')
+#.VERSION.mk: TAGGED=$(shell git tag --points-at HEAD | egrep '^v[0-9]')
+.VERSION.mk: DEV=$(shell echo $RELEASE | egrep '\.dev$$')
 .VERSION.mk: MODIFIED=$(shell git diff --shortstat --exit-code > /dev/null ; echo $$?)
 .VERSION.mk:
-	@echo "${RELEASE},${REVISION},${TAGGED},${MODIFIED}"
 	@echo "RELEASE=${RELEASE}" > $@
 	@echo "REVISION=${REVISION}" >> $@
-	@echo "TAGGED=${TAGGED}" >> $@
+	@echo "DEV=${DEV}" >> $@
 	@echo "MODIFIED=${MODIFIED}" >> $@
-	@# if tagged, don't include revision
-	if [ ! -z "${TAGGED}" ] ; then \
+	if [ -z "${DEV}" ] ; then \
 		if [ "${MODIFIED}" -eq 1 ] ; then \
 			echo "VERSION=${RELEASE}-modified" ; \
 		else \
