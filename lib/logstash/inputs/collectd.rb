@@ -22,12 +22,12 @@ require "time"
 #     LoadPlugin memory
 #     LoadPlugin network
 #     <Plugin interface>
-#     	     Interface "eth0"
-#     	     IgnoreSelected false
+#         Interface "eth0"
+#         IgnoreSelected false
 #     </Plugin>
 #     <Plugin network>
-#	     <Server "10.0.0.1" "25826">
-#	     </Server>
+#         <Server "10.0.0.1" "25826">
+#         </Server>
 #     </Plugin>
 #
 # Be sure to replace "10.0.0.1" with the IP of your Logstash instance.
