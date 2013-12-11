@@ -22,8 +22,10 @@
     choosing the part that becomes the event message. (#784, Brad Fritz)
   - bugfix: zeromq: don't override the 'host' field if the event already
     has one. (Jordan Sissel)
-  - bugfix: ganglia: fix regressions; plugin should work again (LOGSTASH,1655,
+  - bugfix: ganglia: fix regressions; plugin should work again (LOGSTASH-1655,
     #818; Jordan Sissel)
+  - bugfix: Fix missing library in sqs input (#775, LOGSTASH-1294; Toby
+    Collier)
 
   ## filters
   - new: unique: removes duplicate values from a given field in an event.
@@ -79,6 +81,8 @@
     cluster node list. (LOGSTASH-102, #841; Jordan Sissel)
   - feature: elasticsearch: new 'bind_port setting for 'node' protocol which
     lets you chose the local port to bind on (#841, Jordan Sissel)
+  - bugfix: Fix missing library in sqs input (#775, LOGSTASH-1294; Toby
+    Collier)
 
 1.2.2 (October 22, 2013)
   # general
