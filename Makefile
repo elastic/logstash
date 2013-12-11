@@ -354,8 +354,13 @@ build/docs/%: docs/% lib/logstash/version.rb Makefile
 	@echo "Copying $< (to $@)"
 	-$(QUIET)mkdir -p $(shell dirname $@)
 	$(QUIET)cp $< $@
-	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
-	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
+	$(QUIET)case "$(suffix $<)" in \
+		.gz|.bz2|.png|.jpg) ;; \
+		*) \
+			sed -i -re 's/%VERSION%/$(VERSION)/g' $@ ; \
+			sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@ ; \
+			;; \
+	esac
 
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index.html.erb Makefile
