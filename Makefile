@@ -239,7 +239,7 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)cp vendor/ua-parser/regexes.yaml $@/vendor/ua-parser
 	$(QUIET)cp $(GEOIP) $@/
 	$(QUIET)cp $(TYPESDB) $@/
-	$(QUIET)cp lib/logstash/outputs/elasticsearch-template.json $@/
+	$(QUIET)cp lib/logstash/outputs/elasticsearch/elasticsearch-template.json $@/
 	-$(QUIET)rsync -a vendor/kibana/ $@/vendor/kibana/
 
 vendor/ua-parser/: | build
