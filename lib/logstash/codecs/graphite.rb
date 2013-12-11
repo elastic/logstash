@@ -7,7 +7,7 @@ require "json"
 class LogStash::Codecs::Graphite < LogStash::Codecs::Base
   config_name "graphite"
 
-  milestone 1
+  milestone 2
 
   # The character encoding used in this codec. Examples include "UTF-8" and
   # "CP1252"
