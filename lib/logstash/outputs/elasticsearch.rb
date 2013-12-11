@@ -43,8 +43,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # similar events to the same 'type'. String expansion '%{foo}' works here.
   config :index_type, :validate => :string
 
-  # Starting in Logstash 1.3 unless you set option "manage_template" to false 
-  # a default mapping template for Elasticsearch will be applied if you do not 
+  # Starting in Logstash 1.3 (unless you set option "manage_template" to false)
+  # a default mapping template for Elasticsearch will be applied, if you do not 
   # already have one set to match the index pattern defined (default of 
   # "logstash-%{+YYYY.MM.dd}"), minus any variables.  For example, in this case
   # the template will be applied to all indices starting with logstash-* 
