@@ -1,5 +1,6 @@
 require "test_utils"
 require "logstash/filters/dns"
+require "resolv"
 
 describe LogStash::Filters::DNS do
   extend LogStash::RSpec
@@ -14,8 +15,10 @@ describe LogStash::Filters::DNS do
       }
     CONFIG
 
-    sample("host" => "199.192.228.250") do
-      insist { subject["host"] } == "carrera.databits.net"
+    address = Resolv.new.getaddress("aspmx.l.google.com")
+    expected = Resolv.new.getname(address)
+    sample("host" => address) do
+      insist { subject["host"] } == expected
     end
   end
 
