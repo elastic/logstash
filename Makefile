@@ -52,11 +52,11 @@ TESTS=$(wildcard spec/inputs/gelf.rb spec/support/*.rb spec/filters/*.rb spec/ex
 .VERSION.mk: DEV=$(shell echo $RELEASE | egrep '\.dev$$')
 .VERSION.mk: MODIFIED=$(shell git diff --shortstat --exit-code > /dev/null ; echo $$?)
 .VERSION.mk:
-	@echo "RELEASE=${RELEASE}" > $@
-	@echo "REVISION=${REVISION}" >> $@
-	@echo "DEV=${DEV}" >> $@
-	@echo "MODIFIED=${MODIFIED}" >> $@
-	if [ -z "${DEV}" ] ; then \
+	$(QUIET)echo "RELEASE=${RELEASE}" > $@
+	$(QUIET)echo "REVISION=${REVISION}" >> $@
+	$(QUIET)echo "DEV=${DEV}" >> $@
+	$(QUIET)echo "MODIFIED=${MODIFIED}" >> $@
+	$(QUIET)if [ -z "${DEV}" ] ; then \
 		if [ "${MODIFIED}" -eq 1 ] ; then \
 			echo "VERSION=${RELEASE}-modified" ; \
 		else \
