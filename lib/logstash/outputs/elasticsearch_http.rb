@@ -55,20 +55,32 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   config :port, :validate => :number, :default => 9200
 
   # The HTTP Basic Auth username used to access your elasticsearch server.
-  config :username, :validate => :string, :default => nil
+  config :user, :validate => :string, :default => nil
 
   # The HTTP Basic Auth password used to access your elasticsearch server.
   config :password, :validate => :password, :default => nil
 
-  # Set the number of events to queue up before writing to elasticsearch.
+  # This plugin uses the bulk index api for improved indexing performance.
+  # To make efficient bulk api calls, we will buffer a certain number of
+  # events before flushing that out to elasticsearch. This setting
+  # controls how many events will be buffered before sending a batch
+  # of events.
   config :flush_size, :validate => :number, :default => 100
+
+  # The amount of time since last flush before a flush is forced.
+  #
+  # This setting helps ensure slow event rates don't get stuck in logstash.
+  # For example, if your `flush_size` is 100, and you have received 10 events,
+  # and it has been more than `idle_flush_time` seconds since the last flush,
+  # logstash will flush those 10 events automatically.
+  #
+  # This helps keep both fast and slow log streams moving along in
+  # near-real-time.
+  config :idle_flush_time, :validate => :number, :default => 1
 
   # The document ID for the index. Useful for overwriting existing entries in
   # elasticsearch with the same ID.
   config :document_id, :validate => :string, :default => nil
-
-  # The amount of time since last flush before a flush is forced.
-  config :idle_flush_time, :validate => :number, :default => 1
 
   # Set the type of elasticsearch replication to use. If async
   # the index request to elasticsearch to return after the primary
@@ -83,7 +95,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     @agent = FTW::Agent.new
     @queue = []
 
-    auth = @username && @password ? "#{@username}:#{@password.value}@" : ""
+    auth = @user && @password ? "#{@user}:#{@password.value}@" : ""
     @bulk_url = "http://#{auth}#{@host}:#{@port}/_bulk?replication=#{@replication}"
     if @manage_template
       @logger.info("Automatic template configuration enabled", :manage_template => @manage_template.to_s)

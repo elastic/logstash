@@ -13,7 +13,8 @@ JRUBY_CMD=java -jar $(JRUBY)
 ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 TYPESDB=vendor/collectd/types.db
-TYPESDB_URL=https://collectd.org/files/collectd-5.4.0.tar.gz
+COLLECTD_VERSION=5.4.0
+TYPESDB_URL=https://collectd.org/files/collectd-$(COLLECTD_VERSION).tar.gz
 GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
 KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-latest.tar.gz
@@ -45,17 +46,30 @@ default:
 TESTS=$(wildcard spec/inputs/gelf.rb spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
 
 # The 'version' is generated based on the logstash version, git revision, etc.
+.VERSION.mk: REVISION=$(shell git rev-parse --short HEAD | tr -d ' ')
+.VERSION.mk: RELEASE=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb | tr -d ' ')
+.VERSION.mk: TAGGED=$(shell git tag --points-at HEAD | egrep '^v[0-9]')
+.VERSION.mk: MODIFIED=$(shell git diff --shortstat --exit-code > /dev/null ; echo $$?)
 .VERSION.mk:
-	@REVISION="$$(git rev-parse --short HEAD | tr -d ' ')" ; \
-	RELEASE=$$(awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb | tr -d ' ') ; \
-	if [ "$${RELEASE%%.dev}" != "$$RELEASE" ] ; then \
-		RELEASE=$$RELEASE-$$REVISION ; \
-	fi ; \
-	if git diff --shortstat --exit-code > /dev/null ; then \
-		echo "VERSION=$$RELEASE" ; \
+	@echo "${RELEASE},${REVISION},${TAGGED},${MODIFIED}"
+	@echo "RELEASE=${RELEASE}" > $@
+	@echo "REVISION=${REVISION}" >> $@
+	@echo "TAGGED=${TAGGED}" >> $@
+	@echo "MODIFIED=${MODIFIED}" >> $@
+	@# if tagged, don't include revision
+	if [ ! -z "${TAGGED}" ] ; then \
+		if [ "${MODIFIED}" -eq 1 ] ; then \
+			echo "VERSION=${RELEASE}-modified" ; \
+		else \
+			echo "VERSION=${RELEASE}" ; \
+		fi ; \
 	else \
-		echo "VERSION=$${RELEASE}-modified"; \
-	fi > $@
+		if [ "${MODIFIED}" -eq 1 ] ; then \
+			echo "VERSION=${RELEASE}-${REVISION}-modified" ; \
+		else \
+			echo "VERSION=${RELEASE}-${REVISION}" ; \
+		fi ; \
+	fi >> $@
 
 -include .VERSION.mk
 
@@ -88,6 +102,12 @@ clean:
 	-$(QUIET)rm -rf .bundle
 	-$(QUIET)rm -rf build
 	-$(QUIET)rm -f pkg/*.deb
+	-$(QUIET)rm .VERSION.mk
+
+.PHONY: vendor-clean
+vendor-clean:
+	-$(QUIET)rm -rf vendor/kibana vendor/geoip vendor/collectd 
+	-$(QUIET)rm -rf vendor/jar vendor/ua-parser
 
 .PHONY: clean-vendor
 clean-vendor:
@@ -116,7 +136,7 @@ vendor:
 vendor/jar: | vendor
 	$(QUIET)mkdir $@
 
-build-jruby: $(JRUBY)
+vendor-jruby: $(JRUBY)
 
 $(JRUBY): | vendor/jar
 	$(QUIET)echo " ==> Downloading jruby $(JRUBY_VERSION)"
@@ -145,6 +165,7 @@ vendor-geoip: $(GEOIP)
 $(GEOIP): | vendor/geoip
 	$(QUIET)$(DOWNLOAD_COMMAND) $@.tmp.gz $(GEOIP_URL)
 	$(QUIET)gzip -dc $@.tmp.gz > $@.tmp
+	$(QUIET)rm "$@.tmp.gz"
 	$(QUIET)mv $@.tmp $@
 
 vendor/collectd: | vendor
@@ -154,9 +175,8 @@ vendor/collectd: | vendor
 vendor-collectd: $(TYPESDB)
 $(TYPESDB): | vendor/collectd
 	$(QUIET)$(DOWNLOAD_COMMAND) $@.tar.gz $(TYPESDB_URL)
-	$(QUIET)mkdir $@.tmpdir
-	$(QUIET)tar zxf $@.tar.gz -C $@.tmpdir
-	$(QUIET)find $@.tmpdir -type f -name types.db -exec mv -i {} $@ \;
+	$(QUIET)tar zxf $@.tar.gz -O "collectd-$(COLLECTD_VERSION)/src/types.db" > $@
+	$(QUIET)rm $@.tar.gz
 
 # Always run vendor/bundle
 .PHONY: fix-bundler
@@ -169,7 +189,7 @@ vendor-gems: | vendor/bundle
 .PHONY: vendor/bundle
 vendor/bundle: | vendor $(JRUBY)
 	@echo "=> Ensuring ruby gems dependencies are in $@..."
-	$(QUIET)bin/logstash deps $(QUIET_OUTPUT)
+	$(QUIET)USE_JRUBY=1 bin/logstash deps $(QUIET_OUTPUT)
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
 	-$(QUIET)rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
@@ -232,7 +252,7 @@ vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
-VENDOR_DIR=$(shell ls -d vendor/bundle/jruby/*)
+VENDOR_DIR=vendor/bundle/jruby/1.9
 jar: build/logstash-$(VERSION)-monolithic.jar
 build/logstash-$(VERSION)-monolithic.jar: | build/monolith
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS=-C build/ruby .
@@ -419,7 +439,7 @@ prepare-tarball: vendor/ua-parser/regexes.yaml
 prepare-tarball:
 	@echo "=> Preparing tarball"
 	$(QUIET)$(MAKE) $(WORKDIR)
-	$(QUIET)rsync -a --relative bin lib spec locales patterns vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md $(WORKDIR)
+	$(QUIET)rsync -a --relative bin lib spec locales patterns vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md --exclude 'vendor/bundle/jruby/1.9/cache' --exclude 'vendor/bundle/jruby/1.9/gems/*/doc' --exclude 'vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz'  $(WORKDIR)
 	$(QUIET)sed -i -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
 
 .PHONY: tarball

@@ -66,8 +66,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
     @region_endpoint = @region if !@region.empty?
 
-    @region_endpoint == 'us-east-1' ? @region_endpoint = 's3.amazonaws.com' : @region_endpoint = 's3-'+@region_endpoint+'.amazonaws.com'
-
     @logger.info("Registering s3 input", :bucket => @bucket, :region_endpoint => @region_endpoint)
 
     if @credentials.nil?

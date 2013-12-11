@@ -88,10 +88,22 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # By default, this is generated internally by the ES client.
   config :node_name, :validate => :string
 
-  # The maximum number of events to spool before flushing to elasticsearch.
+  # This plugin uses the bulk index api for improved indexing performance.
+  # To make efficient bulk api calls, we will buffer a certain number of
+  # events before flushing that out to elasticsearch. This setting
+  # controls how many events will be buffered before sending a batch
+  # of events.
   config :flush_size, :validate => :number, :default => 100
 
   # The amount of time since last flush before a flush is forced.
+  #
+  # This setting helps ensure slow event rates don't get stuck in logstash.
+  # For example, if your `flush_size` is 100, and you have received 10 events,
+  # and it has been more than `idle_flush_time` seconds since the last flush,
+  # logstash will flush those 10 events automatically.
+  #
+  # This helps keep both fast and slow log streams moving along in
+  # near-real-time.
   config :idle_flush_time, :validate => :number, :default => 1
 
   # Choose the protocol used to talk to elasticsearch.
@@ -101,7 +113,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # multicast discovery.
   #
   # The 'transport' protocol will connect to the host you specify and will
-  # not show up as a 'node' in the elasticsearch cluster. This is useful
+  # not show up as a 'node' in the elasticsearch cluster. This is useful 
   # in situations where you cannot permit connections outbound from the
   # elasticsearch cluster to this logstash server.
   config :protocol, :validate => [ "node", "transport" ], :default => "node"

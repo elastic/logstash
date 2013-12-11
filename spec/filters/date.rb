@@ -218,7 +218,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
     end
   end
   
-  describe "support deep field access" do
+  describe "support deep nested field access" do
     config <<-CONFIG
       filter { 
         date {
@@ -282,5 +282,4 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
       insist { subject["@timestamp"].year } == Time.now.year
     end
   end
-
 end
