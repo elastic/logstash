@@ -3,6 +3,7 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 require "logstash/plugin_mixins/aws_config"
 require "stud/buffer"
+require "digest/sha2"
 
 # Push events to an Amazon Web Services Simple Queue Service (SQS) queue.
 #
