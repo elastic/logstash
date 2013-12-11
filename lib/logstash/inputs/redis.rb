@@ -259,6 +259,5 @@ EOF
       @redis.quit
       @redis = nil
     end
-    finished
   end
 end # class LogStash::Inputs::Redis
