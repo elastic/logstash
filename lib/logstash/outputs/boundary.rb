@@ -32,6 +32,10 @@ class LogStash::Outputs::Boundary < LogStash::Outputs::Base
   # Set any custom tags for this event
   # Default are the Logstash tags if any
   config :btags, :validate => :array
+  
+  config :start_time, :deprecated => "This setting is no longer used."
+  config :end_time, :deprecated => "This setting is no longer used."
+  config :auto, :deprecated => "This setting is no longer used."
 
   public
   def register
@@ -48,17 +52,17 @@ class LogStash::Outputs::Boundary < LogStash::Outputs::Base
     return unless output?(event)
 
     boundary_event = {
-	:createdAt => event["@timestamp"],
-        :fingerprintFields => ["@title"],
-	:source => {
-            :ref => event["host"],
-            :type => "host"
-        },
-	:sender => {
-            :ref => "Logstash",
-            :type => "application"
-        },
-	:properties => event
+      :createdAt => event["@timestamp"],
+      :fingerprintFields => ["@title"],
+      :source => {
+        :ref => event["host"],
+        :type => "host"
+      },
+      :sender => {
+        :ref => "Logstash",
+        :type => "application"
+      },
+      :properties => event
     }
 
     boundary_event['title'] = event.sprintf(@btype) if @btype
