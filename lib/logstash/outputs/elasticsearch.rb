@@ -254,7 +254,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       if __FILE__ =~ /^(jar:)?file:\/.+!.+/
         begin
           # Running from a jar, assume types.db is at the root.
-          jar_path = [__FILE__.split("!").first, "elasticsearch/elasticsearch-template.json"].join("!")
+          jar_path = [__FILE__.split("!").first, "elasticsearch-template.json"].join("!")
           @template = jar_path
         rescue => ex
           raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
