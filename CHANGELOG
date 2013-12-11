@@ -7,6 +7,8 @@
     Jordan Sissel)
   - Fix bug causing "no such file to load -- base64" (LOGSTASH-1310,
     LOGSTASH-1519, LOGSTASH-1325, LOGSTASH-1522, #834; Jordan Sissel)
+  - Elasticsearch version 0.90.7
+  - Bug fixes galore!
 
   ## inputs
   - new: collectd: receive metrics from collectd's network protocol 
@@ -60,6 +62,11 @@
     (LOGSTASH-1534, #850; Jordan Sissel)
 
   ## outputs
+  - feature: elasticsearch and elasticsearch_http now will apply a default
+    index mapping template (included) which has the settings recommended by 
+    Elasticsearch for Logstash specifically.
+    Configuration options allow disabling this feature and providing a path 
+    to your own template. (#826, #839; Aaron Mildenstein)
   - feature: elasticsearch_http: optional 'user' and 'password' settings to
     make use of http authentication (LOGSTASH-902, #684; Ian Neubert)
   - new: google_bigquery: upload logs to bigquery for analysis later (Rodrigo
