@@ -1,5 +1,4 @@
 # encoding: utf-8
-=======
 # Author: Rodrigo De Castro <rdc@google.com>
 # Date: 2013-09-20
 #
