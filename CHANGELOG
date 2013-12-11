@@ -1,4 +1,4 @@
-1.3.0 (???)
+1.3.0 (December 11, 2013)
   # general
   - oops: The --help flag now reports help again, instead of barfing an "I need
     help" exception (LOGSTASH-1436, LOGSTASH-1392; Jordan Sissel)
