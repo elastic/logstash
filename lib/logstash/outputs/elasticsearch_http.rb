@@ -185,7 +185,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
         if File.exists?("elasticsearch-template.json")
           @template = "elasticsearch-template.json"
         elsif File.exists?("lib/logstash/outputs/elasticsearch/elasticsearch-template.json")
-          @template = "lib/logstash/outputs/elasticsearch-template.json"
+          @template = "lib/logstash/outputs/elasticsearch/elasticsearch-template.json"
         else
           raise "You must specify 'template => ...' in your elasticsearch_http output"
         end
