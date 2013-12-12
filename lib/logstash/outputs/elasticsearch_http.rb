@@ -39,8 +39,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # This configuration option defines how the template is named inside Elasticsearch
   # Note that if you have used the template management features and subsequently
   # change this you will need to prune the old template manually, e.g.
-  # curl -XDELETE <http://localhost:9200/_template/OLDtemplatename?pretty>
-  # where OLDtemplatename is whatever the former setting was.
+  # curl -XDELETE <http://localhost:9200/_template/OLD_template_name?pretty>
+  # where OLD_template_name is whatever the former setting was.
   config :template_name, :validate => :string, :default => "logstash"
 
   # You can set the path to your own template here, if you so desire.  
@@ -176,7 +176,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       if __FILE__ =~ /^(jar:)?file:\/.+!.+/
         begin
           # Running from a jar, assume types.db is at the root.
-          jar_path = [__FILE__.split("!").first, "elasticsearch-template.json"].join("!")
+          jar_path = [__FILE__.split("!").first, "/elasticsearch-template.json"].join("!")
           @template = jar_path
         rescue => ex
           raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
