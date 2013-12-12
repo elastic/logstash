@@ -25,6 +25,12 @@ require "stud/buffer"
 #
 # ## Operational Notes
 #
+# Template management is a new feature and requires at least version
+# Elasticsearch 0.90.5+
+#
+# If you are still using a version older than this, please upgrade for 
+# more benefits than just template management.
+#
 # Your firewalls will need to permit port 9300 in *both* directions (from
 # logstash to elasticsearch, and elasticsearch to logstash)
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
@@ -187,15 +193,21 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     options[:port] = options[:port].to_i if options[:type] == :transport
 
     @client = ElasticSearch::Client.new(options)
+
+    # Check to see if we *can* get the template
+    java_client = @client.instance_eval{@client}
+    begin
+      check_template = ElasticSearch::GetIndexTemplatesRequest.new(java_client, @template_name)
+      result = check_template.execute #=> Run previously...
+    rescue Exception => e
+      @logger.error("Unable to check template.  Automatic template management disabled.", :error => e.to_s)
+      @manage_template = false
+    end
     
     if @manage_template
-      @logger.info("Automatic template configuration enabled", :manage_template => @manage_template.to_s)      
-      java_client = @client.instance_eval{@client}
-
+      @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
       if @template_overwrite
         @logger.info("Template overwrite enabled.  Deleting template if it exists.", :template_overwrite => @template_overwrite.to_s)
-        check_template = ElasticSearch::GetIndexTemplatesRequest.new(java_client, @template_name)
-        result = check_template.execute
         if !result.getIndexTemplates.isEmpty
           delete_template = ElasticSearch::DeleteIndexTemplateRequest.new(java_client, @template_name)
           result = delete_template.execute
