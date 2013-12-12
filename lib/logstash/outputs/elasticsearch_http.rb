@@ -101,7 +101,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     auth = @user && @password ? "#{@user}:#{@password.value}@" : ""
     @bulk_url = "http://#{auth}#{@host}:#{@port}/_bulk?replication=#{@replication}"
     if @manage_template
-      @logger.info("Automatic template configuration enabled", :manage_template => @manage_template.to_s)
+      @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
       template_search_url = "http://#{auth}#{@host}:#{@port}/_template/*"
       @template_url = "http://#{auth}#{@host}:#{@port}/_template/#{@template_name}"
       if @template_overwrite
