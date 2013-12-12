@@ -1,3 +1,7 @@
+1.3.1 (December 11, 2013)
+  # general
+  - Fix path to the built-in elasticsearch index template
+
 1.3.0 (December 11, 2013)
   # general
   - oops: The --help flag now reports help again, instead of barfing an "I need
