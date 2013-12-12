@@ -2,6 +2,7 @@
 require "logstash/inputs/threadable"
 require "logstash/namespace"
 require "logstash/plugin_mixins/aws_config"
+require "digest/sha2"
 
 # Pull events from an Amazon Web Services Simple Queue Service (SQS) queue.
 #

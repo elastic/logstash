@@ -62,7 +62,7 @@ require "logstash/codecs/base"
 # This is the base class for logstash codecs.
 class LogStash::Codecs::Multiline < LogStash::Codecs::Base
   config_name "multiline"
-  milestone 1
+  milestone 3
 
   # The regular expression to match
   config :pattern, :validate => :string, :required => true
