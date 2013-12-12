@@ -57,7 +57,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # This configuration option defines how the template is named inside Elasticsearch
   # Note that if you have used the template management features and subsequently
   # change this you will need to prune the old template manually, e.g.
-  # curl -XDELETE http://localhost:9200/_template/OLD_template_name?pretty
+  # curl -XDELETE <http://localhost:9200/_template/OLD_template_name?pretty>
   # where OLD_template_name is whatever the former setting was.
   config :template_name, :validate => :string, :default => "logstash"
 
