@@ -57,7 +57,7 @@ GEM
     ffi-rzmq (1.0.0)
       ffi
     filewatch (0.5.1)
-    ftw (0.0.37)
+    ftw (0.0.38)
       addressable
       backports (>= 2.6.2)
       cabin (> 0)
@@ -107,7 +107,7 @@ GEM
     jls-grok (0.10.12)
       cabin (>= 0.6.0)
     jls-lumberjack (0.0.19)
-    jruby-elasticsearch (0.0.16)
+    jruby-elasticsearch (0.0.17)
     jruby-httpclient (1.1.1-java)
     jruby-openssl (0.8.7)
       bouncy-castle-java (>= 1.5.0147)
@@ -265,7 +265,7 @@ DEPENDENCIES
   ffi
   ffi-rzmq (= 1.0.0)
   filewatch (= 0.5.1)
-  ftw (~> 0.0.37)
+  ftw (~> 0.0.38)
   gelf (= 1.3.2)
   gelfd (= 0.2.0)
   geoip (>= 1.3.2)
@@ -280,7 +280,7 @@ DEPENDENCIES
   jiralicious (= 0.2.2)
   jls-grok (= 0.10.12)
   jls-lumberjack (>= 0.0.19)
-  jruby-elasticsearch (= 0.0.16)
+  jruby-elasticsearch (= 0.0.17)
   jruby-httpclient
   jruby-openssl (= 0.8.7)
   jruby-win32ole

@@ -1,3 +1,93 @@
+1.3.1 (December 11, 2013)
+  # general
+  - Fix path to the built-in elasticsearch index template
+
+1.3.0 (December 11, 2013)
+  # general
+  - oops: The --help flag now reports help again, instead of barfing an "I need
+    help" exception (LOGSTASH-1436, LOGSTASH-1392; Jordan Sissel)
+  - Resolved encoding errors caused by environmental configurations, such as
+    'InvalidByteSequenceError ... on US-ASCII' (LOGSTASH-1595, #842; 
+    Jordan Sissel)
+  - Fix bug causing "no such file to load -- base64" (LOGSTASH-1310,
+    LOGSTASH-1519, LOGSTASH-1325, LOGSTASH-1522, #834; Jordan Sissel)
+  - Elasticsearch version 0.90.7
+  - Bug fixes galore!
+
+  ## inputs
+  - new: collectd: receive metrics from collectd's network protocol 
+    (#785, Aaron Mildenstein)
+  - bugfix: gelf: handle chunked gelf message properly (#718, Thomas De Smedt)
+  - bugfix: s3: fix bug in region endpoint setting (#740, Andrea Ascari)
+  - bugfix: pipe: restart the command when it finishes (#754, Jonathan Van
+    Eenwyk)
+  - bugfix: redis: if redis fails, reconnect. (#767, LOGSTASH-1475; Jordan Sissel)
+  - feature: imap: add 'content_type' setting for multipart messages and
+    choosing the part that becomes the event message. (#784, Brad Fritz)
+  - bugfix: zeromq: don't override the 'host' field if the event already
+    has one. (Jordan Sissel)
+  - bugfix: ganglia: fix regressions; plugin should work again (LOGSTASH-1655,
+    #818; Jordan Sissel)
+  - bugfix: Fix missing library in sqs input (#775, LOGSTASH-1294; Toby
+    Collier)
+
+  ## filters
+  - new: unique: removes duplicate values from a given field in an event.
+    (#676, Adam Tucker)
+  - new: elapsed: time duration between two tagged events. (#713, Andrea Forni)
+  - new: i18n: currently supports 'transliterate' which does best-effort
+    conversion of text to "plain" letters. Like 'ó' to 'o'.  (#671,
+    Juarez Bochi)
+  - bugfix: restore filter flushing thread (LOGSTASH-1284, #689; Bernd Ahlers)
+  - new: elasticsearch: query elasticsearch and update your event based on the
+    results. (#707, Jonathan Van Eenwyk)
+  - new: sumnumbers: finds all numbers in a message and sums them (#752, Avleen
+    Vig)
+  - feature: geoip: new setting 'add_geojson' (default true) and geojson_name
+    (default 'location') to write a GeoJSON-friendly coordinate to your
+    event for use with elasticsearch, kibana, and anything else that
+    understands GeoJSON (#763, Aaron Mildenstein)
+  - new: punct: Removes all text except punctuation and stores it in another
+    field. Useful for as a means for fingerprinting events. (#813, Guixing Bai)
+  - feature: metrics: Make percentiles configurable. Also make rates (1, 5,
+    15-minute) optional. (#817, Juarez Bochi)
+
+  ## codecs
+  - new: compressed_spooler: batches events and sends/receives them in
+    compressed form. Useful over high latency links or with transports
+    with higher-than-desired transmission costs. (Avleen Vig)
+  - new: fluent: receive data serialized using the Fluent::Logger for easier
+    migration away from fluentd or for folks who simply like the logger
+    library (#759, Jordan Sissel)
+  - new: edn: encode and decode the EDN serialization format. Commonly used
+    in Clojure. For more details, see: https://github.com/edn-format/edn
+    (#778, Lee Hinman)
+  - bugfix: oldlogstashjson: Fix encoding to work correctly. (#788, #795; 
+    Brad Fritz)
+  - bugfix: oldlogstashjson: Fallback to plain text on invalid JSON
+    (LOGSTASH-1534, #850; Jordan Sissel)
+
+  ## outputs
+  - feature: elasticsearch and elasticsearch_http now will apply a default
+    index mapping template (included) which has the settings recommended by 
+    Elasticsearch for Logstash specifically.
+    Configuration options allow disabling this feature and providing a path 
+    to your own template. (#826, #839; Aaron Mildenstein)
+  - feature: elasticsearch_http: optional 'user' and 'password' settings to
+    make use of http authentication (LOGSTASH-902, #684; Ian Neubert)
+  - new: google_bigquery: upload logs to bigquery for analysis later (Rodrigo
+    De Castro)
+  - bugfix: datadog_metrics: fix validation bug (#789, Ian Paredes)
+  - feature: elasticsearch: new 'transport' setting letting you tell logstash
+    to act as a cluster node (default, prior behavior) or as a 'transport
+    client'. With the new 'transport' mode, your firewall rules may be simpler
+    (unicast, one direction) and transport clients do not show up in your
+    cluster node list. (LOGSTASH-102, #841; Jordan Sissel)
+  - feature: elasticsearch: new 'bind_port setting for 'node' protocol which
+    lets you chose the local port to bind on (#841, Jordan Sissel)
+  - bugfix: Fix missing library in sqs input (#775, LOGSTASH-1294; Toby
+    Collier)
+
 1.2.2 (October 22, 2013)
   # general
   - new 'worker' setting for outputs. This helps improve throughput on

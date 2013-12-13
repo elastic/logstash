@@ -24,29 +24,32 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # The index type to write events to. Generally you should try to write only
   # similar events to the same 'type'. String expansion '%{foo}' works here.
   config :index_type, :validate => :string
-  
-  # Starting in Logstash 1.3 (unless you set option "manage_template" to false) 
-  # a default mapping template for Elasticsearch will be applied if you do not 
+
+  # Starting in Logstash 1.3 (unless you set option "manage_template" to false)
+  # a default mapping template for Elasticsearch will be applied, if you do not 
   # already have one set to match the index pattern defined (default of 
   # "logstash-%{+YYYY.MM.dd}"), minus any variables.  For example, in this case
   # the template will be applied to all indices starting with logstash-* 
+  #
   # If you have dynamic templating (e.g. creating indices based on field names)
   # then you should set "manage_template" to false and use the REST API to upload
   # your templates manually.
+  config :manage_template, :validate => :boolean, :default => true
+
   # This configuration option defines how the template is named inside Elasticsearch
-  config :template_name, :validate => :string, :default => "logstash_per_index"
-  
+  # Note that if you have used the template management features and subsequently
+  # change this you will need to prune the old template manually, e.g.
+  # curl -XDELETE <http://localhost:9200/_template/OLD_template_name?pretty>
+  # where OLD_template_name is whatever the former setting was.
+  config :template_name, :validate => :string, :default => "logstash"
+
   # You can set the path to your own template here, if you so desire.  
   # If not the included template will be used.
   config :template, :validate => :path
-  
+
   # Overwrite the current template with whatever is configured 
   # in the template and template_name directives.
   config :template_overwrite, :validate => :boolean, :default => false
-  
-  # Logstash will install the default template unless it finds one pre-existing
-  # or you have set this option to false.
-  config :manage_template, :validate => :boolean, :default => true
 
   # The hostname or ip address to reach your elasticsearch server.
   config :host, :validate => :string, :required => true
@@ -55,20 +58,32 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   config :port, :validate => :number, :default => 9200
 
   # The HTTP Basic Auth username used to access your elasticsearch server.
-  config :username, :validate => :string, :default => nil
+  config :user, :validate => :string, :default => nil
 
   # The HTTP Basic Auth password used to access your elasticsearch server.
   config :password, :validate => :password, :default => nil
 
-  # Set the number of events to queue up before writing to elasticsearch.
+  # This plugin uses the bulk index api for improved indexing performance.
+  # To make efficient bulk api calls, we will buffer a certain number of
+  # events before flushing that out to elasticsearch. This setting
+  # controls how many events will be buffered before sending a batch
+  # of events.
   config :flush_size, :validate => :number, :default => 100
+
+  # The amount of time since last flush before a flush is forced.
+  #
+  # This setting helps ensure slow event rates don't get stuck in logstash.
+  # For example, if your `flush_size` is 100, and you have received 10 events,
+  # and it has been more than `idle_flush_time` seconds since the last flush,
+  # logstash will flush those 10 events automatically.
+  #
+  # This helps keep both fast and slow log streams moving along in
+  # near-real-time.
+  config :idle_flush_time, :validate => :number, :default => 1
 
   # The document ID for the index. Useful for overwriting existing entries in
   # elasticsearch with the same ID.
   config :document_id, :validate => :string, :default => nil
-
-  # The amount of time since last flush before a flush is forced.
-  config :idle_flush_time, :validate => :number, :default => 1
 
   # Set the type of elasticsearch replication to use. If async
   # the index request to elasticsearch to return after the primary
@@ -83,10 +98,10 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     @agent = FTW::Agent.new
     @queue = []
 
-    auth = @username && @password ? "#{@username}:#{@password.value}@" : ""
+    auth = @user && @password ? "#{@user}:#{@password.value}@" : ""
     @bulk_url = "http://#{auth}#{@host}:#{@port}/_bulk?replication=#{@replication}"
     if @manage_template
-      @logger.info("Automatic template configuration enabled", :manage_template => @manage_template.to_s)
+      @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
       template_search_url = "http://#{auth}#{@host}:#{@port}/_template/*"
       @template_url = "http://#{auth}#{@host}:#{@port}/_template/#{@template_name}"
       if @template_overwrite
@@ -169,8 +184,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       else
         if File.exists?("elasticsearch-template.json")
           @template = "elasticsearch-template.json"
-        elsif File.exists?("lib/logstash/outputs/elasticsearch-template.json")
-          @template = "lib/logstash/outputs/elasticsearch-template.json"
+        elsif File.exists?("lib/logstash/outputs/elasticsearch/elasticsearch-template.json")
+          @template = "lib/logstash/outputs/elasticsearch/elasticsearch-template.json"
         else
           raise "You must specify 'template => ...' in your elasticsearch_http output"
         end

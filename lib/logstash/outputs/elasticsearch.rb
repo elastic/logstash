@@ -25,6 +25,12 @@ require "stud/buffer"
 #
 # ## Operational Notes
 #
+# Template management is a new feature and requires at least version
+# Elasticsearch 0.90.5+
+#
+# If you are still using a version older than this, please upgrade for 
+# more benefits than just template management.
+#
 # Your firewalls will need to permit port 9300 in *both* directions (from
 # logstash to elasticsearch, and elasticsearch to logstash)
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
@@ -42,6 +48,32 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # The index type to write events to. Generally you should try to write only
   # similar events to the same 'type'. String expansion '%{foo}' works here.
   config :index_type, :validate => :string
+
+  # Starting in Logstash 1.3 (unless you set option "manage_template" to false)
+  # a default mapping template for Elasticsearch will be applied, if you do not 
+  # already have one set to match the index pattern defined (default of 
+  # "logstash-%{+YYYY.MM.dd}"), minus any variables.  For example, in this case
+  # the template will be applied to all indices starting with logstash-* 
+  #
+  # If you have dynamic templating (e.g. creating indices based on field names)
+  # then you should set "manage_template" to false and use the REST API to upload
+  # your templates manually.
+  config :manage_template, :validate => :boolean, :default => true
+
+  # This configuration option defines how the template is named inside Elasticsearch
+  # Note that if you have used the template management features and subsequently
+  # change this you will need to prune the old template manually, e.g.
+  # curl -XDELETE <http://localhost:9200/_template/OLD_template_name?pretty>
+  # where OLD_template_name is whatever the former setting was.
+  config :template_name, :validate => :string, :default => "logstash"
+
+  # You can set the path to your own template here, if you so desire.  
+  # If not the included template will be used.
+  config :template, :validate => :path
+
+  # Overwrite the current template with whatever is configured 
+  # in the template and template_name directives.
+  config :template_overwrite, :validate => :boolean, :default => false
 
   # The document ID for the index. Useful for overwriting existing entries in
   # elasticsearch with the same ID.
@@ -88,10 +120,22 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # By default, this is generated internally by the ES client.
   config :node_name, :validate => :string
 
-  # The maximum number of events to spool before flushing to elasticsearch.
+  # This plugin uses the bulk index api for improved indexing performance.
+  # To make efficient bulk api calls, we will buffer a certain number of
+  # events before flushing that out to elasticsearch. This setting
+  # controls how many events will be buffered before sending a batch
+  # of events.
   config :flush_size, :validate => :number, :default => 100
 
   # The amount of time since last flush before a flush is forced.
+  #
+  # This setting helps ensure slow event rates don't get stuck in logstash.
+  # For example, if your `flush_size` is 100, and you have received 10 events,
+  # and it has been more than `idle_flush_time` seconds since the last flush,
+  # logstash will flush those 10 events automatically.
+  #
+  # This helps keep both fast and slow log streams moving along in
+  # near-real-time.
   config :idle_flush_time, :validate => :number, :default => 1
 
   # Choose the protocol used to talk to elasticsearch.
@@ -101,7 +145,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # multicast discovery.
   #
   # The 'transport' protocol will connect to the host you specify and will
-  # not show up as a 'node' in the elasticsearch cluster. This is useful
+  # not show up as a 'node' in the elasticsearch cluster. This is useful 
   # in situations where you cannot permit connections outbound from the
   # elasticsearch cluster to this logstash server.
   config :protocol, :validate => [ "node", "transport" ], :default => "node"
@@ -150,12 +194,96 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
     @client = ElasticSearch::Client.new(options)
 
+    # Check to see if we *can* get the template
+    java_client = @client.instance_eval{@client}
+    begin
+      check_template = ElasticSearch::GetIndexTemplatesRequest.new(java_client, @template_name)
+      result = check_template.execute #=> Run previously...
+    rescue Exception => e
+      @logger.error("Unable to check template.  Automatic template management disabled.", :error => e.to_s)
+      @manage_template = false
+    end
+    
+    if @manage_template
+      @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
+      if @template_overwrite
+        @logger.info("Template overwrite enabled.  Deleting template if it exists.", :template_overwrite => @template_overwrite.to_s)
+        if !result.getIndexTemplates.isEmpty
+          delete_template = ElasticSearch::DeleteIndexTemplateRequest.new(java_client, @template_name)
+          result = delete_template.execute
+          if result.isAcknowledged
+            @logger.info("Successfully deleted template", :template_name => @template_name)
+          else
+            @logger.error("Failed to delete template", :template_name => @template_name)
+          end
+        end  
+      end # end if @template_overwrite
+      has_template = false
+      @logger.debug("Fetching all templates...")
+      gettemplates = ElasticSearch::GetIndexTemplatesRequest.new(java_client, "*")
+      result = gettemplates.execute
+      # Results of this come as a list, so we need to iterate through it
+      if !result.getIndexTemplates.isEmpty
+        template_metadata_list = result.getIndexTemplates
+        templates = {}
+        i = 0
+        template_metadata_list.size.times do
+          template_data = template_metadata_list.get(i)
+          templates[template_data.name] = template_data.template
+          i += 1
+        end
+        template_idx_name = @index.sub(/%{[^}]+}/,'*')
+        alt_template_idx_name = @index.sub(/-%{[^}]+}/,'*')
+        if !templates.any? { |k,v| v == template_idx_name || v == alt_template_idx_name }
+          @logger.debug("No logstash template found in Elasticsearch", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name)
+        else
+          has_template = true
+          @logger.info("Found existing Logstash template match.", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name, :templates => templates.to_s)
+        end
+      end
+      if !has_template #=> No template found, we're going to add one
+        get_template_json
+        put_template = ElasticSearch::PutIndexTemplateRequest.new(java_client, @template_name, @template_json)
+        result = put_template.execute
+        if result.isAcknowledged
+          @logger.info("Successfully inserted template", :template_name => @template_name)
+        else
+          @logger.error("Failed to insert template", :template_name => @template_name)
+        end
+      end 
+    end # if @manage_templates  
+    
     buffer_initialize(
       :max_items => @flush_size,
       :max_interval => @idle_flush_time,
       :logger => @logger
     )
   end # def register
+
+  public
+  def get_template_json
+    if @template.nil?
+      if __FILE__ =~ /^(jar:)?file:\/.+!.+/
+        begin
+          # Running from a jar, assume types.db is at the root.
+          jar_path = [__FILE__.split("!").first, "/elasticsearch-template.json"].join("!")
+          @template = jar_path
+        rescue => ex
+          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
+        end
+      else
+        if File.exists?("elasticsearch-template.json")
+          @template = "elasticsearch-template.json"
+        elsif File.exists?("lib/logstash/outputs/elasticsearch/elasticsearch-template.json")
+          @template = "lib/logstash/outputs/elasticsearch/elasticsearch-template.json"
+        else
+          raise "You must specify 'template => ...' in your elasticsearch_http output"
+        end
+      end
+    end
+    @template_json = IO.read(@template).gsub(/\n/,'')
+    @logger.info("Using mapping template", :template => @template_json)
+  end # def get_template
 
   protected
   def start_local_elasticsearch
