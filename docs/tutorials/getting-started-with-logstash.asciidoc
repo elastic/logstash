@@ -8,7 +8,6 @@ Using Elasticsearch as a backend datastore, and kibana as a frontend reporting t
 
 .Prerequisite: Java
 The only prerequisite required by logstash is a Java runtime. You can check that you have it installed by running the  command `java -version` in your shell. Here's something similar to what you might see:
-
 ----
 > java -version
 java version "1.7.0_45"
@@ -35,8 +34,7 @@ Now you should have the file named 'logstash-1.3.1-flatjar.jar' on your local fi
 java -jar logstash-1.3.1-flatjar.jar agent -e 'input { stdin { } } output { stdout {}  }'
 ----
 
-Now type something into your command prompt, and you will see it output by logstash:
- 
+Now type something into your command prompt, and you will see it output by logstash: 
 ----
 hello world
 2013-11-21T01:22:14.405+0000 0.0.0.0 hello world
@@ -45,13 +43,11 @@ hello world
 OK, that's interesting... We ran logstash with an input called "stdin", and an output named "stdout", and logstash basically echoed back whatever we typed in some sort of structured format. Note that specifying -e allows logstash to accept a configuration directly from the command line. This is especially useful for quickly testing configurations without having to edit a file between iterations.
 
 Let's try a slightly fancier example. First, you should exit logstash by issuing a 'CTRL-C' command in the shell in which it is running. Now run logstash again with the following command:
-
 ----
 java -jar logstash-1.3.1-flatjar.jar agent -e 'input { stdin { } } output { stdout { codec => rubydebug } }'
 ----
 
-And then try another test input, using the text "goodnight moon":
-
+And then try another test input, typing the text "goodnight moon":
 ----
 goodnight moon
 {
@@ -66,7 +62,6 @@ So, by re-configuring the "stdout" output (adding a "codec"), we can change the 
 
 .Storing logs with Elasticsearch 
 Now, you're probably saying, "that's all fine and dandy, but typing all my logs into logstash isn't really an option, and merely seeing them spit to STDOUT isn't very useful." Good point. First, let's set up Elasticsearch to store the messages we send into logstash. If you don't have Elasticearch already installed, you can http://www.elasticsearch.org/download/[download the RPM or DEB package], or install manually by downloading the current release tarball, by issuing the following four commands:
-
 ----
 curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.7.tar.gz
 tar zxvf elasticsearch-0.90.7.tar.gz
@@ -77,13 +72,11 @@ cd elasticsearch-0.90.7/
 More detailed information on installing and configuring Elasticsearch can be found on http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/index.html[The Elasticsearch reference pages]. However, for the purposes of Getting Started with Logstash, the default installation and configuration of Elasticsearch should be sufficient.
 
 Now that we have Elasticsearch running on port 9200 (we do, right?), logstash can be simply configured to use Elasticsearch as its backend. The defaults for both logstash and Elasticsearch are fairly sane and well thought out, so we can omit the optional configurations within the elasticsearch output:
-
 ----
 java -jar logstash-1.3.1-flatjar.jar agent -e 'input { stdin { } } output { elasticsearch { } }'
 ----
 
 Type something, and logstash will process it as before (this time you won't see any output, since we don't have the stdout output configured)
-
 ----
 you know, for logs
 ----
@@ -93,7 +86,7 @@ You can confirm that ES actually received the data by making a curl request and 
 curl 'http://localhost:9200/_search?pretty'
 ----
 
-which should return something looking something like this:
+which should return something like this:
 ----
 {
   "took" : 2,
@@ -120,11 +113,10 @@ Congratulations! You've successfully stashed logs in Elasticsearch via logstash.
 
 Another very useful tool for querying your logstash data (and Elasticsearch in general) is the Elasticsearch-head plugin. Here is more information on http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-plugins.html[Elasticsearch plugins]. To install elasticsearch-head, simply issue the following command in your Elasticsearch directory (the same one in which you ran Elasticsearch earlier):
 ----
-bin/plugin --install mobz/elasticsearch-head
+bin/plugin -install mobz/elasticsearch-head
 ----
 
 As a quick exercise in configuring multiple outputs, let's invoke logstash again, using both the 'stdout' as well as the 'elasticsearch' output:
-
 ----
 java -jar logstash-1.3.1-flatjar.jar agent -e 'input { stdin { } } output { elasticsearch { } } output { stdout { } }'
 ----
@@ -277,11 +269,20 @@ output { elasticsearch { } }
 output { stdout { codec => rubydebug } }
 
 ----
-TODO: Add else statement matching error log (bleah)
+TODO: Add else statement matching error log?
 
 .Syslog
-
+TODO: Finish syslog example
 ----
-TODO: Syslog example
+input {
+  syslog {
+    type => syslog
+    port => 5544
+  }
+}
+
+output {
+  stdout { }
+}
 ----
 
