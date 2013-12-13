@@ -17,16 +17,16 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
   milestone 2
 
   default :codec, "plain"
-  
+
   # Set this to true to enable debugging on an input.
   config :debug, :validate => :boolean, :default => false
-  
+
   # Command to run. For example, "uptime"
   config :command, :validate => :string, :required => true
-  
+
   # Interval to run the command. Value is in seconds.
   config :interval, :validate => :number, :required => true
-  
+
   public
   def register
     @logger.info("Registering Exec Input", :type => @type,
@@ -47,7 +47,8 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
         event["command"] = @command
         queue << event
       end
-      
+      out.close
+
       duration = Time.now - start
       if @debug
         @logger.info("Command completed", :command => @command,
