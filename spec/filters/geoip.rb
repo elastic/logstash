@@ -18,7 +18,8 @@ describe LogStash::Filters::GeoIP do
 
       expected_fields = %w(ip country_code2 country_code3 country_name
                            continent_code region_name city_name postal_code
-                           latitude longitude dma_code area_code timezone)
+                           latitude longitude dma_code area_code timezone
+                           location )
       expected_fields.each do |f|
         insist { subject["geoip"] }.include?(f)
       end
@@ -46,7 +47,8 @@ describe LogStash::Filters::GeoIP do
 
       expected_fields = %w(ip country_code2 country_code3 country_name
                            continent_code region_name city_name postal_code
-                           latitude longitude dma_code area_code timezone)
+                           latitude longitude dma_code area_code timezone
+                           location )
       expected_fields.each do |f|
         insist { subject["src_ip"] }.include?(f)
       end
@@ -57,5 +59,4 @@ describe LogStash::Filters::GeoIP do
       reject { subject }.include?("src_ip")
     end
   end
-
 end
