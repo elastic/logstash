@@ -25,6 +25,12 @@ require "stud/buffer"
 #
 # ## Operational Notes
 #
+# Template management is a new feature and requires at least version
+# Elasticsearch 0.90.5+
+#
+# If you are still using a version older than this, please upgrade for 
+# more benefits than just template management.
+#
 # Your firewalls will need to permit port 9300 in *both* directions (from
 # logstash to elasticsearch, and elasticsearch to logstash)
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
@@ -57,7 +63,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # This configuration option defines how the template is named inside Elasticsearch
   # Note that if you have used the template management features and subsequently
   # change this you will need to prune the old template manually, e.g.
-  # curl -XDELETE http://localhost:9200/_template/OLD_template_name?pretty
+  # curl -XDELETE <http://localhost:9200/_template/OLD_template_name?pretty>
   # where OLD_template_name is whatever the former setting was.
   config :template_name, :validate => :string, :default => "logstash"
 
@@ -187,15 +193,21 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     options[:port] = options[:port].to_i if options[:type] == :transport
 
     @client = ElasticSearch::Client.new(options)
+
+    # Check to see if we *can* get the template
+    java_client = @client.instance_eval{@client}
+    begin
+      check_template = ElasticSearch::GetIndexTemplatesRequest.new(java_client, @template_name)
+      result = check_template.execute #=> Run previously...
+    rescue Exception => e
+      @logger.error("Unable to check template.  Automatic template management disabled.", :error => e.to_s)
+      @manage_template = false
+    end
     
     if @manage_template
-      @logger.info("Automatic template configuration enabled", :manage_template => @manage_template.to_s)      
-      java_client = @client.instance_eval{@client}
-
+      @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
       if @template_overwrite
         @logger.info("Template overwrite enabled.  Deleting template if it exists.", :template_overwrite => @template_overwrite.to_s)
-        check_template = ElasticSearch::GetIndexTemplatesRequest.new(java_client, @template_name)
-        result = check_template.execute
         if !result.getIndexTemplates.isEmpty
           delete_template = ElasticSearch::DeleteIndexTemplateRequest.new(java_client, @template_name)
           result = delete_template.execute
@@ -254,7 +266,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       if __FILE__ =~ /^(jar:)?file:\/.+!.+/
         begin
           # Running from a jar, assume types.db is at the root.
-          jar_path = [__FILE__.split("!").first, "elasticsearch-template.json"].join("!")
+          jar_path = [__FILE__.split("!").first, "/elasticsearch-template.json"].join("!")
           @template = jar_path
         rescue => ex
           raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
