@@ -3,25 +3,13 @@ require "logstash/namespace"
 
 class LogStash::Outputs::Snmptrap < LogStash::Outputs::Base
         
- #USAGE:
- #output {
- #  snmpwalk {
- #    codec => ... # codec (optional), default: "line"
- #    host => ... # string (optional), default: "0.0.0.0"
- #    port => ... # number (optional), default: "162"
- #    community => ... # string (optional), default: "public"
- #    oid => ... # string (required)
- #    yamilmibdir => ... # string (optional)
- #  }
- #}
-
  config_name "snmptrap"
  milestone 1
 
  default :codec, "line"
 
  #address of the host to send the trap/notification to
- config :host, :validate => :string, :default => "0.0.0.0"
+ config :host, :validate => :string, :required => true
 
  #the port to send the trap on
  config :port, :validate => :number, :default => 162
@@ -34,11 +22,6 @@ class LogStash::Outputs::Snmptrap < LogStash::Outputs::Base
 
  # directory of YAML MIB maps  (same format ruby-snmp uses)
  config :yamlmibdir, :validate => :string
-
-
- def initialize(*args)
-  super(*args)
- end
 
  public
  def register
@@ -66,7 +49,7 @@ class LogStash::Outputs::Snmptrap < LogStash::Outputs::Base
    SNMP::Manager.open(trapsender_opts) do |snmp|
     #set it up and send the whole event using the user specified codec
     varbind = SNMP::VarBind.new(@oid, SNMP::OctetString.new(event))
-    #we dont actually care about the sys_up_time...do we.  Also I am re-using the oid that was input.
+    #set uptime to 12345 since its not really used and reuse the oid that was input.
     snmp.trap_v2(12345, @oid, varbind)
    end
   end
