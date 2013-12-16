@@ -89,7 +89,7 @@ describe "outputs/elasticsearch_http" do
 
       agent do
         ftw = FTW::Agent.new
-        ftw.post!("http://localhost:9200/#{index}/_flush")
+        ftw.post!("http://localhost:9200/#{index}/_refresh")
 
         # Wait until all events are available.
         Stud::try(10.times) do
@@ -136,7 +136,7 @@ describe "outputs/elasticsearch_http" do
 
       agent do
         ftw = FTW::Agent.new
-        ftw.post!("http://localhost:9200/#{index}/_flush")
+        ftw.post!("http://localhost:9200/#{index}/_refresh")
 
         # Wait until all events are available.
         Stud::try(10.times) do
@@ -182,14 +182,16 @@ describe "outputs/elasticsearch_http" do
       subject.receive(LogStash::Event.new("somevalue" => 100))
       subject.receive(LogStash::Event.new("somevalue" => 10))
       subject.receive(LogStash::Event.new("somevalue" => 1))
+      subject.receive(LogStash::Event.new("country" => "us"))
+      subject.receive(LogStash::Event.new("country" => "at"))
       subject.receive(LogStash::Event.new("geoip" => { "location" => [ 0.0, 0.0 ] }))
       subject.buffer_flush(:final => true)
-      @es.indices.flush
+      @es.indices.refresh
 
       # Wait or fail until everything's indexed.
-      Stud::try(10.times) do
+      Stud::try(20.times) do
         r = @es.search
-        insist { r["hits"]["total"] } == 5
+        insist { r["hits"]["total"] } == 7
       end
     end
 
@@ -223,6 +225,16 @@ describe "outputs/elasticsearch_http" do
       results = @es.search(:body => { "filter" => { "geo_distance" => { "distance" => "1000km", "geoip.location" => { "lat" => 0.5, "long" => 0.5 } } } })
       insist { results["hits"]["total"] } == 1
       insist { results["hits"]["hits"][0]["_source"]["geoip"]["location"] } == [ 0.0, 0.0 ]
+    end
+
+    it "should index stopwords like 'at' " do
+      results = @es.search(:body => { "facets" => { "t" => { "terms" => { "field" => "country" } } } })["facets"]["t"]
+      terms = results["terms"].collect { |t| t["term"] }
+
+      insist { terms }.include?("us")
+      
+      # 'at' is a stopword, make sure stopwords are not ignored.
+      insist { terms }.include?("at") 
     end
   end
 end
