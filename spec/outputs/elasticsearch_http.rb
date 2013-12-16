@@ -222,7 +222,7 @@ describe "outputs/elasticsearch_http" do
     end
 
     it "make [geoip][location] a geo_point" do
-      results = @es.search(:body => { "filter" => { "geo_distance" => { "distance" => "1000km", "geoip.location" => { "lat" => 0.5, "long" => 0.5 } } } })
+      results = @es.search(:body => { "filter" => { "geo_distance" => { "distance" => "1000km", "geoip.location" => { "lat" => 0.5, "lon" => 0.5 } } } })
       insist { results["hits"]["total"] } == 1
       insist { results["hits"]["hits"][0]["_source"]["geoip"]["location"] } == [ 0.0, 0.0 ]
     end
