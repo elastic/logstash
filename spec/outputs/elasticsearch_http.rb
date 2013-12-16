@@ -161,13 +161,13 @@ describe "outputs/elasticsearch_http" do
 
   describe "index template expected behavior" do
     subject do
+      Elasticsearch::Client.new.indices.delete_template(:name => "*")
       require "logstash/outputs/elasticsearch_http"
       settings = {
         "manage_template" => true,
         "template_overwrite" => true,
         "host" => "localhost"
       }
-      Elasticsearch::Client.new.indices.delete_template(:name => "*")
       output = LogStash::Outputs::ElasticSearchHTTP.new(settings)
       output.register
       next output
