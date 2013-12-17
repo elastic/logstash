@@ -1,14 +1,126 @@
 source "https://rubygems.org"
 #gemspec(:name => "logstash", :path => "../")
 
-gemspec = File.join(File.dirname(__FILE__), "..", "logstash.gemspec")
-spec = Gem::Specification.load(gemspec)
-spec.runtime_dependencies.each do |dep|
-  gem dep.name, dep.requirement.to_s
+#gemspec = File.join(File.dirname(__FILE__), "..", "logstash.gemspec")
+#spec = Gem::Specification.load(gemspec)
+#spec.runtime_dependencies.each do |dep|
+  #gem dep.name, dep.requirement.to_s
+#end
+#
+#group :development do
+  #spec.development_dependencies.each do |dep|
+    #gem dep.name, dep.requirement.to_s
+  #end
+#end
+
+gem "cabin", [">=0.6.0"]   #(Apache 2.0 license)
+gem "json"               #(ruby license)
+gem "minitest"           # for running the tests from the jar, (MIT license)
+gem "pry"                #(ruby license)
+gem "stud"               #(Apache 2.0 license)
+gem "clamp"              # for command line args/flags (MIT license)
+gem "i18n"               #(MIT license)
+gem "treetop"
+
+# Web dependencies
+gem "ftw", ["~> 0.0.39"] #(Apache 2.0 license)
+gem "haml"               #(MIT license)
+gem "rack"               #(MIT license)
+gem "sass"               #(MIT license)
+gem "sinatra"            #(MIT license)
+gem "mime-types"         #(GPL 2.0)
+
+# Input/Output/Filter dependencies
+#TODO Can these be optional?
+gem "awesome_print"                    #(MIT license)
+gem "aws-sdk"                          #{Apache 2.0 license}  
+gem "google-api-client"                #{Apache 2.0 license}
+gem "heroku"                           #(MIT license)
+gem "addressable"                      #(Apache 2.0 license)
+gem "extlib", ["0.9.16"]               #(MIT license)
+gem "elasticsearch"                    #(Apache 2.0 license)
+gem "ffi"                              #(LGPL-3 license)
+gem "ffi-rzmq", ["1.0.0"]              #(MIT license)
+gem "filewatch", ["0.5.1"]             #(BSD license)
+gem "gelfd", ["0.2.0"]                 #(Apache 2.0 license)
+gem "gelf", ["1.3.2"]                  #(MIT license)
+gem "gmetric", ["0.1.3"]               #(MIT license)
+gem "jiralicious", ["0.2.2"]           #(MIT license)
+gem "jls-grok", ["0.10.12"]            #(BSD license)
+gem "mail"                             #(MIT license)
+gem "mongo"                            #(Apache 2.0 license)
+gem "metriks"                          #(MIT license)
+gem "onstomp"                          #(Apache 2.0 license)
+gem "redis"                            #(MIT license)
+gem "riak-client", ["1.0.3"]           #(Apache 2.0 license)
+gem "riemann-client", ["0.2.1"]        #(MIT license)
+gem "statsd-ruby", ["1.2.0"]           #(MIT license)
+gem "uuidtools"                        # For generating amqp queue names (Apache 2.0 license)
+gem "xml-simple"                       #(ruby license?)
+gem "xmpp4r", ["0.5"]                  #(ruby license)
+gem "jls-lumberjack", [">=0.0.19"]     #(Apache 2.0 license)
+gem "geoip", [">= 1.3.2"]              #(GPL license)
+gem "beefcake", "0.3.7"                #(MIT license)
+gem "php-serialize"                    # For input drupal_dblog (MIT license)
+gem "murmurhash3"                      #(MIT license)
+gem "rufus-scheduler", "~> 2.0.24"     #(MIT license)
+gem "user_agent_parser", [">= 2.0.0"]  #(MIT license)
+gem "snmp"                             #(ruby license)
+gem "varnish-rb"                       #(MIT license)
+gem "mail"                             #(MIT license)
+gem "rbnacl"                           #(MIT license)
+gem "sequel"                           #(MIT license)
+gem "jdbc-sqlite3"                     #(MIT license)
+gem "bindata", [">= 1.5.0"]            #(ruby license)
+gem "twitter", "5.0.0.rc.1"            #(MIT license)
+gem "rsolr"                            #(Apache 2.0 license)
+gem "edn"                              #(MIT license)
+
+platforms :jruby do
+  gem "jruby-elasticsearch", ["0.0.17"] #(BSD license)
+  gem "jruby-httpclient" #(Apache 2.0 license)
+  gem "bouncy-castle-java", "1.5.0147" #(MIT license)
+  gem "jruby-openssl", "0.8.7" #(CPL/GPL/LGPL license)
+  gem "jruby-win32ole" #(unknown license)
+  gem "jdbc-mysql" # For input drupal_dblog (BSD license)
+  gem "msgpack-jruby" #(Apache 2.0 license)
 end
 
-group :development do
-  spec.development_dependencies.each do |dep|
-    gem dep.name, dep.requirement.to_s
-  end
+platforms :ruby do
+  gem "excon", :platforms => :ruby    #(MIT license)
+  gem "mysql2", :platforms => :ruby   # For input drupal_dblog (MIT license)
+  gem "msgpack", :platforms => :ruby  #(Apache 2.0 license)
 end
+
+# rabbitmq support
+platforms :ruby do
+  gem "bunny",       ["~> 1.0.5"] #(MIT license)
+end
+platforms :jruby do
+  gem "march_hare", ["~> 2.0.0"] #(MIT license)
+end
+
+gem "cinch" # (MIT license)
+
+platforms :rbx do
+  # rubinius puts the ruby stdlib into gems.
+  gem "rubysl"
+  # Include racc to make the xml tests pass.
+  # https://github.com/rubinius/rubinius/issues/2632#issuecomment-26954565
+  gem "racc"
+end
+
+# These are runtime-deps so you can do 'java -jar logstash.jar rspec <test>'
+group :development do
+  gem "spoon"            #(Apache 2.0 license)
+  gem "mocha"            #(MIT license)
+  gem "shoulda"          #(MIT license)
+  gem "rspec"            #(MIT license)
+  gem "insist", "1.0.0"  #(Apache 2.0 license)
+  gem "rumbster"         # For faking smtp in email tests (Apache 2.0 license)
+  #Development Deps
+  gem "coveralls"
+end
+
+#Jenkins Deps
+gem "ci_reporter"
