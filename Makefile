@@ -3,7 +3,7 @@
 #   wget or curl
 #
 JRUBY_VERSION=1.7.8
-ELASTICSEARCH_VERSION=0.90.7
+ELASTICSEARCH_VERSION=0.90.8
 
 WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
