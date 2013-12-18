@@ -1,3 +1,8 @@
+1.3.2 (???)
+  # general
+  - web: don't crash if an invalid http request was sent
+    (#878, LOGSTASH-704; Jordan Sissel)
+
 1.3.1 (December 11, 2013)
   # general
   - Fix path to the built-in elasticsearch index template
@@ -43,9 +48,8 @@
     results. (#707, Jonathan Van Eenwyk)
   - new: sumnumbers: finds all numbers in a message and sums them (#752, Avleen
     Vig)
-  - feature: geoip: new setting 'add_geojson' (default true) and geojson_name
-    (default 'location') to write a GeoJSON-friendly coordinate to your
-    event for use with elasticsearch, kibana, and anything else that
+  - feature: geoip: new field 'location' is GeoJSON derived from the lon/lat
+    coordinates for use with elasticsearch, kibana, and anything else that
     understands GeoJSON (#763, Aaron Mildenstein)
   - new: punct: Removes all text except punctuation and stores it in another
     field. Useful for as a means for fingerprinting events. (#813, Guixing Bai)
