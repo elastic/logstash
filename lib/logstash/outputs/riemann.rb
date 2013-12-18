@@ -67,6 +67,10 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
   # but can be overridden here.
   config :riemann_event, :validate => :hash
 
+  # If set to true automatically map all logstash
+  # defined fields to riemann event fields.
+  config :map_fields, :validate => :boolean, :default => false
+
   #
   # Enable debugging output?
   config :debug, :validate => :boolean, :default => false
@@ -76,6 +80,21 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
     require 'riemann/client'
     @client = Riemann::Client.new(:host => @host, :port => @port)
   end # def register
+
+  public
+  def map_fields(parent, fields)
+    fields.each {|key, val|
+      if !key.start_with?("@")
+        parent.nil? ? field = key.gsub(/_/,'-'):field = parent.gsub(/_/,'-')+'-'+key.gsub(/_/,'-')
+        contents = val                            
+        if contents.is_a?(Hash)                                     
+          map_fields(field, contents)                                       
+        else                                                                                  
+          @my_event[field.to_sym] = contents                                                          
+        end
+      end
+    }                 
+  end
 
   public
   def receive(event)
@@ -95,6 +114,15 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
           r_event[key.to_sym] = event.sprintf(val)
         end
       end
+    end
+    if @map_fields == true
+      @my_event = Hash.new
+      if event.include?("@fields")
+        map_fields(nil, event["@fields"])
+      else
+        map_fields(nil, event)
+      end
+      r_event.merge!(@my_event) {|key, val1, val2| val1}
     end
     r_event[:tags] = event["tags"] if event["tags"].is_a?(Array)
     @logger.debug("Riemann event: ", :riemann_event => r_event)
