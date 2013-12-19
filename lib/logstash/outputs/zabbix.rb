@@ -9,10 +9,12 @@ require "logstash/outputs/base"
 #
 # * "zabbix_host"    (the host configured in Zabbix)
 # * "zabbix_item"    (the item key on the host in Zabbix)
+# * "send_field"    (the field name that is sending to Zabbix)
 #
 # In Zabbix, create your host with the same name (no spaces in the name of 
 # the host supported) and create your item with the specified key as a
-# Zabbix Trapper item.
+# Zabbix Trapper item. Also you need to set field that will be send to zabbix
+# as item.value, otherwise @message wiil be sent.
 #
 # The easiest way to use this output is with the grep filter.
 # Presumably, you only want certain events matching a given pattern
@@ -27,7 +29,7 @@ require "logstash/outputs/base"
 #          add_field => [
 #            "zabbix_host", "%{source_host}",
 #            "zabbix_item", "item.key"
-#            "event_field", "event.field.name"
+#            "send_field", "send_field.value"
 #          ]
 #       }
 #     }
@@ -87,7 +89,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
       return
     end
 
-    field = event["event_field"]
+    field = event["send_field"]
     if !field
 	field = "message"
     end
