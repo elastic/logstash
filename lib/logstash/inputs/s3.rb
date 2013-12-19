@@ -2,7 +2,6 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 
-require "aws-sdk"
 require "time"
 require "tmpdir"
 
@@ -63,6 +62,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   public
   def register
     require "digest/md5"
+    require "aws-sdk"
 
     @region_endpoint = @region if !@region.empty?
 

@@ -25,6 +25,12 @@ describe LogStash::Event do
     )
   end
 
+  context "[]=" do
+    it "should raise an exception if you attempt to set @timestamp to a value type other than a Time object" do
+      insist { subject["@timestamp"] = "crash!" }.raises(TypeError)
+    end
+  end
+
   context "#sprintf" do
     it "should report a unix timestamp for %{+%s}" do
       insist { subject.sprintf("%{+%s}") } == "1356998400"
