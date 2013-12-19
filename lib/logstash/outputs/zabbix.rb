@@ -79,7 +79,6 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
                    :missed_event => event)
       return
     end
-    host = host.first if host.is_a?(Array)
  
     item = event["zabbix_item"]
     if !item
@@ -87,29 +86,36 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
                    :missed_event => event)
       return
     end
-    item = item.first if item.is_a?(Array)
 
     field = event["event_field"]
     if !field
 	field = "message"
     end
-    field = field.first if field.is_a?(Array)
  
-    zmsg = event[field]
-    zmsg = zmsg.gsub("\n", "\\n")
-    zmsg = zmsg.gsub(/"/, "\\\"")
- 
-    cmd = "#{@zabbix_sender} -z #{@host} -p #{@port} -s #{host} -k #{item} -o \"#{zmsg}\" 2>/dev/null >/dev/null"
- 
-    @logger.debug("Running zabbix command", :command => cmd)
-    begin
-      # TODO(sissel): Update this to use IO.popen so we can capture the output and
-      # log it accordingly.
-      system(cmd)
-    rescue => e
-      @logger.warn("Skipping zabbix output; error calling zabbix_sender",
-                   :command => cmd, :missed_event => event,
-                   :exception => e, :backtrace => e.backtrace)
+    host = [host] if host.is_a?(String)
+    item = [item] if item.is_a?(String)
+    field = [field] if field.is_a?(String)
+
+    if host.is_a?(Array) && item.is_a?(Array) && field.is_a?(Array) 
+      item.each_with_index do |key, index|
+        zmsg = event[field[index]]
+        zmsg = zmsg.gsub("\n", "\\n")
+        zmsg = zmsg.gsub(/"/, "\\\"")
+
+        cmd = "#{@zabbix_sender} -z #{@host} -p #{@port} -s #{host[index]} -k #{item[index]} -o \"#{zmsg}\" 2>/dev/null >/dev/null"
+
+        @logger.debug("Running zabbix command", :command => cmd)
+
+        begin
+          # TODO(sissel): Update this to use IO.popen so we can capture the output and
+          # log it accordingly.
+          system(cmd)
+        rescue => e
+          @logger.warn("Skipping zabbix output; error calling zabbix_sender",
+                       :command => cmd, :missed_event => event,
+                       :exception => e, :backtrace => e.backtrace)
+        end
+      end
     end
   end # def receive
 end # class LogStash::Outputs::Zabbix
