@@ -27,6 +27,7 @@ require "logstash/outputs/base"
 #          add_field => [
 #            "zabbix_host", "%{source_host}",
 #            "zabbix_item", "item.key"
+#            "event_field", "event.field.name"
 #          ]
 #       }
 #     }
@@ -87,8 +88,14 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
       return
     end
     item = item.first if item.is_a?(Array)
+
+    field = event["event_field"]
+    if !field
+	field = "message"
+    end
+    field = field.first if field.is_a?(Array)
  
-    zmsg = event["message"]
+    zmsg = event[field]
     zmsg = zmsg.gsub("\n", "\\n")
     zmsg = zmsg.gsub(/"/, "\\\"")
  
