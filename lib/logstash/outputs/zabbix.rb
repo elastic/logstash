@@ -18,7 +18,7 @@ require "logstash/outputs/base"
 #
 # The easiest way to use this output is with the grep filter.
 # Presumably, you only want certain events matching a given pattern
-# to send events to zabbix, so use grep to match and also to add the required
+# to send events to zabbix, so use grep or grok to match and also to add the required
 # fields.
 #
 #      filter {
@@ -30,6 +30,15 @@ require "logstash/outputs/base"
 #            "zabbix_host", "%{source_host}",
 #            "zabbix_item", "item.key"
 #            "send_field", "send_field.value"
+#          ]
+#       }
+#        grok {
+#          match => [ "message", "%{SYSLOGBASE} %{DATA:data}" ]
+#          add_tag => [ "zabbix-sender" ]
+#          add_field => [
+#            "zabbix_host", "%{source_host}",
+#            "zabbix_item", "item.key",
+#            "send_field", "data"
 #          ]
 #       }
 #     }
