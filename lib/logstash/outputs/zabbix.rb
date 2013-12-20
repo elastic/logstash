@@ -100,7 +100,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
 
     field = event["send_field"]
     if !field
-	field = "message"
+      field = "message"
     end
  
     host = [host] if host.is_a?(String)
