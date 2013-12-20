@@ -49,6 +49,8 @@ class LogStash::Filters::LimitDuplicate < LogStash::Filters::Base
 
   public
   def filter(event)
+    return unless filter?(event)
+    
     @logger.info("do limit duplicate filter")
     if event == LogStash::SHUTDOWN
       @job.trigger()

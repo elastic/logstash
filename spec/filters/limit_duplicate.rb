@@ -1,7 +1,7 @@
 require "test_utils"
-require "logstash/filters/collate"
+require "logstash/filters/limit_duplicate"
 
-describe LogStash::Filters::Collate do
+describe LogStash::Filters::LimitDuplicate do
   extend LogStash::RSpec
 
   describe "drop duplicated event by default settings" do
@@ -89,6 +89,47 @@ describe LogStash::Filters::Collate do
         end
         if i == 2 # third one should be the messageC
           insist { s["message"] } == "messageC"
+        end
+      end
+    end
+  end
+
+  describe "limit only a specific event" do
+    config <<-CONFIG
+      filter {
+        grep {
+          add_tag => [ "duplicate" ]
+          match => [ "message", "A" ]
+          drop => false
+        }
+        if "duplicate" in [tags] {
+          limit_duplicate {
+          }
+        }
+      }
+    CONFIG
+
+    events = [
+      {
+        "message" => "messageA"
+      },
+      {
+        "message" => "messageB"
+      },
+      {
+        "message" => "messageA"
+      }
+    ]
+
+    sample(events) do
+      insist { subject }.is_a? Array
+      insist { subject.length } == 2
+      subject.each_with_index do |s,i|
+        if i == 0 # first one should be the messageA
+          insist { s["message"] } == "messageA"
+        end
+        if i == 1 # second one should be the messageA
+          insist { s["message"] } == "messageB"
         end
       end
     end
