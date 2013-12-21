@@ -142,4 +142,24 @@ describe LogStash::Event do
       end
     end
   end
+
+  it "timestamp parsing speed", :if => ENV["SPEEDTEST"] do
+    warmup = 10000
+    count = 1000000
+
+    data = { "@timestamp" => "2013-12-21T07:25:06.605Z" }
+    event = LogStash::Event.new(data)
+    insist { event["@timestamp"] }.is_a?(Time)
+
+    duration = 0
+    [warmup, count].each do |i|
+      start = Time.now
+      i.times do
+        data = { "@timestamp" => "2013-12-21T07:25:06.605Z" }
+        LogStash::Event.new(data.clone)
+      end
+      duration = Time.now - start
+    end
+    puts "event @timestamp parse rate: #{count / duration}/sec"
+  end
 end
