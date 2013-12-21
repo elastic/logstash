@@ -41,7 +41,7 @@ grammar LogStashConfig
   rule plugin
     name _ "{"
       _
-      attributes:( attribute (whitespace _ attribute)*)?
+      attributes:( attribute ( ( whitespace / _ "," _ ) _ attribute)*)?
       _
     "}"
     <LogStash::Config::AST::Plugin>
@@ -55,16 +55,32 @@ grammar LogStashConfig
   end
 
   rule attribute
-    name _ "=>" _ value
+    name _ ( "=>" / ":" ) _ value
     <LogStash::Config::AST::Attribute>
   end
 
   rule value
-    plugin / bareword / string / number / array / hash
+    plugin / null / boolean / bareword / string / number / array / hash
   end
 
   rule array_value
-    bareword / string / number / array / hash
+    null / boolean / bareword / string / number / array / hash
+  end
+
+  rule null
+    "null" <LogStash::Config::AST::NullValue>
+  end
+
+  rule boolean
+    true / false
+  end
+
+  rule true
+    "true" <LogStash::Config::AST::TrueValue>
+  end
+
+  rule false
+    "false" <LogStash::Config::AST::FalseValue>
   end
 
   rule bareword
@@ -73,11 +89,11 @@ grammar LogStashConfig
   end
 
   rule double_quoted_string
-    ( '"' ( '\"' / !'"' . )* '"' <LogStash::Config::AST::String>)
+    ( '"' ( "\\" . / !'"' . )* '"' <LogStash::Config::AST::JSONString>)
   end
 
   rule single_quoted_string
-    ( "'" ( "\\'" / !"'" . )* "'" <LogStash::Config::AST::String>)
+    ( "'" ( !"'" . )* "'" <LogStash::Config::AST::String>)
   end
 
   rule string
@@ -89,7 +105,7 @@ grammar LogStashConfig
   end
 
   rule number
-    "-"? [0-9]+ ("." [0-9]*)?
+    "-"? [0-9]+ ("." [0-9]*)? ( [eE] [+-]? [0-9]+ )?
     <LogStash::Config::AST::Number>
   end
 
@@ -114,12 +130,12 @@ grammar LogStashConfig
   end
 
   rule hashentries
-    hashentry (whitespace hashentry)*
+    hashentry ( ( whitespace / _ "," _ ) hashentry)*
     <LogStash::Config::AST::HashEntries>
   end
 
   rule hashentry
-    name:(number / bareword / string) _ "=>" _ value
+    name:(number / bareword / string) _ ( "=>" / ":" ) _ value
     <LogStash::Config::AST::HashEntry>
   end
 

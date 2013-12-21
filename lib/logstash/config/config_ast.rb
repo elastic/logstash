@@ -40,7 +40,14 @@ class Treetop::Runtime::SyntaxNode
 end
 
 module LogStash; module Config; module AST 
-  class Node < Treetop::Runtime::SyntaxNode; end
+  class Node < Treetop::Runtime::SyntaxNode
+    private
+
+    def json_parse_value(jsonstr)
+      JSON.parse("[ #{jsonstr} ]").first
+    end
+  end
+
   class Config < Node
     def compile
       # TODO(sissel): Move this into config/config_ast.rb
@@ -204,6 +211,21 @@ module LogStash; module Config; module AST
     end
   end
 
+  class NullValue < Value
+    def compile
+      'nil'
+    end
+  end
+  class TrueValue < Value
+    def compile
+      'true'
+    end
+  end
+  class FalseValue < Value
+    def compile
+      'false'
+    end
+  end
   class Bareword < Value
     def compile
       return Unicode.wrap(text_value)
@@ -212,6 +234,11 @@ module LogStash; module Config; module AST
   class String < Value
     def compile
       return Unicode.wrap(text_value[1...-1])
+    end
+  end
+  class JSONString < String
+    def compile
+      return Unicode.wrap(json_parse_value(text_value))
     end
   end
   class RegExp < Value
@@ -317,7 +344,7 @@ module LogStash; module Config; module AST
       item, regexp = recursive_select(LogStash::Config::AST::RValue)
       # Compile strings to regexp's
       if regexp.is_a?(LogStash::Config::AST::String)
-        regexp = "/#{regexp.text_value[1..-2]}/"
+        regexp = "Regexp.new(#{regexp.compile})"
       else
         regexp = regexp.compile
       end

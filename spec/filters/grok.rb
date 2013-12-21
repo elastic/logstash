@@ -168,7 +168,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{FIZZLE=\\d+}" ]
+          match => [ "message",  "%{FIZZLE=\\\\d+}" ]
           named_captures_only => false
           singles => true
         }
@@ -285,7 +285,7 @@ describe LogStash::Filters::Grok do
         filter {
           grok {
             singles => true
-            match => [ "message",  "(?<foo>\w+)" ]
+            match => [ "message",  '(?<foo>\w+)' ]
           }
         }
       CONFIG
@@ -377,7 +377,7 @@ describe LogStash::Filters::Grok do
       filter {
         grok {
           match => [ "message",  "matchme %{NUMBER:fancy}" ]
-          tag_on_failure => false
+          tag_on_failure => "false"
         }
       }
     CONFIG

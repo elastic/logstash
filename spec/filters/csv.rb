@@ -69,7 +69,7 @@ describe LogStash::Filters::CSV do
     config <<-CONFIG
       filter {
         csv {
-          quote_char => "\x00"
+          quote_char => "\\u0000"
         }
       }
     CONFIG
