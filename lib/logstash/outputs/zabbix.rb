@@ -120,9 +120,19 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
         begin
           f = IO.popen(cmd, "a+")
           f.close_write unless f.closed?
+
+          command_output = f.gets
+          command_processed = command_output[/processed: (\d+)/,1]
+          command_failed = command_output[/failed: (\d+)/,1]
+          command_total = command_output[/total: (\d+)/,1]
+          command_seconds_spent = command_output[/seconds spent: ([\d\.]+)/,1]
+
           @logger.info("Message was sent to zabbix server",
                        :command => cmd, :event => event,
-                       :command_output => f.gets)
+                       :command_processed => command_processed,
+                       :command_failed => command_failed,
+                       :command_total => command_total,
+                       :command_seconds_spent => command_seconds_spent)
         rescue => e
           @logger.warn("Skipping zabbix output; error calling zabbix_sender",
                        :command => cmd, :missed_event => event,
