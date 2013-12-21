@@ -127,6 +127,10 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
                        :exception => e, :backtrace => e.backtrace)
         end
       end
+    else
+      @logger.warn("Skipping zabbix output; some issues with zabbix parameters conversion",
+                   :missed_event => event, :zabbix_host => host,
+                   :zabbix_item => item, :send_field => field)
     end
   end # def receive
 end # class LogStash::Outputs::Zabbix
