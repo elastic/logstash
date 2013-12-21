@@ -1,7 +1,8 @@
 # encoding: utf-8
 require "logstash/namespace"
 require "logstash/outputs/base"
- 
+require "shellwords"
+
 # The zabbix output is used for sending item data to zabbix via the
 # zabbix_sender executable.
 #
@@ -29,7 +30,7 @@ require "logstash/outputs/base"
 #          add_field => [
 #            "zabbix_host", "%{source_host}",
 #            "zabbix_item", "item.key"
-#            "send_field", "send_field.value"
+#            "send_field", "field_name"
 #          ]
 #       }
 #        grok {
@@ -47,50 +48,50 @@ require "logstash/outputs/base"
 #       zabbix {
 #         # only process events with this tag
 #         tags => "zabbix-sender"
-#  
+#
 #         # specify the hostname or ip of your zabbix server
 #         # (defaults to localhost)
 #         host => "localhost"
-#  
+#
 #         # specify the port to connect to (default 10051)
 #         port => "10051"
-#  
+#
 #         # specify the path to zabbix_sender
 #         # (defaults to "/usr/local/bin/zabbix_sender")
 #         zabbix_sender => "/usr/local/bin/zabbix_sender"
 #       }
 #     }
 class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
- 
+
   config_name "zabbix"
   milestone 2
 
   config :host, :validate => :string, :default => "localhost"
   config :port, :validate => :number, :default => 10051
   config :zabbix_sender, :validate => :path, :default => "/usr/local/bin/zabbix_sender"
- 
+
   public
   def register
     # nothing to do
   end # def register
- 
+
   public
   def receive(event)
     return unless output?(event)
- 
+
     if !File.exists?(@zabbix_sender)
       @logger.warn("Skipping zabbix output; zabbix_sender file is missing",
                    :zabbix_sender => @zabbix_sender, :missed_event => event)
       return
     end
- 
+
     host = event["zabbix_host"]
     if !host
       @logger.warn("Skipping zabbix output; zabbix_host field is missing",
                    :missed_event => event)
       return
     end
- 
+
     item = event["zabbix_item"]
     if !item
       @logger.warn("Skipping zabbix output; zabbix_item field is missing",
@@ -102,7 +103,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
     if !field
       field = "message"
     end
- 
+
     host = [host] if host.is_a?(String)
     item = [item] if item.is_a?(String)
     field = [field] if field.is_a?(String)
@@ -110,8 +111,7 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
     if host.is_a?(Array) && item.is_a?(Array) && field.is_a?(Array) 
       item.each_with_index do |key, index|
         zmsg = event[field[index]]
-        zmsg = zmsg.gsub("\n", "\\n")
-        zmsg = zmsg.gsub(/"/, "\\\"")
+        zmsg = Shellwords.shellescape(zmsg)
 
         cmd = "#{@zabbix_sender} -z #{@host} -p #{@port} -s #{host[index]} -k #{item[index]} -o \"#{zmsg}\" 2>/dev/null >/dev/null"
 
