@@ -4,6 +4,7 @@ require "time"
 require "date"
 require "logstash/namespace"
 require "logstash/util/fieldreference"
+require "logstash/time_addon"
 
 # Use a custom serialization for jsonifying Time objects.
 # TODO(sissel): Put this in a separate file.
@@ -42,20 +43,25 @@ end
 class LogStash::Event
   class DeprecatedMethod < StandardError; end
 
+  CHAR_PLUS = "+"
+  TIMESTAMP = "@timestamp"
+  VERSION = "@version"
+  VERSION_ONE = "1"
+
   public
   def initialize(data={})
     @cancelled = false
 
     @data = data
-    if data.include?("@timestamp")
-      t = data["@timestamp"]
+    data[VERSION] = VERSION_ONE if !@data.include?(VERSION)
+    if data.include?(TIMESTAMP) 
+      t = data[TIMESTAMP]
       if t.is_a?(String)
-        data["@timestamp"] = Time.parse(t).gmtime
+        data[TIMESTAMP] = LogStash::Time.parse_iso8601(t)
       end
     else
-      data["@timestamp"] = ::Time.now.utc 
+      data[TIMESTAMP] = ::Time.now.utc
     end
-    data["@version"] = "1" if !@data.include?("@version")
   end # def initialize
 
   public
@@ -97,8 +103,8 @@ class LogStash::Event
   end
 
   public
-  def timestamp; return @data["@timestamp"]; end # def timestamp
-  def timestamp=(val); return @data["@timestamp"] = val; end # def timestamp=
+  def timestamp; return @data[TIMESTAMP]; end # def timestamp
+  def timestamp=(val); return @data[TIMESTAMP] = val; end # def timestamp=
 
   def unix_timestamp
     raise DeprecatedMethod
@@ -111,7 +117,8 @@ class LogStash::Event
   # field-related access
   public
   def [](str)
-    if str[0,1] == "+"
+    if str[0,1] == CHAR_PLUS
+      # nothing?
     else
       return LogStash::Util::FieldReference.exec(str, @data)
     end
@@ -119,7 +126,7 @@ class LogStash::Event
   
   public
   def []=(str, value)
-    if str == "@timestamp" && !value.is_a?(Time)
+    if str == TIMESTAMP && !value.is_a?(Time)
       raise TypeError, "The field '@timestamp' must be a Time, not a #{value.class} (#{value})"
     end
 
