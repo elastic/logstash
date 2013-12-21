@@ -113,18 +113,29 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
         zmsg = event[field[index]]
         zmsg = Shellwords.shellescape(zmsg)
 
-        cmd = "#{@zabbix_sender} -z #{@host} -p #{@port} -s #{host[index]} -k #{item[index]} -o \"#{zmsg}\" 2>/dev/null >/dev/null"
+        cmd = "#{@zabbix_sender} -z #{@host} -p #{@port} -s #{host[index]} -k #{item[index]} -o \"#{zmsg}\" -v"
 
         @logger.debug("Running zabbix command", :command => cmd)
 
         begin
-          # TODO(sissel): Update this to use IO.popen so we can capture the output and
-          # log it accordingly.
-          system(cmd)
+          f = IO.popen(cmd, "a+")
+          f.close_write unless f.closed?
+          @logger.info("Message was sent to zabbix server",
+                       :command => cmd, :event => event,
+                       :command_output => f.gets)
         rescue => e
           @logger.warn("Skipping zabbix output; error calling zabbix_sender",
                        :command => cmd, :missed_event => event,
                        :exception => e, :backtrace => e.backtrace)
+        ensure
+          begin
+            @logger.debug("Checking zabbix_sender command closing status", 
+                         :event => event, :command_status => f.closed?)
+            f.close unless f.closed?
+          rescue => e
+            @logger.warn("Error during closing zabbix_sender subprocess",
+                       :exception => e, :backtrace => e.backtrace)
+          end
         end
       end
     else
