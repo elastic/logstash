@@ -20,7 +20,7 @@ class LogStash::Pipeline
     # This will compile the config to ruby and evaluate the resulting code.
     # The code will initialize all the plugins and define the
     # filter and output methods.
-    code = @config.compile
+    code = @config.to_ruby
     # The config code is hard to represent as a log message...
     # So just print it.
     @logger.debug? && @logger.debug("Compiled pipeline code:\n#{code}")

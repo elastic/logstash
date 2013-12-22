@@ -63,25 +63,19 @@ module LogStash::Config
 
 
   module AST
-    describe NullValue do
-      it "parses to nil" do
+    describe Value do
+      it "parses `null` as `nil`" do
         insist { Dummy.parsed('null') }.nil?
       end
-    end
 
-    describe TrueValue do
-      it "parses to true" do
+      it "parses `true` as `true`" do
         insist { Dummy.parsed('true') } == true
       end
-    end
 
-    describe FalseValue do
-      it "parses to false" do
+      it "parses `false` as `false`" do
         insist { Dummy.parsed('false') } == false
       end
-    end
 
-    describe JSONString do
       it "parses double-quoted strings using JSON to do the details" do
         [ "foo",
           "foo bar",
@@ -94,10 +88,8 @@ module LogStash::Config
           insist { Dummy.parsed(test_value.to_json) } == test_value
         end
       end
-    end
 
-    describe Value do
-      it "is JSON-compatible" do
+      it "passes JSON unit tests" do
         # This also ensures proper parsing of numbers & strings with
         # all the quoting corner cases.
         Dir[ ::File.join(Gem::Specification.find_by_name('json').gem_dir,
@@ -105,6 +97,21 @@ module LogStash::Config
           map { |fixture| ::File.read(fixture) }.
           each { |jsonstr| insist { Dummy.parsed(jsonstr) } == JSON[jsonstr] }
       end
+
+      it "handles nested hashes" do
+        insist { Dummy.parsed("{ foo => 1, bar => { baz => 2, quux => 3 } }") } == {
+          'foo' => 1,
+          'bar' => {
+            'baz' => 2,
+            'quux' => 3 }}
+      end
+
+      it "parses single-quoted string like POSIX shell" do
+        insist { Dummy.parsed("'foo'") } == "foo"
+        insist { Dummy.parsed("'fo\\o'") } == "fo\\o"
+        insist { Dummy.parsed("'foo\\'") } == "foo\\"
+      end
+
     end
   end
 end
