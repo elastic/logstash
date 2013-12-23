@@ -39,13 +39,14 @@ end
 module LogStash; module Config; module AST
   class NodeArray < Array
     def to_ruby(join_with=nil, &block)
-      pieces = map(&:to_ruby).reject(&:empty?)
-      pieces.map!(&block) if block_given?
-      if join_with
-        return pieces.join(join_with)
-      else
-        return pieces
-      end
+      pieces = ( @pieces ||= map(&:to_ruby).reject(&:empty?) )
+      pieces = pieces.map(&block) if block_given?
+      pieces = pieces.join(join_with) if join_with
+      return pieces
+    end
+
+    def select(&block)
+      self.class.new(super)
     end
   end
 
@@ -91,33 +92,28 @@ module LogStash; module Config; module AST
 
   class Config < SyntaxNode
     def to_ruby
-      # TODO(sissel): Move this into config/config_ast.rb
-      code = []
-      code << "@inputs = []"
-      code << "@filters = []"
-      code << "@outputs = []"
-      items.each do |s|
-        code << s.initializer_ruby
-      end
+      <<-EOF
+@inputs = []
+@filters = []
+@outputs = []
+#{items.map(&:initializer_ruby).join("\n")}
+@filter_func = lambda do |event, &block|
+  extra_events = []
+  begin
+#{section_ruby('filter').gsub(/^/m, '    ')}
+  ensure
+    extra_events.each(&block)
+  end
+end
+@output_func = lambda do |event, &block|
+#{section_ruby('output').gsub(/^/m, '  ')}
+end
+      EOF
+    end
 
-      ["filter", "output"].each do |type|
-        code << "@#{type}_func = lambda do |event, &block|"
-        if type == "filter"
-          code << "  extra_events = []"
-        end
-
-        code << "  @logger.info? && @logger.info(\"#{type} received\", :event => event)"
-        items.select { |s| s.type == type }.each do |s|
-          code << s.to_ruby.gsub(/^/m, '  ')
-        end
-
-        if type == "filter"
-          code << "  extra_events.each(&block)"
-        end
-        code << "end\n"
-      end
-
-      return code.join("\n")
+    def section_ruby(type)
+      items_rb = items.select { |s| s.type == type }.to_ruby("\n")
+      "@logger.info? && @logger.info(\"#{type} received\", :event => event)\n#{items_rb}"
     end
   end
 
@@ -174,11 +170,8 @@ module LogStash; module Config; module AST
     end
 
     def initializer_ruby
-      if items.empty?
-        return "plugin(#{type.inspect}, #{plugin_name.inspect})" << (type == "codec" ? "" : "\n")
-      else
-        return "plugin(#{type.inspect}, #{plugin_name.inspect}, #{attributes_ruby})" << (type == "codec" ? "" : "\n")
-      end
+      maybe_attributes = ( ", #{attributes_ruby}" unless items.empty? )
+      return "plugin(#{type.inspect}, #{plugin_name.inspect}#{maybe_attributes})" << ("\n" unless type == "codec")
     end
 
     def to_ruby
@@ -186,27 +179,7 @@ module LogStash; module Config; module AST
         when "input"
           return "start_input(#{variable_name})"
         when "filter"
-          # This is some pretty stupid code, honestly.
-          # I'd prefer much if it were put into the Pipeline itself
-          # and this should simply to_ruby to 
-          #   #{variable_name}.filter(event)
-          return [
-            "newevents = []",
-            "extra_events.each do |event|",
-            "  #{variable_name}.filter(event) do |newevent|",
-            "    newevents << newevent",
-            "  end",
-            "end",
-            "extra_events += newevents",
-
-            "#{variable_name}.filter(event) do |newevent|",
-            "  extra_events << newevent",
-            "end",
-            "if event.cancelled?",
-            "  extra_events.each(&block)",
-            "  return",
-            "end",
-          ].join("\n") << "\n"
+          return "#{variable_name}.handle(event, extra_events, &block) ; return if event.cancelled?\n"
         when "output"
           return "#{variable_name}.handle(event)\n"
         when "codec"
