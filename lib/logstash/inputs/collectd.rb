@@ -38,6 +38,9 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   config_name "collectd"
   milestone 1
 
+  # Define the regex as a constant
+  AUTHFILEREGEX = /[^:]+: .+/
+
   # File path(s) to collectd types.db to use.
   # The last matching pattern wins if you have identical pattern names in multiple files.
   # If no types.db is provided the included types.db will be used (currently 5.4.0).
@@ -54,6 +57,42 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
 
   # Buffer size. 1452 is the collectd default for v5+
   config :buffer_size, :validate => :number, :default => 1452
+
+  # Security Level. Default is "None". This setting mirrors the setting from the
+  # collectd (Network plugin)[https://collectd.org/wiki/index.php/Plugin:Network]
+  config :security_level, :validate => ["None", "Sign", "Encrypt"],
+    :default => "None"
+
+  # Set whether or not we accept incorrectly signed packets
+
+  # Path to the authentication file. This file should have the same format as
+  # the (AuthFile)[http://collectd.org/documentation/manpages/collectd.conf.5.shtml#authfile_filename]
+  # in collectd. You only need to set this option if the security_level is set to
+  # "Sign" or "Encrypt"
+  config :authfile, :validate => :string
+
+  private
+  def parse_authfile
+    # We keep the authfile parsed in memory so we don't have to open the file
+    # for every event.
+    @logger.debug("Parsing authfile #{@authfile}")
+    if !File.exist?(@authfile)
+      # XXX Should we really kill the pipeline?
+      @logger.error("The file #{@authfile} was not found")
+    end
+    @auth = {}
+    @authmtime = File.stat(@authfile).mtime
+    File.readlines(@authfile).each do |line|
+      line.chomp!
+      if line !~ AUTHFILEREGEX
+        @logger.warn("Ignoring malformed authfile line '#{line}'")
+        next
+      end
+      k,v = line.split(': ')
+      @logger.debug("Added authfile entry '#{k}' with key '#{v}'")
+      @auth[k] = v
+    end
+  end
 
   public
   def initialize(params)
@@ -91,6 +130,14 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
       end
     end
     @logger.info("Using internal types.db", :typesdb => @typesdb.to_s)
+
+    if @authfile.nil? and (@security_level == "Encrypt" || @security_level == "Sign")
+        raise "Security level is set to #{@security_level}, but no authfile was configured"
+    else
+      require 'openssl'
+      parse_authfile
+    end
+
   end # def register
 
   public
@@ -138,6 +185,8 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
       when 9;   return "interval"
       when 256; return "message"
       when 257; return "severity"
+      when 512; return "signature"
+      when 522; return "encryption"
     end
   end # def type_map
 
@@ -193,6 +242,18 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
         else
           @logger.error("Incorrect number of data fields for collectd record", :body => body.to_s)
         end
+      when 512 # signature
+        if body.length < 32
+          @logger.warning("SHA256 signature too small (got #{body.length} bytes instead of 32)")
+        elsif body.length < 33
+          @logger.warning("Received signature without username")
+        else
+          retval = []
+          # Byte 32 till the end contains the username as chars (=unsigned ints)
+          retval << body[32..-1].pack('C*')
+          # Byte 0 till 31 contain the signature
+          retval << body[0..31].pack('C*')
+        end
     end
     # Populate some state variables based on their type...
     case id
@@ -207,9 +268,35 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
       when 4;   @cdtype = retval
       when 5;   @type_instance = retval
       when 1,8; @timestamp = retval
-    end 
+    end
     return retval
   end # def get_values
+
+  private
+  def verify_signature(user, signature, payload)
+    if @security_level == "None"
+      return true
+    end
+
+    # Validate that our auth data is still up-to-date
+    if @authmtime < File.stat(@authfile).mtime
+      parse_authfile
+    end
+
+    key = @auth[user]
+    if key.nil?
+      @logger.warn("Unable to verify signature. User #{user} is not found in the authfile #{@authfile}")
+      return false
+    end
+
+    # The signature cannot sign itself, so remove it from the payload
+    ignorelen = 31 + user.length
+    if OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha256'), key, payload[ignorelen..-1]) == signature
+      @logger.debug("Signature matches!")
+      return true
+    end
+    return false
+  end
 
   private
   def generate_event(data, output_queue)
@@ -223,7 +310,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     decorate(event)
     output_queue << event
   end # def generate_event
-  
+
   private
   def collectd_listener(output_queue)
 
@@ -274,14 +361,22 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           end
           # Here is where we actually fill @collectd
           values = get_values(@typenum, @body)
-          if values.kind_of?(Array)
-            if values.length > 1                  # Only do this iteration on multi-value arrays
-              values.each_with_index {|value, x| @collectd[@types[@collectd['collectd_type']][x]] = values[x]}
-            else                                  # Otherwise it's a single value
-              @collectd['value'] = values[0]      # So name it 'value' accordingly
+          if ["signature","encryption"].include?(field)
+            if !verify_signature(values[0], values[1], payload)
+              # clean up and stop processing
+              @idbyte = 0; @length = 0; @header.clear; @typenum = nil; @body.clear; @collectd.clear; @prev_typenum=0
+              break
             end
-          elsif field != nil                      # Not an array, make sure it's non-empty
-            @collectd[field] = values             # Append values to @collectd under key field
+          else
+            if values.kind_of?(Array)
+              if values.length > 1                  # Only do this iteration on multi-value arrays
+                values.each_with_index {|value, x| @collectd[@types[@collectd['collectd_type']][x]] = values[x]}
+              else                                  # Otherwise it's a single value
+                @collectd['value'] = values[0]      # So name it 'value' accordingly
+              end
+            elsif field != nil                      # Not an array, make sure it's non-empty
+              @collectd[field] = values             # Append values to @collectd under key field
+            end
           end
           @prev_typenum = @typenum
           # All bytes in the collectd event have now been processed.  Reset counters, header & body.
