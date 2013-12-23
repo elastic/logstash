@@ -1,8 +1,8 @@
-1.3.2 (???)
+1.3.2 (December 23, 2013)
   # upgrade notes
-  - If you used logstash 1.3.0 or 1.3.1, you should set 'template_overwrite => true'
-    in your elasticsearch (or elasticsearch_http) outputs before upgrading to
-    this version to ensure you receive the fixed index template.
+  - Users of logstash 1.3.0 or 1.3.1 should set 'template_overwrite => true' in
+    your elasticsearch (or elasticsearch_http) outputs before upgrading to this
+    version to ensure you receive the fixed index template.
 
   # general
   - web: don't crash if an invalid http request was sent
