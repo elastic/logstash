@@ -1,7 +1,8 @@
 require "treetop"
 require "logstash/config/config_ast"
 
-grammar LogStashConfig include LogStash::Config::AST
+grammar LogStashConfig
+  include LogStash::Config::AST
 
   rule config
     _ _item:plugin_section _ _items:( _ _item:plugin_section )* _ <Config>
