@@ -136,8 +136,8 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
       when 5;   return "type_instance"
       when 6;   return "values"
       when 9;   return "interval"
-      when 100; return "message"
-      when 101; return "severity"
+      when 256; return "message"
+      when 257; return "severity"
     end
   end # def type_map
 
@@ -156,14 +156,14 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   def get_values(id, body)
     retval = ''
     case id
-      when 0,2,3,4,5,100 #=> String types
+      when 0,2,3,4,5,256 #=> String types
         retval = body.pack("C*")
         retval = retval[0..-2]
       when 1 # Time
         # Time here, in bit-shifted format.  Parse bytes into UTC.
         byte1, byte2 = body.pack("C*").unpack("NN")
         retval = Time.at(( ((byte1 << 32) + byte2))).utc
-      when 7,101 #=> Numeric types
+      when 7,257 #=> Numeric types
         retval = body.slice!(0..7).pack("C*").unpack("E")[0]
       when 8 # Time, Hi-Res
         # Time here, in bit-shifted format.  Parse bytes into UTC.
@@ -202,7 +202,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           @collectd.delete('plugin_instance')
         end
         @plugin = retval
-      when 0;   @cdhost = retval        
+      when 0;   @cdhost = retval
       when 3;   @plugin_instance = retval
       when 4;   @cdtype = retval
       when 5;   @type_instance = retval
@@ -216,7 +216,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     # Prune these *specific* keys if they exist and are empty.
     # This is better than looping over all keys every time.
     data.delete('type_instance') if data['type_instance'] == ""
-    data.delete('plugin_instance') if data['plugin_instance'] == ""              
+    data.delete('plugin_instance') if data['plugin_instance'] == ""
     # As crazy as it sounds, this is where we actually send our events to the queue!
     event = LogStash::Event.new
     data.each {|k, v| event[k] = data[k]}
@@ -249,8 +249,8 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           @header << byte
         # Now that we have looped exactly 4 times...
         elsif @idbyte == 4
-          @typenum = (@header[0] << 1) + @header[1] # @typenum gets the first 2 bytes
-          @length  = (@header[2] << 1) + @header[3] # @length gets the second 2 bytes
+          @typenum = (@header[0] << 8) + @header[1] # @typenum gets the first 2 bytes
+          @length  = (@header[2] << 8) + @header[3] # @length gets the second 2 bytes
           @body << byte                             # @body begins with the current byte
         # And if we've looped more than 4, up until the length of the message (now defined)
         elsif @idbyte > 4 && @idbyte < @length
@@ -258,7 +258,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
         end
         # So long as we have @length and we've reached it, it's time to parse
         if @length > 0 && @idbyte == @length-1
-          field = type_map(@typenum)              # Get the field name based on type            
+          field = type_map(@typenum)              # Get the field name based on type
           if @typenum < @prev_typenum             # We've started over, generate an event
             if @prune_intervals
               generate_event(@collectd, output_queue) unless @prev_typenum == 7 or @prev_typenum == 9
