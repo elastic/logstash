@@ -35,7 +35,7 @@ class LogStash::Outputs::Zulip < LogStash::Outputs::Base
     require "uri"
 
 
-    @url = "https://zulip.com/api/v1/messages"
+    @url = "https://api.zulip.com/v1/messages"
     
     @zul_uri = URI.parse(@url)
     @client = Net::HTTP.new(@zul_uri.host, @zul_uri.port)
