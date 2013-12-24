@@ -62,6 +62,7 @@ class LogStashConfigDocGenerator
   end # def set_class_description
  
   def add_comment(comment)
+    return if comment == "encoding: utf-8"
     @comments << comment
   end # def add_comment
 
