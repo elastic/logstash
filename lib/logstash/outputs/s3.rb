@@ -104,252 +104,251 @@ require 'logstash/namespace'
 # LET'S ROCK AND ROLL ON THE CODE!
 
 class LogStash::Outputs::S3 < LogStash::Outputs::Base
- #TODO integrate aws_config in the future 
- #  include LogStash::PluginMixins::AwsConfig
+  #TODO integrate aws_config in the future 
+  #  include LogStash::PluginMixins::AwsConfig
 
- config_name "s3"
- milestone 1
+  config_name 's3'
+  milestone 1
 
- # Aws access_key.
- config :access_key_id, :validate => :string
- 
- # Aws secret_access_key
- config :secret_access_key, :validate => :string
+  # Aws access_key.
+  config :access_key_id, :validate => :string
 
- # S3 bucket
- config :bucket, :validate => :string
+  # Aws secret_access_key
+  config :secret_access_key, :validate => :string
 
- # Aws endpoint_region
- config :endpoint_region, :validate => ["us-east-1", "us-west-1", "us-west-2",
-                                        "eu-west-1", "ap-southeast-1", "ap-southeast-2",
-                                        "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
+  # S3 bucket
+  config :bucket, :validate => :string
 
- # Set the size of file in KB, this means that files on bucket when have dimension > file_size, they are stored in two or more file. 
- # If you have tags then it will generate a specific size file for every tags
- ##NOTE: define size of file is the better thing, because generate a local temporary file on disk and then put it in bucket. 
- config :size_file, :validate => :number, :default => 0
+  # Aws endpoint_region
+  config :endpoint_region, :validate => ["us-east-1", "us-west-1", "us-west-2",
+                                         "eu-west-1", "ap-southeast-1", "ap-southeast-2",
+                                         "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
 
- # Set the time, in minutes, to close the current sub_time_section of bucket. 
- # If you define file_size you have a number of files in consideration of the section and the current tag.
- # 0 stay all time on listerner, beware if you specific 0 and size_file 0, because you will not put the file on bucket,
- # for now the only thing this plugin can do is to put the file when logstash restart.
- config :time_file, :validate => :number, :default => 0 
- 
- # The event format you want to store in files. Defaults to plain text.
- config :format, :validate => [ "json", "plain", "nil" ], :default => "plain"
+  # Set the size of file in KB, this means that files on bucket when have dimension > file_size, they are stored in two or more files. 
+  # If you have tags then it will generate a specific size file for every tag
+  ##NOTE: define size of file is the better thing, because generate a local temporary file on disk and then put it in bucket. 
+  config :size_file, :validate => :number, :default => 0
 
- ## IMPORTANT: if you use multiple instance of s3, you should specify on one of them the "restore=> true" and on the others "restore => false".
- ## This is hack for not destroy the new files after restoring the initial files. 
- ## If you do not specify "restore => true" when logstash crashes or is restarted, the files are not sent into the bucket,
- ## for example if you have single Instance. 
- config :restore, :validate => :boolean, :default => false
+  # Set the time, in minutes, to close the current sub_time_section of bucket. 
+  # If you define file_size you have a number of files in consideration of the section and the current tag.
+  # 0 stay all time on listerner, beware if you specific 0 and size_file 0, because you will not put the file on bucket,
+  # for now the only thing this plugin can do is to put the file when logstash restart.
+  config :time_file, :validate => :number, :default => 0 
 
- # Aws canned ACL
- config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
-        :default => "private"
+  # The event format you want to store in files. Defaults to plain text.
+  config :format, :validate => [ "json", "plain", "nil" ], :default => "plain"
 
- # Method to set up the aws configuration and establish connection
- def aws_s3_config
+  ## IMPORTANT: if you use multiple instance of s3, you should specify on one of them the "restore=> true" and on the others "restore => false".
+  ## This is hack for not destroy the new files after restoring the initial files. 
+  ## If you do not specify "restore => true" when logstash crashes or is restarted, the files are not sent into the bucket,
+  ## for example if you have single Instance. 
+  config :restore, :validate => :boolean, :default => false
 
-  @endpoint_region == 'us-east-1' ? @endpoint_region = 's3.amazonaws.com' : @endpoint_region = 's3-'+@endpoint_region+'.amazonaws.com'
+  # Aws canned ACL
+  config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
+    :default => "private"
 
-  @logger.info("Registering s3 output", :bucket => @bucket, :endpoint_region => @endpoint_region)
+  # Method to set up the aws configuration and establish connection
+  def aws_s3_config
 
-  AWS.config(
-    :access_key_id => @access_key_id,
-    :secret_access_key => @secret_access_key,
-    :s3_endpoint => @endpoint_region
-  )
-  @s3 = AWS::S3.new 
+    @endpoint_region == 'us-east-1' ? @endpoint_region = 's3.amazonaws.com' : @endpoint_region = 's3-'+@endpoint_region+'.amazonaws.com'
 
- end
+    @logger.info("Registering s3 output", :bucket => @bucket, :endpoint_region => @endpoint_region)
 
- # This method is used to manage sleep and awaken thread.
- def time_alert(interval)
+    AWS.config(
+      :access_key_id => @access_key_id,
+      :secret_access_key => @secret_access_key,
+      :s3_endpoint => @endpoint_region
+    )
+    @s3 = AWS::S3.new 
 
-   Thread.new do
-    loop do
-      start_time = Time.now
-      yield
-      elapsed = Time.now - start_time
-      sleep([interval - elapsed, 0].max)
-    end
-   end
-
- end
-
- # this method is used for write files on bucket. It accept the file and the name of file.
- def write_on_bucket (file_data, file_basename)
- 
-  # if you lose connection with s3, bad control implementation.
-  if ( @s3 == nil) 
-    aws_s3_config
   end
 
-  # find and use the bucket
-  bucket = @s3.buckets[@bucket]
+  # This method is used to manage sleep and awaken thread.
+  def time_alert(interval)
 
-  @logger.debug "S3: ready to write "+file_basename+" in bucket "+@bucket+", Fire in the hole!"
+    Thread.new do
+      loop do
+        start_time = Time.now
+        yield
+        elapsed = Time.now - start_time
+        sleep([interval - elapsed, 0].max)
+      end
+    end
 
-  # prepare for write the file
-  object = bucket.objects[file_basename]
-  object.write(:file => file_data, :acl => @canned_acl)
- 
-  @logger.debug "S3: has written "+file_basename+" in bucket "+@bucket + " with canned ACL \"" + @canned_acl + "\""
+  end
 
- end
-  
- # this method is used for create new path for name the file
- def getFinalPath
-   
-   @pass_time = Time.now 
-   return @temp_directory+"ls.s3."+Socket.gethostname+"."+(@pass_time).strftime("%Y-%m-%dT%H.%M")
+  # this method is used for write files on bucket. It accept the file and the name of file.
+  def write_on_bucket (file_data, file_basename)
 
- end
+    # if you lose connection with s3, bad control implementation.
+    if ( @s3 == nil) 
+      aws_s3_config
+    end
 
- # This method is used for restore the previous crash of logstash or to prepare the files to send in bucket. 
- # Take two parameter: flag and name. Flag indicate if you want to restore or not, name is the name of file 
- def upFile(flag, name)
-   
-   Dir[@temp_directory+name].each do |file|
-     name_file = File.basename(file)
-    
-     if (flag == true)
-      @logger.warn "S3: have found temporary file: "+name_file+", something has crashed before... Prepare for upload in bucket!"
-     end
-    
-     if (!File.zero?(file))  
-       write_on_bucket(file, name_file)
+    # find and use the bucket
+    bucket = @s3.buckets[@bucket]
 
-       if (flag == true)
+    @logger.debug "S3: ready to write "+file_basename+" in bucket "+@bucket+", Fire in the hole!"
+
+    # prepare for write the file
+    object = bucket.objects[file_basename]
+    object.write(:file => file_data, :acl => @canned_acl)
+
+    @logger.debug "S3: has written "+file_basename+" in bucket "+@bucket + " with canned ACL \"" + @canned_acl + "\""
+
+  end
+
+  # this method is used for create new path for name the file
+  def getFinalPath
+
+    @pass_time = Time.now 
+    return @temp_directory+"ls.s3."+Socket.gethostname+"."+(@pass_time).strftime("%Y-%m-%dT%H.%M")
+
+  end
+
+  # This method is used for restore the previous crash of logstash or to prepare the files to send in bucket. 
+  # Take two parameter: flag and name. Flag indicate if you want to restore or not, name is the name of file 
+  def upFile(flag, name)
+
+    Dir[@temp_directory+name].each do |file|
+      name_file = File.basename(file)
+
+      if (flag == true)
+        @logger.warn "S3: have found temporary file: "+name_file+", something has crashed before... Prepare for upload in bucket!"
+      end
+
+      if (!File.zero?(file))  
+        write_on_bucket(file, name_file)
+
+        if (flag == true)
           @logger.debug "S3: file: "+name_file+" restored on bucket "+@bucket
-       else
+        else
           @logger.debug "S3: file: "+name_file+" was put on bucket "+@bucket
-       end
-     end
+        end
+      end
 
-     File.delete (file)
+      File.delete (file)
 
-   end
- end
+    end
+  end
 
- # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
- def newFile (flag)
-  
-   if (flag == true)
-     @current_final_path = getFinalPath
-     @sizeCounter = 0
-   end
+  # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
+  def newFile (flag)
 
-   if (@tags.size != 0)
-     @tempFile = File.new(@current_final_path+".tag_"+@tag_path+"part"+@sizeCounter.to_s+".txt", "w")
-   else
-     @tempFile = File.new(@current_final_path+".part"+@sizeCounter.to_s+".txt", "w")
-   end
+    if (flag == true)
+      @current_final_path = getFinalPath
+      @sizeCounter = 0
+    end
 
- end
+    if (@tags.size != 0)
+      @tempFile = File.new(@current_final_path+".tag_"+@tag_path+"part"+@sizeCounter.to_s+".txt", "w")
+    else
+      @tempFile = File.new(@current_final_path+".part"+@sizeCounter.to_s+".txt", "w")
+    end
 
- public
- def register
-   require "aws-sdk"
-   @temp_directory = "/opt/logstash/S3_temp/"
+  end
 
-   if (@tags.size != 0)
-       @tag_path = ""
-       for i in (0..@tags.size-1)
-          @tag_path += @tags[i].to_s+"." 
-       end
-   end
+  public
+  def register
+    require "aws-sdk"
+    @temp_directory = "/opt/logstash/S3_temp/"
 
-   if !(File.directory? @temp_directory)
-    @logger.debug "S3: Directory "+@temp_directory+" doesn't exist, let's make it!"
-    Dir.mkdir(@temp_directory)
-   else
-    @logger.debug "S3: Directory "+@temp_directory+" exist, nothing to do"
-   end 
-   
-   if (@restore == true )
-     @logger.debug "S3: is attempting to verify previous crashes..."
-   
-     upFile(true, "*.txt")    
-   end
-   
-   newFile(true)
-   
-   if (time_file != 0)
+    if (@tags.size != 0)
+      @tag_path = ""
+      for i in (0..@tags.size-1)
+        @tag_path += @tags[i].to_s+"." 
+      end
+    end
+
+    if !(File.directory? @temp_directory)
+      @logger.debug "S3: Directory "+@temp_directory+" doesn't exist, let's make it!"
+      Dir.mkdir(@temp_directory)
+    else
+      @logger.debug "S3: Directory "+@temp_directory+" exist, nothing to do"
+    end 
+
+    if (@restore == true )
+      @logger.debug "S3: is attempting to verify previous crashes..."
+
+      upFile(true, "*.txt")    
+    end
+
+    newFile(true)
+
+    if (time_file != 0)
       first_time = true
       @thread = time_alert(@time_file*60) do
-       if (first_time == false)
-         @logger.debug "S3: time_file triggered,  let's bucket the file if dosen't empty  and create new file "
-         upFile(false, File.basename(@tempFile))
-         newFile(true)
-       else
-         first_time = false
-       end
-     end
-   end
- 
- end
- 
- public
- def receive(event)
-  return unless output?(event)
-   
-  # Prepare format of Events 
-  if (@format == "plain")
-     message = self.class.format_message(event)
-  elsif (@format == "json")
-     message = event.to_json
-  else
-     message = event.to_s
-  end
-  
-  if(time_file !=0)
-     @logger.debug "S3: trigger files after "+((@pass_time+60*time_file)-Time.now).to_s
-  end
-
-  # if specific the size
-  if(size_file !=0)
-    
-    if (@tempFile.size < @size_file )
-
-       @logger.debug "S3: File have size: "+@tempFile.size.to_s+" and size_file is: "+ @size_file.to_s
-       @logger.debug "S3: put event into: "+File.basename(@tempFile)
-
-       # Put the event in the file, now! 
-       File.open(@tempFile, 'a') do |file|
-         file.puts message
-         file.write "\n"
-       end
-
-     else
-
-       @logger.debug "S3: file: "+File.basename(@tempFile)+" is too large, let's bucket it and create new file"
-       upFile(false, File.basename(@tempFile))
-       @sizeCounter += 1
-       newFile(false)
-
-     end
-     
-  # else we put all in one file 
-  else
-
-    @logger.debug "S3: put event into "+File.basename(@tempFile)
-    File.open(@tempFile, 'a') do |file|
-      file.puts message
-      file.write "\n"
+        if (first_time == false)
+          @logger.debug "S3: time_file triggered, let's bucket the file if doesn't empty and create new file."
+          upFile(false, File.basename(@tempFile))
+          newFile(true)
+        else
+          first_time = false
+        end
+      end
     end
-  end
-    
- end
 
- def self.format_message(event)
+  end
+
+  public
+  def receive(event)
+    return unless output?(event)
+
+    # Prepare format of Events 
+    if (@format == "plain")
+      message = self.class.format_message(event)
+    elsif (@format == "json")
+      message = event.to_json
+    else
+      message = event.to_s
+    end
+
+    if(time_file !=0)
+      @logger.debug "S3: trigger files after "+((@pass_time+60*time_file)-Time.now).to_s
+    end
+
+    # if specific the size
+    if(size_file !=0)
+
+      if (@tempFile.size < @size_file )
+
+        @logger.debug "S3: File have size: "+@tempFile.size.to_s+" and size_file is: "+ @size_file.to_s
+        @logger.debug "S3: put event into: "+File.basename(@tempFile)
+
+        # Put the event in the file, now! 
+        File.open(@tempFile, 'a') do |file|
+          file.puts message
+          file.write "\n"
+        end
+
+      else
+
+        @logger.debug "S3: file: "+File.basename(@tempFile)+" is too large, let's bucket it and create a new file"
+        upFile(false, File.basename(@tempFile))
+        @sizeCounter += 1
+        newFile(false)
+      end
+
+      # else we put all in one file 
+    else
+
+      @logger.debug "S3: put event into "+File.basename(@tempFile)
+      File.open(@tempFile, 'a') do |file|
+        file.puts message
+        file.write "\n"
+      end
+    end
+
+  end
+
+  def self.format_message(event)
     message = "Date: #{event["@timestamp"]}\n"
     message << "Source: #{event["source"]}\n"
     message << "Tags: #{event["tags"].join(', ')}\n"
     message << "Fields: #{event.to_hash.inspect}\n"
     message << "Message: #{event["message"]}"
- end
+  end
 
 end
 
