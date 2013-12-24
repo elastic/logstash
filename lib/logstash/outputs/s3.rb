@@ -1,26 +1,26 @@
 # encoding: utf-8
-require "logstash/outputs/base"
-require "logstash/namespace"
+require 'logstash/outputs/base'
+require 'logstash/namespace'
 
 # TODO integrate aws_config in the future 
 #require "logstash/plugin_mixins/aws_config"
 
 # INFORMATION:
 
-# This plugin was created for store the logstash's events into Amazon Simple Storage Service (Amazon S3).
-# For use it you needs authentications and an s3 bucket. 
-# Be careful to have the permission to write file on S3's bucket and run logstash with super user for establish connection.
+# This plugin was created to store logstash's events into Amazon Simple Storage Service (Amazon S3).
+# To use it you need authentications and an s3 bucket. 
+# Be careful to have the permission to write file on S3's bucket and run logstash with super user to establish connection.
 
-# S3 plugin allows you to do something complex, let's explain:)
+# The S3 plugin allows you to do something complex, let's explain:)
 
-# S3 outputs create temporary files into "/opt/logstash/S3_temp/". If you want, you can change the path at the start of register method.
-# This files have a special name, for example:
+# S3 outputs create temporary files in "/opt/logstash/S3_temp/". If you want, you can change the path at the start of register method.
+# These files have a special name, for example:
 
 # ls.s3.ip-10-228-27-95.2013-04-18T10.00.tag_hello.part0.txt
 
 # ls.s3 : indicate logstash plugin s3
 
-# "ip-10-228-27-95" : indicate you ip machine, if you have more logstash and writing on the same bucket for example.
+# "ip-10-228-27-95" : indicate you IP machine, if you have more logstash and writing on the same bucket for example.
 # "2013-04-18T10.00" : represents the time whenever you specify time_file.
 # "tag_hello" : this indicate the event's tag, you can collect events with the same tag. 
 # "part0" : this means if you indicate size_file then it will generate more parts if you file.size > size_file. 
@@ -45,7 +45,7 @@ require "logstash/namespace"
 
 # INFORMATION ABOUT CLASS:
 
-# I tried to comment the class at best i could do. 
+# I tried to comment the class at best I could do. 
 # I think there are much thing to improve, but if you want some points to develop here a list:
 
 # TODO Integrate aws_config in the future 
@@ -74,7 +74,7 @@ require "logstash/namespace"
 #    }
 # }
 
-# We analize this:
+# We analyze this:
 
 # access_key_id => "crazy_key" 
 # Amazon will give you the key for use their service if you buy it or try it. (not very much open source anyway)
@@ -89,12 +89,12 @@ require "logstash/namespace"
 # Be careful you have the permission to write on bucket and know the name.
 
 # size_file => 2048
-# Means the size, in KB, of files who can store on temporary directory before you will be pushed on bucket.
+# Means the size, in KB, of files which can store in temporary directory before you will be pushed on bucket.
 # Is useful if you have a little server with poor space on disk and you don't want blow up the server with unnecessary temporary log files.
 
 # time_file => 5
-# Means, in minutes, the time  before the files will be pushed on bucket. Is useful if you want to push the files every specific time.
- 
+# Means, in minutes, the time before the files will be pushed to the S3 bucket. Is useful if you want to push the files every specific time.
+
 # format => "plain"
 # Means the format of events you want to store in the files
 
