@@ -20,7 +20,7 @@ require 'logstash/namespace'
 
 # ls.s3 : indicate logstash plugin s3
 
-# "ip-10-228-27-95" : indicate you IP machine, if you have more logstash and writing on the same bucket for example.
+# "ip-10-228-27-95" : Indicates your machine IP. This is useful in cases where you have multiple instances of Logstash writing to the same bucket.
 # "2013-04-18T10.00" : represents the time whenever you specify time_file.
 # "tag_hello" : this indicate the event's tag, you can collect events with the same tag. 
 # "part0" : this means if you indicate size_file then it will generate more parts if you file.size > size_file. 
