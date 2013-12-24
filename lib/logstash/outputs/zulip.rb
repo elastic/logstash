@@ -41,9 +41,6 @@ class LogStash::Outputs::Zulip < LogStash::Outputs::Base
     @client = Net::HTTP.new(@zul_uri.host, @zul_uri.port)
     if @zul_uri.scheme == "https"
       @client.use_ssl = true
-      #@client.verify_mode = OpenSSL::SSL::VERIFY_PEER
-      # PagerDuty cert doesn't verify oob
-      @client.verify_mode = OpenSSL::SSL::VERIFY_NONE
     end
     
   end # def register
