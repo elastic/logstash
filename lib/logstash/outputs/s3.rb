@@ -228,13 +228,13 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
         end
       end
 
-      File.delete (file)
+      File.delete(file)
 
     end
   end
 
   # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
-  def newFile (flag)
+  def newFile(flag)
 
     if (flag == true)
       @current_final_path = getFinalPath
