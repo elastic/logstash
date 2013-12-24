@@ -54,6 +54,7 @@ class LogStash::Outputs::Zulip < LogStash::Outputs::Base
     begin
       request = Net::HTTP::Post.new(@zul_uri.path)
       request.basic_auth(@botuser, @key)
+      request.add_field("User-Agent", "ZulipLogstash/0.1")
       
       if @zuliptype == 'stream'
         request.set_form_data({'type' => 'stream', 'to' => @to, 'subject' => @subject, 'content' =>  event.sprintf(@format)})
