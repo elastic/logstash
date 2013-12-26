@@ -8,7 +8,7 @@ class LogStash::Inputs::CloudFiles < LogStash::Inputs::Base
   milestone 1
   config_name 'cloud_files'
 
-  default :codec, 'plain'
+  default :codec, 'line'
 
   config :username, :validate => :string, :required => true
   config :api_key, :validate => :string, :required => true
@@ -44,16 +44,13 @@ class LogStash::Inputs::CloudFiles < LogStash::Inputs::Base
   def process_file(queue, file)
     log_stream = StringIO.new(file.body)
     reader = Zlib::GzipReader.new(log_stream)
-    reader.each_line { |l| process_line(queue, l) }
 
-    sincedb_write(file.last_modified)
-  end
-
-  def process_line(queue, line)
-    @codec.decode(line) do |event|
+    @codec.decode(reader.read) do |event|
       decorate(event)
       queue << event
     end
+
+    sincedb_write(file.last_modified)
   end
 
   def sincedb_read
