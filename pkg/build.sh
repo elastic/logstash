@@ -119,7 +119,7 @@ case $os in
     fi
 
     fpm -s dir -t deb -n logstash -v "$RELEASE" \
-      -a all --iteration "1+${os}${DEB_REVISION}" \
+      -a all --iteration "1-${os}${DEB_REVISION}" \
       --url "$URL" \
       --description "$DESCRIPTION" \
       -d "default-jre-headless" \
