@@ -14,6 +14,12 @@
     searching to not work. Added tests to ensure search behavior works as
     expected with this template. (Aaron Mildenstein, Jordan Sissel)
   - Update README.md to be consistent with Makefile use of JRuby 1.7.8
+  - Time parsing in things like the json codec (and other similar parts of
+    logstash) are *much* faster now. This fixes a speed regression that was
+    introduced in logstash 1.2.0.
+
+  # filters
+  - improvement: date: roughly 20% faster (Jordan Sissel)
 
   # outputs
   - new: csv: write csv format to files output. (Matt Gray)
