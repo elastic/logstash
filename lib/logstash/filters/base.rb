@@ -56,7 +56,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   config :remove_tag, :validate => :array, :default => []
 
   # If this filter is successful, add any arbitrary fields to this event.
-  # Tags can be dynamic and include parts of the event using the %{field}
+  # Field names can be dynamic and include parts of the event using the %{field}
   # Example:
   #
   #     filter {
