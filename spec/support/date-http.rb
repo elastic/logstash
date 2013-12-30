@@ -7,6 +7,7 @@ describe "http dates", :if => RUBY_ENGINE == "jruby" do
     filter {
       date {
         match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+        locale => "en"
       }
     }
   CONFIG
