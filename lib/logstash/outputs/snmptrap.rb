@@ -1,6 +1,10 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
+#This output is used to send snmp v2c trap messages to a receiver specified in the host field.  An example use case would be 
+#sending a trap to notify a monitoring system that a certain log message or metric has been seen.  From there the monitoring
+#system could alert or take other action.
+
 class LogStash::Outputs::Snmptrap < LogStash::Outputs::Base
         
  config_name "snmptrap"
