@@ -2,7 +2,7 @@
 title: repositories - logstash
 layout: content_right
 ---
-# LogStash repositories
+# Logstash repositories
 
 We also have Logstash available als APT and YUM repositories.
 
