@@ -2,7 +2,7 @@
 title: Configuration Language - logstash
 layout: content_right
 ---
-# LogStash Config Language
+# Logstash Config Language
 
 The logstash config language aims to be simple.
 
