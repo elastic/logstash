@@ -162,4 +162,26 @@ describe LogStash::Event do
     end
     puts "event @timestamp parse rate: #{count / duration}/sec"
   end
+
+  context "acceptable @timestamp formats" do
+    subject { LogStash::Event.new }
+
+    formats = [ 
+      "YYYY-MM-dd'T'HH:mm:ss.SSSZ",
+      "YYYY-MM-dd'T'HH:mm:ss.SSSSSSZ",
+      "YYYY-MM-dd'T'HH:mm:ss.SSS",
+      "YYYY-MM-dd'T'HH:mm:ss",
+      "YYYY-MM-dd'T'HH:mm:ssZ",
+    ]
+    formats.each do |format|
+      it "includes #{format}" do
+        time = subject.sprintf("%{+#{format}}")
+        begin
+          LogStash::Event.new("@timestamp" => time)
+        rescue 
+          raise StandardError, "Time '#{time}' was rejected"
+        end
+      end
+    end
+  end
 end
