@@ -4,7 +4,7 @@ layout: content_right
 ---
 # LogStash repositories
 
-We also have Logstash available als APT and YUM repositories.
+We also have Logstash available as APT and YUM repositories.
 
 Our public signing key can be found [here](http://packages.elasticsearch.org/GPG-KEY-elasticsearch)
 
