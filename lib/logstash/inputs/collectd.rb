@@ -247,8 +247,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     # for every event.
     @logger.debug("Parsing authfile #{@authfile}")
     if !File.exist?(@authfile)
-      # XXX Should we kill the pipeline?
-      @logger.error("The file #{@authfile} was not found")
+      raise "The file #{@authfile} was not found"
     end
     @auth.clear
     @authmtime = File.stat(@authfile).mtime
@@ -259,7 +258,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
         @logger.debug("Added authfile entry '#{k}' with key '#{v}'")
         @auth[k] = v
       else
-        @logger.warn("Ignoring malformed authfile line '#{line.chomp}'")
+        @logger.info("Ignoring malformed authfile line '#{line.chomp}'")
       end
     end
   end # def parse_authfile
@@ -347,13 +346,12 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
       payload, client = @udp.recvfrom(@buffer_size)
       payload = payload.bytes.to_a
 
-      @logger.debug(payload)
-
       # Clear the last event and set a incoming-time
       @collectd.clear
       @collectd['@timestamp'] = Time.now().utc
       prev_typenum = 0
       was_crypted = false
+      has_error = false
 
       while payload.length > 0 do
         typenum = (payload.slice!(0) << 8) + payload.slice!(0)
@@ -376,6 +374,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
 
         if length > payload.length
           @logger.warn("Header indicated #{length} bytes will follow, but packet has only #{payload.length} bytes left")
+          has_error = true
           break
         end
 
@@ -385,10 +384,17 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
 
         case field
         when "signature"
-          break if !verify_signature(values[0], values[1], payload)
+          if !verify_signature(values[0], values[1], payload)
+            has_error = true
+            break
+          end
           next
         when "encryption"
           payload = decrypt_packet(values[0], values[1], values[2])
+          if payload.length == 0
+            has_error = true
+            break
+          end
           # decrypt_packet returns an empty array if the decryption was
           # unsuccessful and this inner loop checks the length. So we can safely
           # set the 'was_encrypted' variable.
@@ -396,7 +402,10 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           next
         end
 
-        break if !was_encrypted and @security_level == SECURITY_ENCR
+        if !was_encrypted and @security_level == SECURITY_ENCR
+          has_error = true
+          break
+        end
 
         # Fill in the fields.
         if values.kind_of?(Array)
@@ -410,6 +419,10 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
         end
         prev_typenum = typenum
       end # while payload.length > 0 do
+      if !has_error
+        # Generate the last event
+        generate_event(output_queue)
+      end
     end # loop do
 
   ensure
