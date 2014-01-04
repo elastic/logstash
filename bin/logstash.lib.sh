@@ -1,6 +1,7 @@
 basedir=$(cd `dirname $0`/..; pwd)
 
 setup_ruby() {
+  export RUBYLIB="$basedir/lib"
   # Verify ruby works
   if ! ruby -e 'puts "HURRAY"' 2> /dev/null | grep -q "HURRAY" ; then
     echo "No ruby program found. Cannot start."
@@ -9,20 +10,29 @@ setup_ruby() {
 
   eval $(ruby -rrbconfig -e 'puts "RUBYVER=#{RbConfig::CONFIG["ruby_version"]}"; puts "RUBY=#{RUBY_ENGINE}"')
   RUBYCMD="ruby"
+  export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
+  export GEM_PATH=
 }
 
 setup_java() {
-  if [ -z "$JAVA_HOME/bin/java" ] ; then
-    JAVA="$JAVA_HOME/bin/java"
-  else
-    JAVA=$(which java)
+  if [ -z "$JAVACMD" ] ; then
+    if [ -z "$JAVA_HOME/bin/java" ] ; then
+      JAVACMD="$JAVA_HOME/bin/java"
+    else
+      JAVACMD="java"
+    fi
+  elif [ "$(basename $JAVACMD)" = "drip" ] ; then
+    export DRIP_INIT_CLASS="org.jruby.main.DripMain"
+    export DRIP_INIT=
   fi
 
-  if [ ! -x "$JAVA" ] ; then
-    echo "Could not find any executable java binary. Please install java in your PATH or set JAVA_HOME."
-    exit 1
+  if [ ! -x "$JAVACMD" ] ; then
+    JAVACMD="$(which $JAVACMD 2> /dev/null)"
+    if [ ! -x "$JAVACMD" ] ; then
+      echo "Could not find any executable java binary (tried '$JAVACMD'). Please install java in your PATH or set JAVA_HOME."
+      exit 1
+    fi
   fi
-
 
   JAVA_OPTS="$JAVA_OPTS -Xmx${LS_HEAP_SIZE}"
   JAVA_OPTS="$JAVA_OPTS -XX:+UseParNewGC"
@@ -41,30 +51,25 @@ setup_java() {
     JAVA_OPTS="$JAVA_OPTS -Xloggc:./logstash-gc.log"
     echo "Writing garbage collection logs to ./logstash-gc.log"
   fi
+
+  export JAVACMD
+  export JAVA_OPTS
+  export GEM_HOME="$basedir/vendor/bundle/jruby/1.9"
 } 
 
 setup_vendored_jruby() {
   RUBYVER=1.9
   RUBY=jruby
-
-  setup_java
-
-  RUBYCMD="$JAVA $JAVA_OPTS -jar $basedir/vendor/jar/jruby-complete-*.jar"
+  RUBYCMD="$JAVACMD $JAVA_OPTS -jar $basedir/vendor/jar/jruby-complete-*.jar"
 }
 
 setup() {
+  setup_java
   if [ -z "$USE_JRUBY" -a \( -d "$basedir/.git" -o ! -z "$USE_RUBY" \) ] ; then
     setup_ruby
-    if [ "$RUBY" = "jruby" ] ; then
-      setup_java
-      export JAVA_OPTS
-    fi
   else
     setup_vendored_jruby
   fi
-  export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
-  export GEM_PATH=
-  export RUBYLIB="$basedir/lib"
 }
 
 install_deps() {
