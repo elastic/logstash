@@ -28,10 +28,10 @@ case $1 in
   -*) 
     # is the first argument a flag? If so, assume 'agent'
     program="$basedir/lib/logstash/runner.rb"
-    exec $RUBYCMD "$program" agent "$@"
+    exec $RUBYCMD -I$RUBYLIB "$program" agent "$@"
     ;;
   *)
     program="$basedir/lib/logstash/runner.rb"
-    exec $RUBYCMD "$program" "$@"
+    exec $RUBYCMD -I$RUBYLIB "$program" "$@"
     ;;
 esac
