@@ -92,7 +92,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     super
     BasicSocket.do_not_reverse_lookup = true
     @timestamp = Time.now().utc
-    @event = {}
+    @collectd = {}
     @types = {}
   end # def initialize
 
@@ -323,11 +323,11 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   def generate_event(output_queue)
     # Prune these *specific* keys if they exist and are empty.
     # This is better than looping over all keys every time.
-    @event.delete('type_instance') if @event['type_instance'] == ""
-    @event.delete('plugin_instance') if @event['plugin_instance'] == ""
+    @collectd.delete('type_instance') if @collectd['type_instance'] == ""
+    @collectd.delete('plugin_instance') if @collectd['plugin_instance'] == ""
     # As crazy as it sounds, this is where we actually send our events to the queue!
     event = LogStash::Event.new
-    @event.each {|k, v| event[k] = @event[k]}
+    @collectd.each {|k, v| event[k] = @collectd[k]}
     decorate(event)
     output_queue << event
   end # def generate_event
@@ -350,8 +350,8 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
       @logger.debug(payload)
 
       # Clear the last event and set a incoming-time
-      @event.clear
-      @event['@timestamp'] = Time.now().utc
+      @collectd.clear
+      @collectd['@timestamp'] = Time.now().utc
       prev_typenum = 0
       was_crypted = false
 
@@ -369,8 +369,8 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
             generate_event(output_queue)
           end
           # Cleanup the event
-          @event.each_key do |k|
-            @event.delete(k) if !['host','collectd_type', 'plugin', 'plugin_instance', '@timestamp'].include?(k)
+          @collectd.each_key do |k|
+            @collectd.delete(k) if !['host','collectd_type', 'plugin', 'plugin_instance', '@timestamp'].include?(k)
           end
         end
 
@@ -401,12 +401,12 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
         # Fill in the fields.
         if values.kind_of?(Array)
           if values.length > 1              # Only do this iteration on multi-value arrays
-            values.each_with_index {|value, x| @event[@types[@event['collectd_type']][x]] = values[x]}
+            values.each_with_index {|value, x| @collectd[@types[@collectd['collectd_type']][x]] = values[x]}
           else                              # Otherwise it's a single value
-            @event['value'] = values[0]      # So name it 'value' accordingly
+            @collectd['value'] = values[0]      # So name it 'value' accordingly
           end
         elsif field != nil                  # Not an array, make sure it's non-empty
-          @event[field] = values            # Append values to @collectd under key field
+          @collectd[field] = values            # Append values to @collectd under key field
         end
         prev_typenum = typenum
       end # while payload.length > 0 do
