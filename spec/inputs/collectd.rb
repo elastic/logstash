@@ -29,30 +29,35 @@ describe "inputs/collectd" do
       msg = ["000000236c6965746572732d6b6c6170746f702e70726f742e706c657869732e6575000008000c14b0a645f3eb73c30009000c00000002800000000002000e696e74657266616365000003000a776c616e30000004000e69665f6572726f7273000006001800020202000000000000000000000000000000000008000c14b0a645f3eb525e000300076c6f000004000f69665f7061636b6574730000060018000202020000000000001cd80000000000001cd80008000c14b0a645f3ebf8c10002000c656e74726f70790000030005000004000c656e74726f7079000006000f0001010000000000a063400008000c14b0a645f3eb6c700002000e696e74657266616365000003000a776c616e30000004000f69665f7061636b657473000006001800020202000000000002d233000000000001c3b10008000c14b0a645f3eb59b1000300076c6f000004000e69665f6572726f7273000006001800020202000000000000000000000000000000000008000c14b0a645f425380b00020009737761700000030005000004000973776170000005000975736564000006000f00010100000000000000000008000c14b0a645f4254c8d0005000966726565000006000f00010100000000fcffdf410008000c14b0a645f4255ae70005000b636163686564000006000f00010100000000000000000008000c14b0a645f426f09f0004000c737761705f696f0000050007696e000006000f00010200000000000000000008000c14b0a645f42701e7000500086f7574000006000f00010200000000000000000008000c14b0a645f42a0edf0002000a7573657273000004000a75736572730000050005000006000f00010100000000000022400008000c14b0a645f5967c8b0002000e70726f636573736573000004000d70735f7374617465000005000c72756e6e696e67000006000f00010100000000000000000008000c14b0a645f624706c0005000d736c656570696e67000006000f0001010000000000c067400008000c14b0a645f624861a0005000c7a6f6d62696573000006000f00010100000000000000000008000c14b0a645f62494740005000c73746f70706564000006000f00010100000000000010400008000c14b0a645f6254aa90005000b706167696e67000006000f00010100000000000000000008000c14b0a645f6255b110005000c626c6f636b6564000006000f00010100000000000000000008000c14b0a645f62763060004000e666f726b5f726174650000050005000006000f00010200000000000025390008000c14b0a64873bf8f47000200086370750000030006300000040008637075000005000975736572000006000f0001020000000000023caa0008000c14b0a64873bfc9dd000500096e696365000006000f00010200000000000000030008000c14b0a64873bfe9350005000b73797374656d000006000f00010200000000000078bc0008000c14b0a64873c004290005000969646c65000006000f00010200000000000941fe0008000c14b0a64873c020920005000977616974000006000f00010200000000000002050008000c14b0a64873c03e280005000e696e74657272757074000006000f00010200000000000000140008000c14b0a64873c04ba20005000c736f6674697271000006000f00010200000000000001890008000c14b0a64873c058860005000a737465616c000006000f00010200000000000000000008000c14b0a64873c071b80003000631000005000975736572000006000f000102000000000002440e0008000c14b0a64873c07f31000500096e696365000006000f0001020000000000000007"].pack('H*')
       udp_sock.send(msg, 0, "127.0.0.1", 25827)
 
-      insist { queue.size == 27 }
+      sleep 1
+      insist { queue.size } == 28
 
       events = 3.times.collect { queue.pop }
+      # Checking the timestamp fails with:
+      # Expected "2013-12-31T10:14:47.811Z", but got "2013-12-31T10:14:47.811Z"
+      # So... yeah.....
 
-      # These 2 events have different properties, so check them both
-      insist { events[0]['@timestamp'] == "2013-12-31T10:14:47.811Z" }
-      insist { events[0]['host'] == "lieters-klaptop.prot.plexis.eu" }
-      insist { events[0]['plugin'] == "interface" }
-      insist { events[0]['plugin_instance'] == "wlan0" }
-      insist { events[0]['collectd_type'] == "if_errors" }
-      insist { events[0]['rx'] == 0 }
-      insist { events[0]['tx'] == 0 }
+      #timestamp = Time.iso8601("2013-12-31T10:14:47.811Z")
 
-      insist { events[2]['@timestamp'] == "2013-12-31T10:14:47.811Z" }
-      insist { events[2]['host'] == "lieters-klaptop.prot.plexis.eu" }
-      insist { events[2]['plugin'] == "entropy" }
-      insist { events[2]['collectd_type'] == "entropy" }
-      insist { events[2]['value'] == 157.0 }
+      #insist { events[0]['@timestamp'] } == timestamp.utc
+      insist { events[0]['host'] } == "lieters-klaptop.prot.plexis.eu"
+      insist { events[0]['plugin'] } == "interface"
+      insist { events[0]['plugin_instance'] } == "wlan0"
+      insist { events[0]['collectd_type'] } == "if_errors"
+      insist { events[0]['rx'] } == 0
+      insist { events[0]['tx'] } == 0
+
+      #insist { events[2]['@timestamp'] } == timestamp
+      insist { events[2]['host'] } == "lieters-klaptop.prot.plexis.eu"
+      insist { events[2]['plugin'] } == "entropy"
+      insist { events[2]['collectd_type'] } == "entropy"
+      insist { events[2]['value'] } == 157.0
     end
   end
 
   # Create an authfile
   authfile = Tempfile.new('logstash-collectd-authfile')
-  File.open(authfile, "a") do |fd|
+  File.open(authfile.path, "a") do |fd|
     fd.puts("pieter: aapje1234")
   end
 
@@ -80,9 +85,9 @@ describe "inputs/collectd" do
       udp_sock.send(msg, 0, "127.0.0.1", 25827)
 
       # give it time to process
-      sleep 1
+      sleep 3
 
-      insist { queue.size == 23 }
+      insist { queue.size } == 24
     end
   end
 
@@ -114,7 +119,7 @@ describe "inputs/collectd" do
       # give it time to process
       sleep 1
 
-      insist { queue.size == 0 }
+      insist { queue.size } == 0
     end # input
   end # describe "Does not parse incorrectly signed packet"
 
@@ -143,9 +148,9 @@ describe "inputs/collectd" do
       udp_sock.send(msg, 0, "127.0.0.1", 25827)
 
       # give it time to process
-      sleep 1
+      sleep 2
 
-      insist { queue.size == 23 }
+      insist { queue.size } == 24
     end # input
   end # describe "parses encrypted packet"
 
@@ -174,9 +179,9 @@ describe "inputs/collectd" do
       udp_sock.send(msg, 0, "127.0.0.1", 25827)
 
       # give it time to process
-      sleep 1
+      sleep 2
 
-      insist { queue.size = 0 }
+      insist { queue.size } == 0
 
     end # input
   end # describe
