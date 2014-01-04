@@ -10,8 +10,8 @@
 %global sysconfigdir %{_sysconfdir}/sysconfig
 
 Name:           logstash
-Version:        1.2.2
-Release:        2%{?dist}
+Version:        1.3.2
+Release:        1%{?dist}
 Summary:        A tool for managing events and logs
 
 Group:          System Environment/Daemons
@@ -24,7 +24,7 @@ Source3:        logstash.init
 Source4:        logstash.sysconfig
 Source5:        logstash.conf
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildArch:      x86_64 i386 i686 
+BuildArch:      x86_64 i386 i686 arm
 
 Requires:       java
 Requires:       jpackage-utils
@@ -136,6 +136,10 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{piddir}/
 
 %changelog
+* Sat Jan 4 2014 <sbagmeijer@ulyaoth.asia> - 1.3.2-1
+- Updated version to 1.3.2
+- Added BuildArch for arm fedora
+
 * Sun Oct 27 2013 <sbagmeijer@ulyaoth.asia> - 1.2.2-2
 - Fixed the bogus date warning
 
