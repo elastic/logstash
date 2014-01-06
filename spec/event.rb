@@ -25,6 +25,12 @@ describe LogStash::Event do
     )
   end
 
+  context "[]=" do
+    it "should raise an exception if you attempt to set @timestamp to a value type other than a Time object" do
+      insist { subject["@timestamp"] = "crash!" }.raises(TypeError)
+    end
+  end
+
   context "#sprintf" do
     it "should report a unix timestamp for %{+%s}" do
       insist { subject.sprintf("%{+%s}") } == "1356998400"
@@ -135,5 +141,25 @@ describe LogStash::Event do
         insist { subject[ "field1" ] } == [ "original1", "original2", "append1" ]
       end
     end
+  end
+
+  it "timestamp parsing speed", :if => ENV["SPEEDTEST"] do
+    warmup = 10000
+    count = 1000000
+
+    data = { "@timestamp" => "2013-12-21T07:25:06.605Z" }
+    event = LogStash::Event.new(data)
+    insist { event["@timestamp"] }.is_a?(Time)
+
+    duration = 0
+    [warmup, count].each do |i|
+      start = Time.now
+      i.times do
+        data = { "@timestamp" => "2013-12-21T07:25:06.605Z" }
+        LogStash::Event.new(data.clone)
+      end
+      duration = Time.now - start
+    end
+    puts "event @timestamp parse rate: #{count / duration}/sec"
   end
 end

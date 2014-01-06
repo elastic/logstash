@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/codecs/base"
 
 class LogStash::Codecs::CompressSpooler < LogStash::Codecs::Base
@@ -6,16 +7,11 @@ class LogStash::Codecs::CompressSpooler < LogStash::Codecs::Base
   config :spool_size, :validate => :number, :default => 50
   config :compress_level, :validate => :number, :default => 6
 
-
-  public
-  def initialize
-    @buffer = []
-  end
-
   public
   def register
     require "msgpack"
     require "zlib"
+    @buffer = []
   end
 
   public

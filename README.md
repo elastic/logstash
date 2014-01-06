@@ -28,8 +28,8 @@ If you don't have JRuby already (or don't use rvm, rbenv, etc), you can have `bi
 Otherwise, here's how to get started with rvm: 
 
     # Install JRuby with rvm
-    rvm install jruby-1.7.4
-    rvm use jruby-1.7.4
+    rvm install jruby-1.7.8
+    rvm use jruby-1.7.8
 
 Now install dependencies:
 
@@ -83,7 +83,8 @@ specific test like so:
 
 ## Building
 
-Releases are available here: <http://logstash.objects.dreamhost.com/>
+Building is not required. You are highly recommended to download the releases
+we provide from the logstash site!
 
 If you want to build the jar yourself, run:
 

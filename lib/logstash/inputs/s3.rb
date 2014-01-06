@@ -1,7 +1,7 @@
+# encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
 
-require "aws-sdk"
 require "time"
 require "tmpdir"
 
@@ -62,10 +62,9 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   public
   def register
     require "digest/md5"
+    require "aws-sdk"
 
     @region_endpoint = @region if !@region.empty?
-
-    @region_endpoint == 'us-east-1' ? @region_endpoint = 's3.amazonaws.com' : @region_endpoint = 's3-'+@region_endpoint+'.amazonaws.com'
 
     @logger.info("Registering s3 input", :bucket => @bucket, :region_endpoint => @region_endpoint)
 

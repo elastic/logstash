@@ -15,42 +15,23 @@
 # in your environment and this script will download and use
 # a release of JRuby for you.
 
+# Defaults you can override with environment variables
+LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
+
 basedir=$(cd `dirname $0`/..; pwd)
-export RUBYLIB="$basedir/lib"
+. ${basedir}/bin/logstash.lib.sh
 
-# Setup will configure any environmental settings necessary to
-# help logstash run.
-setup() {
-  if [ -d "$basedir/.git" ] ; then
-    if [ "$1" = "jruby" ] ; then
-      RUBY=${RUBY=jruby}
-    else
-      RUBY=${RUBY=$(ruby -e 'puts RUBY_ENGINE')}
-    fi
-    RUBYVER=${RUBYVER=1.9}
-    export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
-    export GEM_PATH=
-  fi
-}
+setup
 
-if [ "$1" = "deps" ] ; then
-  program="$basedir/gembag.rb"
-  set -- "$basedir/logstash.gemspec"
-else
-  program="$basedir/lib/logstash/runner.rb"
-fi
-
-which ruby > /dev/null 2>&1
-if [ "$?" -eq 0 -a -z "$USE_JRUBY" ] ; then
-  set -- ruby "$program" "$@"
-  setup
-else
-  # No ruby found, fetch JRuby and run.
-  jruby="$basedir/vendor/jar/jruby-complete-1.7.5.jar"
-  [ ! -f "$jruby" ] && make -C $basedir build-jruby
-  set -- java -jar "$jruby" "$program" "$@"
-  setup jruby
-fi
-
-exec "$@"
-
+case $1 in
+  deps) install_deps ;;
+  -*) 
+    # is the first argument a flag? If so, assume 'agent'
+    program="$basedir/lib/logstash/runner.rb"
+    exec $RUBYCMD -I$RUBYLIB "$program" agent "$@"
+    ;;
+  *)
+    program="$basedir/lib/logstash/runner.rb"
+    exec $RUBYCMD -I$RUBYLIB "$program" "$@"
+    ;;
+esac

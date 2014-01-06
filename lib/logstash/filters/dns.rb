@@ -1,3 +1,4 @@
+# encoding: utf-8
 # DNS Filter
 #
 # This filter will resolve any IP addresses from a field of your choosing.
@@ -50,7 +51,7 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
   # versions was 'append' by accident.
 
   # resolv calls will be wrapped in a timeout instance
-  config :timeout, :validate => :int, :default => 2
+  config :timeout, :validate => :number, :default => 2
 
   public
   def register

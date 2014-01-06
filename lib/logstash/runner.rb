@@ -1,4 +1,6 @@
+# encoding: utf-8
 
+Encoding.default_external = "UTF-8"
 $START = Time.now
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
@@ -38,12 +40,15 @@ if ENV["PROFILE_BAD_LOG_CALLS"] || $DEBUGLIST.include?("log")
   end
 end # PROFILE_BAD_LOG_CALLS
 
-require "logstash/monkeypatches-for-performance"
+if __FILE__ =~ /^(jar:)?file:\//
+  require "logstash/monkeypatches-for-performance"
+end
 require "logstash/monkeypatches-for-bugs"
 require "logstash/monkeypatches-for-debugging"
 require "logstash/namespace"
 require "logstash/program"
 require "i18n" # gem 'i18n'
+I18n.enforce_available_locales = true
 I18n.load_path << File.expand_path(
   File.join(File.dirname(__FILE__), "../../locales/en.yml")
 )
@@ -182,6 +187,8 @@ class LogStash::Runner
         agent = LogStash::Agent.new($0)
         begin
           agent.parse(args)
+        rescue Clamp::HelpWanted => e
+          puts e.command.help
         rescue Clamp::UsageError => e
           # If 'too many arguments' then give the arguments to
           # the next command. Otherwise it's a real error.

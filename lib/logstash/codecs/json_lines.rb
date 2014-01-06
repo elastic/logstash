@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/codecs/base"
 require "logstash/codecs/line"
 require "json"
@@ -8,7 +9,7 @@ require "json"
 class LogStash::Codecs::JSONLines < LogStash::Codecs::Base
   config_name "json_lines"
 
-  milestone 1
+  milestone 3
 
   # The character encoding used in this codec. Examples include "UTF-8" and
   # "CP1252"

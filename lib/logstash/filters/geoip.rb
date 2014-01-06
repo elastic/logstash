@@ -1,15 +1,26 @@
+# encoding: utf-8
 require "logstash/filters/base"
 require "logstash/namespace"
 require "tempfile"
 
 # Add GeoIP fields from Maxmind database
 #
-# GeoIP filter, adds information about geographical location of IP addresses.
-# This filter uses Maxmind GeoIP databases, have a look at
-# https://www.maxmind.com/app/geolite
+# GeoIP filter, adds information about the geographical location of IP addresses.
+#
+# Starting at version 1.3.0 of logstash, a [geoip][location] field is created if
+# the GeoIP lookup returns a latitude and longitude. The field is stored in
+# [GeoJSON](http://geojson.org/geojson-spec.html) format. Additionally,
+# the default Elasticsearch template provided with the
+# [elasticsearch output](../outputs/elasticsearch.html)
+# maps the [geoip][location] field to a [geo_point](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-geo-point-type.html).
+#
+# As this field is a geo\_point _and_ it is still valid GeoJSON, you get
+# the awesomeness of Elasticsearch's geospatial query, facet and filter functions
+# and the flexibility of having GeoJSON for all other applications (like Kibana's
+# [bettermap panel](https://github.com/elasticsearch/kibana/tree/master/src/app/panels/bettermap)).
 #
 # Logstash releases ship with the GeoLiteCity database made available from
-# Maxmind with a CCA-ShareAlike 3.0 license. For more details on geolite, see
+# Maxmind with a CCA-ShareAlike 3.0 license. For more details on GeoLite, see
 # <http://www.maxmind.com/en/geolite>.
 class LogStash::Filters::GeoIP < LogStash::Filters::Base
   config_name "geoip"
@@ -22,12 +33,12 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   # with logstash.
   config :database, :validate => :path
 
-  # The field containing IP address, hostname is also OK. If this field is an
-  # array, only the first value will be used.
-  config :source, :validate => :string
+  # The field containing the IP address or hostname to map via geoip. If
+  # this field is an array, only the first value will be used.
+  config :source, :validate => :string, :required => true
 
   # Array of geoip fields that we want to be included in our event.
-  # 
+  #
   # Possible fields depend on the database type. By default, all geoip fields
   # are included in the event.
   #
@@ -38,14 +49,22 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
 
   # Specify into what field you want the geoip data.
   # This can be useful for example if you have a src\_ip and dst\_ip and want
-  # information of both IP's
+  # information of both IP's.
+  #
+  # If you save the data to another target than "geoip" and want to use the
+  # geo\_point related functions in elasticsearch, you need to alter the template
+  # provided with the elasticsearch output and configure the output to use the
+  # new template.
+  #
+  # Even if you don't use the geo\_point mapping, the [target][location] field
+  # is still valid GeoJSON.
   config :target, :validate => :string, :default => 'geoip'
 
   public
   def register
     require "geoip"
     if @database.nil?
-      if __FILE__ =~ /^file:\/.+!.+/
+      if __FILE__ =~ /^(jar:)?file:\/.+!.+/
         begin
           # Running from a jar, assume GeoLiteCity.dat is at the root.
           jar_path = [__FILE__.split("!").first, "/GeoLiteCity.dat"].join("!")
@@ -119,7 +138,7 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
     end # geo_data_hash.each
     if event[@target].key?('latitude') && event[@target].key?('longitude')
       # If we have latitude and longitude values, add the location field as GeoJSON array
-      event[@target]['location'] = [ event[@target]["longitude"].to_f, event[@target]["latitude"].to_f ] 
+      event[@target]['location'] = [ event[@target]["longitude"].to_f, event[@target]["latitude"].to_f ]
     end
     filter_matched(event)
   end # def filter

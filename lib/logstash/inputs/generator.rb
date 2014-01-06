@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/inputs/threadable"
 require "logstash/namespace"
 require "socket" # for Socket.gethostname
@@ -82,7 +83,6 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
         queue << event
       end
     end
-    sleep 3
   end # def run
 
   public
