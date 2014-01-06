@@ -169,17 +169,6 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   end # def get_types
 
   public
-  def vt_map(id)
-    case id
-      when 0; return "COUNTER"
-      when 1; return "GAUGE"
-      when 2; return "DERIVE"
-      when 3; return "ABSOLUTE"
-      else;   return 'UNKNOWN'
-    end
-  end
-
-  public
   def get_values(id, body)
     retval = ''
     case id
@@ -207,7 +196,11 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           retval = []
           types = body.slice!(0..((body.length/9)-1))
           while body.length > 0
-            vtype = vt_map(types[count])
+            # TYPE VALUES:
+            # 0: COUNTER
+            # 1: GAUGE
+            # 2: DERIVE
+            # 3: ABSOLUTE
             case types[count]
               when 0, 3; v = body.slice!(0..7).pack("C*").unpack("Q>")[0]
               when 1;    v = body.slice!(0..7).pack("C*").unpack("E")[0]
