@@ -340,12 +340,9 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
       payload, client = @udp.recvfrom(@buffer_size)
       payload = payload.bytes.to_a
 
-      # Clear the last event and set a incoming-time
+      # Clear the last event
       @collectd.clear
-      @collectd['@timestamp'] = Time.now().utc
-      prev_typenum = 0
-      was_crypted = false
-      has_error = false
+      was_encrypted = false
 
       while payload.length > 0 do
         typenum = (payload.slice!(0) << 8) + payload.slice!(0)
@@ -353,42 +350,26 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
         # the header is 4 bytes
         length  = ((payload.slice!(0) << 8) + payload.slice!(0)) - 4
 
-        if prev_typenum > typenum
-          # We've reached a new event in the packet, generate the event of the
-          # previous data for LogStash.
-          # Unless the event was of the 'interval' type and we want to prune these
-          if ((@prune_intervals && ![7,9].include?(prev_typenum)) || !@prune_intervals)
-            generate_event(output_queue)
-          end
-          # Cleanup the event
-          @collectd.each_key do |k|
-            @collectd.delete(k) if !['host','collectd_type', 'plugin', 'plugin_instance', '@timestamp'].include?(k)
-          end
-        end
-
         if length > payload.length
-          @logger.warn("Header indicated #{length} bytes will follow, but packet has only #{payload.length} bytes left")
-          has_error = true
+          @logger.info("Header indicated #{length} bytes will follow, but packet has only #{payload.length} bytes left")
           break
         end
+        body = payload.slice!(0..length-1)
 
         field = TYPEMAP[typenum]
-        body = payload.slice!(0..length-1)
+        if field.nil?
+          @logger.warn("Unknown typenumber: #{typenum}")
+          next
+        end
+
         values = get_values(typenum, body)
 
         case field
         when "signature"
-          if !verify_signature(values[0], values[1], payload)
-            has_error = true
-            break
-          end
+          break if !verify_signature(values[0], values[1], payload)
           next
         when "encryption"
           payload = decrypt_packet(values[0], values[1], values[2])
-          if payload.length == 0
-            has_error = true
-            break
-          end
           # decrypt_packet returns an empty array if the decryption was
           # unsuccessful and this inner loop checks the length. So we can safely
           # set the 'was_encrypted' variable.
@@ -396,10 +377,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           next
         end
 
-        if !was_encrypted and @security_level == SECURITY_ENCR
-          has_error = true
-          break
-        end
+        break if !was_encrypted and @security_level == SECURITY_ENCR
 
         # Fill in the fields.
         if values.kind_of?(Array)
@@ -411,12 +389,17 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
         elsif field != nil                  # Not an array, make sure it's non-empty
           @collectd[field] = values            # Append values to @collectd under key field
         end
-        prev_typenum = typenum
+
+        if ["interval", "values"].include?(field)
+          if ((@prune_intervals && ![7,9].include?(typenum)) || !@prune_intervals)
+            generate_event(output_queue)
+          end
+          # Clean up the event
+          @collectd.each_key do |k|
+            @collectd.delete(k) if !['host','collectd_type', 'plugin', 'plugin_instance', '@timestamp', 'type_instance'].include?(k)
+          end
+        end
       end # while payload.length > 0 do
-      if !has_error
-        # Generate the last event
-        generate_event(output_queue)
-      end
     end # loop do
 
   ensure
