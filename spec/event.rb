@@ -178,8 +178,8 @@ describe LogStash::Event do
         time = subject.sprintf("%{+#{format}}")
         begin
           LogStash::Event.new("@timestamp" => time)
-        rescue 
-          raise StandardError, "Time '#{time}' was rejected"
+        rescue => e
+          raise StandardError, "Time '#{time}' was rejected. #{e.class}: #{e.to_s}"
         end
       end
     end
