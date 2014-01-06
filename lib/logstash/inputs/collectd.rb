@@ -47,6 +47,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
       4   => "collectd_type",
       5   => "type_instance",
       6   => "values",
+      7   => "interval",
       8   => "@timestamp",
       9   => "interval",
       256 => "message",
