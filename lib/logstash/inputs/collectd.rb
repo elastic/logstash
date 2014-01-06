@@ -375,6 +375,19 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           # set the 'was_encrypted' variable.
           was_encrypted=true
           next
+        when "plugin"
+          # We've reached a new plugin, delete everything except for the the host
+          # field, because there's only one per packet and the timestamp field,
+          # because that one goes in front of the plugin
+          @collectd.each_key do |k|
+            @collectd.delete(k) if !['host', '@timestamp'].include?(k)
+          end
+        when "collectd_type"
+          # We've reached a new type within the plugin section, delete all fields
+          # that could have something to do with the previous type (if any)
+          @collectd.each_key do |k|
+            @collectd.delete(k) if !['host', '@timestamp', 'plugin', 'plugin_instance'].include?(k)
+          end
         end
 
         break if !was_encrypted and @security_level == SECURITY_ENCR
