@@ -5,6 +5,21 @@ puts "Skipping date performance tests because this ruby is not jruby" if RUBY_EN
 RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
   extend LogStash::RSpec
 
+  describe "giving an invalid match config, raise a configuration error" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "mydate"]
+        }
+      }
+    CONFIG
+
+    sample "not_really_important" do
+      insist {subject}.raises LogStash::ConfigurationError
+    end
+
+  end
+
   describe "parsing with ISO8601" do
     config <<-CONFIG
       filter {
@@ -39,7 +54,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
           insist { subject["mydate"] } == input
           insist { subject["@timestamp"] } == Time.iso8601(output).utc
         rescue
-          require "pry"; binding.pry
+          #require "pry"; binding.pry
           raise
         end
       end
@@ -203,7 +218,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
     end
   end
   
-  describe "support deep field access" do
+  describe "support deep nested field access" do
     config <<-CONFIG
       filter { 
         date {
@@ -267,5 +282,4 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
       insist { subject["@timestamp"].year } == Time.now.year
     end
   end
-
 end

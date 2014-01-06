@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/namespace"
 require "logstash/logging"
 require "logstash/plugin"
@@ -8,7 +9,7 @@ class LogStash::Filters::Base < LogStash::Plugin
 
   config_name "filter"
 
-  # Note that all of the specified routing options (type,tags.exclude_tags,include_fields,exclude_fields)
+  # Note that all of the specified routing options (type,tags.exclude\_tags,include\_fields,exclude\_fields)
   # must be met in order for the event to be handled by the filter.
 
   # The type to act on. If a type is given, then this filter will only
@@ -17,11 +18,11 @@ class LogStash::Filters::Base < LogStash::Plugin
   # Optional.
   config :type, :validate => :string, :default => "", :deprecated => "You can achieve this same behavior with the new conditionals, like: `if [type] == \"sometype\" { %PLUGIN% { ... } }`."
 
-  # Only handle events with all/any (controlled by include_any config option) of these tags.
+  # Only handle events with all/any (controlled by include\_any config option) of these tags.
   # Optional.
   config :tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if \"sometag\" in [tags] { %PLUGIN% { ... } }`"
 
-  # Only handle events without all/any (controlled by exclude_any config
+  # Only handle events without all/any (controlled by exclude\_any config
   # option) of these tags.
   # Optional.
   config :exclude_tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if !(\"sometag\" in [tags]) { %PLUGIN% { ... } }`"
@@ -55,7 +56,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   config :remove_tag, :validate => :array, :default => []
 
   # If this filter is successful, add any arbitrary fields to this event.
-  # Tags can be dynamic and include parts of the event using the %{field}
+  # Field names can be dynamic and include parts of the event using the %{field}
   # Example:
   #
   #     filter {
