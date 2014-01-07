@@ -3,8 +3,12 @@ require "logstash/inputs/base"
 require "logstash/inputs/threadable"
 require "logstash/namespace"
 
-# Read events from a redis. Supports both redis channels and also redis lists
-# (using BLPOP)
+# Read events from a redis instance. Supports both redis channels and lists.
+# The list command (BLPOP) used by Logstash is supported in redis v1.3.1+ 
+# The channel commands used by Logstash are found in redis v1.3.8+
+# While you may be able to make these redis versions work the best performance
+# and stability will be found in more recent stable versions.  Versions 2.6.0+
+# are recommended.
 #
 # For more information about redis, see <http://redis.io/>
 #
