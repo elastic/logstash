@@ -4,6 +4,11 @@ require "logstash/namespace"
 require "stud/buffer"
 
 # send events to a redis database using RPUSH
+# The RPUSH command is supported in redis v0.0.7+ 
+# To PUBLISH to a channel requires at least v1.3.8+
+# While you may be able to make these redis versions workcool the best performance
+# and stability will be found in more recent stable versions.  Versions 2.6.0+
+# are recommended.
 #
 # For more information about redis, see <http://redis.io/>
 class LogStash::Outputs::Redis < LogStash::Outputs::Base
