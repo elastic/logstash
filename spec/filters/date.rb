@@ -54,7 +54,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
           insist { subject["mydate"] } == input
           insist { subject["@timestamp"] } == Time.iso8601(output).utc
         rescue
-          require "pry"; binding.pry
+          #require "pry"; binding.pry
           raise
         end
       end

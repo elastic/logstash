@@ -106,8 +106,8 @@ case $os in
       --before-install centos/before-install.sh \
       --before-remove centos/before-remove.sh \
       --after-install centos/after-install.sh \
-      --config-files /etc/sysconfig/logstash \
-      --config-files /etc/logrotate.d/logstash \
+      --config-files etc/sysconfig/logstash \
+      --config-files etc/logrotate.d/logstash \
       -f -C $destdir .
     ;;
   ubuntu|debian)
@@ -119,7 +119,7 @@ case $os in
     fi
 
     fpm -s dir -t deb -n logstash -v "$RELEASE" \
-      -a all --iteration "1+${os}${DEB_REVISION}" \
+      -a all --iteration "1-${os}${DEB_REVISION}" \
       --url "$URL" \
       --description "$DESCRIPTION" \
       -d "default-jre-headless" \

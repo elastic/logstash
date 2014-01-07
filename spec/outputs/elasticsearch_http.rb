@@ -38,7 +38,7 @@ describe "outputs/elasticsearch_http" do
       # We try multiple times to allow final agent flushes as well as allowing
       # elasticsearch to finish processing everything.
       ftw = FTW::Agent.new
-      ftw.post!("http://localhost:9200/#{index}/_flush")
+      ftw.post!("http://localhost:9200/#{index}/_refresh")
 
       # Wait until all events are available.
       Stud::try(10.times) do
