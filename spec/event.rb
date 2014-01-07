@@ -183,5 +183,17 @@ describe LogStash::Event do
         end
       end
     end
+
+    context "from LOGSTASH-1738" do
+      it "does not error" do
+        LogStash::Event.new("@timestamp" => "2013-12-29T23:12:52.371240+02:00")
+      end
+    end
+
+    context "from LOGSTASH-1732" do
+      it "does not error" do
+        LogStash::Event.new("@timestamp" => "2013-12-27T11:07:25+00:00")
+      end
+    end
   end
 end
