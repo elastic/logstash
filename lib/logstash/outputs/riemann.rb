@@ -67,8 +67,31 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
   # but can be overridden here.
   config :riemann_event, :validate => :hash
 
-  # If set to true automatically map all logstash
-  # defined fields to riemann event fields.
+  # If set to true automatically map all logstash defined fields to riemann event fields.
+  # All nested logstash fields will be mapped to riemann fields containing all parent keys
+  # separated by dots and the deepest value.
+  #
+  # As an example, the logstash event:
+  #    {
+  #      "@timestamp":"2013-12-10T14:36:26.151+0000",
+  #      "@version": 1,
+  #      "message":"log message",
+  #      "host": "host.domain.com",
+  #      "nested_field": {
+  #                        "key": "value"
+  #                      }
+  #    }
+  # Is mapped to this riemann event:
+  #   {
+  #     :time 1386686186,
+  #     :host host.domain.com,
+  #     :message log message,
+  #     :nested_field.key value
+  #   }
+  #
+  # It can be used in conjunction with or independent of the riemann_event option.
+  # When used with the riemann_event any duplicate keys receive their value from
+  # riemann_event instead of the logstash event itself.
   config :map_fields, :validate => :boolean, :default => false
 
   #
@@ -85,7 +108,7 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
   def map_fields(parent, fields)
     fields.each {|key, val|
       if !key.start_with?("@")
-        parent.nil? ? field = key.gsub(/_/,'-'):field = parent.gsub(/_/,'-')+'-'+key.gsub(/_/,'-')
+        field = parent.nil? ? key : parent + '.' + key
         contents = val                            
         if contents.is_a?(Hash)                                     
           map_fields(field, contents)                                       
@@ -117,11 +140,7 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
     end
     if @map_fields == true
       @my_event = Hash.new
-      if event.include?("@fields")
-        map_fields(nil, event["@fields"])
-      else
-        map_fields(nil, event)
-      end
+      map_fields(nil, event)
       r_event.merge!(@my_event) {|key, val1, val2| val1}
     end
     r_event[:tags] = event["tags"] if event["tags"].is_a?(Array)
