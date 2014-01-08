@@ -22,9 +22,16 @@ class LogStash::Codecs::JSON < LogStash::Codecs::Base
   #
   # For nxlog users, you'll want to set this to "CP1252"
   config :charset, :validate => ::Encoding.name_list, :default => "UTF-8"
+
+  public
+  def register
+    @converter = LogStash::Util::Charset.new(@charset)
+    @converter.logger = @logger
+  end
   
   public
   def decode(data)
+    data = @converter.convert(data)
     begin
       yield LogStash::Event.new(JSON.parse(data))
     rescue JSON::ParserError => e
