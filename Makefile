@@ -40,8 +40,6 @@ default:
 	@echo "Make targets you might be interested in:"
 	@echo "  flatjar -- builds the flatjar jar"
 	@echo "  flatjar-test -- runs the test suite against the flatjar"
-	@echo "  jar -- builds the monolithic jar"
-	@echo "  jar-test -- runs the test suite against the monolithic jar"
 
 TESTS=$(wildcard spec/inputs/gelf.rb spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
 
@@ -252,7 +250,7 @@ vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
 VENDOR_DIR=vendor/bundle/jruby/1.9
-jar: build/logstash-$(VERSION)-monolithic.jar
+jar: | flatjar
 build/logstash-$(VERSION)-monolithic.jar: | build/monolith
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS=-C build/ruby .
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C build/monolith .
@@ -285,15 +283,8 @@ flatjar-test:
 	cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS) --fail-fast
 	#cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-flatjar.jar rspec spec/jar.rb
 
-jar-test:
-	cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --fail-fast
-	#cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-monolithic.jar rspec spec/jar.rb
-
 flatjar-test-and-report:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS) --format h --out build/results.flatjar.html
-
-jar-test-and-report:
-	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --format h --out build/results.monolithic.html
 
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
@@ -305,9 +296,6 @@ build/logstash-$(VERSION)-flatjar.jar: | build/jar
 	$(QUIET)rm -f $@
 	$(QUIET)jar cfe $@ logstash.runner -C build/jar .
 	@echo "Created $@"
-
-update-jar: copy-ruby-files compile build/ruby/logstash/runner.class
-	$(QUIET)jar uf build/logstash-$(VERSION)-monolithic.jar -C build/ruby .
 
 update-flatjar: copy-ruby-files compile build/ruby/logstash/runner.class
 	$(QUIET)jar uf build/logstash-$(VERSION)-flatjar.jar -C build/ruby .
@@ -367,13 +355,6 @@ build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index
 	$(QUIET)ruby $< build/docs > $@
 	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
-
-rpm: build/logstash-$(VERSION)-monolithic.jar
-	rm -rf build/root
-	mkdir -p build/root/opt/logstash
-	cp -rp patterns build/root/opt/logstash/patterns
-	cp build/logstash-$(VERSION)-monolithic.jar build/root/opt/logstash
-	(cd build; fpm -t rpm -d jre -a noarch -n logstash -v $(VERSION) -s dir -C root opt)
 
 .PHONY: patterns
 patterns:
