@@ -271,7 +271,7 @@ class LogStash::Agent < Clamp::Command
       # aka, there must be file in path/logstash/{filters,inputs,outputs}/*.rb
       plugin_glob = File.join(path, "logstash", "{inputs,filters,outputs}", "*.rb")
       if Dir.glob(plugin_glob).empty?
-        warn(I18n.t("logstash.agent.configuration.no_plugins_found",
+        @logger.warn(I18n.t("logstash.agent.configuration.no_plugins_found",
                     :path => path, :plugin_glob => plugin_glob))
       end
 
