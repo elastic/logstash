@@ -60,7 +60,7 @@ GEM
       ffi
     ffi2-generators (0.1.1)
     filewatch (0.5.1)
-    ftw (0.0.38)
+    ftw (0.0.39)
       addressable
       backports (>= 2.6.2)
       cabin (> 0)
@@ -449,6 +449,7 @@ DEPENDENCIES
   aws-sdk
   beefcake (= 0.3.7)
   bindata (>= 1.5.0)
+  bouncy-castle-java (= 1.5.0147)
   bunny (~> 1.0.5)
   cabin (>= 0.6.0)
   ci_reporter
@@ -462,7 +463,7 @@ DEPENDENCIES
   ffi
   ffi-rzmq (= 1.0.0)
   filewatch (= 0.5.1)
-  ftw (~> 0.0.38)
+  ftw (~> 0.0.39)
   gelf (= 1.3.2)
   gelfd (= 0.2.0)
   geoip (>= 1.3.2)
@@ -472,18 +473,25 @@ DEPENDENCIES
   heroku
   i18n
   insist (= 1.0.0)
+  jdbc-mysql
   jdbc-sqlite3
   jiralicious (= 0.2.2)
   jls-grok (= 0.10.12)
   jls-lumberjack (>= 0.0.19)
+  jruby-elasticsearch (= 0.0.17)
+  jruby-httpclient
+  jruby-openssl (= 0.8.7)
+  jruby-win32ole
   json
   mail
+  march_hare (~> 2.0.0)
   metriks
   mime-types
   minitest
   mocha
   mongo
   msgpack
+  msgpack-jruby
   murmurhash3
   mysql2
   onstomp
