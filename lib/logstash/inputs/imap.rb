@@ -20,6 +20,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   config :password, :validate => :password, :required => true
   config :secure, :validate => :boolean, :default => true
 
+  config :folder, :validate => :string, :default => 'INBOX'
   config :fetch_count, :validate => :number, :default => 50
   config :lowercase_headers, :validate => :boolean, :default => true
   config :check_interval, :validate => :number, :default => 300
@@ -61,7 +62,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
     # TODO(sissel): handle exceptions happening during runtime:
     # EOFError, OpenSSL::SSL::SSLError
     imap = connect
-    imap.select("INBOX")
+    imap.select(@folder)
     ids = imap.search("NOT SEEN")
 
     ids.each_slice(@fetch_count) do |id_set|
