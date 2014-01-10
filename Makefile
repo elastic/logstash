@@ -277,6 +277,9 @@ build/flatgems: | build vendor/bundle
 	@# Other lame hacks to get crap to work.
 	$(QUIET)rsync -a $(VENDOR_DIR)/gems/sass-*/VERSION_NAME $@/root/
 	$(QUIET)rsync -a $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
+	@# A lame hack to work around the aws-sdk bug (LOGSTASH-1718)
+	sed -i -e "s@SRC = ROOT + '/lib/aws'@SRC = ROOT + 'aws'@" $@/lib/aws/core.rb
+
 
 flatjar-test:
 	# chdir away from the project directory to make sure things work in isolation.
