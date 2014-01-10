@@ -29,13 +29,14 @@ class LogStash::Filters::LimitDuplicate < LogStash::Filters::Base
   config :limit_time_window, :validate => :string, :default => "30s"
 
   # The field name used to check duplicated or not, by default is the log message.
-  config :duplicated_by, :validate => :string, :default => "message"
+  config :duplicated_by, :validate => :array, :default => ["message"]
 
   public
   def register
     require "thread"
     require "rufus/scheduler"
 
+    @duplicated_by = @duplicated_by.uniq.sort
     @mutex = Mutex.new
     @uniqueEventSet = Set.new
     @scheduler = Rufus::Scheduler.start_new
@@ -59,12 +60,15 @@ class LogStash::Filters::LimitDuplicate < LogStash::Filters::Base
       return
     end
 
-    uniqueField = event[@duplicated_by]
+    uniqueFieldsValueArray = @duplicated_by.map do |item|
+      event[item]
+    end
+
     @mutex.synchronize{
-      if (@uniqueEventSet.include?(uniqueField))
+      if (@uniqueEventSet.include?(uniqueFieldsValueArray))
         event.cancel
       else
-        @uniqueEventSet<<uniqueField
+        @uniqueEventSet << uniqueFieldsValueArray
       end
     }
   end # def filter
