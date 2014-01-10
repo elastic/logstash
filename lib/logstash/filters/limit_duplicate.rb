@@ -17,7 +17,7 @@ require "logstash/namespace"
 #     filter {
 #       limit_duplicate {
 #         limit_time_window => "30s"
-#         duplicated_by => "some field"
+#         duplicated_by => ["some field1", "some field2"]
 #       }
 #     }
 class LogStash::Filters::LimitDuplicate < LogStash::Filters::Base
@@ -28,7 +28,9 @@ class LogStash::Filters::LimitDuplicate < LogStash::Filters::Base
   # The peroid time window of the logs should be droped by duplicated.
   config :limit_time_window, :validate => :string, :default => "30s"
 
-  # The field name used to check duplicated or not, by default is the log message.
+  # The fields name used to check duplicated or not, by default is the message. 
+  # It's a array, which means you can define it as ["field1","field2"], and it will check 
+  # if both two fields' value are duplicated, then it considers the event as duplicated.
   config :duplicated_by, :validate => :array, :default => ["message"]
 
   public
