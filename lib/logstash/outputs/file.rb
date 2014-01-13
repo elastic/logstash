@@ -86,7 +86,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
         fd.close
         @logger.debug("Closed file #{path}", :fd => fd)
       rescue Exception => e
-        @logger.error("Excpetion while flushing and closing files.", :exception => e)
+        @logger.error("Exception while flushing and closing files.", :exception => e)
       end
     end
     finished
