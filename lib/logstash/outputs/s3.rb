@@ -91,11 +91,11 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
     flush(fd)
 
-    if Time.now - @last_sync > @time_limit:
+    if Time.now - @last_sync > @time_limit
       @logger.info("Syncing file due to time limit")
       rotate_file
       @last_sync = Time.now
-    elsif File.size(@tmp_log_path) > @size_limit:
+    elsif File.size(@tmp_log_path) > @size_limit
       @logger.info("Syncing file due to size limit")
       rotate_file
     end
