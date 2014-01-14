@@ -26,7 +26,6 @@ class LogStash::Filters::Gelfify < LogStash::Filters::Base
 
   public
   def filter(event)
-    return unless event["type"] == @type
     @logger.debug("GELFIFY FILTER: received event of type #{event["type"]}")
 
     if event.include?("severity")
