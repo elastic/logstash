@@ -107,6 +107,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   private
   def rotate_file
+    @logger.debug("Rotating file #{@tmp_log_path}")
     # Copy file to temporary file
     FileUtils.cp(@tmp_log_path, @tmp_log_path + '.sync')
     # Truncate existing file
