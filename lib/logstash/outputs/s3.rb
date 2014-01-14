@@ -138,7 +138,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   def open(path)
-    return @tmp_log_path if @tmp_log_path.include?(path) and not @tmp_log_path[path].nil?
+    return @tmp_log_path[path] if @tmp_log_path.include?(path) and not @tmp_log_path[path].nil?
 
     @logger.info("Opening file", :path => path)
 
