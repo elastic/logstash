@@ -4,7 +4,7 @@ require "logstash/namespace"
 # The throttle filter is for throttling the number of events received. The filter
 # is configured with a lower bound, the before_count, and upper bound, the after_count,
 # and a period of time. All events passing through the filter will be counted based on 
-# a key_field. As long as the count is less than the before_count or greater than the 
+# a key. As long as the count is less than the before_count or greater than the 
 # after_count, the event will be "throttled" which means the filter will be considered 
 # successful and any tags or fields will be added.
 #
@@ -52,20 +52,16 @@ require "logstash/namespace"
 #     event 4 - throttled (successful filter)
 #     ...
 # 
-# A common use case would be to use the checksum filter to generate a key_field 
-# from multiple fields, use the throttle filter to throttle events before 3 and after 5, 
-# and then use the drop filter to remove throttled events. This configuration might 
-# appear as:
+# A common use case would be to use the throttle filter to throttle events before 3 and 
+# after 5 while using multiple fields for the key and then use the drop filter to remove 
+# throttled events. This configuration might appear as:
 # 
 #     filter {
-#       checksum {
-#         keys => [ "host", "message" ]
-#       }
 #       throttle {
 #         before_count => 3
 #         after_count => 5
 #         period => 3600
-#         key_field => "logstash_checksum"
+#         key => "%{host}%{message}"
 #         add_tag => "throttled"
 #       }
 #       if "throttled" in [tags] {
@@ -82,7 +78,7 @@ require "logstash/namespace"
 #         before_count => 3
 #         after_count => 5
 #         period => 3600
-#         key_field => "message"
+#         key => "%{message}"
 #         add_tag => "throttled"
 #       }
 #     }
@@ -105,7 +101,7 @@ require "logstash/namespace"
 #
 # The event counts are cleared after the configured period elapses since the 
 # first instance of the event. That is, all the counts don't reset at the same 
-# time but rather the throttle period is per event/unique key_field value.
+# time but rather the throttle period is per unique key value.
 #
 # Mike Pilone (@mikepilone)
 # 
@@ -131,7 +127,7 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
   config :after_count, :validate => :number, :default => -1, :required => false
   
   # The period in seconds after the first occurrence of an event until the count is 
-  # reset for the event. This period is tracked per unique key_field value.  Field
+  # reset for the event. This period is tracked per unique key value.  Field
   # substitutions are allowed in this value.  They will be evaluated when the _first_
   # event for a given key is seen.  This allows you to specify that certain kinds
   # of events throttle for a specific period.
@@ -142,8 +138,8 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
   # and they will only be purged after expiration. This configuration value should only 
   # be used as a memory control mechanism and can cause early counter expiration if the 
   # value is reached. It is recommended to leave the default value and ensure that your 
-  # key_field is selected such that it limits the number of counters required (i.e. don't 
-  # use UUID as the key_field!)
+  # key is selected such that it limits the number of counters required (i.e. don't 
+  # use UUID as the key!)
   config :max_counters, :validate => :number, :default => 100000, :required => false
 
   # Performs initialization of the filter.
@@ -256,7 +252,7 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
     
     @logger.warn? and @logger.warn(
       "filters/#{self.class.name}: Purging oldest counter because max_counters " +
-      "exceeded. Use a better key_field to prevent too many unique event counters.", 
+      "exceeded. Use a better key to prevent too many unique event counters.", 
       { :key => oldestKey, :expiration => oldestCounter[:expiration] })
       	  
     @eventCounters.delete(oldestKey)
