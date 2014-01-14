@@ -82,7 +82,8 @@ describe "inputs/tcp" do
       data = {
         "hello" => "world",
         "foo" => [1,2,3],
-        "baz" => { "1" => "2" }
+        "baz" => { "1" => "2" },
+        "host" => "example host"
       }
 
       socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
@@ -93,6 +94,39 @@ describe "inputs/tcp" do
       insist { event["hello"] } == data["hello"]
       insist { event["foo"] } == data["foo"]
       insist { event["baz"] } == data["baz"]
+
+      # Make sure the tcp input, w/ json codec, uses the event's 'host' value,
+      # if present, instead of providing its own
+      insist { event["host"] } == data["host"]
+    end # input
+  end
+
+  describe "read events with json codec (testing 'host' handling)" do
+    port = 5514
+    config <<-CONFIG
+      input {
+        tcp {
+          port => #{port}
+          codec => json
+        }
+      }
+    CONFIG
+
+    input do |pipeline, queue|
+      Thread.new { pipeline.run }
+      sleep 0.1 while !pipeline.ready?
+
+      data = {
+        "hello" => "world"
+      }
+
+      socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
+      socket.puts(data.to_json)
+      socket.close
+
+      event = queue.pop
+      insist { event["hello"] } == data["hello"]
+      insist { event }.include?("host")
     end # input
   end
 end
