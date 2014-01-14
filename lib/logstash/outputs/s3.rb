@@ -23,7 +23,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   config :message_format, :validate => :string
 
   # Temporary path to write log files before transferring to S3
-  config :tmp_log_path, :validate => :string, :default => "/tmp/logstash/" + Socket.gethostname + "-" + DateTime.now.strftime("%Y-%m-%d_%I-%M-%S") + ".log"
+  config :tmp_log_path, :validate => :string, :default => "/tmp/logstash/" + Socket.gethostname + "_%s.log"
 
   # Format to write files to S3
   config :s3_log_path, :validate => :string, :default => Socket.gethostname + "/%s.log"
@@ -72,7 +72,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
     now = Time.now
     @last_flush_cycle = now
-    flush_interval = @flush_interval.to_i
     @last_sync = now
     @current_fd = nil
   end
@@ -81,7 +80,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    path = @tmp_log_path
+    path = sprintf(@tmp_log_path, DateTime.now.strftime("%Y-%m-%d_%I-%M-%S"))
     fd = open(path)
 
     if @message_format
@@ -124,6 +123,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     # No messages received?
     if not @current_fd.nil?
       file_to_s3(@tmp_log_path)
+      File.unlink(@tmp_log_path)
       begin
         @current_fd.close
         @logger.debug("Closed file #{@tmp_log_path}")
@@ -177,7 +177,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   private
   def file_to_s3(filename)
-    s3_filename = @s3_log_path.sprintf(DateTime.now.strftime("%Y-%m-%d_%I-%M-%S"))
+    s3_filename = sprintf(@s3_log_path, DateTime.now.strftime("%Y-%m-%d_%I-%M-%S"))
     object = @s3.buckets[@bucket_name].objects[s3_filename]
     object.write(:file => filename, :acl => @canned_acl)
     @logger.info("Uploaded log to S3 as #{s3_filename}")
