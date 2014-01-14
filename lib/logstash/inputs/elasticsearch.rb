@@ -85,12 +85,11 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
     if @scan
 
       scroll_params = {
-        "scroll_id" => scroll_id,
         "scroll" => @scroll
       }
 
       scroll_url = "http://#{@host}:#{@port}/_search/scroll?#{encode(scroll_params)}"
-      response = @agent.get!(scroll_url)
+      response = @agent.post!(scroll_url, :body => scroll_id)
       json = ""
       response.read_body { |c| json << c }
       result = JSON.parse(json)
@@ -117,12 +116,11 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
 
       # Fetch the next result set
       scroll_params = {
-        "scroll_id" => scroll_id,
         "scroll" => @scroll
       }
       scroll_url = "http://#{@host}:#{@port}/_search/scroll?#{encode(scroll_params)}"
 
-      response = @agent.get!(scroll_url)
+      response = @agent.post!(scroll_url, :body => scroll_id)
       json = ""
       response.read_body { |c| json << c }
       result = JSON.parse(json)
