@@ -4,6 +4,11 @@ require "logstash/namespace"
 require "logstash/plugin_mixins/aws_config"
 require "zlib"
 
+# S3 output.
+#
+# Write events to files on disk which are then synced to S3
+# based on given parameters (time or size limits).
+
 class LogStash::Outputs::S3 < LogStash::Outputs::Base
   include LogStash::PluginMixins::AwsConfig
 
@@ -13,10 +18,10 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   # Bucket name to store logs
   config :bucket_name, :validate => :string, :required => true
 
-  # File size limit - when the temporary file exceeds this size (in KB), transfer to S3
+  # File size limit - when the temporary file exceeds this size (in bytes), transfer to S3
   config :size_limit, :validate => :number, :default => 10240
 
-  # File time limit - sync every X seconds unless the file is empty. This overrides file size limits.
+  # File time limit - sync every X seconds unless no new messages have been received. This overrides file size limits.
   config :time_limit, :validate => :number, :default => 3600
 
   # Message format, if omitted the full json will be written
@@ -25,13 +30,13 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   # Temporary path to write log files before transferring to S3
   config :tmp_log_path, :validate => :string, :default => "/tmp/logstash/" + Socket.gethostname + "_%s.log"
 
-  # Format to write files to S3
+  # Where to write synced log files in S3
   config :s3_log_path, :validate => :string, :default => Socket.gethostname + "/%s.log"
 
-  # Canned ACL for S3
+  # Canned ACL for S3 (check S3 docs)
   config :canned_acl, :validate => :string, :default => "private"
 
-  # Flush interval for flushing writes to temporary files. 0 will flush on every meesage
+  # Flush interval for flushing writes to temporary files. 0 will flush on every message
   config :flush_interval, :validate => :number, :default => 2
 
   # Gzip output stream
