@@ -149,7 +149,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     end
 
     stat = File.stat(path) rescue nil
-    if stat and stat.ftype == "fifo" and RUBY_PLATFORM = "java"
+    if stat and stat.ftype == "fifo" and RUBY_PLATFORM == "java"
       fd = java.io.FileWriter.new(java.io.File.new(path))
     else
       fd = File.new(path, "a")
