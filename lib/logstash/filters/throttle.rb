@@ -117,10 +117,10 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
   # New plugins should start life at milestone 1.
   milestone 1
 
-  # The key field used to identify events. Two events with the same value in the 
-  # key field will be considered the same event and will increment the count for 
-  # that event. Refer to the checksum filter if support for multiple fields is needed.
-  config :key_field, :validate => :string, :required => true
+  # The key used to identify events. Events with the same key will be throttled
+  # as a group.  Field substitutions are allowed, so you can combine multiple
+  # fields.
+  config :key, :validate => :string, :required => true
   
   # Events less than this count will be throttled. Setting this value to -1, the 
   # default, will cause no messages to be throttled based on the lower bound.
@@ -131,10 +131,10 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
   config :after_count, :validate => :number, :default => -1, :required => false
   
   # The period in seconds after the first occurrence of an event until the count is 
-  # reset for the event. This period is tracked per unique key_field value. The period
-  # is resolved against the first event for a given key_field and patterns are permitted. 
-  # For example, you could use %{throttle_period}" if the event has a number field named
-  # "throttle_period".
+  # reset for the event. This period is tracked per unique key_field value.  Field
+  # substitutions are allowed in this value.  They will be evaluated when the _first_
+  # event for a given key is seen.  This allows you to specify that certain kinds
+  # of events throttle for a specific period.
   config :period, :validate => :string, :default => "3600", :required => false
   
   # The maximum number of counters to store before the oldest counter is purged. Setting 
@@ -162,11 +162,8 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
     # Return nothing unless there's an actual filter event
     return unless filter?(event)
     	  
-    # Return nothing unless the event has the key field
-    return unless event.include?(@key_field)
-    
     now = Time.now
-    key = event[@key_field]
+    key = event.sprintf(@key)
     
     # Purge counters if too large to prevent OOM.
     if @max_counters != -1 && @eventCounters.size > @max_counters then
@@ -185,7 +182,9 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
     # Create new counter for this event if this is the first occurrence
     counter = nil
     if !@eventCounters.include?(key) then
-      expiration = now + event.sprintf(@period).to_i()
+      period = event.sprintf(@period).to_i
+      period = 3600 if period == 0
+      expiration = now + period
       @eventCounters[key] = { :count => 0, :expiration => expiration }
       
       @logger.debug? and @logger.debug("filters/#{self.class.name}: new event", 
