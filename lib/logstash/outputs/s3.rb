@@ -4,10 +4,6 @@ require "logstash/namespace"
 require "logstash/plugin_mixins/aws_config"
 require "zlib"
 
-# Copy file access from file.rb
-# Path string formatting
-# All the S3 uploading stuff
-
 class LogStash::Outputs::S3 < LogStash::Outputs::Base
   include LogStash::PluginMixins::AwsConfig
 
@@ -28,6 +24,12 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   # Temporary path to write log files before transferring to S3
   config :tmp_log_path, :validate => :string, :default => "/tmp/logstash/" + Socket.gethostname + "-" + DateTime.now.strftime("%Y-%m-%d_%I-%M-%S") + ".log"
+
+  # Format to write files to S3
+  config :s3_log_path, :validate => :string, :default => Socket.gethostname + "/%s.log"
+
+  # Canned ACL for S3
+  config :canned_acl, :validate => :string, :default => "private"
 
   # Flush interval for flushing writes to temporary files. 0 will flush on every meesage
   config :flush_interval, :validate => :number, :default => 2
@@ -71,6 +73,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     now = Time.now
     @last_flush_cycle = now
     @last_sync = now
+    @current_fd = nil
   end
 
   public
@@ -98,23 +101,34 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     elsif File.size(@tmp_log_path) > @size_limit
       @logger.info("Syncing file due to size limit")
       rotate_file
+      @last_sync = Time.now
     end
   end
 
   private
   def rotate_file
-    @logger.info("Would have rotated file")
+    # Copy file to temporary file
+    FileUtils.cp(@tmp_log_path, @tmp_log_path + '.sync')
+    # Truncate existing file
+    File.truncate(@tmp_log_path, 0)
+    # Upload temporary file to S3
+    file_to_s3(@tmp_log_path + '.sync')
+    # Delete temporary file
+    File.unlink(@tmp_log_path + '.sync')
   end
 
   public
   def teardown
     @logger.debug("Teardown: syncing files")
-    file_to_s3(@tmp_log_path)
-    begin
-      @tmp_log_path.fd.close
-      @logger.debug("Closed file #{path}", :fd => @tmp_log_path.fd)
-    rescue Exception => e
-      @logger.error("Exception while flushing and syncing files.", :exception => e)
+    # No messages received?
+    if not @current_fd.nil?
+      file_to_s3(@tmp_log_path)
+      begin
+        @current_fd.close
+        @logger.debug("Closed file #{@tmp_log_path}")
+      rescue Exception => e
+        @logger.error("Exception while flushing and syncing files.", :exception => e)
+      end
     end
     finished
   end
@@ -138,7 +152,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   def open(path)
-    return @tmp_log_path[path] if @tmp_log_path.include?(path) and not @tmp_log_path[path].nil?
+    return @current_fd if not @current_fd.nil? and @current_fd.path == path
 
     @logger.info("Opening file", :path => path)
 
@@ -157,12 +171,15 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     if gzip
       fd = Zlib::GzipWriter.new(fd)
     end
-    @tmp_log_path[path] = IOWriter.new(fd)
+    @current_fd = IOWriter.new(fd)
   end
 
   private
   def file_to_s3(filename)
-
+    s3_filename = @s3_log_path.sprintf(DateTime.now.strftime("%Y-%m-%d_%I-%M-%S"))
+    object = @s3.buckets[@bucket_name].objects[s3_filename]
+    object.write(:file => filename, :acl => @canned_acl)
+    @logger.info("Uploaded log to S3 as #{s3_filename}")
   end
 end
 
