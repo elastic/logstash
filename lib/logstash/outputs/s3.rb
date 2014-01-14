@@ -72,6 +72,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
     now = Time.now
     @last_flush_cycle = now
+    flush_interval = @flush_interval.to_i
     @last_sync = now
     @current_fd = nil
   end
@@ -145,8 +146,8 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   def flush_pending_file
     return unless Time.now - @last_flush_cycle >= flush_interval
     @logger.debug("Starting flush cycle")
-    @logger.debug("Flushing file", :path => tmp_log_path, :fd => fd)
-    fd.flush
+    @logger.debug("Flushing file", :path => @tmp_log_path, :fd => @current_fd)
+    @current_fd.flush
 
     @last_flush_cycle = Time.now
   end
