@@ -16,7 +16,7 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
 
   # When used with IPV4_NETWORK method fill in the subnet prefix length
   # Not required for MURMUR3 or UUID methods
-  # With other methods fill in encryption key
+  # With other methods fill in the HMAC key
   config :key, :validate => :string
 
   # Fingerprint method
@@ -28,60 +28,48 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
   def register
     # require any library and set the anonymize function
     case @method
-    when "IPV4_NETWORK"
-      require 'ipaddr'
-      @logger.error("Key value is empty. please fill in a subnet prefix length") if @key.nil?
-      class << self; alias_method :anonymize, :anonymize_ipv4_network; end
-    when "MURMUR3"
-      require "murmurhash3"
-      class << self; alias_method :anonymize, :anonymize_murmur3; end
-    when "UUID"
-      require "securerandom"
-    else
-      require 'openssl'
-      @logger.error("Key value is empty. Please fill in an encryption key") if @key.nil?
-      class << self; alias_method :anonymize, :anonymize_openssl; end
+      when "IPV4_NETWORK"
+        require 'ipaddr'
+        @logger.error("Key value is empty. please fill in a subnet prefix length") if @key.nil?
+        class << self; alias_method :anonymize, :anonymize_ipv4_network; end
+      when "MURMUR3"
+        require "murmurhash3"
+        class << self; alias_method :anonymize, :anonymize_murmur3; end
+      when "UUID"
+        require "securerandom"
+      else
+        require 'openssl'
+        @logger.error("Key value is empty. Please fill in an encryption key") if @key.nil?
+        class << self; alias_method :anonymize, :anonymize_openssl; end
     end
   end # def register
 
   public
   def filter(event)
     return unless filter?(event)
-
     if @method == "UUID"
       event[@target] = SecureRandom.uuid
     else
-
-      if @concatenate_sources == false
-
+      if @concatenate_sources 
+        to_string = ''
+        @source.sort.each do |k|
+          @logger.debug("Adding key to string")
+          to_string << "|#{k}|#{event[k]}"
+        end
+        to_string << "|"
+        @logger.debug("String built", :to_checksum => to_string)
+        event[@target] = anonymize(to_string)
+      else 
         @source.each do |field|
           next unless event.include?(field)
-
           if event[field].is_a?(Array)
             event[@target] = event[field].collect { |v| anonymize(v) }
           else
             event[@target] = anonymize(event[field])
           end
-
         end # @source.each
-
-      else # Concating all fields into 1 like the old checksum filter
-        to_string = ''
-
-        @source.sort.each do |k|
-          @logger.debug("Adding key to string")
-          to_string << "|#{k}|#{event[k]}"
-        end
-
-        to_string << "|"
-        @logger.debug("String built", :to_checksum => to_string)
-
-        event[@target] = anonymize(to_string)
-
       end # concatenate_sources
-
     end # @method
-
   end # def filter
 
   private
@@ -96,28 +84,27 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
 
   def anonymize_murmur3(value)
     case value
-    when Fixnum
-      MurmurHash3::V32.int_hash(value)
-    when String
-      MurmurHash3::V32.str_hash(value)
+      when Fixnum
+        MurmurHash3::V32.int_hash(value)
+      when String
+        MurmurHash3::V32.str_hash(value)
     end
   end
 
   def encryption_algorithm
-
    case @method
-      when 'SHA1'
-        return OpenSSL::Digest::SHA1.new
-      when 'SHA256'
-        return OpenSSL::Digest::SHA256.new
-      when 'SHA384'
-        return OpenSSL::Digest::SHA384.new
-      when 'SHA512'
-        return OpenSSL::Digest::SHA512.new
-      when 'MD5'
-        return OpenSSL::Digest::MD5.new
-      else
-        @logger.error("Unknown algorithm")
+     when 'SHA1'
+       return OpenSSL::Digest::SHA1.new
+     when 'SHA256'
+       return OpenSSL::Digest::SHA256.new
+     when 'SHA384'
+       return OpenSSL::Digest::SHA384.new
+     when 'SHA512'
+       return OpenSSL::Digest::SHA512.new
+     when 'MD5'
+       return OpenSSL::Digest::MD5.new
+     else
+       @logger.error("Unknown algorithm")
     end
   end
 
