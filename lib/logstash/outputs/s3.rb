@@ -27,7 +27,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   config :message_format, :validate => :string
 
   # Temporary path to write log files before transferring to S3
-  config :tmp_log_path, :validate => :string, :default => "/tmp/logstash/" + Socket.gethostname + "-%{+YYYY-MM-dd_hh-ii-ss}.log"
+  config :tmp_log_path, :validate => :string, :default => "/tmp/logstash/" + Socket.gethostname + "-" + DateTime.now.strftime("%Y-%m-%d_%I-%M-%S") + ".log"
 
   # Flush interval for flushing writes to temporary files. 0 will flush on every meesage
   config :flush_interval, :validate => :number, :default => 2
@@ -58,7 +58,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
     begin
       @logger.debug("Opening S3 bucket '#{@bucket_name}"'...')
-      @bucket = s3.buckets[@bucket_name]
+      @bucket = @s3.buckets[@bucket_name]
       if not @bucket.exists?
         @logger.error("Bucket '#{@bucket_name}' does not exist")
       end
@@ -77,7 +77,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    path = event.sprintf(@tmp_log_path)
+    path = @tmp_log_path
     fd = open(path)
 
     if @message_format
