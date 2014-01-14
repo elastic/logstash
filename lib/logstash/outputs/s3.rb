@@ -18,16 +18,16 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   config :bucket_name, :validate => :string, :required => true
 
   # File size limit - when the temporary file exceeds this size (in KB), transfer to S3
-  config :size_limit, :validate => :int, :default => 10240
+  config :size_limit, :validate => :number, :default => 10240
 
   # File time limit - sync every X seconds unless the file is empty. This overrides file size limits.
-  config :time_limit, :validate => :int, :default => 3600
+  config :time_limit, :validate => :number, :default => 3600
 
   # Message format, if omitted the full json will be written
   config :message_format, :validate => :string
 
   # Temporary path to write log files before transferring to S3
-  config :tmp_log_path, :validate => "string", :default => "/tmp/logstash/" + Socket.gethostname + "-%{+YYYY-MM-dd_hh-ii-ss}.log"
+  config :tmp_log_path, :validate => :string, :default => "/tmp/logstash/" + Socket.gethostname + "-%{+YYYY-MM-dd_hh-ii-ss}.log"
 
   # Flush interval for flushing writes to temporary files. 0 will flush on every meesage
   config :flush_interval, :validate => :number, :default => 2
