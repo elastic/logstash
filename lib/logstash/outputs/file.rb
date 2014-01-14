@@ -37,7 +37,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # event will be written as a single line.
   config :message_format, :validate => :string
 
-  # Flush interval for flushing writes to log files. 0 will flush on every meesage
+  # Flush interval for flushing writes to log files. 0 will flush on every message
   config :flush_interval, :validate => :number, :default => 2
 
   # Gzip output stream
