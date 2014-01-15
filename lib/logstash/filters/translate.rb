@@ -47,7 +47,7 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   #       %PLUGIN% {
   #         dictionary => [ "100", "Continue",
   #                         "101", "Switching Protocols",
-  #                         "merci", "thank you,
+  #                         "merci", "thank you",
   #                         "old version", "new version" ]
   #       }
   #     }
