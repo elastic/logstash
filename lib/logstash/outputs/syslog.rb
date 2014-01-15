@@ -81,6 +81,12 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
 
   # syslog message format: you can choose between rfc3164 or rfc5424
   config :rfc, :validate => ["rfc3164", "rfc5424"], :default => "rfc3164"
+  
+  # loggly authentication key within structured data
+  config :loggly_token, :validate => :string, :required => false
+  
+  # loggly search tages within structured data
+  config :loggly_tags, :validate => :array, :default => []
 
   
   public
@@ -97,6 +103,24 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
   def rfc3164?
     @rfc == "rfc3164"
   end 
+  
+  private
+  def loggly?
+    @rfc == "rfc5424" && loggly_token.empty? == false
+  end
+  
+  private
+  def loggly_tags_string
+    tags_as_string = ''
+    unless loggly_tags.empty?
+      tags ||= []
+      loggly_tags.each do |t|
+        tags << %Q[tag="#{t}"]  
+      end
+      tags_as_string = tags.join(' ')
+    end
+    tags_as_string
+  end
 
   private
   def connect
@@ -128,7 +152,13 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
     else
       msgid = event.sprintf(@msgid)
       timestamp = event.sprintf("%{+YYYY-MM-dd'T'HH:mm:ss.SSSZ}")
-      syslog_msg = "<"+priority.to_s()+">1 "+timestamp+" "+sourcehost+" "+appname+" "+procid+" "+msgid+" - "+event["message"]
+    
+      if loggly?  
+        token_tags = loggly_tags.empty? ? "#{loggly_token}" : "#{loggly_token} #{loggly_tags_string}"
+        syslog_msg = "<"+priority.to_s()+">1 "+timestamp+" "+sourcehost+" "+appname+" "+procid+" "+msgid+" ["+token_tags+"] - "+event["message"]
+      else
+        syslog_msg = "<"+priority.to_s()+">1 "+timestamp+" "+sourcehost+" "+appname+" "+procid+" "+msgid+" - "+event["message"]
+      end
     end
 
     begin
