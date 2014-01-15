@@ -61,6 +61,8 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     require "aws-sdk"
     require "fileutils"
 
+    @tmp_log_path = sprintf(@tmp_log_path, DateTime.now.strftime("%Y-%m-%d_%I-%M-%S"))
+
     @s3 = AWS::S3.new(aws_options_hash)
 
     begin
@@ -85,7 +87,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    path = sprintf(@tmp_log_path, DateTime.now.strftime("%Y-%m-%d_%I-%M-%S"))
+    path = @tmp_log_path
     fd = open(path)
 
     if @message_format
