@@ -40,7 +40,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   #     # You can also add multiple tags at once:
   #     filter {
   #       %PLUGIN% {
-  #         add_tag => [ "foo_%{somefield}" "taggedy_tag"]
+  #         add_tag => [ "foo_%{somefield}", "taggedy_tag"]
   #       }
   #     }
   #
@@ -62,7 +62,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   # 
   #     filter {
   #       %PLUGIN% {
-  #         remove_tag => [ "foo_%{somefield}" "sad_unwanted_tag"]
+  #         remove_tag => [ "foo_%{somefield}", "sad_unwanted_tag"]
   #       }
   #     }
   #
