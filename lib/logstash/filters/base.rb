@@ -37,8 +37,15 @@ class LogStash::Filters::Base < LogStash::Plugin
   #       }
   #     }
   #
+  #     # You can also add multiple tags at once:
+  #     filter {
+  #       %PLUGIN% {
+  #         add_tag => [ "foo_%{somefield}" "taggedy_tag"]
+  #       }
+  #     }
+  #
   # If the event has field "somefield" == "hello" this filter, on success,
-  # would add a tag "foo_hello"
+  # would add a tag "foo_hello" (and the second example would of course add a "taggedy_tag" tag).
   config :add_tag, :validate => :array, :default => []
 
   # If this filter is successful, remove arbitrary tags from the event.
@@ -51,8 +58,17 @@ class LogStash::Filters::Base < LogStash::Plugin
   #       }
   #     }
   #
+  #     # You can also remove multiple tags at once:
+  # 
+  #     filter {
+  #       %PLUGIN% {
+  #         remove_tag => [ "foo_%{somefield}" "sad_unwanted_tag"]
+  #       }
+  #     }
+  #
   # If the event has field "somefield" == "hello" this filter, on success,
-  # would remove the tag "foo_hello" if it is present
+  # would remove the tag "foo_hello" if it is present. The second example
+  # would remove a sad, unwanted tag as well. 
   config :remove_tag, :validate => :array, :default => []
 
   # If this filter is successful, add any arbitrary fields to this event.
@@ -61,14 +77,22 @@ class LogStash::Filters::Base < LogStash::Plugin
   #
   #     filter {
   #       %PLUGIN% {
-  #         add_field => [ "foo_%{somefield}", "Hello world, from %{host}" ]
+  #         add_field => [ "foo_%{somefield}" => "Hello world, from %{host}" ]
+  #       }
+  #     }
+  #
+  #     # You can also add multiple fields at once:
+  #
+  #     filter {
+  #       %PLUGIN% {
+  #         add_field => [ "foo_%{somefield}" => "Hello world, from %{host}" "new_field" => "new_static_value"]
   #       }
   #     }
   #
   # If the event has field "somefield" == "hello" this filter, on success,
   # would add field "foo_hello" if it is present, with the
   # value above and the %{host} piece replaced with that value from the
-  # event.
+  # event. The second example would also add a hardcoded field. 
   config :add_field, :validate => :hash, :default => {}
 
   # If this filter is successful, remove arbitrary fields from this event.
@@ -81,8 +105,17 @@ class LogStash::Filters::Base < LogStash::Plugin
   #       }
   #     }
   #
+  #     # You can also remove multiple fields at once:
+  #
+  #     filter {
+  #       %PLUGIN% {
+  #         remove_field => [ "foo_%{somefield}" "my_extraneous_field" ]
+  #       }
+  #     }
+  #
   # If the event has field "somefield" == "hello" this filter, on success,
-  # would remove the field with name "foo_hello" if it is present
+  # would remove the field with name "foo_hello" if it is present. The second 
+  # example would remove an additional, non-dynamic field.
   config :remove_field, :validate => :array, :default => []
 
   RESERVED = ["type", "tags", "exclude_tags", "include_fields", "exclude_fields", "add_tag", "remove_tag", "add_field", "remove_field", "include_any", "exclude_any"]
