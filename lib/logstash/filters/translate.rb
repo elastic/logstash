@@ -51,20 +51,19 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   #                         "old version", "new version" ]
   #       }
   #     }
-  # NOTE: it is an error to specify both @dictionary and @dictionary_path
+  # NOTE: it is an error to specify both dictionary and dictionary_path
   config :dictionary, :validate => :hash,  :default => {}
 
   # The full path of the external YAML dictionary file. The format of the table
-  # should be a standard YAML file which will be merged with the @dictionary. Make
-  # sure you specify any integer-based keys in quotes. The YAML file should look
-  # something like this:
+  # should be a standard YAML file. Make sure you specify any integer-based keys
+  # in quotes. The YAML file should look something like this:
   #
   #     "100": Continue
   #     "101": Switching Protocols
   #     merci: gracias
   #     old version: new version
   #     
-  # NOTE: it is an error to specify both @dictionary and @dictionary_path
+  # NOTE: it is an error to specify both dictionary and dictionary_path
   config :dictionary_path, :validate => :path
 
   # The destination field you wish to populate with the translated code. The default
@@ -73,17 +72,39 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   # the old value of the source field! 
   config :destination, :validate => :string, :default => "translation"
 
-  # Set to false if you want to match multiple terms. A large dictionary could get expensive if set to false.
+  # When `exact => true`, the translate filter will populate the destination field
+  # with the exact contents of the dictionary value. When `exact => false`, the
+  # filter will populate the destination field with the result of any existing
+  # destination field's data, with the translated value substituted in-place.
+  #
+  # For example, consider this simple translation.yml, configured to check the `data` field:
+  #     foo: bar
+  #
+  # If Logstash receives an event with the `data` field set to "foo", and `exact => true`,
+  # the destination field will be populated with the string "bar".
+  
+  # If `exact => false`, and Logstash receives the same event, the destination field
+  # will be also set to "bar". However, if Logstash receives an event with the `data` field
+  # set to "foofing", the destination field will be set to "barfing".
+  #
+  # Set both `exact => true` AND `regex => `true` if you would like to match using dictionary
+  # keys as regular expressions. A large dictionary could be expensive to match in this case. 
   config :exact, :validate => :boolean, :default => true
 
-  # Set this to true (default is false), if you'd like to treat dictionary keys as
-  # regular expressions to match against, this is used only when the "exact" configuration
-  # is enabled (true).
+  # If you'd like to treat dictionary keys as regular expressions, set `exact => true`.
+  # Note: this is activated only when `exact => true`.
   config :regex, :validate => :boolean, :default => false
 
-  # In case no translation occurred in the event, this will add a default translation
-  # string, which will always populate "field", regardless of whether the translate
-  # filter matched.
+  # In case no translation occurs in the event (no matches), this will add a default
+  # translation string, which will always populate "field", if the match failed.
+  #
+  # For example, if we have configured `fallback => "no match"`, using this dictionary:
+  #
+  #     foo: bar
+  #
+  # Then, if Logstash received an event with the field `foo` set to "bar", the destination
+  # field would be set to "bar". However, if Logstash received an event with `foo` set to "nope",
+  # then the destination field would still be populated, but with the value of "no match".
   config :fallback, :validate => :string
 
   public
