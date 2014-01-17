@@ -3,13 +3,13 @@ require "logstash/namespace"
 require "logstash/outputs/base"
 require "stud/buffer"
 
-# This output lets you store logs in elasticsearch.
+# This output lets you store logs in Elasticsearch.
 #
-# This plugin uses the HTTP/REST interface to ElasticSearch, which usually
-# lets you use any version of elasticsearch server. It is known to work
+# This plugin uses the HTTP/REST interface to Elasticsearch, which usually
+# lets you use any version of Elasticsearch server. It is known to work
 # with elasticsearch %ELASTICSEARCH_VERSION%
 #
-# You can learn more about elasticsearch at <http://elasticsearch.org>
+# You can learn more about Elasticsearch at <http://www.elasticsearch.org>
 class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   include Stud::Buffer
 
@@ -36,11 +36,11 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # your templates manually.
   config :manage_template, :validate => :boolean, :default => true
 
-  # This configuration option defines how the template is named inside Elasticsearch
+  # This configuration option defines how the template is named inside Elasticsearch.
   # Note that if you have used the template management features and subsequently
   # change this you will need to prune the old template manually, e.g.
-  # curl -XDELETE <http://localhost:9200/_template/OLD_template_name?pretty>
-  # where OLD_template_name is whatever the former setting was.
+  # curl -XDELETE <http://localhost:9200/_template/OldTemplateName?pretty>
+  # where OldTemplateName is whatever the former setting was.
   config :template_name, :validate => :string, :default => "logstash"
 
   # You can set the path to your own template here, if you so desire.  
@@ -51,10 +51,10 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # in the template and template_name directives.
   config :template_overwrite, :validate => :boolean, :default => false
 
-  # The hostname or ip address to reach your elasticsearch server.
+  # The hostname or IP address to reach your Elasticsearch server.
   config :host, :validate => :string, :required => true
 
-  # The port for ElasticSearch HTTP interface to use.
+  # The port for Elasticsearch HTTP interface to use.
   config :port, :validate => :number, :default => 9200
 
   # The HTTP Basic Auth username used to access your elasticsearch server.
@@ -65,14 +65,14 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   # This plugin uses the bulk index api for improved indexing performance.
   # To make efficient bulk api calls, we will buffer a certain number of
-  # events before flushing that out to elasticsearch. This setting
+  # events before flushing that out to Elasticsearch. This setting
   # controls how many events will be buffered before sending a batch
   # of events.
   config :flush_size, :validate => :number, :default => 100
 
   # The amount of time since last flush before a flush is forced.
   #
-  # This setting helps ensure slow event rates don't get stuck in logstash.
+  # This setting helps ensure slow event rates don't get stuck in Logstash.
   # For example, if your `flush_size` is 100, and you have received 10 events,
   # and it has been more than `idle_flush_time` seconds since the last flush,
   # logstash will flush those 10 events automatically.
@@ -82,11 +82,11 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   config :idle_flush_time, :validate => :number, :default => 1
 
   # The document ID for the index. Useful for overwriting existing entries in
-  # elasticsearch with the same ID.
+  # Elasticsearch with the same ID.
   config :document_id, :validate => :string, :default => nil
 
-  # Set the type of elasticsearch replication to use. If async
-  # the index request to elasticsearch to return after the primary
+  # Set the type of Elasticsearch replication to use. If async
+  # the index request to Elasticsearch to return after the primary
   # shards have been written. If sync (default), index requests
   # will wait until the primary and the replica shards have been
   # written.
