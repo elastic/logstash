@@ -5,7 +5,7 @@ require "stud/buffer"
 
 # This output lets you store logs in Elasticsearch and is the most recommended
 # output for Logstash. If you plan on using the Kibana web interface, you'll
-# need to use this output.
+# need to use this output or the elasticsearch_http output.
 #
 #   *VERSION NOTE*: Your Elasticsearch cluster must be running Elasticsearch
 #   %ELASTICSEARCH_VERSION%. If you use any other version of Elasticsearch,
@@ -53,7 +53,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # a default mapping template for Elasticsearch will be applied, if you do not 
   # already have one set to match the index pattern defined (default of 
   # "logstash-%{+YYYY.MM.dd}"), minus any variables.  For example, in this case
-  # the template will be applied to all indices starting with logstash-*. 
+  # the template will be applied to all indices starting with logstash-*
   #
   # If you have dynamic templating (e.g. creating indices based on field names)
   # then you should set "manage_template" to false and use the REST API to upload
