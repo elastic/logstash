@@ -1,7 +1,7 @@
 1.3.3 (January 17, 2013)
   # general
   - bugfix: Fix SSL cert load problem on plugins using aws-sdk: S3, SNS, etc.
-    (LOGSTASH-1778, #924; Adam Peck)
+    (LOGSTASH-1778, LOGSTASH-1787, LOGSTASH-1784, #924; Adam Peck)
   - bugfix: Fix library load problems for aws-sdk (LOGSTASH-1718, #923; Jordan
     Sissel)
   - bugfix: Fix regression introduced in 1.3.2 while trying to improve time
