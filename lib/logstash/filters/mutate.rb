@@ -145,7 +145,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #    }
   config :join, :validate => :hash
 
-  # Strip whitespace from field. NOTE: this only works on beginning and trailing whitespace.
+  # Strip whitespace from field. NOTE: this only works on leading and trailing whitespace.
   #
   # Example:
   #
