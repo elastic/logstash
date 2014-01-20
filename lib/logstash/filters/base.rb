@@ -77,7 +77,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   #
   #     filter {
   #       %PLUGIN% {
-  #         add_field => [ "foo_%{somefield}" => "Hello world, from %{host}" ]
+  #         add_field => { "foo_%{somefield}" => "Hello world, from %{host}" }
   #       }
   #     }
   #
@@ -85,7 +85,10 @@ class LogStash::Filters::Base < LogStash::Plugin
   #
   #     filter {
   #       %PLUGIN% {
-  #         add_field => [ "foo_%{somefield}" => "Hello world, from %{host}" "new_field" => "new_static_value"]
+  #         add_field => { 
+  #           "foo_%{somefield}" => "Hello world, from %{host}"
+  #           "new_field" => "new_static_value"
+  #         }
   #       }
   #     }
   #
