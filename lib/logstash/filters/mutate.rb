@@ -2,7 +2,7 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
-# The mutate filter allows you to do general mutations to fields. You
+# The mutate filter allows you to perform general mutations on fields. You
 # can rename, remove, replace, and modify fields in your events.
 #
 # TODO(sissel): Support regexp replacements like String#gsub ?
@@ -64,7 +64,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   # integer. If the field value is an array, all members will be converted.
   # If the field is a hash, no action will be taken.
   #
-  # Valid conversion targets are: integer, float, string
+  # Valid conversion targets are: integer, float, string.
   #
   # Example:
   #
@@ -75,8 +75,8 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #     }
   config :convert, :validate => :hash
 
-  # Convert a string field by applying a regular expression and a replacement
-  # if the field is not a string, no action will be taken.
+  # Convert a string field by applying a regular expression and a replacement.
+  # If the field is not a string, no action will be taken.
   # 
   # This configuration takes an array consisting of 3 elements per
   # field/substitution.
@@ -100,7 +100,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   config :gsub, :validate => :array
 
-  # Convert a string to its uppercase equivalent
+  # Convert a string to its uppercase equivalent.
   # 
   # Example:
   # 
@@ -111,7 +111,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #     }
   config :uppercase, :validate => :array
   
-  # Convert a string to its lowercase equivalent
+  # Convert a string to its lowercase equivalent.
   # 
   # Example:
   # 
@@ -134,7 +134,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #     }
   config :split, :validate => :hash
 
-  # Join an array with a separator character, does nothing on non-array fields
+  # Join an array with a separator character. Does nothing on non-array fields.
   #
   # Example:
   #
@@ -145,7 +145,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #    }
   config :join, :validate => :hash
 
-  # Strip whitespaces
+  # Strip whitespace from field. NOTE: this only works on leading and trailing whitespace.
   #
   # Example:
   #
@@ -156,11 +156,11 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #     }
   config :strip, :validate => :array
 
-  # merge two fields or arrays or hashes
-  # String fields will be converted in array, so 
-  #  array + string will work
-  #  string + string will result in an 2 entry array in dest_field
-  #  array and hash will not work
+  # Merge two fields of arrays or hashes.
+  # String fields will be automatically be converted into an array, so:
+  #   array + string will work
+  #   string + string will result in an 2 entry array in dest_field
+  #   array and hash will not work
   #
   # Example:
   #
