@@ -61,7 +61,8 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Should the queue be deleted on the broker when the last consumer
   # disconnects? Set this option to 'false' if you want the queue to remain
   # on the broker, queueing up messages until a consumer comes along to
-  # consume them.
+  # consume them. (note: if false, you should create the queue first in rabbitmq,
+  # and set exclusive to false for this to work)
   config :auto_delete, :validate => :boolean, :default => true
 
   # Is the queue exclusive? (aka: Will other clients connect to this named queue?)
