@@ -122,6 +122,8 @@ case $os in
       -a all --iteration "1-${os}${DEB_REVISION}" \
       --url "$URL" \
       --description "$DESCRIPTION" \
+      --vendor "Elasticsearch" \
+      --license "Apache 2.0" \
       -d "default-jre-headless" \
       --deb-user root --deb-group root \
       --before-install $os/before-install.sh \
