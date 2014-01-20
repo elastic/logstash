@@ -19,7 +19,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   config :bucket_name, :validate => :string, :required => true
 
   # File size limit - when the temporary file exceeds this size (in bytes), transfer to S3
-  config :size_limit, :validate => :number, :default => 10240
+  config :size_limit, :validate => :number, :default => 104857600
 
   # File time limit - sync every X seconds unless no new messages have been received. This overrides file size limits.
   config :time_limit, :validate => :number, :default => 3600
