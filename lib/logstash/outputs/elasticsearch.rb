@@ -3,25 +3,25 @@ require "logstash/namespace"
 require "logstash/outputs/base"
 require "stud/buffer"
 
-# This output lets you store logs in elasticsearch and is the most recommended
-# output for logstash. If you plan on using the logstash web interface, you'll
-# need to use this output.
+# This output lets you store logs in Elasticsearch and is the most recommended
+# output for Logstash. If you plan on using the Kibana web interface, you'll
+# need to use this output or the elasticsearch_http output.
 #
-#   *VERSION NOTE*: Your elasticsearch cluster must be running elasticsearch
-#   %ELASTICSEARCH_VERSION%. If you use any other version of elasticsearch,
+#   *VERSION NOTE*: Your Elasticsearch cluster must be running Elasticsearch
+#   %ELASTICSEARCH_VERSION%. If you use any other version of Elasticsearch,
 #   you should consider using the [elasticsearch_http](elasticsearch_http)
 #   output instead.
 #
-# If you want to set other elasticsearch options that are not exposed directly
+# If you want to set other Elasticsearch options that are not exposed directly
 # as config options, there are two options:
 #
-# * create an elasticsearch.yml file in the $PWD of the logstash process
+# * create an elasticsearch.yml file in the $PWD of the Logstash process
 # * pass in es.* java properties (java -Des.node.foo= or ruby -J-Des.node.foo=)
 #
-# This plugin will join your elasticsearch cluster, so it will show up in
-# elasticsearch's cluster health status.
+# This plugin will join your Elasticsearch cluster, so it will show up in
+# Elasticsearch's cluster health status.
 #
-# You can learn more about elasticsearch at <http://elasticsearch.org>
+# You can learn more about Elasticsearch at <http://www.elasticsearch.org>
 #
 # ## Operational Notes
 #
@@ -31,8 +31,8 @@ require "stud/buffer"
 # If you are still using a version older than this, please upgrade for 
 # more benefits than just template management.
 #
-# Your firewalls will need to permit port 9300 in *both* directions (from
-# logstash to elasticsearch, and elasticsearch to logstash)
+# Your firewalls might need to permit port 9300 in *both* directions (from
+# Logstash to Elasticsearch, and Elasticsearch to Logstash)
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   include Stud::Buffer
 
@@ -53,22 +53,22 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # a default mapping template for Elasticsearch will be applied, if you do not 
   # already have one set to match the index pattern defined (default of 
   # "logstash-%{+YYYY.MM.dd}"), minus any variables.  For example, in this case
-  # the template will be applied to all indices starting with logstash-* 
+  # the template will be applied to all indices starting with logstash-*
   #
   # If you have dynamic templating (e.g. creating indices based on field names)
   # then you should set "manage_template" to false and use the REST API to upload
   # your templates manually.
   config :manage_template, :validate => :boolean, :default => true
 
-  # This configuration option defines how the template is named inside Elasticsearch
+  # This configuration option defines how the template is named inside Elasticsearch.
   # Note that if you have used the template management features and subsequently
-  # change this you will need to prune the old template manually, e.g.
-  # curl -XDELETE <http://localhost:9200/_template/OLD_template_name?pretty>
-  # where OLD_template_name is whatever the former setting was.
+  # change this, you will need to prune the old template manually, e.g.
+  # curl -XDELETE <http://localhost:9200/_template/OldTemplateName?pretty>
+  # where OldTemplateName is whatever the former setting was.
   config :template_name, :validate => :string, :default => "logstash"
 
   # You can set the path to your own template here, if you so desire.  
-  # If not the included template will be used.
+  # If not set, the included template will be used.
   config :template, :validate => :path
 
   # Overwrite the current template with whatever is configured 
@@ -76,23 +76,23 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   config :template_overwrite, :validate => :boolean, :default => false
 
   # The document ID for the index. Useful for overwriting existing entries in
-  # elasticsearch with the same ID.
+  # Elasticsearch with the same ID.
   config :document_id, :validate => :string, :default => nil
 
-  # The name of your cluster if you set it on the ElasticSearch side. Useful
+  # The name of your cluster if you set it on the Elasticsearch side. Useful
   # for discovery.
   config :cluster, :validate => :string
 
-  # The name/address of the host to use for ElasticSearch unicast discovery
+  # The hostname or IP address of the host to use for Elasticsearch unicast discovery
   # This is only required if the normal multicast/cluster discovery stuff won't
   # work in your environment.
   config :host, :validate => :string
 
-  # The port for ElasticSearch transport to use. This is *not* the ElasticSearch
+  # The port for Elasticsearch transport to use. This is *not* the Elasticsearch
   # REST API port (normally 9200).
   config :port, :validate => :string, :default => "9300-9305"
 
-  # The name/address of the host to bind to for ElasticSearch clustering
+  # The name/address of the host to bind to for Elasticsearch clustering
   config :bind_host, :validate => :string
 
   # This is only valid for the 'node' protocol.
@@ -100,13 +100,13 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # The port for the node to listen on.
   config :bind_port, :validate => :number
 
-  # Run the elasticsearch server embedded in this process.
-  # This option is useful if you want to run a single logstash process that
+  # Run the Elasticsearch server embedded in this process.
+  # This option is useful if you want to run a single Logstash process that
   # handles log processing and indexing; it saves you from needing to run
-  # a separate elasticsearch process.
+  # a separate Elasticsearch process.
   config :embedded, :validate => :boolean, :default => false
 
-  # If you are running the embedded elasticsearch server, you can set the http
+  # If you are running the embedded Elasticsearch server, you can set the http
   # port it listens on here; it is not common to need this setting changed from
   # default.
   config :embedded_http_port, :validate => :string, :default => "9200-9300"
@@ -115,44 +115,44 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # from failing. It will be removed in future versions.
   config :max_inflight_requests, :validate => :number, :default => 50, :deprecated => true
 
-  # The node name ES will use when joining a cluster.
+  # The node name Elasticsearch will use when joining a cluster.
   #
   # By default, this is generated internally by the ES client.
   config :node_name, :validate => :string
 
   # This plugin uses the bulk index api for improved indexing performance.
   # To make efficient bulk api calls, we will buffer a certain number of
-  # events before flushing that out to elasticsearch. This setting
+  # events before flushing that out to Elasticsearch. This setting
   # controls how many events will be buffered before sending a batch
   # of events.
   config :flush_size, :validate => :number, :default => 100
 
   # The amount of time since last flush before a flush is forced.
   #
-  # This setting helps ensure slow event rates don't get stuck in logstash.
+  # This setting helps ensure slow event rates don't get stuck in Logstash.
   # For example, if your `flush_size` is 100, and you have received 10 events,
   # and it has been more than `idle_flush_time` seconds since the last flush,
-  # logstash will flush those 10 events automatically.
+  # Logstash will flush those 10 events automatically.
   #
   # This helps keep both fast and slow log streams moving along in
   # near-real-time.
   config :idle_flush_time, :validate => :number, :default => 1
 
-  # Choose the protocol used to talk to elasticsearch.
+  # Choose the protocol used to talk to Elasticsearch.
   #
-  # The 'node' protocol will connect to the cluster as a normal elasticsearch
+  # The 'node' protocol will connect to the cluster as a normal Elasticsearch
   # node (but will not store data). This allows you to use things like
   # multicast discovery.
   #
   # The 'transport' protocol will connect to the host you specify and will
-  # not show up as a 'node' in the elasticsearch cluster. This is useful 
+  # not show up as a 'node' in the Elasticsearch cluster. This is useful 
   # in situations where you cannot permit connections outbound from the
-  # elasticsearch cluster to this logstash server.
+  # Elasticsearch cluster to this Logstash server.
   config :protocol, :validate => [ "node", "transport" ], :default => "node"
 
   public
   def register
-    # TODO(sissel): find a better way of declaring where the elasticsearch
+    # TODO(sissel): find a better way of declaring where the Elasticsearch
     # libraries are
     # TODO(sissel): can skip this step if we're running from a jar.
     jarpath = File.join(File.dirname(__FILE__), "../../../vendor/jar/elasticsearch*/lib/*.jar")
@@ -160,7 +160,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       require jar
     end
 
-    # setup log4j properties for elasticsearch
+    # setup log4j properties for Elasticsearch
     LogStash::Logger.setup_log4j(@logger)
 
     if @embedded
@@ -169,12 +169,12 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       # firewall that blocks multicast.
       @host ||= "localhost"
 
-      # Start elasticsearch local.
+      # Start Elasticsearch local.
       start_local_elasticsearch
     end
     require "jruby-elasticsearch"
 
-    @logger.info("New ElasticSearch output", :cluster => @cluster,
+    @logger.info("New Elasticsearch output", :cluster => @cluster,
                  :host => @host, :port => @port, :embedded => @embedded)
     options = {
       :cluster => @cluster,
@@ -235,7 +235,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
         template_idx_name = @index.sub(/%{[^}]+}/,'*')
         alt_template_idx_name = @index.sub(/-%{[^}]+}/,'*')
         if !templates.any? { |k,v| v == template_idx_name || v == alt_template_idx_name }
-          @logger.debug("No logstash template found in Elasticsearch", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name)
+          @logger.debug("No Logstash template found in Elasticsearch", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name)
         else
           has_template = true
           @logger.info("Found existing Logstash template match.", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name, :templates => templates.to_s)
@@ -287,7 +287,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   protected
   def start_local_elasticsearch
-    @logger.info("Starting embedded ElasticSearch local node.")
+    @logger.info("Starting embedded Elasticsearch local node.")
     builder = org.elasticsearch.node.NodeBuilder.nodeBuilder
     # Disable 'local only' - LOGSTASH-277
     #builder.local(true)
