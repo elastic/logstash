@@ -1,3 +1,16 @@
+1.3.3 (January 17, 2013)
+  # general
+  - bugfix: Fix SSL cert load problem on plugins using aws-sdk: S3, SNS, etc.
+    (LOGSTASH-1778, LOGSTASH-1787, LOGSTASH-1784, #924; Adam Peck)
+  - bugfix: Fix library load problems for aws-sdk (LOGSTASH-1718, #923; Jordan
+    Sissel)
+  - bugfix: Fix regression introduced in 1.3.2 while trying to improve time
+    parsing performance. (LOGSTASH-1732, LOGSTASH-1738, #913; Jordan Sissel)
+
+  # codecs
+  - bugfix: json_lines, json: Fix bug causing invalid json to be incorrectly
+    handled with respect to encoding (#920, LOGSTASH-1595; Jordan Sissel)
+
 1.3.2 (December 23, 2013)
   # upgrade notes
   - Users of logstash 1.3.0 or 1.3.1 should set 'template_overwrite => true' in
