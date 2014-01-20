@@ -111,7 +111,7 @@ do_start()
   $JAVA $ARGS > /dev/null 1>&1 &
 
   RETVAL=$?
-  local PID=`pgrep -f "${DAEMON} ${ARGS}"`
+  local PID=$!
   echo $PID > $PID_FILE
   success
 }
