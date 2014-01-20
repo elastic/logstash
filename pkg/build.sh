@@ -103,6 +103,8 @@ case $os in
       --url "$URL" \
       --description "$DESCRIPTION" \
       -d "jre >= 1.6.0" \
+      --vendor "Elasticsearch" \
+      --license "Apache 2.0" \
       --before-install centos/before-install.sh \
       --before-remove centos/before-remove.sh \
       --after-install centos/after-install.sh \
