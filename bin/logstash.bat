@@ -46,8 +46,11 @@ REM The path to the heap dump location, note directory must exists and have enou
 REM space for a full heap dump.
 REM JAVA_OPTS=%JAVA_OPTS% -XX:HeapDumpPath=$LS_HOME/logs/heapdump.hprof
 
+SET RUBYLIB=%LS_HOME%\lib
+SET GEM_HOME=%LS_HOME%\vendor\bundle\jruby\1.9\
+SET GEM_PATH=%GEM_HOME%
 
-"%JAVA_HOME%\bin\java" %JAVA_OPTS% %LS_JAVA_OPTS% -jar %LS_HOME%\vendor\jar\jruby-complete-*.jar
+"%JAVA_HOME%\bin\java" %JAVA_OPTS% %LS_JAVA_OPTS% -jar %LS_HOME%\vendor\jar\jruby-complete-%JRUBY_VERSION%.jar %LS_HOME%\lib\logstash\runner.rb %*
 goto finally
 
 
