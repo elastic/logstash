@@ -147,8 +147,8 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
   def register
     @threadsafe = false
   
-    @eventCounters = Hash.new
-    @nextExpiration = nil
+    @event_counters = Hash.new
+    @next_expiration = nil
   end # def register
 
   # Filters the event. The filter is successful if the event should be throttled.
@@ -162,33 +162,33 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
     key = event.sprintf(@key)
     
     # Purge counters if too large to prevent OOM.
-    if @max_counters != -1 && @eventCounters.size > @max_counters then
+    if @max_counters != -1 && @event_counters.size > @max_counters then
       purgeOldestEventCounter()
     end
     
     # Expire existing counter if needed
-    if @nextExpiration.nil? || now >= @nextExpiration then
+    if @next_expiration.nil? || now >= @next_expiration then
     	expireEventCounters(now)
     end
     
     @logger.debug? and @logger.debug(
       	  "filters/#{self.class.name}: next expiration", 
-      	  { "nextExpiration" => @nextExpiration })
+      	  { "next_expiration" => @next_expiration })
     
     # Create new counter for this event if this is the first occurrence
     counter = nil
-    if !@eventCounters.include?(key) then
+    if !@event_counters.include?(key) then
       period = event.sprintf(@period).to_i
       period = 3600 if period == 0
       expiration = now + period
-      @eventCounters[key] = { :count => 0, :expiration => expiration }
+      @event_counters[key] = { :count => 0, :expiration => expiration }
       
       @logger.debug? and @logger.debug("filters/#{self.class.name}: new event", 
       	  { :key => key, :expiration => expiration })
     end
     
     # Fetch the counter
-    counter = @eventCounters[key]
+    counter = @event_counters[key]
     
     # Count this event
     counter[:count] = counter[:count] + 1;
@@ -212,9 +212,9 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
   private
   def expireEventCounters(now) 
     
-    @nextExpiration = nil
+    @next_expiration = nil
     
-    @eventCounters.delete_if { |key, counter|
+    @event_counters.delete_if do |key, counter|
       expiration = counter[:expiration]
       expired = expiration <= now
     
@@ -223,12 +223,12 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
       	  "filters/#{self.class.name}: deleting expired counter", 
       	  { :key => key })
       	  
-      elsif @nextExpiration.nil? || (expiration < @nextExpiration)
-      	@nextExpiration = expiration
+      elsif @next_expiration.nil? || (expiration < @next_expiration)
+      	@next_expiration = expiration
       end
       
       expired
-    }
+    end
   
   end # def expireEventCounters
   
@@ -238,24 +238,24 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
   def purgeOldestEventCounter()
     
     # Return unless we have something to purge
-    return unless @eventCounters.size > 0
+    return unless @event_counters.size > 0
     
     oldestCounter = nil
     oldestKey = nil
     
-    @eventCounters.each { |key, counter|
+    @event_counters.each do |key, counter|
       if oldestCounter.nil? || counter[:expiration] < oldestCounter[:expiration] then
         oldestKey = key;
         oldestCounter = counter;
       end
-    }
+    end
     
     @logger.warn? and @logger.warn(
       "filters/#{self.class.name}: Purging oldest counter because max_counters " +
       "exceeded. Use a better key to prevent too many unique event counters.", 
       { :key => oldestKey, :expiration => oldestCounter[:expiration] })
       	  
-    @eventCounters.delete(oldestKey)
+    @event_counters.delete(oldestKey)
     
   end
 end # class LogStash::Filters::Throttle
