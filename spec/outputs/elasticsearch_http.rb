@@ -176,7 +176,7 @@ describe "outputs/elasticsearch_http" do
     before :each do
       require "elasticsearch"
       @es = Elasticsearch::Client.new
-      @es.indices.delete
+      @es.indices.delete(:index => "*")
 
       subject.receive(LogStash::Event.new("message" => "sample message here"))
       subject.receive(LogStash::Event.new("somevalue" => 100))
