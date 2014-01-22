@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "rubygems"
 require "json"
 
 # Connects to a puppet server and requests facts
