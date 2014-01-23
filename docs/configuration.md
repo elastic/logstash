@@ -255,7 +255,7 @@ You can also do multiple expressions in a single condition:
       }
     }
 
-Here are some examples for testing fields that are arrays, such as tags:
+Here are some examples for testing with the in conditional:
 
     filter {
       if [foo] in [foobar] {
@@ -280,7 +280,7 @@ Here are some examples for testing fields that are arrays, such as tags:
 
 Or, to test if grok was successful:
 
-    filter {
+    output {
       if "_grokparsefailure" not in [tags] {
         elasticsearch { ... }
       }
