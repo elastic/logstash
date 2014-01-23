@@ -69,6 +69,7 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "bouncy-castle-java", "1.5.0147"   #(MIT license)
     gem.add_runtime_dependency "jruby-openssl", "0.8.7"           #(CPL/GPL/LGPL license)
     gem.add_runtime_dependency "msgpack-jruby"                    #(Apache 2.0 license)
+    gem.add_runtime_dependency "geoscript"                        #(MIT license)
   else
     gem.add_runtime_dependency "excon"    #(MIT license)
     gem.add_runtime_dependency "msgpack"  #(Apache 2.0 license)
