@@ -23,8 +23,8 @@ module LogStash::Util::ZeroMQ
 
   def error_check(rc, doing)
     unless ZMQ::Util.resultcode_ok?(rc)
-      @logger.error("ZeroMQ error while #{doing}", { :error_code => rc })
-      raise "ZeroMQ Error while #{doing}"
+      @logger.error("ZeroMQ error while #{doing}", :error_code => rc, :zmq_errno => ZMQ::Util.errno, :zmq_error_string => ZMQ::Util.error_string)
+      raise "ZeroMQ Error while #{doing} (zmq_errno = #{ZMQ::Util.errno}, zmq_error_string = '#{ZMQ::Util.error_string}'"
     end
   end # def error_check
 

@@ -36,6 +36,14 @@ class LogStash::Filters::ZeroMQ < LogStash::Filters::Base
   # client mode connects
   config :mode, :validate => ["server", "client"], :default => "client"
 
+  # timeout in milliseconds on which to wait for a reply.
+  config :timeout, :validate => :number, :default => 500
+  
+  # number of retries, used for both sending and receiving messages.
+  # for sending, retries should return instantly.
+  # for receiving, the total blocking time is up to retries X timeout, 
+  # which by default is 3 X 500 = 1500ms
+  config :retries, :validate => :number, :default => 3
   
   # 0mq socket options
   # This exposes zmq_setsockopt
@@ -63,41 +71,110 @@ class LogStash::Filters::ZeroMQ < LogStash::Filters::Base
     require "ffi-rzmq"
     require "logstash/util/zeromq"
     self.class.send(:include, LogStash::Util::ZeroMQ)
+    connect
+  end #def register
 
+  private
+  def close
+    @logger.debug("0mq: closing socket.")
+    @poller.deregister(@zsocket, ZMQ::POLLIN)
+    @zsocket.close
+  end #def close
+
+  private
+  def connect
+    @logger.debug("0mq: connecting socket")
     @zsocket = context.socket(ZMQ::REQ)
-
-    error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
-                "while setting ZMQ::LINGER == 1)")
+    error_check(@zsocket.setsockopt(ZMQ::LINGER, 0),
+                "while setting ZMQ::LINGER == 0)")
+    @poller = ZMQ::Poller.new
+    @poller.register(@zsocket, ZMQ::POLLIN)
 
     if @sockopt
+      #TODO: should make sure that ZMQ::LINGER and ZMQ::POLLIN are not changed
       setopts(@zsocket, @sockopt)
     end
 
     setup(@zsocket, @address)
-  end # def register
+  end #def connect
+
+  private
+  def reconnect
+    close
+    connect
+  end #def reconnect
+
+  #send and receive data. message is assumed to be json
+  #will return a string containing one of several things:
+  #  - empty string: response from server
+  #  - updated string: response from server
+  #  - original message: could not send request or get response from server in time 
+  private
+  def send_recv(message)
+    success = false
+    @retries.times do
+      @logger.debug("0mq: sending", :request => message)
+      rc = @zsocket.send_string(message) 
+      if ZMQ::Util.resultcode_ok?(rc)
+        success = true
+        break
+      else
+        @logger.debug("0mq: error sending message (zmq_errno = #{ZMQ::Util.errno}, zmq_error_string = '#{ZMQ::Util.error_string}'")
+        reconnect
+      end #if resultcode
+    end #retries.times
+
+    #if we did not succeed log it and fail here.
+    if not success
+      @logger.warn("0mq: error sending message (zmq_errno = #{ZMQ::Util.errno}, zmq_error_string = '#{ZMQ::Util.error_string}'")
+      return message 
+    end
+
+    #now get reply
+    reply = ''
+    success = false
+    @retries.times do 
+      @logger.debug("0mq: polling for reply for #{@timeout}ms.")
+      #poll the socket. If > 0, something to read. If < 0, error. If zero, loop
+      num_readable = @poller.poll(@timeout)
+      if num_readable > 0
+        #something to read, do it.
+        rc = @zsocket.recv_string(reply)
+        @logger.debug("0mq: message received, checking error")
+        error_check(rc, "in recv_string")
+        success = true
+        break
+      elsif num_readable < 0
+        #error, reconnect
+        close
+        connect
+      end
+    end # @retries.times
+     
+    #if we maxed out on number of retries, then set reply to message so that
+    #the event isn't cancelled. we want to carry on if the server is down.
+    if not success 
+      @logger.warn("0mq: did not receive reply (zmq_errno = #{ZMQ::Util.errno}, zmq_error_string = '#{ZMQ::Util.error_string}'")
+      return message 
+    end
+
+    return reply
+  end #def send_recv
 
   public
   def filter(event)
     return unless filter?(event)
 
-    # TODO (lusis)
-    # Need to set a timeout on the socket
-    # If it never gets a reply, filtering stops cold
     begin
       if @field
-        @logger.debug("0mq: sending", :request => event[@field])
-        error_check(@zsocket.send_string(event[@field]), "in send_string")
+      	reply = send_recv(event[@field])
       else
-        @logger.debug("0mq: sending", :request => event.to_json)
-        error_check(@zsocket.send_string(event.to_json), "in send_string")
+        reply = send_recv(event.to_json)
       end
-      reply = ''
-      rc = @zsocket.recv_string(reply)
-      error_check(rc, "in recv_string")
-
       # If we receive an empty reply, this is an indication that the filter
       # wishes to cancel this event.
       if reply.empty?
+        @logger.debug("0mq: recieved empty reply, cancelling event.")
         event.cancel
         return
       end
