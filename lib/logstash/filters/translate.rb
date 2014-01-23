@@ -111,14 +111,12 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   # then the destination field would still be populated, but with the value of "no match".
   config :fallback, :validate => :string
 
-  # Time to check if the dictionary has changed!
-  @next_refresh
-  
   public
   def register
     if @dictionary_path
       @next_refresh = Time.now + @refresh_interval
-      load_yaml
+      registering = true
+      load_yaml(registering)
     end
     
     @logger.debug? and @logger.debug("#{self.class.name}: Dictionary - ", :dictionary => @dictionary)
@@ -130,15 +128,23 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   end # def register
 
   public
-  def load_yaml
+  def load_yaml(registering=false)
     if !File.exists?(@dictionary_path)
       @logger.warn("dictionary file read failure, continuing with old dictionary", :path => @dictionary_path)
       return
     end
-    begin
-      @dictionary.merge!(YAML.load_file(@dictionary_path))
-    rescue Exception => e
-      raise "#{self.class.name}: Bad Syntax in dictionary file #{@dictionary_path}"
+    if registering
+      begin
+        @dictionary.merge!(YAML.load_file(@dictionary_path))
+      rescue Exception => e
+        raise "#{self.class.name}: Bad Syntax in dictionary file #{@dictionary_path}"
+      end
+    else
+      begin
+        @dictionary.merge!(YAML.load_file(@dictionary_path))
+      rescue Exception => e
+        @logger.warn("#{self.class.name}: Bad Syntax in dictionary file, continuing with old dictionary", :dictionary_path => @dictionary_path)
+      end
     end
   end
 
