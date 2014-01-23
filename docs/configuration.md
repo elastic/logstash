@@ -255,6 +255,37 @@ You can also do multiple expressions in a single condition:
       }
     }
 
+Here are some examples for testing with the in conditional:
+
+    filter {
+      if [foo] in [foobar] {
+        mutate { add_tag => "field in field" }
+      }
+      if [foo] in "foo" {
+        mutate { add_tag => "field in string" }
+      }
+      if "hello" in [greeting] {
+        mutate { add_tag => "string in field" }
+      }
+      if [foo] in ["hello", "world", "foo"] {
+        mutate { add_tag => "field in list" }
+      }
+      if [missing] in [alsomissing] {
+        mutate { add_tag => "shouldnotexist" }
+      }
+      if !("foo" in ["hello", "world"]) {
+        mutate { add_tag => "shouldexist" }
+      }
+    }
+
+Or, to test if grok was successful:
+
+    output {
+      if "_grokparsefailure" not in [tags] {
+        elasticsearch { ... }
+      }
+    }
+
 ## Further Reading
 
 For more information, see [the plugin docs index](index)
