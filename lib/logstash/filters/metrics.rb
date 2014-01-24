@@ -136,6 +136,11 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   # The percentiles that should be measured
   config :percentiles, :validate => :array, :default => [1, 5, 10, 90, 95, 99, 100]
 
+  def initialize(*args)
+    super
+    @threadsafe = false
+  end
+
   def register
     require "metriks"
     require "socket"
