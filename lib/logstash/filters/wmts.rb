@@ -29,10 +29,11 @@ require "geoscript"
 # Summary: 
 #  * Integrating the geoscript gem to allow reprojections 
 #  * Adding some unit tests
-#  * Adding some 
-class LogStash::Filters::Wxs < LogStash::Filters::Base
+#  * Adding some extra options
 
-  config_name "wxs"
+class LogStash::Filters::Wmts < LogStash::Filters::Base
+
+  config_name "wmts"
   milestone 3
 
   public
@@ -93,6 +94,7 @@ class LogStash::Filters::Wxs < LogStash::Filters::Base
     zlmapping = @mapping[zoomlevel]
     return if zlmapping.nil?
 
+    event["gis.service"] = "wmts"
 
     # convert row and col into LV03 x and y
     lv03_x = 420000 + (((col+0.5)*256*zlmapping).floor)
@@ -105,12 +107,11 @@ class LogStash::Filters::Wxs < LogStash::Filters::Base
     event["gis.lv03_xy"] = "#{lv03_x},#{lv03_y}"
 
     # convert LV03 to WGS84
-    # switch x and y
 
-    lv03_p = GeoScript::Geom::Point.new lv03_y, lv03_x
+    lv03_p = GeoScript::Geom::Point.new lv03_x, lv03_y
     wgs84_p = GeoScript::Projection.reproject lv03_p, 'epsg:21781', 'epsg:4326'
 
-    
+    event['wgs84.wkt'] = wgs84_p.to_wkt 
     
     # add new WGS84 values to the event
     event["gis.wgs84_lat"] = wgs84_p.y
@@ -122,4 +123,4 @@ class LogStash::Filters::Wxs < LogStash::Filters::Base
     filter_matched(event)
 
     end # def filter
-end 
+end
