@@ -74,7 +74,7 @@ class LogStash::Filters::Wms < LogStash::Filters::Base
           event["gis.bbox.maxy"] = bbox[3]
  
         elsif f == "layers"
-          event["gis.#{f}"] = wms_parameters[f].split(",") unless wms_parameters[f].empty?
+          event["gis.#{f}"] = wms_parameters[f].split(",")
         # no extra parsing of the parameter needed
         else
           event["gis.#{f}"] = wms_parameters[f]
