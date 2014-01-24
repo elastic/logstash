@@ -35,10 +35,13 @@ class LogStash::Filters::Elasticsearch < LogStash::Filters::Base
   config :hosts, :validate => :array
 
   # Elasticsearch action
-  config :action, :validate => [ "query", "delete" ], :default => "query"
+  config :action, :validate => [ "query", "delete_by_query" ], :default => "query"
   
   # Elasticsearch query string
   config :query, :validate => :string
+  
+  # Elasticsearch index
+  config :index, :validate => :string, :default => "_all"
 
   # Comma-delimited list of <field>:<direction> pairs that define the sort order
   config :sort, :validate => :string, :default => "@timestamp:desc"
@@ -67,8 +70,10 @@ class LogStash::Filters::Elasticsearch < LogStash::Filters::Base
         @fields.each do |old, new|
           event[new] = results['hits']['hits'][0]['_source'][old]
         end
-      else if @action == "delete"
-        results = @client.delete q: query_str
+      else
+        if @action == "delete_by_query"
+          results = @client.delete_by_query index: @index, q: query_str
+        end
       end
 
       filter_matched(event)
