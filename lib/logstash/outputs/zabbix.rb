@@ -110,8 +110,14 @@ class LogStash::Outputs::Zabbix < LogStash::Outputs::Base
 
     if host.is_a?(Array) && item.is_a?(Array) && field.is_a?(Array) 
       item.each_with_index do |key, index|
-        zmsg = event[field[index]]
-        zmsg = Shellwords.shellescape(zmsg)
+        begin
+          zmsg = event[field[index]]
+          zmsg = Shellwords.shellescape(zmsg)
+        rescue => e
+          @logger.warn("Error during receiving message for sending",
+                       :event => event,
+                       :exception => e, :backtrace => e.backtrace)
+        end
 
         cmd = "#{@zabbix_sender} -z #{@host} -p #{@port} -s #{host[index]} -k #{item[index]} -o \"#{zmsg}\" -v"
 
