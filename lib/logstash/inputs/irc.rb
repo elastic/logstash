@@ -72,6 +72,7 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
       msg = @irc_queue.pop
       if msg.user
         @codec.decode(msg.message) do |event|
+          eventify(event)
           decorate(event)
           event["channel"] = msg.channel.to_s
           event["nick"] = msg.user.nick

@@ -111,6 +111,7 @@ class LogStash::Inputs::RabbitMQ
       # in an @ivar even though we use a blocking version of HB::Queue#subscribe
       @consumer = @q.build_consumer(:block => true) do |metadata, data|
         @codec.decode(data) do |event|
+          eventify(event)
           decorate(event)
           @output_queue << event if event
         end

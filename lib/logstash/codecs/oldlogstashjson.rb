@@ -17,7 +17,7 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
       obj = JSON.parse(data.force_encoding("UTF-8"))
     rescue JSON::ParserError => e
       @logger.info("JSON parse failure. Falling back to plain-text", :error => e, :data => data)
-      yield LogStash::Event.new("message" => data)
+      yield data
       return
     end
 
@@ -29,7 +29,7 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
     end
 
     h.merge!(obj["@fields"]) if obj["@fields"].is_a?(Hash)
-    yield LogStash::Event.new(h)
+    yield h
   end # def decode
 
   public

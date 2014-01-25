@@ -240,6 +240,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       end
     else
       @codec.decode(line) do |event|
+        eventify(event)
         decorate(event)
         unless metadata[:version].nil?
           event["cloudfront_version"] = metadata[:version]

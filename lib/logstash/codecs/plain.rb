@@ -33,7 +33,7 @@ class LogStash::Codecs::Plain < LogStash::Codecs::Base
 
   public
   def decode(data)
-    yield LogStash::Event.new("message" => @converter.convert(data))
+    yield @converter.convert(data)
   end # def decode
 
   public

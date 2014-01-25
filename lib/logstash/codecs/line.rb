@@ -34,7 +34,7 @@ class LogStash::Codecs::Line < LogStash::Codecs::Base
   public
   def decode(data)
     @buffer.extract(data).each do |line|
-      yield LogStash::Event.new("message" => @converter.convert(line))
+      yield @converter.convert(line)
     end
   end # def decode
 
@@ -42,7 +42,7 @@ class LogStash::Codecs::Line < LogStash::Codecs::Base
   def flush(&block)
     remainder = @buffer.flush
     if !remainder.empty?
-      block.call(LogStash::Event.new({"message" => remainder}))
+      block.call(remainder)
     end
   end
 

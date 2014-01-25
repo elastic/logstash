@@ -133,6 +133,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     @tail.subscribe do |path, line|
       @logger.debug? && @logger.debug("Received line", :path => path, :text => line)
       @codec.decode(line) do |event|
+        eventify(event)
         decorate(event)
         event["host"] = hostname if !event.include?("host")
         event["path"] = path

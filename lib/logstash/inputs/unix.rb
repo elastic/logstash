@@ -82,6 +82,7 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
           end
         end
         @codec.decode(buf) do |event|
+          eventify(event)
           decorate(event)
           event["host"] = hostname
           event["path"] = @path

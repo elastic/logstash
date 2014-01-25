@@ -116,6 +116,7 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
         @sqs_queue.receive_message(receive_opts) do |message|
           if message
             @codec.decode(message.body) do |event|
+              eventify(event)
               decorate(event)
               if @id_field
                 event[@id_field] = message.id

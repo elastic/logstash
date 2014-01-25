@@ -48,7 +48,7 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
 
     flowset.records.each do |record|
       if flowset.version == 5
-        event = LogStash::Event.new
+        event = {}
 
         # FIXME Probably not doing this right WRT JRuby?
         #
@@ -153,10 +153,10 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
           records = array.read(record.flowset_data)
 
           records.each do |r|
-            event = LogStash::Event.new(
+            event = {
               "@timestamp" => Time.at(flowset.unix_sec).utc,
               @target => {}
-            )
+            }
 
             # Fewer fields in the v9 header
             ['version', 'flow_seq_num'].each do |f|

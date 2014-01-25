@@ -67,6 +67,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
     while !finished? && (@count <= 0 || number < @count)
       @lines.each do |line|
         @codec.decode(line.clone) do |event|
+          eventify(event)
           decorate(event)
           event["host"] = @host
           event["sequence"] = number

@@ -119,4 +119,15 @@ class LogStash::Inputs::Base < LogStash::Plugin
       event[field] = value
     end
   end
+
+  protected
+  def eventify(event)
+    # Create the event hash from the input
+    if event.is_a? Hash
+        event = LogStash::Event.new(event)
+    else
+        event = LogStash::Event.new("message" => event)
+    end
+    event["@timestamp"] = Time.at(event["@timestamp"]).utc if event["@timestamp"].is_a? Float
+  end
 end # class LogStash::Inputs::Base

@@ -119,6 +119,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       payload, client = @udp.recvfrom(9000)
       # Ruby uri sucks, so don't use it.
       @codec.decode(payload) do |event|
+        eventify(event)
         decorate(event)
         event["host"] = client[3]
         syslog_relay(event)
@@ -145,6 +146,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
         begin
           client.each do |line|
             @codec.decode(line) do |event|
+              eventify(event)
               decorate(event)
               event["host"] = ip
               syslog_relay(event)

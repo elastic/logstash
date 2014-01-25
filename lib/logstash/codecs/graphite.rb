@@ -61,9 +61,11 @@ class LogStash::Codecs::Graphite < LogStash::Codecs::Base
   
   public
   def decode(data)
-    @lines.decode(data) do |event|
-      name, value, time = event["message"].split(" ")
-      yield LogStash::Event.new(name => value.to_f, "@timestamp" => Time.at(time.to_i).gmtime)
+    @lines.decode(data) do |event_input|
+      name, value, time = event_input["message"].split(" ")
+      event = { "name" => value.to_f,
+                "@timestamp" => Time.at(time.to_i).gmtime }
+      yield event
     end # @lines.decode
   end # def decode
 
