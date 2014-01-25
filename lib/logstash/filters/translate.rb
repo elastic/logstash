@@ -133,16 +133,13 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
       @logger.warn("dictionary file read failure, continuing with old dictionary", :path => @dictionary_path)
       return
     end
-    if registering
-      begin
-        @dictionary.merge!(YAML.load_file(@dictionary_path))
-      rescue Exception => e
+
+    begin
+      @dictionary.merge!(YAML.load_file(@dictionary_path))
+    rescue Exception => e
+      if registering
         raise "#{self.class.name}: Bad Syntax in dictionary file #{@dictionary_path}"
-      end
-    else
-      begin
-        @dictionary.merge!(YAML.load_file(@dictionary_path))
-      rescue Exception => e
+      else
         @logger.warn("#{self.class.name}: Bad Syntax in dictionary file, continuing with old dictionary", :dictionary_path => @dictionary_path)
       end
     end
