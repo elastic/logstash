@@ -3,7 +3,11 @@ require "json"
 require "stringio"
 require "zlib"
 
-# Encode as GELF2
+# GELF codec. This is useful if you want to use logstash
+# to output events to graylog2 using for example the
+# rabbitmq output.
+#
+# More information at <http://graylog2.org/gelf#specs>
 class LogStash::Codecs::Gelf < LogStash::Codecs::Base
   config_name "gelf"
 
@@ -82,7 +86,7 @@ class LogStash::Codecs::Gelf < LogStash::Codecs::Base
       "emergency" => 0, "e" => 0,
     }
 
-    # Some other stuff
+    # The version of GELF that we conform to
     @gelf_version = "1.0"
   end # register
 
