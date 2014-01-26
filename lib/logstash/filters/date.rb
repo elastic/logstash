@@ -87,7 +87,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # default to updating the @timestamp field of the event.
   config :target, :validate => :string, :default => "@timestamp"
 
-  # Set to `true` to store the high-resolution timestamp data (milli- or nano-)
+  # Set to `true` to store the high-resolution timestamp data (micro- or nano-)
   # when matching using this filter. Regardless of whether this filter is enabled,
   # Joda will truncate the event's timestamp at millisecond resolution.
   #
