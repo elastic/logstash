@@ -93,7 +93,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #
   # This setting is currently only available with ISO-8601 date matching. When enabled, the
   # micro- and nano- second values (if available), will be saved to the field
-  # "hires_value". The original timestamp will be saved to the field "hires_timestamp".
+  # "date_hires_value". The original timestamp will be saved to the field "date_hires_ts".
   # This should faciliate sorting by hires values when dealing with high-resolution time series.
   config :retain_hires, :validate => :boolean, :default => false
   
