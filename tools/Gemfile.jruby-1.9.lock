@@ -55,7 +55,9 @@ GEM
       json
     gelfd (0.2.0)
     geoip (1.3.3)
-    geoscript (0.0.1)
+    geoscript (0.1.0.pre-java)
+      geotools-jars (>= 8.0)
+    geotools-jars (10.0-java)
     gmetric (0.1.3)
     haml (4.0.4)
       tilt
@@ -220,7 +222,7 @@ DEPENDENCIES
   gelf (= 1.3.2)
   gelfd (= 0.2.0)
   geoip (>= 1.3.2)
-  geoscript
+  geoscript (= 0.1.0.pre)
   gmetric (= 0.1.3)
   haml
   i18n (>= 0.6.6)
