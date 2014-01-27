@@ -18,7 +18,7 @@ class LogStash::Outputs::Zulip < LogStash::Outputs::Base
   config :key, :validate => :string, :required => true
 
   # type - stream or private.
-  config :zuliptype, :validate => :string, :required => true
+  config :zuliptype, :validate => [ "stream", "private" ], :required => true
 
   # The Stream name / Private address
   config :to, :validate => :string, :required => true
