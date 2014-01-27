@@ -26,6 +26,9 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
   
   # I/O workers
   config :workers, :validate => :number, :default => 2
+  
+  # Queue depth
+  config :queue_size, :validate => :number, :default => 2000
 
   public
   def initialize(params)
@@ -64,8 +67,8 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
     @udp = UDPSocket.new(Socket::AF_INET)
     @udp.bind(@host, @port)
 
-	@input_to_worker = SizedQueue.new(20000)
-	@worker_to_output = SizedQueue.new(20000)	
+	@input_to_worker = SizedQueue.new(@queue_size)
+	@worker_to_output = SizedQueue.new(@queue_size)	
 
 	@input_workers = @workers.times do
 		Thread.new { inputworker }
