@@ -66,7 +66,7 @@ class LogStash::Outputs::Zulip < LogStash::Outputs::Base
       response = @client.request(request)
       @logger.debug("Zulip Response", :response => response.body)
     rescue Exception => e
-      @logger.debug("Zulip Unhandled exception", :zulip_error => e.backtrace)
+      @logger.debug("Zulip Unhandled exception", :error => e, :backtrace => e.backtrace)
     end
   end # def receive
 end # class LogStash::Outputs::Zulip
