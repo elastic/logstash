@@ -12,10 +12,10 @@ class LogStash::Outputs::Zulip < LogStash::Outputs::Base
   milestone 1
 
   # The Zulip authentication bot username.
-  config :botuser, :validate => :string, :required => true
+  config :user, :validate => :string, :required => true
   
   # The Zulip authentication key.
-  config :key, :validate => :string, :required => true
+  config :password, :validate => :password, :required => true
 
   # type - stream or private.
   config :zuliptype, :validate => [ "stream", "private" ], :required => true
@@ -53,7 +53,7 @@ class LogStash::Outputs::Zulip < LogStash::Outputs::Base
 
     begin
       request = Net::HTTP::Post.new(@zul_uri.path)
-      request.basic_auth(@botuser, @key)
+      request.basic_auth(@user, @password.value)
       request.add_field("User-Agent", "ZulipLogstash/0.1")
       
       if @zuliptype == 'stream'
