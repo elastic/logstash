@@ -21,13 +21,13 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # ./test-2013-05-29.txt 
   config :path, :validate => :string, :required => true
 
-  # The maximum size in MB of file to write. When the file exceeds this
+  # The maximum size in kB of file to write. When the file exceeds this
   # threshold, it will be rotated to the current filename + ".1"
   # If that file already exists, the previous .1 will shift to .2
   # and so forth.
   #
   # if this setting is omitted or 0, no file rotation is performed.
-  config :max_size, :validate => :string
+  config :max_size, :validate => :number, :default => 0
 
   # The format to use when writing events to the file. This value
   # supports any string and can include %{name} and other dynamic
@@ -56,7 +56,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     flush_interval = @flush_interval.to_i
     @stale_cleanup_interval = 10
     # calc the max size in bytes
-    @max_size_bytes = @max_size * 1024**2
+    @max_size_bytes = @max_size.to_i * 1024
   end # def register
 
   public
@@ -73,8 +73,10 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       if new_path != path
         # close the file, rename it to the rotation file path and reopen the
         # original file again.
+        @logger.debug("Rotating file #{path} to #{new_path}")
         fd.flush()
         fd.close()
+        @files.delete(path)
         File.rename(path, new_path)
         fd = open(path)
       end

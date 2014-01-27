@@ -37,6 +37,37 @@ describe LogStash::Outputs::File do
     end # agent
   end
 
+  describe "ship lots of events to a file with rotation" do
+    event_count = 10000 + rand(500)
+    tmp_file = Tempfile.new('logstash-spec-output-file')
+
+    config <<-CONFIG
+      input {
+        generator {
+          message => "hello world"
+          count => #{event_count}
+          type => "generator"
+        }
+      }
+      output {
+        file {
+          path => "#{tmp_file.path}"
+          max_size => 300
+        }
+      }
+    CONFIG
+
+    agent do
+      #Check if we have a rotation file and delete them
+      file_name_filter = tmp_file.path + ".*"
+      files = Dir[file_name_filter]
+      insist {files.count} > 0
+      files.each { |file_entry|
+        File.delete(file_entry)
+      }
+    end # agent
+  end
+
   describe "ship lots of events to a file gzipped" do
     event_count = 10000 + rand(500)
     tmp_file = Tempfile.new('logstash-spec-output-file')
