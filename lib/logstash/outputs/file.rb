@@ -21,12 +21,12 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # ./test-2013-05-29.txt 
   config :path, :validate => :string, :required => true
 
-  # The maximum size of file to write. When the file exceeds this
+  # The maximum size in MB of file to write. When the file exceeds this
   # threshold, it will be rotated to the current filename + ".1"
   # If that file already exists, the previous .1 will shift to .2
   # and so forth.
   #
-  # NOT YET SUPPORTED
+  # if this setting is omitted or 0, no file rotation is performed.
   config :max_size, :validate => :string
 
   # The format to use when writing events to the file. This value
@@ -55,6 +55,8 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     @last_stale_cleanup_cycle = now
     flush_interval = @flush_interval.to_i
     @stale_cleanup_interval = 10
+    # calc the max size in bytes
+    @max_size_bytes = @max_size * 1024**2
   end # def register
 
   public
@@ -64,7 +66,19 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     path = event.sprintf(@path)
     fd = open(path)
 
-    # TODO(sissel): Check if we should rotate the file.
+    # # Check if we should rotate the file.
+    if @max_size_bytes != nil and @max_size_bytes > 0 and fd.size >= @max_size_bytes
+      # get the rotation file name and path
+      new_path = get_rotation_file_name(path)
+      if new_path != path
+        # close the file, rename it to the rotation file path and reopen the
+        # original file again.
+        fd.flush()
+        fd.close()
+        File.rename(path, new_path)
+        fd = open(path)
+      end
+    end
 
     if @message_format
       output = event.sprintf(@message_format)
@@ -151,6 +165,30 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       fd = Zlib::GzipWriter.new(fd)
     end
     @files[path] = IOWriter.new(fd)
+  end
+
+  # calculate the new rotation file name by searching for a free file name
+  def get_rotation_file_name(path)
+    return path if path == nil
+
+    # try to find a non existing file by increasing the index
+    fileIndex = 1
+    newPath = "#{path}.#{fileIndex}"
+
+    while File.exist?(newPath)
+      fileIndex += 1
+      newPath = "#{path}.#{fileIndex}"
+    end
+
+    return newPath
+  end
+
+  def flush(fd)
+    if flush_interval > 0
+      flush_pending_files
+    else
+      fd.flush
+    end
   end
 end # class LogStash::Outputs::File
 
