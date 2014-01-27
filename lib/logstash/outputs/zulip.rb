@@ -35,15 +35,12 @@ class LogStash::Outputs::Zulip < LogStash::Outputs::Base
     require "uri"
 
 
-    @url = "https://zulip.com/api/v1/messages"
+    @url = "https://api.zulip.com/v1/messages"
     
     @zul_uri = URI.parse(@url)
     @client = Net::HTTP.new(@zul_uri.host, @zul_uri.port)
     if @zul_uri.scheme == "https"
       @client.use_ssl = true
-      #@client.verify_mode = OpenSSL::SSL::VERIFY_PEER
-      # PagerDuty cert doesn't verify oob
-      @client.verify_mode = OpenSSL::SSL::VERIFY_NONE
     end
     
   end # def register
@@ -57,6 +54,7 @@ class LogStash::Outputs::Zulip < LogStash::Outputs::Base
     begin
       request = Net::HTTP::Post.new(@zul_uri.path)
       request.basic_auth(@botuser, @key)
+      request.add_field("User-Agent", "ZulipLogstash/0.1")
       
       if @zuliptype == 'stream'
         request.set_form_data({'type' => 'stream', 'to' => @to, 'subject' => @subject, 'content' =>  event.sprintf(@format)})
