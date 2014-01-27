@@ -22,10 +22,10 @@ class LogStash::Outputs::Zulip < LogStash::Outputs::Base
 
   # The Stream name / Private address
   config :to, :validate => :string, :required => true
-  
-  # The Stream subject
+
+  # The Stream subject. This is not used when `zuliptype` is "private"
   config :subject, :validate => :string, :required => false
-  
+
   # Message format to send, event tokens are usable here.
   config :format, :validate => :string, :default => "%{message}"
 
