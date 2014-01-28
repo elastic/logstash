@@ -44,7 +44,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   config :verify_ssl, :validate => :boolean, :default => false
 
   # Enable or disable logging
-  config :debug, :validate => :boolean, :default => false
+  config :debug, :validate => :boolean, :default => false, :deprecated => "Use the logstash --debug flag for this instead."
 
 
 
