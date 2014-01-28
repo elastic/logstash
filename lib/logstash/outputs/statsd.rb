@@ -62,11 +62,8 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   # The sample rate for the metric
   config :sample_rate, :validate => :number, :default => 1
 
-  # The final metric sent to statsd will look like the following (assuming defaults)
-  # logstash.sender.file_name
-  #
-  # Enable debugging output?
-  config :debug, :validate => :boolean, :default => false
+  # Enable debugging.
+  config :debug, :validate => :boolean, :default => false, :deprecated => "This setting was never used by this plugin. It will be removed soon."
 
   public
   def register
