@@ -25,7 +25,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "i18n"               #(MIT license)
 
   # Web dependencies
-  gem.add_runtime_dependency "ftw", ["~> 0.0.36"] #(Apache 2.0 license)
+  gem.add_runtime_dependency "ftw", ["~> 0.0.39"] #(Apache 2.0 license)
   gem.add_runtime_dependency "haml"               #(MIT license)
   gem.add_runtime_dependency "rack"               #(MIT license)
   gem.add_runtime_dependency "sass"               #(MIT license)
@@ -47,7 +47,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "gelfd", ["0.2.0"]                 #(Apache 2.0 license)
   gem.add_runtime_dependency "gelf", ["1.3.2"]                  #(MIT license)
   gem.add_runtime_dependency "gmetric", ["0.1.3"]               #(MIT license)
-  gem.add_runtime_dependency "jiralicious", ["0.2.2"]		#(MIT license)
+  gem.add_runtime_dependency "jiralicious", ["0.2.2"]           #(MIT license)
   gem.add_runtime_dependency "jls-grok", ["0.10.12"]            #(BSD license)
   gem.add_runtime_dependency "mail"                             #(MIT license)
   gem.add_runtime_dependency "mongo"                            #(Apache 2.0 license)
@@ -80,7 +80,7 @@ Gem::Specification.new do |gem|
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
-    gem.add_runtime_dependency "jruby-elasticsearch", ["0.0.15"]  #(BSD license)
+    gem.add_runtime_dependency "jruby-elasticsearch", ["0.0.17"]  #(BSD license)
     gem.add_runtime_dependency "jruby-httpclient"                 #(Apache 2.0 license)
     gem.add_runtime_dependency "bouncy-castle-java", "1.5.0147"   #(MIT license)
     gem.add_runtime_dependency "jruby-openssl", "0.8.7"           #(CPL/GPL/LGPL license)
@@ -94,13 +94,22 @@ Gem::Specification.new do |gem|
   end
 
   if RUBY_PLATFORM != 'java'
-    gem.add_runtime_dependency "bunny",       ["~> 1.0.0"]  #(MIT license)
+    gem.add_runtime_dependency "bunny",       ["~> 1.1.0"]  #(MIT license)
   else
-    gem.add_runtime_dependency "hot_bunnies", ["~> 2.0.0.pre12"] #(MIT license)
+    gem.add_runtime_dependency "march_hare", ["~> 2.1.0"] #(MIT license)
   end
 
   if RUBY_VERSION >= '1.9.1'
     gem.add_runtime_dependency "cinch" # cinch requires 1.9.1+ #(MIT license)
+  end
+
+  if RUBY_ENGINE == "rbx"
+    # rubinius puts the ruby stdlib into gems.
+    gem.add_runtime_dependency "rubysl"
+
+    # Include racc to make the xml tests pass.
+    # https://github.com/rubinius/rubinius/issues/2632#issuecomment-26954565
+    gem.add_runtime_dependency "racc"
   end
 
   # These are runtime-deps so you can do 'java -jar logstash.jar rspec <test>'
@@ -113,4 +122,7 @@ Gem::Specification.new do |gem|
   
   #Development Deps
   gem.add_development_dependency "coveralls"
+
+  #Jenkins Deps
+  gem.add_runtime_dependency "ci_reporter"
 end

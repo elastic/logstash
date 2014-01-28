@@ -25,6 +25,12 @@ describe LogStash::Event do
     )
   end
 
+  context "[]=" do
+    it "should raise an exception if you attempt to set @timestamp to a value type other than a Time object" do
+      insist { subject["@timestamp"] = "crash!" }.raises(TypeError)
+    end
+  end
+
   context "#sprintf" do
     it "should report a unix timestamp for %{+%s}" do
       insist { subject.sprintf("%{+%s}") } == "1356998400"
@@ -133,6 +139,60 @@ describe LogStash::Event do
       it "should join array, removing duplicates" do
         subject.append(LogStash::Event.new({"field1" => [ "append1","original1" ]}))
         insist { subject[ "field1" ] } == [ "original1", "original2", "append1" ]
+      end
+    end
+  end
+
+  it "timestamp parsing speed", :if => ENV["SPEEDTEST"] do
+    warmup = 10000
+    count = 1000000
+
+    data = { "@timestamp" => "2013-12-21T07:25:06.605Z" }
+    event = LogStash::Event.new(data)
+    insist { event["@timestamp"] }.is_a?(Time)
+
+    duration = 0
+    [warmup, count].each do |i|
+      start = Time.now
+      i.times do
+        data = { "@timestamp" => "2013-12-21T07:25:06.605Z" }
+        LogStash::Event.new(data.clone)
+      end
+      duration = Time.now - start
+    end
+    puts "event @timestamp parse rate: #{count / duration}/sec"
+  end
+
+  context "acceptable @timestamp formats" do
+    subject { LogStash::Event.new }
+
+    formats = [ 
+      "YYYY-MM-dd'T'HH:mm:ss.SSSZ",
+      "YYYY-MM-dd'T'HH:mm:ss.SSSSSSZ",
+      "YYYY-MM-dd'T'HH:mm:ss.SSS",
+      "YYYY-MM-dd'T'HH:mm:ss",
+      "YYYY-MM-dd'T'HH:mm:ssZ",
+    ]
+    formats.each do |format|
+      it "includes #{format}" do
+        time = subject.sprintf("%{+#{format}}")
+        begin
+          LogStash::Event.new("@timestamp" => time)
+        rescue => e
+          raise StandardError, "Time '#{time}' was rejected. #{e.class}: #{e.to_s}"
+        end
+      end
+    end
+
+    context "from LOGSTASH-1738" do
+      it "does not error" do
+        LogStash::Event.new("@timestamp" => "2013-12-29T23:12:52.371240+02:00")
+      end
+    end
+
+    context "from LOGSTASH-1732" do
+      it "does not error" do
+        LogStash::Event.new("@timestamp" => "2013-12-27T11:07:25+00:00")
       end
     end
   end

@@ -35,20 +35,17 @@ class LogStash::Inputs::Ganglia < LogStash::Inputs::Base
 
   public
   def run(output_queue)
-    # udp server
-    Thread.new do
-      begin
-        udp_listener(output_queue)
-      rescue => e
-        break if @shutdown_requested
+    begin
+      udp_listener(output_queue)
+    rescue => e
+      if !@shutdown_requested
         @logger.warn("ganglia udp listener died",
                      :address => "#{@host}:#{@port}", :exception => e,
         :backtrace => e.backtrace)
         sleep(5)
         retry
-      end # begin
-    end # Thread.new
-
+      end
+    end # begin
   end # def run
 
   private
@@ -64,12 +61,12 @@ class LogStash::Inputs::Ganglia < LogStash::Inputs::Base
     @udp.bind(@host, @port)
 
     @metadata = Hash.new if @metadata.nil?
-
     loop do
       packet, client = @udp.recvfrom(9000)
       # TODO(sissel): make this a codec...
-      e = parse_packet(packet,source)
+      e = parse_packet(packet)
       unless e.nil?
+        decorate(e)
         e["host"] = client[3] # the IP address
         output_queue << e
       end
@@ -97,8 +94,7 @@ class LogStash::Inputs::Ganglia < LogStash::Inputs::Base
   end
 
   public
-  def parse_packet(packet,source)
-
+  def parse_packet(packet)
     gmonpacket=GmonPacket.new(packet)
     if gmonpacket.meta?
       # Extract the metadata from the packet

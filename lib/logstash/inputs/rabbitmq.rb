@@ -11,6 +11,7 @@ require "logstash/namespace"
 # find links to both here:
 #
 # * RabbitMQ - <http://www.rabbitmq.com/>
+# * March Hare: <http://rubymarchhare.info>
 # * Bunny - <https://github.com/ruby-amqp/bunny>
 class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
 
@@ -61,10 +62,12 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # disconnects? Set this option to 'false' if you want the queue to remain
   # on the broker, queueing up messages until a consumer comes along to
   # consume them.
-  config :auto_delete, :validate => :boolean, :default => true
+  config :auto_delete, :validate => :boolean, :default => false
 
-  # Is the queue exclusive? (aka: Will other clients connect to this named queue?)
-  config :exclusive, :validate => :boolean, :default => true
+  # Is the queue exclusive? Exclusive queues can only be used by the connection
+  # that declared them and will be deleted when it is closed (e.g. due to a Logstash
+  # restart).
+  config :exclusive, :validate => :boolean, :default => false
 
   # Extra queue arguments as an array.
   # To make a RabbitMQ queue mirrored, use: {"x-ha-policy" => "all"}
@@ -106,17 +109,17 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
     super
   end
 
-  # Use HotBunnies on JRuby to avoid IO#select CPU spikes
+  # Use March Hare on JRuby to avoid IO#select CPU spikes
   # (see github.com/ruby-amqp/bunny/issues/95).
   #
-  # On MRI, use Bunny 0.9.
+  # On MRI, use Bunny.
   #
-  # See http://rubybunny.info and http://hotbunnies.info
+  # See http://rubybunny.info and http://rubymarchhare.info
   # for the docs.
   if RUBY_ENGINE == "jruby"
-    require "logstash/inputs/rabbitmq/hot_bunnies"
+    require "logstash/inputs/rabbitmq/march_hare"
 
-    include HotBunniesImpl
+    include MarchHareImpl
   else
     require "logstash/inputs/rabbitmq/bunny"
 

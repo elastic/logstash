@@ -2,8 +2,8 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
-# The date filter is used for parsing dates from fields and using that
-# date or timestamp as the timestamp for the event.
+# The date filter is used for parsing dates from fields, and then using that
+# date or timestamp as the logstash timestamp for the event.
 #
 # For example, syslog events usually have timestamps like this:
 #
@@ -28,25 +28,25 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   config_name "date"
   milestone 3
 
-  # specify a timezone canonical ID to be used for date parsing.
-  # The valid ID are listed on http://joda-time.sourceforge.net/timezones.html
-  # Useful in case the timezone cannot be extracted from the value,
-  # and is not the platform default
+  # Specify a time zone canonical ID to be used for date parsing.
+  # The valid IDs are listed on the (Joda.org available time zones page)[http://joda-time.sourceforge.net/timezones.html].
+  # This is useful in case the time zone cannot be extracted from the value,
+  # and is not the platform default.
   # If this is not specified the platform default will be used.
   # Canonical ID is good as it takes care of daylight saving time for you
-  # For example, America/Los_Angeles or Europe/France are valid IDs
+  # For example, `America/Los_Angeles` or `Europe/France` are valid IDs.
   config :timezone, :validate => :string
 
-  # specify a locale to be used for date parsing. If this is not specified the
-  # platform default will be used
+  # Specify a locale to be used for date parsing. If this is not specified, the
+  # platform default will be used.
   #
   # The locale is mostly necessary to be set for parsing month names and
-  # weekday names
+  # weekday names.
   #
   config :locale, :validate => :string
 
   # The date formats allowed are anything allowed by Joda-Time (java time
-  # library): You can see the docs for this format here:
+  # library). You can see the docs for this format here:
   #
   # [joda.time.format.DateTimeFormat](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html)
   #
@@ -60,7 +60,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #
   # The above will match a syslog (rfc3164) or iso8601 timestamp.
   #
-  # There are a few special exceptions, the following format literals exist
+  # There are a few special exceptions. The following format literals exist
   # to help you save time and ensure correctness of date parsing.
   #
   # * "ISO8601" - should parse any valid ISO8601 timestamp, such as
@@ -69,7 +69,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # * "UNIX_MS" - will parse unix time in milliseconds since epoch
   # * "TAI64N" - will parse tai64n time values
   #
-  # For example, if you have a field 'logdate' and with a value that looks like
+  # For example, if you have a field 'logdate', with a value that looks like
   # 'Aug 13 2010 00:03:44', you would use this configuration:
   #
   #     filter {
@@ -78,6 +78,9 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   #       }
   #     }
   #
+  # If your field is nested in your structure, you can use the nested
+  # syntax [foo][bar] to match its value. For more information, please refer to
+  # http://logstash.net/docs/latest/configuration#fieldreferences
   config :match, :validate => :array, :default => []
 
   # Store the matching timestamp into the given target field.  If not provided,
@@ -87,25 +90,6 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # LOGSTASH-34
   DATEPATTERNS = %w{ y d H m s S } 
 
-  # The 'date' filter will take a value from your event and use it as the
-  # event timestamp. This is useful for parsing logs generated on remote
-  # servers or for importing old logs.
-  #
-  # The config looks like this:
-  #
-  #     filter {
-  #       date {
-  #         type => "typename"
-  #         filename => fieldformat
-  #         # Example:
-  #         timestamp => "mmm DD HH:mm:ss"
-  #       }
-  #     }
-  #
-  # The format is whatever is supported by Joda; generally:
-  # http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html
-  #
-  # TODO(sissel): Support 'seconds since epoch' parsing (nagios uses this)
   public
   def initialize(config = {})
     super
@@ -146,21 +130,24 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           else
             joda_parser = joda_parser.withOffsetParsed
           end
-          parser = lambda { |date| joda_parser.parseDateTime(date) }
+          parser = lambda { |date| joda_parser.parseMillis(date) }
         when "UNIX" # unix epoch
           joda_instant = org.joda.time.Instant.java_class.constructor(Java::long).method(:new_instance)
-          parser = lambda { |date| joda_instant.call((date.to_f * 1000).to_i).to_java.toDateTime }
+          #parser = lambda { |date| joda_instant.call((date.to_f * 1000).to_i).to_java.toDateTime }
+          parser = lambda { |date| (date.to_f * 1000).to_i }
         when "UNIX_MS" # unix epoch in ms
           joda_instant = org.joda.time.Instant.java_class.constructor(Java::long).method(:new_instance)
           parser = lambda do |date| 
-            return joda_instant.call(date.to_i).to_java.toDateTime
+            #return joda_instant.call(date.to_i).to_java.toDateTime
+            return date.to_i
           end
         when "TAI64N" # TAI64 with nanoseconds, -10000 accounts for leap seconds
           joda_instant = org.joda.time.Instant.java_class.constructor(Java::long).method(:new_instance)
           parser = lambda do |date| 
             # Skip leading "@" if it is present (common in tai64n times)
             date = date[1..-1] if date[0, 1] == "@"
-            return joda_instant.call((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).to_java.toDateTime 
+            #return joda_instant.call((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).to_java.toDateTime 
+            return (date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)
           end
         else
           joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withDefaultYear(Time.new.year)
@@ -172,7 +159,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           if (locale != nil)
             joda_parser = joda_parser.withLocale(locale)
           end
-          parser = lambda { |date| joda_parser.parseDateTime(date) }
+          parser = lambda { |date| joda_parser.parseMillis(date) }
       end
 
       @logger.debug("Adding type with date config", :type => @type,
@@ -200,13 +187,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
       fieldvalues.each do |value|
         next if value.nil?
         begin
-          time = nil
+          epochmillis = nil
           success = false
           last_exception = RuntimeError.new "Unknown"
           fieldparsers.each do |parserconfig|
             parser = parserconfig[:parser]
             begin
-              time = parser.call(value)
+              epochmillis = parser.call(value)
               success = true
               break # success
             rescue StandardError, JavaException => e
@@ -216,13 +203,9 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
           raise last_exception unless success
 
-          time = time.withZone(UTC)
           # Convert joda DateTime to a ruby Time
-          event[@target] = Time.utc(
-            time.getYear, time.getMonthOfYear, time.getDayOfMonth,
-            time.getHourOfDay, time.getMinuteOfHour, time.getSecondOfMinute,
-            time.getMillisOfSecond * 1000
-          )
+          event[@target] = Time.at(epochmillis / 1000, (epochmillis % 1000) * 1000)
+          #event[@target] = Time.at(epochmillis / 1000.0).utc
 
           @logger.debug? && @logger.debug("Date parsing done", :value => value, :timestamp => event[@target])
         rescue StandardError, JavaException => e

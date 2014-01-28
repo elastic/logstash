@@ -2,62 +2,109 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
-# Originally written to translate HTTP response codes 
-# but turned into a general translation tool which uses
-# configured has or/and .yaml files as a dictionary.
-# response codes in default dictionary were scraped from 
-# 'gem install cheat; cheat status_codes'
+# A general search and replace tool which uses a configured hash
+# and/or a YAML file to determine replacement values.
 #
-# Alternatively for simple string search and replacements for just a few values
-# use the gsub function of the mutate filter.
+# The dictionary entries can be specified in one of two ways: First,
+# the "dictionary" configuration item may contain a hash representing
+# the mapping. Second, an external YAML file (readable by logstash) may be specified
+# in the "dictionary_path" configuration item. These two methods may not be used
+# in conjunction; it will produce an error.
+#
+# Operationally, if the event field specified in the "field" configuration
+# matches the EXACT contents of a dictionary entry key (or matches a regex if
+# "regex" configuration item has been enabled), the field's value will be substituted
+# with the matched key's value from the dictionary.
+#
+# By default, the translate filter will replace the contents of the 
+# maching event field (in-place). However, by using the "destination"
+# configuration item, you may also specify a target event field to
+# populate with the new translated value.
+# 
+# Alternatively, for simple string search and replacements for just a few values
+# you might consider using the gsub function of the mutate filter.
 
 class LogStash::Filters::Translate < LogStash::Filters::Base
   config_name "translate"
   milestone 1
 
-  # The field containing a response code If this field is an
-  # array, only the first value will be used.
+  # The name of the logstash event field containing the value to be compared for a
+  # match by the translate filter (e.g. "message", "host", "response_code"). 
+  # 
+  # If this field is an array, only the first value will be used.
   config :field, :validate => :string, :required => true
 
-  # In case dstination field already exists should we skip translation(default) or override it with new translation
+  # If the destination (or target) field already exists, this configuration item specifies
+  # whether the filter should skip translation (default) or overwrite the target field
+  # value with the new translation value.
   config :override, :validate => :boolean, :default => false
 
-  # Dictionary to use for translation.
+  # The dictionary to use for translation, when specified in the logstash filter
+  # configuration item (i.e. do not use the @dictionary_path YAML file)
   # Example:
   #
   #     filter {
   #       %PLUGIN% {
   #         dictionary => [ "100", "Continue",
   #                         "101", "Switching Protocols",
-  #                         "200", "OK",
-  #                         "201", "Created",
-  #                         "202", "Accepted" ]
+  #                         "merci", "thank you",
+  #                         "old version", "new version" ]
   #       }
   #     }
+  # NOTE: it is an error to specify both dictionary and dictionary_path
   config :dictionary, :validate => :hash,  :default => {}
 
-  # name with full path of external dictionary file.    
-  # format of the table should be a YAML file which will be merged with the @dictionary.
-  # make sure you encase any integer based keys in quotes.
-  # The YAML file should look something like this:
+  # The full path of the external YAML dictionary file. The format of the table
+  # should be a standard YAML file. Make sure you specify any integer-based keys
+  # in quotes. The YAML file should look something like this:
   #
-  #     100: Continue
-  #     101: Switching Protocols
+  #     "100": Continue
+  #     "101": Switching Protocols
+  #     merci: gracias
+  #     old version: new version
+  #     
+  # NOTE: it is an error to specify both dictionary and dictionary_path
   config :dictionary_path, :validate => :path
 
-  # The destination field you wish to populate with the translation code.
-  # default is "translation".
-  # Set to the same value as source if you want to do a substitution, in this case filter will allways succeed.
+  # The destination field you wish to populate with the translated code. The default
+  # is a field named "translation". Set this to the same value as source if you want
+  # to do a substitution, in this case filter will allways succeed. This will clobber
+  # the old value of the source field! 
   config :destination, :validate => :string, :default => "translation"
 
-  # set to false if you want to match multiple terms
-  # a large dictionary could get expensive if set to false.
+  # When `exact => true`, the translate filter will populate the destination field
+  # with the exact contents of the dictionary value. When `exact => false`, the
+  # filter will populate the destination field with the result of any existing
+  # destination field's data, with the translated value substituted in-place.
+  #
+  # For example, consider this simple translation.yml, configured to check the `data` field:
+  #     foo: bar
+  #
+  # If Logstash receives an event with the `data` field set to "foo", and `exact => true`,
+  # the destination field will be populated with the string "bar".
+  
+  # If `exact => false`, and Logstash receives the same event, the destination field
+  # will be also set to "bar". However, if Logstash receives an event with the `data` field
+  # set to "foofing", the destination field will be set to "barfing".
+  #
+  # Set both `exact => true` AND `regex => `true` if you would like to match using dictionary
+  # keys as regular expressions. A large dictionary could be expensive to match in this case. 
   config :exact, :validate => :boolean, :default => true
 
-  # treat dictionary keys as regular expressions to match against, used only then @exact enabled.
+  # If you'd like to treat dictionary keys as regular expressions, set `exact => true`.
+  # Note: this is activated only when `exact => true`.
   config :regex, :validate => :boolean, :default => false
 
-  # Incase no translation was made add default translation string
+  # In case no translation occurs in the event (no matches), this will add a default
+  # translation string, which will always populate "field", if the match failed.
+  #
+  # For example, if we have configured `fallback => "no match"`, using this dictionary:
+  #
+  #     foo: bar
+  #
+  # Then, if Logstash received an event with the field `foo` set to "bar", the destination
+  # field would be set to "bar". However, if Logstash received an event with `foo` set to "nope",
+  # then the destination field would still be populated, but with the value of "no match".
   config :fallback, :validate => :string
 
   public

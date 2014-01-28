@@ -9,7 +9,7 @@ require "json"
 class LogStash::Codecs::JSONLines < LogStash::Codecs::Base
   config_name "json_lines"
 
-  milestone 1
+  milestone 3
 
   # The character encoding used in this codec. Examples include "UTF-8" and
   # "CP1252"
@@ -37,7 +37,7 @@ class LogStash::Codecs::JSONLines < LogStash::Codecs::Base
         yield LogStash::Event.new(JSON.parse(event["message"]))
       rescue JSON::ParserError => e
         @logger.info("JSON parse failure. Falling back to plain-text", :error => e, :data => data)
-        yield LogStash::Event.new("message" => data)
+        yield LogStash::Event.new("message" => event["message"])
       end
     end
   end # def decode

@@ -27,7 +27,7 @@ If you have problems, feel free to email the users list
 
 You should download the logstash jar file - if you haven't yet,
 [download it
-now](http://logstash.objects.dreamhost.com/release/logstash-%VERSION%-flatjar.jar).
+now](https://download.elasticsearch.org/logstash/logstash/logstash-%VERSION%-flatjar.jar).
 This package includes most of the dependencies for logstash in it and
 helps you get started quicker.
 

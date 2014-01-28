@@ -2,16 +2,19 @@
 #   rsync
 #   wget or curl
 #
-JRUBY_VERSION=1.7.5
-ELASTICSEARCH_VERSION=0.90.3
+JRUBY_VERSION=1.7.9
+ELASTICSEARCH_VERSION=0.90.9
 
 WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
 JRUBY_URL=http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-complete-$(JRUBY_VERSION).jar
 JRUBY_CMD=java -jar $(JRUBY)
-JRUBYC=$(WITH_JRUBY) jrubyc
+
 ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
+TYPESDB=vendor/collectd/types.db
+COLLECTD_VERSION=5.4.0
+TYPESDB_URL=https://collectd.org/files/collectd-$(COLLECTD_VERSION).tar.gz
 GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
 KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-latest.tar.gz
@@ -37,20 +40,33 @@ default:
 	@echo "Make targets you might be interested in:"
 	@echo "  flatjar -- builds the flatjar jar"
 	@echo "  flatjar-test -- runs the test suite against the flatjar"
-	@echo "  jar -- builds the monolithic jar"
-	@echo "  jar-test -- runs the test suite against the monolithic jar"
 
 TESTS=$(wildcard spec/inputs/gelf.rb spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
 
 # The 'version' is generated based on the logstash version, git revision, etc.
+.VERSION.mk: REVISION=$(shell git rev-parse --short HEAD | tr -d ' ')
+.VERSION.mk: RELEASE=$(shell awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb | tr -d ' ')
+#.VERSION.mk: TAGGED=$(shell git tag --points-at HEAD | egrep '^v[0-9]')
+.VERSION.mk: DEV=$(shell echo $RELEASE | egrep '\.dev$$')
+.VERSION.mk: MODIFIED=$(shell git diff --shortstat --exit-code > /dev/null ; echo $$?)
 .VERSION.mk:
-	@REVISION="$$(git rev-parse --short HEAD | tr -d ' ')" ; \
-	RELEASE=$$(awk -F\" '/LOGSTASH_VERSION/ {print $$2}' lib/logstash/version.rb | tr -d ' ') ; \
-	if git diff --shortstat --exit-code > /dev/null ; then \
-		echo "VERSION=$${RELEASE}-$${REVISION}" ; \
+	$(QUIET)echo "RELEASE=${RELEASE}" > $@
+	$(QUIET)echo "REVISION=${REVISION}" >> $@
+	$(QUIET)echo "DEV=${DEV}" >> $@
+	$(QUIET)echo "MODIFIED=${MODIFIED}" >> $@
+	$(QUIET)if [ -z "${DEV}" ] ; then \
+		if [ "${MODIFIED}" -eq 1 ] ; then \
+			echo "VERSION=${RELEASE}-modified" ; \
+		else \
+			echo "VERSION=${RELEASE}" ; \
+		fi ; \
 	else \
-		echo "VERSION=$${RELEASE}-$${REVISION}-modified"; \
-	fi > $@
+		if [ "${MODIFIED}" -eq 1 ] ; then \
+			echo "VERSION=${RELEASE}-${REVISION}-modified" ; \
+		else \
+			echo "VERSION=${RELEASE}-${REVISION}" ; \
+		fi ; \
+	fi >> $@
 
 -include .VERSION.mk
 
@@ -82,8 +98,17 @@ clean:
 	@echo "=> Cleaning up"
 	-$(QUIET)rm -rf .bundle
 	-$(QUIET)rm -rf build
-	-$(QUIET)rm -rf vendor
 	-$(QUIET)rm -f pkg/*.deb
+	-$(QUIET)rm .VERSION.mk
+
+.PHONY: vendor-clean
+vendor-clean:
+	-$(QUIET)rm -rf vendor/kibana vendor/geoip vendor/collectd 
+	-$(QUIET)rm -rf vendor/jar vendor/ua-parser
+
+.PHONY: clean-vendor
+clean-vendor:
+	-$(QUIET)rm -rf vendor
 
 .PHONY: compile
 compile: compile-grammar compile-runner | build/ruby
@@ -91,8 +116,7 @@ compile: compile-grammar compile-runner | build/ruby
 .PHONY: compile-runner
 compile-runner: build/ruby/logstash/runner.class
 build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
-	#$(QUIET)(cd lib; $(JRUBYC) -5 -t ../build/ruby logstash/runner.rb)
-	$(QUIET)(cd lib; $(JRUBYC) -t ../build/ruby logstash/runner.rb)
+	$(QUIET)(cd lib; java -jar ../$(JRUBY) -rjruby/jrubyc -e 'exit JRuby::Compiler::compile_argv(ARGV)' -- -t ../build/ruby logstash/runner.rb)
 
 .PHONY: copy-ruby-files
 copy-ruby-files: | build/ruby
@@ -109,7 +133,7 @@ vendor:
 vendor/jar: | vendor
 	$(QUIET)mkdir $@
 
-build-jruby: $(JRUBY)
+vendor-jruby: $(JRUBY)
 
 $(JRUBY): | vendor/jar
 	$(QUIET)echo " ==> Downloading jruby $(JRUBY_VERSION)"
@@ -138,7 +162,18 @@ vendor-geoip: $(GEOIP)
 $(GEOIP): | vendor/geoip
 	$(QUIET)$(DOWNLOAD_COMMAND) $@.tmp.gz $(GEOIP_URL)
 	$(QUIET)gzip -dc $@.tmp.gz > $@.tmp
+	$(QUIET)rm "$@.tmp.gz"
 	$(QUIET)mv $@.tmp $@
+
+vendor/collectd: | vendor
+	$(QUIET)mkdir $@
+
+.PHONY: vendor-collectd
+vendor-collectd: $(TYPESDB)
+$(TYPESDB): | vendor/collectd
+	$(QUIET)$(DOWNLOAD_COMMAND) $@.tar.gz $(TYPESDB_URL)
+	$(QUIET)tar zxf $@.tar.gz -O "collectd-$(COLLECTD_VERSION)/src/types.db" > $@
+	$(QUIET)rm $@.tar.gz
 
 # Always run vendor/bundle
 .PHONY: fix-bundler
@@ -150,9 +185,8 @@ vendor-gems: | vendor/bundle
 
 .PHONY: vendor/bundle
 vendor/bundle: | vendor $(JRUBY)
-	@echo "=> Installing gems to $@..."
-	@#$(QUIET)GEM_HOME=$(GEM_HOME) $(JRUBY_CMD) --1.9 $(GEM_HOME)/bin/bundle install --deployment
-	$(QUIET)GEM_HOME=./vendor/bundle/jruby/1.9/ GEM_PATH= $(JRUBY_CMD) --1.9 ./gembag.rb logstash.gemspec $(QUIET_OUTPUT)
+	@echo "=> Ensuring ruby gems dependencies are in $@..."
+	$(QUIET)USE_JRUBY=1 bin/logstash deps $(QUIET_OUTPUT)
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
 	-$(QUIET)rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
@@ -172,7 +206,7 @@ build/ruby: | build
 # TODO(sissel): Skip sigar?
 # Run this one always? Hmm..
 .PHONY: build/monolith
-build/monolith: $(ELASTICSEARCH) $(JRUBY) $(GEOIP) vendor-gems | build
+build/monolith: $(ELASTICSEARCH) $(JRUBY) $(GEOIP) $(TYPESDB) vendor-gems | build
 build/monolith: vendor/ua-parser/regexes.yaml
 build/monolith: vendor/kibana
 build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
@@ -202,18 +236,21 @@ build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
 	-$(QUIET)mkdir -p $@/vendor/ua-parser
 	-$(QUIET)cp vendor/ua-parser/regexes.yaml $@/vendor/ua-parser
 	$(QUIET)cp $(GEOIP) $@/
+	$(QUIET)cp $(TYPESDB) $@/
+	$(QUIET)cp lib/logstash/outputs/elasticsearch/elasticsearch-template.json $@/
 	-$(QUIET)rsync -a vendor/kibana/ $@/vendor/kibana/
 
 vendor/ua-parser/: | build
 	$(QUIET)mkdir $@
 
 vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
+	@echo "=> Fetching ua-parser regexes.yaml"
 	$(QUIET)$(DOWNLOAD_COMMAND) $@ https://raw.github.com/tobie/ua-parser/master/regexes.yaml
 
 # Learned how to do pack gems up into the jar mostly from here:
 # http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
-VENDOR_DIR=$(shell ls -d vendor/bundle/jruby/*)
-jar: build/logstash-$(VERSION)-monolithic.jar
+VENDOR_DIR=vendor/bundle/jruby/1.9
+jar: | flatjar
 build/logstash-$(VERSION)-monolithic.jar: | build/monolith
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS=-C build/ruby .
 build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C build/monolith .
@@ -240,21 +277,18 @@ build/flatgems: | build vendor/bundle
 	@# Other lame hacks to get crap to work.
 	$(QUIET)rsync -a $(VENDOR_DIR)/gems/sass-*/VERSION_NAME $@/root/
 	$(QUIET)rsync -a $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
+	$(QUIET)rsync -a $(VENDOR_DIR)/gems/aws-sdk-*/ca-bundle.crt $@/root/
+	@# A lame hack to work around the aws-sdk bug (LOGSTASH-1718)
+	sed -i -e "s@SRC = ROOT + '/lib/aws'@SRC = ROOT + 'aws'@" $@/lib/aws/core.rb
+
 
 flatjar-test:
 	# chdir away from the project directory to make sure things work in isolation.
 	cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS) --fail-fast
 	#cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-flatjar.jar rspec spec/jar.rb
 
-jar-test:
-	cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --fail-fast
-	#cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-monolithic.jar rspec spec/jar.rb
-
 flatjar-test-and-report:
 	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS) --format h --out build/results.flatjar.html
-
-jar-test-and-report:
-	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-monolithic.jar rspec $(TESTS) --format h --out build/results.monolithic.html
 
 flatjar: build/logstash-$(VERSION)-flatjar.jar
 build/jar: | build build/flatgems build/monolith
@@ -267,14 +301,11 @@ build/logstash-$(VERSION)-flatjar.jar: | build/jar
 	$(QUIET)jar cfe $@ logstash.runner -C build/jar .
 	@echo "Created $@"
 
-update-jar: copy-ruby-files compile build/ruby/logstash/runner.class
-	$(QUIET)jar uf build/logstash-$(VERSION)-monolithic.jar -C build/ruby .
-
 update-flatjar: copy-ruby-files compile build/ruby/logstash/runner.class
 	$(QUIET)jar uf build/logstash-$(VERSION)-flatjar.jar -C build/ruby .
 
 .PHONY: test
-test: | $(JRUBY) vendor-elasticsearch vendor-geoip
+test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd
 	GEM_HOME= GEM_PATH= bin/logstash deps
 	GEM_HOME= GEM_PATH= bin/logstash rspec --order rand --fail-fast $(TESTS)
 
@@ -314,8 +345,13 @@ build/docs/%: docs/% lib/logstash/version.rb Makefile
 	@echo "Copying $< (to $@)"
 	-$(QUIET)mkdir -p $(shell dirname $@)
 	$(QUIET)cp $< $@
-	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
-	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
+	$(QUIET)case "$(suffix $<)" in \
+		.gz|.bz2|.png|.jpg) ;; \
+		*) \
+			sed -i -re 's/%VERSION%/$(VERSION)/g' $@ ; \
+			sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@ ; \
+			;; \
+	esac
 
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index.html.erb Makefile
@@ -323,13 +359,6 @@ build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index
 	$(QUIET)ruby $< build/docs > $@
 	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
-
-rpm: build/logstash-$(VERSION)-monolithic.jar
-	rm -rf build/root
-	mkdir -p build/root/opt/logstash
-	cp -rp patterns build/root/opt/logstash/patterns
-	cp build/logstash-$(VERSION)-monolithic.jar build/root/opt/logstash
-	(cd build; fpm -t rpm -d jre -a noarch -n logstash -v $(VERSION) -s dir -C root opt)
 
 .PHONY: patterns
 patterns:
@@ -379,7 +408,8 @@ package:
 		./build.sh debian 6; \
 	)
 
-vendor/kibana: | build
+vendor/kibana: | vendor
+	@echo "=> Fetching kibana"
 	$(QUIET)mkdir vendor/kibana || true
 	$(DOWNLOAD_COMMAND) - $(KIBANA_URL) | tar -C $@ -zx --strip-components=1
 
@@ -392,18 +422,32 @@ show:
 	echo $(VERSION)
 
 .PHONY: prepare-tarball
-prepare-tarball tarball: WORKDIR=build/tarball/logstash-$(VERSION)
-prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) $(GEOIP) vendor-gems
+prepare-tarball tarball zip: WORKDIR=build/tarball/logstash-$(VERSION)
+prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) $(GEOIP) $(TYPESDB) vendor-gems
+prepare-tarball: vendor/ua-parser/regexes.yaml
 prepare-tarball:
 	@echo "=> Preparing tarball"
 	$(QUIET)$(MAKE) $(WORKDIR)
-	$(QUIET)rsync -a --relative bin lib locales vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser  LICENSE README.md $(WORKDIR)
+	$(QUIET)rsync -a --relative bin lib spec locales patterns vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md --exclude 'vendor/bundle/jruby/1.9/cache' --exclude 'vendor/bundle/jruby/1.9/gems/*/doc' --exclude 'vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz'  $(WORKDIR)
 	$(QUIET)sed -i -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
+	$(QUIET)sed -i -e 's/%JRUBY_VERSION%/$(JRUBY_VERSION)/' $(WORKDIR)/bin/logstash.bat
 
 .PHONY: tarball
 tarball: | build/logstash-$(VERSION).tar.gz
 build/logstash-$(VERSION).tar.gz: | prepare-tarball
-	$(QUIET)tar -C $$(dirname $(WORKDIR)) -zcf $@ $$(basename $(WORKDIR))
+	$(QUIET)tar -C $$(dirname $(WORKDIR)) -c $$(basename $(WORKDIR)) \
+		| gzip -9c > $@
 	@echo "=> tarball ready: $@"
 
+.PHONY: zip
+zip: | build/logstash-$(VERSION).zip
+build/logstash-$(VERSION).zip: | prepare-tarball
+	$(QUIET)(cd $$(dirname $(WORKDIR)); find $$(basename $(WORKDIR)) | zip $(PWD)/$@ -@ -9)$(QUIET_OUTPUT)
+	@echo "=> zip ready: $@"
 
+.PHONY: tarball-test
+tarball-test: #build/logstash-$(VERSION).tar.gz
+	$(QUIET)-rm -rf build/test-tarball/
+	$(QUIET)mkdir -p build/test-tarball/
+	tar -C build/test-tarball --strip-components 1 -xf build/logstash-$(VERSION).tar.gz
+	(cd build/test-tarball; bin/logstash rspec $(TESTS) --fail-fast)

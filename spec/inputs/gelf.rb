@@ -6,7 +6,7 @@ describe "inputs/gelf" do
 
   describe "reads chunked gelf messages " do
     port = 12209
-    host = "127.0.0.9"
+    host = "127.0.0.1"
     chunksize = 1420
     gelfclient = GELF::Notifier.new(host,port,chunksize)
 

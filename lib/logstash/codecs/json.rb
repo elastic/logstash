@@ -10,7 +10,7 @@ require "json"
 class LogStash::Codecs::JSON < LogStash::Codecs::Base
   config_name "json"
 
-  milestone 1
+  milestone 3
 
   # The character encoding used in this codec. Examples include "UTF-8" and
   # "CP1252"
@@ -22,9 +22,16 @@ class LogStash::Codecs::JSON < LogStash::Codecs::Base
   #
   # For nxlog users, you'll want to set this to "CP1252"
   config :charset, :validate => ::Encoding.name_list, :default => "UTF-8"
+
+  public
+  def register
+    @converter = LogStash::Util::Charset.new(@charset)
+    @converter.logger = @logger
+  end
   
   public
   def decode(data)
+    data = @converter.convert(data)
     begin
       yield LogStash::Event.new(JSON.parse(data))
     rescue JSON::ParserError => e

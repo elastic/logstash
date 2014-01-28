@@ -108,12 +108,6 @@ class LogStash::Agent < Clamp::Command
       fail("Configuration problem.")
     end
 
-    # Stop now if we are only asking for a config test.
-    if config_test?
-      report "Configuration OK"
-      return
-    end
-
     # Make SIGINT shutdown the pipeline.
     trap_id = Stud::trap("INT") do
       @logger.warn(I18n.t("logstash.agent.interrupted"))
@@ -126,6 +120,12 @@ class LogStash::Agent < Clamp::Command
     end
 
     pipeline.configure("filter-workers", filter_workers)
+
+    # Stop now if we are only asking for a config test.
+    if config_test?
+      report "Configuration OK"
+      return
+    end
 
     @logger.unsubscribe(stdout_logs) if show_startup_errors
 
@@ -271,7 +271,7 @@ class LogStash::Agent < Clamp::Command
       # aka, there must be file in path/logstash/{filters,inputs,outputs}/*.rb
       plugin_glob = File.join(path, "logstash", "{inputs,filters,outputs}", "*.rb")
       if Dir.glob(plugin_glob).empty?
-        warn(I18n.t("logstash.agent.configuration.no_plugins_found",
+        @logger.warn(I18n.t("logstash.agent.configuration.no_plugins_found",
                     :path => path, :plugin_glob => plugin_glob))
       end
 
@@ -292,6 +292,10 @@ class LogStash::Agent < Clamp::Command
     config = ""
     Dir.glob(path).sort.each do |file|
       next unless File.file?(file)
+      if file.match(/~$/)
+        @logger.debug("NOT reading config file because it is a temp file", :file => file)
+        next
+      end
       @logger.debug("Reading config file", :file => file)
       config << File.read(file) + "\n"
     end

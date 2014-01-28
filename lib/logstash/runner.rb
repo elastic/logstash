@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+Encoding.default_external = "UTF-8"
 $START = Time.now
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
@@ -47,6 +48,7 @@ require "logstash/monkeypatches-for-debugging"
 require "logstash/namespace"
 require "logstash/program"
 require "i18n" # gem 'i18n'
+I18n.enforce_available_locales = true
 I18n.load_path << File.expand_path(
   File.join(File.dirname(__FILE__), "../../locales/en.yml")
 )

@@ -52,6 +52,13 @@ class LogStash::Pipeline
   end
 
   def configure(setting, value)
+    if setting == "filter-workers"
+      # Abort if we have any filters that aren't threadsafe
+      if value > 1 && @filters.any? { |f| !f.threadsafe? }
+        plugins = @filters.select { |f| !f.threadsafe? }.collect { |f| f.class.config_name }
+        raise LogStash::ConfigurationError, "Cannot use more than 1 filter worker because the following plugins don't work with more than one worker: #{plugins.join(", ")}"
+      end
+    end
     @settings[setting] = value
   end
 
