@@ -77,6 +77,9 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "twitter", "5.0.0.rc.1"            #(MIT license)
   gem.add_runtime_dependency "rsolr"                            #(Apache 2.0 license)
   gem.add_runtime_dependency "edn"                              #(MIT license)
+  gem.add_runtime_dependency "fog", "1.15.0"                    #(MIT license)
+  gem.add_runtime_dependency "unf"                              #(BSD license)
+  gem.add_runtime_dependency "excon", "0.28.0"                  #(MIT license)
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
@@ -88,7 +91,6 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "jdbc-mysql"                       # For input drupal_dblog (BSD license)
     gem.add_runtime_dependency "msgpack-jruby"                    #(Apache 2.0 license)
   else
-    gem.add_runtime_dependency "excon"    #(MIT license)
     gem.add_runtime_dependency "mysql2"   # For input drupal_dblog (MIT license)
     gem.add_runtime_dependency "msgpack"  #(Apache 2.0 license)
   end
