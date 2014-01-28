@@ -86,9 +86,13 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
       end
     end
     @logger.info("Using geoip database", :path => @database)
-    @geoip = ::GeoIP.new(@database)
+    # For the purpose of initializing this filter, geoip is initialized here but
+    # not set as a global. The geoip module imposes a mutex, so the filter needs
+    # to re-initialize this later in the filter() thread, and save that access
+    # as a thread-local variable.
+    geoip_initialize = ::GeoIP.new(@database)
 
-    @geoip_type = case @geoip.database_type
+    @geoip_type = case geoip_initialize.database_type
     when GeoIP::GEOIP_CITY_EDITION_REV0, GeoIP::GEOIP_CITY_EDITION_REV1
       :city
     when GeoIP::GEOIP_COUNTRY_EDITION
@@ -108,10 +112,19 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
     return unless filter?(event)
     geo_data = nil
 
+    # Use thread-local access to GeoIP. The Ruby GeoIP module forces a mutex
+    # around access to the database, which can be overcome with :pread.
+    # Unfortunately, :pread requires the io-extra gem, with C extensions that
+    # aren't supported on JRuby. If / when :pread becomes available, we can stop
+    # needing thread-local access.
+    if !Thread.current.key?(:geoip)
+      Thread.current[:geoip] = ::GeoIP.new(@database)
+    end
+
     begin
       ip = event[@source]
       ip = ip.first if ip.is_a? Array
-      geo_data = @geoip.send(@geoip_type, ip)
+      geo_data = Thread.current[:geoip].send(@geoip_type, ip)
     rescue SocketError => e
       @logger.error("IP Field contained invalid IP address or hostname", :field => @field, :event => event)
     rescue Exception => e
