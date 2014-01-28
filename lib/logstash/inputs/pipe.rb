@@ -41,7 +41,7 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
   public
   def run(queue)
     begin
-      stop = true
+      relaunch = false
       begin
         @pipe = IO.popen(@command, mode="r")
         hostname = Socket.gethostname
@@ -57,11 +57,11 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
             queue << event
           end
         end
-        stop = @restart != "always"
+        relaunch = @restart == "always"
       rescue Exception => e
         @logger.error("Exception while running command", :e => e, :backtrace => e.backtrace)
-        stop = @restart != "error"
+        should_restart = @restart == "error"
       end
-    end while !stop && sleep(10) > 0
+    end while relaunch && sleep(10) > 0
   end # def run
 end # class LogStash::Inputs::Pipe
