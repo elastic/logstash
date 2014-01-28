@@ -54,6 +54,7 @@ setup_java() {
 
   export JAVACMD
   export JAVA_OPTS
+  export RUBYLIB="$basedir/lib"
   export GEM_HOME="$basedir/vendor/bundle/jruby/1.9"
 } 
 
