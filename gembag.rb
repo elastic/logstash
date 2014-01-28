@@ -10,6 +10,7 @@ ENV["GEM_PATH"] = ""
 
 require "rubygems/specification"
 require "rubygems/commands/install_command"
+require "logstash/JRUBY-PR1448" if RUBY_PLATFORM == "java" && Gem.win_platform?
 
 def install_gem(name, requirement, target)
   puts "Fetching and installing gem: #{name} (#{requirement})"
