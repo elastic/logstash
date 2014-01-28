@@ -31,7 +31,7 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
   # Example:
   #
   #    restart => "always"
-  config :restart, :validate => :string, :required => false, :default => "never"
+  config :restart, :validate => :string, :required => false, :default => "never", :validate => [ "always", "error", "never" ]
 
   public
   def register
