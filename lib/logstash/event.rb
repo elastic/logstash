@@ -175,6 +175,10 @@ class LogStash::Event
   public
   def overwrite(event)
     @data = event.to_hash
+    #convert timestamp if it's a String
+    if @data["@timestamp"].is_a?(String)
+      @data["@timestamp"] = Time.parse( @data["@timestamp"] )
+    end
   end
 
   public
