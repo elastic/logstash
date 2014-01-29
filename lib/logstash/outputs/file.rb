@@ -43,6 +43,14 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # Gzip output stream
   config :gzip, :validate => :boolean, :default => false
 
+  # The maximum number of rotation files to keep. If the maximum
+  # number is reached files with an older modification time are retired (deleted).
+  # This setting is active only if a log rotation - configured with the
+  # max_size setting - is active too.
+  #
+  # If this setting is omitted or 0, no rotation files are retired.
+  config :max_files, :validate => :number, :default => 0
+
   public
   def register
     require "fileutils" # For mkdir_p
@@ -79,6 +87,11 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
         @files.delete(path)
         File.rename(path, new_path)
         fd = open(path)
+      end
+
+      #delete older files if max_files roation file house keeping is active
+      if @max_files != nil and @max_files > 0
+        retire_rotation_files(path)
       end
     end
 
@@ -183,6 +196,29 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     end
 
     return newPath
+  end
+
+  # retires rotation files.
+  def retire_rotation_files(path)
+    search_file_pattern = path + ".*" #roation pattern is .1,.2,....
+    rotation_files = Dir[search_file_pattern]
+    # now look if we have to delete some files
+    if rotation_files != nil and rotation_files.count > @max_files
+      #sort the file names by modification time
+      rotation_files.sort_by! { |file_entry| File.mtime(file_entry) }
+      # calculate how many file we have to delete
+      files_to_delete_count = rotation_files.count - @max_files
+      #delete the files we have to delete
+      files_to_delete_count.times do |file_index|
+        file_to_delete = rotation_files[file_index]
+        begin
+          @logger.info("Deleting file #{file_to_delete}")
+          File.delete(file_to_delete)
+        rescue Exception => ex
+          @logger.error("Exception while deleting file. #{file_to_delete}", :exception => ex)
+        end
+      end
+    end
   end
 
   def flush(fd)

@@ -53,19 +53,56 @@ describe LogStash::Outputs::File do
         file {
           path => "#{tmp_file.path}"
           max_size => 300
+          max_files => 0
         }
       }
     CONFIG
 
     agent do
-      #Check if we have a rotation file and delete them
+      # we should have a less or equal number of rotation logs
       file_name_filter = tmp_file.path + ".*"
       files = Dir[file_name_filter]
       insist {files.count} > 0
+      
+      # be a good citicen and delete the roation files again
       files.each { |file_entry|
         File.delete(file_entry)
       }
     end # agent
+  end
+  
+  describe "ship lots of events to a file with rotation and retirement" do
+      event_count = 10000 + rand(500)
+      tmp_file = Tempfile.new('logstash-spec-output-file')
+      
+      config <<-CONFIG
+      input {
+          generator {
+              message => "hello world"
+              count => #{event_count}
+              type => "generator"
+          }
+      }
+      output {
+          file {
+              path => "#{tmp_file.path}"
+              max_size => 300
+              max_files => 3
+          }
+      }
+      CONFIG
+      
+      agent do
+          # we should have a less or equal number of rotation logs now
+          file_name_filter = tmp_file.path + ".*"
+          files = Dir[file_name_filter]
+          insist {files.count} <= 3
+          
+          # be a good citicen and delete the rotation files again
+          files.each { |file_entry|
+              File.delete(file_entry)
+          }
+      end # agent
   end
 
   describe "ship lots of events to a file gzipped" do
