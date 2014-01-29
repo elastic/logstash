@@ -177,7 +177,7 @@ class LogStash::Event
     @data = event.to_hash
     #convert timestamp if it's a String
     if @data["@timestamp"].is_a?(String)
-      @data["@timestamp"] = Time.parse( @data["@timestamp"] )
+      @data["@timestamp"] = LogStash::Time.parse_iso8601(@data["@timestamp"])
     end
   end
 
