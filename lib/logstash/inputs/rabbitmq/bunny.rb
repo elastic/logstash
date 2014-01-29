@@ -22,7 +22,7 @@ class LogStash::Inputs::RabbitMQ
                                 Bunny::DEFAULT_PASSWORD
                               end
 
-      @settings[:log_level] = if @debug
+      @settings[:log_level] = if @debug || @logger.debug?
                                 :debug
                               else
                                 :error

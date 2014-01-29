@@ -30,12 +30,12 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
 
   # Set to true to enable greater debugging in XMPP. Useful for debugging
   # network/authentication erros.
-  config :debug, :validate => :boolean, :default => false
+  config :debug, :validate => :boolean, :default => false, :deprecated => "Use the logstash --debug flag for this instead."
 
   public
   def register
     require 'xmpp4r' # xmpp4r gem
-    Jabber::debug = true if @debug
+    Jabber::debug = true if @debug || @logger.debug?
 
     @client = Jabber::Client.new(Jabber::JID.new(@user))
     @client.connect(@host) # it is ok if host is nil

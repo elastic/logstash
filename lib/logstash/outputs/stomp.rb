@@ -27,8 +27,8 @@ class LogStash::Outputs::Stomp < LogStash::Outputs::Base
   # The vhost to use
   config :vhost, :validate => :string, :default => nil
 
-  # Enable debugging output?
-  config :debug, :validate => :boolean, :default => false
+  # Enable debugging output.
+  config :debug, :validate => :boolean, :default => false, :deprecated => "This setting was never used by this plugin. It will be removed soon."
 
   private
   def connect

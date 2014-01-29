@@ -10,8 +10,8 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
   config_name "opentsdb"
   milestone 1
 
-  # Enable debugging. Tries to pretty-print the entire event object.
-  config :debug, :validate => :boolean
+  # Enable debugging.
+  config :debug, :validate => :boolean, :default => false, :deprecated => "This setting was never used by this plugin. It will be removed soon."
 
   # The address of the opentsdb server.
   config :host, :validate => :string, :default => "localhost"

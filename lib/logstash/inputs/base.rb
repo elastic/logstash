@@ -25,8 +25,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # when sent to another Logstash server.
   config :type, :validate => :string
 
-  # Set this to true to enable debugging on an input.
-  config :debug, :validate => :boolean, :default => false
+  config :debug, :validate => :boolean, :default => false, :deprecated => "This setting no longer has any effect. In past releases, it existed, but almost no plugin made use of it."
 
   # The format of input data (plain, json, json_event)
   config :format, :validate => ["plain", "json", "json_event", "msgpack_event"], :deprecated => "You should use the newer 'codec' setting instead."
