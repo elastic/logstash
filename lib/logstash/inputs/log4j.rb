@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "date"
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "logstash/util/socket_peer"
@@ -74,6 +75,9 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
         event["method"] = log4j_obj.getLocationInformation.getMethodName
         event["NDC"] = log4j_obj.getNDC if log4j_obj.getNDC
         event["stack_trace"] = log4j_obj.getThrowableStrRep.to_a.join("\n") if log4j_obj.getThrowableInformation
+
+	# Get timestamp from the original log4 logevent and convert unix timestamp with milliseconds
+	event["@timestamp"] = Time.at(log4j_obj.getTimeStamp / 1000.0)
         
         # Add the MDC context properties to '@fields'
         if log4j_obj.getProperties
