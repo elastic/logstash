@@ -69,7 +69,7 @@ class LogStash::Outputs::Riemann < LogStash::Outputs::Base
 
   #
   # Enable debugging output?
-  config :debug, :validate => :boolean, :default => false
+  config :debug, :validate => :boolean, :default => false, :deprecated => "This setting was never used by this plugin. It will be removed soon."
 
   public
   def register
