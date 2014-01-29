@@ -105,6 +105,7 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
       raise RuntimeException.new "This GeoIP database is not currently supported"
     end
 
+    @threadkey = "geoip-#{self.object_id}"
   end # def register
 
   public
@@ -117,14 +118,14 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
     # Unfortunately, :pread requires the io-extra gem, with C extensions that
     # aren't supported on JRuby. If / when :pread becomes available, we can stop
     # needing thread-local access.
-    if !Thread.current.key?(:geoip)
-      Thread.current[:geoip] = ::GeoIP.new(@database)
+    if !Thread.current.key?(@threadkey)
+      Thread.current[@threadkey] = ::GeoIP.new(@database)
     end
 
     begin
       ip = event[@source]
       ip = ip.first if ip.is_a? Array
-      geo_data = Thread.current[:geoip].send(@geoip_type, ip)
+      geo_data = Thread.current[@threadkey].send(@geoip_type, ip)
     rescue SocketError => e
       @logger.error("IP Field contained invalid IP address or hostname", :field => @field, :event => event)
     rescue Exception => e
