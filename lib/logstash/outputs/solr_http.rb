@@ -3,7 +3,6 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 require "stud/buffer"
 require "rubygems"
-require "uuidtools"
 
 # This output lets you index&store your logs in Solr. If you want to get
 # started quickly you should use version 4.4 or above in schemaless mode,
@@ -41,6 +40,7 @@ class LogStash::Outputs::SolrHTTP < LogStash::Outputs::Base
 
   public
   def register
+    require "uuidtools"
     require "rsolr"
     @solr = RSolr.connect :url => @solr_url
     buffer_initialize(

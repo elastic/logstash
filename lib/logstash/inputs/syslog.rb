@@ -5,7 +5,6 @@ require "logstash/filters/date"
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket"
-require "thread_safe"
 
 # Read syslog messages as events over the network.
 #
@@ -53,6 +52,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
 
   public
   def register
+    require "thread_safe"
     @grok_filter = LogStash::Filters::Grok.new(
       "overwrite" => "message",
       "match" => { "message" => "<%{POSINT:priority}>%{SYSLOGLINE}" },
