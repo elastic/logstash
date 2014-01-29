@@ -259,6 +259,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
 
   private
   def get_key(user)
+    return if @authmtime.nil? or @authfile.nil?
     # Validate that our auth data is still up-to-date
     parse_authfile if @authmtime < File.stat(@authfile).mtime
     key = @auth[user]
