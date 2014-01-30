@@ -12,20 +12,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   config_name "output"
 
-  # The type to act on. If a type is given, then this output will only
-  # act on messages with the same type. See any input plugin's "type"
-  # attribute for more.
-  # Optional.
-  config :type, :validate => :string, :default => "", :deprecated => "You can achieve this same behavior with the new conditionals, like: `if [type] == \"sometype\" { %PLUGIN% { ... } }`."
-
-  # Only handle events with all of these tags.  Note that if you specify
-  # a type, the event must also match that type.
-  # Optional.
-  config :tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if \"sometag\" in [tags] { %PLUGIN% { ... } }`"
-
-  # Only handle events without any of these tags. Note this check is additional to type and tags.
-  config :exclude_tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if !(\"sometag\" in [tags]) { %PLUGIN% { ... } }`"
-
   # The codec used for output data
   config :codec, :validate => :codec, :default => "plain"
 
