@@ -87,17 +87,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   def register
     require 'redis'
 
-    # TODO remove after setting key and data_type to true
-    if @queue
-      if @key or @data_type
-        raise RuntimeError.new(
-          "Cannot specify queue parameter and key or data_type"
-        )
-      end
-      @key = @queue
-      @data_type = 'list'
-    end
-
     if not @key or not @data_type
       raise RuntimeError.new(
         "Must define queue, or key and data_type parameters"
