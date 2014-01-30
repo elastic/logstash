@@ -13,7 +13,8 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   
   default :codec, "line"
 
-  config :debug, :validate => :boolean, :default => false, :deprecated => "This setting no longer has any effect. Please use `codec => rubydebug` instead."
+  # Enable debugging. Tries to pretty-print the entire event object.
+  config :debug, :validate => :boolean, :default => false, :deprecated => "This setting has no effect. Please use `codec => rubydebug` if you wish to have the original behavior this setting provided."
 
   public
   def register
