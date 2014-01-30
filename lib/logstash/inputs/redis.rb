@@ -37,10 +37,6 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   # Password to authenticate with. There is no authentication by default.
   config :password, :validate => :password
 
-  # The name of the redis queue (we'll use BLPOP against this).
-  # TODO: remove soon.
-  config :queue, :validate => :string, :deprecated => true
-
   # The name of a redis list or channel.
   # TODO: change required to true
   config :key, :validate => :string, :required => false
