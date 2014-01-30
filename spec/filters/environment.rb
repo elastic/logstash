@@ -27,9 +27,10 @@ describe LogStash::Filters::Environment do
     # At this time, only filters are supported.
     config <<-CONFIG
       filter {
-        environment {
-          type => "foo"
-          add_field_from_env => [ "newfield", "MY_ENV_VAR" ]
+        if [type] == "foo" {
+          environment {
+            add_field_from_env => [ "newfield", "MY_ENV_VAR" ]
+          }
         }
       }
     CONFIG

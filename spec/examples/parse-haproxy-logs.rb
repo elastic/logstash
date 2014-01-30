@@ -8,7 +8,7 @@ describe "haproxy httplog format" do
   config <<-CONFIG
   filter {
     grok {
-      pattern => "%{HAPROXYHTTP}"
+      match => { "message" => "%{HAPROXYHTTP}" }
     }
   }
   CONFIG

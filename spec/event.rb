@@ -163,7 +163,7 @@ describe LogStash::Event do
     puts "event @timestamp parse rate: #{count / duration}/sec"
   end
 
-  context "acceptable @timestamp formats" do
+  context "acceptable @timestamp formats", :if => RUBY_ENGINE == "jruby" do
     subject { LogStash::Event.new }
 
     formats = [ 

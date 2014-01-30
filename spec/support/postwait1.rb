@@ -5,16 +5,14 @@ describe "some stuff" do
 
   config <<-'CONFIG'
     filter {
-      grep {
-          tags => web
-          drop => false
-          add_field => [ "application", "web" ]
-      }
-     
       mutate {
-          tags => web
-          #replace => [ "message", "%{request}" ]
+        add_field => [ "application", "web" ]
+      }
+
+      if "web" in [tags] and "web" in [application]  {
+        mutate {
           add_field => [ "message", "%{request}" ]
+        }
       }
     }
   CONFIG

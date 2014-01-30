@@ -252,23 +252,6 @@ describe LogStash::Filters::Grep do
     end
   end
 
-  #LOGSTASH-599
-  describe "drop line based on type and tags 'matching' only but otherwise pattern matching" do
-    config <<-CONFIG
-    filter {
-      grep {
-        type => "testing"
-        tags => ["_grokparsefailure"]
-        negate => true
-      }
-    }
-    CONFIG
-
-    sample("type" => "testing", "tags" => ["_grokparsefailure"], "str" => "test") do
-      insist { subject }.nil?
-    end
-  end
-
   #LOGSTASH-894 and LOGSTASH-919
   describe "repeat a field in match config, similar to piped grep command line" do
     config <<-CONFIG

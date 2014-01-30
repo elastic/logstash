@@ -10,8 +10,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message", "%{SYSLOGLINE}" ]
-          singles => true
+          match => { "message" => "%{SYSLOGLINE}" }
           overwrite => [ "message" ]
         }
       }
@@ -33,8 +32,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{SYSLOG5424LINE}" ]
-          singles => true
+          match => { "message" =>  "%{SYSLOG5424LINE}" }
         }
       }
     CONFIG
@@ -135,7 +133,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "(?:hello|world) %{NUMBER}" ]
+          match => { "message" =>  "(?:hello|world) %{NUMBER}" }
           named_captures_only => false
         }
       }
@@ -150,8 +148,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{NUMBER:foo:int} %{NUMBER:bar:float}" ]
-          singles => true
+          match => { "message" =>  "%{NUMBER:foo:int} %{NUMBER:bar:float}" }
         }
       }
     CONFIG
@@ -168,9 +165,8 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{FIZZLE=\\d+}" ]
+          match => { "message" =>  "%{FIZZLE=\\d+}" }
           named_captures_only => false
-          singles => true
         }
       }
     CONFIG
@@ -184,10 +180,9 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{WORD:word}" ]
-          match => [ "examplefield", "%{NUMBER:num}" ]
+          match => { "message" =>  "%{WORD:word}" }
+          match => { "examplefield" => "%{NUMBER:num}" }
           break_on_match => false
-          singles => true
         }
       }
     CONFIG
@@ -202,8 +197,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "matchme %{NUMBER:fancy}" ]
-          singles => true
+          match => { "message" =>  "matchme %{NUMBER:fancy}" }
           add_field => [ "new_field", "%{fancy}" ]
         }
       }
@@ -225,7 +219,7 @@ describe LogStash::Filters::Grok do
       config <<-CONFIG
         filter {
           grok {
-            match => [ "message",  "1=%{WORD:foo1} *(2=%{WORD:foo2})?" ]
+            match => { "message" =>  "1=%{WORD:foo1} *(2=%{WORD:foo2})?" }
           }
         }
       CONFIG
@@ -243,7 +237,7 @@ describe LogStash::Filters::Grok do
       config <<-CONFIG
         filter {
           grok {
-            match => [ "message",  "1=%{WORD:foo1} *(2=%{WORD:foo2})?" ]
+            match => { "message" =>  "1=%{WORD:foo1} *(2=%{WORD:foo2})?" }
             keep_empty_captures => true
           }
         }
@@ -264,9 +258,8 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "Hello %{WORD}. %{WORD:foo}" ]
+          match => { "message" =>  "Hello %{WORD}. %{WORD:foo}" }
           named_captures_only => false
-          singles => true
         }
       }
     CONFIG
@@ -284,8 +277,7 @@ describe LogStash::Filters::Grok do
       config <<-'CONFIG'
         filter {
           grok {
-            singles => true
-            match => [ "message",  "(?<foo>\w+)" ]
+            match => { "message" =>  "(?<foo>\w+)" }
           }
         }
       CONFIG
@@ -299,8 +291,7 @@ describe LogStash::Filters::Grok do
       config <<-'CONFIG'
         filter {
           grok {
-            singles => true
-            match => [ "message",  "(?<timestamp>%{DATE_EU} %{TIME})" ]
+            match => { "message" =>  "(?<timestamp>%{DATE_EU} %{TIME})" }
           }
         }
       CONFIG
@@ -316,7 +307,7 @@ describe LogStash::Filters::Grok do
     config <<-'CONFIG'
       filter {
         grok {
-          match => [ "status", "^403$" ]
+          match => { "status" => "^403$" }
           add_tag => "four_oh_three"
         }
       }
@@ -332,7 +323,7 @@ describe LogStash::Filters::Grok do
     config <<-'CONFIG'
       filter {
         grok {
-          match => [ "version", "^1.0$" ]
+          match => { "version" => "^1.0$" }
           add_tag => "one_point_oh"
         }
       }
@@ -348,7 +339,7 @@ describe LogStash::Filters::Grok do
     config <<-'CONFIG'
       filter {
         grok {
-          pattern => "%{LOGLEVEL:level}: error!"
+          match => { "message" => "%{LOGLEVEL:level}: error!" }
         }
       }
     CONFIG
@@ -376,7 +367,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "matchme %{NUMBER:fancy}" ]
+          match => { "message" =>  "matchme %{NUMBER:fancy}" }
           tag_on_failure => false
         }
       }
@@ -395,8 +386,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{DATE_EU:stimestamp}" ]
-          singles => true
+          match => { "message" =>  "%{DATE_EU:stimestamp}" }
         }
       }
     CONFIG
@@ -410,8 +400,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{WORD:foo-bar}" ]
-          singles => true
+          match => { "message" =>  "%{WORD:foo-bar}" }
         }
       }
     CONFIG
@@ -436,8 +425,7 @@ describe LogStash::Filters::Grok do
       }
       filter {
         grok {
-          match => [ "message", "%{SYSLOGLINE}" ]
-          singles => true
+          match => { "message" => "%{SYSLOGLINE}" }
           overwrite => [ "message" ]
         }
       }
@@ -456,8 +444,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message", "%{INT:foo}|%{WORD:foo}" ]
-          singles => true
+          match => { "message" => "%{INT:foo}|%{WORD:foo}" }
         }
       }
     CONFIG

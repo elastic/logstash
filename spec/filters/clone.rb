@@ -8,9 +8,10 @@ describe LogStash::Filters::Clone do
     type "original"
     config <<-CONFIG
       filter {
-        clone {
-          type => "original"
-          clones => ["clone", "clone", "clone"]
+        if [type] == "original" {
+          clone {
+            clones => ["clone", "clone", "clone"]
+          }
         }
       }
     CONFIG
@@ -32,12 +33,12 @@ describe LogStash::Filters::Clone do
   describe "Complex use" do
     config <<-CONFIG
       filter {
-        clone {
-          type => "nginx-access"
-          tags => ['TESTLOG']
-          clones => ["nginx-access-clone1", "nginx-access-clone2"]
-          add_tag => ['RABBIT','NO_ES']
-          remove_tag => ["TESTLOG"]
+        if [type] == "nginx-access" and "TESTLOG" in [tags] {
+          clone {
+            clones => ["nginx-access-clone1", "nginx-access-clone2"]
+            add_tag => ['RABBIT','NO_ES']
+            remove_tag => ["TESTLOG"]
+          }
         }
       }
     CONFIG

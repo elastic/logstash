@@ -83,31 +83,6 @@ describe LogStash::Filters::Metrics do
     end
   end
 
-  context "with multiple instances" do
-    it "counts should be independent" do
-      config_tag1 = {"meter" => ["http.%{response}"], "tags" => ["tag1"]}
-      config_tag2 = {"meter" => ["http.%{response}"], "tags" => ["tag2"]}
-      filter_tag1 = LogStash::Filters::Metrics.new config_tag1
-      filter_tag2 = LogStash::Filters::Metrics.new config_tag2
-      event_tag1 = LogStash::Event.new({"response" => 200, "tags" => [ "tag1" ]})
-      event_tag2 = LogStash::Event.new({"response" => 200, "tags" => [ "tag2" ]})
-      event2_tag2 = LogStash::Event.new({"response" => 200, "tags" => [ "tag2" ]})
-      filter_tag1.register
-      filter_tag2.register
-
-      [event_tag1, event_tag2, event2_tag2].each do |event|
-        filter_tag1.filter event
-        filter_tag2.filter event
-      end
-
-      events_tag1 = filter_tag1.flush
-      events_tag2 = filter_tag2.flush
-
-      insist { events_tag1.first["http.200.count"] } == 1
-      insist { events_tag2.first["http.200.count"] } == 2
-    end
-  end
-
   context "with timer config" do
     context "on the first flush" do
       subject {

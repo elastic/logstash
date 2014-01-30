@@ -8,7 +8,7 @@ describe "pull #375" do
   describe  "kv after grok" do
     config <<-CONFIG
       filter {
-        grok { pattern => "%{URIPATH:mypath}%{URIPARAM:myparams}" }
+        grok { match => { "message" => "%{URIPATH:mypath}%{URIPARAM:myparams}" } }
         kv { source => "myparams" field_split => "&?" }
       }
     CONFIG

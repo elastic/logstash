@@ -16,7 +16,7 @@ describe LogStash::Filters::Mutate do
           replace => [ "newfield", "newnew" ]
           update => [ "nosuchfield", "weee" ]
           update => [ "updateme", "updated" ]
-          remove => [ "removeme" ]
+          remove_field => [ "removeme" ]
         }
       }
     CONFIG
@@ -52,7 +52,7 @@ describe LogStash::Filters::Mutate do
     config '
       filter {
         mutate {
-          remove => [ "remove-me", "remove-me2", "diedie", "[one][two]" ]
+          remove_field => [ "remove-me", "remove-me2", "diedie", "[one][two]" ]
         }
       }'
 
