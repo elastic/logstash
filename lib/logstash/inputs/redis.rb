@@ -67,11 +67,9 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   end # def register
 
   # A string used to identify a redis instance in log messages
-  # TODO(sissel): Use instance variables for this once the @name config
-  # option is removed.
   private
   def identity
-    @name || "#{@redis_url} #{@data_type}:#{@key}"
+    "#{@redis_url} #{@data_type}:#{@key}"
   end
 
   private
