@@ -103,8 +103,6 @@ class LogStash::Filters::Base < LogStash::Plugin
   # example would remove an additional, non-dynamic field.
   config :remove_field, :validate => :array, :default => []
 
-  RESERVED = ["type", "tags", "exclude_tags", "include_fields", "exclude_fields", "add_tag", "remove_tag", "add_field", "remove_field", "include_any", "exclude_any"]
-
   public
   def initialize(params)
     super
