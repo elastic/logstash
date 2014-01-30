@@ -58,8 +58,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     require "digest/md5"
     require "aws-sdk"
 
-    @region_endpoint = @region if @region && !@region.empty?
-
     @logger.info("Registering s3 input", :bucket => @bucket, :region_endpoint => @region_endpoint)
 
     if @credentials.nil?
