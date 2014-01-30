@@ -20,130 +20,13 @@ describe LogStash::Filters::NOOP do
     end
   end
 
-  describe "type parsing" do
-    config <<-CONFIG
-    filter {
-      noop {
-        type => "noop"
-        add_tag => ["test"]
-      }
-    }
-    CONFIG
-
-    sample("type" => "noop") do
-      insist { subject["tags"] } == ["test"]
-    end
-
-    sample("type" => "not_noop") do
-      insist { subject["tags"] }.nil?
-    end
-  end
-
-  describe "tags parsing with one tag" do
-    config <<-CONFIG
-    filter {
-      noop {
-        type => "noop"
-        tags => ["t1"]
-        add_tag => ["test"]
-      }
-    }
-    CONFIG
-
-    sample("type" => "noop") do
-      insist { subject["tags"] }.nil?
-    end
-
-    sample("type" => "noop", "tags" => ["t1", "t2"]) do
-      insist { subject["tags"] } == ["t1", "t2", "test"]
-    end
-  end
-
-  describe "tags parsing with multiple tags" do
-    config <<-CONFIG
-    filter {
-      noop {
-        type => "noop"
-        tags => ["t1", "t2"]
-        add_tag => ["test"]
-      }
-    }
-    CONFIG
-
-    sample("type" => "noop") do
-      insist { subject["tags"] }.nil?
-    end
-
-    sample("type" => "noop", "tags" => ["t1"]) do
-      insist { subject["tags"] } == ["t1"]
-    end
-
-    sample("type" => "noop", "tags" => ["t1", "t2"]) do
-      insist { subject["tags"] } == ["t1", "t2", "test"]
-    end
-
-    sample("type" => "noop", "tags" => ["t1", "t2", "t3"]) do
-      insist { subject["tags"] } == ["t1", "t2", "t3", "test"]
-    end
-  end
-
-  describe "exclude_tags with 1 tag" do
-    config <<-CONFIG
-    filter {
-      noop {
-        type => "noop"
-        tags => ["t1"]
-        add_tag => ["test"]
-        exclude_tags => ["t2"]
-      }
-    }
-    CONFIG
-
-    sample("type" => "noop") do
-      insist { subject["tags"] }.nil?
-    end
-
-    sample("type" => "noop", "tags" => ["t1"]) do
-      insist { subject["tags"] } == ["t1", "test"]
-    end
-
-    sample("type" => "noop", "tags" => ["t1", "t2"]) do
-      insist { subject["tags"] } == ["t1", "t2"]
-    end
-  end
-
-  describe "exclude_tags with >1 tags" do
-    config <<-CONFIG
-    filter {
-      noop {
-        type => "noop"
-        tags => ["t1"]
-        add_tag => ["test"]
-        exclude_tags => ["t2", "t3"]
-      }
-    }
-    CONFIG
-
-    sample("type" => "noop", "tags" => ["t1", "t2", "t4"]) do
-      insist { subject["tags"] } == ["t1", "t2", "t4"]
-    end
-
-    sample("type" => "noop", "tags" => ["t1", "t3", "t4"]) do
-      insist { subject["tags"] } == ["t1", "t3", "t4"]
-    end
-
-    sample("type" => "noop", "tags" => ["t1", "t4", "t5"]) do
-      insist { subject["tags"] } == ["t1", "t4", "t5", "test"]
-    end
-  end
-
   describe "remove_tag" do
     config <<-CONFIG
     filter {
-      noop {
-        type => "noop"
-        tags => ["t1"]
-        remove_tag => ["t2", "t3"]
+      if [type] == "noop" and "t1" in [tags] {
+        noop {
+          remove_tag => ["t2", "t3"]
+        }
       }
     }
     CONFIG
@@ -164,10 +47,10 @@ describe LogStash::Filters::NOOP do
   describe "remove_tag with dynamic value" do
     config <<-CONFIG
     filter {
-      noop {
-        type => "noop"
-        tags => ["t1"]
-        remove_tag => ["%{blackhole}"]
+      if [type] == "noop" and "t1" in [tags] {
+        noop {
+          remove_tag => ["%{blackhole}"]
+        }
       }
     }
     CONFIG
@@ -180,9 +63,10 @@ describe LogStash::Filters::NOOP do
   describe "remove_field" do
     config <<-CONFIG
     filter {
-      noop {
-        type => "noop"
-        remove_field => ["t2", "t3"]
+      if [type] == "noop" {
+        noop {
+          remove_field => ["t2", "t3"]
+        }
       }
     }
     CONFIG
@@ -206,9 +90,10 @@ describe LogStash::Filters::NOOP do
   describe "remove_field with dynamic value in field name" do
     config <<-CONFIG
     filter {
-      noop {
-        type => "noop"
-        remove_field => ["%{blackhole}"]
+      if [type] == "noop" {
+        noop {
+          remove_field => ["%{blackhole}"]
+        }
       }
     }
     CONFIG
