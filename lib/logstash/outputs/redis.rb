@@ -18,11 +18,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   config_name "redis"
   milestone 2
 
-  # Name is used for logging in case there are multiple instances.
-  # TODO: delete
-  config :name, :validate => :string, :default => 'default',
-    :deprecated => true
-
   # The hostname(s) of your redis server(s). Ports may be specified on any
   # hostname, which will override the global port config.
   #
@@ -47,11 +42,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   # Password to authenticate with.  There is no authentication by default.
   config :password, :validate => :password
-
-  # The name of the redis queue (we'll use RPUSH on this). Dynamic names are
-  # valid here, for example "logstash-%{type}"
-  # TODO: delete
-  config :queue, :validate => :string, :deprecated => true
 
   # The name of a redis list or channel. Dynamic names are
   # valid here, for example "logstash-%{type}".
