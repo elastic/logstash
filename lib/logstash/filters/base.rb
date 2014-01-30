@@ -177,32 +177,6 @@ class LogStash::Filters::Base < LogStash::Plugin
 
   protected
   def filter?(event)
-    if !@type.empty?
-      if event["type"] != @type
-        @logger.debug? and @logger.debug(["filters/#{self.class.name}: Skipping event because type doesn't match #{@type}", event])
-        return false
-      end
-    end
-
-    if !@tags.empty?
-      # this filter has only works on events with certain tags,
-      # and this event has no tags.
-      return false if !event["tags"]
-
-      # Is @tags a subset of the event's tags? If not, skip it.
-      if (event["tags"] & @tags).size != @tags.size
-        @logger.debug(["filters/#{self.class.name}: Skipping event because tags don't match #{@tags.inspect}", event])
-        return false
-      end
-    end
-
-    if !@exclude_tags.empty? && event["tags"]
-      if (diff_tags = (event["tags"] & @exclude_tags)).size != 0
-        @logger.debug(["filters/#{self.class.name}: Skipping event because tags contains excluded tags: #{diff_tags.inspect}", event])
-        return false
-      end
-    end
-
     return true
   end
 end # class LogStash::Filters::Base
