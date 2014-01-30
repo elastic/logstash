@@ -31,14 +31,6 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
   # `client` connects to a server.
   config :mode, :validate => ["server", "client"], :default => "client"
 
-  # The format to use when writing events to the file. This value
-  # supports any string and can include %{name} and other dynamic
-  # strings.
-  #
-  # If this setting is omitted, the full json representation of the
-  # event will be written as a single line.
-  config :message_format, :validate => :string, :deprecated => true
-
   class Client
     public
     def initialize(socket, logger)
