@@ -111,10 +111,6 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # default.
   config :embedded_http_port, :validate => :string, :default => "9200-9300"
 
-  # This setting no longer does anything. It exists to keep config validation
-  # from failing. It will be removed in future versions.
-  config :max_inflight_requests, :validate => :number, :default => 50, :deprecated => true
-
   # The node name Elasticsearch will use when joining a cluster.
   #
   # By default, this is generated internally by the ES client.
