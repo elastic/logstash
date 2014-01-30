@@ -28,12 +28,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   config :bucket, :validate => :string, :required => true
 
   # The AWS region for your bucket.
-  config :region, :validate => ["us-east-1", "us-west-1", "us-west-2",
-                                "eu-west-1", "ap-southeast-1", "ap-southeast-2",
-                                "ap-northeast-1", "sa-east-1", "us-gov-west-1"],
-                                :deprecated => "'region' has been deprecated in favor of 'region_endpoint'"
-
-  # The AWS region for your bucket.
   config :region_endpoint, :validate => ["us-east-1", "us-west-1", "us-west-2",
                                 "eu-west-1", "ap-southeast-1", "ap-southeast-2",
                                 "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
