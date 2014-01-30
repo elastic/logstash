@@ -28,29 +28,8 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # Set this to true to enable debugging on an input.
   config :debug, :validate => :boolean, :default => false
 
-  # The format of input data (plain, json, json_event)
-  config :format, :validate => ["plain", "json", "json_event", "msgpack_event"], :deprecated => "You should use the newer 'codec' setting instead."
-
   # The codec used for input data
   config :codec, :validate => :codec, :default => "plain"
-
-  # The character encoding used in this input. Examples include "UTF-8"
-  # and "cp1252"
-  #
-  # This setting is useful if your log files are in Latin-1 (aka cp1252)
-  # or in another character set other than UTF-8.
-  #
-  # This only affects "plain" format logs since json is UTF-8 already.
-  config :charset, :validate => ::Encoding.name_list, :deprecated => true
-
-  # If format is "json", an event sprintf string to build what
-  # the display @message should be given (defaults to the raw JSON).
-  # sprintf format strings look like %{fieldname}
-  #
-  # If format is "json_event", ALL fields except for @type
-  # are expected to be present. Not receiving all fields
-  # will cause unexpected results.
-  config :message_format, :validate => :string, :deprecated => true
 
   # Add any number of arbitrary tags to your event.
   #
