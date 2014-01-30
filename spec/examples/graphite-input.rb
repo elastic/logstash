@@ -15,14 +15,11 @@ describe "receive graphite input", :if => RUBY_ENGINE == "jruby" do
     # }
     filter {
       grok {
-        pattern => "%{DATA:name} %{NUMBER:value:float} %{POSINT:ts}"
-        singles => true
+        match => { "message" => "%{DATA:name} %{NUMBER:value:float} %{POSINT:ts}" }
       }
       date {
         match => ["ts", UNIX]
-      }
-      mutate {
-        remove => ts
+        remove_field => "ts"
       }
     }
   CONFIG
