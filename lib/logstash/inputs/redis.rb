@@ -22,10 +22,6 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
 
   default :codec, "json"
 
-  # Name is used for logging in case there are multiple instances.
-  # This feature has no real function and will be removed in future versions.
-  config :name, :validate => :string, :default => "default", :deprecated => true
-
   # The hostname of your redis server.
   config :host, :validate => :string, :default => "127.0.0.1"
 
