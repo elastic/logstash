@@ -215,8 +215,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   public
   def initialize(params)
     super(params)
-    @match["message"] ||= []
-    @match["message"] += @pattern if @pattern # the config 'pattern' value (array)
+
     # a cache of capture name handler methods.
     @handlers = {}
   end
