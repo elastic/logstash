@@ -67,9 +67,6 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
   # source host for syslog message
   config :sourcehost, :validate => :string, :default => "%{host}"
 
-  # timestamp for syslog message
-  config :timestamp, :validate => :string, :default => "%{@timestamp}", :deprecated => "This setting is no longer necessary. The RFC setting will determine what time format is used."
-
   # application name for syslog message
   config :appname, :validate => :string, :default => "LOGSTASH"
 
