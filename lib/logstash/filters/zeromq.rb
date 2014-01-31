@@ -44,7 +44,11 @@ class LogStash::Filters::ZeroMQ < LogStash::Filters::Base
   # for receiving, the total blocking time is up to retries X timeout, 
   # which by default is 3 X 500 = 1500ms
   config :retries, :validate => :number, :default => 3
-  
+
+  # tag to add if zeromq timeout expires before getting back an answer.
+  # If set to "" then no tag will be added.
+  config :add_tag_on_timeout, :validate => :string, :default => "zeromqtimeout"
+
   # 0mq socket options
   # This exposes zmq_setsockopt
   # for advanced tuning
@@ -105,7 +109,7 @@ class LogStash::Filters::ZeroMQ < LogStash::Filters::Base
   end #def reconnect
 
   #send and receive data. message is assumed to be json
-  #will return a string containing one of several things:
+  #will return a boolean for success, and a string containing one of several things:
   #  - empty string: response from server
   #  - updated string: response from server
   #  - original message: could not send request or get response from server in time 
@@ -127,7 +131,7 @@ class LogStash::Filters::ZeroMQ < LogStash::Filters::Base
     #if we did not succeed log it and fail here.
     if not success
       @logger.warn("0mq: error sending message (zmq_errno = #{ZMQ::Util.errno}, zmq_error_string = '#{ZMQ::Util.error_string}'")
-      return message 
+      return success, message 
     end
 
     #now get reply
@@ -155,10 +159,10 @@ class LogStash::Filters::ZeroMQ < LogStash::Filters::Base
     #the event isn't cancelled. we want to carry on if the server is down.
     if not success 
       @logger.warn("0mq: did not receive reply (zmq_errno = #{ZMQ::Util.errno}, zmq_error_string = '#{ZMQ::Util.error_string}'")
-      return message 
+      return success, message 
     end
 
-    return reply
+    return success, reply
   end #def send_recv
 
   public
@@ -167,9 +171,9 @@ class LogStash::Filters::ZeroMQ < LogStash::Filters::Base
 
     begin
       if @field
-      	reply = send_recv(event[@field])
+      	success, reply = send_recv(event[@field])
       else
-        reply = send_recv(event.to_json)
+        success, reply = send_recv(event.to_json)
       end
       # If we receive an empty reply, this is an indication that the filter
       # wishes to cancel this event.
@@ -187,6 +191,10 @@ class LogStash::Filters::ZeroMQ < LogStash::Filters::Base
         event.overwrite(reply)
       end
       filter_matched(event)
+      #if message send/recv was not successful add the timeout
+      if not success
+        (event["tags"] ||= []) << @add_tag_on_timeout
+      end
     rescue => e
       @logger.warn("0mq filter exception", :address => @address, :exception => e, :backtrace => e.backtrace)
     end
