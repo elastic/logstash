@@ -135,6 +135,9 @@ class LogStash::Agent < Clamp::Command
   rescue LogStash::ConfigurationError => e
     @logger.unsubscribe(stdout_logs) if show_startup_errors
     report I18n.t("logstash.agent.error", :error => e)
+    if !config_test?
+      report I18n.t("logstash.agent.configtest-flag-information")
+    end
     return 1
   rescue => e
     @logger.unsubscribe(stdout_logs) if show_startup_errors
