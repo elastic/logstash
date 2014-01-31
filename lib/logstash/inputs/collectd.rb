@@ -88,6 +88,17 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   # "Sign" or "Encrypt"
   config :authfile, :validate => :string
 
+  # What to do when a value in the event is NaN (Not a Number)
+  # - warn: Remove the field and send a warning to the log
+  # - drop: Drop the whole event
+  # - change_value (default): Change the NaN to the value of the nan_value option
+  config :nan_handeling, :validate => ['drop','warn','change_value'],
+    :default => 'change_value'
+
+  # Only relevant when nan_handeling is set to 'change_value'
+  # Change NaN to this configured value
+  config :nan_value, :validate => :number, :default => 0
+
   public
   def initialize(params)
     super
