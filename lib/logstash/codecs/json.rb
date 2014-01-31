@@ -3,7 +3,7 @@ require "logstash/codecs/base"
 require "logstash/codecs/line"
 require "json"
 
-# The codec may be used to decode (via inputs) and encode (via outputs) 
+# This codec may be used to decode (via inputs) and encode (via outputs) 
 # full JSON messages.  If you are streaming JSON messages delimited
 # by '\n' then see the json_lines codec.
 # Encoding will result in a single JSON string.
