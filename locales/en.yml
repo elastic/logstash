@@ -71,6 +71,10 @@ en:
         Error: %{error}
       interrupted: >-
         Interrupt received. Shutting down the pipeline.
+      configtest-flag-information: |-
+        You may be interested in the '--configtest' flag which you can
+        use to validate logstash's configuration before you choose
+        to restart a running system.
       configuration:
         file-not-found: |-
           No config files found: %{path}
