@@ -5,7 +5,7 @@ require "json"
 
 # This codec may be used to decode (via inputs) and encode (via outputs) 
 # full JSON messages.  If you are streaming JSON messages delimited
-# by '\n' then see the json_lines codec.
+# by '\n' then see the `json_lines` codec.
 # Encoding will result in a single JSON string.
 class LogStash::Codecs::JSON < LogStash::Codecs::Base
   config_name "json"
