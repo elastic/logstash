@@ -204,7 +204,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           raise last_exception unless success
 
           # Convert joda DateTime to a ruby Time
-          event[@target] = Time.at(epochmillis / 1000, (epochmillis % 1000) * 1000)
+          event[@target] = Time.at(epochmillis / 1000, (epochmillis % 1000) * 1000).utc
           #event[@target] = Time.at(epochmillis / 1000.0).utc
 
           @logger.debug? && @logger.debug("Date parsing done", :value => value, :timestamp => event[@target])
