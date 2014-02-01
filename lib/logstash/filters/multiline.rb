@@ -1,21 +1,14 @@
 # encoding: utf-8
-# multiline filter
-#
-# This filter will collapse multiline messages into a single event.
-# 
-
 require "logstash/filters/base"
 require "logstash/namespace"
 require "set"
-
-# The multiline filter is for combining multiple events from a single source
-# into the same event.
 #
+# This filter will collapse multiline messages from a single source into one Logstash event.
+# 
 # The original goal of this filter was to allow joining of multi-line messages
 # from files into a single event. For example - joining java exception and
 # stacktrace messages into a single event.
 #
-# TODO(sissel): Document any issues?
 # The config looks like this:
 #
 #     filter {
@@ -27,18 +20,18 @@ require "set"
 #       }
 #     }
 # 
-# The 'regexp' should match what you believe to be an indicator that
-# the field is part of a multi-line event
+# The `pattern` should be a regexp which matches what you believe to be an indicator
+# that the field is part of an event consisting of multiple lines of log data.
 #
-# The 'what' must be "previous" or "next" and indicates the relation
+# The `what` must be "previous" or "next" and indicates the relation
 # to the multi-line event.
 #
-# The 'negate' can be "true" or "false" (defaults false). If true, a 
+# The `negate` can be "true" or "false" (defaults to false). If "true", a 
 # message not matching the pattern will constitute a match of the multiline
-# filter and the what will be applied. (vice-versa is also true)
+# filter and the `what` will be applied. (vice-versa is also true)
 #
-# For example, java stack traces are multiline and usually have the message
-# starting at the far-left, then each subsequent line indented. Do this:
+# For example, Java stack traces are multiline and usually have the message
+# starting at the far-left, with each subsequent line indented. Do this:
 # 
 #     filter {
 #       multiline {
@@ -47,7 +40,7 @@ require "set"
 #         what => "previous"
 #       }
 #     }
-#     
+#
 # This says that any line starting with whitespace belongs to the previous line.
 #
 # Another example is C line continuations (backslash). Here's how to do that:
@@ -60,12 +53,15 @@ require "set"
 #       }
 #     }
 #     
+# This says that any line ending with a backslash should be combined with the
+# following line.
+#
 class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   config_name "multiline"
   milestone 3
 
-  # The regular expression to match
+  # The regular expression to match.
   config :pattern, :validate => :string, :required => true
 
   # If the pattern matched, does event belong to the next or previous event?
@@ -75,7 +71,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   config :negate, :validate => :boolean, :default => false
   
   # The stream identity is how the multiline filter determines which stream an
-  # event belongs. This is generally used for differentiating, say, events
+  # event belongs to. This is generally used for differentiating, say, events
   # coming from multiple files in the same file input, or multiple connections
   # coming from a tcp input.
   #
@@ -88,7 +84,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   # case, you can use "%{@source_host}.%{@type}" instead.
   config :stream_identity , :validate => :string, :default => "%{host}.%{path}.%{type}"
   
-  # logstash ships by default with a bunch of patterns, so you don't
+  # Logstash ships by default with a bunch of patterns, so you don't
   # necessarily need to define this yourself unless you are adding additional
   # patterns.
   #
