@@ -89,8 +89,8 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   config :authfile, :validate => :string
 
   # What to do when a value in the event is NaN (Not a Number)
-  # - change_value (default): Change the NaN to the value of the nan_value option and add '_collectdNaN' as a tag
-  # - warn: Change the NaN to the value of the nan_value option, print a warning to the log and add '_collectdNaN' as a tag
+  # - change_value (default): Change the NaN to the value of the nan_value option and add nan_tag as a tag
+  # - warn: Change the NaN to the value of the nan_value option, print a warning to the log and add nan_tag as a tag
   # - drop: Drop the event containing the NaN (this only drops the single event, not the whole packet)
   config :nan_handeling, :validate => ['change_value','warn','drop'],
     :default => 'change_value'
@@ -98,6 +98,10 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   # Only relevant when nan_handeling is set to 'change_value'
   # Change NaN to this configured value
   config :nan_value, :validate => :number, :default => 0
+
+  # The tag to add to the event if a NaN value was found
+  # Set this to an empty string ('') if you don't want to tag
+  config :nan_tag, :validate => :string, :default => '_collectdNaN'
 
   public
   def initialize(params)
@@ -220,8 +224,8 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
                   when 'drop'; return false
                   else
                     v = @nan_value
+                    add_tag(@nan_tag)
                     @nan_handeling == 'warn' && @logger.warn("NaN in (unfinished event) #{@collectd}")
-                    @nan_handeling == 'change_value' && @collectd['tags'] = ['_collectdNaN']
                   end
                 end
               when 0, 3; v = body.slice!(0..7).pack("C*").unpack("Q>")[0]
@@ -354,6 +358,12 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
     end
   end # def clean_up
 
+  private
+  def add_tag(new_tag)
+    return if new_tag.empty?
+    @collectd['tags'] ||= []
+    @collectd['tags'] << new_tag
+  end
 
   private
   def collectd_listener(output_queue)
