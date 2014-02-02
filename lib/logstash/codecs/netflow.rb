@@ -334,6 +334,24 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
       [[:string, :if_name, {:length => length, :trim_padding => true}]]
     when 83
       [[:string, :if_desc, {:length => length, :trim_padding => true}]]
+    when 148
+      [[:uint64, :flowID ]]
+    when 233
+      [[:uint8, :firewallEvent]]
+    when 225
+      [[:ip4_addr, :postNATSourceIPv4Address]]
+    when 226
+      [[:ip4_addr, :postNATDestinationIPv4Address]]
+    when 227
+      [[:uint16, :postNAPTSourceTransportAddress]]
+    when 228
+      [[:uint16, :postNAPTDestinationTransportAddress]]
+    when 346
+      [[:uint16, :privateEnterpriseNumber]]
+    when 56701
+      [[:string, :AppID, {:length => length, :trim_padding => true}]]
+    when 56702
+      [[:string, :UserID, {:length => length, :trim_padding => true}]]
     else
       @logger.warn("Unsupported field", :type => type, :length => length)
       nil
