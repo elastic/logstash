@@ -34,8 +34,14 @@ class LogStash::Filters::Elasticsearch < LogStash::Filters::Base
   # List of elasticsearch hosts to use for querying.
   config :hosts, :validate => :array
 
+  # Elasticsearch action
+  config :action, :validate => [ "query", "delete_by_query" ], :default => "query"
+  
   # Elasticsearch query string
   config :query, :validate => :string
+  
+  # Elasticsearch index
+  config :index, :validate => :string, :default => "_all"
 
   # Comma-delimited list of <field>:<direction> pairs that define the sort order
   config :sort, :validate => :string, :default => "@timestamp:desc"
@@ -58,10 +64,16 @@ class LogStash::Filters::Elasticsearch < LogStash::Filters::Base
     begin
       query_str = event.sprintf(@query)
 
-      results = @client.search q: query_str, sort: @sort, size: 1
+      if @action == "query"
+        results = @client.search q: query_str, sort: @sort, size: 1
 
-      @fields.each do |old, new|
-        event[new] = results['hits']['hits'][0]['_source'][old]
+        @fields.each do |old, new|
+          event[new] = results['hits']['hits'][0]['_source'][old]
+        end
+      else
+        if @action == "delete_by_query"
+          results = @client.delete_by_query index: @index, q: query_str
+        end
       end
 
       filter_matched(event)

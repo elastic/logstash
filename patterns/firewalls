@@ -58,3 +58,36 @@ CISCOFW713172 Group = %{GREEDYDATA:group}, IP = %{IP:src_ip}, Automatic NAT Dete
 # ASA-4-733100
 CISCOFW733100 \[\s*%{DATA:drop_type}\s*\] drop %{DATA:drop_rate_id} exceeded. Current burst rate is %{INT:drop_rate_current_burst} per second, max configured rate is %{INT:drop_rate_max_burst}; Current average rate is %{INT:drop_rate_current_avg} per second, max configured rate is %{INT:drop_rate_max_avg}; Cumulative total count is %{INT:drop_total_count}
 #== End Cisco ASA ==
+
+#== Palo Alto Networks Firewalls ==
+# From https://live.paloaltonetworks.com/servlet/JiveServlet/downloadBody/2021-102-8-13361/PANOS-Syslog-Integration-TN-RevM.pdf
+
+PANTIMETAMP %{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}
+
+# From the PAN Doc:
+# Any field that contains a comma or a double-quote will be enclosed in double quotes.
+# Furthermore, a double-quote appearing inside a field will be escaped by preceding it
+# with another double-quote. The Misc field in threat log will always be enclosed in
+# double-quotes to maintain backward compatibility.
+#
+# So, this likely needs to be updated to include the quoting stuff, but this works for now
+PANCSVFIELD ([^,]*)
+PCF %{PANCSVFIELD}
+
+PANHEADER \<\d+\>%{SYSLOGTIMESTAMP:syslogtimestamp} %{SYSLOGHOST:logsource}
+PANTYPE (TRAFFIC|THREAT|CONFIG|SYSTEM|HIP-MATCH)
+
+
+PANTRAFFIC %{PANHEADER} %{PCF},%{PCF:Receive_Time},%{PCF:Serial_Number},%{PANTYPE:Type},%{PCF:Subtype},%{PCF},%{PCF:Generated_Time},%{PCF:Source_IP},%{PCF:Destination_IP},%{PCF:NAT_Source_IP},%{PCF:NAT_Destination_IP},%{PCF:Rule_Name},%{PCF:Source_User},%{PCF:Destination_User},%{PCF:Application},%{PCF:Virtual_System},%{PCF:Source_Zone},%{PCF:Destination_Zone},%{PCF:Ingress_Interface},%{PCF:Egress_Interface},%{PCF:Log_Forwarding_Profile},%{PCF},%{PCF:Session_ID},%{PCF:Repeat_Count},%{PCF:Source_Port},%{PCF:Destination_Port},%{PCF:NAT_Source_Port},%{PCF:NAT_Destination_Port},%{PCF:Flags},%{PCF:Protocol},%{PCF:Action},%{PCF:Bytes},%{PCF:Bytes_Sent},%{PCF:Bytes_Received},%{PCF:Packets},%{PCF:Start_Time},%{PCF:Elapsed_Time},%{PCF:Category},%{PCF},%{PCF:Sequence_Number},%{PCF:Action_Flags},%{PCF:Source_Location},%{PCF:Destination_Location},%{PCF},%{PCF:Packets_Sent},%{PCF:Packets_Received}
+
+PANTHREAT %{PANHEADER} %{PCF},%{PCF:Receive_Time},%{PCF:Serial_Number},%{PANTYPE:Type},%{PCF:Subtype},%{PCF},%{PCF:Generated_Time},%{PCF:Source_IP},%{PCF:Destination_IP},%{PCF:NAT_Source_IP},%{PCF:NAT_Destination_IP},%{PCF:Rule_Name},%{PCF:Source_User},%{PCF:Destination_User},%{PCF:Application},%{PCF:Virtual_System},%{PCF:Source_Zone},%{PCF:Destination_Zone},%{PCF:Ingress_Interface},%{PCF:Egress_Interface},%{PCF:Log_Forwarding_Profile},%{PCF},%{PCF:Session_ID},%{PCF:Repeat_Count},%{PCF:Source_Port},%{PCF:Destination_Port},%{PCF:NAT_Source_Port},%{PCF:NAT_Destination_Port},%{PCF:Flags},%{PCF:Protocol},%{PCF:Action},%{PCF:Miscellaneous},%{PCF:Threat_ID},%{PCF:Category},%{PCF:Severity},%{PCF:Direction},%{PCF:Sequence_Number},%{PCF:Action_Flags},%{PCF:Source_Location},%{PCF:Destination_Location},%{PCF},%{PCF:Content_Type}
+
+PANHIPMATCH %{PANHEADER} %{PCF},%{PCF:Receive_Time},%{PCF:Serial_Number},%{PANTYPE:Type},%{PCF:Subtype},%{PCF},%{PCF},%{PCF:Source_User},%{PCF:Virtual_System},%{PCF:Machine_name},%{PCF:Source_Address},%{PCF:HIP},%{PCF:Repeat_Count},%{PCF:HIP_Type},%{PCF},%{PCF},%{PCF:Sequence_Number},%{PCF:Action_Flags}
+
+PANCONFIG %{PANHEADER} %{PCF},%{PCF:Receive_Time},%{PCF:Serial_Number},%{PANTYPE:Type},%{PCF:Subtype},%{PCF},%{PCF},%{PCF:Host},%{PCF:Virtual_System},%{PCF:Command},%{PCF:Admin},%{PCF:Client},%{PCF:Result},%{PCF:Configuration_Path},%{PCF:Sequence_Number},%{PCF:Action_Flags}
+
+PANSYSTEM %{PANHEADER} %{PCF},%{PCF:Receive_Time},%{PCF:Serial_Number},%{PANTYPE:Type},%{PCF:Subtype},%{PCF},%{PCF},%{PCF:Virtual_System},%{PCF:Event_ID},%{PCF:Object},%{PCF},%{PCF},%{PCF:Module},%{PCF:Severity},%{PCF:Description},%{PCF:Sequence_Number},%{PCF:Action_Flags}
+
+PANSYSLOG ({%PANTRAFFIC}|%{PANTHREAT}|%{PANHIPMATCH}|%{PANCONFIG}|%{PANSYSTEM})
+
+#== End of Palo Alto Networks Firewalls ==
