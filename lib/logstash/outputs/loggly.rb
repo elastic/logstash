@@ -83,7 +83,13 @@ class LogStash::Outputs::Loggly < LogStash::Outputs::Base
     end
     request = Net::HTTP::Post.new(url.path)
     request.body = event.to_json
-    response = http.request(request)
+    begin
+      response = http.request(request)
+    rescue Exception => e
+      @logger.warn("Unhandled exception", :request => request, :response => response, :exception => e, :stacktrace => e.backtrace)
+      return
+    end
+
     if response.is_a?(Net::HTTPSuccess)
       @logger.info("Event send to Loggly OK!")
     else
