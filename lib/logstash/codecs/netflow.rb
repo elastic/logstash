@@ -16,6 +16,23 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
   # Specify which Netflow versions you will accept.
   config :versions, :validate => :array, :default => [5, 9]
 
+  # Override YAML file containing Netflow field definitions
+  #
+  # Each Netflow field is defined like so:
+  #
+  #    ---
+  #    id:
+  #    - default length in bytes
+  #    - :name
+  #    id:
+  #    - :uintN or :ip4_addr or :ip6_addr or :mac_addr or :string
+  #    - :name
+  #    id:
+  #    - :skip
+  #
+  # See <https://github.com/logstash/logstash/tree/v%VERSION%/lib/logstash/codecs/netflow/netflow.yaml> for the base set.
+  config :definitions, :validate => :path
+
   public
   def initialize(params={})
     super(params)
@@ -26,6 +43,25 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
   def register
     require "logstash/codecs/netflow/util"
     @templates = Vash.new()
+
+    # Path to default Netflow v9 field definitions
+    filename = File.join(File.dirname(__FILE__), "netflow/netflow.yaml")
+
+    begin
+      @fields = YAML.load_file(filename)
+    rescue Exception => e
+      raise "#{self.class.name}: Bad syntax in definitions file #{filename}"
+    end
+
+    # Allow the user to augment/override/rename the supported Netflow fields
+    if @definitions
+      raise "#{self.class.name}: definitions file #{@definitions} does not exists" unless File.exists?(@definitions)
+      begin
+        @fields.merge!(YAML.load_file(@definitions))
+      rescue Exception => e
+        raise "#{self.class.name}: Bad syntax in definitions file #{@definitions}"
+      end
+    end
   end # def register
 
   public
@@ -195,145 +231,29 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
 
   private
   def netflow_field_for(type, length)
-    case type
-    when 1
-      [[uint_field(length, 4), :in_bytes]]
-    when 2
-      [[uint_field(length, 4), :in_pkts]]
-    when 3
-      [[uint_field(length, 4), :flows]]
-    when 4
-      [[:uint8, :protocol]]
-    when 5
-      [[:uint8, :src_tos]]
-    when 6
-      [[:uint8, :tcp_flags]]
-    when 7
-      [[:uint16, :l4_src_port]]
-    when 8
-      [[:ip4_addr, :ipv4_src_addr]]
-    when 9
-      [[:uint8, :src_mask]]
-    when 10
-      [[uint_field(length, 2), :input_snmp]]
-    when 11
-      [[:uint16, :l4_dst_port]]
-    when 12
-      [[:ip4_addr, :ipv4_dst_addr]]
-    when 13
-      [[:uint8, :dst_mask]]
-    when 14
-      [[uint_field(length, 2), :output_snmp]]
-    when 15
-      [[:ip4_addr, :ipv4_next_hop]]
-    when 16
-      [[uint_field(length, 2), :src_as]]
-    when 17
-      [[uint_field(length, 2), :dst_as]]
-    when 18
-      [[:ip4_addr, :bgp_ipv4_next_hop]]
-    when 19
-      [[uint_field(length, 4), :mul_dst_pkts]]
-    when 20
-      [[uint_field(length, 4), :mul_dst_bytes]]
-    when 21
-      [[:uint32, :last_switched]]
-    when 22
-      [[:uint32, :first_switched]]
-    when 23
-      [[uint_field(length, 4), :out_bytes]]
-    when 24
-      [[uint_field(length, 4), :out_pkts]]
-    when 25
-      [[:uint16, :min_pkt_length]]
-    when 26
-      [[:uint16, :max_pkg_length]]
-    when 27
-      [[:ip6_addr, :ipv6_src_addr]]
-    when 28
-      [[:ip6_addr, :ipv6_dst_addr]]
-    when 29
-      [[:uint8, :ipv6_src_mask]]
-    when 30
-      [[:uint8, :ipv6_dst_mask]]
-    when 31
-      [[:uint24, :ipv6_flow_label]]
-    when 32
-      [[:uint16, :icmp_type]]
-    when 33
-      [[:uint8, :mul_igmp_type]]
-    when 34
-      [[:uint32, :sampling_interval]]
-    when 35
-      [[:uint8, :sampling_algorithm]]
-    when 36
-      [[:uint16, :flow_active_timeout]]
-    when 37
-      [[:uint16, :flow_inactive_timeout]]
-    when 38
-      [[:uint8, :engine_type]]
-    when 39
-      [[:uint8, :engine_id]]
-    when 40
-      [[uint_field(length, 4), :total_bytes_exp]]
-    when 41
-      [[uint_field(length, 4), :total_pkts_exp]]
-    when 42
-      [[uint_field(length, 4), :total_flows_exp]]
-    when 43 # Vendor specific field
-      [[:skip, nil, {:length => length}]]
-    when 44
-      [[:ip4_addr, :ipv4_src_prefix]]
-    when 45
-      [[:ip4_addr, :ipv4_dst_prefix]]
-    when 46
-      [[:uint8, :mpls_top_label_type]]
-    when 47
-      [[:uint32, :mpls_top_label_ip_addr]]
-    when 48
-      [[uint_field(length, 4), :flow_sampler_id]]
-    when 49
-      [[:uint8, :flow_sampler_mode]]
-    when 50
-      [[:uint32, :flow_sampler_random_interval]]
-    when 51 # Vendor specific field
-      [[:skip, nil, {:length => length}]]
-    when 52
-      [[:uint8, :min_ttl]]
-    when 53
-      [[:uint8, :max_ttl]]
-    when 54
-      [[:uint16, :ipv4_ident]]
-    when 55
-      [[:uint8, :dst_tos]]
-    when 56
-      [[:mac_addr, :in_src_mac]]
-    when 57
-      [[:mac_addr, :out_dst_mac]]
-    when 58
-      [[:uint16, :src_vlan]]
-    when 59
-      [[:uint16, :dst_vlan]]
-    when 60
-      [[:uint8, :ip_protocol_version]]
-    when 61
-      [[:uint8, :direction]]
-    when 62
-      [[:ip6_addr, :ipv6_next_hop]]
-    when 63
-      [[:ip6_addr, :bgp_ipv6_next_hop]]
-    when 64
-      [[:uint32, :ipv6_option_headers]]
-    when 65..69 # Vendor specific fields
-      [[:skip, nil, {:length => length}]]
-    when 80
-      [[:mac_addr, :in_dst_mac]]
-    when 81
-      [[:mac_addr, :out_src_mac]]
-    when 82
-      [[:string, :if_name, {:length => length, :trim_padding => true}]]
-    when 83
-      [[:string, :if_desc, {:length => length, :trim_padding => true}]]
+    if @fields.include?(type)
+      field = @fields[type]
+      if field.is_a?(Array)
+
+        if field[0].is_a?(Integer)
+          field[0] = uint_field(length, field[0])
+        end
+
+        # Small bit of fixup for skip or string field types where the length
+        # is dynamic
+        case field[0]
+        when :skip
+          field += [nil, {:length => length}]
+        when :string
+          field += [{:length => length, :trim_padding => true}]
+        end
+
+        @logger.debug("Definition complete", :field => field)
+        [field]
+      else
+        @logger.warn("Definition should be an array", :field => field)
+        nil
+      end
     else
       @logger.warn("Unsupported field", :type => type, :length => length)
       nil
