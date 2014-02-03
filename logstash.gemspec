@@ -27,55 +27,39 @@ Gem::Specification.new do |gem|
   # Web dependencies
   gem.add_runtime_dependency "ftw", ["~> 0.0.39"] #(Apache 2.0 license)
   gem.add_runtime_dependency "haml"               #(MIT license)
-  gem.add_runtime_dependency "rack"               #(MIT license)
   gem.add_runtime_dependency "sass"               #(MIT license)
-  gem.add_runtime_dependency "sinatra"            #(MIT license)
   gem.add_runtime_dependency "mime-types"         #(GPL 2.0)
 
   # Input/Output/Filter dependencies
   #TODO Can these be optional?
   gem.add_runtime_dependency "awesome_print"                    #(MIT license)
   gem.add_runtime_dependency "aws-sdk"                          #{Apache 2.0 license}  
-  gem.add_runtime_dependency "google-api-client"                #{Apache 2.0 license}
-  gem.add_runtime_dependency "heroku"                           #(MIT license)
   gem.add_runtime_dependency "addressable"                      #(Apache 2.0 license)
   gem.add_runtime_dependency "extlib", ["0.9.16"]               #(MIT license)
-  gem.add_runtime_dependency "elasticsearch"                    #(Apache 2.0 license)
   gem.add_runtime_dependency "ffi"                              #(LGPL-3 license)
   gem.add_runtime_dependency "ffi-rzmq", ["1.0.0"]              #(MIT license)
   gem.add_runtime_dependency "filewatch", ["0.5.1"]             #(BSD license)
   gem.add_runtime_dependency "gelfd", ["0.2.0"]                 #(Apache 2.0 license)
   gem.add_runtime_dependency "gelf", ["1.3.2"]                  #(MIT license)
   gem.add_runtime_dependency "gmetric", ["0.1.3"]               #(MIT license)
-  gem.add_runtime_dependency "jiralicious", ["0.2.2"]           #(MIT license)
   gem.add_runtime_dependency "jls-grok", ["0.10.12"]            #(BSD license)
   gem.add_runtime_dependency "mail"                             #(MIT license)
-  gem.add_runtime_dependency "mongo"                            #(Apache 2.0 license)
   gem.add_runtime_dependency "metriks"                          #(MIT license)
-  gem.add_runtime_dependency "onstomp"                          #(Apache 2.0 license)
   gem.add_runtime_dependency "redis"                            #(MIT license)
-  gem.add_runtime_dependency "riak-client", ["1.0.3"]           #(Apache 2.0 license)
-  gem.add_runtime_dependency "riemann-client", ["0.2.1"]        #(MIT license)
   gem.add_runtime_dependency "statsd-ruby", ["1.2.0"]           #(MIT license)
-  gem.add_runtime_dependency "uuidtools"                        # For generating amqp queue names (Apache 2.0 license)
   gem.add_runtime_dependency "xml-simple"                       #(ruby license?)
   gem.add_runtime_dependency "xmpp4r", ["0.5"]                  #(ruby license)
   gem.add_runtime_dependency "jls-lumberjack", [">=0.0.19"]     #(Apache 2.0 license)
   gem.add_runtime_dependency "geoip", [">= 1.3.2"]              #(GPL license)
   gem.add_runtime_dependency "beefcake", "0.3.7"                #(MIT license)
-  gem.add_runtime_dependency "php-serialize"                    # For input drupal_dblog (MIT license)
   gem.add_runtime_dependency "murmurhash3"                      #(MIT license)
   gem.add_runtime_dependency "rufus-scheduler", "~> 2.0.24"     #(MIT license)
   gem.add_runtime_dependency "user_agent_parser", [">= 2.0.0"]  #(MIT license)
   gem.add_runtime_dependency "snmp"                             #(ruby license)
-  gem.add_runtime_dependency "varnish-rb"                       #(MIT license)
   gem.add_runtime_dependency "mail"                             #(MIT license)
   gem.add_runtime_dependency "rbnacl"                           #(MIT license)
-  gem.add_runtime_dependency "sequel"                           #(MIT license)
-  gem.add_runtime_dependency "jdbc-sqlite3"                     #(MIT license)
   gem.add_runtime_dependency "bindata", [">= 1.5.0"]            #(ruby license)
   gem.add_runtime_dependency "twitter", "5.0.0.rc.1"            #(MIT license)
-  gem.add_runtime_dependency "rsolr"                            #(Apache 2.0 license)
   gem.add_runtime_dependency "edn"                              #(MIT license)
 
   if RUBY_PLATFORM == 'java'
@@ -84,12 +68,9 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "jruby-httpclient"                 #(Apache 2.0 license)
     gem.add_runtime_dependency "bouncy-castle-java", "1.5.0147"   #(MIT license)
     gem.add_runtime_dependency "jruby-openssl", "0.8.7"           #(CPL/GPL/LGPL license)
-    gem.add_runtime_dependency "jruby-win32ole"                   #(unknown license)
-    gem.add_runtime_dependency "jdbc-mysql"                       # For input drupal_dblog (BSD license)
     gem.add_runtime_dependency "msgpack-jruby"                    #(Apache 2.0 license)
   else
     gem.add_runtime_dependency "excon"    #(MIT license)
-    gem.add_runtime_dependency "mysql2"   # For input drupal_dblog (MIT license)
     gem.add_runtime_dependency "msgpack"  #(Apache 2.0 license)
   end
 

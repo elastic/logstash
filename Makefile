@@ -2,8 +2,8 @@
 #   rsync
 #   wget or curl
 #
-JRUBY_VERSION=1.7.9
-ELASTICSEARCH_VERSION=0.90.9
+JRUBY_VERSION=1.7.10
+ELASTICSEARCH_VERSION=0.90.11
 
 WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
@@ -41,7 +41,7 @@ default:
 	@echo "  flatjar -- builds the flatjar jar"
 	@echo "  flatjar-test -- runs the test suite against the flatjar"
 
-TESTS=$(wildcard spec/inputs/gelf.rb spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
+TESTS=$(wildcard spec/inputs/file.rb spec/inputs/gelf.rb spec/inputs/imap.rb spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
 
 # The 'version' is generated based on the logstash version, git revision, etc.
 .VERSION.mk: REVISION=$(shell git rev-parse --short HEAD | tr -d ' ')
