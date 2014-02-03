@@ -85,7 +85,7 @@ class LogStash::Outputs::Loggly < LogStash::Outputs::Base
   #                                         \---------->   key   <-------------/
   # A udp example is also shown under the rsyslog section on the same page.
   #   $template LogglyFormat,"<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% 
-  #   %app-name% %procid% %msgid% [e537a266-f8fe-420e-bccf-3acf326cebff@41058] %msg%\n"  
+  #   %app-name% %procid% %msgid% [abcdef12-3456-7890-abcd-ef0123456789@41058] %msg%\n"  
   #                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|^^^^^
   #                                \---------->   key   <-------------/|\id/
   #
