@@ -2,7 +2,7 @@
 
 SETLOCAL
 
-if NOT DEFINED JAVA_HOME goto err
+if not defined JAVA_HOME goto missing_java_home
 
 set SCRIPT_DIR=%~dp0
 for %%I in ("%SCRIPT_DIR%..") do set LS_HOME=%%~dpfI
@@ -46,18 +46,43 @@ REM The path to the heap dump location, note directory must exists and have enou
 REM space for a full heap dump.
 REM JAVA_OPTS=%JAVA_OPTS% -XX:HeapDumpPath=$LS_HOME/logs/heapdump.hprof
 
-SET RUBYLIB=%LS_HOME%\lib
-SET GEM_HOME=%LS_HOME%\vendor\bundle\jruby\1.9\
-SET GEM_PATH=%GEM_HOME%
+set RUBYLIB=%LS_HOME%\lib
+set GEM_HOME=%LS_HOME%\vendor\bundle\jruby\1.9\
+set GEM_PATH=%GEM_HOME%
 
-"%JAVA_HOME%\bin\java" %JAVA_OPTS% %LS_JAVA_OPTS% -jar %LS_HOME%\vendor\jar\jruby-complete-%JRUBY_VERSION%.jar %LS_HOME%\lib\logstash\runner.rb %*
+for %%I in ("%LS_HOME%\vendor\jar\jruby-complete-*.jar") do set JRUBY_JAR_FILE=%%I
+if not defined JRUBY_JAR_FILE goto missing_jruby_jar
+
+set RUBY_CMD="%JAVA_HOME%\bin\java" %JAVA_OPTS% %LS_JAVA_OPTS% -jar "%JRUBY_JAR_FILE%"
+
+if "%*"=="deps" goto install_deps
+goto run_logstash
+
+:install_deps
+if not exist "%LS_HOME%\logstash.gemspec" goto missing_gemspec
+echo Installing gem dependencies. This will probably take a while the first time.
+%RUBY_CMD% "%LS_HOME%\gembag.rb"
 goto finally
 
+:run_logstash
+%RUBY_CMD% "%LS_HOME%\lib\logstash\runner.rb" %*
+goto finally
 
-:err
+:missing_java_home
 echo JAVA_HOME environment variable must be set!
 pause
+goto finally
 
+:missing_jruby_jar
+md "%LS_HOME%\vendor\jar\"
+echo Please download the JRuby Complete .jar from http://jruby.org/download to %LS_HOME%\vendor\jar\ and re-run this command.
+pause
+goto finally
+
+:missing_gemspec
+echo Cannot install dependencies; missing logstash.gemspec. This 'deps' command only works from a logstash git clone.
+pause
+goto finally
 
 :finally
 
