@@ -121,7 +121,7 @@ build/ruby/logstash/runner.class: lib/logstash/runner.rb | build/ruby $(JRUBY)
 .PHONY: copy-ruby-files
 copy-ruby-files: | build/ruby
 	@# Copy lib/ and test/ files to the root
-	$(QUIET)rsync -a --include "*/" --include "*.rb" --exclude "*" ./lib/ ./test/ ./build/ruby
+	$(QUIET)rsync -a --include "*/" --include "*.rb" --include "*.yaml" --exclude "*" ./lib/ ./test/ ./build/ruby
 	$(QUIET)rsync -a ./spec ./build/ruby
 	$(QUIET)rsync -a ./locales ./build/ruby
 	@# Delete any empty directories copied by rsync.
