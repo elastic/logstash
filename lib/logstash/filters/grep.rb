@@ -2,8 +2,13 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
-# Grep filter. Useful for dropping events you don't want to pass, or
-# adding tags or fields to events that match.
+# NOTE: This filter has been deprecated and will be removed from future versions of logstash!
+#
+# For similar supported functionality, you should consider using the [drop](drop) and/or
+# [mutate](mutate) filters, in conjunction with logstash conditionals.
+#
+# This filter operates similar to the Unix `grep` utility. It is useful for
+# dropping events you don't want to pass, or adding tags or fields to events that match.
 #
 # Events not matched are dropped. If 'negate' is set to true (defaults false),
 # then matching events are dropped.
@@ -12,14 +17,14 @@ class LogStash::Filters::Grep < LogStash::Filters::Base
   config_name "grep"
   milestone 3
 
-  # Drop events that don't match
+  # Drop events that don't match.
   #
   # If this is set to false, no events will be dropped at all. Rather, the
   # requested tags and fields will be added to matching events, and
   # non-matching events will be passed through unchanged.
   config :drop, :validate => :boolean, :default => true
 
-  # Negate the match. Similar to 'grep -v'
+  # Negate the match. Similar to 'grep -v'.
   #
   # If this is set to true, then any positive matches will result in the
   # event being cancelled and dropped. Non-matching will be allowed
