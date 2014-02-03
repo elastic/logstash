@@ -66,6 +66,10 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   # NOTE: it is an error to specify both dictionary and dictionary_path
   config :dictionary_path, :validate => :path
 
+  # When using a dictionary file, this setting will indicate how frequently
+  # (in seconds) logstash will check the YAML file for updates.
+  config :refresh_interval, :validate => :number, :default => 300
+  
   # The destination field you wish to populate with the translated code. The default
   # is a field named "translation". Set this to the same value as source if you want
   # to do a substitution, in this case filter will allways succeed. This will clobber
@@ -80,11 +84,11 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   # For example, consider this simple translation.yml, configured to check the `data` field:
   #     foo: bar
   #
-  # If Logstash receives an event with the `data` field set to "foo", and `exact => true`,
+  # If logstash receives an event with the `data` field set to "foo", and `exact => true`,
   # the destination field will be populated with the string "bar".
   
-  # If `exact => false`, and Logstash receives the same event, the destination field
-  # will be also set to "bar". However, if Logstash receives an event with the `data` field
+  # If `exact => false`, and logstash receives the same event, the destination field
+  # will be also set to "bar". However, if logstash receives an event with the `data` field
   # set to "foofing", the destination field will be set to "barfing".
   #
   # Set both `exact => true` AND `regex => `true` if you would like to match using dictionary
@@ -102,20 +106,17 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   #
   #     foo: bar
   #
-  # Then, if Logstash received an event with the field `foo` set to "bar", the destination
-  # field would be set to "bar". However, if Logstash received an event with `foo` set to "nope",
+  # Then, if logstash received an event with the field `foo` set to "bar", the destination
+  # field would be set to "bar". However, if logstash received an event with `foo` set to "nope",
   # then the destination field would still be populated, but with the value of "no match".
   config :fallback, :validate => :string
 
   public
   def register
     if @dictionary_path
-      raise "#{self.class.name}: dictionary file #{@dictionary_path} does not exists" unless File.exists?(@dictionary_path)
-      begin
-        @dictionary.merge!(YAML.load_file(@dictionary_path))
-      rescue Exception => e
-        raise "#{self.class.name}: Bad Syntax in dictionary file #{@dictionary_path}"
-      end
+      @next_refresh = Time.now + @refresh_interval
+      registering = true
+      load_yaml(registering)
     end
     
     @logger.debug? and @logger.debug("#{self.class.name}: Dictionary - ", :dictionary => @dictionary)
@@ -127,9 +128,35 @@ class LogStash::Filters::Translate < LogStash::Filters::Base
   end # def register
 
   public
+  def load_yaml(registering=false)
+    if !File.exists?(@dictionary_path)
+      @logger.warn("dictionary file read failure, continuing with old dictionary", :path => @dictionary_path)
+      return
+    end
+
+    begin
+      @dictionary.merge!(YAML.load_file(@dictionary_path))
+    rescue Exception => e
+      if registering
+        raise "#{self.class.name}: Bad Syntax in dictionary file #{@dictionary_path}"
+      else
+        @logger.warn("#{self.class.name}: Bad Syntax in dictionary file, continuing with old dictionary", :dictionary_path => @dictionary_path)
+      end
+    end
+  end
+
+  public
   def filter(event)
     return unless filter?(event)
 
+    if @dictionary_path
+      if @next_refresh < Time.now
+        load_yaml
+        @next_refresh = Time.now + @refresh_interval
+        @logger.info("refreshing dictionary file")
+      end
+    end
+    
     return unless event.include?(@field) # Skip translation in case event does not have @event field.
     return if event.include?(@destination) and not @override # Skip translation in case @destination field already exists and @override is disabled.
 
