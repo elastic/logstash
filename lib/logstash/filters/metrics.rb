@@ -61,18 +61,19 @@ require "logstash/namespace"
 #     }
 #
 #     filter {
-#       metrics {
-#         type => "generated"
-#         meter => "events"
-#         add_tag => "metric"
+#       if [type] == "generated" {
+#         metrics {
+#           meter => ["events"]
+#           add_field => [ "type", "metric" ]
+#         }
 #       }
 #     }
 #
 #     output {
-#       stdout {
-#         # only emit events with the 'metric' tag
-#         tags => "metric"
-#         message => "rate: %{events.rate_1m}"
+#       if [type] == "metric" {
+#         stdout{
+#           message => "rate: %{events.rate_1m}"
+#         }
 #       }
 #     }
 #
