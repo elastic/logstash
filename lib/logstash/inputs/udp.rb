@@ -4,7 +4,9 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket"
 
-# Read messages as events over the network via udp.
+# Read messages as events over the network via udp. The only required
+# configuration item is `port`, which specifies the udp port logstash 
+# will listen on for event streams.
 #
 class LogStash::Inputs::Udp < LogStash::Inputs::Base
   config_name "udp"
@@ -12,11 +14,11 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
 
   default :codec, "plain"
 
-  # The address to listen on
+  # The address which logstash will listen on.
   config :host, :validate => :string, :default => "0.0.0.0"
 
-  # The port to listen on. Remember that ports less than 1024 (privileged
-  # ports) may require root or elevated privileges to use.
+  # The port which logstash will listen on. Remember that ports less
+  # than 1024 (privileged ports) may require root or elevated privileges to use.
   config :port, :validate => :number, :required => true
 
   # Buffer size
