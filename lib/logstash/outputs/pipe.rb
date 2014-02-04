@@ -36,7 +36,6 @@ class LogStash::Outputs::Pipe < LogStash::Outputs::Base
     return unless output?(event)
 
     command = event.sprintf(@command)
-    pipe = get_pipe(command)
 
     if @message_format
       output = event.sprintf(@message_format) + "\n"
@@ -45,10 +44,12 @@ class LogStash::Outputs::Pipe < LogStash::Outputs::Base
     end
 
     begin
+      pipe = get_pipe(command)
       pipe.puts(output)
     rescue IOError, Errno::EPIPE => e
       @logger.error("Error writing to pipe, closing pipe.", :command => command, :pipe => pipe)
       drop_pipe(command)
+      retry
     end
 
     close_stale_pipes
@@ -111,7 +112,7 @@ class PipeWrapper
     @active = false
   end
 
-  def method_missing?(m, *args)
+  def method_missing(m, *args)
     if @pipe.respond_to? m
       @pipe.send(m, *args)
     else
