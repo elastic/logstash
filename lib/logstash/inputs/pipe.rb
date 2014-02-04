@@ -60,7 +60,7 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
         relaunch = @restart == "always"
       rescue Exception => e
         @logger.error("Exception while running command", :e => e, :backtrace => e.backtrace)
-        should_restart = @restart == "error"
+        relaunch = @restart == "error"
       end
     end while relaunch && sleep(10) > 0
   end # def run
