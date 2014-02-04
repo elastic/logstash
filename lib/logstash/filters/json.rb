@@ -74,11 +74,13 @@ class LogStash::Filters::Json < LogStash::Filters::Base
       # later.
       dest.merge!(JSON.parse(source))
 
-      if event["@timestamp"].is_a?(String) && @target.nil?
+      # If no target, we target the root of the event object. This can allow
+      # you to overwrite @timestamp. If so, let's parse it as a timestamp!
+      if @target && event["@timestamp"].is_a?(String)
         # This is a hack to help folks who are mucking with @timestamp during
         # their json filter. You aren't supposed to do anything with
         # "@timestamp" outside of the date filter, but nobody listens... ;)
-        event["@timestamp"] = Time.parse(event["@timestamp"]).gmtime
+        event["@timestamp"] = Time.parse(event["@timestamp"]).utc
       end
 
       filter_matched(event)
