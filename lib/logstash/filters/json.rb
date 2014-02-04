@@ -54,11 +54,17 @@ class LogStash::Filters::Json < LogStash::Filters::Base
 
     return unless event.include?(@source)
 
+    source = event[@source]
     if @target.nil?
       # Default is to write to the root of the event.
       dest = event.to_hash
     else
-      dest = event[@target] ||= {}
+      if @target == @source
+        # Overwrite source
+        dest = event[@target] = {}
+      else
+        dest = event[@target] ||= {}
+      end
     end
 
     begin
@@ -66,12 +72,12 @@ class LogStash::Filters::Json < LogStash::Filters::Base
       # like your text is '[ 1,2,3 ]' JSON.parse gives you an array (correctly)
       # which won't merge into a hash. If someone needs this, we can fix it
       # later.
-      dest.merge!(JSON.parse(event[@source]))
+      dest.merge!(JSON.parse(source))
 
-      # This is a hack to help folks who are mucking with @timestamp during
-      # their json filter. You aren't supposed to do anything with "@timestamp"
-      # outside of the date filter, but nobody listens... ;)
-      if event["@timestamp"].is_a?(String)
+      if event["@timestamp"].is_a?(String) && @target.nil?
+        # This is a hack to help folks who are mucking with @timestamp during
+        # their json filter. You aren't supposed to do anything with
+        # "@timestamp" outside of the date filter, but nobody listens... ;)
         event["@timestamp"] = Time.parse(event["@timestamp"]).gmtime
       end
 
