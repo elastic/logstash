@@ -20,7 +20,7 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
 
   # When mode is `server`, the port to listen on.
   # When mode is `client`, the port to connect to.
-  config :port, :validate => :number, :required => true
+  config :port, :validate => :number, :default => 4560
 
   # Read timeout in seconds. If a particular tcp connection is
   # idle for more than this timeout period, we will assume
