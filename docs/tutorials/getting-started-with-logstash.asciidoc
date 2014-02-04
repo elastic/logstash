@@ -28,11 +28,11 @@ Once you have verified the existence of Java on your system, we can move on!
 .Logstash in two commands
 First, we're going to download the pre-built logstash binary and run it with a very simple configuration.
 ----
-curl -O https://download.elasticsearch.org/logstash/logstash/logstash-1.3.2-flatjar.jar
+curl -O https://download.elasticsearch.org/logstash/logstash/logstash-1.3.3-flatjar.jar
 ----
-Now you should have the file named 'logstash-1.3.2-flatjar.jar' on your local filesystem. Let's run it:
+Now you should have the file named 'logstash-1.3.3-flatjar.jar' on your local filesystem. Let's run it:
 ----
-java -jar logstash-1.3.2-flatjar.jar agent -e 'input { stdin { } } output { stdout {} }'
+java -jar logstash-1.3.3-flatjar.jar agent -e 'input { stdin { } } output { stdout {} }'
 ----
 
 Now type something into your command prompt, and you will see it output by logstash: 
@@ -45,7 +45,7 @@ OK, that's interesting... We ran logstash with an input called "stdin", and an o
 
 Let's try a slightly fancier example. First, you should exit logstash by issuing a 'CTRL-C' command in the shell in which it is running. Now run logstash again with the following command:
 ----
-java -jar logstash-1.3.2-flatjar.jar agent -e 'input { stdin { } } output { stdout { codec => rubydebug } }'
+java -jar logstash-1.3.3-flatjar.jar agent -e 'input { stdin { } } output { stdout { codec => rubydebug } }'
 ----
 
 And then try another test input, typing the text "goodnight moon":
@@ -64,9 +64,9 @@ So, by re-configuring the "stdout" output (adding a "codec"), we can change the 
 .Storing logs with Elasticsearch 
 Now, you're probably saying, "that's all fine and dandy, but typing all my logs into logstash isn't really an option, and merely seeing them spit to STDOUT isn't very useful." Good point. First, let's set up Elasticsearch to store the messages we send into logstash. If you don't have Elasticearch already installed, you can http://www.elasticsearch.org/download/[download the RPM or DEB package], or install manually by downloading the current release tarball, by issuing the following four commands:
 ----
-curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.7.tar.gz
-tar zxvf elasticsearch-0.90.7.tar.gz
-cd elasticsearch-0.90.7/
+curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.10.tar.gz
+tar zxvf elasticsearch-0.90.10.tar.gz
+cd elasticsearch-0.90.10/
 ./bin/elasticsearch
 ----
 
@@ -74,7 +74,7 @@ More detailed information on installing and configuring Elasticsearch can be fou
 
 Now that we have Elasticsearch running on port 9200 (we do, right?), logstash can be simply configured to use Elasticsearch as its backend. The defaults for both logstash and Elasticsearch are fairly sane and well thought out, so we can omit the optional configurations within the elasticsearch output:
 ----
-java -jar logstash-1.3.2-flatjar.jar agent -e 'input { stdin { } } output { elasticsearch { } }'
+java -jar logstash-1.3.3-flatjar.jar agent -e 'input { stdin { } } output { elasticsearch { host => localhost } }'
 ----
 
 Type something, and logstash will process it as before (this time you won't see any output, since we don't have the stdout output configured)
@@ -117,17 +117,17 @@ Another very useful tool for querying your logstash data (and Elasticsearch in g
 ----
 bin/plugin -install mobz/elasticsearch-head
 ----
-Now you can browse to localhost:9200/_plugin/head[localhost:9200/_plugin/head] to browse your Elasticsearch data, settings and mappings!
+Now you can browse to http://localhost:9200/_plugin/head[http://localhost:9200/_plugin/head] to browse your Elasticsearch data, settings and mappings!
 
 .Multiple Outputs
 As a quick exercise in configuring multiple Logstash outputs, let's invoke logstash again, using both the 'stdout' as well as the 'elasticsearch' output:
 ----
-java -jar logstash-1.3.2-flatjar.jar agent -e 'input { stdin { } } output { elasticsearch { } stdout { } }'
+java -jar logstash-1.3.3-flatjar.jar agent -e 'input { stdin { } } output { elasticsearch { host => localhost } stdout { } }'
 ----
 Typing a phrase will now echo back to your terminal, as well as save in Elasticsearch! (Feel free to verify this using curl or elasticsearch-head).
 
 .Default - Daily Indices
-You might notice that logstash was smart enough to create a new index in Elasticsearch... The default index name is in the form of 'logstash-YYYY.MM.DD', which essentially creates one index per day. At midnight (GMT?), logstash will automagically rotate the index to a fresh new one, with the new current day's timestamp. This allows you to keep windows of data, based on how far retroactively you'd like to query your log data. Of course, you can always archive (or re-index) your data to an alternate location, where you are able to query further into the past. If you'd like to simply delete old indices after a certain time period, you can use the https://github.com/logstash/expire-logs[Logstash expire-logs tool].
+You might notice that logstash was smart enough to create a new index in Elasticsearch... The default index name is in the form of 'logstash-YYYY.MM.DD', which essentially creates one index per day. At midnight (GMT?), logstash will automagically rotate the index to a fresh new one, with the new current day's timestamp. This allows you to keep windows of data, based on how far retroactively you'd like to query your log data. Of course, you can always archive (or re-index) your data to an alternate location, where you are able to query further into the past. If you'd like to simply delete old indices after a certain time period, you can use the https://github.com/elasticsearch/curator[Elasticsearch Curator tool].
 
 == Moving On
 Now you're ready for more advanced configurations. At this point, it makes sense for a quick discussion of some of the core features of logstash, and how they interact with the logstash engine.
@@ -179,7 +179,7 @@ http://foo.com[logstash-simple.conf]
 ----
 input { stdin { } }
 output {
-  elasticsearch { }
+  elasticsearch { host => localhost }
   stdout { codec => rubydebug }
 }
 ----
@@ -187,7 +187,7 @@ output {
 Then, run this command:
 
 ----
-java -jar logstash-1.3.2-flatjar.jar agent -f logstash-simple.conf
+java -jar logstash-1.3.3-flatjar.jar agent -f logstash-simple.conf
 ----
 
 Et voilà! Logstash will read in the configuration file you just created and run as in the example we saw earlier. Note that we used the '-f' to read in the file, rather than the '-e' to read the configuration from the command line. This is a very simple case, of course, so let's move on to some more complex examples.
@@ -209,14 +209,14 @@ filter {
 }
 
 output {
-  elasticsearch { }
+  elasticsearch { host => localhost }
   stdout { codec => rubydebug }
 }
 ----
 Run the logstash jar file with this configuration:
 
 ----
-java -jar logstash-1.3.2-flatjar.jar agent -f logstash-filter.conf
+java -jar logstash-1.3.3-flatjar.jar agent -f logstash-filter.conf
 ----
 
 Now paste this line into the terminal (so it will be processed by the stdin input):
@@ -256,26 +256,31 @@ http://foo.com[logstash-apache.conf]
 ----
 input {
   file {
-    path => "/Applications/XAMPP/logs/access_log"
+    path => "/Users/kurt/Documents/es/logstash/tut/new_access_log"
+    start_position => beginning
   }
 }
 
 filter {
   if [path] =~ "access" {
-    type => "apache_access"
+    mutate { replace => { "type" => "apache_access" } }
     grok {
       match => { "message" => "%{COMBINEDAPACHELOG}" }
     }
-    date {
-      match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
-    }
   }
+  date {
+    match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
+  }  
 }
 
 output {
-  elasticsearch { }
+  elasticsearch {
+    host => localhost
+    cluster => kurt
+  }
   stdout { codec => rubydebug }
 }
+
 ----
 Then, create the file you configured above (in this example, "/Applications/XAMPP/logs/access_log") with the following log lines as contents (or use some from your own webserver):
 
@@ -287,7 +292,7 @@ Then, create the file you configured above (in this example, "/Applications/XAMP
 
 Now run it with the -f flag as in the last example:
 ----
-java -jar logstash-1.3.2-flatjar.jar agent -f logstash-apache.conf
+java -jar logstash-1.3.3-flatjar.jar agent -f logstash-apache.conf
 ----
 You should be able to see your apache log data in Elasticsearch now! You'll notice that logstash opened the file you configured, and read through it, processing any events it encountered. Any additional lines logged to this file will also be captured, processed by logstash as events and stored in Elasticsearch. As an added bonus, they will be stashed with the field "type" set to "apache_access" (this is done by the type => "apache_access" line in the input configuration).
 
@@ -332,7 +337,7 @@ filter {
 }
 
 output {
-  elasticsearch { }
+  elasticsearch { host => localhost }
   stdout { codec => rubydebug }
 }
 ----
@@ -373,13 +378,13 @@ filter {
 }
 
 output {
+  elasticsearch { host => localhost }
   stdout { codec => rubydebug }
-  elasticsearch { }
 }
 ----
 Run it as normal:
 ----
-java -jar logstash-1.3.2-flatjar.jar agent -f logstash-syslog.conf
+java -jar logstash-1.3.3-flatjar.jar agent -f logstash-syslog.conf
 ----
 Normally, a client machine would connect to the logstash instance on port 5000 and send its message. In this simplified case, we're simply going to telnet to logstash and enter a log line (similar to how we entered log lines into STDIN earlier). First, open another shell window to interact with the logstash syslog input and type the following command:
 
