@@ -61,7 +61,6 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
     loop do
       payload, client = @udp.recvfrom(@buffer_size)
       @codec.decode(payload) do |event|
-        eventify(event)
         decorate(event)
         event["host"] ||= client[3]
         output_queue << event

@@ -132,7 +132,6 @@ EOF
   def queue_event(msg, output_queue)
     begin
       @codec.decode(msg) do |event|
-        eventify(event)
         decorate(event)
         output_queue << event
       end

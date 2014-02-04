@@ -143,7 +143,6 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
         end
 
         @codec.decode(msg) do |event|
-          eventify(event)
           event["host"] ||= host
           decorate(event)
           output_queue << event

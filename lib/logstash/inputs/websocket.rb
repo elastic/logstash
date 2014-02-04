@@ -35,7 +35,6 @@ class LogStash::Inputs::Websocket < LogStash::Inputs::Base
       websocket = agent.websocket!(@url)
       websocket.each do |payload|
         @codec.decode(payload) do |event|
-          eventify(event)
           decorate(event)
           output_queue << event
         end

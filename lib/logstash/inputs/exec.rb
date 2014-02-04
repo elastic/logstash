@@ -42,7 +42,6 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
       out = IO.popen(@command)
       # out.read will block until the process finishes.
       @codec.decode(out.read) do |event|
-        eventify(event)
         decorate(event)
         event["host"] = hostname
         event["command"] = @command

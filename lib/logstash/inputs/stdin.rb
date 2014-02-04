@@ -25,7 +25,6 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
         # IO.select call in JRuby. Bummer :(
         data = $stdin.sysread(16384)
         @codec.decode(data) do |event|
-          eventify(event)
           decorate(event)
           event["host"] = @host
           queue << event

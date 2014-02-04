@@ -63,7 +63,6 @@ class LogStash::Inputs::Stomp < LogStash::Inputs::Base
   def subscription_handler
     @client.subscribe(@destination) do |msg|
       @codec.decode(msg.body) do |event|
-        eventify(event)
         decorate(event)
         @output_queue << event
       end

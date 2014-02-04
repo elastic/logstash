@@ -106,7 +106,6 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
 
         # Hack to make codecs work
         @codec.decode(event.to_json) do |event|
-          eventify(event)
           decorate(event)
           output_queue << event
         end

@@ -54,7 +54,6 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
         @muc.join(room)
         @muc.on_message do |time,from,body|
           @codec.decode(body) do |event|
-            eventify(event)
             decorate(event)
             event["room"] = room
             event["from"] = from
@@ -68,7 +67,6 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
       # accept normal msgs (skip presence updates, etc)
       if msg.body != nil
         @codec.decode(msg.body) do |event|
-          eventify(event)
           decorate(event)
           # Maybe "from" should just be a hash: 
           # { "node" => ..., "domain" => ..., "resource" => ... }
