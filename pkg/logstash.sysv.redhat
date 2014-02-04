@@ -48,6 +48,8 @@ CONF_DIR=/etc/logstash/conf.d
 
 # logstash log file
 LOG_FILE=$LOG_DIR/$NAME.log
+OUT_FILE=$LOG_DIR/$NAME.out
+ERR_FILE=$LOG_DIR/$NAME.err
 
 # Open File limit
 OPEN_FILES=2048
@@ -108,7 +110,7 @@ do_start()
   ulimit -n $OPEN_FILES
 
   cd $LS_HOME
-  $JAVA $ARGS > /dev/null 1>&1 &
+  $JAVA $ARGS > $OUT_FILE 2> $ERR_FILE &
 
   RETVAL=$?
   local PID=$!
