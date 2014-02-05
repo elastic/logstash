@@ -90,7 +90,7 @@ fi
 case "$1" in
    start)
       if ! is_true "$START" ; then
-         echo "logstash not configured to start, please edit /etc/default/logstash to enable"
+         echo "logstash not configured to start, please edit $DEFAULT to enable"
          exit 0
       fi
 
