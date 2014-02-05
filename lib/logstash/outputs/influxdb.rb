@@ -32,7 +32,7 @@ class LogStash::Outputs::InfluxDB < LogStash::Outputs::Base
   config :user, :validate => :string, :default => nil, :required => true
 
   # The password for the user who access to the named database
-  config :password, :validate => :string, :default => nil, :required => true
+  config :password, :validate => :password, :default => nil, :required => true
 
   # Series name - supports sprintf formatting
   config :series, :validate => :string, :default => "logstash"
@@ -92,7 +92,7 @@ class LogStash::Outputs::InfluxDB < LogStash::Outputs::Base
     @agent = FTW::Agent.new
     @queue = []
 
-    @query_params = "u=#{@user}&p=#{@password}&time_precision=#{@time_precision}"
+    @query_params = "u=#{@user}&p=#{@password.value}&time_precision=#{@time_precision}"
     @base_url = "http://#{@host}:#{@port}/db/#{@db}/series"
     @url = "#{@base_url}?#{@query_params}"
     
