@@ -13,6 +13,9 @@ class LogStash::Inputs::Websocket < LogStash::Inputs::Base
   # The url to connect to or serve from
   config :url, :validate => :string, :default => "0.0.0.0"
 
+  # Additional headers
+  config :headers, :validate => :hash, :default => {}
+
   # Operate as a client or a server.
   #
   # Client mode causes this plugin to connect as a websocket client
@@ -32,7 +35,7 @@ class LogStash::Inputs::Websocket < LogStash::Inputs::Base
     # TODO(sissel): Implement server mode.
     agent = FTW::Agent.new
     begin
-      websocket = agent.websocket!(@url)
+      websocket = agent.websocket!(@url, { :headers => @headers })
       websocket.each do |payload|
         @codec.decode(payload) do |event|
           decorate(event)
