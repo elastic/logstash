@@ -167,6 +167,7 @@ class LogStash::Filters::Advisor < LogStash::Filters::Base
           @carray = Array.new
           @sarray = Array.new
 
+          event.set_refilter(@refilter)
           # push the event
           return [event]
          end

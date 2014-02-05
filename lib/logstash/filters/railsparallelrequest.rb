@@ -1,4 +1,5 @@
 # encoding: utf-8
+#
 # parallel request filter
 #
 # This filter will separate out the parallel requests into separate events.
@@ -43,6 +44,7 @@ class LogStash::Filters::Railsparallelrequest < LogStash::Filters::Base
           return
         else
           @recently_error.uncancel
+          @recently_error.set_refilter(@refilter)
           yield @recently_error
           @recently_error = nil
         end

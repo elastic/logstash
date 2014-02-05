@@ -121,7 +121,13 @@ class LogStash::Filters::Base < LogStash::Plugin
   # example would remove an additional, non-dynamic field.
   config :remove_field, :validate => :array, :default => []
 
-  RESERVED = ["type", "tags", "exclude_tags", "include_fields", "exclude_fields", "add_tag", "remove_tag", "add_field", "remove_field", "include_any", "exclude_any"]
+  # If true, the results of the split are placed back into the filter stack, instead of the pipeline to output.
+  # This only applies to filters that create new events (e.g. split).
+  # It may be possible for this to cause an infinite filter loop. To prevent it, organize your filters with tags and conditionals.
+  # TODO(20goto10): throw a warning when refilter is used for a filter that does not create events.
+  config :refilter, :validate => :boolean, :default => false
+
+  RESERVED = ["type", "tags", "exclude_tags", "include_fields", "exclude_fields", "add_tag", "remove_tag", "add_field", "remove_field", "include_any", "exclude_any", "refilter"]
 
   public
   def initialize(params)

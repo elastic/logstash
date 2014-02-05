@@ -28,6 +28,7 @@ class LogStash::Filters::Clone < LogStash::Filters::Base
       @logger.debug("Cloned event", :clone => clone, :event => event)
 
       # Push this new event onto the stack at the LogStash::FilterWorker
+      clone.set_refilter(@refilter)
       yield clone
     end
   end

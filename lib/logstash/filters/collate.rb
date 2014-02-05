@@ -77,6 +77,7 @@ class LogStash::Filters::Collate < LogStash::Filters::Base
           collatedEvent["tags"] = Array.new if collatedEvent["tags"].nil?
           collatedEvent["tags"] << "collated"
           filter_matched(collatedEvent)
+          collatedEvent.set_refilter(@refilter)
           yield collatedEvent
         end # while @collatingArray.pop
         # reset collatingDone flag
