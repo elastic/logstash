@@ -182,7 +182,7 @@ class LogStash::Event
     return !self[key].nil?
   end # def include?
 
-  # Append an event to this one.
+  # Append an event to this one - dropped when duplicate.
   public
   def append(event)
     # non-destructively merge that event with ourselves.
