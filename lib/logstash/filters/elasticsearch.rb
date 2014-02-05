@@ -46,7 +46,7 @@ class LogStash::Filters::Elasticsearch < LogStash::Filters::Base
   # field to save the old document ID (found via elasticsearch)
   config :document_id, :validate => :string
 
-  # Index of for elasticsearch
+  # Index to use for elasticsearch
   config :index, :validate => :string, :default => 'logstash-*'
 
   public
@@ -72,7 +72,7 @@ class LogStash::Filters::Elasticsearch < LogStash::Filters::Base
         event[new] = results['hits']['hits'][0]['_source'][old]
       end
 
-      unless @document_id.nil?
+      if @document_id
         event[@document_id] = results['hits']['hits'][0]['_id']
       end
 
