@@ -21,8 +21,6 @@ class LogStash::Codecs::CompressSpooler < LogStash::Codecs::Base
     z.finish
     z.close
     data.each do |event|
-      event = LogStash::Event.new(event)
-      event["@timestamp"] = Time.at(event["@timestamp"]).utc if event["@timestamp"].is_a? Float
       yield event
     end
   end # def decode

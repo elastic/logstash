@@ -37,10 +37,10 @@ class LogStash::Codecs::Fluent < LogStash::Codecs::Base
   def decode(data)
     @decoder.feed(data)
     @decoder.each do |tag, epochtime, map|
-      event = LogStash::Event.new(map.merge(
+      event = map.merge(
         "@timestamp" => Time.at(epochtime),
         "tags" => tag
-      ))
+      )
       yield event
     end
   end # def decode

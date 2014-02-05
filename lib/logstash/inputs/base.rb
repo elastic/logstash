@@ -106,6 +106,16 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   protected
   def decorate(event)
+    # Create the event hash from the input
+    if event.instance_of? LogStash::Event
+        next
+    elsif event.is_a? Hash
+        event = LogStash::Event.new(event)
+    else
+        event = LogStash::Event.new("message" => event)
+    end
+    event["@timestamp"] = Time.at(event["@timestamp"]).utc if event["@timestamp"].is_a? Float
+
     # Only set 'type' if not already set. This is backwards-compatible behavior
     event["type"] = @type if @type && !event.include?("type")
 
