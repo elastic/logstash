@@ -86,7 +86,6 @@ class LogStash::Outputs::InfluxDB < LogStash::Outputs::Base
 
   public
   def register
-    require "ap"
     require "ftw" # gem ftw
     require 'cgi'
     @agent = FTW::Agent.new
