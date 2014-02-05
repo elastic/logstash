@@ -15,32 +15,32 @@ require "socket"
 #
 # Of course, 'syslog' is a very muddy term. This input only supports RFC3164
 # syslog with some small modifications. The date format is allowed to be
-# RFC3164 style or ISO8601. Otherwise the rest of the RFC3164 must be obeyed.
+# RFC3164 style or ISO8601. Otherwise the rest of RFC3164 must be obeyed.
 # If you do not use RFC3164, do not use this input.
 #
-# Note: this input will start listeners on both TCP and UDP
+# For more information see (the RFC3164 page)[http://www.ietf.org/rfc/rfc3164.txt].
+#
+# Note: this input will start listeners on both TCP and UDP.
 class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   config_name "syslog"
   milestone 1
 
   default :codec, "plain"
 
-  # The address to listen on
+  # The address to listen on.
   config :host, :validate => :string, :default => "0.0.0.0"
 
   # The port to listen on. Remember that ports less than 1024 (privileged
   # ports) may require root to use.
   config :port, :validate => :number, :default => 514
 
-  # Use label parsing for severity and facility levels
+  # Use label parsing for severity and facility levels.
   config :use_labels, :validate => :boolean, :default => true
 
-  # Labels for facility levels
-  # This comes from RFC3164.
+  # Labels for facility levels. These are defined in RFC3164.
   config :facility_labels, :validate => :array, :default => [ "kernel", "user-level", "mail", "system", "security/authorization", "syslogd", "line printer", "network news", "UUCP", "clock", "security/authorization", "FTP", "NTP", "log audit", "log alert", "clock", "local0", "local1", "local2", "local3", "local4", "local5", "local6", "local7" ]
 
-  # Labels for severity levels
-  # This comes from RFC3164.
+  # Labels for severity levels. These are defined in RFC3164.
   config :severity_labels, :validate => :array, :default => [ "Emergency" , "Alert", "Critical", "Error", "Warning", "Notice", "Informational", "Debug" ]
 
   public
