@@ -222,6 +222,17 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   def initialize_metrics
     @metric_meters = Hash.new { |h,k| h[k] = Metriks.meter metric_key(k) }
     @metric_timers = Hash.new { |h,k| h[k] = Metriks.timer metric_key(k) }
+    #init metrics with constant name to have sero values till the first event
+    @meter.each do |meter_name|
+      if !meter_name.include? "%{"
+        @metric_meters[meter_name]
+      end
+    end
+    @timer.each do |timer_name, value|
+      if !timer_name.include? "%{"
+        @metric_timers[timer_name]
+      end
+    end
   end
 
   def metric_key(key)
