@@ -305,10 +305,15 @@ update-flatjar: copy-ruby-files compile build/ruby/logstash/runner.class
 	$(QUIET)jar uf build/logstash-$(VERSION)-flatjar.jar -C build/ruby .
 
 .PHONY: test
-test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd
+test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd compile-grammar
+ifndef SKIP_DEPS
 	GEM_HOME= GEM_PATH= bin/logstash deps
+endif
 	GEM_HOME= GEM_PATH= bin/logstash rspec --order rand --fail-fast $(TESTS)
 
+.PHONY: pry
+pry: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd compile-grammar
+	GEM_HOME= GEM_PATH= bin/logstash pry
 
 .PHONY: docs
 docs: docgen doccopy docindex

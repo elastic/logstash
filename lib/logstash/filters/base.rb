@@ -150,6 +150,25 @@ class LogStash::Filters::Base < LogStash::Plugin
     @threadsafe
   end
 
+  public
+  def handle(event, extra_events=[])
+    new_events = []
+
+    extra_events.each do |extra_event|
+      filter(extra_event) do |new_event|
+        new_events << new_event
+      end
+    end
+
+    filter(event) do |new_event|
+      new_events << new_event
+    end
+
+    new_events.each do |new_event|
+      extra_events << new_event
+    end
+  end
+
   # a filter instance should call filter_matched from filter if the event
   # matches the filter's conditions (right type, etc)
   protected

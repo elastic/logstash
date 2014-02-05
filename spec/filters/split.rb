@@ -23,7 +23,7 @@ describe LogStash::Filters::Split do
     config <<-CONFIG
       filter {
         split { 
-          terminator => "\t"
+          terminator => "\\t"
         }
       }
     CONFIG

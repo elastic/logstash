@@ -319,7 +319,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
         grok, match = grok.match(input)
         if match
           match.each_capture do |capture, value|
-            handle(capture, value, event)
+            handle_capture(capture, value, event)
           end
         else
           success = false
@@ -333,7 +333,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       return false if !match
 
       match.each_capture do |capture, value|
-        handle(capture, value, event)
+        handle_capture(capture, value, event)
       end
       return true
     end
@@ -342,7 +342,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   end
 
   private
-  def handle(capture, value, event)
+  def handle_capture(capture, value, event)
     handler = @handlers[capture] ||= compile_capture_handler(capture)
     return handler.call(value, event)
   end

@@ -8,7 +8,7 @@ describe "fail2ban logs", :if => RUBY_ENGINE == "jruby"  do
   config <<-CONFIG
     filter {
       grok {
-        pattern => "^%{TIMESTAMP_ISO8601:timestamp} fail2ban\.actions: %{WORD:level} \\[%{WORD:program}\\] %{WORD:action} %{IP:ip}"
+        pattern => "^%{TIMESTAMP_ISO8601:timestamp} fail2ban\\.actions: %{WORD:level} \\\\[%{WORD:program}\\\\] %{WORD:action} %{IP:ip}"
         singles => true
       }
       date {
