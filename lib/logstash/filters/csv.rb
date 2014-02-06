@@ -18,9 +18,9 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
   # Define a list of column names (in the order they appear in the CSV,
   # as if it were a header line). If `columns` is not configured, or there
   # are not enough columns specified, the default column names are
-  # "column1", "column2", "column3", etc. In the case that there are more columns
-  # in the data than specified in this column list, extra columns will be numbered
-  # as above ("column3", "column4", etc.)
+  # "column1", "column2", etc. In the case that there are more columns
+  # in the data than specified in this column list, extra columns will be auto-numbered:
+  # (e.g. "user_defined_1", "user_defined_2", "column3", "column4", etc.)
   config :columns, :validate => :array, :default => []
 
   # Define the column separator value. If this is not specified, the default
