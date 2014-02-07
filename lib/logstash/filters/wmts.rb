@@ -34,10 +34,10 @@ require "geoscript"
 # Date: 2014-01
 #
 # Summary: 
-#  * Integrating the geoscript gem to manage reprojections 
+#  * Integrating geoscript ruby gem to manage reprojections 
 #  * Adding some unit tests
 #  * Adding some extra options to the plugin
-
+#
 class LogStash::Filters::Wmts < LogStash::Filters::Base
 
   config_name "wmts"
@@ -59,6 +59,18 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
   # configures the output projection
   config :output_epsg, :validate => :string, :default => "epsg:4326"
 
+  # configures the name of the field for the WMTS zoomlevel
+  config :zoomlevel_field, :validate => :string, :default => "wmts.zoomlevel"
+
+  # configures the name of the field for the column
+  config :column_field, :validate => :string, :default => "wmts.col"
+
+  # configures the name of the field for the row
+  config :row_field, :validate => :string, :default => "wmts.row"
+
+  # configures the name of the field for the reference system
+  config :refsys_field, :validate => :string, :default => "wmts.reference-system"
+  
   public
   def register
     # basic WMTS grid parameter checking
@@ -75,13 +87,13 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
   def filter(event)
     
 
-    # cast values from grok into integers
     begin
-      zoomlevel = Integer(event["#{@prefix}zoomlevel"])
-      col = Integer(event["#{@prefix}col"])
-      row = Integer(event["#{@prefix}row"])
+      # cast values from grok into integers
+      zoomlevel = Integer(event[@zoomlevel_field])
+      col = Integer(event[@column_field])
+      row = Integer(event[@row_field])
 
-      input_epsg = "epsg:#{event["#{@prefix}reference-system"]}"
+      input_epsg = "epsg:#{event[@refsys_field]}"
 
       zlmapping = @wmts_grid[:zoomlevel_mapping][zoomlevel]
       raise ArgumentError if zlmapping.nil?
