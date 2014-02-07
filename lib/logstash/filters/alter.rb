@@ -13,14 +13,14 @@ class LogStash::Filters::Alter < LogStash::Filters::Base
   milestone 1
   
   # Change the content of the field to the specified value
-  # if the actual content is equal to the expected one.
+  # if the actual content is equal to the expected one. 
   #
   # Example:
   #
   #     filter {
   #       alter {
   #         condrewrite => [ 
-  #              "field_name", "expected_value", "new_value" 
+  #              "field_name", "expected_value", "new_value"
   #              "field_name2", "expected_value2, "new_value2"
   #              ....
   #            ]
@@ -30,21 +30,22 @@ class LogStash::Filters::Alter < LogStash::Filters::Base
   
   # Change the content of the field to the specified value
   # if the content of another field is equal to the expected one.
+  # This will create a new field if it does not already exist.
   #
   # Example:
   #
   #     filter {
   #       alter {
   #         condrewriteother => [ 
-  #              "field_name", "expected_value", "field_name_to_change", "value",
-  #              "field_name2", "expected_value2, "field_name_to_change2", "value2",
+  #              "field_name_to_check", "expected_value", "field_name_to_change", "value",
+  #              "field_name_to_check2", "expected_value2, "field_name_to_change2", "value2",
   #              ....
   #         ]
   #       }
   #     }
   config :condrewriteother, :validate => :array
   
-  # Sets the value of field_name to the first nonnull expression among its arguments.
+  # Sets the value of field_name to the first non-null expression among its arguments.
   #
   # Example:
   #
