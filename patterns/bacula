@@ -1,5 +1,3 @@
-UNIXPATH (?>/(?>[\w_%!$@.,~-]+|\\.)*)+
-
 BACULA_TIMESTAMP %{MONTHDAY}-%{MONTH} %{HOUR}:%{MINUTE}
 BACULA_HOST [a-zA-Z0-9-]+
 BACULA_VOLUME %{USER}
