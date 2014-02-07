@@ -17,7 +17,7 @@ PIDFILE=/var/run/logstash-web.pid
 # user id to be invoked as
 LS_USER=logstash
 
-# location of the logstas jar file
+# location of the logstash jar file
 LS_JAR=/opt/logstash/logstash.jar
 
 # logstash home location
