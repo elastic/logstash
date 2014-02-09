@@ -65,14 +65,15 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
   def run(queue)
     # Read or skip data in existing files
     @readers.each do |file, rdr|
+      absolutepath = @javapath.resolve(file).toAbsolutePath
       if (@start_position == "end")
-        rdr.skip(java.nio.file.Files.size(@javapath.resolve(file)))
+        rdr.skip(java.nio.file.Files.size(absolutepath))
       else
         while (rdr.ready)
           @codec.decode(rdr.readLine) do |event|
             decorate(event)
             event["host"] = @host
-            event["path"] = @javapath.resolve(file).toAbsolutePath.toString
+            event["path"] = absolutepath.toString
             queue << event
           end
         end
@@ -86,40 +87,37 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
         while (watchkey = @watchservice.poll(@timeout, java.util.concurrent.TimeUnit::MILLISECONDS))
           begin
             watchkey.pollEvents.each do |watchevent|
-              if (watchevent)
-
-                p = watchevent.context
-                if (p.getFileName.toString.start_with?(@prefix) && p.getFileName.toString.end_with?(@suffix))
-                  file = @javapath.resolve(p)
+              p = watchevent.context
+              if (p.getFileName.toString.start_with?(@prefix) && p.getFileName.toString.end_with?(@suffix))
+                file = @javapath.resolve(p).toAbsolutePath
+                
+                # If file has been deleted, clear out its reader
+                if (!java.nio.file.Files.exists(file))
+                  reader = @readers[p.getFileName.toString]
+                  if (reader)
+                    reader.close
+                  end
+                  @readers[p.getFileName.toString] = nil
                   
-                  # If file has been deleted, clear out its reader
-                  if (!java.nio.file.Files.exists(file))
-                    reader = @readers[p.getFileName.toString]
-                    if (reader)
-                      reader.close
-                    end
-                    @readers[p.getFileName.toString] = nil
-                    
-                  # Otherwise, file has been created or modified
-                  elsif (!java.nio.file.Files.isDirectory(file))
-                    
-                    # Look for an existing reader for the new or modified file
-                    reader = @readers[p.getFileName.toString]
-                    
-                    # If this file was just created, set up a reader for it
-                    if (reader.nil?)
-                        reader = java.nio.file.Files.newBufferedReader(file, @charset)
-                        @readers[p.getFileName.toString] = reader
-                    end
-                    
-                    # Read new lines from file
-                    while (reader.ready)
-                      @codec.decode(reader.readLine) do |event|
-                        decorate(event)
-                        event["host"] = @host
-                        event["path"] = file.toAbsolutePath.toString
-                        queue << event
-                      end
+                # Otherwise, file has been created or modified
+                elsif (!java.nio.file.Files.isDirectory(file))
+                  
+                  # Look for an existing reader for the new or modified file
+                  reader = @readers[p.getFileName.toString]
+                  
+                  # If this file was just created, set up a reader for it
+                  if (reader.nil?)
+                      reader = java.nio.file.Files.newBufferedReader(file, @charset)
+                      @readers[p.getFileName.toString] = reader
+                  end
+                  
+                  # Read new lines from file
+                  while (reader.ready)
+                    @codec.decode(reader.readLine) do |event|
+                      decorate(event)
+                      event["host"] = @host
+                      event["path"] = file.toString
+                      queue << event
                     end
                   end
                 end
