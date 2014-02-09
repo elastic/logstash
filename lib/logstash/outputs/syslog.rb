@@ -124,7 +124,8 @@ class LogStash::Outputs::Syslog < LogStash::Outputs::Base
 
     if rfc3164?
       timestamp = event.sprintf("%{+MMM dd HH:mm:ss}")
-      syslog_msg = "<"+priority.to_s()+">"+timestamp+" "+sourcehost+" "+appname+"["+procid+"]: "+event["message"]
+      tag = appname+"["+Integer(procid).to_s+"]:" rescue appname+":"
+      syslog_msg = "<"+priority.to_s()+">"+timestamp+" "+sourcehost+" "+tag+" "+event["message"]
     else
       msgid = event.sprintf(@msgid)
       timestamp = event.sprintf("%{+YYYY-MM-dd'T'HH:mm:ss.SSSZ}")
