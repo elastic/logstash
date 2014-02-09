@@ -15,7 +15,7 @@ class LogStash::Outputs::PagerDuty < LogStash::Outputs::Base
   # The PagerDuty Service API Key
   config :service_key, :validate => :string, :required => true
 
-  # The service key to use. You'll need to set this up in PagerDuty beforehand
+  # The service key to use. You'll need to set this up in PagerDuty beforehand.
   config :incident_key, :validate => :string, :default => "logstash/%{host}/%{type}"
 
   # Event type
@@ -25,11 +25,11 @@ class LogStash::Outputs::PagerDuty < LogStash::Outputs::Base
   config :description, :validate => :string, :default => "Logstash event for %{host}"
 
   # The event details. These might be data from the Logstash event fields you wish to include.
-  # Tags are automatically included if detected so no need to explicitly add them here.
+  # Tags are automatically included if detected so there is no need to explicitly add them here.
   config :details, :validate => :hash, :default => {"timestamp" => "%{@timestamp}", "message" => "%{message}"}
 
   # PagerDuty API URL. You shouldn't need to change this, but is included to allow for flexibility
-  # should PD iterate the API and Logstash hasn't updated yet.
+  # should PagerDuty iterate the API and Logstash hasn't been updated yet.
   config :pdurl, :validate => :string, :default => "https://events.pagerduty.com/generic/2010-04-15/create_event.json"
 
   public
