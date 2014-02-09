@@ -54,7 +54,8 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
       @watchservice = @javapath.getFileSystem.newWatchService
       @javapath.register(@watchservice,
                          java.nio.file.StandardWatchEventKinds::ENTRY_MODIFY,
-                         java.nio.file.StandardWatchEventKinds::ENTRY_CREATE)
+                         java.nio.file.StandardWatchEventKinds::ENTRY_CREATE,
+                         java.nio.file.StandardWatchEventKinds::ENTRY_DELETE)
     rescue java.lang.Exception => e
       e.printStackTrace
       raise e
@@ -90,7 +91,17 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
                 p = watchevent.context
                 if ((@prefix.nil? || p.getFileName.toString.start_with?(@prefix)) && (@suffix.nil? || p.getFileName.toString.end_with?(@suffix)))
                   file = @javapath.resolve(p)
-                  if (!java.nio.file.Files.isDirectory(file))
+                  
+                  # If file has been deleted, clear out its reader
+                  if (!java.nio.file.Files.exists(file))
+                    reader = @readers[p.getFileName.toString]
+                    if (reader)
+                      reader.close
+                    end
+                    @readers[p.getFileName.toString] = nil
+                    
+                  # Otherwise, file has been created or modified
+                  elsif (!java.nio.file.Files.isDirectory(file))
                     
                     # Look for an existing reader for the new or modified file
                     reader = @readers[p.getFileName.toString]
