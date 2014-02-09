@@ -14,6 +14,9 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
   default :codec, "plain"
   
   # The directory to watch for files.  Must be a directory!
+  # 
+  # This directory will be monitored and any (non-subdirectory) files
+  # in it matching the glob <prefix>*<suffix> will be processed.
   config :path, :validate => :string, :required => true
   
   # Prefix on filenames in the watched directory.
@@ -24,7 +27,14 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
   # ".log" for example
   config :suffix, :validate => :string, :default => ""
 
+  # Choose where Logstash starts initially reading files - at the beginning or
+  # at the end. The default behavior treats files like live streams and thus
+  # starts at the end. If you have old data you want to import, set this
+  # to 'beginning'
   config :start_position, :validate => [ "beginning", "end"], :default => "end"
+  
+  # Maximum sleep time for polling filesystem changes (milliseconds)
+  config :timeout, :validate => :number, :default => 100
 
   public
   def register
@@ -33,13 +43,16 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
     @readers = {}
     begin
       @javapath = java.nio.file.Paths.get(@path)
+      # Get list of files in path using glob
       java.nio.file.Files.newDirectoryStream(@javapath, @prefix + "*" + @suffix).each do |file|
+        # Save a reader for each file (non-directory)
         if (!java.nio.file.Files.isDirectory(file))
           @readers[file.getFileName.toString] = java.nio.file.Files.newBufferedReader(file, @charset)
         end
       end
-      @watcher = @javapath.getFileSystem.newWatchService
-      @javapath.register(@watcher,
+      # Register a filesystem watchservice to monitor changes to files in the path
+      @watchservice = @javapath.getFileSystem.newWatchService
+      @javapath.register(@watchservice,
                          java.nio.file.StandardWatchEventKinds::ENTRY_MODIFY,
                          java.nio.file.StandardWatchEventKinds::ENTRY_CREATE)
     rescue java.lang.Exception => e
@@ -49,6 +62,7 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
   end # def register
 
   def run(queue)
+    # Read or skip data in existing files
     @readers.each do |file, rdr|
       if (@start_position == "end")
         rdr.skip(java.nio.file.Files.size(@javapath.resolve(file)))
@@ -63,24 +77,38 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
         end
       end
     end
+    
+    # Watch for new & modified files
     while true
       begin
-        watchkey = @watcher.take
-        if (watchkey)
+        # Get new filesystem change events, or sleep
+        while (watchkey = @watchservice.poll(@timeout, java.util.concurrent.TimeUnit::MILLISECONDS))
           begin
             watchkey.pollEvents.each do |watchevent|
               if (watchevent)
 
                 p = watchevent.context
                 if ((@prefix.nil? || p.getFileName.toString.start_with?(@prefix)) && (@suffix.nil? || p.getFileName.toString.end_with?(@suffix)))
-
-                  reader = @readers[p.getFileName.toString]
-                  while (reader.ready)
-                    @codec.decode(reader.readLine) do |event|
-                      decorate(event)
-                      event["host"] = @host
-                      event["path"] = p.toAbsolutePath.toString
-                      queue << event
+                  file = @javapath.resolve(p)
+                  if (!java.nio.file.Files.isDirectory(file))
+                    
+                    # Look for an existing reader for the new or modified file
+                    reader = @readers[p.getFileName.toString]
+                    
+                    # If this file was just created, set up a reader for it
+                    if (reader.nil?)
+                        reader = java.nio.file.Files.newBufferedReader(file, @charset)
+                        @readers[p.getFileName.toString] = reader
+                    end
+                    
+                    # Read new lines from file
+                    while (reader.ready)
+                      @codec.decode(reader.readLine) do |event|
+                        decorate(event)
+                        event["host"] = @host
+                        event["path"] = file.toAbsolutePath.toString
+                        queue << event
+                      end
                     end
                   end
                 end
@@ -102,7 +130,7 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
 
   public
   def teardown
-    @watcher.close
+    @watchservice.close
     @logger.debug("nio2path shutting down.")
     finished
   end # def teardown
