@@ -89,7 +89,7 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
               if (watchevent)
 
                 p = watchevent.context
-                if ((@prefix.nil? || p.getFileName.toString.start_with?(@prefix)) && (@suffix.nil? || p.getFileName.toString.end_with?(@suffix)))
+                if (p.getFileName.toString.start_with?(@prefix) && p.getFileName.toString.end_with?(@suffix))
                   file = @javapath.resolve(p)
                   
                   # If file has been deleted, clear out its reader
