@@ -74,5 +74,63 @@ describe LogStash::Filters::Wmts do
          insist { subject['wmts.errmsg'] } == "Unable to reproject tile coordinates"
     end
   end
+
+  describe "Testing the epsg_mapping parameter" do
+    config <<-CONFIG
+      filter {
+        grok { match => [ "message", "%{COMBINEDAPACHELOG}" ] }
+        grok {
+          match => [
+            "request", 
+            "(?<wmts.version>([0-9\.]{5}))\/(?<wmts.layer>([a-z0-9\.-]*))\/default\/(?<wmts.release>([0-9]*))\/(?<wmts.reference-system>([a-z0-9]*))\/(?<wmts.zoomlevel>([0-9]*))\/(?<wmts.row>([0-9]*))\/(?<wmts.col>([0-9]*))\.(?<wmts.filetype>([a-zA-Z]*))"]
+        }
+        wmts { epsg_mapping => { 'swissgrid' => 21781 } }
+      }
+    CONFIG
+
+    # regular query needing a mapping
+    sample '11.12.13.14 - - [10/Feb/2014:16:27:26 +0100] "GET http://tile1.wmts.example.org/1.0.0/grundkarte/default/2013/swissgrid/9/371/714.png HTTP/1.1" 200 8334 "http://example.org" "Mozilla/5.0 (Windows NT 6.1; rv:26.0) Gecko/20100101 Firefox/26.0"' do
+      insist { subject["wmts.version"] } == "1.0.0"
+      insist { subject["wmts.layer"] } == "grundkarte"
+      insist { subject["wmts.release"] } == "2013"
+      insist { subject["wmts.reference-system"] } == "swissgrid"
+      insist { subject["wmts.zoomlevel"] } == "9"
+      insist { subject["wmts.row"] } == "371"
+      insist { subject["wmts.col"] } == "714"
+      insist { subject["wmts.filetype"] } == "png"
+      insist { subject["wmts.service"] } == "wmts"
+      # it should have been correctly mapped
+      insist { subject["wmts.input_epsg"] } == "epsg:21781"
+      insist { subject["wmts.input_x"] } == 320516000
+      insist { subject["wmts.input_y"] } == -166082000
+      insist { subject["wmts.input_xy"] } == "320516000,-166082000"
+      insist { subject["wmts.output_epsg"] } == "epsg:4326"
+      insist { subject["wmts.output_xy"] } == "7.438691675813199,-43.38015041464443"
+      insist { subject["wmts.output_x"] } == 7.438691675813199
+      insist { subject["wmts.output_y"] } == -43.38015041464443
+    end
+ 
+    # regular query which does not need a mapping
+    sample '11.12.13.14 - - [10/Feb/2014:16:27:26 +0100] "GET http://tile1.wmts.example.org/1.0.0/grundkarte/default/2013/21781/9/371/714.png HTTP/1.1" 200 8334 "http://example.org" "Mozilla/5.0 (Windows NT 6.1; rv:26.0) Gecko/20100101 Firefox/26.0"' do
+      insist { subject["wmts.version"] } == "1.0.0"
+      insist { subject["wmts.layer"] } == "grundkarte"
+      insist { subject["wmts.release"] } == "2013"
+      insist { subject["wmts.reference-system"] } == "21781"
+      insist { subject["wmts.zoomlevel"] } == "9"
+      insist { subject["wmts.row"] } == "371"
+      insist { subject["wmts.col"] } == "714"
+      insist { subject["wmts.filetype"] } == "png"
+      insist { subject["wmts.service"] } == "wmts"
+      insist { subject["wmts.input_epsg"] } == "epsg:21781"
+      insist { subject["wmts.input_x"] } == 320516000
+      insist { subject["wmts.input_y"] } == -166082000
+      insist { subject["wmts.input_xy"] } == "320516000,-166082000"
+      insist { subject["wmts.output_epsg"] } == "epsg:4326"
+      insist { subject["wmts.output_xy"] } == "7.438691675813199,-43.38015041464443"
+      insist { subject["wmts.output_x"] } == 7.438691675813199
+      insist { subject["wmts.output_y"] } == -43.38015041464443
+    end
+
+  end
 end
 

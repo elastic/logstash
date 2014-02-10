@@ -71,6 +71,11 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
   # configures the name of the field for the reference system
   config :refsys_field, :validate => :string, :default => "wmts.reference-system"
   
+  # configures a mapping between named projections and their actual EPSG code.
+  # Some production WMTS use a regular name instead of a numerical value for
+  # the projection code. This parameter allows to define a custom mapping
+  config :epsg_mapping, :validate => :hash, :default => {} 
+
   public
   def register
     # basic WMTS grid parameter checking
@@ -93,7 +98,9 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
       col = Integer(event[@column_field])
       row = Integer(event[@row_field])
 
-      input_epsg = "epsg:#{event[@refsys_field]}"
+      # checks if a mapping exists for the reference system extracted
+      translated_epsg = @epsg_mapping[event[@refsys_field]] || event[@refsys_field] 
+      input_epsg = "epsg:#{translated_epsg}"
 
       zlmapping = @wmts_grid[:zoomlevel_mapping][zoomlevel]
       raise ArgumentError if zlmapping.nil?
