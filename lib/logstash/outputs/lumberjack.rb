@@ -26,7 +26,11 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
     begin
-      @client.write(event.to_hash)
+      # Lumberjack expects message to be line
+      event_hash = event.to_hash.clone
+      line = event_hash.delete('message')
+      event_hash['line'] = line
+      @client.write(event_hash)
     rescue Exception => e
       @logger.error("Client write error", :e => e, :backtrace => e.backtrace)
       connect
