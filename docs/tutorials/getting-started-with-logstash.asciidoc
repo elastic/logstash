@@ -113,18 +113,18 @@ which should return something like this:
 Congratulations! You've successfully stashed logs in Elasticsearch via logstash.
 
 .Elasticsearch Plugins (an aside)
-Another very useful tool for querying your logstash data (and Elasticsearch in general) is the Elasticsearch-head plugin. Here is more information on http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-plugins.html[Elasticsearch plugins]. To install elasticsearch-head, simply issue the following command in your Elasticsearch directory (the same one in which you ran Elasticsearch earlier):
+Another very useful tool for querying your logstash data (and Elasticsearch in general) is the Elasticsearch-kopf plugin. Here is more information on http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-plugins.html[Elasticsearch plugins]. To install elasticsearch-kopf, simply issue the following command in your Elasticsearch directory (the same one in which you ran Elasticsearch earlier):
 ----
-bin/plugin -install mobz/elasticsearch-head
+bin/plugin -install lmenezes/elasticsearch-kopf
 ----
-Now you can browse to http://localhost:9200/_plugin/head[http://localhost:9200/_plugin/head] to browse your Elasticsearch data, settings and mappings!
+Now you can browse to http://localhost:9200/_plugin/kopf[http://localhost:9200/_plugin/kopf] to browse your Elasticsearch data, settings and mappings!
 
 .Multiple Outputs
 As a quick exercise in configuring multiple Logstash outputs, let's invoke logstash again, using both the 'stdout' as well as the 'elasticsearch' output:
 ----
 java -jar logstash-1.3.3-flatjar.jar agent -e 'input { stdin { } } output { elasticsearch { host => localhost } stdout { } }'
 ----
-Typing a phrase will now echo back to your terminal, as well as save in Elasticsearch! (Feel free to verify this using curl or elasticsearch-head).
+Typing a phrase will now echo back to your terminal, as well as save in Elasticsearch! (Feel free to verify this using curl or elasticsearch-kopf).
 
 .Default - Daily Indices
 You might notice that logstash was smart enough to create a new index in Elasticsearch... The default index name is in the form of 'logstash-YYYY.MM.DD', which essentially creates one index per day. At midnight (GMT?), logstash will automagically rotate the index to a fresh new one, with the new current day's timestamp. This allows you to keep windows of data, based on how far retroactively you'd like to query your log data. Of course, you can always archive (or re-index) your data to an alternate location, where you are able to query further into the past. If you'd like to simply delete old indices after a certain time period, you can use the https://github.com/elasticsearch/curator[Elasticsearch Curator tool].
@@ -305,7 +305,7 @@ input {
     path => "/Applications/XAMPP/logs/*_log"
 ...
 ----
-Now, rerun logstash, and you will see both the error and access logs processed via logstash. However, if you inspect your data (using elasticsearch-head, perhaps), you will see that the access_log was broken up into discrete fields, but not the error_log. That's because we used a "grok" filter to match the standard combined apache log format and automatically split the data into separate fields. Wouldn't it be nice *if* we could control how a line was parsed, based on its format? Well, we can... 
+Now, rerun logstash, and you will see both the error and access logs processed via logstash. However, if you inspect your data (using elasticsearch-kopf, perhaps), you will see that the access_log was broken up into discrete fields, but not the error_log. That's because we used a "grok" filter to match the standard combined apache log format and automatically split the data into separate fields. Wouldn't it be nice *if* we could control how a line was parsed, based on its format? Well, we can... 
 
 Also, you might have noticed that logstash did not reprocess the events which were already seen in the access_log file. Logstash is able to save its position in files, only processing new lines as they are added to the file. Neat!
 
