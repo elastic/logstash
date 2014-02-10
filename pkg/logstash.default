@@ -1,6 +1,6 @@
-# defaults for logstash
+# defaults for Logstash
 
-# Start logstash on boot?
+# Start Logstash on boot?
 START=no
 
 # pulled in from the init script; makes things easier.
@@ -17,19 +17,19 @@ PIDFILE=/var/run/logstash.pid
 # user id to be invoked as
 LS_USER=logstash
 
-# location of the logstash jar file
+# location of the Logstash jar file
 LS_JAR=/opt/logstash/logstash.jar
 
-# logstash home location
+# Logstash home location
 LS_HOME=/var/lib/logstash
 
-# logstash log directory
+# Logstash log directory
 LOG_DIR=/var/log/logstash
 
-# logstash log file
+# Logstash log file
 LOG_FILE=$LOG_DIR/$NAME.log
 
-# logstash configuration directory
+# Logstash configuration directory
 CONF_DIR=/etc/logstash/conf.d
 
 # Open file limit
@@ -38,7 +38,7 @@ OPEN_FILES=2048
 # Nice level
 NICE=19
 
-# Set LogStash options
+# Set Logstash options
 LS_OPTS="--log ${LOG_FILE}"
 
 # Set a home directory
