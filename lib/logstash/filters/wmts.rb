@@ -19,7 +19,10 @@ require "geoscript"
 #     grok { match => [ "message", "%{COMBINEDAPACHELOG}" ] }
 #     # Then, parameters 
 #     grok {
-#       match => ["request", "(?<wmts.version>([0-9\.]{5}))\/(?<wmts.layer>([a-z0-9\.-]*))\/default\/(?<wmts.release>([0-9]{8}))\/(?<wmts.reference-system>([0-9]*))\/(?<wmts.zoomlevel>([    0-9]*))\/(?<wmts.row>([0-9]*))\/(?<wmts.col>([0-9]*))\.(?<wmts.filetype>([a-zA-Z]*))"]
+#       [ 
+#         "request",
+#         "(?<wmts.version>([0-9\.]{5}))\/(?<wmts.layer>([a-z0-9\.-]*))\/default\/(?<wmts.release>([0-9]*))\/(?<wmts.reference-system>([a-z0-9]*))\/(?<wmts.zoomlevel>([0-9]*))\/(?<wmts.row>([0-9]*))\/(?<wmts.col>([0-9]*))\.(?<wmts.filetype>([a-zA-Z]*))"
+#       ]
 #     }
 #     # actually passes the previously parsed message to the wmts plugin
 #     wmts { }
@@ -43,16 +46,20 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
   config_name "wmts"
   milestone 3
 
-  # configures the grid (by default, it is set to Swisstopo's WMTS grid)
-  config :wmts_grid, :validate => :hash,
-    :default => {
-      :x_padding => 420000, 
-      :y_padding => 350000,
-      :tile_width => 256,
-      :tile_height => 256,
-      :zoomlevel_mapping => [ 4000, 3750, 3500, 3250, 3000, 2750, 2500, 2250, 2000,
+
+  # WMTS grid configuration (by default, it is set to Swisstopo's WMTS grid)
+  # x_origin
+  config :x_origin, :validate => :number, :default => 420000
+  # y_origin
+  config :y_origin, :validate => :number, :default => 350000
+  # tile_width
+  config :tile_width, :validate => :number, :default => 256
+  # tile_height
+  config :tile_height, :validate => :number, :default => 256
+  # resolutions
+  config :resolutions, :validate => :array, :default => [ 4000, 3750, 3500, 3250, 3000, 2750, 2500, 2250, 2000,
         1750, 1500, 1250, 1000, 750, 650, 500, 250, 100, 50, 20, 10, 5, 2.5, 2, 1.5, 1, 0.5, 0.25, 0.1 ]
-    }
+
   # configures the prefix
   config :prefix, :validate => :string, :default => "#{config_name}."
 
@@ -78,20 +85,10 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
 
   public
   def register
-    # basic WMTS grid parameter checking
-    raise "Bad WMTS grid provided, no :x_padding provided" if @wmts_grid[:x_padding].nil?
-    raise "Bad WMTS grid provided, no :y_padding provided" if @wmts_grid[:y_padding].nil?
-    raise "Bad WMTS grid provided, no :tile_width provided" if @wmts_grid[:tile_width].nil?
-    raise "Bad WMTS grid provided, no :tile_height provided" if @wmts_grid[:tile_height].nil?
-    if @wmts_grid[:zoomlevel_mapping].nil? || ! (@wmts_grid[:zoomlevel_mapping].is_a?(Array))
-      raise "Bad WMTS grid provided, no :zoomlevel_mapping (or not an array) provided"
-    end 
   end
 
   public
   def filter(event)
-    
-
     begin
       # cast values from grok into integers
       zoomlevel = Integer(event[@zoomlevel_field])
@@ -102,8 +99,8 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
       translated_epsg = @epsg_mapping[event[@refsys_field]] || event[@refsys_field] 
       input_epsg = "epsg:#{translated_epsg}"
 
-      zlmapping = @wmts_grid[:zoomlevel_mapping][zoomlevel]
-      raise ArgumentError if zlmapping.nil?
+      resolution = @resolutions[zoomlevel]
+      raise ArgumentError if resolution.nil?
     rescue ArgumentError, TypeError, NoMethodError
       event["#{@prefix}errmsg"] = "Bad parameter received from the Grok filter"
       filter_matched(event)
@@ -111,8 +108,8 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
     end
 
     begin
-      input_x = @wmts_grid[:x_padding] + (((col+0.5)*@wmts_grid[:tile_width]*zlmapping).floor)
-      input_y = @wmts_grid[:y_padding] - (((row+0.5)*@wmts_grid[:tile_height]*zlmapping).floor)
+      input_x = @x_origin + (((col+0.5)*@tile_width*resolution).floor)
+      input_y = @y_origin - (((row+0.5)*@tile_height*resolution).floor)
 
       event["#{@prefix}service"] = "wmts"
 
@@ -143,5 +140,5 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
     # filter matched => make changes persistent
     filter_matched(event)
 
-    end # def filter
+  end # def filter
 end

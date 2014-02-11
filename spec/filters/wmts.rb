@@ -130,7 +130,46 @@ describe LogStash::Filters::Wmts do
       insist { subject["wmts.output_x"] } == 7.438691675813199
       insist { subject["wmts.output_y"] } == -43.38015041464443
     end
+  end
+  describe "Testing a custom grid sent as parameter to the filter" do
+    config <<-CONFIG
+      filter {
+        grok { match => [ "message", "%{COMBINEDAPACHELOG}" ] }
+        grok {
+          match => [
+            "request", 
+            "(?<wmts.version>([0-9\.]{5}))\/(?<wmts.layer>([a-z0-9\.-]*))\/default\/(?<wmts.release>([0-9]*))\/(?<wmts.reference-system>([a-z0-9]*))\/(?<wmts.zoomlevel>([0-9]*))\/(?<wmts.row>([0-9]*))\/(?<wmts.col>([0-9]*))\.(?<wmts.filetype>([a-zA-Z]*))"]
+        }
+        wmts { 
+          epsg_mapping => { 'swissgrid' => 21781 }
+          x_origin => 420000
+          y_origin => 350000
+          tile_width => 256
+          tile_height => 256
+          resolutions => [ 500, 250, 100, 50, 20, 10, 5, 2.5, 2, 1.5, 1, 0.5, 0.25, 0.1, 0.05 ]
+        }
+      }
+    CONFIG
 
+    sample '1.2.3.4 - - [10/Feb/2014:18:06:12 +0100] "GET http://tile1.example.net/1.0.0/ortho/default/2013/swissgrid/9/374/731.jpeg HTTP/1.1" 200 13872 "http://example.net" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.52 Safari/537.36"' do
+      insist { subject["wmts.version"] } == "1.0.0"
+      insist { subject["wmts.layer"] } == "ortho"
+      insist { subject["wmts.release"] } == "2013"
+      insist { subject["wmts.reference-system"] } == "swissgrid"
+      insist { subject["wmts.zoomlevel"] } == "9"
+      insist { subject["wmts.row"] } == "374"
+      insist { subject["wmts.col"] } == "731"
+      insist { subject["wmts.filetype"] } == "jpeg"
+      insist { subject["wmts.service"] } == "wmts"
+      insist { subject["wmts.input_epsg"] } == "epsg:21781"
+      insist { subject["wmts.input_x"] } == 700896
+      insist { subject["wmts.input_y"] } == 206192
+      insist { subject["wmts.input_xy"] } == "700896,206192"
+      insist { subject["wmts.output_epsg"] } == "epsg:4326"
+      insist { subject["wmts.output_xy"] } == "8.765263559441715,46.999112812287045"
+      insist { subject["wmts.output_x"] } == 8.765263559441715
+      insist { subject["wmts.output_y"] } == 46.999112812287045
+    end
   end
 end
 
