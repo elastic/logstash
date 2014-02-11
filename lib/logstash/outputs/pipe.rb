@@ -46,7 +46,7 @@ class LogStash::Outputs::Pipe < LogStash::Outputs::Base
     begin
       pipe = get_pipe(command)
       pipe.puts(output)
-    rescue IOError, Errno::EPIPE => e
+    rescue IOError, Errno::EPIPE, Errno::EBADF => e
       @logger.error("Error writing to pipe, closing pipe.", :command => command, :pipe => pipe)
       drop_pipe(command)
       retry
