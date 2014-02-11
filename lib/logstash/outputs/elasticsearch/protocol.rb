@@ -227,7 +227,7 @@ module LogStash::Outputs::Elasticsearch
         if options[:host]
           client.addTransportAddress(
             org.elasticsearch.common.transport.InetSocketTransportAddress.new(
-              options[:host], options[:port]
+              options[:host], options[:port].to_i
             )
           )
         end
