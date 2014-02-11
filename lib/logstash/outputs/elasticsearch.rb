@@ -145,7 +145,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   #
   # The 'node' protocol will connect to the cluster as a normal Elasticsearch
   # node (but will not store data). This allows you to use things like
-  # multicast discovery.
+  # multicast discovery. If you use the `node` protocol, you must permit
+  # bidirectional communication on the port 9300 (or whichever port you have
+  # configured).
   #
   # The 'transport' protocol will connect to the host you specify and will
   # not show up as a 'node' in the Elasticsearch cluster. This is useful 
