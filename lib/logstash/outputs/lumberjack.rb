@@ -20,18 +20,26 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
   def register
     require 'lumberjack/client'
     connect
+
+    @codec.on_event do |payload|
+      begin
+        @client.write({ 'line' => payload })
+      rescue Exception => e
+        @logger.error("Client write error, trying connect", :e => e, :backtrace => e.backtrace)
+        connect
+        retry
+      end # begin
+    end # @codec
   end # def register
 
   public
   def receive(event)
     return unless output?(event)
-    begin
-      @client.write(event.to_hash)
-    rescue Exception => e
-      @logger.error("Client write error", :e => e, :backtrace => e.backtrace)
-      connect
-      retry
-    end
+    if event == LogStash::SHUTDOWN
+      finished
+      return
+    end # LogStash::SHUTDOWN
+    @codec.encode(event)
   end # def receive
 
   private 
