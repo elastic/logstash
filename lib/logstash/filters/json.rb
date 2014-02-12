@@ -3,9 +3,9 @@ require "logstash/filters/base"
 require "logstash/namespace"
 
 # This is a JSON parsing filter. It takes an existing field which contains JSON and
-# expands it into an actual datastructure within the logstash event.
+# expands it into an actual data structure within the Logstash event.
 # 
-# By default it will place the parsed JSON in the root of the logstash event, but this
+# By default it will place the parsed JSON in the root (top level) of the Logstash event, but this
 # filter can be configured to place the JSON into any arbitrary event field, using the
 # `target` configuration.
 class LogStash::Filters::Json < LogStash::Filters::Base
@@ -29,7 +29,7 @@ class LogStash::Filters::Json < LogStash::Filters::Base
   config :source, :validate => :string, :required => true
 
   # Define the target field for placing the parsed data. If this setting is
-  # ommitted, the JSON data will be stored at the root of the event.
+  # omitted, the JSON data will be stored at the root (top level) of the event.
   #
   # For example, if you want the data to be put in the 'doc' field:
   #
@@ -40,7 +40,7 @@ class LogStash::Filters::Json < LogStash::Filters::Base
   #     }
   #
   # JSON in the value of the `source` field will be expanded into a
-  # datastructure in the `target` field.
+  # data structure in the `target` field.
   #
   # NOTE: if the `target` field already exists, it will be overwritten!
   config :target, :validate => :string
