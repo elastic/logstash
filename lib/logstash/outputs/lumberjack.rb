@@ -44,13 +44,16 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
 
   private 
   def connect
+    require 'resolv'
     @logger.info("Connecting to lumberjack server.", :addresses => @hosts, :port => @port, 
         :ssl_certificate => @ssl_certificate, :window_size => @window_size)
     begin
-      @client = Lumberjack::Client.new(:addresses => @hosts, :port => @port, 
+      ips = []
+      @hosts.each { |host| ips += Resolv.getaddresses host }
+      @client = Lumberjack::Client.new(:addresses => ips.uniq, :port => @port, 
         :ssl_certificate => @ssl_certificate, :window_size => @window_size)
     rescue Exception => e
-      @logger.error("All hosts unavailable, sleeping", :hosts => @hosts, :e => e, 
+      @logger.error("All hosts unavailable, sleeping", :hosts => ips.uniq, :e => e, 
         :backtrace => e.backtrace)
       sleep(10)
       retry
