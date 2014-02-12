@@ -1,9 +1,9 @@
 ---
-title: Logstash Core vs. Contrib - logstash
+title: Logstash Core and Contrib - logstash
 layout: content_right
 ---
 
-# logstash rel-eng.
+# core and contrib plugins
 
 Starting in version 1.4.0, core and contributed plugins will be separated.  
 Contrib plugins reside in a [separate github project](https://github.com/elasticsearch/logstash-contrib).
