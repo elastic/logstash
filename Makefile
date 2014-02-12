@@ -160,7 +160,7 @@ vendor/geoip: | vendor
 	$(QUIET)mkdir $@
 
 .PHONY: vendor-geoip
-vendor-geoip: $(GEOIP)
+vendor-geoip: $(GEOIP) $(GEOIP_ASN)
 $(GEOIP): | vendor/geoip
 	$(QUIET)$(DOWNLOAD_COMMAND) $@.tmp.gz $(GEOIP_URL)
 	$(QUIET)gzip -dc $@.tmp.gz > $@.tmp
