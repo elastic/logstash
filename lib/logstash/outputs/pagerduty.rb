@@ -2,18 +2,20 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-# PagerDuty output
-# Send specific events to PagerDuty for alerting
-
+# The PagerDuty output will send notifications based on pre-configured services 
+# and escalation policies. Logstash can send "trigger", "acknowledge" and "resolve"
+# event types. In addition, you may configure custom descriptions and event details.
+# The only required field is the PagerDuty "Service API Key", which can be found on
+# the service's web page on pagerduty.com. In the default case, the description and
+# event details will be populated by Logstash, using `message`, `timestamp` and `host` data.  
 class LogStash::Outputs::PagerDuty < LogStash::Outputs::Base
   config_name "pagerduty"
   milestone 1
 
-  # Service API Key
+  # The PagerDuty Service API Key
   config :service_key, :validate => :string, :required => true
 
-  # The service key to use
-  # You'll need to set this up in PD beforehand
+  # The service key to use. You'll need to set this up in PagerDuty beforehand.
   config :incident_key, :validate => :string, :default => "logstash/%{host}/%{type}"
 
   # Event type
@@ -22,16 +24,12 @@ class LogStash::Outputs::PagerDuty < LogStash::Outputs::Base
   # Custom description
   config :description, :validate => :string, :default => "Logstash event for %{host}"
 
-  # Event details
-  # These might be keys from the logstash event you wish to include
-  # tags are automatically included if detected so no need to add them here
+  # The event details. These might be data from the Logstash event fields you wish to include.
+  # Tags are automatically included if detected so there is no need to explicitly add them here.
   config :details, :validate => :hash, :default => {"timestamp" => "%{@timestamp}", "message" => "%{message}"}
 
-  # PagerDuty API url
-  # You shouldn't need to change this
-  # This allows for flexibility
-  # should PD iterate the API
-  # and Logstash hasn't updated yet
+  # PagerDuty API URL. You shouldn't need to change this, but is included to allow for flexibility
+  # should PagerDuty iterate the API and Logstash hasn't been updated yet.
   config :pdurl, :validate => :string, :default => "https://events.pagerduty.com/generic/2010-04-15/create_event.json"
 
   public
