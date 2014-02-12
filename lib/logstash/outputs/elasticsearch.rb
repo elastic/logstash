@@ -177,7 +177,12 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     client_settings["cluster.name"] = @cluster if @cluster
     client_settings["network.host"] = @bind_host if @bind_host
     client_settings["transport.tcp.port"] = @bind_port if @bind_port
-    client_settings["node.name"] = @node_name if @node_name
+
+    if @node_name
+      client_settings["node.name"] = @node_name
+    else
+      client_settings["node.name"] = "logstash-#{Socket.gethostname}-#{$$}-#{object_id}"
+    end
 
     if @protocol.nil?
       @protocol = (RUBY_PLATFORM == "java") ? "node" : "http"
