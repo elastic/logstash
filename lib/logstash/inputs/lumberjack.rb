@@ -5,7 +5,7 @@ require "logstash/namespace"
 # Receive events using the lumberjack protocol. 
 #
 # This is mainly to receive events shipped with lumberjack,
-# <http://github.com/jordansissel/lumberjack>, now known as the
+# <http://github.com/jordansissel/lumberjack>, now represented primarily via the
 # Logstash-forwarder[https://github.com/elasticsearch/logstash-forwarder].
 class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
 
