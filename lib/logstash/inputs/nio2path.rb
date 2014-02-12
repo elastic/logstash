@@ -42,7 +42,15 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
     @charset = java.nio.charset.Charset.forName("UTF-8")
     @readers = {}
     begin
+      uri = java.net.URI.new(@path)
+      @javapath = java.nio.file.Paths.get(uri)
+    rescue java.lang.IllegalArgumentException => e
       @javapath = java.nio.file.Paths.get(@path)
+    rescue java.lang.Exception => e
+      e.printStackTrace
+      raise e
+    end
+    begin
       # Get list of files in path using glob
       java.nio.file.Files.newDirectoryStream(@javapath, @prefix + "*" + @suffix).each do |file|
         # Save a reader for each file (non-directory)
@@ -66,17 +74,21 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
     # Read or skip data in existing files
     @readers.each do |file, rdr|
       absolutepath = @javapath.resolve(file).toAbsolutePath
-      if (@start_position == "end")
-        rdr.skip(java.nio.file.Files.size(absolutepath))
-      else
-        while (rdr.ready)
-          @codec.decode(rdr.readLine) do |event|
-            decorate(event)
-            event["host"] = @host
-            event["path"] = absolutepath.toString
-            queue << event
+      begin
+        if (@start_position == "end")
+          rdr.skip(java.nio.file.Files.size(absolutepath))
+        else
+          while (rdr.ready)
+            @codec.decode(rdr.readLine) do |event|
+              decorate(event)
+              event["host"] = @host
+              event["path"] = absolutepath.toString
+              queue << event
+            end
           end
         end
+      rescue java.lang.Exception => e
+        e.printStackTrace
       end
     end
     
