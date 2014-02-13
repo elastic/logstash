@@ -197,7 +197,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
       event["#{name}.mean"] = metric.mean
 
       @percentiles.each do |percentile|
-        event["#{name}.p#{percentile}"] = metric.snapshot.value(percentile / 100)
+        event["#{name}.p#{percentile}"] = metric.snapshot.value(percentile / 100.0)
       end
       metric.clear if should_clear?
     end
