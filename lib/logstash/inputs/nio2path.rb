@@ -64,8 +64,11 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
       e.printStackTrace
       raise e
     end
-    [java.nio.file.StandardWatchEventKinds::ENTRY_MODIFY,
-     java.nio.file.StandardWatchEventKinds::ENTRY_CREATE,
+    
+    # Try to register all three kinds of events with the watch service.
+    @javapath.register(@watchservice, java.nio.file.StandardWatchEventKinds::ENTRY_MODIFY)
+    # ENTRY_MODIFY is the only one that's absolutely required.
+    [java.nio.file.StandardWatchEventKinds::ENTRY_CREATE,
      java.nio.file.StandardWatchEventKinds::ENTRY_DELETE].each do |kind|
       begin
         @javapath.register(@watchservice, kind)
