@@ -4,26 +4,12 @@ layout: content_right
 ---
 <h2><%= name %></h2>
 <h3>Milestone: <a href="../plugin-milestones"><%= @milestone %></a></h3>
+<% if is_contrib_plugin -%>
+  <h3>Community plugin!</h3>
+  This is a community-contributed plugin. To use this, you must have <a href="core-vs-contrib">installed the contrib plugins package</a>.
+<% end -%>
 
 <%= description %>
-
-<% if !@flags.empty? -%>
-<!-- Flags are deprecated 
-<h3> Flags </h3>
-
-This plugin provides the following flags:
-
-<dl>
-<% @flags.each do |flag, description| -%>
-<%# Prefix flag with plugin name. %>
-  <dt> <%= flag.gsub(/^--/, "--#{name}-") %> </dt>
-  <dd> <%= description %> </dd>
-<% end -%>
-</dl>
-
-... flags are deprecated -->
-
-<% end -%>
 
 <h3> Synopsis </h3>
 
