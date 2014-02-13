@@ -3,12 +3,18 @@
 logstash=$HOME/projects/logstash
 contrib=$HOME/projects/logstash-contrib
 
-workdir="/tmp/logstash-release"
-mkdir $workdir
+workdir="$PWD/build/release/"
+mkdir -p $workdir
 
 # circuit breaker to fail if there's something silly wrong.
 if [ -z "$workdir" ] ; then
   echo "workdir is empty?!"
+  exit 1
+fi
+
+if [ ! -d "$contrib" ] ; then
+  echo "Missing: $contrib"
+  echo "Maybe git clone it?"
   exit 1
 fi
 
@@ -22,7 +28,7 @@ docs() {
 
   make -C $workdir build
   (cd $contrib; find lib/logstash -type f -name '*.rb') > $workdir/build/contrib_plugins
-  make -C $workdir docs
+  make -C $workdir -j 4 docs
 }
 
 packages() {
