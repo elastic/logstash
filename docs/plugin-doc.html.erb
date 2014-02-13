@@ -5,8 +5,10 @@ layout: content_right
 <h2><%= name %></h2>
 <h3>Milestone: <a href="../plugin-milestones"><%= @milestone %></a></h3>
 <% if is_contrib_plugin -%>
-  <h3>Community plugin!</h3>
-  This is a community-contributed plugin. To use this, you must have <a href="core-vs-contrib">installed the contrib plugins package</a>.
+<div class="community-plugin-notice">
+  <strong>This is a community-contributed plugin!</strong> It does not ship with logstash by default, but it is easy to install!
+  To use this, you must have <a href="../contrib-plugins">installed the contrib plugins package</a>.
+</div>
 <% end -%>
 
 <%= description %>
