@@ -80,7 +80,7 @@ class Relp#This isn't much use on its own, but gives RelpServer and RelpClient t
     end
     if ! self.valid_command?(frame['command'])#TODO: is this enough to catch framing errors?
       if self.server?
-        self.serverclose
+        self.serverclose(socket)
       else
         self.close
       end
