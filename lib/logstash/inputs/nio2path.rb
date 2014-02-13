@@ -60,13 +60,19 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
       end
       # Register a filesystem watchservice to monitor changes to files in the path
       @watchservice = @javapath.getFileSystem.newWatchService
-      @javapath.register(@watchservice,
-                         java.nio.file.StandardWatchEventKinds::ENTRY_MODIFY,
-                         java.nio.file.StandardWatchEventKinds::ENTRY_CREATE,
-                         java.nio.file.StandardWatchEventKinds::ENTRY_DELETE)
     rescue java.lang.Exception => e
       e.printStackTrace
       raise e
+    end
+    [java.nio.file.StandardWatchEventKinds::ENTRY_MODIFY,
+     java.nio.file.StandardWatchEventKinds::ENTRY_CREATE,
+     java.nio.file.StandardWatchEventKinds::ENTRY_DELETE].each do |kind|
+      begin
+        @javapath.register(@watchservice, kind)
+      rescue java.lang.Exception => e
+        @logger.warn("Unable to register watcher for event kind " + kind.name +
+                         " on path " + @javapath + ". This may not be fatal.")
+      end
     end
   end # def register
 
