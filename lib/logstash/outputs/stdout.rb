@@ -3,18 +3,29 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 
 # A simple output which prints to the STDOUT of the shell running
-# logstash. This output can be quite convenient when debugging
-# logstash plugin configuration, by allowing instant access to
-# the data after it has passed through the input and filters.
+# Logstash. This output can be quite convenient when debugging
+# plugin configurations, by allowing instant access to the event
+# data after it has passed through the inputs and filters.
 #
 # For example, the following output configuration, in conjunction with the
-# logstash `-e` command-line flag will allow you to see the results
+# Logstash `-e` command-line flag, will allow you to see the results
 # of your event pipeline for quick iteration. 
+# 
 #     output {
 #       stdout {}
 #     }
 # 
-# Useful codecs include `rubydebug` and `json`.
+# Useful codecs include:
+#
+# `rubydebug`: outputs event data using the ruby "awesome_print"
+# library[http://rubygems.org/gems/awesome_print]
+#
+#     output {
+#       stdout { codec => rubydebug }
+#     }
+#
+# `json`: outputs event data in structured JSON format
+#
 class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   begin
      require "ap"
