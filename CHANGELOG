@@ -61,6 +61,9 @@
     Bernd Ahlers)
   - bugfix: date: Fix regression that caused times to be local time instead of
     the intended timezone of UTC. (#1010, Jordan Sissel)
+  - bugfix: geoip: Fix encoding of fields created by geoip lookups
+    (LOGSTASH-1354, LOGSTASH-1372, LOGSTASH-1853, #1054, #1058; Jordan Sissel,
+    Nick Ethier)
 
   # outputs
   - bugfix: pipe: fix handling of command failures (#1023, #1034, LOGSTASH-1860; ronnocol, Jordan Sissel)
