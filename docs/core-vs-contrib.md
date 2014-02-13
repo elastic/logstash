@@ -20,7 +20,8 @@ bin/plugin install contrib
 ```
 
 # Manual Installation (if you're behind a firewall, etc.)
-The tarball build defaults to extract on top of an existing Logstash tarball installation. 
+The contrib plugins can be extracted on top of an existing Logstash installation. 
+
 For example, if I've extracted `logstash-1.4.0.tar.gz` into `/path`, e.g.
  
 ```
@@ -43,3 +44,6 @@ tar zxf ~/logstash-contrib-1.4.0.tar.gz
 ```
 
 This will install the contrib plugins in the same directory as the core install.
+
+The download link is http://download.elasticsearch.org/logstash/logstash/logstash-contrib-${VERSION}.tar.gz
+where ${VERSION} is the same version of Logstash you currently have installed, e.g. 1.4.0
