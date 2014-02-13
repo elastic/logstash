@@ -26,6 +26,10 @@ require "logstash/namespace"
 #
 # `json`: outputs event data in structured JSON format
 #
+#     output {
+#       stdout { codec => json }
+#     }
+#
 class LogStash::Outputs::Stdout < LogStash::Outputs::Base
   begin
      require "ap"
