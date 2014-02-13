@@ -1,3 +1,72 @@
+1.4.0 (???)
+  # general
+  - Elasticsearch 1.0 libraries are now included. See the Elasticsearch
+    release notes for details: http://www.elasticsearch.org/downloads/1-0-0/
+  - Kibana 3 milestone 5 is included as the 'web' process.
+  - An empty --pluginpath directory is now accepted (#917, Richard Pijnenburg)
+  - Piles of documentation improvements! A brand new introductory tutorial is
+    included, and many of the popular plugins have had their docs greatly
+    improved. This effort was lead by Kurt Hurtado with assists by James
+    Turnbull, Aaron Mildenstein, Brad Fritz, and others.
+  - Testing was another focus of this release. We added many more tests
+    to help us prevent regressions and verify expected behavior. Helping with
+    this effort was Richard Pijnenburg, Jordan Sissel, and others.
+  - The 'debug' setting was removed from most plugins. Prior to this, 
+    most plugins advertised the availability of this setting but actually
+    did not use it (#996, Jordan Sissel).
+
+  # inputs
+  - improvement: log4j: port now defaults to 4560, the default log4j
+    SocketAppender port. (#757, davux)
+  - bugfix: rabbitmq: auto_delete and exclusive now default to 'false'.
+    The previous version's defaults caused data loss on logstash restarts.
+    Further, these settings are recommended by the RabbitMQ folks. (#864,
+    Michael Klishin)
+    This change breaks past default behavior, so just be aware. (Michael
+    Klishin)
+  - bugfix: collectd: fix some type calculation bugs (#905, Pieter Lexis)
+  - improvement: collectd: Now supports decryption and signature verification
+    (#905, Pieter Lexis)
+  - improvement: wmi: now supports remote hosts (#918, Richard Pijnenburg)
+  - bugfix: elasticsearch: Long scrollids now work correctly (#935, Jonathan
+    Van Eenwyk)
+  - bugfix: tcp: the 'host' field is correctly set now if you are using the
+    json codec and include a 'host' field in your events (#937, Jordan Sissel)
+  - bugfix: file: the 'host' field is correctly set now if you are using the
+    json codec and include a 'host' field in your events (#949, Piotr
+    Popieluch)
+  - bugfix: udp: the 'host' field is correctly set now if you are using the
+    json codec and include a 'host' field in your events (#965, Devin
+    Christensen)
+  - bugfix: syslog: fix regression (#986, Joshua Bussdieker)
+
+  # codecs
+  - improvement: netflow: You can now specify your own netflow field
+    definitions using the 'definitions' setting. See the netflow codec
+    docs for examples on how to do this. (#808, Matt Dainty)
+
+  # filters
+  - new: fingerprint: Checksum, anonymize, generate UUIDs, etc! A generalized
+    solution to replace the following filters: uuid, checksum, and anonymize.
+    (#907, Richard Pijnenburg)
+  - new: throttle: Allows you to tag or add fields to events that occur with a
+    given frequency. One use case is to have logstash email you only once if an
+    event occurs at least 3 times in 60 seconds. (#940, Mike Pilone) -
+  - improvement: translate: A new 'refresh_interval' setting lets you tell
+    logstash to periodically try reloading the 'dictionary_path' file
+    without requiring a restart. (#975, Kurt Hurtado)
+  - improvement: geoip: Now safe to use with multiple filter workers and
+    (#990, #997, LOGSTASH-1842; Avleen Vig, Jordan Sissel)
+  - improvement: metrics: Now safe to use with multiple filter workers (#993,
+    Bernd Ahlers)
+  - bugfix: date: Fix regression that caused times to be local time instead of
+    the intended timezone of UTC. (#1010, Jordan Sissel)
+
+  # outputs
+  - bugfix: pipe: fix handling of command failures (#1023, #1034, LOGSTASH-1860; ronnocol, Jordan Sissel)
+  - improvement: lumberjack: now supports codecs (#1048, LOGSTASH-1680; Nathan
+    Burns)
+
 1.3.3 (January 17, 2013)
   # general
   - bugfix: Fix SSL cert load problem on plugins using aws-sdk: S3, SNS, etc.
