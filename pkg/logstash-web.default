@@ -1,8 +1,5 @@
 # defaults for logstash
 
-# Start logstash on boot?
-START=no
-
 # pulled in from the init script; makes things easier.
 NAME=logstash-web
 
