@@ -36,7 +36,7 @@ fi
 LS_USER=logstash
 LS_GROUP=logstash
 
-JAVA=/usr/bin/java
+JAVA=`which java`
 
 # Directory where the logstash all in one jar lives
 LS_HOME=/var/lib/logstash
@@ -70,31 +70,19 @@ if [ -f "$DEFAULT" ]; then
 fi
 
 # Define other required variables
+LS_JAR="/opt/logstash/logstash.jar"
 PID_FILE=/var/run/$NAME.pid
 DAEMON=$LS_JAR
 DAEMON_OPTS="agent -f ${CONF_DIR} ${LS_OPTS}"
 
-is_true() {
-    if [ "x$1" = "xtrue" -o "x$1" = "xyes" -o "x$1" = "x1" ] ; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 # Check DAEMON exists
 if ! test -e $DAEMON; then
-   log_failure_msg "Daemon $DAEMON doesn't exist"
+   log_failure_msg "Jar file $DAEMON doesn't exist"
    exit 1
 fi
 
 case "$1" in
    start)
-      if ! is_true "$START" ; then
-         echo "logstash not configured to start, please edit /etc/default/logstash to enable"
-         exit 0
-      fi
-
       if [ -z "$JAVA" ]; then
          log_failure_msg "no JDK found - $JAVA"
          exit 1

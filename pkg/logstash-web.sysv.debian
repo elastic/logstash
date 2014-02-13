@@ -73,14 +73,6 @@ PID_FILE=/var/run/$NAME.pid
 DAEMON=$LS_JAR
 DAEMON_OPTS="web"
 
-is_true() {
-    if [ "x$1" = "xtrue" -o "x$1" = "xyes" -o "x$1" = "x1" ] ; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 # Check DAEMON exists
 if ! test -e $DAEMON; then
    log_failure_msg "Daemon $DAEMON doesn't exist"
@@ -89,11 +81,6 @@ fi
 
 case "$1" in
    start)
-      if ! is_true "$START" ; then
-         echo "logstash not configured to start, please edit /etc/default/logstash to enable"
-         exit 0
-      fi
-
       if [ -z "$JAVA" ]; then
          log_failure_msg "no JDK found - $JAVA"
          exit 1
