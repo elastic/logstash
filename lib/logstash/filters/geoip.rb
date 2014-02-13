@@ -140,9 +140,17 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
     geo_data_hash.each do |key, value|
       next if value.nil? || (value.is_a?(String) && value.empty?)
       if @fields.nil? || @fields.empty? || @fields.include?(key.to_s)
-        # no fields requested, so add all geoip hash items to
-        # the event's fields.
         # convert key to string (normally a Symbol)
+        if value.is_a?(String)
+          # Some strings from GeoIP don't have the correct encoding...
+          value = case value.encoding
+            # I have found strings coming from GeoIP that are ASCII-8BIT are actually
+            # ISO-8859-1...
+            when Encoding::ASCII_8BIT; value.force_encoding("ISO-8859-1").encode("UTF-8")
+            when Encoding::ISO_8859_1;  value.encode("UTF-8")
+            else; value
+          end
+        end
         event[@target][key.to_s] = value
       end
     end # geo_data_hash.each

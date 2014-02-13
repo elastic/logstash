@@ -73,14 +73,22 @@ describe LogStash::Filters::GeoIP do
                            dma_code area_code timezone)
 
     sample("ip" => "1.1.1.1") do
+      checked = 0
       expected_fields.each do |f|
+        next unless subject["geoip"][f]
+        checked += 1
         insist { subject["geoip"][f].encoding } == Encoding::UTF_8
       end
+      insist { checked } > 0
     end
     sample("ip" => "189.2.0.0") do
+      checked = 0
       expected_fields.each do |f|
+        next unless subject["geoip"][f]
+        checked += 1
         insist { subject["geoip"][f].encoding } == Encoding::UTF_8
       end
+      insist { checked } > 0
     end
 
   end
