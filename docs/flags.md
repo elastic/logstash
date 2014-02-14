@@ -24,8 +24,12 @@ default. </dd>
 <dd> Set watchdog timeout value in seconds. Default is 10.</dd>
 <dt> -l, --log FILE </dt>
 <dd> Log to a given path. Default is to log to stdout </dd>
-<dt> -v </dt>
-<dd> Increase verbosity. There are multiple levels of verbosity available with
+<dt> --verbose </dt>
+<dd> Increase verbosity to the first level, less verbose.</dd>
+<dt> --debug </dt>
+<dd> Increase verbosity to the last level, more verbose.</dd>
+<dt> -v  </dt>
+<dd> *DEPRECATED: see --verbose/debug* Increase verbosity. There are multiple levels of verbosity available with
 '-vv' currently being the highest </dd>
 <dt> --pluginpath PLUGIN_PATH </dt>
 <dd> A colon-delimted path to find other logstash plugins in </dd>
