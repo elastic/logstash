@@ -326,12 +326,18 @@ doccopy: $(addprefix build/,$(shell find docs -type f | grep '^docs/')) | build/
 docindex: build/docs/index.html
 
 docgen: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
+docgen: build/docs/tutorials/getting-started-with-logstash.md
 
 build/docs: build
-	-$(QUIET)mkdir $@
+	$(QUIET)-mkdir $@
 
 build/docs/inputs build/docs/filters build/docs/outputs build/docs/codecs: | build/docs
-	-$(QUIET)mkdir $@
+	$(QUIET)-mkdir $@
+
+build/docs/tutorials/getting-started-with-logstash.md: build/docs/tutorials/getting-started-with-logstash.xml
+	$(QUIET)pandoc -f docbook -t markdown $< > $@
+build/docs/tutorials/getting-started-with-logstash.xml: docs/tutorials/getting-started-with-logstash.asciidoc
+	$(QUIET)asciidoc -b docbook -o $@ $<
 
 # bluecloth gem doesn't work on jruby. Use ruby.
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/inputs
