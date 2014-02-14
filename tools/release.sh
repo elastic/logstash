@@ -20,15 +20,22 @@ fi
 
 set -e
 
-docs() {
-  rsync -av --delete $logstash/{docs,lib,spec,Makefile} $contrib/{lib,spec} $workdir
+prepare() {
+  rsync -a --delete $logstash/{bin,docs,lib,spec,Makefile,gembag.rb,logstash.gemspec,tools,locales,patterns,LICENSE,README.md} $contrib/{lib,spec} $workdir
   rm -f $logstash/.VERSION.mk
   make -C $logstash .VERSION.mk
   cp $logstash/.VERSION.mk $workdir
+}
 
+docs() {
   make -C $workdir build
   (cd $contrib; find lib/logstash -type f -name '*.rb') > $workdir/build/contrib_plugins
   make -C $workdir -j 4 docs
+}
+
+tests() {
+  make -C $workdir test
+  make -C $workdir tarball test
 }
 
 packages() {
@@ -40,5 +47,7 @@ packages() {
   done
 }
 
-docs
+prepare
 packages
+docs
+tests
