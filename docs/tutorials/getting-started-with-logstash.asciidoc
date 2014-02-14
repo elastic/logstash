@@ -432,8 +432,3 @@ Now you should see the output of logstash in your original shell as it processes
 ----
 
 Congratulations! You're well on your way to being a real Logstash power user. You should be comfortable configuring, running and sending events to Logstash, but there's much more to explore.
-
-* http://foo.com[Blah 1]
-* http://foo.com[Blah 2]
-* http://foo.com[Blah 3]
-* http://foo.com[Blah 4]
