@@ -42,12 +42,13 @@ packages() {
   for path in $logstash $contrib ; do
     rm -f $path/build/*.tar.gz
     rm -f $path/build/*.zip
+    echo "Building packages: $path"
     make -C $path tarball package
     (cd $path/build; cp *.gz *.rpm *.deb *.zip $workdir/build)
   done
 }
 
 prepare
-packages
-docs
 tests
+docs
+packages
