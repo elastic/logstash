@@ -72,6 +72,11 @@ describe LogStash::Filters::Wms do
     sample 'http://tile2.wms.de/mapproxy/service/?SERVICE=WmS&CRS=EPSG%3A2154&BBOX=8040NOTAVALIDBBOX93084' do
       insist { subject["wms.errmsg"] } == "Unable to parse the bounding box"
     end
+    # Unparseable URL provided
+    sample 'this is not a valid url, service=wms' do
+      insist { subject["wms.errmsg"].start_with?("Unable to parse the provided request URI:") }
+    end
+
 
 
   end

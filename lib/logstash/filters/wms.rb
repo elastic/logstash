@@ -39,8 +39,15 @@ class LogStash::Filters::Wms < LogStash::Filters::Base
     # not a valid WMS request
     return unless msg.include? "service=wms"
 
-    parsed_uri = URI(msg)
-    wms_parameters = Hash[*URI.decode_www_form(parsed_uri.query).flatten]
+    begin
+      parsed_uri = URI(msg)
+      wms_parameters = Hash[*URI.decode_www_form(parsed_uri.query).flatten]
+    rescue # TODO: be more specific
+      event["#{@prefix}errmsg"] = "Unable to parse the provided request URI: #{msg}"
+      # at this point, we won't be able to do better
+      filter_matched(event)
+      return
+    end
 
     @wms_fields.each do |f|
 
