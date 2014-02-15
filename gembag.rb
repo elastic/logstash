@@ -62,4 +62,10 @@ if RUBY_ENGINE == "rbx"
   end
 end
 
-Bundler::CLI.start(["install", "--gemfile=tools/Gemfile", "--path", target, "--clean"])
+# Try installing a few times in case we hit the "bad_record_mac" ssl error during installation.
+3.times do
+  begin
+    Bundler::CLI.start(["install", "--gemfile=tools/Gemfile", "--path", target, "--clean"])
+    break
+  end
+end
