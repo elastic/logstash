@@ -147,7 +147,7 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
             # I have found strings coming from GeoIP that are ASCII-8BIT are actually
             # ISO-8859-1...
             when Encoding::ASCII_8BIT; value.force_encoding("ISO-8859-1").encode("UTF-8")
-            when Encoding::ISO_8859_1;  value.encode("UTF-8")
+            when Encoding::ISO_8859_1, Encoding::US_ASCII;  value.encode("UTF-8")
             else; value
           end
         end
