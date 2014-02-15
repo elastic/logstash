@@ -64,17 +64,12 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
       e.printStackTrace
       raise e
     end
-    
-    # Try to register all three kinds of events with the watch service.
-    [java.nio.file.StandardWatchEventKinds::ENTRY_MODIFY,
-     java.nio.file.StandardWatchEventKinds::ENTRY_CREATE,
-     java.nio.file.StandardWatchEventKinds::ENTRY_DELETE].each do |kind|
-      begin
-        @javapath.register(@watchservice, kind)
-      rescue java.lang.Exception => e
-        @logger.warn("Unable to register watcher for event kind " + kind.name +
-                         " on path " + @javapath + ". This may not be fatal.")
-      end
+    begin
+      @javapath.register(@watchservice, java.nio.file.StandardWatchEventKinds::ENTRY_MODIFY,
+                         java.nio.file.StandardWatchEventKinds::ENTRY_CREATE,
+                         java.nio.file.StandardWatchEventKinds::ENTRY_DELETE)
+    rescue java.lang.Exception => e
+      @logger.warn("Unable to register watcher for path " + @javapath)
     end
   end # def register
 
