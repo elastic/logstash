@@ -335,7 +335,14 @@ build/docs/inputs build/docs/filters build/docs/outputs build/docs/codecs: | bui
 	$(QUIET)-mkdir $@
 
 build/docs/tutorials/getting-started-with-logstash.md: build/docs/tutorials/getting-started-with-logstash.xml
-	$(QUIET)pandoc -f docbook -t markdown $< > $@
+	$(QUIET)( \
+		echo "---"; \
+		echo "title: Metrics from Logs - logstash"; \
+		echo "layout: content_right"; \
+		echo "---"; \
+		pandoc -f docbook -t markdown $< \
+	) > $@
+
 build/docs/tutorials/getting-started-with-logstash.xml: docs/tutorials/getting-started-with-logstash.asciidoc
 	$(QUIET)asciidoc -b docbook -o $@ $<
 
