@@ -65,7 +65,7 @@ if [ -f "$DEFAULT" ]; then
 fi
 
 # Define other required variables
-PID_FILE=/var/run/$NAME.pid
+PID_FILE=/var/run/logstash/$NAME.pid
 
 JAVA=`which java`
 JAR="${LS_HOME}/logstash.jar"
