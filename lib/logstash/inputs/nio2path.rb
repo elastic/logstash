@@ -55,7 +55,7 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
       java.nio.file.Files.newDirectoryStream(@javapath, @prefix + "*" + @suffix).each do |file|
         # Save a reader for each file (non-directory)
         if (!java.nio.file.Files.isDirectory(file))
-          @readers[file.getFileName.toString] = java.nio.file.Files.newBufferedReader(file, @charset)
+          @readers[file.getFileName] = java.nio.file.Files.newBufferedReader(file, @charset)
         end
       end
       # Register a filesystem watchservice to monitor changes to files in the path
@@ -103,27 +103,27 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
           begin
             watchkey.pollEvents.each do |watchevent|
               p = watchevent.context
-              if (p.getFileName.toString.start_with?(@prefix) && p.getFileName.toString.end_with?(@suffix))
+              if (p.toString.start_with?(@prefix) && p.toString.end_with?(@suffix))
                 file = @javapath.resolve(p).toAbsolutePath
                 
                 # If file has been deleted, clear out its reader
-                if (!java.nio.file.Files.exists(file))
-                  reader = @readers[p.getFileName.toString]
+                if (watchevent.kind.name == java.nio.file.StandardWatchEventKinds::ENTRY_DELETE.name)
+                  reader = @readers[p]
                   if (reader)
                     reader.close
                   end
-                  @readers[p.getFileName.toString] = nil
+                  @readers[p] = nil
                   
                 # Otherwise, file has been created or modified
                 elsif (!java.nio.file.Files.isDirectory(file))
                   
                   # Look for an existing reader for the new or modified file
-                  reader = @readers[p.getFileName.toString]
+                  reader = @readers[p]
                   
                   # If this file was just created, set up a reader for it
                   if (reader.nil?)
-                      reader = java.nio.file.Files.newBufferedReader(file, @charset)
-                      @readers[p.getFileName.toString] = reader
+                    reader = java.nio.file.Files.newBufferedReader(file, @charset)
+                    @readers[p] = reader
                   end
                   
                   # Read new lines from file
