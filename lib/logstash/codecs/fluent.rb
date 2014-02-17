@@ -84,7 +84,7 @@ class LogStash::Codecs::Fluent < LogStash::Codecs::Base
         entries.each do |epochtime, map|
           yield event(tag, epochtime, map)
         end
-      else # [tag, timestamp, msg]
+      elsif # Message [tag, timestamp, msg]
         yield event(tag, entries, obj[2])
       end
     end
@@ -92,9 +92,11 @@ class LogStash::Codecs::Fluent < LogStash::Codecs::Base
 
   public
   def encode(event)
-    tag = event['tags'] || 'log'
+    tag = (event['tags'][0] unless event['tags'].nil?) || 'log'
     epochtime = event['@timestamp'].to_i
-    @on_event.call(MessagePack.pack([ tag, epochtime, event.to_hash ]))
+    # Time is not supported by MessagePack, so convert @timestamp to string
+    msg = event.to_hash.merge({'@timestamp' => event['@timestamp'].iso8601(3)})
+    @on_event.call(MessagePack.pack([ tag, epochtime, msg ]))
   end # def encode
 
   private
@@ -102,9 +104,7 @@ class LogStash::Codecs::Fluent < LogStash::Codecs::Base
     map['@timestamp'] = Time.at(epochtime).utc if map['@timestamp'].nil?
 
     event = LogStash::Event.new(map)
-    event['tags'] ||= []
-    event['tags'] << tag if event['tags'].index(tag) == nil
-
+    event.tag(tag)
     event
   end
 
