@@ -27,7 +27,7 @@ IP (?:%{IPV6}|%{IPV4})
 HOSTNAME \b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b)
 HOST %{HOSTNAME}
 IPORHOST (?:%{HOSTNAME}|%{IP})
-HOSTPORT (?:%{IPORHOST=~/\./}:%{POSINT})
+HOSTPORT %{IPORHOST}:%{POSINT}
 
 # paths
 PATH (?:%{UNIXPATH}|%{WINPATH})
