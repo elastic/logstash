@@ -84,7 +84,7 @@ class LogStash::Codecs::Fluent < LogStash::Codecs::Base
         entries.each do |epochtime, map|
           yield event(tag, epochtime, map)
         end
-      elsif # Message [tag, timestamp, msg]
+      else # Message [tag, timestamp, msg]
         yield event(tag, entries, obj[2])
       end
     end
