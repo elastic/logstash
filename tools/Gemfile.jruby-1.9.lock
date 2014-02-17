@@ -85,8 +85,6 @@ GEM
     jruby-httpclient (1.1.1-java)
     jruby-openssl (0.8.7)
       bouncy-castle-java (>= 1.5.0147)
-    json (1.8.1)
-    json (1.8.1-java)
     jruby-win32ole (0.8.5)
     json (1.8.1)
     json (1.8.1-java)
