@@ -1,9 +1,26 @@
-require "logstash/filters/base"
-require "logstash/namespace"
-
-require "geoscript"
-require "uri"
-
+#
+# This filter allows to parse WMS (Web-Map Service) queries.
+#
+# It can be used to extract the bounding box from the requests (in case of
+# GetMap queries for example), and the usual parameters defined in the OGC WMS
+# standard. See http://www.opengeospatial.org/standards/wms for more infos.
+#
+# The list of expected parameter can be customized by giving a specific array
+# of fields, but the default one should already fill in the logstash event with
+# the most common information we can find in regular WMS queries (service,
+# version, layers, requested projection, output format ...).
+# 
+# The module also permits to reproject the bounding boxes from getmap requests,
+# using the GeoScript (Gem / Wrapper to the Geotools java library).
+#
+# It can be customized using the following parameters:
+#
+# - output_epsg: the output projection to be used when setting the x/y
+#   coordinates, default to regular lat/long wgs84 ('epsg:4326')
+# - wms_fields: The fields that have to be potentially extracted from the query
+# - prefix: the string that will be used to prefix the variables added to the
+#   logstash event, defaults to 'wms.'
+#
 class LogStash::Filters::Wms < LogStash::Filters::Base
 
   config_name "wms"
@@ -25,7 +42,11 @@ class LogStash::Filters::Wms < LogStash::Filters::Base
 
   public
   def register
-  end
+    require "logstash/filters/base"
+    require "logstash/namespace"
+    require "geoscript"
+    require "uri"
+ end
 
   public
   def filter(event)

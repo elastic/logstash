@@ -1,16 +1,15 @@
-require "logstash/filters/base"
-require "logstash/namespace"
-
-require "geoscript"
-
-# Converts data from WMTS access logs to geospatial information
+#
+# This filter converts data from OGC WMTS (Web Map Tile Service) URLs to
+# geospatial information, and expands the logstash event accordingly. See
+# http://www.opengeospatial.org/standards/wmts for more information about WMTS. 
 #
 # Given a grid, WMTS urls contain all the necessary information to find out
 # which coordinates a requested tile belongs to.  Using a simple grok filter
 # you can extract all the relevant information. This plugin then translates
 # these information into coordinates in LV03 and WGS84.
 #
-# Example of a request: http://wmts4.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/20130213/21781/23/470/561.jpeg
+# Here is an example of such a request: 
+# http://wmts4.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/20130213/21781/23/470/561.jpeg
 #
 # The current filter can be configured as follows in the configuration file:
 # 
@@ -28,18 +27,32 @@ require "geoscript"
 #     wmts { }
 #  }
 #
+# By default, the filter is configured to parse requests made on WMTS servers
+# configured with the Swisstopo WMTS grid, but this can be customized, by
+# setting the following parameters:
 #
-
-# Author: Christian Wittwer <wittwerch AT gmail DOT com>
-# Date: 2013-05-16
+# - x_origin: the abscissa origin of the grid 
+# - y_origin: the ordinate origin of the grid
+# - tile_width: the width of the produced image tiles
+# - tile_height: the height of the image tiles
+# - resolutions: the array of resolutions for this wmts grid
+# 
+# Additionnally, the following parameters can be set:
 #
-# Modifications by Pierre Mauduit <pierre DOT mauduit AT camptocamp DOT com>
-# Date: 2014-01
-#
-# Summary: 
-#  * Integrating geoscript ruby gem to manage reprojections 
-#  * Adding some unit tests
-#  * Adding some extra options to the plugin
+# - prefix: the prefix used on the added variables, by default 'wmts.'
+# - output_epsg: the output projection, classical one by default (lat/lon /
+#   epsg:4326)
+# - zoomlevel_field: the name of the field where the filter can find the
+#   previously extracted zoomlevel, defaults to 'wmts.zoomlevel'
+# - column_field: same for column, defaults to 'wmts.col'
+# - row_field: same, defaults to 'wmts.row'
+# - refsys_field: same, defaults to 'wmts.reference-system'
+#   Note: if the reference system is different from the output_epsg, a
+#   reprojection of the coordinates will take place.
+# - epsg_mapping: sometimes, the reference-system can be given as a string
+#   ('swissgrid' for instance). This parameter allows to set a mapping between
+#   a regular name and the epsg number of a projection, e.g.:
+#   { 'swissgrid' => 21781 }
 #
 class LogStash::Filters::Wmts < LogStash::Filters::Base
 
@@ -85,7 +98,10 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
 
   public
   def register
-  end
+    require "logstash/filters/base"
+    require "logstash/namespace"
+    require "geoscript"
+ end
 
   public
   def filter(event)
