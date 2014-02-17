@@ -62,7 +62,7 @@ describe LogStash::Filters::Wmts do
       'mycustomlayer/default/12345678////.raw HTTP/1.1" 200 2114 ' \
       '"http://localhost//" "ozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36' \
       '(KHTML, like Gecko) Ubuntu Chromium/31.0.1650.63 Chrome/31.0.1650.63 Safari/537.36"' do
-         insist { subject['wmts.errmsg'] } == "Bad parameter received from the Grok filter"
+         insist { subject['wmts.errmsg'].start_with?("Bad parameter received") }
     end
 
     # query looking like a legit wmts log but actually contains garbage

@@ -30,8 +30,7 @@ class LogStash::Filters::Wms < LogStash::Filters::Base
   public
   def filter(event)
 
-    # Detects if the apache combined log grok filter has been executed before
-    # we use request if available.
+    # we use the request field if available, else fallback onto message
     msg = event["request"].nil? ? event["message"] : event["request"]
 
     msg.downcase!

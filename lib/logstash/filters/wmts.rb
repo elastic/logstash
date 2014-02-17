@@ -90,7 +90,7 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
   public
   def filter(event)
     begin
-      # cast values from grok into integers
+      # cast values extracted upstream into integers
       zoomlevel = Integer(event[@zoomlevel_field])
       col = Integer(event[@column_field])
       row = Integer(event[@row_field])
@@ -102,7 +102,7 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
       resolution = @resolutions[zoomlevel]
       raise ArgumentError if resolution.nil?
     rescue ArgumentError, TypeError, NoMethodError
-      event["#{@prefix}errmsg"] = "Bad parameter received from the Grok filter"
+      event["#{@prefix}errmsg"] = "Bad parameter received from upstream filter"
       filter_matched(event)
       return
     end
