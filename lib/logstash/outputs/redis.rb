@@ -10,7 +10,7 @@ require "stud/buffer"
 # the best performance and stability will be found in more 
 # recent stable versions.  Versions 2.6.0+ are recommended.
 #
-# For more information about redis, see <http://redis.io/>
+# For more information about Redis, see <http://redis.io/>
 #
 class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
@@ -65,7 +65,7 @@ require "../inputs/redis"
   # TODO set required true
   config :data_type, :validate => [ "list", "channel" ], :required => false
 
-  # Set to true if you want redis to batch up values and send 1 RPUSH command
+  # Set to true if you want Redis to batch up values and send 1 RPUSH command
   # instead of one command per value to push on the list.  Note that this only
   # works with `data_type="list"` mode right now.
   #
@@ -173,7 +173,7 @@ require "../inputs/redis"
         @redis.publish(key, payload)
       end
     rescue => e
-      @logger.warn("Failed to send event to redis", :event => event,
+      @logger.warn("Failed to send event to Redis", :event => event,
                    :identity => identity, :exception => e,
                    :backtrace => e.backtrace)
       sleep @reconnect_interval
@@ -185,7 +185,7 @@ require "../inputs/redis"
   def congestion_check(key)
     return if @congestion_threshold == 0
     if (Time.now.to_i - @congestion_check_times[key]) >= @congestion_interval # Check congestion only if enough time has passed since last check.
-      while @redis.llen(key) > @congestion_threshold # Don't push event to redis key which has reached @congestion_threshold.
+      while @redis.llen(key) > @congestion_threshold # Don't push event to Redis key which has reached @congestion_threshold.
         @logger.warn? and @logger.warn("Redis key size has hit a congestion threshold #{@congestion_threshold} suspending output for #{@congestion_interval} seconds")
         sleep @congestion_interval
       end
@@ -203,7 +203,7 @@ require "../inputs/redis"
   end
   # called from Stud::Buffer#buffer_flush when an error occurs
   def on_flush_error(e)
-    @logger.warn("Failed to send backlog of events to redis",
+    @logger.warn("Failed to send backlog of events to Redis",
       :identity => identity,
       :exception => e,
       :backtrace => e.backtrace
@@ -245,7 +245,7 @@ require "../inputs/redis"
     Redis.new(params)
   end # def connect
 
-  # A string used to identify a redis instance in log messages
+  # A string used to identify a Redis instance in log messages
   def identity
     @name || "redis://#{@password}@#{@current_host}:#{@current_port}/#{@db} #{@data_type}:#{@key}"
   end
