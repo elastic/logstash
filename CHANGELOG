@@ -14,6 +14,7 @@
   - The 'debug' setting was removed from most plugins. Prior to this, 
     most plugins advertised the availability of this setting but actually
     did not use it (#996, Jordan Sissel).
+  - bugfix: --pluginpath now lets you load codecs. (#1077, Sergey Zhemzhitsky)
 
   # inputs
   - improvement: log4j: port now defaults to 4560, the default log4j
