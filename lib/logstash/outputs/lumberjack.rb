@@ -20,29 +20,40 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
   def register
     require 'lumberjack/client'
     connect
+
+    @codec.on_event do |payload|
+      begin
+        @client.write({ 'line' => payload })
+      rescue Exception => e
+        @logger.error("Client write error, trying connect", :e => e, :backtrace => e.backtrace)
+        connect
+        retry
+      end # begin
+    end # @codec
   end # def register
 
   public
   def receive(event)
     return unless output?(event)
-    begin
-      @client.write(event.to_hash)
-    rescue Exception => e
-      @logger.error("Client write error", :e => e, :backtrace => e.backtrace)
-      connect
-      retry
-    end
+    if event == LogStash::SHUTDOWN
+      finished
+      return
+    end # LogStash::SHUTDOWN
+    @codec.encode(event)
   end # def receive
 
   private 
   def connect
+    require 'resolv'
     @logger.info("Connecting to lumberjack server.", :addresses => @hosts, :port => @port, 
         :ssl_certificate => @ssl_certificate, :window_size => @window_size)
     begin
-      @client = Lumberjack::Client.new(:addresses => @hosts, :port => @port, 
+      ips = []
+      @hosts.each { |host| ips += Resolv.getaddresses host }
+      @client = Lumberjack::Client.new(:addresses => ips.uniq, :port => @port, 
         :ssl_certificate => @ssl_certificate, :window_size => @window_size)
     rescue Exception => e
-      @logger.error("All hosts unavailable, sleeping", :hosts => @hosts, :e => e, 
+      @logger.error("All hosts unavailable, sleeping", :hosts => ips.uniq, :e => e, 
         :backtrace => e.backtrace)
       sleep(10)
       retry
