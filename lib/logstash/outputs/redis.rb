@@ -4,7 +4,7 @@ require "logstash/namespace"
 require "stud/buffer"
 
 # This output will send events to a Redis queue using RPUSH.
-# The RPUSH command is supported in redis v0.0.7+. Using
+# The RPUSH command is supported in Redis v0.0.7+. Using
 # PUBLISH to a channel requires at least v1.3.8+.
 # While you may be able to make these Redis versions work,
 # the best performance and stability will be found in more 
@@ -58,6 +58,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # valid here, for example "logstash-%{type}".
   # TODO set required true
   config :key, :validate => :string, :required => false
+require "../inputs/redis"
 
   # Either list or channel.  If `redis_type` is list, then we will set
   # RPUSH to key. If `redis_type` is channel, then we will PUBLISH to `key`.
@@ -87,12 +88,12 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # block until someone consumes them and reduces congestion, otherwise if there are
   # no consumers Redis will run out of memory, unless it was configured with OOM protection.
   # But even with OOM protection, a single Redis list can block all other users of Redis,
-  # until Redis cpu consumption reaches the max allowed RAM size.
+  # until Redis CPU consumption reaches the max allowed RAM size.
   # A default value of 0 means that this limit is disabled.
-  # Only supported for "list" Redis `data_type`.
+  # Only supported for `list` Redis `data_type`.
   config :congestion_threshold, :validate => :number, :default => 0
 
-  # How often to check for congestion. Defaults is 1 second.
+  # How often to check for congestion. Default is one second.
   # Zero means to check on every event.
   config :congestion_interval, :validate => :number, :default => 1
 
