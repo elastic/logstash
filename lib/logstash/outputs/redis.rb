@@ -90,6 +90,10 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # Only supported for list redis data_type.
   config :congestion_threshold, :validate => :number, :default => 0
 
+  # In case redis list more than @congestion_threshold items, ltrim the oldest items and make it non-blocking.
+  # It will keep @congestion_threshold newest items.
+  config :congestion_keep_recent, :validate => :boolean, :default => false
+
   # How often to check for congestion, defaults to 1 second.
   # Zero means to check on every event.
   config :congestion_interval, :validate => :number, :default => 1
@@ -182,9 +186,13 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   def congestion_check(key)
     return if @congestion_threshold == 0
     if (Time.now.to_i - @congestion_check_times[key]) >= @congestion_interval # Check congestion only if enough time has passed since last check.
-      while @redis.llen(key) > @congestion_threshold # Don't push event to redis key which has reached @congestion_threshold.
-        @logger.warn? and @logger.warn("Redis key size has hit a congestion threshold #{@congestion_threshold} suspending output for #{@congestion_interval} seconds")
-        sleep @congestion_interval
+      if @congestion_keep_recent
+        @redis.ltrim(key, -@congestion_threshold, -1)
+      else
+        while @redis.llen(key) > @congestion_threshold # Don't push event to redis key which has reached @congestion_threshold.
+          @logger.warn? and @logger.warn("Redis key size has hit a congestion threshold #{@congestion_threshold} suspending output for #{@congestion_interval} seconds")
+          sleep @congestion_interval
+        end
       end
       @congestion_check_time = Time.now.to_i
     end
