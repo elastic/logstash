@@ -58,7 +58,6 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # valid here, for example "logstash-%{type}".
   # TODO set required true
   config :key, :validate => :string, :required => false
-require "../inputs/redis"
 
   # Either list or channel.  If `redis_type` is list, then we will set
   # RPUSH to key. If `redis_type` is channel, then we will PUBLISH to `key`.
