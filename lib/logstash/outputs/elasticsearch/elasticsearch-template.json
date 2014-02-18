@@ -1,15 +1,7 @@
 {
   "template" : "logstash-*",
   "settings" : {
-    "index.refresh_interval" : "5s",
-    "analysis" : {
-      "analyzer" : {
-        "default" : {
-          "type" : "standard",
-          "stopwords" : "_none_"
-        }
-      }
-    }
+    "index.refresh_interval" : "5s"
   },
   "mappings" : {
     "_default_" : {
