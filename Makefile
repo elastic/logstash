@@ -17,8 +17,10 @@ COLLECTD_VERSION=5.4.0
 TYPESDB_URL=https://collectd.org/files/collectd-$(COLLECTD_VERSION).tar.gz
 GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
+GEOIP_ASN=vendor/geoip/GeoIPASNum.dat
+GEOIP_ASN_URL=http://logstash.objects.dreamhost.com/maxmind/GeoIPASNum-2014-02-12.dat.gz
 KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-3.0.0milestone5.tar.gz
-PLUGIN_FILES=$(shell git ls-files | egrep '^lib/logstash/(inputs|outputs|filters|codecs)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
+PLUGIN_FILES=$(shell find lib -type f| egrep '^lib/logstash/(inputs|outputs|filters|codecs)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 QUIET=@
 ifeq (@,$(QUIET))
 	QUIET_OUTPUT=> /dev/null 2>&1
@@ -158,13 +160,20 @@ vendor/geoip: | vendor
 	$(QUIET)mkdir $@
 
 .PHONY: vendor-geoip
-vendor-geoip: $(GEOIP)
+vendor-geoip: $(GEOIP) $(GEOIP_ASN)
 $(GEOIP): | vendor/geoip
 	$(QUIET)$(DOWNLOAD_COMMAND) $@.tmp.gz $(GEOIP_URL)
 	$(QUIET)gzip -dc $@.tmp.gz > $@.tmp
 	$(QUIET)rm "$@.tmp.gz"
 	$(QUIET)mv $@.tmp $@
 
+$(GEOIP_ASN): | vendor/geoip
+	$(QUIET)$(DOWNLOAD_COMMAND) $@.tmp.gz $(GEOIP_ASN_URL)
+	$(QUIET)gzip -dc $@.tmp.gz > $@.tmp
+	$(QUIET)rm "$@.tmp.gz"
+	$(QUIET)mv $@.tmp $@
+
+vendor/collectd: | vendor
 vendor/collectd: | vendor
 	$(QUIET)mkdir $@
 
@@ -193,7 +202,7 @@ vendor/bundle: | vendor $(JRUBY)
 	@# Purge any rspec or test directories
 	-$(QUIET)rm -rf $@/jruby/1.9/gems/*/spec $@/jruby/1.9/gems/*/test
 	@# Purge any comments in ruby code.
-	@#-find $@/jruby/1.9/gems/ -name '*.rb' | xargs -n1 sed -i -re '/^[ \t]*#/d; /^[ \t]*$$/d'
+	@#-find $@/jruby/1.9/gems/ -name '*.rb' | xargs -n1 sed -i -e '/^[ \t]*#/d; /^[ \t]*$$/d'
 
 .PHONY: build
 build:
@@ -279,7 +288,7 @@ build/flatgems: | build vendor/bundle
 	$(QUIET)rsync -a $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
 	$(QUIET)rsync -a $(VENDOR_DIR)/gems/aws-sdk-*/ca-bundle.crt $@/root/
 	@# A lame hack to work around the aws-sdk bug (LOGSTASH-1718)
-	sed -i -e "s@SRC = ROOT + '/lib/aws'@SRC = ROOT + 'aws'@" $@/lib/aws/core.rb
+	sed -i "" -e "s@SRC = ROOT + '/lib/aws'@SRC = ROOT + 'aws'@" $@/lib/aws/core.rb
 
 
 flatjar-test:
@@ -313,33 +322,48 @@ test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd
 .PHONY: docs
 docs: docgen doccopy docindex
 
-doccopy: $(addprefix build/,$(shell git ls-files | grep '^docs/')) | build/docs
+doccopy: $(addprefix build/,$(shell find docs -type f | grep '^docs/')) | build/docs
 docindex: build/docs/index.html
 
 docgen: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
+docgen: build/docs/tutorials/getting-started-with-logstash.md
 
 build/docs: build
-	-$(QUIET)mkdir $@
+	$(QUIET)-mkdir $@
 
 build/docs/inputs build/docs/filters build/docs/outputs build/docs/codecs: | build/docs
-	-$(QUIET)mkdir $@
+	$(QUIET)-mkdir $@
+
+build/docs/tutorials/getting-started-with-logstash.md: build/docs/tutorials/getting-started-with-logstash.xml
+	$(QUIET)( \
+		echo "---"; \
+		echo "title: Metrics from Logs - logstash"; \
+		echo "layout: content_right"; \
+		echo "---"; \
+		pandoc -f docbook -t markdown $< \
+	) \
+	| sed -e 's/%VERSION%/$(VERSION)/g' \
+	| sed -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' > $@
+
+build/docs/tutorials/getting-started-with-logstash.xml: docs/tutorials/getting-started-with-logstash.asciidoc
+	$(QUIET)asciidoc -b docbook -o $@ $<
 
 # bluecloth gem doesn't work on jruby. Use ruby.
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/inputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
-	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
-	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
+	$(QUIET)sed -i "" -e 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i "" -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/filters/%.html: lib/logstash/filters/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/filters
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
-	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
-	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
+	$(QUIET)sed -i "" -e 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i "" -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/outputs/%.html: lib/logstash/outputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/outputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
-	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
-	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
+	$(QUIET)sed -i "" -e 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i "" -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/codecs/%.html: lib/logstash/codecs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/codecs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
-	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i "" -e 's/%VERSION%/$(VERSION)/g' $@
 
 build/docs/%: docs/% lib/logstash/version.rb Makefile
 	@echo "Copying $< (to $@)"
@@ -348,8 +372,8 @@ build/docs/%: docs/% lib/logstash/version.rb Makefile
 	$(QUIET)case "$(suffix $<)" in \
 		.gz|.bz2|.png|.jpg) ;; \
 		*) \
-			sed -i -re 's/%VERSION%/$(VERSION)/g' $@ ; \
-			sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@ ; \
+			sed -i "" -e 's/%VERSION%/$(VERSION)/g' $@ ; \
+			sed -i "" -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@ ; \
 			;; \
 	esac
 
@@ -357,8 +381,8 @@ build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .r
 build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index.html.erb Makefile
 	@echo "Building documentation index.html"
 	$(QUIET)ruby $< build/docs > $@
-	$(QUIET)sed -i -re 's/%VERSION%/$(VERSION)/g' $@
-	$(QUIET)sed -i -re 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
+	$(QUIET)sed -i "" -e 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i "" -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 
 .PHONY: patterns
 patterns:
@@ -429,8 +453,8 @@ prepare-tarball:
 	@echo "=> Preparing tarball"
 	$(QUIET)$(MAKE) $(WORKDIR)
 	$(QUIET)rsync -a --relative bin lib spec locales patterns vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md --exclude 'vendor/bundle/jruby/1.9/cache' --exclude 'vendor/bundle/jruby/1.9/gems/*/doc' --exclude 'vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz'  $(WORKDIR)
-	$(QUIET)sed -i -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
-	$(QUIET)sed -i -e 's/%JRUBY_VERSION%/$(JRUBY_VERSION)/' $(WORKDIR)/bin/logstash.bat
+	$(QUIET)sed -i "" -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
+	$(QUIET)sed -i "" -e 's/%JRUBY_VERSION%/$(JRUBY_VERSION)/' $(WORKDIR)/bin/logstash.bat
 
 .PHONY: tarball
 tarball: | build/logstash-$(VERSION).tar.gz

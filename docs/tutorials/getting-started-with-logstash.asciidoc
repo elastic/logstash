@@ -28,11 +28,11 @@ Once you have verified the existence of Java on your system, we can move on!
 === Logstash in two commands
 First, we're going to download the pre-built logstash binary and run it with a very simple configuration.
 ----
-curl -O https://download.elasticsearch.org/logstash/logstash/logstash-1.3.3-flatjar.jar
+curl -O https://download.elasticsearch.org/logstash/logstash/logstash-%VERSION%-flatjar.jar
 ----
-Now you should have the file named 'logstash-1.3.3-flatjar.jar' on your local filesystem. Let's run it:
+Now you should have the file named 'logstash-%VERSION%-flatjar.jar' on your local filesystem. Let's run it:
 ----
-java -jar logstash-1.3.3-flatjar.jar agent -e 'input { stdin { } } output { stdout {} }'
+bin/logstash -e 'input { stdin { } } output { stdout {} }'
 ----
 
 Now type something into your command prompt, and you will see it output by logstash: 
@@ -45,7 +45,7 @@ OK, that's interesting... We ran logstash with an input called "stdin", and an o
 
 Let's try a slightly fancier example. First, you should exit logstash by issuing a 'CTRL-C' command in the shell in which it is running. Now run logstash again with the following command:
 ----
-java -jar logstash-1.3.3-flatjar.jar agent -e 'input { stdin { } } output { stdout { codec => rubydebug } }'
+bin/logstash -e 'input { stdin { } } output { stdout { codec => rubydebug } }'
 ----
 
 And then try another test input, typing the text "goodnight moon":
@@ -64,19 +64,19 @@ So, by re-configuring the "stdout" output (adding a "codec"), we can change the 
 == Storing logs with Elasticsearch 
 Now, you're probably saying, "that's all fine and dandy, but typing all my logs into logstash isn't really an option, and merely seeing them spit to STDOUT isn't very useful." Good point. First, let's set up Elasticsearch to store the messages we send into logstash. If you don't have Elasticearch already installed, you can http://www.elasticsearch.org/download/[download the RPM or DEB package], or install manually by downloading the current release tarball, by issuing the following four commands:
 ----
-curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.10.tar.gz
-tar zxvf elasticsearch-0.90.10.tar.gz
-cd elasticsearch-0.90.10/
+curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-%ELASTICSEARCH_VERSION%.tar.gz
+tar zxvf elasticsearch-%ELASTICSEARCH_VERSION%.tar.gz
+cd elasticsearch-%ELASTICSEARCH_VERSION%/
 ./bin/elasticsearch
 ----
 
-NOTE: This tutorial specifies running Logstash 1.3.3 with Elasticsearch 0.90.10. Each release of Logstash has a *recommended* version of Elasticsearch to pair with. Make sure the versions match based on the http://logstash.net/docs/latest[Logstash version] you're running!
+NOTE: This tutorial specifies running Logstash %VERSION% with Elasticsearch %ELASTICSEARCH_VERSION%. Each release of Logstash has a *recommended* version of Elasticsearch to pair with. Make sure the versions match based on the http://logstash.net/docs/latest[Logstash version] you're running!
 
 More detailed information on installing and configuring Elasticsearch can be found on http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/index.html[The Elasticsearch reference pages]. However, for the purposes of Getting Started with Logstash, the default installation and configuration of Elasticsearch should be sufficient.
 
 Now that we have Elasticsearch running on port 9200 (we do, right?), logstash can be simply configured to use Elasticsearch as its backend. The defaults for both logstash and Elasticsearch are fairly sane and well thought out, so we can omit the optional configurations within the elasticsearch output:
 ----
-java -jar logstash-1.3.3-flatjar.jar agent -e 'input { stdin { } } output { elasticsearch { host => localhost } }'
+bin/logstash -e 'input { stdin { } } output { elasticsearch { host => localhost } }'
 ----
 
 Type something, and logstash will process it as before (this time you won't see any output, since we don't have the stdout output configured)
@@ -124,7 +124,7 @@ Now you can browse to http://localhost:9200/_plugin/kopf[http://localhost:9200/_
 === Multiple Outputs
 As a quick exercise in configuring multiple Logstash outputs, let's invoke logstash again, using both the 'stdout' as well as the 'elasticsearch' output:
 ----
-java -jar logstash-1.3.3-flatjar.jar agent -e 'input { stdin { } } output { elasticsearch { host => localhost } stdout { } }'
+bin/logstash -e 'input { stdin { } } output { elasticsearch { host => localhost } stdout { } }'
 ----
 Typing a phrase will now echo back to your terminal, as well as save in Elasticsearch! (Feel free to verify this using curl or elasticsearch-kopf).
 
@@ -177,7 +177,6 @@ For the complete list of (current) configurations, visit the logstash "plugin co
 
 Specifying configurations on the command line using '-e' is only so helpful, and more advanced setups will require more lengthy, long-lived configurations. First, let's create a simple configuration file, and invoke logstash using it. Create a file named "logstash-simple.conf" and save it in the same directory as the logstash flatjar.
 
-http://foo.com[logstash-simple.conf]
 ----
 input { stdin { } }
 output {
@@ -189,7 +188,7 @@ output {
 Then, run this command:
 
 ----
-java -jar logstash-1.3.3-flatjar.jar agent -f logstash-simple.conf
+bin/logstash -f logstash-simple.conf
 ----
 
 Et voilà! Logstash will read in the configuration file you just created and run as in the example we saw earlier. Note that we used the '-f' to read in the file, rather than the '-e' to read the configuration from the command line. This is a very simple case, of course, so let's move on to some more complex examples.
@@ -197,7 +196,6 @@ Et voilà! Logstash will read in the configuration file you just created and run
 === Filters
 Filters are an in-line processing mechanism which provide the flexibility to slice and dice your data to fit your needs. Let's see one in action, namely the *grok filter*. 
 
-http://foo.com[logstash-filter.conf]
 ----
 input { stdin { } }
 
@@ -218,7 +216,7 @@ output {
 Run the logstash jar file with this configuration:
 
 ----
-java -jar logstash-1.3.3-flatjar.jar agent -f logstash-filter.conf
+bin/logstash -f logstash-filter.conf
 ----
 
 Now paste this line into the terminal (so it will be processed by the stdin input):
@@ -254,7 +252,6 @@ The other filter used in this example is the *date* filter. This filter parses o
 === Apache logs (from files)
 Now, let's configure something actually *useful*... apache2 access log files! We are going to read the input from a file on the localhost, and use a *conditional* to process the event according to our needs. First, create a file called something like 'logstash-apache.conf' with the following contents (you'll need to change the log's file path to suit your needs):
 
-http://foo.com[logstash-apache.conf]
 ----
 input {
   file {
@@ -293,13 +290,12 @@ Then, create the file you configured above (in this example, "/Applications/XAMP
 
 Now run it with the -f flag as in the last example:
 ----
-java -jar logstash-1.3.3-flatjar.jar agent -f logstash-apache.conf
+bin/logstash -f logstash-apache.conf
 ----
 You should be able to see your apache log data in Elasticsearch now! You'll notice that logstash opened the file you configured, and read through it, processing any events it encountered. Any additional lines logged to this file will also be captured, processed by logstash as events and stored in Elasticsearch. As an added bonus, they will be stashed with the field "type" set to "apache_access" (this is done by the type => "apache_access" line in the input configuration).
 
 In this configuration, logstash is only watching the apache access_log, but it's easy enough to watch both the access_log and the error_log (actually, any file matching '*log'), by changing one line in the above configuration, like this:
 
-http://foo.com[logstash-apache-wildcard.conf]
 ----
 input {
   file {
@@ -313,7 +309,6 @@ Also, you might have noticed that logstash did not reprocess the events which we
 === Conditionals
 Now we can build on the previous example, where we introduced the concept of a *conditional*. A conditional should be familiar to most logstash users, in the general sense. You may use 'if', 'else if' and 'else' statements, as in many other programming languages. Let's label each event according to which file it appeared in (access_log, error_log and other random files which end with "log").
 
-http://foo.com[logstash-apache-error.conf]
 ----
 input {
   file {
@@ -350,8 +345,6 @@ OK, now we can move on to another incredibly useful example: *syslog*. Syslog is
 
 First, let's make a simple configuration file for logstash + syslog, called 'logstash-syslog.conf'. 
 
-http://foo.com[logstash-syslog.conf]
-
 ----
 input {
   tcp {
@@ -385,7 +378,7 @@ output {
 ----
 Run it as normal:
 ----
-java -jar logstash-1.3.3-flatjar.jar agent -f logstash-syslog.conf
+bin/logstash -f logstash-syslog.conf
 ----
 Normally, a client machine would connect to the logstash instance on port 5000 and send its message. In this simplified case, we're simply going to telnet to logstash and enter a log line (similar to how we entered log lines into STDIN earlier). First, open another shell window to interact with the logstash syslog input and type the following command:
 
@@ -432,8 +425,3 @@ Now you should see the output of logstash in your original shell as it processes
 ----
 
 Congratulations! You're well on your way to being a real Logstash power user. You should be comfortable configuring, running and sending events to Logstash, but there's much more to explore.
-
-* http://foo.com[Blah 1]
-* http://foo.com[Blah 2]
-* http://foo.com[Blah 3]
-* http://foo.com[Blah 4]
