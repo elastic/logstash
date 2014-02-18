@@ -4,26 +4,14 @@ layout: content_right
 ---
 <h2><%= name %></h2>
 <h3>Milestone: <a href="../plugin-milestones"><%= @milestone %></a></h3>
+<% if is_contrib_plugin -%>
+<div class="community-plugin-notice">
+  <strong>This is a community-contributed plugin!</strong> It does not ship with logstash by default, but it is easy to install!
+  To use this, you must have <a href="../contrib-plugins">installed the contrib plugins package</a>.
+</div>
+<% end -%>
 
 <%= description %>
-
-<% if !@flags.empty? -%>
-<!-- Flags are deprecated 
-<h3> Flags </h3>
-
-This plugin provides the following flags:
-
-<dl>
-<% @flags.each do |flag, description| -%>
-<%# Prefix flag with plugin name. %>
-  <dt> <%= flag.gsub(/^--/, "--#{name}-") %> </dt>
-  <dd> <%= description %> </dd>
-<% end -%>
-</dl>
-
-... flags are deprecated -->
-
-<% end -%>
 
 <h3> Synopsis </h3>
 

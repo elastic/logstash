@@ -5,10 +5,12 @@ require "logstash/util/socket_peer"
 require "socket"
 require "timeout"
 
-# Read events over a TCP socket from Log4j SocketAppender.
+# Read events over a TCP socket from a Log4j SocketAppender.
 #
 # Can either accept connections from clients or connect to a server,
-# depending on `mode`. Depending on mode, you need a matching SocketAppender or SocketHubAppender on the remote side
+# depending on `mode`. Depending on which `mode` is configured,
+# you need a matching SocketAppender or a SocketHubAppender
+# on the remote side.
 class LogStash::Inputs::Log4j < LogStash::Inputs::Base
 
   config_name "log4j"
@@ -22,7 +24,7 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
   # When mode is `client`, the port to connect to.
   config :port, :validate => :number, :default => 4560
 
-  # Read timeout in seconds. If a particular tcp connection is
+  # Read timeout in seconds. If a particular TCP connection is
   # idle for more than this timeout period, we will assume
   # it is dead and close it.
   # If you never want to timeout, use -1.
