@@ -1,3 +1,6 @@
+require "logstash/filters/base"
+require "logstash/namespace"
+
 #
 # This filter allows to parse WMS (Web-Map Service) queries.
 #
@@ -21,6 +24,7 @@
 # - prefix: the string that will be used to prefix the variables added to the
 #   logstash event, defaults to 'wms.'
 #
+
 class LogStash::Filters::Wms < LogStash::Filters::Base
 
   config_name "wms"
@@ -42,8 +46,6 @@ class LogStash::Filters::Wms < LogStash::Filters::Base
 
   public
   def register
-    require "logstash/filters/base"
-    require "logstash/namespace"
     require "geoscript"
     require "uri"
  end

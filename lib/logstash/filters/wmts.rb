@@ -1,3 +1,6 @@
+require "logstash/filters/base"
+require "logstash/namespace"
+
 #
 # This filter converts data from OGC WMTS (Web Map Tile Service) URLs to
 # geospatial information, and expands the logstash event accordingly. See
@@ -54,6 +57,7 @@
 #   a regular name and the epsg number of a projection, e.g.:
 #   { 'swissgrid' => 21781 }
 #
+
 class LogStash::Filters::Wmts < LogStash::Filters::Base
 
   config_name "wmts"
@@ -98,8 +102,6 @@ class LogStash::Filters::Wmts < LogStash::Filters::Base
 
   public
   def register
-    require "logstash/filters/base"
-    require "logstash/namespace"
     require "geoscript"
  end
 
