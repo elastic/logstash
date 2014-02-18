@@ -90,6 +90,7 @@ class LogStash::Inputs::RabbitMQ
                      :durable     => @durable,
                      :auto_delete => @auto_delete,
                      :exclusive   => @exclusive,
+                     :passive     => @passive,
                      :arguments   => @arguments)
 
       # exchange binding is optional for the input
