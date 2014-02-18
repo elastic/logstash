@@ -107,7 +107,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
 
   private
   def load_batch_script(redis)
-    #A Redis lua EVAL script to fetch a count of keys
+    #A Redis Lua EVAL script to fetch a count of keys
     #in case count is bigger than current items in queue whole queue will be returned without extra nil values
     redis_script = <<EOF
           local i = tonumber(ARGV[1])
