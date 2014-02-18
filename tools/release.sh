@@ -1,7 +1,7 @@
 
 
-logstash=$HOME/projects/logstash
-contrib=$HOME/projects/logstash-contrib
+logstash=$PWD
+contrib=$PWD/../logstash-contrib/
 
 workdir="$PWD/build/release/"
 mkdir -p $workdir
