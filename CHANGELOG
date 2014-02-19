@@ -1,4 +1,4 @@
-1.4.0 (???)
+1.4.0 beta1 (Feb 20, 2014)
   # general
   - Elasticsearch 1.0 libraries are now included. See the Elasticsearch
     release notes for details: http://www.elasticsearch.org/downloads/1-0-0/
@@ -14,6 +14,7 @@
   - The 'debug' setting was removed from most plugins. Prior to this, 
     most plugins advertised the availability of this setting but actually
     did not use it (#996, Jordan Sissel).
+  - bugfix: --pluginpath now lets you load codecs. (#1077, Sergey Zhemzhitsky)
 
   # inputs
   - improvement: log4j: port now defaults to 4560, the default log4j
@@ -78,6 +79,8 @@
     Sissel)
   - bugfix: Fix regression introduced in 1.3.2 while trying to improve time
     parsing performance. (LOGSTASH-1732, LOGSTASH-1738, #913; Jordan Sissel)
+  - bugfix: rabbitmq: honour the passive option when creating queues.
+    (LOGSTASH-1461, Tim Potter)
 
   # codecs
   - bugfix: json_lines, json: Fix bug causing invalid json to be incorrectly

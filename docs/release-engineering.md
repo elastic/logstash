@@ -24,7 +24,7 @@ right? ;)
 
 * Make sure all tests pass (make test)
   * `ruby bin/logstash test`
-  * `java -jar logstash-x.y.z-flatjar.jar test`
+  * `java -jar logstash-x.y.z.tar.gz test`
 * Update VERSION.rb
   * VERSION=$(ruby -r./VERSION -e 'puts LOGSTASH_VERSION')
 * Ensure CHANGELOG is up-to-date
