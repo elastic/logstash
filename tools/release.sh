@@ -46,11 +46,11 @@ packages() {
     rm -f $path/build/*.zip
     echo "Building packages: $path"
     make -C $path tarball
-    [ "$path" = "$logstash" ] && make -C $path tarball
+    [ "$path" = "$logstash" ] && make -C $path flatjar
     for dir in build pkg ; do
       [ ! -d "$path/$dir" ] && continue
       (cd $path/$dir;
-        for i in *.gz *.rpm *.deb *.zip ; do
+        for i in *.gz *.rpm *.deb *.zip *.jar ; do
           [ ! -f "$i" ] && continue
           echo "Copying $path/$dir/$i"
           cp $path/$dir/$i $workdir/build
