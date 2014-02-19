@@ -1,6 +1,7 @@
 # encoding: utf-8
 require 'logstash/inputs/base'
 require 'logstash/namespace'
+require 'socket'
 
 # Read fluentd events over a TCP socket.
 #
@@ -93,8 +94,6 @@ class LogStash::Inputs::Fluent < LogStash::Inputs::Base
 
   private
   def heartbeat_handler
-    require 'socket'
-
     begin
       @udp.close if @udp && !@udp.closed?
 
