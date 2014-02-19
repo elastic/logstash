@@ -19,6 +19,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   config :user, :validate => :string, :required => true
   config :password, :validate => :password, :required => true
   config :secure, :validate => :boolean, :default => true
+  config :verify_cert, :validate => :boolean, :default => true
 
   config :fetch_count, :validate => :number, :default => 50
   config :lowercase_headers, :validate => :boolean, :default => true
@@ -46,7 +47,11 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   end # def register
 
   def connect
-    imap = Net::IMAP.new(@host, :port => @port, :ssl => @secure)
+    sslopt = @secure
+    unless @verify_cert
+        sslopt = { :verify_mode => OpenSSL::SSL::VERIFY_NONE }
+    end
+    imap = Net::IMAP.new(@host, :port => @port, :ssl => sslopt)
     imap.login(@user, @password.value)
     return imap
   end
