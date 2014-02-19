@@ -180,7 +180,7 @@ For the complete list of (current) configurations, visit the logstash "plugin co
 == More fun with Logstash
 === Persistent Configuration files
 
-Specifying configurations on the command line using '-e' is only so helpful, and more advanced setups will require more lengthy, long-lived configurations. First, let's create a simple configuration file, and invoke logstash using it. Create a file named "logstash-simple.conf" and save it in the same directory as the logstash flatjar.
+Specifying configurations on the command line using '-e' is only so helpful, and more advanced setups will require more lengthy, long-lived configurations. First, let's create a simple configuration file, and invoke logstash using it. Create a file named "logstash-simple.conf" and save it in the same directory as logstash.
 
 ----
 input { stdin { } }
@@ -218,7 +218,7 @@ output {
   stdout { codec => rubydebug }
 }
 ----
-Run the logstash jar file with this configuration:
+Run logstash with this configuration:
 
 ----
 bin/logstash -f logstash-filter.conf
