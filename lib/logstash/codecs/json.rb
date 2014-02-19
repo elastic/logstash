@@ -36,7 +36,7 @@ class LogStash::Codecs::JSON < LogStash::Codecs::Base
       yield LogStash::Event.new(JSON.parse(data))
     rescue JSON::ParserError => e
       @logger.info("JSON parse failure. Falling back to plain-text", :error => e, :data => data)
-      yield LogStash::Event.new("message" => data)
+      yield LogStash::Event.new({ "message" => data, "tags" => "_jsonparsefailure" })
     end
   end # def decode
 
