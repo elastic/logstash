@@ -91,27 +91,14 @@ plugin.
 You can use the agent flag --pluginpath flag to specify where the root of your
 plugin tree is. In our case, it's the current directory.
 
-    % logstash --pluginpath . -f example.conf
-
-If you use the jar release of logstash, you have an additional option - you can
-include the plugin right in the jar file.
-
-    # This command will take your 'logstash/filters/foo.rb' file
-    # and add it into the jar file.
-    % jar -uf logstash-%VERSION%-flatjar.jar logstash/filters/foo.rb
-
-    # Verify it's in the right location in the jar!
-    % jar tf logstash-%VERSION%-flatjar.jar | grep foo.rb
-    logstash/filters/foo.rb
-
-    % java -jar logstash-%VERSION%-flatjar.jar agent -f example.conf
+    % bin/logstash --pluginpath your/plugin/root -f example.conf
 
 ## Example running
 
 In the example below, I typed in "the quick brown fox" after running the java
 command.
 
-    % java -jar logstash-%VERSION%-flatjar.jar agent -f example.conf
+    % bin/logstash -f example.conf
     the quick brown fox   
     2011-05-12T01:05:09.495000Z stdin://snack.home/: Hello world!
 

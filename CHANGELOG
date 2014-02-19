@@ -1,4 +1,4 @@
-1.4.0 (???)
+1.4.0 beta1 (Feb 20, 2014)
   # general
   - Elasticsearch 1.0 libraries are now included. See the Elasticsearch
     release notes for details: http://www.elasticsearch.org/downloads/1-0-0/
