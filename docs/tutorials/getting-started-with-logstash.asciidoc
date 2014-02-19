@@ -30,8 +30,13 @@ First, we're going to download the pre-built logstash binary and run it with a v
 ----
 curl -O https://download.elasticsearch.org/logstash/logstash/logstash-%VERSION%.tar.gz
 ----
-Now you should have the file named 'logstash-%VERSION%.tar.gz' on your local filesystem. Let's run it:
+Now you should have the file named 'logstash-%VERSION%.tar.gz' on your local filesystem. Let's unpack it:
 ----
+tar zxvf logstash-%VERSION%.tar.gz
+cd logstash-%VERSION%
+---
+Now let's run it:
+---
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 ----
 
