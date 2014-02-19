@@ -331,10 +331,14 @@ docgen: build/docs/tutorials/getting-started-with-logstash.md
 build/docs: build
 	$(QUIET)-mkdir $@
 
+build/docs/tutorials: build/docs
+	$(QUIET)-mkdir $@
+
+
 build/docs/inputs build/docs/filters build/docs/outputs build/docs/codecs: | build/docs
 	$(QUIET)-mkdir $@
 
-build/docs/tutorials/getting-started-with-logstash.md: build/docs/tutorials/getting-started-with-logstash.xml
+build/docs/tutorials/getting-started-with-logstash.md: build/docs/tutorials/getting-started-with-logstash.xml | build/docs/tutorials
 	$(QUIET)( \
 		echo "---"; \
 		echo "title: Metrics from Logs - logstash"; \
@@ -345,7 +349,7 @@ build/docs/tutorials/getting-started-with-logstash.md: build/docs/tutorials/gett
 	| sed -e 's/%VERSION%/$(VERSION)/g' \
 	| sed -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' > $@
 
-build/docs/tutorials/getting-started-with-logstash.xml: docs/tutorials/getting-started-with-logstash.asciidoc
+build/docs/tutorials/getting-started-with-logstash.xml: docs/tutorials/getting-started-with-logstash.asciidoc | build/docs/tutorials
 	$(QUIET)asciidoc -b docbook -o $@ $<
 
 # bluecloth gem doesn't work on jruby. Use ruby.
