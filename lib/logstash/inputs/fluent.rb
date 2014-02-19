@@ -48,14 +48,9 @@ class LogStash::Inputs::Fluent < LogStash::Inputs::Base
   # The port to listen on.
   config :port, :validate => :number, :required => true
 
-  # The 'read' timeout in seconds. If a particular tcp connection is idle for
-  # more than this timeout period, we will assume it is dead and close it.
-  #
-  # If you never want to timeout, use -1.
-  config :data_timeout, :validate => :number, :default => -1
-
   def initialize(*args)
     super(*args)
+    BasicSocket.do_not_reverse_lookup = true
   end
   # def initialize
 
@@ -66,7 +61,6 @@ class LogStash::Inputs::Fluent < LogStash::Inputs::Base
     @tcp = LogStash::Inputs::Tcp.new({
       'host' => @host,
       'port' => @port.to_s,
-      'data_timeout' => @data_timeout.to_s,
       'codec' => self.class.config_name
     })
     @tcp.register
@@ -78,14 +72,22 @@ class LogStash::Inputs::Fluent < LogStash::Inputs::Base
     @heartbeat = Thread.new do
       heartbeat_handler
     end
-    @tcp.run(output_queue)
+    begin
+      @tcp.run(output_queue)
+    rescue
+      unless @interrupted
+        raise
+      end
+    end
+    @heartbeat.join
   end
   # def run
 
   public
   def teardown
-    @tcp.teardown
+    @interrupted = true
     @heartbeat.raise(LogStash::ShutdownSignal)
+    @tcp.teardown
   end
   # def teardown
 
@@ -94,9 +96,7 @@ class LogStash::Inputs::Fluent < LogStash::Inputs::Base
     require 'socket'
 
     begin
-      if @udp && ! @udp.closed?
-        @udp.close
-      end
+      @udp.close if @udp && !@udp.closed?
 
       @udp = UDPSocket.new(Socket::AF_INET)
       @udp.bind(@host, @port)
@@ -105,13 +105,15 @@ class LogStash::Inputs::Fluent < LogStash::Inputs::Base
         _, client = @udp.recvfrom(128)
         @logger.debug('Heartbeat received', :client => "#{client[3]}:#{client[1]}")
 
-        @udp.send "\0", 0, client[3], client[1]
+        @udp.send("\0", 0, client[3], client[1])
       end
     rescue LogStash::ShutdownSignal
       @logger.info('ShutdownSignal caught. Exiting heartbeat listener')
     rescue => e
-      @logger.warn('Heartbeat listener died', :exception => e, :backtrace => e.backtrace)
-      retry
+      unless @interrupted
+        @logger.warn('Heartbeat listener died', :exception => e, :backtrace => e.backtrace)
+        retry
+      end
     ensure
       @udp.close if @udp && !@udp.closed?
     end
