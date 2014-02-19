@@ -22,9 +22,9 @@ require "logstash/namespace"
 # A simple example usage of this is to count HTTP hits by response code; to learn
 # more about that, check out the [log metrics tutorial](../tutorials/metrics-from-logs)
 #
-# The default final metric sent to statsd will look like this:
+# The default final metric sent to statsd would look like this:
 #
-# logstash.sender.metric_name
+#     namespace.sender.metric
 #
 # With regards to this plugin, the default namespace is "logstash", the default sender
 # is the ${host} field, and the metric name depends on what is set as the metric name
