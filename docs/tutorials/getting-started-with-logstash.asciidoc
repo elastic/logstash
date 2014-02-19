@@ -28,10 +28,15 @@ Once you have verified the existence of Java on your system, we can move on!
 === Logstash in two commands
 First, we're going to download the pre-built logstash binary and run it with a very simple configuration.
 ----
-curl -O https://download.elasticsearch.org/logstash/logstash/logstash-%VERSION%-flatjar.jar
+curl -O https://download.elasticsearch.org/logstash/logstash/logstash-%VERSION%.tar.gz
 ----
-Now you should have the file named 'logstash-%VERSION%-flatjar.jar' on your local filesystem. Let's run it:
+Now you should have the file named 'logstash-%VERSION%.tar.gz' on your local filesystem. Let's unpack it:
 ----
+tar zxvf logstash-%VERSION%.tar.gz
+cd logstash-%VERSION%
+---
+Now let's run it:
+---
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 ----
 
@@ -175,7 +180,7 @@ For the complete list of (current) configurations, visit the logstash "plugin co
 == More fun with Logstash
 === Persistent Configuration files
 
-Specifying configurations on the command line using '-e' is only so helpful, and more advanced setups will require more lengthy, long-lived configurations. First, let's create a simple configuration file, and invoke logstash using it. Create a file named "logstash-simple.conf" and save it in the same directory as the logstash flatjar.
+Specifying configurations on the command line using '-e' is only so helpful, and more advanced setups will require more lengthy, long-lived configurations. First, let's create a simple configuration file, and invoke logstash using it. Create a file named "logstash-simple.conf" and save it in the same directory as logstash.
 
 ----
 input { stdin { } }
@@ -213,7 +218,7 @@ output {
   stdout { codec => rubydebug }
 }
 ----
-Run the logstash jar file with this configuration:
+Run logstash with this configuration:
 
 ----
 bin/logstash -f logstash-filter.conf

@@ -288,7 +288,7 @@ build/flatgems: | build vendor/bundle
 	$(QUIET)rsync -a $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
 	$(QUIET)rsync -a $(VENDOR_DIR)/gems/aws-sdk-*/ca-bundle.crt $@/root/
 	@# A lame hack to work around the aws-sdk bug (LOGSTASH-1718)
-	sed -i "" -e "s@SRC = ROOT + '/lib/aws'@SRC = ROOT + 'aws'@" $@/lib/aws/core.rb
+	sed -i -e "s@SRC = ROOT + '/lib/aws'@SRC = ROOT + 'aws'@" $@/lib/aws/core.rb
 
 
 flatjar-test:
@@ -331,10 +331,14 @@ docgen: build/docs/tutorials/getting-started-with-logstash.md
 build/docs: build
 	$(QUIET)-mkdir $@
 
+build/docs/tutorials: build/docs
+	$(QUIET)-mkdir $@
+
+
 build/docs/inputs build/docs/filters build/docs/outputs build/docs/codecs: | build/docs
 	$(QUIET)-mkdir $@
 
-build/docs/tutorials/getting-started-with-logstash.md: build/docs/tutorials/getting-started-with-logstash.xml
+build/docs/tutorials/getting-started-with-logstash.md: build/docs/tutorials/getting-started-with-logstash.xml | build/docs/tutorials
 	$(QUIET)( \
 		echo "---"; \
 		echo "title: Metrics from Logs - logstash"; \
@@ -345,25 +349,25 @@ build/docs/tutorials/getting-started-with-logstash.md: build/docs/tutorials/gett
 	| sed -e 's/%VERSION%/$(VERSION)/g' \
 	| sed -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' > $@
 
-build/docs/tutorials/getting-started-with-logstash.xml: docs/tutorials/getting-started-with-logstash.asciidoc
+build/docs/tutorials/getting-started-with-logstash.xml: docs/tutorials/getting-started-with-logstash.asciidoc | build/docs/tutorials
 	$(QUIET)asciidoc -b docbook -o $@ $<
 
 # bluecloth gem doesn't work on jruby. Use ruby.
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/inputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
-	$(QUIET)sed -i "" -e 's/%VERSION%/$(VERSION)/g' $@
-	$(QUIET)sed -i "" -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
+	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/filters/%.html: lib/logstash/filters/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/filters
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
-	$(QUIET)sed -i "" -e 's/%VERSION%/$(VERSION)/g' $@
-	$(QUIET)sed -i "" -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
+	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/outputs/%.html: lib/logstash/outputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/outputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
-	$(QUIET)sed -i "" -e 's/%VERSION%/$(VERSION)/g' $@
-	$(QUIET)sed -i "" -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
+	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/codecs/%.html: lib/logstash/codecs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/codecs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
-	$(QUIET)sed -i "" -e 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
 
 build/docs/%: docs/% lib/logstash/version.rb Makefile
 	@echo "Copying $< (to $@)"
@@ -372,8 +376,8 @@ build/docs/%: docs/% lib/logstash/version.rb Makefile
 	$(QUIET)case "$(suffix $<)" in \
 		.gz|.bz2|.png|.jpg) ;; \
 		*) \
-			sed -i "" -e 's/%VERSION%/$(VERSION)/g' $@ ; \
-			sed -i "" -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@ ; \
+			sed -i -e 's/%VERSION%/$(VERSION)/g' $@ ; \
+			sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@ ; \
 			;; \
 	esac
 
@@ -381,8 +385,8 @@ build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .r
 build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index.html.erb Makefile
 	@echo "Building documentation index.html"
 	$(QUIET)ruby $< build/docs > $@
-	$(QUIET)sed -i "" -e 's/%VERSION%/$(VERSION)/g' $@
-	$(QUIET)sed -i "" -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
+	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
+	$(QUIET)sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 
 .PHONY: patterns
 patterns:
@@ -453,8 +457,8 @@ prepare-tarball:
 	@echo "=> Preparing tarball"
 	$(QUIET)$(MAKE) $(WORKDIR)
 	$(QUIET)rsync -a --relative bin lib spec locales patterns vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md --exclude 'vendor/bundle/jruby/1.9/cache' --exclude 'vendor/bundle/jruby/1.9/gems/*/doc' --exclude 'vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz'  $(WORKDIR)
-	$(QUIET)sed -i "" -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
-	$(QUIET)sed -i "" -e 's/%JRUBY_VERSION%/$(JRUBY_VERSION)/' $(WORKDIR)/bin/logstash.bat
+	$(QUIET)sed -i -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
+	$(QUIET)sed -i -e 's/%JRUBY_VERSION%/$(JRUBY_VERSION)/' $(WORKDIR)/bin/logstash.bat
 
 .PHONY: tarball
 tarball: | build/logstash-$(VERSION).tar.gz
