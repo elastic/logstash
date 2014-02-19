@@ -48,7 +48,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
 
   def connect
     sslopt = @secure
-    unless @verify_cert
+    if @secure and not @verify_cert
         sslopt = { :verify_mode => OpenSSL::SSL::VERIFY_NONE }
     end
     imap = Net::IMAP.new(@host, :port => @port, :ssl => sslopt)
