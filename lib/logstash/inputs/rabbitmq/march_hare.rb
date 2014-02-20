@@ -70,8 +70,8 @@ class LogStash::Inputs::RabbitMQ
       shutdown_consumer
       @q.delete unless @durable
 
-      @ch.close         if @ch && @ch.open?
-      @connection.close if @connection && @connection.open?
+      @ch.close   if @ch && @ch.open?
+      @conn.close if @conn && @conn.open?
 
       finished
     end
