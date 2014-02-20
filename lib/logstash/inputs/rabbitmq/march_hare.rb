@@ -53,6 +53,8 @@ class LogStash::Inputs::RabbitMQ
           n = 10
           @logger.error("RabbitMQ connection error: #{e}. Will reconnect in #{n} seconds...")
 
+          @conn.close if @conn && @conn.open?
+
           sleep n
           retry
         rescue LogStash::ShutdownSignal => ss
