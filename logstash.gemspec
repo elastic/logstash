@@ -27,13 +27,16 @@ Gem::Specification.new do |gem|
   # Web dependencies
   gem.add_runtime_dependency "ftw", ["~> 0.0.39"] #(Apache 2.0 license)
   gem.add_runtime_dependency "haml"               #(MIT license)
+  gem.add_runtime_dependency "rack"               #(MIT license)
   gem.add_runtime_dependency "sass"               #(MIT license)
+  gem.add_runtime_dependency "sinatra"            #(MIT license)
   gem.add_runtime_dependency "mime-types"         #(GPL 2.0)
+
 
   # Input/Output/Filter dependencies
   #TODO Can these be optional?
   gem.add_runtime_dependency "awesome_print"                    #(MIT license)
-  gem.add_runtime_dependency "aws-sdk"                          #{Apache 2.0 license}  
+  gem.add_runtime_dependency "aws-sdk"                          #{Apache 2.0 license}
   gem.add_runtime_dependency "addressable"                      #(Apache 2.0 license)
   gem.add_runtime_dependency "extlib", ["0.9.16"]               #(MIT license)
   gem.add_runtime_dependency "ffi"                              #(LGPL-3 license)
@@ -100,7 +103,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "rspec"            #(MIT license)
   gem.add_runtime_dependency "insist", "1.0.0"  #(Apache 2.0 license)
   gem.add_runtime_dependency "rumbster"         # For faking smtp in email tests (Apache 2.0 license)
-  
+
   #Development Deps
   gem.add_development_dependency "coveralls"
 

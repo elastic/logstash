@@ -5,7 +5,6 @@ GEM
       i18n (~> 0.6, >= 0.6.4)
       multi_json (~> 1.0)
     addressable (2.3.5)
-    atomic (1.1.14)
     atomic (1.1.14-java)
     avl_tree (1.1.3)
     awesome_print (1.2.0)
@@ -39,7 +38,6 @@ GEM
     extlib (0.9.16)
     faraday (0.8.8)
       multipart-post (~> 1.2.0)
-    ffi (1.9.3)
     ffi (1.9.3-java)
     ffi-rzmq (1.0.0)
       ffi
@@ -56,11 +54,9 @@ GEM
     gmetric (0.1.3)
     haml (4.0.4)
       tilt
-    hitimes (1.2.1)
     hitimes (1.2.1-java)
     http (0.5.0)
       http_parser.rb
-    http_parser.rb (0.5.3)
     http_parser.rb (0.5.3-java)
     i18n (0.6.9)
     insist (1.0.0)
@@ -71,7 +67,6 @@ GEM
     jruby-httpclient (1.1.1-java)
     jruby-openssl (0.8.7)
       bouncy-castle-java (>= 1.5.0147)
-    json (1.8.1)
     json (1.8.1-java)
     mail (2.5.3)
       i18n (>= 0.4.0)
@@ -93,22 +88,19 @@ GEM
     multi_json (1.8.2)
     multipart-post (1.2.0)
     murmurhash3 (0.1.3)
-    nokogiri (1.6.0)
-      mini_portile (~> 0.5.0)
     nokogiri (1.6.0-java)
       mini_portile (~> 0.5.0)
     parslet (1.4.0)
       blankslate (~> 2.0)
     polyglot (0.3.3)
-    pry (0.9.12.4)
-      coderay (~> 1.0)
-      method_source (~> 0.8)
-      slop (~> 3.4)
     pry (0.9.12.4-java)
       coderay (~> 1.0)
       method_source (~> 0.8)
       slop (~> 3.4)
       spoon (~> 0.0)
+    rack (1.5.2)
+    rack-protection (1.5.2)
+      rack
     rbnacl (2.0.0)
       ffi
     redis (3.0.6)
@@ -139,6 +131,10 @@ GEM
       multi_json
       simplecov-html (~> 0.8.0)
     simplecov-html (0.8.0)
+    sinatra (1.4.4)
+      rack (~> 1.4)
+      rack-protection (~> 1.4)
+      tilt (~> 1.3, >= 1.3.4)
     slop (3.4.7)
     snmp (1.1.1)
     spoon (0.0.4)
@@ -150,8 +146,6 @@ GEM
     term-ansicolor (1.2.2)
       tins (~> 0.8)
     thor (0.18.1)
-    thread_safe (0.1.3)
-      atomic
     thread_safe (0.1.3-java)
       atomic
     tilt (1.4.1)
@@ -216,6 +210,7 @@ DEPENDENCIES
   msgpack-jruby
   murmurhash3
   pry
+  rack
   rbnacl
   redis
   rspec
@@ -223,6 +218,7 @@ DEPENDENCIES
   rumbster
   sass
   shoulda
+  sinatra
   snmp
   spoon
   statsd-ruby (= 1.2.0)
