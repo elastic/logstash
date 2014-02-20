@@ -67,5 +67,9 @@ end
   begin
     Bundler::CLI.start(["install", "--gemfile=tools/Gemfile", "--path", target, "--clean"])
     break
+  rescue Gem::RemoteFetcher::FetchError => e
+    puts e.message
+    puts e.backtrace.inspect
+    sleep 5 #slow down a bit before retry
   end
 end
