@@ -84,6 +84,7 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
 
   public
   def initialize(params)
+    @types = {} # This needs to be called before register (which super does).
     super
     @timestamp = Time.now().utc
     @collectd = {}
@@ -92,7 +93,6 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
   public
   def register
     @logger.info("Starting Collectd codec...")
-    @types = {} # Need to register this here.  It seems register gets called before initialize...
     if @typesdb.nil?
       if __FILE__ =~ /^file:\/.+!.+/
         begin
