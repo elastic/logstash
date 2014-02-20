@@ -21,13 +21,14 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
   # than 1024 (privileged ports) may require root or elevated privileges to use.
   config :port, :validate => :number, :required => true
 
-  # Buffer size
+  # The maximum packet size to read from the network
   config :buffer_size, :validate => :number, :default => 8192
   
-  # I/O workers
+  # Number of threads processing packets
   config :workers, :validate => :number, :default => 2
   
-  # Queue depth
+  # This is the number of unprocessed UDP packets you can hold in memory
+  # before packets will start dropping.
   config :queue_size, :validate => :number, :default => 2000
 
   public
