@@ -249,12 +249,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     end
 
 
-    # TODO(sissel): check if we can manage templates
-    #@logger.error("Unable to check template.  Automatic template management disabled.", :error => e.to_s)
-    
     if @manage_template
       @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
-      # TODO(sissel): Manage the template
+      @client.template_install(@template_name, get_template, @template_overwrite)
     end # if @manage_templates  
     
     buffer_initialize(
@@ -265,7 +262,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   end # def register
 
   public
-  def get_template_json
+  def get_template
     if @template.nil?
       if __FILE__ =~ /^(jar:)?file:\/.+!.+/
         begin
@@ -285,8 +282,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
         end
       end
     end
-    @template_json = IO.read(@template).gsub(/\n/,'')
-    @logger.info("Using mapping template", :template => @template_json)
+    template_json = IO.read(@template).gsub(/\n/,'')
+    @logger.info("Using mapping template", :template => template_json)
+    return JSON.parse(template_json)
   end # def get_template
 
   protected

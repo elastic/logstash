@@ -18,11 +18,11 @@ module LogStash::Outputs::Elasticsearch
 
 
       def template_install(name, template, force=false)
-        if template_exists?(name, template) && !force
+        if template_exists?(name) && !force
           @logger.debug("Found existing Elasticsearch template. Skipping template management", :name => name)
           return
         end
-        # TODO(sissel): ???
+        template_put(name, template)
       end
 
       # Do a bulk request with the given actions.
@@ -40,7 +40,7 @@ module LogStash::Outputs::Elasticsearch
         #])
       end
 
-      public(:initialize)
+      public(:initialize, :template_install)
     end
 
     class HTTPClient < Base
@@ -56,7 +56,6 @@ module LogStash::Outputs::Elasticsearch
         require "elasticsearch" # gem 'elasticsearch-ruby'
         @options = DEFAULT_OPTIONS.merge(options)
         @client = client
-
       end
 
       def build_client(options)
@@ -129,6 +128,17 @@ module LogStash::Outputs::Elasticsearch
         end
       end # def bulk_ftw
 
+      def template_exists?(name)
+        @client.indices.get_template(:name => name)
+        return true
+      rescue Elasticsearch::Transport::Transport::Errors::NotFound
+        return false
+      end # def template_exists?
+
+      def template_put(name, template)
+        @client.indices.put_template(:name => name, :body => template)
+      end # template_put
+
       public(:bulk)
     end # class HTTPClient
 
@@ -146,7 +156,7 @@ module LogStash::Outputs::Elasticsearch
         setup(@options)
         @client = client
       end # def initialize
-      
+
       def settings
         return @settings
       end
@@ -215,6 +225,20 @@ module LogStash::Outputs::Elasticsearch
         request.type(args[:_type]) if args[:_type]
         return request
       end # def build_request
+
+      def template_exists?(name)
+        request = org.elasticsearch.action.admin.indices.template.get.GetIndexTemplatesRequestBuilder.new(@client.admin.indices, name)
+        response = request.get
+        return !response.getIndexTemplates.isEmpty
+      end # def template_exists?
+
+      def template_put(name, template)
+        request = org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequestBuilder.new(@client.admin.indices, name)
+        request.setSource(template.to_json)
+
+        # execute the request and get the response, if it fails, we'll get an exception.
+        request.get
+      end # template_put
 
       public(:initialize, :bulk)
     end # class NodeClient
