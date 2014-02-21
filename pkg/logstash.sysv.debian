@@ -14,7 +14,6 @@
 
 set -e
 
-PATH=/bin:/usr/bin:/sbin:/usr/sbin
 NAME=logstash
 DESC="Logstash Daemon"
 DEFAULT=/etc/default/$NAME
@@ -31,36 +30,20 @@ if [ -r /etc/default/rcS ]; then
 fi
 
 # The following variables can be overwritten in $DEFAULT
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
-# Run logstash as this user ID and group ID
+# See contents of file named in $DEFAULT for comments
 LS_USER=logstash
 LS_GROUP=logstash
-
-JAVA=`which java`
-
-# Directory where the logstash all in one jar lives
 LS_HOME=/var/lib/logstash
-
-# Additional Java OPTS
-LS_JAVA_OPTS=" -Djava.io.tmpdir=/var/logstash/"
-
-# logstash log directory
-LOG_DIR=/var/log/logstash
-
-# logstash configuration directory
-CONF_DIR=/etc/logstash/conf.d
-
-# logstash log file
-LOG_FILE=$LOG_DIR/$NAME.log
-
-# Open File limit
-OPEN_FILES=2048
-
-# LogStash options
-LS_OPTS="--log ${LOG_DIR}/${NAME}.log"
-
-# Nice level
-NICE=19
+LS_HEAP_SIZE="500m"
+LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
+LS_LOG_FILE=/var/log/logstash/$NAME.log
+LS_CONF_DIR=/etc/logstash/conf.d
+LS_OPEN_FILES=16384
+LS_NICE=19
+LS_OPTS=""
+LS_PIDFILE=/var/run/$NAME.pid
 
 # End of variables that can be overwritten in $DEFAULT
 
@@ -70,47 +53,54 @@ if [ -f "$DEFAULT" ]; then
 fi
 
 # Define other required variables
-LS_JAR="/opt/logstash/logstash.jar"
-PID_FILE=/var/run/$NAME.pid
-DAEMON=$LS_JAR
-DAEMON_OPTS="agent -f ${CONF_DIR} ${LS_OPTS}"
+PID_FILE=${LS_PIDFILE}
+DAEMON=/opt/logstash/bin/logstash
+DAEMON_OPTS="agent -f ${LS_CONF_DIR} -l ${LS_LOG_FILE} ${LS_OPTS}"
 
 # Check DAEMON exists
 if ! test -e $DAEMON; then
-   log_failure_msg "Jar file $DAEMON doesn't exist"
+   log_failure_msg "Script $DAEMON doesn't exist"
    exit 1
 fi
 
 case "$1" in
    start)
-      if [ -z "$JAVA" ]; then
-         log_failure_msg "no JDK found - $JAVA"
+      if [ -z "$DAEMON" ]; then
+         log_failure_msg "no logstash script found - $DAEMON"
          exit 1
       fi
 
       # Check if a config file exists
-      if [ ! "$(ls -A $CONF_DIR/*.conf 2> /dev/null)" ]; then
-         log_failure_msg "There aren't any configuration files in $CONF_DIR"
+      if [ ! "$(ls -A $LS_CONF_DIR/*.conf 2> /dev/null)" ]; then
+         log_failure_msg "There aren't any configuration files in $LS_CONF_DIR"
          exit 1
       fi
 
       log_daemon_msg "Starting $DESC"
 
+      # Parse the actual JAVACMD from the process' environment, we don't care about errors.
+      JAVA=$(cat /proc/$(cat ${PID_FILE} 2>/dev/null)/environ 2>/dev/null | awk -F= 'BEGIN {RS="\0"} /JAVACMD/ {print $2}')
       if start-stop-daemon --test --start --pidfile "$PID_FILE" \
          --user "$LS_USER" --exec "$JAVA" \
       >/dev/null; then
          # Prepare environment
-         ulimit -n $OPEN_FILES
+         HOME="${HOME:-$LS_HOME}"
+         JAVA_OPTS="${LS_JAVA_OPTS}"
+         ulimit -n ${LS_OPEN_FILES}
+	 cd "${LS_HOME}"
+         export PATH HOME JAVACMD JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
 
          # Start Daemon
          start-stop-daemon --start -b --user "$LS_USER" -c "$LS_USER":"$LS_GROUP" \
-           -d "$LS_HOME" --pidfile "$PID_FILE" --make-pidfile \
-           --exec "$JAVA" -- $LS_JAVA_OPTS -jar $DAEMON $DAEMON_OPTS
+           -d "$LS_HOME" --nicelevel "$LS_NICE" --pidfile "$PID_FILE" --make-pidfile \
+           --exec $DAEMON -- $DAEMON_OPTS
 
          sleep 1
 
+         # Parse the actual JAVACMD from the process' environment, we don't care about errors.
+         JAVA=$(cat /proc/$(cat ${PID_FILE} 2>/dev/null)/environ 2>/dev/null | awk -F= 'BEGIN {RS="\0"} /JAVACMD/ {print $2}')
          if start-stop-daemon --test --start --pidfile "$PID_FILE" \
-            --user "$LS_USER" --exec "$JAVA" \
+             --user "$LS_USER" --exec "$JAVA" \
          >/dev/null; then
 
             if [ -f "$PID_FILE" ]; then
@@ -155,6 +145,8 @@ case "$1" in
    status)
       set +e
 
+      # Parse the actual JAVACMD from the process' environment, we don't care about errors.
+      JAVA=$(cat /proc/$(cat ${PID_FILE} 2>/dev/null)/environ 2>/dev/null | awk -F= 'BEGIN {RS="\0"} /JAVACMD/ {print $2}')
       start-stop-daemon --test --start --pidfile "$PID_FILE" \
          --user "$LS_USER" --exec "$JAVA" \
       >/dev/null 2>&1
