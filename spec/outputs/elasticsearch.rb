@@ -161,13 +161,12 @@ describe "outputs/elasticsearch" do
 
   describe "action => ..." do
     index_name = 10.times.collect { rand(10).to_s }.join("")
-    event_count = 100
 
     config <<-CONFIG
       input {
         generator {
           message => "hello world"
-          count => #{event_count}
+          count => 100
         }
       }
       output {
@@ -180,24 +179,20 @@ describe "outputs/elasticsearch" do
 
 
     agent do
-      p :INDEX2 => index
       ftw = FTW::Agent.new
-      ftw.post!("http://localhost:9200/#{index}/_refresh")
+      ftw.post!("http://localhost:9200/#{index_name}/_refresh")
 
       # Wait until all events are available.
       Stud::try(10.times) do
         data = ""
-        response = ftw.get!("http://127.0.0.1:9200/#{index}/_count?q=*")
+        response = ftw.get!("http://127.0.0.1:9200/#{index_name}/_count?q=*")
         response.read_body { |chunk| data << chunk }
         result = JSON.parse(data)
         count = result["count"]
-        p data
-        p index
-        sleep 300
-        insist { count } == event_count
+        insist { count } == 100
       end
 
-      response = ftw.get!("http://127.0.0.1:9200/#{index}/_search?q=*&size=1000")
+      response = ftw.get!("http://127.0.0.1:9200/#{index_name}/_search?q=*&size=1000")
       data = ""
       response.read_body { |chunk| data << chunk }
       result = JSON.parse(data)
