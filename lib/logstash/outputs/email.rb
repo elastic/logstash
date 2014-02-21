@@ -2,7 +2,8 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-# Send email when an event is received, or based on a conditional.
+# Send email when an output is received. Alternatively, you may include or
+# exclude the email output execution using conditionals. 
 class LogStash::Outputs::Email < LogStash::Outputs::Base
 
   config_name "email"
@@ -36,7 +37,7 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
   # "me@host.com, you@host.com"
   config :cc, :validate => :string
 
-  # How Logstash should send the email, either SMTP or by invoking sendmail.
+  # How Logstash should send the email, either via SMTP or by invoking sendmail.
   config :via, :validate => :string, :default => "smtp"
 
   # Specify the options to use:
@@ -48,22 +49,24 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
   # If you do not specify any `options`, you will get the following equivalent code set in
   # every new mail object:
   #
-  #     delivery_method :smtp, { :address              => "localhost",
-  #                              :port                 => 25,
-  #                              :domain               => 'localhost.localdomain',
-  #                              :user_name            => nil,
-  #                              :password             => nil,
-  #                              :authentication       => nil,(plain, login and cram_md5)
-  #                              :enable_starttls_auto => true  }
+  #     Mail.defaults do
+  #       delivery_method :smtp, { :address              => "localhost",
+  #                                :port                 => 25,
+  #                                :domain               => 'localhost.localdomain',
+  #                                :user_name            => nil,
+  #                                :password             => nil,
+  #                                :authentication       => nil,(plain, login and cram_md5)
+  #                                :enable_starttls_auto => true  }
   #
-  #     retriever_method :pop3, { :address             => "localhost",
-  #                               :port                => 995,
-  #                               :user_name           => nil,
-  #                               :password            => nil,
-  #                               :enable_ssl          => true }
+  #       retriever_method :pop3, { :address             => "localhost",
+  #                                 :port                => 995,
+  #                                 :user_name           => nil,
+  #                                 :password            => nil,
+  #                                 :enable_ssl          => true }
   #
-  #     Mail.delivery_method.new  #=> Mail::SMTP instance
-  #     Mail.retriever_method.new #=> Mail::POP3 instance
+  #       Mail.delivery_method.new  #=> Mail::SMTP instance
+  #       Mail.retriever_method.new #=> Mail::POP3 instance
+  #     end
   #
   # Each mail object inherits the defaults set in Mail.delivery_method. However, on
   # a per email basis, you can override the method:
