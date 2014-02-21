@@ -427,13 +427,10 @@ releaseNote:
 	$(QUIET)curl -si "https://logstash.jira.com/secure/ReleaseNote.jspa?version=$(JIRA_VERSION_ID)&projectId=10020" | sed -n '/<textarea.*>/,/<\/textarea>/p' | grep textarea -v >> releaseNote.html
 	$(QUIET)ruby pull_release_note.rb
 
-package:
-	[ ! -f build/logstash-$(VERSION)-flatjar.jar ] \
-		&& make build/logstash-$(VERSION)-flatjar.jar ; \
+package: build/logstash-$(VERSION).tar.gz
 	(cd pkg; \
-		./build.sh ubuntu 12.10; \
-		./build.sh centos 6; \
-		./build.sh debian 6; \
+		./build.sh ubuntu 12.04; \
+		./build.sh centos 6 \
 	)
 
 vendor/kibana: | vendor

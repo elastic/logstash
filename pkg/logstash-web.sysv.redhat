@@ -1,26 +1,26 @@
 #! /bin/sh
 #
-#       /etc/rc.d/init.d/logstash
+#       /etc/rc.d/init.d/logstash-web
 #
-#       Starts Logstash as a daemon
+#       Starts Logstash Web Server as a daemon
 #
 # chkconfig: 2345 90 10
-# description: Starts Logstash as a daemon.
+# description: Starts Logstash Web Server as a daemon.
 
 ### BEGIN INIT INFO
-# Provides: logstash
+# Provides: logstash-web
 # Required-Start: $local_fs $remote_fs
 # Required-Stop: $local_fs $remote_fs
 # Default-Start: 2 3 4 5
 # Default-Stop: S 0 1 6
-# Short-Description: Logstash
-# Description: Starts Logstash as a daemon.
+# Short-Description: Logstash-Web
+# Description: Starts Logstash Web Server as a daemon.
 ### END INIT INFO
 
 . /etc/rc.d/init.d/functions
 
-NAME=logstash
-DESC="Logstash Daemon"
+NAME=logstash-web
+DESC="Logstash Web Daemon"
 DEFAULT=/etc/sysconfig/$NAME
 
 if [ `id -u` -ne 0 ]; then
@@ -37,9 +37,9 @@ LS_GROUP=logstash
 LS_HOME=/var/lib/logstash
 LS_HEAP_SIZE="500m"
 LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
-LS_LOG_FILE=/var/log/logstash/$NAME.log
+LS_LOG_FILE=
 LS_CONF_DIR=/etc/logstash/conf.d
-LS_OPEN_FILES=16384
+LS_OPEN_FILES=2048
 LS_NICE=19
 LS_OPTS=""
 LS_PIDFILE=/var/run/$NAME/$NAME.pid
@@ -52,9 +52,10 @@ fi
 
 # Define other required variables
 PID_FILE=${LS_PIDFILE}
+test -n "${LS_LOG_FILE}" && LS_OPTS="${LS_OPTS} -l ${LS_LOG_FILE}"
 
 DAEMON="/opt/logstash/bin/logstash"
-DAEMON_OPTS="agent -f ${LS_CONF_DIR} -l ${LS_LOG_FILE} ${LS_OPTS}"
+DAEMON_OPTS="web ${LS_OPTS}"
 
 #
 # Function that starts the daemon/service
