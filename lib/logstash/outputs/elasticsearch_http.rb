@@ -13,6 +13,8 @@ require "stud/buffer"
 class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   include Stud::Buffer
 
+  DEFAULT_PORT = 9200
+
   config_name "elasticsearch_http"
   milestone 2
 
@@ -51,11 +53,16 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # in the template and template_name directives.
   config :template_overwrite, :validate => :boolean, :default => false
 
+  # The list of address:port to reach a cluster of your Elasticsearch nodes. Default port is 9200
+  # E.g. [localhost, localhost:9400] will be translated to [localhost:9200, localhost:9400]
+  # Note: writes to Elasticsearch will happen in a round-robin fashion.
+  config :host_list, :validate => :array, :required => true
+
   # The hostname or IP address to reach your Elasticsearch server.
-  config :host, :validate => :string, :required => true
+  config :host, :validate => :string, :deprecated => "You can use host_list instead." 
 
   # The port for Elasticsearch HTTP interface to use.
-  config :port, :validate => :number, :default => 9200
+  config :port, :validate => :number, :default => DEFAULT_PORT, :deprecated => "You can use host_list instead."
 
   # The HTTP Basic Auth username used to access your elasticsearch server.
   config :user, :validate => :string, :default => nil
@@ -92,6 +99,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # written.
   config :replication, :validate => ['async', 'sync'], :default => 'sync'
 
+  class NoLiveHost < StandardError; end
+
   public
   def register
     require "ftw" # gem ftw
@@ -99,43 +108,17 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     @queue = []
 
     auth = @user && @password ? "#{@user}:#{@password.value}@" : ""
-    @bulk_url = "http://#{auth}#{@host}:#{@port}/_bulk?replication=#{@replication}"
+    @current_host_index = 0
+    create_hosts(auth)
+    @bulk_url = "http://%s/_bulk?replication=#{@replication}"
+    @no_template = false
     if @manage_template
-      @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
-      template_search_url = "http://#{auth}#{@host}:#{@port}/_template/*"
-      @template_url = "http://#{auth}#{@host}:#{@port}/_template/#{@template_name}"
-      if @template_overwrite
-        @logger.info("Template overwrite enabled.  Deleting existing template.", :template_overwrite => @template_overwrite.to_s)
-        response = @agent.get!(@template_url)
-        template_action('delete') if response.status == 200 #=> Purge the old template if it exists
+      begin
+        manage_template
+      rescue NoLiveHost => e
+        @no_template = true
+        @logger.error("All elasticsearch nodes are dead", :exception => e)
       end
-      @logger.debug("Template Search URL:", :template_search_url => template_search_url)
-      has_template = false
-      template_idx_name = @index.sub(/%{[^}]+}/,'*')
-      alt_template_idx_name = @index.sub(/-%{[^}]+}/,'*')
-      # Get the template data
-      response = @agent.get!(template_search_url)
-      json = ""
-      if response.status == 404 #=> This condition can occcur when no template has ever been appended
-        @logger.info("No template found in Elasticsearch...")
-        get_template_json
-        template_action('put')
-      elsif response.status == 200
-        begin
-          response.read_body { |c| json << c }
-          results = JSON.parse(json)
-        rescue Exception => e
-          @logger.error("Error parsing JSON", :json => json, :results => results.to_s, :error => e.to_s)
-          raise "Exception in parsing JSON", e
-        end
-        if !results.any? { |k,v| v["template"] == template_idx_name || v["template"] == alt_template_idx_name }
-          @logger.debug("No template found in Elasticsearch", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name)
-          get_template_json
-          template_action('put')      
-        end
-      else #=> Some other status code?
-        @logger.error("Could not check for existing template.  Check status code.", :status => response.status.to_s)
-      end # end if response.status == 200
     end # end if @manage_template
     buffer_initialize(
       :max_items => @flush_size,
@@ -143,30 +126,115 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       :logger => @logger
     )
   end # def register
-  
+
+  protected
+  def create_hosts(auth)
+    @hosts = []
+    @host_list.each do |host|
+      if host.include? ':'
+        host = "#{auth}#{host}"
+      else
+        host = "#{auth}#{host}:#{DEFAULT_PORT}"
+      end
+      @hosts << host
+    end
+    
+    if @host != nil
+      host = "#{auth}#{@host}:#{@port}"
+      @hosts << host
+    end
+    @hosts = @hosts.uniq
+  end # def create_hosts
+
+  # issue http request in round-robin fashion
+  protected
+  def issue_request(command, url_format, body=nil)
+    tries = @hosts.length - 1
+    begin
+      @current_host_index = (@current_host_index + 1) % @hosts.length
+      host = @hosts[@current_host_index]
+      url = url_format % host
+      case command
+      when 'get'
+        return @agent.get!(url)
+      when 'put'
+        return @agent.put!(url, :body => body)
+      when 'post'
+        return @agent.post!(url, :body => body)
+      when 'delete'
+        return @agent.delete!(url)
+      end
+    rescue Errno::EBADF => e
+      if tries <= 0
+        raise NoLiveHost, "No hosts are alive"
+      end
+      tries -= 1
+      retry
+    end
+  end # def issue_request
+
+  protected
+  def manage_template
+    @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
+    template_search_url = "http://%s/_template/*"
+    @template_url = "http://%s/_template/#{@template_name}"
+    if @template_overwrite
+      @logger.info("Template overwrite enabled.  Deleting existing template.", :template_overwrite => @template_overwrite.to_s)
+      response = issue_request('get', @template_url)
+      template_action('delete') if response.status == 200 #=> Purge the old template if it exists
+    end
+    has_template = false
+    template_idx_name = @index.sub(/%{[^}]+}/,'*')
+    alt_template_idx_name = @index.sub(/-%{[^}]+}/,'*')
+    # Get the template data
+    response = issue_request('get', template_search_url)
+    @logger.debug("Template Search URL:", :template_search_url => template_search_url % @hosts[@current_host_index])
+    json = ""
+    if response.status == 404 #=> This condition can occcur when no template has ever been appended
+      @logger.info("No template found in Elasticsearch...")
+      get_template_json
+      template_action('put')
+    elsif response.status == 200
+      begin
+        response.read_body { |c| json << c }
+        results = JSON.parse(json)
+      rescue Exception => e
+        @logger.error("Error parsing JSON", :json => json, :results => results.to_s, :error => e.to_s)
+        raise "Exception in parsing JSON", e
+      end
+      if !results.any? { |k,v| v["template"] == template_idx_name || v["template"] == alt_template_idx_name }
+        @logger.debug("No template found in Elasticsearch", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name)
+        get_template_json
+        template_action('put')      
+      end
+    else #=> Some other status code?
+      @logger.error("Could not check for existing template.  Check status code.", :status => response.status.to_s)
+    end # end if response.status == 200
+  end
+    
   public 
   def template_action(command)
     begin
       if command == 'delete'
-        response = @agent.delete!(@template_url)
+        response = issue_request('delete', @template_url)
         response.discard_body
       elsif command == 'put'
-        response = @agent.put!(@template_url, :body => @template_json)
+        response = issue_request('put', @template_url, @template_json)
         response.discard_body
       end
     rescue EOFError
       @logger.warn("EOF while attempting request or reading response header from elasticsearch",
-                   :host => @host, :port => @port)
+                   :host => @hosts[@current_host_index])
       return # abort this action
     end
     if response.status != 200
       @logger.error("Error acting on elasticsearch mapping template",
                     :response => response, :action => command,
-                    :request_url => @template_url)
+                    :request_url => @template_url % @hosts[@current_host_index])
       return
     end
-    @logger.info("Successfully deleted template", :template_url => @template_url) if command == 'delete'
-    @logger.info("Successfully applied template", :template_url => @template_url) if command == 'put'
+    @logger.info("Successfully deleted template", :template_url => @template_url % @hosts[@current_host_index]) if command == 'delete'
+    @logger.info("Successfully applied template", :template_url => @template_url % @hosts[@current_host_index]) if command == 'put'
   end # def template_action
   
   
@@ -223,11 +291,25 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   end # def receive_bulk
 
   def post(body)
+    # check if template has been created
+    if @no_template
+      begin
+        manage_template
+      rescue NoLiveHost => e
+        @logger.error("All elasticsearch nodes are dead", :exception => e)
+        return # abort this flush
+      end
+      @no_template = false
+    end
+
     begin
-      response = @agent.post!(@bulk_url, :body => body)
+      response = issue_request('post', @bulk_url, body)
     rescue EOFError
       @logger.warn("EOF while writing request or reading response header from elasticsearch",
-                   :host => @host, :port => @port)
+                  :host => @hosts[@current_host_index])
+      return # abort this flush
+    rescue NoLiveHost => e
+      @logger.error("All elasticsearch nodes are dead", :exception => e)
       return # abort this flush
     end
 
@@ -238,7 +320,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       response.read_body { |chunk| body += chunk }
     rescue EOFError
       @logger.warn("EOF while reading response body from elasticsearch",
-                   :host => @host, :port => @port)
+                   :host => @hosts[@current_host_index])
       return # abort this flush
     end
 
