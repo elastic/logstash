@@ -1,6 +1,6 @@
 # logstash
 
-[![Build Status](https://secure.travis-ci.org/logstash/logstash.png)](http://travis-ci.org/logstash/logstash)
+[![Build Status](https://secure.travis-ci.org/elasticsearch/logstash.png)](http://travis-ci.org/elasticsearch/logstash)
 
 logstash is a tool for managing events and logs. You can use it to collect
 logs, parse them, and store them for later use (like, for searching). Speaking
