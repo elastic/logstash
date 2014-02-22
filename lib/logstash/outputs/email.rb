@@ -42,7 +42,7 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
 
   # Specify the options to use:
   #
-  # Via SMTP: address, port, enable\_starttls\_auto, user_name, password, authentication(bool), domain
+  # Via SMTP: smtpIporHost, port, domain, userName, password, authenticationType, starttls
   #
   # Via sendmail: location, arguments
   #
@@ -50,13 +50,13 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
   # every new mail object:
   #
   #     Mail.defaults do
-  #       delivery_method :smtp, { :address              => "localhost",
+  #       delivery_method :smtp, { :smtpIporHost         => "localhost",
   #                                :port                 => 25,
   #                                :domain               => 'localhost.localdomain',
-  #                                :user_name            => nil,
+  #                                :userName             => nil,
   #                                :password             => nil,
-  #                                :authentication       => nil,(plain, login and cram_md5)
-  #                                :enable_starttls_auto => true  }
+  #                                :authenticationType   => nil,(plain, login and cram_md5)
+  #                                :starttls             => true  }
   #
   #       retriever_method :pop3, { :address             => "localhost",
   #                                 :port                => 995,
