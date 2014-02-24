@@ -35,6 +35,10 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
     require "net/imap" # in stdlib
     require "mail" # gem 'mail'
 
+    if @secure and not @verify_cert
+      @logger.warn("Running IMAP without verifying the certificate may grant attackers unauthorized access to your mailbox or data")
+    end
+
     if @port.nil?
       if @secure
         @port = 993
