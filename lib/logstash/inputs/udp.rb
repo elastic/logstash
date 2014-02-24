@@ -21,8 +21,15 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
   # than 1024 (privileged ports) may require root or elevated privileges to use.
   config :port, :validate => :number, :required => true
 
-  # Buffer size
+  # The maximum packet size to read from the network
   config :buffer_size, :validate => :number, :default => 8192
+  
+  # Number of threads processing packets
+  config :workers, :validate => :number, :default => 2
+  
+  # This is the number of unprocessed UDP packets you can hold in memory
+  # before packets will start dropping.
+  config :queue_size, :validate => :number, :default => 2000
 
   public
   def initialize(params)
@@ -37,6 +44,7 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
 
   public
   def run(output_queue)
+	@output_queue = output_queue
     begin
       # udp server
       udp_listener(output_queue)
@@ -60,13 +68,17 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
     @udp = UDPSocket.new(Socket::AF_INET)
     @udp.bind(@host, @port)
 
+	  @input_to_worker = SizedQueue.new(@queue_size)
+
+	  @input_workers = @workers.times do |i|
+  	    @logger.debug("Starting UDP worker thread", :worker => i)
+ 		  Thread.new { inputworker(i) }
+	  end
+	
     loop do
+		  #collect datagram message and add to queue
       payload, client = @udp.recvfrom(@buffer_size)
-      @codec.decode(payload) do |event|
-        decorate(event)
-        event["host"] ||= client[3]
-        output_queue << event
-      end
+	    @input_to_worker.push([payload,client])
     end
   ensure
     if @udp
@@ -74,7 +86,29 @@ class LogStash::Inputs::Udp < LogStash::Inputs::Base
       @udp.close_write rescue nil
     end
   end # def udp_listener
+  
+  def inputworker(number)
+    LogStash::Util::set_thread_name("<udp.#{number}")
+    begin
+      while true
+        payload,client = @input_to_worker.pop
+		    if payload == LogStash::ShutdownSignal
+          @input_to_worker.push(work)
+          break
+        end
 
+		    @codec.decode(payload) do |event|
+          decorate(event)
+          event["host"] ||= client[3]
+		      @output_queue.push(event)
+		    end
+      end
+
+    rescue => e
+      @logger.error("Exception in inputworker", "exception" => e, "backtrace" => e.backtrace)
+    end
+  end # def inputworker
+  
   public
   def teardown
     @udp.close if @udp && !@udp.closed?

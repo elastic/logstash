@@ -71,24 +71,11 @@ JAVA=`which java`
 JAR="${LS_HOME}/logstash.jar"
 ARGS="${LS_JAVA_OPTS} -jar ${JAR} agent --config ${CONF_DIR} --log ${LOG_FILE} -w ${FILTER_THREADS}"
 
-is_true() {
-    if [ "x$1" = "xtrue" -o "x$1" = "xyes" -o "x$1" = "x1" ] ; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 #
 # Function that starts the daemon/service
 #
 do_start()
 {
-
-  if ! is_true "$START" ; then
-    echo "logstash not configured to start, please edit $DEFAULT to enable"
-    exit 0
-  fi
 
   if [ -z "$JAVA" ]; then
     echo "no JDK found - $JAVA"
@@ -96,7 +83,7 @@ do_start()
   fi
 
   if ! test -e "${JAR}"; then
-    echo "Daemon $DAEMON doesn't exist"
+    echo "Jar file $JAR doesn't exist"
     exit 1
   fi
 

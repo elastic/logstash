@@ -4,23 +4,26 @@ require "logstash/namespace"
 
 require "csv"
 
-# CSV filter. Takes an event field containing CSV data, parses it,
+# The CSV filter takes an event field containing CSV data, parses it,
 # and stores it as individual fields (can optionally specify the names).
+# This filter can also parse data with any separator, not just commas.
 class LogStash::Filters::CSV < LogStash::Filters::Base
   config_name "csv"
   milestone 2
 
-  # The CSV data in the value of the source field will be expanded into a
-  # datastructure.
+  # The CSV data in the value of the `source` field will be expanded into a
+  # data structure.
   config :source, :validate => :string, :default => "message"
 
   # Define a list of column names (in the order they appear in the CSV,
-  # as if it were a header line). If this is not specified or there
-  # are not enough columns specified, the default column name is "columnX"
-  # (where X is the field number, starting from 1).
+  # as if it were a header line). If `columns` is not configured, or there
+  # are not enough columns specified, the default column names are
+  # "column1", "column2", etc. In the case that there are more columns
+  # in the data than specified in this column list, extra columns will be auto-numbered:
+  # (e.g. "user_defined_1", "user_defined_2", "column3", "column4", etc.)
   config :columns, :validate => :array, :default => []
 
-  # Define the column separator value. If this is not specified the default
+  # Define the column separator value. If this is not specified, the default
   # is a comma ','.
   # Optional.
   config :separator, :validate => :string, :default => ","
@@ -30,7 +33,7 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
   # Optional.
   config :quote_char, :validate => :string, :default => '"'
 
-  # Define target for placing the data.
+  # Define target field for placing the data.
   # Defaults to writing to the root of the event.
   config :target, :validate => :string
 

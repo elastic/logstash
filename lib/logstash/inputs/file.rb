@@ -9,7 +9,7 @@ require "socket" # for Socket.gethostname
 #
 # By default, each event is assumed to be one line. If you would like
 # to join multiple log lines into one event, you'll want to use the
-# multiline filter.
+# multiline codec.
 #
 # Files are followed in a manner similar to "tail -0F". File rotation
 # is detected and handled by this input.
@@ -34,7 +34,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   #
   #     path => "/var/log/*"
   #
-  # you might want to exclude gzipped files:
+  # You might want to exclude gzipped files:
   #
   #     exclude => "*.gz"
   config :exclude, :validate => :array
@@ -56,12 +56,12 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   # monitored log files.
   config :sincedb_write_interval, :validate => :number, :default => 15
 
-  # Choose where Logstash starts initially reading files - at the beginning or
+  # Choose where Logstash starts initially reading files: at the beginning or
   # at the end. The default behavior treats files like live streams and thus
   # starts at the end. If you have old data you want to import, set this
   # to 'beginning'
   #
-  # This option only modifieds "first contact" situations where a file is new
+  # This option only modifies "first contact" situations where a file is new
   # and not seen before. If a file has already been seen before, this option
   # has no effect.
   config :start_position, :validate => [ "beginning", "end"], :default => "end"

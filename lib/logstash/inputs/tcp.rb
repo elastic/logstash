@@ -34,24 +34,23 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   # `client` connects to a server.
   config :mode, :validate => ["server", "client"], :default => "server"
 
-  # Enable ssl (must be set for other `ssl_` options to take effect)
+  # Enable SSL (must be set for other `ssl_` options to take effect).
   config :ssl_enable, :validate => :boolean, :default => false
 
-  # Verify the identity of the other end of the ssl connection against the CA
-  # For input, sets the `@field.sslsubject` to that of the client certificate
+  # Verify the identity of the other end of the SSL connection against the CA.
+  # For input, sets the field `sslsubject` to that of the client certificate.
   config :ssl_verify, :validate => :boolean, :default => false
 
-  # ssl CA certificate, chainfile or CA path
-  # The system CA path is automatically included
+  # The SSL CA certificate, chainfile or CA path. The system CA path is automatically included.
   config :ssl_cacert, :validate => :path
 
-  # ssl certificate
+  # SSL certificate path
   config :ssl_cert, :validate => :path
 
-  # ssl key
+  # SSL key path
   config :ssl_key, :validate => :path
 
-  # ssl key passphrase
+  # SSL key passphrase
   config :ssl_key_passphrase, :validate => :password, :default => nil
 
   def initialize(*args)

@@ -5,34 +5,33 @@ require "stud/buffer"
 
 # This output lets you store logs in Elasticsearch and is the most recommended
 # output for Logstash. If you plan on using the Kibana web interface, you'll
-# need to use this output or the elasticsearch_http output.
+# need to use this output.
 #
 #   *VERSION NOTE*: Your Elasticsearch cluster must be running Elasticsearch
 #   %ELASTICSEARCH_VERSION%. If you use any other version of Elasticsearch,
-#   you should consider using the [elasticsearch_http](elasticsearch_http)
-#   output instead.
+#   you should set `protocol => http` in this plugin.
 #
 # If you want to set other Elasticsearch options that are not exposed directly
-# as config options, there are two options:
+# as configuration options, there are two methods:
 #
-# * create an elasticsearch.yml file in the $PWD of the Logstash process
-# * pass in es.* java properties (java -Des.node.foo= or ruby -J-Des.node.foo=)
+# * Create an `elasticsearch.yml` file in the $PWD of the Logstash process
+# * Pass in es.* java properties (java -Des.node.foo= or ruby -J-Des.node.foo=)
 #
-# This plugin will join your Elasticsearch cluster, so it will show up in
-# Elasticsearch's cluster health status.
+# With the default `protocol` setting ("node"), this plugin will join your
+# Elasticsearch cluster as a client node, so it will show up in Elasticsearch's
+# cluster status.
 #
 # You can learn more about Elasticsearch at <http://www.elasticsearch.org>
 #
 # ## Operational Notes
 #
-# Template management is a new feature and requires at least version
-# Elasticsearch 0.90.5+
+# Template management requires Elasticsearch version 0.90.7 or later. If you
+# are using a version older than this, please upgrade. You will receive
+# more benefits than just template management!
 #
-# If you are still using a version older than this, please upgrade for 
-# more benefits than just template management.
-#
-# Your firewalls might need to permit port 9300 in *both* directions (from
-# Logstash to Elasticsearch, and Elasticsearch to Logstash)
+# If using the default `protocol` setting ("node"), your firewalls might need
+# to permit port 9300 in *both* directions (from Logstash to Elasticsearch, and
+# Elasticsearch to Logstash)
 class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   include Stud::Buffer
 
@@ -88,9 +87,13 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # work in your environment.
   config :host, :validate => :string
 
-  # The port for Elasticsearch transport to use. This is *not* the Elasticsearch
-  # REST API port (normally 9200).
-  config :port, :validate => :string, :default => "9300-9305"
+  # The port for Elasticsearch transport to use.
+  #
+  # If you do not set this, the following defaults are used:
+  # * `protocol => http` - port 9200
+  # * `protocol => transport` - port 9300-9305
+  # * `protocol => node` - port 9300-9305
+  config :port, :validate => :string
 
   # The name/address of the host to bind to for Elasticsearch clustering
   config :bind_host, :validate => :string
@@ -125,7 +128,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # events before flushing that out to Elasticsearch. This setting
   # controls how many events will be buffered before sending a batch
   # of events.
-  config :flush_size, :validate => :number, :default => 100
+  config :flush_size, :validate => :number, :default => 5000
 
   # The amount of time since last flush before a flush is forced.
   #
@@ -142,28 +145,100 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   #
   # The 'node' protocol will connect to the cluster as a normal Elasticsearch
   # node (but will not store data). This allows you to use things like
-  # multicast discovery.
+  # multicast discovery. If you use the `node` protocol, you must permit
+  # bidirectional communication on the port 9300 (or whichever port you have
+  # configured).
   #
   # The 'transport' protocol will connect to the host you specify and will
   # not show up as a 'node' in the Elasticsearch cluster. This is useful 
   # in situations where you cannot permit connections outbound from the
   # Elasticsearch cluster to this Logstash server.
-  config :protocol, :validate => [ "node", "transport" ], :default => "node"
+  #
+  # The default `protocol` setting under java/jruby is "node". The default
+  # `protocol` on non-java rubies is "http"
+  config :protocol, :validate => [ "node", "transport", "http" ]
+
+  # The Elasticsearch action to perform. Valid actions are: `index`, `delete`. 
+  #
+  # Use of this setting *REQUIRES* you also configure the `document_id` setting
+  # because `delete` actions all require a document id.
+  #
+  # What does each action do?
+  #
+  # - index: indexes a document (an event from logstash).
+  # - delete: deletes a document by id
+  #
+  # For more details on actions, check out the [Elasticsearch bulk API documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-bulk.html)
+  config :action, :validate => :string, :default => "index"
 
   public
   def register
-    # TODO(sissel): find a better way of declaring where the Elasticsearch
-    # libraries are
-    # TODO(sissel): can skip this step if we're running from a jar.
-    jarpath = File.join(File.dirname(__FILE__), "../../../vendor/jar/elasticsearch*/lib/*.jar")
-    Dir[jarpath].each do |jar|
-      require jar
+    client_settings = {}
+    client_settings["cluster.name"] = @cluster if @cluster
+    client_settings["network.host"] = @bind_host if @bind_host
+    client_settings["transport.tcp.port"] = @bind_port if @bind_port
+
+    if @node_name
+      client_settings["node.name"] = @node_name
+    else
+      client_settings["node.name"] = "logstash-#{Socket.gethostname}-#{$$}-#{object_id}"
     end
 
-    # setup log4j properties for Elasticsearch
-    LogStash::Logger.setup_log4j(@logger)
+    if @protocol.nil?
+      @protocol = (RUBY_PLATFORM == "java") ? "node" : "http"
+    end
+
+    if ["node", "transport"].include?(@protocol)
+      # Node or TransportClient; requires JRuby
+      if RUBY_PLATFORM != "java"
+        raise LogStash::PluginLoadingError, "This configuration requires JRuby. If you are not using JRuby, you must set 'protocol' to 'http'. For example: output { elasticsearch { protocol => \"http\" } }"
+      end
+
+      require "logstash/loadlibs"
+      # setup log4j properties for Elasticsearch
+      LogStash::Logger.setup_log4j(@logger)
+    end
+
+    require "logstash/outputs/elasticsearch/protocol"
+
+    if @port.nil?
+      @port = case @protocol
+        when "http"; "9200"
+        when "transport", "node"; "9300-9305"
+      end
+    end
+
+    if @host.nil? && @protocol == "http"
+      @logger.info("No 'host' set in elasticsearch output. Defaulting to localhost")
+      @host = "localhost"
+    end
+
+    options = {
+      :host => @host,
+      :port => @port,
+      :client_settings => client_settings
+    }
+
+
+    client_class = case @protocol
+      when "transport"
+        LogStash::Outputs::Elasticsearch::Protocols::TransportClient
+      when "node"
+        LogStash::Outputs::Elasticsearch::Protocols::NodeClient
+      when "http"
+        LogStash::Outputs::Elasticsearch::Protocols::HTTPClient
+    end
+
+    @client = client_class.new(options)
+
+    @logger.info("New Elasticsearch output", :cluster => @cluster,
+                 :host => @host, :port => @port, :embedded => @embedded,
+                 :protocol => @protocol)
 
     if @embedded
+      if RUBY_PLATFORM == "java"
+        raise LogStash::ConfigurationError, "The 'embedded => true' setting is only valid for the elasticsearch output under JRuby. You are running #{RUBY_DESCRIPTION}"
+      end
       # Default @host with embedded to localhost. This should help avoid
       # newbies tripping on ubuntu and other distros that have a default
       # firewall that blocks multicast.
@@ -172,85 +247,11 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       # Start Elasticsearch local.
       start_local_elasticsearch
     end
-    require "jruby-elasticsearch"
 
-    @logger.info("New Elasticsearch output", :cluster => @cluster,
-                 :host => @host, :port => @port, :embedded => @embedded)
-    options = {
-      :cluster => @cluster,
-      :host => @host,
-      :port => @port,
-      :bind_host => @bind_host,
-      :node_name => @node_name,
-    }
 
-    # :node or :transport protocols
-    options[:type] = @protocol.to_sym 
-
-    options[:bind_port] = @bind_port unless @bind_port.nil?
-
-    # TransportClient requires a number for a port.
-    options[:port] = options[:port].to_i if options[:type] == :transport
-
-    @client = ElasticSearch::Client.new(options)
-
-    # Check to see if we *can* get the template
-    java_client = @client.instance_eval{@client}
-    begin
-      check_template = ElasticSearch::GetIndexTemplatesRequest.new(java_client, @template_name)
-      result = check_template.execute #=> Run previously...
-    rescue Exception => e
-      @logger.error("Unable to check template.  Automatic template management disabled.", :error => e.to_s)
-      @manage_template = false
-    end
-    
     if @manage_template
       @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
-      if @template_overwrite
-        @logger.info("Template overwrite enabled.  Deleting template if it exists.", :template_overwrite => @template_overwrite.to_s)
-        if !result.getIndexTemplates.isEmpty
-          delete_template = ElasticSearch::DeleteIndexTemplateRequest.new(java_client, @template_name)
-          result = delete_template.execute
-          if result.isAcknowledged
-            @logger.info("Successfully deleted template", :template_name => @template_name)
-          else
-            @logger.error("Failed to delete template", :template_name => @template_name)
-          end
-        end  
-      end # end if @template_overwrite
-      has_template = false
-      @logger.debug("Fetching all templates...")
-      gettemplates = ElasticSearch::GetIndexTemplatesRequest.new(java_client, "*")
-      result = gettemplates.execute
-      # Results of this come as a list, so we need to iterate through it
-      if !result.getIndexTemplates.isEmpty
-        template_metadata_list = result.getIndexTemplates
-        templates = {}
-        i = 0
-        template_metadata_list.size.times do
-          template_data = template_metadata_list.get(i)
-          templates[template_data.name] = template_data.template
-          i += 1
-        end
-        template_idx_name = @index.sub(/%{[^}]+}/,'*')
-        alt_template_idx_name = @index.sub(/-%{[^}]+}/,'*')
-        if !templates.any? { |k,v| v == template_idx_name || v == alt_template_idx_name }
-          @logger.debug("No Logstash template found in Elasticsearch", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name)
-        else
-          has_template = true
-          @logger.info("Found existing Logstash template match.", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name, :templates => templates.to_s)
-        end
-      end
-      if !has_template #=> No template found, we're going to add one
-        get_template_json
-        put_template = ElasticSearch::PutIndexTemplateRequest.new(java_client, @template_name, @template_json)
-        result = put_template.execute
-        if result.isAcknowledged
-          @logger.info("Successfully inserted template", :template_name => @template_name)
-        else
-          @logger.error("Failed to insert template", :template_name => @template_name)
-        end
-      end 
+      @client.template_install(@template_name, get_template, @template_overwrite)
     end # if @manage_templates  
     
     buffer_initialize(
@@ -261,7 +262,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   end # def register
 
   public
-  def get_template_json
+  def get_template
     if @template.nil?
       if __FILE__ =~ /^(jar:)?file:\/.+!.+/
         begin
@@ -281,8 +282,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
         end
       end
     end
-    @template_json = IO.read(@template).gsub(/\n/,'')
-    @logger.info("Using mapping template", :template => @template_json)
+    template_json = IO.read(@template).gsub(/\n/,'')
+    @logger.info("Using mapping template", :template => template_json)
+    return JSON.parse(template_json)
   end # def get_template
 
   protected
@@ -291,8 +293,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     builder = org.elasticsearch.node.NodeBuilder.nodeBuilder
     # Disable 'local only' - LOGSTASH-277
     #builder.local(true)
-    builder.settings.put("cluster.name", @cluster) if !@cluster.nil?
-    builder.settings.put("node.name", @node_name) if !@node_name.nil?
+    builder.settings.put("cluster.name", @cluster) if @cluster
+    builder.settings.put("node.name", @node_name) if @node_name
     builder.settings.put("http.port", @embedded_http_port)
 
     @embedded_elasticsearch = builder.node
@@ -302,28 +304,22 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   public
   def receive(event)
     return unless output?(event)
-    buffer_receive([event, index, type])
-  end # def receive
 
-  def flush(events, teardown=false)
-    request = @client.bulk
-    events.each do |event, index, type|
-      index = event.sprintf(@index)
-
-      # Set the 'type' value for the index.
-      if @index_type.nil?
-        type =  event["type"] || "logs"
-      else
-        type = event.sprintf(@index_type)
-      end
-      if @document_id
-        request.index(index, type, event.sprintf(@document_id), event.to_json)
-      else
-        request.index(index, type, nil, event.to_json)
-      end
+    # Set the 'type' value for the index.
+    if @index_type
+      type = event.sprintf(@index_type)
+    else
+      type = event["type"] || "logs"
     end
 
-    request.execute!
+    index = event.sprintf(@index)
+
+    document_id = @document_id ? event.sprintf(@document_id) : nil
+    buffer_receive([event.sprintf(@action), { :_id => document_id, :_index => index, :_type => type }, event.to_hash])
+  end # def receive
+
+  def flush(actions, teardown=false)
+    @client.bulk(actions)
     # TODO(sissel): Handle errors. Since bulk requests could mostly succeed
     # (aka partially fail), we need to figure out what documents need to be
     # retried.
