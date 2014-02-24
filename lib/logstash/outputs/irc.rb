@@ -43,6 +43,12 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
   # Limit the rate of messages sent to IRC in messages per second.
   config :messages_per_second, :validate => :number, :default => 0.5
 
+  # Static string before event
+  config :pre_string, :validate => :string, :required => false
+  
+  # Static string before event
+  config :post_string, :validate => :string, :required => false
+
   public
   def register
     require "cinch"
@@ -74,7 +80,13 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
     text = event.sprintf(@format)
     @bot.channels.each do |channel|
       @logger.debug("Sending to...", :channel => channel, :text => text)
+      if !@pre_string.nil?
+          channel.msg(pre_string)
+      end
       channel.msg(text)
+      if !@post_string.nil?
+          channel.msg(post_string)
+      end
     end # channels.each
   end # def receive
 end # class LogStash::Outputs::Irc
