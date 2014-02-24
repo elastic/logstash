@@ -12,10 +12,10 @@ require "stud/buffer"
 #   you should set `protocol => http` in this plugin.
 #
 # If you want to set other Elasticsearch options that are not exposed directly
-# as config options, there are two options:
+# as configuration options, there are two methods:
 #
-# * create an elasticsearch.yml file in the $PWD of the Logstash process
-# * pass in es.* java properties (java -Des.node.foo= or ruby -J-Des.node.foo=)
+# * Create an `elasticsearch.yml` file in the $PWD of the Logstash process
+# * Pass in es.* java properties (java -Des.node.foo= or ruby -J-Des.node.foo=)
 #
 # With the default `protocol` setting ("node"), this plugin will join your
 # Elasticsearch cluster as a client node, so it will show up in Elasticsearch's
@@ -25,8 +25,8 @@ require "stud/buffer"
 #
 # ## Operational Notes
 #
-# Template management requires at least version Elasticsearch 0.90.7> If you
-# are still using a version older than this, please upgrade and receive 
+# Template management requires Elasticsearch version 0.90.7 or later. If you
+# are using a version older than this, please upgrade. You will receive
 # more benefits than just template management!
 #
 # If using the default `protocol` setting ("node"), your firewalls might need
