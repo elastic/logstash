@@ -18,14 +18,20 @@
 # Defaults you can override with environment variables
 LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
 
-basedir=$(cd `dirname $0`/..; pwd)
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+basedir="$( cd -P "$( dirname "$SOURCE" )" && cd .. && pwd )"
 . ${basedir}/bin/logstash.lib.sh
 
 setup
 
 case $1 in
   deps) install_deps ;;
-  -*) 
+  -*)
     # is the first argument a flag? If so, assume 'agent'
     program="$basedir/lib/logstash/runner.rb"
     exec $RUBYCMD -I$RUBYLIB "$program" agent "$@"
