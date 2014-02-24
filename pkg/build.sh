@@ -43,7 +43,7 @@ echo "Unable to find $tar"
 exit 1
 fi
 
-tar -C $destdir/$prefix --strip-components 1 -zxf $tar
+tar -C $destdir/$prefix --strip-components 1 -zxpf $tar
 
 case $os@$release in
  centos@*|fedora@*|el6@*|sl6@*)
@@ -95,6 +95,8 @@ case $os in
       -d "jre >= 1.6.0" \
       --vendor "Elasticsearch" \
       --license "Apache 2.0" \
+      --rpm-use-file-permissions \
+      --rpm-user root --rpm-group root \
       --before-install centos/before-install.sh \
       --before-remove centos/before-remove.sh \
       --after-install centos/after-install.sh \
