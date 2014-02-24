@@ -18,7 +18,7 @@
 # Defaults you can override with environment variables
 LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
 
-basedir=$(cd `dirname $0`/.. >/dev/null; /bin/pwd)
+basedir=$(cd `dirname $0`/.. >/dev/null; pwd)
 . ${basedir}/bin/logstash.lib.sh
 
 setup
