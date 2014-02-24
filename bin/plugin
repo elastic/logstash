@@ -46,7 +46,7 @@ TARGET="${TARGETDIR}/${FILENAME}"
 
 case $1 in
   install)
-  	exec $DOWNLOAD_COMMAND ${TARGET} ${URLSTUB}${FILENAME}
+  	$DOWNLOAD_COMMAND ${TARGET} ${URLSTUB}${FILENAME}
   	if [ ! -f "${TARGET}" ]; then
 	  	echo "ERROR: Unable to download ${URLSTUB}${FILENAME}"
 	  	echo "Exiting."
