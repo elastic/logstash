@@ -46,7 +46,7 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
   # Static string before event
   config :pre_string, :validate => :string, :required => false
   
-  # Static string before event
+  # Static string after event
   config :post_string, :validate => :string, :required => false
 
   public
