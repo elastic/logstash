@@ -56,7 +56,6 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "rufus-scheduler", "~> 2.0.24"     #(MIT license)
   gem.add_runtime_dependency "user_agent_parser", [">= 2.0.0"]  #(MIT license)
   gem.add_runtime_dependency "snmp"                             #(ruby license)
-  gem.add_runtime_dependency "mail"                             #(MIT license)
   gem.add_runtime_dependency "rbnacl"                           #(MIT license)
   gem.add_runtime_dependency "bindata", [">= 1.5.0"]            #(ruby license)
   gem.add_runtime_dependency "twitter", "5.0.0.rc.1"            #(MIT license)
@@ -64,7 +63,6 @@ Gem::Specification.new do |gem|
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
-    gem.add_runtime_dependency "jruby-elasticsearch", ["0.0.17"]  #(BSD license)
     gem.add_runtime_dependency "jruby-httpclient"                 #(Apache 2.0 license)
     gem.add_runtime_dependency "bouncy-castle-java", "1.5.0147"   #(MIT license)
     gem.add_runtime_dependency "jruby-openssl", "0.8.7"           #(CPL/GPL/LGPL license)

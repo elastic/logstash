@@ -1,7 +1,7 @@
 
 
-logstash=$HOME/projects/logstash
-contrib=$HOME/projects/logstash-contrib
+logstash=$PWD
+contrib=$PWD/../logstash-contrib/
 
 workdir="$PWD/build/release/"
 mkdir -p $workdir
@@ -25,6 +25,8 @@ prepare() {
   rm -f $logstash/.VERSION.mk
   make -C $logstash .VERSION.mk
   cp $logstash/.VERSION.mk $workdir
+  rm -f $workdir/build/pkg
+  rm -f $workdir/build/*.{zip,rpm,gz,deb} || true
 }
 
 docs() {
@@ -34,8 +36,8 @@ docs() {
 }
 
 tests() {
-  make -C $workdir test
-  make -C $workdir tarball test
+  USE_JRUBY=1 make -C $logstash test QUIET=
+  USE_JRUBY=1 make -C $logstash tarball test QUIET=
 }
 
 packages() {
@@ -43,8 +45,18 @@ packages() {
     rm -f $path/build/*.tar.gz
     rm -f $path/build/*.zip
     echo "Building packages: $path"
-    make -C $path tarball package
-    (cd $path/build; cp *.gz *.rpm *.deb *.zip $workdir/build)
+    make -C $path tarball
+    [ "$path" = "$logstash" ] && make -C $path flatjar
+    for dir in build pkg ; do
+      [ ! -d "$path/$dir" ] && continue
+      (cd $path/$dir;
+        for i in *.gz *.rpm *.deb *.zip *.jar ; do
+          [ ! -f "$i" ] && continue
+          echo "Copying $path/$dir/$i"
+          cp $path/$dir/$i $workdir/build
+        done
+      )
+    done
   done
 }
 
