@@ -80,13 +80,9 @@ class LogStash::Outputs::Irc < LogStash::Outputs::Base
     text = event.sprintf(@format)
     @bot.channels.each do |channel|
       @logger.debug("Sending to...", :channel => channel, :text => text)
-      if !@pre_string.nil?
-          channel.msg(pre_string)
-      end
+      channel.msg(pre_string) if !@pre_string.nil?
       channel.msg(text)
-      if !@post_string.nil?
-          channel.msg(post_string)
-      end
+      channel.msg(post_string) if !@post_string.nil?
     end # channels.each
   end # def receive
 end # class LogStash::Outputs::Irc
