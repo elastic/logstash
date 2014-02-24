@@ -3,7 +3,7 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket"
 
-# Pull events from a Windows Event Log
+# This input will pull events from a (http://msdn.microsoft.com/en-us/library/windows/desktop/bb309026%28v=vs.85%29.aspx)[Windows Event Log].
 #
 # To collect Events from the System Event Log, use a config like:
 #

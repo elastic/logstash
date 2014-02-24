@@ -3,10 +3,8 @@ require "logstash/namespace"
 require "logstash/outputs/base"
 require "zlib"
 
-# File output.
-#
-# Write events to files on disk. You can use fields from the
-# event as parts of the filename.
+# This output will write events to files on disk. You can use fields
+# from the event as parts of the filename and/or path.
 class LogStash::Outputs::File < LogStash::Outputs::Base
 
   config_name "file"
@@ -37,10 +35,11 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # event will be written as a single line.
   config :message_format, :validate => :string
 
-  # Flush interval for flushing writes to log files. 0 will flush on every meesage
+  # Flush interval (in seconds) for flushing writes to log files. 
+  # 0 will flush on every message.
   config :flush_interval, :validate => :number, :default => 2
 
-  # Gzip output stream
+  # Gzip the output stream before writing to disk.
   config :gzip, :validate => :boolean, :default => false
 
   public
