@@ -47,7 +47,7 @@ class LogStash::Inputs::Fluent < LogStash::Inputs::Base
   config :host, :validate => :string, :default => '0.0.0.0'
 
   # The port to listen on.
-  config :port, :validate => :number, :required => true
+  config :port, :validate => :number, :default => 24224
 
   def initialize(*args)
     super(*args)
