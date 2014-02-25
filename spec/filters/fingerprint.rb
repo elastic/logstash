@@ -147,12 +147,12 @@ describe LogStash::Filters::Fingerprint do
     end
   end
 
-  describe "PUNCT method" do
+  describe "PUNCTUATION method" do
     config <<-CONFIG
       filter {
         fingerprint {
           source => 'field1'
-          method => 'PUNCT'
+          method => 'PUNCTUATION'
         }
       }
     CONFIG
