@@ -62,7 +62,7 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
   private
   def snmptrap_listener(output_queue)
     traplistener_opts = {:Port => @port, :Community => @community, :Host => @host}
-    if !@yaml_mibs.empty?
+    if @yaml_mibs && !@yaml_mibs.empty?
       traplistener_opts.merge!({:MibDir => @yamlmibdir, :MibModules => @yaml_mibs})
     end
     @logger.info("It's a Trap!", traplistener_opts.dup)
