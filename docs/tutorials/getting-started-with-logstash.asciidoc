@@ -66,7 +66,7 @@ goodnight moon
 
 So, by re-configuring the "stdout" output (adding a "codec"), we can change the output of Logstash. By adding inputs, outputs and filters to your configuration, it's possible to massage the log data in many ways, in order to maximize flexibility of the stored data when you are querying it.
 
-== Storing logs with Elasticsearch 
+== Storing logs with Elasticsearch
 Now, you're probably saying, "that's all fine and dandy, but typing all my logs into Logstash isn't really an option, and merely seeing them spit to STDOUT isn't very useful." Good point. First, let's set up Elasticsearch to store the messages we send into Logstash. If you don't have Elasticearch already installed, you can http://www.elasticsearch.org/download/[download the RPM or DEB package], or install manually by downloading the current release tarball, by issuing the following four commands:
 ----
 curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-%ELASTICSEARCH_VERSION%.tar.gz
@@ -148,7 +148,7 @@ Inputs are the mechanism for passing log data to Logstash. Some of the more usef
 
 * *file*: reads from a file on the filesystem, much like the UNIX command "tail -0a"
 * *syslog*: listens on the well-known port 514 for syslog messages and parses according to RFC3164 format
-* *redis*: reads from a redis server, using both redis channels and also redis lists. Redis is often used as a "broker" in a centralized Logstash installation, which queues Logstash events from remote Logstash "shippers". 
+* *redis*: reads from a redis server, using both redis channels and also redis lists. Redis is often used as a "broker" in a centralized Logstash installation, which queues Logstash events from remote Logstash "shippers".
 * *lumberjack*: processes events sent in the lumberjack protocol. Now called https://github.com/elasticsearch/logstash-forwarder[logstash-forwarder].
 
 ==== Filters
@@ -199,7 +199,7 @@ bin/logstash -f logstash-simple.conf
 Et voilà! Logstash will read in the configuration file you just created and run as in the example we saw earlier. Note that we used the '-f' to read in the file, rather than the '-e' to read the configuration from the command line. This is a very simple case, of course, so let's move on to some more complex examples.
 
 === Filters
-Filters are an in-line processing mechanism which provide the flexibility to slice and dice your data to fit your needs. Let's see one in action, namely the *grok filter*. 
+Filters are an in-line processing mechanism which provide the flexibility to slice and dice your data to fit your needs. Let's see one in action, namely the *grok filter*.
 
 ----
 input { stdin { } }
@@ -260,7 +260,7 @@ Now, let's configure something actually *useful*... apache2 access log files! We
 ----
 input {
   file {
-    path => "/Users/kurt/logs/access_log"
+    path => "/tmp/access_log"
     start_position => beginning
   }
 }
@@ -274,7 +274,7 @@ filter {
   }
   date {
     match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
-  }  
+  }
 }
 
 output {
@@ -285,7 +285,7 @@ output {
 }
 
 ----
-Then, create the file you configured above (in this example, "/Applications/XAMPP/logs/access_log") with the following log lines as contents (or use some from your own webserver):
+Then, create the file you configured above (in this example, "/tmp/access_log") with the following log lines as contents (or use some from your own webserver):
 
 ----
 71.141.244.242 - kurt [18/May/2011:01:48:10 -0700] "GET /admin HTTP/1.1" 301 566 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3"
@@ -304,10 +304,10 @@ In this configuration, Logstash is only watching the apache access_log, but it's
 ----
 input {
   file {
-    path => "/Applications/XAMPP/logs/*_log"
+    path => "/tmp/*_log"
 ...
 ----
-Now, rerun Logstash, and you will see both the error and access logs processed via Logstash. However, if you inspect your data (using elasticsearch-kopf, perhaps), you will see that the access_log was broken up into discrete fields, but not the error_log. That's because we used a "grok" filter to match the standard combined apache log format and automatically split the data into separate fields. Wouldn't it be nice *if* we could control how a line was parsed, based on its format? Well, we can... 
+Now, rerun Logstash, and you will see both the error and access logs processed via Logstash. However, if you inspect your data (using elasticsearch-kopf, perhaps), you will see that the access_log was broken up into discrete fields, but not the error_log. That's because we used a "grok" filter to match the standard combined apache log format and automatically split the data into separate fields. Wouldn't it be nice *if* we could control how a line was parsed, based on its format? Well, we can...
 
 Also, you might have noticed that Logstash did not reprocess the events which were already seen in the access_log file. Logstash is able to save its position in files, only processing new lines as they are added to the file. Neat!
 
@@ -317,13 +317,13 @@ Now we can build on the previous example, where we introduced the concept of a *
 ----
 input {
   file {
-    path => "/Applications/XAMPP/logs/*_log"
+    path => "/tmp/*_log"
   }
 }
 
 filter {
   if [path] =~ "access" {
-    type => "apache_access"
+    mutate { replace => { type => "apache_access" } }
     grok {
       match => { "message" => "%{COMBINEDAPACHELOG}" }
     }
@@ -331,9 +331,9 @@ filter {
       match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
     }
   } else if [path] =~ "error" {
-    type => "apache_error"
+    mutate { replace => { type => "apache_error" } }
   } else {
-    type => "random_logs"
+    mutate { replace => { type => "random_logs" } }
   }
 }
 
@@ -348,7 +348,7 @@ You'll notice we've labeled all events using the "type" field, but we didn't act
 === Syslog
 OK, now we can move on to another incredibly useful example: *syslog*. Syslog is one of the most common use cases for Logstash, and one it handles exceedingly well (as long as the log lines conform roughly to RFC3164 :). Syslog is the de facto UNIX networked logging standard, sending messages from client machines to a local file, or to a centralized log server via rsyslog. For this example, you won't need a functioning syslog instance; we'll fake it from the command line, so you can get a feel for what happens.
 
-First, let's make a simple configuration file for Logstash + syslog, called 'logstash-syslog.conf'. 
+First, let's make a simple configuration file for Logstash + syslog, called 'logstash-syslog.conf'.
 
 ----
 input {
@@ -395,17 +395,11 @@ You can copy and paste the following lines as samples (feel free to try some of 
 
 ----
 Dec 23 12:11:43 louis postfix/smtpd[31499]: connect from unknown[95.75.93.154]
-----
-----
 Dec 23 14:42:56 louis named[16000]: client 199.48.164.7#64817: query (cache) 'amsterdamboothuren.com/MX/IN' denied
-----
-----
 Dec 23 14:30:01 louis CRON[619]: (www-data) CMD (php /usr/share/cacti/site/poller.php >/dev/null 2>/var/log/cacti/poller-error.log)
+Dec 22 18:28:06 louis rsyslogd: [origin software="rsyslogd" swVersion="4.2.0" x-pid="2253" x-info="http://www.rsyslog.com"] rsyslogd was HUPed, type 'lightweight'.
 ----
-----
-Dec 22 18:28:06 louis rsyslogd: [origin software="rsyslogd" swVersion="4.2.0" x-pid="2253" x-info="http://www.rsyslog.com"] rsyslogd was HUPed, ty
-pe 'lightweight'.
-----
+
 Now you should see the output of Logstash in your original shell as it processes and parses messages!
 
 ----
