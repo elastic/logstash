@@ -111,11 +111,10 @@ class LogStash::Outputs::SQS < LogStash::Outputs::Base
     begin
       @logger.debug("Connecting to AWS SQS queue '#{@queue}'...")
       @sqs_queue = @sqs.queues.named(@queue)
+      @logger.info("Connected to AWS SQS queue '#{@queue}' successfully.")
     rescue Exception => e
       @logger.error("Unable to access SQS queue '#{@queue}': #{e.to_s}")
     end # begin/rescue
-
-    @logger.info("Connected to AWS SQS queue '#{@queue}' successfully.")
   end # def register
 
   public

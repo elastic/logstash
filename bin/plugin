@@ -52,7 +52,7 @@ case $1 in
 	  	echo "Exiting."
 	  	exit 1
 	fi
-  	gzip -dc ${TARGETDIR}${FILENAME} | tar -xC $TARGETDIR
+  	gzip -dc ${TARGET} | tar -xC $TARGETDIR
   	cp -R ${TARGETDIR}/$FILEPATH/* .  ;; # Copy contents to local directory, adding on top of existing install
   *) 
   	echo "Usage: bin/plugin install contrib"
