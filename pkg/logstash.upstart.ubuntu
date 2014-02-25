@@ -9,12 +9,40 @@ stop on runlevel [06]
 # Respawn it if the process exits
 respawn
 
+# We're setting high here, we'll re-limit below.
 limit nofile 65550 65550
+
 setuid logstash
 setgid logstash
 
 # You need to chdir somewhere writable because logstash needs to unpack a few
 # temporary files on startup.
-chdir /var/lib/logstash
 console log
-exec /usr/bin/java -jar /opt/logstash/logstash.jar agent -f /etc/logstash/conf.d
+script
+  # Defaults
+  PATH=/bin:/usr/bin
+  LS_HOME=/var/lib/logstash
+  LS_HEAP_SIZE="500m"
+  LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
+  LS_LOG_FILE=/var/log/logstash/logstash.log
+  LS_USE_GC_LOGGING=""
+  LS_CONF_DIR=/etc/logstash/conf.d
+  LS_OPEN_FILES=16384
+  LS_NICE=19
+  LS_OPTS=""
+
+  # Override our defaults with user defaults:
+  [ -f /etc/default/logstash ] && . /etc/default/logstash
+
+  HOME="${HOME:-$LS_HOME}"
+  JAVA_OPTS="${LS_JAVA_OPTS}"
+  # Reset filehandle limit
+  ulimit -n ${LS_OPEN_FILES}
+  cd "${LS_HOME}"
+
+  # Export variables
+  export PATH HOME JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
+  test -n "${JAVACMD}" && export JAVACMD
+
+  exec nice -n ${LS_NICE} /opt/logstash/bin/logstash agent -f "${LS_CONF_DIR}" -l "${LS_LOG_FILE}" ${LS_OPTS}
+end script
