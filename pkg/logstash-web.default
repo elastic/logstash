@@ -1,38 +1,35 @@
-# defaults for logstash
+###############################
+# Default settings for logstash
+###############################
 
-# pulled in from the init script; makes things easier.
-NAME=logstash-web
+# Override Java location
+#JAVACMD=/usr/bin/java
 
-# location of java
-JAVA=/usr/bin/java
+# Set a home directory
+#LS_HOME=/var/lib/logstash
 
-# arguments to pass to java
-LS_JAVA_OPTS="-Xmx256m -Djava.io.tmpdir=/var/lib/logstash/"
+# Arguments to pass to java
+#LS_HEAP_SIZE="256m"
+#LS_JAVA_OPTS="-Djava.io.tmpdir=$HOME"
 
-PIDFILE=/var/run/logstash-web.pid
+# Logstash filter worker threads
+#LS_WORKER_THREADS=1
 
-# user id to be invoked as
-LS_USER=logstash
+# pidfiles aren't used for upstart; this is for sysv users.
+#LS_PIDFILE=/var/run/logstash.pid
 
-# location of the logstas jar file
-LS_JAR=/opt/logstash/logstash.jar
+# user id to be invoked as; for upstart: edit /etc/init/logstash.conf
+#LS_USER=logstash
 
-# logstash home location
-LS_HOME=/var/lib/logstash
-
-# logstash log directory
-LOG_DIR=/var/log/logstash
-
-# logstash log file
-LOG_FILE=$LOG_DIR/$NAME.log
+# logstash logging
+#LS_LOG_FILE=/var/log/logstash/logstash-web.log
+#LS_USE_GC_LOGGING="true"
 
 # logstash configuration directory
-CONF_DIR=/etc/logstash/conf.d
+#LS_CONF_DIR=/etc/logstash/conf.d
 
-# Open file limit
-OPEN_FILES=2048
+# Open file limit; cannot be overridden in upstart
+#LS_OPEN_FILES=2048
 
 # Nice level
-NICE=19
-
-HOME=/var/lib/logstash
+#LS_NICE=0

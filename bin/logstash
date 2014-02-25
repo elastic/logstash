@@ -24,6 +24,9 @@ basedir=$(cd `dirname $0`/..; pwd)
 
 setup
 
+# Export these so that they can be picked up by file input (and others?).
+export HOME SINCEDB_DIR
+
 case $1 in
   deps) install_deps ;;
   -*) 
