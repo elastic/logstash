@@ -96,7 +96,6 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   def register
     require "ftw" # gem ftw
     @agent = FTW::Agent.new
-    @queue = []
 
     auth = @user && @password ? "#{@user}:#{@password.value}@" : ""
     @bulk_url = "http://#{auth}#{@host}:#{@port}/_bulk?replication=#{@replication}"
@@ -233,9 +232,9 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
     # Consume the body for error checking
     # This will also free up the connection for reuse.
-    body = ""
+    response_body = ""
     begin
-      response.read_body { |chunk| body += chunk }
+      response.read_body { |chunk| response_body += chunk }
     rescue EOFError
       @logger.warn("EOF while reading response body from elasticsearch",
                    :host => @host, :port => @port)
@@ -245,7 +244,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     if response.status != 200
       @logger.error("Error writing (bulk) to elasticsearch",
                     :response => response, :response_body => body,
-                    :request_body => @queue.join("\n"))
+                    :request_body => body)
       return
     end
   end # def post
