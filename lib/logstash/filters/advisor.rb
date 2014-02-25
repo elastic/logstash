@@ -157,7 +157,7 @@ class LogStash::Filters::Advisor < LogStash::Filters::Base
           event = LogStash::Event.new
           event["host"] = Socket.gethostname 
           event["message"] = message  
-          event.tag << "advisor_info"
+          event.tag "advisor_info"
           filter_matched(event)
    
           # reset flag and counter 
