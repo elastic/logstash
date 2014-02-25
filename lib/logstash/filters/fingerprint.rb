@@ -20,7 +20,7 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
   config :key, :validate => :string
 
   # Fingerprint method
-  config :method, :validate => ['SHA1', 'SHA256', 'SHA384', 'SHA512', 'MD5', "MURMUR3", "IPV4_NETWORK", "UUID", "PUNCT"], :required => true, :default => 'SHA1'
+  config :method, :validate => ['SHA1', 'SHA256', 'SHA384', 'SHA512', 'MD5', "MURMUR3", "IPV4_NETWORK", "UUID", "PUNCTUATION"], :required => true, :default => 'SHA1'
 
   # When set to true, we concatenate the values of all fields into 1 string like the old checksum filter.
   config :concatenate_sources, :validate => :boolean, :default => false
@@ -37,7 +37,7 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
         class << self; alias_method :anonymize, :anonymize_murmur3; end
       when "UUID"
         require "securerandom"
-      when "PUNCT"
+      when "PUNCTUATION"
         # nothing required
       else
         require 'openssl'
@@ -52,7 +52,7 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
     case @method
       when "UUID"
         event[@target] = SecureRandom.uuid
-      when "PUNCT"
+      when "PUNCTUATION"
         @source.sort.each do |field|
           next unless event.include?(field)
           event[@target] = event[field].tr('A-Za-z0-9 \t','')
