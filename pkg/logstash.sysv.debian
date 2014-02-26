@@ -79,7 +79,7 @@ case "$1" in
       log_daemon_msg "Starting $DESC"
 
       # Parse the actual JAVACMD from the process' environment, we don't care about errors.
-      JAVA=$(cat /proc/$(cat ${PID_FILE} 2>/dev/null)/environ 2>/dev/null | awk -F= 'BEGIN {RS="\0"} /JAVACMD/ {print $2}')
+      JAVA=$(cat /proc/$(cat "${PID_FILE}" 2>/dev/null)/environ 2>/dev/null | grep -z ^JAVACMD= | cut -d= -f2)
       if start-stop-daemon --test --start --pidfile "$PID_FILE" \
          --user "$LS_USER" --exec "$JAVA" \
       >/dev/null; then
@@ -98,7 +98,7 @@ case "$1" in
          sleep 1
 
          # Parse the actual JAVACMD from the process' environment, we don't care about errors.
-         JAVA=$(cat /proc/$(cat ${PID_FILE} 2>/dev/null)/environ 2>/dev/null | awk -F= 'BEGIN {RS="\0"} /JAVACMD/ {print $2}')
+         JAVA=$(cat /proc/$(cat "${PID_FILE}" 2>/dev/null)/environ 2>/dev/null | grep -z ^JAVACMD= | cut -d= -f2)
          if start-stop-daemon --test --start --pidfile "$PID_FILE" \
              --user "$LS_USER" --exec "$JAVA" \
          >/dev/null; then
@@ -146,7 +146,7 @@ case "$1" in
       set +e
 
       # Parse the actual JAVACMD from the process' environment, we don't care about errors.
-      JAVA=$(cat /proc/$(cat ${PID_FILE} 2>/dev/null)/environ 2>/dev/null | awk -F= 'BEGIN {RS="\0"} /JAVACMD/ {print $2}')
+      JAVA=$(cat /proc/$(cat "${PID_FILE}" 2>/dev/null)/environ 2>/dev/null | grep -z ^JAVACMD= | cut -d= -f2)
       start-stop-daemon --test --start --pidfile "$PID_FILE" \
          --user "$LS_USER" --exec "$JAVA" \
       >/dev/null 2>&1
