@@ -40,7 +40,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   # ElasticSearch river configuration: bulk timeout in milliseconds
   config :es_bulk_timeout_ms, :validate => :number, :default => 100
-  
+
   # ElasticSearch river configuration: is ordered?
   config :es_ordered, :validate => :boolean, :default => false
 
@@ -61,7 +61,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   # RabbitMQ queue name
   config :queue, :validate => :string, :default => "elasticsearch"
-  
+
   # RabbitMQ exchange name
   config :exchange, :validate => :string, :default => "elasticsearch"
 
@@ -123,10 +123,10 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       # Name the river by our hostname
       require "socket"
       hostname = Socket.gethostname
-      
+
       # Replace spaces with hyphens and remove all non-alpha non-dash non-underscore characters
       river_name = "#{hostname} #{@queue}".gsub(' ', '-').gsub(/[^\w-]/, '')
-      
+
       api_path = "/_river/logstash-#{river_name}/_meta"
       @status_path = "/_river/logstash-#{river_name}/_status"
 
