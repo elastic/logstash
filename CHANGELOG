@@ -1,3 +1,22 @@
+1.4.0 beta2 (Feb 26, 2014)
+  # general
+  - Logstash now supports deletes! See outputs section below.
+  - Update template to fit ES 1.0 API changes (untergeek)
+  - Lots of Makefile, gem and build improvements courtesy of untergeek, Faye Salwin,
+    mrsolo, ronnocol, electrical, et al
+  
+  # inputs
+  - bugfix: Fixes exception when not specifying yamlmibdir in snmptrap (#950, Andres Koetsier)
+  - improvement: Add Multi-threaded workers and queues to UDP input (johnarnold + untergeek)
+  
+  # outputs
+  - improvement: Added `action` awesomeness to elasticsearch output (#1105, jordansissel)
+  - improvement: Implement `protocol => http` in elasticsearch output (#1105, jordansissel)   
+  - bugfix: fix broken pipe output to allow EBADF instead of EPIPE,
+    allowing pipe command to be restarted (#974, Paweł Puterla)
+  - improvement: Adding dns resolution to lumberjack output (#1048 nathanlburns)
+  - improvement: added pre- and post-messages to the IRC output (#1111, Lance O'Connor)
+
 1.4.0 beta1 (Feb 20, 2014)
   # general
   - Elasticsearch 1.0 libraries are now included. See the Elasticsearch
@@ -71,7 +90,7 @@
   - improvement: lumberjack: now supports codecs (#1048, LOGSTASH-1680; Nathan
     Burns)
 
-1.3.3 (January 17, 2013)
+1.3.3 (January 17, 2014)
   # general
   - bugfix: Fix SSL cert load problem on plugins using aws-sdk: S3, SNS, etc.
     (LOGSTASH-1778, LOGSTASH-1787, LOGSTASH-1784, #924; Adam Peck)
