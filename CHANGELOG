@@ -14,7 +14,7 @@
   - improvement: Implement `protocol => http` in elasticsearch output (#1105, jordansissel)   
   - bugfix: fix broken pipe output to allow EBADF instead of EPIPE,
     allowing pipe command to be restarted (#974, Paweł Puterla)
-  - improvement: Adding dns resolution to lumberjack output (untergeek)
+  - improvement: Adding dns resolution to lumberjack output (#1048 nathanlburns)
   - improvement: added pre- and post-messages to the IRC output (#1111, Lance O'Connor)
 
 1.4.0 beta1 (Feb 20, 2014)
