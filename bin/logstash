@@ -29,6 +29,7 @@ export HOME SINCEDB_DIR
 
 case $1 in
   deps) install_deps ;;
+  env) env "$@" ;;
   -*) 
     # is the first argument a flag? If so, assume 'agent'
     program="$basedir/lib/logstash/runner.rb"
