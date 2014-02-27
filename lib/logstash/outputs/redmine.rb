@@ -2,6 +2,27 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
+# The redmine output is used to create a ticket via the API redmine. 
+#
+# It send a POST request in a JSON format and use TOKEN authentication
+# This output provide ssl connection method but does not check the certificate
+#
+#
+# -- Exemple of use --
+#  
+#  output {
+#    redmine {
+#      url => "http://redmineserver.tld"
+#      token => 'token'
+#      project_id => 200
+#      tracker_id => 1
+#      status_id => 3
+#      priority_id => 2
+#      subject => "Error ... detected"
+#    }
+#  }
+
+
 class LogStash::Outputs::Redmine < LogStash::Outputs::Base
 
   config_name "redmine"
@@ -15,10 +36,6 @@ class LogStash::Outputs::Redmine < LogStash::Outputs::Base
   # http request ssl trigger
   # not required
   config :ssl, :validate => :boolean, :default => false 
-
-  # request format : json or xml
-  # not required
-  config :post_format, :validate => ["json", "xml"], :default => "json"
 
   # redmine token user used for authentication
   # required
@@ -34,7 +51,7 @@ class LogStash::Outputs::Redmine < LogStash::Outputs::Base
 
   # redmine issue status_id
   # required 
-  config :status_id, :validate => :number, :default => 1 
+  config :status_id, :validate => :number, :required => true 
 
   # redmine issue priority_id
   # required 
@@ -126,17 +143,11 @@ class LogStash::Outputs::Redmine < LogStash::Outputs::Base
     @issue["issue"]["category_id"] = "#{@category_id}" if not @category_id.nil?
     @issue["issue"]["fixed_version_id"] = "#{@fixed_version_id}" if not @fixed_version_id.nil?
 
-
-    # Form the body of the message according to the value of the parameter post_format
-    # expected value : 'json' || 'xml'
-    if @post_format == "json"
-      @req.body = @issue.to_json
-    else
-    # TODO : Make to_xml like ...    
-    end
+    # change hash issue to json for the request
+    @req.body = @issue.to_json
     
     # send the post_http_request "req" 
-    @logger.info("Sending request to redmine :", :host => @uri.host, :body => @req.body)
+    @logger.info("Sending request to redmine :", :host => @formated_url, :body => @req.body)
     begin 
       @http.request(@req)
     rescue => e
