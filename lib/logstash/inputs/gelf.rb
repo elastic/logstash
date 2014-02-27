@@ -34,7 +34,8 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
 
   # Whether or not to remove the leading '_' in GELF fields or leave them
   # in place. (Logstash < 1.2 did not remove them by default.). Note that
-  #
+  # GELF version 1.1 format now requires all non-standard fields to be added
+  # as an "additional" field, beginning with an underscore.
   #
   # e.g. `\_foo` becomes `foo`
   #
