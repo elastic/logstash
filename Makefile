@@ -40,8 +40,8 @@ endif
 #spec/outputs/graphite.rb spec/outputs/email.rb)
 default:
 	@echo "Make targets you might be interested in:"
-	@echo "  flatjar -- builds the flatjar jar"
-	@echo "  flatjar-test -- runs the test suite against the flatjar"
+	@echo "  tarball -- builds the tarball package"
+	@echo "  tarball-test -- runs the test suite against the tarball package"
 
 TESTS=$(wildcard spec/inputs/file.rb spec/inputs/gelf.rb spec/inputs/imap.rb spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
 
@@ -174,7 +174,6 @@ $(GEOIP_ASN): | vendor/geoip
 	$(QUIET)mv $@.tmp $@
 
 vendor/collectd: | vendor
-vendor/collectd: | vendor
 	$(QUIET)mkdir $@
 
 .PHONY: vendor-collectd
@@ -211,107 +210,12 @@ build:
 build/ruby: | build
 	-$(QUIET)mkdir -p $@
 
-# TODO(sissel): Update this to be like.. functional.
-# TODO(sissel): Skip sigar?
-# Run this one always? Hmm..
-.PHONY: build/monolith
-build/monolith: $(ELASTICSEARCH) $(JRUBY) $(GEOIP) $(TYPESDB) vendor-gems | build
-build/monolith: vendor/ua-parser/regexes.yaml
-build/monolith: vendor/kibana
-build/monolith: compile copy-ruby-files vendor/jar/graphtastic-rmiclient.jar
-	-$(QUIET)mkdir -p $@
-	@# Unpack all the 3rdparty jars and any jars in gems
-	$(QUIET)find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
-	| (cd $@; xargs -n1 jar xf)
-	@# Merge all service file in all 3rdparty jars
-	$(QUIET)mkdir -p $@/META-INF/services/
-	$(QUIET)find $$PWD/vendor/bundle $$PWD/vendor/jar -name '*.jar' \
-	| xargs $(JRUBY_CMD) extract_services.rb -o $@/META-INF/services
-	@# copy openssl/lib/shared folders/files to root of jar
-	@#- need this for openssl to work with JRuby
-	$(QUIET)mkdir -p $@/openssl
-	$(QUIET)mkdir -p $@/jopenssl
-	$(QUIET)cp -r $$PWD/vendor/bundle/jruby/1.9/gems/jruby-openss*/lib/shared/openssl/* $@/openssl
-	$(QUIET)cp -r $$PWD/vendor/bundle/jruby/1.9/gems/jruby-openss*/lib/shared/jopenssl/* $@/jopenssl
-	$(QUIET)cp -r $$PWD/vendor/bundle/jruby/1.9/gems/jruby-openss*/lib/shared/openssl.rb $@/openssl.rb
-	@# Purge any extra files we don't need in META-INF (like manifests and
-	@# signature files)
-	-$(QUIET)rm -f $@/META-INF/*.LIST
-	-$(QUIET)rm -f $@/META-INF/*.MF
-	-$(QUIET)rm -f $@/META-INF/*.RSA
-	-$(QUIET)rm -f $@/META-INF/*.SF
-	-$(QUIET)rm -f $@/META-INF/NOTICE $@/META-INF/NOTICE.txt
-	-$(QUIET)rm -f $@/META-INF/LICENSE $@/META-INF/LICENSE.txt
-	-$(QUIET)mkdir -p $@/vendor/ua-parser
-	-$(QUIET)cp vendor/ua-parser/regexes.yaml $@/vendor/ua-parser
-	$(QUIET)cp $(GEOIP) $@/
-	$(QUIET)cp $(TYPESDB) $@/
-	$(QUIET)cp lib/logstash/outputs/elasticsearch/elasticsearch-template.json $@/
-	-$(QUIET)rsync -a vendor/kibana/ $@/vendor/kibana/
-
 vendor/ua-parser/: | build
 	$(QUIET)mkdir $@
 
 vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
 	@echo "=> Fetching ua-parser regexes.yaml"
 	$(QUIET)$(DOWNLOAD_COMMAND) $@ https://raw.github.com/tobie/ua-parser/master/regexes.yaml
-
-# Learned how to do pack gems up into the jar mostly from here:
-# http://blog.nicksieger.com/articles/2009/01/10/jruby-1-1-6-gems-in-a-jar
-VENDOR_DIR=vendor/bundle/jruby/1.9
-jar: | flatjar
-build/logstash-$(VERSION)-monolithic.jar: | build/monolith
-build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS=-C build/ruby .
-build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C build/monolith .
-build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C $(VENDOR_DIR) gems
-build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C $(VENDOR_DIR) specifications
-build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=-C lib logstash/certs
-build/logstash-$(VERSION)-monolithic.jar: JAR_ARGS+=patterns
-build/logstash-$(VERSION)-monolithic.jar:
-	$(QUIET)rm -f $@
-	$(QUIET)jar cfe $@ logstash.runner $(JAR_ARGS)
-	@echo "Created $@"
-
-.PHONY: build/logstash-$(VERSION)-monolithic.jar
-
-build/flatgems: | build vendor/bundle
-	mkdir $@
-	for i in $(VENDOR_DIR)/gems/*/lib $(VENDOR_DIR)/gems/*/data; do \
-		rsync -a $$i/ $@/$$(basename $$i) ; \
-	done
-	@# Until I implement something that looks at the 'require_paths' from
-	@# all the gem specs.
-	$(QUIET)rsync -a $(VENDOR_DIR)/gems/jruby-openssl-*/lib/shared/jopenssl.jar $@/lib
-	#$(QUIET)rsync -a $(VENDOR_DIR)/gems/sys-uname-*/lib/unix/ $@/lib
-	@# Other lame hacks to get crap to work.
-	$(QUIET)rsync -a $(VENDOR_DIR)/gems/sass-*/VERSION_NAME $@/root/
-	$(QUIET)rsync -a $(VENDOR_DIR)/gems/user_agent_parser-*/vendor/ua-parser $@/vendor
-	$(QUIET)rsync -a $(VENDOR_DIR)/gems/aws-sdk-*/ca-bundle.crt $@/root/
-	@# A lame hack to work around the aws-sdk bug (LOGSTASH-1718)
-	sed -i -e "s@SRC = ROOT + '/lib/aws'@SRC = ROOT + 'aws'@" $@/lib/aws/core.rb
-
-
-flatjar-test:
-	# chdir away from the project directory to make sure things work in isolation.
-	cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS) --fail-fast
-	#cd / && GEM_HOME= GEM_PATH= java -jar $(PWD)/build/logstash-$(VERSION)-flatjar.jar rspec spec/jar.rb
-
-flatjar-test-and-report:
-	GEM_HOME= GEM_PATH= java -jar build/logstash-$(VERSION)-flatjar.jar rspec $(TESTS) --format h --out build/results.flatjar.html
-
-flatjar: build/logstash-$(VERSION)-flatjar.jar
-build/jar: | build build/flatgems build/monolith
-	$(QUIET)mkdir build/jar
-	$(QUIET)rsync -a build/flatgems/root/ build/flatgems/lib/ build/monolith/ build/ruby/ patterns build/flatgems/data build/jar/
-	$(QUIET)(cd lib; rsync -a --delete logstash/certs/ ../build/jar/logstash/certs)
-
-build/logstash-$(VERSION)-flatjar.jar: | build/jar
-	$(QUIET)rm -f $@
-	$(QUIET)jar cfe $@ logstash.runner -C build/jar .
-	@echo "Created $@"
-
-update-flatjar: copy-ruby-files compile build/ruby/logstash/runner.class
-	$(QUIET)jar uf build/logstash-$(VERSION)-flatjar.jar -C build/ruby .
 
 .PHONY: test
 test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd
