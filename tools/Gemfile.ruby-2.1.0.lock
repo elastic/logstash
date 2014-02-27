@@ -1,35 +1,30 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (3.2.16)
+    activesupport (3.2.17)
       i18n (~> 0.6, >= 0.6.4)
       multi_json (~> 1.0)
     addressable (2.3.5)
-    amq-protocol (1.9.0)
-    atomic (1.1.14)
-    autoparse (0.3.3)
-      addressable (>= 2.3.1)
-      extlib (>= 0.9.15)
-      multi_json (>= 1.0.0)
+    amq-protocol (1.9.2)
+    atomic (1.1.15)
     avl_tree (1.1.3)
     awesome_print (1.2.0)
-    aws-sdk (1.29.0)
+    aws-sdk (1.35.0)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
       uuidtools (~> 2.1)
-    backports (3.3.5)
+    backports (3.6.0)
     beefcake (0.3.7)
-    bindata (1.6.0)
+    bindata (2.0.0)
     blankslate (2.1.2.4)
-    bson (1.9.2)
     buftok (0.1)
     builder (3.2.2)
-    bunny (1.0.5)
-      amq-protocol (>= 1.9.0)
+    bunny (1.1.3)
+      amq-protocol (>= 1.9.2)
     cabin (0.6.1)
-    ci_reporter (1.9.0)
+    ci_reporter (1.9.1)
       builder (>= 2.1.2)
-    cinch (2.0.10)
+    cinch (2.1.0)
     clamp (0.6.3)
     coderay (1.1.0)
     coveralls (0.7.0)
@@ -38,28 +33,19 @@ GEM
       simplecov (>= 0.7)
       term-ansicolor
       thor
-    crack (0.1.8)
     diff-lcs (1.2.5)
-    docile (1.1.1)
+    docile (1.1.3)
     edn (1.0.2)
       parslet (~> 1.4.0)
-    elasticsearch (0.4.1)
-      elasticsearch-api (= 0.4.1)
-      elasticsearch-transport (= 0.4.1)
-    elasticsearch-api (0.4.1)
-      multi_json
-    elasticsearch-transport (0.4.1)
-      faraday
-      multi_json
-    excon (0.30.0)
+    excon (0.32.0)
     extlib (0.9.16)
-    faraday (0.8.8)
-      multipart-post (~> 1.2.0)
+    faraday (0.9.0)
+      multipart-post (>= 1.2, < 3)
     ffi (1.9.3)
     ffi-rzmq (1.0.0)
       ffi
     filewatch (0.5.1)
-    ftw (0.0.38)
+    ftw (0.0.39)
       addressable
       backports (>= 2.6.2)
       cabin (> 0)
@@ -67,140 +53,78 @@ GEM
     gelf (1.3.2)
       json
     gelfd (0.2.0)
-    geoip (1.3.3)
+    geoip (1.3.5)
     gmetric (0.1.3)
-    google-api-client (0.6.4)
-      addressable (>= 2.3.2)
-      autoparse (>= 0.3.3)
-      extlib (>= 0.9.15)
-      faraday (~> 0.8.4)
-      jwt (>= 0.1.5)
-      launchy (>= 2.1.1)
-      multi_json (>= 1.0.0)
-      signet (~> 0.4.5)
-      uuidtools (>= 2.1.0)
-    haml (4.0.4)
+    haml (4.0.5)
       tilt
-    hashie (2.0.5)
-    heroku (2.25.0)
-      launchy (>= 0.3.2)
-      netrc (~> 0.7.1)
-      rest-client (~> 1.6.1)
-      rubyzip
     hitimes (1.2.1)
     http (0.5.0)
       http_parser.rb
     http_parser.rb (0.5.3)
-    httparty (0.11.0)
-      multi_json (~> 1.0)
-      multi_xml (>= 0.5.2)
     i18n (0.6.9)
     insist (1.0.0)
-    jdbc-sqlite3 (3.7.2.1)
-    jiralicious (0.2.2)
-      crack (~> 0.1.8)
-      hashie (>= 1.1)
-      httparty (>= 0.10, < 0.12.0)
-      json (>= 1.6, < 1.9.0)
     jls-grok (0.10.12)
       cabin (>= 0.6.0)
     jls-lumberjack (0.0.19)
     json (1.8.1)
-    jwt (0.1.8)
-      multi_json (>= 1.5)
-    launchy (2.4.2)
-      addressable (~> 2.3)
     mail (2.5.3)
       i18n (>= 0.4.0)
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
-    metaclass (0.0.1)
+    metaclass (0.0.4)
     method_source (0.8.2)
-    metriks (0.9.9.5)
+    metriks (0.9.9.6)
       atomic (~> 1.0)
       avl_tree (~> 1.1.2)
       hitimes (~> 1.1)
     mime-types (1.25.1)
     mini_portile (0.5.2)
-    minitest (5.0.8)
-    mocha (0.14.0)
+    minitest (5.3.0)
+    mocha (1.0.0)
       metaclass (~> 0.0.1)
-    mongo (1.9.2)
-      bson (~> 1.9.2)
-    msgpack (0.5.7)
-    mtrc (0.0.4)
-    multi_json (1.8.2)
-    multi_xml (0.5.5)
-    multipart-post (1.2.0)
-    murmurhash3 (0.1.3)
-    mysql2 (0.3.14)
-    netrc (0.7.7)
-    nokogiri (1.6.0)
+    msgpack (0.5.8)
+    multi_json (1.8.4)
+    multipart-post (2.0.0)
+    murmurhash3 (0.1.4)
+    nokogiri (1.6.1)
       mini_portile (~> 0.5.0)
-    onstomp (1.0.7)
     parslet (1.4.0)
       blankslate (~> 2.0)
-    php-serialize (1.1.0)
-    polyglot (0.3.3)
-    pry (0.9.12.4)
+    polyglot (0.3.4)
+    pry (0.9.12.6)
       coderay (~> 1.0)
       method_source (~> 0.8)
       slop (~> 3.4)
-    rack (1.5.2)
-    rack-protection (1.5.1)
-      rack
     rbnacl (2.0.0)
       ffi
-    redis (3.0.6)
+    redis (3.0.7)
     rest-client (1.6.7)
       mime-types (>= 1.16)
-    riak-client (1.0.3)
-      beefcake (~> 0.3.7)
-      builder (>= 2.1.2)
-      i18n (>= 0.4.0)
-      multi_json (~> 1.0)
-    riemann-client (0.2.1)
-      beefcake (>= 0.3.5)
-      mtrc (>= 0.0.4)
-      trollop (>= 1.16.2)
-    rsolr (1.0.9)
-      builder (>= 2.1.2)
     rspec (2.14.1)
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
       rspec-mocks (~> 2.14.0)
     rspec-core (2.14.7)
-    rspec-expectations (2.14.4)
+    rspec-expectations (2.14.5)
       diff-lcs (>= 1.1.3, < 2.0)
-    rspec-mocks (2.14.4)
-    rubyzip (1.1.0)
+    rspec-mocks (2.14.6)
     rufus-scheduler (2.0.24)
       tzinfo (>= 0.3.22)
     rumbster (1.1.1)
       mail (= 2.5.3)
-    sass (3.2.12)
-    sequel (4.5.0)
+    sass (3.2.14)
     shoulda (3.5.0)
       shoulda-context (~> 1.0, >= 1.0.1)
       shoulda-matchers (>= 1.4.1, < 3.0)
     shoulda-context (1.1.6)
-    shoulda-matchers (2.4.0)
+    shoulda-matchers (2.5.0)
       activesupport (>= 3.0.0)
-    signet (0.4.5)
-      addressable (>= 2.2.3)
-      faraday (~> 0.8.1)
-      jwt (>= 0.1.5)
-      multi_json (>= 1.0.0)
     simple_oauth (0.2.0)
     simplecov (0.8.2)
       docile (~> 1.1.0)
       multi_json
       simplecov-html (~> 0.8.0)
     simplecov-html (0.8.0)
-    sinatra (1.4.4)
-      rack (~> 1.4)
-      rack-protection (~> 1.4)
-      tilt (~> 1.3, >= 1.3.4)
     slop (3.4.7)
     snmp (1.1.1)
     spoon (0.0.4)
@@ -209,17 +133,16 @@ GEM
     stud (0.0.17)
       ffi
       metriks
-    term-ansicolor (1.2.2)
-      tins (~> 0.8)
+    term-ansicolor (1.3.0)
+      tins (~> 1.0)
     thor (0.18.1)
-    thread_safe (0.1.3)
-      atomic
-    tilt (1.4.1)
-    tins (0.13.1)
+    thread_safe (0.2.0)
+      atomic (>= 1.1.7, < 2)
+    tilt (2.0.0)
+    tins (1.0.0)
     treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
-    trollop (2.0)
     twitter (5.0.0.rc.1)
       buftok (~> 0.1.0)
       faraday (>= 0.8, < 0.10)
@@ -229,11 +152,9 @@ GEM
       simple_oauth (~> 0.2.0)
     tzinfo (1.1.0)
       thread_safe (~> 0.1)
-    user_agent_parser (2.1.1)
+    user_agent_parser (2.1.2)
     uuidtools (2.1.4)
-    varnish-rb (0.2.0)
-      ffi
-    xml-simple (1.1.2)
+    xml-simple (1.1.3)
     xmpp4r (0.5)
 
 PLATFORMS
@@ -245,31 +166,26 @@ DEPENDENCIES
   aws-sdk
   beefcake (= 0.3.7)
   bindata (>= 1.5.0)
-  bunny (~> 1.0.5)
+  bunny (~> 1.1.0)
   cabin (>= 0.6.0)
   ci_reporter
   cinch
   clamp
   coveralls
   edn
-  elasticsearch
   excon
   extlib (= 0.9.16)
   ffi
   ffi-rzmq (= 1.0.0)
   filewatch (= 0.5.1)
-  ftw (~> 0.0.38)
+  ftw (~> 0.0.39)
   gelf (= 1.3.2)
   gelfd (= 0.2.0)
   geoip (>= 1.3.2)
   gmetric (= 0.1.3)
-  google-api-client
   haml
-  heroku
-  i18n
+  i18n (>= 0.6.6)
   insist (= 1.0.0)
-  jdbc-sqlite3
-  jiralicious (= 0.2.2)
   jls-grok (= 0.10.12)
   jls-lumberjack (>= 0.0.19)
   json
@@ -278,33 +194,21 @@ DEPENDENCIES
   mime-types
   minitest
   mocha
-  mongo
   msgpack
   murmurhash3
-  mysql2
-  onstomp
-  php-serialize
   pry
-  rack
   rbnacl
   redis
-  riak-client (= 1.0.3)
-  riemann-client (= 0.2.1)
-  rsolr
   rspec
   rufus-scheduler (~> 2.0.24)
   rumbster
   sass
-  sequel
   shoulda
-  sinatra
   snmp
   spoon
   statsd-ruby (= 1.2.0)
   stud
   twitter (= 5.0.0.rc.1)
   user_agent_parser (>= 2.0.0)
-  uuidtools
-  varnish-rb
   xml-simple
   xmpp4r (= 0.5)
