@@ -55,7 +55,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   # Should now be sent as an underscored "additional field" (e.g. `\_file`).
   config :file, :validate => :string, :deprecated => true
 
-  # Should Logstash ship metadata within event object? This will cause logstash
+  # Should Logstash ship metadata within event object? This will cause Logstash
   # to ship any fields in the event (such as those created by grok) in the GELF
   # messages. These will be sent as underscored "additional fields".
   config :ship_metadata, :validate => :boolean, :default => true
