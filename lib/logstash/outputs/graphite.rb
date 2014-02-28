@@ -4,11 +4,11 @@ require "logstash/namespace"
 require "socket"
 
 # This output allows you to pull metrics from your logs and ship them to
-# graphite. Graphite is an open source tool for storing and graphing metrics.
+# Graphite. Graphite is an open source tool for storing and graphing metrics.
 #
-# An example use case: At loggly, some of our applications emit aggregated
-# stats in the logs every 10 seconds. Using the grok filter and this output,
-# I can capture the metric values from the logs and emit them to graphite.
+# An example use case: Some applications emit aggregated stats in the logs
+# every 10 seconds. Using the grok filter and this output, it is possible to
+# capture the metric values from the logs and emit them to Graphite.
 class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   config_name "graphite"
   milestone 2
@@ -18,46 +18,49 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   DEFAULT_METRICS_FORMAT = "*"
   METRIC_PLACEHOLDER = "*"
 
-  # The address of the graphite server.
+  # The hostname or IP address of the Graphite server.
   config :host, :validate => :string, :default => "localhost"
 
-  # The port to connect on your graphite server.
+  # The port to connect to on the Graphite server.
   config :port, :validate => :number, :default => 2003
 
-  # Interval between reconnect attempts to Carbon
+  # Interval between reconnect attempts to Carbon.
   config :reconnect_interval, :validate => :number, :default => 2
 
-  # Should metrics be resend on failure?
+  # Should metrics be resent on failure?
   config :resend_on_failure, :validate => :boolean, :default => false
 
   # The metric(s) to use. This supports dynamic strings like %{host}
   # for metric names and also for values. This is a hash field with key 
-  # of the metric name, value of the metric value. Example:
+  # being the metric name, value being the metric value. Example:
   #
   #     [ "%{host}/uptime", "%{uptime_1m}" ]
   #
   # The value will be coerced to a floating point value. Values which cannot be
-  # coerced will zero (0)
+  # coerced will be set to zero (0). You may use either `metrics` or `fields_are_metrics`,
+  # but not both.
   config :metrics, :validate => :hash, :default => {}
 
-  # Indicate that the event @fields should be treated as metrics and will be sent as is to graphite
+  # An array indicating that these event fields should be treated as metrics
+  # and will be sent verbatim to Graphite. You may use either `fields_are_metrics`
+  # or `metrics`, but not both.
   config :fields_are_metrics, :validate => :boolean, :default => false
 
-  # Include only regex matched metric names
+  # Include only regex matched metric names.
   config :include_metrics, :validate => :array, :default => [ ".*" ]
 
-  # Exclude regex matched metric names, by default exclude unresolved %{field} strings
+  # Exclude regex matched metric names, by default exclude unresolved %{field} strings.
   config :exclude_metrics, :validate => :array, :default => [ "%\{[^}]+\}" ]
 
-  # Enable debug output
+  # Enable debug output.
   config :debug, :validate => :boolean, :default => false, :deprecated => "This setting was never used by this plugin. It will be removed soon."
 
-  # Defines format of the metric string. The placeholder '*' will be
+  # Defines the format of the metric string. The placeholder '*' will be
   # replaced with the name of the actual metric.
   #
   #     metrics_format => "foo.bar.*.sum"
   #
-  # NOTE: If no metrics_format is defined the name of the metric will be used as fallback.
+  # NOTE: If no metrics_format is defined, the name of the metric will be used as fallback.
   config :metrics_format, :validate => :string, :default => DEFAULT_METRICS_FORMAT
 
   def register
@@ -74,7 +77,7 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
   end # def register
 
   def connect
-    # TODO(sissel): Test error cases. Catch exceptions. Find fortune and glory.
+    # TODO(sissel): Test error cases. Catch exceptions. Find fortune and glory. Retire to yak farm.
     begin
       @socket = TCPSocket.new(@host, @port)
     rescue Errno::ECONNREFUSED => e
@@ -121,7 +124,7 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
     end
 
     if messages.empty?
-      @logger.debug("Message is empty, not sending anything to graphite", :messages => messages, :host => @host, :port => @port)
+      @logger.debug("Message is empty, not sending anything to Graphite", :messages => messages, :host => @host, :port => @port)
     else
       message = messages.join("\n")
       @logger.debug("Sending carbon messages", :messages => messages, :host => @host, :port => @port)
