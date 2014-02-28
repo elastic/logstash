@@ -89,6 +89,7 @@ class LogStash::Outputs::Redmine < LogStash::Outputs::Base
 
     # url form
     # TODO : Add a mecanism that verify and format this value
+    @post_format = 'json'
     @formated_url = "#{@url}/issues.#{@post_format}"
     @uri = URI(@formated_url)
     @logger.debug("formated_uri:",:uri => @formated_url) 
@@ -155,5 +156,4 @@ class LogStash::Outputs::Redmine < LogStash::Outputs::Base
     end #begin
 
   end # def receive
-
 end
