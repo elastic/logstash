@@ -147,4 +147,19 @@ describe LogStash::Filters::Fingerprint do
     end
   end
 
+  describe "PUNCTUATION method" do
+    config <<-CONFIG
+      filter {
+        fingerprint {
+          source => 'field1'
+          method => 'PUNCTUATION'
+        }
+      }
+    CONFIG
+
+    sample("field1" =>  "PHP Warning:  json_encode() [<a href='function.json-encode'>function.json-encode</a>]: Invalid UTF-8 sequence in argument in /var/www/htdocs/test.php on line 233") do
+      insist { subject["fingerprint"] } == ":_()[<='.-'>.-</>]:-////."
+    end
+  end
+
 end

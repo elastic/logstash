@@ -49,8 +49,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   config :index_type, :validate => :string
 
   # Starting in Logstash 1.3 (unless you set option "manage_template" to false)
-  # a default mapping template for Elasticsearch will be applied, if you do not 
-  # already have one set to match the index pattern defined (default of 
+  # a default mapping template for Elasticsearch will be applied, if you do not
+  # already have one set to match the index pattern defined (default of
   # "logstash-%{+YYYY.MM.dd}"), minus any variables.  For example, in this case
   # the template will be applied to all indices starting with logstash-*
   #
@@ -66,11 +66,11 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # where OldTemplateName is whatever the former setting was.
   config :template_name, :validate => :string, :default => "logstash"
 
-  # You can set the path to your own template here, if you so desire.  
+  # You can set the path to your own template here, if you so desire.
   # If not set, the included template will be used.
   config :template, :validate => :path
 
-  # Overwrite the current template with whatever is configured 
+  # Overwrite the current template with whatever is configured
   # in the template and template_name directives.
   config :template_overwrite, :validate => :boolean, :default => false
 
@@ -150,7 +150,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # configured).
   #
   # The 'transport' protocol will connect to the host you specify and will
-  # not show up as a 'node' in the Elasticsearch cluster. This is useful 
+  # not show up as a 'node' in the Elasticsearch cluster. This is useful
   # in situations where you cannot permit connections outbound from the
   # Elasticsearch cluster to this Logstash server.
   #
@@ -158,7 +158,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # `protocol` on non-java rubies is "http"
   config :protocol, :validate => [ "node", "transport", "http" ]
 
-  # The Elasticsearch action to perform. Valid actions are: `index`, `delete`. 
+  # The Elasticsearch action to perform. Valid actions are: `index`, `delete`.
   #
   # Use of this setting *REQUIRES* you also configure the `document_id` setting
   # because `delete` actions all require a document id.
@@ -252,8 +252,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     if @manage_template
       @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
       @client.template_install(@template_name, get_template, @template_overwrite)
-    end # if @manage_templates  
-    
+    end # if @manage_templates
+
     buffer_initialize(
       :max_items => @flush_size,
       :max_interval => @idle_flush_time,
@@ -275,10 +275,13 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       else
         if File.exists?("elasticsearch-template.json")
           @template = "elasticsearch-template.json"
-        elsif File.exists?("lib/logstash/outputs/elasticsearch/elasticsearch-template.json")
-          @template = "lib/logstash/outputs/elasticsearch/elasticsearch-template.json"
         else
-          raise "You must specify 'template => ...' in your elasticsearch_http output"
+          path = File.join(File.dirname(__FILE__), "elasticsearch/elasticsearch-template.json")
+          if File.exists?(path)
+            @template = path
+          else
+            raise "You must specify 'template => ...' in your elasticsearch_http output"
+          end
         end
       end
     end
