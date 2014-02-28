@@ -2,8 +2,8 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
 
-# GELF output. This is most useful if you want to use logstash
-# to output events to graylog2.
+# This output generates messages in GELF format. This is most useful if you
+# want to use Logstash to output events to Graylog2.
 #
 # More information at <http://graylog2.org/gelf#specs>
 class LogStash::Outputs::Gelf < LogStash::Outputs::Base
@@ -11,16 +11,16 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
   config_name "gelf"
   milestone 2
 
-  # graylog2 server address
+  # Graylog2 server IP address or hostname.
   config :host, :validate => :string, :required => true
 
-  # graylog2 server port
+  # Graylog2 server port number.
   config :port, :validate => :number, :default => 12201
 
   # The GELF chunksize. You usually don't need to change this.
   config :chunksize, :validate => :number, :default => 1420
 
-  # Allow overriding of the gelf 'sender' field. This is useful if you
+  # Allow overriding of the GELF `sender` field. This is useful if you
   # want to use something other than the event's source host as the
   # "sender" of an event. A common case for this is using the application name
   # instead of the hostname.
@@ -28,47 +28,50 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
   # The GELF message level. Dynamic values like %{level} are permitted here;
   # useful if you want to parse the 'log level' from an event and use that
-  # as the gelf level/severity.
+  # as the GELF level/severity.
   #
   # Values here can be integers [0..7] inclusive or any of
   # "debug", "info", "warn", "error", "fatal" (case insensitive).
   # Single-character versions of these are also valid, "d", "i", "w", "e", "f",
   # "u"
-  # The following additional severity_labels from logstash's  syslog_pri filter
+  # The following additional severity\_labels from Logstash's  syslog\_pri filter
   # are accepted: "emergency", "alert", "critical",  "warning", "notice", and
-  # "informational"
+  # "informational".
   config :level, :validate => :array, :default => [ "%{severity}", "INFO" ]
 
   # The GELF facility. Dynamic values like %{foo} are permitted here; this
   # is useful if you need to use a value from the event as the facility name.
+  # Should now be sent as an underscored "additional field" (e.g. `\_facility`)
   config :facility, :validate => :string, :deprecated => true
 
   # The GELF line number; this is usually the line number in your program where
   # the log event originated. Dynamic values like %{foo} are permitted here, but the
   # value should be a number.
+  # Should now be sent as an underscored "additional field" (e.g. `\_line`).
   config :line, :validate => :string, :deprecated => true
 
   # The GELF file; this is usually the source code file in your program where
   # the log event originated. Dynamic values like %{foo} are permitted here.
+  # Should now be sent as an underscored "additional field" (e.g. `\_file`).
   config :file, :validate => :string, :deprecated => true
 
-  # Ship metadata within event object? This will cause logstash to ship
-  # any fields in the event (such as those created by grok) in the GELF
-  # messages.
+  # Should Logstash ship metadata within event object? This will cause Logstash
+  # to ship any fields in the event (such as those created by grok) in the GELF
+  # messages. These will be sent as underscored "additional fields".
   config :ship_metadata, :validate => :boolean, :default => true
 
-  # Ship tags within events. This will cause logstash to ship the tags of an
-  # event as the field _tags.
+  # Ship tags within events. This will cause Logstash to ship the tags of an
+  # event as the field `\_tags`.
   config :ship_tags, :validate => :boolean, :default => true
 
-  # Ignore these fields when ship_metadata is set. Typically this lists the
+  # Ignore these fields when `ship_metadata` is set. Typically this lists the
   # fields used in dynamic values for GELF fields.
   config :ignore_metadata, :validate => :array, :default => [ "@timestamp", "@version", "severity", "host", "source_host", "source_path", "short_message" ]
 
   # The GELF custom field mappings. GELF supports arbitrary attributes as custom
   # fields. This exposes that. Exclude the `_` portion of the field name
   # e.g. `custom_fields => ['foo_field', 'some_value']
-  # sets `_foo_field` = `some_value`
+  # sets `_foo_field` = `some_value`.
   config :custom_fields, :validate => :hash, :default => {}
 
   # The GELF full message. Dynamic values like %{foo} are permitted here.
