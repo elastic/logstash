@@ -1,9 +1,12 @@
-1.4.0 beta2 (Feb 26, 2014)
+1.4.0 beta2 (Feb 28, 2014)
   # general
   - Logstash now supports deletes! See outputs section below.
   - Update template to fit ES 1.0 API changes (untergeek)
   - Lots of Makefile, gem and build improvements courtesy of untergeek, Faye Salwin,
     mrsolo, ronnocol, electrical, et al
+  - Add `env` command so you can run arbitrary commands with the logstash 
+    environment setup (jordansissel)
+  - Bug fixes (lots).  Did I mention bug fixes? (Thanks, community!)
   
   # inputs
   - bugfix: Fixes exception when not specifying yamlmibdir in snmptrap (#950, Andres Koetsier)
