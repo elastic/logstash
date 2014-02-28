@@ -45,6 +45,10 @@ class LogStash::Agent < Clamp::Command
     I18n.t("logstash.agent.flag.configtest"),
     :attribute_name => :config_test
 
+  option "--pid", "FILE",
+    "Pid file",
+    :attribute_name => :pid_file
+
   # Emit a warning message.
   def warn(message)
     # For now, all warnings are fatal.
@@ -73,6 +77,10 @@ class LogStash::Agent < Clamp::Command
     if version?
       show_version
       return 0
+    end
+
+    if pid_file
+      manage_pid
     end
 
     # temporarily send logs to stdout as well if a --log is specified
@@ -304,5 +312,13 @@ class LogStash::Agent < Clamp::Command
     end
     return config
   end # def load_config
+
+  # Pid file creation
+  def manage_pid
+    pid = Process.pid
+    pidfile = File.new(pid_file,'w')
+    pidfile.write(pid)
+    pidfile.close()
+  end
 
 end # class LogStash::Agent
