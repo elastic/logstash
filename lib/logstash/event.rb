@@ -6,18 +6,6 @@ require "logstash/namespace"
 require "logstash/util/fieldreference"
 require "logstash/time_addon"
 
-# Use a custom serialization for jsonifying Time objects.
-# TODO(sissel): Put this in a separate file.
-class Time
-  def to_json(*args)
-    return iso8601(3).to_json(*args)
-  end
-
-  def inspect
-    return to_json
-  end
-end
-
 # the logstash event object.
 #
 # An event is simply a tuple of (timestamp, data).
@@ -165,7 +153,8 @@ class LogStash::Event
   
   public
   def to_json(*args)
-    return @data.to_json(*args) 
+    json_data = @data.merge(TIMESTAMP => timestamp.iso8601(3))
+    return json_data.to_json(*args) 
   end # def to_json
 
   def to_hash
