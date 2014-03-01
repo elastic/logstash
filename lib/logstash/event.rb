@@ -4,19 +4,7 @@ require "time"
 require "date"
 require "logstash/namespace"
 require "logstash/util/fieldreference"
-require "logstash/time_addon"
-
-# Use a custom serialization for jsonifying Time objects.
-# TODO(sissel): Put this in a separate file.
-class Time
-  def to_json(*args)
-    return iso8601(3).to_json(*args)
-  end
-
-  def inspect
-    return to_json
-  end
-end
+require "logstash/time"
 
 # the logstash event object.
 #
@@ -31,7 +19,7 @@ end
 # * "@version" - the version of the schema. Currently "1"
 #
 # They are prefixed with an "@" symbol to avoid clashing with your
-# own custom fields. 
+# own custom fields.
 #
 # When serialized, this is represented in JSON. For example:
 #
@@ -43,10 +31,10 @@ end
 class LogStash::Event
   class DeprecatedMethod < StandardError; end
 
-  CHAR_PLUS = "+"
-  TIMESTAMP = "@timestamp"
-  VERSION = "@version"
-  VERSION_ONE = "1"
+  CHAR_PLUS = "+".freeze
+  TIMESTAMP = "@timestamp".freeze
+  VERSION = "@version".freeze
+  VERSION_ONE = "1".freeze
 
   public
   def initialize(data={})
@@ -54,13 +42,13 @@ class LogStash::Event
 
     @data = data
     data[VERSION] = VERSION_ONE if !@data.include?(VERSION)
-    if data.include?(TIMESTAMP) 
+    if data.include?(TIMESTAMP)
       t = data[TIMESTAMP]
       if t.is_a?(String)
-        data[TIMESTAMP] = LogStash::Time.parse_iso8601(t)
+        data[TIMESTAMP] = ::LogStash::Time.parse_iso8601(t)
       end
     else
-      data[TIMESTAMP] = ::Time.now.utc
+      data[TIMESTAMP] = ::LogStash::Time.now.utc
     end
   end # def initialize
 
@@ -98,7 +86,7 @@ class LogStash::Event
   else
     public
     def to_s
-      return self.sprintf("#{self["@timestamp"].iso8601} %{host} %{message}")
+      return self.sprintf("#{self[TIMESTAMP].iso8601(3)} %{host} %{message}")
     end # def to_s
   end
 
@@ -113,7 +101,7 @@ class LogStash::Event
   def ruby_timestamp
     raise DeprecatedMethod
   end # def unix_timestamp
-  
+
   # field-related access
   public
   def [](str)
@@ -123,11 +111,11 @@ class LogStash::Event
       return LogStash::Util::FieldReference.exec(str, @data)
     end
   end # def []
-  
+
   public
   def []=(str, value)
     if str == TIMESTAMP && !value.is_a?(Time)
-      raise TypeError, "The field '@timestamp' must be a Time, not a #{value.class} (#{value})"
+      raise TypeError, "The field '#{TIMESTAMP}' must be a Time, not a #{value.class} (#{value})"
     end
 
     r = LogStash::Util::FieldReference.exec(str, @data) do |obj, key|
@@ -162,10 +150,10 @@ class LogStash::Event
   def fields
     raise DeprecatedMethod
   end
-  
+
   public
   def to_json(*args)
-    return @data.to_json(*args) 
+    return JSON.dump(@data)
   end # def to_json
 
   def to_hash
@@ -199,7 +187,7 @@ class LogStash::Event
   end # def remove
 
   # sprintf. This could use a better method name.
-  # The idea is to take an event and convert it to a string based on 
+  # The idea is to take an event and convert it to a string based on
   # any format values, delimited by %{foo} where 'foo' is a field or
   # metadata member.
   #
@@ -212,7 +200,7 @@ class LogStash::Event
   # If a %{name} value is an array, then we will join by ','
   # If a %{name} value does not exist, then no substitution occurs.
   #
-  # TODO(sissel): It is not clear what the value of a field that 
+  # TODO(sissel): It is not clear what the value of a field that
   # is an array (or hash?) should be. Join by comma? Something else?
   public
   def sprintf(format)
@@ -227,9 +215,9 @@ class LogStash::Event
 
       if key == "+%s"
         # Got %{+%s}, support for unix epoch time
-        next @data["@timestamp"].to_i
+        next @data[TIMESTAMP].to_i
       elsif key[0,1] == "+"
-        t = @data["@timestamp"]
+        t = @data[TIMESTAMP]
         formatter = org.joda.time.format.DateTimeFormat.forPattern(key[1 .. -1])\
           .withZone(org.joda.time.DateTimeZone::UTC)
         #next org.joda.time.Instant.new(t.tv_sec * 1000 + t.tv_usec / 1000).toDateTime.toString(formatter)
