@@ -27,7 +27,7 @@ Example:
 
 ## Filters and Ordering
 
-For a given event, are applied in the order of appearance in the
+Filters are applied to each event by their order of appearance in the
 configuration file.
 
 ## Comments
@@ -113,7 +113,7 @@ The above makes 'path' a 3-element array including all 3 strings.
 
 ### <a name="hash"></a>Hash
 
-A hash is basically the same syntax as Ruby hashes. 
+A hash is basically the same syntax as Ruby hashes.
 The key and value are simply pairs, such as:
 
     match => { "field1" => "value1", "field2" => "value2", ... }
@@ -122,7 +122,7 @@ The key and value are simply pairs, such as:
 
 All events have properties. For example, an apache access log would have things
 like status code (200, 404), request path ("/", "index.html"), HTTP verb (GET, POST),
-client IP address, etc. Logstash calls these properties "fields." 
+client IP address, etc. Logstash calls these properties "fields."
 
 In many cases, it is useful to be able to refer to a field by name. To do this,
 you can use the Logstash field reference syntax.
@@ -161,7 +161,7 @@ apache logs by status code:
       }
     }
 
-You can also do time formatting in this sprintf format. Instead of specifying a field name, use the `+FORMAT` syntax where `FORMAT` is a [time format](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html). 
+You can also do time formatting in this sprintf format. Instead of specifying a field name, use the `+FORMAT` syntax where `FORMAT` is a [time format](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html).
 
 For example, if you want to use the file output to write to logs based on the
 hour and the 'type' field:
@@ -195,8 +195,8 @@ What's an expression? Comparison tests, boolean logic, etc!
 
 The following comparison operators  are supported:
 
-* equality, etc: ==,  !=,  <,  >,  <=,  >= 
-* regexp: =~, !~ 
+* equality, etc: ==,  !=,  <,  >,  <=,  >=
+* regexp: =~, !~
 * inclusion: in, not in
 
 The following boolean operators are supported:
