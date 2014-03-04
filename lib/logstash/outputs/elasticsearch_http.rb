@@ -26,10 +26,10 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   config :index_type, :validate => :string
 
   # Starting in Logstash 1.3 (unless you set option "manage_template" to false)
-  # a default mapping template for Elasticsearch will be applied, if you do not 
-  # already have one set to match the index pattern defined (default of 
+  # a default mapping template for Elasticsearch will be applied, if you do not
+  # already have one set to match the index pattern defined (default of
   # "logstash-%{+YYYY.MM.dd}"), minus any variables.  For example, in this case
-  # the template will be applied to all indices starting with logstash-* 
+  # the template will be applied to all indices starting with logstash-*
   #
   # If you have dynamic templating (e.g. creating indices based on field names)
   # then you should set "manage_template" to false and use the REST API to upload
@@ -43,11 +43,11 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # where OldTemplateName is whatever the former setting was.
   config :template_name, :validate => :string, :default => "logstash"
 
-  # You can set the path to your own template here, if you so desire.  
+  # You can set the path to your own template here, if you so desire.
   # If not the included template will be used.
   config :template, :validate => :path
 
-  # Overwrite the current template with whatever is configured 
+  # Overwrite the current template with whatever is configured
   # in the template and template_name directives.
   config :template_overwrite, :validate => :boolean, :default => false
 
@@ -131,7 +131,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
         if !results.any? { |k,v| v["template"] == template_idx_name || v["template"] == alt_template_idx_name }
           @logger.debug("No template found in Elasticsearch", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name)
           get_template_json
-          template_action('put')      
+          template_action('put')
         end
       else #=> Some other status code?
         @logger.error("Could not check for existing template.  Check status code.", :status => response.status.to_s)
@@ -143,8 +143,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       :logger => @logger
     )
   end # def register
-  
-  public 
+
+  public
   def template_action(command)
     begin
       if command == 'delete'
@@ -168,8 +168,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     @logger.info("Successfully deleted template", :template_url => @template_url) if command == 'delete'
     @logger.info("Successfully applied template", :template_url => @template_url) if command == 'put'
   end # def template_action
-  
-  
+
+
   public
   def get_template_json
     if @template.nil?

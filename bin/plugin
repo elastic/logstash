@@ -46,13 +46,13 @@ TARGET="${TARGETDIR}/${FILENAME}"
 
 case $1 in
   install)
-  	exec $DOWNLOAD_COMMAND ${TARGET} ${URLSTUB}${FILENAME}
+  	$DOWNLOAD_COMMAND ${TARGET} ${URLSTUB}${FILENAME}
   	if [ ! -f "${TARGET}" ]; then
 	  	echo "ERROR: Unable to download ${URLSTUB}${FILENAME}"
 	  	echo "Exiting."
 	  	exit 1
 	fi
-  	gzip -dc ${TARGETDIR}${FILENAME} | tar -xC $TARGETDIR
+  	gzip -dc ${TARGET} | tar -xC $TARGETDIR
   	cp -R ${TARGETDIR}/$FILEPATH/* .  ;; # Copy contents to local directory, adding on top of existing install
   *) 
   	echo "Usage: bin/plugin install contrib"

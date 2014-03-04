@@ -1,9 +1,0 @@
-/var/log/logstash/logstash.log {
-        weekly
-        copytruncate
-        missingok
-        rotate 52
-        compress
-        delaycompress
-        notifempty
-}
