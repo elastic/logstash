@@ -1,10 +1,8 @@
-# logstash
+# Logstash
 
-[![Build Status](https://secure.travis-ci.org/logstash/logstash.png)](http://travis-ci.org/logstash/logstash)
-
-logstash is a tool for managing events and logs. You can use it to collect
+Logstash is a tool for managing events and logs. You can use it to collect
 logs, parse them, and store them for later use (like, for searching). Speaking
-of searching, logstash comes with a web interface for searching and drilling
+of searching, Logstash comes with a web interface for searching and drilling
 into all of your logs.
 
 It is fully free and fully open source. The license is Apache 2.0, meaning you
@@ -28,8 +26,8 @@ If you don't have JRuby already (or don't use rvm, rbenv, etc), you can have `bi
 Otherwise, here's how to get started with rvm: 
 
     # Install JRuby with rvm
-    rvm install jruby-1.7.8
-    rvm use jruby-1.7.8
+    rvm install jruby-1.7.11
+    rvm use jruby-1.7.11
 
 Now install dependencies:
 
@@ -38,18 +36,18 @@ Now install dependencies:
 
 Other commands:
 
-    # to use logstash gems or libraries in irb, use the following
-    # this gets you an 'irb' shell with logstash's environment
+    # to use Logstash gems or libraries in irb, use the following
+    # this gets you an 'irb' shell with Logstash's environment
     bin/logstash irb
 
     # or use irb from the jar
     java -jar logstash-<version>-monolithic.jar irb
 
-    # Run logstash
+    # Run Logstash
     bin/logstash agent [options]
     
     # If running bin/logstash agent yields complaints about log4j/other things
-    # This will download the elasticsearch jars so logstash can use them.
+    # This will download the elasticsearch jars so Logstash can use them.
     make vendor-elasticsearch
 
 ## Testing
@@ -84,7 +82,7 @@ specific test like so:
 ## Building
 
 Building is not required. You are highly recommended to download the releases
-we provide from the logstash site!
+we provide from the Logstash site!
 
 If you want to build the jar yourself, run:
 

@@ -1,3 +1,0 @@
-#LOGSTASH_LOGFILE=@@@LOGDIR@@@/@@@NAME@@@.log
-#LOGSTASH_PATH_CONF=@@@CONFDIR@@@
-#LOGSTASH_JAVA_OPTS="-Djava.io.tmpdir=/opt/@@@NAME@@@/tmp"
