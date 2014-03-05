@@ -96,6 +96,12 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # Zero means to check on every event.
   config :congestion_interval, :validate => :number, :default => 1
 
+  # How many attempts to make to send to redis while congestion is at
+  # its threshold. Will try connecting to the next server in the host
+  # list after attempts is reached. This will take
+  # time_in_secs = :congestion_interval * :congestion_attempts
+  config :congestion_attempts, :validate => :number, :default => 10
+
   def register
     require 'redis'
 
@@ -183,10 +189,16 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   def congestion_check(key)
     return if @congestion_threshold == 0
+    tries = 0
     if (Time.now.to_i - @congestion_check_times[key]) >= @congestion_interval # Check congestion only if enough time has passed since last check.
       while @redis.llen(key) > @congestion_threshold # Don't push event to Redis key which has reached @congestion_threshold.
         @logger.warn? and @logger.warn("Redis key size has hit a congestion threshold #{@congestion_threshold} suspending output for #{@congestion_interval} seconds")
         sleep @congestion_interval
+        tries += 1
+        if tries > @congestion_attempts
+            @redis = connect
+            tries = 0
+        end
       end
       @congestion_check_time = Time.now.to_i
     end
