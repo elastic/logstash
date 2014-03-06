@@ -32,6 +32,7 @@ class LogStash::Filters::Edn < LogStash::Filters::Base
 #
 #      edn {
 #        source  => "edn_msg"
+#        target  => "edn_key"
 #      }
 #
 #    }

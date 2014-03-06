@@ -15,9 +15,9 @@ describe LogStash::Filters::Edn do
     CONFIG
 
     sample '{ :hello "world", :list [ 1 2 3 ] , :hash { :k "v" } }' do
-      insist { subject["hello"] } == "world"
-      insist { subject["list" ] } == [1,2,3]
-      insist { subject["hash"]  } == { :k => "v" }
+      insist { subject[:hello] } == "world"
+      insist { subject[:list ] } == [1,2,3]
+      insist { subject[:hash]  } == { :k => "v" }
     end
   end
 
@@ -33,9 +33,9 @@ describe LogStash::Filters::Edn do
     CONFIG
 
     sample '{ :hello "world", :list [ 1 2 3 ], :hash { :k "v" } }' do
-      insist { subject["data"]["hello"] } == "world"
-      insist { subject["data"]["list" ] } == [1,2,3]
-      insist { subject["data"]["hash"]  } == { :k => "v" }
+      insist { subject["data"][:hello] } == "world"
+      insist { subject["data"][:list]  } == [1,2,3]
+      insist { subject["data"][:hash]  } == { :k => "v" }
     end
   end
 
@@ -81,7 +81,7 @@ describe LogStash::Filters::Edn do
 
     sample({ "example" => "{ :hello \"world\" }" }) do
       insist { subject["example"] }.is_a?(Hash)
-      insist { subject["example"]["hello"] } == "world"
+      insist { subject["example"][:hello] } == "world"
     end
   end
 
