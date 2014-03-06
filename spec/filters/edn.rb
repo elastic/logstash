@@ -55,20 +55,6 @@ describe LogStash::Filters::Edn do
     end
   end
 
-  describe "fixing @timestamp (#pull 733)" do
-    config <<-CONFIG
-      filter {
-        edn {
-          source => "message"
-        }
-      }
-    CONFIG
-
-    sample "{ :timestamp \"2013-10-19T00:14:32.996Z\" }" do
-      insist { subject["timestamp"] }.is_a?(Time)
-    end
-  end
-
   describe "source == target" do
     config <<-CONFIG
       filter {

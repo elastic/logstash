@@ -42,9 +42,6 @@ class LogStash::Filters::Edn < LogStash::Filters::Base
   # NOTE: if the `target` field already exists, it will be overwritten!
   config :target, :validate => :string
 
-
-  TIMESTAMP = "timestamp"
-
   public
   def register
     require 'edn'
@@ -60,7 +57,6 @@ class LogStash::Filters::Edn < LogStash::Filters::Base
     return unless event.include?(@source)
 
     source = event[@source]
-
     if @target.nil?
       # Default: to write to the root of the 'event'.
       dest = event.to_hash
@@ -74,30 +70,22 @@ class LogStash::Filters::Edn < LogStash::Filters::Base
     end
 
     begin
-
-      # prevent EDN keys to be treated as Symbols
-      edn = Hash[ EDN.read(source).map{ |(k,v)| [k.to_s,v] } ]
-
-      # New entries into the destination
-      dest.merge!(edn)
-
-      # Same fix from the 'json' filter plugin....
-      # If no @target, we target the root of the event object. This can allow
-      # you to overwrite @timestamp. If so, let's parse it as a timestamp!
-      if !@target && event[TIMESTAMP].is_a?(String)
-        # This is a hack to help folks who are mucking with @timestamp during
-        # their edn filter. You aren't supposed to do anything with
-        # "@timestamp" outside of the date filter, but nobody listens... ;)
-        event[TIMESTAMP] = Time.parse(event[TIMESTAMP]).utc
-      end
+      # NOTE: EDN keywords automatically turn into Ruby Symbols because
+      # of their same colon prefix notation such as ':key'. I do not know
+      # if they must be converted to a string in something like:
+      #   edn = Hash[ EDN.read(source).map{ |(k,v)| [k.to_s,v] } ]
+      # But to do so it should be recursive (and maybe slow?).
+      # To keep it simple is better to do what the 'edn' codec does and
+      # execute a simple conversion.
+      dest.merge!(EDN.read(source))
 
       filter_matched(event)
 
     rescue => e
       event.tag("_ednparsefailure")
-      @logger.warn("Trouble parsing edn", :source => @source, :raw => event[@source], :exception => e)
+      @logger.warn("Trouble parsing edn", :source => @source,
+                   :raw => event[@source], :exception => e)
       return
-
     end
 
     @logger.debug("Event after edn filter", :event => event)
@@ -105,4 +93,3 @@ class LogStash::Filters::Edn < LogStash::Filters::Base
   end # def filter
 
 end # class LogStash::Filters::Edn
-
