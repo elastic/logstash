@@ -102,6 +102,7 @@ Gem::Specification.new do |gem|
   
   #Development Deps
   gem.add_development_dependency "coveralls"
+  gem.add_development_dependency "bluecloth"
 
   #Jenkins Deps
   gem.add_runtime_dependency "ci_reporter"
