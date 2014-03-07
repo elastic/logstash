@@ -89,7 +89,7 @@ require "logstash/namespace"
 # Be careful you have the permission to write on bucket and know the name.
 
 # size_file => 2048
-# Means the size, in KB, of files who can store on temporary directory before you will be pushed on bucket.
+# Means the size, in bytes, of files who can store on temporary directory before you will be pushed on bucket.
 # Is useful if you have a little server with poor space on disk and you don't want blow up the server with unnecessary temporary log files.
 
 # time_file => 5
@@ -124,7 +124,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
                                         "eu-west-1", "ap-southeast-1", "ap-southeast-2",
                                         "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
 
- # Set the size of file in KB, this means that files on bucket when have dimension > file_size, they are stored in two or more file. 
+ # Set the size of file in bytes, this means that files on bucket when have dimension > file_size, they are stored in two or more file. 
  # If you have tags then it will generate a specific size file for every tags
  ##NOTE: define size of file is the better thing, because generate a local temporary file on disk and then put it in bucket. 
  config :size_file, :validate => :number, :default => 0
