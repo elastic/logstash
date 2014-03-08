@@ -18,6 +18,19 @@ describe LogStash::Codecs::JSON do
       end
     end
 
+    it 'should return an event from data with v1-specific fields' do
+      data = { 'foo' => 'bar', '@timestamp' => '2014-03-08T12:34:56+0100', '@version' => 1, 'baz' => 'bax' }
+      subject.decode(data.to_json) do |event|
+        insist { event.is_s? LogStash::Event }
+        insist { event['foo'] } == data['foo']
+        insist { event.timestamp.is_a? LogStash::Time }
+        insist { event.timestamp } == LogStash::Time.parse_iso8601(data['@timestamp'])
+        insist { event.timestamp.gmtime.hour } == 11
+        insist { event['@version'] } == 1
+        insist { event['baz'] } == 'bax'
+      end
+    end
+
     it "should be fast", :if => ENV["SPEEDTEST"] do
       json = '{"message":"Hello world!","@timestamp":"2013-12-21T07:01:25.616Z","@version":"1","host":"Macintosh.local","sequence":1572456}'
       iterations = 500000
