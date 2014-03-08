@@ -28,7 +28,7 @@ class LogStash::Util::Charset
       end
     end
 
-    data
+    return data
   end # def convert
 
 end # class LogStash::Util::Charset
