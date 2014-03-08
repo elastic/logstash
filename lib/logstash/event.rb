@@ -85,7 +85,7 @@ class LogStash::Event
     copy = {}
     @data.each do |k,v|
       # TODO(sissel): Recurse if this is a hash/array?
-      copy[k] = v.clone
+      copy[k] = begin v.clone rescue v end
     end
     return self.class.new(copy)
   end # def clone
