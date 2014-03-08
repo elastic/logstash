@@ -33,7 +33,7 @@ Gem::Specification.new do |gem|
   # Input/Output/Filter dependencies
   #TODO Can these be optional?
   gem.add_runtime_dependency "awesome_print"                    #(MIT license)
-  gem.add_runtime_dependency "aws-sdk"                          #{Apache 2.0 license}  
+  gem.add_runtime_dependency "aws-sdk"                          #{Apache 2.0 license}
   gem.add_runtime_dependency "addressable"                      #(Apache 2.0 license)
   gem.add_runtime_dependency "extlib", ["0.9.16"]               #(MIT license)
   gem.add_runtime_dependency "ffi"                              #(LGPL-3 license)
@@ -43,6 +43,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "gelf", ["1.3.2"]                  #(MIT license)
   gem.add_runtime_dependency "gmetric", ["0.1.3"]               #(MIT license)
   gem.add_runtime_dependency "jls-grok", ["0.10.12"]            #(BSD license)
+  gem.add_runtime_dependency "keen"                             #(MIT license)
   gem.add_runtime_dependency "mail"                             #(MIT license)
   gem.add_runtime_dependency "metriks"                          #(MIT license)
   gem.add_runtime_dependency "redis"                            #(MIT license)
@@ -99,7 +100,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "rspec"            #(MIT license)
   gem.add_runtime_dependency "insist", "1.0.0"  #(Apache 2.0 license)
   gem.add_runtime_dependency "rumbster"         # For faking smtp in email tests (Apache 2.0 license)
-  
+
   #Development Deps
   gem.add_development_dependency "coveralls"
 
