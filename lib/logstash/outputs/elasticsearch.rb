@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "logstash/namespace"
 require "logstash/outputs/base"
-require "socket"
+require "socket" # for Socket.gethostname
 require "stud/buffer"
 
 # This output lets you store logs in Elasticsearch and is the most recommended
