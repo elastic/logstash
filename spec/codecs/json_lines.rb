@@ -1,6 +1,7 @@
 require "logstash/codecs/json_lines"
 require "logstash/event"
 require "insist"
+require_relative 'json_shared'
 
 describe LogStash::Codecs::JSONLines do
   subject do
@@ -10,14 +11,20 @@ describe LogStash::Codecs::JSONLines do
   context "#decode" do
     it "should return an event from json data" do
       data = {"foo" => "bar", "baz" => {"bah" => ["a","b","c"]}}
-      subject.decode(data.to_json+"\n") do |event|
+      subject.decode(data.to_json + data_suffix) do |event|
         insist { event.is_a? LogStash::Event }
         insist { event["foo"] } == data["foo"]
         insist { event["baz"] } == data["baz"]
         insist { event["bah"] } == data["bah"]
       end
     end
+
+    let :data_suffix do
+      "\n"
+    end
     
+    include_context 'json_structure'
+
     it "should return an event from json data when a newline is recieved" do
       data = {"foo" => "bar", "baz" => {"bah" => ["a","b","c"]}}
       subject.decode(data.to_json) do |event|

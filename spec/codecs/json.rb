@@ -1,6 +1,7 @@
 require "logstash/codecs/json"
 require "logstash/event"
 require "insist"
+require_relative 'json_shared'
 
 describe LogStash::Codecs::JSON do
   subject do
@@ -17,6 +18,12 @@ describe LogStash::Codecs::JSON do
         insist { event["bah"] } == data["bah"]
       end
     end
+
+    let :data_suffix do
+      ""
+    end
+    
+    include_context 'json_structure'
 
     it "should be fast", :if => ENV["SPEEDTEST"] do
       json = '{"message":"Hello world!","@timestamp":"2013-12-21T07:01:25.616Z","@version":"1","host":"Macintosh.local","sequence":1572456}'
