@@ -131,6 +131,32 @@ describe LogStash::Filters::Grok do
       insist { subject["syslog5424_sd"] } == nil
       insist { subject["syslog5424_msg"] } == "Additional spaces and missing SD."
     end
+
+    sample "<30>1 2014-04-04T16:44:07+02:00 osctrl01 dnsmasq-dhcp 8048 - -  Appname contains a dash" do
+      insist { subject["tags"] }.nil?
+      insist { subject["syslog5424_pri"] } == "30"
+      insist { subject["syslog5424_ver"] } == "1"
+      insist { subject["syslog5424_ts"] } == "2014-04-04T16:44:07+02:00"
+      insist { subject["syslog5424_host"] } == "osctrl01"
+      insist { subject["syslog5424_app"] } == "dnsmasq-dhcp"
+      insist { subject["syslog5424_proc"] } == "8048"
+      insist { subject["syslog5424_msgid"] } == nil
+      insist { subject["syslog5424_sd"] } == nil
+      insist { subject["syslog5424_msg"] } == "Appname contains a dash"
+    end
+
+    sample "<30>1 2014-04-04T16:44:07+02:00 osctrl01 - 8048 - -  Appname is nil" do
+      insist { subject["tags"] }.nil?
+      insist { subject["syslog5424_pri"] } == "30"
+      insist { subject["syslog5424_ver"] } == "1"
+      insist { subject["syslog5424_ts"] } == "2014-04-04T16:44:07+02:00"
+      insist { subject["syslog5424_host"] } == "osctrl01"
+      insist { subject["syslog5424_app"] } == nil
+      insist { subject["syslog5424_proc"] } == "8048"
+      insist { subject["syslog5424_msgid"] } == nil
+      insist { subject["syslog5424_sd"] } == nil
+      insist { subject["syslog5424_msg"] } == "Appname is nil"
+    end
   end
 
   describe "parsing an event with multiple messages (array of strings)", :if => false do
