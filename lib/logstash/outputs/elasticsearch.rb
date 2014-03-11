@@ -181,6 +181,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     if @node_name
       client_settings["node.name"] = @node_name
     else
+      require "socket"
       client_settings["node.name"] = "logstash-#{Socket.gethostname}-#{$$}-#{object_id}"
     end
 
