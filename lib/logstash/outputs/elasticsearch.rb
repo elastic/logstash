@@ -2,6 +2,7 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
 require "stud/buffer"
+require "socket" # for Socket.gethostname
 
 # This output lets you store logs in Elasticsearch and is the most recommended
 # output for Logstash. If you plan on using the Kibana web interface, you'll

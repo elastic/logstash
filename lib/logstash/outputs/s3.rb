@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/outputs/base"
 require "logstash/namespace"
+require "socket" # for Socket.gethostname
 
 # TODO integrate aws_config in the future 
 #require "logstash/plugin_mixins/aws_config"
