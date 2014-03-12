@@ -56,7 +56,8 @@ setup_java() {
   export JAVA_OPTS
   export RUBYLIB="$basedir/lib"
   export GEM_HOME="$basedir/vendor/bundle/jruby/1.9"
-} 
+  export GEM_PATH=
+}
 
 setup_vendored_jruby() {
   RUBYVER=1.9
