@@ -63,6 +63,8 @@ class LogStash::Codecs::Fluent < LogStash::Codecs::Base
   config_name 'fluent'
   milestone 1
 
+  config :ignore_tag, :validate => :boolean, :default => false
+
   public
   def register
     require 'msgpack'
@@ -104,7 +106,7 @@ class LogStash::Codecs::Fluent < LogStash::Codecs::Base
     map['@timestamp'] = Time.at(epochtime).utc if map['@timestamp'].nil?
 
     event = LogStash::Event.new(map)
-    event.tag(tag)
+    event.tag(tag) unless @ignore_tag
     event
   end
 
