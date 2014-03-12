@@ -155,6 +155,11 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # in situations where you cannot permit connections outbound from the
   # Elasticsearch cluster to this Logstash server.
   #
+  # The 'http' protocol will use the Elasticsearch REST/HTTP interface to talk
+  # to elasticsearch.
+  #
+  # All protocols will use bulk requests when talking to Elasticsearch.
+  #
   # The default `protocol` setting under java/jruby is "node". The default
   # `protocol` on non-java rubies is "http"
   config :protocol, :validate => [ "node", "transport", "http" ]
