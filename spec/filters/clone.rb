@@ -64,4 +64,20 @@ describe LogStash::Filters::Clone do
 
     end
   end
+
+  describe "Bug LOGSTASH-1225" do
+    ### LOGSTASH-1225: Cannot clone events containing numbers.
+    config <<-CONFIG
+      filter {
+        clone {
+          clones => [ 'clone1' ]
+        }
+      }
+    CONFIG
+
+    sample("type" => "bug-1225", "message" => "unused", "number" => 5) do
+      insist { subject[0]["number"] } == 5
+      insist { subject[1]["number"] } == 5
+    end
+  end
 end
