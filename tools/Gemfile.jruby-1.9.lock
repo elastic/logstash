@@ -72,7 +72,7 @@ GEM
     insist (1.0.0)
     jls-grok (0.10.12)
       cabin (>= 0.6.0)
-    jls-lumberjack (0.0.19)
+    jls-lumberjack (0.0.20)
     jruby-httpclient (1.1.1-java)
     jruby-openssl (0.8.7)
       bouncy-castle-java (>= 1.5.0147)
@@ -213,7 +213,7 @@ DEPENDENCIES
   i18n (>= 0.6.6)
   insist (= 1.0.0)
   jls-grok (= 0.10.12)
-  jls-lumberjack (>= 0.0.19)
+  jls-lumberjack (>= 0.0.20)
   jruby-httpclient
   jruby-openssl (= 0.8.7)
   json
