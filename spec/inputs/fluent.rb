@@ -114,7 +114,34 @@ describe 'inputs/fluent' do
       insist { event['message'] } == 'Hello World'
       insist { event['tags'] } == ['syslog']
     end # input
+  end
 
+  describe 'ignore fluent\'s tag' do
+    port = 5515
+    config <<-CONFIG
+    input {
+      fluent {
+        port => #{port}
+        ignore_tag => true
+      }
+    }
+    CONFIG
+
+    data = MessagePack.pack(['syslog', MessagePack.pack([0, {'message' => 'Hello World'}])])
+    input do |pipeline, queue|
+      Thread.new { pipeline.run }
+      sleep 0.1 until pipeline.ready?
+
+      socket = Stud.try(5.times) { TCPSocket.new('127.0.0.1', port) }
+      socket.puts(data)
+      socket.close
+
+      event = queue.pop
+
+      insist { event['@timestamp'] } == Time.at(0).utc
+      insist { event['message'] } == 'Hello World'
+      insist { event['tags'] } == nil
+    end # input
   end
 
 end

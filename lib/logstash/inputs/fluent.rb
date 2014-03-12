@@ -49,6 +49,9 @@ class LogStash::Inputs::Fluent < LogStash::Inputs::Base
   # The port to listen on.
   config :port, :validate => :number, :default => 24224
 
+  # Don't add fluent's tag to the event tags
+  config :ignore_tag, :validate => :boolean, :default => false
+
   def initialize(*args)
     super(*args)
     BasicSocket.do_not_reverse_lookup = true
@@ -58,11 +61,17 @@ class LogStash::Inputs::Fluent < LogStash::Inputs::Base
   public
   def register
     require 'logstash/inputs/tcp'
+    require 'logstash/codecs/fluent'
+
+    codec = LogStash::Codecs::Fluent.new({
+      'ignore_tag' => @ignore_tag
+    })
+    codec.register
 
     @tcp = LogStash::Inputs::Tcp.new({
       'host' => @host,
       'port' => @port.to_s,
-      'codec' => self.class.config_name
+      'codec' => codec
     })
     @tcp.register
   end
