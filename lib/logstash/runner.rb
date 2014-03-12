@@ -187,6 +187,7 @@ class LogStash::Runner
         agent = LogStash::Agent.new($0)
         begin
           agent.parse(args)
+          @runners << Stud::Task.new { agent.execute }
         rescue Clamp::HelpWanted => e
           puts e.command.help
         rescue Clamp::UsageError => e
@@ -196,9 +197,6 @@ class LogStash::Runner
           remaining = agent.remaining_arguments
         end
 
-        #require "pry"
-        #binding.pry
-        @runners << Stud::Task.new { agent.execute }
         return remaining
       end
     } # commands
