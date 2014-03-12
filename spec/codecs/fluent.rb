@@ -96,6 +96,19 @@ describe LogStash::Codecs::Fluent do
         insist { event['tags'] } == ['syslog']
       end
     end
+
+    it 'should ignore default tag' do
+      data = MessagePack.pack(['syslog', 0, {'message' => 'Hello World'}])
+      subject.instance_eval {
+        @ignore_tag = true
+      }
+      subject.decode(data) do |event|
+        insist { event.is_a? LogStash::Event }
+        insist { event['@timestamp'] } == Time.at(0).utc
+        insist { event['message'] } == 'Hello World'
+        insist { event['tags'] } == nil
+      end
+    end
   end
 
   context '#encode' do
