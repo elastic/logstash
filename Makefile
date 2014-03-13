@@ -43,7 +43,7 @@ default:
 	@echo "  tarball -- builds the tarball package"
 	@echo "  tarball-test -- runs the test suite against the tarball package"
 
-TESTS=$(wildcard spec/inputs/file.rb spec/inputs/gelf.rb spec/inputs/imap.rb spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb)
+TESTS=$(wildcard spec/inputs/file.rb spec/inputs/gelf.rb spec/inputs/imap.rb spec/util/*.rb spec/support/*.rb spec/filters/*.rb spec/examples/*.rb spec/codecs/*.rb spec/conditionals/*.rb spec/event.rb spec/jar.rb spec/web.rb)
 
 # The 'version' is generated based on the logstash version, git revision, etc.
 .VERSION.mk: REVISION=$(shell git rev-parse --short HEAD | tr -d ' ')
@@ -105,7 +105,7 @@ clean:
 
 .PHONY: vendor-clean
 vendor-clean:
-	-$(QUIET)rm -rf vendor/kibana vendor/geoip vendor/collectd 
+	-$(QUIET)rm -rf vendor/kibana vendor/geoip vendor/collectd
 	-$(QUIET)rm -rf vendor/jar vendor/ua-parser
 
 .PHONY: clean-vendor
