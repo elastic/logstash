@@ -1,3 +1,28 @@
+1.4.0 RC1 (Mar 13, 2014)
+  # general
+  - Fix a bug in character encoding which would cause inputs using non-UTF-8
+    codecs to accidentally skip re-encoding the text to UTF-8. This should
+    solve a great number of UTF-8-related bugs. (Colin Surprenant)
+  - Fixes missing gem  for logstash web which was broken in 1.4.0 beta1
+    (LOGSTASH-1918, Jordan Sissel)
+  - Fix 'help' output being emitted twice when --help is invoked.
+    (LOGSTASH-1952, #1168)
+
+  # filters
+  - bugfix: clone: Correctly clone events with numeric field values.
+    (LOGSTASH-1225, #1158, Darren Holloway) 
+  - bugfix: zeromq: Add `timeout` and `retries` settings for retrying on
+    request failures. Also adds `add_tag_on_timeout` so you can act on retry
+    failures. (logstash-contrib#23, Michael Hart)
+
+  # outputs:
+  - feature: riemann: Automatically map event fields to rieman event fields
+    (logstash-contrib#15, Byron Pezan)
+  - bugfix: lumberjack: fix off-by-one errors causing writes to another
+    logstash agent to block indefinitely
+  - bugfix: elasticsearch: Fix NameError Socket crash on startup
+    (LOGSTASH-1974, #1167)
+
 1.4.0 beta2 (Feb 28, 2014)
   # general
   - Logstash now supports deletes! See outputs section below.
