@@ -115,9 +115,16 @@ class LogStash::Inputs::Ganglia < LogStash::Inputs::Base
 
       data["program"] = "ganglia"
       event["log_host"] = data["hostname"]
-      %w{dmax tmax slope type units}.each do |info|
+      # Fields in the data packet itself
+      %w{name val}.each do |info|
+        event[info] = data[info]
+      end
+      # Fields that are from MetaData
+      %w{dmax tmax slope units}.each do |info|
         event[info] = @metadata[data["name"]][info]
       end
+      # Change the Ganglia metadata type to vtype, so the event can be decorated() later.
+      event["vtype"] = @metadata[data["name"]]["type"]
       return event
     else
       # Skipping unknown packet types
