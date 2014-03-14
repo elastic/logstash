@@ -22,7 +22,7 @@ def process(pipeline, queue, event_count)
   pipeline.shutdown
 end # process
 
-describe "inputs/redis" do
+describe "inputs/redis", :redis => true do
   extend LogStash::RSpec
 
   describe "read events from a list" do

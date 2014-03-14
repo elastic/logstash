@@ -2,7 +2,7 @@ require "test_utils"
 require "socket"
 require "tempfile"
 
-describe "inputs/collectd" do
+describe "inputs/collectd", :socket => true do
   extend LogStash::RSpec
   udp_sock = UDPSocket.new(Socket::AF_INET)
 

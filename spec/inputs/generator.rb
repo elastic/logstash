@@ -1,6 +1,6 @@
 require "test_utils"
 
-describe "inputs/generator" do
+describe "inputs/generator", :performance => true do
   extend LogStash::RSpec
 
   describe "generate events" do
@@ -23,7 +23,7 @@ describe "inputs/generator" do
         insist { event["sequence"] } == i
       end
       duration = Time.now - start
-      puts "Rate: #{event_count / duration}"
+      puts "Generator Rate: #{"%02.0f/sec" % (event_count / duration)}, Elapsed: #{duration}s"
       pipeline.shutdown
     end # input
   end
