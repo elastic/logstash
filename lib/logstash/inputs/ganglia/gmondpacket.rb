@@ -1,4 +1,3 @@
-# encoding: utf-8
 # Inspiration
 # https://github.com/fastly/ganglia/blob/master/lib/gm_protocol.x
 # https://github.com/igrigorik/gmetric/blob/master/lib/gmetric.rb
@@ -11,28 +10,36 @@ require 'logstash/inputs/ganglia/xdr'
 require 'stringio'
 
 class GmonPacket
-
+  GMETADATA_FULL = 128
+  GMETRIC_USHORT = 129
+  GMETRIC_SHORT  = 130
+  GMETRIC_INT    = 131
+  GMETRIC_UINT   = 132
+  GMETRIC_STRING = 133
+  GMETRIC_FLOAT  = 134
+  GMETRIC_DOUBLE = 136
+  GMETADATA_REQ  = 137
+  
   def initialize(packet)
     @xdr=XDR::Reader.new(StringIO.new(packet))
 
     # Read packet type
-    type=@xdr.uint32
-    case type
-    when 128
+    @ptype=@xdr.uint32
+    case @ptype
+    when GMETADATA_FULL
       @type=:meta
-    when 132
-      @type=:heartbeat
-    when 133..134
+    when GMETRIC_USHORT..GMETRIC_DOUBLE
       @type=:data
-    when 135
-      @type=:gexec
+    when GMETADATA_REQ
+      @type=:req
     else
+      @logger.warning("GmonPacket: Received unknown packet of type #{@ptype}")
       @type=:unknown
     end
   end
 
   def heartbeat?
-    @type == :hearbeat
+    @type == :req
   end
 
   def data?
@@ -82,8 +89,8 @@ class GmonPacket
     return meta
   end
 
-  # Parsing a data packet : type 133..135
-  # Requires metadata to be available for correct parsing of the value
+  # Parsing a data packet : type 129..136
+  # Requires metadata to be available for correct interpretation of the value
   def parse_data(metadata)
     data=Hash.new
     data['hostname']=@xdr.string
@@ -98,11 +105,11 @@ class GmonPacket
 
     if metrictype.nil?
       # Probably we got a data packet before a metadata packet
-      #puts "Received datapacket without metadata packet"
+      @logger.debug("GmonPacket: Received datapacket without metadata packet")
       return nil
     end
 
-    data['val']=parse_value(metrictype)
+    data['val']=parse_value()
 
     # If we received a packet, last update was 0 time ago
     data['tn']=0
@@ -110,26 +117,26 @@ class GmonPacket
   end
 
   # Parsing a specific value of type
-  # https://github.com/ganglia/monitor-core/blob/master/gmond/gmond.c#L1527
-  def parse_value(type)
+  # This depends on the packet type, not the logical data type in the metadata.
+  def parse_value()
     value=:unknown
-    case type
-    when "int16"
+    case @ptype
+    when GMETRIC_SHORT
       value=@xdr.int16
-    when "uint16"
+    when GMETRIC_USHORT
       value=@xdr.uint16
-    when "uint32"
+    when GMETRIC_UINT
       value=@xdr.uint32
-    when "int32"
+    when GMETRIC_INT
       value=@xdr.int32
-    when "float"
+    when GMETRIC_FLOAT
       value=@xdr.float32
-    when "double"
+    when GMETRIC_DOUBLE
       value=@xdr.float64
-    when "string"
+    when GMETRIC_STRING
       value=@xdr.string
     else
-      #puts "Received unknown type #{type}"
+      @logger.error("GmonPacket: Received unknown type #{@ptype}")
     end
     return value
   end
