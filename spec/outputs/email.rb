@@ -2,9 +2,9 @@ require "test_utils"
 require "rumbster"
 require "message_observers"
 
-describe "outputs/email" do
+describe "outputs/email", :broken => true do
     extend LogStash::RSpec
-    
+
     @@port=2525
     let (:rumbster) { Rumbster.new(@@port) }
     let (:message_observer) { MailMessageObserver.new }
