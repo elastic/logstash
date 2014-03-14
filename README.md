@@ -64,7 +64,7 @@ rspec <some spec>` will suffice:
 Alternately, if you have just built the flatjar, you can run the tests
 specifically on those like so:
 
-    make flatjar-test
+    make tarball-test
 
 If you want to run all the tests from source (not compiled jar), do:
 
@@ -86,12 +86,7 @@ we provide from the Logstash site!
 
 If you want to build the jar yourself, run:
 
-    make flatjar
-
-To update a flat jar previously built with 'make flatjar', run:
-
-    make update-flatjar
-
+    make tarball
 
 You can build rpms and debs, if you need those. Building rpms requires you have [fpm](https://github.com/jordansissel/fpm), then do this:
 
