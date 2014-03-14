@@ -2,7 +2,7 @@
 require "test_utils"
 require "socket"
 
-describe "inputs/tcp" do
+describe "inputs/tcp", :socket => true do
   extend LogStash::RSpec
 
   describe "read json_event" do

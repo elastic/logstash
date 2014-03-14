@@ -2,7 +2,7 @@ require "test_utils"
 require "logstash/outputs/graphite"
 require "mocha/api"
 
-describe LogStash::Outputs::Graphite do
+describe LogStash::Outputs::Graphite, :socket => true do
   extend LogStash::RSpec
 
   describe "defaults should include all metrics" do
