@@ -1,12 +1,12 @@
 ---
-title: Configuration Language - logstash
+title: Configuration Language - Logstash
 layout: content_right
 ---
-# LogStash Config Language
+# Logstash Config Language
 
-The logstash config language aims to be simple.
+The Logstash config language aims to be simple.
 
-There's 3 main sections: inputs, filters, outputs. Each section has
+There are 3 main sections: inputs, filters, outputs. Each section has
 configurations for each plugin available in that section.
 
 Example:
@@ -32,7 +32,7 @@ configuration file.
 
 ## Comments
 
-Comments are as in ruby, perl, and python. Starts with a '#' character. Example:
+Comments are the same as in ruby, perl, and python. Starts with a '#' character. Example:
 
     # this is a comment
 
@@ -42,7 +42,7 @@ Comments are as in ruby, perl, and python. Starts with a '#' character. Example:
 
 ## Plugins
 
-The input, filter, and output sections all let you configure plugins. Plugins
+The input, filter and output sections all let you configure plugins. Plugin
 configuration consists of the plugin name followed by a block of settings for
 that plugin. For example, how about two file inputs:
 
@@ -58,9 +58,9 @@ that plugin. For example, how about two file inputs:
       }
     }
 
-The above configures a two file separate inputs. Both set two
-configuration settings each: path and type. Each plugin has different
-settings for configuring it, seek the documentation for your plugin to
+The above configures two file separate inputs. Both set two
+configuration settings each: 'path' and 'type'. Each plugin has different
+settings for configuring it; seek the documentation for your plugin to
 learn what settings are available and what they mean. For example, the
 [file input][fileinput] documentation will explain the meanings of the
 path and type settings.
@@ -69,13 +69,13 @@ path and type settings.
 
 ## Value Types
 
-The documentation for a plugin may say that a configuration field has a
+The documentation for a plugin may enforce a configuration field having a
 certain type.  Examples include boolean, string, array, number, hash,
 etc.
 
 ### <a name="boolean"></a>Boolean
 
-A boolean must be either `true` or `false`.
+A boolean must be either `true` or `false`. Note the lack of quotes around `true` and `false`.
 
 Examples:
 
@@ -93,7 +93,7 @@ Single, unquoted words are valid as strings, too, but you should use quotes.
 
 ### <a name="number"></a>Number
 
-Numbers must be valid numerics (floating point or integer are OK)
+Numbers must be valid numerics (floating point or integer are OK).
 
 Example:
 
@@ -121,11 +121,11 @@ The key and value are simply pairs, such as:
 ## <a name="fieldreferences"></a>Field References
 
 All events have properties. For example, an apache access log would have things
-like status code, request path, http verb, client ip, etc. Logstash calls these
-properties "fields." 
+like status code (200, 404), request path ("/", "index.html"), HTTP verb (GET, POST),
+client IP address, etc. Logstash calls these properties "fields." 
 
 In many cases, it is useful to be able to refer to a field by name. To do this,
-you can use the logstash field reference syntax.
+you can use the Logstash field reference syntax.
 
 By way of example, let us suppose we have this event:
 
@@ -150,7 +150,7 @@ the full path to that field: `[ua][os]`.
 
 ## <a name="sprintf"></a>sprintf format
 
-This syntax is also used in what logstash calls 'sprintf format'. This format
+This syntax is also used in what Logstash calls 'sprintf format'. This format
 allows you to refer to field values from within other strings. For example, the
 statsd output has an 'increment' setting, to allow you to keep a count of
 apache logs by status code:
@@ -177,7 +177,7 @@ hour and the 'type' field:
 Sometimes you only want a filter or output to process an event under
 certain conditions. For that, you'll want to use a conditional!
 
-Conditionals in logstash look and act the same way they do in programming
+Conditionals in Logstash look and act the same way they do in programming
 languages. You have `if`, `else if` and `else` statements. Conditionals may be
 nested if you need that.
 
@@ -195,8 +195,8 @@ What's an expression? Comparison tests, boolean logic, etc!
 
 The following comparison operators  are supported:
 
-* equality, etc: ==  !=  <  >  <=  >= 
-* regexp: =~ !~ 
+* equality, etc: ==,  !=,  <,  >,  <=,  >= 
+* regexp: =~, !~ 
 * inclusion: in, not in
 
 The following boolean operators are supported:
@@ -221,8 +221,8 @@ For example, if we want to remove the field `secret` if the field
     }
 
 The above uses the field reference syntax to get the value of the
-`action` field. It is compared against the text `login` and, when equal,
-allows the mutate filter to do delete the field named `secret`
+`action` field. It is compared against the text `login` and, if equal,
+allows the mutate filter to delete the field named `secret`.
 
 How about a more complex example?
 
@@ -252,6 +252,37 @@ You can also do multiple expressions in a single condition:
         pagerduty {
           ...
         }
+      }
+    }
+
+Here are some examples for testing with the in conditional:
+
+    filter {
+      if [foo] in [foobar] {
+        mutate { add_tag => "field in field" }
+      }
+      if [foo] in "foo" {
+        mutate { add_tag => "field in string" }
+      }
+      if "hello" in [greeting] {
+        mutate { add_tag => "string in field" }
+      }
+      if [foo] in ["hello", "world", "foo"] {
+        mutate { add_tag => "field in list" }
+      }
+      if [missing] in [alsomissing] {
+        mutate { add_tag => "shouldnotexist" }
+      }
+      if !("foo" in ["hello", "world"]) {
+        mutate { add_tag => "shouldexist" }
+      }
+    }
+
+Or, to test if grok was successful:
+
+    output {
+      if "_grokparsefailure" not in [tags] {
+        elasticsearch { ... }
       }
     }
 

@@ -7,8 +7,9 @@ require "socket" # for Socket.gethostname
 
 # Stream events from files.
 #
-# By default, each event is assumed to be one line. If you
-# want to join lines, you'll want to use the multiline filter.
+# By default, each event is assumed to be one line. If you would like
+# to join multiple log lines into one event, you'll want to use the
+# multiline codec.
 #
 # Files are followed in a manner similar to "tail -0F". File rotation
 # is detected and handled by this input.
@@ -20,9 +21,12 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   # once file following
   default :codec, "plain"
 
-  # The path to the file to use as an input.
+  # The path(s) to the file(s) to use as an input.
   # You can use globs here, such as `/var/log/*.log`
   # Paths must be absolute and cannot be relative.
+  #
+  # You may also configure multiple paths. See an example
+  # on the [Logstash configuration page](configuration#array).
   config :path, :validate => :array, :required => true
 
   # Exclusions (matched against the filename, not full path). Globs
@@ -30,7 +34,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   #
   #     path => "/var/log/*"
   #
-  # you might want to exclude gzipped files:
+  # You might want to exclude gzipped files:
   #
   #     exclude => "*.gz"
   config :exclude, :validate => :array
@@ -43,7 +47,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   # How often we expand globs to discover new files to watch.
   config :discover_interval, :validate => :number, :default => 15
 
-  # Where to write the since database (keeps track of the current
+  # Where to write the sincedb database (keeps track of the current
   # position of monitored log files). The default will write
   # sincedb files to some path matching "$HOME/.sincedb*"
   config :sincedb_path, :validate => :string
@@ -52,12 +56,12 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   # monitored log files.
   config :sincedb_write_interval, :validate => :number, :default => 15
 
-  # Choose where logstash starts initially reading files - at the beginning or
+  # Choose where Logstash starts initially reading files: at the beginning or
   # at the end. The default behavior treats files like live streams and thus
   # starts at the end. If you have old data you want to import, set this
   # to 'beginning'
   #
-  # This option only modifieds "first contact" situations where a file is new
+  # This option only modifies "first contact" situations where a file is new
   # and not seen before. If a file has already been seen before, this option
   # has no effect.
   config :start_position, :validate => [ "beginning", "end"], :default => "end"
@@ -88,7 +92,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
         @logger.error("No SINCEDB_DIR or HOME environment variable set, I don't know where " \
                       "to keep track of the files I'm watching. Either set " \
                       "HOME or SINCEDB_DIR in your environment, or set sincedb_path in " \
-                      "in your logstash config for the file input with " \
+                      "in your Logstash config for the file input with " \
                       "path '#{@path.inspect}'")
         raise # TODO(sissel): HOW DO I FAIL PROPERLY YO
       end
@@ -130,7 +134,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
       @logger.debug? && @logger.debug("Received line", :path => path, :text => line)
       @codec.decode(line) do |event|
         decorate(event)
-        event["host"] = hostname
+        event["host"] = hostname if !event.include?("host")
         event["path"] = path
         queue << event
       end

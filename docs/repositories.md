@@ -2,11 +2,11 @@
 title: repositories - logstash
 layout: content_right
 ---
-# LogStash repositories
+# Logstash repositories
 
-We also have Logstash available als APT and YUM repositories.
+We also have Logstash available as APT and YUM repositories.
 
-Our public signing key can be found [here](http://packages.elasticsearch.org/GPG-KEY-elasticsearch)
+Our public signing key can be found on the [Elasticsearch packages apt GPG signing key page](http://packages.elasticsearch.org/GPG-KEY-elasticsearch)
 
 ## Apt based distributions
 
@@ -16,7 +16,7 @@ Add the key:
 
 Add the repo to /etc/apt/sources.list
 
-     deb http://packages.elasticsearch.org/logstash/1.3/debian stable main
+     deb http://packages.elasticsearch.org/logstash/1.4/debian stable main
 
 
 ## YUM based distributions
@@ -27,9 +27,9 @@ Add the key:
 
 Add the repo to /etc/yum.repos.d/ directory
 
-     [logstash-1.3]
-     name=logstash repository for 1.3.x packages
-     baseurl=http://packages.elasticsearch.org/logstash/1.3/centos
+     [logstash-1.4]
+     name=logstash repository for 1.4.x packages
+     baseurl=http://packages.elasticsearch.org/logstash/1.4/centos
      gpgcheck=1
      gpgkey=http://packages.elasticsearch.org/GPG-KEY-elasticsearch
      enabled=1

@@ -1,0 +1,61 @@
+#!/bin/sh
+# Install contrib plugins.
+#
+# Usage:
+#     bin/plugin install contrib
+#
+# Figure out if we're using wget or curl
+
+basedir=$(cd `dirname $0`/..; pwd)
+. ${basedir}/bin/logstash.lib.sh
+
+WGET=$(which wget 2>/dev/null)
+CURL=$(which curl 2>/dev/null)
+
+URLSTUB="http://download.elasticsearch.org/logstash/logstash/"
+
+if [ "x$WGET" != "x" ]; then
+	DOWNLOAD_COMMAND="wget -q --no-check-certificate -O"
+elif [ "x$CURL" != "x" ]; then
+    DOWNLOAD_COMMAND="curl -s -L -k -o"
+else
+	echo "wget or curl are required."
+	exit 1
+fi
+
+
+if [ -f "$basedir/lib/logstash/version.rb" ] ; then
+	VERSION=$(cat "$basedir/lib/logstash/version.rb" | grep LOGSTASH_VERSION | awk -F\" '{print $2}') 
+else
+	echo "ERROR: Cannot determine Logstash version.  Exiting."
+	exit 1
+fi
+
+# Placeholder for now, if other installs ever become available.
+if [ "x$2" != "xcontrib" ]; then
+	echo "Can only install contrib at this time... Exiting."
+	exit 1
+fi
+
+TARGETDIR="$basedir/vendor/logstash"
+mkdir -p $TARGETDIR
+SUFFIX=".tar.gz"
+FILEPATH="logstash-contrib-${VERSION}"
+FILENAME=${FILEPATH}${SUFFIX}
+TARGET="${TARGETDIR}/${FILENAME}"
+
+case $1 in
+  install)
+  	$DOWNLOAD_COMMAND ${TARGET} ${URLSTUB}${FILENAME}
+  	if [ ! -f "${TARGET}" ]; then
+	  	echo "ERROR: Unable to download ${URLSTUB}${FILENAME}"
+	  	echo "Exiting."
+	  	exit 1
+	fi
+  	gzip -dc ${TARGET} | tar -xC $TARGETDIR
+  	cp -R ${TARGETDIR}/$FILEPATH/* .  ;; # Copy contents to local directory, adding on top of existing install
+  *) 
+  	echo "Usage: bin/plugin install contrib"
+	exit 0
+	;;
+esac

@@ -61,18 +61,20 @@ require "logstash/namespace"
 #     }
 #
 #     filter {
-#       metrics {
-#         type => "generated"
-#         meter => "events"
-#         add_tag => "metric"
+#       if [type] == "generated" {
+#         metrics {
+#           meter => "events"
+#           add_tag => "metric"
+#         }
 #       }
 #     }
 #
 #     output {
-#       stdout {
-#         # only emit events with the 'metric' tag
-#         tags => "metric"
-#         message => "rate: %{events.rate_1m}"
+#       # only emit events with the 'metric' tag
+#       if "metric" in [tags] {
+#         stdout {
+#           message => "rate: %{events.rate_1m}"
+#         }
 #       }
 #     }
 #
@@ -139,13 +141,16 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   def register
     require "metriks"
     require "socket"
-    @last_flush = 0 # how many seconds ago the metrics where flushed.
-    @last_clear = 0 # how many seconds ago the metrics where cleared.
+    require "atomic"
+    require "thread_safe"
+    @last_flush = Atomic.new(0) # how many seconds ago the metrics where flushed.
+    @last_clear = Atomic.new(0) # how many seconds ago the metrics where cleared.
     @random_key_preffix = SecureRandom.hex
     unless (@rates - [1, 5, 15]).empty?
       raise LogStash::ConfigurationError, "Invalid rates configuration. possible rates are 1, 5, 15. Rates: #{rates}."
     end
-    initialize_metrics
+    @metric_meters = ThreadSafe::Cache.new { |h,k| h[k] = Metriks.meter metric_key(k) }
+    @metric_timers = ThreadSafe::Cache.new { |h,k| h[k] = Metriks.timer metric_key(k) }
   end # def register
 
   def filter(event)
@@ -169,20 +174,20 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   def flush
     # Add 5 seconds to @last_flush and @last_clear counters
     # since this method is called every 5 seconds.
-    @last_flush += 5
-    @last_clear += 5
+    @last_flush.update { |v| v + 5 }
+    @last_clear.update { |v| v + 5 }
 
     # Do nothing if there's nothing to do ;)
     return unless should_flush?
 
     event = LogStash::Event.new
     event["message"] = Socket.gethostname
-    @metric_meters.each do |name, metric|
+    @metric_meters.each_pair do |name, metric|
       flush_rates event, name, metric
       metric.clear if should_clear?
     end
 
-    @metric_timers.each do |name, metric|
+    @metric_timers.each_pair do |name, metric|
       flush_rates event, name, metric
       # These 4 values are not sliding, so they probably are not useful.
       event["#{name}.min"] = metric.min
@@ -198,12 +203,13 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     end
 
     # Reset counter since metrics were flushed
-    @last_flush = 0
+    @last_flush.value = 0
 
     if should_clear?
       #Reset counter since metrics were cleared
-      @last_clear = 0
-      initialize_metrics
+      @last_clear.value = 0
+      @metric_meters.clear
+      @metric_timers.clear
     end
 
     filter_matched(event)
@@ -218,20 +224,15 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
       event["#{name}.rate_15m"] = metric.fifteen_minute_rate if @rates.include? 15
   end
 
-  def initialize_metrics
-    @metric_meters = Hash.new { |h,k| h[k] = Metriks.meter metric_key(k) }
-    @metric_timers = Hash.new { |h,k| h[k] = Metriks.timer metric_key(k) }
-  end
-
   def metric_key(key)
     "#{@random_key_preffix}_#{key}"
   end
 
   def should_flush?
-    @last_flush >= @flush_interval && (@metric_meters.any? || @metric_timers.any?)
+    @last_flush.value >= @flush_interval && (!@metric_meters.empty? || !@metric_timers.empty?)
   end
 
   def should_clear?
-    @clear_interval > 0 && @last_clear >= @clear_interval
+    @clear_interval > 0 && @last_clear.value >= @clear_interval
   end
 end # class LogStash::Filters::Metrics

@@ -18,7 +18,7 @@ describe LogStash::Codecs::JSON do
       end
     end
 
-    it "should be fast" do
+    it "should be fast", :if => ENV["SPEEDTEST"] do
       json = '{"message":"Hello world!","@timestamp":"2013-12-21T07:01:25.616Z","@version":"1","host":"Macintosh.local","sequence":1572456}'
       iterations = 500000
       count = 0
@@ -35,6 +35,31 @@ describe LogStash::Codecs::JSON do
       duration = Time.now - start
       insist { count } == iterations
       puts "codecs/json speed: #{iterations/duration}/sec"
+    end
+    
+    context "processing plain text" do
+      it "falls back to plain text" do
+        decoded = false
+        subject.decode("something that isn't json") do |event|
+          decoded = true
+          insist { event.is_a?(LogStash::Event) }
+          insist { event["message"] } == "something that isn't json"
+        end
+        insist { decoded } == true
+      end
+    end
+
+    context "processing weird binary blobs" do
+      it "falls back to plain text and doesn't crash (LOGSTASH-1595)" do
+        decoded = false
+        blob = (128..255).to_a.pack("C*").force_encoding("ASCII-8BIT")
+        subject.decode(blob) do |event|
+          decoded = true
+          insist { event.is_a?(LogStash::Event) }
+          insist { event["message"].encoding.to_s } == "UTF-8"
+        end
+        insist { decoded } == true
+      end
     end
   end
 

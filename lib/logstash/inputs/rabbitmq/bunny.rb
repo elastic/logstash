@@ -22,7 +22,7 @@ class LogStash::Inputs::RabbitMQ
                                 Bunny::DEFAULT_PASSWORD
                               end
 
-      @settings[:log_level] = if @debug
+      @settings[:log_level] = if @debug || @logger.debug?
                                 :debug
                               else
                                 :error
@@ -90,6 +90,7 @@ class LogStash::Inputs::RabbitMQ
                      :durable     => @durable,
                      :auto_delete => @auto_delete,
                      :exclusive   => @exclusive,
+                     :passive     => @passive,
                      :arguments   => @arguments)
 
       # exchange binding is optional for the input

@@ -20,8 +20,6 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
   config_name "elasticsearch_river"
   milestone 2
 
-  config :debug, :validate => :boolean, :default => false
-
   # The index to write events to. This can be dynamic using the %{foo} syntax.
   # The default value will partition your indeces by day so you can more easily
   # delete old data or only search specific date ranges.
@@ -42,7 +40,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   # ElasticSearch river configuration: bulk timeout in milliseconds
   config :es_bulk_timeout_ms, :validate => :number, :default => 100
-  
+
   # ElasticSearch river configuration: is ordered?
   config :es_ordered, :validate => :boolean, :default => false
 
@@ -63,7 +61,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   # RabbitMQ queue name
   config :queue, :validate => :string, :default => "elasticsearch"
-  
+
   # RabbitMQ exchange name
   config :exchange, :validate => :string, :default => "elasticsearch"
 
@@ -113,7 +111,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       "vhost" => [@vhost],
       "durable" => [@durable.to_s],
       "persistent" => [@persistent.to_s],
-      "debug" => [@debug.to_s],
+      "debug" => [@logger.debug?.to_s],
     }.reject {|k,v| v.first.nil?}
     @mq = LogStash::Outputs::RabbitMQ.new(params)
     @mq.register
@@ -125,10 +123,10 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       # Name the river by our hostname
       require "socket"
       hostname = Socket.gethostname
-      
+
       # Replace spaces with hyphens and remove all non-alpha non-dash non-underscore characters
       river_name = "#{hostname} #{@queue}".gsub(' ', '-').gsub(/[^\w-]/, '')
-      
+
       api_path = "/_river/logstash-#{river_name}/_meta"
       @status_path = "/_river/logstash-#{river_name}/_status"
 

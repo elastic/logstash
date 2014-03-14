@@ -6,7 +6,7 @@ require "logstash/logging"
 require "logstash/config/mixin"
 require "logstash/codecs/base"
 
-# This is the base class for logstash inputs.
+# This is the base class for Logstash inputs.
 class LogStash::Inputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
   config_name "input"
@@ -15,26 +15,22 @@ class LogStash::Inputs::Base < LogStash::Plugin
   #
   # Types are used mainly for filter activation.
   #
-  # If you create an input with type "foobar", then only filters
-  # which also have type "foobar" will act on them.
-  #
-  # The type is also stored as part of the event itself, so you
-  # can also use the type to search for in the web interface.
+  # The type is stored as part of the event itself, so you can
+  # also use the type to search for it in the web interface.
   #
   # If you try to set a type on an event that already has one (for
   # example when you send an event from a shipper to an indexer) then
   # a new input will not override the existing type. A type set at 
   # the shipper stays with that event for its life even
-  # when sent to another LogStash server.
+  # when sent to another Logstash server.
   config :type, :validate => :string
 
-  # Set this to true to enable debugging on an input.
-  config :debug, :validate => :boolean, :default => false
+  config :debug, :validate => :boolean, :default => false, :deprecated => "This setting no longer has any effect. In past releases, it existed, but almost no plugin made use of it."
 
   # The format of input data (plain, json, json_event)
   config :format, :validate => ["plain", "json", "json_event", "msgpack_event"], :deprecated => "You should use the newer 'codec' setting instead."
 
-  # The codec used for input data
+  # The codec used for input data. Input codecs are a convenient method for decoding your data before it enters the input, without needing a separate filter in your Logstash pipeline.
   config :codec, :validate => :codec, :default => "plain"
 
   # The character encoding used in this input. Examples include "UTF-8"

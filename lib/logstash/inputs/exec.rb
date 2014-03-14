@@ -17,16 +17,16 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
   milestone 2
 
   default :codec, "plain"
-  
+
   # Set this to true to enable debugging on an input.
-  config :debug, :validate => :boolean, :default => false
-  
+  config :debug, :validate => :boolean, :default => false, :deprecated => "This setting was never used by this plugin. It will be removed soon."
+
   # Command to run. For example, "uptime"
   config :command, :validate => :string, :required => true
-  
+
   # Interval to run the command. Value is in seconds.
   config :interval, :validate => :number, :required => true
-  
+
   public
   def register
     @logger.info("Registering Exec Input", :type => @type,
@@ -38,7 +38,7 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
     hostname = Socket.gethostname
     loop do
       start = Time.now
-      @logger.info("Running exec", :command => @command) if @debug
+      @logger.info? && @logger.info("Running exec", :command => @command)
       out = IO.popen(@command)
       # out.read will block until the process finishes.
       @codec.decode(out.read) do |event|
@@ -47,12 +47,11 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
         event["command"] = @command
         queue << event
       end
-      
+      out.close
+
       duration = Time.now - start
-      if @debug
-        @logger.info("Command completed", :command => @command,
-                     :duration => duration)
-      end
+      @logger.info? && @logger.info("Command completed", :command => @command,
+                                    :duration => duration)
 
       # Sleep for the remainder of the interval, or 0 if the duration ran
       # longer than the interval.

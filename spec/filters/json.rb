@@ -8,7 +8,7 @@ describe LogStash::Filters::Json do
     config <<-CONFIG
       filter {
         json {
-          # Parse message as JSON, store the results in the 'data' field'
+          # Parse message as JSON
           source => "message"
         }
       }
@@ -69,4 +69,21 @@ describe LogStash::Filters::Json do
       insist { subject["@timestamp"].to_json } == "\"2013-10-19T00:14:32.996Z\""
     end
   end
+
+  describe "source == target" do
+    config <<-CONFIG
+      filter {
+        json {
+          source => "example"
+          target => "example"
+        }
+      }
+    CONFIG
+
+    sample({ "example" => "{ \"hello\": \"world\" }" }) do
+      insist { subject["example"] }.is_a?(Hash)
+      insist { subject["example"]["hello"] } == "world"
+    end
+  end
+
 end
