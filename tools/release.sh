@@ -24,6 +24,12 @@ prepare() {
   rsync -a --delete $logstash/{bin,docs,lib,spec,Makefile,gembag.rb,logstash.gemspec,tools,locales,patterns,LICENSE,README.md} $contrib/{lib,spec} $workdir
   rm -f $logstash/.VERSION.mk
   make -C $logstash .VERSION.mk
+  make -C $logstash package
+  (cd $contrib;
+    sh pkg/build.sh ubuntu 12.04
+    sh pkg/build.sh centos 6
+  )
+  make -C $contrib package
   cp $logstash/.VERSION.mk $workdir
   rm -f $workdir/build/pkg
   rm -f $workdir/build/*.{zip,rpm,gz,deb} || true
