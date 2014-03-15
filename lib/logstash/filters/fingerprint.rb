@@ -58,7 +58,7 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
           event[@target] = event[field].tr('A-Za-z0-9 \t','')
         end
       else
-        if @concatenate_sources 
+        if @concatenate_sources
           to_string = ''
           @source.sort.each do |k|
             @logger.debug("Adding key to string")
@@ -67,7 +67,7 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
           to_string << "|"
           @logger.debug("String built", :to_checksum => to_string)
           event[@target] = anonymize(to_string)
-        else 
+        else
           @source.each do |field|
             next unless event.include?(field)
             if event[field].is_a?(Array)
@@ -83,12 +83,14 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
 
   private
   def anonymize_ipv4_network(ip_string)
-    IPAddr.new(ip_string).mask(@key.to_i).to_s
+    # in JRuby 1.7.11 outputs as US-ASCII
+    IPAddr.new(ip_string).mask(@key.to_i).to_s.force_encoding(Encoding::UTF_8)
   end
 
   def anonymize_openssl(data)
     digest = encryption_algorithm()
-    OpenSSL::HMAC.hexdigest(digest, @key, data)
+    # in JRuby 1.7.11 outputs as ASCII-8BIT
+    OpenSSL::HMAC.hexdigest(digest, @key, data).force_encoding(Encoding::UTF_8)
   end
 
   def anonymize_murmur3(value)

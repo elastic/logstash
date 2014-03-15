@@ -7,14 +7,15 @@ class LogStash::Util::Charset
 
   def initialize(charset)
     @charset = charset
+    @charset_encoding = Encoding.find(charset)
   end
 
   def convert(data)
-    data.force_encoding(@charset)
+    data.force_encoding(@charset_encoding)
 
     # NON UTF-8 charset declared.
     # Let's convert it (as cleanly as possible) into UTF-8 so we can use it with JSON, etc.
-    return data.encode("UTF-8", :invalid => :replace, :undef => :replace) unless @charset == "UTF-8"
+    return data.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace) unless @charset_encoding == Encoding::UTF_8
 
     # UTF-8 charset declared.
     # Some users don't know the charset of their logs or just don't know they

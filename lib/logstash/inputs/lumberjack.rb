@@ -2,7 +2,7 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 
-# Receive events using the lumberjack protocol. 
+# Receive events using the lumberjack protocol.
 #
 # This is mainly to receive events shipped with lumberjack,
 # <http://github.com/jordansissel/lumberjack>, now represented primarily via the
@@ -46,7 +46,7 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
     @lumberjack.run do |l|
       @codec.decode(l.delete("line")) do |event|
         decorate(event)
-        l.each { |k,v| event[k] = v; v.force_encoding("UTF-8") }
+        l.each { |k,v| event[k] = v; v.force_encoding(Encoding::UTF_8) }
         output_queue << event
       end
     end
