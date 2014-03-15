@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "test_utils"
 
 describe "receive graphite input", :if => RUBY_ENGINE == "jruby" do
@@ -36,6 +38,6 @@ describe "receive graphite input", :if => RUBY_ENGINE == "jruby" do
     insist { subject["name"] } == "foo.bar.baz"
     insist { subject["value"] } == 4025.34
     insist { subject["@timestamp"] } == Time.iso8601("2013-03-30T01:22:02.000Z")
-    
+
   end
 end
