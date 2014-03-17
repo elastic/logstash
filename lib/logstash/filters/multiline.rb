@@ -69,6 +69,9 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   # Negate the regexp pattern ('if not matched')
   config :negate, :validate => :boolean, :default => false
+
+  # Replace the message with a regexp group from the additional messages
+  config :onlygroup, :validate => :string, :required => false, :default => ""
   
   # The stream identity is how the multiline filter determines which stream an
   # event belongs to. This is generally used for differentiating, say, events
@@ -157,8 +160,14 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     key = event.sprintf(@stream_identity)
     pending = @pending[key]
 
+    # Fetch regexp group for onlygroup-parameter
+    foundgroup = ""
+    if @onlygroup != "" and match.is_a?(Grok::Match)
+        foundgroup = match.match[@onlygroup]
+    end
+
     @logger.debug("Multiline", :pattern => @pattern, :message => event["message"],
-                  :match => match, :negate => @negate)
+                  :match => match, :negate => @negate, :foundgroup => foundgroup)
 
     # Add negate option
     match = (match and !@negate) || (!match and @negate)
@@ -170,6 +179,9 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
         # previous previous line is part of this event.
         # append it to the event and cancel it
         if pending
+          if @onlygroup != ""
+            event["message"] = foundgroup
+          end
           pending.append(event)
         else
           @pending[key] = event
@@ -194,6 +206,9 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
         # this line is part of a multiline event, the next
         # line will be part, too, put it into pending.
         if pending
+          if @onlygroup != ""
+            event["message"] = foundgroup
+          end
           pending.append(event)
         else
           @pending[key] = event
