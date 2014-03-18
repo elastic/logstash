@@ -93,7 +93,7 @@ class LogStash::Agent < Clamp::Command
       # Append the config string.
       # This allows users to provide both -f and -e flags. The combination
       # is rare, but useful for debugging.
-      @config_string += load_config(@config_path)
+      @config_string = config_string + load_config(@config_path)
     else
       # include a default stdin input if no inputs given
       if @config_string !~ /input *{/

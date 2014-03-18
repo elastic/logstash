@@ -100,8 +100,8 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
 
       if not ua_data.version.nil?
         ua_version = ua_data.version
-        target[@prefix + "major"] = ua_version.major.force_encoding(Encoding::UTF_8)
-        target[@prefix + "minor"] = ua_version.minor.force_encoding(Encoding::UTF_8)
+        target[@prefix + "major"] = ua_version.major.force_encoding(Encoding::UTF_8) if ua_version.major
+        target[@prefix + "minor"] = ua_version.minor.force_encoding(Encoding::UTF_8) if ua_version.minor
         target[@prefix + "patch"] = ua_version.patch.force_encoding(Encoding::UTF_8) if ua_version.patch
         target[@prefix + "build"] = ua_version.patch_minor.force_encoding(Encoding::UTF_8) if ua_version.patch_minor
       end
