@@ -87,6 +87,17 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # default to updating the @timestamp field of the event.
   config :target, :validate => :string, :default => "@timestamp"
 
+  # Set to `true` to store the high-resolution timestamp data (micro- or nano-)
+  # when matching using this filter. Regardless of whether this filter is enabled,
+  # Joda will truncate the event's timestamp at millisecond resolution.
+  #
+  # This setting is currently only available with ISO-8601 date matching. When enabled, the
+  # micro- and nano- second values (if available), will be saved to the field
+  # "date_hires_value". The original timestamp will be saved to the field "date_hires_ts".
+  # This should faciliate sorting by hires values when dealing with high-resolution time series.
+  config :retain_hires, :validate => :boolean, :default => false
+  
+  #
   # LOGSTASH-34
   DATEPATTERNS = %w{ y d H m s S } 
 
@@ -131,6 +142,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             joda_parser = joda_parser.withOffsetParsed
           end
           parser = lambda { |date| joda_parser.parseMillis(date) }
+          @could_have_hires = true
         when "UNIX" # unix epoch
           joda_instant = org.joda.time.Instant.java_class.constructor(Java::long).method(:new_instance)
           #parser = lambda { |date| joda_instant.call((date.to_f * 1000).to_i).to_java.toDateTime }
@@ -208,6 +220,14 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           #event[@target] = Time.at(epochmillis / 1000.0).utc
 
           @logger.debug? && @logger.debug("Date parsing done", :value => value, :timestamp => event[@target])
+          if @config["retain_hires"] && @could_have_hires
+            hires = /\.\d\d\d(\d*)Z?$/.match(value)[1]
+            if !hires.empty?
+              @logger.debug? && @logger.debug("hires timestamp data beyond joda resolution: ", :hires => hires)
+              event['date_hires_value'] = hires
+              event['date_hires_ts'] = value
+            end
+          end
         rescue StandardError, JavaException => e
           @logger.warn("Failed parsing date from field", :field => field,
                        :value => value, :exception => e)
