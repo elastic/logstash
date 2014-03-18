@@ -100,7 +100,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # its threshold. Will try connecting to the next server in the host
   # list after attempts is reached. This will take
   # time_in_secs = :congestion_interval * :congestion_attempts
-  config :congestion_attempts, :validate => :number, :default => 10
+  config :congestion_attempts, :validate => :number, :default => 0
 
   def register
     require 'redis'
@@ -195,7 +195,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
         @logger.warn? and @logger.warn("Redis key size has hit a congestion threshold #{@congestion_threshold} suspending output for #{@congestion_interval} seconds")
         sleep @congestion_interval
         tries += 1
-        if tries > @congestion_attempts
+        if tries > @congestion_attempts and @congestion_attempts > 0
             @redis = connect
             tries = 0
         end
