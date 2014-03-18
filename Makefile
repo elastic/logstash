@@ -19,7 +19,7 @@ GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
 GEOIP_ASN=vendor/geoip/GeoIPASNum.dat
 GEOIP_ASN_URL=http://logstash.objects.dreamhost.com/maxmind/GeoIPASNum-2014-02-12.dat.gz
-KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-3.0.0milestone5.tar.gz
+KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-3.0.0.tar.gz
 PLUGIN_FILES=$(shell find lib -type f| egrep '^lib/logstash/(inputs|outputs|filters|codecs)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 QUIET=@
 ifeq (@,$(QUIET))
