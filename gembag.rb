@@ -21,7 +21,7 @@ def install_gem(name, requirement, target)
   installer.options[:version] = requirement
   installer.options[:args] = [name]
   installer.options[:install_dir] = target
- 
+
   # ruby 2.0.0 / rubygems 2.x; disable documentation generation
   installer.options[:document] = []
   begin
@@ -63,7 +63,7 @@ if RUBY_ENGINE == "rbx"
 end
 
 # Try installing a few times in case we hit the "bad_record_mac" ssl error during installation.
-3.times do
+10.times do
   begin
     Bundler::CLI.start(["install", "--gemfile=tools/Gemfile", "--path", target, "--clean"])
     break
