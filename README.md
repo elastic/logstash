@@ -40,9 +40,6 @@ Other commands:
     # this gets you an 'irb' shell with Logstash's environment
     bin/logstash irb
 
-    # or use irb from the jar
-    java -jar logstash-<version>-monolithic.jar irb
-
     # Run Logstash
     bin/logstash agent [options]
     
@@ -61,37 +58,23 @@ rspec <some spec>` will suffice:
     Finished in 0.123 seconds
     19 examples, 0 failures
 
-Alternately, if you have just built the flatjar, you can run the tests
+Alternately, if you have just built the tarball, you can run the tests
 specifically on those like so:
 
-    make flatjar-test
+    make tarball-test
 
-If you want to run all the tests from source (not compiled jar), do:
+If you want to run all the tests from source, do:
 
     make test
-
-Finally, like 'bin/logstash rspec' above, you can invoke the jar to run a
-specific test like so:
-
-    % java -jar logstash.jar rspec spec/filters/grok.rb
-    ...................
-
-    Finished in 0.346 seconds
-    19 examples, 0 failures
 
 ## Building
 
 Building is not required. You are highly recommended to download the releases
 we provide from the Logstash site!
 
-If you want to build the jar yourself, run:
+If you want to build the release tarball yourself, run:
 
-    make flatjar
-
-To update a flat jar previously built with 'make flatjar', run:
-
-    make update-flatjar
-
+    make tarball
 
 You can build rpms and debs, if you need those. Building rpms requires you have [fpm](https://github.com/jordansissel/fpm), then do this:
 
