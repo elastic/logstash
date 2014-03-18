@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/namespace"
 require "logstash/outputs/base"
+require "logstash/retryable"
 require "stud/buffer"
 
 # This output lets you store logs in Elasticsearch.
@@ -12,6 +13,7 @@ require "stud/buffer"
 # You can learn more about Elasticsearch at <http://www.elasticsearch.org>
 class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   include Stud::Buffer
+  include Retryable
 
   config_name "elasticsearch_http"
   milestone 2
@@ -219,16 +221,22 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
       [ header.to_json, newline, event.to_json, newline ]
     end.flatten
-    post(body.join(""))
+
+    bulk_body = body.join("")
+
+    # retry indefinitely, sleep with exponential backoff starting at 0.1s maxing at 1s
+    retryable(:tries => 0, :base_sleep => 0.1, :max_sleep => 1) do
+      post(bulk_body)
+    end
   end # def receive_bulk
 
   def post(body)
     begin
       response = @agent.post!(@bulk_url, :body => body)
-    rescue EOFError
+    rescue EOFError => e
       @logger.warn("EOF while writing request or reading response header from elasticsearch",
                    :host => @host, :port => @port)
-      return # abort this flush
+      raise e
     end
 
     # Consume the body for error checking
@@ -236,17 +244,17 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     body = ""
     begin
       response.read_body { |chunk| body += chunk }
-    rescue EOFError
+    rescue EOFError => e
       @logger.warn("EOF while reading response body from elasticsearch",
                    :host => @host, :port => @port)
-      return # abort this flush
+      raise e
     end
 
     if response.status != 200
       @logger.error("Error writing (bulk) to elasticsearch",
                     :response => response, :response_body => body,
                     :request_body => @queue.join("\n"))
-      return
+      raise("HTTP error status=#{response.status}")
     end
   end # def post
 
