@@ -19,20 +19,20 @@ require "logstash/codecs/base"
 #         }
 #       }
 #     }
-# 
+#
 # The `pattern` should match what you believe to be an indicator that the field
 # is part of a multi-line event.
 #
 # The `what` must be "previous" or "next" and indicates the relation
 # to the multi-line event.
 #
-# The `negate` can be "true" or "false" (defaults to "false"). If "true", a 
+# The `negate` can be "true" or "false" (defaults to "false"). If "true", a
 # message not matching the pattern will constitute a match of the multiline
 # filter and the `what` will be applied. (vice-versa is also true)
 #
 # For example, Java stack traces are multiline and usually have the message
 # starting at the far-left, with each subsequent line indented. Do this:
-# 
+#
 #     input {
 #       stdin {
 #         codec => multiline {
@@ -41,7 +41,7 @@ require "logstash/codecs/base"
 #         }
 #       }
 #     }
-#     
+#
 # This says that any line starting with whitespace belongs to the previous line.
 #
 # Another example is to merge lines not starting with a date up to the previous
@@ -149,14 +149,16 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
 
     @buffer = []
     @handler = method("do_#{@what}".to_sym)
+
+    @charset_encoding = Encoding.find(@charset)
   end # def register
-  
+
   public
   def decode(text, &block)
-    text.force_encoding(@charset)
-    if @charset != "UTF-8"
+    text.force_encoding(@charset_encoding)
+    if @charset_encoding != Encoding::UTF_8
       # Convert to UTF-8 if not in that character set.
-      text = text.encode("UTF-8", :invalid => :replace, :undef => :replace)
+      text = text.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace)
     end
 
     match = @grok.match(text)

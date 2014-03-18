@@ -9,7 +9,7 @@ class LogStash::Codecs::JsonSpooler < LogStash::Codecs::Spool
 
   public
   def decode(data)
-    super(JSON.parse(data.force_encoding("UTF-8"))) do |event|
+    super(JSON.parse(data.force_encoding(Encoding::UTF_8))) do |event|
       yield event
     end
   end # def decode

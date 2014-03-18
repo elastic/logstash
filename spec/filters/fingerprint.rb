@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "test_utils"
 require "logstash/filters/fingerprint"
 
@@ -22,8 +24,8 @@ describe LogStash::Filters::Fingerprint do
 
   describe "fingerprint string with MURMUR3 method" do
     config <<-CONFIG
-      filter { 
-        fingerprint { 
+      filter {
+        fingerprint {
           source => ["clientip"]
           method => "MURMUR3"
         }
@@ -34,7 +36,7 @@ describe LogStash::Filters::Fingerprint do
       insist { subject["fingerprint"] } == 1541804874
     end
   end
- 
+
    describe "fingerprint string with SHA1 alogrithm" do
     config <<-CONFIG
       filter {
@@ -141,7 +143,7 @@ describe LogStash::Filters::Fingerprint do
         }
       }
     CONFIG
-    
+
     sample("field1" => "test1", "field2" => "test2") do
       insist { subject["fingerprint"]} == "872da745e45192c2a1d4bf7c1ff8a370"
     end

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "logstash/inputs/imap"
 require "mail"
 
