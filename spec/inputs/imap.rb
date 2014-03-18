@@ -59,4 +59,30 @@ describe LogStash::Inputs::IMAP do
     end
   end
 
+  context "with multiple values for same header" do
+    it "should add 2 values as array in event" do
+      msg.received = "test1"
+      msg.received = "test2"
+
+      config = {"type" => "imap", "host" => "localhost",
+                "user" => "#{user}", "password" => "#{password}"}
+
+      input = LogStash::Inputs::IMAP.new config
+      input.register
+      event = input.parse_mail(msg)
+      insist { event["received"] } == ["test1", "test2"]
+    end
+
+    it "should add more than 2 values as array in event" do
+      msg.received = "test3"
+
+      config = {"type" => "imap", "host" => "localhost",
+                "user" => "#{user}", "password" => "#{password}"}
+
+      input = LogStash::Inputs::IMAP.new config
+      input.register
+      event = input.parse_mail(msg)
+      insist { event["received"] } == ["test1", "test2", "test3"]
+    end
+  end
 end
