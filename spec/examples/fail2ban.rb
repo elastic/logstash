@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "test_utils"
 
 describe "fail2ban logs", :if => RUBY_ENGINE == "jruby"  do

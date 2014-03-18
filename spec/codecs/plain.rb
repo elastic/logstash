@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "logstash/codecs/plain"
 require "logstash/event"
 require "insist"

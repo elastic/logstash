@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "test_utils"
 require "logstash/filters/urldecode"
 
@@ -21,8 +23,8 @@ describe LogStash::Filters::Urldecode do
 
   describe "urldecode of incorrect urlencoded data" do
     config <<-CONFIG
-      filter { 
-        urldecode { 
+      filter {
+        urldecode {
         }
       }
     CONFIG
@@ -31,7 +33,7 @@ describe LogStash::Filters::Urldecode do
       insist { subject["message"] } == "http://logstash.net/docs/1.3.2/filters/urldecode"
     end
   end
- 
+
    describe "urldecode with all_fields set to true" do
     # The logstash config goes here.
     # At this time, only filters are supported.

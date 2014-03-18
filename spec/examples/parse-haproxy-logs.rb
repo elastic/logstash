@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "test_utils"
 
 describe "haproxy httplog format" do

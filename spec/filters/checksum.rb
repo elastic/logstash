@@ -1,10 +1,12 @@
+# encoding: utf-8
+
 require "test_utils"
 require "logstash/filters/checksum"
 require 'openssl'
 
 describe LogStash::Filters::Checksum do
   extend LogStash::RSpec
-  
+
   LogStash::Filters::Checksum::ALGORITHMS.each do |alg|
     describe "#{alg} checksum with single field" do
       config <<-CONFIG
@@ -21,7 +23,7 @@ describe LogStash::Filters::Checksum do
         insist { subject["logstash_checksum"] } == OpenSSL::Digest.hexdigest(alg, "|test|foo bar|")
       end
     end
-    
+
     describe "#{alg} checksum with multiple keys" do
       config <<-CONFIG
         filter {

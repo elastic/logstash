@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "test_utils"
 
 describe "apache common log format", :if => RUBY_ENGINE == "jruby" do
