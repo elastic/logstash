@@ -334,4 +334,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     # retried.
   end # def flush
 
+  def teardown
+    buffer_flush(:final => true)
+  end
+
 end # class LogStash::Outputs::Elasticsearch
