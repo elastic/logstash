@@ -2,7 +2,7 @@
 require "test_utils"
 require "socket"
 
-describe "inputs/syslog" do
+describe "inputs/syslog", :socket => true do
   extend LogStash::RSpec
 
   describe "properly handles priority, severity and facilities" do
