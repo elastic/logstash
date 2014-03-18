@@ -24,7 +24,7 @@ require "tempfile"
 # <http://www.maxmind.com/en/geolite>.
 class LogStash::Filters::GeoIP < LogStash::Filters::Base
   config_name "geoip"
-  milestone 1
+  milestone 3
 
   # The path to the GeoIP database file which Logstash should use. Country, City, ASN, ISP
   # and organization databases are supported.
