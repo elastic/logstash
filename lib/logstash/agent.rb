@@ -10,7 +10,7 @@ class LogStash::Agent < Clamp::Command
 
   option "-e", "CONFIG_STRING",
     I18n.t("logstash.agent.flag.config-string"),
-    :attribute_name => :config_string
+    :default => "", :attribute_name => :config_string
 
   option ["-w", "--filterworkers"], "COUNT",
     I18n.t("logstash.agent.flag.filterworkers"),
@@ -90,7 +90,10 @@ class LogStash::Agent < Clamp::Command
     end
 
     if @config_path
-      @config_string = load_config(@config_path)
+      # Append the config string.
+      # This allows users to provide both -f and -e flags. The combination
+      # is rare, but useful for debugging.
+      @config_string += load_config(@config_path)
     else
       # include a default stdin input if no inputs given
       if @config_string !~ /input *{/
