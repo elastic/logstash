@@ -1,4 +1,4 @@
-
+#!/bin/bash
 
 logstash=$PWD
 contrib=$PWD/../logstash-contrib/
@@ -54,7 +54,7 @@ packages() {
         for i in *.gz *.rpm *.deb *.zip *.jar ; do
           [ ! -f "$i" ] && continue
           echo "Copying $path/$dir/$i"
-          cp $path/$dir/$i $workdir/build
+          cp $i $workdir/build
         done
       )
     done
