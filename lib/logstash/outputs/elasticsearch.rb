@@ -332,6 +332,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     # TODO(sissel): Handle errors. Since bulk requests could mostly succeed
     # (aka partially fail), we need to figure out what documents need to be
     # retried.
+    #
+    # In the worst case, a failing flush (exception) will incur a retry from Stud::Buffer.
   end # def flush
 
   def teardown
