@@ -3,6 +3,7 @@
   - TODO(sissel): Note new tarball release packaging and that flatjar is gone.
     Link to release notes for upgrade information
   - Ships with Kibana 3.0.0
+  - Much faster field reference implementation (Colin Surprenant)
   - Fix a bug in character encoding which would cause inputs using non-UTF-8
     codecs to accidentally skip re-encoding the text to UTF-8. This should
     solve a great number of UTF-8-related bugs. (Colin Surprenant)
@@ -12,8 +13,8 @@
     (LOGSTASH-1952, #1168)
   - Logstash now supports deletes! See outputs section below.
   - Update template to fit ES 1.0 API changes (untergeek)
-  - Lots of Makefile, gem and build improvements courtesy of untergeek, Faye Salwin,
-    mrsolo, ronnocol, electrical, et al
+  - Lots of Makefile, gem and build improvements courtesy of untergeek, Faye
+    Salwin, mrsolo, ronnocol, electrical, et al
   - Add `env` command so you can run arbitrary commands with the logstash 
     environment setup (jordansissel)
   - Bug fixes (lots).  Did I mention bug fixes? (Thanks, community!)
@@ -34,7 +35,8 @@
   - bugfix: --pluginpath now lets you load codecs. (#1077, Sergey Zhemzhitsky)
 
   # inputs
-  - bugfix: Fixes exception when not specifying yamlmibdir in snmptrap (#950, Andres Koetsier)
+  - bugfix: collectd: Improve handling of 'NaN' values (#1015, Pieter Lexis)
+  - bugfix: snmptrap: Fixes exception when not specifying yamlmibdir (#950, Andres Koetsier)
   - improvement: Add Multi-threaded workers and queues to UDP input (johnarnold + untergeek)
   - improvement: log4j: port now defaults to 4560, the default log4j
     SocketAppender port. (#757, davux)
