@@ -106,7 +106,7 @@ module LogStash::Outputs::Elasticsearch
           response = @agent.post!(@bulk_url, :body => body)
         rescue EOFError
           @logger.warn("EOF while writing request or reading response header from elasticsearch", :host => @host, :port => @port)
-        return # abort this flush
+          raise
         end
 
         # Consume the body for error checking
@@ -117,14 +117,14 @@ module LogStash::Outputs::Elasticsearch
         rescue EOFError
           @logger.warn("EOF while reading response body from elasticsearch",
                        :url => @bulk_url)
-          return # abort this flush
+          raise
         end
 
         if response.status != 200
           @logger.error("Error writing (bulk) to elasticsearch",
                         :response => response, :response_body => response_body,
                         :request_body => body)
-          return
+          raise "Non-OK response code from Elasticsearch: #{response.status}"
         end
       end # def bulk_ftw
 
