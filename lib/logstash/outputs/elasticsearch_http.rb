@@ -219,6 +219,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
       [ header.to_json, newline, event.to_json, newline ]
     end.flatten
+
     post(body.join(""))
   end # def receive_bulk
 
@@ -228,7 +229,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     rescue EOFError
       @logger.warn("EOF while writing request or reading response header from elasticsearch",
                    :host => @host, :port => @port)
-      return # abort this flush
+      raise
     end
 
     # Consume the body for error checking
@@ -239,14 +240,14 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     rescue EOFError
       @logger.warn("EOF while reading response body from elasticsearch",
                    :host => @host, :port => @port)
-      return # abort this flush
+      raise
     end
 
     if response.status != 200
       @logger.error("Error writing (bulk) to elasticsearch",
                     :response => response, :response_body => body,
                     :request_body => @queue.join("\n"))
-      return
+      raise
     end
   end # def post
 
