@@ -121,7 +121,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
           # promote string to array if a header appears multiple times
           # (like 'received')
           when String; event[name] = [event[name], value]
-          when Array; event[name].is_a?(Array)
+          when Array; event[name] << value
           when nil; event[name] = value
         end
       end # mail.header_fields.each
