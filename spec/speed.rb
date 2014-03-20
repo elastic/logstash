@@ -14,7 +14,9 @@ describe "speed tests" do
     output { null { } }
   CONFIG
 
+  start = Time.now
   agent do
-    puts "Rate: #{count / @duration}"
+    duration = (Time.now - start)
+    puts "Speed Rate: #{"%02.0f/sec" % (count / duration)}, Elapsed: #{duration}s"
   end
 end
