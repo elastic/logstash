@@ -1,7 +1,8 @@
-1.4.0 (???)
+1.4.0 (March 20, 2014)
   # General
-  - TODO(sissel): Note new tarball release packaging and that flatjar is gone.
-    Link to release notes for upgrade information
+  - We've included some upgrade-specific release notes with more details about
+    the tarball changes and contrib packaging here:
+    http://logstash.net/docs/1.4.0/release-notes
   - Ships with Kibana 3.0.0
   - Much faster field reference implementation (Colin Surprenant)
   - Fix a bug in character encoding which would cause inputs using non-UTF-8
