@@ -67,4 +67,4 @@ shrank by 19MB compared to the previous release because we were able to shed
 some lesser-used dependencies.
 
 You can learn more about contrib plugins on the [contrib plugins
-page](http://logstash.net/docs/1.4.0.beta1/contrib-plugins)
+page](http://logstash.net/docs/%VERSION%/contrib-plugins)
