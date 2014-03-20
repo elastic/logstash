@@ -24,7 +24,7 @@ describe LogStash::Filters::Date, :if => RUBY_ENGINE == "jruby" do
         end
         duration = Time.now - start
       end
-      puts "date parse rate: #{event_count / duration}"
+      puts "filters/date parse rate: #{"%02.0f/sec" % (event_count / duration)}, elapsed: #{duration}s"
       insist { duration } < max_duration
     end
   end

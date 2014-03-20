@@ -107,10 +107,12 @@ describe LogStash::Event do
     end
 
     it "should be fast?", :performance => true do
+      count = 100000
       2.times do
         start = Time.now
-        100000.times { subject["[j][k1]"] }
-        puts "Duration: #{Time.now - start}"
+        count.times { subject["[j][k1]"] }
+        duration = Time.now - start
+        puts "event #[] rate: #{"%02.0f/sec" % (count / duration)}, elapsed: #{duration}s"
       end
     end
   end
@@ -192,7 +194,7 @@ describe LogStash::Event do
       end
       duration = Time.now - start
     end
-    puts "event @timestamp parse rate: #{count / duration}/sec"
+    puts "event @timestamp parse rate: #{"%02.0f/sec" % (count / duration)}, elapsed: #{duration}s"
   end
 
   context "acceptable @timestamp formats" do

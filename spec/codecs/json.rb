@@ -34,7 +34,7 @@ describe LogStash::Codecs::JSON do
       end
       duration = Time.now - start
       insist { count } == iterations
-      puts "codecs/json speed: #{iterations/duration}/sec"
+      puts "codecs/json rate: #{"%02.0f/sec" % (iterations / duration)}, elapsed: #{duration}s"
     end
 
     context "processing plain text" do

@@ -450,7 +450,7 @@ describe LogStash::Filters::Grok do
       start = Time.now
       agent do
         duration = (Time.now - start)
-        puts "grok parse rate: #{"%02.0f/sec" % (event_count / duration)}, elapsed: #{duration}s"
+        puts "filters/grok parse rate: #{"%02.0f/sec" % (event_count / duration)}, elapsed: #{duration}s"
         insist { duration } < max_duration
       end
     end
