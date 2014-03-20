@@ -1,4 +1,4 @@
-
+#!/bin/bash
 
 logstash=$PWD
 contrib=$PWD/../logstash-contrib/
@@ -24,12 +24,8 @@ prepare() {
   rsync -a --delete $logstash/{bin,docs,lib,spec,Makefile,gembag.rb,logstash.gemspec,tools,locales,patterns,LICENSE,README.md} $contrib/{lib,spec} $workdir
   rm -f $logstash/.VERSION.mk
   make -C $logstash .VERSION.mk
-  make -C $logstash package
-  (cd $contrib;
-    sh pkg/build.sh ubuntu 12.04
-    sh pkg/build.sh centos 6
-  )
-  make -C $contrib package
+  make -C $logstash tarball package
+  make -C $contrib tarball package
   cp $logstash/.VERSION.mk $workdir
   rm -f $workdir/build/pkg
   rm -f $workdir/build/*.{zip,rpm,gz,deb} || true
@@ -52,13 +48,13 @@ packages() {
     rm -f $path/build/*.zip
     echo "Building packages: $path"
     make -C $path tarball
-    for dir in build pkg ; do
+    for dir in build pkg . ; do
       [ ! -d "$path/$dir" ] && continue
       (cd $path/$dir;
         for i in *.gz *.rpm *.deb *.zip *.jar ; do
           [ ! -f "$i" ] && continue
           echo "Copying $path/$dir/$i"
-          cp $path/$dir/$i $workdir/build
+          cp $i $workdir/build
         done
       )
     done

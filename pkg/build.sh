@@ -5,12 +5,8 @@
 
 . ../.VERSION.mk
 
-if ! git show-ref --tags | grep -q "$(git rev-parse HEAD)"; then
-	# HEAD is not tagged, add the date, time and commit hash to the revision
-	BUILD_TIME="$(date +%Y%m%d%H%M)"
-	DEB_REVISION="${BUILD_TIME}~${REVISION}"
-	RPM_REVISION=".${BUILD_TIME}.${REVISION}"
-fi
+DEB_REVISION="${REVISION}"
+RPM_REVISION="${REVISION}"
 
 URL="http://logstash.net"
 DESCRIPTION="An extensible logging pipeline"
