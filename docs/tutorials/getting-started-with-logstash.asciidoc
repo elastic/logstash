@@ -193,7 +193,7 @@ output {
 Then, run this command:
 
 ----
-bin/logstash -f logstash-simple.conf
+bin/logstash agent -f logstash-simple.conf
 ----
 
 Et voilà! Logstash will read in the configuration file you just created and run as in the example we saw earlier. Note that we used the '-f' to read in the file, rather than the '-e' to read the configuration from the command line. This is a very simple case, of course, so let's move on to some more complex examples.
@@ -221,7 +221,7 @@ output {
 Run Logstash with this configuration:
 
 ----
-bin/logstash -f logstash-filter.conf
+bin/logstash agent -f logstash-filter.conf
 ----
 
 Now paste this line into the terminal (so it will be processed by the stdin input):
@@ -295,7 +295,7 @@ Then, create the file you configured above (in this example, "/tmp/access_log") 
 
 Now run it with the -f flag as in the last example:
 ----
-bin/logstash -f logstash-apache.conf
+bin/logstash agent -f logstash-apache.conf
 ----
 You should be able to see your apache log data in Elasticsearch now! You'll notice that Logstash opened the file you configured, and read through it, processing any events it encountered. Any additional lines logged to this file will also be captured, processed by Logstash as events and stored in Elasticsearch. As an added bonus, they will be stashed with the field "type" set to "apache_access" (this is done by the type => "apache_access" line in the input configuration).
 
@@ -383,7 +383,7 @@ output {
 ----
 Run it as normal:
 ----
-bin/logstash -f logstash-syslog.conf
+bin/logstash agent -f logstash-syslog.conf
 ----
 Normally, a client machine would connect to the Logstash instance on port 5000 and send its message. In this simplified case, we're simply going to telnet to Logstash and enter a log line (similar to how we entered log lines into STDIN earlier). First, open another shell window to interact with the Logstash syslog input and type the following command:
 
