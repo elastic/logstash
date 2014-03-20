@@ -5,7 +5,7 @@ puts "Skipping date tests because this ruby is not jruby" if RUBY_ENGINE != "jru
 describe LogStash::Filters::Date, :if => RUBY_ENGINE == "jruby" do
   extend LogStash::RSpec
 
-  describe "speed test of date parsing", :if => ENV["SPEEDTEST"] do
+  describe "speed test of date parsing", :performance => true do
     it "should be fast" do
       event_count = 100000
       min_rate = 4000

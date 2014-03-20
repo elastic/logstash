@@ -106,7 +106,7 @@ describe LogStash::Event do
 
     end
 
-    it "should be fast?", :if => ENV["SPEEDTEST"] do
+    it "should be fast?", :performance => true do
       2.times do
         start = Time.now
         100000.times { subject["[j][k1]"] }
@@ -175,7 +175,7 @@ describe LogStash::Event do
     end
   end
 
-  it "timestamp parsing speed", :if => ENV["SPEEDTEST"] do
+  it "timestamp parsing speed", :performance => true do
     warmup = 10000
     count = 1000000
 

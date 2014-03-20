@@ -423,7 +423,7 @@ describe LogStash::Filters::Grok do
     end
   end
 
-  describe "performance test", :if => ENV["SPEEDTEST"] do
+  describe "performance test", :performance => true do
     event_count = 100000
     min_rate = 4000
 

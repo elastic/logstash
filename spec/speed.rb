@@ -1,6 +1,6 @@
 require "test_utils"
 
-describe "speed tests" do
+describe "speed tests", :performance => true do
   extend LogStash::RSpec
   count = 1000000
 
