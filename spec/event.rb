@@ -107,7 +107,7 @@ describe LogStash::Event do
     end
 
     it "should be fast?", :performance => true do
-      count = 100000
+      count = 1000000
       2.times do
         start = Time.now
         count.times { subject["[j][k1]"] }
