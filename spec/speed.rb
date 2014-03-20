@@ -17,6 +17,6 @@ describe "speed tests", :performance => true do
   start = Time.now
   agent do
     duration = (Time.now - start)
-    puts "Speed Rate: #{"%02.0f/sec" % (count / duration)}, Elapsed: #{duration}s"
+    puts "speed rate: #{"%02.0f/sec" % (count / duration)}, elapsed: #{duration}s"
   end
 end

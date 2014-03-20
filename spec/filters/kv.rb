@@ -125,7 +125,7 @@ describe LogStash::Filters::KV do
     start = Time.now
     agent do
       duration = (Time.now - start)
-      puts "kv rate: #{"%02.0f/sec" % (count / duration)}, elapsed: #{duration}s"
+      puts "filters/kv rate: #{"%02.0f/sec" % (count / duration)}, elapsed: #{duration}s"
     end
   end
 
