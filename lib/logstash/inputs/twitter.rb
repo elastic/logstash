@@ -47,6 +47,9 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
   # Any keywords to track in the twitter stream
   config :keywords, :validate => :array, :required => true
 
+  # Record full tweet object as given to us by the Twitter stream api.
+  config :full_tweet, :validate => :boolean, :default => false
+
   public
   def register
     require "twitter"
@@ -63,14 +66,20 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
     @logger.info("Starting twitter tracking", :keywords => @keywords)
     @client.filter(:track => @keywords.join(",")) do |tweet|
       @logger.info? && @logger.info("Got tweet", :user => tweet.user.screen_name, :text => tweet.text)
-      event = LogStash::Event.new(
-        "@timestamp" => tweet.created_at.gmtime,
-        "message" => tweet.full_text,
-        "user" => tweet.user.screen_name,
-        "client" => tweet.source,
-        "retweeted" => tweet.retweeted?,
-        "source" => "http://twitter.com/#{tweet.user.screen_name}/status/#{tweet.id}"
-      )
+      if @full_tweet
+        event = LogStash::Event.new(
+          tweet.to_hash.merge("@timestamp" => tweet.created_at.gmtime)
+        )
+      else
+        event = LogStash::Event.new(
+          "@timestamp" => tweet.created_at.gmtime,
+          "message" => tweet.full_text,
+          "user" => tweet.user.screen_name,
+          "client" => tweet.source,
+          "retweeted" => tweet.retweeted?,
+          "source" => "http://twitter.com/#{tweet.user.screen_name}/status/#{tweet.id}"
+        )
+      end
       decorate(event)
       event["in-reply-to"] = tweet.in_reply_to_status_id if tweet.reply?
       unless tweet.urls.empty?
