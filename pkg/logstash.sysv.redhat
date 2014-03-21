@@ -19,7 +19,7 @@
 
 . /etc/rc.d/init.d/functions
 
-NAME=logstash
+NAME=`basename $0`
 DESC="Logstash Daemon"
 DEFAULT=/etc/sysconfig/$NAME
 
