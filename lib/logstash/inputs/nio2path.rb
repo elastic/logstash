@@ -11,7 +11,7 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
   config_name "nio2path"
   milestone 1
 
-  default :codec, "plain"
+  default :codec, "line"
   
   # The directory to watch for files.  Must be a directory!
   # 
@@ -40,14 +40,14 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
   def register
     @host = Socket.gethostname
     @charset = java.nio.charset.Charset.forName("UTF-8")
-    @readers = {}
+    @streams = {}
     begin
       uri = java.net.URI.new(@path)
       @javapath = java.nio.file.Paths.get(uri)
     rescue java.lang.IllegalArgumentException => e
       @javapath = java.nio.file.Paths.get(@path)
     rescue java.lang.Exception => e
-      e.printStackTrace
+      @logger.warn("Unable to open path", :path => @path, :error => e)
       raise e
     end
     begin
@@ -55,13 +55,13 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
       java.nio.file.Files.newDirectoryStream(@javapath, @prefix + "*" + @suffix).each do |file|
         # Save a reader for each file (non-directory)
         if (!java.nio.file.Files.isDirectory(file))
-          @readers[file.getFileName] = java.nio.file.Files.newBufferedReader(file, @charset)
+          @streams[file.getFileName] = java.nio.file.Files.newInputStream(file)
         end
       end
       # Register a filesystem watchservice to monitor changes to files in the path
       @watchservice = @javapath.getFileSystem.newWatchService
     rescue java.lang.Exception => e
-      e.printStackTrace
+      @logger.error("Error looking up file", :path => @path, :error => e)
       raise e
     end
     begin
@@ -69,29 +69,27 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
                          java.nio.file.StandardWatchEventKinds::ENTRY_CREATE,
                          java.nio.file.StandardWatchEventKinds::ENTRY_DELETE)
     rescue java.lang.Exception => e
-      @logger.warn("Unable to register watcher for path " + @javapath)
+      @logger.warn("Unable to register watcher for a path", :path => @javapath, :error => e)
     end
   end # def register
 
   def run(queue)
     # Read or skip data in existing files
-    @readers.each do |file, rdr|
+    @streams.each do |file, str|
       absolutepath = @javapath.resolve(file).toAbsolutePath
       begin
         if (@start_position == "end")
-          rdr.skip(java.nio.file.Files.size(absolutepath))
+          str.skip(java.nio.file.Files.size(absolutepath))
         else
-          while (rdr.ready)
-            @codec.decode(rdr.readLine) do |event|
-              decorate(event)
-              event["host"] = @host
-              event["path"] = absolutepath.toString
-              queue << event
-            end
+          @codec.decode(readMore(str)) do |event|
+            decorate(event)
+            event["host"] ||= @host
+            event["path"] ||= absolutepath.toString
+            queue << event
           end
         end
       rescue java.lang.Exception => e
-        e.printStackTrace
+        @logger.warn("Unable to read from a file", :file => file, :error => e)
       end
     end
     
@@ -108,39 +106,37 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
                 
                 # If file has been deleted, clear out its reader
                 if (watchevent.kind.name == java.nio.file.StandardWatchEventKinds::ENTRY_DELETE.name)
-                  reader = @readers[p]
-                  if (reader)
-                    reader.close
+                  stream = @streams[p]
+                  if (stream)
+                    stream.close
                   end
-                  @readers[p] = nil
+                  @streams[p] = nil
                   
                 # Otherwise, file has been created or modified
                 elsif (!java.nio.file.Files.isDirectory(file))
                   
                   # Look for an existing reader for the new or modified file
-                  reader = @readers[p]
+                  stream = @streams[p]
                   
                   # If this file was just created, set up a reader for it
-                  if (reader.nil?)
-                    reader = java.nio.file.Files.newBufferedReader(file, @charset)
-                    @readers[p] = reader
+                  if (stream.nil?)
+                    stream = java.nio.file.Files.newInputStream(file)
+                    @streams[p] = stream
                   end
                   
                   # Read new lines from file
-                  while (reader.ready)
-                    @codec.decode(reader.readLine) do |event|
-                      decorate(event)
-                      event["host"] = @host
-                      event["path"] = file.toString
-                      queue << event
-                    end
+                  @codec.decode(readMore(stream)) do |event|
+                    decorate(event)
+                    event["host"] ||= @host
+                    event["path"] ||= file.toString
+                    queue << event
                   end
                 end
               end
             end
             watchkey.reset
           rescue java.lang.Exception => e
-            e.printStackTrace
+            @logger.warn("Unknown error", :error => e)
             raise e
           end
 
@@ -152,6 +148,13 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
     finished
   end # def run
 
+  private
+  def readMore(stream)
+    buffer = java.nio.ByteBuffer.allocate(stream.available)
+    stream.read(buffer)
+    return org.jruby.RubyString.bytesToString(buffer.array)
+  end
+  
   public
   def teardown
     @watchservice.close
