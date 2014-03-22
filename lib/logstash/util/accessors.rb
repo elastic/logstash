@@ -1,7 +1,7 @@
 # encoding: utf-8
+
 require "logstash/namespace"
 require "logstash/util"
-
 
 module LogStash::Util
 
@@ -20,7 +20,6 @@ module LogStash::Util
       [path.pop, path]
     end
   end
-
 
   # Accessors uses a lookup table to speedup access of an accessor field of the type
   # "[hello][world]" to the underlying store hash into {"hello" => {"world" => "foo"}}
@@ -41,6 +40,10 @@ module LogStash::Util
       target[key] = value
     end
 
+    def strict_set(accessor, value)
+      set(accessor, strict_value(value))
+    end
+
     def del(accessor)
       target, key = lookup(accessor)
       target.delete(key)
@@ -58,5 +61,19 @@ module LogStash::Util
       [target, key]
     end
 
-  end
-end # module LogStash::Util::Accessors
+    def strict_value(value)
+      case value
+      when String
+        raise("expected UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.encoding == Encoding::UTF_8
+        raise("invalid UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.valid_encoding?
+        value
+      when Array
+        value.each{|v| strict_value(v)} # don't map, return original object
+        value
+      else
+        value
+      end
+    end
+
+  end # class Accessors
+end # module LogStash::Util
