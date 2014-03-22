@@ -94,6 +94,11 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
     end
     
     # Watch for new & modified files
+    monitorFiles(queue) # while true
+    finished
+  end
+
+  def monitorFiles(queue)
     while true
       begin
         # Get new filesystem change events, or sleep
@@ -103,7 +108,7 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
               p = watchevent.context
               if (p.toString.start_with?(@prefix) && p.toString.end_with?(@suffix))
                 file = @javapath.resolve(p).toAbsolutePath
-                
+
                 # If file has been deleted, clear out its reader
                 if (watchevent.kind.name == java.nio.file.StandardWatchEventKinds::ENTRY_DELETE.name)
                   stream = @streams[p]
@@ -111,19 +116,19 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
                     stream.close
                   end
                   @streams[p] = nil
-                  
-                # Otherwise, file has been created or modified
+
+                  # Otherwise, file has been created or modified
                 elsif (!java.nio.file.Files.isDirectory(file))
-                  
+
                   # Look for an existing reader for the new or modified file
                   stream = @streams[p]
-                  
+
                   # If this file was just created, set up a reader for it
                   if (stream.nil?)
                     stream = java.nio.file.Files.newInputStream(file)
                     @streams[p] = stream
                   end
-                  
+
                   # Read new lines from file
                   @codec.decode(readMore(stream)) do |event|
                     decorate(event)
@@ -144,9 +149,10 @@ class LogStash::Inputs::Nio2Path < LogStash::Inputs::Base
       rescue EOFError, LogStash::ShutdownSignal
         break
       end
-    end # while true
-    finished
-  end # def run
+    end
+  end
+
+  # def run
 
   private
   def readMore(stream)
