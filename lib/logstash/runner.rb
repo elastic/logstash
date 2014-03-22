@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-Encoding.default_external = "UTF-8"
+Encoding.default_external = Encoding::UTF_8
 $START = Time.now
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
@@ -99,7 +99,7 @@ class LogStash::Runner
       "version" => lambda do
         require "logstash/agent"
         agent_args = ["--version"]
-        if args.include?("--verbose") 
+        if args.include?("--verbose")
           agent_args << "--verbose"
         end
         LogStash::Agent.run($0, agent_args)
@@ -187,6 +187,7 @@ class LogStash::Runner
         agent = LogStash::Agent.new($0)
         begin
           agent.parse(args)
+          @runners << Stud::Task.new { agent.execute }
         rescue Clamp::HelpWanted => e
           puts e.command.help
         rescue Clamp::UsageError => e
@@ -196,9 +197,6 @@ class LogStash::Runner
           remaining = agent.remaining_arguments
         end
 
-        #require "pry"
-        #binding.pry
-        @runners << Stud::Task.new { agent.execute }
         return remaining
       end
     } # commands

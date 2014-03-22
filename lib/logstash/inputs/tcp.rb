@@ -34,24 +34,23 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   # `client` connects to a server.
   config :mode, :validate => ["server", "client"], :default => "server"
 
-  # Enable ssl (must be set for other `ssl_` options to take effect)
+  # Enable SSL (must be set for other `ssl_` options to take effect).
   config :ssl_enable, :validate => :boolean, :default => false
 
-  # Verify the identity of the other end of the ssl connection against the CA
-  # For input, sets the `@field.sslsubject` to that of the client certificate
+  # Verify the identity of the other end of the SSL connection against the CA.
+  # For input, sets the field `sslsubject` to that of the client certificate.
   config :ssl_verify, :validate => :boolean, :default => false
 
-  # ssl CA certificate, chainfile or CA path
-  # The system CA path is automatically included
+  # The SSL CA certificate, chainfile or CA path. The system CA path is automatically included.
   config :ssl_cacert, :validate => :path
 
-  # ssl certificate
+  # SSL certificate path
   config :ssl_cert, :validate => :path
 
-  # ssl key
+  # SSL key path
   config :ssl_key, :validate => :path
 
-  # ssl key passphrase
+  # SSL key passphrase
   config :ssl_key_passphrase, :validate => :password, :default => nil
 
   def initialize(*args)
@@ -117,22 +116,19 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         output_queue << event
       end
     end # loop do
+  rescue EOFError
+    @logger.debug("Connection closed", :client => socket.peer)
   rescue => e
+    @logger.debug("An error occurred. Closing connection",
+                  :client => socket.peer, :exception => e, :backtrace => e.backtrace)
+  ensure
+    socket.close rescue IOError nil
     codec.respond_to?(:flush) && codec.flush do |event|
       event["host"] ||= client_address
       event["sslsubject"] ||= socket.peer_cert.subject if @ssl_enable && @ssl_verify
       decorate(event)
       output_queue << event
     end
-
-    @logger.debug("An error occurred. Closing connection",
-                  :client => socket.peer, :exception => e)
-  ensure
-    begin
-      socket.close
-    rescue IOError
-      #pass
-    end # begin
   end
 
   private
@@ -194,7 +190,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   rescue LogStash::ShutdownSignal
     # nothing to do
   ensure
-    @server_socket.close
+    @server_socket.close rescue nil
   end # def run_server
 
   def run_client(output_queue) 
@@ -225,7 +221,6 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   def teardown
     if server?
       @interrupted = true
-      @thread.raise(LogStash::ShutdownSignal)
     end
   end # def teardown
 end # class LogStash::Inputs::Tcp

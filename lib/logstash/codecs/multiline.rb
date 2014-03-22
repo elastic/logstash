@@ -1,11 +1,11 @@
 # encoding: utf-8
 require "logstash/codecs/base"
 
-# The multiline codec is for taking line-oriented text and merging them into a
+# The multiline codec will collapse multiline messages and merge them into a
 # single event.
 #
-# The original goal of this codec was to allow joining of multi-line messages
-# from files into a single event. For example - joining java exception and
+# The original goal of this codec was to allow joining of multiline messages
+# from files into a single event. For example, joining Java exception and
 # stacktrace messages into a single event.
 #
 # The config looks like this:
@@ -14,25 +14,25 @@ require "logstash/codecs/base"
 #       stdin {
 #         codec => multiline {
 #           pattern => "pattern, a regexp"
-#           negate => true or false
+#           negate => "true" or "false"
 #           what => "previous" or "next"
 #         }
 #       }
 #     }
-# 
-# The 'pattern' should match what you believe to be an indicator that the field
+#
+# The `pattern` should match what you believe to be an indicator that the field
 # is part of a multi-line event.
 #
-# The 'what' must be "previous" or "next" and indicates the relation
+# The `what` must be "previous" or "next" and indicates the relation
 # to the multi-line event.
 #
-# The 'negate' can be "true" or "false" (defaults false). If true, a 
+# The `negate` can be "true" or "false" (defaults to "false"). If "true", a
 # message not matching the pattern will constitute a match of the multiline
-# filter and the what will be applied. (vice-versa is also true)
+# filter and the `what` will be applied. (vice-versa is also true)
 #
-# For example, java stack traces are multiline and usually have the message
-# starting at the far-left, then each subsequent line indented. Do this:
-# 
+# For example, Java stack traces are multiline and usually have the message
+# starting at the far-left, with each subsequent line indented. Do this:
+#
 #     input {
 #       stdin {
 #         codec => multiline {
@@ -41,7 +41,7 @@ require "logstash/codecs/base"
 #         }
 #       }
 #     }
-#     
+#
 # This says that any line starting with whitespace belongs to the previous line.
 #
 # Another example is to merge lines not starting with a date up to the previous
@@ -58,22 +58,36 @@ require "logstash/codecs/base"
 #         }
 #       }
 #     }
-#     
-# This is the base class for logstash codecs.
+#
+# This says that any line not starting with a timestamp should be merged with the previous line.
+#
+# One more common example is C line continuations (backslash). Here's how to do that:
+#
+#     filter {
+#       multiline {
+#         type => "somefiletype"
+#         pattern => "\\$"
+#         what => "next"
+#       }
+#     }
+#
+# This says that any line ending with a backslash should be combined with the
+# following line.
+#
 class LogStash::Codecs::Multiline < LogStash::Codecs::Base
   config_name "multiline"
   milestone 3
 
-  # The regular expression to match
+  # The regular expression to match.
   config :pattern, :validate => :string, :required => true
 
   # If the pattern matched, does event belong to the next or previous event?
   config :what, :validate => ["previous", "next"], :required => true
 
-  # Negate the regexp pattern ('if not matched')
+  # Negate the regexp pattern ('if not matched').
   config :negate, :validate => :boolean, :default => false
 
-  # logstash ships by default with a bunch of patterns, so you don't
+  # Logstash ships by default with a bunch of patterns, so you don't
   # necessarily need to define this yourself unless you are adding additional
   # patterns.
   #
@@ -92,7 +106,7 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
   # This setting is useful if your log files are in Latin-1 (aka cp1252)
   # or in another character set other than UTF-8.
   #
-  # This only affects "plain" format logs since json is UTF-8 already.
+  # This only affects "plain" format logs since JSON is UTF-8 already.
   config :charset, :validate => ::Encoding.name_list, :default => "UTF-8"
 
   # Tag multiline events with a given tag. This tag will only be added
@@ -135,14 +149,16 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
 
     @buffer = []
     @handler = method("do_#{@what}".to_sym)
+
+    @charset_encoding = Encoding.find(@charset)
   end # def register
-  
+
   public
   def decode(text, &block)
-    text.force_encoding(@charset)
-    if @charset != "UTF-8"
+    text.force_encoding(@charset_encoding)
+    if @charset_encoding != Encoding::UTF_8
       # Convert to UTF-8 if not in that character set.
-      text = text.encode("UTF-8", :invalid => :replace, :undef => :replace)
+      text = text.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace)
     end
 
     match = @grok.match(text)

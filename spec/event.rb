@@ -9,19 +9,19 @@ describe LogStash::Event do
       "message" => "hello world",
       "tags" => [ "tag1" ],
       "source" => "/home/foo",
-      "a" => "b", 
+      "a" => "b",
       "c" => {
         "d" => "f",
         "e" => {"f" => "g"}
-      }, 
+      },
       "f" => { "g" => { "h" => "i" } },
-      "j" => { 
-          "k1" => "v", 
+      "j" => {
+          "k1" => "v",
           "k2" => [ "w", "x" ],
           "k3" => {"4" => "m"},
           5 => 6,
           "5" => 7
-      } 
+      }
     )
   end
 
@@ -29,24 +29,54 @@ describe LogStash::Event do
     it "should raise an exception if you attempt to set @timestamp to a value type other than a Time object" do
       insist { subject["@timestamp"] = "crash!" }.raises(TypeError)
     end
+
+    it "should assign simple fields" do
+      insist { subject["foo"] }.nil?
+      insist { subject["foo"] = "bar"} == "bar"
+      insist { subject["foo"] } == "bar"
+    end
+
+    it "should overwrite simple fields" do
+      insist { subject["foo"] }.nil?
+      insist { subject["foo"] = "bar"} == "bar"
+      insist { subject["foo"] } == "bar"
+
+      insist { subject["foo"] = "baz"} == "baz"
+      insist { subject["foo"] } == "baz"
+    end
+
+    it "should assign deep fields" do
+      insist { subject["[foo][bar]"] }.nil?
+      insist { subject["[foo][bar]"] = "baz"} == "baz"
+      insist { subject["[foo][bar]"] } == "baz"
+    end
+
+    it "should overwrite deep fields" do
+      insist { subject["[foo][bar]"] }.nil?
+      insist { subject["[foo][bar]"] = "baz"} == "baz"
+      insist { subject["[foo][bar]"] } == "baz"
+
+      insist { subject["[foo][bar]"] = "zab"} == "zab"
+      insist { subject["[foo][bar]"] } == "zab"
+    end
   end
 
   context "#sprintf" do
     it "should report a unix timestamp for %{+%s}" do
       insist { subject.sprintf("%{+%s}") } == "1356998400"
     end
-    
+
     it "should report a time with %{+format} syntax", :if => RUBY_ENGINE == "jruby" do
       insist { subject.sprintf("%{+YYYY}") } == "2013"
       insist { subject.sprintf("%{+MM}") } == "01"
       insist { subject.sprintf("%{+HH}") } == "00"
     end
-  
+
     it "should report fields with %{field} syntax" do
       insist { subject.sprintf("%{type}") } == "sprintf"
       insist { subject.sprintf("%{message}") } == subject["message"]
     end
-    
+
     it "should print deep fields" do
       insist { subject.sprintf("%{[j][k1]}") } == "v"
       insist { subject.sprintf("%{[j][k2][0]}") } == "w"
@@ -56,7 +86,7 @@ describe LogStash::Event do
       insist { subject.sprintf(2) } == "2"
     end
   end
-  
+
   context "#[]" do
     it "should fetch data" do
       insist { subject["type"] } == "sprintf"
@@ -88,12 +118,12 @@ describe LogStash::Event do
       subject.append(LogStash::Event.new("message" => "another thing"))
       insist { subject["message"] } == [ "hello world", "another thing" ]
     end
-  
+
     it "should concatenate tags" do
       subject.append(LogStash::Event.new("tags" => [ "tag2" ]))
       insist { subject["tags"] } == [ "tag1", "tag2" ]
     end
-  
+
     context "when event field is nil" do
       it "should add single value as string" do
         subject.append(LogStash::Event.new({"field1" => "append1"}))
@@ -104,10 +134,10 @@ describe LogStash::Event do
         insist { subject[ "field1" ] } == [ "append1","append2" ]
       end
     end
-  
+
     context "when event field is a string" do
       before { subject[ "field1" ] = "original1" }
-  
+
       it "should append string to values, if different from current" do
         subject.append(LogStash::Event.new({"field1" => "append1"}))
         insist { subject[ "field1" ] } == [ "original1", "append1" ]
@@ -127,7 +157,7 @@ describe LogStash::Event do
     end
     context "when event field is an array" do
       before { subject[ "field1" ] = [ "original1", "original2" ] }
-  
+
       it "should append string values to array, if not present in array" do
         subject.append(LogStash::Event.new({"field1" => "append1"}))
         insist { subject[ "field1" ] } == [ "original1", "original2", "append1" ]
@@ -166,7 +196,7 @@ describe LogStash::Event do
   context "acceptable @timestamp formats" do
     subject { LogStash::Event.new }
 
-    formats = [ 
+    formats = [
       "YYYY-MM-dd'T'HH:mm:ss.SSSZ",
       "YYYY-MM-dd'T'HH:mm:ss.SSSSSSZ",
       "YYYY-MM-dd'T'HH:mm:ss.SSS",

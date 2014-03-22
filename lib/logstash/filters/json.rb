@@ -2,18 +2,22 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
-# JSON filter. Takes a field that contains JSON and expands it into
-# an actual datastructure.
+# This is a JSON parsing filter. It takes an existing field which contains JSON and
+# expands it into an actual data structure within the Logstash event.
+# 
+# By default it will place the parsed JSON in the root (top level) of the Logstash event, but this
+# filter can be configured to place the JSON into any arbitrary event field, using the
+# `target` configuration.
 class LogStash::Filters::Json < LogStash::Filters::Base
 
   config_name "json"
   milestone 2
 
-  # Config for json is:
+  # The configuration for the JSON filter:
   #
   #     source => source_field
   #
-  # For example, if you have json data in the @message field:
+  # For example, if you have JSON data in the @message field:
   #
   #     filter {
   #       json {
@@ -24,10 +28,10 @@ class LogStash::Filters::Json < LogStash::Filters::Base
   # The above would parse the json from the @message field
   config :source, :validate => :string, :required => true
 
-  # Define target for placing the data. If this setting is omitted,
-  # the json data will be stored at the root of the event.
+  # Define the target field for placing the parsed data. If this setting is
+  # omitted, the JSON data will be stored at the root (top level) of the event.
   #
-  # For example if you want the data to be put in the 'doc' field:
+  # For example, if you want the data to be put in the 'doc' field:
   #
   #     filter {
   #       json {
@@ -35,11 +39,13 @@ class LogStash::Filters::Json < LogStash::Filters::Base
   #       }
   #     }
   #
-  # json in the value of the source field will be expanded into a
-  # datastructure in the "target" field.
+  # JSON in the value of the `source` field will be expanded into a
+  # data structure in the `target` field.
   #
-  # Note: if the "target" field already exists, it will be overwritten.
+  # NOTE: if the `target` field already exists, it will be overwritten!
   config :target, :validate => :string
+
+  TIMESTAMP = "@timestamp"
 
   public
   def register
@@ -76,11 +82,11 @@ class LogStash::Filters::Json < LogStash::Filters::Base
 
       # If no target, we target the root of the event object. This can allow
       # you to overwrite @timestamp. If so, let's parse it as a timestamp!
-      if @target && event["@timestamp"].is_a?(String)
+      if !@target && event[TIMESTAMP].is_a?(String)
         # This is a hack to help folks who are mucking with @timestamp during
         # their json filter. You aren't supposed to do anything with
         # "@timestamp" outside of the date filter, but nobody listens... ;)
-        event["@timestamp"] = Time.parse(event["@timestamp"]).utc
+        event[TIMESTAMP] = Time.parse(event[TIMESTAMP]).utc
       end
 
       filter_matched(event)

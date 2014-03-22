@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "test_utils"
 require "logstash/filters/split"
 
@@ -22,7 +24,7 @@ describe LogStash::Filters::Split do
   describe "custome terminator" do
     config <<-CONFIG
       filter {
-        split { 
+        split {
           terminator => "\t"
         }
       }
@@ -39,7 +41,7 @@ describe LogStash::Filters::Split do
   describe "custom field" do
     config <<-CONFIG
       filter {
-        split { 
+        split {
           field => "custom"
         }
       }

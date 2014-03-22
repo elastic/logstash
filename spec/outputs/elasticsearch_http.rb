@@ -1,6 +1,6 @@
 require "test_utils"
 
-describe "outputs/elasticsearch_http" do
+describe "outputs/elasticsearch_http", :elasticsearch => true do
   extend LogStash::RSpec
 
   describe "ship lots of events w/ default index_type" do
@@ -232,9 +232,9 @@ describe "outputs/elasticsearch_http" do
       terms = results["terms"].collect { |t| t["term"] }
 
       insist { terms }.include?("us")
-      
+
       # 'at' is a stopword, make sure stopwords are not ignored.
-      insist { terms }.include?("at") 
+      insist { terms }.include?("at")
     end
   end
 end

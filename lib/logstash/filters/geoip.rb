@@ -3,16 +3,16 @@ require "logstash/filters/base"
 require "logstash/namespace"
 require "tempfile"
 
-# Add GeoIP fields from Maxmind database
+# The GeoIP filter adds information about the geographical location of IP addresses,
+# based on data from the Maxmind database.
 #
-# GeoIP filter, adds information about the geographical location of IP addresses.
-#
-# Starting at version 1.3.0 of logstash, a [geoip][location] field is created if
+# Starting with version 1.3.0 of Logstash, a [geoip][location] field is created if
 # the GeoIP lookup returns a latitude and longitude. The field is stored in
 # [GeoJSON](http://geojson.org/geojson-spec.html) format. Additionally,
 # the default Elasticsearch template provided with the
 # [elasticsearch output](../outputs/elasticsearch.html)
-# maps the [geoip][location] field to a [geo_point](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-geo-point-type.html).
+# maps the [geoip][location] field to a
+# [geo_point](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-geo-point-type.html).
 #
 # As this field is a geo\_point _and_ it is still valid GeoJSON, you get
 # the awesomeness of Elasticsearch's geospatial query, facet and filter functions
@@ -24,36 +24,36 @@ require "tempfile"
 # <http://www.maxmind.com/en/geolite>.
 class LogStash::Filters::GeoIP < LogStash::Filters::Base
   config_name "geoip"
-  milestone 1
+  milestone 3
 
-  # GeoIP database file to use, Country, City, ASN, ISP and organization
-  # databases are supported
+  # The path to the GeoIP database file which Logstash should use. Country, City, ASN, ISP
+  # and organization databases are supported.
   #
   # If not specified, this will default to the GeoLiteCity database that ships
-  # with logstash.
+  # with Logstash.
   config :database, :validate => :path
 
   # The field containing the IP address or hostname to map via geoip. If
   # this field is an array, only the first value will be used.
   config :source, :validate => :string, :required => true
 
-  # Array of geoip fields that we want to be included in our event.
+  # An array of geoip fields to be included in the event.
   #
   # Possible fields depend on the database type. By default, all geoip fields
   # are included in the event.
   #
-  # For the built in GeoLiteCity database, the following are available:
-  # city\_name, continent\_code, country\_code2, country\_code3, country\_name,
-  # dma\_code, ip, latitude, longitude, postal\_code, region\_name, timezone
+  # For the built-in GeoLiteCity database, the following are available:
+  # `city\_name`, `continent\_code`, `country\_code2`, `country\_code3`, `country\_name`,
+  # `dma\_code`, `ip`, `latitude`, `longitude`, `postal\_code`, `region\_name` and `timezone`.
   config :fields, :validate => :array
 
-  # Specify into what field you want the geoip data.
-  # This can be useful for example if you have a src\_ip and dst\_ip and want
-  # information of both IP's.
+  # Specify the field into which Logstash should store the geoip data.
+  # This can be useful, for example, if you have `src\_ip` and `dst\_ip` fields and
+  # would like the GeoIP information of both IPs.
   #
-  # If you save the data to another target than "geoip" and want to use the
-  # geo\_point related functions in elasticsearch, you need to alter the template
-  # provided with the elasticsearch output and configure the output to use the
+  # If you save the data to a target field other than "geoip" and want to use the
+  # geo\_point related functions in Elasticsearch, you need to alter the template
+  # provided with the Elasticsearch output and configure the output to use the
   # new template.
   #
   # Even if you don't use the geo\_point mapping, the [target][location] field
@@ -140,9 +140,17 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
     geo_data_hash.each do |key, value|
       next if value.nil? || (value.is_a?(String) && value.empty?)
       if @fields.nil? || @fields.empty? || @fields.include?(key.to_s)
-        # no fields requested, so add all geoip hash items to
-        # the event's fields.
         # convert key to string (normally a Symbol)
+        if value.is_a?(String)
+          # Some strings from GeoIP don't have the correct encoding...
+          value = case value.encoding
+            # I have found strings coming from GeoIP that are ASCII-8BIT are actually
+            # ISO-8859-1...
+            when Encoding::ASCII_8BIT; value.force_encoding(Encoding::ISO_8859_1).encode(Encoding::UTF_8)
+            when Encoding::ISO_8859_1, Encoding::US_ASCII;  value.encode(Encoding::UTF_8)
+            else; value
+          end
+        end
         event[@target][key.to_s] = value
       end
     end # geo_data_hash.each

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "test_utils"
 require "logstash/filters/anonymize"
 
@@ -24,8 +26,8 @@ describe LogStash::Filters::Anonymize do
 
   describe "anonymize string with MURMUR3 algorithm" do
     config <<-CONFIG
-      filter { 
-        anonymize { 
+      filter {
+        anonymize {
           fields => ["clientip"]
           algorithm => "MURMUR3"
           key => ""
@@ -37,7 +39,7 @@ describe LogStash::Filters::Anonymize do
       insist { subject["clientip"] } == 1541804874
     end
   end
- 
+
    describe "anonymize string with SHA1 alogrithm" do
     # The logstash config goes here.
     # At this time, only filters are supported.
@@ -184,6 +186,6 @@ describe LogStash::Filters::Anonymize do
     end
   end
 
-  
+
 
 end

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 if ENV['COVERAGE']
   require 'simplecov'
   require 'coveralls'
@@ -35,6 +37,10 @@ else
   $logger.level = :error
 end
 
+RSpec.configure do |config|
+  config.filter_run_excluding :redis => true, :socket => true, :performance => true, :elasticsearch => true, :broken => true
+end
+
 module LogStash
   module RSpec
     def config(configstr)
@@ -44,7 +50,7 @@ module LogStash
     def type(default_type)
       let(:default_type) { default_type }
     end
-    
+
     def tags(*tags)
       let(:default_tags) { tags }
       puts "Setting default tags: #{@default_tags}"
@@ -93,7 +99,7 @@ module LogStash
       it "inputs" do
         pipeline = LogStash::Pipeline.new(config)
         queue = Queue.new
-        pipeline.instance_eval do 
+        pipeline.instance_eval do
           @output_func = lambda { |event| queue << event }
         end
         block.call(pipeline, queue)

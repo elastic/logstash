@@ -10,7 +10,7 @@ class LogStash::Agent < Clamp::Command
 
   option "-e", "CONFIG_STRING",
     I18n.t("logstash.agent.flag.config-string"),
-    :attribute_name => :config_string
+    :default => "", :attribute_name => :config_string
 
   option ["-w", "--filterworkers"], "COUNT",
     I18n.t("logstash.agent.flag.filterworkers"),
@@ -90,7 +90,10 @@ class LogStash::Agent < Clamp::Command
     end
 
     if @config_path
-      @config_string = load_config(@config_path)
+      # Append the config string.
+      # This allows users to provide both -f and -e flags. The combination
+      # is rare, but useful for debugging.
+      @config_string = config_string + load_config(@config_path)
     else
       # include a default stdin input if no inputs given
       if @config_string !~ /input *{/
@@ -271,8 +274,8 @@ class LogStash::Agent < Clamp::Command
       end
 
       # TODO(sissel): Verify the path looks like the correct form.
-      # aka, there must be file in path/logstash/{filters,inputs,outputs}/*.rb
-      plugin_glob = File.join(path, "logstash", "{inputs,filters,outputs}", "*.rb")
+      # aka, there must be file in path/logstash/{inputs,codecs,filters,outputs}/*.rb
+      plugin_glob = File.join(path, "logstash", "{inputs,codecs,filters,outputs}", "*.rb")
       if Dir.glob(plugin_glob).empty?
         @logger.warn(I18n.t("logstash.agent.configuration.no_plugins_found",
                     :path => path, :plugin_glob => plugin_glob))

@@ -2,8 +2,8 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-# statsd is a server for aggregating counters and other metrics to ship to
-# graphite.
+# statsd is a network daemon for aggregating statistics, such as counters and timers,
+# and shipping over UDP to backend services, such as Graphite or Datadog.
 #
 # The most basic coverage of this plugin is that the 'namespace', 'sender', and
 # 'metric' names are combined into the full metric path like so:
@@ -11,8 +11,8 @@ require "logstash/namespace"
 #     namespace.sender.metric
 #
 # The general idea is that you send statsd count or latency data and every few
-# seconds it will emit the aggregated values to graphite (aggregates like
-# average, max, stddev, etc)
+# seconds it will emit the aggregated values to the backend. Example aggregates are
+# average, max, stddev, etc.
 #
 # You can learn about statsd here:
 #
@@ -20,46 +20,53 @@ require "logstash/namespace"
 # * <https://github.com/etsy/statsd>
 #
 # A simple example usage of this is to count HTTP hits by response code; to learn
-# more about that, check out the 
-# [log metrics tutorial](../tutorials/metrics-from-logs)
+# more about that, check out the [log metrics tutorial](../tutorials/metrics-from-logs)
+#
+# The default final metric sent to statsd would look like this:
+#
+#     namespace.sender.metric
+#
+# With regards to this plugin, the default namespace is "logstash", the default sender
+# is the ${host} field, and the metric name depends on what is set as the metric name
+# in the increment, decrement, timing, count, set or gauge variable. 
+#
 class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   ## Regex stolen from statsd code
   RESERVED_CHARACTERS_REGEX = /[\:\|\@]/
   config_name "statsd"
   milestone 2
 
-  # The address of the Statsd server.
+  # The address of the statsd server.
   config :host, :validate => :string, :default => "localhost"
 
   # The port to connect to on your statsd server.
   config :port, :validate => :number, :default => 8125
 
-  # The statsd namespace to use for this metric
+  # The statsd namespace to use for this metric.
   config :namespace, :validate => :string, :default => "logstash"
 
-  # The name of the sender.
-  # Dots will be replaced with underscores
+  # The name of the sender. Dots will be replaced with underscores.
   config :sender, :validate => :string, :default => "%{host}"
 
-  # An increment metric. metric names as array.
+  # An increment metric. Metric names as array.
   config :increment, :validate => :array, :default => []
 
-  # A decrement metric. metric names as array.
+  # A decrement metric. Metric names as array.
   config :decrement, :validate => :array, :default => []
 
-  # A timing metric. metric_name => duration as hash
+  # A timing metric. `metric_name => duration` as hash
   config :timing, :validate => :hash, :default => {}
 
-  # A count metric. metric_name => count as hash
+  # A count metric. `metric_name => count` as hash
   config :count, :validate => :hash, :default => {}
 
-  # A set metric. metric_name => string to append as hash
+  # A set metric. `metric_name => "string"` to append as hash
   config :set, :validate => :hash, :default => {}
 
-  # A gauge metric. metric_name => gauge as hash
+  # A gauge metric. `metric_name => gauge` as hash.
   config :gauge, :validate => :hash, :default => {}
   
-  # The sample rate for the metric
+  # The sample rate for the metric.
   config :sample_rate, :validate => :number, :default => 1
 
   # Enable debugging.

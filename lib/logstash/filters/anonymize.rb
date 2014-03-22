@@ -49,12 +49,14 @@ class LogStash::Filters::Anonymize < LogStash::Filters::Base
 
   private
   def anonymize_ipv4_network(ip_string)
-    IPAddr.new(ip_string).mask(@key.to_i).to_s
-  end  
+    # in JRuby 1.7.11 outputs as US-ASCII
+    IPAddr.new(ip_string).mask(@key.to_i).to_s.force_encoding(Encoding::UTF_8)
+  end
 
   def anonymize_openssl(data)
     digest = algorithm()
-    OpenSSL::HMAC.hexdigest(digest, @key, data)
+    # in JRuby 1.7.11 outputs as ASCII-8BIT
+    OpenSSL::HMAC.hexdigest(digest, @key, data).force_encoding(Encoding::UTF_8)
   end
 
   def anonymize_murmur3(value)
@@ -67,7 +69,7 @@ class LogStash::Filters::Anonymize < LogStash::Filters::Base
   end
 
   def algorithm
- 
+
    case @algorithm
       #when 'SHA'
         #return OpenSSL::Digest::SHA.new
@@ -89,5 +91,5 @@ class LogStash::Filters::Anonymize < LogStash::Filters::Base
         @logger.error("Unknown algorithm")
     end
   end
-      
+
 end # class LogStash::Filters::Anonymize

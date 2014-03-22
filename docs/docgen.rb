@@ -27,6 +27,12 @@ class LogStashConfigDocGenerator
       /^ *flag[( ].*/ => lambda { |m| add_flag(m[0]) },
       /^ *(class|def|module) / => lambda { |m| clear_comments },
     }
+
+    if File.exists?("build/contrib_plugins")
+      @contrib_list = File.read("build/contrib_plugins").split("\n")
+    else
+      @contrib_list = []
+    end
   end
 
   def parse(string)
@@ -192,6 +198,8 @@ class LogStashConfigDocGenerator
 
     template_file = File.join(File.dirname(__FILE__), "plugin-doc.html.erb")
     template = ERB.new(File.new(template_file).read, nil, "-")
+
+    is_contrib_plugin = @contrib_list.include?(file)
 
     # descriptions are assumed to be markdown
     description = BlueCloth.new(@class_description).to_html
