@@ -90,7 +90,7 @@ case $os in
       --description "$DESCRIPTION" \
       -d "jre >= 1.6.0" \
       --vendor "Elasticsearch" \
-      --license "Apache 2.0" \
+      --license "ASL 2.0" \
       --rpm-use-file-permissions \
       --rpm-user root --rpm-group root \
       --before-install centos/before-install.sh \
