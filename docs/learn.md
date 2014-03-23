@@ -42,5 +42,5 @@ for such things, that works for me, too.)
 
 ## What's next?
 
-Try the [standalone logstash guide](tutorials/getting-started-simple) for a simple
+Try this [guide](tutorials/getting-started-with-logstash) for a simple
 real-world example getting started using logstash.
