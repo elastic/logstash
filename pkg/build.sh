@@ -89,7 +89,8 @@ case $os in
       --url "$URL" \
       --description "$DESCRIPTION" \
       -d "jre >= 1.6.0" \
-      --vendor "Elasticsearch" \
+      --category "Applications/System" \
+      --vendor "Elasticsearch BV" \
       --license "Apache 2.0" \
       --rpm-use-file-permissions \
       --rpm-user root --rpm-group root \
