@@ -156,9 +156,8 @@ class LogStash::Inputs::S3Fog < LogStash::Inputs::Base
     objects = list_new(since)
     objects.each do |obj|
       @logger.debug('S3 input processing', :bucket => @bucket, :key => obj)
-      lastmod = @s3files.body["Contents"].select { |k| k["LastModified"] == obj }.first
-      process_log(queue, obj)
-      sincedb_write(lastmod)
+      lastest = process_log(queue, obj)
+      sincedb_write(lastest)
     end
 
   end # def process_new
@@ -175,7 +174,7 @@ class LogStash::Inputs::S3Fog < LogStash::Inputs::Base
     objects = {}
     while !is_list_complete   # since AWS will only return up to 1000 results, keep going until hitting the true end of the file list.
       @s3files.body["Contents"].each do |log|
-        # puts "FILE MODIFICATION STATUS: #{log["Key"]} -- #{log["LastModified"]} -- vs #{since} -- #{log["LastModified"] > since} -- #{log["LastModified"].class}"
+#        puts "FILE MODIFICATION STATUS: #{log["Key"]} -- #{log["LastModified"]} -- vs #{since} -- #{log["LastModified"] > since} -- #{log["LastModified"].class}"
         if log["LastModified"] > since
           objects[log["Key"]] = log["LastModified"]
         end
@@ -190,7 +189,7 @@ class LogStash::Inputs::S3Fog < LogStash::Inputs::Base
 
     sorted_list = objects.keys.sort {|a,b| objects[a] <=> objects[b]}
     # sorted_list.each do |k|
-      # puts "Item: #{k}"
+    #  puts "New Item: #{k}"
     # end
     return sorted_list
 
@@ -200,6 +199,7 @@ class LogStash::Inputs::S3Fog < LogStash::Inputs::Base
   def process_log(queue, key)
 
     object = @s3fog.get_object(@bucket, key)
+    lastest =  Time.parse(object.headers['Last-Modified']).utc
     tmp = Dir.mktmpdir('logstash-')
     begin
       filename = File.join(tmp, File.basename(key))
@@ -217,11 +217,13 @@ class LogStash::Inputs::S3Fog < LogStash::Inputs::Base
         if @delete
           @s3fog.delete_object(@bucket, key)
         end
+      else
+        puts "Warning: #{key} was a blank file"
       end
 
     end
     FileUtils.remove_entry_secure(tmp, force=true)
-
+    lastest
   end # def process_log
 
   private
