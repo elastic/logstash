@@ -20,13 +20,16 @@ class LogStash::Outputs::RabbitMQ
 
       @connected.set(true)
 
-      @codec.on_event(&method(:publish_serialized))
     end
 
 
     def receive(event)
       return unless output?(event)
 
+      key = event.sprintf(@key) if @key
+      @codec.on_event do |payload|
+        publish_serialized(payload, key)
+      end
       begin
         @codec.encode(event)
       rescue JSON::GeneratorError => e
@@ -35,10 +38,10 @@ class LogStash::Outputs::RabbitMQ
       end
     end
 
-    def publish_serialized(message)
+    def publish_serialized(message, key = @key)
       begin
         if @connected.get
-          @x.publish(message, :routing_key => @key, :properties => {
+          @x.publish(message, :routing_key => key, :properties => {
             :persistent => @persistent
           })
         else
