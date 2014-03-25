@@ -80,11 +80,26 @@ do_start()
     exit 1
   fi
 
-  if pidofproc -p "$PID_FILE" >/dev/null; then
-    failure
-    exit 99
-  fi
+  #opensuse's pidofproc requires a program with full path
+  if [ -f /etc/rc.status ]; then
+    if [ -n "$JAVACMD" ]; then
+      if pidofproc -p "$PID_FILE" $JAVACMD >/dev/null; then
+        failure
+      exit 99
+    fi
+    else
+      if pidofproc -p "$PID_FILE" /usr/bin/java >/dev/null; then
+        failure
+      exit 99
+    fi
+    fi
 
+  else
+    if pidofproc -p "$PID_FILE" >/dev/null; then
+      failure
+      exit 99
+    fi
+  fi
   # Prepare environment
   HOME="${HOME:-$LS_HOME}"
   JAVA_OPTS="${LS_JAVA_OPTS}"
