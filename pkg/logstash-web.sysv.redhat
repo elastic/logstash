@@ -90,7 +90,7 @@ do_start()
   JAVA_PID=$(ps axo ppid,pid | awk -v "ppid=$PID" '$1==ppid {print $2}')
   PID=${JAVA_PID:-$PID}
   echo $PID > $PID_FILE
-  [ $PID = $JAVA_PID ] && success
+  [ "$PID" = "$JAVA_PID" ] && success
 }
 
 #
