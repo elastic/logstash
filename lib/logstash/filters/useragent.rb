@@ -86,7 +86,7 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
 
       # UserAgentParser outputs as US-ASCII.
 
-      target[@prefix + "name"] = ua_data.name.force_encoding(Encoding::UTF_8).force_encoding(Encoding::UTF_8)
+      target[@prefix + "name"] = ua_data.name.force_encoding(Encoding::UTF_8)
 
       #OSX, Andriod and maybe iOS parse correctly, ua-agent parsing for Windows does not provide this level of detail
       unless ua_data.os.nil?
