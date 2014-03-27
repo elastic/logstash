@@ -113,6 +113,23 @@ describe LogStash::Event do
     end
   end
 
+  context "#overwrite" do
+    it "should swap data with new content" do
+      new_event = LogStash::Event.new(
+        "type" => "new",
+        "message" => "foo bar",
+      )
+      subject.overwrite(new_event)
+
+      insist { subject["message"] } == "foo bar"
+      insist { subject["type"] } == "new"
+
+      ["tags", "source", "a", "c", "f", "j"].each do |field|
+        insist { subject[field] } == nil
+      end
+    end
+  end
+
   context "#append" do
     it "should append strings to an array" do
       subject.append(LogStash::Event.new("message" => "another thing"))
