@@ -154,7 +154,11 @@ class LogStash::Event
 
   public
   def overwrite(event)
-    @data = event.to_hash
+    # pickup new event @data and also pickup @accessors
+    # otherwise it will be pointing on previous data
+    @data = event.instance_variable_get(:@data)
+    @accessors = event.instance_variable_get(:@accessors)
+
     #convert timestamp if it is a String
     if @data[TIMESTAMP].is_a?(String)
       @data[TIMESTAMP] = LogStash::Time.parse_iso8601(@data[TIMESTAMP])
@@ -170,6 +174,9 @@ class LogStash::Event
   public
   def append(event)
     # non-destructively merge that event with ourselves.
+
+    # no need to reset @accessors here because merging will not disrupt any existing field paths
+    # and if new ones are created they will be picked up.
     LogStash::Util.hash_merge(@data, event.to_hash)
   end # append
 
@@ -188,7 +195,7 @@ class LogStash::Event
   # any format values, delimited by %{foo} where 'foo' is a field or
   # metadata member.
   #
-  # For example, if the event has type == "foo" and source == "bar"
+  # For example, if the event has type == "foo" and host == "bar"
   # then this string:
   #   "type is %{type} and source is %{host}"
   # will return
