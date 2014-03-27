@@ -53,8 +53,10 @@ class LogStash::Event
   def initialize(data={})
     @cancelled = false
 
+    # If we ever need to change the reference @data holds, always change the reference @accessors holds too
+    # These must BOTH match, or gets and sets will only affects data in the OLD reference
     @data = data
-    @accessors = LogStash::Util::Accessors.new(data)
+    @accessors = LogStash::Util::Accessors.new(@data)
 
     data[VERSION] = VERSION_ONE if !@data.include?(VERSION)
     if data.include?(TIMESTAMP)
@@ -154,7 +156,9 @@ class LogStash::Event
 
   public
   def overwrite(event)
+    # When changing the reference @data holds, always update the reference @accessors holds too [see initialise()]
     @data = event.to_hash
+    @accessors = LogStash::Util::Accessors.new(@data)
     #convert timestamp if it is a String
     if @data[TIMESTAMP].is_a?(String)
       @data[TIMESTAMP] = LogStash::Time.parse_iso8601(@data[TIMESTAMP])
