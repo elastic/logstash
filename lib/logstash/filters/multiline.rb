@@ -7,6 +7,7 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 require "set"
+require "cache"  #rubygem 'ruby-cache'
 
 # The multiline filter is for combining multiple events from a single source
 # into the same event.
@@ -31,7 +32,7 @@ require "set"
 # the field is part of a multi-line event
 #
 # The 'what' must be "previous" or "next" and indicates the relation
-# to the multi-line event.
+# to the multi-line event. "streamcache" is for reassembling ongoing streams when messages arrive out-of-order.
 #
 # The 'negate' can be "true" or "false" (defaults false). If true, a 
 # message not matching the pattern will constitute a match of the multiline
@@ -69,8 +70,14 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   config :pattern, :validate => :string, :required => true
 
   # If the pattern matched, does event belong to the next or previous event?
-  config :what, :validate => ["previous", "next"], :required => true
+  config :what, :validate => ["previous", "next", "streamcache"], :required => true
 
+  # Cache size, the maximum number of cached messages
+  config :cache_size, :validate => :number, :default => 50000
+  
+  # Cache TTL (seconds)
+  config :cache_ttl, :validate => :number, :default => 5
+  
   # Negate the regexp pattern ('if not matched')
   config :negate, :validate => :boolean, :default => false
   
@@ -118,6 +125,12 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     # This filter needs to keep state.
     @types = Hash.new { |h,k| h[k] = [] }
     @pending = Hash.new
+	
+	# Set the maximum number of cached objects and the expiration time to
+	# 100 and 60 (secs), respectively.
+	cache = Cache.new(nil, nil, @cache_size, @cache_ttl, &hook)
+	
+	
   end # def initialize
 
   public
@@ -183,7 +196,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
         # this line is not part of the previous event
         # if we have a pending event, it's done, send it.
         # put the current event into pending
-        if pending
+		if pending
           tmp = event.to_hash
           event.overwrite(pending)
           @pending[key] = LogStash::Event.new(tmp)
@@ -213,6 +226,21 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
           @pending.delete(key)
         end
       end # if/else match
+	when "streamcache"
+		#first lookup the stream_identity to see if the stream is already in cache.
+		key = event.sprintf(@stream_identity)
+		if cache.cached?(key)
+			#if it is, append new message to cached messages
+			event.tag "multiline"
+			cached = cache.fetch(key)
+			cached.append(event)
+			cache.store(key, cached)
+			event.cancel
+		else			
+			#if it's not, add this message to the cache
+			cache.store(key, event)
+			event.cancel
+		end
     else
       # TODO(sissel): Make this part of the 'register' method.
       @logger.warn("Unknown multiline 'what' value.", :what => @what)
@@ -225,6 +253,16 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     end
   end # def filter
 
+  # Hook is called when cached objects are invalidated.
+  # This will send reassembled messages back to the pipeline.
+  def hook
+	event["message"] = event["message"].join("\n") if event["message"].is_a?(Array)
+    event["@timestamp"] = event["@timestamp"].first if event["@timestamp"].is_a?(Array)
+    filter_matched(event) if match
+  end
+ 
+   
+  
   # Flush any pending messages. This is generally used for unit testing only.
   #
   # Note: flush is disabled now; it is preferable to use the multiline codec.
@@ -238,4 +276,16 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     @pending.clear
     return events
   end # def flush
+  
+  #Johnar Adding a flush just for streamcache
+  # this will periodically go through and wipe out expired cache members. I really should spin my own flusher thread to match the ttl...
+  def flush
+	cachehash = cache.to_hash
+	cachehash.each do |object|
+		object.expire
+	end
+  
+  end
+  
+ 
 end # class LogStash::Filters::Multiline
