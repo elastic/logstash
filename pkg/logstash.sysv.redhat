@@ -68,8 +68,7 @@ do_start()
   fi
 
   if pidofproc -p "$PID_FILE" >/dev/null; then
-    failure
-    exit 99
+    exit 0
   fi
 
   # Prepare environment
