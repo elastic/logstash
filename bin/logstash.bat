@@ -46,7 +46,7 @@ REM The path to the heap dump location, note directory must exists and have enou
 REM space for a full heap dump.
 REM JAVA_OPTS=%JAVA_OPTS% -XX:HeapDumpPath=$LS_HOME/logs/heapdump.hprof
 
-set RUBYLIB=%LS_HOME%\lib
+if defined LS_CONTRIB (set RUBYLIB=%LS_HOME%\lib;%LS_CONTRIB%\lib) ELSE (set RUBYLIB=%LS_HOME%\lib)
 set GEM_HOME=%LS_HOME%\vendor\bundle\jruby\1.9\
 set GEM_PATH=%GEM_HOME%
 

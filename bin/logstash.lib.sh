@@ -1,7 +1,12 @@
 basedir=$(cd `dirname $0`/..; pwd)
 
 setup_ruby() {
-  export RUBYLIB="$basedir/lib"
+  if [ -d "$LS_CONTRIB/lib" ] ; then
+    export RUBYLIB="$basedir/lib:$LS_CONTRIB/lib"
+  else
+    export RUBYLIB="$basedir/lib"
+  fi
+
   # Verify ruby works
   if ! ruby -e 'puts "HURRAY"' 2> /dev/null | grep -q "HURRAY" ; then
     echo "No ruby program found. Cannot start."
@@ -54,7 +59,11 @@ setup_java() {
 
   export JAVACMD
   export JAVA_OPTS
-  export RUBYLIB="$basedir/lib"
+  if [ -d "$LS_CONTRIB/lib" ] ; then
+    export RUBYLIB="$basedir/lib:$LS_CONTRIB/lib"
+  else
+    export RUBYLIB="$basedir/lib"
+  fi
   export GEM_HOME="$basedir/vendor/bundle/jruby/1.9"
   export GEM_PATH=
 }
