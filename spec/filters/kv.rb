@@ -102,7 +102,7 @@ describe LogStash::Filters::KV do
 
   end
 
-  describe "speed test", :if => ENV["SPEEDTEST"] do
+  describe "speed test", :performance => true do
     count = 10000 + rand(3000)
     config <<-CONFIG
       input {
@@ -122,8 +122,10 @@ describe LogStash::Filters::KV do
       }
     CONFIG
 
+    start = Time.now
     agent do
-      p :duration => @duration, :rate => count/@duration
+      duration = (Time.now - start)
+      puts "filters/kv rate: #{"%02.0f/sec" % (count / duration)}, elapsed: #{duration}s"
     end
   end
 

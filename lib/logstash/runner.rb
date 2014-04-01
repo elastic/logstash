@@ -53,6 +53,40 @@ I18n.load_path << File.expand_path(
   File.join(File.dirname(__FILE__), "../../locales/en.yml")
 )
 
+class LogStash::RSpecsRunner
+  def initialize(args)
+    @args = args.collect do |arg|
+      # if the arg ends in .rb or has a "/" in it, assume it's a path.
+      if arg =~ /\.rb$/ || arg =~ /\//
+        # check if it's a file, if not, try inside the jar if we are in it.
+        if !File.exists?(arg) && __FILE__ =~ /file:.*\.jar!\//
+          # Try inside the jar.
+          jar_root = __FILE__.gsub(/!.*/,"!")
+          newpath = File.join(jar_root, arg)
+
+          # Strip leading 'jar:' path (JRUBY_6970)
+          newpath.gsub!(/^jar:/, "")
+          if File.exists?(newpath)
+            # Add the 'spec' dir to the load path so specs can run
+            specpath = File.join(jar_root, "spec")
+            $LOAD_PATH << specpath unless $LOAD_PATH.include?(specpath)
+            next newpath
+          end
+        end
+      end
+      next arg
+    end # args.collect
+  end
+
+  def run
+    @result = RSpec::Core::Runner.run(@args)
+  end
+
+  def wait
+    return @result
+  end
+end
+
 class LogStash::Runner
   include LogStash::Program
 
@@ -122,48 +156,9 @@ class LogStash::Runner
       "rspec" => lambda do
         require "rspec/core/runner"
         require "rspec"
-        fixedargs = args.collect do |arg|
-          # if the arg ends in .rb or has a "/" in it, assume it's a path.
-          if arg =~ /\.rb$/ || arg =~ /\//
-            # check if it's a file, if not, try inside the jar if we are in it.
-            if !File.exists?(arg) && __FILE__ =~ /file:.*\.jar!\//
-              # Try inside the jar.
-              jar_root = __FILE__.gsub(/!.*/,"!")
-              newpath = File.join(jar_root, arg)
-
-              # Strip leading 'jar:' path (JRUBY_6970)
-              newpath.gsub!(/^jar:/, "")
-              if File.exists?(newpath)
-                # Add the 'spec' dir to the load path so specs can run
-                specpath = File.join(jar_root, "spec")
-                $LOAD_PATH << specpath unless $LOAD_PATH.include?(specpath)
-                next newpath
-              end
-            end
-          end
-          next arg
-        end # args.collect
-
-        # Hack up a runner
-        runner = Class.new do
-          def initialize(args)
-            @args = args
-          end
-          def run
-            @thread = Thread.new do
-              @result = RSpec::Core::Runner.run(@args)
-            end
-          end
-          def wait
-            @thread.join
-            return @result
-          end
-        end
-
         $LOAD_PATH << File.expand_path("#{File.dirname(__FILE__)}/../../spec")
         require "test_utils"
-        #p :args => fixedargs
-        rspec = runner.new(fixedargs)
+        rspec = LogStash::RSpecsRunner.new(args)
         rspec.run
         @runners << rspec
         return []

@@ -37,6 +37,18 @@ else
   $logger.level = :error
 end
 
+puts("Using Accessor#strict_set for specs")
+# mokey path LogStash::Event to use strict_set in tests
+# ugly, I know, but this avoids adding conditionals in performance critical section
+class LogStash::Event
+  def []=(str, value)
+    if str == TIMESTAMP && !value.is_a?(Time)
+      raise TypeError, "The field '@timestamp' must be a Time, not a #{value.class} (#{value})"
+    end
+    @accessors.strict_set(str, value)
+  end # def []=
+end
+
 RSpec.configure do |config|
   config.filter_run_excluding :redis => true, :socket => true, :performance => true, :elasticsearch => true, :broken => true
 end
