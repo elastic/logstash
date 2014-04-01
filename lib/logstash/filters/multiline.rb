@@ -8,6 +8,7 @@ require "logstash/filters/base"
 require "logstash/namespace"
 require "set"
 require "cache"  #rubygem 'ruby-cache'
+require "stud/interval" # gem stud
 
 # The multiline filter is for combining multiple events from a single source
 # into the same event.
@@ -126,11 +127,34 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     @types = Hash.new { |h,k| h[k] = [] }
     @pending = Hash.new
 	
-	# Set the maximum number of cached objects and the expiration time to
-	# 100 and 60 (secs), respectively.
-	cache = Cache.new(nil, nil, @cache_size, @cache_ttl, &hook)
+	# Hook is called when cached objects are invalidated.
+	# This will send reassembled messages back to the pipeline.
+	hook = Proc.new {|key, event| 
+		@logger.info("Calling hook for event.", :key => key, :event => event)
+		event["message"] = event["message"].join("\n") if event["message"].is_a?(Array)
+		event["@timestamp"] = event["@timestamp"].first if event["@timestamp"].is_a?(Array)
+		filter_matched(event)
+	}
 	
+	# Create cache, set the maximum number of cached objects and the expiration time 
+	@cache = Cache.new(nil, nil, @cache_size, @cache_ttl, &hook)
+	@logger.info("StreamCache created.")
 	
+	# this will periodically go through and wipe out expired cache members.
+	def cache_expire
+		#cachehash = @cache.to_hash
+		#cachehash.each do |object|
+		#	object.expire
+		#end
+		@logger.info("Expiring cache items...")
+		@cache.expire
+	end
+	
+	# Set up the periodic cache expiry thread. Depending on event arrival timing, expiry can take up to 2x TTL time... How to fix?  expire more often?  1/2 the TTL time? Every second?
+    @expire_thread = Thread.new { Stud.interval(@cache_ttl) { cache_expire } }
+	
+
+
   end # def initialize
 
   public
@@ -174,8 +198,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     key = event.sprintf(@stream_identity)
     pending = @pending[key]
 
-    @logger.debug("Multiline", :pattern => @pattern, :message => event["message"],
-                  :match => match, :negate => @negate)
+    @logger.debug("Multiline", :pattern => @pattern, :message => event["message"], :match => match, :negate => @negate)
 
     # Add negate option
     match = (match and !@negate) || (!match and @negate)
@@ -227,18 +250,23 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
         end
       end # if/else match
 	when "streamcache"
-		#first lookup the stream_identity to see if the stream is already in cache.
+		
 		key = event.sprintf(@stream_identity)
-		if cache.cached?(key)
-			#if it is, append new message to cached messages
+		cached = @cache[key]
+		#first lookup the stream_identity to see if the stream is already in cache.
+		if cached
+			#if it is, append new message and re-cache
 			event.tag "multiline"
-			cached = cache.fetch(key)
 			cached.append(event)
-			cache.store(key, cached)
+			@logger.info("Appending cache item 'what'.", :what => key)
+			@cache.store(key, cached)
 			event.cancel
+		
 		else			
 			#if it's not, add this message to the cache
-			cache.store(key, event)
+			cached = LogStash::Event.new(event.to_hash)
+			@logger.info("Adding cache item 'what'.", :what => key)
+			@cache.store(key, cached)
 			event.cancel
 		end
     else
@@ -249,17 +277,13 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     if !event.cancelled?
       event["message"] = event["message"].join("\n") if event["message"].is_a?(Array)
       event["@timestamp"] = event["@timestamp"].first if event["@timestamp"].is_a?(Array)
+	  @logger.info("Outputting event", :message => event["message"])
       filter_matched(event) if match
     end
+	 
   end # def filter
 
-  # Hook is called when cached objects are invalidated.
-  # This will send reassembled messages back to the pipeline.
-  def hook
-	event["message"] = event["message"].join("\n") if event["message"].is_a?(Array)
-    event["@timestamp"] = event["@timestamp"].first if event["@timestamp"].is_a?(Array)
-    filter_matched(event) if match
-  end
+
  
    
   
@@ -276,16 +300,6 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     @pending.clear
     return events
   end # def flush
-  
-  #Johnar Adding a flush just for streamcache
-  # this will periodically go through and wipe out expired cache members. I really should spin my own flusher thread to match the ttl...
-  def flush
-	cachehash = cache.to_hash
-	cachehash.each do |object|
-		object.expire
-	end
-  
-  end
   
  
 end # class LogStash::Filters::Multiline
