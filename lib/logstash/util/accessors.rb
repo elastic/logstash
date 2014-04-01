@@ -57,7 +57,7 @@ module LogStash::Util
 
     def store_path(accessor)
       key, path = PathCache.get(accessor)
-      target = path.inject(@store) {|r, k| r[k] ||= {}}
+      target = path.inject(@store) {|r, k| r[r.is_a?(Array) ? k.to_i : k] ||= {}}
       [target, key]
     end
 

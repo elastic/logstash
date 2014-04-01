@@ -146,6 +146,13 @@ describe LogStash::Util::Accessors, :if => true do
       insist { accessors.get("[hello][world][0]") } == data["hello"]["world"][0]
       insist { accessors.get("[hello][world][1]") } == data["hello"]["world"][1]
     end
+
+    it "should retrieve array item containing hash" do
+      data = { "hello" => { "world" => [ { "a" => 123 }, { "b" => 345 } ], "bar" => "baz" } }
+      accessors = LogStash::Util::Accessors.new(data)
+      insist { accessors.get("[hello][world][0][a]") } == data["hello"]["world"][0]["a"]
+      insist { accessors.get("[hello][world][1][b]") } == data["hello"]["world"][1]["b"]
+    end
   end
 
   context "using invalid encoding" do
