@@ -18,7 +18,7 @@ describe LogStash::Codecs::JSON do
       end
     end
 
-    it "should be fast", :if => ENV["SPEEDTEST"] do
+    it "should be fast", :performance => true do
       json = '{"message":"Hello world!","@timestamp":"2013-12-21T07:01:25.616Z","@version":"1","host":"Macintosh.local","sequence":1572456}'
       iterations = 500000
       count = 0
@@ -34,9 +34,9 @@ describe LogStash::Codecs::JSON do
       end
       duration = Time.now - start
       insist { count } == iterations
-      puts "codecs/json speed: #{iterations/duration}/sec"
+      puts "codecs/json rate: #{"%02.0f/sec" % (iterations / duration)}, elapsed: #{duration}s"
     end
-    
+
     context "processing plain text" do
       it "falls back to plain text" do
         decoded = false

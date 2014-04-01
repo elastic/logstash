@@ -129,12 +129,12 @@ class LogStash::Event
   end # def []
 
   public
+  # keep []= implementation in sync with spec/test_utils.rb monkey patch
+  # which redefines []= but using @accessors.strict_set
   def []=(str, value)
     if str == TIMESTAMP && !value.is_a?(Time)
       raise TypeError, "The field '@timestamp' must be a Time, not a #{value.class} (#{value})"
     end
-
-    # return LogStash::Util::FieldReference.set(str, value, @data)
     @accessors.set(str, value)
   end # def []=
 

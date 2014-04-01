@@ -43,7 +43,7 @@ default:
 	@echo "  tarball -- builds the tarball package"
 	@echo "  tarball-test -- runs the test suite against the tarball package"
 
-TESTS=$(wildcard spec/**/*.rb)
+TESTS=$(wildcard spec/**/*.rb spec/*.rb)
 
 # The 'version' is generated based on the logstash version, git revision, etc.
 .VERSION.mk: REVISION=$(shell git rev-parse --short HEAD | tr -d ' ')
