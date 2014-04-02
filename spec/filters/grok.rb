@@ -423,9 +423,9 @@ describe LogStash::Filters::Grok do
     end
   end
 
-  describe "performance test", :if => ENV["SPEEDTEST"] do
+  describe "performance test", :performance => true do
     event_count = 100000
-    min_rate = 4000
+    min_rate = 2000
 
     max_duration = event_count / min_rate
     input = "Nov 24 01:29:01 -0800"
@@ -447,9 +447,11 @@ describe LogStash::Filters::Grok do
     CONFIG
 
     2.times do
+      start = Time.now
       agent do
-        puts "grok parse rate: #{event_count / @duration}"
-        insist { @duration } < max_duration
+        duration = (Time.now - start)
+        puts "filters/grok parse rate: #{"%02.0f/sec" % (event_count / duration)}, elapsed: #{duration}s"
+        insist { duration } < max_duration
       end
     end
   end

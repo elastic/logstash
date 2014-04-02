@@ -74,7 +74,7 @@ Gem::Specification.new do |gem|
   end
 
   if RUBY_PLATFORM != 'java'
-    gem.add_runtime_dependency "bunny",       ["~> 1.1.0"]  #(MIT license)
+    gem.add_runtime_dependency "bunny",       ["~> 1.1.8"]  #(MIT license)
   else
     gem.add_runtime_dependency "march_hare", ["~> 2.1.0"] #(MIT license)
   end
@@ -102,6 +102,7 @@ Gem::Specification.new do |gem|
   
   #Development Deps
   gem.add_development_dependency "coveralls"
+  gem.add_development_dependency "bluecloth"
 
   #Jenkins Deps
   gem.add_runtime_dependency "ci_reporter"
