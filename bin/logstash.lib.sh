@@ -19,9 +19,13 @@ setup_java() {
     if [ -n "$JAVA_HOME" ] ; then
       JAVACMD="$JAVA_HOME/bin/java"
     else
-      JAVACMD="$(which java 2> /dev/null)"
+      JAVACMD="java"
     fi
-  elif [ "$(basename $JAVACMD)" = "drip" ] ; then
+  else
+    JAVACMD=$(which $JAVACMD 2>/dev/null)
+  fi
+
+  if [ "$(basename $JAVACMD)" = "drip" ] ; then
     export DRIP_INIT_CLASS="org.jruby.main.DripMain"
     export DRIP_INIT=
   fi
