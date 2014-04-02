@@ -233,8 +233,10 @@ class LogStash::Runner
     return args
   end # def run
 
-  def self.valid_caller?
-    caller.none?{|entry| entry =~ /rspec/}
+  # @return true if this file is the main file being run and not via rspec
+  def self.autorun?
+    # caller is the current execution stack
+    $0 == __FILE__ && caller.none?{|entry| entry =~ /rspec/}
   end
 
   private
@@ -244,6 +246,4 @@ class LogStash::Runner
   end
 end # class LogStash::Runner
 
-if $0 == __FILE__ && LogStash::Runner.valid_caller?
-  LogStash::Runner.new.main(ARGV)
-end
+LogStash::Runner.new.main(ARGV) if LogStash::Runner.autorun?
