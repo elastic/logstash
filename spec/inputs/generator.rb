@@ -23,7 +23,7 @@ describe "inputs/generator", :performance => true do
         insist { event["sequence"] } == i
       end
       duration = Time.now - start
-      puts "Generator Rate: #{"%02.0f/sec" % (event_count / duration)}, Elapsed: #{duration}s"
+      puts "inputs/generator rate: #{"%02.0f/sec" % (event_count / duration)}, elapsed: #{duration}s"
       pipeline.shutdown
     end # input
   end

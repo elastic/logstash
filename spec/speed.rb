@@ -1,6 +1,6 @@
 require "test_utils"
 
-describe "speed tests" do
+describe "speed tests", :performance => true do
   extend LogStash::RSpec
   count = 1000000
 
@@ -14,7 +14,9 @@ describe "speed tests" do
     output { null { } }
   CONFIG
 
+  start = Time.now
   agent do
-    puts "Rate: #{count / @duration}"
+    duration = (Time.now - start)
+    puts "speed rate: #{"%02.0f/sec" % (count / duration)}, elapsed: #{duration}s"
   end
 end
