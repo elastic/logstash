@@ -90,6 +90,10 @@ end
 class LogStash::Runner
   include LogStash::Program
 
+  def initialize
+    @runners = []
+  end
+
   def main(args)
     require "logstash/util"
     require "stud/trap"
@@ -108,7 +112,6 @@ class LogStash::Runner
 
     args = [nil] if args.empty?
 
-    @runners = []
     while args != nil && !args.empty?
       args = run(args)
     end
@@ -182,15 +185,16 @@ class LogStash::Runner
         agent = LogStash::Agent.new($0)
         begin
           agent.parse(args)
-          @runners << Stud::Task.new { agent.execute }
         rescue Clamp::HelpWanted => e
-          puts e.command.help
+          show_help(e.command)
+          return []
         rescue Clamp::UsageError => e
           # If 'too many arguments' then give the arguments to
           # the next command. Otherwise it's a real error.
           raise if e.message != "too many arguments"
           remaining = agent.remaining_arguments
         end
+        @runners << Stud::Task.new { agent.execute }
 
         return remaining
       end
@@ -224,8 +228,17 @@ class LogStash::Runner
     return args
   end # def run
 
+  # @return true if this file is the main file being run and not via rspec
+  def self.autorun?
+    # caller is the current execution stack
+    $0 == __FILE__ && caller.none?{|entry| entry =~ /rspec/}
+  end
+
+  private
+
+  def show_help(command)
+    puts command.help
+  end
 end # class LogStash::Runner
 
-if $0 == __FILE__
-  LogStash::Runner.new.main(ARGV)
-end
+LogStash::Runner.new.main(ARGV) if LogStash::Runner.autorun?
