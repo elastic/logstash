@@ -130,23 +130,17 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 	# Hook is called when cached objects are invalidated.
 	# This will send reassembled messages back to the pipeline.
 	hook = Proc.new {|key, event| 
-		@logger.info("Calling hook for event.", :key => key, :event => event)
-		event["message"] = event["message"].join("\n") if event["message"].is_a?(Array)
-		event["@timestamp"] = event["@timestamp"].first if event["@timestamp"].is_a?(Array)
+		@logger.info("Calling hook for event output.", :key => key, :event => event)
 		filter_matched(event)
 	}
 	
 	# Create cache, set the maximum number of cached objects and the expiration time 
 	@cache = Cache.new(nil, nil, @cache_size, @cache_ttl, &hook)
-	@logger.info("StreamCache created.")
+	@logger.debug("StreamCache created.")
 	
 	# this will periodically go through and wipe out expired cache members.
 	def cache_expire
-		#cachehash = @cache.to_hash
-		#cachehash.each do |object|
-		#	object.expire
-		#end
-		@logger.info("Expiring cache items...")
+		@logger.debug("Expiring cache items...")
 		@cache.expire
 	end
 	
@@ -258,14 +252,17 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 			#if it is, append new message and re-cache
 			event.tag "multiline"
 			cached.append(event)
-			@logger.info("Appending cache item 'what'.", :what => key)
+			#flatten the event before storing
+			cached["message"] = cached["message"].join("\n") if cached["message"].is_a?(Array)
+			cached["@timestamp"] = cached["@timestamp"].first if cached["@timestamp"].is_a?(Array)
+			@logger.debug("Appending cache item 'what'.", :what => key, :event => cached)
 			@cache.store(key, cached)
 			event.cancel
 		
 		else			
 			#if it's not, add this message to the cache
 			cached = LogStash::Event.new(event.to_hash)
-			@logger.info("Adding cache item 'what'.", :what => key)
+			@logger.debug("Adding cache item 'what'.", :what => key)
 			@cache.store(key, cached)
 			event.cancel
 		end
