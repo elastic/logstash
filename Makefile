@@ -256,7 +256,6 @@ build/docs/tutorials/getting-started-with-logstash.md: build/docs/tutorials/gett
 build/docs/tutorials/getting-started-with-logstash.xml: docs/tutorials/getting-started-with-logstash.asciidoc | build/docs/tutorials
 	$(QUIET)asciidoc -b docbook -o $@ $<
 
-# bluecloth gem doesn't work on jruby. Use ruby.
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/inputs
 	$(QUIET)ruby docs/docgen.rb -o build/docs $<
 	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
