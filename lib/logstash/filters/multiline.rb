@@ -1,14 +1,23 @@
 # encoding: utf-8
+# multiline filter
+#
+# This filter will collapse multiline messages into a single event.
+# 
+
 require "logstash/filters/base"
 require "logstash/namespace"
 require "set"
+require "cache"  #rubygem 'ruby-cache'
+require "stud/interval" # gem stud
+
+# The multiline filter is for combining multiple events from a single source
+# into the same event.
 #
-# This filter will collapse multiline messages from a single source into one Logstash event.
-# 
 # The original goal of this filter was to allow joining of multi-line messages
 # from files into a single event. For example - joining java exception and
 # stacktrace messages into a single event.
 #
+# TODO(sissel): Document any issues?
 # The config looks like this:
 #
 #     filter {
@@ -20,18 +29,18 @@ require "set"
 #       }
 #     }
 # 
-# The `pattern` should be a regexp which matches what you believe to be an indicator
-# that the field is part of an event consisting of multiple lines of log data.
+# The 'regexp' should match what you believe to be an indicator that
+# the field is part of a multi-line event
 #
-# The `what` must be "previous" or "next" and indicates the relation
-# to the multi-line event.
+# The 'what' must be "previous" or "next" and indicates the relation
+# to the multi-line event. "streamcache" is for reassembling ongoing streams when messages arrive out-of-order.
 #
-# The `negate` can be "true" or "false" (defaults to false). If "true", a 
+# The 'negate' can be "true" or "false" (defaults false). If true, a 
 # message not matching the pattern will constitute a match of the multiline
-# filter and the `what` will be applied. (vice-versa is also true)
+# filter and the what will be applied. (vice-versa is also true)
 #
-# For example, Java stack traces are multiline and usually have the message
-# starting at the far-left, with each subsequent line indented. Do this:
+# For example, java stack traces are multiline and usually have the message
+# starting at the far-left, then each subsequent line indented. Do this:
 # 
 #     filter {
 #       multiline {
@@ -40,7 +49,7 @@ require "set"
 #         what => "previous"
 #       }
 #     }
-#
+#     
 # This says that any line starting with whitespace belongs to the previous line.
 #
 # Another example is C line continuations (backslash). Here's how to do that:
@@ -53,25 +62,28 @@ require "set"
 #       }
 #     }
 #     
-# This says that any line ending with a backslash should be combined with the
-# following line.
-#
 class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   config_name "multiline"
   milestone 3
 
-  # The regular expression to match.
+  # The regular expression to match
   config :pattern, :validate => :string, :required => true
 
   # If the pattern matched, does event belong to the next or previous event?
-  config :what, :validate => ["previous", "next"], :required => true
+  config :what, :validate => ["previous", "next", "streamcache"], :required => true
 
+  # Cache size, the maximum number of cached messages
+  config :cache_size, :validate => :number, :default => 50000
+  
+  # Cache TTL (seconds)
+  config :cache_ttl, :validate => :number, :default => 5
+  
   # Negate the regexp pattern ('if not matched')
   config :negate, :validate => :boolean, :default => false
   
   # The stream identity is how the multiline filter determines which stream an
-  # event belongs to. This is generally used for differentiating, say, events
+  # event belongs. This is generally used for differentiating, say, events
   # coming from multiple files in the same file input, or multiple connections
   # coming from a tcp input.
   #
@@ -84,7 +96,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   # case, you can use "%{@source_host}.%{@type}" instead.
   config :stream_identity , :validate => :string, :default => "%{host}.%{path}.%{type}"
   
-  # Logstash ships by default with a bunch of patterns, so you don't
+  # logstash ships by default with a bunch of patterns, so you don't
   # necessarily need to define this yourself unless you are adding additional
   # patterns.
   #
@@ -114,6 +126,29 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     # This filter needs to keep state.
     @types = Hash.new { |h,k| h[k] = [] }
     @pending = Hash.new
+	
+	# Hook is called when cached objects are invalidated.
+	# This will send reassembled messages back to the pipeline.
+	hook = Proc.new {|key, event| 
+		@logger.info("Calling hook for event output.", :key => key, :event => event)
+		filter_matched(event)
+	}
+	
+	# Create cache, set the maximum number of cached objects and the expiration time 
+	@cache = Cache.new(nil, nil, @cache_size, @cache_ttl, &hook)
+	@logger.debug("StreamCache created.")
+	
+	# this will periodically go through and wipe out expired cache members.
+	def cache_expire
+		@logger.debug("Expiring cache items...")
+		@cache.expire
+	end
+	
+	# Set up the periodic cache expiry thread. Depending on event arrival timing, expiry can take up to 2x TTL time... How to fix?  expire more often?  1/2 the TTL time? Every second?
+    @expire_thread = Thread.new { Stud.interval(@cache_ttl) { cache_expire } }
+	
+
+
   end # def initialize
 
   public
@@ -157,8 +192,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     key = event.sprintf(@stream_identity)
     pending = @pending[key]
 
-    @logger.debug("Multiline", :pattern => @pattern, :message => event["message"],
-                  :match => match, :negate => @negate)
+    @logger.debug("Multiline", :pattern => @pattern, :message => event["message"], :match => match, :negate => @negate)
 
     # Add negate option
     match = (match and !@negate) || (!match and @negate)
@@ -179,7 +213,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
         # this line is not part of the previous event
         # if we have a pending event, it's done, send it.
         # put the current event into pending
-        if pending
+		if pending
           tmp = event.to_hash
           event.overwrite(pending)
           @pending[key] = LogStash::Event.new(tmp)
@@ -209,6 +243,29 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
           @pending.delete(key)
         end
       end # if/else match
+	when "streamcache"
+		
+		key = event.sprintf(@stream_identity)
+		cached = @cache[key]
+		#first lookup the stream_identity to see if the stream is already in cache.
+		if cached
+			#if it is, append new message and re-cache
+			event.tag "multiline"
+			cached.append(event)
+			#flatten the event before storing
+			cached["message"] = cached["message"].join("\n") if cached["message"].is_a?(Array)
+			cached["@timestamp"] = cached["@timestamp"].first if cached["@timestamp"].is_a?(Array)
+			@logger.debug("Appending cache item 'what'.", :what => key, :event => cached)
+			@cache.store(key, cached)
+			event.cancel
+		
+		else			
+			#if it's not, add this message to the cache
+			cached = LogStash::Event.new(event.to_hash)
+			@logger.debug("Adding cache item 'what'.", :what => key)
+			@cache.store(key, cached)
+			event.cancel
+		end
     else
       # TODO(sissel): Make this part of the 'register' method.
       @logger.warn("Unknown multiline 'what' value.", :what => @what)
@@ -217,10 +274,16 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     if !event.cancelled?
       event["message"] = event["message"].join("\n") if event["message"].is_a?(Array)
       event["@timestamp"] = event["@timestamp"].first if event["@timestamp"].is_a?(Array)
+	  @logger.info("Outputting event", :message => event["message"])
       filter_matched(event) if match
     end
+	 
   end # def filter
 
+
+ 
+   
+  
   # Flush any pending messages. This is generally used for unit testing only.
   #
   # Note: flush is disabled now; it is preferable to use the multiline codec.
@@ -234,4 +297,6 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     @pending.clear
     return events
   end # def flush
+  
+ 
 end # class LogStash::Filters::Multiline
