@@ -86,4 +86,41 @@ describe LogStash::Filters::Json do
     end
   end
 
+  describe "parse json array" do
+    config <<-CONFIG
+      filter {
+        json {
+          # Parse message as JSON
+          source => "message"
+          target => "result"
+        }
+      }
+    CONFIG
+
+    sample '["hello","world","list", [ 1, 2, 3 ], "hash", { "k": "v" }]' do
+      insist { subject["result"] } == ["hello","world","list", [ 1, 2, 3 ], "hash", { "k" => "v" }]
+    end
+
+    #Trying to overwrite an existing hash with an array, result in parsefailure
+    sample "result" => {"existing"=>"hash"}, "message" => '["hello","world","list", [ 1, 2, 3 ], "hash", { "k": "v" }]' do
+      insist { subject["tags"] }.include?("_jsonparsefailure")
+      insist { subject["result"] } == {"existing"=>"hash"}
+    end
+  end
+
+  describe "Avoid storing an array event in the event root" do
+    config <<-CONFIG
+      filter {
+        json {
+          # Parse message as JSON
+          source => "message"
+        }
+      }
+    CONFIG
+
+    sample '["hello","world","list", [ 1, 2, 3 ], "hash", { "k": "v" }]' do
+      insist { subject["tags"] }.include?("_jsonparsefailure")
+    end
+  end
+
 end
