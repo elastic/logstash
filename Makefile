@@ -8,7 +8,7 @@ ELASTICSEARCH_VERSION=1.0.1
 WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
 JRUBY_URL=http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-complete-$(JRUBY_VERSION).jar
-JRUBY_CMD=java -jar $(JRUBY)
+JRUBY_CMD=bin/logstash env java -jar $(JRUBY)
 
 ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
@@ -138,7 +138,7 @@ vendor/jar: | vendor
 vendor-jruby: $(JRUBY)
 
 $(JRUBY): | vendor/jar
-	$(QUIET)echo " ==> Downloading jruby $(JRUBY_VERSION)"
+	$(QUIET)echo "=> Downloading jruby $(JRUBY_VERSION)"
 	$(QUIET)$(DOWNLOAD_COMMAND) $@ $(JRUBY_URL)
 
 vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | wget-or-curl vendor/jar
@@ -218,9 +218,9 @@ vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
 	$(QUIET)$(DOWNLOAD_COMMAND) $@ https://raw.github.com/tobie/ua-parser/master/regexes.yaml
 
 .PHONY: test
-test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd
-	GEM_HOME= GEM_PATH= bin/logstash deps
-	GEM_HOME= GEM_PATH= bin/logstash rspec --order rand --fail-fast $(TESTS)
+test: QUIET_OUTPUT=
+test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd vendor-gems
+	bin/logstash rspec --order rand --fail-fast $(TESTS)
 
 
 .PHONY: docs
@@ -257,19 +257,19 @@ build/docs/tutorials/getting-started-with-logstash.xml: docs/tutorials/getting-s
 	$(QUIET)asciidoc -b docbook -o $@ $<
 
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/inputs
-	$(QUIET)ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
 	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/filters/%.html: lib/logstash/filters/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/filters
-	$(QUIET)ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
 	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/outputs/%.html: lib/logstash/outputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/outputs
-	$(QUIET)ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
 	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/codecs/%.html: lib/logstash/codecs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/codecs
-	$(QUIET)ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
 	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
 
 build/docs/%: docs/% lib/logstash/version.rb Makefile
@@ -287,7 +287,7 @@ build/docs/%: docs/% lib/logstash/version.rb Makefile
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index.html.erb Makefile
 	@echo "Building documentation index.html"
-	$(QUIET)ruby $< build/docs > $@
+	$(QUIET)$(JRUBY_CMD) $< build/docs > $@
 	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 
@@ -328,7 +328,7 @@ JIRA_VERSION_ID=10820
 releaseNote:
 	-$(QUIET)rm releaseNote.html
 	$(QUIET)curl -si "https://logstash.jira.com/secure/ReleaseNote.jspa?version=$(JIRA_VERSION_ID)&projectId=10020" | sed -n '/<textarea.*>/,/<\/textarea>/p' | grep textarea -v >> releaseNote.html
-	$(QUIET)ruby pull_release_note.rb
+	$(QUIET)$(JRUBY_CMD) pull_release_note.rb
 
 package: build/logstash-$(VERSION).tar.gz
 	(cd pkg; \
