@@ -220,8 +220,12 @@ vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
 .PHONY: test
 test: QUIET_OUTPUT=
 test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd vendor-gems
-	bin/logstash rspec --order rand --fail-fast $(TESTS)
+	$(SPEC_ENV) bin/logstash rspec $(SPEC_OPTS) --order rand --fail-fast $(TESTS)
 
+.PHONY: reporting-test
+reporting-test: SPEC_ENV=JRUBY_OPTS=--debug COVERAGE=TRUE
+reporting-test: SPEC_OPTS=--format CI::Reporter::RSpec
+reporting-test: | test
 
 .PHONY: docs
 docs: docgen doccopy docindex
