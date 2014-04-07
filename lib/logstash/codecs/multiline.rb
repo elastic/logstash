@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/codecs/base"
+require "logstash/util/charset"
 
 # The multiline codec will collapse multiline messages and merge them into a
 # single event.
@@ -150,16 +151,13 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
     @buffer = []
     @handler = method("do_#{@what}".to_sym)
 
-    @charset_encoding = Encoding.find(@charset)
+    @converter = LogStash::Util::Charset.new(@charset)
+    @converter.logger = @logger
   end # def register
 
   public
   def decode(text, &block)
-    text.force_encoding(@charset_encoding)
-    if @charset_encoding != Encoding::UTF_8
-      # Convert to UTF-8 if not in that character set.
-      text = text.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace)
-    end
+    text = @converter.convert(text)
 
     match = @grok.match(text)
     @logger.debug("Multiline", :pattern => @pattern, :text => text,

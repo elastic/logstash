@@ -11,6 +11,76 @@ describe LogStash::Codecs::Plain do
         insist { event.is_a? LogStash::Event }
       end
     end
+
+    context "using default UTF-8 charset" do
+
+      it "should decode valid UTF-8 input" do
+        ["foobar", "κόσμε"].each do |data|
+          insist { data.encoding.name } == "UTF-8"
+          insist { data.valid_encoding? } == true
+          subject.decode(data) do |event|
+            insist { event["message"] } == data
+            insist { event["message"].encoding.name } == "UTF-8"
+          end
+        end
+      end
+
+      it "should escape invalid sequences" do
+        ["foo \xED\xB9\x81\xC3", "bar \xAD"].each do |data|
+          insist { data.encoding.name } == "UTF-8"
+          insist { data.valid_encoding? } == false
+          subject.decode(data) do |event|
+            insist { event["message"] } == data.inspect[1..-2]
+            insist { event["message"].encoding.name } == "UTF-8"
+          end
+        end
+      end
+    end
+
+
+    context "with valid non UTF-8 source encoding" do
+
+      subject{LogStash::Codecs::Plain.new("charset" => "ISO-8859-1")}
+
+      it "should encode to UTF-8" do
+        samples = [
+          ["foobar", "foobar"],
+          ["\xE0 Montr\xE9al", "à Montréal"],
+        ]
+        samples.map{|(a, b)| [a.force_encoding("ISO-8859-1"), b]}.each do |(a, b)|
+          insist { a.encoding.name } == "ISO-8859-1"
+          insist { b.encoding.name } == "UTF-8"
+          insist { a.valid_encoding? } == true
+
+          subject.decode(a) do |event|
+            insist { event["message"] } == b
+            insist { event["message"].encoding.name } == "UTF-8"
+          end
+        end
+      end
+    end
+
+    context "with invalid non UTF-8 source encoding" do
+
+      subject{LogStash::Codecs::Plain.new("charset" => "ASCII-8BIT")}
+
+      it "should encode to UTF-8" do
+        samples = [
+          ["\xE0 Montr\xE9al", "� Montr�al"],
+          ["\xCE\xBA\xCF\x8C\xCF\x83\xCE\xBC\xCE\xB5", "����������"],
+        ]
+        samples.map{|(a, b)| [a.force_encoding("ASCII-8BIT"), b]}.each do |(a, b)|
+          insist { a.encoding.name } == "ASCII-8BIT"
+          insist { b.encoding.name } == "UTF-8"
+          insist { a.valid_encoding? } == true
+
+          subject.decode(a) do |event|
+            insist { event["message"] } == b
+            insist { event["message"].encoding.name } == "UTF-8"
+          end
+        end
+      end
+    end
   end
 
   context "#encode" do
@@ -32,6 +102,5 @@ describe LogStash::Codecs::Plain do
       end
       codec.encode(event)
     end
-
   end
 end
