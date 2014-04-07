@@ -17,7 +17,20 @@
 # Description: Starts Logstash as a daemon.
 ### END INIT INFO
 
-. /etc/rc.d/init.d/functions
+#
+# init.d / servicectl compatibility (openSUSE)
+#
+if [ -f /etc/rc.status ]; then
+    . /etc/rc.status
+    rc_reset
+fi
+
+#
+# Source function library.
+#
+if [ -f /etc/rc.d/init.d/functions ]; then
+    . /etc/rc.d/init.d/functions
+fi
 
 NAME=logstash
 DESC="Logstash Daemon"
@@ -67,11 +80,26 @@ do_start()
     exit 1
   fi
 
-  if pidofproc -p "$PID_FILE" >/dev/null; then
-    failure
-    exit 99
-  fi
+  #opensuse's pidofproc requires a program with full path
+  if [ -f /etc/rc.status ]; then
+    if [ -n "$JAVACMD" ]; then
+      if pidofproc -p "$PID_FILE" $JAVACMD >/dev/null; then
+        failure
+      exit 99
+    fi
+    else
+      if pidofproc -p "$PID_FILE" /usr/bin/java >/dev/null; then
+        failure
+      exit 99
+    fi
+    fi
 
+  else
+    if pidofproc -p "$PID_FILE" >/dev/null; then
+      failure
+      exit 99
+    fi
+  fi
   # Prepare environment
   HOME="${HOME:-$LS_HOME}"
   JAVA_OPTS="${LS_JAVA_OPTS}"
@@ -80,16 +108,27 @@ do_start()
   export PATH HOME JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
   test -n "${JAVACMD}" && export JAVACMD
 
-  nice -n ${LS_NICE} runuser -s /bin/sh -c "exec $DAEMON $DAEMON_OPTS" ${LS_USER} > /dev/null 1>&1 < /dev/null &
+  #if we are on openSUSE, use startproc instead of runuser
+  if [ -f /etc/rc.status ]; then
+    startproc -n $LS_NICE -u $LS_USER -l LS_LOG_FILE -p $PID_FILE $DAEMON $DAEMON_OPTS
+    rc_status -v
+    usleep 500000
+    PID=$(ps -efwwww | grep $LS_CONF_DIR | awk '/[j]ava/{print $2}')
+    echo $PID > $PID_FILE
+    rc_status -v
+  else
+    nice -n ${LS_NICE} runuser -s /bin/sh -c "exec $DAEMON $DAEMON_OPTS" ${LS_USER} > /dev/null 1>&1 < /dev/null &
+    RETVAL=$?
+	local PID=$!
+	# runuser forks rather than execing our process.
+	usleep 500000
+	JAVA_PID=$(ps axo ppid,pid | awk -v "ppid=$PID" '$1==ppid {print $2}')
+	PID=${JAVA_PID:-$PID}
+	echo $PID > $PID_FILE
+	[ $PID = $JAVA_PID ] && success
+  fi
 
-  RETVAL=$?
-  local PID=$!
-  # runuser forks rather than execing our process.
-  usleep 500000
-  JAVA_PID=$(ps axo ppid,pid | awk -v "ppid=$PID" '$1==ppid {print $2}')
-  PID=${JAVA_PID:-$PID}
-  echo $PID > $PID_FILE
-  [ $PID = $JAVA_PID ] && success
+
 }
 
 #
@@ -97,10 +136,22 @@ do_start()
 #
 do_stop()
 {
+  #if we are on openSUSE, use use the $JAVACMD or java not $DAEMON
+  if [ -f /etc/rc.status ]; then
+    if [ -n "$JAVACMD" ]; then
+       killproc -p $PID_FILE $JAVACMD
+    else
+       killproc -p $PID_FILE java
+    fi
+    RETVAL=$?
+    echo
+    [ $RETVAL = 0 ] && rm -f ${PID_FILE}
+  else
     killproc -p $PID_FILE $DAEMON
     RETVAL=$?
     echo
     [ $RETVAL = 0 ] && rm -f ${PID_FILE}
+  fi
 }
 
 case "$1" in
@@ -121,7 +172,16 @@ case "$1" in
     ;;
   status)
     echo -n "$DESC"
-    status -p $PID_FILE
+    if [ -f /etc/rc.status ]; then
+      if [ -n "$JAVACMD" ]; then
+        checkproc -p $PID_FILE $JAVACMD
+      else
+        checkproc -p $PID_FILE java
+      fi
+      rc_status -v
+    else
+      status -p $PID_FILE
+    fi
     exit $?
     ;;
   *)
@@ -132,3 +192,4 @@ esac
 
 echo
 exit 0
+
