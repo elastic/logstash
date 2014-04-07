@@ -50,6 +50,7 @@ case $os@$release in
     mkdir -p $destdir/opt/logstash/tmp
     mkdir -p $destdir/var/lib/logstash
     mkdir -p $destdir/var/run/logstash
+    mkdir -p $destdir/var/run/logstash-web
     mkdir -p $destdir/var/log/logstash
     chmod 0755 $destdir/opt/logstash/bin/logstash
     install -m644 logrotate.conf $destdir/etc/logrotate.d/logstash
