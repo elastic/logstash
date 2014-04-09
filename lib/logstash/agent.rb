@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "clamp" # gem 'clamp'
+require "logstash/environment"
 require "logstash/errors"
 require "i18n"
 
@@ -16,7 +17,7 @@ class LogStash::Agent < Clamp::Command
     I18n.t("logstash.agent.flag.filterworkers"),
     :attribute_name => :filter_workers, :default => 1, &:to_i
 
-  option "--watchdog-timeout", "SECONDS", 
+  option "--watchdog-timeout", "SECONDS",
     I18n.t("logstash.agent.flag.watchdog-timeout"),
     :default => 10, &:to_f
 
@@ -25,7 +26,7 @@ class LogStash::Agent < Clamp::Command
     :attribute_name => :log_file
 
   # Old support for the '-v' flag'
-  option "-v", :flag, 
+  option "-v", :flag,
     I18n.t("logstash.agent.flag.verbosity"),
     :attribute_name => :verbosity, :multivalued => true
 
@@ -164,7 +165,7 @@ class LogStash::Agent < Clamp::Command
       end
 
       if [:debug].include?(verbosity?) || debug?
-        show_gems 
+        show_gems
       end
     end
   end # def show_version
@@ -179,14 +180,7 @@ class LogStash::Agent < Clamp::Command
   end # def show_version_ruby
 
   def show_version_elasticsearch
-    # Not running in the,jar? assume elasticsearch jars are
-    # in ../../vendor/jar/...
-    if __FILE__ !~ /^(?:jar:)?file:/
-      jarpath = File.join(File.dirname(__FILE__), "../../vendor/jar/elasticsearch*/lib/*.jar")
-      Dir.glob(jarpath).each do |jar|
-        require jar
-      end
-    end
+    LogStash::Environment.load_elasticsearch_jars!
 
     $stdout.write("Elasticsearch: ");
     org.elasticsearch.Version::main([])
