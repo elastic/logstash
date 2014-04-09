@@ -22,6 +22,11 @@ class LogStash::Codecs::ElasticSearch < LogStash::Codecs::Base
   # elasticsearch with the same ID.
   config :document_id, :validate => :string, :default => nil
 
+  # Should the bulk API call include the index name? If your Elasticsearch
+  # cluster has rest.action.multi.allow_explicit_index set to false and
+  # you're indexing over HTTP(S) this should be set to false too
+  config :explicit_index, :validate => :boolean, :default => true
+
   public
   def initialize(params={})
     super(params)
@@ -59,7 +64,10 @@ class LogStash::Codecs::ElasticSearch < LogStash::Codecs::Base
       return
     end
 
-    header = { "index" => { "_index" => data.sprintf(@index), "_type" => data.sprintf(@index_type) } }
+    header = { "index" => { "_type" => data.sprintf(@index_type) } }
+    if @explicit_index
+      header["index"]["_index"] = data.sprintf(@index)
+    end
     if !@document_id.nil?
       header["index"]["_id"] = data.sprintf(@document_id)
     end
