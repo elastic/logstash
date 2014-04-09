@@ -42,7 +42,10 @@ Other commands:
 
     # Run Logstash
     bin/logstash agent [options]
-    
+
+    # to load the plugins from logstash-contrib add --pluginpath (-p)
+    bin/logstash agent -p .../logstash-contrib/lib [options]
+
     # If running bin/logstash agent yields complaints about log4j/other things
     # This will download the elasticsearch jars so Logstash can use them.
     make vendor-elasticsearch
