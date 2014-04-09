@@ -241,9 +241,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
                  :protocol => @protocol)
 
     if @embedded
-      if RUBY_PLATFORM != "java"
-        raise LogStash::ConfigurationError, "The 'embedded => true' setting is only valid for the elasticsearch output under JRuby. You are running #{RUBY_DESCRIPTION}"
-      end
+      LogStash::Environment.assess_jruby!(LogStash::ConfigurationError, "The 'embedded => true' setting is only valid for the elasticsearch output under JRuby. You are running #{RUBY_DESCRIPTION}")
+      LogStash::Environment.load_elasticsearch_jars!
+
       # Default @host with embedded to localhost. This should help avoid
       # newbies tripping on ubuntu and other distros that have a default
       # firewall that blocks multicast.
