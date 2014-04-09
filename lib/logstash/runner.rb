@@ -149,19 +149,14 @@ class LogStash::Runner
         @runners << kibana
         return kibana.run(args)
       end,
-      "test" => lambda do
-        $LOAD_PATH << File.join(File.dirname(__FILE__), "..", "..", "test")
-        require "logstash/test"
-        test = LogStash::Test.new
-        @runners << test
-        return test.run(args)
-      end,
       "rspec" => lambda do
         require "rspec/core/runner"
         require "rspec"
-        $LOAD_PATH << File.expand_path("#{File.dirname(__FILE__)}/../../spec")
+        spec_path = File.expand_path(File.join(File.dirname(__FILE__), "/../../spec"))
+        $LOAD_PATH << spec_path
         require "test_utils"
-        rspec = LogStash::RSpecsRunner.new(args)
+        all_specs = Dir.glob(File.join(spec_path, "/**/*.rb"))
+        rspec = LogStash::RSpecsRunner.new(args.empty? ? all_specs : args)
         rspec.run
         @runners << rspec
         return []
