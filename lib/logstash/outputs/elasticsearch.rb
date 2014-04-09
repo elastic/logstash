@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/namespace"
+require "logstash/environment"
 require "logstash/outputs/base"
 require "stud/buffer"
 require "socket" # for Socket.gethostname
@@ -196,11 +197,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
     if ["node", "transport"].include?(@protocol)
       # Node or TransportClient; requires JRuby
-      if RUBY_PLATFORM != "java"
-        raise LogStash::PluginLoadingError, "This configuration requires JRuby. If you are not using JRuby, you must set 'protocol' to 'http'. For example: output { elasticsearch { protocol => \"http\" } }"
-      end
+      LogStash::Environment.assess_jruby!(LogStash::PluginLoadingError, "This configuration requires JRuby. If you are not using JRuby, you must set 'protocol' to 'http'. For example: output { elasticsearch { protocol => \"http\" } }")
+      LogStash::Environment.load_elasticsearch_jars!
 
-      require "logstash/loadlibs"
       # setup log4j properties for Elasticsearch
       LogStash::Logger.setup_log4j(@logger)
     end
