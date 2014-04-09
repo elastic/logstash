@@ -192,12 +192,12 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     end
 
     if @protocol.nil?
-      @protocol = (RUBY_PLATFORM == "java") ? "node" : "http"
+      @protocol = LogStash::Environment.jruby? ? "node" : "http"
     end
 
     if ["node", "transport"].include?(@protocol)
       # Node or TransportClient; requires JRuby
-      LogStash::Environment.assess_jruby!{LogStash::PluginLoadingError.new("This configuration requires JRuby. If you are not using JRuby, you must set 'protocol' to 'http'. For example: output { elasticsearch { protocol => \"http\" } }")}
+      raise(LogStash::PluginLoadingError, "This configuration requires JRuby. If you are not using JRuby, you must set 'protocol' to 'http'. For example: output { elasticsearch { protocol => \"http\" } }") unless LogStash::Environment.jruby?
       LogStash::Environment.load_elasticsearch_jars!
 
       # setup log4j properties for Elasticsearch
@@ -241,7 +241,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
                  :protocol => @protocol)
 
     if @embedded
-      LogStash::Environment.assess_jruby!{LogStash::ConfigurationError.new("The 'embedded => true' setting is only valid for the elasticsearch output under JRuby. You are running #{RUBY_DESCRIPTION}")}
+      raise(LogStash::ConfigurationError, "The 'embedded => true' setting is only valid for the elasticsearch output under JRuby. You are running #{RUBY_DESCRIPTION}") unless LogStash::Environment.jruby?
       LogStash::Environment.load_elasticsearch_jars!
 
       # Default @host with embedded to localhost. This should help avoid

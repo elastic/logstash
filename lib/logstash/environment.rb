@@ -10,7 +10,7 @@ module LogStash
     # loads currenly embedded elasticsearch jars
     # @raise LogStash::EnvironmentError if not runnig under JRuby or if no jar files found
     def load_elasticsearch_jars!
-      assess_jruby!
+      raise(LogStash::EnvironmentError, "JRuby is required") unless jruby?
 
       require "java"
       jars_path = ::File.join(JAR_DIR, "/elasticsearch*/lib/*.jar")
@@ -21,19 +21,6 @@ module LogStash
       jar_files.each do |jar|
         loaded = require jar
         puts("Loaded #{jar}") if $DEBUG && loaded
-      end
-    end
-
-    # @yield execute optional block if not currently running under JRuby
-    # @yieldreturn [Exception] exception to raise if Exception class returned otherwise raise default exception
-    # @raise [Exception] yielded exception or default if not runnig under JRuby
-    def assess_jruby!
-      unless  jruby?
-        # grab return value from block if present, use default exception if not an exception class
-        exception = block_given? ? yield : nil
-        exception = LogStash::EnvironmentError.new("JRuby is required") unless exception.is_a?(Exception)
-
-        raise(exception)
       end
     end
 
