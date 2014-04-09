@@ -7,6 +7,8 @@ module LogStash
     LOGSTASH_HOME = ::File.expand_path(::File.join(::File.dirname(__FILE__), "/../.."))
     JAR_DIR = ::File.join(LOGSTASH_HOME, "/vendor/jar")
 
+    # loads currenly embedded elasticsearch jars
+    # @raise LogStash::EnvironmentError if not runnig under JRuby or if no jar files found
     def load_elasticsearch_jars!
       assess_jruby!
 
@@ -22,8 +24,17 @@ module LogStash
       end
     end
 
-    def assess_jruby!(exception_class = nil, message = nil)
-      raise(exception_class || LogStash::EnvironmentError, message || "JRuby is required") unless jruby?
+    # @yield execute optional block if not currently running under JRuby
+    # @yieldreturn [Exception] exception to raise if Exception class returned otherwise raise default exception
+    # @raise [Exception] yielded exception or default if not runnig under JRuby
+    def assess_jruby!
+      unless  jruby?
+        # grab return value from block if present, use default exception if not an exception class
+        exception = block_given? ? yield : nil
+        exception = LogStash::EnvironmentError.new("JRuby is required") unless exception.is_a?(Exception)
+
+        raise(exception)
+      end
     end
 
     def jruby?
