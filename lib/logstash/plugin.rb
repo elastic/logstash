@@ -128,6 +128,7 @@ class LogStash::Plugin
     #
     # And expects to find LogStash::Filters::Grok (or something similar based
     # on pattern matching
+
     path = "logstash/#{type}s/#{name}"
     require(path)
 
@@ -135,9 +136,11 @@ class LogStash::Plugin
     klass = nil
     #klass_sym = base.constants.find { |c| c.to_s =~ /^#{Regexp.quote(name)}$/i }
     #if klass_sym.nil?
-    
+
     # Look for a plugin by the config_name
-    klass_sym = base.constants.find { |k| base.const_get(k).config_name == name }
+    # the namespace can contain constants which are not for plugins classes (do not respond to :config_name)
+    # for example, the ElasticSearch output adds the LogStash::Outputs::Elasticsearch::Protocols namespace
+    klass_sym = base.constants.find { |c| o = base.const_get(c); o.respond_to?(:config_name) && o.config_name == name }
     klass = base.const_get(klass_sym)
 
     raise LoadError if klass.nil?
