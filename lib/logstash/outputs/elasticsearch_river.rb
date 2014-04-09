@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "logstash/environment"
 require "logstash/namespace"
 require "logstash/outputs/base"
 require "json"
@@ -84,14 +85,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   public
   def register
-
-    # TODO(sissel): find a better way of declaring where the elasticsearch
-    # libraries are
-    # TODO(sissel): can skip this step if we're running from a jar.
-    jarpath = File.join(File.dirname(__FILE__), "../../../vendor/**/*.jar")
-    Dir[jarpath].each do |jar|
-        require jar
-    end
+    LogStash::Environment.load_elasticsearch_jars!
     prepare_river
   end
 

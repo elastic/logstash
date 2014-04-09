@@ -1,5 +1,7 @@
 # encoding: utf-8
 require "logstash/inputs/base"
+require "logstash/errors"
+require "logstash/environment"
 require "logstash/namespace"
 require "logstash/util/socket_peer"
 require "socket"
@@ -40,13 +42,14 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
 
   public
   def register
+    LogStash::Environment.load_elasticsearch_jars!
     require "java"
     require "jruby/serialization"
 
-    if __FILE__ !~ /^(jar:)?file:\/\//
-      if File.exists?("vendor/jar/elasticsearch-0.90.3/lib/log4j-1.2.17.jar")
-        require "vendor/jar/elasticsearch-0.90.3/lib/log4j-1.2.17.jar"
-      end
+    begin
+      Java::OrgApacheLog4jSpi.const_get("LoggingEvent")
+    rescue
+      raise(LogStash::PluginLoadingError, "Log4j java library not loaded")
     end
 
     if server?
@@ -62,7 +65,7 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
       # JRubyObjectInputStream uses JRuby class path to find the class to de-serialize to
       ois = JRubyObjectInputStream.new(java.io.BufferedInputStream.new(socket.to_inputstream))
       loop do
-        # NOTE: event_raw is org.apache.log4j.spi.LoggingEvent
+        # NOTE: log4j_obj is org.apache.log4j.spi.LoggingEvent
         log4j_obj = ois.readObject
         event = LogStash::Event.new("message" => log4j_obj.getRenderedMessage)
         decorate(event)
@@ -76,13 +79,13 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
         event["method"] = log4j_obj.getLocationInformation.getMethodName
         event["NDC"] = log4j_obj.getNDC if log4j_obj.getNDC
         event["stack_trace"] = log4j_obj.getThrowableStrRep.to_a.join("\n") if log4j_obj.getThrowableInformation
-        
+
         # Add the MDC context properties to '@fields'
         if log4j_obj.getProperties
           log4j_obj.getPropertyKeySet.each do |key|
             event[key] = log4j_obj.getProperty(key)
-          end  
-        end  
+          end
+        end
 
         output_queue << event
       end # loop do

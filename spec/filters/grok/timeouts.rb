@@ -16,11 +16,12 @@ describe "grok known timeout failures" do
 
     it "should not timeout" do
       data = File.open(__FILE__); data.each { |line| break if line == "__END__\n" }
-      puts subject.expanded_pattern
+      # puts subject.expanded_pattern
       data.each do |line|
         # This timeout will toss an exception if it takes too long.
         Timeout.timeout(1) do
-          puts :matched => subject.match(line.chomp)
+          subject.match(line.chomp)
+          # puts :matched => subject.match(line.chomp)
         end
       end
     end

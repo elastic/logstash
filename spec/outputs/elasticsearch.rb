@@ -1,10 +1,18 @@
 require "test_utils"
 require "ftw"
+require "logstash/plugin"
 
-describe "outputs/elasticsearch", :elasticsearch => true do
+describe "outputs/elasticsearch" do
   extend LogStash::RSpec
 
-  describe "ship lots of events w/ default index_type" do
+  it "should register" do
+    output = LogStash::Plugin.lookup("output", "elasticsearch").new("embedded" => "false", "protocol" => "transport", "manage_template" => "false")
+
+    # register will try to load jars and raise if it cannot find jars
+    expect {output.register}.to_not raise_error
+  end
+
+  describe "ship lots of events w/ default index_type", :elasticsearch => true do
     # Generate a random index name
     index = 10.times.collect { rand(10).to_s }.join("")
     type = 10.times.collect { rand(10).to_s }.join("")
@@ -64,7 +72,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
     end
   end
 
-  describe "testing index_type" do
+  describe "testing index_type", :elasticsearch => true do
     describe "no type value" do
       # Generate a random index name
       index = 10.times.collect { rand(10).to_s }.join("")
@@ -159,7 +167,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
     end
   end
 
-  describe "action => ..." do
+  describe "action => ...", :elasticsearch => true do
     index_name = 10.times.collect { rand(10).to_s }.join("")
 
     config <<-CONFIG
@@ -201,7 +209,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
       end
     end
 
-    describe "default event type value" do
+    describe "default event type value", :elasticsearch => true do
       # Generate a random index name
       index = 10.times.collect { rand(10).to_s }.join("")
       event_count = 100 + rand(100)
@@ -249,7 +257,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
     end
   end
 
-  describe "index template expected behavior" do
+  describe "index template expected behavior", :elasticsearch => true do
     ["node", "transport", "http"].each do |protocol|
       context "with protocol => #{protocol}" do
         subject do

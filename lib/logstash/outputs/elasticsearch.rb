@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/namespace"
+require "logstash/environment"
 require "logstash/outputs/base"
 require "stud/buffer"
 require "socket" # for Socket.gethostname
@@ -191,16 +192,14 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     end
 
     if @protocol.nil?
-      @protocol = (RUBY_PLATFORM == "java") ? "node" : "http"
+      @protocol = LogStash::Environment.jruby? ? "node" : "http"
     end
 
     if ["node", "transport"].include?(@protocol)
       # Node or TransportClient; requires JRuby
-      if RUBY_PLATFORM != "java"
-        raise LogStash::PluginLoadingError, "This configuration requires JRuby. If you are not using JRuby, you must set 'protocol' to 'http'. For example: output { elasticsearch { protocol => \"http\" } }"
-      end
+      raise(LogStash::PluginLoadingError, "This configuration requires JRuby. If you are not using JRuby, you must set 'protocol' to 'http'. For example: output { elasticsearch { protocol => \"http\" } }") unless LogStash::Environment.jruby?
+      LogStash::Environment.load_elasticsearch_jars!
 
-      require "logstash/loadlibs"
       # setup log4j properties for Elasticsearch
       LogStash::Logger.setup_log4j(@logger)
     end
@@ -242,9 +241,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
                  :protocol => @protocol)
 
     if @embedded
-      if RUBY_PLATFORM != "java"
-        raise LogStash::ConfigurationError, "The 'embedded => true' setting is only valid for the elasticsearch output under JRuby. You are running #{RUBY_DESCRIPTION}"
-      end
+      raise(LogStash::ConfigurationError, "The 'embedded => true' setting is only valid for the elasticsearch output under JRuby. You are running #{RUBY_DESCRIPTION}") unless LogStash::Environment.jruby?
+      LogStash::Environment.load_elasticsearch_jars!
+
       # Default @host with embedded to localhost. This should help avoid
       # newbies tripping on ubuntu and other distros that have a default
       # firewall that blocks multicast.
