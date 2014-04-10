@@ -246,6 +246,38 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
     end
   end
 
+   describe "success to parse should apply on_success config(add_tag,add_field...)" do
+    config <<-CONFIG
+      filter { 
+        date {
+          match => [ "thedate", "yyyy/MM/dd" ]
+          add_tag => "tagged"
+        }
+      }
+    CONFIG
+
+    sample("thedate" => "2013/04/21") do
+      insist { subject["@timestamp"] } != "2013-04-21T00:00:00.000Z"
+      insist { subject["tags"] } == ["tagged"]
+    end
+  end
+
+   describe "failing to parse should not apply on_success config(add_tag,add_field...)" do
+    config <<-CONFIG
+      filter { 
+        date {
+          match => [ "thedate", "yyyy/MM/dd" ]
+          add_tag => "tagged"
+        }
+      }
+    CONFIG
+
+    sample("thedate" => "2013/Apr/21") do
+      insist { subject["@timestamp"] } != "2013-04-21T00:00:00.000Z"
+      insist { subject["tags"] } == nil
+    end
+  end
+
   describe "parsing with timezone parameter" do
     config <<-CONFIG
       filter {
