@@ -49,6 +49,7 @@ case $1 in
   	$DOWNLOAD_COMMAND ${TARGET} ${URLSTUB}${FILENAME}
   	if [ ! -f "${TARGET}" ]; then
 	  	echo "ERROR: Unable to download ${URLSTUB}${FILENAME}"
+	  	echo "HINT: If you're behind a proxy, specify the http_proxy variable."
 	  	echo "Exiting."
 	  	exit 1
 	fi
