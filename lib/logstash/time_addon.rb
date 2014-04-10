@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/namespace"
+require "logstash/environment"
 
 module LogStash::Time
   ISO8601_STRFTIME = "%04d-%02d-%02dT%02d:%02d:%02d.%06d%+03d:00".freeze
@@ -7,7 +8,7 @@ module LogStash::Time
     return Time.new.utc
   end
 
-  if RUBY_PLATFORM == "java"
+  if LogStash::Environment.jruby?
     JODA_ISO8601_PARSER = org.joda.time.format.ISODateTimeFormat.dateTimeParser
     #JODA_ISO8601_PARSER = org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     UTC = org.joda.time.DateTimeZone.forID("UTC")

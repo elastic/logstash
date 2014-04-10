@@ -43,14 +43,8 @@ class LogStash::Inputs::Log4j < LogStash::Inputs::Base
   public
   def register
     LogStash::Environment.load_elasticsearch_jars!
-    require "java"
     require "jruby/serialization"
-
-    begin
-      Java::OrgApacheLog4jSpi.const_get("LoggingEvent")
-    rescue
-      raise(LogStash::PluginLoadingError, "Log4j java library not loaded")
-    end
+    raise(LogStash::PluginLoadingError, "Log4j java library not loaded") unless LogStash::Environment.log4j_loaded?
 
     if server?
       @logger.info("Starting Log4j input listener", :address => "#{@host}:#{@port}")
