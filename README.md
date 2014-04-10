@@ -10,6 +10,16 @@ are pretty much free to use it however you want in whatever way.
 
 For more info, see <http://logstash.net/>
 
+## logstash-contrib
+### AKA "Where'd that plugin go??"
+
+In version 1.4.0 of Logstash, some of the community-contributed plugins were
+moved to a new home in the
+[Elasticsearch logstash-contrib repo](https://github.com/elasticsearch/logstash-contrib).
+If you can't find a plugin here which you've previously used, odds are it is now
+located there. The good news is that these plugins are simple to install using the
+[Logstash manual plugin installation script](http://logstash.net/docs/1.4.0/contrib-plugins).
+
 ## Need Help?
 
 Need help? Try #logstash on freenode irc or the logstash-users@googlegroups.com
@@ -23,7 +33,7 @@ If you don't have JRuby already (or don't use rvm, rbenv, etc), you can have `bi
 
     USE_JRUBY=1 bin/logstash ...
 
-Otherwise, here's how to get started with rvm: 
+Otherwise, here's how to get started with rvm:
 
     # Install JRuby with rvm
     rvm install jruby-1.7.11
@@ -42,7 +52,7 @@ Other commands:
 
     # Run Logstash
     bin/logstash agent [options]
-    
+
     # If running bin/logstash agent yields complaints about log4j/other things
     # This will download the elasticsearch jars so Logstash can use them.
     make vendor-elasticsearch
@@ -52,7 +62,7 @@ Other commands:
 There are a few ways to run the tests. For development, using `bin/logstash
 rspec <some spec>` will suffice:
 
-    % bin/logstash rspec spec/filters/grok.rb 
+    % bin/logstash rspec spec/filters/grok.rb
     ...................
 
     Finished in 0.123 seconds
