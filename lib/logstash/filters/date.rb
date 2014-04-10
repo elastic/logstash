@@ -208,6 +208,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           #event[@target] = Time.at(epochmillis / 1000.0).utc
 
           @logger.debug? && @logger.debug("Date parsing done", :value => value, :timestamp => event[@target])
+          filter_matched(event)
         rescue StandardError, JavaException => e
           @logger.warn("Failed parsing date from field", :field => field,
                        :value => value, :exception => e)
@@ -219,7 +220,6 @@ class LogStash::Filters::Date < LogStash::Filters::Base
       end # fieldvalue.each 
     end # @parsers.each
 
-    filter_matched(event) if !event.cancelled?
     return event
   end # def filter
 end # class LogStash::Filters::Date
