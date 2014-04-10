@@ -97,6 +97,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
   private
   def handle_socket(socket, client_address, output_queue, codec)
+    hostname = Socket.gethostname
     while true
       buf = nil
       # NOTE(petef): the timeout only hits after the line is read
@@ -110,7 +111,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         end
       end
       codec.decode(buf) do |event|
-        event["host"] ||= client_address
+        event["host"] ||= hostname
         event["sslsubject"] ||= socket.peer_cert.subject if @ssl_enable && @ssl_verify
         decorate(event)
         output_queue << event
@@ -122,9 +123,10 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
     @logger.debug("An error occurred. Closing connection",
                   :client => socket.peer, :exception => e, :backtrace => e.backtrace)
   ensure
+    hostname = Socket.gethostname
     socket.close rescue IOError nil
     codec.respond_to?(:flush) && codec.flush do |event|
-      event["host"] ||= client_address
+      event["host"] ||= hostname
       event["sslsubject"] ||= socket.peer_cert.subject if @ssl_enable && @ssl_verify
       decorate(event)
       output_queue << event
