@@ -48,6 +48,7 @@ require "logstash/namespace"
 # * "thing.max" - the maximum value seen for this metric
 # * "thing.stddev" - the standard deviation for this metric
 # * "thing.mean" - the mean for this metric
+# * "thing.pXX" - the XXth percentile for this metric (see `percentiles`)
 #
 # #### Example: computing event rate
 #
