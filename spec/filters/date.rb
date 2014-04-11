@@ -112,6 +112,12 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
         insist { subject["@timestamp"].time } == Time.iso8601(output).utc
       end
     end # times.each
+
+    #Invalid value should not be evaluated to zero (String#to_i madness)
+    sample("mydate" => "%{bad_value}") do
+      insist { subject["mydate"] } == "%{bad_value}"
+      insist { subject["@timestamp"] } != Time.iso8601("1970-01-01T00:00:00.000Z").utc
+    end
   end
 
   describe "parsing microsecond-precise times with UNIX (#213)" do
@@ -127,6 +133,18 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
     sample("mydate" => "1350414944.123456") do
       # Joda time only supports milliseconds :\
       insist { subject.timestamp.time } == Time.iso8601("2012-10-16T12:15:44.123-07:00").utc
+    end
+
+    #Support float values
+    sample("mydate" => 1350414944.123456) do
+      insist { subject["mydate"] } == 1350414944.123456
+      insist { subject.timestamp } == Time.iso8601("2012-10-16T12:15:44.123-07:00").utc
+    end
+
+    #Invalid value should not be evaluated to zero (String#to_i madness)
+    sample("mydate" => "%{bad_value}") do
+      insist { subject["mydate"] } == "%{bad_value}"
+      insist { subject["@timestamp"] } != Time.iso8601("1970-01-01T00:00:00.000Z").utc
     end
   end
 
