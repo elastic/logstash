@@ -86,15 +86,17 @@ class LogStash::Agent < Clamp::Command
     configure
 
     # You must specify a config_string or config_path
-    if config_string.nil? && config_path.nil?
+    if @config_string.nil? && @config_path.nil?
       fail(help + "\n" + I18n.t("logstash.agent.missing-configuration"))
     end
+
+    @config_string = @config_string.to_s
 
     if @config_path
       # Append the config string.
       # This allows users to provide both -f and -e flags. The combination
       # is rare, but useful for debugging.
-      @config_string = config_string + load_config(@config_path)
+      @config_string = @config_string + load_config(@config_path)
     else
       # include a default stdin input if no inputs given
       if @config_string !~ /input *{/
