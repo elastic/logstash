@@ -208,7 +208,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
         # multiline, send it.
         if pending
           pending.append(event)
-          event.overwrite(pending.to_hash)
+          event.overwrite(pending)
           @pending.delete(key)
         end
       end # if/else match
