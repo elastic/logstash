@@ -1,8 +1,9 @@
+# encoding: utf-8
+
 require "test_utils"
 require "logstash/filters/multiline"
 
-puts "MULTILINE FILTER TEST DISABLED"
-describe LogStash::Filters::Multiline, :if => false do
+describe LogStash::Filters::Multiline do
 
   extend LogStash::RSpec
 
@@ -10,6 +11,7 @@ describe LogStash::Filters::Multiline, :if => false do
     config <<-CONFIG
     filter {
       multiline {
+        enable_flush => true
         pattern => "^\\s"
         what => previous
       }
@@ -17,8 +19,8 @@ describe LogStash::Filters::Multiline, :if => false do
     CONFIG
 
     sample [ "hello world", "   second line", "another first line" ] do
-      p subject.to_hash
-      insist { subject.length } == 2
+      expect(subject).to be_a(Array)
+      insist { subject.size } == 2
       insist { subject[0]["message"] } == "hello world\n   second line"
       insist { subject[1]["message"] } == "another first line"
     end
@@ -28,6 +30,7 @@ describe LogStash::Filters::Multiline, :if => false do
     config <<-CONFIG
     filter {
       multiline {
+        enable_flush => true
         pattern => "^%{NUMBER} %{TIME}"
         negate => true
         what => previous
@@ -36,8 +39,7 @@ describe LogStash::Filters::Multiline, :if => false do
     CONFIG
 
     sample [ "120913 12:04:33 first line", "second line", "third line" ] do
-      insist { subject.length } == 1
-      insist { subject[0]["message"] } ==  "120913 12:04:33 first line\nsecond line\nthird line"
+      insist { subject["message"] } ==  "120913 12:04:33 first line\nsecond line\nthird line"
     end
   end
 
@@ -45,51 +47,46 @@ describe LogStash::Filters::Multiline, :if => false do
     config <<-CONFIG
       filter {
         multiline {
+          enable_flush => true
           pattern => "^\\s"
           what => previous
         }
       }
     CONFIG
 
-    multiline_event = [
-      "hello world",
-    ]
+    count = 50
+    stream_count = 3
 
-    count = 20
-    stream_count = 2
-    id = 0
-    eventstream = count.times.collect do |i|
-      stream = "stream#{i % stream_count}"
-      (
-        [ "hello world #{stream}" ] \
-        + rand(5).times.collect { |n| id += 1; "   extra line #{n} in #{stream} event #{id}" }
-      ) .collect do |line|
-        LogStash::Event.new("message" => line,
-                            "host" => stream, "type" => stream,
-                            "event" => i)
+    # first make sure to have starting lines for all streams
+    eventstream = stream_count.times.map do |i|
+      stream = "stream#{i}"
+      lines = [LogStash::Event.new("message" => "hello world #{stream}", "host" => stream, "type" => stream)]
+      lines += rand(5).times.map do |n|
+        LogStash::Event.new("message" => "   extra line in #{stream}", "host" => stream, "type" => stream)
       end
     end
 
-    alllines = eventstream.flatten
-
-    # Take whole events and mix them with other events (maintain order)
-    # This simulates a mixing of multiple streams being received 
-    # and processed. It requires that the multiline filter correctly partition
-    # by stream_identity
-    concurrent_stream = eventstream.flatten.count.times.collect do 
-      index = rand(eventstream.count)
-      event = eventstream[index].shift
-      eventstream.delete_at(index) if eventstream[index].empty?
-      event
+    # them add starting lines for random stream with sublines also for random stream
+    eventstream += (count - stream_count).times.map do |i|
+      stream = "stream#{rand(stream_count)}"
+      lines = [LogStash::Event.new("message" => "hello world #{stream}", "host" => stream, "type" => stream)]
+      lines += rand(5).times.map do |n|
+        stream = "stream#{rand(stream_count)}"
+        LogStash::Event.new("message" => "   extra line in #{stream}", "host" => stream, "type" => stream)
+      end
     end
 
-    sample concurrent_stream do 
-      insist { subject.count } == count
+    events = eventstream.flatten.map{|event| event.to_hash}
+
+    sample events do
+      expect(subject).to be_a(Array)
+      insist { subject.size } == count
+
       subject.each_with_index do |event, i|
-        #puts "#{i}/#{event["event"]}: #{event.to_json}"
-        #insist { event.type } == stream
-        #insist { event.source } == stream
+        insist { event["type"] == event["host"] } == true
+        stream = event["type"]
         insist { event["message"].split("\n").first } =~ /hello world /
+        insist { event["message"].scan(/stream\d/).all?{|word| word == stream} } == true
       end
     end
   end
@@ -101,6 +98,7 @@ describe LogStash::Filters::Multiline, :if => false do
           add_tag => "dummy"
         }
         multiline {
+          enable_flush => true
           add_tag => [ "nope" ]
           remove_tag => "dummy"
           add_field => [ "dummy2", "value" ]
@@ -111,9 +109,14 @@ describe LogStash::Filters::Multiline, :if => false do
     CONFIG
 
     sample [ "120913 12:04:33 first line", "120913 12:04:33 second line" ] do
+      expect(subject).to be_a(Array)
+      insist { subject.size } == 2
+
       subject.each do |s|
-        insist { s.tags.find_index("nope").nil? && s.tags.find_index("dummy") != nil && !s.fields.has_key?("dummy2") } == true
+        insist { s["tags"].include?("nope")  } == false
+        insist { s["tags"].include?("dummy") } == true
+        insist { s.include?("dummy2") } == false
       end
     end
-  end 
+  end
 end
