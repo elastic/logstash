@@ -119,4 +119,40 @@ describe LogStash::Filters::Multiline do
       end
     end
   end
+
+  describe "regression test for GH issue #1258" do
+    config <<-CONFIG
+      filter {
+        multiline {
+          pattern => "^\s"
+          what => "next"
+          add_tag => ["multi"]
+        }
+      }
+    CONFIG
+
+    sample [ "  match", "nomatch" ] do
+      expect(subject).to be_a(LogStash::Event)
+      insist { subject["message"] } == "  match\nnomatch"
+    end
+  end
+
+  describe "multiple match/nomatch" do
+    config <<-CONFIG
+      filter {
+        multiline {
+          pattern => "^\s"
+          what => "next"
+          add_tag => ["multi"]
+        }
+      }
+    CONFIG
+
+    sample ["  match1", "nomatch1", "  match2", "nomatch2"] do
+      expect(subject).to be_a(Array)
+      insist { subject.size } == 2
+      insist { subject[0]["message"] } == "  match1\nnomatch1"
+      insist { subject[1]["message"] } == "  match2\nnomatch2"
+    end
+  end
 end
