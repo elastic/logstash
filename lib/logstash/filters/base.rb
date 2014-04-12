@@ -59,7 +59,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   #     }
   #
   #     # You can also remove multiple tags at once:
-  # 
+  #
   #     filter {
   #       %PLUGIN% {
   #         remove_tag => [ "foo_%{somefield}", "sad_unwanted_tag"]
@@ -68,7 +68,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   #
   # If the event has field "somefield" == "hello" this filter, on success,
   # would remove the tag "foo_hello" if it is present. The second example
-  # would remove a sad, unwanted tag as well. 
+  # would remove a sad, unwanted tag as well.
   config :remove_tag, :validate => :array, :default => []
 
   # If this filter is successful, add any arbitrary fields to this event.
@@ -85,7 +85,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   #
   #     filter {
   #       %PLUGIN% {
-  #         add_field => { 
+  #         add_field => {
   #           "foo_%{somefield}" => "Hello world, from %{host}"
   #           "new_field" => "new_static_value"
   #         }
@@ -95,7 +95,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   # If the event has field "somefield" == "hello" this filter, on success,
   # would add field "foo_hello" if it is present, with the
   # value above and the %{host} piece replaced with that value from the
-  # event. The second example would also add a hardcoded field. 
+  # event. The second example would also add a hardcoded field.
   config :add_field, :validate => :hash, :default => {}
 
   # If this filter is successful, remove arbitrary fields from this event.
@@ -117,9 +117,13 @@ class LogStash::Filters::Base < LogStash::Plugin
   #     }
   #
   # If the event has field "somefield" == "hello" this filter, on success,
-  # would remove the field with name "foo_hello" if it is present. The second 
+  # would remove the field with name "foo_hello" if it is present. The second
   # example would remove an additional, non-dynamic field.
   config :remove_field, :validate => :array, :default => []
+
+  # Call the filter flush method at regular interval.
+  # Optional.
+  config :periodic_flush, :validate => :boolean, :default => false
 
   RESERVED = ["type", "tags", "exclude_tags", "include_fields", "exclude_fields", "add_tag", "remove_tag", "add_field", "remove_field", "include_any", "exclude_any"]
 
@@ -169,11 +173,11 @@ class LogStash::Filters::Base < LogStash::Plugin
                                        :field => field, :value => value)
       end
     end
-    
+
     @remove_field.each do |field|
       field = event.sprintf(field)
       @logger.debug? and @logger.debug("filters/#{self.class.name}: removing field",
-                                       :field => field) 
+                                       :field => field)
       event.remove(field)
     end
 
@@ -222,5 +226,10 @@ class LogStash::Filters::Base < LogStash::Plugin
     end
 
     return true
+  end
+
+  public
+  def teardown
+    # Nothing to do by default.
   end
 end # class LogStash::Filters::Base
