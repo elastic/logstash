@@ -80,4 +80,6 @@ describe LogStash::Filters::Clone do
       insist { subject[1]["number"] } == 5
     end
   end
+
+
 end

@@ -98,21 +98,31 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   #     NUMBER \d+
   config :patterns_dir, :validate => :array, :default => []
 
-  # for debugging & testing purposes, do not use in production. allows periodic flushing of pending events
-  config :enable_flush, :validate => :boolean, :default => false
+  # The maximum age an event can be (in seconds) before it is automatically
+  # flushed.
+  config :max_age, :validate => :number, :default => 5
+
+  # Call the filter flush method at regular interval.
+  # Optional.
+  config :periodic_flush, :validate => :boolean, :default => true
+
 
   # Detect if we are running from a jarfile, pick the right path.
   @@patterns_path = Set.new
   @@patterns_path += [LogStash::Environment.pattern_path("*")]
 
+  MULTILINE_TAG = "multiline"
+
   public
   def initialize(config = {})
     super
 
+    # this filter cannot be parallelized because message order
+    # cannot be garanteed across threads, line #2 could be processed
+    # before line #1
     @threadsafe = false
 
-    # This filter needs to keep state.
-    @types = Hash.new { |h,k| h[k] = [] }
+    # this filter needs to keep state
     @pending = Hash.new
   end # def initialize
 
@@ -136,6 +146,16 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
     @grok.compile(@pattern)
 
+    case @what
+    when "previous"
+      class << self; alias_method :multiline_filter!, :previous_filter!; end
+    when "next"
+      class << self; alias_method :multiline_filter!, :next_filter!; end
+    else
+      # we should never get here since @what is validated at config
+      raise(ArgumentError, "Unknown multiline 'what' value")
+    end # case @what
+
     @logger.debug("Registered multiline plugin", :type => @type, :config => @config)
   end # def register
 
@@ -143,94 +163,111 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   def filter(event)
     return unless filter?(event)
 
-    if event["message"].is_a?(Array)
-      match = @grok.match(event["message"].first)
-    else
-      match = @grok.match(event["message"])
-    end
-    key = event.sprintf(@stream_identity)
-    pending = @pending[key]
+    match = event["message"].is_a?(Array) ? @grok.match(event["message"].first) : @grok.match(event["message"])
+    match = (match and !@negate) || (!match and @negate) # add negate option
 
-    @logger.debug("Multiline", :pattern => @pattern, :message => event["message"],
-                  :match => match, :negate => @negate)
+    @logger.debug? && @logger.debug("Multiline", :pattern => @pattern, :message => event["message"], :match => match, :negate => @negate)
 
-    # Add negate option
-    match = (match and !@negate) || (!match and @negate)
+    multiline_filter!(event, match)
 
-    case @what
-    when "previous"
-      if match
-        event.tag "multiline"
-        # previous previous line is part of this event.
-        # append it to the event and cancel it
-        if pending
-          pending.append(event)
-        else
-          @pending[key] = event
-        end
-        event.cancel
-      else
-        # this line is not part of the previous event
-        # if we have a pending event, it's done, send it.
-        # put the current event into pending
-        if pending
-          tmp = event.to_hash
-          event.overwrite(pending)
-          @pending[key] = LogStash::Event.new(tmp)
-        else
-          @pending[key] = event
-          event.cancel
-        end # if/else pending
-      end # if/else match
-    when "next"
-      if match
-        event.tag "multiline"
-        # this line is part of a multiline event, the next
-        # line will be part, too, put it into pending.
-        if pending
-          pending.append(event)
-        else
-          @pending[key] = event
-        end
-        event.cancel
-      else
-        # if we have something in pending, join it with this message
-        # and send it. otherwise, this is a new message and not part of
-        # multiline, send it.
-        if pending
-          pending.append(event)
-          event.overwrite(pending)
-          @pending.delete(key)
-        end
-      end # if/else match
-    else
-      # TODO(sissel): Make this part of the 'register' method.
-      @logger.warn("Unknown multiline 'what' value.", :what => @what)
-    end # case @what
-
-    if !event.cancelled?
+    unless event.cancelled?
       collapse_event!(event)
       filter_matched(event) if match
     end
   end # def filter
 
-  # Flush any pending messages. This is generally used for unit testing only.
-  #
-  # Note: flush is disabled now; it is preferable to use the multiline codec.
+  # flush any pending messages
+  # called at regular interval without options and at pipeline shutdown with the :final => true option
+  # @param options [Hash]
+  # @option options [Boolean] :final => true to signal a final shutdown flush
+  # @return [Array<LogStash::Event>] list of flushed events
   public
-  def flush
-    return [] unless @enable_flush
+  def flush(options = {})
+    expired = nil
 
-    events = []
-    @pending.each do |key, value|
-      value.uncancel
-      events << collapse_event!(value)
+    # note that thread safety concerns are not necessary here because the multiline filter
+    # is not thread safe thus cannot be run in multiple folterworker threads and flushing
+    # is called by the same thread
+
+    # select all expired events from the @pending hash into a new expired hash
+    # if :final flush then select all events
+    expired = @pending.inject({}) do |r, (key, event)|
+      age = Time.now - Array(event["@timestamp"]).first.time
+      r[key] = event if (age >= @max_age) || options[:final]
+      r
     end
-    @pending.clear
-    return events
+
+    # delete expired items from @pending hash
+    expired.each{|key, event| @pending.delete(key)}
+
+    # return list of uncancelled and collapsed expired events
+    expired.map{|key, event| event.uncancel; collapse_event!(event)}
   end # def flush
 
+  public
+  def teardown
+    # nothing to do
+  end
+
   private
+
+  def previous_filter!(event, match)
+    key = event.sprintf(@stream_identity)
+
+    pending = @pending[key]
+
+    if match
+      event.tag(MULTILINE_TAG)
+      # previous previous line is part of this event.
+      # append it to the event and cancel it
+      if pending
+        pending.append(event)
+      else
+        @pending[key] = event
+      end
+      event.cancel
+    else
+      # this line is not part of the previous event
+      # if we have a pending event, it's done, send it.
+      # put the current event into pending
+      if pending
+        tmp = event.to_hash
+        event.overwrite(pending)
+        @pending[key] = LogStash::Event.new(tmp)
+      else
+        @pending[key] = event
+        event.cancel
+      end
+    end # if match
+  end
+
+  def next_filter!(event, match)
+    key = event.sprintf(@stream_identity)
+
+    # protect @pending for race condition between the flush thread and the worker thread
+    pending = @pending[key]
+
+    if match
+      event.tag(MULTILINE_TAG)
+      # this line is part of a multiline event, the next
+      # line will be part, too, put it into pending.
+      if pending
+        pending.append(event)
+      else
+        @pending[key] = event
+      end
+      event.cancel
+    else
+      # if we have something in pending, join it with this message
+      # and send it. otherwise, this is a new message and not part of
+      # multiline, send it.
+      if pending
+        pending.append(event)
+        event.overwrite(pending)
+        @pending.delete(key)
+      end
+    end # if match
+  end
 
   def collapse_event!(event)
     event["message"] = event["message"].join("\n") if event["message"].is_a?(Array)
