@@ -57,4 +57,5 @@ describe LogStash::Filters::Split do
       insist { subject[2]["custom"] } == "sesame street"
     end
   end
+
 end
