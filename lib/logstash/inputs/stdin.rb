@@ -30,7 +30,7 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
           event["host"] = @host
           queue << event
         end
-      rescue EOFError, LogStash::ShutdownSignal
+      rescue IOError, EOFError, LogStash::ShutdownSignal
         # stdin closed or a requested shutdown
         break
       end
