@@ -6,6 +6,14 @@ class Treetop::Runtime::SyntaxNode
     return elements.collect(&:compile).reject(&:empty?).join("")
   end
 
+  # Traverse the syntax tree recursively.
+  # Breadth-first.
+  def recurse(e, depth=0, &block)
+    r = block.call(e, depth)
+    e.elements.each { |e| recurse(e, depth+1, &block) } if r && e.elements
+    nil
+  end
+
   def recursive_inject(results=[], &block)
     if !elements.nil?
       elements.each do |element|
