@@ -7,7 +7,8 @@ class Treetop::Runtime::SyntaxNode
   end
 
   # Traverse the syntax tree recursively.
-  # Breadth-first.
+  # The order should respect the order of the configuration file as it is read
+  # and written by humans (and the order in which it is parsed).
   def recurse(e, depth=0, &block)
     r = block.call(e, depth)
     e.elements.each { |e| recurse(e, depth+1, &block) } if r && e.elements
