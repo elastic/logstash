@@ -234,12 +234,6 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
         LogStash::Outputs::Elasticsearch::Protocols::HTTPClient
     end
 
-    @client = client_class.new(options)
-
-    @logger.info("New Elasticsearch output", :cluster => @cluster,
-                 :host => @host, :port => @port, :embedded => @embedded,
-                 :protocol => @protocol)
-
     if @embedded
       raise(LogStash::ConfigurationError, "The 'embedded => true' setting is only valid for the elasticsearch output under JRuby. You are running #{RUBY_DESCRIPTION}") unless LogStash::Environment.jruby?
       LogStash::Environment.load_elasticsearch_jars!
@@ -252,6 +246,12 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       # Start Elasticsearch local.
       start_local_elasticsearch
     end
+
+    @client = client_class.new(options)
+
+    @logger.info("New Elasticsearch output", :cluster => @cluster,
+                 :host => @host, :port => @port, :embedded => @embedded,
+                 :protocol => @protocol)
 
 
     if @manage_template
