@@ -303,7 +303,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     #builder.local(true)
     builder.settings.put("cluster.name", @cluster) if @cluster
     builder.settings.put("node.name", @node_name) if @node_name
-    builder.settings.put("network.host") = @bind_host if @bind_host
+    builder.settings.put("network.host", @bind_host) if @bind_host
     builder.settings.put("http.port", @embedded_http_port)
 
     @embedded_elasticsearch = builder.node
