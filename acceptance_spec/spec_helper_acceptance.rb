@@ -9,7 +9,7 @@ hosts.each do |host|
   if host.is_pe?
     install_pe
   else
-    puppetversion = ENV['VM_PUPPET_VERSION']
+    puppetversion = ENV['VM_PUPPET_VERSION'] || '3.4.0'
     install_package host, 'rubygems'
     on host, "gem install puppet --no-ri --no-rdoc --version '~> #{puppetversion}'"
     on host, "mkdir -p #{host['distmoduledir']}"
