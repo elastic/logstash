@@ -1,4 +1,4 @@
-require 'spec_helper_acceptance'
+require_relative '../spec_helper_acceptance'
 
 describe "Logstash class:" do
 
