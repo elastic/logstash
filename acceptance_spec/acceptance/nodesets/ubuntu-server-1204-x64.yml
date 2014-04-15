@@ -1,0 +1,14 @@
+HOSTS:
+  ubuntu-12-04:
+    roles:
+      - master
+      - database
+      - dashboard
+    platform: ubuntu-12.04-amd64
+    image: jordansissel/system:ubuntu-12.04
+    hypervisor: docker
+    docker_cmd: '["/sbin/init"]'
+    extra_commands:
+      - 'apt-get install -yq ruby1.8-dev libaugeas-dev libaugeas-ruby ruby rubygems lsb-release wget net-tools curl'
+CONFIG:
+  type: foss
