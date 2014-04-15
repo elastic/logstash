@@ -24,6 +24,7 @@ describe "Logstash class:" do
 
       # Run it twice and test for idempotency
       apply_manifest(pp, :catch_failures => true)
+      sleep 20
       expect(apply_manifest(pp, :catch_failures => true).exit_code).to be_zero
 
     end
@@ -35,7 +36,7 @@ describe "Logstash class:" do
     describe service(service_name) do
       it { should be_enabled }
       it { should be_running }
-    end  
+    end
 
     describe file(pid_file) do
       it { should be_file }
@@ -44,9 +45,24 @@ describe "Logstash class:" do
 
     describe port(2000) do
       it {
-        sleep 5
+        sleep 30
         should be_listening
       }
+    end
+
+  end
+
+  context "ensure we are still running" do
+
+    describe service(service_name) do
+      it {
+        sleep 30
+        should be_running
+      }
+    end
+
+    describe port(2000) do
+      it { should be_listening }
     end
 
   end
