@@ -1,0 +1,15 @@
+source 'https://rubygems.org'
+
+gem 'beaker', :git => 'https://github.com/electrical/beaker.git', :branch => 'docker_test'
+gem 'beaker-rspec'
+gem 'pry'
+gem 'docker-api'
+gem 'rubysl-securerandom'
+gem 'rspec_junit_formatter'
+
+case RUBY_VERSION
+when '1.8.7'
+  gem 'rake', '~> 10.1.0'
+else
+  gem 'rake'
+end
