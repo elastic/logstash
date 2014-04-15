@@ -4,6 +4,11 @@ require 'securerandom'
 
 files_dir = ENV['files_dir'] || '/home/jenkins/puppet'
 
+proxy_host = ENV['proxy_host'] || ''
+
+gem_proxy = ''
+gem_proxy = "http_proxy=http://#{proxy_host}" unless proxy_host.empty?
+
 hosts.each do |host|
   # Install Puppet
   if host.is_pe?
@@ -11,7 +16,7 @@ hosts.each do |host|
   else
     puppetversion = ENV['VM_PUPPET_VERSION'] || '3.4.0'
     install_package host, 'rubygems'
-    on host, "gem install puppet --no-ri --no-rdoc --version '~> #{puppetversion}'"
+    on host, "#{gem_proxy} gem install puppet --no-ri --no-rdoc --version '~> #{puppetversion}'"
     on host, "mkdir -p #{host['distmoduledir']}"
 
     if fact('osfamily') == 'Suse'
@@ -19,6 +24,14 @@ hosts.each do |host|
       on host, 'gem install ruby-augeas --no-ri --no-rdoc'
     end
 
+  end
+
+  # Setup proxy if its enabled
+  if fact('osfamily') == 'Debian'
+          on host, "echo 'Acquire::http::Proxy \"http://#{proxy_host}/\";' >> /etc/apt/apt.conf.d/10proxy" unless proxy_host.empty?
+  end
+  if fact('osfamily') == 'RedHat'
+    on host, "echo 'proxy=http://#{proxy_host}/' >> /etc/yum.conf" unless proxy_host.empty?
   end
 
 end
@@ -38,10 +51,6 @@ RSpec.configure do |c|
 
       on host, puppet('module','install','elasticsearch-logstash'), { :acceptable_exit_codes => [0,1] }
 
-      if !host.is_pe?
-        scp_to(host, "#{files_dir}/puppetlabs-stdlib-3.2.0.tar.gz", '/tmp/puppetlabs-stdlib-3.2.0.tar.gz')
-        on host, puppet('module','install','/tmp/puppetlabs-stdlib-3.2.0.tar.gz'), { :acceptable_exit_codes => [0,1] }
-      end
       if fact('osfamily') == 'Debian'
         scp_to(host, "#{files_dir}/puppetlabs-apt-1.4.2.tar.gz", '/tmp/puppetlabs-apt-1.4.2.tar.gz')
         on host, puppet('module','install','/tmp/puppetlabs-apt-1.4.2.tar.gz'), { :acceptable_exit_codes => [0,1] }
