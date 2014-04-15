@@ -1,0 +1,15 @@
+HOSTS:
+  debian-7:
+    roles:
+      - master
+      - database
+      - dashboard
+    platform: debian-7-amd64
+    image: jordansissel/system:debian-7.3
+    hypervisor: docker
+    docker_cmd: '["/sbin/init"]'
+    extra_commands:
+      - 'apt-get install -yq lsb-release wget net-tools ruby rubygems ruby1.8-dev libaugeas-dev libaugeas-ruby ntpdate locales-all'
+      - 'REALLY_GEM_UPDATE_SYSTEM=1 gem update --system --no-ri --no-rdoc'
+CONFIG:
+  type: foss
