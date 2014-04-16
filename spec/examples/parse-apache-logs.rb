@@ -15,6 +15,7 @@ describe "apache common log format", :if => RUBY_ENGINE == "jruby" do
       }
       date {
         match => ["timestamp", "dd/MMM/yyyy:HH:mm:ss Z"]
+        locale => "en"
       }
     }
   CONFIG
