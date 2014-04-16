@@ -43,6 +43,9 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   # Labels for severity levels. These are defined in RFC3164.
   config :severity_labels, :validate => :array, :default => [ "Emergency" , "Alert", "Critical", "Error", "Warning", "Notice", "Informational", "Debug" ]
 
+  # Locale
+  config :locale, :validate => :string
+
   public
   def initialize(params)
     super
@@ -58,8 +61,10 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
       "match" => { "message" => "<%{POSINT:priority}>%{SYSLOGLINE}" },
     )
 
+    locale = @config["locale"][0] if @config["locale"] != nil and @config["locale"][0] != nil
     @date_filter = LogStash::Filters::Date.new(
-      "match" => [ "timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss", "ISO8601"]
+      "match" => [ "timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss", "ISO8601"],
+      "locale" => locale
     )
 
     @grok_filter.register
