@@ -16,22 +16,23 @@ setup_ruby() {
 
 setup_java() {
   if [ -z "$JAVACMD" ] ; then
-    if [ -z "$JAVA_HOME/bin/java" ] ; then
+    if [ -n "$JAVA_HOME" ] ; then
       JAVACMD="$JAVA_HOME/bin/java"
     else
       JAVACMD="java"
     fi
-  elif [ "$(basename $JAVACMD)" = "drip" ] ; then
+  else
+    JAVACMD=$(which $JAVACMD 2>/dev/null)
+  fi
+
+  if [ "$(basename $JAVACMD)" = "drip" ] ; then
     export DRIP_INIT_CLASS="org.jruby.main.DripMain"
     export DRIP_INIT=
   fi
 
   if [ ! -x "$JAVACMD" ] ; then
-    JAVACMD="$(which $JAVACMD 2> /dev/null)"
-    if [ ! -x "$JAVACMD" ] ; then
-      echo "Could not find any executable java binary (tried '$JAVACMD'). Please install java in your PATH or set JAVA_HOME."
-      exit 1
-    fi
+    echo "Could not find any executable java binary. Please install java in your PATH or set JAVA_HOME."
+    exit 1
   fi
 
   JAVA_OPTS="$JAVA_OPTS -Xmx${LS_HEAP_SIZE}"
