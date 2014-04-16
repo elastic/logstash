@@ -53,7 +53,7 @@ case $1 in
 	  	exit 1
 	fi
   	gzip -dc ${TARGET} | tar -xC $TARGETDIR
-  	cp -R ${TARGETDIR}/$FILEPATH/* .  ;; # Copy contents to local directory, adding on top of existing install
+  	cp -R ${TARGETDIR}/$FILEPATH/* $basedir  ;; # Copy contents to local directory, adding on top of existing install
   *) 
   	echo "Usage: bin/plugin install contrib"
 	exit 0
