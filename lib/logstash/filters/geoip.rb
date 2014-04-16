@@ -35,7 +35,12 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
 
   # The field containing the IP address or hostname to map via geoip. If
   # this field is an array, only the first value will be used.
+  # If this field is a hash, please specify an index (See :index)
   config :source, :validate => :string, :required => true
+
+  # The index of the hash.
+  # Should be specified as String. See :source
+  config :index, :validates => :string
 
   # An array of geoip fields to be included in the event.
   #
@@ -124,7 +129,11 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
 
     begin
       ip = event[@source]
-      ip = ip.first if ip.is_a? Array
+      if ip.is_a?(Hash)
+        ip = ip[@index]
+      elsif ip.is_a?(Array)
+        ip = ip.first
+      end
       geo_data = Thread.current[@threadkey].send(@geoip_type, ip)
     rescue SocketError => e
       @logger.error("IP Field contained invalid IP address or hostname", :field => @field, :event => event)
