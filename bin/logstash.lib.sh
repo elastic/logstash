@@ -66,7 +66,8 @@ setup_java() {
 setup_vendored_jruby() {
   RUBYVER=1.9
   RUBY=jruby
-  RUBYCMD="$JAVACMD $JAVA_OPTS -jar $basedir/vendor/jar/jruby-complete-*.jar"
+  RUBYCMD="$JAVACMD $JAVA_OPTS -jar"
+  JARFILE=$(ls "$basedir"/vendor/jar/jruby-complete-*.jar)
 }
 
 setup() {
