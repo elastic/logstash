@@ -204,7 +204,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   #       grok {
   #         match => [ 
   #           "message",
-  #           "%{SYSLOGBASE} %{DATA:message}
+  #           "%{SYSLOGBASE} %{DATA:message}"
   #         ]
   #         overwrite => [ "message" ]
   #       }
