@@ -88,7 +88,7 @@ case $os in
       -a noarch --iteration "1_${RPM_REVISION}" \
       --url "$URL" \
       --description "$DESCRIPTION" \
-      -d "jre >= 1.6.0" \
+      -d "jdk >= 1.6.0" \
       --vendor "Elasticsearch" \
       --license "ASL 2.0" \
       --rpm-use-file-permissions \
