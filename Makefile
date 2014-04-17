@@ -3,7 +3,7 @@
 #   wget or curl
 #
 JRUBY_VERSION=1.7.11
-ELASTICSEARCH_VERSION=1.0.1
+ELASTICSEARCH_VERSION=1.1.1
 
 WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
@@ -19,7 +19,7 @@ GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
 GEOIP_ASN=vendor/geoip/GeoIPASNum.dat
 GEOIP_ASN_URL=http://logstash.objects.dreamhost.com/maxmind/GeoIPASNum-2014-02-12.dat.gz
-KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-3.0.0.tar.gz
+KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-3.0.1.tar.gz
 PLUGIN_FILES=$(shell find lib -type f| egrep '^lib/logstash/(inputs|outputs|filters|codecs)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 QUIET=@
 ifeq (@,$(QUIET))
