@@ -34,10 +34,9 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   #           "line 2",
   #           "line 3"
   #         ]
+  #         # Emit all lines 3 times.
+  #         count => 3
   #       }
-  #
-  #       # Emit all lines 3 times.
-  #       count => 3
   #     }
   #
   # The above will emit "line 1" then "line 2" then "line", then "line 1", etc... 
