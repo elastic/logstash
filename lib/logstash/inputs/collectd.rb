@@ -433,7 +433,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
         break if !was_encrypted and @security_level == SECURITY_ENCR
 
         # Fill in the fields.
-        if values.kind_of?(Array)
+        if values.kind_of?(Array) and not values.empty? # Catch empty arrays to fix JIRA LOGSTASH-2053
           if values.length > 1              # Only do this iteration on multi-value arrays
             values.each_with_index {|value, x| @collectd[@types[@collectd['collectd_type']][x]] = values[x]}
           else                              # Otherwise it's a single value
