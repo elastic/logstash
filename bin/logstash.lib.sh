@@ -16,7 +16,7 @@ setup_ruby() {
   VENDORED_JRUBY=
 
   export GEM_HOME="${basedir}/vendor/bundle/${RUBY}/${RUBYVER}"
-  export GEM_PATH=
+  export GEM_PATH=${GEM_HOME}
 }
 
 setup_java() {
@@ -74,7 +74,7 @@ setup_vendored_jruby() {
 
   export RUBYLIB="${basedir}/lib"
   export GEM_HOME="${basedir}/vendor/bundle/${RUBY}/${RUBYVER}"
-  export GEM_PATH=
+  export GEM_PATH=${GEM_HOME}
 }
 
 setup() {
