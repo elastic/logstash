@@ -1,0 +1,2 @@
+STORM_WORKER ^%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}%{SPACE}%{HOUR:hour}:%{MINUTE:minute}:%{SECOND:second}%{SPACE}%{JAVAFILE:javaFile}%{SPACE}\[%{LOGLEVEL:logLevel}\]%{SPACE}%{GREEDYDATA:logMessage}
+STORM_NIMBUS ^%{MONTH:month}%{SPACE}%{MONTHDAY:day}%{SPACE}%{YEAR:year}%{SPACE}%{HOUR:hour}:%{MINUTE:minute}:%{SECOND:second}%{SPACE}%{WORD:meridiem}%{SPACE}%{LOGLEVEL:logLevel}%{SPACE}\(%{JAVAFILE:javaFile}\)%{SPACE}-%{SPACE}%{GREEDYDATA:logMessage}
