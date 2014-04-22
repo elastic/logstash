@@ -86,8 +86,7 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
   def initialize(params)
     @types = {} # This needs to be called before register (which super does).
     super
-    @timestamp = Time.now().utc
-    @collectd = {}
+    #@timestamp = Time.now().utc
   end # def initialize
 
   public
@@ -108,7 +107,7 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
         elsif File.exists?("vendor/collectd/types.db")
           @typesdb = ["vendor/collectd/types.db"]
         else
-          raise "You must specify 'typesdb => ...' in your collectd input"
+          raise LogStash::ConfigurationError, "You must specify 'typesdb => ...' in your collectd input"
         end
       end
     end
@@ -143,12 +142,11 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
         end
       end
     end
-  @logger.debug("Collectd Types", :types => @types.to_s)
+    @logger.debug("Collectd Types", :types => @types.to_s)
   end # def get_types
 
   public
   def get_values(id, body)
-    retval = ''
     case id
       when 0,2,3,4,5,256 #=> String types
         retval = body.pack("C*")
@@ -219,14 +217,14 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
     # for every event.
     @logger.debug("Parsing authfile #{@authfile}")
     if !File.exist?(@authfile)
-      raise "The file #{@authfile} was not found"
+      raise LogStash::ConfigurationError, "The file #{@authfile} was not found"
     end
     @auth.clear
     @authmtime = File.stat(@authfile).mtime
-    File.readlines(@authfile).each do |line|
+    File.readlines(@authfile).each_line do
       #line.chomp!
       k,v = line.scan(AUTHFILEREGEX).flatten
-      if k and v
+      if k && v
         @logger.debug("Added authfile entry '#{k}' with key '#{v}'")
         @auth[k] = v
       else
@@ -256,8 +254,7 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
     key = get_key(user)
     return false if key.nil?
 
-    return true if OpenSSL::HMAC.digest(@sha256, key, user+payload) == signature
-    return false
+    return OpenSSL::HMAC.digest(@sha256, key, user+payload) == signature
   end # def verify_signature
 
   private
@@ -267,7 +264,10 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
     return [] if content.length < 26
     content = content.pack('C*') if content.is_a?(Array)
     key = get_key(user)
-    return [] if key.nil?
+    if key.nil?
+      @logger.debug("Key was nil")
+      return []
+    end
 
     # Set the correct state of the cipher instance
     @cipher.decrypt
@@ -295,8 +295,7 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
   def decode(payload)
     payload = payload.bytes.to_a
 
-    # Clear the last event
-    @collectd.clear
+    collectd = {}
     was_encrypted = false
 
      while payload.length > 0 do
@@ -334,51 +333,50 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
         # We've reached a new plugin, delete everything except for the the host
         # field, because there's only one per packet and the timestamp field,
         # because that one goes in front of the plugin
-        @collectd.each_key do |k|
-          @collectd.delete(k) if !['host', '@timestamp'].include?(k)
+        collectd.each_key do |k|
+          collectd.delete(k) if !['host', '@timestamp'].include?(k)
         end
       when "collectd_type"
         # We've reached a new type within the plugin section, delete all fields
         # that could have something to do with the previous type (if any)
-        @collectd.each_key do |k|
-          @collectd.delete(k) if !['host', '@timestamp', 'plugin', 'plugin_instance'].include?(k)
+        collectd.each_key do |k|
+          collectd.delete(k) if !['host', '@timestamp', 'plugin', 'plugin_instance'].include?(k)
         end
       end
 
       break if !was_encrypted and @security_level == SECURITY_ENCR
 
       # Fill in the fields.
-      if values.kind_of?(Array)
+      if values.is_a?(Array)
         if values.length > 1              # Only do this iteration on multi-value arrays
-          #values.each_with_index {|value, x| @collectd[@types[@collectd['collectd_type']][x]] = values[x]}
+          #values.each_with_index {|value, x| collectd[@types[collectd['collectd_type']][x]] = values[x]}
           values.each_with_index do |value, x|
-            type = @collectd['collectd_type']
+            type = collectd['collectd_type']
             key = @types[type]
             key_x = key[x]
             # assign
-            @collectd[key_x] = value
+            collectd[key_x] = value
           end
         else                              # Otherwise it's a single value
-          @collectd['value'] = values[0]      # So name it 'value' accordingly
+          collectd['value'] = values[0]      # So name it 'value' accordingly
         end
       elsif field != nil                  # Not an array, make sure it's non-empty
-        @collectd[field] = values            # Append values to @collectd under key field
+        collectd[field] = values            # Append values to collectd under key field
       end
 
       if ["interval", "values"].include?(field)
         if ((@prune_intervals && ![7,9].include?(typenum)) || !@prune_intervals)
           # Prune these *specific* keys if they exist and are empty.
           # This is better than looping over all keys every time.
-          @collectd.delete('type_instance') if @collectd['type_instance'] == ""
-          @collectd.delete('plugin_instance') if @collectd['plugin_instance'] == ""
+          collectd.delete('type_instance') if collectd['type_instance'] == ""
+          collectd.delete('plugin_instance') if collectd['plugin_instance'] == ""
           # This ugly little shallow-copy hack keeps the new event from getting munged by the cleanup
-          # since pass-by-reference allows this (if we pass @collectd, then clean it up rapidly)
-          send_me = @collectd.dup
-          yield LogStash::Event.new(send_me)
+          # With pass-by-reference we get hosed (if we pass collectd, then clean it up rapidly, values can disappear)
+          yield LogStash::Event.new(collectd.dup)
         end
         # Clean up the event
-        @collectd.each_key do |k|
-          @collectd.delete(k) if !['host','collectd_type', 'plugin', 'plugin_instance', '@timestamp', 'type_instance'].include?(k)
+        collectd.each_key do |k|
+          collectd.delete(k) if !['host','collectd_type', 'plugin', 'plugin_instance', '@timestamp', 'type_instance'].include?(k)
         end
         # This needs to go here to clean up before the next chunk iteration
         was_encrypted = false
