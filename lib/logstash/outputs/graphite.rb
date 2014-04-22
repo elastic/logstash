@@ -133,7 +133,7 @@ class LogStash::Outputs::Graphite < LogStash::Outputs::Base
       # TODO(sissel): Test error cases. Catch exceptions. Find fortune and glory.
       begin
         @socket.puts(message)
-      rescue Errno::EPIPE, Errno::ECONNRESET => e
+      rescue Errno::EPIPE, Errno::ECONNRESET, IOError => e
         @logger.warn("Connection to graphite server died",
                      :exception => e, :host => @host, :port => @port)
         sleep(@reconnect_interval)
