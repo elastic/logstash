@@ -19,6 +19,6 @@
    end
    annotation += ", default: #{config[:default].inspect}" if config.include?(:default)
 -%>
-    <a href="#<%= name %>"><%= name %></a> => ... # <%= annotation %>
+<%= "  " if section == "codec" %>    <a href="#<%= name %>"><%= name %></a> => ... # <%= annotation %>
 <% end -%>
-}
+<%= "  " if section == "codec" %>  }

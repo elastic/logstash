@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-Encoding.default_external = "UTF-8"
+Encoding.default_external = Encoding::UTF_8
 $START = Time.now
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
@@ -53,8 +53,46 @@ I18n.load_path << File.expand_path(
   File.join(File.dirname(__FILE__), "../../locales/en.yml")
 )
 
+class LogStash::RSpecsRunner
+  def initialize(args)
+    @args = args.collect do |arg|
+      # if the arg ends in .rb or has a "/" in it, assume it's a path.
+      if arg =~ /\.rb$/ || arg =~ /\//
+        # check if it's a file, if not, try inside the jar if we are in it.
+        if !File.exists?(arg) && __FILE__ =~ /file:.*\.jar!\//
+          # Try inside the jar.
+          jar_root = __FILE__.gsub(/!.*/,"!")
+          newpath = File.join(jar_root, arg)
+
+          # Strip leading 'jar:' path (JRUBY_6970)
+          newpath.gsub!(/^jar:/, "")
+          if File.exists?(newpath)
+            # Add the 'spec' dir to the load path so specs can run
+            specpath = File.join(jar_root, "spec")
+            $LOAD_PATH << specpath unless $LOAD_PATH.include?(specpath)
+            next newpath
+          end
+        end
+      end
+      next arg
+    end # args.collect
+  end
+
+  def run
+    @result = RSpec::Core::Runner.run(@args)
+  end
+
+  def wait
+    return @result
+  end
+end
+
 class LogStash::Runner
   include LogStash::Program
+
+  def initialize
+    @runners = []
+  end
 
   def main(args)
     require "logstash/util"
@@ -74,7 +112,6 @@ class LogStash::Runner
 
     args = [nil] if args.empty?
 
-    @runners = []
     while args != nil && !args.empty?
       args = run(args)
     end
@@ -99,7 +136,7 @@ class LogStash::Runner
       "version" => lambda do
         require "logstash/agent"
         agent_args = ["--version"]
-        if args.include?("--verbose") 
+        if args.include?("--verbose")
           agent_args << "--verbose"
         end
         LogStash::Agent.run($0, agent_args)
@@ -112,58 +149,14 @@ class LogStash::Runner
         @runners << kibana
         return kibana.run(args)
       end,
-      "test" => lambda do
-        $LOAD_PATH << File.join(File.dirname(__FILE__), "..", "..", "test")
-        require "logstash/test"
-        test = LogStash::Test.new
-        @runners << test
-        return test.run(args)
-      end,
       "rspec" => lambda do
         require "rspec/core/runner"
         require "rspec"
-        fixedargs = args.collect do |arg|
-          # if the arg ends in .rb or has a "/" in it, assume it's a path.
-          if arg =~ /\.rb$/ || arg =~ /\//
-            # check if it's a file, if not, try inside the jar if we are in it.
-            if !File.exists?(arg) && __FILE__ =~ /file:.*\.jar!\//
-              # Try inside the jar.
-              jar_root = __FILE__.gsub(/!.*/,"!")
-              newpath = File.join(jar_root, arg)
-
-              # Strip leading 'jar:' path (JRUBY_6970)
-              newpath.gsub!(/^jar:/, "")
-              if File.exists?(newpath)
-                # Add the 'spec' dir to the load path so specs can run
-                specpath = File.join(jar_root, "spec")
-                $LOAD_PATH << specpath unless $LOAD_PATH.include?(specpath)
-                next newpath
-              end
-            end
-          end
-          next arg
-        end # args.collect
-
-        # Hack up a runner
-        runner = Class.new do
-          def initialize(args)
-            @args = args
-          end
-          def run
-            @thread = Thread.new do
-              @result = RSpec::Core::Runner.run(@args)
-            end
-          end
-          def wait
-            @thread.join
-            return @result
-          end
-        end
-
-        $LOAD_PATH << File.expand_path("#{File.dirname(__FILE__)}/../../spec")
+        spec_path = File.expand_path(File.join(File.dirname(__FILE__), "/../../spec"))
+        $LOAD_PATH << spec_path
         require "test_utils"
-        #p :args => fixedargs
-        rspec = runner.new(fixedargs)
+        all_specs = Dir.glob(File.join(spec_path, "/**/*.rb"))
+        rspec = LogStash::RSpecsRunner.new(args.empty? ? all_specs : args)
         rspec.run
         @runners << rspec
         return []
@@ -188,17 +181,16 @@ class LogStash::Runner
         begin
           agent.parse(args)
         rescue Clamp::HelpWanted => e
-          puts e.command.help
+          show_help(e.command)
+          return []
         rescue Clamp::UsageError => e
           # If 'too many arguments' then give the arguments to
           # the next command. Otherwise it's a real error.
           raise if e.message != "too many arguments"
           remaining = agent.remaining_arguments
         end
-
-        #require "pry"
-        #binding.pry
         @runners << Stud::Task.new { agent.execute }
+
         return remaining
       end
     } # commands
@@ -231,8 +223,17 @@ class LogStash::Runner
     return args
   end # def run
 
+  # @return true if this file is the main file being run and not via rspec
+  def self.autorun?
+    # caller is the current execution stack
+    $0 == __FILE__ && caller.none?{|entry| entry =~ /rspec/}
+  end
+
+  private
+
+  def show_help(command)
+    puts command.help
+  end
 end # class LogStash::Runner
 
-if $0 == __FILE__
-  LogStash::Runner.new.main(ARGV)
-end
+LogStash::Runner.new.main(ARGV) if LogStash::Runner.autorun?

@@ -129,7 +129,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # To include "from" and "to", but exclude the "foo" key, you could use this configuration:
   #     filter {
   #       kv {
-  #         include_keys = [ "from", "to" ]
+  #         include_keys => [ "from", "to" ]
   #       }
   #     }
   config :include_keys, :validate => :array, :default => []
@@ -141,7 +141,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # To exclude "from" and "to", but retain the "foo" key, you could use this configuration:
   #     filter {
   #       kv {
-  #         exclude_keys = [ "from", "to" ]
+  #         exclude_keys => [ "from", "to" ]
   #       }
   #     }
   config :exclude_keys, :validate => :array, :default => []
@@ -151,7 +151,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #
   #     filter {
   #       kv {
-  #         default_keys = [ "from", "logstash@example.com",
+  #         default_keys => [ "from", "logstash@example.com",
   #                          "to", "default@dev.null" ]
   #       }
   #     }

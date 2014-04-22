@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "test_utils"
 require "logstash/filters/grok"
 
@@ -128,6 +130,32 @@ describe LogStash::Filters::Grok do
       insist { subject["syslog5424_msgid"] } == nil
       insist { subject["syslog5424_sd"] } == nil
       insist { subject["syslog5424_msg"] } == "Additional spaces and missing SD."
+    end
+
+    sample "<30>1 2014-04-04T16:44:07+02:00 osctrl01 dnsmasq-dhcp 8048 - -  Appname contains a dash" do
+      insist { subject["tags"] }.nil?
+      insist { subject["syslog5424_pri"] } == "30"
+      insist { subject["syslog5424_ver"] } == "1"
+      insist { subject["syslog5424_ts"] } == "2014-04-04T16:44:07+02:00"
+      insist { subject["syslog5424_host"] } == "osctrl01"
+      insist { subject["syslog5424_app"] } == "dnsmasq-dhcp"
+      insist { subject["syslog5424_proc"] } == "8048"
+      insist { subject["syslog5424_msgid"] } == nil
+      insist { subject["syslog5424_sd"] } == nil
+      insist { subject["syslog5424_msg"] } == "Appname contains a dash"
+    end
+
+    sample "<30>1 2014-04-04T16:44:07+02:00 osctrl01 - 8048 - -  Appname is nil" do
+      insist { subject["tags"] }.nil?
+      insist { subject["syslog5424_pri"] } == "30"
+      insist { subject["syslog5424_ver"] } == "1"
+      insist { subject["syslog5424_ts"] } == "2014-04-04T16:44:07+02:00"
+      insist { subject["syslog5424_host"] } == "osctrl01"
+      insist { subject["syslog5424_app"] } == nil
+      insist { subject["syslog5424_proc"] } == "8048"
+      insist { subject["syslog5424_msgid"] } == nil
+      insist { subject["syslog5424_sd"] } == nil
+      insist { subject["syslog5424_msg"] } == "Appname is nil"
     end
   end
 
@@ -421,9 +449,9 @@ describe LogStash::Filters::Grok do
     end
   end
 
-  describe "performance test", :if => ENV["SPEEDTEST"] do
+  describe "performance test", :performance => true do
     event_count = 100000
-    min_rate = 4000
+    min_rate = 2000
 
     max_duration = event_count / min_rate
     input = "Nov 24 01:29:01 -0800"
@@ -445,9 +473,11 @@ describe LogStash::Filters::Grok do
     CONFIG
 
     2.times do
+      start = Time.now
       agent do
-        puts "grok parse rate: #{event_count / @duration}"
-        insist { @duration } < max_duration
+        duration = (Time.now - start)
+        puts "filters/grok parse rate: #{"%02.0f/sec" % (event_count / duration)}, elapsed: #{duration}s"
+        insist { duration } < max_duration
       end
     end
   end

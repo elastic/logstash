@@ -1,0 +1,15 @@
+HOSTS:
+  centos-6-x64:
+    roles:
+      - master
+      - database
+      - dashboard
+    platform: el-6-x86_64
+    image: jordansissel/system:centos-6.4
+    hypervisor: docker
+    docker_cmd: '["/sbin/init"]'
+    extra_commands:
+      - 'yum install -y wget ntpdate rubygems ruby-augeas ruby-devel augeas-devel'
+      - 'touch /etc/sysconfig/network'
+CONFIG:
+  type: foss

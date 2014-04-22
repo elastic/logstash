@@ -13,12 +13,15 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   milestone 1
   ISO8601_STRFTIME = "%04d-%02d-%02dT%02d:%02d:%02d.%06d%+03d:00".freeze
 
+  default :codec, "plain"
+
   config :host, :validate => :string, :required => true
   config :port, :validate => :number
 
   config :user, :validate => :string, :required => true
   config :password, :validate => :password, :required => true
   config :secure, :validate => :boolean, :default => true
+  config :verify_cert, :validate => :boolean, :default => true
 
   config :fetch_count, :validate => :number, :default => 50
   config :lowercase_headers, :validate => :boolean, :default => true
@@ -34,6 +37,10 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
     require "net/imap" # in stdlib
     require "mail" # gem 'mail'
 
+    if @secure and not @verify_cert
+      @logger.warn("Running IMAP without verifying the certificate may grant attackers unauthorized access to your mailbox or data")
+    end
+
     if @port.nil?
       if @secure
         @port = 993
@@ -46,7 +53,11 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   end # def register
 
   def connect
-    imap = Net::IMAP.new(@host, :port => @port, :ssl => @secure)
+    sslopt = @secure
+    if @secure and not @verify_cert
+        sslopt = { :verify_mode => OpenSSL::SSL::VERIFY_NONE }
+    end
+    imap = Net::IMAP.new(@host, :port => @port, :ssl => sslopt)
     imap.login(@user, @password.value)
     return imap
   end
@@ -91,41 +102,42 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
       message = part.decoded
     end
 
-    event = LogStash::Event.new("message" => message)
+    @codec.decode(message) do |event|
+      # event = LogStash::Event.new("message" => message)
 
-    # Use the 'Date' field as the timestamp
-    event["@timestamp"] = mail.date.to_time.gmtime
+      # Use the 'Date' field as the timestamp
+      event["@timestamp"] = mail.date.to_time.gmtime
 
-    # Add fields: Add message.header_fields { |h| h.name=> h.value }
-    mail.header_fields.each do |header|
-      if @lowercase_headers
-        # 'header.name' can sometimes be a Mail::Multibyte::Chars, get it in
-        # String form
-        name = header.name.to_s.downcase
-      else
-        name = header.name.to_s
-      end
-      # Call .decoded on the header in case it's in encoded-word form.
-      # Details at:
-      #   https://github.com/mikel/mail/blob/master/README.md#encodings
-      #   http://tools.ietf.org/html/rfc2047#section-2
-      value = header.decoded
+      # Add fields: Add message.header_fields { |h| h.name=> h.value }
+      mail.header_fields.each do |header|
+        if @lowercase_headers
+          # 'header.name' can sometimes be a Mail::Multibyte::Chars, get it in
+          # String form
+          name = header.name.to_s.downcase
+        else
+          name = header.name.to_s
+        end
+        # Call .decoded on the header in case it's in encoded-word form.
+        # Details at:
+        #   https://github.com/mikel/mail/blob/master/README.md#encodings
+        #   http://tools.ietf.org/html/rfc2047#section-2
+        value = transcode_to_utf8(header.decoded)
 
-      # Assume we already processed the 'date' above.
-      next if name == "Date"
+        # Assume we already processed the 'date' above.
+        next if name == "Date"
 
-      case event[name]
-        # promote string to array if a header appears multiple times
-        # (like 'received')
-        when String; event[name] = [event[name], value]
-        when Array; event[name].is_a?(Array)
-        when nil; event[name] = value
-      end
-    end # mail.header_fields.each
+        case event[name]
+          # promote string to array if a header appears multiple times
+          # (like 'received')
+          when String; event[name] = [event[name], value]
+          when Array; event[name] << value
+          when nil; event[name] = value
+        end
+      end # mail.header_fields.each
 
-    decorate(event)
-
-    return event
+      decorate(event)
+      event
+    end
   end # def handle
 
   public
@@ -133,4 +145,13 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
     $stdin.close
     finished
   end # def teardown
+
+  private
+
+  # transcode_to_utf8 is meant for headers transcoding.
+  # the mail gem will set the correct encoding on header strings decoding
+  # and we want to transcode it to utf8
+  def transcode_to_utf8(s)
+    s.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace)
+  end
 end # class LogStash::Inputs::IMAP

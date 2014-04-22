@@ -21,13 +21,18 @@ This is what it might look like in your config file:
 # with an input plugin:
 # you can also use this codec with an output.
 input { 
-  file { 
-    codec =&gt; <%= synopsis.split("\n").map { |l| "  #{l}" }.join("\n") %>
+<% if name == "json_lines" -%>
+  udp {
+    port =&gt; 1234
+<% else -%>
+  file {
+<% end -%>
+    codec =&gt; <%= synopsis -%>
   }
 }
 <% else -%>
 <%= section %> {
-  <%= synopsis %>
+  <%= synopsis -%>
 }
 <% end -%></code></pre>
 
