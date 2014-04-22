@@ -262,7 +262,7 @@ class LogStash::Agent < Clamp::Command
   def configure_plugin_path(paths)
     # prepend any discovered plugins paths to the $LOAD_PATH
     load_paths = paths.map{|path| LogStash::Environment.discover_load_paths(path)}.flatten
-    @logger.warn(I18n.t("logstash.agent.configuration.no_plugins_found", :path => path, :plugin_glob => plugin_glob)) if load_paths.empty?
+    @logger.warn(I18n.t("logstash.agent.configuration.no_plugins_found", :path => paths, :plugin_glob => "")) if load_paths.empty?
     load_paths.each do |path|
       @logger.debug("Adding plugin path", :path => path)
       $LOAD_PATH.unshift(path)
