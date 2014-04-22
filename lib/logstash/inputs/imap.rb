@@ -21,6 +21,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   config :user, :validate => :string, :required => true
   config :password, :validate => :password, :required => true
   config :secure, :validate => :boolean, :default => true
+  config :verify_cert, :validate => :boolean, :default => true
 
   config :fetch_count, :validate => :number, :default => 50
   config :lowercase_headers, :validate => :boolean, :default => true
@@ -36,6 +37,10 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
     require "net/imap" # in stdlib
     require "mail" # gem 'mail'
 
+    if @secure and not @verify_cert
+      @logger.warn("Running IMAP without verifying the certificate may grant attackers unauthorized access to your mailbox or data")
+    end
+
     if @port.nil?
       if @secure
         @port = 993
@@ -48,7 +53,11 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   end # def register
 
   def connect
-    imap = Net::IMAP.new(@host, :port => @port, :ssl => @secure)
+    sslopt = @secure
+    if @secure and not @verify_cert
+        sslopt = { :verify_mode => OpenSSL::SSL::VERIFY_NONE }
+    end
+    imap = Net::IMAP.new(@host, :port => @port, :ssl => sslopt)
     imap.login(@user, @password.value)
     return imap
   end
