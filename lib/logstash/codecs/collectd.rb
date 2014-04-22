@@ -339,7 +339,6 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
       # Fill in the fields.
       if values.is_a?(Array)
         if values.length > 1              # Only do this iteration on multi-value arrays
-          #values.each_with_index {|value, x| collectd[@types[collectd['collectd_type']][x]] = values[x]}
           values.each_with_index do |value, x|
             type = collectd['collectd_type']
             key = @types[type]
