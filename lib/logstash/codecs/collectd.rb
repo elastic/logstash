@@ -93,22 +93,12 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
   def register
     @logger.info("Starting Collectd codec...")
     if @typesdb.nil?
-      if __FILE__ =~ /^file:\/.+!.+/
-        begin
-          # Running from a jar, assume types.db is at the root.
-          jar_path = [__FILE__.split("!").first, "/types.db"].join("!")
-          @typesdb = [jar_path]
-        rescue => ex
-          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
-        end
+      if File.exists?("types.db")
+        @typesdb = ["types.db"]
+      elsif File.exists?("vendor/collectd/types.db")
+        @typesdb = ["vendor/collectd/types.db"]
       else
-        if File.exists?("types.db")
-          @typesdb = ["types.db"]
-        elsif File.exists?("vendor/collectd/types.db")
-          @typesdb = ["vendor/collectd/types.db"]
-        else
-          raise LogStash::ConfigurationError, "You must specify 'typesdb => ...' in your collectd input"
-        end
+        raise LogStash::ConfigurationError, "You must specify 'typesdb => ...' in your collectd input"
       end
     end
     @logger.info("Using internal types.db", :typesdb => @typesdb.to_s)
