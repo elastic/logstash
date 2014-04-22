@@ -350,7 +350,14 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
       # Fill in the fields.
       if values.kind_of?(Array)
         if values.length > 1              # Only do this iteration on multi-value arrays
-          values.each_with_index {|value, x| @collectd[@types[@collectd['collectd_type']][x]] = values[x]}
+          #values.each_with_index {|value, x| @collectd[@types[@collectd['collectd_type']][x]] = values[x]}
+          values.each_with_index do |value, x|
+            type = @collectd['collectd_type']
+            key = @types[type]
+            key_x = key[x]
+            # assign
+            @collectd[key_x] = value
+          end
         else                              # Otherwise it's a single value
           @collectd['value'] = values[0]      # So name it 'value' accordingly
         end
@@ -364,12 +371,17 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
           # This is better than looping over all keys every time.
           @collectd.delete('type_instance') if @collectd['type_instance'] == ""
           @collectd.delete('plugin_instance') if @collectd['plugin_instance'] == ""
-          yield LogStash::Event.new(@collectd)
+          # This ugly little shallow-copy hack keeps the new event from getting munged by the cleanup
+          # since pass-by-reference allows this (if we pass @collectd, then clean it up rapidly)
+          send_me = @collectd.dup
+          yield LogStash::Event.new(send_me)
         end
         # Clean up the event
         @collectd.each_key do |k|
           @collectd.delete(k) if !['host','collectd_type', 'plugin', 'plugin_instance', '@timestamp', 'type_instance'].include?(k)
         end
+        # This needs to go here to clean up before the next chunk iteration
+        was_encrypted = false
       end
     end # while payload.length > 0 do
   end # def decode
