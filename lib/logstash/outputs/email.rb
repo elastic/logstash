@@ -2,13 +2,14 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 
-# Send email when any event is received.
+# Send email when an output is received. Alternatively, you may include or
+# exclude the email output execution using conditionals. 
 class LogStash::Outputs::Email < LogStash::Outputs::Base
 
   config_name "email"
   milestone 1
 
-  # This setting is deprecated in favor of logstash's "conditionals" feature
+  # This setting is deprecated in favor of Logstash's "conditionals" feature
   # If you were using this setting previously, please use conditionals instead.
   #
   # If you need help converting your older 'match' setting to a conditional,
@@ -16,86 +17,89 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
   # the logstash-users@googlegroups.com mailling list and ask for help! :)
   config :match, :validate => :hash, :deprecated => true
 
-  # Who to send this email to?
-  # A fully qualified email address to send to
+  # The fully-qualified email address to send the email to.
   #
-  # This field also accept a comma separated list of emails like 
+  # This field also accepts a comma-separated string of addresses, for example: 
   # "me@host.com, you@host.com"
   #
-  # You can also use dynamic field from the event with the %{fieldname} syntax.
+  # You can also use dynamic fields from the event with the %{fieldname} syntax.
   config :to, :validate => :string, :required => true
 
-  # The From setting for email - fully qualified email address for the From:
+  # The fully-qualified email address for the From: field in the email.
   config :from, :validate => :string, :default => "logstash.alert@nowhere.com"
 
-  # The Reply-To setting for email - fully qualified email address is required
-  # here.
+  # The fully qualified email address for the Reply-To: field.
   config :replyto, :validate => :string
 
-  # Who to CC on this email?
+  # The fully-qualified email address(es) to include as cc: address(es).
   #
-  # See "to" setting for what is valid here.
+  # This field also accepts a comma-separated string of addresses, for example: 
+  # "me@host.com, you@host.com"
   config :cc, :validate => :string
 
-  # how to send email: either smtp or sendmail - default to 'smtp'
+  # How Logstash should send the email, either via SMTP or by invoking sendmail.
   config :via, :validate => :string, :default => "smtp"
 
-  # the options to use:
-  # smtp: address, port, enable_starttls_auto, user_name, password, authentication(bool), domain
-  # sendmail: location, arguments
-  # If you do not specify anything, you will get the following equivalent code set in
+  # Specify the options to use:
+  #
+  # Via SMTP: smtpIporHost, port, domain, userName, password, authenticationType, starttls
+  #
+  # Via sendmail: location, arguments
+  #
+  # If you do not specify any `options`, you will get the following equivalent code set in
   # every new mail object:
   #
-  #   Mail.defaults do
-  #     delivery_method :smtp, { :address              => "localhost",
-  #                              :port                 => 25,
-  #                              :domain               => 'localhost.localdomain',
-  #                              :user_name            => nil,
-  #                              :password             => nil,
-  #                              :authentication       => nil,(plain, login and cram_md5)
-  #                              :enable_starttls_auto => true  }
+  #     Mail.defaults do
+  #       delivery_method :smtp, { :smtpIporHost         => "localhost",
+  #                                :port                 => 25,
+  #                                :domain               => 'localhost.localdomain',
+  #                                :userName             => nil,
+  #                                :password             => nil,
+  #                                :authenticationType   => nil,(plain, login and cram_md5)
+  #                                :starttls             => true  }
   #
-  #     retriever_method :pop3, { :address             => "localhost",
-  #                               :port                => 995,
-  #                               :user_name           => nil,
-  #                               :password            => nil,
-  #                               :enable_ssl          => true }
-  #   end
+  #       retriever_method :pop3, { :address             => "localhost",
+  #                                 :port                => 995,
+  #                                 :user_name           => nil,
+  #                                 :password            => nil,
+  #                                 :enable_ssl          => true }
   #
-  #   Mail.delivery_method.new  #=> Mail::SMTP instance
-  #   Mail.retriever_method.new #=> Mail::POP3 instance
+  #       Mail.delivery_method.new  #=> Mail::SMTP instance
+  #       Mail.retriever_method.new #=> Mail::POP3 instance
+  #     end
   #
-  # Each mail object inherits the default set in Mail.delivery_method, however, on
+  # Each mail object inherits the defaults set in Mail.delivery_method. However, on
   # a per email basis, you can override the method:
   #
-  #   mail.delivery_method :sendmail
+  #     mail.delivery_method :sendmail
   #
   # Or you can override the method and pass in settings:
   #
-  #   mail.delivery_method :sendmail, { :address => 'some.host' }
+  #     mail.delivery_method :sendmail, { :address => 'some.host' }
   #
   # You can also just modify the settings:
   #
-  #   mail.delivery_settings = { :address => 'some.host' }
+  #     mail.delivery_settings = { :address => 'some.host' }
   #
-  # The passed in hash is just merged against the defaults with +merge!+ and the result
-  # assigned the mail object.  So the above example will change only the :address value
-  # of the global smtp_settings to be 'some.host', keeping all other values
+  # The hash you supply is just merged against the defaults with "merge!" and the result
+  # assigned to the mail object.  For instance, the above example will change only the
+  # `:address` value of the global `smtp_settings` to be 'some.host', retaining all other values.
   config :options, :validate => :hash, :default => {}
 
-  # subject for email
+  # Subject: for the email.
   config :subject, :validate => :string, :default => ""
 
-  # body for email - just plain text
+  # Body for the email - plain text only.
   config :body, :validate => :string, :default => ""
 
-  # body for email - can contain html markup
+  # HTML Body for the email, which may contain HTML markup.
   config :htmlbody, :validate => :string, :default => ""
 
-  # attachments - has of name of file and file location
+  # Attachments - specify the name(s) and location(s) of the files.
   config :attachments, :validate => :array, :default => []
 
-  # contenttype : for multipart messages, set the content type and/or charset of the html part
+  # contenttype : for multipart messages, set the content-type and/or charset of the HTML part.
+  # NOTE: this may not be functional (KH)
   config :contenttype, :validate => :string, :default => "text/html; charset=UTF-8"
 
   public

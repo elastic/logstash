@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # This spec covers the question here:
 # https://github.com/logstash/logstash/pull/375
 

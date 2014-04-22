@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "test_utils"
 require "logstash/filters/mutate"
 
@@ -105,7 +107,7 @@ describe LogStash::Filters::Mutate do
         }
       }'
 
-    sample("unicorns" => [ 
+    sample("unicorns" => [
       "Magnificient extinct animals", "Other extinct ideas" ]
     ) do
       insist { subject["unicorns"] } == [

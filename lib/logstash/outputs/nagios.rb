@@ -2,27 +2,26 @@
 require "logstash/namespace"
 require "logstash/outputs/base"
 
-# The nagios output is used for sending passive check results to nagios via the
-# nagios command file. 
+# The Nagios output is used for sending passive check results to Nagios via the
+# Nagios command file. This output currently supports Nagios 3.
 #
-# For this output to work, your event must have the following fields:
+# For this output to work, your event _must_ have the following Logstash event fields:
 #
-#  * "nagios_host"
-#  * "nagios_service"
+#  * `nagios\_host`
+#  * `nagios\_service`
 #
-# These fields are supported, but optional:
+# These Logstash event fields are supported, but optional:
 #
-#  * "nagios_annotation"
-#  * "nagios_level"
+#  * `nagios\_annotation`
+#  * `nagios\_level` (overrides `nagios\_level` configuration option)
 #
 # There are two configuration options:
 #
-#  * commandfile - The location of the Nagios external command file
-#  * nagios_level - Specifies the level of the check to be sent. Defaults to
-#    CRITICAL and can be overriden by setting the "nagios_level" field to one
-#    of "OK", "WARNING", "CRITICAL", or "UNKNOWN" 
-#
-#         match => [ "message", "(error|ERROR|CRITICAL)" ]
+#  * `commandfile` - The location of the Nagios external command file. Defaults
+#    to '/var/lib/nagios3/rw/nagios.cmd'
+#  * `nagios\_level` - Specifies the level of the check to be sent. Defaults to
+#    CRITICAL and can be overriden by setting the "nagios\_level" field to one
+#    of "OK", "WARNING", "CRITICAL", or "UNKNOWN"
 #
 #     output{
 #       if [message] =~ /(error|ERROR|CRITICAL)/ {
@@ -31,12 +30,13 @@ require "logstash/outputs/base"
 #         }
 #       }
 #     }
+#
 class LogStash::Outputs::Nagios < LogStash::Outputs::Base
 
   config_name "nagios"
   milestone 2
 
-  # The path to your nagios command file
+  # The full path to your Nagios command file.
   config :commandfile, :validate => :path, :default => "/var/lib/nagios3/rw/nagios.cmd"
 
   # The Nagios check level. Should be one of 0=OK, 1=WARNING, 2=CRITICAL,

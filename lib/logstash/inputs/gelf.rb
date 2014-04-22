@@ -4,12 +4,11 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket"
 
-# Read gelf messages as events over the network.
+# This input will read GELF messages as events over the network,
+# making it a good choice if you already use Graylog2 today.
 #
-# This input is a good choice if you already use graylog2 today.
-#
-# The main reasoning for this input is to leverage existing GELF
-# logging libraries such as the gelf log4j appender
+# The main use case for this input is to leverage existing GELF
+# logging libraries such as the GELF log4j appender.
 #
 class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   config_name "gelf"
@@ -17,31 +16,29 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
 
   default :codec, "plain"
 
-  # The address to listen on
+  # The IP address or hostname to listen on.
   config :host, :validate => :string, :default => "0.0.0.0"
 
   # The port to listen on. Remember that ports less than 1024 (privileged
   # ports) may require root to use.
   config :port, :validate => :number, :default => 12201
 
-  # Whether or not to remap the gelf message fields to logstash event fields or
+  # Whether or not to remap the GELF message fields to Logstash event fields or
   # leave them intact.
   #
-  # Default is true
+  # Remapping converts the following GELF fields to Logstash equivalents:
   #
-  # Remapping converts the following gelf fields to logstash equivalents:
-  #
-  # * event["message"] becomes full_message
-  #   if no full_message, use event["message"] becomes short_message
-  #   if no short_message, event["message"] is the raw json input
+  # * `full\_message` becomes event["message"].
+  # * if there is no `full\_message`, `short\_message` becomes event["message"].
   config :remap, :validate => :boolean, :default => true
 
-  # Whether or not to remove the leading '_' in GELF fields or leave them
-  # in place. (Logstash < 1.2 did not remove them by default.)
+  # Whether or not to remove the leading '\_' in GELF fields or leave them
+  # in place. (Logstash < 1.2 did not remove them by default.). Note that
+  # GELF version 1.1 format now requires all non-standard fields to be added
+  # as an "additional" field, beginning with an underscore.
   #
-  # _foo becomes foo
+  # e.g. `\_foo` becomes `foo`
   #
-  # Default is true
   config :strip_leading_underscore, :validate => :boolean, :default => true
 
   public
@@ -72,7 +69,7 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
   def udp_listener(output_queue)
     @logger.info("Starting gelf listener", :address => "#{@host}:#{@port}")
 
-    if @udp 
+    if @udp
       @udp.close_read rescue nil
       @udp.close_write rescue nil
     end
@@ -88,10 +85,10 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
         @logger.warn("Gelfd failed to parse a message skipping", :exception => ex, :backtrace => ex.backtrace)
         next
       end
-      
+
       # Gelfd parser outputs null if it received and cached a non-final chunk
-      next if data.nil?    
- 
+      next if data.nil?
+
       event = LogStash::Event.new(JSON.parse(data))
       event["source_host"] = client[3]
       if event["timestamp"].is_a?(Numeric)

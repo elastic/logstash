@@ -13,7 +13,7 @@ class LogStash::Filters::Checksum < LogStash::Filters::Base
 
   config_name "checksum"
   milestone 1
-  
+
   ALGORITHMS = ["md5", "sha", "sha1", "sha256", "sha384",]
 
   # A list of keys to use in creating the string to checksum
@@ -43,7 +43,10 @@ class LogStash::Filters::Checksum < LogStash::Filters::Base
     @to_checksum << "|"
     @logger.debug("Final string built", :to_checksum => @to_checksum)
 
-    digested_string = OpenSSL::Digest.hexdigest(@algorithm, @to_checksum)
+
+    # in JRuby 1.7.11 outputs as ASCII-8BIT
+    digested_string = OpenSSL::Digest.hexdigest(@algorithm, @to_checksum).force_encoding(Encoding::UTF_8)
+
     @logger.debug("Digested string", :digested_string => digested_string)
     event['logstash_checksum'] = digested_string
   end
