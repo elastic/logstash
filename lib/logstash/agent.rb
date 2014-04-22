@@ -279,7 +279,9 @@ class LogStash::Agent < Clamp::Command
 
     # set GEM_PATH to the reverse so that plugins gems are found before own to follow same logic as load path
     ENV["GEM_PATH"] = gem_paths.reverse.join(File::PATH_SEPARATOR)
-    puts("GEMPATH=#{ENV["GEM_PATH"]}")
+
+    # make sure rubygems recomputes its paths with the new GEM_PATH
+    Gem.clear_paths
   end # def configure_plugin_path
 
 
