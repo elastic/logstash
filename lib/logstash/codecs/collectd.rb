@@ -120,10 +120,11 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
       @logger.info("Getting Collectd typesdb info", :typesdb => path.to_s)
       File.open(path, 'r').each_line do |line|
         typename, *line = line.strip.split
-        next if typename.nil? || if typename[0,1] != '#' # Don't process commented or blank lines
-          v = line.collect { |l| l.strip.split(":")[0] }
-          types[typename] = v
-        end
+        @logger.debug("typename", :typename => typename.to_s)
+        next if typename.nil?
+        next if typename[0,1] == '#'
+        v = line.collect { |l| l.strip.split(":")[0] }
+        types[typename] = v
       end
     end
     @logger.debug("Collectd Types", :types => types.to_s)
