@@ -83,13 +83,6 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
   config :authfile, :validate => :string
 
   public
-  def initialize(params)
-    @types = {} # This needs to be called before register (which super does).
-    super
-    #@timestamp = Time.now().utc
-  end # def initialize
-
-  public
   def register
     @logger.info("Starting Collectd codec...")
     if @typesdb.nil?
@@ -102,7 +95,7 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
       end
     end
     @logger.info("Using internal types.db", :typesdb => @typesdb.to_s)
-    get_types(@typesdb)
+    @types = get_types(@typesdb)
 
     if ([SECURITY_SIGN, SECURITY_ENCR].include?(@security_level))
       if @authfile.nil?
@@ -121,6 +114,7 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
 
   public
   def get_types(paths)
+    types = {}
     # Get the typesdb
     paths.each do |path|
       @logger.info("Getting Collectd typesdb info", :typesdb => path.to_s)
@@ -128,11 +122,12 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
         typename, *line = line.strip.split
         next if typename.nil? || if typename[0,1] != '#' # Don't process commented or blank lines
           v = line.collect { |l| l.strip.split(":")[0] }
-          @types[typename] = v
+          types[typename] = v
         end
       end
     end
-    @logger.debug("Collectd Types", :types => @types.to_s)
+    @logger.debug("Collectd Types", :types => types.to_s)
+    return types
   end # def get_types
 
   public
