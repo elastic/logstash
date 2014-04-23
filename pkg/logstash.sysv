@@ -52,7 +52,7 @@ start() {
   # Run the program!
   chroot --userspec $LS_USER:$LS_GROUP / sh -c "
     cd $LS_HOME
-    nice ${LS_NICE}
+    nice -n ${LS_NICE}
     ulimit -n ${LS_OPEN_FILES}
     exec \"$program\" $args
   " > "${LS_LOG_DIR}/$name.stdout" 2> "${LS_LOG_DIR}/$name.err" &
