@@ -53,7 +53,7 @@ start() {
   # Run the program!
   chroot --userspec $LS_USER:$LS_GROUP / sh -c "
     cd $LS_HOME
-    nice ${LS_NICE}
+    nice -n ${LS_NICE}
     ulimit -n ${LS_OPEN_FILES}
     exec \"$program\" $args
   " > /var/log/logstash/$name.stdout 2> /var/log/logstash/$name.err &
