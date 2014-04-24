@@ -36,27 +36,66 @@ require "time"
 # Be sure to replace "10.0.0.1" with the IP of your Logstash instance.
 #
 
-#
+class ProtocolError < LogStash::Error; end
+class EncryptionError < LogStash::Error; end
+
 class LogStash::Codecs::Collectd < LogStash::Codecs::Base
   config_name "collectd"
   milestone 1
 
   AUTHFILEREGEX = /([^:]+): (.+)/
+
+  PLUGIN_TYPE = 2
+  COLLECTD_TYPE = 4
+  SIGNATURE_TYPE = 512
+  ENCRYPTION_TYPE = 528
+
   TYPEMAP = {
-      0   => "host",
-      1   => "@timestamp",
-      2   => "plugin",
-      3   => "plugin_instance",
-      4   => "collectd_type",
-      5   => "type_instance",
-      6   => "values",
-      7   => "interval",
-      8   => "@timestamp",
-      9   => "interval",
-      256 => "message",
-      257 => "severity",
-      512 => "signature",
-      528 => "encryption"
+    0               => "host",
+    1               => "@timestamp",
+    PLUGIN_TYPE     => "plugin",
+    3               => "plugin_instance",
+    COLLECTD_TYPE   => "collectd_type",
+    5               => "type_instance",
+    6               => "values",
+    7               => "interval",
+    8               => "@timestamp",
+    9               => "interval",
+    256             => "message",
+    257             => "severity",
+    SIGNATURE_TYPE  => "signature",
+    ENCRYPTION_TYPE => "encryption"
+  }
+
+  PLUGIN_TYPE_FIELDS = {
+    'host' => true,
+    '@timestamp' => true,
+  }
+
+  COLLECTD_TYPE_FIELDS = {
+    'host' => true,
+    '@timestamp' => true, 
+    'plugin' => true, 
+    'plugin_instance' => true,
+  }
+
+  INTERVAL_VALUES_FIELDS = {
+    "interval" => true, 
+    "values" => true,
+  }
+
+  INTERVAL_BASE_FIELDS = {
+    'host' => true,
+    'collectd_type' => true,
+    'plugin' => true, 
+    'plugin_instance' => true,
+    '@timestamp' => true,
+    'type_instance' => true,
+  }
+
+  INTERVAL_TYPES = {
+    7 => true,
+    9 => true,
   }
 
   SECURITY_NONE = "None"
@@ -121,81 +160,112 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
       File.open(path, 'r').each_line do |line|
         typename, *line = line.strip.split
         @logger.debug("typename", :typename => typename.to_s)
-        next if typename.nil?
-        next if typename[0,1] == '#'
-        v = line.collect { |l| l.strip.split(":")[0] }
-        types[typename] = v
+        next if typename.nil? || typename[0,1] == '#'
+        types[typename] = line.collect { |l| l.strip.split(":")[0] }
       end
     end
     @logger.debug("Collectd Types", :types => types.to_s)
     return types
   end # def get_types
 
-  public
-  def get_values(id, body)
-    case id
-      when 0,2,3,4,5,256 #=> String types
-        retval = body.pack("C*")
-        retval = retval[0..-2]
-      when 1 # Time
-        # Time here, in bit-shifted format.  Parse bytes into UTC.
-        byte1, byte2 = body.pack("C*").unpack("NN")
-        retval = Time.at(( ((byte1 << 32) + byte2))).utc
-      when 7,257 #=> Numeric types
-        retval = body.slice!(0..7).pack("C*").unpack("E")[0]
-      when 8 # Time, Hi-Res
-        # Time here, in bit-shifted format.  Parse bytes into UTC.
-        byte1, byte2 = body.pack("C*").unpack("NN")
-        retval = Time.at(( ((byte1 << 32) + byte2) * (2**-30) )).utc
-      when 9 # Interval, Hi-Res
-        byte1, byte2 = body.pack("C*").unpack("NN")
-        retval = (((byte1 << 32) + byte2) * (2**-30)).to_i
-      when 6 # Values
-        val_bytes = body.slice!(0..1)
-        val_count = val_bytes.pack("C*").unpack("n")
-        if body.length % 9 == 0 # Should be 9 fields
-          count = 0
-          retval = []
-          types = body.slice!(0..((body.length/9)-1))
-          while body.length > 0
-            # TYPE VALUES:
-            # 0: COUNTER
-            # 1: GAUGE
-            # 2: DERIVE
-            # 3: ABSOLUTE
-            case types[count]
-              when 0, 3; v = body.slice!(0..7).pack("C*").unpack("Q>")[0]
-              when 1;    v = body.slice!(0..7).pack("C*").unpack("E")[0]
-              when 2;    v = body.slice!(0..7).pack("C*").unpack("q>")[0]
-              else;      v = 0
-            end
-            retval << v
-            count += 1
-          end
-        else
-          @logger.error("Incorrect number of data fields for collectd record", :body => body.to_s)
-        end
-      when 512 # signature
-        if body.length < 32
-          @logger.warning("SHA256 signature too small (got #{body.length} bytes instead of 32)")
-        elsif body.length < 33
-          @logger.warning("Received signature without username")
-        else
-          retval = []
-          # Byte 32 till the end contains the username as chars (=unsigned ints)
-          retval << body[32..-1].pack('C*')
-          # Byte 0 till 31 contain the signature
-          retval << body[0..31].pack('C*')
-        end
-      when 528 # encryption
-        retval = []
-        user_length = (body.slice!(0) << 8) + body.slice!(0)
-        retval << body.slice!(0..user_length-1).pack('C*') # Username
-        retval << body.slice!(0..15).pack('C*')            # IV
-        retval << body.pack('C*')                          # Encrypted content
+  # Lambdas for hash + closure methodology
+  # This replaces when statements for fixed values and is much faster
+  string_decoder = lambda { |body| body.pack("C*")[0..-2] }
+  numeric_decoder = lambda { |body| body.slice!(0..7).pack("C*").unpack("E")[0] }
+  counter_decoder = lambda { |body| body.slice!(0..7).pack("C*").unpack("Q>")[0] }
+  gauge_decoder   = lambda { |body| body.slice!(0..7).pack("C*").unpack("E")[0] }
+  derive_decoder  = lambda { |body| body.slice!(0..7).pack("C*").unpack("q>")[0] }
+  # For Low-Resolution time
+  time_decoder = lambda do |body|
+    byte1, byte2 = body.pack("C*").unpack("NN")
+    Time.at(( ((byte1 << 32) + byte2))).utc
+  end
+  # Hi-Resolution time
+  hirestime_decoder = lambda do |body|
+    byte1, byte2 = body.pack("C*").unpack("NN")
+    Time.at(( ((byte1 << 32) + byte2) * (2**-30) )).utc
+  end
+  # Hi resolution intervals
+  hiresinterval_decoder = lambda do |body|
+    byte1, byte2 = body.pack("C*").unpack("NN")
+    Time.at(( ((byte1 << 32) + byte2) * (2**-30) )).to_i
+  end
+  # Values decoder
+  values_decoder = lambda do |body|
+    remove_header = body.slice!(0..1)
+    if body.length % 9 == 0 # Should be 9 fields
+      count = 0
+      retval = []
+      # Iterate through and take a slice each time
+      types = body.slice!(0..((body.length/9)-1))
+      while body.length > 0
+        # Use another hash + closure here...
+        retval << VALUES_DECODER[types[count]].call(body)
+        count += 1
+      end
+    else
+      @logger.error("Incorrect number of data fields for collectd record", :body => body.to_s)
     end
     return retval
-  end # def get_values
+  end
+  # Signature
+  signature_decoder = lambda do |body|
+    if body.length < 32
+      @logger.warning("SHA256 signature too small (got #{body.length} bytes instead of 32)")
+    elsif body.length < 33
+      @logger.warning("Received signature without username")
+    else
+      retval = []
+      # Byte 32 till the end contains the username as chars (=unsigned ints)
+      retval << body[32..-1].pack('C*')
+      # Byte 0 till 31 contain the signature
+      retval << body[0..31].pack('C*')
+    end
+    return retval
+  end
+  # Encryption
+  encryption_decoder = lambda do |body|
+    retval = []
+    user_length = (body.slice!(0) << 8) + body.slice!(0)
+    retval << body.slice!(0..user_length-1).pack('C*') # Username
+    retval << body.slice!(0..15).pack('C*')            # IV
+    retval << body.pack('C*')
+    return retval
+  end
+  # Lambda Hashes
+  ID_DECODER = {
+    0 => string_decoder,
+    1 => time_decoder,
+    2 => string_decoder,
+    3 => string_decoder,
+    4 => string_decoder,
+    5 => string_decoder,
+    6 => values_decoder,
+    7 => numeric_decoder,
+    8 => hirestime_decoder,
+    9 => hiresinterval_decoder,
+    256 => string_decoder,
+    257 => numeric_decoder,
+    512 => signature_decoder,
+    528 => encryption_decoder
+  }
+  # TYPE VALUES:
+  # 0: COUNTER
+  # 1: GAUGE
+  # 2: DERIVE
+  # 3: ABSOLUTE
+  VALUES_DECODER = {
+    0 => counter_decoder,
+    1 => gauge_decoder,
+    2 => derive_decoder,
+    3 => counter_decoder
+  }
+
+  public
+  def get_values(id, body)
+    # Use hash + closure/lambda to speed operations
+    ID_DECODER[id].call(body)
+  end
 
   private
   def parse_authfile
@@ -207,7 +277,7 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
     end
     @auth.clear
     @authmtime = File.stat(@authfile).mtime
-    File.readlines(@authfile).each_line do
+    File.readlines(@authfile).each do |line|
       #line.chomp!
       k,v = line.scan(AUTHFILEREGEX).flatten
       if k && v
@@ -304,43 +374,45 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
 
       values = get_values(typenum, body)
 
-      case field
-      when "signature"
-        break if !verify_signature(values[0], values[1], payload)
+      case typenum
+      when SIGNATURE_TYPE
+        raise(EncryptionError) unless verify_signature(values[0], values[1], payload)
         next
-      when "encryption"
+      when ENCRYPTION_TYPE
         payload = decrypt_packet(values[0], values[1], values[2])
-        # decrypt_packet returns an empty array if the decryption was
-        # unsuccessful and this inner loop checks the length. So we can safely
-        # set the 'was_encrypted' variable.
-        was_encrypted=true
+        raise(EncryptionError) if payload.empty?
+        was_encrypted = true
         next
-      when "plugin"
+      when PLUGIN_TYPE
         # We've reached a new plugin, delete everything except for the the host
         # field, because there's only one per packet and the timestamp field,
         # because that one goes in front of the plugin
         collectd.each_key do |k|
-          collectd.delete(k) if !['host', '@timestamp'].include?(k)
+          collectd.delete(k) unless PLUGIN_TYPE_FIELDS.has_key?(k)
         end
-      when "collectd_type"
+      when COLLECTD_TYPE
         # We've reached a new type within the plugin section, delete all fields
         # that could have something to do with the previous type (if any)
         collectd.each_key do |k|
-          collectd.delete(k) if !['host', '@timestamp', 'plugin', 'plugin_instance'].include?(k)
+          collectd.delete(k) unless COLLECTD_TYPE_FIELDS.has_key?(k)
         end
       end
 
-      break if !was_encrypted and @security_level == SECURITY_ENCR
+      raise(EncryptionError) if !was_encrypted and @security_level == SECURITY_ENCR
 
       # Fill in the fields.
       if values.is_a?(Array)
         if values.length > 1              # Only do this iteration on multi-value arrays
           values.each_with_index do |value, x|
-            type = collectd['collectd_type']
-            key = @types[type]
-            key_x = key[x]
-            # assign
-            collectd[key_x] = value
+            begin
+              type = collectd['collectd_type']
+              key = @types[type]
+              key_x = key[x]
+              # assign
+              collectd[key_x] = value
+            rescue
+              @logger.error("Invalid value for type=#{type.inspect}, key=#{@types[type].inspect}, index=#{x}")
+            end
           end
         else                              # Otherwise it's a single value
           collectd['value'] = values[0]      # So name it 'value' accordingly
@@ -349,8 +421,8 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
         collectd[field] = values            # Append values to collectd under key field
       end
 
-      if ["interval", "values"].include?(field)
-        if ((@prune_intervals && ![7,9].include?(typenum)) || !@prune_intervals)
+      if INTERVAL_VALUES_FIELDS.has_key?(field)
+        if ((@prune_intervals && !INTERVAL_TYPES.has_key?(typenum)) || !@prune_intervals)
           # Prune these *specific* keys if they exist and are empty.
           # This is better than looping over all keys every time.
           collectd.delete('type_instance') if collectd['type_instance'] == ""
@@ -361,12 +433,12 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
         end
         # Clean up the event
         collectd.each_key do |k|
-          collectd.delete(k) if !['host','collectd_type', 'plugin', 'plugin_instance', '@timestamp', 'type_instance'].include?(k)
+          collectd.delete(k) if !INTERVAL_BASE_FIELDS.has_key?(k)
         end
-        # This needs to go here to clean up before the next chunk iteration
-        was_encrypted = false
       end
     end # while payload.length > 0 do
+  rescue EncryptionError, ProtocolError
+    # basically do nothing, we just want out
   end # def decode
 
 end # class LogStash::Codecs::Collectd
