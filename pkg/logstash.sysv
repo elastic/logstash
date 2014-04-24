@@ -55,6 +55,7 @@ start() {
     ulimit -n ${LS_OPEN_FILES} && \
     exec nice -n ${LS_NICE} \"$program\" $args \
   " > "${LS_LOG_DIR}/$name.stdout" 2> "${LS_LOG_DIR}/$name.err" &
+
   # Generate the pidfile from here. If we instead made the forked process
   # generate it there will be a race condition between the pidfile writing
   # and a process possibly asking for status.
