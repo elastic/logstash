@@ -29,7 +29,7 @@ class LogStash::Outputs::Xmpp < LogStash::Outputs::Base
 
   # The xmpp server's port to connect to. This is optional. If you omit this setting,
   # the default port (5222) is used.
-  config :port, :validate => :number
+  config :port, :validate => :number, :default => 5222
 
   # The message to send. This supports dynamic strings like %{host}
   config :message, :validate => :string, :required => true
@@ -57,7 +57,7 @@ class LogStash::Outputs::Xmpp < LogStash::Outputs::Base
   def connect
     Jabber::debug = true
     client = Jabber::Client.new(Jabber::JID.new(@user))
-    client.connect(@host)
+    client.connect(@host, @port)
     client.auth(@password.value)
     return client
   end # def connect

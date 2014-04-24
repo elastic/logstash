@@ -28,6 +28,10 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
   # the host on the user/identity is used. (foo.com for user@foo.com)
   config :host, :validate => :string
 
+  # The xmpp server's port to connect to. This is optional. If you omit this setting,
+  # the default port (5222) is used.
+  config :port, :validate => :number, :default => 5222
+
   # Set to true to enable greater debugging in XMPP. Useful for debugging
   # network/authentication erros.
   config :debug, :validate => :boolean, :default => false, :deprecated => "Use the logstash --debug flag for this instead."
@@ -38,7 +42,7 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
     Jabber::debug = true if @debug || @logger.debug?
 
     @client = Jabber::Client.new(Jabber::JID.new(@user))
-    @client.connect(@host) # it is ok if host is nil
+    @client.connect(@host, @port) # it is ok if host is nil
     @client.auth(@password.value)
     @client.send(Jabber::Presence.new.set_type(:available))
 
