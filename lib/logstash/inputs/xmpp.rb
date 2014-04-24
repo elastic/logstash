@@ -8,7 +8,7 @@ require "logstash/namespace"
 # XMPP, or you can use it for PubSub or general message passing for logstash to
 # logstash.
 class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
-  
+
   config_name "xmpp"
   milestone 2
 
@@ -68,7 +68,7 @@ class LogStash::Inputs::Xmpp < LogStash::Inputs::Base
       if msg.body != nil
         @codec.decode(msg.body) do |event|
           decorate(event)
-          # Maybe "from" should just be a hash: 
+          # Maybe "from" should just be a hash:
           # { "node" => ..., "domain" => ..., "resource" => ... }
           event["from"] = "#{msg.from.node}@#{msg.from.domain}/#{msg.from.resource}"
           queue << event

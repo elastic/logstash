@@ -27,6 +27,10 @@ class LogStash::Outputs::Xmpp < LogStash::Outputs::Base
   # the host on the user/identity is used. (foo.com for user@foo.com)
   config :host, :validate => :string
 
+  # The xmpp server's port to connect to. This is optional. If you omit this setting,
+  # the default port (5222) is used.
+  config :port, :validate => :number
+
   # The message to send. This supports dynamic strings like %{host}
   config :message, :validate => :string, :required => true
 
