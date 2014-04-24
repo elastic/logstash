@@ -221,7 +221,11 @@ class LogStash::Event
         # Got %{+%s}, support for unix epoch time
         next @data["@timestamp"].to_i
       elsif key[0,1] == "+"
-        t = @data["@timestamp"]
+        if @data["@timestamp"].class.to_s == "Array"
+          t = @data["@timestamp"].first
+        else
+          t = @data["@timestamp"]
+        end
         formatter = org.joda.time.format.DateTimeFormat.forPattern(key[1 .. -1])\
           .withZone(org.joda.time.DateTimeZone::UTC)
         #next org.joda.time.Instant.new(t.tv_sec * 1000 + t.tv_usec / 1000).toDateTime.toString(formatter)
