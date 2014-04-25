@@ -436,7 +436,7 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
         end
       end
     end # while payload.length > 0 do
-  rescue EncryptionError, ProtocolError
+  rescue EncryptionError, ProtocolError, HeaderError
     # basically do nothing, we just want out
   end # def decode
 
