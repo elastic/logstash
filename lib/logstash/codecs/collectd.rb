@@ -37,6 +37,7 @@ require "time"
 #
 
 class ProtocolError < LogStash::Error; end
+class HeaderError < LogStash::Error; end
 class EncryptionError < LogStash::Error; end
 
 class LogStash::Codecs::Collectd < LogStash::Codecs::Base
@@ -192,7 +193,7 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
   end
   # Values decoder
   values_decoder = lambda do |body|
-    remove_header = body.slice!(0..1)
+    body.slice!(0..1)       # Prune the header
     if body.length % 9 == 0 # Should be 9 fields
       count = 0
       retval = []
@@ -354,16 +355,14 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
     collectd = {}
     was_encrypted = false
 
-     while payload.length > 0 do
+    while payload.length > 0 do
       typenum = (payload.slice!(0) << 8) + payload.slice!(0)
       # Get the length of the data in this part, but take into account that
       # the header is 4 bytes
       length  = ((payload.slice!(0) << 8) + payload.slice!(0)) - 4
-
-      if length > payload.length
-        @logger.info("Header indicated #{length} bytes will follow, but packet has only #{payload.length} bytes left")
-        break
-      end
+      # Validate that the part length is correct
+      raise(HeaderError) if length > payload.length
+      
       body = payload.slice!(0..length-1)
 
       field = TYPEMAP[typenum]
