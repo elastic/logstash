@@ -35,23 +35,23 @@
   - improvement: proper charset support in all codecs (Colin Surprenant)
 
   # filters
+  - bugfix: date: on_success actions only when date parsing actually succeed (Philippe Weber)
+  - bugfix: multiline: "undefined method `tv_sec'" fix (Colin Surprenant)
+  - bugfix: multiline: fix for "undefined method `[]' for nil:NilClass" (#1258, Colin Surprenant)
+  - improvement: date: fix specs for non "en" locale (Olivier Le Moal)
+  - improvement: multiline: added flush support to enable specs, refactored specs (Colin Surprenant)
   - improvement: useragent: removed useless dual force_encoding (Alex Tambellini)
   - improvement: grok: better pattern for RFC-5424 syslog format (Guillaume Espanel)
   - improvement: grok: refactored the LOGLEVEL pattern (Lorenzo González)
   - improvement: grok: fix example doc (LOGSTASH-2093, Jason Kendall)
-  - bugfix: date: on_success actions only when date parsing actually succeed (Philippe Weber)
-  - improvement: date: fix specs for non "en" locale (Olivier Le Moal)
   - improvement: metrics: document .pXX metric (Juarez Bochi)
-  - improvement: multiline: added flush support to enable specs, refactored specs (Colin Surprenant)
-  - bugfix: multiline: "undefined method `tv_sec'" fix (Colin Surprenant)
-  - bugfix: multiline: fix for "undefined method `[]' for nil:NilClass" (#1258, Colin Surprenant)
 
   # outputs
   - improvement: rabbitmq: upgraded Bunny gem to 1.1.8, fixes a threading leak and improves
     latency (Michael Klishin)
   - improvement: elasticsearch: start embedded server before creating a client to fix discovery
     problems "waited for 30s ..." (Jordan Sissel)
-  - improvement: elastivsearch: have embedded ES use "bind_host" option for "noetwork.host"
+  - improvement: elasticsearch: have embedded ES use "bind_host" option for "network.host"
     ES config (Jordan Sissel)
 
 1.4.0 (March 20, 2014)
