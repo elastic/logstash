@@ -192,7 +192,7 @@ module LogStash; module Config; module AST
           # and this should simply compile to 
           #   #{variable_name}.filter(event)
           return [
-            "# #{text_value}",
+            "# #{text_value.split("\n").join("")}",
             "newevents = []",
             "extra_events.each do |event|",
             "  #{variable_name}.filter(event) do |newevent|",
