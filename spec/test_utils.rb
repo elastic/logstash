@@ -100,7 +100,7 @@ module LogStash
             results += extra.reject(&:cancelled?)
           end
 
-          pipeline.instance_eval {@filters.each {|f| results += f.flush if f.respond_to?(:flush)}}
+          pipeline.instance_eval {@filters.each {|f| f.teardown.tap { |v| results += v if v } if f.respond_to?(:teardown)}}
 
           # TODO(sissel): pipeline flush needs to be implemented.
           # results += pipeline.flush

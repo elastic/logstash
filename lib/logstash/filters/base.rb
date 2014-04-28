@@ -223,4 +223,9 @@ class LogStash::Filters::Base < LogStash::Plugin
 
     return true
   end
+
+  public
+  def teardown
+    # Nothing to do by default.
+  end
 end # class LogStash::Filters::Base
