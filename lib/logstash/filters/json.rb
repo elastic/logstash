@@ -61,25 +61,43 @@ class LogStash::Filters::Json < LogStash::Filters::Base
     return unless event.include?(@source)
 
     source = event[@source]
-    if @target.nil?
-      # Default is to write to the root of the event.
-      dest = event.to_hash
-    else
-      if @target == @source
-        # Overwrite source
-        dest = event[@target] = {}
-      else
-        dest = event[@target] ||= {}
-      end
-    end
 
     begin
-      # TODO(sissel): Note, this will not successfully handle json lists
-      # like your text is '[ 1,2,3 ]' JSON.parse gives you an array (correctly)
-      # which won't merge into a hash. If someone needs this, we can fix it
-      # later.
-      dest.merge!(JSON.parse(source))
-
+      json = JSON.parse(source)
+      if json.kind_of?(Array)
+        if @target.nil?
+          @logger.warn("Parsed json is an array, it cannot be stored as complete event, 
+            please define a target parameter in your filter", :source => @source,
+                   :raw => event[@source])
+        elsif @target == @source
+          # Overwrite source
+          dest = event[@target] = []
+        else
+          dest = event[@target] ||= []
+          if !dest.kind_of?(Array)
+            @logger.warn("Parsed json is an array, but target field is a hash,
+              it cannot be overwritten.", :source => @source,
+                   :raw => event[@source])
+          end
+        end
+        if dest && dest.kind_of?(Array)
+          dest.concat(json)
+        else
+          event.tag("_jsonparsefailure")
+        end
+      else 
+        if @target.nil?
+          # Default is to write to the root of the event.
+          dest = event.to_hash
+        elsif @target == @source
+          # Overwrite source
+          dest = event[@target] = {}
+        else
+          dest = event[@target] ||= {}
+        end
+        dest.merge!(json)
+      end
+    
       # If no target, we target the root of the event object. This can allow
       # you to overwrite @timestamp. If so, let's parse it as a timestamp!
       if !@target && event[TIMESTAMP].is_a?(String)
