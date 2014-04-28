@@ -36,6 +36,12 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
   # The index or alias to search.
   config :index, :validate => :string, :default => "logstash-*"
 
+  # The HTTP Basic Auth username used to access your elasticsearch server.
+  config :user, :validate => :string, :default => nil
+
+  # The HTTP Basic Auth password used to access your elasticsearch server.
+  config :password, :validate => :password, :default => nil
+
   # The query to be executed.
   config :query, :validate => :string, :default => "*"
 
@@ -62,8 +68,8 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
     }
 
     params['search_type'] = "scan" if @scan
-
-    @url = "http://#{@host}:#{@port}/#{@index}/_search?#{encode(params)}"
+    @auth = @user && @password ? "#{@user}:#{@password.value}@" : ""
+    @url = "http://#{@auth}#{@host}:#{@port}/#{@index}/_search?#{encode(params)}"
   end # def register
 
   private
@@ -91,7 +97,7 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
         "scroll" => @scroll
       }
 
-      scroll_url = "http://#{@host}:#{@port}/_search/scroll?#{encode(scroll_params)}"
+      scroll_url = "http://#{@auth}#{@host}:#{@port}/_search/scroll?#{encode(scroll_params)}"
       response = @agent.post!(scroll_url, :body => scroll_id)
       json = ""
       response.read_body { |c| json << c }
@@ -121,7 +127,7 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
       scroll_params = {
         "scroll" => @scroll
       }
-      scroll_url = "http://#{@host}:#{@port}/_search/scroll?#{encode(scroll_params)}"
+      scroll_url = "http://#{@auth}#{@host}:#{@port}/_search/scroll?#{encode(scroll_params)}"
 
       response = @agent.post!(scroll_url, :body => scroll_id)
       json = ""
