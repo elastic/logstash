@@ -2,6 +2,7 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket"
+require "fileutils"
 
 # Read events over a UNIX socket.
 #
@@ -32,6 +33,16 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
   # Mode to operate in. `server` listens for client connections,
   # `client` connects to a server.
   config :mode, :validate => ["server", "client"], :default => "server"
+  
+  # Change file mode
+  config :chmod, :validate => :number, :default => false
+  
+  # Change socket group ownership
+  config :chgrp, :validate => :string, :required => false, :default => nil
+  
+  # Change socket user ownership
+  config :chown, :validate => :string, :required => false, :default => nil
+  
 
   def initialize(*args)
     super(*args)
@@ -41,16 +52,29 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
   def register
     require "socket"
     require "timeout"
+    require "fileutils"
 
     if server?
       @logger.info("Starting unix input listener", :address => "#{@path}", :force_unlink => "#{@force_unlink}")
       begin
         @server_socket = UNIXServer.new(@path)
+        if @chmod
+          FileUtils.chmod(@chmod, "#{@path}")
+        end
+        if @chown || @chgrp
+          FileUtils.chown("#{@chown}", "#{@chgrp}", "#{@path}")
+        end
       rescue Errno::EADDRINUSE, IOError
         if @force_unlink
           File.unlink(@path)
           begin
             @server_socket = UNIXServer.new(@path)
+            if @chmod
+              FileUtils.chmod(@chmod, "#{@path}")
+            end
+            if @chown || @chgrp
+              FileUtils.chown("#{@chown}", "#{@chgrp}", "#{@path}")
+            end
             return
           rescue Errno::EADDRINUSE, IOError
             @logger.error("!!!Could not start UNIX server: Address in use",

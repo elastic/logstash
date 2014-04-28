@@ -2,6 +2,7 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket"
+require "fileutils"
 
 # Read events over a 0MQ SUB socket.
 #
@@ -69,11 +70,21 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   #
   # example: sockopt => ["ZMQ::HWM", 50, "ZMQ::IDENTITY", "my_named_queue"]
   config :sockopt, :validate => :hash
+  
+  # Change file mode
+  config :chmod, :validate => :number, :default => false
+  
+  # Change socket group ownership
+  config :chgrp, :validate => :string, :required => false, :default => nil
+  
+  # Change socket user ownership
+  config :chown, :validate => :string, :required => false, :default => nil
 
   public
   def register
     require "ffi-rzmq"
     require "logstash/util/zeromq"
+    require "fileutils"
     self.class.send(:include, LogStash::Util::ZeroMQ)
 
     case @topology
@@ -94,6 +105,18 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
 
     @address.each do |addr|
       setup(@zsocket, addr)
+      @logger.info("hello world")
+      @logger.info(addr.split('ipc://', 2)[1])
+      @logger.info(addr.start_with?("ipc://"))
+      if addr.start_with?("ipc://")
+        if @chmod
+          FileUtils.chmod(@chmod, "#{addr.split('ipc://', 2)[1]}")
+        end
+        if @chown || @chgrp
+          FileUtils.chown("#{@chown}", "#{@chgrp}", "#{addr.split('ipc://', 2)[1]}")
+        end
+      
+      end
     end
 
     if @topology == "pubsub"
