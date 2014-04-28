@@ -135,7 +135,10 @@ vendor:
 vendor/jar: | vendor
 	$(QUIET)mkdir $@
 
+.PHONY: vendor-jruby
 vendor-jruby: $(JRUBY)
+	@echo "=> Pulling the jars out of $<"
+	$(QUIET)unzip -o -d vendor/jar/ -j $< META-INF/jruby.home/lib/ruby/shared/bc*.jar
 
 $(JRUBY): | vendor/jar
 	$(QUIET)echo "=> Downloading jruby $(JRUBY_VERSION)"
@@ -192,7 +195,7 @@ fix-bundler:
 vendor-gems: | vendor/bundle
 
 .PHONY: vendor/bundle
-vendor/bundle: | vendor $(JRUBY)
+vendor/bundle: | vendor $(JRUBY) vendor-jruby
 	@echo "=> Ensuring ruby gems dependencies are in $@..."
 	$(QUIET)USE_JRUBY=1 bin/logstash deps $(QUIET_OUTPUT)
 	@# Purge any junk that fattens our jar without need!
