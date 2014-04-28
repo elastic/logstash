@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/namespace"
+require "logstash/environment"
 require "cabin"
 require "logger"
 
@@ -46,6 +47,7 @@ class LogStash::Logger
 
   def self.setup_log4j(logger)
     require "java"
+    raise(LogStash::EnvironmentError, "Log4j java library not loaded") unless LogStash::Environment.log4j_loaded?
 
     properties = java.util.Properties.new
     log4j_level = "WARN"

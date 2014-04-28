@@ -24,6 +24,12 @@ module LogStash
       end
     end
 
+    def log4j_loaded?
+      !!Java::OrgApacheLog4j.const_get("Logger") # Java org.apache.log4j
+    rescue NameError
+      false
+    end
+
     def jruby?
       RUBY_PLATFORM == "java"
     end
