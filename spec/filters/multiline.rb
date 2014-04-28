@@ -11,7 +11,6 @@ describe LogStash::Filters::Multiline do
     config <<-CONFIG
     filter {
       multiline {
-        enable_flush => true
         pattern => "^\\s"
         what => previous
       }
@@ -30,7 +29,6 @@ describe LogStash::Filters::Multiline do
     config <<-CONFIG
     filter {
       multiline {
-        enable_flush => true
         pattern => "^%{NUMBER} %{TIME}"
         negate => true
         what => previous
@@ -47,7 +45,6 @@ describe LogStash::Filters::Multiline do
     config <<-CONFIG
       filter {
         multiline {
-          enable_flush => true
           pattern => "^\\s"
           what => previous
         }
@@ -98,7 +95,6 @@ describe LogStash::Filters::Multiline do
           add_tag => "dummy"
         }
         multiline {
-          enable_flush => true
           add_tag => [ "nope" ]
           remove_tag => "dummy"
           add_field => [ "dummy2", "value" ]
