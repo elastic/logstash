@@ -20,7 +20,7 @@ LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
 
 unset CDPATH
 basedir=$(cd `dirname $0`/..; pwd)
-. ${basedir}/bin/logstash.lib.sh
+. "${basedir}/bin/logstash.lib.sh"
 
 setup
 
@@ -30,13 +30,18 @@ export HOME SINCEDB_DIR
 case $1 in
   deps) install_deps ;;
   env) env "$@" ;;
-  -*) 
+  -*)
     # is the first argument a flag? If so, assume 'agent'
-    program="$basedir/lib/logstash/runner.rb"
-    exec $RUBYCMD -I$RUBYLIB "$program" agent "$@"
+    LAUNCHARGS+=(-I"${RUBYLIB}")
+    LAUNCHARGS+=("${basedir}/lib/logstash/runner.rb")
+    LAUNCHARGS+=("agent")
+    LAUNCHARGS+=("$@")
+    exec "${LAUNCHCMD}" "${LAUNCHARGS[@]}"
     ;;
   *)
-    program="$basedir/lib/logstash/runner.rb"
-    exec $RUBYCMD -I$RUBYLIB "$program" "$@"
+    LAUNCHARGS+=(-I"${RUBYLIB}")
+    LAUNCHARGS+=("${basedir}/lib/logstash/runner.rb")
+    LAUNCHARGS+=("$@")
+    exec "${LAUNCHCMD}" "${LAUNCHARGS[@]}"
     ;;
 esac
