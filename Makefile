@@ -220,7 +220,7 @@ vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
 .PHONY: test
 test: QUIET_OUTPUT=
 test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd vendor-gems
-	$(SPEC_ENV) bin/logstash rspec $(SPEC_OPTS) --order rand --fail-fast $(TESTS)
+	$(SPEC_ENV) USE_JRUBY=1 bin/logstash rspec $(SPEC_OPTS) --order rand --fail-fast $(TESTS)
 
 .PHONY: reporting-test
 reporting-test: SPEC_ENV=JRUBY_OPTS=--debug COVERAGE=TRUE
@@ -382,4 +382,4 @@ tarball-test: #build/logstash-$(VERSION).tar.gz
 	$(QUIET)-rm -rf build/test-tarball/
 	$(QUIET)mkdir -p build/test-tarball/
 	tar -C build/test-tarball --strip-components 1 -xf build/logstash-$(VERSION).tar.gz
-	(cd build/test-tarball; bin/logstash rspec $(TESTS) --fail-fast)
+	(cd build/test-tarball; USE_JRUBY=1 bin/logstash rspec $(TESTS) --fail-fast)
