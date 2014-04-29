@@ -116,7 +116,9 @@ The above makes 'path' a 3-element array including all 3 strings.
 A hash is basically the same syntax as Ruby hashes. 
 The key and value are simply pairs, such as:
 
-    match => { "field1" => "value1", "field2" => "value2", ... }
+    match => { "field1" => "value1" "field2" => "value2" "field3" => "value3" ... }
+
+Note that commas between the key value pairs are not valid in the Logstash config syntax.
 
 ## <a name="fieldreferences"></a>Field References
 
