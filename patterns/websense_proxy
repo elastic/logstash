@@ -1,0 +1,46 @@
+USERNAME [a-zA-Z0-9._-]+
+USER %{USERNAME}
+INT (?:[+-]?(?:[0-9]+))
+NUMBER (?:%{BASE10NUM})
+POSINT \b(?:[1-9][0-9]*)\b
+GREEDYDATA .*
+
+IPV6 ((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?
+IPV4 (?<![0-9])(?:(?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))(?![0-9])
+IP (?:%{IPV6}|%{IPV4})
+HOSTNAME \b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b)
+HOST %{HOSTNAME}
+IPORHOST (?:%{HOSTNAME}|%{IP})
+HOSTPORT %{IPORHOST}:%{POSINT}
+
+# paths
+PATH (?:%{UNIXPATH}|%{WINPATH})
+UNIXPATH (?>/(?>[\w_%!$@:.,-]+|\\.)*)+
+TTY (?:/dev/(pts|tty([pq])?)(\w+)?/?(?:[0-9]+))
+WINPATH (?>[A-Za-z]+:|\\)(?:\\[^\\?*]*)+
+URIPROTO [A-Za-z]+(\+[A-Za-z+]+)?
+URIHOST %{IPORHOST}(?::%{POSINT:port})?
+# uripath comes loosely from RFC1738, but mostly from what Firefox
+# doesn't turn into %XX
+URIPATH (?:/[A-Za-z0-9$.+!*'(){},~:;=@#%_\-]*)+
+#URIPARAM \?(?:[A-Za-z0-9]+(?:=(?:[^&]*))?(?:&(?:[A-Za-z0-9]+(?:=(?:[^&]*))?)?)*)?
+URIPARAM \?[A-Za-z0-9$.+!*'|(){},~@#%&/=:;_?\-\[\]]*
+URIPATHPARAM %{URIPATH}(?:%{URIPARAM})?
+URI %{URIPROTO}://(?:%{USER}(?::[^@]*)?@)?(?:%{URIHOST})?(?:%{URIPATHPARAM})?
+
+# Months: January, Feb, 3, 03, 12, December
+MONTH \b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b
+MONTHDAY (?:(?:0[1-9])|(?:[12][0-9])|(?:3[01])|[1-9])
+
+# Years?
+YEAR (?>\d\d){1,2}
+HOUR (?:2[0123]|[01]?[0-9])
+MINUTE (?:[0-5][0-9])
+# '60' is a leap second in most time standards and thus is valid.
+SECOND (?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)
+TIME (?!<[0-9])%{HOUR}:%{MINUTE}(?::%{SECOND})(?![0-9])
+
+# Syslog Dates: Month Day HH:MM:SS
+SYSLOGTIMESTAMP %{MONTH} +%{MONTHDAY} %{TIME}
+
+WEBSENSE <%{POSINT}>%{SYSLOGTIMESTAMP:timestamp} %{IP} vendor=%{GREEDYDATA:vendor} product=%{GREEDYDATA:product} product_version=%{GREEDYDATA:product_version} action=%{GREEDYDATA:action} severity=%{GREEDYDATA:severity} category=%{GREEDYDATA:category} user=%{GREEDYDATA:user} OU=%{GREEDYDATA:OU},OU=%{GREEDYDATA},OU=%{GREEDYDATA},OU=%{GREEDYDATA},DC=%{GREEDYDATA:DC},DC=%{GREEDYDATA} src_host=%{IP:src_host} src_port=%{INT:src_port} dst_host=%{GREEDYDATA:dst_host} dst_ip=%{IP:dst_ip} dst_port=%{INT:dst_port} bytes_out=%{INT:bytes_out} bytes_in=%{INT:byte_in} http_response=%{GREEDYDATA:http_response} http_method=%{GREEDYDATA:http_method} http_content_type=%{GREEDYDATA:http_content_type} http_user_agent=%{GREEDYDATA:http_user_agent} http_proxy_status_code=%{GREEDYDATA:http_proxy_status_code} reason=%{GREEDYDATA:reason} disposition=%{GREEDYDATA:disposition} policy=%{GREEDYDATA:policy} role=%{GREEDYDATA:role} duration=%{GREEDYDATA:duration} url=%{URI:url}
