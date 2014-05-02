@@ -33,7 +33,6 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
     @logger.info("Registering input eventlog://#{@hostname}/#{@logfile}")
 
     if RUBY_PLATFORM == "java"
-      require "logstash/inputs/eventlog/racob_fix"
       require "jruby-win32ole"
     else
       require "win32ole"

@@ -116,25 +116,12 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   def register
     @udp = nil
     if @typesdb.nil?
-      if __FILE__ =~ /^file:\/.+!.+/
-        begin
-          # Running from a jar, assume types.db is at the root.
-          jar_path = [__FILE__.split("!").first, "/types.db"].join("!")
-          @typesdb = [jar_path]
-        rescue => ex
-          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
-        end
-      else
-        if File.exists?("types.db")
-          @typesdb = ["types.db"]
-        elsif File.exists?("vendor/collectd/types.db")
-          @typesdb = ["vendor/collectd/types.db"]
-        else
-          raise "You must specify 'typesdb => ...' in your collectd input"
-        end
+      @typesdb = LogStash::Environment.vendor_path("collectd/types.db")
+      if !File.exists?(@typesdb)
+        raise "You must specify 'typesdb => ...' in your collectd input (I looked for '#{@typesdb}')"
       end
+      @logger.info("Using internal types.db", :typesdb => @typesdb.to_s)
     end
-    @logger.info("Using internal types.db", :typesdb => @typesdb.to_s)
 
     if ([SECURITY_SIGN, SECURITY_ENCR].include?(@security_level))
       if @authfile.nil?
