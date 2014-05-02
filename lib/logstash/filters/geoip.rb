@@ -61,8 +61,7 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   # is still valid GeoJSON.
   config :target, :validate => :string, :default => 'geoip'
   
-  VENDOR_GEOIP = ::File.join(LogStash::Environment::VENDOR_DIR, "/geoip")
-  GEOIPDB = ::File.join(VENDOR_GEOIP, "/GeoLiteCity.dat")
+  GEOIPDB = ::File.join(LogStash::Environment.vendor_path("geoip/GeoLiteCity.dat"))
   
   public
   def register
