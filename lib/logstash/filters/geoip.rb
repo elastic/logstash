@@ -64,25 +64,12 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   def register
     require "geoip"
     if @database.nil?
-      if __FILE__ =~ /^(jar:)?file:\/.+!.+/
-        begin
-          # Running from a jar, assume GeoLiteCity.dat is at the root.
-          jar_path = [__FILE__.split("!").first, "/GeoLiteCity.dat"].join("!")
-          tmp_file = Tempfile.new('logstash-geoip')
-          tmp_file.write(File.read(jar_path))
-          tmp_file.close # this file is reaped when ruby exits
-          @database = tmp_file.path
-        rescue => ex
-          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
-        end
+      if File.exists?("GeoLiteCity.dat")
+        @database = "GeoLiteCity.dat"
+      elsif File.exists?("vendor/geoip/GeoLiteCity.dat")
+        @database = "vendor/geoip/GeoLiteCity.dat"
       else
-        if File.exists?("GeoLiteCity.dat")
-          @database = "GeoLiteCity.dat"
-        elsif File.exists?("vendor/geoip/GeoLiteCity.dat")
-          @database = "vendor/geoip/GeoLiteCity.dat"
-        else
-          raise "You must specify 'database => ...' in your geoip filter"
-        end
+        raise "You must specify 'database => ...' in your geoip filter"
       end
     end
     @logger.info("Using geoip database", :path => @database)
