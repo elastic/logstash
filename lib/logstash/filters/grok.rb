@@ -216,11 +216,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   # Detect if we are running from a jarfile, pick the right path.
   @@patterns_path ||= Set.new
-  if __FILE__ =~ /file:\/.*\.jar!.*/
-    @@patterns_path += ["#{File.dirname(__FILE__)}/../../patterns/*"]
-  else
-    @@patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
-  end
+  @@patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
 
   public
   def initialize(params)
@@ -242,13 +238,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     @patterns_dir = @@patterns_path.to_a + @patterns_dir
     @logger.info? and @logger.info("Grok patterns path", :patterns_dir => @patterns_dir)
     @patterns_dir.each do |path|
-      # Can't read relative paths from jars, try to normalize away '../'
-      while path =~ /file:\/.*\.jar!.*\/\.\.\//
-        # replace /foo/bar/../baz => /foo/baz
-        path = path.gsub(/[^\/]+\/\.\.\//, "")
-        @logger.debug? and @logger.debug("In-jar path to read", :path => path)
-      end
-
       if File.directory?(path)
         path = File.join(path, "*")
       end
@@ -407,21 +396,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   private
   def add_patterns_from_file(path, pile)
-    # Check if the file path is a jar, if so, we'll have to read it ourselves
-    # since libgrok won't know what to do with it.
-    if path =~ /file:\/.*\.jar!.*/
-      File.new(path).each do |line|
-        next if line =~ /^(?:\s*#|\s*$)/
-        # In some cases I have seen 'file.each' yield lines with newlines at
-        # the end. I don't know if this is a bug or intentional, but we need
-        # to chomp it.
-        name, pattern = line.chomp.split(/\s+/, 2)
-        @logger.debug? and @logger.debug("Adding pattern from file", :name => name,
-                                         :pattern => pattern, :path => path)
-        pile.add_pattern(name, pattern)
-      end
-    else
-      pile.add_patterns_from_file(path)
-    end
+    pile.add_patterns_from_file(path)
   end # def add_patterns_from_file
 end # class LogStash::Filters::Grok

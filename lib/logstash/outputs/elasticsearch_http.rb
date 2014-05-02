@@ -173,22 +173,12 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   public
   def get_template_json
     if @template.nil?
-      if __FILE__ =~ /^(jar:)?file:\/.+!.+/
-        begin
-          # Running from a jar, assume types.db is at the root.
-          jar_path = [__FILE__.split("!").first, "/elasticsearch-template.json"].join("!")
-          @template = jar_path
-        rescue => ex
-          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
-        end
+      if File.exists?("elasticsearch-template.json")
+        @template = "elasticsearch-template.json"
+      elsif File.exists?("lib/logstash/outputs/elasticsearch/elasticsearch-template.json")
+        @template = "lib/logstash/outputs/elasticsearch/elasticsearch-template.json"
       else
-        if File.exists?("elasticsearch-template.json")
-          @template = "elasticsearch-template.json"
-        elsif File.exists?("lib/logstash/outputs/elasticsearch/elasticsearch-template.json")
-          @template = "lib/logstash/outputs/elasticsearch/elasticsearch-template.json"
-        else
-          raise "You must specify 'template => ...' in your elasticsearch_http output"
-        end
+        raise "You must specify 'template => ...' in your elasticsearch_http output"
       end
     end
     @template_json = IO.read(@template).gsub(/\n/,'')
