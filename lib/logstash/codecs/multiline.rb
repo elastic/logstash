@@ -119,22 +119,12 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
     require "grok-pure" # rubygem 'jls-grok'
     # Detect if we are running from a jarfile, pick the right path.
     patterns_path = []
-    if __FILE__ =~ /file:\/.*\.jar!.*/
-      patterns_path += ["#{File.dirname(__FILE__)}/../../patterns/*"]
-    else
-      patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
-    end
+    patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
 
     @grok = Grok.new
 
     @patterns_dir = patterns_path.to_a + @patterns_dir
     @patterns_dir.each do |path|
-      # Can't read relative paths from jars, try to normalize away '../'
-      while path =~ /file:\/.*\.jar!.*\/\.\.\//
-        # replace /foo/bar/../baz => /foo/baz
-        path = path.gsub(/[^\/]+\/\.\.\//, "")
-      end
-
       if File.directory?(path)
         path = File.join(path, "*")
       end

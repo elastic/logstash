@@ -44,14 +44,7 @@ class LogStash::Filters::UserAgent < LogStash::Filters::Base
         @parser = UserAgentParser::Parser.new()
       rescue Exception => e
         begin
-          if __FILE__ =~ /file:\/.*\.jar!/
-            # Running from a flatjar which has a different layout
-            regexes_file = [__FILE__.split("!").first, "/vendor/ua-parser/regexes.yaml"].join("!")
-            @parser = UserAgentParser::Parser.new(:patterns_path => regexes_file)
-          else
-            # assume operating from the git checkout
-            @parser = UserAgentParser::Parser.new(:patterns_path => "vendor/ua-parser/regexes.yaml")
-          end
+          @parser = UserAgentParser::Parser.new(:patterns_path => "vendor/ua-parser/regexes.yaml")
         rescue => ex
           raise "Failed to cache, due to: #{ex}\n"
         end
