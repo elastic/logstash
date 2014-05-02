@@ -37,6 +37,10 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
   #
   # These should be full channel names including the '#' symbol, such as
   # "#logstash".
+  #
+  # For passworded channels, add a space and the channel password, such as
+  # "#logstash password".
+  #
   config :channels, :validate => :array, :required => true
 
   public
