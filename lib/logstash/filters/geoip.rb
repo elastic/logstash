@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "logstash/environment"
 require "logstash/filters/base"
 require "logstash/namespace"
 require "tempfile"
@@ -59,16 +60,18 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   # Even if you don't use the geo\_point mapping, the [target][location] field
   # is still valid GeoJSON.
   config :target, :validate => :string, :default => 'geoip'
-
+  
+  VENDOR_GEOIP = ::File.join(LogStash::Environment::VENDOR_DIR, "/geoip")
+  GEOIPDB = ::File.join(VENDOR_GEOIP, "/GeoLiteCity.dat")
+  
   public
   def register
     require "geoip"
-    provided = File.dirname(__FILE__) + "/../../../vendor/geoip/GeoLiteCity.dat"
     if @database.nil?
       if File.exists?("GeoLiteCity.dat")
         @database = "GeoLiteCity.dat"
-      elsif File.exists?(provided)
-        @database = provided
+      elsif File.exists?(GEOIPDB)
+        @database = GEOIPDB
       else
         raise "You must specify 'database => ...' in your geoip filter"
       end

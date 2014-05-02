@@ -5,6 +5,7 @@ module LogStash
     extend self
 
     LOGSTASH_HOME = ::File.expand_path(::File.join(::File.dirname(__FILE__), "/../.."))
+    VENDOR_DIR = ::File.join(LOGSTASH_HOME, "/vendor")
     JAR_DIR = ::File.join(LOGSTASH_HOME, "/vendor/jar")
 
     # loads currently embedded elasticsearch jars
