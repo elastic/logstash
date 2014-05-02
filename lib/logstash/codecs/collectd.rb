@@ -125,16 +125,17 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
   public
   def register
     @logger.info("Starting Collectd codec...")
+    provided = File.dirname(__FILE__) + "/../../../vendor/collectd/types.db"
     if @typesdb.nil?
       if File.exists?("types.db")
         @typesdb = ["types.db"]
-      elsif File.exists?("vendor/collectd/types.db")
-        @typesdb = ["vendor/collectd/types.db"]
+      elsif File.exists?(provided)
+        @typesdb = [provided]
+        @logger.info("Using internal types.db", :typesdb => @typesdb.to_s)
       else
         raise LogStash::ConfigurationError, "You must specify 'typesdb => ...' in your collectd input"
       end
     end
-    @logger.info("Using internal types.db", :typesdb => @typesdb.to_s)
     @types = get_types(@typesdb)
 
     if ([SECURITY_SIGN, SECURITY_ENCR].include?(@security_level))
