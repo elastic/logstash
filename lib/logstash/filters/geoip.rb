@@ -64,12 +64,9 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
   def register
     require "geoip"
     if @database.nil?
-      if File.exists?("GeoLiteCity.dat")
-        @database = "GeoLiteCity.dat"
-      elsif File.exists?("vendor/geoip/GeoLiteCity.dat")
-        @database = "vendor/geoip/GeoLiteCity.dat"
-      else
-        raise "You must specify 'database => ...' in your geoip filter"
+      @database = LogStash::Environment.vendor_path("geoip/GeoLiteCity.dat")
+      if !File.exists?(@database)
+        raise "You must specify 'database => ...' in your geoip filter (I looked for '#{@database}'"
       end
     end
     @logger.info("Using geoip database", :path => @database)
