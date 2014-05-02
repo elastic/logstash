@@ -27,5 +27,13 @@ module LogStash
     def jruby?
       RUBY_PLATFORM == "java"
     end
+    
+    def vendor_path(relative_path)
+      return ::File.join(LOGSTASH_HOME, "vendor", relative_path)
+    end
+    
+    def path(base_path, file)
+      return ::File.join(dir, base_path, file)
+    end
   end
 end
