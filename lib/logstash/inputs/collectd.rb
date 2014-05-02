@@ -157,6 +157,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   public
   def get_types(paths)
     # Get the typesdb
+    paths = Array(paths) # Make sure a single path is still forced into an array type
     paths.each do |path|
       @logger.info("Getting Collectd typesdb info", :typesdb => path.to_s)
       File.open(path, 'r').each_line do |line|
