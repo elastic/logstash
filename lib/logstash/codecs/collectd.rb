@@ -125,16 +125,12 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
   public
   def register
     @logger.info("Starting Collectd codec...")
-    provided = File.dirname(__FILE__) + "/../../../vendor/collectd/types.db"
     if @typesdb.nil?
-      if File.exists?("types.db")
-        @typesdb = ["types.db"]
-      elsif File.exists?(provided)
-        @typesdb = [provided]
-        @logger.info("Using internal types.db", :typesdb => @typesdb.to_s)
-      else
-        raise LogStash::ConfigurationError, "You must specify 'typesdb => ...' in your collectd input"
+      @typesdb = LogStash::Environment.vendor_path("collectd/types.db")
+      if !File.exists?(@typesdb)
+        raise "You must specify 'typesdb => ...' in your collectd input (I looked for '#{@typesdb}')"
       end
+      @logger.info("Using types.db", :typesdb => @typesdb.to_s)
     end
     @types = get_types(@typesdb)
 
@@ -157,6 +153,7 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
   def get_types(paths)
     types = {}
     # Get the typesdb
+    paths = Array(paths) # Make sure a single path is still forced into an array type
     paths.each do |path|
       @logger.info("Getting Collectd typesdb info", :typesdb => path.to_s)
       File.open(path, 'r').each_line do |line|
