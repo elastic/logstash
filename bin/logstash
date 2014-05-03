@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/local/bin/dash
 # Run logstash from source
 #
 # This is most useful when done from a git checkout.
@@ -31,17 +31,19 @@ case $1 in
   deps) install_deps ;;
   env) env "$@" ;;
   -*)
-    # is the first argument a flag? If so, assume 'agent'
-    LAUNCHARGS+=(-I"${RUBYLIB}")
-    LAUNCHARGS+=("${basedir}/lib/logstash/runner.rb")
-    LAUNCHARGS+=("agent")
-    LAUNCHARGS+=("$@")
-    exec "${LAUNCHCMD}" "${LAUNCHARGS[@]}"
+    if [ -z "$VENDORED_JRUBY" ] ; then
+      exec "${RUBYCMD}" "-I${RUBYLIB}" "${basedir}/lib/logstash/runner.rb" "agent" "$@"
+    else
+      exec "${JAVACMD}" $JAVA_OPTS "-jar" "$JRUBY_JAR" "-I${RUBYLIB}" "${basedir}/lib/logstash/runner.rb" "agent" "$@"
+    fi
     ;;
   *)
-    LAUNCHARGS+=(-I"${RUBYLIB}")
-    LAUNCHARGS+=("${basedir}/lib/logstash/runner.rb")
-    LAUNCHARGS+=("$@")
-    exec "${LAUNCHCMD}" "${LAUNCHARGS[@]}"
+    if [ -z "$VENDORED_JRUBY" ] ; then
+      exec "${RUBYCMD}" "-I${RUBYLIB}" "${basedir}/lib/logstash/runner.rb" "$@"
+    else
+      exec "${JAVACMD}" $JAVA_OPTS "-jar" "$JRUBY_JAR" "-I${RUBYLIB}" "${basedir}/lib/logstash/runner.rb" "$@"
+    fi
     ;;
 esac
+
+
