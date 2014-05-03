@@ -1,4 +1,4 @@
-#!/usr/local/bin/dash
+#!/bin/sh
 # Run logstash from source
 #
 # This is most useful when done from a git checkout.
