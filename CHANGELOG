@@ -7,7 +7,7 @@
   - documentations fixes (James Turnbull)
   - fixed bin/plugin target dir for when installing out from form logstash home (lr1980)
   - fixed accessors reset bug in event overwrite which was causing the infamous
-    "undefined method `tv_sec'" bug with the multiline input (Colin Surprenant)
+    "undefined method `tv_sec'" bug with the multiline filter (Colin Surprenant)
   - fixed agent stalling when also using web (Colin Surprenant)
   - starting a already running service should return exit code 0 (Jan Gaedicke)
   - fixes for RedHat init script (LOGSTASH-2040, Jan Gaedicke, Jordan Sissel)
