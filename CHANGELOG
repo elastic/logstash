@@ -1,4 +1,4 @@
-1.4.1 (April x, 2014)
+1.4.1 (May 6, 2014)
   # General
   - bumped Elasticsearch to 1.1.1 and Kibana to 3.0.1
   - improved specs & testing (Colin Surprenant), packaging (Richard Pijnenburg) & doc (James Turnbull)
