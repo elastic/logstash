@@ -1,28 +1,15 @@
 1.4.1 (April x, 2014)
   # General
   - bumped Elasticsearch to 1.1.1 and Kibana to 3.0.1
-  - many improvments/additions on the specs/tests & CI integration (Colin Surprenant)
-  - removed bin/logstash test, now only using rspec (Colin Surprenant)
+  - improved specs & testing (Colin Surprenant), packaging (Richard Pijnenburg) & doc (James Turnbull)
   - better $JAVA_HOME handling (Marc Chadwick)
-  - documentations fixes (James Turnbull)
   - fixed bin/plugin target dir for when installing out from form logstash home (lr1980)
-  - fixed accessors reset bug in event overwrite which was causing the infamous
+  - fixed Accessors reset bug in Event#overwrite that was causing the infamous
     "undefined method `tv_sec'" bug with the multiline filter (Colin Surprenant)
-  - fixed agent stalling when also using web (Colin Surprenant)
-  - starting a already running service should return exit code 0 (Jan Gaedicke)
-  - fixes for RedHat init script (LOGSTASH-2040, Jan Gaedicke, Jordan Sissel)
-  - removed dependency on MRI for doc markdown parsing (Colin Surprenant)
-  - improved Makefile jruby command launching (Colin Surprenant)
+  - fixed agent stalling when also using web option (Colin Surprenant)
   - fixed accessing array-indexed event fields (Jonathan Van Eenwyk)
-  - refactored jar dependencies loading (Colin Surprenant)
-  - logstash-contrib doc in README (Kurt Hurtado)
   - new sysv init style scripts based on pleaserun (Richard Pijnenburg)
   - better handling of invalid command line parameters (LOGSTASH-2024, Colin Surprenant)
-  - logging and typos corrected (Philippe Weber)
-  - packaging acceptance specs (Richard Pijnenburg)
-  - better java command and drip handling (Jordan Sissel)
-  - refactored plugins external files lookup to remove hardcoded paths
-    and lookup relative to logstash home (Jordan Sissel)
 
   # inputs
   - improvement: rabbitmq: upgraded Bunny gem to 1.1.8, fixes a threading leak and improves
@@ -42,8 +29,6 @@
   - bugfix: multiline: "undefined method `tv_sec'" fix (Colin Surprenant)
   - bugfix: multiline: fix for "undefined method `[]' for nil:NilClass" (#1258, Colin Surprenant)
   - improvement: date: fix specs for non "en" locale (Olivier Le Moal)
-  - improvement: multiline: added flush support to enable specs, refactored specs (Colin Surprenant)
-  - improvement: useragent: removed useless dual force_encoding (Alex Tambellini)
   - improvement: grok: better pattern for RFC-5424 syslog format (Guillaume Espanel)
   - improvement: grok: refactored the LOGLEVEL pattern (Lorenzo González)
   - improvement: grok: fix example doc (LOGSTASH-2093, Jason Kendall)
