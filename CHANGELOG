@@ -21,6 +21,8 @@
   - logging and typos corrected (Philippe Weber)
   - packaging acceptance specs (Richard Pijnenburg)
   - better java command and drip handling (Jordan Sissel)
+  - refactored plugins external files lookup to remove hardcoded paths
+    and lookup relative to logstash home (Jordan Sissel)
 
   # inputs
   - improvement: rabbitmq: upgraded Bunny gem to 1.1.8, fixes a threading leak and improves
@@ -30,6 +32,7 @@
   - improvement: imap: option to disable certificate validation (Sverre Bakke)
 
   # codecs
+  - new: collectd: better performance & error handling than collectd input (Aaron Mildenstein)
   - improvement: graphite: removed unused charset option (Colin Surprenant)
   - improvement: json_spooler: is now deprecated (Colin Surprenant)
   - improvement: proper charset support in all codecs (Colin Surprenant)
