@@ -1,16 +1,21 @@
 basedir=$(cd `dirname $0`/..; pwd)
 
 setup_ruby() {
-  export RUBYLIB="$basedir/lib"
+  export RUBYLIB="${basedir}/lib"
+
   # Verify ruby works
   if ! ruby -e 'puts "HURRAY"' 2> /dev/null | grep -q "HURRAY" ; then
     echo "No ruby program found. Cannot start."
     exit 1
   fi
 
+  # set $RUBY and $RUBYVER
   eval $(ruby -rrbconfig -e 'puts "RUBYVER=#{RbConfig::CONFIG["ruby_version"]}"; puts "RUBY=#{RUBY_ENGINE}"')
+
   RUBYCMD="ruby"
-  export GEM_HOME="$basedir/vendor/bundle/${RUBY}/${RUBYVER}"
+  VENDORED_JRUBY=
+
+  export GEM_HOME="${basedir}/vendor/bundle/${RUBY}/${RUBYVER}"
   export GEM_PATH=
 }
 
@@ -58,15 +63,18 @@ setup_java() {
 
   export JAVACMD
   export JAVA_OPTS
-  export RUBYLIB="$basedir/lib"
-  export GEM_HOME="$basedir/vendor/bundle/jruby/1.9"
-  export GEM_PATH=
 }
 
 setup_vendored_jruby() {
   RUBYVER=1.9
   RUBY=jruby
-  RUBYCMD="$JAVACMD $JAVA_OPTS -jar $basedir/vendor/jar/jruby-complete-*.jar"
+
+  JRUBY_JAR=$(ls "${basedir}"/vendor/jar/jruby-complete-*.jar)
+  VENDORED_JRUBY=1
+
+  export RUBYLIB="${basedir}/lib"
+  export GEM_HOME="${basedir}/vendor/bundle/${RUBY}/${RUBYVER}"
+  export GEM_PATH=
 }
 
 setup() {
@@ -80,9 +88,11 @@ setup() {
 
 install_deps() {
   if [ -f "$basedir/logstash.gemspec" ] ; then
-    program="$basedir/gembag.rb"
-    set -- "$basedir/logstash.gemspec"
-    exec $RUBYCMD "$basedir/gembag.rb" "$@"
+    if [ -z "$VENDORED_JRUBY" ] ; then
+      exec "${RUBYCMD}" "${basedir}/gembag.rb" "${basedir}/logstash.gemspec" "$@"
+    else
+      exec "${JAVACMD}" $JAVA_OPTS "-jar" "$JRUBY_JAR" "${basedir}/gembag.rb" "${basedir}/logstash.gemspec" "$@"
+    fi
   else
     echo "Cannot install dependencies; missing logstash.gemspec. This 'deps' command only works from a logstash git clone."
   fi
