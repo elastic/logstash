@@ -40,7 +40,7 @@ class LogStash::Outputs::Http < LogStash::Outputs::Base
   #
   # For example:
   #
-  #    mapping => ["foo", "%{host}", "bar", "%{type}"]
+  #    mapping => {"foo" => "%{host}" "bar" => "%{type}"]
   config :mapping, :validate => :hash
 
   # Set the format of the http body.
@@ -54,6 +54,29 @@ class LogStash::Outputs::Http < LogStash::Outputs::Base
   config :format, :validate => ["json", "form", "message"], :default => "json"
 
   config :message, :validate => :string
+
+
+
+  # function to parse mapping hash
+  # Adapted from: http://stackoverflow.com/a/8749149
+  private
+  def parse_mapping(parent, mapping_hash, lse)
+    #lse = LogStash::Event.new
+    parsed = Hash.new
+    mapping_hash.each do |k,v|
+      if v.is_a?(Hash) 
+        parsed[k] = parse_mapping(k,v, lse)
+      else
+        if parent.nil?
+          parsed[lse.sprintf(k)] = lse.sprintf(v)
+        else
+          parsed[lse.sprintf(k)] = lse.sprintf(v)
+          return parsed
+        end
+      end
+    end
+    return parsed
+  end
 
   public
   def register
@@ -84,12 +107,8 @@ class LogStash::Outputs::Http < LogStash::Outputs::Base
   public
   def receive(event)
     return unless output?(event)
-
     if @mapping
-      evt = Hash.new
-      @mapping.each do |k,v|
-        evt[k] = event.sprintf(v)
-      end
+      evt = parse_mapping(nil, @mapping, event)
     else
       evt = event.to_hash
     end
