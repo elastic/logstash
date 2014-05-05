@@ -20,7 +20,7 @@ LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
 
 unset CDPATH
 basedir=$(cd `dirname $0`/..; pwd)
-. ${basedir}/bin/logstash.lib.sh
+. "${basedir}/bin/logstash.lib.sh"
 
 setup
 
@@ -33,10 +33,10 @@ case $1 in
   -*) 
     # is the first argument a flag? If so, assume 'agent'
     program="$basedir/lib/logstash/runner.rb"
-    exec $RUBYCMD -I$RUBYLIB "$program" agent "$@"
+    exec $RUBYCMD "$JARFILE" -I"$RUBYLIB" "$program" agent "$@"
     ;;
   *)
     program="$basedir/lib/logstash/runner.rb"
-    exec $RUBYCMD -I$RUBYLIB "$program" "$@"
+    exec $RUBYCMD "$JARFILE" -I"$RUBYLIB" "$program" "$@"
     ;;
 esac
