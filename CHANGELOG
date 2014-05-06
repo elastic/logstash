@@ -10,6 +10,7 @@
   - fixed accessing array-indexed event fields (Jonathan Van Eenwyk)
   - new sysv init style scripts based on pleaserun (Richard Pijnenburg)
   - better handling of invalid command line parameters (LOGSTASH-2024, Colin Surprenant)
+  - fixed running from a path containing spaces (LOGSTASH-1983, Colin Surprenant)
 
   # inputs
   - improvement: rabbitmq: upgraded Bunny gem to 1.1.8, fixes a threading leak and improves
