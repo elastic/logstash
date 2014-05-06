@@ -8,7 +8,7 @@ HOSTS:
     image: jordansissel/system:centos-6.4
     hypervisor: docker
     docker_cmd: '["/sbin/init"]'
-    extra_commands:
+    docker_image_commands:
       - 'yum install -y wget ntpdate rubygems ruby-augeas ruby-devel augeas-devel'
       - 'touch /etc/sysconfig/network'
 CONFIG:
