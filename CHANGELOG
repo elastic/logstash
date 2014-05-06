@@ -1,3 +1,48 @@
+1.4.1 (May 6, 2014)
+  # General
+  - bumped Elasticsearch to 1.1.1 and Kibana to 3.0.1
+  - improved specs & testing (Colin Surprenant), packaging (Richard Pijnenburg) & doc (James Turnbull)
+  - better $JAVA_HOME handling (Marc Chadwick)
+  - fixed bin/plugin target dir for when installing out from form logstash home (lr1980)
+  - fixed Accessors reset bug in Event#overwrite that was causing the infamous
+    "undefined method `tv_sec'" bug with the multiline filter (Colin Surprenant)
+  - fixed agent stalling when also using web option (Colin Surprenant)
+  - fixed accessing array-indexed event fields (Jonathan Van Eenwyk)
+  - new sysv init style scripts based on pleaserun (Richard Pijnenburg)
+  - better handling of invalid command line parameters (LOGSTASH-2024, Colin Surprenant)
+  - fixed running from a path containing spaces (LOGSTASH-1983, Colin Surprenant)
+
+  # inputs
+  - improvement: rabbitmq: upgraded Bunny gem to 1.1.8, fixes a threading leak and improves
+    latency (Michael Klishin)
+  - improvement: twitter: added "full_tweet" option (Jordan Sissel)
+  - improvement: generator: fixed the example doc (LOGSTASH-2093, Jason Kendall)
+  - improvement: imap: option to disable certificate validation (Sverre Bakke)
+
+  # codecs
+  - new: collectd: better performance & error handling than collectd input (Aaron Mildenstein)
+  - improvement: graphite: removed unused charset option (Colin Surprenant)
+  - improvement: json_spooler: is now deprecated (Colin Surprenant)
+  - improvement: proper charset support in all codecs (Colin Surprenant)
+
+  # filters
+  - bugfix: date: on_success actions only when date parsing actually succeed (Philippe Weber)
+  - bugfix: multiline: "undefined method `tv_sec'" fix (Colin Surprenant)
+  - bugfix: multiline: fix for "undefined method `[]' for nil:NilClass" (#1258, Colin Surprenant)
+  - improvement: date: fix specs for non "en" locale (Olivier Le Moal)
+  - improvement: grok: better pattern for RFC-5424 syslog format (Guillaume Espanel)
+  - improvement: grok: refactored the LOGLEVEL pattern (Lorenzo González)
+  - improvement: grok: fix example doc (LOGSTASH-2093, Jason Kendall)
+  - improvement: metrics: document .pXX metric (Juarez Bochi)
+
+  # outputs
+  - improvement: rabbitmq: upgraded Bunny gem to 1.1.8, fixes a threading leak and improves
+    latency (Michael Klishin)
+  - improvement: elasticsearch: start embedded server before creating a client to fix discovery
+    problems "waited for 30s ..." (Jordan Sissel)
+  - improvement: elasticsearch: have embedded ES use "bind_host" option for "network.host"
+    ES config (Jordan Sissel)
+
 1.4.0 (March 20, 2014)
   # General
   - We've included some upgrade-specific release notes with more details about
@@ -16,7 +61,7 @@
   - Update template to fit ES 1.0 API changes (untergeek)
   - Lots of Makefile, gem and build improvements courtesy of untergeek, Faye
     Salwin, mrsolo, ronnocol, electrical, et al
-  - Add `env` command so you can run arbitrary commands with the logstash 
+  - Add `env` command so you can run arbitrary commands with the logstash
     environment setup (jordansissel)
   - Bug fixes (lots).  Did I mention bug fixes? (Thanks, community!)
   - Elasticsearch 1.0 libraries are now included. See the Elasticsearch
@@ -30,7 +75,7 @@
   - Testing was another focus of this release. We added many more tests
     to help us prevent regressions and verify expected behavior. Helping with
     this effort was Richard Pijnenburg, Jordan Sissel, and others.
-  - The 'debug' setting was removed from most plugins. Prior to this, 
+  - The 'debug' setting was removed from most plugins. Prior to this,
     most plugins advertised the availability of this setting but actually
     did not use it (#996, Jordan Sissel).
   - bugfix: --pluginpath now lets you load codecs. (#1077, Sergey Zhemzhitsky)
@@ -70,7 +115,7 @@
 
   # filters
   - bugfix: clone: Correctly clone events with numeric field values.
-    (LOGSTASH-1225, #1158, Darren Holloway) 
+    (LOGSTASH-1225, #1158, Darren Holloway)
   - bugfix: zeromq: Add `timeout` and `retries` settings for retrying on
     request failures. Also adds `add_tag_on_timeout` so you can act on retry
     failures. (logstash-contrib#23, Michael Hart)
@@ -103,7 +148,7 @@
   - bugfix: elasticsearch: Fix NameError Socket crash on startup
     (LOGSTASH-1974, #1167)
   - improvement: Added `action` awesomeness to elasticsearch output (#1105, jordansissel)
-  - improvement: Implement `protocol => http` in elasticsearch output (#1105, jordansissel)   
+  - improvement: Implement `protocol => http` in elasticsearch output (#1105, jordansissel)
   - bugfix: fix broken pipe output to allow EBADF instead of EPIPE,
     allowing pipe command to be restarted (#974, Paweł Puterla)
   - improvement: Adding dns resolution to lumberjack output (#1048, Nathan Burns )
@@ -136,7 +181,7 @@
   - web: don't crash if an invalid http request was sent
     (#878, LOGSTASH-704; Jordan Sissel)
   - Ships with Elasticsearch 0.90.9
-  - logstash will now try to make sure the @timestamp field is of the 
+  - logstash will now try to make sure the @timestamp field is of the
     correct format.
   - Fix a bug in 1.3.1/1.3.0's elasticsearch index template causing phrase
     searching to not work. Added tests to ensure search behavior works as
@@ -163,7 +208,7 @@
   - oops: The --help flag now reports help again, instead of barfing an "I need
     help" exception (LOGSTASH-1436, LOGSTASH-1392; Jordan Sissel)
   - Resolved encoding errors caused by environmental configurations, such as
-    'InvalidByteSequenceError ... on US-ASCII' (LOGSTASH-1595, #842; 
+    'InvalidByteSequenceError ... on US-ASCII' (LOGSTASH-1595, #842;
     Jordan Sissel)
   - Fix bug causing "no such file to load -- base64" (LOGSTASH-1310,
     LOGSTASH-1519, LOGSTASH-1325, LOGSTASH-1522, #834; Jordan Sissel)
@@ -171,7 +216,7 @@
   - Bug fixes galore!
 
   ## inputs
-  - new: collectd: receive metrics from collectd's network protocol 
+  - new: collectd: receive metrics from collectd's network protocol
     (#785, Aaron Mildenstein)
   - bugfix: gelf: handle chunked gelf message properly (#718, Thomas De Smedt)
   - bugfix: s3: fix bug in region endpoint setting (#740, Andrea Ascari)
@@ -217,16 +262,16 @@
   - new: edn: encode and decode the EDN serialization format. Commonly used
     in Clojure. For more details, see: https://github.com/edn-format/edn
     (#778, Lee Hinman)
-  - bugfix: oldlogstashjson: Fix encoding to work correctly. (#788, #795; 
+  - bugfix: oldlogstashjson: Fix encoding to work correctly. (#788, #795;
     Brad Fritz)
   - bugfix: oldlogstashjson: Fallback to plain text on invalid JSON
     (LOGSTASH-1534, #850; Jordan Sissel)
 
   ## outputs
   - feature: elasticsearch and elasticsearch_http now will apply a default
-    index mapping template (included) which has the settings recommended by 
+    index mapping template (included) which has the settings recommended by
     Elasticsearch for Logstash specifically.
-    Configuration options allow disabling this feature and providing a path 
+    Configuration options allow disabling this feature and providing a path
     to your own template. (#826, #839; Aaron Mildenstein)
   - feature: elasticsearch_http: optional 'user' and 'password' settings to
     make use of http authentication (LOGSTASH-902, #684; Ian Neubert)
@@ -381,7 +426,7 @@
     Eenwyk)
   - bugfix: syslog: 'message' field no longer appears as an array.
   - bugfix: rabbitmq: can now bind the queue to the exchange (#624, #628,
-    LOGSTASH-1300, patches by Jonathan Tron and Jonathan Van Eenwyk) 
+    LOGSTASH-1300, patches by Jonathan Tron and Jonathan Van Eenwyk)
 
   ## codecs
   - compatibility: json: if data given is not valid as json will now be used as
@@ -425,7 +470,7 @@
     perl/ruby hash-rocket syntax: { "key" => "value", ... } (LOGSTASH-728)
   - ElasticSearch version 0.90.3 is included. (#486, Gang Chen)
   - The elasticsearch plugin now uses the bulk index api which should result
-    in lower cpu usage as well as higher performance than the previous 
+    in lower cpu usage as well as higher performance than the previous
     logstash version.
   - Many deprecated features have been removed. If your config caused
     deprecation warnings on startup in logstash v1.1.13, there is a good
@@ -501,13 +546,13 @@
   - feature: irc: add messages_per_second tunable (LOGSTASH-962)
   - bugfix: email: restored initial really useful documentation
   - improvement: emails: allow @message, @source, @... in match (LOGSTASH-826,
-    LOGSTASH-823) 
-  - feature: email: can now set Reply-To (#540, Tim Meighen) 
+    LOGSTASH-823)
+  - feature: email: can now set Reply-To (#540, Tim Meighen)
   - feature: mongodb: replica sets are supported (#389, patch by Mathias Gug)
   - new: s3: New plugin to write to amazon S3 (#439, patch by Mattia Peterle)
   - feature: statsd: now supports 'set' metrics (#513, patch by David Warden)
   - feature: sqs: now supports batching (#522, patch by AaronTheApe)
-  - feature: ganglia: add slope and group settings (#583, patch by divanikus) 
+  - feature: ganglia: add slope and group settings (#583, patch by divanikus)
 
 1.1.13 (May 28, 2013)
   ## general
@@ -583,7 +628,7 @@
   - new: varnishlog input to read from the Varnish Cache server's shared memory
     log (LOGSTASH-978, #422; Louis Zuckerman)
   - new: graphite input. Supports the plain text carbon tcp protocol.
-  - new: imap input. Read mail! 
+  - new: imap input. Read mail!
   - feature: twitter: supports http proxying now (#276, patch by Richard
     Pijnenburg)
   - feature: loggly: supports http proxying now (#276, patch by Richard
@@ -609,7 +654,7 @@
     tagging events on failure. (#328, patch by Neil Prosser)
   - deprecated: grok: deprecated the --grok-patterns-path flag (LOGSTASH-803)
   - feature: date: nested field access is allowed now
-  - feature: csv, xml, kv, json, geoip: new common settings! 
+  - feature: csv, xml, kv, json, geoip: new common settings!
     (LOGSTASH-756, #310, #311, #312, #383, #396; patches by Richard Pijnenburg)
       source - what field the text comes from
       target - where to store the parse result.
@@ -619,7 +664,7 @@
   - bugfix: kv filter now respects add_tag, etc (LOGSTASH-935)
 
   ## outputs
-  - new: hipchat output (#428, Cameron Stokes) 
+  - new: hipchat output (#428, Cameron Stokes)
   - bugfix: mongo would fail to load bson_java support (LOGSTASH-849)
   - bugfix: tags support to gelf output. Returns tags as _tags field
     (LOGSTASH-880, patch by James Turnbull)
@@ -629,7 +674,7 @@
   - bugfix: Fix opentsdb output (LOGSTASH-689, #317; patch by Emmet Murphy)
   - improvement: http output now supports a custom message format with
     the 'message' setting (Patch by Christian Schröder)
-  - graphite output now lets you ship the whole (or part) of an event's fields 
+  - graphite output now lets you ship the whole (or part) of an event's fields
     to graphite as metric updates. (#350, patch by Piavlo)
   - email output now correctly defaults to not using authentication
     (LOGSTASH-559, #365; patch by Stian Mathiassen)
@@ -640,7 +685,7 @@
     until that problem is resolved. This helps prevent a dead reader
     from letting redis fill up memory. (Piavlo)
   - feature: boundary: New 'auto' setting. (#413, Alden Jole)
- 
+
 1.1.9 (January 10, 2013)
   ## inputs
   - bugfix: all inputs: fix bug where some @source values were not valid urls
@@ -742,7 +787,7 @@
  - improvement: grok: can now match against number types. Example, if you're
    sending a json format event with { "status": 403 } you can now grok that
    field.  The number is represented as a string "403" before pattern matching.
- - bugfix: date: Fix a bug that would crash the pipeline if no date pattern 
+ - bugfix: date: Fix a bug that would crash the pipeline if no date pattern
    matched. (LOGSTASH-705)
  - feature: kv: Adds field_split, value_split, prefix, and container
    settings. (#225, patch by Alex Wheeler)
@@ -770,7 +815,7 @@
  - feature: mongodb: new setting 'isodate' that, when true, stores the
    @timestamp field as a mongodb date instead of a string. (#224, patch by
    Kevin Amorin)
- - improvement: gelf: Allow full_message gelf property to be overridden (#245, 
+ - improvement: gelf: Allow full_message gelf property to be overridden (#245,
    patch by Sébastien Masset)
  - misc: lumberjack: jls-lumberjack gem updated to 0.0.6
  - feature: nagios: New 'nagios_level' setting to let you change the level
@@ -796,7 +841,7 @@
    now work. (Fixes LOGSTASH-649, LOGSTASH-642, LOGSTASH-655)
  - several plugins received UTF-8-related fixes (file, lumberjack, etc)
    File bugs if you see any UTF-8 related crashes.
- - 'json_event' format inputs will now respect 'tags' (#239, patch by 
+ - 'json_event' format inputs will now respect 'tags' (#239, patch by
    Tim Laszlo)
  - logstash no longer uses nor recommends bundler (see 'gembag.rb'). The
    Gemfile will be purged in the near future.
@@ -864,7 +909,7 @@
 
  ## inputs
  - bugfix: redis: [LOGSTASH-526] fix bug with password passing
- - new: lumberjack: for use with the lumberjack log shipper 
+ - new: lumberjack: for use with the lumberjack log shipper
    (https://github.com/jordansissel/lumberjack)
  - new: sqs: Amazon SQS input (Patch by Sean Laurent, #211)
  - new: relp: RELP (rsyslog) plugin (Patch by Mike Worth, #177)
@@ -895,10 +940,10 @@
  - grok patterns: the URIPARAM pattern now includes pipe '|' as a valid
    character. (Patch by Chris Mague)
  - grok patterns: improve haproxy log patterns (Patch by Kevin Nuckolls)
- - grok patterns: include 'FATAL' as a valid LOGLEVEL match 
+ - grok patterns: include 'FATAL' as a valid LOGLEVEL match
    (patch by Corry Haines)
  - grok patterns: 'ZONE' is no longer captured by name in the HTTPDATE pattern
- - new: alter: adds some conditional field modification as well as a 
+ - new: alter: adds some conditional field modification as well as a
    'coalesce' feature which sets the value of a field to the first non-null
    value given in a list. (Patch by Francesco Salbaroli)
  - improvement: date: add TAI64N support
@@ -1029,7 +1074,7 @@
 
   ## IMPORTANT CHANGES FOR UPGRADES FROM 1.0.x
     - grok filter: named_captures_only now defaults to true
-        This means simple patterns %{NUMBER} without any other name will 
+        This means simple patterns %{NUMBER} without any other name will
         now not be included in the field set. You can revert to the old
         behavior by setting 'named_captures_only => false' in your grok
         filter config.
@@ -1119,7 +1164,7 @@
 1.0.17 (Aug 12, 2011)
   - Bugs fixed
     - [LOGSTASH-147] - grok filter incorrectly adding fields when a match failed
-    - [LOGSTASH-151] - Fix bug in routing keys on AMQP 
+    - [LOGSTASH-151] - Fix bug in routing keys on AMQP
     - [LOGSTASH-156] - amqp issue with 1.0.16?
 
   - Improvement
@@ -1210,7 +1255,7 @@
   - bugfix: amqp input now reconnects properly when the amqp broker restarts.
   - bugfix: Fix bug in gelf output when a fields were not arrays but numbers.
     Issue: https://logstash.jira.com/browse/LOGSTASH-113
-  - bugfix: Fix a bug in syslog udp input due to misfeatures in Ruby's URI 
+  - bugfix: Fix a bug in syslog udp input due to misfeatures in Ruby's URI
     class. https://logstash.jira.com/browse/LOGSTASH-115
   - misc: jquery and jquery ui now ship with logstash; previously they were
     loaded externally
@@ -1218,7 +1263,7 @@
   - testing: fixed logstash-test to now run properly
 
 1.0.12 (Jun 9, 2011)
-  - misc: clean up some excess debugging output 
+  - misc: clean up some excess debugging output
   - feature: for tcp input, allow 'data_timeout => -1' to mean "never time out"
 
 1.0.11 (Jun 9, 2011)
@@ -1228,7 +1273,7 @@
   - feature: Refactor runner to allow you to run multiple things in a single
     process.  You can end each instance with '--' flag. For example, to run one
     agent and one web instance:
-      % java -jar logstash-blah.jar agent -f myconfig -- web 
+      % java -jar logstash-blah.jar agent -f myconfig -- web
   - feature: Add 'embedded' option to the elasticsearch output:
       elasticsearch { embedded => true }
     Default is false. If true, logstash will run an elasticsearch server
@@ -1245,7 +1290,7 @@
     multihomed server.
   - feature: The mongodb output now supports authentication
   - bugfix: Fix bug in GELF output that caused the gelf short_message to be set as an
-    array if it came from a grok value. The short_message field should only 
+    array if it came from a grok value. The short_message field should only
     now be a string properly.
   - bugfix: Fix bug in grep filter that would drop/cancel events if you had
     more than one event type flowing through filters and didn't have a grep
@@ -1292,7 +1337,7 @@
   - Add shutdown processing. Shutdown starts when all inputs finish (like
     stdin) The sequence progresses using the same pipeline as the
     inputs/filters/outputs, so all in-flight events should finish getting
-    processed before the final shutdown event makes it's way to the outputs.  
+    processed before the final shutdown event makes it's way to the outputs.
   - Add retries to unhandled input exceptions (LOGSTASH-84)
 
 1.0.6 (May 11, 2011)
