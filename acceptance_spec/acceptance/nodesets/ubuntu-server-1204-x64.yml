@@ -8,7 +8,7 @@ HOSTS:
     image: jordansissel/system:ubuntu-12.04
     hypervisor: docker
     docker_cmd: '["/sbin/init"]'
-    extra_commands:
+    docker_image_commands:
       - 'apt-get install -yq ruby1.8-dev libaugeas-dev libaugeas-ruby ruby rubygems lsb-release wget net-tools curl'
 CONFIG:
   type: foss
