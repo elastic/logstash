@@ -29,7 +29,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   milestone 3
 
   # Specify a time zone canonical ID to be used for date parsing.
-  # The valid IDs are listed on the (Joda.org available time zones page)[http://joda-time.sourceforge.net/timezones.html].
+  # The valid IDs are listed on the [Joda.org available time zones page](http://joda-time.sourceforge.net/timezones.html).
   # This is useful in case the time zone cannot be extracted from the value,
   # and is not the platform default.
   # If this is not specified the platform default will be used.
