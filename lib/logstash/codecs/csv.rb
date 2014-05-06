@@ -1,5 +1,4 @@
 require "csv"
-# require "logstash/namespace"
 require "logstash/codecs/base"
 
 # CSV output.
@@ -39,18 +38,6 @@ class LogStash::Codecs::CSV < LogStash::Codecs::Base
     @on_event.call(csv_values.to_csv(@csv_options) + "\n")
   end # def encode
 
-#  public
-#  def receive(event)
-#    return unless output?(event)
-#    path = event.sprintf(@path)
-#    fd = open(path)
-#    csv_values = @fields.map {|name| get_value(name, event)}
-#    fd.write(csv_values.to_csv(@csv_options))
-
-#    flush(fd)
-#    close_stale_files
-#  end #def receive
-
   private
   def get_value(name, event)
     val = event[name]
@@ -61,5 +48,5 @@ class LogStash::Codecs::CSV < LogStash::Codecs::Base
         return val
     end
   end
-end # class LogStash::Outputs::CSV
+end # class LogStash::Codec::CSV
 
