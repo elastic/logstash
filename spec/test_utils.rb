@@ -50,7 +50,7 @@ class LogStash::Event
 end
 
 RSpec.configure do |config|
-  config.filter_run_excluding :redis => true, :socket => true, :performance => true, :elasticsearch => true, :broken => true
+  config.filter_run_excluding :redis => true, :socket => true, :performance => true, :elasticsearch => true, :broken => true, :export_cypher => true
 end
 
 module LogStash
