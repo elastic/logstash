@@ -13,12 +13,12 @@ For more info, see <http://logstash.net/>
 ## logstash-contrib
 ### AKA "Where'd that plugin go??"
 
-In version 1.4.0 of Logstash, some of the community-contributed plugins were
+Since version 1.4.0 of Logstash, some of the community-contributed plugins were
 moved to a new home in the
 [Elasticsearch logstash-contrib repo](https://github.com/elasticsearch/logstash-contrib).
 If you can't find a plugin here which you've previously used, odds are it is now
 located there. The good news is that these plugins are simple to install using the
-[Logstash manual plugin installation script](http://logstash.net/docs/1.4.0/contrib-plugins).
+[Logstash manual plugin installation script](http://logstash.net/docs/latest/contrib-plugins).
 
 ## Need Help?
 
