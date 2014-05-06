@@ -43,6 +43,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "gelf", ["1.3.2"]                  #(MIT license)
   gem.add_runtime_dependency "gmetric", ["0.1.3"]               #(MIT license)
   gem.add_runtime_dependency "jls-grok", ["0.10.12"]            #(BSD license)
+  gem.add_runtime_dependency "keen"                             #(MIT license)
   gem.add_runtime_dependency "mail"                             #(MIT license)
   gem.add_runtime_dependency "metriks"                          #(MIT license)
   gem.add_runtime_dependency "redis"                            #(MIT license)

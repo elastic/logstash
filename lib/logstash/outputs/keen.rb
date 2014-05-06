@@ -15,7 +15,7 @@ class LogStash::Outputs::Keen < LogStash::Outputs::Base
   # The collection to write events to. This can be dynamic using the %{foo} syntax.
   # The default value will partition your indices by day so you can more easily
   # delete old data or only search specific date ranges.
-  config :collection, :validate => :string, :default => "FUXNE-%{+YYYY.MM.dd}"
+  config :collection, :validate => :string, :default => "logstash-%{+YYYY.MM.dd}"
 
   # The Project ID to which you'll be writing.
   config :project_id, :validate => :string, :default => nil
