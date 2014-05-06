@@ -17,18 +17,11 @@ class LogStash::Outputs::Keen < LogStash::Outputs::Base
   # delete old data or only search specific date ranges.
   config :collection, :validate => :string, :default => "FUXNE-%{+YYYY.MM.dd}"
 
-  # The index type to write events to. Generally you should try to write only
-  # similar events to the same 'type'. String expansion '%{foo}' works here.
-  config :index_type, :validate => :string
-
   # The Project ID to which you'll be writing.
   config :project_id, :validate => :string, :default => nil
 
   # The Write Key used to write to your project.
   config :write_key, :validate => :string, :default => nil
-
-  # The HTTP Basic Auth password used to access your elasticsearch server.
-  config :password, :validate => :password, :default => nil
 
   # This plugin uses the bulk index api for improved indexing performance.
   # To make efficient bulk api calls, we will buffer a certain number of
