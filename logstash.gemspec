@@ -26,9 +26,9 @@ Gem::Specification.new do |gem|
 
   # Web dependencies
   gem.add_runtime_dependency "ftw", ["~> 0.0.39"] #(Apache 2.0 license)
-  gem.add_runtime_dependency "haml"               #(MIT license)
-  gem.add_runtime_dependency "sass"               #(MIT license)
   gem.add_runtime_dependency "mime-types"         #(GPL 2.0)
+  gem.add_runtime_dependency "rack"               # (MIT-style license)
+  gem.add_runtime_dependency "sinatra"            # (MIT-style license)
 
   # Input/Output/Filter dependencies
   #TODO Can these be optional?
@@ -43,14 +43,13 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "gelf", ["1.3.2"]                  #(MIT license)
   gem.add_runtime_dependency "gmetric", ["0.1.3"]               #(MIT license)
   gem.add_runtime_dependency "jls-grok", ["0.10.12"]            #(BSD license)
-  gem.add_runtime_dependency "keen"                             #(MIT license)
   gem.add_runtime_dependency "mail"                             #(MIT license)
   gem.add_runtime_dependency "metriks"                          #(MIT license)
   gem.add_runtime_dependency "redis"                            #(MIT license)
   gem.add_runtime_dependency "statsd-ruby", ["1.2.0"]           #(MIT license)
   gem.add_runtime_dependency "xml-simple"                       #(ruby license?)
   gem.add_runtime_dependency "xmpp4r", ["0.5"]                  #(ruby license)
-  gem.add_runtime_dependency "jls-lumberjack", [">=0.0.19"]     #(Apache 2.0 license)
+  gem.add_runtime_dependency "jls-lumberjack", [">=0.0.20"]     #(Apache 2.0 license)
   gem.add_runtime_dependency "geoip", [">= 1.3.2"]              #(GPL license)
   gem.add_runtime_dependency "beefcake", "0.3.7"                #(MIT license)
   gem.add_runtime_dependency "murmurhash3"                      #(MIT license)
@@ -75,7 +74,7 @@ Gem::Specification.new do |gem|
   end
 
   if RUBY_PLATFORM != 'java'
-    gem.add_runtime_dependency "bunny",       ["~> 1.1.0"]  #(MIT license)
+    gem.add_runtime_dependency "bunny",       ["~> 1.1.8"]  #(MIT license)
   else
     gem.add_runtime_dependency "march_hare", ["~> 2.1.0"] #(MIT license)
   end
@@ -101,9 +100,10 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "insist", "1.0.0"  #(Apache 2.0 license)
   gem.add_runtime_dependency "rumbster"         # For faking smtp in email tests (Apache 2.0 license)
 
-  #Development Deps
+  # Development Deps
   gem.add_development_dependency "coveralls"
+  gem.add_development_dependency "kramdown"     # pure-ruby markdown parser (MIT license)
 
-  #Jenkins Deps
+  # Jenkins Deps
   gem.add_runtime_dependency "ci_reporter"
 end
