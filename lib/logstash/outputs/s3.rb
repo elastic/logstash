@@ -14,7 +14,7 @@ require "socket" # for Socket.gethostname
 
 # S3 plugin allows you to do something complex, let's explain:)
 
-# S3 outputs create temporary files into "/opt/logstash/S3_temp/". If you want, you can change the path at the start of register method.
+# S3 outputs create temporary files into "/opt/logstash/S3_temp/" or in to the temp_directory you specify in your conf. If
 # This files have a special name, for example:
 
 # ls.s3.ip-10-228-27-95.2013-04-18T10.00.tag_hello.part0.txt
@@ -72,7 +72,7 @@ require "socket" # for Socket.gethostname
 #      time_file => 5                           (optional)
 #      format => "plain"                        (optional) 
 #      canned_acl => "private"                  (optional. Options are "private", "public_read", "public_read_write", "authenticated_read". Defaults to "private" )
-#    }
+#      temp_directory => "/tmp/s3_temp"         (optional. Defaults to "/opt/logstash/S3_temp/")
 # }
 
 # We analize this:
@@ -135,6 +135,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  # 0 stay all time on listerner, beware if you specific 0 and size_file 0, because you will not put the file on bucket,
  # for now the only thing this plugin can do is to put the file when logstash restart.
  config :time_file, :validate => :number, :default => 0 
+
+ #Set the directory where temporary files are stored.
+ config :temp_directory, :validate => :string, :default => "/opt/logstash/S3_temp/"
  
  # The event format you want to store in files. Defaults to plain text.
  config :format, :validate => [ "json", "plain", "nil" ], :default => "plain"
@@ -204,7 +207,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  def getFinalPath
    
    @pass_time = Time.now 
-   return @temp_directory+"ls.s3."+Socket.gethostname+"."+(@pass_time).strftime("%Y-%m-%dT%H.%M")
+   return @temp_directory+"/ls.s3."+Socket.gethostname+"."+(@pass_time).strftime("%Y-%m-%dT%H.%M")
 
  end
 
@@ -253,7 +256,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  public
  def register
    require "aws-sdk"
-   @temp_directory = "/opt/logstash/S3_temp/"
 
    if (@tags.size != 0)
        @tag_path = ""
@@ -266,7 +268,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     @logger.debug "S3: Directory "+@temp_directory+" doesn't exist, let's make it!"
     Dir.mkdir(@temp_directory)
    else
-    @logger.debug "S3: Directory "+@temp_directory+" exist, nothing to do"
+    @logger.debug "S3: Directory "+@temp_directory+" exists, nothing to do"
    end 
    
    if (@restore == true )
