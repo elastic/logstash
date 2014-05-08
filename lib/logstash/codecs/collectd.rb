@@ -2,6 +2,7 @@
 require "date"
 require "logstash/codecs/base"
 require "logstash/namespace"
+require "logstash/errors"
 require "tempfile"
 require "time"
 
@@ -75,20 +76,20 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
 
   COLLECTD_TYPE_FIELDS = {
     'host' => true,
-    '@timestamp' => true, 
-    'plugin' => true, 
+    '@timestamp' => true,
+    'plugin' => true,
     'plugin_instance' => true,
   }
 
   INTERVAL_VALUES_FIELDS = {
-    "interval" => true, 
+    "interval" => true,
     "values" => true,
   }
 
   INTERVAL_BASE_FIELDS = {
     'host' => true,
     'collectd_type' => true,
-    'plugin' => true, 
+    'plugin' => true,
     'plugin_instance' => true,
     '@timestamp' => true,
     'type_instance' => true,
@@ -360,7 +361,7 @@ class LogStash::Codecs::Collectd < LogStash::Codecs::Base
       length  = ((payload.slice!(0) << 8) + payload.slice!(0)) - 4
       # Validate that the part length is correct
       raise(HeaderError) if length > payload.length
-      
+
       body = payload.slice!(0..length-1)
 
       field = TYPEMAP[typenum]
