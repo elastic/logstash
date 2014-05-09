@@ -29,6 +29,9 @@ class LogStash::Outputs::HipChat < LogStash::Outputs::Base
   # Message format to send, event tokens are usable here.
   config :format, :validate => :string, :default => "%{message}"
 
+  # HipChat server to use
+  config :server, :validate => :string, :default => "api.hipchat.com"
+
   public
   def register
     require "ftw"
@@ -36,7 +39,7 @@ class LogStash::Outputs::HipChat < LogStash::Outputs::Base
 
     @agent = FTW::Agent.new
 
-    @url = "https://api.hipchat.com/v1/rooms/message?auth_token=" + @token
+    @url = "https://" + @server + "/v1/rooms/message?auth_token=" + @token
     @content_type = "application/x-www-form-urlencoded"
   end # def register
 
