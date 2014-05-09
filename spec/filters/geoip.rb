@@ -117,4 +117,94 @@ describe LogStash::Filters::GeoIP do
       insist { subject["geoip"]["asn"].encoding } == Encoding::UTF_8
     end
   end
+
+  describe "defaults ipv6" do
+    config <<-CONFIG
+      filter {
+        geoip { 
+          source => "ip"
+          database => "vendor/geoip/GeoLiteCityv6.dat"
+        }
+      }
+    CONFIG
+
+    sample("ip" => "2001:4860:4860::8888") do
+      insist { subject }.include?("geoip")
+      expected_fields = %w(ip country_code2 country_code3 country_name
+                           continent_code latitude longitude )
+      expected_fields.each do |f|
+        insist { subject["geoip"] }.include?(f)
+      end
+    end
+
+    sample("ip" => "fe80::1") do
+      # assume geoip fails on localhost lookups
+      reject { subject }.include?("geoip")
+    end
+  end
+
+  describe "Specify the target ipv6" do
+    config <<-CONFIG
+      filter {
+        geoip { 
+          source => "ip"
+          database => "vendor/geoip/GeoLiteCityv6.dat"
+          target => src_ip
+        }
+      }
+    CONFIG
+
+    sample("ip" => "2001:4860:4860::8888") do
+      insist { subject }.include?("src_ip")
+
+      expected_fields = %w(ip country_code2 country_code3 country_name
+                           continent_code latitude longitude)
+      expected_fields.each do |f|
+        insist { subject["src_ip"] }.include?(f)
+      end
+    end
+
+    sample("ip" => "fe80::1") do
+      # assume geoip fails on localhost lookups
+      reject { subject }.include?("src_ip")
+    end
+  end
+
+  describe "correct encodings with ipv6 db" do
+    config <<-CONFIG
+      filter {
+        geoip {
+          source => "ip"
+	  database => "vendor/geoip/GeoLiteCityv6.dat"
+        }
+      }
+    CONFIG
+    expected_fields = %w(ip country_code2 country_code3 country_name
+                           continent_code)
+
+    sample("ip" => "2a03:2880:2110:df07:face:b00c:0:1") do
+      checked = 0
+      expected_fields.each do |f|
+        next unless subject["geoip"][f]
+        checked += 1
+        insist { subject["geoip"][f].encoding } == Encoding::UTF_8
+      end
+      insist { checked } > 0
+    end
+    sample("ip" => "2001:200:dff:fff1:216:3eff:feb1:44d7") do
+      checked = 0
+      expected_fields.each do |f|
+        next unless subject["geoip"][f]
+        checked += 1
+        insist { subject["geoip"][f].encoding } == Encoding::UTF_8
+      end
+      insist { checked } > 0
+    end
+
+  end
+
+
+
+
+
 end
