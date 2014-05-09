@@ -129,11 +129,13 @@ en:
           be loaded in the order described above.
         config-string: |+
           Use the given string as the configuration
-          data. Same syntax as the config file. If not
-          input is specified, then 'stdin { type =>
-          stdin }' is the default input. If no output
-          is specified, then 'stdout { debug => true
-          }}' is default output.
+          data. Same syntax as the config file. If no
+          input is specified, then 'stdin 
+          { type => stdin }' is the default input.
+          If no output is specified, then  'stdout
+          { codec => rubydebug } }' is default output.
+        configtest: |+
+          Check configuration, then exit.
         filterworkers: |+
           Sets the number of filter workers to run.
         watchdog-timeout: |+
