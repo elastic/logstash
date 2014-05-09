@@ -500,4 +500,85 @@ describe LogStash::Filters::Grok do
       insist { subject["foo"] }.is_a?(String)
     end
   end
+
+  ##
+  ## This section expresses the need for a proper UNIXPATH grok pattern,
+  ## in a couple of sections.
+  ##
+  describe "(1) old vs new path matching - largely OK" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => [ "message", "%{UNIXPATH_OLD:path}" ]
+        }
+      }
+    CONFIG
+
+    # Simple sample, OK
+    sample "/var/lib/imap/socket/lmtp" do
+      insist { subject["path"] } == "/var/lib/imap/socket/lmtp"
+    end
+
+    # More complex sample, also OK
+    sample "/var/spool/amavisd/tmp/amavis-20140325T074113-04533-_rMUbUsI/parts/p004" do
+      insist { subject["path"] } == "/var/spool/amavisd/tmp/amavis-20140325T074113-04533-_rMUbUsI/parts/p004"
+    end
+
+    # Here be trouble
+    sample "/var/tmp/valid^directory^name/" do
+      insist { subject["path"] } != "/var/tmp/valid^directory^name/"
+    end
+  end
+
+  describe "(2) old vs new path matching - NOT OK" do
+   config <<-CONFIG
+     filter {
+        grok {
+          match => [ "message", "%{UNIXPATH_OLD:path}: %{DATA:reason}" ]
+        }
+      }
+    CONFIG
+
+    # More complex sample, NOT OK - hence the == nil
+    sample "/var/spool/amavisd/tmp/amavis-20140325T074113-04533-_rMUbUsI/parts/p004: Worm FOUND" do
+      insist { subject["path"] } == nil
+    end
+  end
+
+  describe "(3) old vs new path matching - A-OK" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => [ "message", "%{UNIXPATH:path}" ]
+        }
+      }
+    CONFIG
+
+    sample "/var/lib/imap/socket/lmtp" do
+      insist { subject["path"] } == "/var/lib/imap/socket/lmtp"
+    end
+
+    sample "/var/tmp/valid^directory^name/" do
+      insist { subject["path"] } == "/var/tmp/valid^directory^name/"
+    end
+
+    sample "/var/spool/amavisd/tmp/amavis-20140325T074113-04533-_rMUbUsI/parts/p004" do
+      insist { subject["path"] } == "/var/spool/amavisd/tmp/amavis-20140325T074113-04533-_rMUbUsI/parts/p004"
+    end
+  end
+
+  describe "(4) old vs new path matching - holy moly" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => [ "message", "%{UNIXPATH:path}: %{DATA:reason}" ]
+        }
+      }
+    CONFIG
+
+    sample "/var/spool/amavisd/tmp/amavis-20140325T074113-04533-_rMUbUsI/parts/p004: Worm FOUND" do
+      insist { subject["path"] } == "/var/spool/amavisd/tmp/amavis-20140325T074113-04533-_rMUbUsI/parts/p004"
+    end
+  end
+
 end
