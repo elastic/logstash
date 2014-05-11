@@ -246,7 +246,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   # A string used to identify a Redis instance in log messages
   def identity
-    @name || "redis://#{@password}@#{@current_host}:#{@current_port}/#{@db} #{@data_type}:#{@key}"
+    @name || "redis://#{@current_host}:#{@current_port}/#{@db} #{@data_type}:#{@key}"
   end
 
 end
