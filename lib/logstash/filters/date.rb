@@ -134,19 +134,13 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           parser = lambda { |date| joda_parser.parseMillis(date) }
         when "UNIX" # unix epoch
           parser = lambda do |date|
-            if /\d+/ === date || date.is_a?(Numeric)
-              (date.to_f * 1000).to_i
-            else
-              raise "Invalid UNIX epoch value '#{date}'"
-            end
+            raise "Invalid UNIX epoch value '#{date}'" unless /^\d+(\.\d+)?$/ === date || date.is_a?(Numeric)
+            (date.to_f * 1000).to_i
           end
         when "UNIX_MS" # unix epoch in ms
           parser = lambda do |date|
-            if /\d+/ === date || date.is_a?(Numeric)
-              date.to_i
-            else
-              raise "Invalid UNIX epoch value '#{date}'"
-            end
+            raise "Invalid UNIX epoch value '#{date}'" unless /^\d+$/ === date || date.is_a?(Numeric)
+            date.to_i
           end
         when "TAI64N" # TAI64 with nanoseconds, -10000 accounts for leap seconds
           joda_instant = org.joda.time.Instant.java_class.constructor(Java::long).method(:new_instance)
