@@ -74,7 +74,9 @@ require "logstash/namespace"
 #       # only emit events with the 'metric' tag
 #       if "metric" in [tags] {
 #         stdout {
-#           message => "rate: %{events.rate_1m}"
+#           codec => line {
+#             format => "rate: %{events.rate_1m}"
+#           }
 #         }
 #       }
 #     }
