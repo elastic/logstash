@@ -56,7 +56,98 @@ describe LogStash::Codecs::Collectd do
       # One of these will fail because I altered the payload from the normal packet
       insist { counter } == 27
     end # it "should drop a part with an header length"
+
+    # This payload contains a NaN value
+    it "should replace a NaN with a zero and add tag '_collectdNaN' by default" do
+      payload = ["00000015746573742e6578616d706c652e636f6d000008000c14dc4c81831ef78b0009000c00000000400000000002000970696e67000004000970696e67000005001c70696e672d7461726765742e6578616d706c652e636f6d000006000f000101000000000000f87f"].pack('H*')
+      counter = 0
+      subject.decode(payload) do |event|
+        case counter
+        when 0
+          insist { event['host'] } == "test.example.com"
+          insist { event['plugin'] } == "ping"
+          insist { event['type_instance'] } == "ping-target.example.com"
+          insist { event['collectd_type'] } == "ping"
+          insist { event['value'] } == 0   # Not a NaN
+          insist { event['tags'] } == ["_collectdNaN"]
+        end
+        counter += 1
+      end
+      insist { counter } == 1
+    end # it "should replace a NaN with a zero and add tag '_collectdNaN' by default"
   end # context "None"
+
+  context "Replace nan_value and nan_tag with non-default values" do
+    subject do
+      next LogStash::Codecs::Collectd.new({"nan_value" => 1,
+                                           "nan_tag" => "NaN_encountered"})
+    end
+    # This payload contains a NaN value
+    it "should replace a NaN with the specified value and tag 'NaN_encountered'" do
+      payload = ["00000015746573742e6578616d706c652e636f6d000008000c14dc4c81831ef78b0009000c00000000400000000002000970696e67000004000970696e67000005001c70696e672d7461726765742e6578616d706c652e636f6d000006000f000101000000000000f87f"].pack('H*')
+      counter = 0
+      subject.decode(payload) do |event|
+        case counter
+        when 0
+          insist { event['host'] } == "test.example.com"
+          insist { event['plugin'] } == "ping"
+          insist { event['type_instance'] } == "ping-target.example.com"
+          insist { event['collectd_type'] } == "ping"
+          insist { event['value'] } == 1   # Not a NaN
+          insist { event['tags'] } == ["NaN_encountered"]
+        end
+        counter += 1
+      end
+      insist { counter } == 1
+    end # it "should replace a NaN with the specified value and tag 'NaN_encountered'"
+  end # context "Replace nan_value and nan_tag with non-default values"
+
+  context "Warn on NaN event" do
+    subject do
+      next LogStash::Codecs::Collectd.new({"nan_handling" => "warn"})
+    end
+    # This payload contains a NaN value
+    it "should replace a NaN with a zero and receive a warning when 'nan_handling' set to warn" do
+      payload = ["00000015746573742e6578616d706c652e636f6d000008000c14dc4c81831ef78b0009000c00000000400000000002000970696e67000004000970696e67000005001c70696e672d7461726765742e6578616d706c652e636f6d000006000f000101000000000000f87f"].pack('H*')
+      counter = 0
+      subject.logger.should_receive(:warn).with("NaN replaced by 0")
+      subject.decode(payload) do |event|
+        case counter
+        when 0
+          insist { event['host'] } == "test.example.com"
+          insist { event['plugin'] } == "ping"
+          insist { event['type_instance'] } == "ping-target.example.com"
+          insist { event['collectd_type'] } == "ping"
+          insist { event['value'] } == 0   # Not a NaN
+        end
+        counter += 1
+      end
+      insist { counter } == 1
+    end # it "should replace a NaN with a zero and receive a warning when 'nan_handling' set to warn"
+  end # context "Warn on NaN event"
+
+  context "Drop NaN event" do
+    subject do
+      next LogStash::Codecs::Collectd.new({"nan_handling" => "drop"})
+    end
+    # This payload contains a NaN value
+    it "should drop an event with a NaN value when 'nan_handling' set to drop" do
+      payload = ["00000015746573742e6578616d706c652e636f6d000008000c14dc4c81831ef78b0009000c00000000400000000002000970696e67000004000970696e67000005001c70696e672d7461726765742e6578616d706c652e636f6d000006000f000101000000000000f87f"].pack('H*')
+      counter = 0
+      subject.decode(payload) do |event|
+        case counter
+        when 0
+          insist { event['host'] } == "test.example.com"
+          insist { event['plugin'] } == "ping"
+          insist { event['type_instance'] } == "ping-target.example.com"
+          insist { event['collectd_type'] } == "ping"
+          insist { event['value'] } == NaN   # NaN
+        end
+        counter += 1 # Because we're dropping this, it should not increment
+      end
+      insist { counter } == 0 # We expect no increment
+    end # it "should drop an event with a NaN value when 'nan_handling' set to drop"
+  end # context "Drop NaN event"
 
   # Create an authfile for the next tests
   authfile = Tempfile.new('logstash-collectd-authfile')
