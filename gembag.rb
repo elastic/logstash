@@ -65,7 +65,7 @@ end
 # Try installing a few times in case we hit the "bad_record_mac" ssl error during installation.
 10.times do
   begin
-    Bundler::CLI.start(["install", "--gemfile=tools/Gemfile", "--path", target, "--clean"])
+    Bundler::CLI.start(["install", "--gemfile=tools/Gemfile", "--path", target, "--clean", "--without", "development"])
     break
   rescue Gem::RemoteFetcher::FetchError => e
     puts e.message
