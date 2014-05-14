@@ -163,6 +163,10 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
     rescue AWS::EC2::Errors::InstanceLimitExceeded
       @logger.warn("AWS::EC2::Errors::InstanceLimitExceeded ... aborting SQS message retreival.")
       return false
+    rescue AWS::SQS::Errors::InternalError
+      @logger.info("AWS::SQS::Errors::AWS Internal Error ... retrying SQS request with exponential backoff", :queue => @queue, :sleep_time => sleep_time)
+      sleep sleep_time
+      run_with_backoff(max_time, sleep_time * 2, &block)
     rescue Exception => bang
       @logger.error("Error reading SQS queue.", :error => bang, :queue => @queue)
       return false
