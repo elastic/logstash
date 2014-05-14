@@ -220,9 +220,13 @@ class LogStash::Pipeline
     @outputs.each(&:register)
     @outputs.each(&:worker_setup)
     while true
-      event = @filter_to_output.pop
-      break if event == LogStash::ShutdownSignal
-      output(event)
+      begin
+        event = @filter_to_output.pop
+        break if event == LogStash::ShutdownSignal
+        output(event)
+      rescue => e
+        @logger.error("Exception in outputworker", "exception" => e, "backtrace" => e.backtrace)
+      end
     end # while true
     @outputs.each(&:teardown)
   end # def outputworker
