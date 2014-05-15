@@ -99,7 +99,7 @@ require "set"
 #
 #     (?<queue_id>[0-9A-F]{10,11})
 #
-# Alternately, you can create a custom patterns file. 
+# Alternately, you can create a custom patterns file.
 #
 # * Create a directory called `patterns` with a file in it called `extra`
 #   (the file name doesn't matter, but name it meaningfully for yourself)
@@ -202,7 +202,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   #
   #     filter {
   #       grok {
-  #         match => [ 
+  #         match => [
   #           "message",
   #           "%{SYSLOGBASE} %{DATA:message}"
   #         ]
@@ -216,7 +216,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   # Detect if we are running from a jarfile, pick the right path.
   @@patterns_path ||= Set.new
-  @@patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
+  @@patterns_path += [LogStash::Environment.pattern_path("*")]
 
   public
   def initialize(params)
@@ -342,7 +342,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     syntax, semantic, coerce = capture.split(":")
 
     # each_capture do |fullname, value|
-    #   capture_handlers[fullname].call(value, event) 
+    #   capture_handlers[fullname].call(value, event)
     # end
 
     code = []
@@ -350,7 +350,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     code << "lambda do |value, event|"
     #code << "  p :value => value, :event => event"
     if semantic.nil?
-      if @named_captures_only 
+      if @named_captures_only
         # Abort early if we are only keeping named (semantic) captures
         # and this capture has no semantic name.
         code << "  return"

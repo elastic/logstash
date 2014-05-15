@@ -45,7 +45,7 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
     @templates = Vash.new()
 
     # Path to default Netflow v9 field definitions
-    filename = File.join(File.dirname(__FILE__), "netflow/netflow.yaml")
+    filename = LogStash::Environment.plugin_path("codecs/netflow/netflow.yaml")
 
     begin
       @fields = YAML.load_file(filename)
@@ -162,7 +162,7 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
               # Purge any expired templates
               @templates.cleanup!
             end
-          end 
+          end
         when 256..65535
           # Data flowset
           #key = "#{flowset.source_id}|#{event["source"]}|#{record.flowset_id}"
@@ -180,7 +180,7 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
           # Template shouldn't be longer than the record and there should
           # be at most 3 padding bytes
           if template.num_bytes > length or ! (length % template.num_bytes).between?(0, 3)
-            @logger.warn("Template length doesn't fit cleanly into flowset", :template_id => record.flowset_id, :template_length => template.num_bytes, :record_length => length) 
+            @logger.warn("Template length doesn't fit cleanly into flowset", :template_id => record.flowset_id, :template_length => template.num_bytes, :record_length => length)
             next
           end
 
