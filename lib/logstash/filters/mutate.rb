@@ -17,7 +17,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #     filter {
   #       mutate {
   #         # Renames the 'HOSTORIP' field to 'client_ip'
-  #         rename => [ "HOSTORIP", "client_ip" ]
+  #         rename => { "HOSTORIP" => "client_ip" }
   #       }
   #     }
   config :rename, :validate => :hash
@@ -43,7 +43,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   #     filter {
   #       mutate {
-  #         replace => [ "message", "%{source_host}: My new message" ]
+  #         replace => { "message" => "%{source_host}: My new message" }
   #       }
   #     }
   config :replace, :validate => :hash
@@ -55,7 +55,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   #     filter {
   #       mutate {
-  #         update => [ "sample", "My new message" ]
+  #         update => { "sample" => "My new message" }
   #       }
   #     }
   config :update, :validate => :hash
@@ -70,7 +70,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   #     filter {
   #       mutate {
-  #         convert => [ "fieldname", "integer" ]
+  #         convert => { "fieldname" => "integer" }
   #       }
   #     }
   config :convert, :validate => :hash
@@ -129,7 +129,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   #     filter {
   #       mutate {
-  #          split => ["fieldname", ","]
+  #          split => { "fieldname" => "," }
   #       }
   #     }
   config :split, :validate => :hash
@@ -140,7 +140,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   #    filter {
   #      mutate {
-  #        join => ["fieldname", ","]
+  #        join => { "fieldname" => "," }
   #      }
   #    }
   config :join, :validate => :hash
@@ -166,7 +166,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   #     filter {
   #       mutate {
-  #          merge => ["dest_field", "added_field"]
+  #          merge => { "dest_field" => "added_field" }
   #       }
   #     }
   config :merge, :validate => :hash
