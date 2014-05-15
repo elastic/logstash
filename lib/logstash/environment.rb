@@ -31,5 +31,13 @@ module LogStash
     def vendor_path(path)
       return ::File.join(LOGSTASH_HOME, "vendor", path)
     end
+
+    def plugin_path(path)
+      return ::File.join(LOGSTASH_HOME, "lib/logstash", path)
+    end
+
+    def pattern_path(path)
+      return ::File.join(LOGSTASH_HOME, "patterns", path)
+    end
   end
 end

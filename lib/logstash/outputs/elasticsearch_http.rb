@@ -173,17 +173,14 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   public
   def get_template_json
     if @template.nil?
-      if File.exists?("elasticsearch-template.json")
-        @template = "elasticsearch-template.json"
-      elsif File.exists?("lib/logstash/outputs/elasticsearch/elasticsearch-template.json")
-        @template = "lib/logstash/outputs/elasticsearch/elasticsearch-template.json"
-      else
-        raise "You must specify 'template => ...' in your elasticsearch_http output"
+      @template = LogStash::Environment.plugin_path("outputs/elasticsearch/elasticsearch-template.json")
+      if !File.exists?(@template)
+        raise "You must specify 'template => ...' in your elasticsearch_http output (I looked for '#{@template}')"
       end
     end
     @template_json = IO.read(@template).gsub(/\n/,'')
     @logger.info("Using mapping template", :template => @template_json)
-  end # def get_template
+  end # def get_template_json
 
   public
   def receive(event)
