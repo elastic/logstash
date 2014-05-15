@@ -6,7 +6,7 @@ describe "inputs/gelf" do
 
   describe "reads chunked gelf messages " do
     port = 12209
-    host = "127.0.0.1"
+    host = "127.0.111.1"
     chunksize = 1420
     gelfclient = GELF::Notifier.new(host,port,chunksize)
 
@@ -34,7 +34,8 @@ input {
       [ "hello", 
         "world", 
         large_random, 
-        "we survived gelf!" 
+        "we survived gelf!",
+        "some UTF chars too: h\u{20AC}ll\u{C3B3} japale\u{C3B1}o ..."
       ].each do |m| 
   	gelfclient.notify!( "short_message" => m )
         # poll at most 10 times 
