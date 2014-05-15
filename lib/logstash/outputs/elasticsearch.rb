@@ -269,15 +269,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   public
   def get_template
     if @template.nil?
-      if File.exists?("elasticsearch-template.json")
-        @template = "elasticsearch-template.json"
-      else
-        path = File.join(File.dirname(__FILE__), "elasticsearch/elasticsearch-template.json")
-        if File.exists?(path)
-          @template = path
-        else
-          raise "You must specify 'template => ...' in your elasticsearch_http output"
-        end
+      @template = LogStash::Environment.plugin_path("outputs/elasticsearch/elasticsearch-template.json")
+      if !File.exists?(@template)
+        raise "You must specify 'template => ...' in your elasticsearch output (I looked for '#{@template}')"
       end
     end
     template_json = IO.read(@template).gsub(/\n/,'')

@@ -102,7 +102,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   # Detect if we are running from a jarfile, pick the right path.
   @@patterns_path = Set.new
-  @@patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
+  @@patterns_path += [LogStash::Environment.pattern_path("*")]
 
   public
   def initialize(config = {})
