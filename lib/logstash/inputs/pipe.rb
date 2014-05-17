@@ -46,6 +46,9 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
             queue << event
           end
         end
+      rescue LogStash::ShutdownSignal => e
+        @logger.debug? && @logger.debug("Received LogStash::ShutdownSignal")
+        break
       rescue Exception => e
         @logger.error("Exception while running command", :e => e, :backtrace => e.backtrace)
       end
