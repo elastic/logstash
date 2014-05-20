@@ -57,6 +57,9 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # The port for Elasticsearch HTTP interface to use.
   config :port, :validate => :number, :default => 9200
 
+  # The protocol to use, either `http` (default) or `https`
+  config :protocol, :validate => ["http", "https"], :default => "http"
+
   # The HTTP Basic Auth username used to access your elasticsearch server.
   config :user, :validate => :string, :default => nil
 
@@ -99,11 +102,11 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     @queue = []
 
     auth = @user && @password ? "#{@user}:#{@password.value}@" : ""
-    @bulk_url = "http://#{auth}#{@host}:#{@port}/_bulk?replication=#{@replication}"
+    @bulk_url = "#{@protocol}://#{auth}#{@host}:#{@port}/_bulk?replication=#{@replication}"
     if @manage_template
       @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
-      template_search_url = "http://#{auth}#{@host}:#{@port}/_template/*"
-      @template_url = "http://#{auth}#{@host}:#{@port}/_template/#{@template_name}"
+      template_search_url = "#{@protocol}://#{auth}#{@host}:#{@port}/_template/*"
+      @template_url = "#{@protocol}://#{auth}#{@host}:#{@port}/_template/#{@template_name}"
       if @template_overwrite
         @logger.info("Template overwrite enabled.  Deleting existing template.", :template_overwrite => @template_overwrite.to_s)
         response = @agent.get!(@template_url)
