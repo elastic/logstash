@@ -59,6 +59,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
   public
   def register
+    fix_streaming_codecs
     require "socket"
     require "timeout"
     require "openssl"
