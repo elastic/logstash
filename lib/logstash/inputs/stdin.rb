@@ -16,6 +16,7 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
   public
   def register
     @host = Socket.gethostname
+    fix_streaming_codecs
   end # def register
 
   def run(queue) 
