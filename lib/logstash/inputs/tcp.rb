@@ -9,8 +9,8 @@ require "logstash/util/socket_peer"
 #
 # Note, because tcp input relies on codec to parse lines, certain codecs 
 # will provide frustratingly inconsistent results. It is recommended that 
-# you use line aware codecs or _lines variant of codecs (eg json_lines codec 
-# rather than json codec).
+# you use line aware codecs or _lines variant of codecs (eg `json_lines` 
+# codec rather than `json` codec).
 #
 # Can either accept connections from clients or connect to a server,
 # depending on `mode`.
@@ -20,7 +20,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   milestone 2
 
   # only line aware codecs should be used with this input
-  # such as json_line
+  # such as `json_lines` codec
   default :codec, "line"
 
   # When mode is `server`, the address to listen on.
