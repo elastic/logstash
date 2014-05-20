@@ -1,12 +1,30 @@
-# coding: utf-8
+# encoding: utf-8
 require "test_utils"
 require "socket"
 require "timeout"
+require "logstash/inputs/tcp"
 
-describe "inputs/tcp" do
+describe LogStash::Inputs::Tcp do
   extend LogStash::RSpec
 
-  describe "read plain with unicode" do
+  context "codec (PR #1372)" do
+    it "switches from plain to line" do
+      require "logstash/codecs/plain"
+      require "logstash/codecs/line"
+      plugin = LogStash::Inputs::Tcp.new("codec" => LogStash::Codecs::Plain.new, "port" => 0)
+      plugin.register
+      insist { plugin.codec }.is_a?(LogStash::Codecs::Line)
+    end
+    it "switches from json to json_lines" do
+      require "logstash/codecs/json"
+      require "logstash/codecs/json_lines"
+      plugin = LogStash::Inputs::Tcp.new("codec" => LogStash::Codecs::JSON.new, "port" => 0)
+      plugin.register
+      insist { plugin.codec }.is_a?(LogStash::Codecs::JSONLines)
+    end
+  end
+
+  describe "read plain with unicode", :socket => true do
     event_count = 10
     port = 5511
     config <<-CONFIG
@@ -38,7 +56,7 @@ describe "inputs/tcp" do
     end # input
   end
 
-  describe "read events with plain codec and ISO-8859-1 charset" do
+  describe "read events with plain codec and ISO-8859-1 charset", :socket => true do
     port = 5513
     charset = "ISO-8859-1"
     config <<-CONFIG
@@ -73,7 +91,7 @@ describe "inputs/tcp" do
     end # input
   end
 
-  describe "read events with json codec" do
+  describe "read events with json codec", :socket => true do
     port = 5514
     config <<-CONFIG
       input {
@@ -113,7 +131,7 @@ describe "inputs/tcp" do
     end # input
   end
 
-  describe "read events with json codec (testing 'host' handling)" do
+  describe "read events with json codec (testing 'host' handling)", :socket => true do
     port = 5514
     config <<-CONFIG
       input {
@@ -145,7 +163,7 @@ describe "inputs/tcp" do
     end # input
   end
 
-  describe "read events with json_lines codec" do
+  describe "read events with json_lines codec", :socket => true do
     port = 5515
     config <<-CONFIG
       input {
@@ -258,6 +276,3 @@ describe "inputs/tcp" do
     end # input
   end
 end
-
-
-
