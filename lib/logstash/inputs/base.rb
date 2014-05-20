@@ -118,4 +118,20 @@ class LogStash::Inputs::Base < LogStash::Plugin
       event[field] = value
     end
   end
+
+  protected
+  def fix_streaming_codecs
+    require "logstash/codecs/plain"
+    require "logstash/codecs/line"
+    require "logstash/codecs/json"
+    require "logstash/codecs/json_lines"
+    case @codec
+      when LogStash::Codecs::Plain
+        @logger.info("Automatically switching from #{@codec.class.config_name} to line codec", :plugin => self.class.config_name)
+        @codec = LogStash::Codecs::Line.new
+      when LogStash::Codecs::JSON
+        @logger.info("Automatically switching from #{@codec.class.config_name} to json_lines codec", :plugin => self.class.config_name)
+        @codec = LogStash::Codecs::JSONLines.new
+    end
+  end
 end # class LogStash::Inputs::Base
