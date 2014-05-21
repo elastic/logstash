@@ -26,7 +26,7 @@ IPV4 (?<![0-9])(?:(?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0
 IP (?:%{IPV6}|%{IPV4})
 HOSTNAME \b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b)
 HOST %{HOSTNAME}
-IPORHOST (?:%{HOSTNAME}|%{IP})
+IPORHOST (?:%{IP}|%{HOST})
 HOSTPORT %{IPORHOST}:%{POSINT}
 
 # paths
