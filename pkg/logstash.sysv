@@ -54,11 +54,16 @@ start() {
   # Boy, I hope we're root here. 
   SGROUPS=$(grep "$LS_USER" /etc/group | grep -v "^$LS_GROUP" | cut -d: -f1 | tr "\\n" "," | sed 's/,$//'; echo '')
 
+  if [ ! -z $SGROUPS ]
+  then
+	EXTRA_GROUPS="--groups $SGROUPS"
+  fi
+
   # set ulimit as (root, presumably) first, before we drop privileges
   ulimit -n ${LS_OPEN_FILES}
 
   # Run the program!
-  nice -n ${LS_NICE} chroot --userspec $LS_USER:$LS_GROUP --groups $SGROUPS / sh -c "
+  nice -n ${LS_NICE} chroot --userspec $LS_USER:$LS_GROUP $EXTRA_GROUPS / sh -c "
     cd $LS_HOME
     ulimit -n ${LS_OPEN_FILES}
     exec \"$program\" $args
