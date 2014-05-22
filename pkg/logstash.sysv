@@ -52,7 +52,7 @@ start() {
 
   # chown doesn't grab the suplimental groups when setting the user:group - so we have to do it for it.
   # Boy, I hope we're root here. 
-  SGROUPS=$(grep "$LS_USER" /etc/group | grep -v "^$LS_GROUP" | cut -d: -f1 | tr "\\n" "," | sed 's/,$//'; echo '')
+  SGROUPS=$(id -Gn "$LS_USER" | tr " " "," | sed 's/,$//'; echo '')
 
   if [ ! -z $SGROUPS ]
   then
