@@ -22,6 +22,16 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
   #
   #    command => "echo hello world"
   config :command, :validate => :string, :required => true
+  
+  # Should the pipe be restarted when it exits. Valid values are:
+  # * "always" - always after every exit of the command
+  # * "error" - after and exiting because of error with the pipe command
+  # * "never" - never restart the pipe command
+  #
+  # Example:
+  #
+  #    restart => "always"
+  config :restart, :validate => :string, :required => false, :default => "never", :validate => [ "always", "error", "never" ]
 
   public
   def register
@@ -30,7 +40,8 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
 
   public
   def run(queue)
-    loop do
+    begin
+      relaunch = false
       begin
         @pipe = IO.popen(@command, mode="r")
         hostname = Socket.gethostname
@@ -46,12 +57,11 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
             queue << event
           end
         end
+        relaunch = @restart == "always"
       rescue Exception => e
         @logger.error("Exception while running command", :e => e, :backtrace => e.backtrace)
+        relaunch = @restart == "error"
       end
-
-      # Keep running the command forever.
-      sleep(10)
-    end
+    end while relaunch && sleep(10) > 0
   end # def run
 end # class LogStash::Inputs::Pipe
