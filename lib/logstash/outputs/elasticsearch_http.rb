@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/namespace"
 require "logstash/outputs/base"
+require "logstash/json"
 require "stud/buffer"
 
 # This output lets you store logs in Elasticsearch.
@@ -123,7 +124,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       elsif response.status == 200
         begin
           response.read_body { |c| json << c }
-          results = JSON.parse(json)
+          results = LogStash::Json.load(json)
         rescue Exception => e
           @logger.error("Error parsing JSON", :json => json, :results => results.to_s, :error => e.to_s)
           raise "Exception in parsing JSON", e
@@ -204,7 +205,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       header = { "index" => { "_index" => index, "_type" => type } }
       header["index"]["_id"] = event.sprintf(@document_id) if !@document_id.nil?
 
-      [ header.to_json, newline, event.to_json, newline ]
+      [ LogStash::Json.dump(header), newline, event.to_json, newline ]
     end.flatten
 
     post(body.join(""))

@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "logstash/timestamp"
 require "socket"
 
 # This input will pull events from a (http://msdn.microsoft.com/en-us/library/windows/desktop/bb309026%28v=vs.85%29.aspx)[Windows Event Log].
@@ -60,14 +61,14 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
           "host" => @hostname,
           "path" => @logfile,
           "type" => @type,
-          "@timestamp" => timestamp
+          LogStash::Event::TIMESTAMP => timestamp
         )
 
         %w{Category CategoryString ComputerName EventCode EventIdentifier
             EventType Logfile Message RecordNumber SourceName
             TimeGenerated TimeWritten Type User
         }.each{
-            |property| e[property] = event.send property 
+            |property| e[property] = event.send property
         }
 
         if RUBY_PLATFORM == "java"
@@ -111,7 +112,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
     # parse the utc date string
     /(?<w_date>\d{8})(?<w_time>\d{6})\.\d{6}(?<w_sign>[\+-])(?<w_diff>\d{3})/ =~ wmi_time
     result = "#{w_date}T#{w_time}#{w_sign}"
-    # the offset is represented by the difference, in minutes, 
+    # the offset is represented by the difference, in minutes,
     # between the local time zone and Greenwich Mean Time (GMT).
     if w_diff.to_i > 0
       # calculate the timezone offset in hours and minutes
@@ -121,8 +122,8 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
     else
       result.concat("0000")
     end
-  
-    return DateTime.strptime(result, "%Y%m%dT%H%M%S%z").iso8601
+
+    return LogStash::Timestamp.new(DateTime.strptime(result, "%Y%m%dT%H%M%S%z").to_time)
   end
 end # class LogStash::Inputs::EventLog
 

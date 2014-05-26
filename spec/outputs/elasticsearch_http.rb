@@ -1,4 +1,5 @@
 require "test_utils"
+require "logstash/json"
 
 describe "outputs/elasticsearch_http", :elasticsearch => true do
   extend LogStash::RSpec
@@ -45,7 +46,7 @@ describe "outputs/elasticsearch_http", :elasticsearch => true do
         data = ""
         response = ftw.get!("http://127.0.0.1:9200/#{index}/_count?q=*")
         response.read_body { |chunk| data << chunk }
-        result = JSON.parse(data)
+        result = LogStash::Json.load(data)
         count = result["count"]
         insist { count } == event_count
       end
@@ -53,7 +54,7 @@ describe "outputs/elasticsearch_http", :elasticsearch => true do
       response = ftw.get!("http://127.0.0.1:9200/#{index}/_search?q=*&size=1000")
       data = ""
       response.read_body { |chunk| data << chunk }
-      result = JSON.parse(data)
+      result = LogStash::Json.load(data)
       result["hits"]["hits"].each do |doc|
         # With no 'index_type' set, the document type should be the type
         # set on the input
@@ -96,7 +97,7 @@ describe "outputs/elasticsearch_http", :elasticsearch => true do
           data = ""
           response = ftw.get!("http://127.0.0.1:9200/#{index}/_count?q=*")
           response.read_body { |chunk| data << chunk }
-          result = JSON.parse(data)
+          result = LogStash::Json.load(data)
           count = result["count"]
           insist { count } == event_count
         end
@@ -104,7 +105,7 @@ describe "outputs/elasticsearch_http", :elasticsearch => true do
         response = ftw.get!("http://127.0.0.1:9200/#{index}/_search?q=*&size=1000")
         data = ""
         response.read_body { |chunk| data << chunk }
-        result = JSON.parse(data)
+        result = LogStash::Json.load(data)
         result["hits"]["hits"].each do |doc|
           insist { doc["_type"] } == "logs"
         end
@@ -143,7 +144,7 @@ describe "outputs/elasticsearch_http", :elasticsearch => true do
           data = ""
           response = ftw.get!("http://127.0.0.1:9200/#{index}/_count?q=*")
           response.read_body { |chunk| data << chunk }
-          result = JSON.parse(data)
+          result = LogStash::Json.load(data)
           count = result["count"]
           insist { count } == event_count
         end
@@ -151,7 +152,7 @@ describe "outputs/elasticsearch_http", :elasticsearch => true do
         response = ftw.get!("http://127.0.0.1:9200/#{index}/_search?q=*&size=1000")
         data = ""
         response.read_body { |chunk| data << chunk }
-        result = JSON.parse(data)
+        result = LogStash::Json.load(data)
         result["hits"]["hits"].each do |doc|
           insist { doc["_type"] } == "generated"
         end

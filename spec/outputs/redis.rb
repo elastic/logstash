@@ -1,5 +1,6 @@
 require "test_utils"
 require "logstash/outputs/redis"
+require "logstash/json"
 require "redis"
 
 describe LogStash::Outputs::Redis, :redis => true do
@@ -36,7 +37,7 @@ describe LogStash::Outputs::Redis, :redis => true do
       # Now check all events for order and correctness.
       event_count.times do |value|
         id, element = redis.blpop(key, 0)
-        event = LogStash::Event.new(JSON.parse(element))
+        event = LogStash::Event.new(LogStash::Json.load(element))
         insist { event["sequence"] } == value
         insist { event["message"] } == "hello world"
       end
@@ -84,7 +85,7 @@ describe LogStash::Outputs::Redis, :redis => true do
       # Now check all events for order and correctness.
       event_count.times do |value|
         id, element = redis.blpop(key, 0)
-        event = LogStash::Event.new(JSON.parse(element))
+        event = LogStash::Event.new(LogStash::Json.load(element))
         insist { event["sequence"] } == value
         insist { event["message"] } == "hello world"
       end

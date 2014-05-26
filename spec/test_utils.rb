@@ -1,5 +1,8 @@
 # encoding: utf-8
 
+require "logstash/json"
+require "logstash/timestamp"
+
 if ENV['COVERAGE']
   require 'simplecov'
   require 'coveralls'
@@ -42,8 +45,8 @@ puts("Using Accessor#strict_set for specs")
 # ugly, I know, but this avoids adding conditionals in performance critical section
 class LogStash::Event
   def []=(str, value)
-    if str == TIMESTAMP && !value.is_a?(Time)
-      raise TypeError, "The field '@timestamp' must be a Time, not a #{value.class} (#{value})"
+    if str == TIMESTAMP && !value.is_a?(LogStash::Timestamp)
+      raise TypeError, "The field '@timestamp' must be a LogStash::Timestamp, not a #{value.class} (#{value})"
     end
     @accessors.strict_set(str, value)
   end # def []=
@@ -69,7 +72,7 @@ module LogStash
     end
 
     def sample(sample_event, &block)
-      name = sample_event.is_a?(String) ? sample_event : sample_event.to_json
+      name = sample_event.is_a?(String) ? sample_event : LogStash::Json.dump(sample_event)
       name = name[0..50] + "..." if name.length > 50
 
       describe "\"#{name}\"" do

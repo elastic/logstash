@@ -233,7 +233,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   def collapse_event!(event)
     event["message"] = event["message"].join("\n") if event["message"].is_a?(Array)
-    event["@timestamp"] = event["@timestamp"].first if event["@timestamp"].is_a?(Array)
+    event.timestamp = event.timestamp.first if event.timestamp.is_a?(Array)
     event
   end
 end # class LogStash::Filters::Multiline

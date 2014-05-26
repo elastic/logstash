@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "json"
+require "logstash/timestamp"
 
 # Read events from the twitter streaming api.
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
@@ -32,7 +32,7 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
   # will create an oauth token and secret bound to your account and that
   # application.
   config :oauth_token, :validate => :string, :required => true
-  
+
   # Your oauth token secret.
   #
   # To get this, login to twitter with whatever account you want,
@@ -67,12 +67,11 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
     @client.filter(:track => @keywords.join(",")) do |tweet|
       @logger.info? && @logger.info("Got tweet", :user => tweet.user.screen_name, :text => tweet.text)
       if @full_tweet
-        event = LogStash::Event.new(
-          tweet.to_hash.merge("@timestamp" => tweet.created_at.gmtime)
-        )
+        event = LogStash::Event.new(tweet.to_hash)
+        event.timestamp = LogStash::Timestamp.new(tweet.created_at)
       else
         event = LogStash::Event.new(
-          "@timestamp" => tweet.created_at.gmtime,
+          LogStash::Event::TIMESTAMP => LogStash::Timestamp.new(tweet.created_at),
           "message" => tweet.full_text,
           "user" => tweet.user.screen_name,
           "client" => tweet.source,
