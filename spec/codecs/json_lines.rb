@@ -1,5 +1,6 @@
 require "logstash/codecs/json_lines"
 require "logstash/event"
+require "logstash/json"
 require "insist"
 
 describe LogStash::Codecs::JSONLines do
@@ -10,17 +11,17 @@ describe LogStash::Codecs::JSONLines do
   context "#decode" do
     it "should return an event from json data" do
       data = {"foo" => "bar", "baz" => {"bah" => ["a","b","c"]}}
-      subject.decode(data.to_json+"\n") do |event|
+      subject.decode(LogStash::Json.dump(data) + "\n") do |event|
         insist { event.is_a? LogStash::Event }
         insist { event["foo"] } == data["foo"]
         insist { event["baz"] } == data["baz"]
         insist { event["bah"] } == data["bah"]
       end
     end
-    
+
     it "should return an event from json data when a newline is recieved" do
       data = {"foo" => "bar", "baz" => {"bah" => ["a","b","c"]}}
-      subject.decode(data.to_json) do |event|
+      subject.decode(LogStash::Json.dump(data)) do |event|
         insist {false}
       end
       subject.decode("\n") do |event|
@@ -64,10 +65,10 @@ describe LogStash::Codecs::JSONLines do
       event = LogStash::Event.new(data)
       got_event = false
       subject.on_event do |d|
-        insist { d.chomp } == LogStash::Event.new(data).to_json
-        insist { JSON.parse(d)["foo"] } == data["foo"]
-        insist { JSON.parse(d)["baz"] } == data["baz"]
-        insist { JSON.parse(d)["bah"] } == data["bah"]
+        insist { d } == "#{LogStash::Event.new(data).to_json}\n"
+        insist { LogStash::Json.load(d)["foo"] } == data["foo"]
+        insist { LogStash::Json.load(d)["baz"] } == data["baz"]
+        insist { LogStash::Json.load(d)["bah"] } == data["bah"]
         got_event = true
       end
       subject.encode(event)

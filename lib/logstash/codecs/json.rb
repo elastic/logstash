@@ -1,9 +1,9 @@
 # encoding: utf-8
 require "logstash/codecs/base"
-require "logstash/codecs/line"
-require "json"
+require "logstash/util/charset"
+require "logstash/json"
 
-# This codec may be used to decode (via inputs) and encode (via outputs) 
+# This codec may be used to decode (via inputs) and encode (via outputs)
 # full JSON messages.  If you are streaming JSON messages delimited
 # by '\n' then see the `json_lines` codec.
 # Encoding will result in a single JSON string.
@@ -28,21 +28,21 @@ class LogStash::Codecs::JSON < LogStash::Codecs::Base
     @converter = LogStash::Util::Charset.new(@charset)
     @converter.logger = @logger
   end
-  
+
   public
   def decode(data)
     data = @converter.convert(data)
     begin
-      yield LogStash::Event.new(JSON.parse(data))
-    rescue JSON::ParserError => e
+      yield LogStash::Event.new(LogStash::Json.load(data))
+    rescue LogStash::Json::ParserError => e
       @logger.info("JSON parse failure. Falling back to plain-text", :error => e, :data => data)
       yield LogStash::Event.new("message" => data)
     end
   end # def decode
 
   public
-  def encode(data)
-    @on_event.call(data.to_json)
+  def encode(event)
+    @on_event.call(event.to_json)
   end # def encode
 
 end # class LogStash::Codecs::JSON

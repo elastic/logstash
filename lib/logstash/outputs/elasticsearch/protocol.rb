@@ -80,7 +80,7 @@ module LogStash::Outputs::Elasticsearch
           bulk_ftw(actions)
         end
       end
-      
+
       def bulk_esruby(actions)
         @client.bulk(:body => actions.collect do |action, args, source|
           if source
@@ -97,9 +97,9 @@ module LogStash::Outputs::Elasticsearch
         body = actions.collect do |action, args, source|
           header = { action => args }
           if source
-            next [ header.to_json, NEWLINE, source.to_json, NEWLINE ]
+            next [ LogStash::Json.dump(header), NEWLINE, LogStash::Json.dump(source), NEWLINE ]
           else
-            next [ header.to_json, NEWLINE ]
+            next [ LogStash::Json.dump(header), NEWLINE ]
           end
         end.flatten.join("")
         begin
@@ -170,7 +170,7 @@ module LogStash::Outputs::Elasticsearch
 
         @settings.put("node.client", true)
         @settings.put("http.enabled", false)
-        
+
         if options[:client_settings]
           options[:client_settings].each do |key, value|
             @settings.put(key, value)
@@ -182,7 +182,7 @@ module LogStash::Outputs::Elasticsearch
 
       def hosts(options)
         if options[:port].to_s =~ /^\d+-\d+$/
-          # port ranges are 'host[port1-port2]' according to 
+          # port ranges are 'host[port1-port2]' according to
           # http://www.elasticsearch.org/guide/reference/modules/discovery/zen/
           # However, it seems to only query the first port.
           # So generate our own list of unicast hosts to scan.
@@ -234,7 +234,7 @@ module LogStash::Outputs::Elasticsearch
 
       def template_put(name, template)
         request = org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequestBuilder.new(@client.admin.indices, name)
-        request.setSource(template.to_json)
+        request.setSource(LogStash::Json.dump(template))
 
         # execute the request and get the response, if it fails, we'll get an exception.
         request.get

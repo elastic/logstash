@@ -1,6 +1,7 @@
 # coding: utf-8
 require "test_utils"
 require "socket"
+require "logstash/json"
 
 describe "inputs/tcp", :socket => true do
   extend LogStash::RSpec
@@ -89,7 +90,7 @@ describe "inputs/tcp", :socket => true do
       }
 
       socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
-      socket.puts(data.to_json)
+      socket.puts(LogStash::Json.dump(data))
       socket.close
 
       event = queue.pop
@@ -123,7 +124,7 @@ describe "inputs/tcp", :socket => true do
       }
 
       socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
-      socket.puts(data.to_json)
+      socket.puts(LogStash::Json.dump(data))
       socket.close
 
       event = queue.pop
@@ -157,7 +158,7 @@ describe "inputs/tcp", :socket => true do
       socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
       (1..5).each do |idx|
         data["idx"] = idx
-        socket.puts(data.to_json+"\n")
+        socket.puts(LogStash::Json.dump(data) + "\n")
       end # do
       socket.close
 

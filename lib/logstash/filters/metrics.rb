@@ -158,7 +158,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     return unless filter?(event)
 
     # TODO(piavlo): This should probably be moved to base filter class.
-    if @ignore_older_than > 0 && Time.now - event["@timestamp"] > @ignore_older_than
+    if @ignore_older_than > 0 && Time.now - event.timestamp.time > @ignore_older_than
       @logger.debug("Skipping metriks for old event", :event => event)
       return
     end

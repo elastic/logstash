@@ -2,6 +2,7 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 require "logstash/event"
+require "logstash/json"
 
 # Push messages to the juggernaut websockets server:
 #
@@ -85,7 +86,7 @@ class LogStash::Outputs::Juggernaut < LogStash::Outputs::Base
         "data" => event["message"]
       }
 
-      @redis.publish 'juggernaut', juggernaut_message.to_json
+      @redis.publish 'juggernaut', LogStash::Json.dump(juggernaut_message)
     rescue => e
       @logger.warn("Failed to send event to redis", :event => event,
                    :identity => identity, :exception => e,

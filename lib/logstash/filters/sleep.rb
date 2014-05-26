@@ -12,7 +12,7 @@ class LogStash::Filters::Sleep < LogStash::Filters::Base
 
   # The length of time to sleep, in seconds, for every event.
   #
-  # This can be a number (eg, 0.5), or a string (eg, "%{foo}") 
+  # This can be a number (eg, 0.5), or a string (eg, "%{foo}")
   # The second form (string with a field value) is useful if
   # you have an attribute of your event that you want to use
   # to indicate the amount of time to sleep.
@@ -33,7 +33,7 @@ class LogStash::Filters::Sleep < LogStash::Filters::Base
   #
   #     filter {
   #       sleep {
-  #         time => "1"   # Sleep 1 second 
+  #         time => "1"   # Sleep 1 second
   #         every => 10   # on every 10th event
   #       }
   #     }
@@ -89,7 +89,7 @@ class LogStash::Filters::Sleep < LogStash::Filters::Base
     end
 
     if @replay
-      clock = event["@timestamp"].to_f
+      clock = event.timestamp.to_f
       if @last_clock
         delay = clock - @last_clock
         time = delay/time

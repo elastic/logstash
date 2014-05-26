@@ -1,5 +1,7 @@
 # encoding: utf-8
 require "logstash/codecs/base"
+require "logstash/timestamp"
+require "logstash/util"
 
 class LogStash::Codecs::Msgpack < LogStash::Codecs::Base
   config_name "msgpack"
@@ -18,7 +20,6 @@ class LogStash::Codecs::Msgpack < LogStash::Codecs::Base
     begin
       # Msgpack does not care about UTF-8
       event = LogStash::Event.new(MessagePack.unpack(data))
-      event["@timestamp"] = Time.at(event["@timestamp"]).utc if event["@timestamp"].is_a? Float
       event["tags"] ||= []
       if @format
         event["message"] ||= event.sprintf(@format)
@@ -36,8 +37,12 @@ class LogStash::Codecs::Msgpack < LogStash::Codecs::Base
 
   public
   def encode(event)
-    event["@timestamp"] = event["@timestamp"].to_f
-    @on_event.call event.to_hash.to_msgpack
+    # use normalize to make sure returned Hash is pure Ruby for
+    # MessagePack#pack which relies on pure Ruby object recognition
+    data = LogStash::Util.normalize(event.to_hash)
+    # timestamp is serialized as a iso8601 string
+    # merge to avoid modifying data which could have side effects if multiple outputs
+    @on_event.call(MessagePack.pack(data.merge(LogStash::Event::TIMESTAMP => event.timestamp.to_iso8601)))
   end # def encode
 
 end # class LogStash::Codecs::Msgpack

@@ -13,6 +13,6 @@ describe "http dates", :if => RUBY_ENGINE == "jruby" do
   CONFIG
 
   sample("timestamp" => "25/Mar/2013:20:33:56 +0000") do
-    insist { subject["@timestamp"] } == Time.iso8601("2013-03-25T20:33:56.000Z")
+    insist { subject["@timestamp"].time } == Time.iso8601("2013-03-25T20:33:56.000Z")
   end
 end

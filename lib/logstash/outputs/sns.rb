@@ -112,7 +112,7 @@ class LogStash::Outputs::Sns < LogStash::Outputs::Base
   end
 
   def self.format_message(event)
-    message =  "Date: #{event["@timestamp"]}\n"
+    message =  "Date: #{event.timestamp}\n"
     message << "Source: #{event["source"]}\n"
     message << "Tags: #{event["tags"].join(', ')}\n"
     message << "Fields: #{event.to_hash.inspect}\n"

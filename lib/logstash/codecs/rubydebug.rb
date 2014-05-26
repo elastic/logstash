@@ -18,8 +18,8 @@ class LogStash::Codecs::RubyDebug < LogStash::Codecs::Base
   end # def decode
 
   public
-  def encode(data)
-    @on_event.call(data.to_hash.awesome_inspect + "\n")
+  def encode(event)
+    @on_event.call(event.to_hash.awesome_inspect + NL)
   end # def encode
 
 end # class LogStash::Codecs::Dots
