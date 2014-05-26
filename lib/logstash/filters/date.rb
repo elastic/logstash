@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/filters/base"
 require "logstash/namespace"
+require "logstash/timestamp"
 
 # The date filter is used for parsing dates from fields, and then using that
 # date or timestamp as the logstash timestamp for the event.
@@ -88,7 +89,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   config :target, :validate => :string, :default => "@timestamp"
 
   # LOGSTASH-34
-  DATEPATTERNS = %w{ y d H m s S } 
+  DATEPATTERNS = %w{ y d H m s S }
 
   public
   def initialize(config = {})
@@ -111,7 +112,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   def register
     require "java"
     if @match.length < 2
-      raise LogStash::ConfigurationError, I18n.t("logstash.agent.configuration.invalid_plugin_register", 
+      raise LogStash::ConfigurationError, I18n.t("logstash.agent.configuration.invalid_plugin_register",
         :plugin => "filter", :type => "date",
         :error => "The match setting should contains first a field name and at least one date format, current value is #{@match}")
     end
@@ -137,16 +138,16 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           parser = lambda { |date| (date.to_f * 1000).to_i }
         when "UNIX_MS" # unix epoch in ms
           joda_instant = org.joda.time.Instant.java_class.constructor(Java::long).method(:new_instance)
-          parser = lambda do |date| 
+          parser = lambda do |date|
             #return joda_instant.call(date.to_i).to_java.toDateTime
             return date.to_i
           end
         when "TAI64N" # TAI64 with nanoseconds, -10000 accounts for leap seconds
           joda_instant = org.joda.time.Instant.java_class.constructor(Java::long).method(:new_instance)
-          parser = lambda do |date| 
+          parser = lambda do |date|
             # Skip leading "@" if it is present (common in tai64n times)
             date = date[1..-1] if date[0, 1] == "@"
-            #return joda_instant.call((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).to_java.toDateTime 
+            #return joda_instant.call((date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)).to_java.toDateTime
             return (date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)
           end
         else
@@ -204,8 +205,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           raise last_exception unless success
 
           # Convert joda DateTime to a ruby Time
-          event[@target] = Time.at(epochmillis / 1000, (epochmillis % 1000) * 1000).utc
-          #event[@target] = Time.at(epochmillis / 1000.0).utc
+          event[@target] = LogStash::Timestamp.at(epochmillis / 1000, (epochmillis % 1000) * 1000)
 
           @logger.debug? && @logger.debug("Date parsing done", :value => value, :timestamp => event[@target])
           filter_matched(event)
@@ -217,7 +217,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           # TODO(sissel): What do we do on a failure? Tag it like grok does?
           #raise e
         end # begin
-      end # fieldvalue.each 
+      end # fieldvalue.each
     end # @parsers.each
 
     return event

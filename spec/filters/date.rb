@@ -52,9 +52,9 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
 
     times.each do |input, output|
       sample("mydate" => input) do
-        begin 
+        begin
           insist { subject["mydate"] } == input
-          insist { subject["@timestamp"] } == Time.iso8601(output).utc
+          insist { subject["@timestamp"].time } == Time.iso8601(output).utc
         rescue
           #require "pry"; binding.pry
           raise
@@ -83,7 +83,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
     times.each do |input, output|
       sample("mydate" => input) do
         insist { subject["mydate"] } == input
-        insist { subject["@timestamp"] } == Time.iso8601(output).utc
+        insist { subject["@timestamp"].time } == Time.iso8601(output).utc
       end
     end # times.each
   end
@@ -109,7 +109,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
     times.each do |input, output|
       sample("mydate" => input) do
         insist { subject["mydate"] } == input
-        insist { subject["@timestamp"] } == Time.iso8601(output).utc
+        insist { subject["@timestamp"].time } == Time.iso8601(output).utc
       end
     end # times.each
   end
@@ -126,7 +126,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
 
     sample("mydate" => "1350414944.123456") do
       # Joda time only supports milliseconds :\
-      insist { subject.timestamp } == Time.iso8601("2012-10-16T12:15:44.123-07:00").utc
+      insist { subject.timestamp.time } == Time.iso8601("2012-10-16T12:15:44.123-07:00").utc
     end
   end
 
@@ -153,7 +153,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
     times.each do |input, output|
       sample("mydate" => input) do
         insist { subject["mydate"] } == input
-        insist { subject["@timestamp"] } == Time.iso8601(output)
+        insist { subject["@timestamp"].time } == Time.iso8601(output)
       end
     end # times.each
   end
@@ -177,7 +177,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
           locale => "en"
         }
       }
-      output { 
+      output {
         null { }
       }
     CONFIG
@@ -199,13 +199,13 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
 
     # Try without leading "@"
     sample("t" => "4000000050d506482dbdf024") do
-      insist { subject.timestamp } == Time.iso8601("2012-12-22T01:00:46.767Z").utc
+      insist { subject.timestamp.time } == Time.iso8601("2012-12-22T01:00:46.767Z").utc
     end
 
     # Should still parse successfully if it's a full tai64n time (with leading
     # '@')
     sample("t" => "@4000000050d506482dbdf024") do
-      insist { subject.timestamp } == Time.iso8601("2012-12-22T01:00:46.767Z").utc
+      insist { subject.timestamp.time } == Time.iso8601("2012-12-22T01:00:46.767Z").utc
     end
   end
 
@@ -223,28 +223,28 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
 
     sample("mydate" => time) do
       insist { subject["mydate"] } == time
-      insist { subject["@timestamp"] } == Time.iso8601(time).utc
+      insist { subject["@timestamp"].time } == Time.iso8601(time).utc
     end
   end
-  
+
   describe "support deep nested field access" do
     config <<-CONFIG
-      filter { 
+      filter {
         date {
           match => [ "[data][deep]", "ISO8601" ]
           locale => "en"
         }
       }
     CONFIG
-    
+
     sample("data" => { "deep" => "2013-01-01T00:00:00.000Z" }) do
-      insist { subject["@timestamp"] } == Time.iso8601("2013-01-01T00:00:00.000Z").utc
+      insist { subject["@timestamp"].time } == Time.iso8601("2013-01-01T00:00:00.000Z").utc
     end
   end
 
   describe "failing to parse should not throw an exception" do
     config <<-CONFIG
-      filter { 
+      filter {
         date {
           match => [ "thedate", "yyyy/MM/dd" ]
           locale => "en"
@@ -259,7 +259,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
 
    describe "success to parse should apply on_success config(add_tag,add_field...)" do
     config <<-CONFIG
-      filter { 
+      filter {
         date {
           match => [ "thedate", "yyyy/MM/dd" ]
           add_tag => "tagged"
@@ -275,7 +275,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
 
    describe "failing to parse should not apply on_success config(add_tag,add_field...)" do
     config <<-CONFIG
-      filter { 
+      filter {
         date {
           match => [ "thedate", "yyyy/MM/dd" ]
           add_tag => "tagged"
@@ -308,7 +308,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
     times.each do |input, output|
       sample("mydate" => input) do
         insist { subject["mydate"] } == input
-        insist { subject["@timestamp"] } == Time.iso8601(output).utc
+        insist { subject["@timestamp"].time } == Time.iso8601(output).utc
       end
     end # times.each
   end

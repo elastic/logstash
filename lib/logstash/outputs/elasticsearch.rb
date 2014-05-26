@@ -2,6 +2,7 @@
 require "logstash/namespace"
 require "logstash/environment"
 require "logstash/outputs/base"
+require "logstash/json"
 require "stud/buffer"
 require "socket" # for Socket.gethostname
 
@@ -276,7 +277,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     end
     template_json = IO.read(@template).gsub(/\n/,'')
     @logger.info("Using mapping template", :template => template_json)
-    return JSON.parse(template_json)
+    return LogStash::Json.load(template_json)
   end # def get_template
 
   protected

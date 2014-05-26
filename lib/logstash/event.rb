@@ -1,23 +1,12 @@
 # encoding: utf-8
-require "json"
 require "time"
 require "date"
+require "cabin"
 require "logstash/namespace"
 require "logstash/util/fieldreference"
 require "logstash/util/accessors"
-require "logstash/time_addon"
-
-# Use a custom serialization for jsonifying Time objects.
-# TODO(sissel): Put this in a separate file.
-class Time
-  def to_json(*args)
-    return iso8601(3).to_json(*args)
-  end
-
-  def inspect
-    return to_json
-  end
-end
+require "logstash/timestamp"
+require "logstash/json"
 
 # the logstash event object.
 #
@@ -48,23 +37,17 @@ class LogStash::Event
   TIMESTAMP = "@timestamp"
   VERSION = "@version"
   VERSION_ONE = "1"
+  TIMESTAMP_FAILURE_TAG = "_timestampparsefailure"
+  TIMESTAMP_FAILURE_FIELD = "_@timestamp"
 
   public
-  def initialize(data={})
+  def initialize(data = {})
+    @logger = Cabin::Channel.get(LogStash)
     @cancelled = false
-
     @data = data
     @accessors = LogStash::Util::Accessors.new(data)
-
-    data[VERSION] = VERSION_ONE if !@data.include?(VERSION)
-    if data.include?(TIMESTAMP)
-      t = data[TIMESTAMP]
-      if t.is_a?(String)
-        data[TIMESTAMP] = LogStash::Time.parse_iso8601(t)
-      end
-    else
-      data[TIMESTAMP] = ::Time.now.utc
-    end
+    @data[VERSION] ||= VERSION_ONE
+    @data[TIMESTAMP] = init_timestamp(@data[TIMESTAMP])
   end # def initialize
 
   public
@@ -101,7 +84,7 @@ class LogStash::Event
   else
     public
     def to_s
-      return self.sprintf("#{self["@timestamp"].iso8601} %{host} %{message}")
+      return self.sprintf("#{timestamp.to_iso8601} %{host} %{message}")
     end # def to_s
   end
 
@@ -119,23 +102,18 @@ class LogStash::Event
 
   # field-related access
   public
-  def [](str)
-    if str[0,1] == CHAR_PLUS
-      # nothing?
-    else
-      # return LogStash::Util::FieldReference.exec(str, @data)
-      @accessors.get(str)
-    end
+  def [](fieldref)
+    @accessors.get(fieldref)
   end # def []
 
   public
   # keep []= implementation in sync with spec/test_utils.rb monkey patch
   # which redefines []= but using @accessors.strict_set
-  def []=(str, value)
-    if str == TIMESTAMP && !value.is_a?(Time)
-      raise TypeError, "The field '@timestamp' must be a Time, not a #{value.class} (#{value})"
+  def []=(fieldref, value)
+    if fieldref == TIMESTAMP && !value.is_a?(LogStash::Timestamp)
+      raise TypeError, "The field '@timestamp' must be a (LogStash::Timestamp, not a #{value.class} (#{value})"
     end
-    @accessors.set(str, value)
+    @accessors.set(fieldref, value)
   end # def []=
 
   public
@@ -144,12 +122,13 @@ class LogStash::Event
   end
 
   public
-  def to_json(*args)
-    return @data.to_json(*args)
+  def to_json
+    LogStash::Json.dump(@data)
   end # def to_json
 
+  public
   def to_hash
-    return @data
+    @data
   end # def to_hash
 
   public
@@ -161,7 +140,7 @@ class LogStash::Event
 
     #convert timestamp if it is a String
     if @data[TIMESTAMP].is_a?(String)
-      @data[TIMESTAMP] = LogStash::Time.parse_iso8601(@data[TIMESTAMP])
+      @data[TIMESTAMP] = LogStash::Timestamp.parse_iso8601(@data[TIMESTAMP])
     end
   end
 
@@ -183,11 +162,8 @@ class LogStash::Event
   # Remove a field or field reference. Returns the value of that field when
   # deleted
   public
-  def remove(str)
-    # return LogStash::Util::FieldReference.exec(str, @data) do |obj, key|
-    #   next obj.delete(key)
-    # end
-    @accessors.del(str)
+  def remove(fieldref)
+    @accessors.del(fieldref)
   end # def remove
 
   # sprintf. This could use a better method name.
@@ -219,9 +195,9 @@ class LogStash::Event
 
       if key == "+%s"
         # Got %{+%s}, support for unix epoch time
-        next @data["@timestamp"].to_i
+        next @data[TIMESTAMP].to_i
       elsif key[0,1] == "+"
-        t = @data["@timestamp"]
+        t = @data[TIMESTAMP]
         formatter = org.joda.time.format.DateTimeFormat.forPattern(key[1 .. -1])\
           .withZone(org.joda.time.DateTimeZone::UTC)
         #next org.joda.time.Instant.new(t.tv_sec * 1000 + t.tv_usec / 1000).toDateTime.toString(formatter)
@@ -238,7 +214,7 @@ class LogStash::Event
           when Array
             value.join(",") # Join by ',' if value is an array
           when Hash
-            value.to_json # Convert hashes to json
+            LogStash::Json.dump(value) # Convert hashes to json
           else
             value # otherwise return the value
         end # case value
@@ -250,5 +226,24 @@ class LogStash::Event
     # Generalize this method for more usability
     self["tags"] ||= []
     self["tags"] << value unless self["tags"].include?(value)
+  end
+
+  private
+
+  def init_timestamp(o)
+    begin
+      timestamp = o ? LogStash::Timestamp.coerce(o) : LogStash::Timestamp.now
+      return timestamp if timestamp
+
+      @logger.warn("Unrecognized #{TIMESTAMP} value, setting current time to #{TIMESTAMP}, original in #{TIMESTAMP_FAILURE_FIELD}field", :value => o.inspect)
+    rescue LogStash::TimestampParserError => e
+      @logger.warn("Error parsing #{TIMESTAMP} string, setting current time to #{TIMESTAMP}, original in #{TIMESTAMP_FAILURE_FIELD} field", :value => o.inspect, :exception => e.message)
+    end
+
+    @data["tags"] ||= []
+    @data["tags"] << TIMESTAMP_FAILURE_TAG unless @data["tags"].include?(TIMESTAMP_FAILURE_TAG)
+    @data[TIMESTAMP_FAILURE_FIELD] = o
+
+    LogStash::Timestamp.now
   end
 end # class LogStash::Event

@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "logstash/timestamp"
 require "stud/interval"
 require "socket" # for Socket.gethostname
 
@@ -11,7 +12,6 @@ require "socket" # for Socket.gethostname
 class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   config_name "imap"
   milestone 1
-  ISO8601_STRFTIME = "%04d-%02d-%02dT%02d:%02d:%02d.%06d%+03d:00".freeze
 
   default :codec, "plain"
 
@@ -106,7 +106,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
       # event = LogStash::Event.new("message" => message)
 
       # Use the 'Date' field as the timestamp
-      event["@timestamp"] = mail.date.to_time.gmtime
+      event.timestamp = LogStash::Timestamp.new(mail.date.to_time)
 
       # Add fields: Add message.header_fields { |h| h.name=> h.value }
       mail.header_fields.each do |header|

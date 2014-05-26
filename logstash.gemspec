@@ -17,7 +17,6 @@ Gem::Specification.new do |gem|
 
   # Core dependencies
   gem.add_runtime_dependency "cabin", [">=0.6.0"]   #(Apache 2.0 license)
-  gem.add_runtime_dependency "json"               #(ruby license)
   gem.add_runtime_dependency "minitest"           # for running the tests from the jar, (MIT license)
   gem.add_runtime_dependency "pry"                #(ruby license)
   gem.add_runtime_dependency "stud"               #(Apache 2.0 license)
@@ -68,9 +67,11 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "bouncy-castle-java", "1.5.0147"   #(MIT license)
     gem.add_runtime_dependency "jruby-openssl", "0.8.7"           #(CPL/GPL/LGPL license)
     gem.add_runtime_dependency "msgpack-jruby"                    #(Apache 2.0 license)
+    gem.add_runtime_dependency "jrjackson"                        #(Apache 2.0 license)
   else
     gem.add_runtime_dependency "excon"    #(MIT license)
     gem.add_runtime_dependency "msgpack"  #(Apache 2.0 license)
+    gem.add_runtime_dependency "oj"       #(MIT-style license)
   end
 
   if RUBY_PLATFORM != 'java'
