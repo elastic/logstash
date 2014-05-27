@@ -17,9 +17,8 @@ module LogStash::Time
     end
   else
     def self.parse_iso8601(t)
-      # Warning, ruby's Time.parse is *really* terrible and slow.
       return unless t.is_a?(String)
-      return Time.parse(t).gmtime
+      return Time.iso8601(t).gmtime
     end
   end
 end # module LogStash::Time
