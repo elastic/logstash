@@ -78,3 +78,4 @@ class LogStash::Codecs::SensuJSON < LogStash::Codecs::Base
 
 
 end
+
