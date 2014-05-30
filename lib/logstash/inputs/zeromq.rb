@@ -5,7 +5,7 @@ require "socket"
 
 # Read events over a 0MQ SUB socket.
 #
-# You need to have the 0mq 2.1.x library installed to be able to use
+# You need to have the 0mq 3.2.x or 4.x library installed to be able to use
 # this input plugin.
 #
 # The default settings will create a subscriber binding to tcp://127.0.0.1:2120 
