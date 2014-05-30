@@ -59,8 +59,8 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
 
   # 0mq socket options
   # This exposes zmq_setsockopt
-  # for advanced tuning
-  # see http://api.zeromq.org/2-1:zmq-setsockopt for details
+  # for advanced tuning.
+  # Read about zmq-setsockopt details on http://api.zeromq.org/, accordingly to you 0mq version.
   #
   # This is where you would set values like:
   # ZMQ::HWM - high water mark
