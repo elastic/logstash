@@ -75,14 +75,12 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
     @queue = queue
     begin
       rec_num = 0
-      old_total = @eventlog.total_records()
-      new_total = old_total
+      old_total = 0
       flags = EventLog::FORWARDS_READ | EventLog::SEEK_READ
 
-      if(@sincedb[@logfile] != nil && @sincedb[@logfile] > @eventlog.oldest_record_number)
-        rec_num = @sincedb[@logfile]
+      if(@sincedb[@logfile] != nil && @sincedb[@logfile].to_i > @eventlog.oldest_record_number)
+        rec_num = @sincedb[@logfile].to_i
         @logger.debug("run: Starting #{@logfile} at rec #{rec_num.to_s}")
-        old_total = 0
       elsif(@start_position == "end")
         rec_num = @eventlog.read_last_event.record_number
         @logger.debug("run: Starting #{@logfile} at rec #{rec_num.to_s}")
@@ -97,16 +95,15 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
       @logger.debug("Tailing Windows Event Log '#{@logfile}'")
       while true
-        new_total = @eventlog.total_records()
-        if new_total != old_total
-          @eventlog.read(flags, rec_num).each{ |eventlog_item|
+        if old_total != @eventlog.total_records()
+          @eventlog.read(flags, rec_num){ |eventlog_item|
             @eventlog_item = eventlog_item
             if( @eventlog_item.record_number > rec_num )
               send_logstash_event()
             end
+            old_total = @eventlog.total_records()
             rec_num = @eventlog_item.record_number
           }
-          old_total = new_total
         end
         sleep frequency
       end # while
