@@ -23,37 +23,49 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
   #    command => "echo hello world"
   config :command, :validate => :string, :required => true
 
+  # Should the pipe be restarted when it exits. Valid values are:
+  # * "always" - restart after every exit of the pipe command
+  # * "error" - restart only after an erroneous condition of the pipe command
+  # * "never" - never restart the pipe command
+  #
+  # Example:
+  #
+  #    restart => "always"
+  config :restart, :validate => :string, :default => "always", :validate => [ "always", "error", "never" ]
+
+
+  # Number of seconds to wait before restarting the pipe
+  config :wait_on_restart, :validate => :number, :default => 0
+
   public
   def register
     @logger.info("Registering pipe input", :command => @command)
+    @host = Socket.gethostname
   end # def register
 
   public
   def run(queue)
     loop do
       begin
-        @pipe = IO.popen(@command, mode="r")
-        hostname = Socket.gethostname
-
-        @pipe.each do |line|
+        IO.popen(@command, mode="r").each do |line|
           line = line.chomp
-          source = "pipe://#{hostname}/#{@command}"
           @logger.debug? && @logger.debug("Received line", :command => @command, :line => line)
           @codec.decode(line) do |event|
-            event["host"] = hostname
+            event["host"] = @host
             event["command"] = @command
             decorate(event)
             queue << event
           end
         end
+        break unless @restart == "always"
       rescue LogStash::ShutdownSignal => e
         break
       rescue Exception => e
-        @logger.error("Exception while running command", :e => e, :backtrace => e.backtrace)
+        @logger.error("Exception while running command", :command => @command, :e => e, :backtrace => e.backtrace)
+        break unless @restart == "error" || @restart == "always"
       end
-
-      # Keep running the command forever.
-      sleep(10)
+      # Wait before restarting the pipe.
+      sleep(@wait_on_restart)
     end
   end # def run
 end # class LogStash::Inputs::Pipe
