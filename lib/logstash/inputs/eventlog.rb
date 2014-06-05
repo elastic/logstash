@@ -2,9 +2,8 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "socket"
-require 'win32/eventlog'
 require 'java'
-include Win32
+require 'logstash/inputs/eventlog/eventlogsimplereader'
 
 java_import 'java.lang.System'
 
@@ -58,7 +57,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
     @hostname = Socket.gethostname
     @logger.info("Registering input eventlog://#{@hostname}/#{@logfile}")
-    @eventlog = EventLog.new(@logfile)
+    @eventlog = EventLogSimpleReader.new(@logfile)
 
     @sincedb = {}
     @sincedb_last_write = 0
@@ -76,7 +75,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
     begin
       rec_num = 0
       old_total = 0
-      flags = EventLog::FORWARDS_READ | EventLog::SEEK_READ
+      flags = EventLogSimpleReader::FORWARDS_READ | EventLogSimpleReader::SEEK_READ
 
       if(@sincedb[@logfile] != nil && @sincedb[@logfile].to_i > @eventlog.oldest_record_number)
         rec_num = @sincedb[@logfile].to_i
@@ -127,14 +126,17 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
     e["Category"] = @eventlog_item.category
     e["ComputerName"] = @eventlog_item.computer
-    e["Data"] = @eventlog_item.data == nil ? nil : @eventlog_item.data.force_encoding('iso-8859-1')
-    e["Description"] = @eventlog_item.description == nil ? nil : @eventlog_item.description.force_encoding('iso-8859-1')
+    e["Data"] = @eventlog_item.data.nil? ? nil : @eventlog_item.data.force_encoding('iso-8859-1')
+    e["Description"] = @eventlog_item.description.nil? ? nil : @eventlog_item.description.force_encoding('iso-8859-1')
     e["EventId"] = @eventlog_item.event_id
+    e["EventCode"] = e["EventId"]
     e["EventType"] = @eventlog_item.event_type
     e["Logfile"] = @logfile
-    e["Message"] = @eventlog_item.string_inserts.map{ |monostring|
-      monostring == nil ? nil : monostring.force_encoding('iso-8859-1')
+    e["InsertionStrings"] = @eventlog_item.string_inserts.map{ |monostring|
+      monostring.nil? ? nil : monostring.force_encoding('iso-8859-1')
     }
+    e["Message"] = e["Description"].nil? ? e["InsertionStrings"] : e["Description"]
+    e["message"] = e["Message"]
     e["RecordNumber"] = @eventlog_item.record_number
     e["SourceName"] = @eventlog_item.source
     e["TimeGenerated"] = @eventlog_item.time_generated
@@ -252,4 +254,3 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
   end # def teardown
 
 end # class LogStash::Inputs::EventLog
-
