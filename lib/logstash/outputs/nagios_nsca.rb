@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/outputs/base"
 require "logstash/namespace"
+require "open3"
 
 # The nagios_nsca output is used for sending passive check results to Nagios
 # through the NSCA protocol.
@@ -105,19 +106,27 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
     # build the command
     # syntax: echo '<server>!<nagios_service>!<status>!<text>'  | \
     #           /usr/sbin/send_nsca -H <nagios_host> -d '!' -c <nsca_config>"
-    cmd = %(echo '#{nagios_host}~#{nagios_service}~#{status}~#{msg}' |)
-    cmd << %( #{@send_nsca_bin} -H #{@host} -p #{@port} -d '~')
-    cmd << %( -c #{@send_nsca_config}) if @send_nsca_config
-    cmd << %( 2>/dev/null >/dev/null)
-    @logger.debug("Running send_nsca command", "nagios_nsca_command" => cmd)
+
+    cmd = [@send_nsca_bin, "-H", "@host", "-p", "@port", "-d", "~"]
+    cmd = cmd + ["-c", @send_nsca_config]  if @send_nsca_config
+    message = "#{nagios_host}~#{nagios_service}~#{status}~#{msg}"
+
+    @logger.debug("Running send_nsca command", :nagios_nsca_command => cmd.join(" "), :message => message)
 
     begin
-      system cmd
+      Open3.popen3(*cmd) do |i, o, e|
+        i.puts(message)
+        i.close
+      end
     rescue => e
-      @logger.warn("Skipping nagios_nsca output; error calling send_nsca",
-                   "error" => $!, "nagios_nsca_command" => cmd,
-                   "missed_event" => event)
-      @logger.debug("Backtrace", e.backtrace)
+      @logger.warn(
+        "Skipping nagios_nsca output; error calling send_nsca",
+        :error => $!,
+        :nagios_nsca_command => cmd.join(" "),
+        :message => message,
+        :missed_event => event
+      )
+      @logger.debug("Backtrace", :backtrace => e.backtrace)
     end
   end # def receive
 end # class LogStash::Outputs::NagiosNsca
