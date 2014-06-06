@@ -160,11 +160,18 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   @logger.info("Registering s3 output", :bucket => @bucket, :endpoint_region => @endpoint_region)
 
-  AWS.config(
-    :access_key_id => @access_key_id,
-    :secret_access_key => @secret_access_key,
-    :s3_endpoint => @endpoint_region
-  )
+  if @access_key_id and @secret_access_key
+    AWS.config(
+      :access_key_id => @access_key_id,
+      :secret_access_key => @secret_access_key,
+      :s3_endpoint => @endpoint_region
+    )
+  else
+    # Use IAM Roles for EC2 Instances to Manage Credentials (http://docs.aws.amazon.com/AWSSdkDocsRuby/latest/DeveloperGuide/ruby-dg-roles.html)
+    AWS.config(
+      :s3_endpoint => @endpoint_region
+    )
+  end
   @s3 = AWS::S3.new 
 
  end
