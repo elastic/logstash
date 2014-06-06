@@ -68,6 +68,7 @@ require "socket" # for Socket.gethostname
 #      secret_access_key => "monkey_access_key" (required)
 #      endpoint_region => "eu-west-1"           (required)
 #      bucket => "boss_please_open_your_bucket" (required)         
+#      file_prefix => "logstash/"               (optional)         
 #      size_file => 2048                        (optional)
 #      time_file => 5                           (optional)
 #      format => "plain"                        (optional) 
@@ -119,6 +120,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
  # S3 bucket
  config :bucket, :validate => :string
+
+ # S3 bucket
+ config :file_prefix, :validate => :string, :default => nil
 
  # Aws endpoint_region
  config :endpoint_region, :validate => ["us-east-1", "us-west-1", "us-west-2",
@@ -210,7 +214,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
  # This method is used for restore the previous crash of logstash or to prepare the files to send in bucket. 
  # Take two parameter: flag and name. Flag indicate if you want to restore or not, name is the name of file 
- def upFile(flag, name)
+ def upFile(flag, name, name_prefix)
    
    Dir[@temp_directory+name].each do |file|
      name_file = File.basename(file)
@@ -219,8 +223,12 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       @logger.warn "S3: have found temporary file: "+name_file+", something has crashed before... Prepare for upload in bucket!"
      end
     
-     if (!File.zero?(file))  
-       write_on_bucket(file, name_file)
+     if (!File.zero?(file))
+       if (name_prefix != nil)
+         write_on_bucket(file, name_prefix+name_file)
+       else
+         write_on_bucket(file, name_file)
+       end
 
        if (flag == true)
           @logger.debug "S3: file: "+name_file+" restored on bucket "+@bucket
@@ -229,7 +237,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
        end
      end
 
-     File.delete (file)
+     File.delete(file)
 
    end
  end
@@ -272,7 +280,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
    if (@restore == true )
      @logger.debug "S3: is attempting to verify previous crashes..."
    
-     upFile(true, "*.txt")    
+     upFile(true, "*.txt", file_prefix)    
    end
    
    newFile(true)
@@ -282,7 +290,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       @thread = time_alert(@time_file*60) do
        if (first_time == false)
          @logger.debug "S3: time_file triggered,  let's bucket the file if dosen't empty  and create new file "
-         upFile(false, File.basename(@tempFile))
+         upFile(false, File.basename(@tempFile), file_prefix)
          newFile(true)
        else
          first_time = false
@@ -311,30 +319,23 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   # if specific the size
   if(size_file !=0)
-    
     if (@tempFile.size < @size_file )
+      @logger.debug "S3: File have size: "+@tempFile.size.to_s+" and size_file is: "+ @size_file.to_s
+      @logger.debug "S3: put event into: "+File.basename(@tempFile)
 
-       @logger.debug "S3: File have size: "+@tempFile.size.to_s+" and size_file is: "+ @size_file.to_s
-       @logger.debug "S3: put event into: "+File.basename(@tempFile)
-
-       # Put the event in the file, now! 
-       File.open(@tempFile, 'a') do |file|
-         file.puts message
-         file.write "\n"
-       end
-
-     else
-
-       @logger.debug "S3: file: "+File.basename(@tempFile)+" is too large, let's bucket it and create new file"
-       upFile(false, File.basename(@tempFile))
-       @sizeCounter += 1
-       newFile(false)
-
-     end
-     
+      # Put the event in the file, now! 
+      File.open(@tempFile, 'a') do |file|
+        file.puts message
+        file.write "\n"
+      end
+    else
+      @logger.debug "S3: file: "+File.basename(@tempFile)+" is too large, let's bucket it and create new file"
+      upFile(false, File.basename(@tempFile), file_prefix)
+      @sizeCounter += 1
+      newFile(false)
+    end
   # else we put all in one file 
   else
-
     @logger.debug "S3: put event into "+File.basename(@tempFile)
     File.open(@tempFile, 'a') do |file|
       file.puts message
