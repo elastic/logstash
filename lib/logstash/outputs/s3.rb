@@ -121,7 +121,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  # S3 bucket
  config :bucket, :validate => :string
 
- # S3 bucket
+ # S3 filename prefix
  config :file_prefix, :validate => :string, :default => nil
 
  # Aws endpoint_region
