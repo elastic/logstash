@@ -13,7 +13,7 @@ module LogStash::Time
     UTC = org.joda.time.DateTimeZone.forID("UTC")
     def self.parse_iso8601(t)
       millis = JODA_ISO8601_PARSER.parseMillis(t)
-      return Time.at(millis / 1000, (millis % 1000) * 1000)
+      return Time.at(millis / 1000, (millis % 1000) * 1000).gmtime
     end
   else
     def self.parse_iso8601(t)
