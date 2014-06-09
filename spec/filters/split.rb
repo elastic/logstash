@@ -57,4 +57,20 @@ describe LogStash::Filters::Split do
       insist { subject[2]["custom"] } == "sesame street"
     end
   end
+
+  describe "chain split with another filter" do
+    config <<-CONFIG
+      filter {
+        split { }
+        mutate { replace => [ "message", "test" ] }
+      }
+    CONFIG
+
+    sample "hello\nbird" do
+      insist { subject.length } == 2
+      insist { subject[0]["message"] } == "test"
+      insist { subject[1]["message"] } == "test"
+    end
+  end
+
 end
