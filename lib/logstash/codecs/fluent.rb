@@ -63,6 +63,7 @@ class LogStash::Codecs::Fluent < LogStash::Codecs::Base
   config_name "fluent"
   milestone 1
 
+  # Don't add fluent's tag to the event tags
   config :ignore_tag, :validate => :boolean, :default => false
 
   public
