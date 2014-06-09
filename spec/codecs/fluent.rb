@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/codecs/fluent"
 require "logstash/event"
 require "insist"
@@ -12,8 +13,8 @@ describe LogStash::Codecs::Fluent do
     it "should decode packed forward" do
       data = MessagePack.pack([
         "syslog",
-        MessagePack.pack([0, {"message" => "Hello World"}]) +
-        MessagePack.pack([1, {"message" => "Bye World"}])
+        MessagePack.pack([0, {"message" => "Hello World"}]).force_encoding("UTF-8") +
+        MessagePack.pack([1, {"message" => "Bye World"}]).force_encoding("UTF-8")
       ])
 
       events = []
@@ -37,7 +38,7 @@ describe LogStash::Codecs::Fluent do
     it "should prevent duplicate tags" do
       data = MessagePack.pack([
         "syslog",
-        MessagePack.pack([0, {"message" => "Hello World", "tags" => ["syslog", "fluent"]}])
+        MessagePack.pack([0, {"message" => "Hello World", "tags" => ["syslog", "fluent"]}]).force_encoding("UTF-8")
       ])
 
       subject.decode(data) do |event|
@@ -51,7 +52,7 @@ describe LogStash::Codecs::Fluent do
     it "should use @timestamp from data" do
       data = MessagePack.pack([
         "syslog",
-        MessagePack.pack([0, {"message" => "Hello World", "@timestamp" => "2014-01-01T00:00:0.000Z"}])
+        MessagePack.pack([0, {"message" => "Hello World", "@timestamp" => "2014-01-01T00:00:0.000Z"}]).force_encoding("UTF-8")
       ])
 
       subject.decode(data) do |event|
