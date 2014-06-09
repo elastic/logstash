@@ -3,105 +3,99 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 require "socket" # for Socket.gethostname
 
-# TODO integrate aws_config in the future
-#require "logstash/plugin_mixins/aws_config"
-
-# INFORMATION:
-
 # This plugin was created for store the logstash's events into Amazon Simple Storage Service (Amazon S3).
 # For use it you needs authentications and an s3 bucket.
 # Be careful to have the permission to write file on S3's bucket and run logstash with super user for establish connection.
-
+#
 # S3 plugin allows you to do something complex, let's explain:)
-
+#
 # S3 outputs create temporary files into "/opt/logstash/S3_temp/". If you want, you can change the path at the start of register method.
 # This files have a special name, for example:
-
+#
 # ls.s3.ip-10-228-27-95.2013-04-18T10.00.tag_hello.part0.txt
-
+#
 # ls.s3 : indicate logstash plugin s3
-
+#
 # "ip-10-228-27-95" : indicate you ip machine, if you have more logstash and writing on the same bucket for example.
 # "2013-04-18T10.00" : represents the time whenever you specify time_file.
 # "tag_hello" : this indicate the event's tag, you can collect events with the same tag.
 # "part0" : this means if you indicate size_file then it will generate more parts if you file.size > size_file.
 #           When a file is full it will pushed on bucket and will be deleted in temporary directory.
 #           If a file is empty is not pushed, but deleted.
-
+#
 # This plugin have a system to restore the previous temporary files if something crash.
-
+#
 ##[Note] :
-
+#
 ## If you specify size_file and time_file then it will create file for each tag (if specified), when time_file or
 ## their size > size_file, it will be triggered then they will be pushed on s3's bucket and will delete from local disk.
-
 ## If you don't specify size_file, but time_file then it will create only one file for each tag (if specified).
 ## When time_file it will be triggered then the files will be pushed on s3's bucket and delete from local disk.
-
+#
 ## If you don't specify time_file, but size_file  then it will create files for each tag (if specified),
 ## that will be triggered when their size > size_file, then they will be pushed on s3's bucket and will delete from local disk.
-
+#
 ## If you don't specific size_file and time_file you have a curios mode. It will create only one file for each tag (if specified).
 ## Then the file will be rest on temporary directory and don't will be pushed on bucket until we will restart logstash.
-
-# INFORMATION ABOUT CLASS:
-
-# I tried to comment the class at best i could do.
-# I think there are much thing to improve, but if you want some points to develop here a list:
-
-# TODO Integrate aws_config in the future
-# TODO Find a method to push them all files when logtstash close the session.
-# TODO Integrate @field on the path file
-# TODO Permanent connection or on demand? For now on demand, but isn't a good implementation.
-#      Use a while or a thread to try the connection before break a time_out and signal an error.
-# TODO If you have bugs report or helpful advice contact me, but remember that this code is much mine as much as yours,
-#      try to work on it if you want :)
-
-
+#
+#
+# #### USAGE:
 # USAGE:
-
 # This is an example of logstash config:
-
-# output {
-#    s3{
-#      access_key_id => "crazy_key"             (required)
-#      secret_access_key => "monkey_access_key" (required)
-#      endpoint_region => "eu-west-1"           (required)
-#      bucket => "boss_please_open_your_bucket" (required)
-#      size_file => 2048                        (optional)
-#      time_file => 5                           (optional)
-#      format => "plain"                        (optional)
-#      canned_acl => "private"                  (optional. Options are "private", "public_read", "public_read_write", "authenticated_read". Defaults to "private" )
+#
+#    output {
+#       s3{
+#         access_key_id => "crazy_key"             (required)
+#         secret_access_key => "monkey_access_key" (required)
+#         endpoint_region => "eu-west-1"           (required)
+#         bucket => "boss_please_open_your_bucket" (required)
+#         size_file => 2048                        (optional)
+#         time_file => 5                           (optional)
+#         format => "plain"                        (optional)
+#         canned_acl => "private"                  (optional. Options are "private", "public_read", "public_read_write", "authenticated_read". Defaults to "private" )
+#       }
 #    }
-# }
-
+#
 # We analize this:
-
+#
 # access_key_id => "crazy_key"
 # Amazon will give you the key for use their service if you buy it or try it. (not very much open source anyway)
-
+#
 # secret_access_key => "monkey_access_key"
 # Amazon will give you the secret_access_key for use their service if you buy it or try it . (not very much open source anyway).
-
+#
 # endpoint_region => "eu-west-1"
 # When you make a contract with Amazon, you should know where the services you use.
-
+#
 # bucket => "boss_please_open_your_bucket"
 # Be careful you have the permission to write on bucket and know the name.
-
+#
 # size_file => 2048
 # Means the size, in KB, of files who can store on temporary directory before you will be pushed on bucket.
 # Is useful if you have a little server with poor space on disk and you don't want blow up the server with unnecessary temporary log files.
-
+#
 # time_file => 5
 # Means, in minutes, the time  before the files will be pushed on bucket. Is useful if you want to push the files every specific time.
-
+#
 # format => "plain"
 # Means the format of events you want to store in the files
-
+#
 # canned_acl => "private"
 # The S3 canned ACL to use when putting the file. Defaults to "private".
-
+#
+# #### TODO
+#
+# I tried to comment the class at best i could do.
+# I think there are much thing to improve, but if you want some points to develop here a list:
+#
+# * Integrate aws_config in the future
+# * Find a method to push them all files when logtstash close the session.
+# * Integrate @field on the path file
+# * Permanent connection or on demand? For now on demand, but isn't a good implementation.
+#   Use a while or a thread to try the connection before break a time_out and signal an error.
+# * If you have bugs report or helpful advice contact me, but remember that this code is much mine as much as yours,
+#   try to work on it if you want :)
+#
 # LET'S ROCK AND ROLL ON THE CODE!
 
 class LogStash::Outputs::S3 < LogStash::Outputs::Base
