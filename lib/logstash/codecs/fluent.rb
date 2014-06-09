@@ -1,6 +1,6 @@
 # encoding: utf-8
-require 'logstash/codecs/base'
-require 'logstash/util/charset'
+require "logstash/codecs/base"
+require "logstash/util/charset"
 
 # This codec handles fluentd's msgpack schema.
 #
@@ -60,14 +60,14 @@ require 'logstash/util/charset'
 #   the @timestamp presents in the received message
 #
 class LogStash::Codecs::Fluent < LogStash::Codecs::Base
-  config_name 'fluent'
+  config_name "fluent"
   milestone 1
 
   config :ignore_tag, :validate => :boolean, :default => false
 
   public
   def register
-    require 'msgpack'
+    require "msgpack"
     @decoder = MessagePack::Unpacker.new
     @payload_decoder = MessagePack::Unpacker.new
   end
@@ -94,16 +94,16 @@ class LogStash::Codecs::Fluent < LogStash::Codecs::Base
 
   public
   def encode(event)
-    tag = (event['tags'][0] unless event['tags'].nil?) || 'log'
-    epochtime = event['@timestamp'].to_i
+    tag = (event["tags"][0] unless event["tags"].nil?) || "log"
+    epochtime = event["@timestamp"].to_i
     # Time is not supported by MessagePack, so convert @timestamp to string
-    msg = event.to_hash.merge({'@timestamp' => event['@timestamp'].iso8601(3)})
+    msg = event.to_hash.merge({"@timestamp" => event["@timestamp"].iso8601(3)})
     @on_event.call(MessagePack.pack([ tag, epochtime, msg ]))
   end # def encode
 
   private
   def event(tag, epochtime, map)
-    map['@timestamp'] = Time.at(epochtime).utc if map['@timestamp'].nil?
+    map["@timestamp"] = Time.at(epochtime).utc if map["@timestamp"].nil?
 
     event = LogStash::Event.new(map)
     event.tag(tag) unless @ignore_tag

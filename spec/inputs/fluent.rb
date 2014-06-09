@@ -1,12 +1,12 @@
 # coding: utf-8
-require 'test_utils'
-require 'socket'
-require 'msgpack'
+require "test_utils"
+require "socket"
+require "msgpack"
 
-describe 'inputs/fluent' do
+describe "inputs/fluent" do
   extend LogStash::RSpec
 
-  describe 'read event' do
+  describe "read event" do
     port = 5511
     config <<-CONFIG
       input {
@@ -17,32 +17,32 @@ describe 'inputs/fluent' do
     CONFIG
 
     data = MessagePack.pack([
-      'syslog',
-      MessagePack.pack([0, {'message' => 'Hello World'}]) +
-      MessagePack.pack([1, {'message' => 'Bye World'}])
+      "syslog",
+      MessagePack.pack([0, {"message" => "Hello World"}]) +
+      MessagePack.pack([1, {"message" => "Bye World"}])
     ])
 
     input do |pipeline, queue|
       Thread.new { pipeline.run }
       sleep 0.1 until pipeline.ready?
 
-      socket = Stud.try(5.times) { TCPSocket.new('127.0.0.1', port) }
+      socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
       socket.puts(data)
       socket.close
 
       events = 2.times.collect { queue.pop }
 
-      insist { events[0]['@timestamp'] } == Time.at(0).utc
-      insist { events[0]['message'] } == 'Hello World'
-      insist { events[0]['tags'] } == ['syslog']
+      insist { events[0]["@timestamp"] } == Time.at(0).utc
+      insist { events[0]["message"] } == "Hello World"
+      insist { events[0]["tags"] } == ["syslog"]
 
-      insist { events[1]['@timestamp'] } == Time.at(1).utc
-      insist { events[1]['message'] } == 'Bye World'
-      insist { events[1]['tags'] } == ['syslog']
+      insist { events[1]["@timestamp"] } == Time.at(1).utc
+      insist { events[1]["message"] } == "Bye World"
+      insist { events[1]["tags"] } == ["syslog"]
     end # input
   end
 
-  describe 'responds to tcp heartbeats' do
+  describe "responds to tcp heartbeats" do
     port = 5512
     config <<-CONFIG
       input {
@@ -56,12 +56,12 @@ describe 'inputs/fluent' do
       Thread.new { pipeline.run }
       sleep 0.1 until pipeline.ready?
 
-      socket = Stud.try(5.times) { TCPSocket.new('127.0.0.1', port) }
+      socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
       socket.close
     end # input
   end
 
-  describe 'responds to udp heartbeats' do
+  describe "responds to udp heartbeats" do
     port = 5513
     config <<-CONFIG
       input {
@@ -76,7 +76,7 @@ describe 'inputs/fluent' do
       sleep 0.1 until pipeline.ready?
 
       socket = Stud.try(5.times) { UDPSocket.new(Socket::AF_INET) }
-      socket.send("\0", 0, '127.0.0.1', port)
+      socket.send("\0", 0, "127.0.0.1", port)
 
       Stud.try(5.times) {
         IO.select([socket], nil, nil, 0.1)
@@ -88,7 +88,7 @@ describe 'inputs/fluent' do
     end # input
   end
 
-  describe 'explicit codec does not have any effect' do
+  describe "explicit codec does not have any effect" do
     port = 5514
     config <<-CONFIG
       input {
@@ -99,24 +99,24 @@ describe 'inputs/fluent' do
       }
     CONFIG
 
-    data = MessagePack.pack(['syslog', MessagePack.pack([0, {'message' => 'Hello World'}])])
+    data = MessagePack.pack(["syslog", MessagePack.pack([0, {"message" => "Hello World"}])])
     input do |pipeline, queue|
       Thread.new { pipeline.run }
       sleep 0.1 until pipeline.ready?
 
-      socket = Stud.try(5.times) { TCPSocket.new('127.0.0.1', port) }
+      socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
       socket.puts(data)
       socket.close
 
       event = queue.pop
 
-      insist { event['@timestamp'] } == Time.at(0).utc
-      insist { event['message'] } == 'Hello World'
-      insist { event['tags'] } == ['syslog']
+      insist { event["@timestamp"] } == Time.at(0).utc
+      insist { event["message"] } == "Hello World"
+      insist { event["tags"] } == ["syslog"]
     end # input
   end
 
-  describe 'ignore fluent\'s tag' do
+  describe "ignore fluent\"s tag" do
     port = 5515
     config <<-CONFIG
     input {
@@ -127,20 +127,20 @@ describe 'inputs/fluent' do
     }
     CONFIG
 
-    data = MessagePack.pack(['syslog', MessagePack.pack([0, {'message' => 'Hello World'}])])
+    data = MessagePack.pack(["syslog", MessagePack.pack([0, {"message" => "Hello World"}])])
     input do |pipeline, queue|
       Thread.new { pipeline.run }
       sleep 0.1 until pipeline.ready?
 
-      socket = Stud.try(5.times) { TCPSocket.new('127.0.0.1', port) }
+      socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
       socket.puts(data)
       socket.close
 
       event = queue.pop
 
-      insist { event['@timestamp'] } == Time.at(0).utc
-      insist { event['message'] } == 'Hello World'
-      insist { event['tags'] } == nil
+      insist { event["@timestamp"] } == Time.at(0).utc
+      insist { event["message"] } == "Hello World"
+      insist { event["tags"] } == nil
     end # input
   end
 

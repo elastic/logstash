@@ -1,7 +1,7 @@
 # encoding: utf-8
-require 'logstash/inputs/base'
-require 'logstash/namespace'
-require 'socket'
+require "logstash/inputs/base"
+require "logstash/namespace"
+require "socket"
 
 # Read fluentd events over a TCP socket.
 #
@@ -40,11 +40,11 @@ require 'socket'
 # * manually specified codec will not have any effect, as this plugin is already preconfigured with fluent codec
 #
 class LogStash::Inputs::Fluent < LogStash::Inputs::Base
-  config_name 'fluent'
+  config_name "fluent"
   milestone 1
 
   # The address to listen on.
-  config :host, :validate => :string, :default => '0.0.0.0'
+  config :host, :validate => :string, :default => "0.0.0.0"
 
   # The port to listen on.
   config :port, :validate => :number, :default => 24224
@@ -60,18 +60,18 @@ class LogStash::Inputs::Fluent < LogStash::Inputs::Base
 
   public
   def register
-    require 'logstash/inputs/tcp'
-    require 'logstash/codecs/fluent'
+    require "logstash/inputs/tcp"
+    require "logstash/codecs/fluent"
 
     codec = LogStash::Codecs::Fluent.new({
-      'ignore_tag' => @ignore_tag
+      "ignore_tag" => @ignore_tag
     })
     codec.register
 
     @tcp = LogStash::Inputs::Tcp.new({
-      'host' => @host,
-      'port' => @port.to_s,
-      'codec' => codec
+      "host" => @host,
+      "port" => @port.to_s,
+      "codec" => codec
     })
     @tcp.register
   end
@@ -111,15 +111,15 @@ class LogStash::Inputs::Fluent < LogStash::Inputs::Base
 
       loop do
         _, client = @udp.recvfrom(128)
-        @logger.debug('Heartbeat received', :client => "#{client[3]}:#{client[1]}")
+        @logger.debug("Heartbeat received", :client => "#{client[3]}:#{client[1]}")
 
         @udp.send("\0", 0, client[3], client[1])
       end
     rescue LogStash::ShutdownSignal
-      @logger.info('ShutdownSignal caught. Exiting heartbeat listener')
+      @logger.info("ShutdownSignal caught. Exiting heartbeat listener")
     rescue => e
       unless @interrupted
-        @logger.warn('Heartbeat listener died', :exception => e, :backtrace => e.backtrace)
+        @logger.warn("Heartbeat listener died", :exception => e, :backtrace => e.backtrace)
         retry
       end
     ensure
