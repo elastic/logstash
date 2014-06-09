@@ -18,8 +18,8 @@ describe "inputs/fluent" do
 
     data = MessagePack.pack([
       "syslog",
-      MessagePack.pack([0, {"message" => "Hello World"}]) +
-      MessagePack.pack([1, {"message" => "Bye World"}])
+      MessagePack.pack([0, {"message" => "Hello World"}]).force_encoding("UTF-8") +
+      MessagePack.pack([1, {"message" => "Bye World"}]).force_encoding("UTF-8")
     ])
 
     input do |pipeline, queue|
@@ -99,7 +99,10 @@ describe "inputs/fluent" do
       }
     CONFIG
 
-    data = MessagePack.pack(["syslog", MessagePack.pack([0, {"message" => "Hello World"}])])
+    data = MessagePack.pack([
+      "syslog", 
+      MessagePack.pack([0, {"message" => "Hello World"}]).force_encoding("UTF-8")
+    ])
     input do |pipeline, queue|
       Thread.new { pipeline.run }
       sleep 0.1 until pipeline.ready?
@@ -127,7 +130,10 @@ describe "inputs/fluent" do
     }
     CONFIG
 
-    data = MessagePack.pack(["syslog", MessagePack.pack([0, {"message" => "Hello World"}])])
+    data = MessagePack.pack([
+      "syslog", 
+      MessagePack.pack([0, {"message" => "Hello World"}]).force_encoding("UTF-8")
+    ])
     input do |pipeline, queue|
       Thread.new { pipeline.run }
       sleep 0.1 until pipeline.ready?
