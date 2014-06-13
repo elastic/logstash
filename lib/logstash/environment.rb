@@ -24,8 +24,28 @@ module LogStash
       end
     end
 
+    def gem_target
+      "#{LOGSTASH_HOME}/vendor/bundle"
+    end
+
+    def set_gem_paths!
+      gemdir = "#{gem_target}/#{ruby_engine}/#{ruby_abi_version}/"
+      ENV["GEM_HOME"] = gemdir
+      ENV["GEM_PATH"] = gemdir
+    end
+
+    # @return [String] major.minor ruby version, ex 1.9
+    def ruby_abi_version
+      RUBY_VERSION[/(\d+\.\d+)(\.\d+)*/, 1]
+    end
+
+    # @return [String] jruby, ruby, rbx, ...
+    def ruby_engine
+      RUBY_ENGINE
+    end
+
     def jruby?
-      RUBY_PLATFORM == "java"
+      @jruby ||= !!(RUBY_PLATFORM == "java")
     end
 
     def vendor_path(path)
@@ -38,6 +58,10 @@ module LogStash
 
     def pattern_path(path)
       return ::File.join(LOGSTASH_HOME, "patterns", path)
+    end
+
+    def locales_path(path)
+      return ::File.join(LOGSTASH_HOME, "locales", path)
     end
   end
 end

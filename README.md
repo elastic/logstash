@@ -29,11 +29,7 @@ You can also find documentation on the <http://logstash.net> site.
 
 ## Developing
 
-If you don't have JRuby already (or don't use rvm, rbenv, etc), you can have `bin/logstash` fetch it for you by setting `USE_JRUBY`:
-
-    USE_JRUBY=1 bin/logstash ...
-
-Otherwise, here's how to get started with rvm:
+Here's how to get started with rvm:
 
     # Install JRuby with rvm
     rvm install jruby-1.7.11
