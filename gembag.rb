@@ -1,12 +1,7 @@
 #!/usr/bin/env ruby
 
-require "rbconfig"
-
-rubyabi = RbConfig::CONFIG["ruby_version"]
-target = "#{Dir.pwd}/vendor/bundle"
-gemdir = "#{target}/#{RUBY_ENGINE}/#{rubyabi}/"
-ENV["GEM_HOME"] = gemdir
-ENV["GEM_PATH"] = ""
+require "logstash/environment"
+LogStash::Environment.set_gem_paths!
 
 require "rubygems/specification"
 require "rubygems/commands/install_command"
@@ -48,13 +43,13 @@ require "bundler/cli"
 module Bundler
   module SharedHelpers
     def default_lockfile
-      ruby = "#{RUBY_ENGINE}-#{RbConfig::CONFIG["ruby_version"]}"
+      ruby = "#{LogStash::Environment.ruby_engine}-#{LogStash::Environment.ruby_abi_version}"
       return Pathname.new("#{default_gemfile}.#{ruby}.lock")
     end
   end
 end
 
-if RUBY_ENGINE == "rbx"
+if LogStash::Environment.ruby_engine == "rbx"
   begin
     gem("rubysl")
   rescue Gem::LoadError => e
@@ -65,7 +60,7 @@ end
 # Try installing a few times in case we hit the "bad_record_mac" ssl error during installation.
 10.times do
   begin
-    Bundler::CLI.start(["install", "--gemfile=tools/Gemfile", "--path", target, "--clean", "--without", "development"])
+    Bundler::CLI.start(["install", "--gemfile=tools/Gemfile", "--path", LogStash::Environment.gem_target, "--clean", "--without", "development"])
     break
   rescue Gem::RemoteFetcher::FetchError => e
     puts e.message

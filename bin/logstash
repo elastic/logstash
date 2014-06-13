@@ -10,10 +10,6 @@
 #
 # NOTE: One extra command is available 'deps'
 # The 'deps' command will install dependencies for logstash.
-#
-# If you do not have ruby installed, you can set "USE_JRUBY=1"
-# in your environment and this script will download and use
-# a release of JRuby for you.
 
 # Defaults you can override with environment variables
 LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
@@ -32,18 +28,16 @@ case $1 in
   env) env "$@" ;;
   -*)
     if [ -z "$VENDORED_JRUBY" ] ; then
-      exec "${RUBYCMD}" "-I${RUBYLIB}" "${basedir}/lib/logstash/runner.rb" "agent" "$@"
+      exec "${RUBYCMD}" "${basedir}/lib/logstash/runner.rb" "agent" "$@"
     else
-      exec "${JAVACMD}" $JAVA_OPTS "-jar" "$JRUBY_JAR" "-I${RUBYLIB}" "${basedir}/lib/logstash/runner.rb" "agent" "$@"
+      exec "${JAVACMD}" $JAVA_OPTS "-jar" "$JRUBY_JAR" "${basedir}/lib/logstash/runner.rb" "agent" "$@"
     fi
     ;;
   *)
     if [ -z "$VENDORED_JRUBY" ] ; then
-      exec "${RUBYCMD}" "-I${RUBYLIB}" "${basedir}/lib/logstash/runner.rb" "$@"
+      exec "${RUBYCMD}" "${basedir}/lib/logstash/runner.rb" "$@"
     else
-      exec "${JAVACMD}" $JAVA_OPTS "-jar" "$JRUBY_JAR" "-I${RUBYLIB}" "${basedir}/lib/logstash/runner.rb" "$@"
+      exec "${JAVACMD}" $JAVA_OPTS "-jar" "$JRUBY_JAR" "${basedir}/lib/logstash/runner.rb" "$@"
     fi
     ;;
 esac
-
-
