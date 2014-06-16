@@ -4,16 +4,6 @@
 #     for unformatted text.
 en:
   oops: |-
-    +---------------------------------------------------------+
-    | An unexpected error occurred. This is probably a bug.   |
-    | You can find help with this problem in a few places:    |
-    |                                                         |
-    | * chat: #logstash IRC channel on freenode irc.          |
-    |     IRC via the web: http://goo.gl/TI4Ro                |
-    | * email: logstash-users@googlegroups.com                |
-    | * bug system: https://logstash.jira.com/                |
-    |                                                         |
-    +---------------------------------------------------------+
     The error reported is: 
       %{error}
   logstash:
