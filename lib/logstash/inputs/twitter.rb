@@ -3,6 +3,7 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require "logstash/timestamp"
 require "logstash/util"
+require "logstash/json"
 
 # Read events from the twitter streaming api.
 class LogStash::Inputs::Twitter < LogStash::Inputs::Base
@@ -54,6 +55,24 @@ class LogStash::Inputs::Twitter < LogStash::Inputs::Base
   public
   def register
     require "twitter"
+
+    # monkey patch twitter gem to ignore json parsing error.
+    # at the same time, use our own json parser
+    # this has been tested with a specific gem version, raise if not the same
+    raise("Invalid Twitter gem") unless Twitter::Version.to_s == "5.0.0.rc.1"
+    Twitter::Streaming::Response.module_eval do
+      def on_body(data)
+        @tokenizer.extract(data).each do |line|
+          next if line.empty?
+          begin
+            @block.call(LogStash::Json.load(line, :symbolize_keys => true))
+          rescue LogStash::Json::ParserError
+            # silently ignore json parsing errors
+          end
+        end
+      end
+    end
+
     @client = Twitter::Streaming::Client.new do |c|
       c.consumer_key = @consumer_key
       c.consumer_secret = @consumer_secret.value
