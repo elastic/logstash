@@ -29,7 +29,6 @@ describe LogStash::Codecs::Line do
   end
 
   context "#decode" do
-
     it "should return an event from an ascii string" do
       decoded = false
       subject.decode("hello world\n") do |e|
@@ -46,6 +45,5 @@ describe LogStash::Codecs::Line do
         insist { e["message"] } == "München"
       end
     end
-
   end
 end
