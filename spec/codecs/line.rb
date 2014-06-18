@@ -9,9 +9,10 @@ describe LogStash::Codecs::Line do
   end
 
   context "#encode" do
-    event = LogStash::Event.new({"message" => "hello world", "host" => "test"})
+    let (:event) {LogStash::Event.new({"message" => "hello world", "host" => "test"})}
 
     it "should return a default date formatted line" do
+      expect(subject).to receive(:on_event).once.and_call_original
       subject.on_event do |d|
         insist {d} == event.to_s + "\n"
       end
@@ -21,6 +22,7 @@ describe LogStash::Codecs::Line do
     it "should respect the supplied format" do
       format = "%{host}"
       subject.format = format
+      expect(subject).to receive(:on_event).once.and_call_original
       subject.on_event do |d|
         insist {d} == event.sprintf(format) + "\n"
       end
