@@ -59,6 +59,9 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   # Value is in seconds.
   config :interval, :validate => :number, :default => 60
 
+  # Whether to add s3 bucket and object information to event
+  config :decorate_with_s3_info , :validate => :string, :default => "false", :required => false
+
   public
   def register
     require "digest/md5"
@@ -67,6 +70,8 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     @region_endpoint = @region if @region && !@region.empty?
 
     @logger.info("Registering s3 input", :bucket => @bucket, :region_endpoint => @region_endpoint)
+
+    @decorate_with_s3_info = @decorate_with_s3_info == "true"
 
     if @credentials.nil?
       @access_key_id = ENV['AWS_ACCESS_KEY_ID']
@@ -181,6 +186,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     object = @s3bucket.objects[key]
     tmp = Dir.mktmpdir("logstash-")
     begin
+      @object_key = key
       filename = File.join(tmp, File.basename(key))
       File.open(filename, 'wb') do |s3file|
         object.read do |chunk|
@@ -247,6 +253,13 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
         unless metadata[:format].nil?
           event["cloudfront_fields"] = metadata[:format]
         end
+
+        if @decorate_with_s3_info
+          event['s3_object_key'] = @object_key
+          event['s3_bucket_name'] = @bucket
+          event['s3_bucket_region'] = @region_endpoint
+        end
+
         queue << event
       end
     end
