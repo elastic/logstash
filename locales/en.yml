@@ -138,6 +138,9 @@ en:
           "%{default_output}"
           If you wish to use both defaults, please use
           the empty string for the '-e' flag.
+        configtest: |+
+          Ensures the provided configuration is
+          technically sound.
         filterworkers: |+
           Sets the number of filter workers to run.
         watchdog-timeout: |+
