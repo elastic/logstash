@@ -63,9 +63,15 @@ module LogStash::Outputs::Elasticsearch
           :host => [options[:host], options[:port]].join(":")
         )
 
+        # Use SSL if asked
+        scheme = options[:use_ssl] ? "https" : "http"
+
+        # Use authentication if asked
+        auth = options[:user] && options[:password] ? "#{options[:user]}:#{options[:password]}@" : ""
+
         # Use FTW to do indexing requests, for now, until we
         # can identify and resolve performance problems of elasticsearch-ruby
-        @bulk_url = "http://#{options[:host]}:#{options[:port]}/_bulk"
+        @bulk_url = "#{scheme}://#{auth}#{options[:host]}:#{options[:port]}/_bulk"
         @agent = FTW::Agent.new
 
         return client

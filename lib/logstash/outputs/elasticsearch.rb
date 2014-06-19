@@ -166,6 +166,15 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # `protocol` on non-java rubies is "http"
   config :protocol, :validate => [ "node", "transport", "http" ]
 
+  # FIXME
+  config :use_ssl, :validate => :boolean, :default => false
+
+  # The HTTP Basic Auth username used to access your elasticsearch server.
+  config :user, :validate => :string, :default => nil
+
+  # The HTTP Basic Auth password used to access your elasticsearch server.
+  config :password, :validate => :password, :default => nil
+
   # The Elasticsearch action to perform. Valid actions are: `index`, `delete`.
   #
   # Use of this setting *REQUIRES* you also configure the `document_id` setting
