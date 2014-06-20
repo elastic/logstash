@@ -149,6 +149,8 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
         :default => "private"
 
+ config :s3_prefix, :validate => :string, :default => ""
+
  # Method to set up the aws configuration and establish connection
  def aws_s3_config
 
@@ -193,7 +195,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   @logger.debug "S3: ready to write "+file_basename+" in bucket "+@bucket+", Fire in the hole!"
 
   # prepare for write the file
-  object = bucket.objects[file_basename]
+  object = bucket.objects[@prefix + file_basename]
   object.write(:file => file_data, :acl => @canned_acl)
 
   @logger.debug "S3: has written "+file_basename+" in bucket "+@bucket + " with canned ACL \"" + @canned_acl + "\""
