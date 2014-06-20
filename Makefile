@@ -253,12 +253,14 @@ build/docs/tutorials/getting-started-with-logstash.md: build/docs/tutorials/gett
 		echo "layout: content_right"; \
 		echo "---"; \
 		pandoc -f docbook -t markdown $< \
-	) \
-	| sed -e 's/%VERSION%/$(VERSION)/g' \
-	| sed -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' > $@
+	) > $@
 
 build/docs/tutorials/getting-started-with-logstash.xml: docs/tutorials/getting-started-with-logstash.asciidoc | build/docs/tutorials
-	$(QUIET)asciidoc -b docbook -o $@ $<
+	$(QUIET)( \
+		sed -e 's/%VERSION%/$(VERSION)/g' $< \
+		| sed -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' \
+		| asciidoc -b docbook -o $@ - \
+	)
 
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/inputs
 	$(QUIET)$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
