@@ -149,7 +149,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
         :default => "private"
 
- config :prefix, :validate => :string, :default => ""
  config :s3_key_format, :validate => :string, :default => ""
 
  # Method to set up the aws configuration and establish connection
@@ -338,7 +337,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
        # Put the event in the file, now!
        File.open(@tempFile, 'a') do |file|
          file.puts message
-         file.write "\n"
        end
 
      else
@@ -367,7 +365,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     message << "Source: #{event["source"]}\n"
     message << "Tags: #{event["tags"].join(', ')}\n"
     message << "Fields: #{event.to_hash.inspect}\n"
-    message << "Message: #{event["message"]}"
+    message << "Message: #{event["message"]}\n"
  end
 
 end
