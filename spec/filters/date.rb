@@ -138,7 +138,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
     #Support float values
     sample("mydate" => 1350414944.123456) do
       insist { subject["mydate"] } == 1350414944.123456
-      insist { subject.timestamp } == Time.iso8601("2012-10-16T12:15:44.123-07:00").utc
+      insist { subject["@timestamp"].time } == Time.iso8601("2012-10-16T12:15:44.123-07:00").utc
     end
 
     #Invalid value should not be evaluated to zero (String#to_i madness)
