@@ -107,7 +107,7 @@ class LogStash::Outputs::NagiosNsca < LogStash::Outputs::Base
     # syntax: echo '<server>!<nagios_service>!<status>!<text>'  | \
     #           /usr/sbin/send_nsca -H <nagios_host> -d '!' -c <nsca_config>"
 
-    cmd = [@send_nsca_bin, "-H", "@host", "-p", "@port", "-d", "~"]
+    cmd = [@send_nsca_bin, "-H", @host, "-p", @port, "-d", "~"]
     cmd = cmd + ["-c", @send_nsca_config]  if @send_nsca_config
     message = "#{nagios_host}~#{nagios_service}~#{status}~#{msg}"
 
