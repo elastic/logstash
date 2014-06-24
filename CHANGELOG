@@ -1,3 +1,18 @@
+1.4.2 (June 24, 2014)
+  # general
+  - fixed path issues when invoking bin/logstash outside its home directory
+
+  # input
+  - bugfix: generator: fixed stdin option support
+  - bugfix: file: fixed debian 7 path issue
+
+  # codecs
+  - improvement: stdin/tcp: automatically select json_line and line codecs with the tcp and stdin streaming imputs
+  - improvement: collectd: add support for NaN values
+
+  # outputs
+  - improvement: nagios_nsca: fix external command invocation to avoid shell escaping
+
 1.4.1 (May 6, 2014)
   # General
   - bumped Elasticsearch to 1.1.1 and Kibana to 3.0.1
