@@ -292,6 +292,7 @@ class LogStash::Agent < Clamp::Command
     end
 
     config = ""
+    encoding_issue_files = []
     Dir.glob(path).sort.each do |file|
       next unless File.file?(file)
       if file.match(/~$/)
@@ -299,7 +300,14 @@ class LogStash::Agent < Clamp::Command
         next
       end
       @logger.debug("Reading config file", :file => file)
-      config << File.read(file) + "\n"
+      cfg = File.read(file)
+      if !cfg.ascii_only? && !cfg.valid_encoding?
+        encoding_issue_files << file
+      end
+      config << cfg + "\n"
+    end
+    if (encoding_issue_files.any?)
+      fail("The following config files contains non-ascii characters but are not UTF-8 encoded #{encoding_issue_files}")
     end
     return config
   end # def load_config
