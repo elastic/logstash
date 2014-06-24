@@ -129,6 +129,18 @@ describe "conditionals" do
         if [foo] in "foo" {
           mutate { add_tag => "field in string" }
         }
+        if [foo] in ["foo"] {
+          mutate { add_tag => "field in single list" }
+        }
+        if [foo] in ["foo", "dummy"] {
+          mutate { add_tag => "field in multiple list" }
+        }
+        if [foo] in ["bar"] {
+          mutate { add_tag => "field not in single list" }
+        }
+        if [foo] in ["bar", "dummy"] {
+          mutate { add_tag => "field not in multiple list" }
+        }
         if "hello" in [greeting] {
           mutate { add_tag => "string in field" }
         }
@@ -147,6 +159,10 @@ describe "conditionals" do
     sample("foo" => "foo", "foobar" => "foobar", "greeting" => "hello world") do
       insist { subject["tags"] }.include?("field in field")
       insist { subject["tags"] }.include?("field in string")
+      insist { subject["tags"] }.include?("field in single list")
+      insist { subject["tags"] }.include?("field in multiple list")
+      reject { subject["tags"] }.include?("field not in single list")
+      reject { subject["tags"] }.include?("field not in multiple list")
       insist { subject["tags"] }.include?("string in field")
       insist { subject["tags"] }.include?("field in list")
       reject { subject["tags"] }.include?("shouldnotexist")
@@ -159,6 +175,10 @@ describe "conditionals" do
       filter {
         if "foo" not in "baz" { mutate { add_tag => "baz" } }
         if "foo" not in "foo" { mutate { add_tag => "foo" } }
+        if "foo" not in ["foo"] { mutate { add_tag => "field in single list" } }
+        if "foo" not in ["foo", "dummy"] { mutate { add_tag => "field in multiple list" } }
+        if "foo" not in ["bar"] { mutate { add_tag => "field not in single list" } }
+        if "foo" not in ["bar", "dummy"] { mutate { add_tag => "field not in multiple list" } }
         if !("foo" not in "foo") { mutate { add_tag => "notfoo" } }
         if "foo" not in [somelist] { mutate { add_tag => "notsomelist" } } 
         if "one" not in [somelist] { mutate { add_tag => "somelist" } }
@@ -172,6 +192,10 @@ describe "conditionals" do
 
       insist { subject["tags"] }.include?("baz")
       reject { subject["tags"] }.include?("foo")
+      reject { subject["tags"] }.include?("field in single list")
+      reject { subject["tags"] }.include?("field in multiple list")
+      insist { subject["tags"] }.include?("field not in single list")
+      insist { subject["tags"] }.include?("field not in multiple list")
       insist { subject["tags"] }.include?("notfoo")
       insist { subject["tags"] }.include?("notsomelist")
       reject { subject["tags"] }.include?("somelist")
