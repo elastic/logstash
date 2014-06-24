@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/filters/base"
 require "logstash/namespace"
+require "logstash/environment"
 require "set"
 #
 # This filter will collapse multiline messages from a single source into one Logstash event.
