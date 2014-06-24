@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/filters/base"
 require "logstash/namespace"
+require "logstash/environment"
 require "set"
 
 # Parse arbitrary text and structure it.
