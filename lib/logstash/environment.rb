@@ -24,6 +24,19 @@ module LogStash
       end
     end
 
+    def load_kafka_jars!
+      raise(LogStash::EnvironmentError, "JRuby is required") unless jruby?
+
+      require "java"
+      jar_files = Dir.glob(::File.join(JAR_DIR, "/kafka*/*.jar"))
+      raise(LogStash::EnvironmentError, "Could not find Kafka jar files under #{JAR_DIR}") if jar_files.empty?
+
+      jar_files.each do |jar|
+        loaded = require jar
+        puts("Loaded #{jar}") if loaded
+      end
+    end
+
     def jruby?
       RUBY_PLATFORM == "java"
     end
