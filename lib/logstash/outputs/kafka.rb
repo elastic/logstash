@@ -11,6 +11,7 @@ class LogStash::Outputs::Kafka < LogStash::Outputs::Base
 
   config :topic,                   :validate => :string, :required => true
   config :broker_list,             :validate => :string, :required => true
+  config :kafka_home,              :validate => :string, :required => true
   config :client_id,               :validate => :string, :default  => "logstash"
   config :producer_type,           :validate => :string, :default  => "async"
   config :serializer_class,        :validate => :string, :default  => "kafka.serializer.StringEncoder"
@@ -29,8 +30,12 @@ class LogStash::Outputs::Kafka < LogStash::Outputs::Base
   config :topic_metadata_refresh_interval_ms, :validate => :number
 
   def register
+    raise(LogStash::EnvironmentError, "JRuby is required to ouput to Kafka") unless LogStash::Environment.jruby?
     @logger.info "initializing kafka client"
-    LogStash::Environment.load_kafka_jars!
+
+    kafka_jars = Dir.glob(::File.join(@kafka_home, "*.jar"))
+    raise(LogStash::EnvironmentError, "Could not find Kafka jar files under #{@kafka_home}") if kafka_jars.empty?
+    kafka_jars.each {|jar| require jar}
 
     properties = java.util.Properties.new
     properties.put("metadata.broker.list",   @broker_list)
