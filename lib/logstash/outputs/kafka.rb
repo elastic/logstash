@@ -109,13 +109,13 @@ class LogStash::Outputs::Kafka < LogStash::Outputs::Base
   end
 
   def should_log_stats?
-    if @log_stats and Time.now.to_i > @last_stats_log_time + @log_stats_interval and not counters.empty?
+    if @log_stats and Time.now.to_i > @last_stats_log_time.to_i + @log_stats_interval and not counters.empty?
       true
     end
   end
 
   def log_stats
-    @last_stats_log_time = Time.now.to_i
+    @last_stats_log_time = Time.now
     @logger.send(@log_stats_level.downcase.to_sym, "kafka events: " + counters.to_json)
 
     # reset counters
