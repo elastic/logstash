@@ -6,27 +6,30 @@ class LogStash::Inputs::RabbitMQ
       require "hot_bunnies"
       require "java"
 
-      @vhost       ||= "127.0.0.1"
+      @vhost       ||= "/"
       # 5672. Will be switched to 5671 by Bunny if TLS is enabled.
       @port        ||= 5672
       @key         ||= "#"
+
+      password = @password.value if @password
 
       @settings = {
         :vhost => @vhost,
         :host  => @host,
         :port  => @port,
         :user  => @user,
-        :automatic_recovery => false
+        :automatic_recovery => false,
+        :ssl => @ssl
       }
-      @settings[:pass]      = @password.value if @password
-      @settings[:tls]       = @ssl if @ssl
 
+      @settings[:password]  = password
       proto                 = if @ssl
-                                "amqp"
-                              else
                                 "amqps"
+                              else
+                                "amqp"
                               end
-      @connection_url       = "#{proto}://#{@user}@#{@host}:#{@port}#{vhost}/#{@queue}"
+
+      @connection_url       = "#{proto}://#{@user}:#{password}@#{@host}:#{@port}#{vhost}/#{@queue}"
 
       @logger.info("Registering input #{@connection_url}")
     end
@@ -101,8 +104,15 @@ class LogStash::Inputs::RabbitMQ
 
       # exchange binding is optional for the input
       if @exchange
-        @q.bind(@exchange, :routing_key => @key)
+        if @exchange_type == 'topic'
+          @q.bind(@ch.topic(@exchange), :routing_key => @key)
+        elsif @exchange_type == 'fanout'
+          @q.bind(@ch.fanout(@exchange))
+        else
+          @q.bind(@ch.direct(@exchange), :routing_key => @key)
+        end
       end
+
     end
 
     def consume

@@ -1,4 +1,4 @@
-# encoding: utf-8
+1# encoding: utf-8
 require "logstash/inputs/threadable"
 require "logstash/namespace"
 
@@ -14,7 +14,7 @@ require "logstash/namespace"
 # * March Hare: <http://rubymarchhare.info>
 # * Bunny - <https://github.com/ruby-amqp/bunny>
 class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
-
+  EXCHANGE_TYPES = ["fanout", "direct", "topic"]
   config_name "rabbitmq"
   milestone 1
 
@@ -87,6 +87,8 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   #
   # (Optional) Exchange binding
   #
+  # The exchange type (fanout, topic, direct)
+  config :exchange_type, :validate => EXCHANGE_TYPES
 
   # Optional.
   #
