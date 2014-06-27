@@ -50,9 +50,10 @@ It will have a `/path/logstash-%VERSION%` directory, e.g.
 
 The method to install the contrib tarball is identical.
 
-    cd /path
+    cd /path/logstash-%VERSION%/vendor/logstash
     wget http://download.elasticsearch.org/logstash/logstash/logstash-contrib-%VERSION%.tar.gz
     tar zxf ~/logstash-contrib-%VERSION%.tar.gz
+    cp -R logstash-contrib-%VERSION%/* /path/logstash-%VERSION%
 
 This will install the contrib plugins in the same directory as the core
 install. These plugins will be available to logstash the next time it starts.
