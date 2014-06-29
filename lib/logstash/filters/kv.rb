@@ -229,7 +229,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       value = @trim.nil? ? value : value.gsub(@trim_re, "")
 
       # recursively get more kv pairs from the value
-      kv_keys = parse(value, event, kv_keys) if @dig_values 
+      kv_keys = parse(value, event, kv_keys) if @dig_values and value =~ /[@field_split]/
 
       if kv_keys.has_key?(key)
         if kv_keys[key].is_a? Array
