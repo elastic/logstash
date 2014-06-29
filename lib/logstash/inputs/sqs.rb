@@ -114,7 +114,9 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
     continue_polling = true
     while running? && continue_polling
       continue_polling = run_with_backoff(60, 1) do
-        @sqs_queue.receive_message(receive_opts) do |message|
+        received_messages = @sqs_queue.receive_message(receive_opts)
+        messages_to_delete=[]
+        received_messages.each() do |message|
           if message
             @codec.decode(message.body) do |event|
               decorate(event)
@@ -129,10 +131,13 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
               end
               @logger.debug? && @logger.debug("Processed SQS message", :message_id => message.id, :message_md5 => message.md5, :sent_timestamp => message.sent_timestamp, :queue => @queue)
               output_queue << event
-              message.delete
+              messages_to_delete << message
             end # codec.decode
           end # valid SQS message
-        end # receive_message
+        end # rm_each
+        if !messages_to_delete.empty?
+          @sqs_queue.batch_delete(messages_to_delete)
+        end
       end # run_with_backoff
     end # polling loop
   end # def run
