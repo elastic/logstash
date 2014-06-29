@@ -160,7 +160,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
     @trimkey_re = Regexp.new("[#{@trimkey}]") if !@trimkey.nil?
-    @scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)\\s*["+@value_split+"]\\s*(?:\"([^\"]+)\"|'([^']+)'|((?:\\\\ |[^"+@field_split+"])+))")
+    @scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)\\s*["+@value_split+"]\\s*(?:\"([^\"]+)\"|'([^']+)'|\\(([^\\)]+)\\)|((?:\\\\ |[^"+@field_split+"])+))")
   end # def register
 
   def filter(event)
@@ -206,8 +206,8 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     if !event =~ /[@field_split]/
       return kv_keys
     end
-    text.scan(@scan_re) do |key, v1, v2, v3|
-      value = v1 || v2 || v3
+    text.scan(@scan_re) do |key, v1, v2, v3, v4|
+      value = v1 || v2 || v3 || v4
       key = @trimkey.nil? ? key : key.gsub(@trimkey_re, "")
 
       # Bail out as per the values of @include_keys and @exclude_keys
@@ -217,6 +217,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       key = event.sprintf(@prefix) + key
 
       value = @trim.nil? ? value : value.gsub(@trim_re, "")
+
       if kv_keys.has_key?(key)
         if kv_keys[key].is_a? Array
           kv_keys[key].push(value)
