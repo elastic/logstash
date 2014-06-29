@@ -117,23 +117,27 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
         received_messages = @sqs_queue.receive_message(receive_opts)
         messages_to_delete=[]
         received_messages.each() do |message|
-          if message
-            @codec.decode(message.body) do |event|
-              decorate(event)
-              if @id_field
-                event[@id_field] = message.id
-              end
-              if @md5_field
-                event[@md5_field] = message.md5
-              end
-              if @sent_timestamp_field
-                event[@sent_timestamp_field] = LogStash::Timestamp.new(message.sent_timestamp).utc
-              end
-              @logger.debug? && @logger.debug("Processed SQS message", :message_id => message.id, :message_md5 => message.md5, :sent_timestamp => message.sent_timestamp, :queue => @queue)
-              output_queue << event
-              messages_to_delete << message
-            end # codec.decode
-          end # valid SQS message
+          begin
+            if message
+              @codec.decode(message.body) do |event|
+                decorate(event)
+                if @id_field
+                  event[@id_field] = message.id
+                end
+                if @md5_field
+                  event[@md5_field] = message.md5
+                end
+                if @sent_timestamp_field
+                  event[@sent_timestamp_field] = message.sent_timestamp.utc
+                end
+                @logger.debug? && @logger.debug("Processed SQS message", :message_id => message.id, :message_md5 => message.md5, :sent_timestamp => message.sent_timestamp, :queue => @queue)
+                output_queue << event
+                messages_to_delete << message
+              end # codec.decode
+            end # valid SQS message
+          rescue Exception => e
+            @logger.warn("Processing a SQS message failed", :error => e, :message_id => message.id, :message_md5 => message.md5, :sent_timestamp => message.sent_timestamp, :queue => @queue)
+          end # begin
         end # rm_each
         if !messages_to_delete.empty?
           @sqs_queue.batch_delete(messages_to_delete)
