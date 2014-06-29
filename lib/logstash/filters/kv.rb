@@ -157,6 +157,16 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     }
   config :default_keys, :validate => :hash, :default => {}
 
+  # A boolean specifying whether to drill down into values 
+  # and recursively get more key-value pairs from it.
+  #
+  #     filter {
+  #       kv {
+  #         dig_values => true
+  #       }
+  #     }
+  config :dig_values, :validate => :boolean, :default => false
+
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
     @trimkey_re = Regexp.new("[#{@trimkey}]") if !@trimkey.nil?
@@ -217,6 +227,9 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       key = event.sprintf(@prefix) + key
 
       value = @trim.nil? ? value : value.gsub(@trim_re, "")
+
+      # recursively get more kv pairs from the value
+      kv_keys = parse(value, event, kv_keys) if @dig_values 
 
       if kv_keys.has_key?(key)
         if kv_keys[key].is_a? Array
