@@ -26,6 +26,7 @@ class LogStash::Filters::Checksum < LogStash::Filters::Base
 
   public
   def register
+    @keys.sort!
     require 'openssl'
   end
 
@@ -36,7 +37,7 @@ class LogStash::Filters::Checksum < LogStash::Filters::Base
     @logger.debug("Running checksum filter", :event => event)
 
     to_checksum = ''
-    @keys.sort.each do |k|
+    @keys.each do |k|
       @logger.debug("Adding key to string", :current_key => k)
       to_checksum << "|#{k}|#{event[k]}"
     end
