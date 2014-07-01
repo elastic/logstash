@@ -112,7 +112,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   #
   #     filter {
   #       %PLUGIN% {
-  #         remove_field => [ "foo_%{somefield}" "my_extraneous_field" ]
+  #         remove_field => [ "foo_%{somefield}", "my_extraneous_field" ]
   #       }
   #     }
   #
