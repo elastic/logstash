@@ -27,7 +27,6 @@ class LogStash::Filters::Checksum < LogStash::Filters::Base
   public
   def register
     require 'openssl'
-    @to_checksum = ""
   end
 
   public
@@ -36,16 +35,17 @@ class LogStash::Filters::Checksum < LogStash::Filters::Base
 
     @logger.debug("Running checksum filter", :event => event)
 
+    to_checksum = ''
     @keys.sort.each do |k|
       @logger.debug("Adding key to string", :current_key => k)
-      @to_checksum << "|#{k}|#{event[k]}"
+      to_checksum << "|#{k}|#{event[k]}"
     end
-    @to_checksum << "|"
-    @logger.debug("Final string built", :to_checksum => @to_checksum)
+    to_checksum << "|"
+    @logger.debug("Final string built", :to_checksum => to_checksum)
 
 
     # in JRuby 1.7.11 outputs as ASCII-8BIT
-    digested_string = OpenSSL::Digest.hexdigest(@algorithm, @to_checksum).force_encoding(Encoding::UTF_8)
+    digested_string = OpenSSL::Digest.hexdigest(@algorithm, to_checksum).force_encoding(Encoding::UTF_8)
 
     @logger.debug("Digested string", :digested_string => digested_string)
     event['logstash_checksum'] = digested_string
