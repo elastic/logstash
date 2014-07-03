@@ -60,7 +60,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
     @eventlog = EventLogSimpleReader.new(@logfile)
 
     @sincedb = {}
-    @sincedb_last_write = 0
+    @sincedb_last_write = Time.now.to_i
     @sincedb_write_pending = false
     @sincedb_writing = false
     @eventlog_item = nil
