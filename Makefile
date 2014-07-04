@@ -366,9 +366,10 @@ prepare-tarball:
 
 .PHONY: tarball
 tarball: | build/logstash-$(VERSION).tar.gz
-build/logstash-$(VERSION).tar.gz: | prepare-tarball
-	$(QUIET)tar -C $$(dirname $(WORKDIR)) -c $$(basename $(WORKDIR)) \
-		| gzip -9c > $@
+build/logstash-$(VERSION).tar: | prepare-tarball
+	$(QUIET)tar -C $$(dirname $(WORKDIR)) -c $$(basename $(WORKDIR)) -f $@
+build/logstash-$(VERSION).tar.gz: | build/logstash-$(VERSION).tar
+	$(QUIET)gzip -9 build/logstash-$(VERSION).tar
 	@echo "=> tarball ready: $@"
 
 .PHONY: zip
