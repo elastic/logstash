@@ -2,6 +2,7 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 require "thread"
+require "logstash/util/socket_peer"
 
 # Write events over a TCP socket.
 #
@@ -73,12 +74,22 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
       workers_not_supported
 
       @logger.info("Starting tcp output listener", :address => "#{@host}:#{@port}")
-      @server_socket = TCPServer.new(@host, @port)
+      begin
+        @server_socket = TCPServer.new(@host, @port)
+      rescue Errno::EADDRINUSE
+        @logger.error("Could not start TCP server: Address in use",
+                      :host => @host, :port => @port)
+        raise
+      end
       @client_threads = []
 
       @accept_thread = Thread.new(@server_socket) do |server_socket|
         loop do
           Thread.start(server_socket.accept) do |client_socket|
+            # monkeypatch a 'peer' method onto the socket.
+            client_socket.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
+            @logger.debug("Accepted connection", :client => client_socket.peer,
+                          :server => "#{@host}:#{@port}")
             client = Client.new(client_socket, @logger)
             Thread.current[:client] = client
             @client_threads << Thread.current
@@ -121,7 +132,10 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
   private
   def connect
     Stud::try do
-      return TCPSocket.new(@host, @port)
+      client_socket = TCPSocket.new(@host, @port)
+      client_socket.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
+      @logger.debug("Opened connection", :client => "#{client_socket.peer}")
+      return client_socket
     end
   end # def connect
 
