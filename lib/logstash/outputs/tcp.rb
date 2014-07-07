@@ -78,12 +78,12 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
 
       @accept_thread = Thread.new(@server_socket) do |server_socket|
         loop do
-          client_thread = Thread.start(server_socket.accept) do |client_socket|
+          Thread.start(server_socket.accept) do |client_socket|
             client = Client.new(client_socket, @logger)
             Thread.current[:client] = client
+            @client_threads << Thread.current
             client.run
           end
-          @client_threads << client_thread
         end
       end
 
