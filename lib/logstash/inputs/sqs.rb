@@ -76,7 +76,13 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
 
   # Name of the event field in which to store the  SQS message Sent Timestamp
   config :sent_timestamp_field, :validate => :string
+  
+  # The number of events expected for a receive.
+  config :batch_events, :validate => :number, :default => 10
 
+  # Delay for thread if less than 10 messages are read in the batch from sqs
+  config :partial_batch_delay, :validate => :string, :default => 2
+  
   public
   def aws_service_endpoint(region)
     return {
@@ -105,8 +111,10 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   def run(output_queue)
     @logger.debug("Polling SQS queue", :queue => @queue)
 
+    batch_limit = 10
+    
     receive_opts = {
-        :limit => 10,
+        :limit => @batch_events,
         :visibility_timeout => 30,
         :attributes => [:sent_at]
     }
@@ -140,6 +148,10 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
           end # begin
         end # rm_each
         if !messages_to_delete.empty?
+            if messages_to_delete.size < @batch_events and @partial_batch_delay > 0
+              sleep @partial_batch_delay
+              @logger.info("sleeping #{@partial_batch_delay} seconds, only #{messages_to_delete.size} messages read, out of max #{@batch_events}")
+            end
           @sqs_queue.batch_delete(messages_to_delete)
         end
       end # run_with_backoff
