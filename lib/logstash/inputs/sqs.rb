@@ -111,8 +111,6 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
   def run(output_queue)
     @logger.debug("Polling SQS queue", :queue => @queue)
 
-    batch_limit = 10
-    
     receive_opts = {
         :limit => @batch_events,
         :visibility_timeout => 30,
