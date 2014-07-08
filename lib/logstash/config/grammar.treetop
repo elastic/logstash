@@ -234,7 +234,7 @@ grammar LogStashConfig
   end
 
   rule selector_element
-    "[" [^\], ]+ "]"
+    "[" [^\],]+ "]"
     <LogStash::Config::AST::SelectorElement>
   end
 
