@@ -85,6 +85,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
       @logger.info("Starting tcp input listener", :address => "#{@host}:#{@port}")
       begin
         @server_socket = TCPServer.new(@host, @port)
+        @server_socket.listen(20) # apply backpressure to clients by hinting to the OS that it shouldn't keep too large of a connection backlog
       rescue Errno::EADDRINUSE
         @logger.error("Could not start TCP server: Address in use",
                       :host => @host, :port => @port)
@@ -153,23 +154,18 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
   def run_server(output_queue)
     @thread = Thread.current
-    @client_threads = []
     loop do
-      # Start a new thread for each connection.
       begin
-        @client_threads << Thread.start(@server_socket.accept) do |s|
-          # TODO(sissel): put this block in its own method.
-
-          # monkeypatch a 'peer' method onto the socket.
-          s.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
-          @logger.debug("Accepted connection", :client => s.peer,
-                        :server => "#{@host}:#{@port}")
-          begin
-            handle_socket(s, s.peer, output_queue, @codec.clone)
-          rescue Interrupted
-            s.close rescue nil
-          end
-        end # Thread.start
+        s = @server_socket.accept
+        # monkeypatch a 'peer' method onto the socket.
+        s.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
+        @logger.debug("Accepted connection", :client => s.peer,
+                      :server => "#{@host}:#{@port}")
+        begin
+          handle_socket(s, s.peer, output_queue, @codec.clone)
+        rescue Interrupted
+          s.close rescue nil
+        end
       rescue OpenSSL::SSL::SSLError => ssle
         # NOTE(mrichar1): This doesn't return a useful error message for some reason
         @logger.error("SSL Error", :exception => ssle,
@@ -178,9 +174,6 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         if @interrupted
           # Intended shutdown, get out of the loop
           @server_socket.close
-          @client_threads.each do |thread|
-            thread.raise(LogStash::ShutdownSignal)
-          end
           break
         else
           # Else it was a genuine IOError caused by something else, so propagate it up..
@@ -194,8 +187,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
     @server_socket.close rescue nil
   end # def run_server
 
-  def run_client(output_queue) 
-    @thread = Thread.current
+  def run_client(output_queue)
     while true
       client_socket = TCPSocket.new(@host, @port)
       if @ssl_enable
