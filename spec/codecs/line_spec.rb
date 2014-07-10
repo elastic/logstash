@@ -48,4 +48,19 @@ describe LogStash::Codecs::Line do
       end
     end
   end
+
+  context "#flush" do
+    it "should convert charsets" do
+      garbage = [0xD0].pack("C")
+      subject.decode(garbage) do |e|
+        fail "Should not get here."
+      end
+      count = 0
+      subject.flush do |event|
+        count += 1
+        insist { event["message"].encoding } == Encoding::UTF_8
+      end
+      insist { count } == 1
+    end
+  end
 end
