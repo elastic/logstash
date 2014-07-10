@@ -66,7 +66,7 @@ require "set"
 #     }
 #     filter {
 #       grok {
-#         match => [ "message", "%{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}" ]
+#         match => { "message" => "%{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}" }
 #       }
 #     }
 #
@@ -120,7 +120,7 @@ require "set"
 #     filter {
 #       grok {
 #         patterns_dir => "./patterns"
-#         match => [ "message", "%{SYSLOGBASE} %{POSTFIX_QUEUEID:queue_id}: %{GREEDYDATA:syslog_message}" ]
+#         match => { "message" => "%{SYSLOGBASE} %{POSTFIX_QUEUEID:queue_id}: %{GREEDYDATA:syslog_message}" }
 #       }
 #     }
 #
@@ -150,9 +150,13 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # For example:
   #
   #     filter {
-  #       grok {
-  #         match => [ "message", "Duration: %{NUMBER:duration}" ]
-  #       }
+  #       grok { match => { "message" => "Duration: %{NUMBER:duration}" } }
+  #     }
+  #
+  # Alternatively, using the old array syntax:
+  #
+  #     filter {
+  #       grok { match => [ "message", "Duration: %{NUMBER:duration}" ] }
   #     }
   #
   config :match, :validate => :hash, :default => {}
@@ -203,10 +207,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   #
   #     filter {
   #       grok {
-  #         match => [
-  #           "message",
-  #           "%{SYSLOGBASE} %{DATA:message}"
-  #         ]
+  #         match => { "message" => "%{SYSLOGBASE} %{DATA:message}" }
   #         overwrite => [ "message" ]
   #       }
   #     }
