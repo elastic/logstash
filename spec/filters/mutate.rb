@@ -136,7 +136,7 @@ describe LogStash::Filters::Mutate do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message", "%{WORD:foo}" ]
+          match => { "message" => "%{WORD:foo}" }
         }
         mutate {
           lowercase => "foo"
