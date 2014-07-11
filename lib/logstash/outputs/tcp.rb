@@ -183,6 +183,7 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
                         :backtrace => ssle.backtrace)
           # NOTE(mrichar1): Hack to prevent hammering peer
           sleep(5)
+          raise
         end
       end
       client_socket.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
