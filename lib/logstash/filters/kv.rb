@@ -157,6 +157,27 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     }
   config :default_keys, :validate => :hash, :default => {}
 
+  # A boolean specifying whether to include brackets as value 'wrappers'
+  # (the default is true)
+  #
+  #     filter {
+  #       kv {
+  #         include_brackets => true
+  #       }
+  #     }
+  #
+  # For example, the result of this line:
+  # 'bracketsone=(hello world) bracketstwo=[hello world]'
+  #
+  # will be:
+  # * bracketsone: hello world
+  # * bracketstwo: hello world
+  #
+  # instead of:
+  # * bracketsone: (hello
+  # * bracketstwo: [hello
+  config :include_brackets, :validate => :boolean, :default => true
+
   # A boolean specifying whether to drill down into values 
   # and recursively get more key-value pairs from it.
   #
@@ -170,7 +191,11 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
     @trimkey_re = Regexp.new("[#{@trimkey}]") if !@trimkey.nil?
-    @scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)\\s*["+@value_split+"]\\s*(?:\"([^\"]+)\"|'([^']+)'|\\(([^\\)]+)\\)|((?:\\\\ |[^"+@field_split+"])+))")
+
+    valueRxString = "(?:\"([^\"]+)\"|'([^']+)'"
+    valueRxString += "|\\(([^\\)]+)\\)|\\[([^\\]]+)\\]" if @include_brackets
+    valueRxString += "|((?:\\\\ |[^"+@field_split+"])+))"
+    @scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)\\s*["+@value_split+"]\\s*"+valueRxString)
   end # def register
 
   def filter(event)
@@ -216,8 +241,8 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     if !event =~ /[@field_split]/
       return kv_keys
     end
-    text.scan(@scan_re) do |key, v1, v2, v3, v4|
-      value = v1 || v2 || v3 || v4
+    text.scan(@scan_re) do |key, v1, v2, v3, v4, v5|
+      value = v1 || v2 || v3 || v4 || v5
       key = @trimkey.nil? ? key : key.gsub(@trimkey_re, "")
 
       # Bail out as per the values of @include_keys and @exclude_keys

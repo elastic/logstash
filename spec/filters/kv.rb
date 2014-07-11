@@ -13,13 +13,14 @@ describe LogStash::Filters::KV do
       }
     CONFIG
 
-    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world' brackets=(hello world)" do
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world' bracketsone=(hello world) bracketstwo=[hello world]" do
       insist { subject["hello"] } == "world"
       insist { subject["foo"] } == "bar"
       insist { subject["baz"] } == "fizz"
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
-      insist { subject["brackets"] } == "hello world"
+      insist { subject["bracketsone"] } == "hello world"
+      insist { subject["bracketstwo"] } == "hello world"
     end
   end
 
@@ -84,6 +85,19 @@ describe LogStash::Filters::KV do
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
       insist { subject["foo12"] } == "bar12"
+    end
+  end
+
+  describe "test include_brackets is false" do
+    config <<-CONFIG
+      filter {
+        kv { include_brackets => "false" }
+      }
+    CONFIG
+
+    sample "bracketsone=(hello world) bracketstwo=[hello world]" do
+      insist { subject["bracketsone"] } == "(hello"
+      insist { subject["bracketstwo"] } == "[hello"
     end
   end
 
