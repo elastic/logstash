@@ -178,15 +178,32 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # * bracketstwo: [hello
   config :include_brackets, :validate => :boolean, :default => true
 
-  # A boolean specifying whether to drill down into values 
+  # An array, if not empty:
+  # The first value specifying whether to drill down into values 
   # and recursively get more key-value pairs from it.
+  # The extra key-value pairs will be stored as subkeys of the root key.
+  #
+  # The second value of the array if exists specifying the name of
+  # the extra key which will hold the whole raw value.
+  # If the second value not specifying the whole raw value won't preserved
+  #
+  # Default is not to dig values.
   #
   #     filter {
   #       kv {
-  #         dig_values => true
+  #         dig_values => [ 'true', '_raw' ]
   #       }
   #     }
-  config :dig_values, :validate => :boolean, :default => false
+  #
+  # For example, the result of:
+  # 'rootkey="some message and subkey=1" another=nothing'
+  # 
+  # will be:
+  # * rootkey:
+  # *** _raw: some message and subkey=1
+  # *** subkey:1
+  # * another: nothing
+  config :dig_values, :validate => :array, :default => []
 
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
@@ -196,6 +213,15 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     valueRxString += "|\\(([^\\)]+)\\)|\\[([^\\]]+)\\]" if @include_brackets
     valueRxString += "|((?:\\\\ |[^"+@field_split+"])+))"
     @scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)\\s*["+@value_split+"]\\s*"+valueRxString)
+
+    @isToDigValues = false
+    @digValuesRootKey = nil
+    if @dig_values.length > 0 and @dig_values[0] =~ /^true$/i
+      @isToDigValues = true
+      if@dig_values.length > 1
+        @digValuesRootKey = @dig_values[1]
+      end
+    end
   end # def register
 
   def filter(event)
@@ -254,7 +280,16 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       value = @trim.nil? ? value : value.gsub(@trim_re, "")
 
       # recursively get more kv pairs from the value
-      kv_keys = parse(value, event, kv_keys) if @dig_values and value =~ /[@field_split]/
+      if @isToDigValues and value =~ /[@field_split]/
+        innerKv = Hash.new
+        innerKv = parse(value, event, innerKv) 
+        if innerKv.length > 0
+          if not @digValuesRootKey.nil?
+            innerKv[@digValuesRootKey] = value 
+          end
+          value = innerKv
+        end
+      end
 
       if kv_keys.has_key?(key)
         if kv_keys[key].is_a? Array

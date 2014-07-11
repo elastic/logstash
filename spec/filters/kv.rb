@@ -104,16 +104,16 @@ describe LogStash::Filters::KV do
   describe "test dig_values" do
     config <<-CONFIG
       filter {
-        kv { dig_values => true }
+        kv { dig_values => ['true', '_raw'] }
       }
     CONFIG
   
     sample 'IKE="Quick Mode completion" IKE\ IDs = (subnet= x.x.x.x mask= 255.255.255.254 and host=y.y.y.y)' do
       insist { subject["IKE"] } == 'Quick Mode completion'
-      insist { subject['IKE\ IDs'] } == 'subnet= x.x.x.x mask= 255.255.255.254 and host=y.y.y.y'
-      insist { subject['subnet'] } == 'x.x.x.x'
-      insist { subject['mask'] } == '255.255.255.254'
-      insist { subject['host'] } == 'y.y.y.y'
+      insist { subject['IKE\ IDs']['_raw'] } == 'subnet= x.x.x.x mask= 255.255.255.254 and host=y.y.y.y'
+      insist { subject['IKE\ IDs']['subnet'] } == 'x.x.x.x'
+      insist { subject['IKE\ IDs']['mask'] } == '255.255.255.254'
+      insist { subject['IKE\ IDs']['host'] } == 'y.y.y.y'
     end
   end
 
