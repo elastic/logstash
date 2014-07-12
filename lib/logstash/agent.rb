@@ -260,29 +260,30 @@ class LogStash::Agent < Clamp::Command
   # Validate and add any paths to the list of locations
   # logstash will look to find plugins.
   def configure_plugin_path(paths)
-    # Append any plugin paths to the ruby search path
-    paths.each do |path|
-      # Verify the path exists
-      if !Dir.exists?(path)
-        warn(I18n.t("logstash.agent.configuration.plugin_path_missing",
-                    :path => path))
-
-      end
-
-      # TODO(sissel): Verify the path looks like the correct form.
-      # aka, there must be file in path/logstash/{inputs,codecs,filters,outputs}/*.rb
-      plugin_glob = File.join(path, "logstash", "{inputs,codecs,filters,outputs}", "*.rb")
-      if Dir.glob(plugin_glob).empty?
-        @logger.warn(I18n.t("logstash.agent.configuration.no_plugins_found",
-                    :path => path, :plugin_glob => plugin_glob))
-      end
-
-      # We push plugin paths to the front of the LOAD_PATH so that folks
-      # can override any core logstash plugins if they need to.
+    # prepend any discovered plugins paths to the $LOAD_PATH
+    load_paths = paths.map{|path| LogStash::Environment.discover_load_paths(path)}.flatten
+    @logger.warn(I18n.t("logstash.agent.configuration.no_plugins_found", :path => paths, :plugin_glob => "")) if load_paths.empty?
+    load_paths.each do |path|
       @logger.debug("Adding plugin path", :path => path)
       $LOAD_PATH.unshift(path)
     end
+
+    # prepend any discovered plugins gems paths to the ENV["GEM_PATH"]
+    gem_paths = paths.map{|path| LogStash::Environment.discover_gem_paths(path)}.flatten
+    gem_paths.each do |path|
+      @logger.debug("Adding gem path", :path => path)
+    end
+
+    # prepend current GEM_PATH to discovered gem_paths
+    gem_paths.unshift(ENV["GEM_PATH"])
+
+    # set GEM_PATH to the reverse so that plugins gems are found before own to follow same logic as load path
+    ENV["GEM_PATH"] = gem_paths.reverse.join(File::PATH_SEPARATOR)
+
+    # make sure rubygems recomputes its paths with the new GEM_PATH
+    Gem.clear_paths
   end # def configure_plugin_path
+
 
   def load_config(path)
     path = File.join(path, "*") if File.directory?(path)

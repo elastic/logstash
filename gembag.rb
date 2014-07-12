@@ -6,7 +6,7 @@ rubyabi = RbConfig::CONFIG["ruby_version"]
 target = "#{Dir.pwd}/vendor/bundle"
 gemdir = "#{target}/#{RUBY_ENGINE}/#{rubyabi}/"
 ENV["GEM_HOME"] = gemdir
-ENV["GEM_PATH"] = ""
+ENV["GEM_PATH"] = gemdir
 
 require "rubygems/specification"
 require "rubygems/commands/install_command"
