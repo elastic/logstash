@@ -43,7 +43,7 @@ require "bundler/cli"
 module Bundler
   module SharedHelpers
     def default_lockfile
-      ruby = "#{LogStash::Environment.ruby_engine}-#{LogStash::Environment.ruby_abi_version}"
+      ruby = "#{LogStash::Environment.ruby_engine}-#{LogStash::Environment.gem_ruby_version}"
       return Pathname.new("#{default_gemfile}.#{ruby}.lock")
     end
   end

@@ -29,7 +29,7 @@ module LogStash
     end
 
     def set_gem_paths!
-      gemdir = "#{gem_target}/#{ruby_engine}/#{ruby_abi_version}/"
+      gemdir = "#{gem_target}/#{ruby_engine}/#{gem_ruby_version}/"
       ENV["GEM_HOME"] = gemdir
       ENV["GEM_PATH"] = gemdir
     end
@@ -37,6 +37,11 @@ module LogStash
     # @return [String] major.minor ruby version, ex 1.9
     def ruby_abi_version
       RUBY_VERSION[/(\d+\.\d+)(\.\d+)*/, 1]
+    end
+
+    # @return [String] the ruby version string bundler uses to craft its gem path
+    def gem_ruby_version
+      RbConfig::CONFIG["ruby_version"]
     end
 
     # @return [String] jruby, ruby, rbx, ...
