@@ -21,6 +21,12 @@ GEOIP_ASN=vendor/geoip/GeoIPASNum.dat
 GEOIP_ASN_URL=http://logstash.objects.dreamhost.com/maxmind/GeoIPASNum-2014-02-12.dat.gz
 KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-3.0.1.tar.gz
 PLUGIN_FILES=$(shell find lib -type f| egrep '^lib/logstash/(inputs|outputs|filters|codecs)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
+SCALA_VERSION?=2.9.2
+
+KAFKA_VERSION?=0.8.1.1
+KAFKA_URL=https://archive.apache.org/dist/kafka
+KAFKA=vendor/jar/kafka_$(SCALA_VERSION)-$(KAFKA_VERSION)
+
 QUIET=@
 ifeq (@,$(QUIET))
 	QUIET_OUTPUT=> /dev/null 2>&1
@@ -149,6 +155,11 @@ vendor/jar/graphtastic-rmiclient.jar: | wget-or-curl vendor/jar
 	@echo "=> Fetching graphtastic rmi client jar"
 	$(QUIET)$(DOWNLOAD_COMMAND) $@ http://cloud.github.com/downloads/NickPadilla/GraphTastic/graphtastic-rmiclient.jar
 
+vendor/jar/kafka_$(SCALA_VERSION)-$(KAFKA_VERSION).tgz: | wget-or-curl vendor/jar
+	@echo "=> Fetching kafka $(SCALA_VERSION)-$(KAFKA_VERSION)"
+	$(QUIET)$(DOWNLOAD_COMMAND) $@ $(KAFKA_URL)/$(KAFKA_VERSION)/kafka_$(SCALA_VERSION)-$(KAFKA_VERSION).tgz
+
+
 .PHONY: vendor-elasticsearch
 vendor-elasticsearch: $(ELASTICSEARCH)
 $(ELASTICSEARCH): $(ELASTICSEARCH).tar.gz | vendor/jar
@@ -182,6 +193,15 @@ $(TYPESDB): | vendor/collectd
 	$(QUIET)$(DOWNLOAD_COMMAND) $@.tar.gz $(TYPESDB_URL)
 	$(QUIET)tar zxf $@.tar.gz -O "collectd-$(COLLECTD_VERSION)/src/types.db" > $@
 	$(QUIET)rm $@.tar.gz
+
+.PHONY: vendor-kafka
+vendor-kafka: $(KAFKA)
+$(KAFKA): $(KAFKA).tgz | vendor/jar
+	@echo "=> Pulling the jars out of $<"
+	$(QUIET)tar -C $(shell dirname $@) -xf $< $(TAR_OPTS) \
+		'kafka_$(SCALA_VERSION)-$(KAFKA_VERSION)/libs/*.jar'
+	$(QUIET)tar -C $(shell dirname $@) -xf $< $(TAR_OPTS) \
+		'kafka_$(SCALA_VERSION)-$(KAFKA_VERSION)/*.jar'
 
 # Always run vendor/bundle
 .PHONY: fix-bundler
@@ -219,7 +239,7 @@ vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
 
 .PHONY: test
 test: QUIET_OUTPUT=
-test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd vendor-gems
+test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd vendor-kafka vendor-gems
 	$(SPEC_ENV) bin/logstash rspec $(SPEC_OPTS) --order rand --fail-fast $(TESTS)
 
 .PHONY: reporting-test
@@ -355,12 +375,12 @@ show:
 
 .PHONY: prepare-tarball
 prepare-tarball tarball zip: WORKDIR=build/tarball/logstash-$(VERSION)
-prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) vendor-geoip $(TYPESDB) vendor-gems
+prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) vendor-geoip $(TYPESDB) $(KAFKA) vendor-gems
 prepare-tarball: vendor/ua-parser/regexes.yaml
 prepare-tarball:
 	@echo "=> Preparing tarball"
 	$(QUIET)$(MAKE) $(WORKDIR)
-	$(QUIET)rsync -a --relative bin lib spec locales patterns vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md --exclude 'vendor/bundle/jruby/1.9/cache' --exclude 'vendor/bundle/jruby/1.9/gems/*/doc' --exclude 'vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz'  $(WORKDIR)
+	$(QUIET)rsync -a --relative bin lib spec locales patterns vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md --exclude 'vendor/bundle/jruby/1.9/cache' --exclude 'vendor/bundle/jruby/1.9/gems/*/doc' --exclude 'vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz' --exclude 'vendor/jar/kafka_$(SCALA_VERSION)-$(KAFKA_VERSION).tgz' $(WORKDIR)
 	$(QUIET)sed -i -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
 	$(QUIET)sed -i -e 's/%JRUBY_VERSION%/$(JRUBY_VERSION)/' $(WORKDIR)/bin/logstash.bat
 
