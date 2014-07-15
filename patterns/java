@@ -1,3 +1,4 @@
-JAVACLASS (?:[a-zA-Z0-9-]+\.)+[A-Za-z0-9$_]+
+JAVACLASS (?:[a-zA-Z0-9_-]+\.)+[A-Za-z0-9$_]+
+JAVAMETHOD (?:[\w<>]+)
 JAVAFILE (?:[A-Za-z0-9_. -]+)
-JAVASTACKTRACEPART at %{JAVACLASS:class}\.%{WORD:method}\(%{JAVAFILE:file}:%{NUMBER:line}\)
+JAVASTACKTRACEPART at %{JAVACLASS:class}\.%{JAVAMETHOD:method}\(%{JAVAFILE:file}:%{NUMBER:line}\)
