@@ -52,6 +52,8 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
     begin
       # snmp trap server
       snmptrap_listener(output_queue)
+    rescue LogStash::ShutdownSignal
+      @snmptrap.exit
     rescue => e
       @logger.warn("SNMP Trap listener died", :exception => e, :backtrace => e.backtrace)
       sleep(5)
