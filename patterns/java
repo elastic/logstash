@@ -1,3 +1,3 @@
 JAVACLASS (?:[a-zA-Z0-9-]+\.)+[A-Za-z0-9$_]+
 JAVAFILE (?:[A-Za-z0-9_. -]+)
-JAVASTACKTRACEPART at %{JAVACLASS:class}\.%{WORD:method}\(%{JAVAFILE:file}:%{NUMBER:line}\)
+JAVASTACKTRACEPART at %{JAVACLASS:class}\.(?<method>[a-zA-Z_$][a-zA-Z0-9_$]*)\(((Native Method)|(Unknown Source)|(%{JAVAFILE:file}:%{NUMBER:line}))\)
