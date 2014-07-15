@@ -38,8 +38,8 @@ docs() {
 }
 
 tests() {
-  USE_JRUBY=1 make -C $logstash test QUIET=
-  USE_JRUBY=1 make -C $logstash tarball test QUIET=
+  make -C $logstash test QUIET=
+  make -C $logstash tarball test QUIET=
 }
 
 packages() {
