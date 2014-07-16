@@ -29,12 +29,11 @@ You can also find documentation on the <http://logstash.net> site.
 
 ## Developing
 
-Here's how to get started with rvm:
+Here's how to get started:
 
-    # Install JRuby with rvm
-    rvm install jruby-1.7.11
-    rvm use jruby-1.7.11
-
+    # Install jruby
+    make vendor-jruby
+    
 Now install dependencies:
 
     # Install logstash ruby dependencies
@@ -52,6 +51,8 @@ Other commands:
     # If running bin/logstash agent yields complaints about log4j/other things
     # This will download the elasticsearch jars so Logstash can use them.
     make vendor-elasticsearch
+
+Notes about using other rubies. If you don't use rvm, you can probably skip this paragraph. Logstash works with other rubies, and if you wish to use your own ruby instead of the JRuby the Makefile gives you, you must set `USE_RUBY=1` in your environment.
 
 ## Testing
 
