@@ -150,6 +150,8 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
         :default => "private"
 
+ config :temp_directory, :validate => :string, :default => "/opt/logstash/S3_temp/"
+
  # Method to set up the aws configuration and establish connection
  def aws_s3_config
 
@@ -259,7 +261,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  public
  def register
    require "aws-sdk"
-   @temp_directory = "/opt/logstash/S3_temp/"
    @lock = Mutex.new
 
    if (@tags.size != 0)
