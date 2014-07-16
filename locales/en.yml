@@ -121,7 +121,7 @@ en:
         # them in an 80-character terminal
         config: |+
           Load the logstash config from a specific file
-          or directory.  If a direcory is given, all
+          or directory.  If a directory is given, all
           files in that directory will be concatonated
           in lexicographical order and then parsed as a
           single config file. You can also specify
