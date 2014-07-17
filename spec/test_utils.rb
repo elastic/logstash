@@ -96,11 +96,15 @@ module LogStash
               extra << new_event
             end
 
-            results << e if !e.cancelled?
+            results << e unless e.cancelled?
             results += extra.reject(&:cancelled?)
           end
 
-          results += pipeline.filters_flush!(:final => true)
+          pipeline.flush_filters(:final => true) do |e|
+            results << e unless e.cancelled?
+          end
+
+          results
         end
 
         subject { results.length > 1 ? results: results.first }

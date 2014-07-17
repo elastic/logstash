@@ -75,7 +75,7 @@ class LogStash::Pipeline
 
     # Set up the periodic flusher thread.
     @flusher_lock = Mutex.new
-    @flusher_thread = Thread.new { Stud.interval(5) { @flusher_lock.synchronize { filters_flush! } } }
+    @flusher_thread = Thread.new { Stud.interval(5) { @flusher_lock.synchronize { flush_filters_to_output! } } }
 
     @ready = true
 
@@ -86,7 +86,7 @@ class LogStash::Pipeline
       @flusher_lock.synchronize { @flusher_thread.kill }
       shutdown_filters
       wait_filters
-      filters_flush!(:final => true)
+      flush_filters_to_output!(:final => true)
     end
 
     shutdown_outputs
@@ -269,20 +269,27 @@ class LogStash::Pipeline
     @output_func.call(event)
   end
 
-  # perform filters flush
+  # perform filters flush and yeild flushed event to the passed block
   # @param options [Hash]
   # @option options [Boolean] :final => true to signal a final shutdown flush
-  def filters_flush!(options = {})
+  def flush_filters(options = {}, &block)
     flushers = options[:final] ? @shutdown_flushers : @periodic_flushers
 
-    flushed = flushers.map do |flusher|
-      flusher.call(options) do |event|
+    flushers.each do |flusher|
+      flusher.call(options, &block)
+    end
+  end
+
+  # perform filters flush into the output queue
+  # @param options [Hash]
+  # @option options [Boolean] :final => true to signal a final shutdown flush
+  def flush_filters_to_output!(options = {})
+    flush_filters(options) do |event|
+      unless event.cancelled?
         @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
-        @filter_to_output.push(event) unless event.cancelled?
+        @filter_to_output.push(event)
       end
     end
-
-    flushed.flatten
-  end # filters_flush!
+  end # flush_filters_to_output!
 
 end # class Pipeline

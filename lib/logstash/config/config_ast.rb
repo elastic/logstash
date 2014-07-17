@@ -73,7 +73,7 @@ module LogStash; module Config; module AST
       definitions = []
 
       ["filter", "output"].each do |type|
-        #definitions << "def #{type}(event)"
+        # defines @filter_func and @output_func
         definitions << "@#{type}_func = lambda do |event, &block|"
         if type == "filter"
           definitions << "  extra_events = []"
@@ -122,14 +122,19 @@ module LogStash; module Config; module AST
               @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name})
 
               flushed_events = #{name}.flush(options)
-              return [] if flushed_events.nil? || flushed_events.empty?
 
-              flushed_events.map do |event|
+              return if flushed_events.nil? || flushed_events.empty?
+
+              flushed_events.each do |event|
                 @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name}, :event => event)
 
                 extra_events = []
                 #{plugin.compile_starting_here.gsub(/^/, "  ")}
-              end.flatten
+
+                block.call(event)
+                extra_events.each(&block)
+              end
+
             end
 
             if #{name}.respond_to?(:flush)
@@ -208,19 +213,21 @@ module LogStash; module Config; module AST
 
           return <<-CODE
             # #{text_value.split("\n").join("")}
-            newevents = []
-            extra_events.each do |event|
+            unless extra_events.empty?
+              newevents = []
+              extra_events.each do |event|
+                #{variable_name}.filter(event) do |newevent|
+                  newevents << newevent
+                end
+              end
+              extra_events += newevents
+            end
+
+            unless event.cancelled?
               #{variable_name}.filter(event) do |newevent|
-                newevents << newevent
+                extra_events << newevent
               end
             end
-            extra_events += newevents
-
-            #{variable_name}.filter(event) do |newevent|
-              extra_events << newevent
-            end
-
-            [event] + (event.cancelled? ? extra_events : [])
           CODE
         when "output"
           return "#{variable_name}.handle(event)\n"
@@ -258,9 +265,10 @@ module LogStash; module Config; module AST
 
       found = false
       recurse(ast) do |element, depth|
-        next false if ast.is_a?(LogStash::Config::AST::PluginSection) && ast.plugin_type != "filter"
+        next false if element.is_a?(LogStash::Config::AST::PluginSection) && element.plugin_type.text_value != "filter"
         if element == self
           found = true
+          next false
         end
         if found && expressions.include?(element.class)
           code << element.compile
