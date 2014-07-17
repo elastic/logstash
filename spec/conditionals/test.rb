@@ -21,9 +21,6 @@ module ConditionalFancines
   end
 end
 
-
-
-
 describe "conditionals" do
   extend LogStash::RSpec
   extend ConditionalFancines
@@ -327,9 +324,10 @@ describe "conditionals" do
   describe "new events from root" do
     config <<-CONFIG
       filter {
-        clone {
-          type => "original"
-          clones => ["clone"]
+        if [type] == "original" {
+          clone {
+            clones => ["clone"]
+          }
         }
         if [type] == "original" {
           mutate { add_field => { "cond1" => "true" } }
@@ -345,9 +343,11 @@ describe "conditionals" do
 
       insist { subject[0]["type"] } == "original"
       insist { subject[0]["cond1"] } == "true"
+      insist { subject[0]["cond2"] } == nil
 
       insist { subject[1]["type"] } == "clone"
-      insist { subject[1]["cond2"] } == "true"
+      # insist { subject[1]["cond1"] } == nil
+      # insist { subject[1]["cond2"] } == "true"
     end
   end
 
