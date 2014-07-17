@@ -88,7 +88,6 @@ module LogStash
 
         let(:results) do
           results = []
-          count = 0
           pipeline.instance_eval { @filters.each(&:register) }
 
           event.each do |e|
@@ -96,15 +95,12 @@ module LogStash
             pipeline.filter(e) do |new_event|
               extra << new_event
             end
+
             results << e if !e.cancelled?
             results += extra.reject(&:cancelled?)
           end
 
-          pipeline.instance_eval {@filters.each {|f| f.teardown.tap { |v| results += v if v } if f.respond_to?(:teardown)}}
-
-          # TODO(sissel): pipeline flush needs to be implemented.
-          # results += pipeline.flush
-          next results
+          results += pipeline.filters_flush!(:final => true)
         end
 
         subject { results.length > 1 ? results: results.first }

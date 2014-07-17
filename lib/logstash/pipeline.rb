@@ -74,20 +74,20 @@ class LogStash::Pipeline
     start_outputs
 
     # Set up the periodic flusher thread.
-    @flusher_thread = Thread.new { Stud.interval(5) { break if terminating?; filter_flusher } }
+    @flusher_lock = Mutex.new
+    @flusher_thread = Thread.new { Stud.interval(5) { @flusher_lock.synchronize { filters_flush! } } }
 
     @ready = true
 
     @logger.info("Pipeline started")
     wait_inputs
 
-    # In theory there's nothing to do to filters to tell them to shutdown?
-    @terminating = true
     if filters?
+      @flusher_lock.synchronize { @flusher_thread.kill }
       shutdown_filters
       wait_filters
+      filters_flush!(:final => true)
     end
-    filter_flusher
 
     shutdown_outputs
     wait_outputs
@@ -198,7 +198,6 @@ class LogStash::Pipeline
           break
         end
 
-
         # TODO(sissel): we can avoid the extra array creation here
         # if we don't guarantee ordering of origin vs created events.
         # - origin event is one that comes in naturally to the filter worker.
@@ -207,6 +206,7 @@ class LogStash::Pipeline
         filter(event) do |newevent|
           events << newevent
         end
+
         events.each do |event|
           next if event.cancelled?
           @filter_to_output.push(event)
@@ -255,10 +255,6 @@ class LogStash::Pipeline
     # the inputs to finish, because in the #run method we wait for that anyway.
   end # def shutdown
 
-  def terminating?
-    return @terminating
-  end
-
   def plugin(plugin_type, name, *args)
     args << {} if args.empty?
     klass = LogStash::Plugin.lookup(plugin_type, name)
@@ -273,37 +269,20 @@ class LogStash::Pipeline
     @output_func.call(event)
   end
 
-  def filter_flusher
-    @flushers.each do |flusher|
-      flusher.call do |event|
+  # perform filters flush
+  # @param options [Hash]
+  # @option options [Boolean] :final => true to signal a final shutdown flush
+  def filters_flush!(options = {})
+    flushers = options[:final] ? @shutdown_flushers : @periodic_flushers
+
+    flushed = flushers.map do |flusher|
+      flusher.call(options) do |event|
         @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
         @filter_to_output.push(event) unless event.cancelled?
       end
     end
-  end # filter_Flusher
 
-  def _filter_flusher
-    events = []
-    @filters.each do |filter|
+    flushed.flatten
+  end # filters_flush!
 
-      # Filter any events generated so far in this flush.
-      events.each do |event|
-        # TODO(sissel): watchdog on flush filtration?
-        unless event.cancelled?
-          filter.filter(event)
-        end
-      end
-
-      # TODO(sissel): watchdog on flushes?
-      if filter.respond_to?(:flush)
-        flushed = filter.flush
-        events += flushed if !flushed.nil? && flushed.any?
-      end
-    end
-
-    events.each do |event|
-      @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
-      @filter_to_output.push(event) unless event.cancelled?
-    end
-  end # def filter_flusher
 end # class Pipeline

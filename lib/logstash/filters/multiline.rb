@@ -102,6 +102,11 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   # flushed.
   config :max_age, :validate => :number, :default => 5
 
+  # Call the filter flush method at regular interval.
+  # Optional.
+  config :periodic_flush, :validate => :boolean, :default => true
+
+
   # Detect if we are running from a jarfile, pick the right path.
   @@patterns_path = Set.new
   @@patterns_path += [LogStash::Environment.pattern_path("*")]
@@ -215,33 +220,31 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     end
   end # def filter
 
-  # Flush any pending messages. This is generally used for unit testing only.
-  #
-  # Note: flush is disabled now; it is preferable to use the multiline codec.
+  # flush any pending messages
+  # called at regular interval without options and at pipeline shutdown with the :final => true option
+  # @param options [Hash]
+  # @option options [Boolean] :final => true to signal a final shutdown flush
+  # @return [Array<LogStash::Event>] list of flushed events
   public
-  def flush
-    events = []
-    flushed = @pending.collect do |key, value|
-      t = value["@timestamp"]
-      age = Time.now - (t.is_a?(Array) ? t.first : t)
-      if age >= @max_age
-        value.uncancel
-        events << collapse_event!(value)
-        next key
-      end
+  def flush(options = {})
+    # select all expired events from the @pending hash into a new expired hash
+    # if :final flush then select all events
+    expired = @pending.inject({}) do |r, (key, event)|
+      age = Time.now - Array(event["@timestamp"]).first.time
+      r[key] = event if (age >= @max_age) || options[:final]
+      r
     end
-    flushed.each do |key|
-      @pending.delete(key)
-    end
-    return events
+
+    # delete expired items from @pending hash
+    expired.each{|key, event| @pending.delete(key)}
+
+    # return list of uncancelled and collapsed expired events
+    expired.map{|key, event| event.uncancel; collapse_event!(event)}
   end # def flush
 
   public
   def teardown
-    return @pending.collect do |k,v|
-      v.uncancel
-      next collapse_event!(v)
-    end
+    # nothing to do
   end
 
   private

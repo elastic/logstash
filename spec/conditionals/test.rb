@@ -21,6 +21,9 @@ module ConditionalFancines
   end
 end
 
+
+
+
 describe "conditionals" do
   extend LogStash::RSpec
   extend ConditionalFancines
@@ -160,7 +163,7 @@ describe "conditionals" do
         if "foo" not in "baz" { mutate { add_tag => "baz" } }
         if "foo" not in "foo" { mutate { add_tag => "foo" } }
         if !("foo" not in "foo") { mutate { add_tag => "notfoo" } }
-        if "foo" not in [somelist] { mutate { add_tag => "notsomelist" } } 
+        if "foo" not in [somelist] { mutate { add_tag => "notsomelist" } }
         if "one" not in [somelist] { mutate { add_tag => "somelist" } }
         if "foo" not in [alsomissing] { mutate { add_tag => "no string in missing field" } }
       }
@@ -183,12 +186,12 @@ describe "conditionals" do
     conditional "[message] == 'sample'" do
       sample("sample") { insist { subject["tags"] }.include?("success") }
       sample("different") { insist { subject["tags"] }.include?("failure") }
-    end 
+    end
 
     conditional "[message] != 'sample'" do
       sample("sample") { insist { subject["tags"] }.include?("failure") }
       sample("different") { insist { subject["tags"] }.include?("success") }
-    end 
+    end
 
     conditional "[message] < 'sample'" do
       sample("apple") { insist { subject["tags"] }.include?("success") }
@@ -230,12 +233,12 @@ describe "conditionals" do
     conditional "!([message] == 'sample')" do
       sample("sample") { reject { subject["tags"] }.include?("success") }
       sample("different") { reject { subject["tags"] }.include?("failure") }
-    end 
+    end
 
     conditional "!([message] != 'sample')" do
       sample("sample") { reject { subject["tags"] }.include?("failure") }
       sample("different") { reject { subject["tags"] }.include?("success") }
-    end 
+    end
 
     conditional "!([message] < 'sample')" do
       sample("apple") { reject { subject["tags"] }.include?("success") }
@@ -320,4 +323,33 @@ describe "conditionals" do
       end
     end
   end
+
+  describe "new events from root" do
+    config <<-CONFIG
+      filter {
+        clone {
+          type => "original"
+          clones => ["clone"]
+        }
+        if [type] == "original" {
+          mutate { add_field => { "cond1" => "true" } }
+        } else {
+          mutate { add_field => { "cond2" => "true" } }
+        }
+      }
+    CONFIG
+
+    sample({"type" => "original"}) do
+      insist { subject }.is_a?(Array)
+      insist { subject.length } == 2
+
+      insist { subject[0]["type"] } == "original"
+      insist { subject[0]["cond1"] } == "true"
+
+      insist { subject[1]["type"] } == "clone"
+      insist { subject[1]["cond2"] } == "true"
+    end
+  end
+
+
 end

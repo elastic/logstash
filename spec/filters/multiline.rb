@@ -11,6 +11,7 @@ describe LogStash::Filters::Multiline do
     config <<-CONFIG
     filter {
       multiline {
+        periodic_flush => false
         pattern => "^\\s"
         what => previous
       }

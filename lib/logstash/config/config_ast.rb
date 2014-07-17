@@ -11,7 +11,7 @@ class Treetop::Runtime::SyntaxNode
   # and written by humans (and the order in which it is parsed).
   def recurse(e, depth=0, &block)
     r = block.call(e, depth)
-    e.elements.each { |e| recurse(e, depth+1, &block) } if r && e.elements
+    e.elements.each { |e| recurse(e, depth + 1, &block) } if r && e.elements
     nil
   end
 
@@ -48,16 +48,21 @@ class Treetop::Runtime::SyntaxNode
   end
 end
 
-module LogStash; module Config; module AST 
+module LogStash; module Config; module AST
   class Node < Treetop::Runtime::SyntaxNode; end
   class Config < Node
     def compile
       # TODO(sissel): Move this into config/config_ast.rb
       code = []
-      code << "@inputs = []"
-      code << "@filters = []"
-      code << "@outputs = []"
-      code << "@flushers = []"
+
+      code << <<-CODE
+        @inputs = []
+        @filters = []
+        @outputs = []
+        @periodic_flushers = []
+        @shutdown_flushers = []
+      CODE
+
       sections = recursive_select(LogStash::Config::AST::PluginSection)
       sections.each do |s|
         code << s.compile_initializer
@@ -66,7 +71,7 @@ module LogStash; module Config; module AST
       # start inputs
       #code << "class << self"
       definitions = []
-        
+
       ["filter", "output"].each do |type|
         #definitions << "def #{type}(event)"
         definitions << "@#{type}_func = lambda do |event, &block|"
@@ -102,28 +107,37 @@ module LogStash; module Config; module AST
       generate_variables
       code = []
       @variables.each do |plugin, name|
-        code << "#{name} = #{plugin.compile_initializer}"
-        code << "@#{plugin.plugin_type}s << #{name}"
+
+
+        code << <<-CODE
+          #{name} = #{plugin.compile_initializer}
+          @#{plugin.plugin_type}s << #{name}
+        CODE
 
         # The flush method for this filter.
         if plugin.plugin_type == "filter"
-          code << "#{name}_flush = lambda do |&block|"
-          code << "  @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name})"
-          code << "  flushed_events = #{name}.flush"
-          code << "  next if flushed_events.nil? || flushed_events.empty?"
-          code << "  flushed_events.each do |event|"
-          code << "    extra_events = []"
-          code << "    @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name}, :event => event)"
-          code << "    #{plugin.compile_starting_here.gsub(/^/, "  ")}"
-          #code << "    @filter_to_output << event"
-          #code << "    extra_events.each do |e|"
-          #code << "      @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name}, :event => e)"
-          #code << "      @filter_to_output << e"
-          #code << "    end"
-          code << "  end"
-          code << "end"
-          code << "@flushers << #{name}_flush if #{name}.respond_to?(:flush)"
-          #code << "# #{name}_flush = #{plugin.plugin_type}"
+
+          code << <<-CODE
+            #{name}_flush = lambda do |options, &block|
+              @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name})
+
+              flushed_events = #{name}.flush(options)
+              return [] if flushed_events.nil? || flushed_events.empty?
+
+              flushed_events.map do |event|
+                @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name}, :event => event)
+
+                extra_events = []
+                #{plugin.compile_starting_here.gsub(/^/, "  ")}
+              end.flatten
+            end
+
+            if #{name}.respond_to?(:flush)
+              @periodic_flushers << #{name}_flush if #{name}.periodic_flush
+              @shutdown_flushers << #{name}_flush
+            end
+          CODE
+
         end
       end
       return code.join("\n")
@@ -189,26 +203,25 @@ module LogStash; module Config; module AST
         when "filter"
           # This is some pretty stupid code, honestly.
           # I'd prefer much if it were put into the Pipeline itself
-          # and this should simply compile to 
+          # and this should simply compile to
           #   #{variable_name}.filter(event)
-          return [
-            "# #{text_value.split("\n").join("")}",
-            "newevents = []",
-            "extra_events.each do |event|",
-            "  #{variable_name}.filter(event) do |newevent|",
-            "    newevents << newevent",
-            "  end",
-            "end",
-            "extra_events += newevents",
 
-            "#{variable_name}.filter(event) do |newevent|",
-            "  extra_events << newevent",
-            "end",
-            "if event.cancelled?",
-            "  extra_events.each(&block)",
-            "  return",
-            "end",
-          ].map { |l| "#{l}\n" }.join("")
+          return <<-CODE
+            # #{text_value.split("\n").join("")}
+            newevents = []
+            extra_events.each do |event|
+              #{variable_name}.filter(event) do |newevent|
+                newevents << newevent
+              end
+            end
+            extra_events += newevents
+
+            #{variable_name}.filter(event) do |newevent|
+              extra_events << newevent
+            end
+
+            [event] + (event.cancelled? ? extra_events : [])
+          CODE
         when "output"
           return "#{variable_name}.handle(event)\n"
         when "codec"
@@ -220,6 +233,7 @@ module LogStash; module Config; module AST
 
     def compile_starting_here
       return unless plugin_type == "filter" # only filter supported.
+
       expressions = [
         LogStash::Config::AST::Branch,
         LogStash::Config::AST::Plugin
@@ -247,7 +261,6 @@ module LogStash; module Config; module AST
         next false if ast.is_a?(LogStash::Config::AST::PluginSection) && ast.plugin_type != "filter"
         if element == self
           found = true
-          next false
         end
         if found && expressions.include?(element.class)
           code << element.compile
@@ -256,6 +269,7 @@ module LogStash; module Config; module AST
         next false if branch_siblings.include?(element)
         next true
       end
+
       return code.collect { |l| "#{l}\n" }.join("")
     end # def compile_starting_here
   end
@@ -402,7 +416,7 @@ module LogStash; module Config; module AST
     end
   end
 
-  module ComparisonOperator 
+  module ComparisonOperator
     def compile
       return " #{text_value} "
     end
