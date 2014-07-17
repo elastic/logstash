@@ -6,6 +6,15 @@ class Treetop::Runtime::SyntaxNode
     return elements.collect(&:compile).reject(&:empty?).join("")
   end
 
+  # Traverse the syntax tree recursively.
+  # The order should respect the order of the configuration file as it is read
+  # and written by humans (and the order in which it is parsed).
+  def recurse(e, depth=0, &block)
+    r = block.call(e, depth)
+    e.elements.each { |e| recurse(e, depth+1, &block) } if r && e.elements
+    nil
+  end
+
   def recursive_inject(results=[], &block)
     if !elements.nil?
       elements.each do |element|
@@ -48,6 +57,7 @@ module LogStash; module Config; module AST
       code << "@inputs = []"
       code << "@filters = []"
       code << "@outputs = []"
+      code << "@flushers = []"
       sections = recursive_select(LogStash::Config::AST::PluginSection)
       sections.each do |s|
         code << s.compile_initializer
@@ -76,7 +86,6 @@ module LogStash; module Config; module AST
       end
 
       code += definitions.join("\n").split("\n", -1).collect { |l| "  #{l}" }
-      #code << "end"
       return code.join("\n")
     end
   end
@@ -84,14 +93,38 @@ module LogStash; module Config; module AST
   class Comment < Node; end
   class Whitespace < Node; end
   class PluginSection < Node
+    # Global plugin numbering for the janky instance variable naming we use
+    # like @filter_<name>_1
     @@i = 0
+
     # Generate ruby code to initialize all the plugins.
     def compile_initializer
       generate_variables
       code = []
-      @variables.collect do |plugin, name|
+      @variables.each do |plugin, name|
         code << "#{name} = #{plugin.compile_initializer}"
         code << "@#{plugin.plugin_type}s << #{name}"
+
+        # The flush method for this filter.
+        if plugin.plugin_type == "filter"
+          code << "#{name}_flush = lambda do |&block|"
+          code << "  @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name})"
+          code << "  flushed_events = #{name}.flush"
+          code << "  next if flushed_events.nil? || flushed_events.empty?"
+          code << "  flushed_events.each do |event|"
+          code << "    extra_events = []"
+          code << "    @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name}, :event => event)"
+          code << "    #{plugin.compile_starting_here.gsub(/^/, "  ")}"
+          #code << "    @filter_to_output << event"
+          #code << "    extra_events.each do |e|"
+          #code << "      @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name}, :event => e)"
+          #code << "      @filter_to_output << e"
+          #code << "    end"
+          code << "  end"
+          code << "end"
+          code << "@flushers << #{name}_flush if #{name}.respond_to?(:flush)"
+          #code << "# #{name}_flush = #{plugin.plugin_type}"
+        end
       end
       return code.join("\n")
     end
@@ -159,6 +192,7 @@ module LogStash; module Config; module AST
           # and this should simply compile to 
           #   #{variable_name}.filter(event)
           return [
+            "# #{text_value.split("\n").join("")}",
             "newevents = []",
             "extra_events.each do |event|",
             "  #{variable_name}.filter(event) do |newevent|",
@@ -183,6 +217,47 @@ module LogStash; module Config; module AST
           return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})"
       end
     end
+
+    def compile_starting_here
+      return unless plugin_type == "filter" # only filter supported.
+      expressions = [
+        LogStash::Config::AST::Branch,
+        LogStash::Config::AST::Plugin
+      ]
+      code = []
+
+      # Find the branch we are in, if any (the 'if' statement, etc)
+      self_branch = recursive_select_parent(LogStash::Config::AST::BranchEntry).first
+
+      # Find any siblings to our branch so we can skip them later.  For example,
+      # if we are in an 'else if' we want to skip any sibling 'else if' or
+      # 'else' blocks.
+      branch_siblings = []
+      if self_branch
+        branch_siblings = recursive_select_parent(LogStash::Config::AST::Branch).first \
+          .recursive_select(LogStash::Config::AST::BranchEntry) \
+          .reject { |b| b == self_branch }
+      end
+
+      #ast = recursive_select_parent(LogStash::Config::AST::PluginSection).first
+      ast = recursive_select_parent(LogStash::Config::AST::Config).first
+
+      found = false
+      recurse(ast) do |element, depth|
+        next false if ast.is_a?(LogStash::Config::AST::PluginSection) && ast.plugin_type != "filter"
+        if element == self
+          found = true
+          next false
+        end
+        if found && expressions.include?(element.class)
+          code << element.compile
+          next false
+        end
+        next false if branch_siblings.include?(element)
+        next true
+      end
+      return code.collect { |l| "#{l}\n" }.join("")
+    end # def compile_starting_here
   end
 
   class Name < Node
@@ -248,21 +323,23 @@ module LogStash; module Config; module AST
       return super + "end\n"
     end
   end
-  class If < Node
+
+  class BranchEntry < Node; end
+  class If < BranchEntry
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
-      return "if #{condition.compile}\n" \
+      return "if #{condition.compile} # if #{condition.text_value}\n" \
         << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
-  class Elsif < Node
+  class Elsif < BranchEntry
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
-      return "elsif #{condition.compile}\n" \
+      return "elsif #{condition.compile} # else if #{condition.text_value}\n" \
         << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
-  class Else < Node
+  class Else < BranchEntry
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
       return "else\n" \
