@@ -191,9 +191,10 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
         @logger.error("Invalid gsub configuration. gsub has to define 3 elements per config entry", :field => field, :needle => needle, :replacement => replacement)
         raise "Bad configuration, aborting."
       end
+
       @gsub_parsed << {
         :field        => field,
-        :needle       => Regexp.new(needle),
+        :needle       => (needle.index("%{").nil?? Regexp.new(needle): needle),
         :replacement  => replacement
       }
     end
@@ -303,7 +304,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
                           "skipping", :field => field, :value => v)
             v
           else
-            v.gsub(needle, replacement)
+            gsub_dynamic_fields(event, v, needle, replacement)
           end
         end
       else
@@ -312,10 +313,20 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
                         "skipping", :field => field, :value => event[field])
           next
         end
-        event[field] = event[field].gsub(needle, replacement)
+        event[field] = gsub_dynamic_fields(event, event[field], needle, replacement)
       end
     end # @gsub_parsed.each
   end # def gsub
+
+  private
+  def gsub_dynamic_fields(event, original, needle, replacement)
+    if needle.is_a? Regexp
+      original.gsub(needle, event.sprintf(replacement))
+    else
+      # we need to replace any dynamic fields
+      original.gsub(Regexp.new(event.sprintf(needle)), event.sprintf(replacement))
+    end
+  end
 
   private
   def uppercase(event)
