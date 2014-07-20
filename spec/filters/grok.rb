@@ -500,4 +500,67 @@ describe LogStash::Filters::Grok do
       insist { subject["foo"] }.is_a?(String)
     end
   end
+
+  describe "s3 access log format" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => [ "message", "%{S3_ACCESS}" ]
+        }
+      }
+    CONFIG
+
+    sample "79a5 mybucket [06/Feb/2014:00:00:38 +0000] 192.0.2.3 79a5 3E57427F3EXAMPLE REST.GET.VERSIONING - \"GET /mybucket?versioning HTTP/1.1\" 200 - 113 - 7 - \"-\" \"S3Console/0.4\" -" do
+      insist { subject["tags"] }.nil?
+      insist { subject["owner"] } == "79a5"
+      insist { subject["bucket"] } == "mybucket"
+      insist { subject["timestamp"] } == "06/Feb/2014:00:00:38 +0000"
+      insist { subject["clientip"] } == "192.0.2.3"
+      insist { subject["requester"] } == "79a5"
+      insist { subject["request_id"] } == "3E57427F3EXAMPLE"
+      insist { subject["operation_type"] } == "REST"
+      insist { subject["operation"] } == "GET"
+      insist { subject["resource_type"] } == "VERSIONING"
+      insist { subject["key"] } == '-'
+      insist { subject["verb"] } == "GET"
+      insist { subject["request"] } == "/mybucket?versioning"
+      insist { subject["httpversion"] } == "1.1"
+      insist { subject["response"] } == 200
+      insist { subject["error_code"] } == "-"
+      insist { subject["bytes"] } == 113
+      insist { subject["object_size"] }.nil?
+      insist { subject["request_time_ms"] } == 7
+      insist { subject["turnaround_time_ms"] }.nil?
+      insist { subject["referrer"] } == "\"-\""
+      insist { subject["agent"] } == "\"S3Console/0.4\""
+      insist { subject["version_id"] } == "-"
+    end
+
+    sample "79a5 mybucket [12/May/2014:07:54:01 +0000] 10.0.1.2 - 7ACC4BE89EXAMPLE REST.GET.OBJECT foo/bar.html \"GET /foo/bar.html HTTP/1.1\" 304 - - 1718 10 - \"-\" \"Mozilla/5.0\" -" do
+      insist { subject["tags"] }.nil?
+      insist { subject["owner"] } == "79a5"
+      insist { subject["bucket"] } == "mybucket"
+      insist { subject["timestamp"] } == "12/May/2014:07:54:01 +0000"
+      insist { subject["clientip"] } == "10.0.1.2"
+      insist { subject["requester"] } == "-"
+      insist { subject["request_id"] } == "7ACC4BE89EXAMPLE"
+      insist { subject["operation_type"] } == "REST"
+      insist { subject["operation"] } == "GET"
+      insist { subject["resource_type"] } == "OBJECT"
+      insist { subject["key"] } == "foo/bar.html"
+      insist { subject["verb"] } == "GET"
+      insist { subject["request"] } == "/foo/bar.html"
+      insist { subject["httpversion"] } == "1.1"
+      insist { subject["response"] } == 304
+      insist { subject["error_code"] } == "-"
+      insist { subject["bytes"] }.nil?
+      insist { subject["object_size"] } == 1718
+      insist { subject["request_time_ms"] } == 10
+      insist { subject["turnaround_time_ms"] }.nil?
+      insist { subject["referrer"] } == "\"-\""
+      insist { subject["agent"] } == "\"Mozilla/5.0\""
+      insist { subject["version_id"] } == "-"
+    end
+  end
+
 end
