@@ -500,4 +500,31 @@ describe LogStash::Filters::Grok do
       insist { subject["foo"] }.is_a?(String)
     end
   end
+
+  describe "apache combined log line" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => "%{COMBINEDAPACHELOG}" }
+        }
+        date {
+          match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+        }
+      }
+    CONFIG
+
+    sample "client.ip.domain.tld - username [20/Dec/2013:13:23:51 +0100] \"POST /Microsoft-Server-ActiveSync?Cmd=Sync&User=username&DeviceId=SEC022A00AA00AA0&DeviceType=SAMSUNGGTP3110 HTTP/1.1\" 200 - \"-\" \"SAMSUNG-GT-P3110/100.40101\"" do
+      insist { subject["auth"] } == "username"
+    end
+
+    sample "client.ip.domain.tld - username@domain.tld [20/Dec/2013:13:23:51 +0100] \"POST /Microsoft-Server-ActiveSync?Cmd=Sync&User=username%40domain.tld&DeviceId=SEC022A00AA00AA0&DeviceType=SAMSUNGGTP3110 HTTP/1.1\" 200 - \"-\" \"SAMSUNG-GT-P3110/100.40101\"" do
+      insist { subject["auth"] } == "username@domain.tld"
+    end
+
+    sample "client.ip.domain.tld - domain.tld\\username [20/Dec/2013:13:23:51 +0100] \"POST /Microsoft-Server-ActiveSync?Cmd=Sync&User=domain.tld%5Cusername&DeviceId=SEC022A00AA00AA0&DeviceType=SAMSUNGGTP3110 HTTP/1.1\" 200 - \"-\" \"SAMSUNG-GT-P3110/100.40101\"" do
+      insist { subject["auth"] } == 'domain.tld\username'
+    end
+
+  end
+
 end
