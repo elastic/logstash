@@ -354,7 +354,7 @@ show:
 	echo $(VERSION)
 
 .PHONY: prepare-tarball
-prepare-tarball tarball zip: WORKDIR=build/tarball/logstash-$(VERSION)
+prepare-tarball tarball zip build/logstash-$(VERSION).tar.gz build/logstash-$(VERSION).zip: WORKDIR=build/tarball/logstash-$(VERSION)
 prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) $(GEOIP) $(TYPESDB) vendor-gems
 prepare-tarball: vendor/ua-parser/regexes.yaml
 prepare-tarball:
@@ -366,9 +366,10 @@ prepare-tarball:
 
 .PHONY: tarball
 tarball: | build/logstash-$(VERSION).tar.gz
-build/logstash-$(VERSION).tar.gz: | prepare-tarball
-	$(QUIET)tar -C $$(dirname $(WORKDIR)) -c $$(basename $(WORKDIR)) \
-		| gzip -9c > $@
+build/logstash-$(VERSION).tar: | prepare-tarball
+	$(QUIET)tar -C $$(dirname $(WORKDIR)) -c $$(basename $(WORKDIR)) -f $@
+build/logstash-$(VERSION).tar.gz: | build/logstash-$(VERSION).tar
+	$(QUIET)gzip -9 build/logstash-$(VERSION).tar
 	@echo "=> tarball ready: $@"
 
 .PHONY: zip
