@@ -92,33 +92,33 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
     if @xpath
       begin
         doc = Nokogiri::XML(value)
+
+        @xpath.each do |xpath_src, xpath_dest|
+          nodeset = doc.xpath(xpath_src)
+
+          # If asking xpath for a String, like "name(/*)", we get back a
+          # String instead of a NodeSet.  We normalize that here.
+          normalized_nodeset = nodeset.kind_of?(Nokogiri::XML::NodeSet) ? nodeset : [nodeset]
+
+          normalized_nodeset.each do |value|
+            # some XPath functions return empty arrays as string
+            if value.is_a?(Array)
+              return if value.length == 0
+            end
+
+            unless value.nil?
+              matched = true
+              event[xpath_dest] ||= []
+              event[xpath_dest] << value.to_s
+            end
+          end # XPath.each
+        end # @xpath.each
       rescue => e
         event.tag("_xmlparsefailure")
         @logger.warn("Trouble parsing xml", :source => @source, :value => value,
                      :exception => e, :backtrace => e.backtrace)
         return
       end
-
-      @xpath.each do |xpath_src, xpath_dest|
-        nodeset = doc.xpath(xpath_src)
-
-        # If asking xpath for a String, like "name(/*)", we get back a
-        # String instead of a NodeSet.  We normalize that here.
-        normalized_nodeset = nodeset.kind_of?(Nokogiri::XML::NodeSet) ? nodeset : [nodeset]
-
-        normalized_nodeset.each do |value|
-          # some XPath functions return empty arrays as string
-          if value.is_a?(Array)
-            return if value.length == 0
-          end
-
-          unless value.nil?
-            matched = true
-            event[xpath_dest] ||= []
-            event[xpath_dest] << value.to_s
-          end
-        end # XPath.each
-      end # @xpath.each
     end # if @xpath
 
     if @store_xml
