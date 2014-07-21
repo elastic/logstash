@@ -120,6 +120,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     # This filter needs to keep state.
     @types = Hash.new { |h,k| h[k] = [] }
     @pending = Hash.new
+    @pending_lock = Mutex.new
   end # def initialize
 
   public
@@ -154,65 +155,65 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
     else
       match = @grok.match(event["message"])
     end
+    match = (match and !@negate) || (!match and @negate) # add negate option
     key = event.sprintf(@stream_identity)
-    pending = @pending[key]
 
-    @logger.debug("Multiline", :pattern => @pattern, :message => event["message"],
-                  :match => match, :negate => @negate)
+    @logger.debug? && @logger.debug("Multiline", :pattern => @pattern, :message => event["message"], :match => match, :negate => @negate)
 
-    # Add negate option
-    match = (match and !@negate) || (!match and @negate)
+    @pending_lock.synchronize do
+      pending = @pending[key]
 
-    case @what
-    when "previous"
-      if match
-        event.tag "multiline"
-        # previous previous line is part of this event.
-        # append it to the event and cancel it
-        if pending
-          pending.append(event)
-        else
-          @pending[key] = event
-        end
-        event.cancel
-      else
-        # this line is not part of the previous event
-        # if we have a pending event, it's done, send it.
-        # put the current event into pending
-        if pending
-          tmp = event.to_hash
-          event.overwrite(pending)
-          @pending[key] = LogStash::Event.new(tmp)
-        else
-          @pending[key] = event
+      case @what
+      when "previous"
+        if match
+          event.tag "multiline"
+          # previous previous line is part of this event.
+          # append it to the event and cancel it
+          if pending
+            pending.append(event)
+          else
+            @pending[key] = event
+          end
           event.cancel
-        end # if/else pending
-      end # if/else match
-    when "next"
-      if match
-        event.tag "multiline"
-        # this line is part of a multiline event, the next
-        # line will be part, too, put it into pending.
-        if pending
-          pending.append(event)
         else
-          @pending[key] = event
-        end
-        event.cancel
+          # this line is not part of the previous event
+          # if we have a pending event, it's done, send it.
+          # put the current event into pending
+          if pending
+            tmp = event.to_hash
+            event.overwrite(pending)
+            @pending[key] = LogStash::Event.new(tmp)
+          else
+            @pending[key] = event
+            event.cancel
+          end # if/else pending
+        end # if/else match
+      when "next"
+        if match
+          event.tag "multiline"
+          # this line is part of a multiline event, the next
+          # line will be part, too, put it into pending.
+          if pending
+            pending.append(event)
+          else
+            @pending[key] = event
+          end
+          event.cancel
+        else
+          # if we have something in pending, join it with this message
+          # and send it. otherwise, this is a new message and not part of
+          # multiline, send it.
+          if pending
+            pending.append(event)
+            event.overwrite(pending)
+            @pending.delete(key)
+          end
+        end # if/else match
       else
-        # if we have something in pending, join it with this message
-        # and send it. otherwise, this is a new message and not part of
-        # multiline, send it.
-        if pending
-          pending.append(event)
-          event.overwrite(pending)
-          @pending.delete(key)
-        end
-      end # if/else match
-    else
-      # TODO(sissel): Make this part of the 'register' method.
-      @logger.warn("Unknown multiline 'what' value.", :what => @what)
-    end # case @what
+        # TODO(sissel): Make this part of the 'register' method.
+        @logger.warn("Unknown multiline 'what' value.", :what => @what)
+      end # case @what
+    end
 
     if !event.cancelled?
       collapse_event!(event)
@@ -227,16 +228,20 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
   # @return [Array<LogStash::Event>] list of flushed events
   public
   def flush(options = {})
-    # select all expired events from the @pending hash into a new expired hash
-    # if :final flush then select all events
-    expired = @pending.inject({}) do |r, (key, event)|
-      age = Time.now - Array(event["@timestamp"]).first.time
-      r[key] = event if (age >= @max_age) || options[:final]
-      r
-    end
+    expired = nil
 
-    # delete expired items from @pending hash
-    expired.each{|key, event| @pending.delete(key)}
+    @pending_lock.synchronize do
+      # select all expired events from the @pending hash into a new expired hash
+      # if :final flush then select all events
+      expired = @pending.inject({}) do |r, (key, event)|
+        age = Time.now - Array(event["@timestamp"]).first.time
+        r[key] = event if (age >= @max_age) || options[:final]
+        r
+      end
+
+      # delete expired items from @pending hash
+      expired.each{|key, event| @pending.delete(key)}
+    end
 
     # return list of uncancelled and collapsed expired events
     expired.map{|key, event| event.uncancel; collapse_event!(event)}
