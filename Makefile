@@ -355,7 +355,7 @@ show:
 
 .PHONY: prepare-tarball
 prepare-tarball tarball zip: WORKDIR=build/tarball/logstash-$(VERSION)
-prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) $(GEOIP) $(TYPESDB) vendor-gems
+prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) vendor-geoip $(TYPESDB) vendor-gems
 prepare-tarball: vendor/ua-parser/regexes.yaml
 prepare-tarball:
 	@echo "=> Preparing tarball"
