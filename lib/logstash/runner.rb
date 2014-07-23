@@ -7,6 +7,7 @@ $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 require "logstash/environment"
 LogStash::Environment.set_gem_paths!
 LogStash::Environment.load_logstash_gemspec!
+LogStash::Environment.load_locale!
 
 Thread.abort_on_exception = true
 if ENV["PROFILE_BAD_LOG_CALLS"] || $DEBUGLIST.include?("log")
@@ -47,10 +48,6 @@ end # PROFILE_BAD_LOG_CALLS
 require "logstash/monkeypatches-for-debugging"
 require "logstash/namespace"
 require "logstash/program"
-
-require "i18n"
-I18n.enforce_available_locales = true
-I18n.load_path << LogStash::Environment.locales_path("en.yml")
 
 class LogStash::RSpecsRunner
   def initialize(args)

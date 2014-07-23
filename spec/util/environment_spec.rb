@@ -9,7 +9,7 @@ describe LogStash::Environment do
     end
 
     it "should raise when cannot find elasticsarch jars" do
-      stub_const("LogStash::Environment::JAR_DIR", "/some/invalid/path")
+      stub_const("LogStash::Environment::ELASTICSEARCH_DIR", "/some/invalid/path")
       expect{LogStash::Environment.load_elasticsearch_jars!}.to raise_error(LogStash::EnvironmentError)
     end
   end
