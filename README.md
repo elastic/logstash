@@ -29,16 +29,12 @@ You can also find documentation on the <http://logstash.net> site.
 
 ## Developing
 
-Here's how to get started:
+To get started, you'll need *any* ruby available and it should come with the `rake` tool.
 
-    # Install jruby
-    make vendor-jruby
+Here's how to get started with Logstash development:
+
+    rake bootstrap
     
-Now install dependencies:
-
-    # Install logstash ruby dependencies
-    bin/logstash deps
-
 Other commands:
 
     # to use Logstash gems or libraries in irb, use the following
@@ -48,11 +44,12 @@ Other commands:
     # Run Logstash
     bin/logstash agent [options]
 
-    # If running bin/logstash agent yields complaints about log4j/other things
-    # This will download the elasticsearch jars so Logstash can use them.
-    make vendor-elasticsearch
+Notes about using other rubies. If you don't use rvm, you can probably skip
+this paragraph. Logstash works with other rubies, and if you wish to use your
+own ruby you must set `USE_RUBY=1` in your environment.
 
-Notes about using other rubies. If you don't use rvm, you can probably skip this paragraph. Logstash works with other rubies, and if you wish to use your own ruby instead of the JRuby the Makefile gives you, you must set `USE_RUBY=1` in your environment.
+We recommend using flatland/drip for faster startup times during development. To
+tell Logstash to use drip, set `USE_DRIP=1` in your environment.
 
 ## Testing
 
@@ -65,14 +62,9 @@ rspec <some spec>` will suffice:
     Finished in 0.123 seconds
     19 examples, 0 failures
 
-Alternately, if you have just built the tarball, you can run the tests
-specifically on those like so:
-
-    make tarball-test
-
 If you want to run all the tests from source, do:
 
-    make test
+    rake test
 
 ## Building
 
@@ -81,11 +73,15 @@ we provide from the Logstash site!
 
 If you want to build the release tarball yourself, run:
 
-    make tarball
+    rake artifact:tar
 
 You can build rpms and debs, if you need those. Building rpms requires you have [fpm](https://github.com/jordansissel/fpm), then do this:
 
-    make package
+    # Build an RPM
+    rake artifact:rpm
+
+    # Build a Debian/Ubuntu package
+    rake artifact:deb
 
 ## Project Principles
 

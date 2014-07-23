@@ -7,6 +7,7 @@ module LogStash
 
     LOGSTASH_HOME = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", ".."))
     JAR_DIR = ::File.join(LOGSTASH_HOME, "vendor", "jar")
+    ELASTICSEARCH_DIR = ::File.join(LOGSTASH_HOME, "vendor", "elasticsearch")
     BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
     PLUGINS_DIR = ::File.join(LOGSTASH_HOME, "vendor", "plugins")
     GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "tools", "Gemfile")
@@ -17,10 +18,10 @@ module LogStash
       raise(LogStash::EnvironmentError, "JRuby is required") unless jruby?
 
       require "java"
-      jars_path = ::File.join(JAR_DIR, "elasticsearch*", "lib", "*.jar")
+      jars_path = ::File.join(ELASTICSEARCH_DIR, "**", "*.jar")
       jar_files = Dir.glob(jars_path)
 
-      raise(LogStash::EnvironmentError, "Could not find Elasticsearch jar files under #{JAR_DIR}") if jar_files.empty?
+      raise(LogStash::EnvironmentError, "Could not find Elasticsearch jar files under #{ELASTICSEARCH_DIR}") if jar_files.empty?
 
       jar_files.each do |jar|
         loaded = require jar
@@ -41,6 +42,7 @@ module LogStash
       require ::File.join(BUNDLE_DIR, "bundler", "setup.rb")
       ENV["GEM_PATH"] = plugins_home
       ENV["GEM_HOME"] = plugins_home
+      Gem.paths = plugins_home
     end
 
     # @return [String] major.minor ruby version, ex 1.9
@@ -94,5 +96,12 @@ module LogStash
       Gem::Specification.add_spec logstash_spec
     end
 
+    def load_locale!
+      require "i18n"
+      I18n.enforce_available_locales = true
+      I18n.load_path << LogStash::Environment.locales_path("en.yml")
+      I18n.reload!
+      fail "No locale? This is a bug." if I18n.available_locales.empty?
+    end
   end
 end
