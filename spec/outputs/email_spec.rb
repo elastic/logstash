@@ -5,8 +5,8 @@ require "message_observers"
 describe "outputs/email", :broken => true do
     
 
-    @@port=2525
-    let (:rumbster) { Rumbster.new(@@port) }
+    port = 2525
+    let (:rumbster) { Rumbster.new(port) }
     let (:message_observer) { MailMessageObserver.new }
 
     before :each do
@@ -36,7 +36,7 @@ describe "outputs/email", :broken => true do
             email {
                 to => "email1@host, email2@host"
                 match => ["mymatch", "dummy_match,ok"]
-                options => ["port", #{@@port}]
+                options => ["port", #{port}]
             }
         }
         CONFIG
@@ -67,7 +67,7 @@ describe "outputs/email", :broken => true do
             email {
                 to => "%{to_addr}"
                 match => ["mymatch", "dummy_match,ok"]
-                options => ["port", #{@@port}]
+                options => ["port", #{port}]
             }
         }
         CONFIG
@@ -98,7 +98,7 @@ describe "outputs/email", :broken => true do
                 subject => "Hello World"
                 body => "Line1\\nLine2\\nLine3"
                 match => ["mymatch", "dummy_match,*"]
-                options => ["port", #{@@port}]
+                options => ["port", #{port}]
             }
         }
         CONFIG
@@ -130,7 +130,7 @@ describe "outputs/email", :broken => true do
                 subject => "Hello World"
                 body => "Line1\\nLine2\\nLine3"
                 match => ["mymatch", "dummy_match,*"]
-                options => ["port", #{@@port}, "authenticationType", "nil"]
+                options => ["port", #{port}, "authenticationType", "nil"]
             }
         }
         CONFIG
@@ -157,7 +157,7 @@ describe "outputs/email", :broken => true do
                 subject => "Hello World"
                 body => "Mail body"
                 match => ["messageAndSourceMatch", "message,*hello,,and,source,*generator"]
-                options => ["port", #{@@port}, "authenticationType", "nil"]
+                options => ["port", #{port}, "authenticationType", "nil"]
             }
         }
         CONFIG

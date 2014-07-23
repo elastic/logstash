@@ -2,7 +2,8 @@
 require "clamp" # gem 'clamp'
 require "logstash/environment"
 require "logstash/errors"
-require "i18n"
+require "logstash/environment"
+LogStash::Environment.load_locale!
 
 class LogStash::Agent < Clamp::Command
   option ["-f", "--config"], "CONFIG_PATH",
