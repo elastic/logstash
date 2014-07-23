@@ -5,7 +5,8 @@ require "logstash/config/registry"
 require "logstash/logging"
 require "logstash/util/password"
 require "logstash/version"
-require "i18n"
+require "logstash/environment"
+LogStash::Environment.load_locale!
 
 # This module is meant as a mixin to classes wishing to be configurable from
 # config files
