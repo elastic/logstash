@@ -11,8 +11,7 @@ require "socket" # for Socket.gethostname
 # need to use this output.
 #
 #   *VERSION NOTE*: Your Elasticsearch cluster must be running Elasticsearch
-#   %ELASTICSEARCH_VERSION%. If you use any other version of Elasticsearch,
-#   you should set `protocol => http` in this plugin.
+#   1.0.0 or later.
 #
 # If you want to set other Elasticsearch options that are not exposed directly
 # as configuration options, there are two methods:
@@ -27,10 +26,6 @@ require "socket" # for Socket.gethostname
 # You can learn more about Elasticsearch at <http://www.elasticsearch.org>
 #
 # ## Operational Notes
-#
-# Template management requires Elasticsearch version 0.90.7 or later. If you
-# are using a version older than this, please upgrade. You will receive
-# more benefits than just template management!
 #
 # If using the default `protocol` setting ("node"), your firewalls might need
 # to permit port 9300 in *both* directions (from Logstash to Elasticsearch, and
