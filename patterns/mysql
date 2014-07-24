@@ -1,0 +1,3 @@
+MYSQL_HOST ^# User@Host: %{USER:user}(?:\[[^\]]+\])?\s+@\s+%{HOST:host}?\s+\[%{IP:ip}?\]
+MYSQL_SLOWQUERY ^# Query_time: %{NUMBER:query_time}\s+Lock_time: %{NUMBER:lock_time}\s+Rows_sent: %{NUMBER:rows_sent}\s+Rows_examined: %{NUMBER:rows_examined}
+MYSQL_TIMESTAMP ^SET timestamp=%{NUMBER:timestamp};
