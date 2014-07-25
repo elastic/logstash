@@ -61,6 +61,10 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "edn"                              #(MIT license)
   gem.add_runtime_dependency "elasticsearch"                    #9Apache 2.0 license)
 
+  # Plugin manager dependencies
+  gem.add_runtime_dependency "jar-dependencies"                    #(MIT license)
+  gem.add_runtime_dependency "ruby-maven"                          #(EPL license)
+
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
     gem.add_runtime_dependency "jruby-httpclient"                 #(Apache 2.0 license)
