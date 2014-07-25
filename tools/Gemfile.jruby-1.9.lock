@@ -73,6 +73,7 @@ GEM
     jls-lumberjack (0.0.20)
     jrjackson (0.2.7)
     jruby-httpclient (1.1.1-java)
+    jruby-memcached (0.5.5)
     jruby-openssl (0.8.7)
       bouncy-castle-java (>= 1.5.0147)
     json (1.8.1-java)
@@ -203,6 +204,7 @@ DEPENDENCIES
   jls-lumberjack (>= 0.0.20)
   jrjackson
   jruby-httpclient
+  jruby-memcached
   jruby-openssl (= 0.8.7)
   kramdown
   mail
