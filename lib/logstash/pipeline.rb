@@ -1,12 +1,13 @@
 # encoding: utf-8
-require "logstash/config/file"
+require "thread" #
+require "stud/interval"
 require "logstash/namespace"
-require "thread" # stdlib
+require "logstash/errors"
+require "logstash/event"
+require "logstash/config/file"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
-require "logstash/errors"
-require "stud/interval" # gem stud
 
 class LogStash::Pipeline
   def initialize(configstr)
@@ -109,7 +110,7 @@ class LogStash::Pipeline
   end
 
   def shutdown_filters
-    @input_to_filter.push(LogStash::ShutdownSignal)
+    @input_to_filter.push(LogStash::ShutdownEvent.new)
   end
 
   def wait_filters
@@ -118,7 +119,7 @@ class LogStash::Pipeline
 
   def shutdown_outputs
     # nothing, filters will do this
-    @filter_to_output.push(LogStash::ShutdownSignal)
+    @filter_to_output.push(LogStash::ShutdownEvent.new)
   end
 
   def wait_outputs
@@ -193,7 +194,7 @@ class LogStash::Pipeline
     begin
       while true
         event = @input_to_filter.pop
-        if event == LogStash::ShutdownSignal
+        if event.is_a?(LogStash::ShutdownEvent)
           @input_to_filter.push(event)
           break
         end
@@ -224,7 +225,7 @@ class LogStash::Pipeline
     @outputs.each(&:worker_setup)
     while true
       event = @filter_to_output.pop
-      break if event == LogStash::ShutdownSignal
+      break if event.is_a?(LogStash::ShutdownEvent)
       output(event)
     end # while true
     @outputs.each(&:teardown)
@@ -251,7 +252,7 @@ class LogStash::Pipeline
       end
     end
 
-    # No need to send the ShutdownSignal to the filters/outputs nor to wait for
+    # No need to send the ShutdownEvent to the filters/outputs nor to wait for
     # the inputs to finish, because in the #run method we wait for that anyway.
   end # def shutdown
 
