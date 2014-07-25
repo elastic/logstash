@@ -29,13 +29,12 @@ class LogStash::Outputs::RabbitMQ
 
       begin
         @codec.encode(event)
-      rescue JSON::GeneratorError => e
-        @logger.warn("Trouble converting event to JSON", :exception => e,
-                     :event => event)
+      rescue => e
+        @logger.warn("Error encoding event", :exception => e, :event => event)
       end
     end
 
-    def publish_serialized(message)
+    def publish_serialized(event, message)
       begin
         if @connected.get
           @x.publish(message, :routing_key => @key, :properties => {

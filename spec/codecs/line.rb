@@ -13,7 +13,7 @@ describe LogStash::Codecs::Line do
 
     it "should return a default date formatted line" do
       expect(subject).to receive(:on_event).once.and_call_original
-      subject.on_event do |d|
+      subject.on_event do |e, d|
         insist {d} == event.to_s + "\n"
       end
       subject.encode(event)
@@ -23,7 +23,7 @@ describe LogStash::Codecs::Line do
       format = "%{host}"
       subject.format = format
       expect(subject).to receive(:on_event).once.and_call_original
-      subject.on_event do |d|
+      subject.on_event do |e, d|
         insist {d} == event.sprintf(format) + "\n"
       end
       subject.encode(event)

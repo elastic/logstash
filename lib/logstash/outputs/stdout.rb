@@ -9,12 +9,12 @@ require "logstash/namespace"
 #
 # For example, the following output configuration, in conjunction with the
 # Logstash `-e` command-line flag, will allow you to see the results
-# of your event pipeline for quick iteration. 
-# 
+# of your event pipeline for quick iteration.
+#
 #     output {
 #       stdout {}
 #     }
-# 
+#
 # Useful codecs include:
 #
 # `rubydebug`: outputs event data using the ruby "awesome_print"
@@ -38,13 +38,13 @@ class LogStash::Outputs::Stdout < LogStash::Outputs::Base
 
   config_name "stdout"
   milestone 3
-  
+
   default :codec, "line"
 
   public
   def register
-    @codec.on_event do |event|
-      $stdout.write(event)
+    @codec.on_event do |event, data|
+      $stdout.write(data)
     end
   end
 

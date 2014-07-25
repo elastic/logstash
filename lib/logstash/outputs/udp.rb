@@ -9,7 +9,7 @@ require "socket"
 class LogStash::Outputs::UDP < LogStash::Outputs::Base
   config_name "udp"
   milestone 1
-  
+
   default :codec, "json"
 
   # The address to send messages to
@@ -21,7 +21,7 @@ class LogStash::Outputs::UDP < LogStash::Outputs::Base
   public
   def register
     @socket = UDPSocket.new
-    @codec.on_event do |payload|
+    @codec.on_event do |event, payload|
       @socket.send(payload, 0, @host, @port)
     end
   end

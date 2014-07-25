@@ -110,7 +110,7 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
     @codec.encode(event)
   end # def receive
 
-  def publish(payload)
+  def publish(event, payload)
     @logger.debug? && @logger.debug("0mq: sending", :event => payload)
     if @topology == "pubsub"
       # TODO(sissel): Need to figure out how to fit this into the codecs system.

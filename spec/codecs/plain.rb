@@ -87,7 +87,7 @@ describe LogStash::Codecs::Plain do
     it "should return a plain text encoding" do
       event = LogStash::Event.new
       event["message"] = "Hello World."
-      subject.on_event do |data|
+      subject.on_event do |e, data|
         insist { data } == event.to_s
       end
       subject.encode(event)
@@ -97,7 +97,7 @@ describe LogStash::Codecs::Plain do
       format = "%{[hello]} %{[something][fancy]}"
       codec = LogStash::Codecs::Plain.new("format" => format)
       event = LogStash::Event.new("hello" => "world", "something" => { "fancy" => 123 })
-      codec.on_event do |data|
+      codec.on_event do |e, data|
         insist { data } == event.sprintf(format)
       end
       codec.encode(event)

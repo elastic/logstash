@@ -25,7 +25,7 @@ describe LogStash::Codecs::Msgpack do
       data = {"foo" => "bar", "baz" => {"bah" => ["a","b","c"]}, "@timestamp" => "2014-05-30T02:52:17.929Z"}
       event = LogStash::Event.new(data)
       got_event = false
-      subject.on_event do |d|
+      subject.on_event do |e, d|
         insist { MessagePack.unpack(d)["foo"] } == data["foo"]
         insist { MessagePack.unpack(d)["baz"] } == data["baz"]
         insist { MessagePack.unpack(d)["bah"] } == data["bah"]
@@ -41,7 +41,7 @@ describe LogStash::Codecs::Msgpack do
       data = LogStash::Json.load('{"foo": "bar", "baz": {"bah": ["a","b","c"]}, "@timestamp": "2014-05-30T02:52:17.929Z"}')
       event = LogStash::Event.new(data)
       got_event = false
-      subject.on_event do |d|
+      subject.on_event do |e, d|
         insist { MessagePack.unpack(d)["foo"] } == data["foo"]
         insist { MessagePack.unpack(d)["baz"] } == data["baz"]
         insist { MessagePack.unpack(d)["bah"] } == data["bah"]

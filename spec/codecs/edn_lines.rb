@@ -41,7 +41,7 @@ describe LogStash::Codecs::EDNLines do
       data = {"foo" => "bar", "baz" => {"bah" => ["a","b","c"]}, "@timestamp" => "2014-05-30T02:52:17.929Z"}
       event = LogStash::Event.new(data)
       got_event = false
-      subject.on_event do |d|
+      subject.on_event do |e, d|
         insist { EDN.read(d)["foo"] } == data["foo"]
         insist { EDN.read(d)["baz"] } == data["baz"]
         insist { EDN.read(d)["bah"] } == data["bah"]
@@ -57,7 +57,7 @@ describe LogStash::Codecs::EDNLines do
       data = LogStash::Json.load('{"foo": "bar", "baz": {"bah": ["a","b","c"]}, "@timestamp": "2014-05-30T02:52:17.929Z"}')
       event = LogStash::Event.new(data)
       got_event = false
-      subject.on_event do |d|
+      subject.on_event do |e, d|
         insist { EDN.read(d)["foo"] } == data["foo"]
         insist { EDN.read(d)["baz"] } == data["baz"]
         insist { EDN.read(d)["bah"] } == data["bah"]

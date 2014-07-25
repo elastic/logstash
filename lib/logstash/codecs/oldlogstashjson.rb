@@ -51,7 +51,7 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
     end
 
     # Tack on a \n because JSON outputs 1.1.x had them.
-    @on_event.call(LogStash::Json.dump(h) + NL)
+    @on_event.call(event, LogStash::Json.dump(h) + NL)
   end # def encode
 
 end # class LogStash::Codecs::OldLogStashJSON

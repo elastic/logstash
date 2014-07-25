@@ -28,7 +28,7 @@ describe LogStash::Codecs::JsonSpooler do
       data = {"foo" => "bar", "baz" => {"bah" => ["a","b","c"]}}
       subject.spool_size = 3
       got_event = false
-      subject.on_event do |d|
+      subject.on_event do |event, d|
         events = LogStash::Json.load(d)
         insist { events.is_a? Array }
         insist { events[0].is_a? LogStash::Event }

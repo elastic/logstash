@@ -38,7 +38,7 @@ describe LogStash::Codecs::OldLogStashJSON do
               "bah" => "baz"}
       event = LogStash::Event.new(data)
       got_event = false
-      subject.on_event do |d|
+      subject.on_event do |e, d|
         insist { LogStash::Json.load(d)["@timestamp"] } != nil
         insist { LogStash::Json.load(d)["@type"] } == data["type"]
         insist { LogStash::Json.load(d)["@message"] } == data["message"]

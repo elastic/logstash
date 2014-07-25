@@ -57,9 +57,9 @@ describe LogStash::Codecs::Graphite do
       value = Random.rand*1000
       timestamp = Time.now.gmtime
       subject.metrics = {name => value}
-      subject.on_event do |event|
-        insist { event.is_a? String }
-        insist { event } == "#{name} #{value} #{timestamp.to_i}\n"
+      subject.on_event do |event, data|
+        insist { data.is_a? String }
+        insist { data } == "#{name} #{value} #{timestamp.to_i}\n"
       end
       subject.encode(LogStash::Event.new("@timestamp" => timestamp))
     end
@@ -69,9 +69,9 @@ describe LogStash::Codecs::Graphite do
       value = Random.rand*1000
       timestamp = Time.now.gmtime
       subject.fields_are_metrics = true
-      subject.on_event do |event|
-        insist { event.is_a? String }
-        insist { event } == "#{name} #{value} #{timestamp.to_i}\n"
+      subject.on_event do |event, data|
+        insist { data.is_a? String }
+        insist { data } == "#{name} #{value} #{timestamp.to_i}\n"
       end
       subject.encode(LogStash::Event.new({name => value, "@timestamp" => timestamp}))
 
@@ -86,9 +86,9 @@ describe LogStash::Codecs::Graphite do
       timestamp = Time.now.gmtime
       subject.metrics = {name => value}
       subject.metrics_format = "foo.bar.*.baz"
-      subject.on_event do |event|
-        insist { event.is_a? String }
-        insist { event } == "foo.bar.#{name}.baz #{value} #{timestamp.to_i}\n"
+      subject.on_event do |event, data|
+        insist { data.is_a? String }
+        insist { data } == "foo.bar.#{name}.baz #{value} #{timestamp.to_i}\n"
       end
       subject.encode(LogStash::Event.new("@timestamp" => timestamp))
     end
