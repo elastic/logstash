@@ -37,7 +37,7 @@ class LogStash::Outputs::RabbitMQ
     def publish_serialized(event, message)
       begin
         if @connected.get
-          @x.publish(message, :routing_key => @key, :properties => { :persistent => @persistent })
+          @x.publish(message, :routing_key => event.sprintf(@key), :properties => { :persistent => @persistent })
         else
           @logger.warn("Tried to send a message, but not connected to RabbitMQ.")
         end
