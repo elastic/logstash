@@ -14,6 +14,7 @@ require "logstash/json"
 # class to have a common interface for all pileline events to support
 # eventual queueing persistence for example, TBD.
 class LogStash::ShutdownEvent; end
+class LogStash::FlushEvent; end
 
 # the logstash event object.
 #

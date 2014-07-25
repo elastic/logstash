@@ -10,6 +10,9 @@ require "logstash/inputs/base"
 require "logstash/outputs/base"
 
 class LogStash::Pipeline
+
+  FLUSH_EVENT = LogStash::FlushEvent.new
+
   def initialize(configstr)
     @logger = Cabin::Channel.get(LogStash)
     grammar = LogStashConfigParser.new
@@ -70,13 +73,10 @@ class LogStash::Pipeline
   def run
     @started = true
     @input_threads = []
+
     start_inputs
     start_filters if filters?
     start_outputs
-
-    # Set up the periodic flusher thread.
-    @flusher_lock = Mutex.new
-    @flusher_thread = Thread.new { Stud.interval(5) { @flusher_lock.synchronize { flush_filters_to_output! } } }
 
     @ready = true
 
@@ -84,7 +84,6 @@ class LogStash::Pipeline
     wait_inputs
 
     if filters?
-      @flusher_lock.synchronize { @flusher_thread.kill }
       shutdown_filters
       wait_filters
       flush_filters_to_output!(:final => true)
@@ -110,6 +109,7 @@ class LogStash::Pipeline
   end
 
   def shutdown_filters
+    @flusher_lock.synchronize { @flusher_thread.kill }
     @input_to_filter.push(LogStash::ShutdownEvent.new)
   end
 
@@ -149,6 +149,9 @@ class LogStash::Pipeline
     @filter_threads = @settings["filter-workers"].times.collect do
       Thread.new { filterworker }
     end
+
+    @flusher_lock = Mutex.new
+    @flusher_thread = Thread.new { Stud.interval(5) { @flusher_lock.synchronize { @input_to_filter.push(FLUSH_EVENT) } } }
   end
 
   def start_outputs
@@ -194,23 +197,22 @@ class LogStash::Pipeline
     begin
       while true
         event = @input_to_filter.pop
-        if event.is_a?(LogStash::ShutdownEvent)
+
+        case event
+        when LogStash::Event
+          # use events array to guarantee ordering of origin vs created events
+          # where created events are emitted by filters like split or metrics
+          events = [event]
+          filter(event) { |newevent| events << newevent }
+          events.each { |event| @filter_to_output.push(event) unless event.cancelled? }
+        when LogStash::FlushEvent
+          # handle filter flushing here so that non threadsafe filters (thus only running one filterworker)
+          # don't have to deal with thread safety implementing the flush method
+          @flusher_lock.synchronize { flush_filters_to_output! }
+        when LogStash::ShutdownEvent
+          # pass it down to any other filterworker and stop this worker
           @input_to_filter.push(event)
           break
-        end
-
-        # TODO(sissel): we can avoid the extra array creation here
-        # if we don't guarantee ordering of origin vs created events.
-        # - origin event is one that comes in naturally to the filter worker.
-        # - created events are emitted by filters like split or metrics
-        events = [event]
-        filter(event) do |newevent|
-          events << newevent
-        end
-
-        events.each do |event|
-          next if event.cancelled?
-          @filter_to_output.push(event)
         end
       end
     rescue => e
