@@ -83,7 +83,7 @@ require "logstash/namespace"
 #
 # Running the above:
 #
-#     % ./logstash-1.4.1/bin/logstash agent -f example.conf
+#     % bin/logstash -f example.conf
 #     rate: 23721.983566819246
 #     rate: 24811.395722536377
 #     rate: 25875.892745934525
