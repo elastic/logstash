@@ -264,7 +264,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
 
   private
   def parse(text, event, kv_keys)
-    if !event =~ /[@field_split]/
+    if !event =~ /[@value_split]/
       return kv_keys
     end
     text.scan(@scan_re) do |key, v1, v2, v3, v4, v5|
@@ -280,7 +280,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       value = @trim.nil? ? value : value.gsub(@trim_re, "")
 
       # recursively get more kv pairs from the value
-      if @isToDigValues and value =~ /[@field_split]/
+      if @isToDigValues and value =~ /[@value_split]/
         innerKv = Hash.new
         innerKv = parse(value, event, innerKv) 
         if innerKv.length > 0
