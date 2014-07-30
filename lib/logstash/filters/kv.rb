@@ -191,20 +191,6 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     }
   #
   config :recursive, :validate => :boolean, :default => false
-  
-  # A string, if not empty specifying the name of
-  # the extra key which will hold the whole original raw value.
-  # Default is empty, meaning the whole raw value won't be preserved
-  #
-  # For example, the result of:
-  # 'rootkey="some message and subkey=1" another=nothing'
-  # 
-  # will be:
-  # * rootkey:
-  # *** _raw: some message and subkey=1
-  # *** subkey:1
-  # * another: nothing
-  config :recursive_preservation_key, :validate => :string, :default => ''
 
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
@@ -276,9 +262,6 @@ class LogStash::Filters::KV < LogStash::Filters::Base
         innerKv = Hash.new
         innerKv = parse(value, event, innerKv) 
         if innerKv.length > 0
-          if not @recursive_preservation_key.to_s.empty?
-            innerKv[@recursive_preservation_key] = value 
-          end
           value = innerKv
         end
       end

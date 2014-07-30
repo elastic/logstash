@@ -101,19 +101,17 @@ describe LogStash::Filters::KV do
     end
   end
 
-  describe "test dig_values" do
+  describe "test recursive" do
     config <<-CONFIG
       filter {
         kv { 
           recursive => 'true'
-          recursive_preservation_key => '_raw'
         }
       }
     CONFIG
   
     sample 'IKE="Quick Mode completion" IKE\ IDs = (subnet= x.x.x.x mask= 255.255.255.254 and host=y.y.y.y)' do
       insist { subject["IKE"] } == 'Quick Mode completion'
-      insist { subject['IKE\ IDs']['_raw'] } == 'subnet= x.x.x.x mask= 255.255.255.254 and host=y.y.y.y'
       insist { subject['IKE\ IDs']['subnet'] } == 'x.x.x.x'
       insist { subject['IKE\ IDs']['mask'] } == '255.255.255.254'
       insist { subject['IKE\ IDs']['host'] } == 'y.y.y.y'
