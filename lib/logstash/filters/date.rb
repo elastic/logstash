@@ -134,7 +134,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           parser = lambda { |date| joda_parser.parseMillis(date) }
         when "UNIX" # unix epoch
           parser = lambda do |date|
-            raise "Invalid UNIX epoch value '#{date}'" unless /^\d+(\.\d+)?$/ === date || date.is_a?(Numeric)
+            raise "Invalid UNIX epoch value '#{date}'" unless /^\d+(?:\.\d+)?$/ === date || date.is_a?(Numeric)
             (date.to_f * 1000).to_i
           end
         when "UNIX_MS" # unix epoch in ms
