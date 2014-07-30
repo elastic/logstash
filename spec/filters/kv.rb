@@ -104,7 +104,10 @@ describe LogStash::Filters::KV do
   describe "test dig_values" do
     config <<-CONFIG
       filter {
-        kv { dig_values => ['true', '_raw'] }
+        kv { 
+          recursive => 'true'
+          recursive_preservation_key => '_raw'
+        }
       }
     CONFIG
   
