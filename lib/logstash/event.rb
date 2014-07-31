@@ -47,7 +47,8 @@ class LogStash::Event
     @data = data
     @accessors = LogStash::Util::Accessors.new(data)
     @data[VERSION] ||= VERSION_ONE
-    @data[TIMESTAMP] = init_timestamp(@data[TIMESTAMP])
+    timestampObject = init_timestamp(@data[TIMESTAMP])
+    @data[TIMESTAMP] = timestampObject.to_iso8601
   end # def initialize
 
   public
