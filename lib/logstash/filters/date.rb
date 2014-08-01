@@ -132,7 +132,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           else
             iso_parser = iso_parser.withOffsetParsed
           end
-          parsers << lambda { |date| iso_parser.parseDateTime(date) }
+          parsers << lambda { |date| iso_parser.parseMillis(date) }
           #Fall back solution of almost ISO8601 date-time
           almostISOparsers = [
             org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSZ").getParser(),
