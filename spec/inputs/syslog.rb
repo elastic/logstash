@@ -29,6 +29,8 @@ describe "inputs/syslog", :socket => true do
       socket.close
 
       events = event_count.times.collect { queue.pop }
+
+      insist { events.length } == event_count
       event_count.times do |i|
         insist { events[i]["priority"] } == 164
         insist { events[i]["severity"] } == 4
@@ -36,5 +38,36 @@ describe "inputs/syslog", :socket => true do
       end
     end
   end
-end
 
+  describe "adds unique tag when grok parsing fails" do
+    port = 5511
+    event_count = 10
+
+    config <<-CONFIG
+      input {
+        syslog {
+          type => "blah"
+          port => #{port}
+        }
+      }
+    CONFIG
+
+    input do |pipeline, queue|
+      Thread.new { pipeline.run }
+      sleep 0.1 while !pipeline.ready?
+
+      socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
+      event_count.times do |i|
+        socket.puts("message which causes the a grok parse failure")
+      end
+      socket.close
+
+      events = event_count.times.collect { queue.pop }
+
+      insist { events.length } == event_count
+      event_count.times do |i|
+        insist { events[i]["tags"] } == ["_grokparsefailure_sysloginputplugin"]
+      end
+    end
+  end
+end
