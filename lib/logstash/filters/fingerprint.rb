@@ -90,15 +90,15 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
   def anonymize_openssl(data)
     digest = encryption_algorithm()
     # in JRuby 1.7.11 outputs as ASCII-8BIT
-    OpenSSL::HMAC.hexdigest(digest, @key, data).force_encoding(Encoding::UTF_8)
+    OpenSSL::HMAC.hexdigest(digest, @key, data.to_s).force_encoding(Encoding::UTF_8)
   end
 
   def anonymize_murmur3(value)
     case value
       when Fixnum
         MurmurHash3::V32.int_hash(value)
-      when String
-        MurmurHash3::V32.str_hash(value)
+      else
+        MurmurHash3::V32.str_hash(value.to_s)
     end
   end
 
