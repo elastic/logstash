@@ -79,6 +79,9 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Enable message acknowledgement
   config :ack, :validate => :boolean, :default => true
 
+  # Enable acknowledging multiple messages. The value of this config is number of messages to acknoledge
+  config :ack_multi, :validate => :number, :default => 0
+
   # Passive queue creation? Useful for checking queue existance without modifying server state
   config :passive, :validate => :boolean, :default => false
 

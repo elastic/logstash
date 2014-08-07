@@ -64,6 +64,10 @@ class LogStash::Inputs::RabbitMQ
 
     def teardown
       @consumer.cancel
+      begin
+        @ch.ack(@last_handled_msg, true)
+      rescue
+      end
       @q.delete unless @durable
 
       @ch.close   if @ch && @ch.open?
@@ -106,13 +110,24 @@ class LogStash::Inputs::RabbitMQ
       # a reference to the consumer so that we can cancel it, so
       # a consumer manually. MK.
       @consumer = Bunny::Consumer.new(@ch, @q)
+      @last_ack = 0
       @q.subscribe(:manual_ack => @ack, :block => true) do |delivery_info, properties, data|
         @codec.decode(data) do |event|
           decorate(event)
           @output_queue << event
         end
 
-        @ch.acknowledge(delivery_info.delivery_tag) if @ack
+        if @ack
+          if @ack_multi > 1
+            @last_handled_msg = metadata.delivery_tag
+            if metadata.delivery_tag.to_i > @last_ack.to_i
+              @last_ack = metadata.delivery_tag
+              @ch.ack(metadata.delivery_tag, true)
+            end
+          else 
+            @ch.ack(metadata.delivery_tag)
+          end
+        end
       end
     end
   end # BunnyImpl
