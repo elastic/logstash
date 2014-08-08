@@ -80,4 +80,37 @@ describe LogStash::Filters::Clone do
       insist { subject[1]["number"] } == 5
     end
   end
+
+  describe "with conditionals, see bug #1548" do
+    type "original"
+    config <<-CONFIG
+      filter {
+        clone {
+          clones => ["clone"]
+        }
+        if [type] == "clone" {
+          mutate { add_field => { "clone" => "true" } }
+        } else {
+          mutate { add_field => { "original" => "true" } }
+        }
+      }
+    CONFIG
+
+    sample("message" => "hello world") do
+      insist { subject }.is_a? Array
+      # subject.each{|event| puts(event.inspect + "\n")}
+      insist { subject.length } == 2
+
+      insist { subject.first["type"] } == nil
+      insist { subject.first["original"] } == "true"
+      insist { subject.first["clone"]} == nil
+      insist { subject.first["message"] } == "hello world"
+
+      insist { subject.last["type"]} == "clone"
+      insist { subject.last["original"] } == nil
+      insist { subject.last["clone"]} == "true"
+      insist { subject.last["message"] } == "hello world"
+    end
+  end
+
 end

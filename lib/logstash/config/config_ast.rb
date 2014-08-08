@@ -52,7 +52,6 @@ module LogStash; module Config; module AST
   class Node < Treetop::Runtime::SyntaxNode; end
   class Config < Node
     def compile
-      # TODO(sissel): Move this into config/config_ast.rb
       code = []
 
       code << <<-CODE
@@ -61,6 +60,15 @@ module LogStash; module Config; module AST
         @outputs = []
         @periodic_flushers = []
         @shutdown_flushers = []
+
+        @filter_event = lambda do |filter, event|
+          return [] if event.cancelled?
+
+          new_events = []
+          filter.filter(event){|new_event| new_events << new_event}
+
+          event.cancelled? ? new_events : new_events << event
+        end
       CODE
 
       sections = recursive_select(LogStash::Config::AST::PluginSection)
@@ -74,9 +82,10 @@ module LogStash; module Config; module AST
 
       ["filter", "output"].each do |type|
         # defines @filter_func and @output_func
+
         definitions << "@#{type}_func = lambda do |event, &block|"
         if type == "filter"
-          definitions << "  extra_events = []"
+          definitions << "  events = [event]"
         end
 
         definitions << "  @logger.debug? && @logger.debug(\"#{type} received\", :event => event.to_hash)"
@@ -85,7 +94,7 @@ module LogStash; module Config; module AST
         end
 
         if type == "filter"
-          definitions << "  extra_events.each(&block)"
+          definitions << "  events.flatten.each{|e| block.call(e) if e != event}"
         end
         definitions << "end"
       end
@@ -128,11 +137,11 @@ module LogStash; module Config; module AST
               flushed_events.each do |event|
                 @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name}, :event => event)
 
-                extra_events = []
+                events = [event]
                 #{plugin.compile_starting_here.gsub(/^/, "  ")}
 
                 block.call(event)
-                extra_events.each(&block)
+                events.flatten.each{|e| block.call(e) if e != event}
               end
 
             end
@@ -206,29 +215,7 @@ module LogStash; module Config; module AST
         when "input"
           return "start_input(#{variable_name})"
         when "filter"
-          # This is some pretty stupid code, honestly.
-          # I'd prefer much if it were put into the Pipeline itself
-          # and this should simply compile to
-          #   #{variable_name}.filter(event)
-
-          return <<-CODE
-            # #{text_value.split("\n").join("")}
-            unless extra_events.empty?
-              newevents = []
-              extra_events.each do |event|
-                #{variable_name}.filter(event) do |newevent|
-                  newevents << newevent
-                end
-              end
-              extra_events += newevents
-            end
-
-            unless event.cancelled?
-              #{variable_name}.filter(event) do |newevent|
-                extra_events << newevent
-              end
-            end
-          CODE
+          return "events = events.flat_map{|event| @filter_event.call(#{variable_name}, event)}\n"
         when "output"
           return "#{variable_name}.handle(event)\n"
         when "codec"
@@ -342,7 +329,21 @@ module LogStash; module Config; module AST
 
   class Branch < Node
     def compile
-      return super + "end\n"
+
+      # this construct is non obvious. we need to loop through each event and apply the conditional.
+      # each branch of a conditional will contain a construct (a filter for example) that also loops through
+      # the events variable so we have to initialize it to [event] for the branch code.
+      # at the end, events is returned to handle the case where no branch match and no branch code is executed
+      # so we must make sure to return the current event.
+
+      return <<-CODE
+        events = events.flat_map do |event|
+          events = [event]
+          #{super}
+          end
+          events
+        end
+      CODE
     end
   end
 
