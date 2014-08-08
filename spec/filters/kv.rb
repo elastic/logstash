@@ -346,6 +346,38 @@ describe LogStash::Filters::KV do
       insist { subject["__doublequoted"] } == "hello world"
     end
   end
+  
+  describe "test include_keys with dynamic key" do
+    config <<-CONFIG
+      filter {
+        kv {
+          source => "data"
+          include_keys => [ "%{key}"]
+        }
+      }
+    CONFIG
+    
+    sample({"data" => "foo=bar baz=fizz", "key" => "foo"}) do
+      insist { subject["foo"] } == "bar"
+      insist { subject["baz"] } == nil
+    end
+  end
+  
+  describe "test exclude_keys with dynamic key" do
+    config <<-CONFIG
+      filter {
+        kv {
+          source => "data"
+          exclude_keys => [ "%{key}"]
+        }
+      }
+    CONFIG
+    
+    sample({"data" => "foo=bar baz=fizz", "key" => "foo"}) do
+      insist { subject["foo"] } == nil
+      insist { subject["baz"] } == "fizz"
+    end
+  end
 
   describe "test include_keys and exclude_keys" do
     config <<-CONFIG
