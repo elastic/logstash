@@ -144,4 +144,19 @@ describe LogStash::Filters::Split do
     end
   end
 
+  describe "new events bug #793" do
+    config <<-CONFIG
+      filter {
+        split { terminator => "," }
+        mutate { rename => { "message" => "fancypants" } }
+      }
+    CONFIG
+
+    sample "hello,world" do
+    insist { subject.length } == 2
+      insist { subject[0]["fancypants"] } == "hello"
+      insist { subject[1]["fancypants"] } == "world"
+    end
+  end
+
 end
