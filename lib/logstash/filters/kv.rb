@@ -206,13 +206,18 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     if !event =~ /[@field_split]/
       return kv_keys
     end
+    
+    # Interpret dynamic keys for @include_keys and @exclude_keys
+    include_keys = @include_keys.map{|key| event.sprintf(key)}
+    exclude_keys = @exclude_keys.map{|key| event.sprintf(key)}
+    
     text.scan(@scan_re) do |key, v1, v2, v3|
       value = v1 || v2 || v3
       key = @trimkey.nil? ? key : key.gsub(@trimkey_re, "")
-
-      # Bail out as per the values of @include_keys and @exclude_keys
-      next if not @include_keys.empty? and not @include_keys.include?(key)
-      next if @exclude_keys.include?(key)
+      
+      # Bail out as per the values of include_keys and exclude_keys
+      next if not include_keys.empty? and not include_keys.include?(key)
+      next if exclude_keys.include?(key)
 
       key = event.sprintf(@prefix) + key
 
