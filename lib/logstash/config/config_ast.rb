@@ -60,15 +60,6 @@ module LogStash; module Config; module AST
         @outputs = []
         @periodic_flushers = []
         @shutdown_flushers = []
-
-        @filter_event = lambda do |filter, event|
-          return [] if event.cancelled?
-
-          new_events = []
-          filter.filter(event){|new_event| new_events << new_event}
-
-          event.cancelled? ? new_events : new_events << event
-        end
       CODE
 
       sections = recursive_select(LogStash::Config::AST::PluginSection)
@@ -77,7 +68,6 @@ module LogStash; module Config; module AST
       end
 
       # start inputs
-      #code << "class << self"
       definitions = []
 
       ["filter", "output"].each do |type|
@@ -212,16 +202,24 @@ module LogStash; module Config; module AST
 
     def compile
       case plugin_type
-        when "input"
-          return "start_input(#{variable_name})"
-        when "filter"
-          return "events = events.flat_map{|event| @filter_event.call(#{variable_name}, event)}\n"
-        when "output"
-          return "#{variable_name}.handle(event)\n"
-        when "codec"
-          settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
-          attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
-          return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})"
+      when "input"
+        return "start_input(#{variable_name})"
+      when "filter"
+        return <<-CODE
+          events = events.flat_map do |event|
+            next [] if event.cancelled?
+
+            new_events = []
+            #{variable_name}.filter(event){|new_event| new_events << new_event}
+            event.cancelled? ? new_events : new_events << event
+          end
+        CODE
+      when "output"
+        return "#{variable_name}.handle(event)\n"
+      when "codec"
+        settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
+        attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})"
       end
     end
 
@@ -284,7 +282,7 @@ module LogStash; module Config; module AST
 
   module Unicode
     def self.wrap(text)
-      return "(" + text.inspect + ".force_encoding(\"UTF-8\")" + ")"
+      return "(" + text.inspect + ".force_encoding(Encoding::UTF_8)" + ")"
     end
   end
 
