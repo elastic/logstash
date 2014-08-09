@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/codecs/base"
 require "logstash/util/charset"
+require "logstash/timestamp"
 
 # The multiline codec will collapse multiline messages and merge them into a
 # single event.
@@ -159,13 +160,13 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
   end # def decode
 
   def buffer(text)
-    @time = Time.now.utc if @buffer.empty?
+    @time = LogStash::Timestamp.now if @buffer.empty?
     @buffer << text
   end
 
   def flush(&block)
     if @buffer.any?
-      event = LogStash::Event.new("@timestamp" => @time, "message" => @buffer.join("\n"))
+      event = LogStash::Event.new(LogStash::Event::TIMESTAMP => @time, "message" => @buffer.join(NL))
       # Tag multiline events
       event.tag @multiline_tag if @multiline_tag && @buffer.size > 1
 
@@ -185,9 +186,9 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
   end
 
   public
-  def encode(data)
+  def encode(event)
     # Nothing to do.
-    @on_event.call(data)
+    @on_event.call(event)
   end # def encode
 
 end # class LogStash::Codecs::Plain

@@ -1,6 +1,6 @@
 require "test_utils"
 
-module ConditionalFancines
+module ConditionalFanciness
   def description
     return example.metadata[:example_group][:description_args][0]
   end
@@ -23,7 +23,7 @@ end
 
 describe "conditionals" do
   extend LogStash::RSpec
-  extend ConditionalFancines
+  extend ConditionalFanciness
 
   describe "simple" do
     config <<-CONFIG
@@ -317,6 +317,26 @@ describe "conditionals" do
       end
       conditional "![message] or ![message]" do
         sample("whatever") { insist { subject["tags"] }.include?("failure") }
+      end
+    end
+  end
+
+  describe "field references" do
+    conditional "[field with space]" do
+      sample("field with space" => "hurray") do
+        insist { subject["tags"].include?("success") }
+      end
+    end
+
+    conditional "[field with space] == 'hurray'" do
+      sample("field with space" => "hurray") do
+        insist { subject["tags"].include?("success") }
+      end
+    end
+
+    conditional "[nested field][reference with][some spaces] == 'hurray'" do
+      sample({"nested field" => { "reference with" => { "some spaces" => "hurray" } } }) do
+        insist { subject["tags"].include?("success") }
       end
     end
   end

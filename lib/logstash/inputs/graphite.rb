@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/inputs/tcp"
 require "logstash/namespace"
+require "logstash/timestamp"
 
 # Receive graphite metrics. This plugin understands the text-based graphite
 # carbon protocol. Both 'N' and specific-timestamp forms are supported, example:
@@ -18,8 +19,6 @@ class LogStash::Inputs::Graphite < LogStash::Inputs::Tcp
   config_name "graphite"
   milestone 1
 
-  ISO8601_STRFTIME = "%04d-%02d-%02dT%02d:%02d:%02d.%06d%+03d:00".freeze
-
   public
   def run(output_queue)
     @queue = output_queue
@@ -33,7 +32,7 @@ class LogStash::Inputs::Graphite < LogStash::Inputs::Tcp
     event[name] = value.to_f
 
     if time != "N"
-      event["@timestamp"] = Time.at(time.to_i).gmtime
+      event.timestamp = LogStash::Timestamp.at(time.to_i)
     end
 
     @queue << event

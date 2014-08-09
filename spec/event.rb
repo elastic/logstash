@@ -247,4 +247,51 @@ describe LogStash::Event do
       end
     end
   end
+
+  context "timestamp initialization" do
+    let(:logger) { double("logger") }
+
+    it "should coerce timestamp" do
+      t = Time.iso8601("2014-06-12T00:12:17.114Z")
+      expect(LogStash::Timestamp).to receive(:coerce).exactly(3).times.and_call_original
+      insist{LogStash::Event.new("@timestamp" => t).timestamp.to_i} == t.to_i
+      insist{LogStash::Event.new("@timestamp" => LogStash::Timestamp.new(t)).timestamp.to_i} == t.to_i
+      insist{LogStash::Event.new("@timestamp" => "2014-06-12T00:12:17.114Z").timestamp.to_i} == t.to_i
+    end
+
+    it "should assign current time when no timestamp" do
+      ts = LogStash::Timestamp.now
+      expect(LogStash::Timestamp).to receive(:now).and_return(ts)
+      insist{LogStash::Event.new({}).timestamp.to_i} == ts.to_i
+    end
+
+    it "should tag and warn for invalid value" do
+      ts = LogStash::Timestamp.now
+      expect(LogStash::Timestamp).to receive(:now).twice.and_return(ts)
+      expect(Cabin::Channel).to receive(:get).twice.and_return(logger)
+      expect(logger).to receive(:warn).twice
+
+      event = LogStash::Event.new("@timestamp" => :foo)
+      insist{event.timestamp.to_i} == ts.to_i
+      insist{event["tags"]} == [LogStash::Event::TIMESTAMP_FAILURE_TAG]
+      insist{event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]} == :foo
+
+      event = LogStash::Event.new("@timestamp" => 666)
+      insist{event.timestamp.to_i} == ts.to_i
+      insist{event["tags"]} == [LogStash::Event::TIMESTAMP_FAILURE_TAG]
+      insist{event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]} == 666
+    end
+
+    it "should tag and warn for invalid string format" do
+      ts = LogStash::Timestamp.now
+      expect(LogStash::Timestamp).to receive(:now).and_return(ts)
+      expect(Cabin::Channel).to receive(:get).and_return(logger)
+      expect(logger).to receive(:warn)
+
+      event = LogStash::Event.new("@timestamp" => "foo")
+      insist{event.timestamp.to_i} == ts.to_i
+      insist{event["tags"]} == [LogStash::Event::TIMESTAMP_FAILURE_TAG]
+      insist{event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]} == "foo"
+    end
+  end
 end

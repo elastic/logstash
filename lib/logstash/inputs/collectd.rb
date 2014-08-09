@@ -2,6 +2,7 @@
 require "date"
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "logstash/timestamp"
 require "socket"
 require "tempfile"
 require "time"
@@ -107,7 +108,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   def initialize(params)
     super
     BasicSocket.do_not_reverse_lookup = true
-    @timestamp = Time.now().utc
+    @timestamp = LogStash::Timestamp.now
     @collectd = {}
     @types = {}
   end # def initialize

@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/outputs/base"
 require "logstash/namespace"
+require "logstash/json"
 
 class LogStash::Outputs::Http < LogStash::Outputs::Base
   # This output lets you `PUT` or `POST` events to a
@@ -102,7 +103,7 @@ class LogStash::Outputs::Http < LogStash::Outputs::Base
     else
       @logger.error("Unknown verb:", :verb => @http_method)
     end
-    
+
     if @headers
       @headers.each do |k,v|
         request.headers[k] = event.sprintf(v)
@@ -113,7 +114,7 @@ class LogStash::Outputs::Http < LogStash::Outputs::Base
 
     begin
       if @format == "json"
-        request.body = evt.to_json
+        request.body = LogStash::Json.dump(evt)
       elsif @format == "message"
         request.body = event.sprintf(@message)
       else
@@ -121,7 +122,7 @@ class LogStash::Outputs::Http < LogStash::Outputs::Base
       end
       #puts "#{request.port} / #{request.protocol}"
       #puts request
-      #puts 
+      #puts
       #puts request.body
       response = @agent.execute(request)
 

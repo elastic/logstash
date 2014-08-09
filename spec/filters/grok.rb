@@ -12,7 +12,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message", "%{SYSLOGLINE}" ]
+          match => { "message" => "%{SYSLOGLINE}" }
           singles => true
           overwrite => [ "message" ]
         }
@@ -35,7 +35,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{SYSLOG5424LINE}" ]
+          match => { "message" => "%{SYSLOG5424LINE}" }
           singles => true
         }
       }
@@ -163,7 +163,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "(?:hello|world) %{NUMBER}" ]
+          match => { "message" => "(?:hello|world) %{NUMBER}" }
           named_captures_only => false
         }
       }
@@ -178,7 +178,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{NUMBER:foo:int} %{NUMBER:bar:float}" ]
+          match => { "message" => "%{NUMBER:foo:int} %{NUMBER:bar:float}" }
           singles => true
         }
       }
@@ -196,7 +196,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{FIZZLE=\\d+}" ]
+          match => { "message" => "%{FIZZLE=\\d+}" }
           named_captures_only => false
           singles => true
         }
@@ -212,8 +212,8 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{WORD:word}" ]
-          match => [ "examplefield", "%{NUMBER:num}" ]
+          match => { "message" => "%{WORD:word}" }
+          match => { "examplefield" => "%{NUMBER:num}" }
           break_on_match => false
           singles => true
         }
@@ -230,7 +230,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "matchme %{NUMBER:fancy}" ]
+          match => { "message" => "matchme %{NUMBER:fancy}" }
           singles => true
           add_field => [ "new_field", "%{fancy}" ]
         }
@@ -253,7 +253,7 @@ describe LogStash::Filters::Grok do
       config <<-CONFIG
         filter {
           grok {
-            match => [ "message",  "1=%{WORD:foo1} *(2=%{WORD:foo2})?" ]
+            match => { "message" => "1=%{WORD:foo1} *(2=%{WORD:foo2})?" }
           }
         }
       CONFIG
@@ -271,7 +271,7 @@ describe LogStash::Filters::Grok do
       config <<-CONFIG
         filter {
           grok {
-            match => [ "message",  "1=%{WORD:foo1} *(2=%{WORD:foo2})?" ]
+            match => { "message" => "1=%{WORD:foo1} *(2=%{WORD:foo2})?" }
             keep_empty_captures => true
           }
         }
@@ -292,7 +292,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "Hello %{WORD}. %{WORD:foo}" ]
+          match => { "message" => "Hello %{WORD}. %{WORD:foo}" }
           named_captures_only => false
           singles => true
         }
@@ -313,7 +313,7 @@ describe LogStash::Filters::Grok do
         filter {
           grok {
             singles => true
-            match => [ "message",  "(?<foo>\w+)" ]
+            match => { "message" => "(?<foo>\w+)" }
           }
         }
       CONFIG
@@ -328,7 +328,7 @@ describe LogStash::Filters::Grok do
         filter {
           grok {
             singles => true
-            match => [ "message",  "(?<timestamp>%{DATE_EU} %{TIME})" ]
+            match => { "message" => "(?<timestamp>%{DATE_EU} %{TIME})" }
           }
         }
       CONFIG
@@ -344,7 +344,7 @@ describe LogStash::Filters::Grok do
     config <<-'CONFIG'
       filter {
         grok {
-          match => [ "status", "^403$" ]
+          match => { "status" => "^403$" }
           add_tag => "four_oh_three"
         }
       }
@@ -360,7 +360,7 @@ describe LogStash::Filters::Grok do
     config <<-'CONFIG'
       filter {
         grok {
-          match => [ "version", "^1.0$" ]
+          match => { "version" => "^1.0$" }
           add_tag => "one_point_oh"
         }
       }
@@ -404,7 +404,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "matchme %{NUMBER:fancy}" ]
+          match => { "message" => "matchme %{NUMBER:fancy}" }
           tag_on_failure => false
         }
       }
@@ -423,7 +423,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{DATE_EU:stimestamp}" ]
+          match => { "message" => "%{DATE_EU:stimestamp}" }
           singles => true
         }
       }
@@ -438,7 +438,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message",  "%{WORD:foo-bar}" ]
+          match => { "message" => "%{WORD:foo-bar}" }
           singles => true
         }
       }
@@ -464,7 +464,7 @@ describe LogStash::Filters::Grok do
       }
       filter {
         grok {
-          match => [ "message", "%{SYSLOGLINE}" ]
+          match => { "message" => "%{SYSLOGLINE}" }
           singles => true
           overwrite => [ "message" ]
         }
@@ -486,7 +486,7 @@ describe LogStash::Filters::Grok do
     config <<-CONFIG
       filter {
         grok {
-          match => [ "message", "%{INT:foo}|%{WORD:foo}" ]
+          match => { "message" => "%{INT:foo}|%{WORD:foo}" }
           singles => true
         }
       }
@@ -500,4 +500,133 @@ describe LogStash::Filters::Grok do
       insist { subject["foo"] }.is_a?(String)
     end
   end
+
+  describe "break_on_match default should be true and first match should exit filter" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => "%{INT:foo}"
+                     "somefield" => "%{INT:bar}"}
+        }
+      }
+    CONFIG
+
+    sample("message" => "hello world 123", "somefield" => "testme abc 999") do
+      insist { subject["foo"] } == "123"
+      insist { subject["bar"] }.nil?
+    end
+  end
+
+  describe "break_on_match when set to false should try all patterns" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => "%{INT:foo}"
+                     "somefield" => "%{INT:bar}"}
+          break_on_match => false
+        }
+      }
+    CONFIG
+
+    sample("message" => "hello world 123", "somefield" => "testme abc 999") do
+      insist { subject["foo"] } == "123"
+      insist { subject["bar"] } == "999"
+    end
+  end
+
+  describe "LOGSTASH-1547 - break_on_match should work on fields with multiple patterns" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => ["%{GREEDYDATA:name1}beard", "tree%{GREEDYDATA:name2}"] }
+          break_on_match => false
+        }
+      }
+    CONFIG
+
+    sample "treebranch" do
+      insist { subject["name2"] } == "branch"
+    end
+
+    sample "bushbeard" do
+      insist { subject["name1"] } == "bush"
+    end
+
+    sample "treebeard" do
+      insist { subject["name1"] } == "tree"
+      insist { subject["name2"] } == "beard"
+    end
+  end
+
+  describe "break_on_match default for array input with single grok pattern" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => "%{INT:foo}"}
+        }
+      }
+    CONFIG
+
+    # array input --
+    sample("message" => ["hello world 123", "line 23"]) do
+      insist { subject["foo"] } == ["123", "23"]
+      insist { subject["tags"] }.nil?
+    end
+
+    # array input, one of them matches
+    sample("message" => ["hello world 123", "abc"]) do
+      insist { subject["foo"] } == "123"
+      insist { subject["tags"] }.nil?
+    end
+  end
+
+  describe "break_on_match = true (default) for array input with multiple grok pattern" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => ["%{INT:foo}", "%{WORD:bar}"] }
+        }
+      }
+    CONFIG
+
+    # array input --
+    sample("message" => ["hello world 123", "line 23"]) do
+      insist { subject["foo"] } == ["123", "23"]
+      insist { subject["bar"] }.nil?
+      insist { subject["tags"] }.nil?
+    end
+
+    # array input, one of them matches
+    sample("message" => ["hello world", "line 23"]) do
+      insist { subject["bar"] } == "hello"
+      insist { subject["foo"] } == "23"
+      insist { subject["tags"] }.nil?
+    end
+  end
+
+  describe "break_on_match = false for array input with multiple grok pattern" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => ["%{INT:foo}", "%{WORD:bar}"] }
+          break_on_match => false
+        }
+      }
+    CONFIG
+
+    # array input --
+    sample("message" => ["hello world 123", "line 23"]) do
+      insist { subject["foo"] } == ["123", "23"]
+      insist { subject["bar"] } == ["hello", "line"]
+      insist { subject["tags"] }.nil?
+    end
+
+    # array input, one of them matches
+    sample("message" => ["hello world", "line 23"]) do
+      insist { subject["bar"] } == ["hello", "line"]
+      insist { subject["foo"] } == "23"
+      insist { subject["tags"] }.nil?
+    end
+  end
+
 end

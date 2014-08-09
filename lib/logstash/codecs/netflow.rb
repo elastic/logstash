@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/filters/base"
 require "logstash/namespace"
+require "logstash/timestamp"
 
 # The "netflow" codec is for decoding Netflow v5/v9 flows.
 class LogStash::Codecs::Netflow < LogStash::Codecs::Base
@@ -45,7 +46,7 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
     @templates = Vash.new()
 
     # Path to default Netflow v9 field definitions
-    filename = File.join(File.dirname(__FILE__), "netflow/netflow.yaml")
+    filename = LogStash::Environment.plugin_path("codecs/netflow/netflow.yaml")
 
     begin
       @fields = YAML.load_file(filename)
@@ -90,7 +91,7 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
         #
         # The flowset header gives us the UTC epoch seconds along with
         # residual nanoseconds so we can set @timestamp to that easily
-        event["@timestamp"] = Time.at(flowset.unix_sec, flowset.unix_nsec / 1000).utc
+        event.timestamp = LogStash::Timestamp.at(flowset.unix_sec, flowset.unix_nsec / 1000)
         event[@target] = {}
 
         # Copy some of the pertinent fields in the header to the event
@@ -162,7 +163,7 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
               # Purge any expired templates
               @templates.cleanup!
             end
-          end 
+          end
         when 256..65535
           # Data flowset
           #key = "#{flowset.source_id}|#{event["source"]}|#{record.flowset_id}"
@@ -180,7 +181,7 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
           # Template shouldn't be longer than the record and there should
           # be at most 3 padding bytes
           if template.num_bytes > length or ! (length % template.num_bytes).between?(0, 3)
-            @logger.warn("Template length doesn't fit cleanly into flowset", :template_id => record.flowset_id, :template_length => template.num_bytes, :record_length => length) 
+            @logger.warn("Template length doesn't fit cleanly into flowset", :template_id => record.flowset_id, :template_length => template.num_bytes, :record_length => length)
             next
           end
 
@@ -190,7 +191,7 @@ class LogStash::Codecs::Netflow < LogStash::Codecs::Base
 
           records.each do |r|
             event = LogStash::Event.new(
-              "@timestamp" => Time.at(flowset.unix_sec).utc,
+              LogStash::Event::TIMESTAMP => LogStash::Timestamp.at(flowset.unix_sec),
               @target => {}
             )
 

@@ -30,7 +30,7 @@ class LogStash::Codecs::Line < LogStash::Codecs::Base
     @converter = LogStash::Util::Charset.new(@charset)
     @converter.logger = @logger
   end
-  
+
   public
   def decode(data)
     @buffer.extract(data).each do |line|
@@ -47,11 +47,11 @@ class LogStash::Codecs::Line < LogStash::Codecs::Base
   end
 
   public
-  def encode(data)
-    if data.is_a? LogStash::Event and @format
-      @on_event.call(data.sprintf(@format) + "\n")
+  def encode(event)
+    if event.is_a? LogStash::Event and @format
+      @on_event.call(event.sprintf(@format) + NL)
     else
-      @on_event.call(data.to_s + "\n")
+      @on_event.call(event.to_s + NL)
     end
   end # def encode
 

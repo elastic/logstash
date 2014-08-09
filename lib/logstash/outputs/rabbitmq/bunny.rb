@@ -1,4 +1,7 @@
 # encoding: utf-8
+
+require "logstash/json"
+
 class LogStash::Outputs::RabbitMQ
   module BunnyImpl
 
@@ -24,7 +27,7 @@ class LogStash::Outputs::RabbitMQ
 
       begin
         publish_serialized(event.to_json, key)
-      rescue JSON::GeneratorError => e
+      rescue LogStash::Json::GeneratorError => e
         @logger.warn("Trouble converting event to JSON", :exception => e,
                      :event => event)
       end

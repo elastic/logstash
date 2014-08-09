@@ -8,6 +8,8 @@ class LogStash::Plugin
   attr_accessor :params
   attr_accessor :logger
 
+  NL = "\n"
+
   public
   def hash
     params.hash ^

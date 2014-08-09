@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/filters/base"
 require "logstash/namespace"
+require "logstash/environment"
 require "set"
 #
 # This filter will collapse multiline messages from a single source into one Logstash event.
@@ -102,7 +103,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   # Detect if we are running from a jarfile, pick the right path.
   @@patterns_path = Set.new
-  @@patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
+  @@patterns_path += [LogStash::Environment.pattern_path("*")]
 
   public
   def initialize(config = {})
@@ -233,7 +234,7 @@ class LogStash::Filters::Multiline < LogStash::Filters::Base
 
   def collapse_event!(event)
     event["message"] = event["message"].join("\n") if event["message"].is_a?(Array)
-    event["@timestamp"] = event["@timestamp"].first if event["@timestamp"].is_a?(Array)
+    event.timestamp = event.timestamp.first if event.timestamp.is_a?(Array)
     event
   end
 end # class LogStash::Filters::Multiline
