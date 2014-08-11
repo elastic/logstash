@@ -1,7 +1,8 @@
-# You can use this pattern if you run appcfg tool (https://developers.google.com/appengine/docs/appcfg)
+# You can use this pattern if you use appcfg tool (https://developers.google.com/appengine/docs/appcfg)
 #
 # Google App Engine logs without the option '--include_all' (in the docs they are called 'Apache common log', but there are problems if you use %{COMBINEDAPACHELOG})
 GOOGLEAPPENGINELOG %{COMMONAPACHELOG} (%{QS:referrer}|-) %{QS:agent}
 
 # Google App Engine logs with the option '--include_all'
-GOOGLEAPPENGINEFULLLOG %{GOOGLEAPPENGINELOG} %{QS:hostname} ms=%{NUMBER:ms} cpu_ms=%{NUMBER:cpu_ms} cpm_usd=%{NUMBER:cpm_usd} instance=%{WORD:instance} app_engine_release=(?<app_engine_release>[0-9].[0-9].[0-9]) trace_id=%{WORD:trace_id}
+GOOGLEAPPENGINERELEASE [0-9].[0-9].[0-9]
+GOOGLEAPPENGINEFULLLOG %{GOOGLEAPPENGINELOG} %{QS:hostname} ms=%{NUMBER:ms} cpu_ms=%{NUMBER:cpu_ms} cpm_usd=%{NUMBER:cpm_usd} instance=%{WORD:instance} app_engine_release=%{GOOGLEAPPENGINERELEASE:app_engine_release} trace_id=%{WORD:trace_id}
