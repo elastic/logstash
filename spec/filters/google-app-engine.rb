@@ -30,7 +30,7 @@ describe "google app engine grok pattern" do
         end
         context "should NOT match" do
             [
-            "205.251.208.18 - - [11/Aug/2014:00:00:07 -0700] \"GET /main/path HTTP/1.1\" 200 19896 - \"Amazon CloudFront\" \"mydomain.com\" ms=59 cpu_ms=62 cpm_usd=0.002224 instance=00c61b117c8717096ff64563cf71f30641cf995d app_engine_release=1.9.8 trace_id=649a71703f21791d12e87f46f8c83dcd",
+            "205.251.208.18 - - [11/Aug/2014:00:00:07 -0700] \"GET /main/path HTTP/1.1\" 200 19896 - \"Referrer String\" \"mydomain.com\" ms=59 cpu_ms=62 cpm_usd=0.002224 instance=00c61b117c8717096ff64563cf71f30641cf995d app_engine_release=1.9.8 trace_id=649a71703f21791d12e87f46f8c83dcd",
             ].each do |message|
                 sample message do
                     insist {subject["result"]} != message
@@ -55,7 +55,11 @@ describe "google app engine grok pattern" do
         
         context "should match" do
             [
-            "205.251.208.18 - - [11/Aug/2014:00:00:07 -0700] \"GET /main/path HTTP/1.1\" 200 19896 - \"Amazon CloudFront\" \"mydomain.com\" ms=59 cpu_ms=62 cpm_usd=0.002224 instance=00c61b117c8717096ff64563cf71f30641cf995d app_engine_release=1.9.8 trace_id=649a71703f21791d12e87f46f8c83dcd"
+            "205.251.208.18 - - [11/Aug/2014:00:00:07 -0700] \"GET /main/path HTTP/1.1\" 200 19896 - \"Referrer String\" \"mydomain.com\" ms=59 cpu_ms=62 cpm_usd=0.002224 instance=00c61b117c8717096ff64563cf71f30641cf995d app_engine_release=1.9.8 trace_id=649a71703f21791d12e87f46f8c83dcd",
+            "0.1.0.3 - - [11/Aug/2014:11:56:38 -0700] \"GET /_ah/warmup HTTP/1.1\" 200 0 - - \"mydomain.com\" ms=15192 cpu_ms=19147 loading_request=1 instance=00c61b117cca2457cdf71e7f6187ac76aa90590c app_engine_release=1.9.8 trace_id=0cb6fce856b4451a28e06194a42d59fe",
+            "205.251.208.42 - - [11/Aug/2014:12:52:03 -0700] \"GET /image.jpg HTTP/1.1\" 200 62795 - \"Referrer String\" \"mydomain.com\" ms=24877 cpu_ms=17999 cpm_usd=0.007018 loading_request=1 pending_ms=10572 instance=00c61b117c58c56f7d2d90ee67d4a01e43e262 app_engine_release=1.9.8 trace_id=cd59e954c8a3d2142bcfef9f923839bf",
+            "205.251.208.18 - - [11/Aug/2014:12:51:55 -0700] \"GET /public/files/ahJzfm1hcDJhcHAtcGxhdGZvcm1yLAsSC1VzZXJBY2NvdW50GK2iDAwLEgVBbGJ1bRi6FwwLEgVNZWRpYRirgQoM_ORIGINAL=s640.jpg HTTP/1.1\" 200 77961 - \"Referrer String\" \"mydomain.com\" ms=16993 cpu_ms=18395 cpm_usd=0.008713 loading_request=1 instance=00c61b117c895aad5344960bc5673b2f8652d7 app_engine_release=1.9.8 trace_id=160462e198259582cd987016057a05ce",
+            "216.137.62.18 - - [11/Aug/2014:12:37:50 -0700] \"GET /animage.jpg HTTP/1.1\" 200 22029 - \"Referrer String\" \"mydomain.com\" ms=16749 cpu_ms=17187 cpm_usd=0.002462 loading_request=1 instance=00c61b117c74a08ddd0eb033a807fdbff928ad app_engine_release=1.9.8 trace_id=3b9e760a3255e7500f348275276e4206"
             ].each do |message|
                 sample message do
                     insist {subject["result"]} == message
@@ -63,7 +67,7 @@ describe "google app engine grok pattern" do
             end
         end
         
-        sample "205.251.208.18 - - [11/Aug/2014:00:00:07 -0700] \"GET /main/path HTTP/1.1\" 200 19896 - \"Amazon CloudFront\" \"mydomain.com\" ms=59 cpu_ms=62 cpm_usd=0.002224 instance=00c61b117c8717096ff64563cf71f30641cf995d app_engine_release=1.9.8 trace_id=649a71703f21791d12e87f46f8c83dcd" do
+        sample "205.251.208.18 - - [11/Aug/2014:00:00:07 -0700] \"GET /main/path HTTP/1.1\" 200 19896 - \"Referrer String\" \"mydomain.com\" ms=59 cpu_ms=62 cpm_usd=0.002224 instance=00c61b117c8717096ff64563cf71f30641cf995d app_engine_release=1.9.8 trace_id=649a71703f21791d12e87f46f8c83dcd" do
             insist { subject["hostname"] } == "\"mydomain.com\""
             insist { subject["ms"] } == "59"
             insist { subject["cpu_ms"] } == "62"
