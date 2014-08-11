@@ -263,7 +263,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
         grok = Grok.new
         grok.logger = @logger unless @logger.nil?
         add_patterns_from_files(@patternfiles, grok)
-        grok.compile(pattern)
+        grok.compile(pattern, @named_captures_only)
         @patterns[field] << grok
       end
     end # @match.each
@@ -320,76 +320,35 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     matched = false
     groks.each do |grok|
       # Convert anything else to string (number, hash, etc)
-      match = grok.match(input.to_s)
-      if match
-        match.each_capture do |capture, value|
-          handle(capture, value, event)
-        end
+      matched = grok.match_and_capture(input.to_s) do |field, value|
         matched = true
-        break if @break_on_match
+        handle(field, value, event)
       end
+      break if matched and @break_on_match
     end
     return matched
   end
 
   private
-  def handle(capture, value, event)
-    handler = @handlers[capture] ||= compile_capture_handler(capture)
-    return handler.call(value, event)
-  end
+  def handle(field, value, event)
+    return if (value.nil? || (value.is_a?(String) && value.empty?)) unless
+        @keep_empty_captures
 
-  private
-  def compile_capture_handler(capture)
-    # SYNTAX:SEMANTIC:TYPE
-    syntax, semantic, coerce = capture.split(":")
-
-    # each_capture do |fullname, value|
-    #   capture_handlers[fullname].call(value, event)
-    # end
-
-    code = []
-    code << "# for capture #{capture}"
-    code << "lambda do |value, event|"
-    #code << "  p :value => value, :event => event"
-    if semantic.nil?
-      if @named_captures_only
-        # Abort early if we are only keeping named (semantic) captures
-        # and this capture has no semantic name.
-        code << "  return"
-      else
-        field = syntax
-      end
-    else
-      field = semantic
-    end
-    code << "  return if value.nil? || value.empty?" unless @keep_empty_captures
-    if coerce
-      case coerce
-        when "int"; code << "  value = value.to_i"
-        when "float"; code << "  value = value.to_f"
-      end
-    end
-
-    code << "  # field: #{field}"
     if @overwrite.include?(field)
-      code << "  event[field] = value"
+      event[field] = value
     else
-      code << "  v = event[field]"
-      code << "  if v.nil?"
-      code << "    event[field] = value"
-      code << "  elsif v.is_a?(Array)"
-      code << "    event[field] << value"
-      code << "  elsif v.is_a?(String)"
-      # Promote to array since we aren't overwriting.
-      code << "    event[field] = [v, value]"
-      code << "  end"
+      v = event[field]
+      if v.nil?
+        event[field] = value
+      elsif v.is_a?(Array)
+        event[field] << value
+      elsif v.is_a?(String)
+        #puts v, value
+        # Promote to array since we aren't overwriting.
+        event[field] = [v, value]
+      end
     end
-    code << "  return"
-    code << "end"
-
-    #puts code
-    return eval(code.join("\n"), binding, "<grok capture #{capture}>")
-  end # def compile_capture_handler
+  end
 
   private
   def add_patterns_from_files(paths, grok)
