@@ -70,25 +70,25 @@ describe "google app engine grok pattern" do
         
         sample "205.251.208.18 - - [11/Aug/2014:00:00:07 -0700] \"GET /main/path HTTP/1.1\" 200 19896 - \"Referrer String\" \"mydomain.com\" ms=59 cpu_ms=62 cpm_usd=0.002224 instance=00c61b117c8717096ff64563cf71f30641cf995d app_engine_release=1.9.8 trace_id=649a71703f21791d12e87f46f8c83dcd" do
             insist { subject["hostname"] } == "\"mydomain.com\""
-            insist { subject["ms"] } == "59"
-            insist { subject["cpu_ms"] } == "62"
-            insist { subject["cpm_usd"] } == "0.002224"
+            insist { subject["ms"] } == 59
+            insist { subject["cpu_ms"] } == 62
+            insist { subject["cpm_usd"] } == 0.002224
             insist { subject["instance"] } == "00c61b117c8717096ff64563cf71f30641cf995d"
             insist { subject["app_engine_release"] } == "1.9.8"
             insist { subject["trace_id"] } == "649a71703f21791d12e87f46f8c83dcd"
         end
         
-        #sample "205.251.208.42 - - [11/Aug/2014:12:52:03 -0700] \"GET /image.jpg HTTP/1.1\" 200 62795 - \"Referrer String\" \"mydomain.com\" ms=24877 cpu_ms=17999 cpm_usd=0.007018 loading_request=1 pending_ms=10572 instance=00c61b117c58c56f7d2d90ee67d4a01e43e262 app_engine_release=1.9.8 trace_id=cd59e954c8a3d2142bcfef9f923839bf" do
-        #    insist { subject["hostname"] } == "\"mydomain.com\""
-        #    insist { subject["ms"] } == "24877"
-        #    insist { subject["cpu_ms"] } == "17999"
-        #    insist { subject["cpm_usd"] } == "0.007018"
-        #    insist { subject["loading_request"] } == "1"
-        #    insist { subject["pending_ms"] } == "10572"
-        #    insist { subject["instance"] } == "00c61b117c58c56f7d2d90ee67d4a01e43e262"
-        #    insist { subject["app_engine_release"] } == "1.9.8"
-        #    insist { subject["trace_id"] } == "cd59e954c8a3d2142bcfef9f923839bf"
-        #end
+        sample "205.251.208.42 - - [11/Aug/2014:12:52:03 -0700] \"GET /image.jpg HTTP/1.1\" 200 62795 - \"Referrer String\" \"mydomain.com\" ms=24877 cpu_ms=17999 cpm_usd=0.007018 loading_request=1 pending_ms=10572 instance=00c61b117c58c56f7d2d90ee67d4a01e43e262 app_engine_release=1.9.8 trace_id=cd59e954c8a3d2142bcfef9f923839bf" do
+            insist { subject["hostname"] } == "\"mydomain.com\""
+            insist { subject["ms"] } == 24877
+            insist { subject["cpu_ms"] } == 17999
+            insist { subject["cpm_usd"] } == 0.007018
+            insist { subject["loading_request"] } == 1
+            insist { subject["pending_ms"] } == 10572
+            insist { subject["instance"] } == "00c61b117c58c56f7d2d90ee67d4a01e43e262"
+            insist { subject["app_engine_release"] } == "1.9.8"
+            insist { subject["trace_id"] } == "cd59e954c8a3d2142bcfef9f923839bf"
+        end
     end
     
 end

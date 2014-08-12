@@ -5,4 +5,4 @@ GOOGLEAPPENGINELOG %{COMMONAPACHELOG} (%{QS:referrer}|-) (%{QS:agent}|-)
 
 # Google App Engine logs with the option '--include_all'
 GOOGLEAPPENGINERELEASE [0-9].[0-9].[0-9]
-GOOGLEAPPENGINEFULLLOG %{GOOGLEAPPENGINELOG} %{QS:hostname} ms=%{NUMBER:ms} cpu_ms=%{NUMBER:cpu_ms} (cpm_usd=%{NUMBER:cpm_usd}\s)*(loading_request=%{NUMBER:loading_request}\s)*(pending_ms=%{NUMBER:pending_ms}\s)*(instance=%{WORD:instance}\s)*app_engine_release=%{GOOGLEAPPENGINERELEASE:app_engine_release} trace_id=%{WORD:trace_id}
+GOOGLEAPPENGINEFULLLOG %{GOOGLEAPPENGINELOG} %{QS:hostname} ms=%{NUMBER:ms:int} cpu_ms=%{NUMBER:cpu_ms:int} (cpm_usd=%{NUMBER:cpm_usd:float}\s)*(loading_request=%{NUMBER:loading_request:int}\s)*(pending_ms=%{NUMBER:pending_ms:int}\s)*(instance=%{WORD:instance}\s)*app_engine_release=%{GOOGLEAPPENGINERELEASE:app_engine_release} trace_id=%{WORD:trace_id}
