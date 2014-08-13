@@ -9,11 +9,11 @@ require "test_utils"
 describe "google app engine grok pattern" do
     extend LogStash::RSpec
     
-    describe "GOOGLEAPPENGINELOG" do
+    describe "GAELOG" do
         config <<-CONFIG
         filter {
             grok {
-                match => { "message" => "%{GOOGLEAPPENGINELOG:result}" }
+                match => { "message" => "%{GAELOG:result}" }
             }
         }
         CONFIG
@@ -44,11 +44,11 @@ describe "google app engine grok pattern" do
         end
     end
     
-    describe "GOOGLEAPPENGINEFULLLOG" do
+    describe "GAEFULLLOG" do
         config <<-CONFIG
         filter {
             grok {
-                match => { "message" => "%{GOOGLEAPPENGINEFULLLOG:result}" }
+                match => { "message" => "%{GAEFULLLOG:result}" }
             }
         }
         CONFIG
@@ -60,7 +60,8 @@ describe "google app engine grok pattern" do
             "205.251.208.42 - - [11/Aug/2014:12:52:03 -0700] \"GET /image.jpg HTTP/1.1\" 200 62795 - \"Referrer String\" \"mydomain.com\" ms=24877 cpu_ms=17999 cpm_usd=0.007018 loading_request=1 pending_ms=10572 instance=00c61b117c58c56f7d2d90ee67d4a01e43e262 app_engine_release=1.9.8 trace_id=cd59e954c8a3d2142bcfef9f923839bf",
             "205.251.208.18 - - [11/Aug/2014:12:51:55 -0700] \"GET /public/files/ahJzfm1hcDJhcHAtcGxhdGZvcm1yLAsSC1VzZXJBY2NvdW50GK2iDAwLEgVBbGJ1bRi6FwwLEgVNZWRpYRirgQoM_ORIGINAL=s640.jpg HTTP/1.1\" 200 77961 - \"Referrer String\" \"mydomain.com\" ms=16993 cpu_ms=18395 cpm_usd=0.008713 loading_request=1 instance=00c61b117c895aad5344960bc5673b2f8652d7 app_engine_release=1.9.8 trace_id=160462e198259582cd987016057a05ce",
             "216.137.62.18 - - [11/Aug/2014:12:37:50 -0700] \"GET /animage.jpg HTTP/1.1\" 200 22029 - \"Referrer String\" \"mydomain.com\" ms=16749 cpu_ms=17187 cpm_usd=0.002462 loading_request=1 instance=00c61b117c74a08ddd0eb033a807fdbff928ad app_engine_release=1.9.8 trace_id=3b9e760a3255e7500f348275276e4206",
-            "79.38.174.111 - - [12/Aug/2014:00:00:48 -0700] \"GET /vthumb_grip.png HTTP/1.1\" 200 0 \"http://mydomain.com/file.jsp\" \"Mozilla/5.0 (Windows NT 6.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36\" \"mydomain.com\" ms=57 cpu_ms=0 app_engine_release=1.9.9 trace_id=85b1c3e86fc703ecdad61b7f85456d40"
+            "79.38.174.111 - - [12/Aug/2014:00:00:48 -0700] \"GET /vthumb_grip.png HTTP/1.1\" 200 0 \"http://mydomain.com/file.jsp\" \"Mozilla/5.0 (Windows NT 6.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36\" \"mydomain.com\" ms=57 cpu_ms=0 app_engine_release=1.9.9 trace_id=85b1c3e86fc703ecdad61b7f85456d40",
+            "0.1.0.2 - - [13/Aug/2014:08:29:16 -0700] \"POST /testpath HTTP/1.1\" 202 67 \"http://mydomain/endpoint\"; \"AppEngine-Google; (+http://code.google.com/appengine)\" \"mydomain.com\" ms=45787 cpu_ms=27188 cpm_usd=0.071525 queue_name=name-queue task_name=13646048306045697056 instance=00c61b117c6b9e63d18bfa55a4be5369794b2b64 app_engine_release=1.9.9 trace_id=a1f770a9c5a2e6ad23de2c0222473c81"
             ].each do |message|
                 sample message do
                     insist {subject["result"]} == message
