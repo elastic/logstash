@@ -84,7 +84,7 @@ module LogStash; module Config; module AST
         end
 
         if type == "filter"
-          definitions << "  events.flatten.each{|e| block.call(e) if e != event}"
+          definitions << "  events.flatten.each{|e| block.call(e) }"
         end
         definitions << "end"
       end
@@ -211,7 +211,7 @@ module LogStash; module Config; module AST
 
             new_events = []
             #{variable_name}.filter(event){|new_event| new_events << new_event}
-            event.cancelled? ? new_events : new_events << event
+            event.cancelled? ? new_events : new_events.insert(0, event)
           end
         CODE
       when "output"

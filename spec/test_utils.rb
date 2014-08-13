@@ -91,13 +91,7 @@ module LogStash
           pipeline.instance_eval { @filters.each(&:register) }
 
           event.each do |e|
-            extra = []
-            pipeline.filter(e) do |new_event|
-              extra << new_event
-            end
-
-            results << e unless e.cancelled?
-            results += extra.reject(&:cancelled?)
+            pipeline.filter(e) {|new_event| results << new_event }
           end
 
           pipeline.flush_filters(:final => true) do |e|

@@ -202,9 +202,9 @@ class LogStash::Pipeline
         when LogStash::Event
           # use events array to guarantee ordering of origin vs created events
           # where created events are emitted by filters like split or metrics
-          events = [event]
+          events = []
           filter(event) { |newevent| events << newevent }
-          events.each { |event| @filter_to_output.push(event) unless event.cancelled? }
+          events.each { |event| @filter_to_output.push(event) }
         when LogStash::FlushEvent
           # handle filter flushing here so that non threadsafe filters (thus only running one filterworker)
           # don't have to deal with thread safety implementing the flush method
