@@ -29,7 +29,14 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   # SSL key passphrase to use.
   config :ssl_key_passphrase, :validate => :password
 
-  # TODO(sissel): Add CA to authenticate clients with.
+  #SSL certificate authority
+  config :ssl_cacert, :validate => :path
+  
+  #SSL include system wide certificate authorities
+  config :ssl_include_system_ca, :default => false
+  
+  #SSL verify client certificates
+  config :ssl_client_cert_check, :default => false
 
   public
   def register
