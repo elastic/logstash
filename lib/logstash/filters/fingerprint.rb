@@ -15,8 +15,8 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
   # will overwrite current value of a field if it exists.
   config :target, :validate => :string, :default => 'fingerprint'
 
-  # Hash encoding. Valid values are 'hex', 'base64' and 'base64url'.
-  config :encoding, :validate => :string, :default => 'hex'
+  # Hash encoding for OpenSSL hashes.
+  config :encoding, :validate => [ 'hex', 'base64', 'base64url' ], :default => 'hex'
 
   # When used with IPV4_NETWORK method fill in the subnet prefix length
   # Not required for MURMUR3 or UUID methods
