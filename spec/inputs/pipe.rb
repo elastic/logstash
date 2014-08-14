@@ -5,6 +5,9 @@ require "tempfile"
 describe "inputs/pipe" do
   extend LogStash::RSpec
 
+  #Minimal value to avoid an endless loop when enabling debug log
+  @@wait_on_restart = 0.3
+
   describe "echo - once" do
     event_count = 1
     tmp_file = Tempfile.new('logstash-spec-input-pipe')
@@ -84,6 +87,8 @@ describe "inputs/pipe" do
     end # input
   end
 
+  #This test is reading the log expecting only warn level,
+  #so enabling debug logging will make it fail
   describe "invalid command - do not restart" do
     error_count = 1
     config <<-CONFIG
@@ -91,7 +96,6 @@ describe "inputs/pipe" do
       pipe {
         command => "@@@Invalid_Command_Test@@@"
         restart => "never"
-        wait_on_restart => 0
       }
     }
     CONFIG
@@ -125,13 +129,16 @@ describe "inputs/pipe" do
     end # input
   end
 
+  #This test is reading the log expecting only warn level,
+  #so enabling debug logging will make it fail
   describe "restart on error" do
-    error_count = 5
+    error_count = 3
     config <<-CONFIG
     input {
       pipe {
         command => "@@@Invalid_Command_Test@@@"
         restart => "error"
+        wait_on_restart => #{@@wait_on_restart}
       }
     }
     CONFIG

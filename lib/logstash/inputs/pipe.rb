@@ -35,12 +35,12 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
 
 
   # Number of seconds to wait before restarting the pipe
-  config :wait_on_restart, :validate => :number, :default => 0
+  config :wait_on_restart, :validate => :number, :default => 10
 
   public
   def register
     @logger.info("Registering pipe input", :command => @command)
-    @host = Socket.gethostname
+    @host = Socket.gethostname.force_encoding(Encoding::UTF_8)
   end # def register
 
   public
