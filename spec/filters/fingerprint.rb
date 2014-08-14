@@ -37,7 +37,7 @@ describe LogStash::Filters::Fingerprint do
     end
   end
 
-   describe "fingerprint string with SHA1 alogrithm" do
+   describe "fingerprint string with SHA1 alogrithm and default hex encoding" do
     config <<-CONFIG
       filter {
         fingerprint {
@@ -50,6 +50,40 @@ describe LogStash::Filters::Fingerprint do
 
     sample("clientip" => "123.123.123.123") do
       insist { subject["fingerprint"] } == "fdc60acc4773dc5ac569ffb78fcb93c9630797f4"
+    end
+  end
+
+  describe "fingerprint string with SHA1 algorithm and base64 encoding" do
+    config <<-CONFIG
+      filter {
+        fingerprint {
+          source => ["clientip"]
+          key => "longencryptionkey"
+          method => 'SHA1'
+          encoding => 'base64'
+        }
+      }
+    CONFIG
+
+    sample("clientip" => "123.123.123.123") do
+      insist { subject["fingerprint"] } == "/cYKzEdz3FrFaf+3j8uTyWMHl/Q="
+    end
+  end
+
+  describe "fingerprint string with SHA1 algorithm and base64url encoding" do
+    config <<-CONFIG
+      filter {
+        fingerprint {
+          source => ["clientip"]
+          key => "longencryptionkey"
+          method => 'SHA1'
+          encoding => 'base64url'
+        }
+      }
+    CONFIG
+
+    sample("clientip" => "123.123.123.123") do
+      insist { subject["fingerprint"] } == "_cYKzEdz3FrFaf-3j8uTyWMHl_Q="
     end
   end
 
