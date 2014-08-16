@@ -45,7 +45,9 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
     @logger.info("Starting lumberjack input listener", :address => "#{@host}:#{@port}")
     @lumberjack = Lumberjack::Server.new(:address => @host, :port => @port,
       :ssl_certificate => @ssl_certificate, :ssl_key => @ssl_key,
-      :ssl_key_passphrase => @ssl_key_passphrase)
+      :ssl_key_passphrase => @ssl_key_passphrase, :ssl_cacert => @ssl_cacert,
+      :ssl_include_system_ca => @ssl_include_system_ca,
+      :ssl_client_cert_check=> @ssl_client_cert_check )
   end # def register
 
   public
