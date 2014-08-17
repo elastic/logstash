@@ -1,0 +1,30 @@
+[cols="<,<,<,<",options="header",]
+|=======================================================================
+|Setting |Input type|Required/optional|Default value
+<% sorted_attributes.each do |name, config|
+   next if config[:deprecated]
+   if config[:validate].is_a?(Array) 
+     annotation = "|string, one of #{config[:validate].inspect}"
+   elsif config[:validate] == :path
+     annotation = "|a valid filesystem path"
+   else 
+     annotation = "|#{config[:validate]}"
+   end
+
+   if name.is_a?(Regexp)
+     name = "/" + name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
+   end
+   if config[:required]
+     annotation += "|required"
+   else
+     annotation += "|optional"
+   end
+   if config.include?(:default)
+     annotation += "|#{config[:default].inspect}"
+   else 
+     annotation += "|"
+   end
+-%>
+| <<_<%= name %>,<%= name %>>> <%= annotation %>
+<% end -%>
+|=======================================================================
