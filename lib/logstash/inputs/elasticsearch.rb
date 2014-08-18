@@ -52,8 +52,44 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
   # round trip (i.e. between the previous scan scroll request, to the next).
   config :scroll, :validate => :string, :default => "1m"
 
+  # If set, include Elasticsearch document information such as index, type, and id in the event.
+  # (`_index`, `_type`, and `_id` from the Elasticsearch API become `index`,
+  # `type`, and `id` as field names)
+  # 
+  # This information can be used to in reindexing scenarios to update rather
+  # than append existing indices
+  #
+  # Example
+  #
+  #     input {
+  #       elasticsearch {
+  #         host => "es.production.mysite.org"
+  #         index => "mydata-2018.09.*"
+  #         query => "*"
+  #         size => 500
+  #         scroll => "5m"
+  #         docinfo_target => "es"
+  #       }
+  #     }
+  #     output {
+  #       elasticsearch {
+  #         index => "copy-of-production.%{[es][index]}"
+  #         index_type => "%{[es][type]}"
+  #         document_id => "%{[es][id]}"
+  #       }
+  #     }
+  config :docinfo_target, :validate=> :string
+
   public
   def register
+    # ( TODO : make the list of metadata fields configurable (?document version field) )
+    # ( TODO : elasticsearch output might need to use the bulk/create API instead
+    # of bulk/index API to avoid overwriting existing documents in the target index (idempotency)
+    # This is not yet supported in the elasticsearch outputs )
+    # ( TODO : this solution stores the metadata as normal data on the target index.
+    # consider alternative approach: include_meta will take the 'hit' document (including metadata)
+    # and configure a custom output codec for elastic to index only the '_source' field )
+    
     require "ftw"
     @agent = FTW::Agent.new
 
@@ -111,6 +147,13 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
         # Hack to make codecs work
         @codec.decode(LogStash::Json.dump(hit["_source"])) do |event|
           decorate(event)
+          if @docinfo_target
+            event[@docinfo_target] = {
+              "index" => hit["_index"],
+              "type" => hit["_type"],
+              "id" => hit["_id"]
+            }
+          end
           output_queue << event
         end
       end
@@ -122,7 +165,7 @@ class LogStash::Inputs::Elasticsearch < LogStash::Inputs::Base
       result = LogStash::Json.load(execute_scroll_request(scroll_id))
 
       if result["error"]
-        @logger.warn(result["error"], :request => scroll_url)
+        @logger.warn(result["error"], :request => @scroll_url)
         # TODO(sissel): raise an error instead of breaking
         break
       end
