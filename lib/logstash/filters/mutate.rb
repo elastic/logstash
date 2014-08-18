@@ -17,7 +17,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #     filter {
   #       mutate {
   #         # Renames the 'HOSTORIP' field to 'client_ip'
-  #         rename => [ "HOSTORIP", "client_ip" ]
+  #         rename => { "HOSTORIP" => "client_ip" }
   #       }
   #     }
   config :rename, :validate => :hash
@@ -43,7 +43,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   #     filter {
   #       mutate {
-  #         replace => [ "message", "%{source_host}: My new message" ]
+  #         replace => { "message" => "%{source_host}: My new message" }
   #       }
   #     }
   config :replace, :validate => :hash
@@ -55,7 +55,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   #     filter {
   #       mutate {
-  #         update => [ "sample", "My new message" ]
+  #         update => { "sample" => "My new message" }
   #       }
   #     }
   config :update, :validate => :hash
@@ -70,7 +70,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   #     filter {
   #       mutate {
-  #         convert => [ "fieldname", "integer" ]
+  #         convert => { "fieldname" => "integer" }
   #       }
   #     }
   config :convert, :validate => :hash
@@ -129,7 +129,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   #     filter {
   #       mutate {
-  #          split => ["fieldname", ","]
+  #          split => { "fieldname" => "," }
   #       }
   #     }
   config :split, :validate => :hash
@@ -140,7 +140,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   #    filter {
   #      mutate {
-  #        join => ["fieldname", ","]
+  #        join => { "fieldname" => "," }
   #      }
   #    }
   config :join, :validate => :hash
@@ -166,7 +166,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
   #
   #     filter {
   #       mutate {
-  #          merge => ["dest_field", "added_field"]
+  #          merge => { "dest_field" => "added_field" }
   #       }
   #     }
   config :merge, :validate => :hash
@@ -191,9 +191,10 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
         @logger.error("Invalid gsub configuration. gsub has to define 3 elements per config entry", :field => field, :needle => needle, :replacement => replacement)
         raise "Bad configuration, aborting."
       end
+
       @gsub_parsed << {
         :field        => field,
-        :needle       => Regexp.new(needle),
+        :needle       => (needle.index("%{").nil?? Regexp.new(needle): needle),
         :replacement  => replacement
       }
     end
@@ -303,7 +304,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
                           "skipping", :field => field, :value => v)
             v
           else
-            v.gsub(needle, replacement)
+            gsub_dynamic_fields(event, v, needle, replacement)
           end
         end
       else
@@ -312,10 +313,20 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
                         "skipping", :field => field, :value => event[field])
           next
         end
-        event[field] = event[field].gsub(needle, replacement)
+        event[field] = gsub_dynamic_fields(event, event[field], needle, replacement)
       end
     end # @gsub_parsed.each
   end # def gsub
+
+  private
+  def gsub_dynamic_fields(event, original, needle, replacement)
+    if needle.is_a? Regexp
+      original.gsub(needle, event.sprintf(replacement))
+    else
+      # we need to replace any dynamic fields
+      original.gsub(Regexp.new(event.sprintf(needle)), event.sprintf(replacement))
+    end
+  end
 
   private
   def uppercase(event)

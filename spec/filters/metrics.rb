@@ -111,12 +111,12 @@ describe LogStash::Filters::Metrics do
   context "with timer config" do
     context "on the first flush" do
       subject {
-        config = {"timer" => ["http.request_time", "request_time"]}
+        config = {"timer" => ["http.request_time", "%{request_time}"]}
         filter = LogStash::Filters::Metrics.new config
         filter.register
-        filter.filter LogStash::Event.new({"request_time" => 1})
-        filter.filter LogStash::Event.new({"request_time" => 2})
-        filter.filter LogStash::Event.new({"request_time" => 3})
+        filter.filter LogStash::Event.new({"request_time" => 10})
+        filter.filter LogStash::Event.new({"request_time" => 20})
+        filter.filter LogStash::Event.new({"request_time" => 30})
         filter.flush
       }
 
@@ -125,11 +125,31 @@ describe LogStash::Filters::Metrics do
         insist { subject.first["http.request_time.count"] } == 3
       end
 
-      it "should include rates and percentiles" do
+      it "should include rates and percentiles keys" do
         metrics = ["rate_1m", "rate_5m", "rate_15m", "p1", "p5", "p10", "p90", "p95", "p99"]
         metrics.each do |metric|
           insist { subject.first }.include? "http.request_time.#{metric}"
         end
+      end
+
+      it "should include min value" do
+        insist { subject.first['http.request_time.min'] } == 10.0
+      end
+
+      it "should include mean value" do
+        insist { subject.first['http.request_time.mean'] } == 20.0
+      end
+
+      it "should include stddev value" do
+        insist { subject.first['http.request_time.stddev'] } == Math.sqrt(10.0)
+      end
+
+      it "should include max value" do
+        insist { subject.first['http.request_time.max'] } == 30.0
+      end
+
+      it "should include percentile value" do
+        insist { subject.first['http.request_time.p99'] } == 30.0
       end
     end
   end

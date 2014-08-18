@@ -1,5 +1,7 @@
 # encoding: utf-8
 require "logstash/codecs/base"
+require "logstash/util/charset"
+require "logstash/timestamp"
 
 # The multiline codec will collapse multiline messages and merge them into a
 # single event.
@@ -118,22 +120,12 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
     require "grok-pure" # rubygem 'jls-grok'
     # Detect if we are running from a jarfile, pick the right path.
     patterns_path = []
-    if __FILE__ =~ /file:\/.*\.jar!.*/
-      patterns_path += ["#{File.dirname(__FILE__)}/../../patterns/*"]
-    else
-      patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
-    end
+    patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
 
     @grok = Grok.new
 
     @patterns_dir = patterns_path.to_a + @patterns_dir
     @patterns_dir.each do |path|
-      # Can't read relative paths from jars, try to normalize away '../'
-      while path =~ /file:\/.*\.jar!.*\/\.\.\//
-        # replace /foo/bar/../baz => /foo/baz
-        path = path.gsub(/[^\/]+\/\.\.\//, "")
-      end
-
       if File.directory?(path)
         path = File.join(path, "*")
       end
@@ -150,16 +142,13 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
     @buffer = []
     @handler = method("do_#{@what}".to_sym)
 
-    @charset_encoding = Encoding.find(@charset)
+    @converter = LogStash::Util::Charset.new(@charset)
+    @converter.logger = @logger
   end # def register
 
   public
   def decode(text, &block)
-    text.force_encoding(@charset_encoding)
-    if @charset_encoding != Encoding::UTF_8
-      # Convert to UTF-8 if not in that character set.
-      text = text.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace)
-    end
+    text = @converter.convert(text)
 
     match = @grok.match(text)
     @logger.debug("Multiline", :pattern => @pattern, :text => text,
@@ -171,13 +160,13 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
   end # def decode
 
   def buffer(text)
-    @time = Time.now.utc if @buffer.empty?
+    @time = LogStash::Timestamp.now if @buffer.empty?
     @buffer << text
   end
 
   def flush(&block)
     if @buffer.any?
-      event = LogStash::Event.new("@timestamp" => @time, "message" => @buffer.join("\n"))
+      event = LogStash::Event.new(LogStash::Event::TIMESTAMP => @time, "message" => @buffer.join(NL))
       # Tag multiline events
       event.tag @multiline_tag if @multiline_tag && @buffer.size > 1
 
@@ -197,9 +186,9 @@ class LogStash::Codecs::Multiline < LogStash::Codecs::Base
   end
 
   public
-  def encode(data)
+  def encode(event)
     # Nothing to do.
-    @on_event.call(data)
+    @on_event.call(event)
   end # def encode
 
 end # class LogStash::Codecs::Plain

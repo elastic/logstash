@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/codecs/base"
+require "logstash/json"
 
 class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
   config_name "oldlogstashjson"
@@ -14,8 +15,8 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
   public
   def decode(data)
     begin
-      obj = JSON.parse(data.force_encoding(Encoding::UTF_8))
-    rescue JSON::ParserError => e
+      obj = LogStash::Json.load(data.force_encoding(Encoding::UTF_8))
+    rescue LogStash::Json::ParserError => e
       @logger.info("JSON parse failure. Falling back to plain-text", :error => e, :data => data)
       yield LogStash::Event.new("message" => data)
       return
@@ -33,24 +34,24 @@ class LogStash::Codecs::OldLogStashJSON < LogStash::Codecs::Base
   end # def decode
 
   public
-  def encode(data)
+  def encode(event)
     h  = {}
 
     # Convert the new logstash schema to the old one.
     V0_TO_V1.each do |key, val|
-      h[key] = data[val] if data.include?(val)
+      h[key] = event[val] if event.include?(val)
     end
 
-    data.to_hash.each do |field, val|
+    event.to_hash.each do |field, val|
       # TODO: might be better to V1_TO_V0 = V0_TO_V1.invert during
       # initialization than V0_TO_V1.has_value? within loop
       next if field == "@version" or V0_TO_V1.has_value?(field)
-      h["@fields"] = {} if h["@fields"].nil?
+      h["@fields"] ||= {}
       h["@fields"][field] = val
     end
 
     # Tack on a \n because JSON outputs 1.1.x had them.
-    @on_event.call(h.to_json + "\n")
+    @on_event.call(LogStash::Json.dump(h) + NL)
   end # def encode
 
 end # class LogStash::Codecs::OldLogStashJSON

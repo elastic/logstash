@@ -1,10 +1,19 @@
 require "test_utils"
 require "ftw"
+require "logstash/plugin"
+require "logstash/json"
 
-describe "outputs/elasticsearch", :elasticsearch => true do
+describe "outputs/elasticsearch" do
   extend LogStash::RSpec
 
-  describe "ship lots of events w/ default index_type" do
+  it "should register" do
+    output = LogStash::Plugin.lookup("output", "elasticsearch").new("embedded" => "false", "protocol" => "transport", "manage_template" => "false")
+
+    # register will try to load jars and raise if it cannot find jars
+    expect {output.register}.to_not raise_error
+  end
+
+  describe "ship lots of events w/ default index_type", :elasticsearch => true do
     # Generate a random index name
     index = 10.times.collect { rand(10).to_s }.join("")
     type = 10.times.collect { rand(10).to_s }.join("")
@@ -45,7 +54,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
         data = ""
         response = ftw.get!("http://127.0.0.1:9200/#{index}/_count?q=*")
         response.read_body { |chunk| data << chunk }
-        result = JSON.parse(data)
+        result = LogStash::Json.load(data)
         count = result["count"]
         insist { count } == event_count
       end
@@ -53,7 +62,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
       response = ftw.get!("http://127.0.0.1:9200/#{index}/_search?q=*&size=1000")
       data = ""
       response.read_body { |chunk| data << chunk }
-      result = JSON.parse(data)
+      result = LogStash::Json.load(data)
       result["hits"]["hits"].each do |doc|
         # With no 'index_type' set, the document type should be the type
         # set on the input
@@ -64,7 +73,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
     end
   end
 
-  describe "testing index_type" do
+  describe "testing index_type", :elasticsearch => true do
     describe "no type value" do
       # Generate a random index name
       index = 10.times.collect { rand(10).to_s }.join("")
@@ -96,7 +105,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
           data = ""
           response = ftw.get!("http://127.0.0.1:9200/#{index}/_count?q=*")
           response.read_body { |chunk| data << chunk }
-          result = JSON.parse(data)
+          result = LogStash::Json.load(data)
           count = result["count"]
           insist { count } == event_count
         end
@@ -104,7 +113,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
         response = ftw.get!("http://127.0.0.1:9200/#{index}/_search?q=*&size=1000")
         data = ""
         response.read_body { |chunk| data << chunk }
-        result = JSON.parse(data)
+        result = LogStash::Json.load(data)
         result["hits"]["hits"].each do |doc|
           insist { doc["_type"] } == "logs"
         end
@@ -143,7 +152,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
           data = ""
           response = ftw.get!("http://127.0.0.1:9200/#{index}/_count?q=*")
           response.read_body { |chunk| data << chunk }
-          result = JSON.parse(data)
+          result = LogStash::Json.load(data)
           count = result["count"]
           insist { count } == event_count
         end
@@ -151,7 +160,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
         response = ftw.get!("http://127.0.0.1:9200/#{index}/_search?q=*&size=1000")
         data = ""
         response.read_body { |chunk| data << chunk }
-        result = JSON.parse(data)
+        result = LogStash::Json.load(data)
         result["hits"]["hits"].each do |doc|
           insist { doc["_type"] } == "generated"
         end
@@ -159,7 +168,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
     end
   end
 
-  describe "action => ..." do
+  describe "action => ...", :elasticsearch => true do
     index_name = 10.times.collect { rand(10).to_s }.join("")
 
     config <<-CONFIG
@@ -187,7 +196,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
         data = ""
         response = ftw.get!("http://127.0.0.1:9200/#{index_name}/_count?q=*")
         response.read_body { |chunk| data << chunk }
-        result = JSON.parse(data)
+        result = LogStash::Json.load(data)
         count = result["count"]
         insist { count } == 100
       end
@@ -195,13 +204,13 @@ describe "outputs/elasticsearch", :elasticsearch => true do
       response = ftw.get!("http://127.0.0.1:9200/#{index_name}/_search?q=*&size=1000")
       data = ""
       response.read_body { |chunk| data << chunk }
-      result = JSON.parse(data)
+      result = LogStash::Json.load(data)
       result["hits"]["hits"].each do |doc|
         insist { doc["_type"] } == "logs"
       end
     end
 
-    describe "default event type value" do
+    describe "default event type value", :elasticsearch => true do
       # Generate a random index name
       index = 10.times.collect { rand(10).to_s }.join("")
       event_count = 100 + rand(100)
@@ -233,7 +242,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
           data = ""
           response = ftw.get!("http://127.0.0.1:9200/#{index}/_count?q=*")
           response.read_body { |chunk| data << chunk }
-          result = JSON.parse(data)
+          result = LogStash::Json.load(data)
           count = result["count"]
           insist { count } == event_count
         end
@@ -241,7 +250,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
         response = ftw.get!("http://127.0.0.1:9200/#{index}/_search?q=*&size=1000")
         data = ""
         response.read_body { |chunk| data << chunk }
-        result = JSON.parse(data)
+        result = LogStash::Json.load(data)
         result["hits"]["hits"].each do |doc|
           insist { doc["_type"] } == "generated"
         end
@@ -249,7 +258,7 @@ describe "outputs/elasticsearch", :elasticsearch => true do
     end
   end
 
-  describe "index template expected behavior" do
+  describe "index template expected behavior", :elasticsearch => true do
     ["node", "transport", "http"].each do |protocol|
       context "with protocol => #{protocol}" do
         subject do

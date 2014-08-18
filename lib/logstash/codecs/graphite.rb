@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "logstash/codecs/base"
 require "logstash/codecs/line"
-require "json"
+require "logstash/timestamp"
 
 # This codec will encode and decode Graphite formated lines.
 class LogStash::Codecs::Graphite < LogStash::Codecs::Base
@@ -9,24 +9,13 @@ class LogStash::Codecs::Graphite < LogStash::Codecs::Base
 
   milestone 2
 
-  # The character encoding used in this codec. Examples include "UTF-8" and
-  # "CP1252"
-  #
-  # JSON requires valid UTF-8 strings, but in some cases, software that
-  # emits JSON does so in another encoding (nxlog, for example). In
-  # weird cases like this, you can set the charset setting to the
-  # actual encoding of the text and logstash will convert it for you.
-  #
-  # For nxlog users, you'll want to set this to "CP1252"
-  config :charset, :validate => ::Encoding.name_list, :default => "UTF-8"
-  
   EXCLUDE_ALWAYS = [ "@timestamp", "@version" ]
 
   DEFAULT_METRICS_FORMAT = "*"
   METRIC_PLACEHOLDER = "*"
 
   # The metric(s) to use. This supports dynamic strings like %{host}
-  # for metric names and also for values. This is a hash field with key 
+  # for metric names and also for values. This is a hash field with key
   # of the metric name, value of the metric value. Example:
   #
   #     [ "%{host}/uptime", "%{uptime_1m}" ]
@@ -51,19 +40,19 @@ class LogStash::Codecs::Graphite < LogStash::Codecs::Base
   #
   # NOTE: If no metrics_format is defined the name of the metric will be used as fallback.
   config :metrics_format, :validate => :string, :default => DEFAULT_METRICS_FORMAT
-  
-  
+
+
   public
   def initialize(params={})
     super(params)
     @lines = LogStash::Codecs::Line.new
   end
-  
+
   public
   def decode(data)
     @lines.decode(data) do |event|
       name, value, time = event["message"].split(" ")
-      yield LogStash::Event.new(name => value.to_f, "@timestamp" => Time.at(time.to_i).gmtime)
+      yield LogStash::Event.new(name => value.to_f, LogStash::Event::TIMESTAMP => LogStash::Timestamp.at(time.to_i))
     end # @lines.decode
   end # def decode
 
@@ -75,7 +64,7 @@ class LogStash::Codecs::Graphite < LogStash::Codecs::Base
 
     return metric
   end
-  
+
   public
   def encode(event)
     # Graphite message format: metric value timestamp\n
@@ -104,11 +93,11 @@ class LogStash::Codecs::Graphite < LogStash::Codecs::Base
     if messages.empty?
       @logger.debug("Message is empty, not emiting anything.", :messages => messages)
     else
-      message = messages.join("\n") + "\n"
+      message = messages.join(NL) + NL
       @logger.debug("Emiting carbon messages", :messages => messages)
 
       @on_event.call(message)
     end # if messages.empty?
   end # def encode
 
-end # class LogStash::Codecs::JSON
+end # class LogStash::Codecs::Graphite

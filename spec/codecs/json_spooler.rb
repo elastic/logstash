@@ -1,10 +1,14 @@
 require "logstash/codecs/json_spooler"
 require "logstash/event"
+require "logstash/json"
 require "insist"
 
 describe LogStash::Codecs::JsonSpooler do
   subject do
-    next LogStash::Codecs::JsonSpooler.new
+    # mute deprecation message
+    expect_any_instance_of(LogStash::Codecs::JsonSpooler).to receive(:register).and_return(nil)
+
+    LogStash::Codecs::JsonSpooler.new
   end
 
   context "#decode" do
@@ -12,7 +16,7 @@ describe LogStash::Codecs::JsonSpooler do
       data = {"a" => 1}
       events = [LogStash::Event.new(data), LogStash::Event.new(data),
         LogStash::Event.new(data)]
-      subject.decode(events.to_json) do |event|
+      subject.decode(LogStash::Json.dump(events)) do |event|
         insist { event.is_a? LogStash::Event }
         insist { event["a"] } == data["a"]
       end
@@ -25,7 +29,7 @@ describe LogStash::Codecs::JsonSpooler do
       subject.spool_size = 3
       got_event = false
       subject.on_event do |d|
-        events = JSON.parse(d)
+        events = LogStash::Json.load(d)
         insist { events.is_a? Array }
         insist { events[0].is_a? LogStash::Event }
         insist { events[0]["foo"] } == data["foo"]

@@ -68,8 +68,7 @@ do_start()
   fi
 
   if pidofproc -p "$PID_FILE" >/dev/null; then
-    failure
-    exit 99
+    exit 0
   fi
 
   # Prepare environment
@@ -80,7 +79,7 @@ do_start()
   export PATH HOME JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
   test -n "${JAVACMD}" && export JAVACMD
 
-  nice -n ${LS_NICE} runuser -s /bin/sh -c "exec $DAEMON $DAEMON_OPTS" ${LS_USER} > /dev/null 1>&1 < /dev/null &
+  nice -n ${LS_NICE} runuser -s /bin/sh -c "exec $DAEMON $DAEMON_OPTS" ${LS_USER} >> $LS_LOG_FILE 2>&1 < /dev/null &
 
   RETVAL=$?
   local PID=$!
@@ -89,7 +88,7 @@ do_start()
   JAVA_PID=$(ps axo ppid,pid | awk -v "ppid=$PID" '$1==ppid {print $2}')
   PID=${JAVA_PID:-$PID}
   echo $PID > $PID_FILE
-  [ $PID = $JAVA_PID ] && success
+  [ "$PID" = "$JAVA_PID" ] && success
 }
 
 #

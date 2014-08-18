@@ -1,5 +1,6 @@
 require "test_utils"
 require "logstash/outputs/file"
+require "logstash/json"
 require "tempfile"
 
 describe LogStash::Outputs::File do
@@ -28,7 +29,7 @@ describe LogStash::Outputs::File do
       line_num = 0
       # Now check all events for order and correctness.
       File.foreach(tmp_file) do |line|
-        event = LogStash::Event.new(JSON.parse(line))
+        event = LogStash::Event.new(LogStash::Json.load(line))
         insist {event["message"]} == "hello world"
         insist {event["sequence"]} == line_num
         line_num += 1
@@ -61,7 +62,7 @@ describe LogStash::Outputs::File do
       line_num = 0
       # Now check all events for order and correctness.
       Zlib::GzipReader.open(tmp_file.path).each_line do |line|
-        event = LogStash::Event.new(JSON.parse(line))
+        event = LogStash::Event.new(LogStash::Json.load(line))
         insist {event["message"]} == "hello world"
         insist {event["sequence"]} == line_num
         line_num += 1

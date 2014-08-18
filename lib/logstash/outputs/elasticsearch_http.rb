@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/namespace"
 require "logstash/outputs/base"
+require "logstash/json"
 require "stud/buffer"
 
 # This output lets you store logs in Elasticsearch.
@@ -123,7 +124,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       elsif response.status == 200
         begin
           response.read_body { |c| json << c }
-          results = JSON.parse(json)
+          results = LogStash::Json.load(json)
         rescue Exception => e
           @logger.error("Error parsing JSON", :json => json, :results => results.to_s, :error => e.to_s)
           raise "Exception in parsing JSON", e
@@ -173,27 +174,14 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   public
   def get_template_json
     if @template.nil?
-      if __FILE__ =~ /^(jar:)?file:\/.+!.+/
-        begin
-          # Running from a jar, assume types.db is at the root.
-          jar_path = [__FILE__.split("!").first, "/elasticsearch-template.json"].join("!")
-          @template = jar_path
-        rescue => ex
-          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
-        end
-      else
-        if File.exists?("elasticsearch-template.json")
-          @template = "elasticsearch-template.json"
-        elsif File.exists?("lib/logstash/outputs/elasticsearch/elasticsearch-template.json")
-          @template = "lib/logstash/outputs/elasticsearch/elasticsearch-template.json"
-        else
-          raise "You must specify 'template => ...' in your elasticsearch_http output"
-        end
+      @template = LogStash::Environment.plugin_path("outputs/elasticsearch/elasticsearch-template.json")
+      if !File.exists?(@template)
+        raise "You must specify 'template => ...' in your elasticsearch_http output (I looked for '#{@template}')"
       end
     end
     @template_json = IO.read(@template).gsub(/\n/,'')
     @logger.info("Using mapping template", :template => @template_json)
-  end # def get_template
+  end # def get_template_json
 
   public
   def receive(event)
@@ -217,7 +205,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       header = { "index" => { "_index" => index, "_type" => type } }
       header["index"]["_id"] = event.sprintf(@document_id) if !@document_id.nil?
 
-      [ header.to_json, newline, event.to_json, newline ]
+      [ LogStash::Json.dump(header), newline, event.to_json, newline ]
     end.flatten
 
     post(body.join(""))

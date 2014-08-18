@@ -1,5 +1,6 @@
 require "logstash/codecs/json"
 require "logstash/event"
+require "logstash/json"
 require "insist"
 
 describe LogStash::Codecs::JSON do
@@ -10,7 +11,7 @@ describe LogStash::Codecs::JSON do
   context "#decode" do
     it "should return an event from json data" do
       data = {"foo" => "bar", "baz" => {"bah" => ["a","b","c"]}}
-      subject.decode(data.to_json) do |event|
+      subject.decode(LogStash::Json.dump(data)) do |event|
         insist { event.is_a? LogStash::Event }
         insist { event["foo"] } == data["foo"]
         insist { event["baz"] } == data["baz"]
@@ -18,7 +19,7 @@ describe LogStash::Codecs::JSON do
       end
     end
 
-    it "should be fast", :if => ENV["SPEEDTEST"] do
+    it "should be fast", :performance => true do
       json = '{"message":"Hello world!","@timestamp":"2013-12-21T07:01:25.616Z","@version":"1","host":"Macintosh.local","sequence":1572456}'
       iterations = 500000
       count = 0
@@ -34,9 +35,9 @@ describe LogStash::Codecs::JSON do
       end
       duration = Time.now - start
       insist { count } == iterations
-      puts "codecs/json speed: #{iterations/duration}/sec"
+      puts "codecs/json rate: #{"%02.0f/sec" % (iterations / duration)}, elapsed: #{duration}s"
     end
-    
+
     context "processing plain text" do
       it "falls back to plain text" do
         decoded = false
@@ -70,9 +71,9 @@ describe LogStash::Codecs::JSON do
       got_event = false
       subject.on_event do |d|
         insist { d.chomp } == LogStash::Event.new(data).to_json
-        insist { JSON.parse(d)["foo"] } == data["foo"]
-        insist { JSON.parse(d)["baz"] } == data["baz"]
-        insist { JSON.parse(d)["bah"] } == data["bah"]
+        insist { LogStash::Json.load(d)["foo"] } == data["foo"]
+        insist { LogStash::Json.load(d)["baz"] } == data["baz"]
+        insist { LogStash::Json.load(d)["bah"] } == data["bah"]
         got_event = true
       end
       subject.encode(event)

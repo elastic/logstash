@@ -202,7 +202,7 @@ class LogStash::Outputs::Gelf < LogStash::Outputs::Base
 
     @logger.debug(["Sending GELF event", m])
     begin
-      @gelf.notify!(m, :timestamp => event["@timestamp"].to_f)
+      @gelf.notify!(m, :timestamp => event.timestamp.to_f)
     rescue
       @logger.warn("Trouble sending GELF event", :gelf_event => m,
                    :event => event, :error => $!)

@@ -3,12 +3,12 @@
 #   wget or curl
 #
 JRUBY_VERSION=1.7.11
-ELASTICSEARCH_VERSION=1.0.1
+ELASTICSEARCH_VERSION=1.1.1
 
 WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
 JRUBY_URL=http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-complete-$(JRUBY_VERSION).jar
-JRUBY_CMD=java -jar $(JRUBY)
+JRUBY_CMD=bin/logstash env java -jar $(JRUBY)
 
 ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
@@ -19,7 +19,7 @@ GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
 GEOIP_ASN=vendor/geoip/GeoIPASNum.dat
 GEOIP_ASN_URL=http://logstash.objects.dreamhost.com/maxmind/GeoIPASNum-2014-02-12.dat.gz
-KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-3.0.0.tar.gz
+KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-3.0.1.tar.gz
 PLUGIN_FILES=$(shell find lib -type f| egrep '^lib/logstash/(inputs|outputs|filters|codecs)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 QUIET=@
 ifeq (@,$(QUIET))
@@ -43,7 +43,7 @@ default:
 	@echo "  tarball -- builds the tarball package"
 	@echo "  tarball-test -- runs the test suite against the tarball package"
 
-TESTS=$(wildcard spec/**/*.rb)
+TESTS=$(wildcard spec/*.rb spec/**/*.rb spec/**/**/*.rb)
 
 # The 'version' is generated based on the logstash version, git revision, etc.
 .VERSION.mk: REVISION=$(shell git rev-parse --short HEAD | tr -d ' ')
@@ -138,7 +138,7 @@ vendor/jar: | vendor
 vendor-jruby: $(JRUBY)
 
 $(JRUBY): | vendor/jar
-	$(QUIET)echo " ==> Downloading jruby $(JRUBY_VERSION)"
+	$(QUIET)echo "=> Downloading jruby $(JRUBY_VERSION)"
 	$(QUIET)$(DOWNLOAD_COMMAND) $@ $(JRUBY_URL)
 
 vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz: | wget-or-curl vendor/jar
@@ -194,7 +194,7 @@ vendor-gems: | vendor/bundle
 .PHONY: vendor/bundle
 vendor/bundle: | vendor $(JRUBY)
 	@echo "=> Ensuring ruby gems dependencies are in $@..."
-	$(QUIET)USE_JRUBY=1 bin/logstash deps $(QUIET_OUTPUT)
+	$(QUIET)bin/logstash deps $(QUIET_OUTPUT)
 	@# Purge any junk that fattens our jar without need!
 	@# The riak gem includes previous gems in the 'pkg' dir. :(
 	-$(QUIET)rm -rf $@/jruby/1.9/gems/riak-client-1.0.3/pkg
@@ -218,10 +218,14 @@ vendor/ua-parser/regexes.yaml: | vendor/ua-parser/
 	$(QUIET)$(DOWNLOAD_COMMAND) $@ https://raw.github.com/tobie/ua-parser/master/regexes.yaml
 
 .PHONY: test
-test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd
-	GEM_HOME= GEM_PATH= bin/logstash deps
-	GEM_HOME= GEM_PATH= bin/logstash rspec --order rand --fail-fast $(TESTS)
+test: QUIET_OUTPUT=
+test: | $(JRUBY) vendor-elasticsearch vendor-geoip vendor-collectd vendor-gems
+	$(SPEC_ENV) bin/logstash rspec $(SPEC_OPTS) --order rand --fail-fast $(TESTS)
 
+.PHONY: reporting-test
+reporting-test: SPEC_ENV=JRUBY_OPTS=--debug
+reporting-test: SPEC_OPTS=--format CI::Reporter::RSpec
+reporting-test: | test
 
 .PHONY: docs
 docs: docgen doccopy docindex
@@ -256,21 +260,20 @@ build/docs/tutorials/getting-started-with-logstash.md: build/docs/tutorials/gett
 build/docs/tutorials/getting-started-with-logstash.xml: docs/tutorials/getting-started-with-logstash.asciidoc | build/docs/tutorials
 	$(QUIET)asciidoc -b docbook -o $@ $<
 
-# bluecloth gem doesn't work on jruby. Use ruby.
 build/docs/inputs/%.html: lib/logstash/inputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/inputs
-	$(QUIET)ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
 	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/filters/%.html: lib/logstash/filters/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/filters
-	$(QUIET)ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
 	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/outputs/%.html: lib/logstash/outputs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/outputs
-	$(QUIET)ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
 	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 build/docs/codecs/%.html: lib/logstash/codecs/%.rb docs/docgen.rb docs/plugin-doc.html.erb | build/docs/codecs
-	$(QUIET)ruby docs/docgen.rb -o build/docs $<
+	$(QUIET)$(JRUBY_CMD) docs/docgen.rb -o build/docs $<
 	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
 
 build/docs/%: docs/% lib/logstash/version.rb Makefile
@@ -288,7 +291,7 @@ build/docs/%: docs/% lib/logstash/version.rb Makefile
 build/docs/index.html: $(addprefix build/docs/,$(subst lib/logstash/,,$(subst .rb,.html,$(PLUGIN_FILES))))
 build/docs/index.html: docs/generate_index.rb lib/logstash/version.rb docs/index.html.erb Makefile
 	@echo "Building documentation index.html"
-	$(QUIET)ruby $< build/docs > $@
+	$(QUIET)$(JRUBY_CMD) $< build/docs > $@
 	$(QUIET)sed -i -e 's/%VERSION%/$(VERSION)/g' $@
 	$(QUIET)sed -i -e 's/%ELASTICSEARCH_VERSION%/$(ELASTICSEARCH_VERSION)/g' $@
 
@@ -329,7 +332,7 @@ JIRA_VERSION_ID=10820
 releaseNote:
 	-$(QUIET)rm releaseNote.html
 	$(QUIET)curl -si "https://logstash.jira.com/secure/ReleaseNote.jspa?version=$(JIRA_VERSION_ID)&projectId=10020" | sed -n '/<textarea.*>/,/<\/textarea>/p' | grep textarea -v >> releaseNote.html
-	$(QUIET)ruby pull_release_note.rb
+	$(QUIET)$(JRUBY_CMD) pull_release_note.rb
 
 package: build/logstash-$(VERSION).tar.gz
 	(cd pkg; \
@@ -352,7 +355,7 @@ show:
 
 .PHONY: prepare-tarball
 prepare-tarball tarball zip: WORKDIR=build/tarball/logstash-$(VERSION)
-prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) $(GEOIP) $(TYPESDB) vendor-gems
+prepare-tarball: vendor/kibana $(ELASTICSEARCH) $(JRUBY) vendor-geoip $(TYPESDB) vendor-gems
 prepare-tarball: vendor/ua-parser/regexes.yaml
 prepare-tarball:
 	@echo "=> Preparing tarball"

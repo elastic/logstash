@@ -17,7 +17,6 @@ Gem::Specification.new do |gem|
 
   # Core dependencies
   gem.add_runtime_dependency "cabin", [">=0.6.0"]   #(Apache 2.0 license)
-  gem.add_runtime_dependency "json"               #(ruby license)
   gem.add_runtime_dependency "minitest"           # for running the tests from the jar, (MIT license)
   gem.add_runtime_dependency "pry"                #(ruby license)
   gem.add_runtime_dependency "stud"               #(Apache 2.0 license)
@@ -33,7 +32,7 @@ Gem::Specification.new do |gem|
   # Input/Output/Filter dependencies
   #TODO Can these be optional?
   gem.add_runtime_dependency "awesome_print"                    #(MIT license)
-  gem.add_runtime_dependency "aws-sdk"                          #{Apache 2.0 license}  
+  gem.add_runtime_dependency "aws-sdk"                          #{Apache 2.0 license}
   gem.add_runtime_dependency "addressable"                      #(Apache 2.0 license)
   gem.add_runtime_dependency "extlib", ["0.9.16"]               #(MIT license)
   gem.add_runtime_dependency "ffi"                              #(LGPL-3 license)
@@ -68,9 +67,11 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "bouncy-castle-java", "1.5.0147"   #(MIT license)
     gem.add_runtime_dependency "jruby-openssl", "0.8.7"           #(CPL/GPL/LGPL license)
     gem.add_runtime_dependency "msgpack-jruby"                    #(Apache 2.0 license)
+    gem.add_runtime_dependency "jrjackson"                        #(Apache 2.0 license)
   else
     gem.add_runtime_dependency "excon"    #(MIT license)
     gem.add_runtime_dependency "msgpack"  #(Apache 2.0 license)
+    gem.add_runtime_dependency "oj"       #(MIT-style license)
   end
 
   if RUBY_PLATFORM != 'java'
@@ -99,11 +100,11 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "rspec"            #(MIT license)
   gem.add_runtime_dependency "insist", "1.0.0"  #(Apache 2.0 license)
   gem.add_runtime_dependency "rumbster"         # For faking smtp in email tests (Apache 2.0 license)
-  
-  #Development Deps
-  gem.add_development_dependency "coveralls"
-  gem.add_development_dependency "bluecloth"
 
-  #Jenkins Deps
+  # Development Deps
+  gem.add_development_dependency "coveralls"
+  gem.add_development_dependency "kramdown"     # pure-ruby markdown parser (MIT license)
+
+  # Jenkins Deps
   gem.add_runtime_dependency "ci_reporter"
 end

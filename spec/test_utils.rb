@@ -1,5 +1,8 @@
 # encoding: utf-8
 
+require "logstash/json"
+require "logstash/timestamp"
+
 if ENV['COVERAGE']
   require 'simplecov'
   require 'coveralls'
@@ -37,8 +40,20 @@ else
   $logger.level = :error
 end
 
+puts("Using Accessor#strict_set for specs")
+# mokey path LogStash::Event to use strict_set in tests
+# ugly, I know, but this avoids adding conditionals in performance critical section
+class LogStash::Event
+  def []=(str, value)
+    if str == TIMESTAMP && !value.is_a?(LogStash::Timestamp)
+      raise TypeError, "The field '@timestamp' must be a LogStash::Timestamp, not a #{value.class} (#{value})"
+    end
+    @accessors.strict_set(str, value)
+  end # def []=
+end
+
 RSpec.configure do |config|
-  config.filter_run_excluding :redis => true, :socket => true, :performance => true, :elasticsearch => true, :broken => true
+  config.filter_run_excluding :redis => true, :socket => true, :performance => true, :elasticsearch => true, :broken => true, :export_cypher => true
 end
 
 module LogStash
@@ -57,7 +72,7 @@ module LogStash
     end
 
     def sample(sample_event, &block)
-      name = sample_event.is_a?(String) ? sample_event : sample_event.to_json
+      name = sample_event.is_a?(String) ? sample_event : LogStash::Json.dump(sample_event)
       name = name[0..50] + "..." if name.length > 50
 
       describe "\"#{name}\"" do
@@ -75,6 +90,7 @@ module LogStash
           results = []
           count = 0
           pipeline.instance_eval { @filters.each(&:register) }
+
           event.each do |e|
             extra = []
             pipeline.filter(e) do |new_event|
@@ -84,8 +100,10 @@ module LogStash
             results += extra.reject(&:cancelled?)
           end
 
+          pipeline.instance_eval {@filters.each {|f| results += f.flush if f.respond_to?(:flush)}}
+
           # TODO(sissel): pipeline flush needs to be implemented.
-          #results += pipeline.flush
+          # results += pipeline.flush
           next results
         end
 

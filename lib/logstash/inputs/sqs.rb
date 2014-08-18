@@ -1,12 +1,13 @@
 # encoding: utf-8
 require "logstash/inputs/threadable"
 require "logstash/namespace"
+require "logstash/timestamp"
 require "logstash/plugin_mixins/aws_config"
 require "digest/sha2"
 
 # Pull events from an Amazon Web Services Simple Queue Service (SQS) queue.
 #
-# SQS is a simple, scalable queue system that is part of the 
+# SQS is a simple, scalable queue system that is part of the
 # Amazon Web Services suite of tools.
 #
 # Although SQS is similar to other queuing systems like AMQP, it
@@ -52,7 +53,7 @@ require "digest/sha2"
 #           ]
 #         }
 #       ]
-#     } 
+#     }
 #
 # See http://aws.amazon.com/iam/ for more details on setting up AWS identities.
 #
@@ -124,7 +125,7 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
                 event[@md5_field] = message.md5
               end
               if @sent_timestamp_field
-                event[@sent_timestamp_field] = message.sent_timestamp.utc
+                event[@sent_timestamp_field] = LogStash::Timestamp.new(message.sent_timestamp).utc
               end
               @logger.debug? && @logger.debug("Processed SQS message", :message_id => message.id, :message_md5 => message.md5, :sent_timestamp => message.sent_timestamp, :queue => @queue)
               output_queue << event

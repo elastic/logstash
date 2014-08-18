@@ -1,6 +1,8 @@
 # encoding: utf-8
 require "logstash/namespace"
+require "logstash/environment"
 require "logstash/outputs/base"
+require "logstash/json"
 require "stud/buffer"
 require "socket" # for Socket.gethostname
 
@@ -9,8 +11,7 @@ require "socket" # for Socket.gethostname
 # need to use this output.
 #
 #   *VERSION NOTE*: Your Elasticsearch cluster must be running Elasticsearch
-#   %ELASTICSEARCH_VERSION%. If you use any other version of Elasticsearch,
-#   you should set `protocol => http` in this plugin.
+#   1.0.0 or later.
 #
 # If you want to set other Elasticsearch options that are not exposed directly
 # as configuration options, there are two methods:
@@ -25,10 +26,6 @@ require "socket" # for Socket.gethostname
 # You can learn more about Elasticsearch at <http://www.elasticsearch.org>
 #
 # ## Operational Notes
-#
-# Template management requires Elasticsearch version 0.90.7 or later. If you
-# are using a version older than this, please upgrade. You will receive
-# more benefits than just template management!
 #
 # If using the default `protocol` setting ("node"), your firewalls might need
 # to permit port 9300 in *both* directions (from Logstash to Elasticsearch, and
@@ -191,16 +188,14 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     end
 
     if @protocol.nil?
-      @protocol = (RUBY_PLATFORM == "java") ? "node" : "http"
+      @protocol = LogStash::Environment.jruby? ? "node" : "http"
     end
 
     if ["node", "transport"].include?(@protocol)
       # Node or TransportClient; requires JRuby
-      if RUBY_PLATFORM != "java"
-        raise LogStash::PluginLoadingError, "This configuration requires JRuby. If you are not using JRuby, you must set 'protocol' to 'http'. For example: output { elasticsearch { protocol => \"http\" } }"
-      end
+      raise(LogStash::PluginLoadingError, "This configuration requires JRuby. If you are not using JRuby, you must set 'protocol' to 'http'. For example: output { elasticsearch { protocol => \"http\" } }") unless LogStash::Environment.jruby?
+      LogStash::Environment.load_elasticsearch_jars!
 
-      require "logstash/loadlibs"
       # setup log4j properties for Elasticsearch
       LogStash::Logger.setup_log4j(@logger)
     end
@@ -235,16 +230,10 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
         LogStash::Outputs::Elasticsearch::Protocols::HTTPClient
     end
 
-    @client = client_class.new(options)
-
-    @logger.info("New Elasticsearch output", :cluster => @cluster,
-                 :host => @host, :port => @port, :embedded => @embedded,
-                 :protocol => @protocol)
-
     if @embedded
-      if RUBY_PLATFORM != "java"
-        raise LogStash::ConfigurationError, "The 'embedded => true' setting is only valid for the elasticsearch output under JRuby. You are running #{RUBY_DESCRIPTION}"
-      end
+      raise(LogStash::ConfigurationError, "The 'embedded => true' setting is only valid for the elasticsearch output under JRuby. You are running #{RUBY_DESCRIPTION}") unless LogStash::Environment.jruby?
+      LogStash::Environment.load_elasticsearch_jars!
+
       # Default @host with embedded to localhost. This should help avoid
       # newbies tripping on ubuntu and other distros that have a default
       # firewall that blocks multicast.
@@ -253,6 +242,12 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       # Start Elasticsearch local.
       start_local_elasticsearch
     end
+
+    @client = client_class.new(options)
+
+    @logger.info("New Elasticsearch output", :cluster => @cluster,
+                 :host => @host, :port => @port, :embedded => @embedded,
+                 :protocol => @protocol)
 
 
     if @manage_template
@@ -270,30 +265,14 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   public
   def get_template
     if @template.nil?
-      if __FILE__ =~ /^(jar:)?file:\/.+!.+/
-        begin
-          # Running from a jar, assume types.db is at the root.
-          jar_path = [__FILE__.split("!").first, "/elasticsearch-template.json"].join("!")
-          @template = jar_path
-        rescue => ex
-          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
-        end
-      else
-        if File.exists?("elasticsearch-template.json")
-          @template = "elasticsearch-template.json"
-        else
-          path = File.join(File.dirname(__FILE__), "elasticsearch/elasticsearch-template.json")
-          if File.exists?(path)
-            @template = path
-          else
-            raise "You must specify 'template => ...' in your elasticsearch_http output"
-          end
-        end
+      @template = LogStash::Environment.plugin_path("outputs/elasticsearch/elasticsearch-template.json")
+      if !File.exists?(@template)
+        raise "You must specify 'template => ...' in your elasticsearch output (I looked for '#{@template}')"
       end
     end
     template_json = IO.read(@template).gsub(/\n/,'')
     @logger.info("Using mapping template", :template => template_json)
-    return JSON.parse(template_json)
+    return LogStash::Json.load(template_json)
   end # def get_template
 
   protected
@@ -304,6 +283,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     #builder.local(true)
     builder.settings.put("cluster.name", @cluster) if @cluster
     builder.settings.put("node.name", @node_name) if @node_name
+    builder.settings.put("network.host", @bind_host) if @bind_host
     builder.settings.put("http.port", @embedded_http_port)
 
     @embedded_elasticsearch = builder.node

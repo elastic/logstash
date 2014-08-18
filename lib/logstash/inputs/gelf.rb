@@ -2,6 +2,8 @@
 require "date"
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "logstash/json"
+require "logstash/timestamp"
 require "socket"
 
 # This input will read GELF messages as events over the network,
@@ -89,10 +91,10 @@ class LogStash::Inputs::Gelf < LogStash::Inputs::Base
       # Gelfd parser outputs null if it received and cached a non-final chunk
       next if data.nil?
 
-      event = LogStash::Event.new(JSON.parse(data))
+      event = LogStash::Event.new(LogStash::Json.load(data))
       event["source_host"] = client[3]
       if event["timestamp"].is_a?(Numeric)
-        event["@timestamp"] = Time.at(event["timestamp"]).gmtime
+        event.timestamp = LogStash::Timestamp.at(event["timestamp"])
         event.remove("timestamp")
       end
       remap_gelf(event) if @remap
