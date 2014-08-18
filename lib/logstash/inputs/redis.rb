@@ -227,10 +227,11 @@ EOF
       begin
         @redis ||= connect
         self.send listener, @redis, output_queue
-      rescue Redis::CannotConnectError => e
+      rescue Redis::BaseError => e
         @logger.warn("Redis connection problem", :exception => e)
         sleep 1
-        @redis = connect
+        # Reset the redis variable to trigger reconnect
+        @redis = nil
       rescue => e # Redis error
         @logger.warn("Failed to get event from Redis", :name => @name,
                      :exception => e, :backtrace => e.backtrace)
