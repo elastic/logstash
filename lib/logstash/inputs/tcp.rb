@@ -143,7 +143,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
     Thread.new(output_queue, socket) do |q, s|
       begin
         @logger.debug? && @logger.debug("Accepted connection", :client => s.peer, :server => "#{@host}:#{@port}")
-        handle_socket(s, s.peer, q, @codec.clone)
+        handle_socket(s, s.peeraddr[3], q, @codec.clone)
       rescue Interrupted
         s.close rescue nil
       ensure
@@ -223,7 +223,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         end
       end
       @logger.debug("Opened connection", :client => "#{client_socket.peer}")
-      handle_socket(client_socket, client_socket.peer, output_queue, @codec.clone)
+      handle_socket(client_socket, client_socket.peeraddr[3], output_queue, @codec.clone)
     end # loop
   ensure
     client_socket.close rescue nil
