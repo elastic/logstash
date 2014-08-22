@@ -32,9 +32,9 @@ class LogStash::Inputs::RabbitMQ
       @settings[:verify_ssl] = @verify_ssl if @verify_ssl
 
       proto                  = if @ssl
-                                 "amqp"
-                               else
                                  "amqps"
+                               else
+                                 "amqp"
                                end
       @connection_url        = "#{proto}://#{@user}@#{@host}:#{@port}#{vhost}/#{@queue}"
 
