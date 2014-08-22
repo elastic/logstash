@@ -177,19 +177,18 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
     # TODO(sissel): Validate conversion requests if provided.
     @convert.nil? or @convert.each do |field, type|
       if !valid_conversions.include?(type)
-        @logger.error("Invalid conversion type",
-                      "type" => type, "expected one of" => valid_types)
-        # TODO(sissel): It's 2011, man, let's actually make like.. a proper
-        # 'configuration broken' exception
-        raise "Bad configuration, aborting."
+        raise LogStash::ConfigurationError, I18n.t("logstash.agent.configuration.invalid_plugin_register",
+          :plugin => "filter", :type => "mutate",
+          :error => "Invalid conversion type '#{type}', expected one of '#{valid_conversions.join(',')}'")
       end
     end # @convert.each
 
     @gsub_parsed = []
     @gsub.nil? or @gsub.each_slice(3) do |field, needle, replacement|
       if [field, needle, replacement].any? {|n| n.nil?}
-        @logger.error("Invalid gsub configuration. gsub has to define 3 elements per config entry", :field => field, :needle => needle, :replacement => replacement)
-        raise "Bad configuration, aborting."
+        raise LogStash::ConfigurationError, I18n.t("logstash.agent.configuration.invalid_plugin_register",
+          :plugin => "filter", :type => "mutate",
+          :error => "Invalid gsub configuration #{[field, needle, replacement]}. gsub requires 3 non-nil elements per config entry")
       end
 
       @gsub_parsed << {
