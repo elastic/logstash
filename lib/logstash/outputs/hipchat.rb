@@ -45,7 +45,7 @@ class LogStash::Outputs::HipChat < LogStash::Outputs::Base
     return unless output?(event)
 
     hipchat_data = Hash.new
-    hipchat_data['room_id'] = @room_id
+    hipchat_data['room_id'] = event.sprintf(@room_id)
     hipchat_data['from']    = @from
     hipchat_data['color']   = @color
     hipchat_data['notify']  = @trigger_notify ? "1" : "0"
