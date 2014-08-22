@@ -36,7 +36,6 @@ script
 
   HOME="${HOME:-$LS_HOME}"
   JAVA_OPTS="${LS_JAVA_OPTS}"
-  [ -n "${LS_LOG_FILE}" ] && LS_OPTS="${LSOPTS} -l ${LS_LOG_FILE}"
   # Reset filehandle limit
   ulimit -n ${LS_OPEN_FILES}
   cd "${LS_HOME}"
