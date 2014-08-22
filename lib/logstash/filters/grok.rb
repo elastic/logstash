@@ -331,8 +331,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   private
   def handle(field, value, event)
-    return if (value.nil? || (value.is_a?(String) && value.empty?)) unless
-        @keep_empty_captures
+    return if (value.nil? || (value.is_a?(String) && value.empty?)) unless @keep_empty_captures
 
     if @overwrite.include?(field)
       event[field] = value
@@ -343,7 +342,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
       elsif v.is_a?(Array)
         event[field] << value
       elsif v.is_a?(String)
-        #puts v, value
         # Promote to array since we aren't overwriting.
         event[field] = [v, value]
       end
