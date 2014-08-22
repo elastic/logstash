@@ -6,6 +6,35 @@ require "logstash/filters/mutate"
 describe LogStash::Filters::Mutate do
   extend LogStash::RSpec
 
+  context "config validation" do
+   describe "invalid convert type should raise a configuration error" do
+      config <<-CONFIG
+        filter {
+          mutate {
+            convert => [ "message", "int"] //should be integer
+          }
+        }
+      CONFIG
+
+      sample "not_really_important" do
+        insist {subject}.raises LogStash::ConfigurationError
+      end
+    end
+    describe "invalid gsub triad should raise a configuration error" do
+      config <<-CONFIG
+        filter {
+          mutate {
+            gsub => [ "message", "toreplace"]
+          }
+        }
+      CONFIG
+
+      sample "not_really_important" do
+        insist {subject}.raises LogStash::ConfigurationError
+      end
+    end
+  end
+
   describe "basics" do
     config <<-CONFIG
       filter {
