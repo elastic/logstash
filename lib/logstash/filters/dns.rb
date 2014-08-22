@@ -101,6 +101,9 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
       return
     end
 
+    # Explicit encode, as Resolv returns ASCII
+    result.encode!('UTF-8')
+
     if @target.empty?
       event["dns"] = result
     else
