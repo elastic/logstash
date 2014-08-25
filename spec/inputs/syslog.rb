@@ -14,6 +14,7 @@ describe "inputs/syslog", :socket => true do
         syslog {
           type => "blah"
           port => #{port}
+          locale => "en"
         }
       }
     CONFIG
@@ -33,8 +34,8 @@ describe "inputs/syslog", :socket => true do
         insist { events[i]["priority"] } == 164
         insist { events[i]["severity"] } == 4
         insist { events[i]["facility"] } == 20
+        insist { events[i]["@timestamp"] } == "2014-10-26T14:19:25.000Z"
       end
     end
   end
 end
-
