@@ -35,6 +35,8 @@ Now you should have the file named 'logstash-%VERSION%.tar.gz' on your local fil
 tar zxvf logstash-%VERSION%.tar.gz
 cd logstash-%VERSION%
 ----
+Here, we are telling the *tar* command that we are sending it a gzipped file (*z* flag), that we would like to extract the file (*x* flag), that we would like to do so verbosely (*v* flag), and that we will provide a filename for *tar* (*f* flag).
+
 Now let's run it:
 ----
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
@@ -131,7 +133,7 @@ As a quick exercise in configuring multiple Logstash outputs, let's invoke Logst
 ----
 bin/logstash -e 'input { stdin { } } output { elasticsearch { host => localhost } stdout { } }'
 ----
-Typing a phrase will now echo back to your terminal, as well as save in Elasticsearch! (Feel free to verify this using curl or elasticsearch-kopf).
+Typing a phrase will now echo back to your terminal, as well as save in Elasticsearch! (Feel free to verify this using curl, kibana or elasticsearch-kopf).
 
 === Default - Daily Indices
 You might notice that Logstash was smart enough to create a new index in Elasticsearch... The default index name is in the form of 'logstash-YYYY.MM.DD', which essentially creates one index per day. At midnight (GMT?), Logstash will automagically rotate the index to a fresh new one, with the new current day's timestamp. This allows you to keep windows of data, based on how far retroactively you'd like to query your log data. Of course, you can always archive (or re-index) your data to an alternate location, where you are able to query further into the past. If you'd like to simply delete old indices after a certain time period, you can use the https://github.com/elasticsearch/curator[Elasticsearch Curator tool].
@@ -197,6 +199,14 @@ bin/logstash -f logstash-simple.conf
 ----
 
 Et voilà! Logstash will read in the configuration file you just created and run as in the example we saw earlier. Note that we used the '-f' to read in the file, rather than the '-e' to read the configuration from the command line. This is a very simple case, of course, so let's move on to some more complex examples.
+
+=== Testing Your Configuration Files
+
+After creating a new or complex configuration file, it can be helpful to quickly test that the file is formatted correctly. We can verify our configuration file is formatted correctly by using the *--configtest* flag.
+
+----
+bin/logstash -f logstash-simple.conf --configtest
+----
 
 === Filters
 Filters are an in-line processing mechanism which provide the flexibility to slice and dice your data to fit your needs. Let's see one in action, namely the *grok filter*.
