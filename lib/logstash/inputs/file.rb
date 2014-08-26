@@ -18,7 +18,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
   milestone 2
 
   # TODO(sissel): This should switch to use the 'line' codec by default
-  # once file following
+  # once file following.
   default :codec, "plain"
 
   # The path(s) to the file(s) to use as an input.
