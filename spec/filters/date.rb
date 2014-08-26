@@ -356,4 +356,52 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
       insist { subject["@timestamp"].year } == Time.now.year
     end
   end
+
+  describe "Supporting locale only" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "message", "dd MMMM yyyy" ]
+          locale => "fr"
+          timezone => "UTC"
+        }
+      }
+    CONFIG
+
+    sample "14 juillet 1789" do
+      insist { subject["@timestamp"].time } == Time.iso8601("1789-07-14T00:00:00.000Z").utc
+    end
+  end
+
+  describe "Supporting locale+country in BCP47" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "message", "dd MMMM yyyy" ]
+          locale => "fr-FR"
+          timezone => "UTC"
+        }
+      }
+    CONFIG
+
+    sample "14 juillet 1789" do
+      insist { subject["@timestamp"].time } == Time.iso8601("1789-07-14T00:00:00.000Z").utc
+    end
+  end
+
+  describe "Supporting locale+country in POSIX (internally replace '_' by '-')" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "message", "dd MMMM yyyy" ]
+          locale => "fr_FR"
+          timezone => "UTC"
+        }
+      }
+    CONFIG
+
+    sample "14 juillet 1789" do
+      insist { subject["@timestamp"].time } == Time.iso8601("1789-07-14T00:00:00.000Z").utc
+    end
+  end
 end
