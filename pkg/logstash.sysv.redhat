@@ -19,7 +19,7 @@
 
 . /etc/rc.d/init.d/functions
 
-NAME=logstash
+NAME=`basename $0`
 DESC="Logstash Daemon"
 DEFAULT=/etc/sysconfig/$NAME
 
@@ -42,7 +42,7 @@ LS_CONF_DIR=/etc/logstash/conf.d
 LS_OPEN_FILES=16384
 LS_NICE=19
 LS_OPTS=""
-LS_PIDFILE=/var/run/$NAME/$NAME.pid
+LS_PIDFILE=/var/run/logstash/$NAME.pid
 
 # End of variables that can be overwritten in $DEFAULT
 
