@@ -44,7 +44,7 @@ class LogStash::Outputs::RabbitMQ
         else
           @logger.warn("Tried to send a message, but not connected to RabbitMQ.")
         end
-      rescue MarchHare::Exception, com.rabbitmq.client.AlreadyClosedException => e
+      rescue MarchHare::Exception, IOError, com.rabbitmq.client.AlreadyClosedException => e
         @connected.set(false)
         n = 10
 
