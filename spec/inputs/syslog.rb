@@ -1,11 +1,13 @@
 # coding: utf-8
 require "test_utils"
 require "socket"
+require "logstash/inputs/syslog"
+require "logstash/event"
 
-describe "inputs/syslog", :socket => true do
+describe "inputs/syslog" do
   extend LogStash::RSpec
 
-  describe "properly handles priority, severity and facilities" do
+  it "should properly handle priority, severity and facilities", :socket => true do
     port = 5511
     event_count = 10
 
@@ -39,7 +41,7 @@ describe "inputs/syslog", :socket => true do
     end
   end
 
-  describe "adds unique tag when grok parsing fails" do
+  it "should add unique tag when grok parsing fails with live syslog input", :socket => true do
     port = 5511
     event_count = 10
 
@@ -70,4 +72,21 @@ describe "inputs/syslog", :socket => true do
       end
     end
   end
+
+  it "should add unique tag when grok parsing fails" do
+    input = LogStash::Inputs::Syslog.new({})
+    input.register
+
+    # event which is not syslog should have a new tag
+    event = LogStash::Event.new({ "message" => "hello world, this is not syslog RFC3164" })
+    input.syslog_relay(event)
+    insist { event["tags"] } ==  ["_grokparsefailure_sysloginput"]
+
+    syslog_event = LogStash::Event.new({ "message" => "<164>Oct 26 15:19:25 1.2.3.4 %ASA-4-106023: Deny udp src DRAC:10.1.2.3/43434" })
+    input.syslog_relay(syslog_event)
+    insist { syslog_event["priority"] } ==  164
+    insist { syslog_event["severity"] } ==  4
+    insist { syslog_event["tags"] } ==  nil
+  end
+
 end
