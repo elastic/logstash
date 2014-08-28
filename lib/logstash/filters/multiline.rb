@@ -10,6 +10,8 @@ require "set"
 # from files into a single event. For example - joining java exception and
 # stacktrace messages into a single event.
 #
+# NOTE: This filter will not work with multiple worker threads "-w 2" on the logstash command line.
+#
 # The config looks like this:
 #
 #     filter {
