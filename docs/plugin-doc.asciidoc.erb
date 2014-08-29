@@ -1,3 +1,4 @@
+<%- plugin_name = name -%>
 [[plugins-<%= section %>s-<%= name %>]]
 === <%= name %>
 
@@ -21,7 +22,8 @@ These are the config options
        is_regexp = false
      end
 -%>
-===== <%= name %><%= " (required setting)" if config[:required] %><%= " (DEPRECATED)" if config[:deprecated] %>
+[[plugins-<%= section%>s-<%= plugin_name%>-<%= name%>]]
+===== `<%= name %>` <%= " (required setting)" if config[:required] %><%= " (DEPRECATED)" if config[:deprecated] %>
 
 <% if config[:deprecated] -%>
   * DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version.
@@ -30,14 +32,14 @@ These are the config options
   * The configuration attribute name here is anything that matches the above regular expression.
 <% end -%>
 <% if config[:validate].is_a?(Symbol) -%>
-  * Value type is <<configuration,_<%= config[:validate] %>, <%= config[:validate] %>>>
+  * Value type is <<<%= config[:validate] %>,<%= config[:validate] %>>>
 <% elsif config[:validate].nil? -%>
-  <li> Value type is <a href="../configuration#string">string</a>
+  <li> Value type is <<string,string>>
 <% elsif config[:validate].is_a?(Array) -%>
-  * Value can be any of: <%= config[:validate].map(&:inspect).join(", ") %>
+  * Value can be any of: `<%= config[:validate].join('`, `') %>`
 <% end -%>
 <% if config.include?(:default) -%>
-  * Default value is <%= config[:default].inspect %>
+  * Default value is `<%= config[:default].inspect %>`
 <% else -%>
   * There is no default value for this setting.
 <% end -%>
@@ -45,7 +47,3 @@ These are the config options
 <%= config[:description] %>
 
 <% end -%>
-
-This is documentation from <a href="https://github.com/logstash/logstash/blob/v<%= LOGSTASH_VERSION %>/<%= file %>"><%= file %></a>
-
-<h3>Milestone: <a href="../plugin-milestones"><%= @milestone %></a></h3>
