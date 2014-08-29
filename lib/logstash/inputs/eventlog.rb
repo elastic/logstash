@@ -51,8 +51,12 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
 
       events = @wmi.ExecNotificationQuery(wmi_query)
 
-      while
-        notification = events.NextEvent
+      while true
+        begin
+          notification = events.NextEvent(1000) #timeout is 1000 ms
+        rescue
+          next
+        end
         event = notification.TargetInstance
 
         timestamp = to_timestamp(event.TimeGenerated)
@@ -89,6 +93,8 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
         queue << e
 
       end # while
+
+    rescue LogStash::ShutdownSignal
 
     rescue Exception => ex
       @logger.error("Windows Event Log error: #{ex}\n#{ex.backtrace}")
