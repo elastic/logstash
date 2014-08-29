@@ -186,8 +186,8 @@ class LogStash::Pipeline
 
   def filterworker
     LogStash::Util::set_thread_name("|worker")
-    begin
-      while true
+    while true
+      begin
         event = @input_to_filter.pop
         if event == LogStash::ShutdownSignal
           @input_to_filter.push(event)
@@ -207,9 +207,9 @@ class LogStash::Pipeline
           next if event.cancelled?
           @filter_to_output.push(event)
         end
+      rescue => e
+        @logger.error("Exception in filterworker", "exception" => e, "backtrace" => e.backtrace)
       end
-    rescue => e
-      @logger.error("Exception in filterworker", "exception" => e, "backtrace" => e.backtrace)
     end
 
     @filters.each(&:teardown)
@@ -220,9 +220,13 @@ class LogStash::Pipeline
     @outputs.each(&:register)
     @outputs.each(&:worker_setup)
     while true
-      event = @filter_to_output.pop
-      break if event == LogStash::ShutdownSignal
-      output(event)
+      begin
+        event = @filter_to_output.pop
+        break if event == LogStash::ShutdownSignal
+        output(event)
+      rescue => e
+        @logger.error("Exception in outputworker", "exception" => e, "backtrace" => e.backtrace)
+      end
     end # while true
     @outputs.each(&:teardown)
   end # def outputworker
