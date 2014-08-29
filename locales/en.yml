@@ -57,8 +57,10 @@ en:
         the '-f yourlogstash.conf' flag?
       error: >-
         Error: %{error}
-      interrupted: >-
-        Interrupt received. Shutting down the pipeline.
+      sigint: >-
+        SIGINT received. Shutting down the pipeline.
+      sigterm: >-
+        SIGTERM received. Shutting down the pipeline.
       configtest-flag-information: |-
         You may be interested in the '--configtest' flag which you can
         use to validate logstash's configuration before you choose

@@ -117,8 +117,14 @@ class LogStash::Agent < Clamp::Command
     end
 
     # Make SIGINT shutdown the pipeline.
-    trap_id = Stud::trap("INT") do
-      @logger.warn(I18n.t("logstash.agent.interrupted"))
+    sigint_id = Stud::trap("INT") do
+      @logger.warn(I18n.t("logstash.agent.sigint"))
+      pipeline.shutdown
+    end
+
+    # Make SIGTERM shutdown the pipeline.
+    sigterm_id = Stud::trap("TERM") do
+      @logger.warn(I18n.t("logstash.agent.sigterm"))
       pipeline.shutdown
     end
 
@@ -154,7 +160,8 @@ class LogStash::Agent < Clamp::Command
     return 1
   ensure
     @log_fd.close if @log_fd
-    Stud::untrap("INT", trap_id) unless trap_id.nil?
+    Stud::untrap("INT", sigint_id) unless sigint_id.nil?
+    Stud::untrap("TERM", sigterm_id) unless sigterm_id.nil?
   end # def execute
 
   def show_version
