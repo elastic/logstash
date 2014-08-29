@@ -1,4 +1,18 @@
-[cols="<,<,<,<",options="header",]
+<%- plugin_name = name -%>
+[source,json]
+--------------------------
+<%= name %> {
+<% sorted_attributes.each do |name, config|
+   next if config[:deprecated]
+   next if !config[:required]
+-%>
+<%= "  " if section == "codec" %>    <%= name %> => ... 
+<% end -%>
+<%= "  " if section == "codec" %>  }
+
+--------------------------
+
+[cols="<,<,<,<m",options="header",]
 |=======================================================================
 |Setting |Input type|Required/optional|Default value
 <% sorted_attributes.each do |name, config|
@@ -7,8 +21,8 @@
      annotation = "|string, one of #{config[:validate].inspect}"
    elsif config[:validate] == :path
      annotation = "|a valid filesystem path"
-   else 
-     annotation = "|#{config[:validate]}"
+   else
+     annotation = "|<<#{config[:validate]},#{config[:validate]}>>"
    end
 
    if name.is_a?(Regexp)
@@ -20,11 +34,15 @@
      annotation += "|optional"
    end
    if config.include?(:default)
-     annotation += "|#{config[:default].inspect}"
+     if config[:default].is_a?(String)
+       annotation += "|`#{config[:default]}`"
+     else
+       annotation += "|#{config[:default].inspect}"
+     end
    else 
      annotation += "|"
    end
 -%>
-| <<_<%= name %>,<%= name %>>> <%= annotation %>
+| <<plugins-<%= section %>s-<%=plugin_name%>-<%= name %>>> <%= annotation %>
 <% end -%>
 |=======================================================================
