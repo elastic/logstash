@@ -13,14 +13,32 @@ describe LogStash::Filters::KV do
       }
     CONFIG
 
-    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world'" do
+    sample "hello=world foo=bar baz=fizz doublequoted=\"hello world\" singlequoted='hello world' bracketsone=(hello world) bracketstwo=[hello world]" do
       insist { subject["hello"] } == "world"
       insist { subject["foo"] } == "bar"
       insist { subject["baz"] } == "fizz"
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
+      insist { subject["bracketsone"] } == "hello world"
+      insist { subject["bracketstwo"] } == "hello world"
     end
+  end
 
+  describe  "test spaces attached to the field_split" do
+    config <<-CONFIG
+      filter {
+        kv { }
+      }
+    CONFIG
+
+    sample "hello = world foo =bar baz= fizz doublequoted = \"hello world\" singlequoted= 'hello world' brackets =(hello world)" do
+      insist { subject["hello"] } == "world"
+      insist { subject["foo"] } == "bar"
+      insist { subject["baz"] } == "fizz"
+      insist { subject["doublequoted"] } == "hello world"
+      insist { subject["singlequoted"] } == "hello world"
+      insist { subject["brackets"] } == "hello world"
+    end
   end
 
    describe "LOGSTASH-624: allow escaped space in key or value " do
@@ -43,14 +61,14 @@ describe LogStash::Filters::KV do
       }
     CONFIG
 
-    sample "hello:=world foo:bar baz=:fizz doublequoted:\"hello world\" singlequoted:'hello world'" do
+    sample "hello:=world foo:bar baz=:fizz doublequoted:\"hello world\" singlequoted:'hello world' brackets:(hello world)" do
       insist { subject["hello"] } == "=world"
       insist { subject["foo"] } == "bar"
       insist { subject["baz="] } == "fizz"
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
+      insist { subject["brackets"] } == "hello world"
     end
-
   end
 
   describe "test field_split" do
@@ -68,7 +86,36 @@ describe LogStash::Filters::KV do
       insist { subject["singlequoted"] } == "hello world"
       insist { subject["foo12"] } == "bar12"
     end
+  end
 
+  describe "test include_brackets is false" do
+    config <<-CONFIG
+      filter {
+        kv { include_brackets => "false" }
+      }
+    CONFIG
+
+    sample "bracketsone=(hello world) bracketstwo=[hello world]" do
+      insist { subject["bracketsone"] } == "(hello"
+      insist { subject["bracketstwo"] } == "[hello"
+    end
+  end
+
+  describe "test recursive" do
+    config <<-CONFIG
+      filter {
+        kv { 
+          recursive => 'true'
+        }
+      }
+    CONFIG
+  
+    sample 'IKE="Quick Mode completion" IKE\ IDs = (subnet= x.x.x.x mask= 255.255.255.254 and host=y.y.y.y)' do
+      insist { subject["IKE"] } == 'Quick Mode completion'
+      insist { subject['IKE\ IDs']['subnet'] } == 'x.x.x.x'
+      insist { subject['IKE\ IDs']['mask'] } == '255.255.255.254'
+      insist { subject['IKE\ IDs']['host'] } == 'y.y.y.y'
+    end
   end
 
   describe  "delimited fields should override space default (reported by LOGSTASH-733)" do

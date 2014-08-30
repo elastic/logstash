@@ -157,10 +157,49 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #     }
   config :default_keys, :validate => :hash, :default => {}
 
+  # A boolean specifying whether to include brackets as value 'wrappers'
+  # (the default is true)
+  #
+  #     filter {
+  #       kv {
+  #         include_brackets => true
+  #       }
+  #     }
+  #
+  # For example, the result of this line:
+  # 'bracketsone=(hello world) bracketstwo=[hello world]'
+  #
+  # will be:
+  # * bracketsone: hello world
+  # * bracketstwo: hello world
+  #
+  # instead of:
+  # * bracketsone: (hello
+  # * bracketstwo: [hello
+  config :include_brackets, :validate => :boolean, :default => true
+
+  # A boolean specifying whether to drill down into values 
+  # and recursively get more key-value pairs from it.
+  # The extra key-value pairs will be stored as subkeys of the root key.
+  #
+  # Default is not to recursive values.
+  #
+  #     filter {
+  #       kv {
+  #         recursive => 'true'
+  #       }
+  #     }
+  #
+  config :recursive, :validate => :boolean, :default => false
+
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
     @trimkey_re = Regexp.new("[#{@trimkey}]") if !@trimkey.nil?
-    @scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)["+@value_split+"](?:\"([^\"]+)\"|'([^']+)'|((?:\\\\ |[^"+@field_split+"])+))")
+
+    valueRxString = "(?:\"([^\"]+)\"|'([^']+)'"
+    valueRxString += "|\\(([^\\)]+)\\)|\\[([^\\]]+)\\]" if @include_brackets
+    valueRxString += "|((?:\\\\ |[^"+@field_split+"])+))"
+    @scan_re = Regexp.new("((?:\\\\ |[^"+@field_split+@value_split+"])+)\\s*["+@value_split+"]\\s*"+valueRxString)
   end # def register
 
   def filter(event)
@@ -203,11 +242,11 @@ class LogStash::Filters::KV < LogStash::Filters::Base
 
   private
   def parse(text, event, kv_keys)
-    if !event =~ /[@field_split]/
+    if !event =~ /[@value_split]/
       return kv_keys
     end
-    text.scan(@scan_re) do |key, v1, v2, v3|
-      value = v1 || v2 || v3
+    text.scan(@scan_re) do |key, v1, v2, v3, v4, v5|
+      value = v1 || v2 || v3 || v4 || v5
       key = @trimkey.nil? ? key : key.gsub(@trimkey_re, "")
 
       # Bail out as per the values of @include_keys and @exclude_keys
@@ -217,6 +256,16 @@ class LogStash::Filters::KV < LogStash::Filters::Base
       key = event.sprintf(@prefix) + key
 
       value = @trim.nil? ? value : value.gsub(@trim_re, "")
+
+      # recursively get more kv pairs from the value
+      if @recursive and value =~ /[@value_split]/
+        innerKv = Hash.new
+        innerKv = parse(value, event, innerKv) 
+        if innerKv.length > 0
+          value = innerKv
+        end
+      end
+
       if kv_keys.has_key?(key)
         if kv_keys[key].is_a? Array
           kv_keys[key].push(value)
