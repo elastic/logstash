@@ -21,7 +21,7 @@ require "socket" # for Socket.gethostname
 # cannot provide stable inodes (e.g. mounted NTFS volumes). In these cases,
 # one option is to use `rsync --inplace --no-W` to syncronize the files to 
 # standard Linux filesystem and read the files from there. You can view a file's
-# inode with `ls i`.
+# inode with `ls -i`.
 class LogStash::Inputs::File < LogStash::Inputs::Base
   config_name "file"
   milestone 2
