@@ -329,7 +329,23 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
 
     sample("thedate" => "2013/Apr/21") do
       insist { subject["@timestamp"] } != "2013-04-21T00:00:00.000Z"
-      insist { subject["tags"] } == nil
+      reject { subject["tags"] }.include? "tagged"
+    end
+  end
+
+  describe "failing to parse should apply tag_on_failure" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "thedate", "yyyy/MM/dd" ]
+          tag_on_failure => ["date_failed"]
+        }
+      }
+    CONFIG
+
+    sample("thedate" => "2013/Apr/21") do
+      insist { subject["@timestamp"] } != "2013-04-21T00:00:00.000Z"
+      insist { subject["tags"] }.include? "date_failed"
     end
   end
 

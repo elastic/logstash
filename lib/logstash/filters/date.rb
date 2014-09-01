@@ -45,7 +45,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # weekday names (pattern with EEE).
   #
   # If not specified, the platform default will be used but for non-english platform default
-  # an english parser will be also be used as a fallback mechanism.
+  # an english parser will also be used as a fallback mechanism.
   #
   config :locale, :validate => :string
 
@@ -90,6 +90,10 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # Store the matching timestamp into the given target field.  If not provided,
   # default to updating the @timestamp field of the event.
   config :target, :validate => :string, :default => "@timestamp"
+
+  # Append values to the 'tags' field when there has been no
+  # successful match
+  config :tag_on_failure, :validate => :array, :default => ["_dateparsefailure"]
 
   # LOGSTASH-34
   DATEPATTERNS = %w{ y d H m s S }
@@ -238,12 +242,16 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           filter_matched(event)
         rescue StandardError, JavaException => e
           @logger.warn("Failed parsing date from field", :field => field,
-                       :value => value, :exception => e)
-
-          # Raising here will bubble all the way up and cause an exit.
-          # TODO(sissel): Maybe we shouldn't raise?
-          # TODO(sissel): What do we do on a failure? Tag it like grok does?
-          #raise e
+                       :value => value, :exception => e.message,
+                       :config_parsers => fieldparsers.collect {|x| x[:format]}.join(','),
+                       :config_locale => @locale ? @locale : "default="+java.util.Locale.getDefault().toString()
+                       )
+          # Tag this event if we can't parse it. We can use this later to
+          # reparse+reindex logs if we improve the patterns given.
+          @tag_on_failure.each do |tag|
+            event["tags"] ||= []
+            event["tags"] << tag unless event["tags"].include?(tag)
+          end
         end # begin
       end # fieldvalue.each
     end # @parsers.each
