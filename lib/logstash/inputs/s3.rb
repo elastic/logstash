@@ -157,9 +157,9 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     executor = Executors.newFixedThreadPool(@poolsize)
 
     objects.each do |k|
+      lastmod = @s3bucket.objects[k].last_modified
       executor.submit do
         @logger.debug("S3 input processing", :bucket => @bucket, :key => k)
-        lastmod = @s3bucket.objects[k].last_modified
         process_log(queue, k)
         sincedb_write(lastmod)
       end
