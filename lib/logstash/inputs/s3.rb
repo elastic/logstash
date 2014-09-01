@@ -5,6 +5,9 @@ require "logstash/namespace"
 require "time"
 require "tmpdir"
 
+java_import java.util.concurrent.Executors
+java_import java.util.concurrent.TimeUnit
+
 # Stream events from files from a S3 bucket.
 #
 # Each line from each file generates an event.
@@ -16,6 +19,9 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   # TODO(sissel): refactor to use 'line' codec (requires removing both gzip
   # support and readline usage). Support gzip through a gzip codec! ;)
   default :codec, "plain"
+
+  # number of parallel threads == downloaded files
+  config :poolsize, :validate => :integer, :default => 2
 
   # The credentials of the AWS account used to access the bucket.
   # Credentials can be specified:
@@ -148,11 +154,22 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     end
 
     objects = list_new(since)
+    executor = Executors.newFixedThreadPool(@poolsize)
+
     objects.each do |k|
-      @logger.debug("S3 input processing", :bucket => @bucket, :key => k)
-      lastmod = @s3bucket.objects[k].last_modified
-      process_log(queue, k)
-      sincedb_write(lastmod)
+      executor.submit do
+        @logger.debug("S3 input processing", :bucket => @bucket, :key => k)
+        lastmod = @s3bucket.objects[k].last_modified
+        process_log(queue, k)
+        sincedb_write(lastmod)
+      end
+    end
+
+    executor.shutdown
+    loop do
+      executor.awaitTermination 20, TimeUnit::SECONDS
+      @logger.debug("ACTIVE COUNT #{executor.activeCount} ")
+      break if executor.activeCount == 0
     end
 
   end # def process_new
