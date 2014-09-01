@@ -260,7 +260,7 @@ EOF
         @redis.quit
       end
     end
-  rescue
+  rescue Redis::BaseError
   ensure
     @redis = nil
   end
