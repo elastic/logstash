@@ -5,20 +5,35 @@ puts "Skipping date performance tests because this ruby is not jruby" if RUBY_EN
 RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
   extend LogStash::RSpec
 
-  describe "giving an invalid match config, raise a configuration error" do
-    config <<-CONFIG
-      filter {
-        date {
-          match => [ "mydate"]
-          locale => "en"
+  context "config validation" do
+    describe "giving an invalid match config, raise a configuration error" do
+      config <<-CONFIG
+        filter {
+          date {
+            match => [ "mydate"]
+            locale => "en"
+          }
         }
-      }
-    CONFIG
+      CONFIG
 
-    sample "not_really_important" do
-      insist {subject}.raises LogStash::ConfigurationError
+      sample "not_really_important" do
+        insist {subject}.raises LogStash::ConfigurationError
+      end
     end
 
+    describe "giving an invalid pattern, raise a configuration error" do
+      config <<-CONFIG
+        filter {
+          date {
+            match => [ "message", "hello world" ]
+          }
+        }
+      CONFIG
+
+      sample "not_really_important" do
+        insist {subject}.raises LogStash::ConfigurationError
+      end
+    end
   end
 
   describe "parsing with ISO8601" do

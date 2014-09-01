@@ -162,23 +162,29 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             return (date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)
           end
         else
-          joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withDefaultYear(Time.new.year)
-          if @timezone
-            joda_parser = joda_parser.withZone(org.joda.time.DateTimeZone.forID(@timezone))
-          else
-            joda_parser = joda_parser.withOffsetParsed
-          end
-          if locale
-            joda_parser = joda_parser.withLocale(locale)
-          end
-          parsers << lambda { |date| joda_parser.parseMillis(date) }
+          begin
+            joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withDefaultYear(Time.new.year)
+            if @timezone
+              joda_parser = joda_parser.withZone(org.joda.time.DateTimeZone.forID(@timezone))
+            else
+              joda_parser = joda_parser.withOffsetParsed
+            end
+            if locale
+              joda_parser = joda_parser.withLocale(locale)
+            end
+            parsers << lambda { |date| joda_parser.parseMillis(date) }
 
-          #Include a fallback parser to english when default locale is non-english
-          if !locale &&
-            "en" != java.util.Locale.getDefault().getLanguage() &&
-            (format.include?("MMM") || format.include?("E"))
-            en_joda_parser = joda_parser.withLocale(java.util.Locale.forLanguageTag('en-US'))
-            parsers << lambda { |date| en_joda_parser.parseMillis(date) }
+            #Include a fallback parser to english when default locale is non-english
+            if !locale &&
+              "en" != java.util.Locale.getDefault().getLanguage() &&
+              (format.include?("MMM") || format.include?("E"))
+              en_joda_parser = joda_parser.withLocale(java.util.Locale.forLanguageTag('en-US'))
+              parsers << lambda { |date| en_joda_parser.parseMillis(date) }
+            end
+          rescue JavaException => e
+            raise LogStash::ConfigurationError, I18n.t("logstash.agent.configuration.invalid_plugin_register",
+              :plugin => "filter", :type => "date",
+              :error => "#{e.message} for pattern '#{format}'")
           end
       end
 
