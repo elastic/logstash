@@ -40,10 +40,12 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
   # Specify a locale to be used for date parsing using either IETF-BCP47 or POSIX language tag.
   # Simple examples are `en`,`en-US` for BCP47 or `en_US` for POSIX.
-  # If not specified, the platform default will be used.
   #
   # The locale is mostly necessary to be set for parsing month names (pattern with MMM) and
   # weekday names (pattern with EEE).
+  #
+  # If not specified, the platform default will be used but for non-english platform default
+  # an english parser will be also be used as a fallback mechanism.
   #
   config :locale, :validate => :string
 
@@ -166,10 +168,18 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           else
             joda_parser = joda_parser.withOffsetParsed
           end
-          if (locale != nil)
+          if locale
             joda_parser = joda_parser.withLocale(locale)
           end
           parsers << lambda { |date| joda_parser.parseMillis(date) }
+
+          #Include a fallback parser to english when default locale is non-english
+          if !locale &&
+            "en" != java.util.Locale.getDefault().getLanguage() &&
+            (format.include?("MMM") || format.include?("E"))
+            en_joda_parser = joda_parser.withLocale(java.util.Locale.forLanguageTag('en-US'))
+            parsers << lambda { |date| en_joda_parser.parseMillis(date) }
+          end
       end
 
       @logger.debug("Adding type with date config", :type => @type,
@@ -223,6 +233,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
         rescue StandardError, JavaException => e
           @logger.warn("Failed parsing date from field", :field => field,
                        :value => value, :exception => e)
+
           # Raising here will bubble all the way up and cause an exit.
           # TODO(sissel): Maybe we shouldn't raise?
           # TODO(sissel): What do we do on a failure? Tag it like grok does?

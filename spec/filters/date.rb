@@ -404,4 +404,24 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
       insist { subject["@timestamp"].time } == Time.iso8601("1789-07-14T00:00:00.000Z").utc
     end
   end
+
+  describe "Support fallback to english for non-english default locale" do
+    default_locale = java.util.Locale.getDefault()
+    #Override default locale with non-english
+    java.util.Locale.setDefault(java.util.Locale.forLanguageTag('fr-FR'))
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "message", "dd MMMM yyyy" ]
+          timezone => "UTC"
+        }
+      }
+    CONFIG
+
+    sample "01 September 2014" do
+      insist { subject["@timestamp"].time } == Time.iso8601("2014-09-01T00:00:00.000Z").utc
+    end
+    #Restore default locale
+    java.util.Locale.setDefault(default_locale)
+  end
 end
