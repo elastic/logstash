@@ -21,7 +21,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   default :codec, "plain"
 
   # number of parallel threads == downloaded files
-  config :poolsize, :validate => :integer, :default => 2
+  config :poolsize, :validate => :number, :default => 2
 
   # The credentials of the AWS account used to access the bucket.
   # Credentials can be specified:
