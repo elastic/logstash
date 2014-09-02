@@ -261,7 +261,7 @@ Now, let's configure something actually *useful*... apache2 access log files! We
 input {
   file {
     path => "/tmp/access_log"
-    start_position => beginning
+    start_position => "beginning"
   }
 }
 
