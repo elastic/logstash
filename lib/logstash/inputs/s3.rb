@@ -21,8 +21,8 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   # Credentials can be specified:
   # - As an ["id","secret"] array
   # - As a path to a file containing AWS_ACCESS_KEY_ID=... and AWS_SECRET_ACCESS_KEY=...
-  # - In the environment (variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)
-  config :credentials, :validate => :array, :default => nil
+  # - In the environment if not set (variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)
+  config :credentials, :validate => :array, :default => []
 
   # The name of the S3 bucket.
   config :bucket, :validate => :string, :required => true
@@ -72,7 +72,10 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       @access_key_id = ENV['AWS_ACCESS_KEY_ID']
       @secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
     elsif @credentials.is_a? Array
-      if @credentials.length ==1
+      if @credentials.length == 0
+        @access_key_id = ENV['AWS_ACCESS_KEY_ID']
+        @secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+      elsif @credentials.length == 1
         File.open(@credentials[0]) { |f| f.each do |line|
           unless (/^\#/.match(line))
             if(/\s*=\s*/.match(line))
