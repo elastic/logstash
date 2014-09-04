@@ -48,6 +48,11 @@ class LogStash::Event
   TIMESTAMP_FAILURE_TAG = "_timestampparsefailure"
   TIMESTAMP_FAILURE_FIELD = "_@timestamp"
 
+  # Floats outside of these upper and lower bounds are forcibly converted
+  # to scientific notation by Float#to_s
+  MIN_FLOAT_BEFORE_SCI_NOT = 0.0001
+  MAX_FLOAT_BEFORE_SCI_NOT = 1000000000000000.0
+
   public
   def initialize(data = {})
     @logger = Cabin::Channel.get(LogStash)
@@ -192,7 +197,12 @@ class LogStash::Event
   # is an array (or hash?) should be. Join by comma? Something else?
   public
   def sprintf(format)
-    format = format.to_s
+    if format.is_a?(Float) and
+        (format < MIN_FLOAT_BEFORE_SCI_NOT or format >= MAX_FLOAT_BEFORE_SCI_NOT) then
+      format = ("%.15f" % format).sub(/0*$/,"")
+    else
+      format = format.to_s
+    end
     if format.index("%").nil?
       return format
     end
