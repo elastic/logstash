@@ -95,11 +95,11 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
     end
     @count.each do |metric, val|
       @client.count(build_stat(event.sprintf(metric), sender),
-                    event.sprintf(val).to_f, @sample_rate)
+                    event.sprintf(val), @sample_rate)
     end
     @timing.each do |metric, val|
       @client.timing(build_stat(event.sprintf(metric), sender),
-                     event.sprintf(val).to_f, @sample_rate)
+                     event.sprintf(val), @sample_rate)
     end
     @set.each do |metric, val|
       @client.set(build_stat(event.sprintf(metric), sender),
@@ -107,7 +107,7 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
     end
     @gauge.each do |metric, val|
       @client.gauge(build_stat(event.sprintf(metric), sender),
-                    event.sprintf(val).to_f, @sample_rate)
+                    event.sprintf(val), @sample_rate)
     end
   end # def receive
 
