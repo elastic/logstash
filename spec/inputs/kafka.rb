@@ -50,6 +50,8 @@ describe LogStash::Inputs::Kafka do
     kafka.run logstash_queue
     e = logstash_queue.pop
     insist { e["message"] } == "Kafka message"
-    insist { e["kafka"] } == {"msg_size"=>13, "topic"=>"test", "consumer_group"=>"logstash"}
+    # no metadata by default
+    insist { e["kafka"] } == nil
   end
+
 end
