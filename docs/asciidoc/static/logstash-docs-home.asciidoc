@@ -1,0 +1,30 @@
+[[logstash-docs-home]]
+== Logstash Documentation
+Pretty self-explanatory, really
+
+=== Downloads and Releases
+* http://www.elasticsearch.org/overview/logstash/download/[Download logstash 1.4.2]
+* http://www.elasticsearch.org/blog/apt-and-yum-repositories/[package repositories]
+* http://www.elasticsearch.org/blog/logstash-1-4-2/[release notes]
+* https://github.com/elasticsearch/logstash/blob/master/CHANGELOG[view changelog]
+* https://github.com/elasticsearch/puppet-logstash[Puppet Module]
+
+=== Plugins
+* http://elasticsearch.org/#[contrib plugins]
+* http://elasticsearch.org/#[writing your own plugins]
+* http://elasticsearch.org/#[Inputs] / http://elasticsearch.org/#[Filters] / http://elasticsearch.org/#[Outputs]
+* http://elasticsearch.org/#[Codecs]
+* http://elasticsearch.org/#[(more)]
+
+=== HOWTOs, References, Information
+* http://elasticsearch.org/#[Getting Started with Logstash]
+* http://elasticsearch.org/#[Configuration file overview]
+* http://elasticsearch.org/#[Command-line flags]
+* http://elasticsearch.org/#[The life of an event in logstash]
+* http://elasticsearch.org/#[Using conditional logic]
+* http://elasticsearch.org/#[Glossary]
+* http://elasticsearch.org/#[(more)]
+
+=== About / Videos / Blogs
+* http://elasticsearch.org/#[Videos]
+* http://elasticsearch.org/#[Blogs]

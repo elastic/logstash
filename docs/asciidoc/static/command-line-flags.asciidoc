@@ -1,0 +1,49 @@
+= Command-line flags
+
+== Agent
+
+The logstash agent has the following flags (also try using the '--help' flag)
+
+[source,js]
+----------------------------------
+-f, --config CONFIGFILE
+ Load the logstash config from a specific file, directory, or a wildcard. If given a directory or wildcard, config files will be read from the directory in alphabetical order.
+
+-e CONFIGSTRING
+ Use the given string as the configuration data. Same syntax as the config file. If not input is specified, 'stdin { type => stdin }' is default. If no output is specified, 'stdout { debug => true }}' is default.
+
+-w, --filterworkers COUNT
+ Run COUNT filter workers (default: 1)
+
+--watchdog-timeout TIMEOUT
+ Set watchdog timeout value in seconds. Default is 10.
+
+-l, --log FILE 
+ Log to a given path. Default is to log to stdout 
+
+--verbose 
+ Increase verbosity to the first level, less verbose.
+
+--debug 
+ Increase verbosity to the last level, more verbose.
+
+-v  
+ *DEPRECATED: see --verbose/debug* Increase verbosity. There are multiple levels of verbosity available with
+'-vv' currently being the highest 
+
+--pluginpath PLUGIN_PATH 
+ A colon-delimted path to find other logstash plugins in 
+----------------------------------
+
+
+== Web
+
+[source,js]
+----------------------------------
+-a, --address ADDRESS 
+ Address on which to start webserver. Default is 0.0.0.0.
+
+-p, --port PORT
+ Port on which to start webserver. Default is 9292.
+----------------------------------
+
