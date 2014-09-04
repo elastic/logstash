@@ -56,7 +56,8 @@ class LogStash::Inputs::Kafka < LogStash::Inputs::Base
   config :consumer_restart_on_error, :validate => :boolean, :default => true
   # Time in millis to wait for consumer to restart after an error
   config :consumer_restart_sleep_ms, :validate => :number, :default => 0
-  config :decorate_events, :validate => :boolean, :default => true
+  # Option to add Kafka metadata like topic, message size to the event
+  config :decorate_events, :validate => :boolean, :default => false
   # A unique id for the consumer; generated automatically if not set.
   config :consumer_id, :validate => :string, :default => nil
   # The number of byes of messages to attempt to fetch for each topic-partition in each fetch
