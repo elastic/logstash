@@ -21,6 +21,61 @@ describe LogStash::Filters::Split do
     end
   end
 
+  describe "all defaults chain w/ other filter" do
+    config <<-CONFIG
+      filter {
+        split { }
+        mutate { replace => [ "message", "test" ] }
+      }
+    CONFIG
+
+    sample "big\nbird" do
+      insist { subject.length } == 2
+      insist { subject[0]["message"] } == "test"
+      insist { subject[1]["message"] } == "test"
+    end
+  end
+
+  describe "all defaults chain w/ many other filters" do
+    config <<-CONFIG
+      filter {
+        split { }
+        mutate { replace => [ "message", "test" ] }
+        mutate { replace => [ "message", "test2" ] }
+        mutate { replace => [ "message", "test3" ] }
+        mutate { replace => [ "message", "test4" ] }
+      }
+    CONFIG
+
+    sample "big\nbird" do
+      insist { subject.length } == 2
+      insist { subject[0]["message"] } == "test4"
+      insist { subject[1]["message"] } == "test4"
+    end
+  end
+
+  describe "all defaults chain w/ mutate and clone filters" do
+    config <<-CONFIG
+      filter {
+        split { }
+        mutate { replace => [ "message", "test" ] }
+        clone { clones => ['clone1', 'clone2'] }
+        mutate { replace => [ "message", "test2" ] }
+        mutate { replace => [ "message", "test3" ] }
+      }
+    CONFIG
+
+    sample "big\nbird" do
+      insist { subject.length } == 6
+      insist { subject[0]["message"] } == "test3"
+      insist { subject[1]["message"] } == "test3"
+      insist { subject[2]["message"] } == "test3"
+      insist { subject[3]["message"] } == "test3"
+      insist { subject[4]["message"] } == "test3"
+      insist { subject[5]["message"] } == "test3"
+    end
+  end
+
   describe "custome terminator" do
     config <<-CONFIG
       filter {
@@ -57,4 +112,20 @@ describe LogStash::Filters::Split do
       insist { subject[2]["custom"] } == "sesame street"
     end
   end
+
+  describe "chain split with another filter" do
+    config <<-CONFIG
+      filter {
+        split { }
+        mutate { replace => [ "message", "test" ] }
+      }
+    CONFIG
+
+    sample "hello\nbird" do
+      insist { subject.length } == 2
+      insist { subject[0]["message"] } == "test"
+      insist { subject[1]["message"] } == "test"
+    end
+  end
+
 end

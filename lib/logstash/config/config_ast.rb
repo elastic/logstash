@@ -61,7 +61,8 @@ module LogStash; module Config; module AST
         #definitions << "def #{type}(event)"
         definitions << "@#{type}_func = lambda do |event, &block|"
         if type == "filter"
-          definitions << "  extra_events = []"
+          definitions << "  events = [event]"
+          definitions << "  newevents = []"
         end
 
         definitions << "  @logger.debug? && @logger.debug(\"#{type} received\", :event => event.to_hash)"
@@ -70,7 +71,8 @@ module LogStash; module Config; module AST
         end
 
         if type == "filter"
-          definitions << "  extra_events.each(&block)"
+          definitions << "  events.delete(event)"
+          definitions << "  events.each(&block)"
         end
         definitions << "end"
       end
@@ -159,21 +161,15 @@ module LogStash; module Config; module AST
           # and this should simply compile to 
           #   #{variable_name}.filter(event)
           return [
-            "newevents = []",
-            "extra_events.each do |event|",
+            "events.each do |event|",
             "  #{variable_name}.filter(event) do |newevent|",
             "    newevents << newevent",
             "  end",
             "end",
-            "extra_events += newevents",
+            "events = (newevents + events).reject {|e| e.cancelled?}",
 
-            "#{variable_name}.filter(event) do |newevent|",
-            "  extra_events << newevent",
-            "end",
-            "if event.cancelled?",
-            "  extra_events.each(&block)",
-            "  return",
-            "end",
+            "return if events.empty?",
+            "newevents = []",
           ].map { |l| "#{l}\n" }.join("")
         when "output"
           return "#{variable_name}.handle(event)\n"
