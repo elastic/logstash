@@ -1,7 +1,6 @@
 # encoding: utf-8
 
-require 'rspec'
-require 'insist'
+require "test_utils"
 require 'logstash/namespace'
 require 'logstash/inputs/kafka'
 require 'logstash/errors'
@@ -10,6 +9,15 @@ describe LogStash::Inputs::Kafka do
   extend LogStash::RSpec
 
   let (:kafka_config) {{"topic_id" => "test"}}
+
+  config <<-CONFIG
+    input {
+      kafka {
+        zk_connect => "localhost:2181"
+        topic_id => "logstash_test11"
+      }
+    }
+  CONFIG
 
   it 'should populate kafka config with default values' do
     kafka = LogStash::Inputs::Kafka.new(kafka_config)
@@ -52,6 +60,35 @@ describe LogStash::Inputs::Kafka do
     insist { e["message"] } == "Kafka message"
     # no metadata by default
     insist { e["kafka"] } == nil
+  end
+
+  it "should receive current events from Kafka server on localhost", :kafka => true do
+    jarpath = File.join(File.dirname(__FILE__), "../../vendor/jar/kafka*/libs/*.jar")
+    Dir[jarpath].each do |jar|
+      require jar
+    end
+    require 'jruby-kafka'
+    producer_options = {:broker_list => "localhost:9092",
+                        :serializer_class => "kafka.serializer.StringEncoder"}
+    producer = Kafka::Producer.new(producer_options)
+    producer.connect()
+
+    # send some messages to Kafka topic
+    producer.sendMsg("logstash_test11", nil, "this is a log line")
+    producer.sendMsg("logstash_test11", nil, "this is another log line")
+
+    pipeline = LogStash::Pipeline.new(config)
+    queue = Queue.new
+    pipeline.instance_eval do
+      @output_func = lambda { |event| queue << event }
+    end
+    # start LS
+    pipeline_thread = Thread.new { pipeline.run }
+
+    event = queue.pop
+    puts event.to_s
+    insist { event["message"] } == "foobar"
+    pipeline_thread.join
   end
 
 end
