@@ -28,7 +28,7 @@ require "logstash/namespace"
 #
 # With regards to this plugin, the default namespace is "logstash", the default sender
 # is the ${host} field, and the metric name depends on what is set as the metric name
-# in the increment, decrement, timing, count, set or gauge variable. 
+# in the increment, decrement, timing, count, set or gauge variable.
 #
 class LogStash::Outputs::Statsd < LogStash::Outputs::Base
   ## Regex stolen from statsd code
@@ -65,7 +65,7 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
 
   # A gauge metric. `metric_name => gauge` as hash.
   config :gauge, :validate => :hash, :default => {}
-  
+
   # The sample rate for the metric.
   config :sample_rate, :validate => :number, :default => 1
 
@@ -115,6 +115,6 @@ class LogStash::Outputs::Statsd < LogStash::Outputs::Base
     sender = sender.gsub('::','.').gsub(RESERVED_CHARACTERS_REGEX, '_').gsub(".", "_")
     metric = metric.gsub('::','.').gsub(RESERVED_CHARACTERS_REGEX, '_')
     @logger.debug? and @logger.debug("Formatted value", :sender => sender, :metric => metric)
-    return "#{sender}.#{metric}"
+    return "#{sender}.#{metric}".gsub(/\.\./, '.').gsub(/^./, '')
   end
 end # class LogStash::Outputs::Statsd
