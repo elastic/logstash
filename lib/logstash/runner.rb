@@ -152,6 +152,23 @@ class LogStash::Runner
         require "pry"
         return binding.pry
       end,
+      "plugin" => lambda do
+        require 'logstash/pluginmanager'
+        plugin_manager = LogStash::PluginManager::Main.new($0)
+        begin
+          plugin_manager.parse(args)
+        rescue Clamp::HelpWanted => e
+          show_help(e.command)
+        end
+
+        begin
+          plugin_manager.execute
+        rescue Clamp::HelpWanted => e
+          show_help(e.command)
+        end
+
+        return []
+      end,
       "agent" => lambda do
         require "logstash/agent"
         # Hack up a runner

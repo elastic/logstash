@@ -61,6 +61,10 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "edn"                              #(MIT license)
   gem.add_runtime_dependency "elasticsearch"                    #9Apache 2.0 license)
 
+  # Plugin manager dependencies
+  gem.add_runtime_dependency "jar-dependencies"                    #(MIT license)
+  gem.add_runtime_dependency "ruby-maven"                          #(EPL license)
+
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
     gem.add_runtime_dependency "jruby-httpclient"                 #(Apache 2.0 license)
@@ -68,6 +72,7 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "jruby-openssl", "0.8.7"           #(CPL/GPL/LGPL license)
     gem.add_runtime_dependency "msgpack-jruby"                    #(Apache 2.0 license)
     gem.add_runtime_dependency "jrjackson"                        #(Apache 2.0 license)
+    gem.add_runtime_dependency "jruby-kafka", [">=0.1.0"]         #(Apache 2.0 license)
   else
     gem.add_runtime_dependency "excon"    #(MIT license)
     gem.add_runtime_dependency "msgpack"  #(Apache 2.0 license)

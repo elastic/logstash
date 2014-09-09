@@ -27,6 +27,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
         date {
           match => [ "mydate", "ISO8601" ]
           locale => "en"
+          timezone => "UTC"
         }
       }
     CONFIG
@@ -48,6 +49,16 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
       "2001-09-05T16:36:36.123+0700"     => "2001-09-05T09:36:36.123Z",
       "2001-11-06T20:45:45.123-0000"     => "2001-11-06T20:45:45.123Z",
       "2001-12-07T23:54:54.123Z"         => "2001-12-07T23:54:54.123Z",
+
+      #Almost ISO8601 support, with timezone
+
+      "2001-11-06 20:45:45.123-0000"     => "2001-11-06T20:45:45.123Z",
+      "2001-12-07 23:54:54.123Z"         => "2001-12-07T23:54:54.123Z",
+
+      #Almost ISO8601 support, without timezone
+
+      "2001-11-06 20:45:45.123"     => "2001-11-06T20:45:45.123Z",
+
     }
 
     times.each do |input, output|
@@ -343,6 +354,54 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
 
     sample "Sun Jun 02 20:38:03" do
       insist { subject["@timestamp"].year } == Time.now.year
+    end
+  end
+
+  describe "Supporting locale only" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "message", "dd MMMM yyyy" ]
+          locale => "fr"
+          timezone => "UTC"
+        }
+      }
+    CONFIG
+
+    sample "14 juillet 1789" do
+      insist { subject["@timestamp"].time } == Time.iso8601("1789-07-14T00:00:00.000Z").utc
+    end
+  end
+
+  describe "Supporting locale+country in BCP47" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "message", "dd MMMM yyyy" ]
+          locale => "fr-FR"
+          timezone => "UTC"
+        }
+      }
+    CONFIG
+
+    sample "14 juillet 1789" do
+      insist { subject["@timestamp"].time } == Time.iso8601("1789-07-14T00:00:00.000Z").utc
+    end
+  end
+
+  describe "Supporting locale+country in POSIX (internally replace '_' by '-')" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "message", "dd MMMM yyyy" ]
+          locale => "fr_FR"
+          timezone => "UTC"
+        }
+      }
+    CONFIG
+
+    sample "14 juillet 1789" do
+      insist { subject["@timestamp"].time } == Time.iso8601("1789-07-14T00:00:00.000Z").utc
     end
   end
 end

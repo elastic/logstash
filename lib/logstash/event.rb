@@ -8,6 +8,14 @@ require "logstash/util/accessors"
 require "logstash/timestamp"
 require "logstash/json"
 
+# transcient pipeline events for normal in-flow signaling as opposed to
+# flow altering exceptions. for now having base classes is adequate and
+# in the future it might be necessary to refactor using like a BaseEvent
+# class to have a common interface for all pileline events to support
+# eventual queueing persistence for example, TBD.
+class LogStash::ShutdownEvent; end
+class LogStash::FlushEvent; end
+
 # the logstash event object.
 #
 # An event is simply a tuple of (timestamp, data).
@@ -39,6 +47,11 @@ class LogStash::Event
   VERSION_ONE = "1"
   TIMESTAMP_FAILURE_TAG = "_timestampparsefailure"
   TIMESTAMP_FAILURE_FIELD = "_@timestamp"
+
+  # Floats outside of these upper and lower bounds are forcibly converted
+  # to scientific notation by Float#to_s
+  MIN_FLOAT_BEFORE_SCI_NOT = 0.0001
+  MAX_FLOAT_BEFORE_SCI_NOT = 1000000000000000.0
 
   public
   def initialize(data = {})
@@ -184,7 +197,12 @@ class LogStash::Event
   # is an array (or hash?) should be. Join by comma? Something else?
   public
   def sprintf(format)
-    format = format.to_s
+    if format.is_a?(Float) and
+        (format < MIN_FLOAT_BEFORE_SCI_NOT or format >= MAX_FLOAT_BEFORE_SCI_NOT) then
+      format = ("%.15f" % format).sub(/0*$/,"")
+    else
+      format = format.to_s
+    end
     if format.index("%").nil?
       return format
     end

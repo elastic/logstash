@@ -11,6 +11,7 @@ module LogStash
   module Web; end
   module Util; end
   module PluginMixins; end
+  module PluginManager; end
 
   SHUTDOWN = :shutdown
 end # module LogStash

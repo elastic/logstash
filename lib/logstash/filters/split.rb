@@ -8,7 +8,7 @@ require "logstash/namespace"
 # which emits one event for the whole output of a command and splitting that
 # output by newline - making each line an event.
 #
-# The end result of each split is a complete copy of the event 
+# The end result of each split is a complete copy of the event
 # with only the current split section of the given field changed.
 class LogStash::Filters::Split < LogStash::Filters::Base
 
@@ -30,8 +30,6 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   public
   def filter(event)
     return unless filter?(event)
-
-    events = []
 
     original_value = event[@field]
 
