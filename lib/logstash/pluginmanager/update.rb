@@ -17,7 +17,7 @@ class LogStash::PluginManager::Update < Clamp::Command
 
   def execute
 
-    LogStash::PluginManager::Util.load_logstash_gemspec
+    LogStash::Environment.load_logstash_gemspec!
     ::Gem.configuration.verbose = false
     ::Gem.configuration[:http_proxy] = proxy
 
