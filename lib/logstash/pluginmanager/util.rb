@@ -1,3 +1,5 @@
+require 'logstash/version'
+
 class LogStash::PluginManager::Util
 
   def self.logstash_plugin?(gem)
@@ -46,6 +48,22 @@ class LogStash::PluginManager::Util
           break
       end
     end
+  end
+
+  def self.load_logstash_gemspec
+    logstash_spec = Gem::Specification.new do |gem|
+      gem.authors       = ["Jordan Sissel", "Pete Fritchman"]
+      gem.email         = ["jls@semicomplete.com", "petef@databits.net"]
+      gem.description   = %q{scalable log and event management (search, archive, pipeline)}
+      gem.summary       = %q{logstash - log and event management}
+      gem.homepage      = "http://logstash.net/"
+      gem.license       = "Apache License (2.0)"
+
+      gem.name          = "logstash"
+      gem.version       = LOGSTASH_VERSION
+    end
+
+    Gem::Specification.add_spec logstash_spec
   end
 
 end
