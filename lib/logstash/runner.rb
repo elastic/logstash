@@ -6,6 +6,7 @@ $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
 require "logstash/environment"
 LogStash::Environment.set_gem_paths!
+LogStash::Environment.load_logstash_gemspec!
 
 Thread.abort_on_exception = true
 if ENV["PROFILE_BAD_LOG_CALLS"] || $DEBUGLIST.include?("log")
