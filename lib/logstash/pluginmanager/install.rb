@@ -1,5 +1,6 @@
 require 'clamp'
 require 'logstash/namespace'
+require 'logstash/environment'
 require 'logstash/pluginmanager'
 require 'logstash/pluginmanager/util'
 require 'rubygems/dependency_installer'
@@ -16,7 +17,7 @@ class LogStash::PluginManager::Install < Clamp::Command
   option "--proxy", "PROXY", "Use HTTP proxy for remote operations"
 
   def execute
-    LogStash::PluginManager::Util.load_logstash_gemspec
+    LogStash::Environment.load_logstash_gemspec!
 
     ::Gem.configuration.verbose = false
     ::Gem.configuration[:http_proxy] = proxy 
