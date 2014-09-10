@@ -2,7 +2,7 @@ require 'clamp'
 require 'logstash/namespace'
 require 'logstash/pluginmanager'
 require 'logstash/pluginmanager/util'
-require 'rubygems/installer'
+require 'rubygems/dependency_installer'
 require 'rubygems/uninstaller'
 require 'jar-dependencies'
 require 'jar_install_post_install_hook'
@@ -17,6 +17,7 @@ class LogStash::PluginManager::Update < Clamp::Command
 
   def execute
 
+    LogStash::PluginManager::Util.load_logstash_gemspec
     ::Gem.configuration.verbose = false
     ::Gem.configuration[:http_proxy] = proxy
 
@@ -61,7 +62,11 @@ class LogStash::PluginManager::Update < Clamp::Command
     end
 
     ::Gem.configuration.verbose = false
-    ::Gem.install(spec.name, version)
+    options = {}
+    options[:document] = []
+    inst = Gem::DependencyInstaller.new(options)
+    inst.install spec.name, gem_meta.version
+    specs, _ = inst.installed_gems
     puts ("Update successful")
 
   end
