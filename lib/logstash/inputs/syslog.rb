@@ -18,9 +18,9 @@ require "socket"
 # RFC3164 style or ISO8601. Otherwise the rest of RFC3164 must be obeyed.
 # If you do not use RFC3164, do not use this input.
 #
-# For more information see (the RFC3164 page)[http://www.ietf.org/rfc/rfc3164.txt].
+# For more information see [the RFC3164 page](http://www.ietf.org/rfc/rfc3164.txt).
 #
-# Note: this input will start listeners on both TCP and UDP.
+# Note: This input will start listeners on both TCP and UDP.
 class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   config_name "syslog"
   milestone 1
