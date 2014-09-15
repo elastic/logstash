@@ -26,8 +26,8 @@ echo "Building package for $os $release"
 destdir=build/$(echo "$os" | tr ' ' '_')
 prefix=/opt/logstash
 
-if [ "$destdir/$prefix" != "/" -a -d "$destdir/$prefix" ] ; then
-  rm -rf "$destdir/$prefix"
+if [ "$destdir" != "/" -a -d "$destdir" ] ; then
+  rm -rf "$destdir"
 fi
 
 mkdir -p $destdir/$prefix
