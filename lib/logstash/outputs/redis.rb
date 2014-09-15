@@ -40,6 +40,15 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # The default port to connect on. Can be overridden on any hostname.
   config :port, :validate => :number, :default => 6379
 
+  # The hostnames of Redis sentinels (overrides host)
+  config :sentinel_hosts, :validate => :array
+
+  # The port to connect sentinel on.
+  config :sentinel_port, :validate => :number, :default => 26379
+
+  # Redis master name for sentinel
+  config :master, :validate => :string, :default => "mymaster"
+
   # The Redis database number.
   config :db, :validate => :number, :default => 0
 
@@ -222,19 +231,34 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   private
   def connect
-    @current_host, @current_port = @host[@host_idx].split(':')
-    @host_idx = @host_idx + 1 >= @host.length ? 0 : @host_idx + 1
-
-    if not @current_port
-      @current_port = @port
-    end
-
     params = {
-      :host => @current_host,
-      :port => @current_port,
       :timeout => @timeout,
       :db => @db
     }
+    if @sentinel_hosts
+      @logger.info("Connecting to sentinel")
+      require 'redis-sentinel'
+      hosts = []
+      for sentinel_host in @sentinel_hosts
+        host, port = sentinel_host.split(":")
+        if not port
+          port = @sentinel_port
+        end
+        hosts.push({:host => host, :port => port})
+      end
+      params[:master_name] = @master
+      params[:sentinels] = hosts
+    else
+      @current_host, @current_port = @host[@host_idx].split(':')
+      @host_idx = @host_idx + 1 >= @host.length ? 0 : @host_idx + 1
+
+      if not @current_port
+        @current_port = @port
+      end
+      params[:host] = @current_host
+      params[:port] = @current_port
+    end
+
     @logger.debug(params)
 
     if @password
@@ -246,6 +270,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   # A string used to identify a Redis instance in log messages
   def identity
+    if @sentinel_hosts
+      return "redis-sentinel #{@password}@#{@sentinel_hosts}/#{@db} #{@data_type}:#{@key}"
+    end
     @name || "redis://#{@password}@#{@current_host}:#{@current_port}/#{@db} #{@data_type}:#{@key}"
   end
 
