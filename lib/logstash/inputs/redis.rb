@@ -31,6 +31,15 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   # The port to connect on.
   config :port, :validate => :number, :default => 6379
 
+  # The hostnames of Redis sentinels (overrides host)
+  config :sentinel_hosts, :validate => :array
+
+  # The port to connect sentinel on.
+  config :sentinel_port, :validate => :number, :default => 26379
+
+  # Redis master name for sentinel
+  config :master, :validate => :string, :default => "mymaster"
+
   # The Redis database number.
   config :db, :validate => :number, :default => 0
 
@@ -89,18 +98,37 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   # option is removed.
   private
   def identity
+    if @sentinel_hosts
+      return "redis-sentinel #{$sentinel_hosts} #{@data_type}:#{@key}"
+    end
     @name || "#{@redis_url} #{@data_type}:#{@key}"
   end
 
   private
   def connect
-    redis = Redis.new(
-      :host => @host,
-      :port => @port,
+    params = {
       :timeout => @timeout,
       :db => @db,
       :password => @password.nil? ? nil : @password.value
-    )
+    }
+    if @sentinel_hosts
+      @logger.info("Connecting to sentinel")
+      require 'redis-sentinel'
+      hosts = []
+      for sentinel_host in @sentinel_hosts
+        host, port = sentinel_host.split(":")
+        if not port
+          port = @sentinel_port
+        end
+        hosts.push({:host => host, :port => port})
+      end
+      params[:master_name] = @master
+      params[:sentinels] = hosts
+    else
+      params[:host] = @host
+      params[:port] = @port
+    end
+    redis = Redis.new(params)
     load_batch_script(redis) if @data_type == 'list' && (@batch_count > 1)
     return redis
   end # def connect
