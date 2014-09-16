@@ -111,8 +111,7 @@ class LogStash::Runner
         require "rspec"
         spec_path = File.expand_path(File.join(File.dirname(__FILE__), "/../../spec"))
         $LOAD_PATH << spec_path
-        require "test_utils"
-        all_specs = Dir.glob(File.join(spec_path, "/**/*.rb"))
+        all_specs = Dir.glob(File.join(spec_path, "/**/*_spec.rb"))
         rspec = LogStash::RSpecsRunner.new(args.empty? ? all_specs : args)
         return rspec.run
       end,
