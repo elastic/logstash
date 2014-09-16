@@ -110,7 +110,6 @@ class LogStash::Outputs::Kafka < LogStash::Outputs::Base
     end
     require 'jruby-kafka'
     options = {
-      :topic_id => @topic_id,
       :broker_list => @broker_list,
       :compression_codec => @compression_codec,
       :compressed_topics => @compressed_topics,
