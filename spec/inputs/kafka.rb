@@ -107,11 +107,11 @@ describe LogStash::Inputs::Kafka do
     producer.connect()
 
     # send some messages to Kafka topic
-    decorate_config = {"topic_id" => topic}
+    config = {"topic_id" => topic}
     producer.sendMsg(topic, nil, "this is a log line")
     producer.sendMsg(topic, nil, "this is another log line")
 
-    kafka = LogStash::Inputs::TestKafkaHarness.new(decorate_config, 2)
+    kafka = LogStash::Inputs::TestKafkaHarness.new(config, 2)
     kafka.register
     logstash_queue = Queue.new
     Thread.new { kafka.run logstash_queue }
