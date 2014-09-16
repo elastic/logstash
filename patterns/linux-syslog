@@ -6,7 +6,7 @@ SYSLOGPAMSESSION %{SYSLOGBASE} (?=%{GREEDYDATA:message})%{WORD:pam_module}\(%{DA
 CRON_ACTION [A-Z ]+
 CRONLOG %{SYSLOGBASE} \(%{USER:user}\) %{CRON_ACTION:action} \(%{DATA:message}\)
 
-SYSLOGLINE %{SYSLOGBASE2} %{GREEDYDATA:message}
+SYSLOGLINE %{SYSLOGBASE2} ?%{GREEDYDATA:message}
 
 # IETF 5424 syslog(8) format (see http://www.rfc-editor.org/info/rfc5424)
 SYSLOG5424PRI <%{NONNEGINT:syslog5424_pri}>
