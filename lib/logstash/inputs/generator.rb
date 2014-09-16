@@ -47,6 +47,10 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   # The default, 0, means generate an unlimited number of events.
   config :count, :validate => :number, :default => 0
 
+  config :delay, :validate => :number, :default => 0
+
+  config :log_sequence, :validate => :boolean, :default => true
+
   public
   def register
     @host = Socket.gethostname
@@ -66,13 +70,20 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
     while !finished? && (@count <= 0 || number < @count)
       @lines.each do |line|
         @codec.decode(line.clone) do |event|
+          if @delay > 0  
+            sleep(@delay)
+          end
           decorate(event)
           event["host"] = @host
-          event["sequence"] = number
+          if @log_sequence
+            event["sequence"] = number
+          end
           queue << event
         end
       end
-      number += 1
+      if @log_sequence
+        number += 1
+      end
     end # loop
 
     if @codec.respond_to?(:flush)
