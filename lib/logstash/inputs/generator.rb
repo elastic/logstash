@@ -49,7 +49,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
 
   # Set delay(seconds) between generated events.
   #
-  # The default,  0, means generate events as quickly as possible.
+  # The default, 0, means generate events as quickly as possible.
   config :delay, :validate => :number, :default => 0
 
   # Set whether to include sequence number of generated events in event
