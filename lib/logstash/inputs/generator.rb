@@ -47,8 +47,14 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   # The default, 0, means generate an unlimited number of events.
   config :count, :validate => :number, :default => 0
 
+  # Set delay(seconds) between generated events.
+  #
+  # The default,  0, means generate events as quickly as possible.
   config :delay, :validate => :number, :default => 0
 
+  # Set whether to include sequence number of generated events in event
+  #
+  #The default, true, means each event will include field 'sequence' to indicate count of generated messages. 
   config :log_sequence, :validate => :boolean, :default => true
 
   public
