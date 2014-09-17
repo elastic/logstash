@@ -62,7 +62,7 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
 
   # Convert a field's value to a different type, like turning a string to an
   # integer. If the field value is an array, all members will be converted.
-  # If the field is a hash, no action will be taken.
+  # If the field is a hash, all values will be converted.
   #
   # Valid conversion targets are: integer, float, string.
   #
@@ -261,9 +261,8 @@ class LogStash::Filters::Mutate < LogStash::Filters::Base
       if original.nil?
         next
       elsif original.is_a?(Hash)
-        @logger.debug("I don't know how to type convert a hash, skipping",
-                      :field => field, :value => original)
-        next
+        value = {}
+        original.each_pair { |k, v| value[k] = converter.call(v) }
       elsif original.is_a?(Array)
         value = original.map { |v| converter.call(v) }
       else

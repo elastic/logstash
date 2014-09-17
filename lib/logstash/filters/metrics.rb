@@ -46,6 +46,7 @@ require "logstash/namespace"
 # * "thing.rate_15m" - the 15-minute rate of events (sliding)
 # * "thing.min" - the minimum value seen for this metric
 # * "thing.max" - the maximum value seen for this metric
+# * "thing.last" - the last value seen for this metric
 # * "thing.stddev" - the standard deviation for this metric
 # * "thing.mean" - the mean for this metric
 # * "thing.pXX" - the XXth percentile for this metric (see `percentiles`)
@@ -99,6 +100,34 @@ require "logstash/namespace"
 #         metrics => [ "events.rate_1m", "%{events.rate_1m}" ]
 #       }
 #     }
+#
+# #### Example: anomaly detection by box and whisker
+#
+# Using the exists percentile to detect the last input anomaly or not. 
+# The agent conf like so:
+#
+#     filter {
+#         metrics {
+#             timer => {"rt" => "%{request_time}"}
+#             percentiles => [25, 75]
+#             add_tag => "percentile"
+#         }
+#         if "percentile" in [tags] {
+#             ruby {
+#                 code => "l=event['rt.p75']-event['rt.p25'];
+#                          event['rt.low']=event['rt.p25']-l;
+#                          event['rt.high']=event['rt.p75']+l"
+#             }
+#         }
+#     }
+#     output {
+#         if "percentile" in [tags] and ([rt.last] > [rt.high] or [rt.last] < [rt.low]) {
+#             exec {
+#                 command => "echo \"Anomaly: %{rt.last}\""
+#             }
+#         }
+#     }
+#
 class LogStash::Filters::Metrics < LogStash::Filters::Base
   config_name "metrics"
   milestone 1
@@ -148,6 +177,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     require "thread_safe"
     @last_flush = Atomic.new(0) # how many seconds ago the metrics where flushed.
     @last_clear = Atomic.new(0) # how many seconds ago the metrics where cleared.
+    @last_value = {}
     @random_key_preffix = SecureRandom.hex
     unless (@rates - [1, 5, 15]).empty?
       raise LogStash::ConfigurationError, "Invalid rates configuration. possible rates are 1, 5, 15. Rates: #{rates}."
@@ -171,6 +201,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
 
     @timer.each do |name, value|
       @metric_timers[event.sprintf(name)].update(event.sprintf(value).to_f)
+      @last_value[event.sprintf(name)] = event.sprintf(value).to_f
     end
   end # def filter
 
@@ -198,6 +229,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
       # timer's stddev currently returns variance, fix it.
       event["#{name}.stddev"] = metric.stddev ** 0.5
       event["#{name}.mean"] = metric.mean
+      event["#{name}.last"] = @last_value[name]
 
       @percentiles.each do |percentile|
         event["#{name}.p#{percentile}"] = metric.snapshot.value(percentile / 100.0)

@@ -148,6 +148,10 @@ describe LogStash::Filters::Metrics do
         insist { subject.first['http.request_time.max'] } == 30.0
       end
 
+      it "should include last value" do
+        insist { subject.first['http.request_time.last'] } == 30.0
+      end
+
       it "should include percentile value" do
         insist { subject.first['http.request_time.p99'] } == 30.0
       end
