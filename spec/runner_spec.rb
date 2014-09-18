@@ -19,24 +19,22 @@ describe LogStash::Runner do
     it "should run agent help" do
       expect(subject).to receive(:show_help).once.and_return(nil)
       args = ["agent", "-h"]
-      expect(subject.run(args)).to eq([])
+      expect(subject.run(args).wait).to eq(0)
     end
 
     it "should run agent help and not run following commands" do
       expect(subject).to receive(:show_help).once.and_return(nil)
       args = ["agent", "-h", "web"]
-      expect(subject.run(args)).to eq([])
+      expect(subject.run(args).wait).to eq(0)
     end
 
-    it "should run agent and web" do
+    it "should not run agent and web" do
       expect(Stud::Task).to receive(:new).once
       args = ["agent", "-e", "", "web"]
       args = subject.run(args)
-      expect(args).to eq(["web"])
-
-      expect(LogStash::Kibana::Runner).to receive(:new).once.and_return(NullRunner.new)
-      args = subject.run(args)
       expect(args).to eq(nil)
+
+      expect(LogStash::Kibana::Runner).to_not receive(:new)
     end
   end
 end

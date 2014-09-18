@@ -69,10 +69,6 @@ end
 class LogStash::Runner
   include LogStash::Program
 
-  def initialize
-    @runners = []
-  end
-
   def main(args)
     require "logstash/util"
     require "stud/trap"
@@ -89,23 +85,11 @@ class LogStash::Runner
 
     Stud::untrap("INT", @startup_interruption_trap)
 
-    args = [nil] if args.empty?
-
-    while args != nil && !args.empty?
-      args = run(args)
-    end
-
-    status = []
-    @runners.each do |r|
-      #$stderr.puts "Waiting on #{r.wait.inspect}"
-      status << r.wait
-    end
-
-    # Avoid running test/unit's at_exit crap
-    if status.empty? || status.first.nil?
+    if args.empty? then
       exit(0)
     else
-      exit(status.first)
+      task = run(args)
+      exit(task.wait)
     end
   end # def self.main
 
@@ -118,14 +102,12 @@ class LogStash::Runner
         if args.include?("--verbose")
           agent_args << "--verbose"
         end
-        LogStash::Agent.run($0, agent_args)
-        return []
+        return LogStash::Agent.run($0, agent_args)
       end,
       "web" => lambda do
         # Give them kibana.
         require "logstash/kibana"
         kibana = LogStash::Kibana::Runner.new
-        @runners << kibana
         return kibana.run(args)
       end,
       "rspec" => lambda do
@@ -136,18 +118,11 @@ class LogStash::Runner
         require "test_utils"
         all_specs = Dir.glob(File.join(spec_path, "/**/*.rb"))
         rspec = LogStash::RSpecsRunner.new(args.empty? ? all_specs : args)
-        rspec.run
-        @runners << rspec
-        return []
+        return rspec.run
       end,
       "irb" => lambda do
         require "irb"
-        IRB.start(__FILE__)
-        return []
-      end,
-      "ruby" => lambda do
-        require(args[0])
-        return []
+        return IRB.start(__FILE__)
       end,
       "pry" => lambda do
         require "pry"
@@ -158,17 +133,11 @@ class LogStash::Runner
         plugin_manager = LogStash::PluginManager::Main.new($0)
         begin
           plugin_manager.parse(args)
+          return plugin_manager.execute
         rescue Clamp::HelpWanted => e
           show_help(e.command)
+          return 0
         end
-
-        begin
-          plugin_manager.execute
-        rescue Clamp::HelpWanted => e
-          show_help(e.command)
-        end
-
-        return []
       end,
       "agent" => lambda do
         require "logstash/agent"
@@ -178,21 +147,20 @@ class LogStash::Runner
           agent.parse(args)
         rescue Clamp::HelpWanted => e
           show_help(e.command)
-          return []
+          return 0
         rescue Clamp::UsageError => e
           # If 'too many arguments' then give the arguments to
           # the next command. Otherwise it's a real error.
           raise if e.message != "too many arguments"
           remaining = agent.remaining_arguments
         end
-        @runners << Stud::Task.new { agent.execute }
 
-        return remaining
+        return agent.execute
       end
     } # commands
 
     if commands.include?(command)
-      args = commands[command].call
+      return Stud::Task.new { commands[command].call }
     else
       if command.nil?
         $stderr.puts "No command given"
