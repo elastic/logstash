@@ -121,7 +121,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
         # Details at:
         #   https://github.com/mikel/mail/blob/master/README.md#encodings
         #   http://tools.ietf.org/html/rfc2047#section-2
-        value = transcode_to_utf8(header.decoded)
+        value = transcode_to_utf8(header.decoded.to_s)
 
         # Assume we already processed the 'date' above.
         next if name == "Date"

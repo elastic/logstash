@@ -89,4 +89,17 @@ describe LogStash::Inputs::IMAP do
       insist { event["received"] } == ["test1", "test2", "test3"]
     end
   end
+
+  context "when a header field is nil" do
+    it "should parse mail" do
+      subject.header['X-Custom-Header'] = nil
+      config = {"type" => "imap", "host" => "localhost",
+                "user" => "#{user}", "password" => "#{password}"}
+
+      input = LogStash::Inputs::IMAP.new config
+      input.register
+      event = input.parse_mail(subject)
+      insist { event["message"] } == msg_text
+    end
+  end
 end
