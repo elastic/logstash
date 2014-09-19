@@ -60,6 +60,9 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   # Value is in seconds.
   config :interval, :validate => :number, :default => 60
 
+  # Ruby style regexp of keys to exclude from the bucket
+  config :exclude_pattern, :validate => :string, :default => nil
+
   public
   def register
     require "digest/md5"
@@ -162,8 +165,12 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
     objects = {}
     @s3bucket.objects.with_prefix(@prefix).each do |log|
-      if log.last_modified > since
-        objects[log.key] = log.last_modified
+      @logger.debug("Found key: #{log.key}")
+      unless log.key =~ Regexp.new(@exclude_pattern) || (@backup_add_prefix && @backup_to_bucket == @bucket && log.key =~ /^#{backup_add_prefix}/)
+        @logger.debug("Adding to objects[]: #{log.key}")
+        if log.last_modified > since
+          objects[log.key] = log.last_modified
+        end
       end
     end
 
@@ -187,9 +194,9 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       unless @backup_to_bucket.nil?
         backup_key = "#{@backup_add_prefix}#{key}"
         if @delete
-          object.move_to(backup_key)
+          object.move_to(backup_key, :bucket => @backup_bucket)
         else
-          object.copy_to(backup_key)
+          object.copy_to(backup_key, :bucket => @backup_bucket)
         end
       end
       unless @backup_to_dir.nil?
