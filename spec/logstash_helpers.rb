@@ -75,3 +75,14 @@ module LogStashHelper
 
 end # module LogStash
 
+def compress_with_gzip(io)
+  compressed = StringIO.new('', 'r+b')
+
+  gzip = Zlib::GzipWriter.new(compressed)
+  gzip.write(io.read)
+  gzip.finish
+
+  compressed.rewind
+
+  compressed
+end # def compress_with_gzip
