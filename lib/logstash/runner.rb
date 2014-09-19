@@ -85,12 +85,8 @@ class LogStash::Runner
 
     Stud::untrap("INT", @startup_interruption_trap)
 
-    if args.empty? then
-      exit(0)
-    else
-      task = run(args)
-      exit(task.wait)
-    end
+    task = run(args)
+    exit(task.wait)
   end # def self.main
 
   def run(args)
@@ -170,21 +166,20 @@ class LogStash::Runner
           $stderr.puts "No such command #{command.inspect}"
         end
       end
-      $stderr.puts "Usage: logstash <command> [command args]"
-      $stderr.puts "Run a command with the --help flag to see the arguments."
-      $stderr.puts "For example: logstash agent --help"
-      $stderr.puts
-      # hardcode the available commands to reduce confusion.
-      $stderr.puts "Available commands:"
-      $stderr.puts "  agent - runs the logstash agent"
-      $stderr.puts "  version - emits version info about this logstash"
-      $stderr.puts "  web - runs the logstash web ui (called Kibana)"
-      $stderr.puts "  rspec - runs tests"
-      #$stderr.puts commands.keys.map { |s| "  #{s}" }.join("\n")
-      exit 1
-    end
+      $stderr.puts %q[
+Usage: logstash <command> [command args]
+Run a command with the --help flag to see the arguments.
+For example: logstash agent --help
 
-    return args
+Available commands:
+  agent - runs the logstash agent
+  version - emits version info about this logstash
+  web - runs the logstash web ui (called Kibana)
+  rspec - runs tests
+      ]
+      #$stderr.puts commands.keys.map { |s| "  #{s}" }.join("\n")
+      return Stud::Task.new { 1 }
+    end
   end # def run
 
   # @return true if this file is the main file being run and not via rspec

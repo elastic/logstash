@@ -22,6 +22,20 @@ describe LogStash::Runner do
       expect(subject.run(args).wait).to eq(0)
     end
 
+    it "should show help with no arguments" do
+      expect($stderr).to receive(:puts).once.and_return("No command given")
+      expect($stderr).to receive(:puts).once
+      args = []
+      expect(subject.run(args).wait).to eq(1)
+    end
+
+    it "should show help for unknown commands" do
+      expect($stderr).to receive(:puts).once.and_return("No such command welp")
+      expect($stderr).to receive(:puts).once
+      args = ["welp"]
+      expect(subject.run(args).wait).to eq(1)
+    end
+
     it "should run agent help and not run following commands" do
       expect(subject).to receive(:show_help).once.and_return(nil)
       args = ["agent", "-h", "web"]
