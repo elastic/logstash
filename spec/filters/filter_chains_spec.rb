@@ -1,11 +1,11 @@
 # encoding: utf-8
 
-require "test_utils"
+require "spec_helper"
 require "logstash/filters/split"
 require "logstash/filters/clone"
 
 describe LogStash::Filters do
-  extend LogStash::RSpec
+  
 
   describe "chain split with mutate filter" do
     config <<-CONFIG
