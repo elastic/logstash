@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-require "test_utils"
+require "spec_helper"
 
 describe "haproxy httplog format" do
-  extend LogStash::RSpec
+  
 
   # The logstash config goes here.
   # At this time, only filters are supported.
