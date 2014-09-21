@@ -1,7 +1,7 @@
-require "test_utils"
+require "spec_helper"
 
 describe "speed tests", :performance => true do
-  extend LogStash::RSpec
+  
   count = 1000000
 
   config <<-CONFIG
