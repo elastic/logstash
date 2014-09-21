@@ -130,7 +130,7 @@ class LogStash::Outputs::Kafka < LogStash::Outputs::Base
       :client_id => @client_id
     }
     @producer = Kafka::Producer.new(options)
-    @producer.connect()
+    @producer.connect
 
     @logger.info('Registering kafka producer', :topic_id => @topic_id, :broker_list => @broker_list)
 
@@ -153,6 +153,10 @@ class LogStash::Outputs::Kafka < LogStash::Outputs::Base
       return
     end
     @codec.encode(event)
+  end
+
+  def teardown
+    @producer.close
   end
 
 end #class LogStash::Outputs::Kafka
