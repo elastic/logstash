@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-require "test_utils"
+require "spec_helper"
 
 describe "fail2ban logs", :if => RUBY_ENGINE == "jruby"  do
-  extend LogStash::RSpec
+  
 
   # The logstash config goes here.
   # At this time, only filters are supported.

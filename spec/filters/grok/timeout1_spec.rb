@@ -1,4 +1,4 @@
-require "test_utils"
+require "spec_helper"
 require "grok-pure"
 require "timeout"
 
