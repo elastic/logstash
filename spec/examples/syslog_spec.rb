@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-require "test_utils"
+require "spec_helper"
 
 describe "parse syslog", :if => RUBY_ENGINE == "jruby" do
-  extend LogStash::RSpec
+  
 
   config <<-'CONFIG'
     filter {

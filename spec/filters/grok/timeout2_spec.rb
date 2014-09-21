@@ -1,9 +1,9 @@
-require "test_utils"
+require "spec_helper"
 require "grok-pure"
 require "timeout"
 
 describe "grok known timeout failures" do
-  extend LogStash::RSpec
+  
 
   describe "user reported timeout" do
     config <<-'CONFIG'
