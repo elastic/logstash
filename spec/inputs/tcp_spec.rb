@@ -4,6 +4,7 @@ require "socket"
 require "timeout"
 require "logstash/json"
 require "logstash/inputs/tcp"
+require 'stud/try'
 
 describe LogStash::Inputs::Tcp do
   
@@ -40,7 +41,7 @@ describe LogStash::Inputs::Tcp do
       Thread.new { pipeline.run }
       sleep 0.1 while !pipeline.ready?
 
-      socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
+      socket = Stud::try(5.times) { TCPSocket.new("127.0.0.1", port) }
       event_count.times do |i|
         # unicode smiley for testing unicode support!
         socket.puts("#{i} ☹")
@@ -57,7 +58,7 @@ describe LogStash::Inputs::Tcp do
     end # input
   end
 
-  describe "read events with plain codec and ISO-8859-1 charset", :socket => true do
+  describe "read events with plain codec and ISO-8859-1 charset" do
     port = 5513
     charset = "ISO-8859-1"
     config <<-CONFIG
@@ -73,7 +74,7 @@ describe LogStash::Inputs::Tcp do
       Thread.new { pipeline.run }
       sleep 0.1 while !pipeline.ready?
 
-      socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
+      socket = Stud::try(5.times) { TCPSocket.new("127.0.0.1", port) }
       text = "\xA3" # the £ symbol in ISO-8859-1 aka Latin-1
       text.force_encoding("ISO-8859-1")
       socket.puts(text)
@@ -92,7 +93,7 @@ describe LogStash::Inputs::Tcp do
     end # input
   end
 
-  describe "read events with json codec", :socket => true do
+  describe "read events with json codec" do
     port = 5514
     config <<-CONFIG
       input {
@@ -114,7 +115,7 @@ describe LogStash::Inputs::Tcp do
         "host" => "example host"
       }
 
-      socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
+      socket = Stud::try(5.times) { TCPSocket.new("127.0.0.1", port) }
       socket.puts(LogStash::Json.dump(data))
       socket.close
 
@@ -132,7 +133,7 @@ describe LogStash::Inputs::Tcp do
     end # input
   end
 
-  describe "read events with json codec (testing 'host' handling)", :socket => true do
+  describe "read events with json codec (testing 'host' handling)" do
     port = 5514
     config <<-CONFIG
       input {
@@ -151,7 +152,7 @@ describe LogStash::Inputs::Tcp do
         "hello" => "world"
       }
 
-      socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
+      socket = Stud::try(5.times) { TCPSocket.new("127.0.0.1", port) }
       socket.puts(LogStash::Json.dump(data))
       socket.close
 
@@ -164,7 +165,7 @@ describe LogStash::Inputs::Tcp do
     end # input
   end
 
-  describe "read events with json_lines codec", :socket => true do
+  describe "read events with json_lines codec" do
     port = 5515
     config <<-CONFIG
       input {
@@ -186,7 +187,7 @@ describe LogStash::Inputs::Tcp do
         "idx" => 0
       }
 
-      socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
+      socket = Stud::try(5.times) { TCPSocket.new("127.0.0.1", port) }
       (1..5).each do |idx|
         data["idx"] = idx
         socket.puts(LogStash::Json.dump(data) + "\n")
@@ -219,7 +220,7 @@ describe LogStash::Inputs::Tcp do
       sleep 0.1 while !pipeline.ready?
 
       event_count.times do |i|
-        socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
+        socket = Stud::try(5.times) { TCPSocket.new("127.0.0.1", port) }
         socket.puts("#{i}")
         socket.flush
         socket.close
@@ -256,7 +257,7 @@ describe LogStash::Inputs::Tcp do
       insist { inputs.size } == 1
 
       sockets = event_count.times.map do |i|
-        socket = Stud.try(5.times) { TCPSocket.new("127.0.0.1", port) }
+        socket = Stud::try(5.times) { TCPSocket.new("127.0.0.1", port) }
         socket.puts("#{i}")
         socket.flush
         socket
