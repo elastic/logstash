@@ -26,13 +26,13 @@ describe LogStash::Outputs::Kafka do
   end
 
   it "should send logstash event to kafka broker" do
+    kafka = LogStash::Outputs::Kafka.new(kafka_config)
+    kafka.register
     timestamp = LogStash::Timestamp.now
     expect_any_instance_of(Kafka::Producer)
     .to receive(:sendMsg)
         .with("test", nil, "{\"message\":\"hello world\",\"host\":\"test\",\"@timestamp\":\"#{timestamp}\",\"@version\":\"1\"}")
     e = LogStash::Event.new({"message" => "hello world", "host" => "test", "@timestamp" => timestamp})
-    kafka = LogStash::Outputs::Kafka.new(kafka_config)
-    kafka.register
     kafka.receive(e)
   end
 
