@@ -115,7 +115,8 @@ class LogStash::Inputs::Ganglia < LogStash::Inputs::Base
 
       data["program"] = "ganglia"
       event["log_host"] = data["hostname"]
-      %w{dmax tmax slope type units}.each do |info|
+      event['val'] = data['val']
+      %w{dmax tmax slope type units name}.each do |info|
         event[info] = @metadata[data["name"]][info]
       end
       return event
