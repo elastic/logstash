@@ -42,17 +42,17 @@ describe LogStash::Json do
 
     context "jruby serialize" do
       it "should respond to dump and serialize object" do
-expect(JrJackson::Json).to receive(:dump).with(string).and_call_original
+        expect(JrJackson::Json).to receive(:dump).with(string).and_call_original
         expect(LogStash::Json.dump(string)).to eql(json_string)
       end
 
       it "should call JrJackson::Raw.generate for Hash" do
-#expect(JrJackson::Raw).to receive(:generate).with(hash).and_call_original
+        expect(JrJackson::Raw).to receive(:generate).with(hash).and_call_original
         expect(LogStash::Json.dump(hash)).to eql(json_hash)
       end
 
       it "should call JrJackson::Raw.generate for Array" do
-#expect(JrJackson::Raw).to receive(:generate).with(array).and_call_original
+        expect(JrJackson::Raw).to receive(:generate).with(array).and_call_original
         expect(LogStash::Json.dump(array)).to eql(json_array)
       end
 

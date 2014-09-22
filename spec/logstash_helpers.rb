@@ -14,7 +14,7 @@ module LogStashHelper
 
   def tags(*tags)
     let(:default_tags) { tags }
-    puts "Setting default tags: #{@default_tags}"
+    puts "Setting default tags: #{tags}"
   end
 
   def sample(sample_event, &block)

@@ -22,7 +22,6 @@ module ConditionalFanciness
 end
 
 describe "conditionals in output" do
-  extend LogStash::RSpec
   extend ConditionalFanciness
 
   describe "simple" do
