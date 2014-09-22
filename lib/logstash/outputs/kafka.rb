@@ -100,11 +100,11 @@ class LogStash::Outputs::Kafka < LogStash::Outputs::Base
   config :send_buffer_bytes, :validate => :number, :default => 100 * 1024
   # The client id is a user-specified string sent in each request to help trace calls. It should
   # logically identify the application making the request.
-  config :client_id, :validate => :string, :default => ""
+  config :client_id, :validate => :string, :default => ''
 
   public
   def register
-    jarpath = File.join(File.dirname(__FILE__), "../../../vendor/jar/kafka*/libs/*.jar")
+    jarpath = File.join(File.dirname(__FILE__), '../../../vendor/jar/kafka*/libs/*.jar')
     Dir[jarpath].each do |jar|
       require jar
     end
@@ -136,7 +136,7 @@ class LogStash::Outputs::Kafka < LogStash::Outputs::Base
 
     @codec.on_event do |event|
       begin
-        @producer.sendMsg(@topic_id,nil,event)
+        @producer.send_msg(@topic_id,nil,event)
       rescue LogStash::ShutdownSignal
         @logger.info('Kafka producer got shutdown signal')
       rescue => e

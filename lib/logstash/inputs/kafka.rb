@@ -24,6 +24,12 @@ class LogStash::Inputs::Kafka < LogStash::Inputs::Base
   # Specifies the ZooKeeper connection string in the form hostname:port where host and port are
   # the host and port of a ZooKeeper server. You can also specify multiple hosts in the form
   # hostname1:port1,hostname2:port2,hostname3:port3.
+  #
+  # The server may also have a ZooKeeper chroot path as part of it's ZooKeeper connection string
+  # which puts its data under some path in the global ZooKeeper namespace. If so the consumer
+  # should use the same chroot path in its connection string. For example to give a chroot path of
+  # /chroot/path you would give the connection string as
+  # hostname1:port1,hostname2:port2,hostname3:port3/chroot/path.
   config :zk_connect, :validate => :string, :default => 'localhost:2181'
   # A string that uniquely identifies the group of consumer processes to which this consumer
   # belongs. By setting the same group id multiple processes indicate that they are all part of
@@ -34,6 +40,11 @@ class LogStash::Inputs::Kafka < LogStash::Inputs::Base
   # Specify whether to jump to beginning of the queue when there is no initial offset in
   # ZooKeeper, or if an offset is out of range. If this is false, messages are consumed
   # from the latest offset
+  #
+  # If reset_beginning is true, the consumer will check ZooKeeper to see if any other group members
+  # are present and active. If not, the consumer deletes any offset information in the ZooKeeper
+  # and starts at the smallest offset. If other group members are present reset_beginning will not
+  # work and the consumer threads will rejoin the consumer group.
   config :reset_beginning, :validate => :boolean, :default => false
   # Number of threads to read from the partitions. Ideally you should have as many threads as the
   # number of partitions for a perfect balance. More threads than partitions means that some
@@ -69,7 +80,7 @@ class LogStash::Inputs::Kafka < LogStash::Inputs::Base
 
   public
   def register
-    jarpath = File.join(File.dirname(__FILE__), "../../../vendor/jar/kafka*/libs/*.jar")
+    jarpath = File.join(File.dirname(__FILE__), '../../../vendor/jar/kafka*/libs/*.jar')
     Dir[jarpath].each do |jar|
       require jar
     end
@@ -86,7 +97,7 @@ class LogStash::Inputs::Kafka < LogStash::Inputs::Base
         :consumer_id => @consumer_id,
         :fetch_message_max_bytes => @fetch_message_max_bytes
     }
-    if @reset_beginning == true
+    if @reset_beginning
       options[:reset_beginning] = 'from-beginning'
     end # if :reset_beginning
     @kafka_client_queue = SizedQueue.new(@queue_size)
@@ -107,7 +118,7 @@ class LogStash::Inputs::Kafka < LogStash::Inputs::Base
         end
       rescue LogStash::ShutdownSignal
         @logger.info('Kafka got shutdown signal')
-        @consumer_group.shutdown()
+        @consumer_group.shutdown
       end
       until @kafka_client_queue.empty?
         queue_event("#{@kafka_client_queue.pop}",logstash_queue)
@@ -117,7 +128,7 @@ class LogStash::Inputs::Kafka < LogStash::Inputs::Base
       @logger.warn('kafka client threw exception, restarting',
                    :exception => e)
       if @consumer_group.running?
-        @consumer_group.shutdown()
+        @consumer_group.shutdown
       end
       sleep(Float(@consumer_restart_sleep_ms) * 1 / 1000)
       retry
@@ -131,13 +142,13 @@ class LogStash::Inputs::Kafka < LogStash::Inputs::Base
       @codec.decode(msg) do |event|
         decorate(event)
         if @decorate_events
-          event['kafka'] = {'msg_size' => msg.bytesize, 'topic' => @topic_id, 'consumer_group' => @group_id}
+          event['kafka'] = {:msg_size => msg.bytesize, :topic => @topic_id, :consumer_group => @group_id}
         end
         output_queue << event
       end # @codec.decode
     rescue => e # parse or event creation error
-      @logger.error("Failed to create event", :message => msg, :exception => e,
-                    :backtrace => e.backtrace);
+      @logger.error('Failed to create event', :message => msg, :exception => e,
+                    :backtrace => e.backtrace)
     end # begin
   end # def queue_event
 
