@@ -294,4 +294,27 @@ describe LogStash::Event do
       insist{event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]} == "foo"
     end
   end
+
+  context "to_json" do
+    it "should support to_json" do
+      new_event = LogStash::Event.new(
+        "@timestamp" => Time.iso8601("2014-09-23T19:26:15.832Z"),
+        "message" => "foo bar",
+      )
+      json = new_event.to_json
+
+      insist { json } ==  "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}"
+    end
+
+    it "should support to_json and ignore arguments" do
+      new_event = LogStash::Event.new(
+        "@timestamp" => Time.iso8601("2014-09-23T19:26:15.832Z"),
+        "message" => "foo bar",
+      )
+      json = new_event.to_json(:foo => 1, :bar => "baz")
+
+      insist { json } ==  "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}"
+    end
+  end
+
 end
