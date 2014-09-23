@@ -48,7 +48,7 @@ hello world
 
 OK, that's interesting... We ran Logstash with an input called "stdin", and an output named "stdout", and Logstash basically echoed back whatever we typed in some sort of structured format. Note that specifying the *-e* command line flag allows Logstash to accept a configuration directly from the command line. This is especially useful for quickly testing configurations without having to edit a file between iterations.
 
-Let's try a slightly fancier example. First, you should exit Logstash by issuing a 'CTRL-C' command in the shell in which it is running. Now run Logstash again with the following command:
+Let's try a slightly fancier example. First, you should exit Logstash by issuing a 'CTRL-D' command in the shell in which it is running. Now run Logstash again with the following command:
 ----
 bin/logstash -e 'input { stdin { } } output { stdout { codec => rubydebug } }'
 ----
