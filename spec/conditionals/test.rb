@@ -21,7 +21,32 @@ module ConditionalFanciness
   end
 end
 
-describe "conditionals" do
+describe "conditionals in output" do
+  extend LogStash::RSpec
+  extend ConditionalFanciness
+
+  describe "simple" do
+    config <<-CONFIG
+      input {
+        generator {
+          message => '{"foo":{"bar"},"baz": "quux"}'
+          count => 1
+        }
+      }
+      output {
+        if [foo] == "bar" {
+          stdout { }
+        }
+      }
+    CONFIG
+
+    agent do
+      #LOGSTASH-2288, should not fail raising an exception
+    end
+  end
+end
+
+describe "conditionals in filter" do
   extend LogStash::RSpec
   extend ConditionalFanciness
 
