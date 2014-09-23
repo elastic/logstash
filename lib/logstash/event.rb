@@ -135,7 +135,8 @@ class LogStash::Event
   end
 
   public
-  def to_json
+  def to_json(*args)
+    # ignore arguments to respect accepted to_json method signature
     LogStash::Json.dump(@data)
   end # def to_json
 
