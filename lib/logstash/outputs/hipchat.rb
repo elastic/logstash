@@ -28,6 +28,9 @@ class LogStash::Outputs::HipChat < LogStash::Outputs::Base
 
   # Message format to send, event tokens are usable here.
   config :format, :validate => :string, :default => "%{message}"
+  
+  # Whether or not this message should send as html message_format
+  config :html, :validate => :boolean, :default => false
 
   public
   def register
@@ -50,6 +53,7 @@ class LogStash::Outputs::HipChat < LogStash::Outputs::Base
     hipchat_data['color']   = @color
     hipchat_data['notify']  = @trigger_notify ? "1" : "0"
     hipchat_data['message'] = event.sprintf(@format)
+    hipchat_data['message_format'] = @html ? "html" : "text"
 
     @logger.debug("HipChat data", :hipchat_data => hipchat_data)
 
