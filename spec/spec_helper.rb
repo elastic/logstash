@@ -45,6 +45,6 @@ end
 
 RSpec.configure do |config|
   config.extend LogStashHelper
-  config.filter_run_excluding :redis => true, :socket => true, :performance => true, :elasticsearch => true, :broken => true, :export_cypher => true
+  config.filter_run_excluding :redis => true, :socket => true, :performance => true, :elasticsearch => true, :elasticsearch_secure => true, :broken => true, :export_cypher => true
 end
 

@@ -386,4 +386,105 @@ describe "outputs/elasticsearch" do
       end
     end
   end
+
+  describe "Authentication option" do
+    ["node", "transport"].each do |protocol|
+      context "with protocol => #{protocol}" do
+        subject do
+          require "logstash/outputs/elasticsearch"
+          settings = {
+            "protocol" => protocol,
+            "node_name" => "logstash",
+            "cluster" => "elasticsearch",
+            "host" => "node01",
+            "user" => "test",
+            "password" => "test"
+          }
+          next LogStash::Outputs::ElasticSearch.new(settings)
+        end
+
+        it "should fail in register" do
+          expect {subject.register}.to raise_error
+        end
+      end
+    end
+  end
+
+  describe "SSL option" do
+    ["node", "transport"].each do |protocol|
+      context "with protocol => #{protocol}" do
+        subject do
+          require "logstash/outputs/elasticsearch"
+          settings = {
+            "protocol" => protocol,
+            "node_name" => "logstash",
+            "cluster" => "elasticsearch",
+            "host" => "node01",
+            "ssl" => true
+          }
+          next LogStash::Outputs::ElasticSearch.new(settings)
+        end
+
+        it "should fail in register" do
+          expect {subject.register}.to raise_error
+        end
+      end
+    end
+  end
+
+  describe "send messages to ElasticSearch using HTTPS", :elasticsearch_secure => true do
+    subject do
+      require "logstash/outputs/elasticsearch"
+      settings = {
+        "protocol" => "http",
+        "node_name" => "logstash",
+        "cluster" => "elasticsearch",
+        "host" => "node01",
+        "user" => "user",
+        "password" => "changeme",
+        "ssl" => true,
+        "cacert" => "/tmp/ca/certs/cacert.pem",
+        # or
+        #"truststore" => "/tmp/ca/truststore.jks",
+        #"truststore_password" => "testeteste"
+      }
+      next LogStash::Outputs::ElasticSearch.new(settings)
+    end
+
+    before :each do
+      subject.register
+    end
+
+    it "sends events to ES" do
+      expect {
+        subject.receive(LogStash::Event.new("message" => "sample message here"))
+        subject.buffer_flush(:final => true)
+      }.to_not raise_error
+    end
+  end
+
+  describe "connect using HTTP Authentication", :elasticsearch_secure => true do
+    subject do
+      require "logstash/outputs/elasticsearch"
+      settings = {
+        "protocol" => "http",
+        "cluster" => "elasticsearch",
+        "host" => "node01",
+        "user" => "user",
+        "password" => "changeme",
+      }
+      next LogStash::Outputs::ElasticSearch.new(settings)
+    end
+
+    before :each do
+      subject.register
+    end
+
+    it "sends events to ES" do
+      expect {
+        subject.receive(LogStash::Event.new("message" => "sample message here"))
+        subject.buffer_flush(:final => true)
+      }.to_not raise_error
+    end
+  end
 end
