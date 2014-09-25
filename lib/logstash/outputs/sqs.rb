@@ -61,6 +61,7 @@ require "digest/sha2"
 #  * sqs:ListQueues
 #  * sqs:ChangeMessageVisibilityBatch
 #  * sqs:SendMessage
+#
 # A sample policy is as follows:
 #
 #      {
