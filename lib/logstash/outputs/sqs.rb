@@ -56,8 +56,32 @@ require "digest/sha2"
 #        ]
 #      }
 #
-# See http://aws.amazon.com/iam/ for more details on setting up AWS identities.
+# The "source" identity shipping logs must have the following permissions on the queue:
 #
+#  * sqs:ListQueues
+#  * sqs:ChangeMessageVisibilityBatch
+#  * sqs:SendMessage
+# A sample policy is as follows:
+#
+#      {
+#        "Statement": [
+#          {
+#            "Sid": "Stmt1347986764948",
+#            "Action": [
+#              "sqs:ListQueues",
+#              "sqs:ChangeMessageVisibilityBatch",
+#              "sqs:SendMessage"
+#            ],
+#            "Effect": "Allow",
+#            "Resource": [
+#              "arn:aws:sqs:us-east-1:200850199751:Logstash"
+#            ]
+#          }
+#        ]
+#      }
+#
+# See http://aws.amazon.com/iam/ for more details on setting up AWS identities.
+
 class LogStash::Outputs::SQS < LogStash::Outputs::Base
   include LogStash::PluginMixins::AwsConfig
   include Stud::Buffer
