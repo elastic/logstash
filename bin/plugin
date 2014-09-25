@@ -47,13 +47,21 @@ TARGET="${TARGETDIR}/${FILENAME}"
 case $1 in
   install)
   	$DOWNLOAD_COMMAND ${TARGET} ${URLSTUB}${FILENAME}
-  	if [ ! -f "${TARGET}" ]; then
+  	if [[ ! -f "${TARGET}"  || ! -s "${TARGET}" ]]; then
 	  	echo "ERROR: Unable to download ${URLSTUB}${FILENAME}"
 	  	echo "Exiting."
 	  	exit 1
 	fi
-  	gzip -dc ${TARGET} | tar -xC $TARGETDIR
-  	cp -R ${TARGETDIR}/$FILEPATH/* $basedir  ;; # Copy contents to local directory, adding on top of existing install
+	tar -xC ${TARGETDIR} -f ${TARGET}
+	if [[ $? -eq 0 ]]; then
+		cp -R ${TARGETDIR}/$FILEPATH/* $basedir   # Copy contents to local directory, adding on top of existing install
+	else
+	  	echo "ERROR: Unable to untar downloaded file ${URLSTUB}${FILENAME}"
+	  	echo "Exiting."
+		rm -rf ${TARGETDIR}/${FILEPATH}/
+	  	exit 1
+	fi
+	;;
   *) 
   	echo "Usage: bin/plugin install contrib"
 	exit 0
