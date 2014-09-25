@@ -94,7 +94,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   config :replication, :validate => ['async', 'sync'], :default => 'sync'
 
   # Indexer action to perform.
-  config :action, :validate => ['index', 'create', 'delete'], :default => 'create'
+  config :action, :validate => ['index', 'create', 'delete'], :default => 'index'
 
   public
   def register
