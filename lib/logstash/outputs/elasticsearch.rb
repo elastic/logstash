@@ -83,7 +83,10 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # The hostname or IP address of the host to use for Elasticsearch unicast discovery
   # This is only required if the normal multicast/cluster discovery stuff won't
   # work in your environment.
-  config :host, :validate => :string
+  #
+  #     "127.0.0.1"
+  #     ["127.0.0.1:9300","127.0.0.2:9300"]
+  config :host, :validate => :array
 
   # The port for Elasticsearch transport to use.
   #
@@ -211,15 +214,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
     if @host.nil? && @protocol == "http"
       @logger.info("No 'host' set in elasticsearch output. Defaulting to localhost")
-      @host = "localhost"
+      @host = ["localhost"]
     end
-
-    options = {
-      :host => @host,
-      :port => @port,
-      :client_settings => client_settings
-    }
-
 
     client_class = case @protocol
       when "transport"
@@ -237,23 +233,52 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       # Default @host with embedded to localhost. This should help avoid
       # newbies tripping on ubuntu and other distros that have a default
       # firewall that blocks multicast.
-      @host ||= "localhost"
+      @host ||= ["localhost"]
 
       # Start Elasticsearch local.
       start_local_elasticsearch
     end
 
-    @client = client_class.new(options)
+    @client = Array.new
+
+    if protocol == "node" or @host.nil? # if @protocol is "node" or @host is not set
+      options = {
+          :host => @host,
+          :port => @port,
+          :client_settings => client_settings
+      }
+      @client << client_class.new(options)
+    else # if @protocol in ["transport","http"]
+      @host.each do |host|
+          (_host,_port) = host.split ":"
+          options = {
+            :host => _host,
+            :port => _port || @port,
+            :client_settings => client_settings
+          }
+          @logger.info "Create client to elasticsearch server on #{_host}:#{_port}"
+          @client << client_class.new(options)
+      end # @host.each
+    end
+
+    if @manage_template
+      for client in @client
+          begin
+            @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
+            client.template_install(@template_name, get_template, @template_overwrite)
+            break
+          rescue => e
+            @logger.error("Failed to install template: #{e.message}")
+          end
+      end # for @client loop
+    end # if @manage_templates
 
     @logger.info("New Elasticsearch output", :cluster => @cluster,
                  :host => @host, :port => @port, :embedded => @embedded,
                  :protocol => @protocol)
 
-
-    if @manage_template
-      @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
-      @client.template_install(@template_name, get_template, @template_overwrite)
-    end # if @manage_templates
+    @client_idx = 0
+    @current_client = @client[@client_idx]
 
     buffer_initialize(
       :max_items => @flush_size,
@@ -261,6 +286,13 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       :logger => @logger
     )
   end # def register
+
+  protected
+  def shift_client
+    @client_idx = (@client_idx+1) % @client.length
+    @current_client = @client[@client_idx]
+    @logger.debug? and @logger.debug("Switched current elasticsearch client to ##{@client_idx} at #{@host[@client_idx]}")
+  end
 
   public
   def get_template
@@ -308,7 +340,18 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   end # def receive
 
   def flush(actions, teardown=false)
-    @client.bulk(actions)
+    begin
+      @logger.debug? and @logger.debug "Sending bulk of actions to client[#{@client_idx}]: #{@host[@client_idx]}"
+      @current_client.bulk(actions)
+    rescue => e
+      @logger.error "Got error to send bulk of actions to elasticsearch server at #{@host[@client_idx]} : #{e.message}"
+      raise e
+    ensure
+      unless @protocol == "node"
+          @logger.debug? and @logger.debug "Shifting current elasticsearch client"
+          shift_client
+      end
+    end
     # TODO(sissel): Handle errors. Since bulk requests could mostly succeed
     # (aka partially fail), we need to figure out what documents need to be
     # retried.
