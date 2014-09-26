@@ -19,12 +19,12 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # ./test-2013-05-29.txt 
   config :path, :validate => :string, :required => true
 
-  # The maximum size of file to write. When the file exceeds this
-  # threshold, it will be rotated to the current filename + ".1"
-  # If that file already exists, the previous .1 will shift to .2
+  # The maximum size of file to write in bytes. When the file exceeds this
+  # threshold, it will be rotated to the current filename + ".N"
+  # N starts with 1, if that file already exists, N will shift to 2
   # and so forth.
+  # Supports suffix of k, m, or g for kilobyte, megabyte, gigabyte
   #
-  # NOT YET SUPPORTED
   config :max_size, :validate => :string
 
   # The format to use when writing events to the file. This value
@@ -54,6 +54,13 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     @last_stale_cleanup_cycle = now
     flush_interval = @flush_interval.to_i
     @stale_cleanup_interval = 10
+
+    if @max_size
+      @rotate_size = tobytes(@max_size)
+      # if string is invalid in some way disable rotation
+      # (TODO: should there be a minimum size allowed?)
+      @max_size = false unless @rotate_size and @rotate_size.is_a? Integer
+    end
   end # def register
 
   public
@@ -61,9 +68,14 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     return unless output?(event)
 
     path = event.sprintf(@path)
-    fd = open(path)
+    
+    # Check if we should rotate the file.
+    if @max_size
+      rotate(path)
+    end
 
-    # TODO(sissel): Check if we should rotate the file.
+    # open after rotate in the event it was moved or closed above
+    fd = open(path)
 
     if @message_format
       output = event.sprintf(@message_format)
@@ -77,6 +89,48 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     flush(fd)
     close_stale_files
   end # def receive
+
+  def rotate(path)
+    begin
+      stat = File.stat(path)
+    rescue Errno::ENOENT
+      @logger.debug("Path does not exist during rotate: #{path}")
+      return
+    end
+
+    return unless stat
+    return if stat.size < @rotate_size
+
+    i = 0
+    # just incase something weird is going on, don't loop forever
+    while i < 1000000
+      i += 1
+      break unless File.exists?(path + ".#{i}")
+    end
+
+    begin
+      File.rename(path, path + ".#{i}")
+    rescue
+      @logger.warn("Failed to rotate #{path} to #{path}.#{i}")
+      return
+    end
+    @files[path].close
+    @files.delete(path)
+  
+  end
+
+  def tobytes(s)
+    last = s[-1].downcase
+    return s unless ['k','m','g'].include?(last) 
+
+    if last == 'k'
+      return s[0..-2].to_i * 1024
+    elsif last == 'm'
+      return s[0..-2].to_i * 1024 * 1024
+    elsif last == 'g'
+      return s[0..-2].to_i * 1024 * 1024 * 1024
+    end
+  end
 
   def teardown
     @logger.debug("Teardown: closing files")
