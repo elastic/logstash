@@ -96,7 +96,7 @@ class LogStash::Codecs::Graphite < LogStash::Codecs::Base
       message = messages.join(NL) + NL
       @logger.debug("Emiting carbon messages", :messages => messages)
 
-      @on_event.call(message)
+      @on_event.call(event, message)
     end # if messages.empty?
   end # def encode
 

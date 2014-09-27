@@ -23,7 +23,7 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
   # When mode is `server`, the port to listen on.
   # When mode is `client`, the port to connect to.
   config :port, :validate => :number, :required => true
-  
+
   # When connect failed,retry interval in sec.
   config :reconnect_interval, :validate => :number, :default => 10
 
@@ -87,7 +87,7 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
         end
       end
 
-      @codec.on_event do |payload|
+      @codec.on_event do |event, payload|
         @client_threads.each do |client_thread|
           client_thread[:client].write(payload)
         end
@@ -95,7 +95,7 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
       end
     else
       client_socket = nil
-      @codec.on_event do |payload|
+      @codec.on_event do |event, payload|
         begin
           client_socket = connect unless client_socket
           r,w,e = IO.select([client_socket], [client_socket], [client_socket], nil)
@@ -139,7 +139,7 @@ class LogStash::Outputs::Tcp < LogStash::Outputs::Base
     #else
       #output = event.to_hash.to_json + "\n"
     #end
-    
+
     @codec.encode(event)
   end # def receive
 end # class LogStash::Outputs::Tcp

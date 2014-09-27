@@ -47,7 +47,7 @@ class LogStash::Codecs::JSONLines < LogStash::Codecs::Base
   def encode(event)
     # Tack on a \n for now because previously most of logstash's JSON
     # outputs emitted one per line, and whitespace is OK in json.
-    @on_event.call(event.to_json + NL)
+    @on_event.call(event, event.to_json + NL)
   end # def encode
 
 end # class LogStash::Codecs::JSON

@@ -16,7 +16,7 @@ class LogStash::Outputs::RabbitMQ
       @connected = java.util.concurrent.atomic.AtomicBoolean.new
 
       connect
-      declare_exchange
+      @x = declare_exchange
 
       @connected.set(true)
 
@@ -29,18 +29,15 @@ class LogStash::Outputs::RabbitMQ
 
       begin
         @codec.encode(event)
-      rescue JSON::GeneratorError => e
-        @logger.warn("Trouble converting event to JSON", :exception => e,
-                     :event => event)
+      rescue => e
+        @logger.warn("Error encoding event", :exception => e, :event => event)
       end
     end
 
-    def publish_serialized(message)
+    def publish_serialized(event, message)
       begin
         if @connected.get
-          @x.publish(message, :routing_key => @key, :properties => {
-            :persistent => @persistent
-          })
+          @x.publish(message, :routing_key => event.sprintf(@key), :properties => { :persistent => @persistent })
         else
           @logger.warn("Tried to send a message, but not connected to RabbitMQ.")
         end
@@ -131,12 +128,12 @@ class LogStash::Outputs::RabbitMQ
     def declare_exchange
       @logger.debug("Declaring an exchange", :name => @exchange, :type => @exchange_type,
                     :durable => @durable)
-      @x = @ch.exchange(@exchange, :type => @exchange_type.to_sym, :durable => @durable)
+      x = @ch.exchange(@exchange, :type => @exchange_type.to_sym, :durable => @durable)
 
       # sets @connected to true during recovery. MK.
       @connected.set(true)
 
-      @x
+      x
     end
 
   end # MarchHareImpl

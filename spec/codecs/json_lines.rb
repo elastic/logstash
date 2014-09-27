@@ -64,7 +64,7 @@ describe LogStash::Codecs::JSONLines do
       data = {"foo" => "bar", "baz" => {"bah" => ["a","b","c"]}}
       event = LogStash::Event.new(data)
       got_event = false
-      subject.on_event do |d|
+      subject.on_event do |e, d|
         insist { d } == "#{LogStash::Event.new(data).to_json}\n"
         insist { LogStash::Json.load(d)["foo"] } == data["foo"]
         insist { LogStash::Json.load(d)["baz"] } == data["baz"]

@@ -36,7 +36,7 @@ class LogStash::Codecs::EDNLines < LogStash::Codecs::Base
     data = LogStash::Util.normalize(event.to_hash)
     # timestamp is serialized as a iso8601 string
     # merge to avoid modifying data which could have side effects if multiple outputs
-    @on_event.call(data.merge(LogStash::Event::TIMESTAMP => event.timestamp.to_iso8601).to_edn + NL)
+    @on_event.call(event, data.merge(LogStash::Event::TIMESTAMP => event.timestamp.to_iso8601).to_edn + NL)
   end
 
 end

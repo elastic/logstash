@@ -42,7 +42,7 @@ class LogStash::Codecs::JSON < LogStash::Codecs::Base
 
   public
   def encode(event)
-    @on_event.call(event.to_json)
+    @on_event.call(event, event.to_json)
   end # def encode
 
 end # class LogStash::Codecs::JSON

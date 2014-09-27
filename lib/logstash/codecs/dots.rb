@@ -11,8 +11,8 @@ class LogStash::Codecs::Dots < LogStash::Codecs::Base
   end # def decode
 
   public
-  def encode(data)
-    @on_event.call(".")
+  def encode(event)
+    @on_event.call(event, ".")
   end # def encode
 
 end # class LogStash::Codecs::Dots

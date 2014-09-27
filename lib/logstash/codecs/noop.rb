@@ -13,7 +13,7 @@ class LogStash::Codecs::Noop < LogStash::Codecs::Base
 
   public
   def encode(event)
-    @on_event.call event
+    @on_event.call(event, event)
   end # def encode
 
 end # class LogStash::Codecs::Noop

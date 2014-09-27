@@ -21,7 +21,7 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
     require 'lumberjack/client'
     connect
 
-    @codec.on_event do |payload|
+    @codec.on_event do |event, payload|
       begin
         @client.write({ 'line' => payload })
       rescue Exception => e
@@ -42,18 +42,18 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
     @codec.encode(event)
   end # def receive
 
-  private 
+  private
   def connect
     require 'resolv'
-    @logger.info("Connecting to lumberjack server.", :addresses => @hosts, :port => @port, 
+    @logger.info("Connecting to lumberjack server.", :addresses => @hosts, :port => @port,
         :ssl_certificate => @ssl_certificate, :window_size => @window_size)
     begin
       ips = []
       @hosts.each { |host| ips += Resolv.getaddresses host }
-      @client = Lumberjack::Client.new(:addresses => ips.uniq, :port => @port, 
+      @client = Lumberjack::Client.new(:addresses => ips.uniq, :port => @port,
         :ssl_certificate => @ssl_certificate, :window_size => @window_size)
     rescue Exception => e
-      @logger.error("All hosts unavailable, sleeping", :hosts => ips.uniq, :e => e, 
+      @logger.error("All hosts unavailable, sleeping", :hosts => ips.uniq, :e => e,
         :backtrace => e.backtrace)
       sleep(10)
       retry

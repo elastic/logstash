@@ -23,7 +23,7 @@ describe LogStash::Codecs::Spool do
       spool_size = Random.rand(10)
       subject.spool_size = spool_size
       got_event = false
-      subject.on_event do |data|
+      subject.on_event do |event, data|
         got_event = true
       end
       spool_size.times do

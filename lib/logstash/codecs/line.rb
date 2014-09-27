@@ -49,9 +49,9 @@ class LogStash::Codecs::Line < LogStash::Codecs::Base
   public
   def encode(event)
     if event.is_a? LogStash::Event and @format
-      @on_event.call(event.sprintf(@format) + NL)
+      @on_event.call(event, event.sprintf(@format) + NL)
     else
-      @on_event.call(event.to_s + NL)
+      @on_event.call(event, event.to_s + NL)
     end
   end # def encode
 
