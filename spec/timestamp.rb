@@ -32,4 +32,11 @@ describe LogStash::Timestamp do
     expect(LogStash::Timestamp.coerce(:foobar)).to be_nil
   end
 
+  it "should support to_json" do
+    expect(LogStash::Timestamp.parse_iso8601("2014-09-23T00:00:00-0800").to_json).to eq("\"2014-09-23T08:00:00.000Z\"")
+  end
+
+  it "should support to_json and ignore arguments" do
+    expect(LogStash::Timestamp.parse_iso8601("2014-09-23T00:00:00-0800").to_json(:some => 1, :argumnents => "test")).to eq("\"2014-09-23T08:00:00.000Z\"")
+  end
 end

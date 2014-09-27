@@ -78,7 +78,8 @@ module LogStash
     end
     alias_method :gmtime, :utc
 
-    def to_json
+    def to_json(*args)
+      # ignore arguments to respect accepted to_json method signature
       LogStash::Json.dump(@time.iso8601(ISO8601_PRECISION))
     end
     alias_method :inspect, :to_json
