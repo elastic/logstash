@@ -23,6 +23,9 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
   #    command => "echo hello world"
   config :command, :validate => :string, :required => true
 
+  # Interval to run the command. Value is in seconds.
+  config :interval, :validate => :number, :required => true
+
   public
   def register
     @logger.info("Registering pipe input", :command => @command)
@@ -53,7 +56,7 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
       end
 
       # Keep running the command forever.
-      sleep(10)
+      sleep(@interval)
     end
   end # def run
 end # class LogStash::Inputs::Pipe
