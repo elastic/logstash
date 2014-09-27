@@ -70,11 +70,14 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
   def filter(event)
     return unless filter?(event)
 
+    new_event = event.clone
+
     if @resolve
       begin
         status = Timeout::timeout(@timeout) {
-          resolve(event)
+          resolve(new_event)
         }
+        return if status.nil?
       rescue Timeout::Error
         @logger.debug("DNS: resolve action timed out")
         return
@@ -84,15 +87,18 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
     if @reverse
       begin
         status = Timeout::timeout(@timeout) {
-          reverse(event)
+          reverse(new_event)
         }
+        return if status.nil?
       rescue Timeout::Error
         @logger.debug("DNS: reverse action timed out")
         return
       end
     end
 
-    filter_matched(event)
+    filter_matched(new_event)
+    yield new_event
+    event.cancel
   end
 
   private
