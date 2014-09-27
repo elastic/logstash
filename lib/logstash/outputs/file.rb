@@ -19,13 +19,13 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # ./test-2013-05-29.txt 
   config :path, :validate => :string, :required => true
 
-  # The maximum size of file to write. When the file exceeds this
+  # The maximum size in kB of file to write. When the file exceeds this
   # threshold, it will be rotated to the current filename + ".1"
   # If that file already exists, the previous .1 will shift to .2
   # and so forth.
   #
-  # NOT YET SUPPORTED
-  config :max_size, :validate => :string
+  # if this setting is omitted or 0, no file rotation is performed.
+  config :max_size, :validate => :number, :default => 0
 
   # The format to use when writing events to the file. This value
   # supports any string and can include %{name} and other dynamic
@@ -42,6 +42,14 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # Gzip the output stream before writing to disk.
   config :gzip, :validate => :boolean, :default => false
 
+  # The maximum number of rotation files to keep. If the maximum
+  # number is reached files with an older modification time are retired (deleted).
+  # This setting is active only if a log rotation - configured with the
+  # max_size setting - is active too.
+  #
+  # If this setting is omitted or 0, no rotation files are retired.
+  config :max_files, :validate => :number, :default => 0
+
   public
   def register
     require "fileutils" # For mkdir_p
@@ -54,6 +62,8 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     @last_stale_cleanup_cycle = now
     flush_interval = @flush_interval.to_i
     @stale_cleanup_interval = 10
+    # calc the max size in bytes
+    @max_size_bytes = @max_size.to_i * 1024
   end # def register
 
   public
@@ -63,7 +73,26 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     path = event.sprintf(@path)
     fd = open(path)
 
-    # TODO(sissel): Check if we should rotate the file.
+    # # Check if we should rotate the file.
+    if @max_size_bytes != nil and @max_size_bytes > 0 and fd.size >= @max_size_bytes
+      # get the rotation file name and path
+      new_path = get_rotation_file_name(path)
+      if new_path != path
+        # close the file, rename it to the rotation file path and reopen the
+        # original file again.
+        @logger.debug("Rotating file #{path} to #{new_path}")
+        fd.flush()
+        fd.close()
+        @files.delete(path)
+        File.rename(path, new_path)
+        fd = open(path)
+      end
+
+      #delete older files if max_files roation file house keeping is active
+      if @max_files != nil and @max_files > 0
+        retire_rotation_files(path)
+      end
+    end
 
     if @message_format
       output = event.sprintf(@message_format)
@@ -150,6 +179,53 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       fd = Zlib::GzipWriter.new(fd)
     end
     @files[path] = IOWriter.new(fd)
+  end
+
+  # calculate the new rotation file name by searching for a free file name
+  def get_rotation_file_name(path)
+    return path if path == nil
+
+    # try to find a non existing file by increasing the index
+    fileIndex = 1
+    newPath = "#{path}.#{fileIndex}"
+
+    while File.exist?(newPath)
+      fileIndex += 1
+      newPath = "#{path}.#{fileIndex}"
+    end
+
+    return newPath
+  end
+
+  # retires rotation files.
+  def retire_rotation_files(path)
+    search_file_pattern = path + ".*" #roation pattern is .1,.2,....
+    rotation_files = Dir[search_file_pattern]
+    # now look if we have to delete some files
+    if rotation_files != nil and rotation_files.count > @max_files
+      #sort the file names by modification time
+      rotation_files.sort_by! { |file_entry| File.mtime(file_entry) }
+      # calculate how many file we have to delete
+      files_to_delete_count = rotation_files.count - @max_files
+      #delete the files we have to delete
+      files_to_delete_count.times do |file_index|
+        file_to_delete = rotation_files[file_index]
+        begin
+          @logger.info("Deleting file #{file_to_delete}")
+          File.delete(file_to_delete)
+        rescue Exception => ex
+          @logger.error("Exception while deleting file. #{file_to_delete}", :exception => ex)
+        end
+      end
+    end
+  end
+
+  def flush(fd)
+    if flush_interval > 0
+      flush_pending_files
+    else
+      fd.flush
+    end
   end
 end # class LogStash::Outputs::File
 
