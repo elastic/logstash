@@ -42,7 +42,7 @@ module LogStash::Kibana
       if File.exists?(path)
         ext = path.split(".").last
         content_type MIME::Types.type_for(ext).first.to_s
-        body File.new(path, "r").read
+        body File.new(path, "rb").read
       else
         status 404
         content_type "text/plain"
