@@ -5,20 +5,35 @@ puts "Skipping date performance tests because this ruby is not jruby" if RUBY_EN
 RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
   extend LogStash::RSpec
 
-  describe "giving an invalid match config, raise a configuration error" do
-    config <<-CONFIG
-      filter {
-        date {
-          match => [ "mydate"]
-          locale => "en"
+  context "config validation" do
+    describe "giving an invalid match config, raise a configuration error" do
+      config <<-CONFIG
+        filter {
+          date {
+            match => [ "mydate"]
+            locale => "en"
+          }
         }
-      }
-    CONFIG
+      CONFIG
 
-    sample "not_really_important" do
-      insist {subject}.raises LogStash::ConfigurationError
+      sample "not_really_important" do
+        insist {subject}.raises LogStash::ConfigurationError
+      end
     end
 
+    describe "giving an invalid pattern, raise a configuration error" do
+      config <<-CONFIG
+        filter {
+          date {
+            match => [ "message", "hello world" ]
+          }
+        }
+      CONFIG
+
+      sample "not_really_important" do
+        insist {subject}.raises LogStash::ConfigurationError
+      end
+    end
   end
 
   describe "parsing with ISO8601" do
@@ -314,7 +329,23 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
 
     sample("thedate" => "2013/Apr/21") do
       insist { subject["@timestamp"] } != "2013-04-21T00:00:00.000Z"
-      insist { subject["tags"] } == nil
+      reject { subject["tags"] }.include? "tagged"
+    end
+  end
+
+  describe "failing to parse should apply tag_on_failure" do
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "thedate", "yyyy/MM/dd" ]
+          tag_on_failure => ["date_failed"]
+        }
+      }
+    CONFIG
+
+    sample("thedate" => "2013/Apr/21") do
+      insist { subject["@timestamp"] } != "2013-04-21T00:00:00.000Z"
+      insist { subject["tags"] }.include? "date_failed"
     end
   end
 
@@ -403,5 +434,25 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
     sample "14 juillet 1789" do
       insist { subject["@timestamp"].time } == Time.iso8601("1789-07-14T00:00:00.000Z").utc
     end
+  end
+
+  describe "Support fallback to english for non-english default locale" do
+    default_locale = java.util.Locale.getDefault()
+    #Override default locale with non-english
+    java.util.Locale.setDefault(java.util.Locale.forLanguageTag('fr-FR'))
+    config <<-CONFIG
+      filter {
+        date {
+          match => [ "message", "dd MMMM yyyy" ]
+          timezone => "UTC"
+        }
+      }
+    CONFIG
+
+    sample "01 September 2014" do
+      insist { subject["@timestamp"].time } == Time.iso8601("2014-09-01T00:00:00.000Z").utc
+    end
+    #Restore default locale
+    java.util.Locale.setDefault(default_locale)
   end
 end

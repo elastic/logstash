@@ -40,10 +40,12 @@ class LogStash::Filters::Date < LogStash::Filters::Base
 
   # Specify a locale to be used for date parsing using either IETF-BCP47 or POSIX language tag.
   # Simple examples are `en`,`en-US` for BCP47 or `en_US` for POSIX.
-  # If not specified, the platform default will be used.
   #
   # The locale is mostly necessary to be set for parsing month names (pattern with MMM) and
   # weekday names (pattern with EEE).
+  #
+  # If not specified, the platform default will be used but for non-english platform default
+  # an english parser will also be used as a fallback mechanism.
   #
   config :locale, :validate => :string
 
@@ -88,6 +90,10 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # Store the matching timestamp into the given target field.  If not provided,
   # default to updating the @timestamp field of the event.
   config :target, :validate => :string, :default => "@timestamp"
+
+  # Append values to the 'tags' field when there has been no
+  # successful match
+  config :tag_on_failure, :validate => :array, :default => ["_dateparsefailure"]
 
   # LOGSTASH-34
   DATEPATTERNS = %w{ y d H m s S }
@@ -160,16 +166,30 @@ class LogStash::Filters::Date < LogStash::Filters::Base
             return (date[1..15].hex * 1000 - 10000)+(date[16..23].hex/1000000)
           end
         else
-          joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withDefaultYear(Time.new.year)
-          if @timezone
-            joda_parser = joda_parser.withZone(org.joda.time.DateTimeZone.forID(@timezone))
-          else
-            joda_parser = joda_parser.withOffsetParsed
+          begin
+            joda_parser = org.joda.time.format.DateTimeFormat.forPattern(format).withDefaultYear(Time.new.year)
+            if @timezone
+              joda_parser = joda_parser.withZone(org.joda.time.DateTimeZone.forID(@timezone))
+            else
+              joda_parser = joda_parser.withOffsetParsed
+            end
+            if locale
+              joda_parser = joda_parser.withLocale(locale)
+            end
+            parsers << lambda { |date| joda_parser.parseMillis(date) }
+
+            #Include a fallback parser to english when default locale is non-english
+            if !locale &&
+              "en" != java.util.Locale.getDefault().getLanguage() &&
+              (format.include?("MMM") || format.include?("E"))
+              en_joda_parser = joda_parser.withLocale(java.util.Locale.forLanguageTag('en-US'))
+              parsers << lambda { |date| en_joda_parser.parseMillis(date) }
+            end
+          rescue JavaException => e
+            raise LogStash::ConfigurationError, I18n.t("logstash.agent.configuration.invalid_plugin_register",
+              :plugin => "filter", :type => "date",
+              :error => "#{e.message} for pattern '#{format}'")
           end
-          if (locale != nil)
-            joda_parser = joda_parser.withLocale(locale)
-          end
-          parsers << lambda { |date| joda_parser.parseMillis(date) }
       end
 
       @logger.debug("Adding type with date config", :type => @type,
@@ -222,11 +242,16 @@ class LogStash::Filters::Date < LogStash::Filters::Base
           filter_matched(event)
         rescue StandardError, JavaException => e
           @logger.warn("Failed parsing date from field", :field => field,
-                       :value => value, :exception => e)
-          # Raising here will bubble all the way up and cause an exit.
-          # TODO(sissel): Maybe we shouldn't raise?
-          # TODO(sissel): What do we do on a failure? Tag it like grok does?
-          #raise e
+                       :value => value, :exception => e.message,
+                       :config_parsers => fieldparsers.collect {|x| x[:format]}.join(','),
+                       :config_locale => @locale ? @locale : "default="+java.util.Locale.getDefault().toString()
+                       )
+          # Tag this event if we can't parse it. We can use this later to
+          # reparse+reindex logs if we improve the patterns given.
+          @tag_on_failure.each do |tag|
+            event["tags"] ||= []
+            event["tags"] << tag unless event["tags"].include?(tag)
+          end
         end # begin
       end # fieldvalue.each
     end # @parsers.each
