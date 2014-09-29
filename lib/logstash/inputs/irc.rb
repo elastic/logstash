@@ -91,7 +91,7 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
       if msg.command.to_s == "353"
 	# Got a names list event
 	# Count the users returned in msg.params[3] split by " "
-	@user_stats[msg.channel.to_s].to_i += 1
+	@user_stats[msg.channel.to_s] = (@user_stats[msg.channel.to_s] || 0)  + 1
       end
       if msg.command.to_s == "366"
 	# Got an end of names event, now we can send the info down the pipe.
