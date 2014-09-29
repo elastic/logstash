@@ -92,10 +92,14 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
     Thread.new(@bot) do |bot|
       bot.start
     end
+    if @get_stats
+	trigger_time = Time.now + (@stats_interval * 60)
+    end
     loop do
       msg = @irc_queue.pop
-      if msg.command.to_s == "PONG"
+      if @get_stats and Time.now >= trigger_time # the queue pop above is blocking - thus not the best solution
          request_names
+	 trigger_time = Time.now + (@stats_interval * 60)
       end
       if @get_stats and msg.command.to_s == "353"
 	# Got a names list event
