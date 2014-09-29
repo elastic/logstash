@@ -7,155 +7,150 @@ require "resolv"
 describe LogStash::Filters::DNS do
   extend LogStash::RSpec
 
-  before(:all) do
-    begin
-      Resolv.new.getaddress("elasticsearch.com")
-    rescue Errno::ENOENT
-      $stderr.puts("DNS resolver error, no network? mocking resolver")
-      @mock_resolv = true
-    end
-  end
-
-  before(:each) do
-    if @mock_resolv
-      allow_any_instance_of(Resolv).to receive(:getaddress).with("carrera.databits.net").and_return("199.192.228.250")
-      allow_any_instance_of(Resolv).to receive(:getaddress).with("does.not.exist").and_return(nil)
-      allow_any_instance_of(Resolv).to receive(:getname).with("199.192.228.250").and_return("carrera.databits.net")
-    end
-  end
-
-  describe "dns reverse lookup, replace (on a field)" do
+  describe "dns reverse lookup, no target" do
     config <<-CONFIG
       filter {
         dns {
-          reverse => "foo"
-          action => "replace"
+          source => "host"
         }
       }
     CONFIG
 
-    sample("foo" => "199.192.228.250") do
-      insist { subject["foo"] } == "carrera.databits.net"
+    address = Resolv.new.getaddress("aspmx.l.google.com")
+    expected = Resolv.new.getname(address)
+    sample("host" => address) do
+      insist { subject["host"] } == address
+      insist { subject["dns"] } == expected
     end
   end
 
-  describe "dns reverse lookup, append" do
+  describe "dns lookup, with target" do
     config <<-CONFIG
       filter {
         dns {
-          reverse => "foo"
-          action => "append"
+          source => "foo"
+          target => "bar"
         }
       }
     CONFIG
 
-    sample("foo" => "199.192.228.250") do
-      insist { subject["foo"][0] } == "199.192.228.250"
-      insist { subject["foo"][1] } == "carrera.databits.net"
+    name = Resolv.new.getname("8.8.8.8")
+    expected = Resolv.new.getaddress(name)
+    sample("foo" => name) do
+      insist { subject["foo"] } == name
+      insist { subject["bar"] } == expected
     end
   end
 
-  describe "dns reverse lookup, not an IP" do
+  describe "dns lookup, empty target" do
     config <<-CONFIG
       filter {
         dns {
-          reverse => "foo"
+          source => "foo"
+          target => ""
         }
       }
     CONFIG
 
-    sample("foo" => "not.an.ip") do
-      insist { subject["foo"] } == "not.an.ip"
+    name = Resolv.new.getname("8.8.8.8")
+    expected = Resolv.new.getaddress(name)
+    sample("foo" => name) do
+      insist { subject["foo"] } == name
+      insist { subject["dns"] } == expected
     end
   end
 
-  describe "dns resolve lookup, replace" do
+  describe "dns lookup, NXDOMAIN, no target" do
     config <<-CONFIG
       filter {
         dns {
-          resolve => "host"
-          action => "replace"
+          source => "foo"
         }
       }
     CONFIG
 
-    sample("host" => "carrera.databits.net") do
+    sample("foo" => "doesnotexist.invalid.topleveldomain") do
+      insist { subject["foo"] } == "doesnotexist.invalid.topleveldomain"
+      insist { subject["dns"] }.nil?
+    end
+  end
+
+  describe "dns lookup, NXDOMAIN, with target" do
+    config <<-CONFIG
+      filter {
+        dns {
+          source => "foo"
+          target => "bar"
+        }
+      }
+    CONFIG
+
+    sample("foo" => "doesnotexist.invalid.topleveldomain") do
+      insist { subject["foo"] } == "doesnotexist.invalid.topleveldomain"
+      insist { subject["bar"] }.nil?
+    end
+  end
+
+  # Tests for the source/target options
+  describe "dns reverse lookup, no target" do
+    config <<-CONFIG
+      filter {
+        dns {
+          source => "host"
+        }
+      }
+    CONFIG
+
+    sample("host" => "199.192.228.250") do
       insist { subject["host"] } == "199.192.228.250"
+      insist { subject["dns"] } == "carrera.databits.net"
     end
   end
 
-  describe "dns resolve lookup, replace (on a field)" do
+  describe "dns lookup, with target" do
     config <<-CONFIG
       filter {
         dns {
-          resolve => "foo"
-          action => "replace"
+          source => "foo"
+          target => "bar"
         }
       }
     CONFIG
 
-    sample("foo" => "carrera.databits.net") do
+    sample("foo" => "199.192.228.250") do
       insist { subject["foo"] } == "199.192.228.250"
+      insist { subject["bar"] } == "carrera.databits.net"
     end
   end
 
-  describe "dns resolve lookup, skip multi-value" do
+  describe "dns lookup, NXDOMAIN, no target" do
     config <<-CONFIG
       filter {
         dns {
-          resolve => "foo"
-          action => "replace"
+          source => "foo"
         }
       }
     CONFIG
 
-    sample("foo" => ["carrera.databits.net", "foo.databits.net"]) do
-      insist { subject["foo"] } == ["carrera.databits.net", "foo.databits.net"]
+    sample("foo" => "doesnotexist.invalid.topleveldomain") do
+      insist { subject["foo"] } == "doesnotexist.invalid.topleveldomain"
+      insist { subject["dns"] } == nil
     end
   end
 
-  describe "dns resolve lookup, append" do
+  describe "dns lookup, NXDOMAIN, with target" do
     config <<-CONFIG
       filter {
         dns {
-          resolve => "foo"
-          action => "append"
+          source => "foo"
+          target => "bar"
         }
       }
     CONFIG
 
-    sample("foo" => "carrera.databits.net") do
-      insist { subject["foo"][0] } == "carrera.databits.net"
-      insist { subject["foo"][1] } == "199.192.228.250"
-    end
-  end
-
-  describe "dns resolve lookup, append with multi-value does nothing" do
-    config <<-CONFIG
-      filter {
-        dns {
-          resolve => "foo"
-          action => "append"
-        }
-      }
-    CONFIG
-
-    sample("foo" => ["carrera.databits.net", "foo.databits.net"]) do
-      insist { subject["foo"] } == ["carrera.databits.net", "foo.databits.net"]
-    end
-  end
-
-  describe "dns resolve lookup, not a valid hostname" do
-    config <<-CONFIG
-      filter {
-        dns {
-          resolve=> "foo"
-        }
-      }
-    CONFIG
-
-    sample("foo" => "does.not.exist") do
-      insist { subject["foo"] } == "does.not.exist"
+    sample("foo" => "doesnotexist.invalid.topleveldomain") do
+      insist { subject["foo"] } == "doesnotexist.invalid.topleveldomain"
+      insist { subject["bar"] } == nil
     end
   end
 end
