@@ -46,6 +46,7 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
   public
   def register
     require "cinch"
+    @user_stats = Array.new
     @irc_queue = Queue.new
     @logger.info("Connecting to irc server", :host => @host, :port => @port, :nick => @nick, :channels => @channels)
 
@@ -62,9 +63,11 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
       c.ssl.use = @secure
     end
     queue = @irc_queue
-    @bot.on :channel  do |m|
+    @bot.on :catchall  do |m|
       queue << m
     end
+
+
   end # def register
 
   public
@@ -74,9 +77,28 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
     end
     loop do
       msg = @irc_queue.pop
-      if msg.user
+#      @logger.debug("IRC Message", :data => msg)
+      if msg.command.to_s == "PONG"
+         request_names
+      end
+      if msg.command.to_s == "353"
+	# Got a names list event
+	# Count the users returned in msg.params[3] split by " "
+#	@user_stats[msg.channel.to_s] += 1
+      end
+      if msg.command.to_s == "366"
+	# Got an end of names event, now we can send the info down the pipe.
+	event = LogStash::Event.new()
+        decorate(event)
+	event["channel"] = msg.channel.to_s
+	event["users"] = msg.params[3]
+	output_queue << event
+      end
+      if msg.command and msg.user
+        @logger.info("IRC Message", :data => msg)
         @codec.decode(msg.message) do |event|
           decorate(event)
+          event["command"] = msg.command.to_s
           event["channel"] = msg.channel.to_s
           event["nick"] = msg.user.nick
           event["server"] = "#{@host}:#{@port}"
@@ -85,4 +107,10 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
       end
     end
   end # def run
+
+  def request_names
+    @users['logstash'] == 0
+    @bot.irc.send "NAMES #logstash"
+  end
+
 end # class LogStash::Inputs::Irc
