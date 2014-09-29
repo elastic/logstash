@@ -112,7 +112,7 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
 	output_queue << event
       end
       if msg.command and msg.user
-        @logger.info("IRC Message", :data => msg)
+        @logger.debug("IRC Message", :data => msg)
         @codec.decode(msg.message) do |event|
           decorate(event)
           event["command"] = msg.command.to_s
@@ -126,7 +126,17 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
   end # def run
 
   def request_names
-    @bot.irc.send "NAMES #logstash"
+    # Go though list of channels, and request a NAMES for them
+    # Note : Logstash channel list can have passwords ie : "channel password"
+    # Need to account for that
+    @channels.each do |channel|
+	if channel.include? " "
+	    # Remove password from channel
+	    channel = channel.split(' ')[0]
+	end
+	@user_stats[channel] = 0
+        @bot.irc.send "NAMES #{channel}"
+    end
   end
 
 end # class LogStash::Inputs::Irc
