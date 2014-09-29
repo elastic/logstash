@@ -93,14 +93,10 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
       bot.start
     end
     if @get_stats
-	trigger_time = Time.now + (@stats_interval * 60)
+	start_names_thread
     end
     loop do
       msg = @irc_queue.pop
-      if @get_stats and Time.now >= trigger_time # the queue pop above is blocking - thus not the best solution
-         request_names
-	 trigger_time = Time.now + (@stats_interval * 60)
-      end
       if @get_stats and msg.command.to_s == "353"
 	# Got a names list event
 	# Count the users returned in msg.params[3] split by " "
@@ -143,4 +139,12 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
     end
   end
 
+  def start_names_thread
+    Thread.new {
+      loop do
+	sleep(@stats_interval * 60)
+	request_names
+      end
+    }
+  end
 end # class LogStash::Inputs::Irc
