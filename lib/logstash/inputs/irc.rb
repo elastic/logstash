@@ -36,6 +36,12 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
   # Catch all IRC channel/user events not just channel messages
   config :catch_all, :validate => :boolean, :default => false
 
+  # Gather and send user counts for channels - this requires catch_all and will force it
+  config :get_stats, :validate => :boolean, :default => false
+
+  # How often in minutes to get the user count stats
+  config :stats_interval, :validate => :number, :default => 5
+
   # Channels to join and read messages from.
   #
   # These should be full channel names including the '#' symbol, such as
@@ -51,6 +57,9 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
     require "cinch"
     @user_stats = Hash.new
     @irc_queue = Queue.new
+    if @get_stats
+	@catch_all = true
+    end
     @logger.info("Connecting to irc server", :host => @host, :port => @port, :nick => @nick, :channels => @channels)
 
     @bot = Cinch::Bot.new
@@ -88,12 +97,13 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
       if msg.command.to_s == "PONG"
          request_names
       end
-      if msg.command.to_s == "353"
+      if @get_stats and msg.command.to_s == "353"
 	# Got a names list event
 	# Count the users returned in msg.params[3] split by " "
-	@user_stats[msg.channel.to_s] = (@user_stats[msg.channel.to_s] || 0)  + 1
+	users = msg.params[3].split(" ")
+	@user_stats[msg.channel.to_s] = (@user_stats[msg.channel.to_s] || 0)  + users.length
       end
-      if msg.command.to_s == "366"
+      if @get_stats and msg.command.to_s == "366"
 	# Got an end of names event, now we can send the info down the pipe.
 	event = LogStash::Event.new()
         decorate(event)
@@ -116,7 +126,6 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
   end # def run
 
   def request_names
-    @users["#logstash"] == 0
     @bot.irc.send "NAMES #logstash"
   end
 
