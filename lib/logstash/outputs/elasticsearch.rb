@@ -240,6 +240,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     end
 
     @client = Array.new
+    template_installed = false
     @host.each do |host|
         (_host,_port) = host.split ":"
         options = {
@@ -249,9 +250,16 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
         }
         @logger.info "Create client to elasticsearch server on #{_host}:#{_port}"
         client = client_class.new(options)
-        if @manage_template
-          @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
-          client.template_install(@template_name, get_template, @template_overwrite)
+        if @manage_template and not template_installed
+          begin
+            @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
+            client.template_install(@template_name, get_template, @template_overwrite)
+            template_installed = true
+            @logger.info("successfully installed template on #{options[:host]}:#{options[:port]}")
+          rescue => e
+            @logger.error("Failed to install template to #{options[:host]}:#{options[:port]}, #{e.message}")
+            template_installed = false
+          end
         end # if @manage_templates
         @client << client
     end # @host.each
@@ -326,11 +334,11 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       @logger.debug "Sending bulk of actions to client[#{@client_idx}]: #{@host[@client_idx]}"
       @current_client.bulk(actions)
     rescue => e
-      @logger.error "Got error to send bulk of actions to elasticsearch server at #{@host[@client_idx]} : #{e.message}, retry"
+      @logger.error "Got error to send bulk of actions to elasticsearch server at #{@host[@client_idx]} : #{e.message}"
+      raise e
+    ensure
       shift_client
-      retry
     end
-    shift_client
     # TODO(sissel): Handle errors. Since bulk requests could mostly succeed
     # (aka partially fail), we need to figure out what documents need to be
     # retried.
