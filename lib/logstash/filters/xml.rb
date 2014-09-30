@@ -115,7 +115,7 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
           unless value.nil?
             matched = true
             event[xpath_dest] ||= []
-            event[xpath_dest] << value.to_s
+            event[xpath_dest] << value.to_str
           end
         end # XPath.each
       end # @xpath.each
