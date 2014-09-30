@@ -240,29 +240,38 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     end
 
     @client = Array.new
-    template_installed = false
-    @host.each do |host|
-        (_host,_port) = host.split ":"
-        options = {
-          :host => _host,
-          :port => _port || @port,
+
+    if @protocol == "node" # if @protocol is "node"
+      options = {
+          :host => @host,
+          :port => @port,
           :client_settings => client_settings
-        }
-        @logger.info "Create client to elasticsearch server on #{_host}:#{_port}"
-        client = client_class.new(options)
-        if @manage_template and not template_installed
+      }
+      @client << client_class.new(options)
+    else # if @protocol in ["transport","http"]
+      @host.each do |host|
+          (_host,_port) = host.split ":"
+          options = {
+            :host => _host,
+            :port => _port || @port,
+            :client_settings => client_settings
+          }
+          @logger.info "Create client to elasticsearch server on #{_host}:#{_port}"
+          @client << client_class.new(options)
+      end # @host.each
+    end
+
+    if @manage_template
+      for client in @client
           begin
             @logger.info("Automatic template management enabled", :manage_template => @manage_template.to_s)
             client.template_install(@template_name, get_template, @template_overwrite)
-            template_installed = true
-            @logger.info("successfully installed template on #{options[:host]}:#{options[:port]}")
+            break
           rescue => e
-            @logger.error("Failed to install template to #{options[:host]}:#{options[:port]}, #{e.message}")
-            template_installed = false
+            @logger.error("Failed to install template: #{e.message}")
           end
-        end # if @manage_templates
-        @client << client
-    end # @host.each
+      end # for @client loop
+    end # if @manage_templates
 
     @logger.info("New Elasticsearch output", :cluster => @cluster,
                  :host => @host, :port => @port, :embedded => @embedded,

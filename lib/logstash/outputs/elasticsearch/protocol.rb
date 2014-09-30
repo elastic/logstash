@@ -181,16 +181,40 @@ module LogStash::Outputs::Elasticsearch
       end
 
       def hosts(options)
-        if options[:port].to_s =~ /^\d+-\d+$/
-          # port ranges are 'host[port1-port2]' according to
-          # http://www.elasticsearch.org/guide/reference/modules/discovery/zen/
-          # However, it seems to only query the first port.
-          # So generate our own list of unicast hosts to scan.
-          range = Range.new(*options[:port].split("-"))
-          return range.collect { |p| "#{options[:host]}:#{p}" }.join(",")
+        # http://www.elasticsearch.org/guide/reference/modules/discovery/zen/
+        result = Array.new
+        if options[:host].class == Array
+          options[:host].each do |host|
+            if host.to_s =~ /^.+:.+$/
+              # For host in format: host:port, ignore options[:port]
+              result << host
+            else
+              if options[:port].to_s =~ /^\d+-\d+$/
+                # port ranges are 'host[port1-port2]'
+                result << Range.new(*options[:port].split("-")).collect { |p| "#{host}:#{p}" }
+              else
+                result << "#{host}:#{options[:port]}"
+              end
+            end
+          end
         else
-          return "#{options[:host]}:#{options[:port]}"
+          if options[:host].to_s =~ /^.+:.+$/
+            # For host in format: host:port, ignore options[:port]
+            result << options[:host]
+          else
+            if options[:port].to_s =~ /^\d+-\d+$/
+              # port ranges are 'host[port1-port2]' according to
+              # http://www.elasticsearch.org/guide/reference/modules/discovery/zen/
+              # However, it seems to only query the first port.
+              # So generate our own list of unicast hosts to scan.
+              range = Range.new(*options[:port].split("-"))
+              result << range.collect { |p| "#{options[:host]}:#{p}" }
+            else
+              result << "#{options[:host]}:#{options[:port]}"
+            end
+          end
         end
+        result.flatten.join(",")
       end # def hosts
 
       def build_client(options)
