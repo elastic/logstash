@@ -77,9 +77,9 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
     geoip_initialize = ::GeoIP.new(@database)
 
     @geoip_type = case geoip_initialize.database_type
-    when GeoIP::GEOIP_CITY_EDITION_REV0, GeoIP::GEOIP_CITY_EDITION_REV1
+    when GeoIP::GEOIP_CITY_EDITION_REV0, GeoIP::GEOIP_CITY_EDITION_REV1, GeoIP::GEOIP_CITY_EDITION_REV1_V6
       :city
-    when GeoIP::GEOIP_COUNTRY_EDITION
+    when GeoIP::GEOIP_COUNTRY_EDITION, GeoIP::GEOIP_COUNTRY_EDITION_V6
       :country
     when GeoIP::GEOIP_ASNUM_EDITION
       :asn

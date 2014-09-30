@@ -19,6 +19,8 @@ GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
 GEOIP_ASN=vendor/geoip/GeoIPASNum.dat
 GEOIP_ASN_URL=http://logstash.objects.dreamhost.com/maxmind/GeoIPASNum-2014-02-12.dat.gz
+GEOIPV6=vendor/geoip/GeoLiteCityv6.dat
+GEOIPV6_URL=http://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz
 KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-3.0.1.tar.gz
 PLUGIN_FILES=$(shell find lib -type f| egrep '^lib/logstash/(inputs|outputs|filters|codecs)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 SCALA_VERSION?=2.9.2
@@ -171,7 +173,7 @@ vendor/geoip: | vendor
 	$(QUIET)mkdir $@
 
 .PHONY: vendor-geoip
-vendor-geoip: $(GEOIP) $(GEOIP_ASN)
+vendor-geoip: $(GEOIP) $(GEOIP_ASN) $(GEOIPV6)
 $(GEOIP): | vendor/geoip
 	$(QUIET)$(DOWNLOAD_COMMAND) $@.tmp.gz $(GEOIP_URL)
 	$(QUIET)gzip -dc $@.tmp.gz > $@.tmp
@@ -180,6 +182,12 @@ $(GEOIP): | vendor/geoip
 
 $(GEOIP_ASN): | vendor/geoip
 	$(QUIET)$(DOWNLOAD_COMMAND) $@.tmp.gz $(GEOIP_ASN_URL)
+	$(QUIET)gzip -dc $@.tmp.gz > $@.tmp
+	$(QUIET)rm "$@.tmp.gz"
+	$(QUIET)mv $@.tmp $@
+
+$(GEOIPV6): | vendor/geoip
+	$(QUIET)$(DOWNLOAD_COMMAND) $@.tmp.gz $(GEOIPV6_URL)
 	$(QUIET)gzip -dc $@.tmp.gz > $@.tmp
 	$(QUIET)rm "$@.tmp.gz"
 	$(QUIET)mv $@.tmp $@
