@@ -1,9 +1,8 @@
-require "test_utils"
+require "spec_helper"
 require "logstash/filters/ruby"
 require "logstash/filters/date"
 
 describe LogStash::Filters::Ruby do
-  extend LogStash::RSpec
 
   describe "generate pretty json on event.to_hash" do
     # this obviously tests the Ruby filter but also makes sure
