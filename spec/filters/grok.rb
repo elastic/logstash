@@ -6,6 +6,28 @@ require "logstash/filters/grok"
 describe LogStash::Filters::Grok do
   extend LogStash::RSpec
 
+  describe "simple HP Procurve log line" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => "%{PROCURVE}" }
+          singles => true
+          overwrite => [ "message" ]
+        }
+      }
+    CONFIG
+    
+    sample "2012-04-19T15:13:29-04:00 <user.info> 192.168.1.1 ports:  port 24 is now on-line" do
+      insist { subject["tags"] }.nil?
+      insist { subject["logsource"] } == "192.168.1.1"
+      insist { subject["timestamp"] } == "2012-04-19T15:13:29-04:00"
+      insist { subject["message"] } == "port 24 is now on-line"
+      insist { subject["program"] } == "ports"
+      insist { subject["facility"] } == "user"
+      insist { subject["severity"] } == "info"
+    end
+  end
+  
   describe "simple syslog line" do
     # The logstash config goes here.
     # At this time, only filters are supported.
