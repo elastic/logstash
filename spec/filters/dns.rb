@@ -73,14 +73,72 @@ describe LogStash::Filters::DNS do
     config <<-CONFIG
       filter {
         dns {
-          resolve => "host"
+          resolve => ["host"]
           action => "replace"
+          add_tag => ["success"]
         }
       }
     CONFIG
 
     sample("host" => "carrera.databits.net") do
       insist { subject["host"] } == "199.192.228.250"
+      insist { subject["tags"] } == ["success"]
+    end
+  end
+
+  describe "dns fail resolve lookup, don't add tag" do
+    config <<-CONFIG
+      filter {
+        dns {
+          resolve => ["host1", "host2"]
+          action => "replace"
+          add_tag => ["success"]
+        }
+      }
+    CONFIG
+
+    sample("host1" => "carrera.databits.net", "host2" => "nonexistanthostname###.net") do
+      insist { subject["tags"] }.nil?
+      insist { subject["host1"] } == "carrera.databits.net"
+      insist { subject["host2"] } == "nonexistanthostname###.net"
+    end
+  end
+
+  describe "dns resolves lookups, adds tag" do
+    config <<-CONFIG
+      filter {
+        dns {
+          resolve => ["host1", "host2"]
+          action => "replace"
+          add_tag => ["success"]
+        }
+      }
+    CONFIG
+
+    sample("host1" => "carrera.databits.net", "host2" => "carrera.databits.net") do
+      insist { subject["tags"] } == ["success"]
+    end
+  end
+
+  describe "dns resolves and reverses, fails last, no tag" do
+    config <<-CONFIG
+      filter {
+        dns {
+          resolve => ["host1"]
+          reverse => ["ip1", "ip2"]
+          action => "replace"
+          add_tag => ["success"]
+        }
+      }
+    CONFIG
+
+    sample("host1" => "carrera.databits.net",
+           "ip1" => "127.0.0.1",
+           "ip2" => "128.0.0.1") do
+      insist { subject["tags"] }.nil?
+      insist { subject["host1"] } == "carrera.databits.net"
+      insist { subject["ip1"] } == "127.0.0.1"
+      insist { subject["ip2"] } == "128.0.0.1"
     end
   end
 

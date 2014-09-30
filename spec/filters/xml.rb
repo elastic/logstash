@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "test_utils"
 require "logstash/filters/xml"
 
@@ -151,6 +152,24 @@ describe LogStash::Filters::Xml do
     sample("xmldata" => '<foo><key>value1</key><key>value2</key></foo>') do
       insist { subject["tags"] }.nil?
       insist { subject["xpath_field"]} == ["value1","value2"]
+    end
+  end
+
+  describe "parse correctly non ascii content with xpath" do
+    config <<-CONFIG
+    filter {
+      xml {
+        source => "xmldata"
+        target => "data"
+        xpath => [ "/foo/key/text()", "xpath_field" ]
+      }
+    }
+    CONFIG
+
+    # Single value
+    sample("xmldata" => '<foo><key>Français</key></foo>') do
+      insist { subject["tags"] }.nil?
+      insist { subject["xpath_field"]} == ["Français"]
     end
   end
 

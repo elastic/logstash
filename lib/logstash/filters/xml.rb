@@ -91,7 +91,7 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
 
     if @xpath
       begin
-        doc = Nokogiri::XML(value)
+        doc = Nokogiri::XML(value, nil, value.encoding.to_s)
       rescue => e
         event.tag("_xmlparsefailure")
         @logger.warn("Trouble parsing xml", :source => @source, :value => value,
