@@ -88,7 +88,7 @@ elasticsearch.
 Small queue sizes mean that logstash simply blocks and stalls safely during
 times of load or other temporary pipeline problems. There are two alternatives
 to this - unlimited queue length and dropping messages. Unlimited queues grow
-grow unbounded and eventually exceed memory causing a crash which loses all of
+unbounded and eventually exceed memory causing a crash which loses all of
 those messages. Dropping messages is also an undesirable behavior in most cases.
 
 At a minimum, logstash will have probably 3 threads (2 if you have no filters).
