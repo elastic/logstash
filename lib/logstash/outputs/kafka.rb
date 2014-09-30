@@ -46,7 +46,7 @@ class LogStash::Outputs::Kafka < LogStash::Outputs::Base
   # leader. For more info, see -- http://kafka.apache.org/documentation.html#producerconfigs
   config :request_required_acks, :validate => [-1,0,1], :default => 0
   # The serializer class for messages. The default encoder takes a byte[] and returns the same byte[]
-  config :serializer_class, :validate => :string, :default => 'kafka.serializer.StringEncoder'
+  config :serializer_class, :validate => :string, :default => 'kafka.serializer.DefaultEncoder'
   # The partitioner class for partitioning messages amongst partitions in the topic. The default
   # partitioner is based on the hash of the key. If the key is null,
   # the message is sent to a random partition in the broker.
