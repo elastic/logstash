@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-require "test_utils"
+require "spec_helper"
 require "logstash/util/charset"
 
 describe LogStash::Util::Charset do
@@ -29,7 +29,8 @@ describe LogStash::Util::Charset do
       ["foo \xED\xB9\x81\xC3", "bar \xAD"].each do |data|
         insist { data.encoding.name } == "UTF-8"
         insist { data.valid_encoding? } == false
-        logger.should_receive(:warn).twice
+        expect(logger).to receive(:warn).exactly(2).times
+#logger.should_receive(:warn).twice
         insist { subject.convert(data) } == data.inspect[1..-2]
         insist { subject.convert(data).encoding.name } == "UTF-8"
       end
