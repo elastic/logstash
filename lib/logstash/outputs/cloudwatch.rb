@@ -93,6 +93,9 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
   # Set this to the number of events-per-timeframe you will be sending to CloudWatch to avoid extra API calls
   config :queue_size, :validate => :number, :default => 10000
 
+  # How many data points can be given in one call to the CloudWatch API
+  config :batch_size, :validate => :number, :default => 20
+
   # The default namespace to use for events which do not have a `CW_namespace` field
   config :namespace, :validate => :string, :default => "Logstash"
 
@@ -227,15 +230,17 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
         metric_data << new_data
       end # data.each
 
-      begin
-        @cw.put_metric_data(
-            :namespace => namespace,
-            :metric_data => metric_data
-        )
-        @logger.info("Sent data to AWS CloudWatch OK", :namespace => namespace, :metric_data => metric_data)
-      rescue Exception => e
-        @logger.warn("Failed to send to AWS CloudWatch", :exception => e, :namespace => namespace, :metric_data => metric_data)
-        break
+      metric_data.each_slice(@batch_size) do |batch|
+        begin
+          @cw.put_metric_data(
+              :namespace => namespace,
+              :metric_data => batch
+          )
+          @logger.info("Sent data to AWS CloudWatch OK", :namespace => namespace, :metric_data => batch)
+        rescue Exception => e
+          @logger.warn("Failed to send to AWS CloudWatch", :exception => e, :namespace => namespace, :metric_data => metric_data)
+          break
+        end
       end
     end # aggregates.each
     return aggregates
