@@ -230,4 +230,41 @@ describe LogStash::Filters::Metrics do
       insist {subject.register }.raises(LogStash::ConfigurationError)
     end
   end
+
+  context "should flush every 5 seconds when run in agent" do
+    require "tempfile"
+    tmp_file = Tempfile.new('logstash-spec-metrics-file')
+    config <<-CONFIG
+      input {
+       generator {
+         type => "generated"
+         count => 200000
+       }
+      }
+
+      filter {
+        if [type] == "generated" {
+          metrics {
+            meter => "events"
+            add_tag => "metric"
+          }
+        }
+      }
+
+      output {
+        #only emit events with the 'metric' tag
+        if "metric" in [tags] {
+          file {
+          path => "#{tmp_file.path}"
+        }
+        }
+      }
+    CONFIG
+
+    agent do
+      #Counting \n is counting events
+      #A unique event means no flushing occured before teardown
+      reject {tmp_file.read.scan(/\n/).count} == 1
+    end
+  end
 end
