@@ -10,10 +10,10 @@ require "logstash/namespace"
 class LogStash::Filters::SplitArray < LogStash::Filters::Base
 
   config_name "split_array"
-  milestone 3
+  milestone 1
 
   # The field which value is split by the terminator
-  config :field, :validate => :string, :default => "message"
+  config :source, :validate => :string, :default => "message"
 
   public
   def register
@@ -25,18 +25,18 @@ class LogStash::Filters::SplitArray < LogStash::Filters::Base
     return unless filter?(event)
 
 
-    original_value = event[@field]
+    original_value = event[@source]
 
     # Skip filtering if field is not an array
-    return if not original_value.is_a?(Array)
+    return unless original_value.is_a?(Array)
 
     original_value.each do |value|
-      next if value.empty?
 
-      filter_matched(value)
+      new_event = LogStash::Event.new("message" => value)
+      filter_matched(new_event)
 
       # Push this new event onto the stack at the LogStash::FilterWorker
-      yield LogStash::Event.new("message" => value)
+      yield new_event
     end
 
     # Cancel this event, we'll use the newly generated ones above.
