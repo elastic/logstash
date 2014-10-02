@@ -19,7 +19,22 @@ describe LogStash::Filters::KV do
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
     end
+  end
 
+  describe "LOGSTASH-2272: allow escaped quotes" do
+    config <<-CONFIG
+      filter {
+        kv { }
+      }
+    CONFIG
+
+    sample %{msg="Running command \\"df --blocksize=1024\\""} do
+      insist { subject["msg"] } == %{Running command \\"df --blocksize=1024\\"}
+    end
+
+    sample %{msg='Running command \\'df --blocksize=1024\\''} do
+      insist { subject["msg"] } == %{Running command \\'df --blocksize=1024\\'}
+    end
   end
 
    describe "LOGSTASH-624: allow escaped space in key or value " do
