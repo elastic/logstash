@@ -1,14 +1,5 @@
 source "https://rubygems.org"
-#gemspec(:name => "logstash", :path => "../")
+gemspec :path => File.expand_path(File.join(File.dirname(__FILE__), "..")), :name => "logstash", :development_group => :development
 
-gemspec = File.join(File.dirname(__FILE__), "..", "logstash.gemspec")
-spec = Gem::Specification.load(gemspec)
-spec.runtime_dependencies.each do |dep|
-  gem dep.name, dep.requirement.to_s
-end
-
-group :development do
-  spec.development_dependencies.each do |dep|
-    gem dep.name, dep.requirement.to_s
-  end
-end
+# in development if a local, unpublished gems is required, you must add it first in the gemspec without the :path option
+# and also add it here with the :path option.
