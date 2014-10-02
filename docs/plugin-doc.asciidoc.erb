@@ -23,8 +23,11 @@ These are the config options
      end
 -%>
 [[plugins-<%= section%>s-<%= plugin_name%>-<%= name%>]]
-===== `<%= name %>` <%= " (required setting)" if config[:required] %><%= " (DEPRECATED)" if config[:deprecated] %>
+===== `<%= name %>` <%= " (DEPRECATED)" if config[:deprecated] %>
 
+<% if config[:required] -%>
+  * This is a required setting.
+<% end -%>
 <% if config[:deprecated] -%>
   * DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version.
 <% end -%>
