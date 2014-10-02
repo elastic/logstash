@@ -358,7 +358,7 @@ describe "outputs/elasticsearch" do
       # Reference: http://www.elasticsearch.org/guide/reference/modules/discovery/zen/
 
       it "should support hosts in both string and array" do
-        # Because we defined *hosts* method in NodeClient is private,
+        # Because we defined *hosts* method in NodeClient as private,
         # we use *obj.send :method,[args...]* to call method *hosts*
         client = LogStash::Outputs::Elasticsearch::Protocols::NodeClient.new
 
