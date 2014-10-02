@@ -4,7 +4,7 @@ require "erb"
 
 if ARGV.size != 2
   $stderr.puts "No path given to search for plugin docs"
-  $stderr.puts "Usage: #{$0} plugin_doc_dir"
+  $stderr.puts "Usage: #{$0} plugin_doc_dir type"
   exit 1
 end
 
@@ -26,4 +26,10 @@ docs = plugins(File.join(basedir, "#{type}/*.asciidoc"))
 template_path = File.join(File.dirname(__FILE__), "index-#{type}.asciidoc.erb")
 template = File.new(template_path).read
 erb = ERB.new(template, nil, "-")
-puts erb.result(binding)
+
+path = "#{basedir}/#{type}.asciidoc"
+
+File.open(path, "w") do |out|
+  html = erb.result(binding)
+  out.puts(html)
+end
