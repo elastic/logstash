@@ -160,26 +160,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   def register
     @trim_re = Regexp.new("[#{@trim}]") if !@trim.nil?
     @trimkey_re = Regexp.new("[#{@trimkey}]") if !@trimkey.nil?
-
-    @scan_re = %r{
-      # key
-      (
-        (?:
-          \\\s|
-          [^#@field_split#@value_split]
-        )+
-      )
-
-      # separator
-      [#@value_split]
-
-      # value
-      (?:
-        "(.*)(?!<\\)"|
-        '(.*)(?!<\\)'|
-        ((?:\\\s|[^#@field_split])+)
-      )
-    }x
+    @scan_re = %r{((?:\\ |[^#@field_split#@value_split])+)[#@value_split](?:"(.*)(?!<\\)"|'(.*)(?!<\\)'|((?:\\ |[^#@field_split])+))}
   end # def register
 
   def filter(event)
