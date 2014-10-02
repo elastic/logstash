@@ -34,7 +34,7 @@ describe LogStash::Event do
 
     it "should assign simple fields" do
       insist { subject["foo"] }.nil?
-      insist { subject["foo"] = "bar"} == "bar"
+      insist { subject["foo"] = "bar" } == "bar"
       insist { subject["foo"] } == "bar"
     end
 
@@ -200,7 +200,7 @@ describe LogStash::Event do
 
     data = { "@timestamp" => "2013-12-21T07:25:06.605Z" }
     event = LogStash::Event.new(data)
-    insist { event["@timestamp"] }.is_a?(Time)
+    insist { event["@timestamp"] }.is_a?(LogStash::Timestamp)
 
     duration = 0
     [warmup, count].each do |i|
@@ -315,6 +315,70 @@ describe LogStash::Event do
 
       insist { json } ==  "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}"
     end
+  end
+
+  context "metadata" do
+    context "with existing metadata" do
+      subject { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => "pants" }) }
+      it "should not include metadata in to_hash" do
+        reject { subject.to_hash.keys }.include?("@metadata")
+
+        # 'hello', '@timestamp', and '@version'
+        insist { subject.to_hash.keys.count } == 3
+      end
+
+      it "should still allow normal field access" do
+        insist { subject["hello"] } == "world"
+      end
+    end
+
+    context "with set metadata" do
+      let(:fieldref) { "[@metadata][foo][bar]" }
+      let(:value) { "bar" }
+      subject { LogStash::Event.new("normal" => "normal") }
+      before do
+        # Verify the test is configured correctly.
+        insist { fieldref }.start_with?("[@metadata]")
+
+        # Set it.
+        subject[fieldref] = value
+      end
+
+      it "should still allow normal field access" do
+        insist { subject["normal"] } == "normal"
+      end
+
+      it "should allow getting" do
+        insist { subject[fieldref] } == value
+      end
+
+      it "should be hidden from .to_json" do
+        require "json"
+        obj = JSON.parse(subject.to_json)
+        reject { obj }.include?("@metadata")
+      end
+
+      it "should be hidden from .to_hash" do
+        reject { subject.to_hash }.include?("@metadata")
+      end
+
+      it "should be accessible through #to_hash_with_metadata" do
+        obj = subject.to_hash_with_metadata
+        insist { obj }.include?("@metadata")
+        insist { obj["@metadata"]["foo"]["bar"] } == value
+      end
+    end
+    
+    context "with no metadata" do
+      subject { LogStash::Event.new("foo" => "bar") }
+      it "should have no metadata" do
+        insist { subject["@metadata"] }.empty?
+      end
+      it "should still allow normal field access" do
+        insist { subject["foo"] } == "bar"
+      end
+    end
+
   end
 
 end
