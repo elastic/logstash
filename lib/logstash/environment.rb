@@ -5,8 +5,11 @@ module LogStash
   module Environment
     extend self
 
-    LOGSTASH_HOME = ::File.expand_path(::File.join(::File.dirname(__FILE__), "/../.."))
-    JAR_DIR = ::File.join(LOGSTASH_HOME, "/vendor/jar")
+    LOGSTASH_HOME = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", ".."))
+    JAR_DIR = ::File.join(LOGSTASH_HOME, "vendor", "jar")
+    BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
+    PLUGINS_DIR = ::File.join(LOGSTASH_HOME, "vendor", "plugins")
+    GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "tools", "Gemfile")
 
     # loads currently embedded elasticsearch jars
     # @raise LogStash::EnvironmentError if not running under JRuby or if no jar files are found
@@ -14,7 +17,7 @@ module LogStash
       raise(LogStash::EnvironmentError, "JRuby is required") unless jruby?
 
       require "java"
-      jars_path = ::File.join(JAR_DIR, "/elasticsearch*/lib/*.jar")
+      jars_path = ::File.join(JAR_DIR, "elasticsearch*", "lib", "*.jar")
       jar_files = Dir.glob(jars_path)
 
       raise(LogStash::EnvironmentError, "Could not find Elasticsearch jar files under #{JAR_DIR}") if jar_files.empty?
@@ -25,14 +28,19 @@ module LogStash
       end
     end
 
-    def gem_target
-      "#{LOGSTASH_HOME}/vendor/bundle"
+    def gem_home
+      ::File.join(BUNDLE_DIR, ruby_engine, gem_ruby_version)
+    end
+
+    def plugins_home
+      # plugins are gems, respect same path structure as core gems_home
+      ::File.join(PLUGINS_DIR, ruby_engine, gem_ruby_version)
     end
 
     def set_gem_paths!
-      gemdir = "#{gem_target}/#{ruby_engine}/#{gem_ruby_version}/"
-      ENV["GEM_HOME"] = gemdir
-      ENV["GEM_PATH"] = gemdir
+      require ::File.join(BUNDLE_DIR, "bundler", "setup.rb")
+      ENV["GEM_PATH"] = plugins_home
+      ENV["GEM_HOME"] = plugins_home
     end
 
     # @return [String] major.minor ruby version, ex 1.9
@@ -59,7 +67,7 @@ module LogStash
     end
 
     def plugin_path(path)
-      return ::File.join(LOGSTASH_HOME, "lib/logstash", path)
+      return ::File.join(LOGSTASH_HOME, "lib", "logstash", path)
     end
 
     def pattern_path(path)
