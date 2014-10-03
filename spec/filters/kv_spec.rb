@@ -19,6 +19,11 @@ describe LogStash::Filters::KV do
       insist { subject["doublequoted"] } == "hello world"
       insist { subject["singlequoted"] } == "hello world"
     end
+
+    sample "hello=\"world\" foo=\"bar\"" do
+      insist { subject["hello"] } == "world"
+      insist { subject["foo"] } == "bar"
+    end
   end
 
   describe "LOGSTASH-2272: allow escaped quotes" do
