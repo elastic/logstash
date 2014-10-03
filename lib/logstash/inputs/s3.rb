@@ -186,7 +186,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
           s3file.write(chunk)
         end
       end
-      process_local_log(queue, filename)
+      process_local_log(queue, filename,@s3bucket.name,object.key)
       unless @backup_to_bucket.nil?
         backup_object = @backup_bucket.objects[key]
         backup_object.write(Pathname.new(filename))
@@ -203,11 +203,13 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   end # def process_log
 
   private
-  def process_local_log(queue, filename)
+  def process_local_log(queue, filename,bucket,name)
 
     metadata = {
       :version => nil,
       :format => nil,
+      :s3bucket => bucket,
+      :s3path => name
     }
     File.open(filename) do |file|
       if filename.end_with?('.gz')
@@ -246,6 +248,8 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
         unless metadata[:format].nil?
           event["cloudfront_fields"] = metadata[:format]
         end
+        queue["s3bucket"] = metadata[:s3bucket]
+        queue["s3path"] = metadata[:s3path]
         queue << event
       end
     end
