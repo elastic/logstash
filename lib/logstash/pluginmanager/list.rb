@@ -29,10 +29,10 @@ class LogStash::PluginManager::List < Clamp::Command
             .select{|spec| group ? group == spec.metadata['logstash_group'] : true}
     if specs.empty?
       $stderr.puts ("No plugins found.")
-      exit(99)
+      return 0
     end
     specs.each {|spec| puts ("#{spec.name} (#{spec.version})") }
-
+    return 0
   end
 
 end # class Logstash::PluginManager

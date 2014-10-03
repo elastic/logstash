@@ -26,12 +26,12 @@ class LogStash::PluginManager::Install < Clamp::Command
 
     unless gem_path = (plugin =~ /\.gem$/ && File.file?(plugin)) ? plugin : LogStash::PluginManager::Util.download_gem(plugin, version)
       $stderr.puts ("Plugin does not exist '#{plugin}'. Aborting")
-      exit(99)
+      return 99
     end
 
     unless gem_meta = LogStash::PluginManager::Util.logstash_plugin?(gem_path)
       $stderr.puts ("Invalid logstash plugin gem '#{plugin}'. Aborting...")
-      exit(99)
+      return 99
     end
 
     puts ("valid logstash plugin. Continueing...")
@@ -42,7 +42,7 @@ class LogStash::PluginManager::Install < Clamp::Command
       if Gem::Version.new(current.version) > Gem::Version.new(gem_meta.version)
         unless LogStash::PluginManager::Util.ask_yesno("Do you wish to downgrade this plugin?")
           $stderr.puts("Aborting installation")
-          exit(99)
+          return 99
         end
       end
 
@@ -58,7 +58,7 @@ class LogStash::PluginManager::Install < Clamp::Command
     inst.install plugin, version
     specs, _ = inst.installed_gems
     puts ("Successfully installed '#{specs.name}' with version '#{specs.version}'")
-
+    return 0
   end
 
 end # class Logstash::PluginManager
