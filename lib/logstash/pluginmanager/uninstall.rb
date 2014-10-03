@@ -19,12 +19,12 @@ class LogStash::PluginManager::Uninstall < Clamp::Command
     
     unless gem_data = LogStash::PluginManager::Util.logstash_plugin?(plugin)
       $stderr.puts ("Trying to remove a non logstash plugin. Aborting")
-      exit(99)
+      return 99
     end
 
     puts ("Uninstalling plugin '#{plugin}' with version '#{gem_data.version}'.")
     ::Gem::Uninstaller.new(plugin, {}).uninstall
-
+    return 
   end
 
 end # class Logstash::PluginManager
