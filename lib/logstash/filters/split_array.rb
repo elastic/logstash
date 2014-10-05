@@ -14,6 +14,7 @@ class LogStash::Filters::SplitArray < LogStash::Filters::Base
 
   # The field which value is split by the terminator
   config :source, :validate => :string, :default => "message"
+  config :target, :validate => :string, :default => "message"
 
   public
   def register
@@ -32,9 +33,11 @@ class LogStash::Filters::SplitArray < LogStash::Filters::Base
 
     original_value.each do |value|
 
-      new_event = LogStash::Event.new("message" => value)
+      new_event = LogStash::Event.new(@target => value)
       filter_matched(new_event)
 
+      #print new_event
+	
       # Push this new event onto the stack at the LogStash::FilterWorker
       yield new_event
     end
