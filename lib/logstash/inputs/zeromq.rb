@@ -5,7 +5,7 @@ require "socket"
 
 # Read events over a 0MQ SUB socket.
 #
-# You need to have the 0mq 2.1.x library installed to be able to use
+# You need to have the 0mq 3.2.x or 4.x library installed to be able to use
 # this input plugin.
 #
 # The default settings will create a subscriber binding to tcp://127.0.0.1:2120 
@@ -59,8 +59,8 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
 
   # 0mq socket options
   # This exposes zmq_setsockopt
-  # for advanced tuning
-  # see http://api.zeromq.org/2-1:zmq-setsockopt for details
+  # for advanced tuning.
+  # Read about zmq-setsockopt details on http://api.zeromq.org/, accordingly to you 0mq version.
   #
   # This is where you would set values like:
   # ZMQ::HWM - high water mark

@@ -4,7 +4,7 @@ require "logstash/namespace"
 
 # Write events to a 0MQ PUB socket.
 #
-# You need to have the 0mq 2.1.x library installed to be able to use
+# You need to have the 0mq 3.2.x or 4.x library installed to be able to use
 # this output plugin.
 #
 # The default settings will create a publisher connecting to a subscriber
@@ -46,7 +46,7 @@ class LogStash::Outputs::ZeroMQ < LogStash::Outputs::Base
   config :mode, :validate => ["server", "client"], :default => "client"
 
   # This exposes zmq_setsockopt for advanced tuning.
-  # See http://api.zeromq.org/2-1:zmq-setsockopt for details.
+  # Read about zmq-setsockopt details on http://api.zeromq.org/, accordingly to you 0mq version.
   #
   # This is where you would set values like:
   #
