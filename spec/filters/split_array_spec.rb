@@ -23,14 +23,25 @@ describe LogStash::Filters::SplitArray do
   describe "object array field source" do
     config <<-CONFIG
       filter {
-        split_array { source => "events" }
+        split_array { source => "events" target => "other" }
       }
     CONFIG
 
     sample JSON.parse('{"events": [ {"id":"1"}, {"id":"2"} ] }') do
       insist { subject.length } == 2
-      insist { subject[0]["message"]["id"] } == "1"
-      insist { subject[1]["message"]["id"] } == "2"
+      insist { subject[0]["other"]["id"] } == "1"
+      insist { subject[1]["other"]["id"] } == "2"
+    end
+  end
+
+  describe "not an array" do
+    config <<-CONFIG
+      filter {
+      }
+    CONFIG
+
+    sample JSON.parse('{"message": "NA" }') do
+      insist { subject["message"] } == "NA"
     end
   end
 
