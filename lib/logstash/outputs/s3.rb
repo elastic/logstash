@@ -150,7 +150,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   # this method is used for create new path for name the file
-  def getFinalPath
+  def get_final_path
 
     @pass_time = Time.now
     return @temp_directory+"ls.s3."+Socket.gethostname+"."+(@pass_time).strftime("%Y-%m-%dT%H.%M")
@@ -159,35 +159,35 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   # This method is used for restore the previous crash of logstash or to prepare the files to send in bucket.
   # Take two parameter: flag and name. Flag indicate if you want to restore or not, name is the name of file
-  def upFile(flag, name)
+  def up_file(flag, name)
 
     Dir[@temp_directory+name].each do |file|
       name_file = File.basename(file)
 
-    if (flag == true)
-      @logger.warn "S3: have found temporary file: "+name_file+", something has crashed before... Prepare for upload in bucket!"
-    end
-
-    if (!File.zero?(file))
-      write_on_bucket(file, name_file)
-
       if (flag == true)
-        @logger.debug "S3: file: "+name_file+" restored on bucket "+@bucket
-      else
-        @logger.debug "S3: file: "+name_file+" was put on bucket "+@bucket
+        @logger.warn "S3: have found temporary file: "+name_file+", something has crashed before... Prepare for upload in bucket!"
       end
-    end
 
-    File.delete (file)
+      if (!File.zero?(file))
+        write_on_bucket(file, name_file)
+
+        if (flag == true)
+          @logger.debug "S3: file: "+name_file+" restored on bucket "+@bucket
+        else
+          @logger.debug "S3: file: "+name_file+" was put on bucket "+@bucket
+        end
+      end
+
+      File.delete (file)
 
     end
   end
 
   # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
-  def newFile (flag)
+  def new_file (flag)
 
    if (flag == true)
-     @current_final_path = getFinalPath
+     @current_final_path = get_final_path
      @sizeCounter = 0
    end
 
@@ -221,18 +221,18 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
    if (@restore == true )
      @logger.debug "S3: is attempting to verify previous crashes..."
 
-     upFile(true, "*.txt")
+     up_file(true, "*.txt")
    end
 
-   newFile(true)
+   new_file(true)
 
    if (time_file != 0)
       first_time = true
       @thread = time_alert(@time_file*60) do
        if (first_time == false)
          @logger.debug "S3: time_file triggered,  let's bucket the file if dosen't empty  and create new file "
-         upFile(false, File.basename(@tempFile))
-         newFile(true)
+         up_file(false, File.basename(@tempFile))
+         new_file(true)
        else
          first_time = false
        end
@@ -275,9 +275,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       else
 
         @logger.debug "S3: file: "+File.basename(@tempFile)+" is too large, let's bucket it and create new file"
-        upFile(false, File.basename(@tempFile))
+        up_file(false, File.basename(@tempFile))
         @sizeCounter += 1
-        newFile(false)
+        new_file(false)
 
        end
 
