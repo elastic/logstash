@@ -2,30 +2,15 @@ require "spec_helper"
 require "logstash/outputs/s3"
 
 describe LogStash::Outputs::S3 do
-  before do
-    AWS.stub!
-  end
+  describe "format_message" do
+    it 'should accept a nil list of tags' do
+      event = {}
+      LogStash::Outputs::S3.format_message(event).should match(/\nTags:\s\n/)
+    end
 
-  describe 'should allow to use the IAM roles without specifying the credentials' do
-    config <<-CONFIG
-      input {
-        generator {
-          message => "valid"
-          count => 1
-        }
-      }
-
-      output {
-        s3 {
-          host => "localhost"
-          sender => "spec"
-          count => [ "test.valid", "0.1" ]
-        }
-      }
-    CONFIG
-
-    agent do
-
+    it 'should accept a list of muliples tags' do
+      event = { "tags" => ["elasticsearch", "logstash", "kibana"] }
+      LogStash::Outputs::S3.format_message(event).should match(/\nTags:\selasticsearch,\slogstash,\skibana\n/)
     end
   end
 end
