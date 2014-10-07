@@ -1,7 +1,11 @@
 # encoding: utf-8
 require "logstash/outputs/base"
 require "logstash/namespace"
+require "logstash/plugin_mixins/aws_config"
+
 require "socket" # for Socket.gethostname
+
+# INFORMATION:
 
 # This plugin was created for store the logstash's events into Amazon Simple Storage Service (Amazon S3).
 # For use it you needs authentications and an s3 bucket.
@@ -56,15 +60,10 @@ require "socket" # for Socket.gethostname
 #    }
 #
 class LogStash::Outputs::S3 < LogStash::Outputs::Base
+  include LogStash::PluginMixins::AwsConfig
 
   config_name "s3"
   milestone 1
-
-  # Aws access_key.
-  config :access_key_id, :validate => :string
-
-  # Aws secret_access_key
-  config :secret_access_key, :validate => :string
 
   # S3 bucket
   config :bucket, :validate => :string
@@ -100,23 +99,19 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   # Method to set up the aws configuration and establish connection
   def aws_s3_config
+    @logger.info("Registering s3 output", :bucket => @bucket, :endpoint_region => @region)
 
-    @endpoint_region == 'us-east-1' ? @endpoint_region = 's3.amazonaws.com' : @endpoint_region = 's3-'+@endpoint_region+'.amazonaws.com'
+    @s3 = AWS::S3.new(aws_options_hash)
+  end
 
-    @logger.info("Registering s3 output", :bucket => @bucket, :endpoint_region => @endpoint_region)
-
-    AWS.config(
-      :access_key_id => @access_key_id,
-      :secret_access_key => @secret_access_key,
-      :s3_endpoint => @endpoint_region
-    )
-    @s3 = AWS::S3.new
-
+  def aws_service_endpoint(region)
+    return {
+      :s3_endpoint => region == 'us-east-1' ? 's3.amazonaws.com' : "s3-#{@region}.amazonaws.com"
+    }
   end
 
   # This method is used to manage sleep and awaken thread.
   def time_alert(interval)
-
     Thread.new do
       loop do
         start_time = Time.now
@@ -125,12 +120,10 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
         sleep([interval - elapsed, 0].max)
       end
     end
-
   end
 
   # this method is used for write files on bucket. It accept the file and the name of file.
   def write_on_bucket (file_data, file_basename)
-
     # if you lose connection with s3, bad control implementation.
     if ( @s3 == nil)
       aws_s3_config
@@ -146,21 +139,17 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     object.write(:file => file_data, :acl => @canned_acl)
 
     @logger.debug "S3: has written "+file_basename+" in bucket "+@bucket + " with canned ACL \"" + @canned_acl + "\""
-
   end
 
   # this method is used for create new path for name the file
   def get_final_path
-
     @pass_time = Time.now
     return @temp_directory+"ls.s3."+Socket.gethostname+"."+(@pass_time).strftime("%Y-%m-%dT%H.%M")
-
   end
 
   # This method is used for restore the previous crash of logstash or to prepare the files to send in bucket.
   # Take two parameter: flag and name. Flag indicate if you want to restore or not, name is the name of file
   def up_file(flag, name)
-
     Dir[@temp_directory+name].each do |file|
       name_file = File.basename(file)
 
@@ -179,13 +168,11 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       end
 
       File.delete (file)
-
     end
   end
 
   # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
   def new_file (flag)
-
    if (flag == true)
      @current_final_path = get_final_path
      @sizeCounter = 0
@@ -196,7 +183,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
    else
      @tempFile = File.new(@current_final_path+".part"+@sizeCounter.to_s+".txt", "w")
    end
-
   end
 
   public
