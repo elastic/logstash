@@ -74,4 +74,3 @@ module LogStashHelper
   end # def agent
 
 end # module LogStash
-
