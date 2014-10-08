@@ -69,11 +69,11 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     @logger.info("Registering s3 input", :bucket => @bucket, :region_endpoint => @region_endpoint)
 
     if @credentials.length == 0
-      if ENV['AWS_ACCESS_KEY_ID'].length > 0 && ENV['AWS_SECRET_ACCESS_KEY'].length > 0
+      if ENV['AWS_ACCESS_KEY_ID'].nil? && ENV['AWS_SECRET_ACCESS_KEY'].nil?
+        @access_key_id = :userole
+      else
         @access_key_id = ENV['AWS_ACCESS_KEY_ID']
         @secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
-      else
-        @access_key_id = :userole
       end
     elsif @credentials.length == 1
       File.open(@credentials[0]) { |f| f.each do |line|
