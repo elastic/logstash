@@ -93,28 +93,30 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
       bot.start
     end
     if @get_stats
-	start_names_thread
+        start_names_thread
     end
     loop do
       msg = @irc_queue.pop
       if @get_stats and msg.command.to_s == "353"
-	# Got a names list event
-	# Count the users returned in msg.params[3] split by " "
-	users = msg.params[3].split(" ")
-	@user_stats[msg.channel.to_s] = (@user_stats[msg.channel.to_s] || 0)  + users.length
+        # Got a names list event
+        # Count the users returned in msg.params[3] split by " "
+        users = msg.params[3].split(" ")
+        @user_stats[msg.channel.to_s] = (@user_stats[msg.channel.to_s] || 0)  + users.length
       end
       if @get_stats and msg.command.to_s == "366"
-	# Got an end of names event, now we can send the info down the pipe.
-	event = LogStash::Event.new()
+        # Got an end of names event, now we can send the info down the pipe.
+        event = LogStash::Event.new()
         decorate(event)
-	event["channel"] = msg.channel.to_s
-	event["users"] = @user_stats[msg.channel.to_s]
-	output_queue << event
+        event["channel"] = msg.channel.to_s
+        event["users"] = @user_stats[msg.channel.to_s]
+        event["server"] = "#{@host}:#{@port}"
+        output_queue << event
       end
       if msg.command and msg.user
         @logger.debug("IRC Message", :data => msg)
         @codec.decode(msg.message) do |event|
           decorate(event)
+          event["user"] = msg.prefix.to_s
           event["command"] = msg.command.to_s
           event["channel"] = msg.channel.to_s
           event["nick"] = msg.user.nick
@@ -130,11 +132,11 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
     # Note : Logstash channel list can have passwords ie : "channel password"
     # Need to account for that
     @channels.each do |channel|
-	if channel.include? " "
-	    # Remove password from channel
-	    channel = channel.split(' ')[0]
-	end
-	@user_stats[channel] = 0
+        if channel.include? " "
+            # Remove password from channel
+            channel = channel.split(' ')[0]
+        end
+        @user_stats[channel] = 0
         @bot.irc.send "NAMES #{channel}"
     end
   end
@@ -142,8 +144,8 @@ class LogStash::Inputs::Irc < LogStash::Inputs::Base
   def start_names_thread
     Thread.new {
       loop do
-	sleep(@stats_interval * 60)
-	request_names
+        sleep(@stats_interval * 60)
+        request_names
       end
     }
   end
