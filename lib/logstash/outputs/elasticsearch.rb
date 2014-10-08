@@ -289,8 +289,9 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   protected
   def shift_client
-    @client_idx = @client_idx +1 >= @client.length ? 0 : @client_idx + 1
+    @client_idx = (@client_idx+1) % @client.length
     @current_client = @client[@client_idx]
+    @logger.debug("Switched current elasticsearch client to ##{@client_idx} at #{@host[@client_idx]}")
   end
 
   public
@@ -346,7 +347,10 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       @logger.error "Got error to send bulk of actions to elasticsearch server at #{@host[@client_idx]} : #{e.message}"
       raise e
     ensure
-      shift_client
+      unless @protocol == "node"
+          @logger.debug "Shifting current elasticsearch client"
+          shift_client
+      end
     end
     # TODO(sissel): Handle errors. Since bulk requests could mostly succeed
     # (aka partially fail), we need to figure out what documents need to be
