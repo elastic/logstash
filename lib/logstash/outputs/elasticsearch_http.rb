@@ -107,7 +107,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       @template_url = "http://#{auth}#{@host}:#{@port}/_template/#{@template_name}"
       if @template_overwrite
         @logger.info("Template overwrite enabled.  Deleting existing template.", :template_overwrite => @template_overwrite.to_s)
-        response = @agent.get!(@template_url)
+        response = @agent.get!(@template_url, :read_timeout => 60)
         template_action('delete') if response.status == 200 #=> Purge the old template if it exists
       end
       @logger.debug("Template Search URL:", :template_search_url => template_search_url)
@@ -115,7 +115,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       template_idx_name = @index.sub(/%{[^}]+}/,'*')
       alt_template_idx_name = @index.sub(/-%{[^}]+}/,'*')
       # Get the template data
-      response = @agent.get!(template_search_url)
+      response = @agent.get!(template_search_url, :read_timeout => 60)
       json = ""
       if response.status == 404 #=> This condition can occcur when no template has ever been appended
         @logger.info("No template found in Elasticsearch...")
@@ -149,10 +149,10 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   def template_action(command)
     begin
       if command == 'delete'
-        response = @agent.delete!(@template_url)
+        response = @agent.delete!(@template_url, :read_timeout => 60)
         response.discard_body
       elsif command == 'put'
-        response = @agent.put!(@template_url, :body => @template_json)
+        response = @agent.put!(@template_url, { :body => @template_json, :read_timeout => 60 })
         response.discard_body
       end
     rescue EOFError
@@ -213,7 +213,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   def post(body)
     begin
-      response = @agent.post!(@bulk_url, :body => body)
+      response = @agent.post!(@bulk_url, { :body => body, :read_timeout => 60 })
     rescue EOFError
       @logger.warn("EOF while writing request or reading response header from elasticsearch",
                    :host => @host, :port => @port)

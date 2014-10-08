@@ -103,7 +103,7 @@ module LogStash::Outputs::Elasticsearch
           end
         end.flatten.join("")
         begin
-          response = @agent.post!(@bulk_url, :body => body)
+          response = @agent.post!(@bulk_url, { :body => body, :read_timeout => 60 })
         rescue EOFError
           @logger.warn("EOF while writing request or reading response header from elasticsearch", :host => @host, :port => @port)
           raise
