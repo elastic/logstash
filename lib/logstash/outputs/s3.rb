@@ -97,6 +97,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
         :default => "private"
 
+  # Set the directory where logstash will store the tmp files before sending it to S3
+  config :temp_directory, :validate => :string, :default => "/opt/logstash/S3_temp/"
+
   # Method to set up the aws configuration and establish connection
   def aws_s3_config
     @logger.info("Registering s3 output", :bucket => @bucket, :endpoint_region => @region)
@@ -188,7 +191,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   public
   def register
     require "aws-sdk"
-    @temp_directory = "/opt/logstash/S3_temp/"
 
     if (@tags.size != 0)
       @tag_path = ""
@@ -197,11 +199,8 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       end
     end
 
-    if !(File.directory? @temp_directory)
-      @logger.debug "S3: Directory "+@temp_directory+" doesn't exist, let's make it!"
-      Dir.mkdir(@temp_directory)
-    else
-      @logger.debug "S3: Directory "+@temp_directory+" exist, nothing to do"
+    if !File.directory?(@temp_directory)
+      raise LogStash::ConfigurationError, "S3: Directory #{@temp_directory} doesn't exist, create it and start logstash."
     end
 
    if (@restore == true )
@@ -272,7 +271,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
       @logger.debug "S3: put event into "+File.basename(@tempFile)
       File.open(@tempFile, 'a') do |file|
-        file.puts message
+        file.puts messages
         file.write "\n"
       end
     end

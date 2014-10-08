@@ -13,4 +13,23 @@ describe LogStash::Outputs::S3 do
       LogStash::Outputs::S3.format_message(event).should match(/\nTags:\selasticsearch,\slogstash,\skibana\n/)
     end
   end
+
+  describe "#register" do
+    it "should raise a Configuration error if the tmp directory doesn't exist" do
+      config = {
+        "access_key_id" => "1234",
+        "secret_access_key" => "secret",
+        "bucket" => "logstash",
+        "time_file" => 1,
+        "size_file" => 10,
+        "temp_directory" => "/tmp/logstash-do-not-exist"
+      }
+
+      s3 = LogStash::Outputs::S3.new(config)
+
+      expect {
+        s3.register
+      }.to raise_error(LogStash::ConfigurationError)
+    end
+  end
 end
