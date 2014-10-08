@@ -16,6 +16,7 @@ describe LogStash::Outputs::S3 do
 
   describe "#register" do
     it "should raise a Configuration error if the tmp directory doesn't exist" do
+
       config = {
         "access_key_id" => "1234",
         "secret_access_key" => "secret",
