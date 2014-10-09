@@ -36,7 +36,7 @@ describe LogStash::PluginMixins::AwsConfig do
     config.aws_options_hash[:dummy_input_aws_config_region].should == "us-west-2.awswebservice.local"
   end
 
-  # 
+  #
   # it 'should support passing aws configuration from the environment' do
   #   # I think we should test this even if the support magicly coming from the aws-sdk gem
   #

@@ -12,6 +12,7 @@ require "tmpdir"
 # Files ending in '.gz' are handled as gzip'ed files.
 class LogStash::Inputs::S3 < LogStash::Inputs::Base
   include LogStash::PluginMixins::AwsConfig
+
   config_name "s3"
   milestone 1
 
@@ -125,6 +126,15 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     end
 
   end # def register
+
+  public
+  def aws_service_endpoint(region)
+    # NOTE: I dont think its needed anymore
+    return { :s3_endpoint => region }
+
+    #   :s3_endpoint => region == 'us-east-1' ? 's3.amazonaws.com' : "s3-#{@region}.amazonaws.com"
+    # }
+  end
 
   public
   def run(queue)
