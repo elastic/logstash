@@ -94,6 +94,10 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       @secret_access_key = @credentials[1]
     end
 
+    if @bucket.nil?
+      raise ConfigurationError.new('Missing AWS bucket')
+    end
+
     if @sincedb_path.nil?
       if ENV['HOME'].nil?
         raise ConfigurationError.new('No HOME or sincedb_path set')
@@ -231,6 +235,19 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       object.delete()
     end
   end
+
+  private
+  def process_backup_to_bucket(object, key)
+    unless @backup_to_bucket.nil?
+      backup_key = "#{@backup_add_prefix}#{key}"
+      if @delete
+        object.move_to(backup_key, :bucket => @backup_bucket)
+      else
+        object.copy_to(backup_key, :bucket => @backup_bucket)
+      end
+    end
+  end
+
 
   private
   def process_local_log(queue, filename)

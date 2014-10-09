@@ -2,7 +2,6 @@ require "spec_helper"
 require "logstash/inputs/s3"
 require "logstash/errors"
 require "aws-sdk"
-require "tempfile"
 
 describe LogStash::Inputs::S3 do
   before { AWS.stub! }
@@ -57,7 +56,7 @@ describe LogStash::Inputs::S3 do
       end
     end
 
-    it 'should ignore files older than X' do
+    it 'should ignore file older than X' do
       AWS::S3::ObjectCollection.any_instance.stub(:with_prefix).with(nil) { objects_list }
 
       config = LogStash::Inputs::S3.new(settings.merge({ 'backup_add_prefix' => 'exclude-this-file'}))
@@ -65,11 +64,11 @@ describe LogStash::Inputs::S3 do
       config.list_new(Time.now - day).should == [present_object.key]
     end
 
-    it 'should sort return object sorted by last_modification date with older first' do
+    it 'should sort return object sorted by keys' do
       objects = [
-        double(:key => 'YESTERDAY', :last_modified => Time.now - day),
-        double(:key => 'TODAY', :last_modified => Time.now),
-        double(:key => 'TWO_DAYS_AGO', :last_modified => Time.now - 2 * day)
+        double(:key => 'C', :last_modified => Time.now),
+        double(:key => 'E', :last_modified => Time.now),
+        double(:key => 'A', :last_modified => Time.now)
       ]
 
       AWS::S3::ObjectCollection.any_instance.stub(:with_prefix).with(nil) { objects }
@@ -77,7 +76,7 @@ describe LogStash::Inputs::S3 do
 
       config = LogStash::Inputs::S3.new(settings)
       config.register
-      config.list_new.should == ['TWO_DAYS_AGO', 'YESTERDAY', 'TODAY']
+      config.list_new.should == ['A', 'C', 'E']
     end
 
     describe "when doing backup on the s3" do
