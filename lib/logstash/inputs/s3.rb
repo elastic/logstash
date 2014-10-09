@@ -207,27 +207,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       process_backup_to_dir(filename)
       delete_file_from_bucket()
     end
-    FileUtils.remove_entry_secure(tmp, force=true)
-
-  end # def process_log
-
-  public
-  def process_backup_to_bucket(object, key)
-    unless @backup_to_bucket.nil?
-      backup_key = "#{@backup_add_prefix}#{key}"
-      if @delete
-        object.move_to(backup_key, :bucket => @backup_bucket)
-      else
-        object.copy_to(backup_key, :bucket => @backup_bucket)
-      end
-    end
-  end
-
-  public
-  def process_backup_to_dir(filename)
-    unless @backup_to_dir.nil?
-      FileUtils.cp(filename, @backup_to_dir)
-    end
   end
 
   def delete_file_from_bucket
@@ -248,6 +227,18 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     end
   end
 
+  private
+  def process_backup_to_dir(filename)
+    unless @backup_to_dir.nil?
+      FileUtils.cp(filename, @backup_to_dir)
+    end
+  end
+
+  def delete_file_from_bucket
+    if @delete and @backup_to_bucket.nil?
+      object.delete()
+    end
+  end
 
   private
   def process_local_log(queue, filename)
