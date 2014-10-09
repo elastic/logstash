@@ -69,8 +69,12 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     @logger.info("Registering s3 input", :bucket => @bucket, :region_endpoint => @region_endpoint)
 
     if @credentials.length == 0
-      @access_key_id = ENV['AWS_ACCESS_KEY_ID']
-      @secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+      if ENV['AWS_ACCESS_KEY_ID'].nil? && ENV['AWS_SECRET_ACCESS_KEY'].nil?
+        @access_key_id = :userole
+      else
+        @access_key_id = ENV['AWS_ACCESS_KEY_ID']
+        @secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+      end
     elsif @credentials.length == 1
       File.open(@credentials[0]) { |f| f.each do |line|
         unless (/^\#/.match(line))
@@ -91,10 +95,10 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       @access_key_id = @credentials[0]
       @secret_access_key = @credentials[1]
     else
-      raise ArgumentError.new('Credentials must be of the form "/path/to/file" or ["id", "secret"]')
+      raise ArgumentError.new('Credentials must be of the form "/path/to/file" or ["id", "secret"] or use iam role')
     end
 
-    if @access_key_id.nil? or @secret_access_key.nil?
+    if (@access_key_id.nil? or @secret_access_key.nil?) && @access_key_id != :userole
       raise ArgumentError.new('Missing AWS credentials')
     end
 
@@ -109,11 +113,18 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       @sincedb_path = File.join(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest("#{@bucket}+#{@prefix}"))
     end
 
-    s3 = AWS::S3.new(
-      :access_key_id => @access_key_id,
-      :secret_access_key => @secret_access_key,
-      :region => @region_endpoint
-    )
+    if @access_key_id == :userole
+      # use iam role. should working by default
+      s3 = AWS::S3.new(
+        :region => @region_endpoint
+      )
+    else
+      s3 = AWS::S3.new(
+        :access_key_id => @access_key_id,
+        :secret_access_key => @secret_access_key,
+        :region => @region_endpoint
+      )
+    end
 
     @s3bucket = s3.buckets[@bucket]
 
