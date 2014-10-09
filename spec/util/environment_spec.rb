@@ -17,11 +17,11 @@ describe LogStash::Environment do
   describe "load_jars!" do
 
     it "should load custom jars" do
-      expect{LogStash::Environment.load_jars!("/jruby-complete*.jar")}.to_not raise_error
+      expect{LogStash::Environment.load_jars!("jruby-complete*.jar")}.to_not raise_error
     end
 
     it "should raise when cannot find jars" do
-      expect{LogStash::Environment.load_jars!("/non-exisiting/jar.jar")}.to raise_error(LogStash::EnvironmentError)
+      expect{LogStash::Environment.load_jars!("non-exisiting","jar.jar")}.to raise_error(LogStash::EnvironmentError)
     end
   end
 end

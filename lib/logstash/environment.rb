@@ -24,7 +24,7 @@ module LogStash
       raise(LogStash::EnvironmentError, "JRuby is required") unless jruby?
 
       require "java"
-      jars_path = ::File.join(jars_subpath)
+      jars_path = ::File.join(jars_path)
       jar_files = Dir.glob(jars_path)
 
       raise(LogStash::EnvironmentError, "Could not find jar files under #{jars_path}") if jar_files.empty?
