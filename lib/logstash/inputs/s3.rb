@@ -95,12 +95,12 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     end
 
     if @bucket.nil?
-      raise ArgumentError.new('Missing AWS bucket')
+      raise ConfigurationError.new('Missing AWS bucket')
     end
 
     if @sincedb_path.nil?
       if ENV['HOME'].nil?
-        raise ArgumentError.new('No HOME or sincedb_path set')
+        raise ConfigurationError.new('No HOME or sincedb_path set')
       end
       @sincedb_path = File.join(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest("#{@bucket}+#{@prefix}"))
     end
@@ -156,7 +156,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
   end # def process_new
 
-  private
+  public
   def list_new(since=nil)
 
     if since.nil?
@@ -166,17 +166,29 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     objects = {}
     @s3bucket.objects.with_prefix(@prefix).each do |log|
       @logger.debug("Found key: #{log.key}")
-      unless log.key =~ Regexp.new(@exclude_pattern) || (@backup_add_prefix && @backup_to_bucket == @bucket && log.key =~ /^#{backup_add_prefix}/)
-        @logger.debug("Adding to objects[]: #{log.key}")
+
+      unless ignore_filename?(log.key)
         if log.last_modified > since
           objects[log.key] = log.last_modified
+          @logger.debug("Adding to objects[]: #{log.key}")
         end
       end
     end
-
     return sorted_objects = objects.keys.sort {|a,b| objects[a] <=> objects[b]}
-
   end # def list_new
+
+  private
+  def ignore_filename?(filename)
+    if (@backup_add_prefix && @backup_to_bucket == @bucket && filename =~ /^#{backup_add_prefix}/)
+      return true
+    elsif @exclude_pattern.nil?
+      return false
+    elsif filename =~ Regexp.new(@exclude_pattern)
+      return true
+    else
+      return false
+    end
+  end
 
   private
   def process_log(queue, key)
@@ -190,25 +202,36 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
           s3file.write(chunk)
         end
       end
+
       process_local_log(queue, filename)
-      unless @backup_to_bucket.nil?
-        backup_key = "#{@backup_add_prefix}#{key}"
-        if @delete
-          object.move_to(backup_key, :bucket => @backup_bucket)
-        else
-          object.copy_to(backup_key, :bucket => @backup_bucket)
-        end
-      end
+      process_backup_to_bucket(object, key)
+      process_backup_to_dir(filename)
+
       unless @backup_to_dir.nil?
         FileUtils.cp(filename, @backup_to_dir)
       end
+
       if @delete and @backup_to_bucket.nil?
         object.delete()
       end
+
     end
     FileUtils.remove_entry_secure(tmp, force=true)
 
   end # def process_log
+
+  private
+  def process_backup_to_bucket(object, key)
+    unless @backup_to_bucket.nil?
+      backup_key = "#{@backup_add_prefix}#{key}"
+      if @delete
+        object.move_to(backup_key, :bucket => @backup_bucket)
+      else
+        object.copy_to(backup_key, :bucket => @backup_bucket)
+      end
+    end
+  end
+
 
   private
   def process_local_log(queue, filename)
@@ -217,6 +240,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       :version => nil,
       :format => nil,
     }
+
     File.open(filename) do |file|
       if filename.end_with?('.gz')
         gz = Zlib::GzipReader.new(file)
