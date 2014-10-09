@@ -231,15 +231,17 @@ describe LogStash::Filters::Metrics do
     end
   end
 
+
   context "should flush every 5 seconds when run in agent" do
-    require "tempfile"
-    tmp_file = Tempfile.new('logstash-spec-metrics-file')
+    require "stud/temporary"
+    tmp_file = Stud::Temporary.file
+
     config <<-CONFIG
       input {
-       generator {
-         type => "generated"
-         count => 200000
-       }
+        generator {
+          type => "generated"
+          count => 200000
+        }
       }
 
       filter {
@@ -255,16 +257,22 @@ describe LogStash::Filters::Metrics do
         #only emit events with the 'metric' tag
         if "metric" in [tags] {
           file {
-          path => "#{tmp_file.path}"
-        }
+            path => "#{tmp_file.path}"
+          }
         }
       }
     CONFIG
 
-    agent do
-      #Counting \n is counting events
-      #A unique event means no flushing occured before teardown
-      reject {tmp_file.read.scan(/\n/).count} == 1
-    end
+      agent do
+        begin
+          #Counting \n is counting events
+          #A unique event means no flushing occured before teardown
+          reject {tmp_file.read.scan(/\n/).count} == 1
+        ensure
+          #http://www.ruby-doc.org/stdlib-1.9.3/libdoc/tempfile/rdoc/Tempfile.html#method-i-unlink
+          tmp_file.close
+          File.unlink(tmp_file)
+        end
+      end
   end
 end
