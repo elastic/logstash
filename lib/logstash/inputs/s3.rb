@@ -192,7 +192,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
   private
   def process_log(queue, key)
-
     object = @s3bucket.objects[key]
     tmp = Dir.mktmpdir("logstash-")
     begin
@@ -206,15 +205,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       process_local_log(queue, filename)
       process_backup_to_bucket(object, key)
       process_backup_to_dir(filename)
-
-      unless @backup_to_dir.nil?
-        FileUtils.cp(filename, @backup_to_dir)
-      end
-
-      if @delete and @backup_to_bucket.nil?
-        object.delete()
-      end
-
+      delete_file_from_bucket()
     end
     FileUtils.remove_entry_secure(tmp, force=true)
 
@@ -232,6 +223,18 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     end
   end
 
+  private
+  def process_backup_to_dir(filename)
+    unless @backup_to_dir.nil?
+      FileUtils.cp(filename, @backup_to_dir)
+    end
+  end
+
+  def delete_file_from_bucket
+    if @delete and @backup_to_bucket.nil?
+      object.delete()
+    end
+  end
 
   private
   def process_local_log(queue, filename)
@@ -306,5 +309,4 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     File.open(@sincedb_path, 'w') { |file| file.write(since.to_s) }
 
   end # def sincedb_write
-
 end # class LogStash::Inputs::S3
