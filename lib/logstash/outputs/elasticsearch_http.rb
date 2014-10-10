@@ -19,7 +19,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   # The index to write events to. This can be dynamic using the %{foo} syntax.
   # The default value will partition your indices by day so you can more easily
-  # delete old data or only search specific date ranges.
+  # delete old data or only search specific date ranges. For weekly indexes
+  # ISO 8601 format is recommended, eg. logstash-%{+xxxx.ww}
   config :index, :validate => :string, :default => "logstash-%{+YYYY.MM.dd}"
 
   # The index type to write events to. Generally you should try to write only
