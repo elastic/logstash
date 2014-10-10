@@ -59,7 +59,7 @@ Notes about using other rubies. If you don't use rvm, you can probably skip this
 There are a few ways to run the tests. For development, using `bin/logstash
 rspec <some spec>` will suffice:
 
-    % bin/logstash rspec spec/filters/grok.rb
+    % bin/logstash rspec spec/filters/grok_spec.rb
     ...................
 
     Finished in 0.123 seconds
