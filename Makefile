@@ -380,7 +380,7 @@ prepare-tarball: vendor/ua-parser/regexes.yaml
 prepare-tarball:
 	@echo "=> Preparing tarball"
 	$(QUIET)$(MAKE) $(WORKDIR)
-	$(QUIET)rsync -a --relative bin lib spec locales patterns vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md --exclude 'vendor/bundle/jruby/1.9/cache' --exclude 'vendor/bundle/jruby/1.9/gems/*/doc' --exclude 'vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz' --exclude 'vendor/jar/kafka_$(SCALA_VERSION)-$(KAFKA_VERSION).tgz' $(WORKDIR)
+	$(QUIET)rsync -a --relative bin lib spec locales patterns vendor/bundle/bundler vendor/bundle/jruby vendor/geoip vendor/jar vendor/kibana vendor/ua-parser vendor/collectd LICENSE README.md --exclude 'vendor/bundle/jruby/1.9/cache' --exclude 'vendor/bundle/jruby/1.9/gems/*/doc' --exclude 'vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz' --exclude 'vendor/jar/kafka_$(SCALA_VERSION)-$(KAFKA_VERSION).tgz' $(WORKDIR)
 	$(QUIET)sed -i -e 's/^LOGSTASH_VERSION = .*/LOGSTASH_VERSION = "$(VERSION)"/' $(WORKDIR)/lib/logstash/version.rb
 	$(QUIET)sed -i -e 's/%JRUBY_VERSION%/$(JRUBY_VERSION)/' $(WORKDIR)/bin/logstash.bat
 
