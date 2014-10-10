@@ -241,7 +241,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
     @client = Array.new
 
-    if @protocol == "node" # if @protocol is "node"
+    if protocol == "node" or @host.nil? # if @protocol is "node" or @host is not set
       options = {
           :host => @host,
           :port => @port,
@@ -291,7 +291,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   def shift_client
     @client_idx = (@client_idx+1) % @client.length
     @current_client = @client[@client_idx]
-    @logger.debug("Switched current elasticsearch client to ##{@client_idx} at #{@host[@client_idx]}")
+    @logger.debug? and @logger.debug("Switched current elasticsearch client to ##{@client_idx} at #{@host[@client_idx]}")
   end
 
   public
@@ -341,14 +341,14 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   def flush(actions, teardown=false)
     begin
-      @logger.debug "Sending bulk of actions to client[#{@client_idx}]: #{@host[@client_idx]}"
+      @logger.debug? and @logger.debug "Sending bulk of actions to client[#{@client_idx}]: #{@host[@client_idx]}"
       @current_client.bulk(actions)
     rescue => e
       @logger.error "Got error to send bulk of actions to elasticsearch server at #{@host[@client_idx]} : #{e.message}"
       raise e
     ensure
       unless @protocol == "node"
-          @logger.debug "Shifting current elasticsearch client"
+          @logger.debug? and @logger.debug "Shifting current elasticsearch client"
           shift_client
       end
     end
