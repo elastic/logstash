@@ -33,15 +33,24 @@ fi
 
 # Placeholder for now, if other installs ever become available.
 if [ "x$2" != "xcontrib" ]; then
-	echo "Can only install contrib at this time... Exiting."
-	exit 1
+	URLSTUB=${2%/*}/
+	FILENAME=${2##*/}
+	if [ $(echo $FILENAME | grep -e ".tgz$" >/dev/null; echo $?) -eq 0 ]; then
+	    FILEPATH=$(echo $FILENAME | sed 's/\.tgz//')
+	elif [ $(echo $FILENAME | grep -e ".tar.gz$" >/dev/null; echo $?) -eq 0 ]; then
+	    FILEPATH=$(echo $FILENAME | sed 's/\.tar\.gz//')
+	else 
+	    echo "ERROR: Only .tar.gz or .tgz files are supported"
+	    exit 1
+	fi
+else
+	SUFFIX=".tar.gz"
+	FILEPATH="logstash-contrib-${VERSION}"
+	FILENAME=${FILEPATH}${SUFFIX}
 fi
 
 TARGETDIR="$basedir/vendor/logstash"
 mkdir -p $TARGETDIR
-SUFFIX=".tar.gz"
-FILEPATH="logstash-contrib-${VERSION}"
-FILENAME=${FILEPATH}${SUFFIX}
 TARGET="${TARGETDIR}/${FILENAME}"
 
 case $1 in
