@@ -206,6 +206,10 @@ class LogStashConfigAsciiDocGenerator
 
     klass.get_config.each do |name, settings|
       @attributes[name].merge!(settings)
+      default = klass.get_default(name)
+      unless default.nil?
+        @attributes[name][:default] = default
+      end
     end
     sorted_attributes = @attributes.sort { |a,b| a.first.to_s <=> b.first.to_s }
     klassname = LogStash::Config::Registry.registry[@name].to_s
