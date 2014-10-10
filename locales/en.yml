@@ -79,6 +79,12 @@ en:
         file-not-found: |-
           No config files found: %{path}
           Can you make sure this path is a logstash config file?
+        scheme-not-supported: |-
+          URI scheme not supported: %{path}
+          Either pass a local file path or "file|http://" URI
+        fetch-failed: |-
+          Unable to fetch config from: %{path}
+          Reason: %{message}
         setting_missing: |-
           Missing a required setting for the %{plugin} %{type} plugin:
 
