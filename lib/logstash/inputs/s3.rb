@@ -215,7 +215,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     end
   end
 
-  private
+  public
   def process_backup_to_bucket(object, key)
     unless @backup_to_bucket.nil?
       backup_key = "#{@backup_add_prefix}#{key}"
@@ -227,7 +227,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     end
   end
 
-  private
+  public
   def process_backup_to_dir(filename)
     unless @backup_to_dir.nil?
       FileUtils.cp(filename, @backup_to_dir)
