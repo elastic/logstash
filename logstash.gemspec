@@ -123,5 +123,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "kramdown"       #(MIT license) pure-ruby markdown parser
 
   # Jenkins Deps
-  gem.add_runtime_dependency "ci_reporter"
+  gem.add_runtime_dependency "ci_reporter", "1.9.3"
 end

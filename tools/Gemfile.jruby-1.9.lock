@@ -84,7 +84,7 @@ GEM
     buftok (0.1)
     builder (3.2.2)
     cabin (0.6.1)
-    ci_reporter (2.0.0)
+    ci_reporter (1.9.3)
       builder (>= 2.1.2)
     cinch (2.1.0)
     clamp (0.6.3)
