@@ -1,6 +1,7 @@
 require "spec_helper"
 require "logstash/inputs/s3"
 require "aws-sdk"
+require 'tempfile'
 
 describe LogStash::Inputs::S3 do
   before { AWS.stub! }
@@ -78,13 +79,65 @@ describe LogStash::Inputs::S3 do
       config.list_new.should == ['TWO_DAYS_AGO', 'YESTERDAY', 'TODAY']
     end
 
-    it 'should copy to another s3 bucket'
+    describe "when doing backup on the s3" do
+      it 'should copy to another s3 bucket when keeping the original file' do
+        config = LogStash::Inputs::S3.new(settings.merge({ "backup_to_bucket" => "mybackup"}))
+        config.register
 
-    it 'should move to another s3 bucket'
+        s3object = double()
+        s3object.stub(:copy_to).with('test-file', :bucket => an_instance_of(AWS::S3::Bucket))
 
-    it 'allows to specify a prefix for the backuped files'
+        config.process_backup_to_bucket(s3object, 'test-file')
+      end
 
-    it 'should support doing local backup of files'
-    it 'should a list of credentials for the aws-sdk, this is deprecated'
+      it 'should move to another s3 bucket when deleting the original file' do
+        config = LogStash::Inputs::S3.new(settings.merge({ "backup_to_bucket" => "mybackup", "delete" => true }))
+        config.register
+
+        s3object = double()
+        s3object.stub(:move_to).with('test-file', :bucket => an_instance_of(AWS::S3::Bucket))
+
+        config.process_backup_to_bucket(s3object, 'test-file')
+      end
+
+      it 'should add the specified prefix to the backup file' do
+        config = LogStash::Inputs::S3.new(settings.merge({ "backup_to_bucket" => "mybackup",
+                                                           "backup_add_prefix" => 'backup-' }))
+        config.register
+
+        s3object = double()
+        s3object.stub(:copy_to).with('backup-test-file', :bucket => an_instance_of(AWS::S3::Bucket))
+
+        config.process_backup_to_bucket(s3object, 'test-file')
+      end
+    end
+
+    it 'should support doing local backup of files' do
+      backup_dir = Dir.mktmpdir
+
+      source_file = Tempfile.new('tmp-logstash-file')
+      backup_file = File.join(backup_dir.to_s, Pathname.new(source_file.path).basename.to_s)
+
+      begin
+        config = LogStash::Inputs::S3.new(settings.merge({ "backup_to_dir" => backup_dir }))
+
+        config.process_backup_to_dir(source_file)
+
+        File.exists?(backup_file).should be_true
+      ensure
+        FileUtils.remove_entry_secure(backup_file, :force => true)
+        FileUtils.remove_entry_secure(backup_dir)
+      end
+    end
+
+    it 'should accepts a list of credentials for the aws-sdk, this is deprecated' do
+      old_credentials_settings = {
+        "credentials" => ['1234', 'secret'],
+        "bucket" => "logstash-test"
+      }
+
+      config = LogStash::Inputs::S3.new(settings.merge({ "backup_to_dir" => "/tmp/mybackup" }))
+      config.register
+    end
   end
 end
