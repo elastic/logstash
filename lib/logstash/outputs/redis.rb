@@ -199,19 +199,10 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     # to support this Stud::Buffer#buffer_flush should pass here the :final boolean value.
     congestion_check(key) unless teardown
     @redis.rpush(key, events)
-
-    ##########################################################################################################
-    # 2014/9/19 {hchen9, xinzli}@ebay.com: change the connection strategy from active-standby to round-robin #
-    ##########################################################################################################
-    @redis.quit
-    @redis=nil
   end
   # called from Stud::Buffer#buffer_flush when an error occurs
   def on_flush_error(e)
-    ###########################################################################################
-    # 2014/9/19 {hchen9, xinzli}@ebay.com: Add current_host and current_port for troubleshoot #
-    ###########################################################################################
-    @logger.warn("Failed to rend backlog of events to Redis on #{@current_host}:#{@current_port}",
+    @logger.warn("Failed to send backlog of events to Redis",
       :identity => identity,
       :exception => e,
       :backtrace => e.backtrace
