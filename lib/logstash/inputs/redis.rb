@@ -263,4 +263,10 @@ EOF
       @redis = nil
     end
   end
+  
+  public
+  def teardown
+    @logger.warn("redis teardown")
+  end 
+
 end # class LogStash::Inputs::Redis
