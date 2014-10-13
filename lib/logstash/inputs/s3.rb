@@ -94,10 +94,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       @secret_access_key = @credentials[1]
     end
 
-    if @bucket.nil?
-      raise ConfigurationError.new('Missing AWS bucket')
-    end
-
     if @sincedb_path.nil?
       if ENV['HOME'].nil?
         raise ConfigurationError.new('No HOME or sincedb_path set')

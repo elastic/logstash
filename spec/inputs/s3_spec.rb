@@ -2,7 +2,7 @@ require "spec_helper"
 require "logstash/inputs/s3"
 require "logstash/errors"
 require "aws-sdk"
-require 'tempfile'
+require "tempfile"
 
 describe LogStash::Inputs::S3 do
   before { AWS.stub! }
