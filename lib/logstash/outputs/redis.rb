@@ -37,6 +37,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # Shuffle the host list during Logstash startup.
   config :shuffle_hosts, :validate => :boolean, :default => true
 
+  # Allow to balance redis hosts by round-robin
+  config :balance_hosts, :validate => :boolean, :default => false
+
   # The default port to connect on. Can be overridden on any hostname.
   config :port, :validate => :number, :default => 6379
 
@@ -199,9 +202,12 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     # to support this Stud::Buffer#buffer_flush should pass here the :final boolean value.
     congestion_check(key) unless teardown
     @redis.rpush(key, events)
- 
-    @redis.quit
-    @redis=nil
+
+    # Make sure to select another hosts in next flush round if @balance_hosts is true
+    if @balance_hosts
+      @redis.quit
+      @redis=nil
+    end
   end
   # called from Stud::Buffer#buffer_flush when an error occurs
   def on_flush_error(e)
