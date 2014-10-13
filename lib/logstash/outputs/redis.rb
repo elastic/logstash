@@ -211,7 +211,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   end
   # called from Stud::Buffer#buffer_flush when an error occurs
   def on_flush_error(e)
-    @logger.warn("Failed to rend backlog of events to Redis on #{@current_host}:#{@current_port}",
+    @logger.warn("Failed to send backlog of events to Redis on #{@current_host}:#{@current_port}",
       :identity => identity,
       :exception => e,
       :backtrace => e.backtrace
