@@ -172,7 +172,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
         @redis.publish(key, payload)
       end
     rescue => e
-      @logger.warn("Failed to send event to Redis", :event => event,
+      @logger.warn("Failed to send event to Redis #{@current_host}:#{@current_port}", :event => event,
                    :identity => identity, :exception => e,
                    :backtrace => e.backtrace)
       sleep @reconnect_interval
