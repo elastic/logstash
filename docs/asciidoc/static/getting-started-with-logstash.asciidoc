@@ -143,7 +143,7 @@ Another very useful tool for querying your Logstash data (and Elasticsearch in g
 ----------------------------------
 bin/plugin -install lmenezes/elasticsearch-kopf
 ----------------------------------
-Now you can browse to http://localhost:9200/_plugin/kopf[http://localhost:9200/_plugin/kopf] to browse your Elasticsearch data, settings and mappings!
+Now you can browse to http://localhost:9200/_plugin/kopf/[http://localhost:9200/_plugin/kopf/] to browse your Elasticsearch data, settings and mappings!
 
 === Multiple Outputs
 As a quick exercise in configuring multiple Logstash outputs, let's invoke Logstash again, using both the 'stdout' as well as the 'elasticsearch' output:
@@ -155,7 +155,7 @@ bin/logstash -e 'input { stdin { } } output { elasticsearch { host => localhost 
 Typing a phrase will now echo back to your terminal, as well as save in Elasticsearch! (Feel free to verify this using curl or elasticsearch-kopf).
 
 === Default - Daily Indices
-You might notice that Logstash was smart enough to create a new index in Elasticsearch... The default index name is in the form of 'logstash-YYYY.MM.DD', which essentially creates one index per day. At midnight (GMT?), Logstash will automagically rotate the index to a fresh new one, with the new current day's timestamp. This allows you to keep windows of data, based on how far retroactively you'd like to query your log data. Of course, you can always archive (or re-index) your data to an alternate location, where you are able to query further into the past. If you'd like to simply delete old indices after a certain time period, you can use the https://github.com/elasticsearch/curator[Elasticsearch Curator tool].
+You might notice that Logstash was smart enough to create a new index in Elasticsearch... The default index name is in the form of 'logstash-YYYY.MM.DD', which essentially creates one index per day. At midnight (UTC), Logstash will automagically rotate the index to a fresh new one, with the new current day's timestamp. This allows you to keep windows of data, based on how far retroactively you'd like to query your log data. Of course, you can always archive (or re-index) your data to an alternate location, where you are able to query further into the past. If you'd like to simply delete old indices after a certain time period, you can use the https://github.com/elasticsearch/curator[Elasticsearch Curator tool].
 
 == Moving On
 Now you're ready for more advanced configurations. At this point, it makes sense for a quick discussion of some of the core features of Logstash, and how they interact with the Logstash engine.
@@ -278,7 +278,7 @@ You should see something returned to STDOUT which looks like this:
 }
 ----------------------------------
 
-As you can see, Logstash (with help from the *grok* filter) was able to parse the log line (which happens to be in Apache "combined log" format) and break it up into many different discrete bits of information. This will be extremely useful later when we start querying and analyzing our log data... for example, we'll be able to run reports on HTTP response codes, IP addresses, referrers, etc. very easily. There are quite a few grok patterns included with Logstash out-of-the-box, so it's quite likely if you're attempting to parse a fairly common log format, someone has already done the work for you. For more details, see the list of https://github.com/logstash/logstash/blob/master/patterns/grok-patterns[logstash grok patterns] on github.
+As you can see, Logstash (with help from the *grok* filter) was able to parse the log line (which happens to be in Apache "combined log" format) and break it up into many different discrete bits of information. This will be extremely useful later when we start querying and analyzing our log data... for example, we'll be able to run reports on HTTP response codes, IP addresses, referrers, etc. very easily. There are quite a few grok patterns included with Logstash out-of-the-box, so it's quite likely if you're attempting to parse a fairly common log format, someone has already done the work for you. For more details, see the list of https://github.com/logstash/logstash/blob/master/patterns/[logstash grok patterns] on github.
 
 The other filter used in this example is the *date* filter. This filter parses out a timestamp and uses it as the timestamp for the event (regardless of when you're ingesting the log data). You'll notice that the @timestamp field in this example is set to December 11, 2013, even though Logstash is ingesting the event at some point afterwards. This is handy when backfilling logs, for example... the ability to tell Logstash "use this value as the timestamp for this event".
 
@@ -292,7 +292,7 @@ Now, let's configure something actually *useful*... apache2 access log files! We
 input {
   file {
     path => "/tmp/access_log"
-    start_position => beginning
+    start_position => "beginning"
   }
 }
 

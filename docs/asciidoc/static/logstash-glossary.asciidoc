@@ -1,5 +1,5 @@
-== bar 
-bar bar
+== Glossary 
+Logstash Glossary
 
 apache ::
 	A very common open source web server application, which produces logs easily consumed by Logstash (Apache Common/Combined Log Format).
