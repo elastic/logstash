@@ -27,7 +27,7 @@ output {
 
 == Filters and Ordering
 
-For a given event, are applied in the order of appearance in the configuration file.
+For a given event, filters are applied in the order of appearance in the configuration file.
 
 == Comments
 
@@ -57,7 +57,8 @@ input {
   }
 
   file {
-    path => "/var/log/apache/access.log" => "apache"
+    path => "/var/log/apache/access.log"
+    type => "apache"
   }
 }
 ----------------------------------
@@ -80,7 +81,7 @@ Examples:
 
 [source,js]
 ----------------------------------
-  debug => true
+  ssl_enable => true
 ----------------------------------
 
 === String
@@ -94,7 +95,7 @@ Example:
   name => "Hello world"
 ----------------------------------
 
-Single, unquoted words are valid as strings, too, but you should use quotes.
+You should use quotes around string values.
 
 === Number
 

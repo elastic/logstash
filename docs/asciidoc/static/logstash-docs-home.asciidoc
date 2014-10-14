@@ -3,7 +3,7 @@
 Pretty self-explanatory, really
 
 === Downloads and Releases
-* http://www.elasticsearch.org/overview/logstash/download/[Download logstash 1.4.2]
+* http://www.elasticsearch.org/overview/logstash/download/[Download Logstash 1.4.2]
 * http://www.elasticsearch.org/blog/apt-and-yum-repositories/[package repositories]
 * http://www.elasticsearch.org/blog/logstash-1-4-2/[release notes]
 * https://github.com/elasticsearch/logstash/blob/master/CHANGELOG[view changelog]
@@ -20,7 +20,7 @@ Pretty self-explanatory, really
 * http://elasticsearch.org/#[Getting Started with Logstash]
 * http://elasticsearch.org/#[Configuration file overview]
 * http://elasticsearch.org/#[Command-line flags]
-* http://elasticsearch.org/#[The life of an event in logstash]
+* http://elasticsearch.org/#[The life of an event in Logstash]
 * http://elasticsearch.org/#[Using conditional logic]
 * http://elasticsearch.org/#[Glossary]
 * http://elasticsearch.org/#[(more)]

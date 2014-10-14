@@ -2,15 +2,15 @@
 
 == Agent
 
-The logstash agent has the following flags (also try using the '--help' flag)
+The Logstash agent has the following flags (also try using the '--help' flag)
 
 [source,js]
 ----------------------------------
 -f, --config CONFIGFILE
- Load the logstash config from a specific file, directory, or a wildcard. If given a directory or wildcard, config files will be read from the directory in alphabetical order.
+ Load the Logstash config from a specific file, directory, or a wildcard. If given a directory or wildcard, config files will be read from the directory in alphabetical order.
 
 -e CONFIGSTRING
- Use the given string as the configuration data. Same syntax as the config file. If not input is specified, 'stdin { type => stdin }' is default. If no output is specified, 'stdout { debug => true }}' is default.
+ Use the given string as the configuration data. Same syntax as the config file. If not input is specified, 'stdin { type => stdin }' is default. If no output is specified, 'stdout { codec => rubydebug }}' is default.
 
 -w, --filterworkers COUNT
  Run COUNT filter workers (default: 1)
@@ -32,7 +32,7 @@ The logstash agent has the following flags (also try using the '--help' flag)
 '-vv' currently being the highest 
 
 --pluginpath PLUGIN_PATH 
- A colon-delimted path to find other logstash plugins in 
+ A colon-delimited path to find other Logstash plugins in 
 ----------------------------------
 
 
