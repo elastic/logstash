@@ -2,6 +2,20 @@ require "spec_helper"
 require "logstash/outputs/s3"
 
 describe LogStash::Outputs::S3 do
+  describe "configuration" do
+    it "should support the deprecated endpoint_region as a configuration option" do
+      config = { "endpoint_region" => "sa-east-1" }
+      s3 = LogStash::Outputs::S3.new(config)
+      s3.aws_options_hash[:s3_endpoint].should == "s3-sa-east-1.amazonaws.com"
+    end
+
+    it "should use the depracated option before failling back to the region" do
+      config = { "region" => "us-east-1", "endpoint_region" => "sa-east-1" }
+      s3 = LogStash::Outputs::S3.new(config)
+      s3.aws_options_hash[:s3_endpoint].should == "s3-sa-east-1.amazonaws.com"
+    end
+  end
+
   describe "format_message" do
     it 'should accept a nil list of tags' do
       event = {}
@@ -33,4 +47,5 @@ describe LogStash::Outputs::S3 do
       }.to raise_error(LogStash::ConfigurationError)
     end
   end
+
 end
