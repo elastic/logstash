@@ -92,7 +92,7 @@ Gem::Specification.new do |gem|
   end
 
   if RUBY_PLATFORM != 'java'
-    gem.add_runtime_dependency "bunny",      ["~> 1.4.0"] #(MIT license)
+    gem.add_runtime_dependency "bunny",      ["~> 1.5.0"] #(MIT license)
   else
     gem.add_runtime_dependency "march_hare", ["~> 2.1.0"] #(MIT license)
   end
