@@ -39,8 +39,7 @@ require "socket" # for Socket.gethostname
 ## Then the file will be rest on temporary directory and don't will be pushed on bucket until we will restart logstash.
 #
 #
-# #### USAGE:
-# USAGE:
+# #### Usage:
 # This is an example of logstash config:
 #
 #    output {
@@ -56,51 +55,8 @@ require "socket" # for Socket.gethostname
 #       }
 #    }
 #
-# We analize this:
-#
-# access_key_id => "crazy_key"
-# Amazon will give you the key for use their service if you buy it or try it. (not very much open source anyway)
-#
-# secret_access_key => "monkey_access_key"
-# Amazon will give you the secret_access_key for use their service if you buy it or try it . (not very much open source anyway).
-#
-# endpoint_region => "eu-west-1"
-# When you make a contract with Amazon, you should know where the services you use.
-#
-# bucket => "boss_please_open_your_bucket"
-# Be careful you have the permission to write on bucket and know the name.
-#
-# size_file => 2048
-# Means the size, in KB, of files who can store on temporary directory before you will be pushed on bucket.
-# Is useful if you have a little server with poor space on disk and you don't want blow up the server with unnecessary temporary log files.
-#
-# time_file => 5
-# Means, in minutes, the time  before the files will be pushed on bucket. Is useful if you want to push the files every specific time.
-#
-# format => "plain"
-# Means the format of events you want to store in the files
-#
-# canned_acl => "private"
-# The S3 canned ACL to use when putting the file. Defaults to "private".
-#
-# #### TODO
-#
-# I tried to comment the class at best i could do.
-# I think there are much thing to improve, but if you want some points to develop here a list:
-#
-# * Integrate aws_config in the future
-# * Find a method to push them all files when logtstash close the session.
-# * Integrate @field on the path file
-# * Permanent connection or on demand? For now on demand, but isn't a good implementation.
-#   Use a while or a thread to try the connection before break a time_out and signal an error.
-# * If you have bugs report or helpful advice contact me, but remember that this code is much mine as much as yours,
-#   try to work on it if you want :)
-#
-# LET'S ROCK AND ROLL ON THE CODE!
-
 class LogStash::Outputs::S3 < LogStash::Outputs::Base
- #TODO integrate aws_config in the future
- #  include LogStash::PluginMixins::AwsConfig
+
 
  config_name "s3"
  milestone 1
@@ -114,7 +70,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  # S3 bucket
  config :bucket, :validate => :string
 
- # Aws endpoint_region
+ # AWS endpoint_region
  config :endpoint_region, :validate => ["us-east-1", "us-west-1", "us-west-2",
                                         "eu-west-1", "ap-southeast-1", "ap-southeast-2",
                                         "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
@@ -139,9 +95,25 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  ## for example if you have single Instance.
  config :restore, :validate => :boolean, :default => false
 
- # Aws canned ACL
+ # The S3 canned ACL to use when putting the file. Defaults to "private".
  config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
         :default => "private"
+
+
+# TODO
+#
+# I tried to comment the class at best i could do.
+# I think there are much thing to improve, but if you want some points to develop here a list:
+#
+# * Integrate aws_config in the future
+# * Find a method to push them all files when logtstash close the session.
+# * Integrate @field on the path file
+# * Permanent connection or on demand? For now on demand, but isn't a good implementation.
+#   Use a while or a thread to try the connection before break a time_out and signal an error.
+# * If you have bugs report or helpful advice contact me, but remember that this code is much mine as much as yours,
+#   try to work on it if you want :)
+#
+# LET'S ROCK AND ROLL ON THE CODE!
 
  # Method to set up the aws configuration and establish connection
  def aws_s3_config
