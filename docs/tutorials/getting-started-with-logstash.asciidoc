@@ -124,7 +124,7 @@ Another very useful tool for querying your Logstash data (and Elasticsearch in g
 ----
 bin/plugin -install lmenezes/elasticsearch-kopf
 ----
-Now you can browse to http://localhost:9200/_plugin/kopf[http://localhost:9200/_plugin/kopf] to browse your Elasticsearch data, settings and mappings!
+Now you can browse to http://localhost:9200/_plugin/kopf/[http://localhost:9200/_plugin/kopf/] to browse your Elasticsearch data, settings and mappings!
 
 === Multiple Outputs
 As a quick exercise in configuring multiple Logstash outputs, let's invoke Logstash again, using both the 'stdout' as well as the 'elasticsearch' output:
