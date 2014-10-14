@@ -6,7 +6,7 @@ Pretty self-explanatory, really
 * http://elasticsearch.org/#[Getting Started with Logstash]
 * http://elasticsearch.org/#[Configuration file overview]
 * http://elasticsearch.org/#[Command-line flags]
-* http://elasticsearch.org/#[The life of an event in logstash]
+* http://elasticsearch.org/#[The life of an event in Logstash]
 * http://elasticsearch.org/#[Using conditional logic]
 * http://elasticsearch.org/#[Glossary]
 * http://elasticsearch.org/#[referring to fields `[like][this]`]

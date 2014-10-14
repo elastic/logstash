@@ -1,7 +1,7 @@
 = Plugin Milestones
 
 == Why Milestones?
-Plugins (inputs/outputs/filters/codecs) have a milestone label in logstash. This is to provide an indicator to the end-user as to the kinds of changes a given plugin could have between logstash releases.
+Plugins (inputs/outputs/filters/codecs) have a milestone label in Logstash. This is to provide an indicator to the end-user as to the kinds of changes a given plugin could have between Logstash releases.
 
 The desire here is to allow plugin developers to quickly iterate on possible new plugins while conveying to the end-user a set of expectations about that plugin.
 
