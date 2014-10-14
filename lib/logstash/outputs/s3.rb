@@ -133,7 +133,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   # this method is used for write files on bucket. It accept the file and the name of file.
-  def write_on_bucket (file_data, file_basename)
+  def write_on_bucket(file_data, file_basename)
     # if you lose connection with s3, bad control implementation.
     if ( @s3 == nil)
       aws_s3_config
@@ -182,7 +182,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
-  def new_file (flag)
+  def new_file(flag)
    if (flag == true)
      @current_final_path = get_final_path
      @sizeCounter = 0
