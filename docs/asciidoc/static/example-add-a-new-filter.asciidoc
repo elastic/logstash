@@ -47,12 +47,12 @@ class LogStash::Filters::Foo < LogStash::Filters::Base
 
   public
     def register
-    # nothing to do  end # def register
+    # nothing to do
+  end # def register
 
   public
     def filter(event)
-      # return nothing unless there's an actual filter event
-      return unless filter?(event)
+
       if @message
         # Replace the event message with our message as configured in the
         # config file.
@@ -109,9 +109,9 @@ command.
 
 [source,js]
 ----------------------------------
-% bin/logstash -f example.conf
+% bin/logstash --pluginpath your/plugin/root -f example.conf
 the quick brown fox   
-2011-05-12T01:05:09.495000Z stdin://snack.home/: Hello world!
+2011-05-12T01:05:09.495000Z mylocalhost: Hello world!
 ----------------------------------
 
 The output is the standard Logstash stdout output, but in this case our "the quick brown fox" message was replaced with "Hello world!"
