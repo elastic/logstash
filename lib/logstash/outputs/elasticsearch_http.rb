@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/namespace"
 require "logstash/outputs/base"
+require "logstash/json"
 require "stud/buffer"
 
 # This output lets you store logs in Elasticsearch.
@@ -26,10 +27,10 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   config :index_type, :validate => :string
 
   # Starting in Logstash 1.3 (unless you set option "manage_template" to false)
-  # a default mapping template for Elasticsearch will be applied, if you do not 
-  # already have one set to match the index pattern defined (default of 
+  # a default mapping template for Elasticsearch will be applied, if you do not
+  # already have one set to match the index pattern defined (default of
   # "logstash-%{+YYYY.MM.dd}"), minus any variables.  For example, in this case
-  # the template will be applied to all indices starting with logstash-* 
+  # the template will be applied to all indices starting with logstash-*
   #
   # If you have dynamic templating (e.g. creating indices based on field names)
   # then you should set "manage_template" to false and use the REST API to upload
@@ -43,11 +44,11 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # where OldTemplateName is whatever the former setting was.
   config :template_name, :validate => :string, :default => "logstash"
 
-  # You can set the path to your own template here, if you so desire.  
+  # You can set the path to your own template here, if you so desire.
   # If not the included template will be used.
   config :template, :validate => :path
 
-  # Overwrite the current template with whatever is configured 
+  # Overwrite the current template with whatever is configured
   # in the template and template_name directives.
   config :template_overwrite, :validate => :boolean, :default => false
 
@@ -123,7 +124,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       elsif response.status == 200
         begin
           response.read_body { |c| json << c }
-          results = JSON.parse(json)
+          results = LogStash::Json.load(json)
         rescue Exception => e
           @logger.error("Error parsing JSON", :json => json, :results => results.to_s, :error => e.to_s)
           raise "Exception in parsing JSON", e
@@ -131,7 +132,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
         if !results.any? { |k,v| v["template"] == template_idx_name || v["template"] == alt_template_idx_name }
           @logger.debug("No template found in Elasticsearch", :has_template => has_template, :name => template_idx_name, :alt => alt_template_idx_name)
           get_template_json
-          template_action('put')      
+          template_action('put')
         end
       else #=> Some other status code?
         @logger.error("Could not check for existing template.  Check status code.", :status => response.status.to_s)
@@ -143,8 +144,8 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       :logger => @logger
     )
   end # def register
-  
-  public 
+
+  public
   def template_action(command)
     begin
       if command == 'delete'
@@ -168,32 +169,19 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     @logger.info("Successfully deleted template", :template_url => @template_url) if command == 'delete'
     @logger.info("Successfully applied template", :template_url => @template_url) if command == 'put'
   end # def template_action
-  
-  
+
+
   public
   def get_template_json
     if @template.nil?
-      if __FILE__ =~ /^(jar:)?file:\/.+!.+/
-        begin
-          # Running from a jar, assume types.db is at the root.
-          jar_path = [__FILE__.split("!").first, "/elasticsearch-template.json"].join("!")
-          @template = jar_path
-        rescue => ex
-          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
-        end
-      else
-        if File.exists?("elasticsearch-template.json")
-          @template = "elasticsearch-template.json"
-        elsif File.exists?("lib/logstash/outputs/elasticsearch/elasticsearch-template.json")
-          @template = "lib/logstash/outputs/elasticsearch/elasticsearch-template.json"
-        else
-          raise "You must specify 'template => ...' in your elasticsearch_http output"
-        end
+      @template = LogStash::Environment.plugin_path("outputs/elasticsearch/elasticsearch-template.json")
+      if !File.exists?(@template)
+        raise "You must specify 'template => ...' in your elasticsearch_http output (I looked for '#{@template}')"
       end
     end
     @template_json = IO.read(@template).gsub(/\n/,'')
     @logger.info("Using mapping template", :template => @template_json)
-  end # def get_template
+  end # def get_template_json
 
   public
   def receive(event)
@@ -217,8 +205,9 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       header = { "index" => { "_index" => index, "_type" => type } }
       header["index"]["_id"] = event.sprintf(@document_id) if !@document_id.nil?
 
-      [ header.to_json, newline, event.to_json, newline ]
+      [ LogStash::Json.dump(header), newline, event.to_json, newline ]
     end.flatten
+
     post(body.join(""))
   end # def receive_bulk
 
@@ -228,7 +217,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     rescue EOFError
       @logger.warn("EOF while writing request or reading response header from elasticsearch",
                    :host => @host, :port => @port)
-      return # abort this flush
+      raise
     end
 
     # Consume the body for error checking
@@ -239,14 +228,14 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
     rescue EOFError
       @logger.warn("EOF while reading response body from elasticsearch",
                    :host => @host, :port => @port)
-      return # abort this flush
+      raise
     end
 
     if response.status != 200
       @logger.error("Error writing (bulk) to elasticsearch",
                     :response => response, :response_body => body,
                     :request_body => @queue.join("\n"))
-      return
+      raise
     end
   end # def post
 

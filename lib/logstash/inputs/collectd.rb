@@ -2,6 +2,7 @@
 require "date"
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "logstash/timestamp"
 require "socket"
 require "tempfile"
 require "time"
@@ -88,11 +89,26 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   # "Sign" or "Encrypt"
   config :authfile, :validate => :string
 
+  # What to do when a value in the event is NaN (Not a Number)
+  # - change_value (default): Change the NaN to the value of the nan_value option and add nan_tag as a tag
+  # - warn: Change the NaN to the value of the nan_value option, print a warning to the log and add nan_tag as a tag
+  # - drop: Drop the event containing the NaN (this only drops the single event, not the whole packet)
+  config :nan_handeling, :validate => ['change_value','warn','drop'],
+    :default => 'change_value'
+
+  # Only relevant when nan_handeling is set to 'change_value'
+  # Change NaN to this configured value
+  config :nan_value, :validate => :number, :default => 0
+
+  # The tag to add to the event if a NaN value was found
+  # Set this to an empty string ('') if you don't want to tag
+  config :nan_tag, :validate => :string, :default => '_collectdNaN'
+
   public
   def initialize(params)
     super
     BasicSocket.do_not_reverse_lookup = true
-    @timestamp = Time.now().utc
+    @timestamp = LogStash::Timestamp.now
     @collectd = {}
     @types = {}
   end # def initialize
@@ -101,25 +117,12 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   def register
     @udp = nil
     if @typesdb.nil?
-      if __FILE__ =~ /^file:\/.+!.+/
-        begin
-          # Running from a jar, assume types.db is at the root.
-          jar_path = [__FILE__.split("!").first, "/types.db"].join("!")
-          @typesdb = [jar_path]
-        rescue => ex
-          raise "Failed to cache, due to: #{ex}\n#{ex.backtrace}"
-        end
-      else
-        if File.exists?("types.db")
-          @typesdb = ["types.db"]
-        elsif File.exists?("vendor/collectd/types.db")
-          @typesdb = ["vendor/collectd/types.db"]
-        else
-          raise "You must specify 'typesdb => ...' in your collectd input"
-        end
+      @typesdb = LogStash::Environment.vendor_path("collectd/types.db")
+      if !File.exists?(@typesdb)
+        raise "You must specify 'typesdb => ...' in your collectd input (I looked for '#{@typesdb}')"
       end
+      @logger.info("Using internal types.db", :typesdb => @typesdb.to_s)
     end
-    @logger.info("Using internal types.db", :typesdb => @typesdb.to_s)
 
     if ([SECURITY_SIGN, SECURITY_ENCR].include?(@security_level))
       if @authfile.nil?
@@ -155,6 +158,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   public
   def get_types(paths)
     # Get the typesdb
+    paths = Array(paths) # Make sure a single path is still forced into an array type
     paths.each do |path|
       @logger.info("Getting Collectd typesdb info", :typesdb => path.to_s)
       File.open(path, 'r').each_line do |line|
@@ -202,8 +206,18 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
             # 2: DERIVE
             # 3: ABSOLUTE
             case types[count]
+              when 1;
+                v = body.slice!(0..7).pack("C*").unpack("E")[0]
+                if v.nan?
+                  case @nan_handeling
+                  when 'drop'; return false
+                  else
+                    v = @nan_value
+                    add_tag(@nan_tag)
+                    @nan_handeling == 'warn' && @logger.warn("NaN in (unfinished event) #{@collectd}")
+                  end
+                end
               when 0, 3; v = body.slice!(0..7).pack("C*").unpack("Q>")[0]
-              when 1;    v = body.slice!(0..7).pack("C*").unpack("E")[0]
               when 2;    v = body.slice!(0..7).pack("C*").unpack("q>")[0]
               else;      v = 0
             end
@@ -327,6 +341,20 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
   end # def generate_event
 
   private
+  def clean_up()
+    @collectd.each_key do |k|
+      @collectd.delete(k) if !['host','collectd_type', 'plugin', 'plugin_instance', '@timestamp', 'type_instance'].include?(k)
+    end
+  end # def clean_up
+
+  private
+  def add_tag(new_tag)
+    return if new_tag.empty?
+    @collectd['tags'] ||= []
+    @collectd['tags'] << new_tag
+  end
+
+  private
   def collectd_listener(output_queue)
     @logger.info("Starting Collectd listener", :address => "#{@host}:#{@port}")
 
@@ -400,6 +428,9 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           else                              # Otherwise it's a single value
             @collectd['value'] = values[0]      # So name it 'value' accordingly
           end
+        elsif !values
+          clean_up()
+          next
         elsif field != nil                  # Not an array, make sure it's non-empty
           @collectd[field] = values            # Append values to @collectd under key field
         end
@@ -408,10 +439,7 @@ class LogStash::Inputs::Collectd < LogStash::Inputs::Base
           if ((@prune_intervals && ![7,9].include?(typenum)) || !@prune_intervals)
             generate_event(output_queue)
           end
-          # Clean up the event
-          @collectd.each_key do |k|
-            @collectd.delete(k) if !['host','collectd_type', 'plugin', 'plugin_instance', '@timestamp', 'type_instance'].include?(k)
-          end
+          clean_up()
         end
       end # while payload.length > 0 do
     end # loop do

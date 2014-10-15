@@ -70,11 +70,14 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
   def filter(event)
     return unless filter?(event)
 
+    new_event = event.clone
+
     if @resolve
       begin
-        status = Timeout::timeout(@timeout) { 
-          resolve(event)
+        status = Timeout::timeout(@timeout) {
+          resolve(new_event)
         }
+        return if status.nil?
       rescue Timeout::Error
         @logger.debug("DNS: resolve action timed out")
         return
@@ -83,16 +86,19 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
 
     if @reverse
       begin
-        status = Timeout::timeout(@timeout) { 
-          reverse(event)
+        status = Timeout::timeout(@timeout) {
+          reverse(new_event)
         }
+        return if status.nil?
       rescue Timeout::Error
         @logger.debug("DNS: reverse action timed out")
         return
       end
     end
 
-    filter_matched(event)
+    filter_matched(new_event)
+    yield new_event
+    event.cancel
   end
 
   private
@@ -110,7 +116,8 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
       end
 
       begin
-        address = @resolv.getaddress(raw)
+        # in JRuby 1.7.11 outputs as US-ASCII
+        address = @resolv.getaddress(raw).force_encoding(Encoding::UTF_8)
       rescue Resolv::ResolvError
         @logger.debug("DNS: couldn't resolve the hostname.",
                       :field => field, :value => raw)
@@ -168,7 +175,8 @@ class LogStash::Filters::DNS < LogStash::Filters::Base
         return
       end
       begin
-        hostname = @resolv.getname(raw)
+        # in JRuby 1.7.11 outputs as US-ASCII
+        hostname = @resolv.getname(raw).force_encoding(Encoding::UTF_8)
       rescue Resolv::ResolvError
         @logger.debug("DNS: couldn't resolve the address.",
                       :field => field, :value => raw)

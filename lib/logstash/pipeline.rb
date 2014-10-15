@@ -1,14 +1,18 @@
 # encoding: utf-8
-require "logstash/config/file"
+require "thread" #
+require "stud/interval"
 require "logstash/namespace"
-require "thread" # stdlib
+require "logstash/errors"
+require "logstash/event"
+require "logstash/config/file"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
-require "logstash/errors"
-require "stud/interval" # gem stud
 
 class LogStash::Pipeline
+
+  FLUSH_EVENT = LogStash::FlushEvent.new
+
   def initialize(configstr)
     @logger = Cabin::Channel.get(LogStash)
     grammar = LogStashConfigParser.new
@@ -69,6 +73,7 @@ class LogStash::Pipeline
   def run
     @started = true
     @input_threads = []
+
     start_inputs
     start_filters if filters?
     start_outputs
@@ -78,11 +83,12 @@ class LogStash::Pipeline
     @logger.info("Pipeline started")
     wait_inputs
 
-    # In theory there's nothing to do to filters to tell them to shutdown?
     if filters?
       shutdown_filters
       wait_filters
+      flush_filters_to_output!(:final => true)
     end
+
     shutdown_outputs
     wait_outputs
 
@@ -103,7 +109,8 @@ class LogStash::Pipeline
   end
 
   def shutdown_filters
-    @input_to_filter.push(LogStash::ShutdownSignal)
+    @flusher_lock.synchronize { @flusher_thread.kill }
+    @input_to_filter.push(LogStash::ShutdownEvent.new)
   end
 
   def wait_filters
@@ -112,7 +119,7 @@ class LogStash::Pipeline
 
   def shutdown_outputs
     # nothing, filters will do this
-    @filter_to_output.push(LogStash::ShutdownSignal)
+    @filter_to_output.push(LogStash::ShutdownEvent.new)
   end
 
   def wait_outputs
@@ -143,11 +150,12 @@ class LogStash::Pipeline
       Thread.new { filterworker }
     end
 
-    # Set up the periodic flusher thread.
-    @flusher_thread = Thread.new { Stud.interval(5) { filter_flusher } }
+    @flusher_lock = Mutex.new
+    @flusher_thread = Thread.new { Stud.interval(5) { @flusher_lock.synchronize { @input_to_filter.push(FLUSH_EVENT) } } }
   end
 
   def start_outputs
+    @outputs.each(&:register)
     @output_threads = [
       Thread.new { outputworker }
     ]
@@ -189,23 +197,22 @@ class LogStash::Pipeline
     begin
       while true
         event = @input_to_filter.pop
-        if event == LogStash::ShutdownSignal
+
+        case event
+        when LogStash::Event
+          # use events array to guarantee ordering of origin vs created events
+          # where created events are emitted by filters like split or metrics
+          events = []
+          filter(event) { |newevent| events << newevent }
+          events.each { |event| @filter_to_output.push(event) }
+        when LogStash::FlushEvent
+          # handle filter flushing here so that non threadsafe filters (thus only running one filterworker)
+          # don't have to deal with thread safety implementing the flush method
+          @flusher_lock.synchronize { flush_filters_to_output! }
+        when LogStash::ShutdownEvent
+          # pass it down to any other filterworker and stop this worker
           @input_to_filter.push(event)
           break
-        end
-
-
-        # TODO(sissel): we can avoid the extra array creation here
-        # if we don't guarantee ordering of origin vs created events.
-        # - origin event is one that comes in naturally to the filter worker.
-        # - created events are emitted by filters like split or metrics
-        events = [event]
-        filter(event) do |newevent|
-          events << newevent
-        end
-        events.each do |event|
-          next if event.cancelled?
-          @filter_to_output.push(event)
         end
       end
     rescue => e
@@ -217,11 +224,10 @@ class LogStash::Pipeline
 
   def outputworker
     LogStash::Util::set_thread_name(">output")
-    @outputs.each(&:register)
     @outputs.each(&:worker_setup)
     while true
       event = @filter_to_output.pop
-      break if event == LogStash::ShutdownSignal
+      break if event.is_a?(LogStash::ShutdownEvent)
       output(event)
     end # while true
     @outputs.each(&:teardown)
@@ -248,7 +254,7 @@ class LogStash::Pipeline
       end
     end
 
-    # No need to send the ShutdownSignal to the filters/outputs nor to wait for
+    # No need to send the ShutdownEvent to the filters/outputs nor to wait for
     # the inputs to finish, because in the #run method we wait for that anyway.
   end # def shutdown
 
@@ -266,28 +272,27 @@ class LogStash::Pipeline
     @output_func.call(event)
   end
 
-  def filter_flusher
-    events = []
-    @filters.each do |filter|
+  # perform filters flush and yeild flushed event to the passed block
+  # @param options [Hash]
+  # @option options [Boolean] :final => true to signal a final shutdown flush
+  def flush_filters(options = {}, &block)
+    flushers = options[:final] ? @shutdown_flushers : @periodic_flushers
 
-      # Filter any events generated so far in this flush.
-      events.each do |event|
-        # TODO(sissel): watchdog on flush filtration?
-        unless event.cancelled?
-          filter.filter(event)
-        end
-      end
+    flushers.each do |flusher|
+      flusher.call(options, &block)
+    end
+  end
 
-      # TODO(sissel): watchdog on flushes?
-      if filter.respond_to?(:flush)
-        flushed = filter.flush
-        events += flushed if !flushed.nil? && flushed.any?
+  # perform filters flush into the output queue
+  # @param options [Hash]
+  # @option options [Boolean] :final => true to signal a final shutdown flush
+  def flush_filters_to_output!(options = {})
+    flush_filters(options) do |event|
+      unless event.cancelled?
+        @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
+        @filter_to_output.push(event)
       end
     end
+  end # flush_filters_to_output!
 
-    events.each do |event|
-      @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
-      @filter_to_output.push(event) unless event.cancelled?
-    end
-  end # def filter_flusher
 end # class Pipeline

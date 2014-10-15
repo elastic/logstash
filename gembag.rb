@@ -1,16 +1,15 @@
 #!/usr/bin/env ruby
 
-require "rbconfig"
+require "logstash/environment"
 
-rubyabi = RbConfig::CONFIG["ruby_version"]
-target = "#{Dir.pwd}/vendor/bundle"
-gemdir = "#{target}/#{RUBY_ENGINE}/#{rubyabi}/"
-ENV["GEM_HOME"] = gemdir
-ENV["GEM_PATH"] = ""
+# set gem paths here to help find the required gems below
+ENV["GEM_PATH"] = LogStash::Environment.gem_home
+ENV["GEM_HOME"] = LogStash::Environment.gem_home
 
 require "rubygems/specification"
 require "rubygems/commands/install_command"
 require "logstash/JRUBY-PR1448" if RUBY_PLATFORM == "java" && Gem.win_platform?
+
 
 def install_gem(name, requirement, target)
   puts "Fetching and installing gem: #{name} (#{requirement})"
@@ -21,7 +20,7 @@ def install_gem(name, requirement, target)
   installer.options[:version] = requirement
   installer.options[:args] = [name]
   installer.options[:install_dir] = target
- 
+
   # ruby 2.0.0 / rubygems 2.x; disable documentation generation
   installer.options[:document] = []
   begin
@@ -36,9 +35,9 @@ end # def install_gem
 
 # Ensure bundler is available.
 begin
-  gem("bundler", ">=1.3.5")
+  gem("bundler", ">=1.7.3")
 rescue Gem::LoadError => e
-  install_gem("bundler", ">= 1.3.5", ENV["GEM_HOME"])
+  install_gem("bundler", ">= 1.7.3", LogStash::Environment.gem_home)
 end
 
 require "bundler/cli"
@@ -48,18 +47,28 @@ require "bundler/cli"
 module Bundler
   module SharedHelpers
     def default_lockfile
-      ruby = "#{RUBY_ENGINE}-#{RbConfig::CONFIG["ruby_version"]}"
-      return Pathname.new("#{default_gemfile}.#{ruby}.lock")
+      ruby = "#{LogStash::Environment.ruby_engine}-#{LogStash::Environment.gem_ruby_version}"
+      Pathname.new("#{default_gemfile}.#{ruby}.lock")
     end
   end
 end
 
-if RUBY_ENGINE == "rbx"
+if LogStash::Environment.ruby_engine == "rbx"
   begin
     gem("rubysl")
   rescue Gem::LoadError => e
-    install_gem("rubysl", ">= 0", ENV["GEM_HOME"])
+    install_gem("rubysl", ">= 0", LogStash::Environment.gem_home)
   end
 end
 
-Bundler::CLI.start(["install", "--gemfile=tools/Gemfile", "--path", target, "--clean"])
+# Try installing a few times in case we hit the "bad_record_mac" ssl error during installation.
+10.times do
+  begin
+    Bundler::CLI.start(["install", "--gemfile=#{LogStash::Environment::GEMFILE_PATH}", "--path", LogStash::Environment::BUNDLE_DIR, "--standalone", "--clean", "--without", "development"])
+    break
+  rescue Gem::RemoteFetcher::FetchError => e
+    puts e.message
+    puts e.backtrace.inspect
+    sleep 5 #slow down a bit before retry
+  end
+end

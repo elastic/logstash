@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/filters/base"
 require "logstash/namespace"
+require "logstash/environment"
 require "set"
 
 # Parse arbitrary text and structure it.
@@ -65,7 +66,7 @@ require "set"
 #     }
 #     filter {
 #       grok {
-#         match => [ "message", "%{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}" ]
+#         match => { "message" => "%{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}" }
 #       }
 #     }
 #
@@ -99,7 +100,7 @@ require "set"
 #
 #     (?<queue_id>[0-9A-F]{10,11})
 #
-# Alternately, you can create a custom patterns file. 
+# Alternately, you can create a custom patterns file.
 #
 # * Create a directory called `patterns` with a file in it called `extra`
 #   (the file name doesn't matter, but name it meaningfully for yourself)
@@ -119,7 +120,7 @@ require "set"
 #     filter {
 #       grok {
 #         patterns_dir => "./patterns"
-#         match => [ "message", "%{SYSLOGBASE} %{POSTFIX_QUEUEID:queue_id}: %{GREEDYDATA:syslog_message}" ]
+#         match => { "message" => "%{SYSLOGBASE} %{POSTFIX_QUEUEID:queue_id}: %{GREEDYDATA:syslog_message}" }
 #       }
 #     }
 #
@@ -149,9 +150,13 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   # For example:
   #
   #     filter {
-  #       grok {
-  #         match => [ "message", "Duration: %{NUMBER:duration}" ]
-  #       }
+  #       grok { match => { "message" => "Duration: %{NUMBER:duration}" } }
+  #     }
+  #
+  # Alternatively, using the old array syntax:
+  #
+  #     filter {
+  #       grok { match => [ "message", "Duration: %{NUMBER:duration}" ] }
   #     }
   #
   config :match, :validate => :hash, :default => {}
@@ -202,10 +207,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   #
   #     filter {
   #       grok {
-  #         match => [ 
-  #           "message",
-  #           "%{SYSLOGBASE} %{DATA:message}
-  #         ]
+  #         match => { "message" => "%{SYSLOGBASE} %{DATA:message}" }
   #         overwrite => [ "message" ]
   #       }
   #     }
@@ -216,11 +218,7 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
 
   # Detect if we are running from a jarfile, pick the right path.
   @@patterns_path ||= Set.new
-  if __FILE__ =~ /file:\/.*\.jar!.*/
-    @@patterns_path += ["#{File.dirname(__FILE__)}/../../patterns/*"]
-  else
-    @@patterns_path += ["#{File.dirname(__FILE__)}/../../../patterns/*"]
-  end
+  @@patterns_path += [LogStash::Environment.pattern_path("*")]
 
   public
   def initialize(params)
@@ -242,13 +240,6 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     @patterns_dir = @@patterns_path.to_a + @patterns_dir
     @logger.info? and @logger.info("Grok patterns path", :patterns_dir => @patterns_dir)
     @patterns_dir.each do |path|
-      # Can't read relative paths from jars, try to normalize away '../'
-      while path =~ /file:\/.*\.jar!.*\/\.\.\//
-        # replace /foo/bar/../baz => /foo/baz
-        path = path.gsub(/[^\/]+\/\.\.\//, "")
-        @logger.debug? and @logger.debug("In-jar path to read", :path => path)
-      end
-
       if File.directory?(path)
         path = File.join(path, "*")
       end
@@ -266,16 +257,14 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     @match.each do |field, patterns|
       patterns = [patterns] if patterns.is_a?(String)
 
-      if !@patterns.include?(field)
-        @patterns[field] = Grok::Pile.new
-        #@patterns[field].logger = @logger
-
-        add_patterns_from_files(@patternfiles, @patterns[field])
-      end
       @logger.info? and @logger.info("Grok compile", :field => field, :patterns => patterns)
       patterns.each do |pattern|
         @logger.debug? and @logger.debug("regexp: #{@type}/#{field}", :pattern => pattern)
-        @patterns[field].compile(pattern)
+        grok = Grok.new
+        grok.logger = @logger unless @logger.nil?
+        add_patterns_from_files(@patternfiles, grok)
+        grok.compile(pattern, @named_captures_only)
+        @patterns[field] << grok
       end
     end # @match.each
   end # def register
@@ -288,8 +277,8 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
     done = false
 
     @logger.debug? and @logger.debug("Running grok filter", :event => event);
-    @patterns.each do |field, grok|
-      if match(grok, field, event)
+    @patterns.each do |field, groks|
+      if match(groks, field, event)
         matched = true
         break if @break_on_match
       end
@@ -311,117 +300,62 @@ class LogStash::Filters::Grok < LogStash::Filters::Base
   end # def filter
 
   private
-  def match(grok, field, event)
+  def match(groks, field, event)
     input = event[field]
     if input.is_a?(Array)
-      success = true
+      success = false
       input.each do |input|
-        grok, match = grok.match(input)
-        if match
-          match.each_capture do |capture, value|
-            handle(capture, value, event)
-          end
-        else
-          success = false
-        end
+        success |= match_against_groks(groks, input, event)
       end
       return success
-    #elsif input.is_a?(String)
     else
-      # Convert anything else to string (number, hash, etc)
-      grok, match = grok.match(input.to_s)
-      return false if !match
-
-      match.each_capture do |capture, value|
-        handle(capture, value, event)
-      end
-      return true
+      return match_against_groks(groks, input, event)
     end
   rescue StandardError => e
     @logger.warn("Grok regexp threw exception", :exception => e.message)
   end
 
   private
-  def handle(capture, value, event)
-    handler = @handlers[capture] ||= compile_capture_handler(capture)
-    return handler.call(value, event)
+  def match_against_groks(groks, input, event)
+    matched = false
+    groks.each do |grok|
+      # Convert anything else to string (number, hash, etc)
+      matched = grok.match_and_capture(input.to_s) do |field, value|
+        matched = true
+        handle(field, value, event)
+      end
+      break if matched and @break_on_match
+    end
+    return matched
   end
 
   private
-  def compile_capture_handler(capture)
-    # SYNTAX:SEMANTIC:TYPE
-    syntax, semantic, coerce = capture.split(":")
+  def handle(field, value, event)
+    return if (value.nil? || (value.is_a?(String) && value.empty?)) unless @keep_empty_captures
 
-    # each_capture do |fullname, value|
-    #   capture_handlers[fullname].call(value, event) 
-    # end
-
-    code = []
-    code << "# for capture #{capture}"
-    code << "lambda do |value, event|"
-    #code << "  p :value => value, :event => event"
-    if semantic.nil?
-      if @named_captures_only 
-        # Abort early if we are only keeping named (semantic) captures
-        # and this capture has no semantic name.
-        code << "  return"
-      else
-        field = syntax
-      end
-    else
-      field = semantic
-    end
-    code << "  return if value.nil? || value.empty?" unless @keep_empty_captures
-    if coerce
-      case coerce
-        when "int"; code << "  value = value.to_i"
-        when "float"; code << "  value = value.to_f"
-      end
-    end
-
-    code << "  # field: #{field}"
     if @overwrite.include?(field)
-      code << "  event[field] = value"
+      event[field] = value
     else
-      code << "  v = event[field]"
-      code << "  if v.nil?"
-      code << "    event[field] = value"
-      code << "  elsif v.is_a?(Array)"
-      code << "    event[field] << value"
-      code << "  elsif v.is_a?(String)"
-      # Promote to array since we aren't overwriting.
-      code << "    event[field] = [v, value]"
-      code << "  end"
+      v = event[field]
+      if v.nil?
+        event[field] = value
+      elsif v.is_a?(Array)
+        event[field] << value
+      elsif v.is_a?(String)
+        # Promote to array since we aren't overwriting.
+        event[field] = [v, value]
+      end
     end
-    code << "  return"
-    code << "end"
-
-    #puts code
-    return eval(code.join("\n"), binding, "<grok capture #{capture}>")
-  end # def compile_capture_handler
+  end
 
   private
-  def add_patterns_from_files(paths, pile)
-    paths.each { |path| add_patterns_from_file(path, pile) }
+  def add_patterns_from_files(paths, grok)
+    paths.each do |path|
+      if !File.exists?(path)
+        raise "Grok pattern file does not exist: #{path}"
+      end
+      grok.add_patterns_from_file(path)
+    end
   end # def add_patterns_from_files
 
-  private
-  def add_patterns_from_file(path, pile)
-    # Check if the file path is a jar, if so, we'll have to read it ourselves
-    # since libgrok won't know what to do with it.
-    if path =~ /file:\/.*\.jar!.*/
-      File.new(path).each do |line|
-        next if line =~ /^(?:\s*#|\s*$)/
-        # In some cases I have seen 'file.each' yield lines with newlines at
-        # the end. I don't know if this is a bug or intentional, but we need
-        # to chomp it.
-        name, pattern = line.chomp.split(/\s+/, 2)
-        @logger.debug? and @logger.debug("Adding pattern from file", :name => name,
-                                         :pattern => pattern, :path => path)
-        pile.add_pattern(name, pattern)
-      end
-    else
-      pile.add_patterns_from_file(path)
-    end
-  end # def add_patterns_from_file
 end # class LogStash::Filters::Grok

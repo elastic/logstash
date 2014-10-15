@@ -1,13 +1,14 @@
 # encoding: utf-8
 require "logstash/outputs/base"
 require "logstash/namespace"
+require "logstash/json"
 
-# The PagerDuty output will send notifications based on pre-configured services 
+# The PagerDuty output will send notifications based on pre-configured services
 # and escalation policies. Logstash can send "trigger", "acknowledge" and "resolve"
 # event types. In addition, you may configure custom descriptions and event details.
 # The only required field is the PagerDuty "Service API Key", which can be found on
 # the service's web page on pagerduty.com. In the default case, the description and
-# event details will be populated by Logstash, using `message`, `timestamp` and `host` data.  
+# event details will be populated by Logstash, using `message`, `timestamp` and `host` data.
 class LogStash::Outputs::PagerDuty < LogStash::Outputs::Base
   config_name "pagerduty"
   milestone 1
@@ -49,7 +50,7 @@ class LogStash::Outputs::PagerDuty < LogStash::Outputs::Base
   public
   def receive(event)
     return unless output?(event)
-   
+
     pd_event = Hash.new
     pd_event[:service_key] = "#{@service_key}"
     pd_event[:incident_key] = event.sprintf(@incident_key)
@@ -65,7 +66,7 @@ class LogStash::Outputs::PagerDuty < LogStash::Outputs::Base
     @logger.info("PD Event", :event => pd_event)
     begin
       request = Net::HTTP::Post.new(@pd_uri.path)
-      request.body = pd_event.to_json
+      request.body = LogStash::Json.dump(pd_event)
       @logger.debug("PD Request", :request => request.inspect)
       response = @client.request(request)
       @logger.debug("PD Response", :response => response.body)

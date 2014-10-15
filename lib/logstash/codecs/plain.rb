@@ -37,11 +37,11 @@ class LogStash::Codecs::Plain < LogStash::Codecs::Base
   end # def decode
 
   public
-  def encode(data)
-    if data.is_a? LogStash::Event and @format
-      @on_event.call(data.sprintf(@format))
+  def encode(event)
+    if event.is_a?(LogStash::Event) and @format
+      @on_event.call(event.sprintf(@format))
     else
-      @on_event.call(data.to_s)
+      @on_event.call(event.to_s)
     end
   end # def encode
 

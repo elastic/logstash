@@ -10,28 +10,34 @@
 #
 # NOTE: One extra command is available 'deps'
 # The 'deps' command will install dependencies for logstash.
-#
-# If you do not have ruby installed, you can set "USE_JRUBY=1"
-# in your environment and this script will download and use
-# a release of JRuby for you.
 
 # Defaults you can override with environment variables
 LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
 
+unset CDPATH
 basedir=$(cd `dirname $0`/..; pwd)
-. ${basedir}/bin/logstash.lib.sh
+. "${basedir}/bin/logstash.lib.sh"
 
 setup
 
+# Export these so that they can be picked up by file input (and others?).
+export HOME SINCEDB_DIR
+
 case $1 in
   deps) install_deps ;;
-  -*) 
-    # is the first argument a flag? If so, assume 'agent'
-    program="$basedir/lib/logstash/runner.rb"
-    exec $RUBYCMD -I$RUBYLIB "$program" agent "$@"
+  env) env "$@" ;;
+  -*)
+    if [ -z "$VENDORED_JRUBY" ] ; then
+      exec "${RUBYCMD}" "${basedir}/lib/logstash/runner.rb" "agent" "$@"
+    else
+      exec "${JAVACMD}" $JAVA_OPTS "-jar" "$JRUBY_JAR" "${basedir}/lib/logstash/runner.rb" "agent" "$@"
+    fi
     ;;
   *)
-    program="$basedir/lib/logstash/runner.rb"
-    exec $RUBYCMD -I$RUBYLIB "$program" "$@"
+    if [ -z "$VENDORED_JRUBY" ] ; then
+      exec "${RUBYCMD}" "${basedir}/lib/logstash/runner.rb" "$@"
+    else
+      exec "${JAVACMD}" $JAVA_OPTS "-jar" "$JRUBY_JAR" "${basedir}/lib/logstash/runner.rb" "$@"
+    fi
     ;;
 esac

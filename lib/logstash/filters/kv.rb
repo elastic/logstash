@@ -129,7 +129,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # To include "from" and "to", but exclude the "foo" key, you could use this configuration:
   #     filter {
   #       kv {
-  #         include_keys = [ "from", "to" ]
+  #         include_keys => [ "from", "to" ]
   #       }
   #     }
   config :include_keys, :validate => :array, :default => []
@@ -141,7 +141,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   # To exclude "from" and "to", but retain the "foo" key, you could use this configuration:
   #     filter {
   #       kv {
-  #         exclude_keys = [ "from", "to" ]
+  #         exclude_keys => [ "from", "to" ]
   #       }
   #     }
   config :exclude_keys, :validate => :array, :default => []
@@ -151,7 +151,7 @@ class LogStash::Filters::KV < LogStash::Filters::Base
   #
   #     filter {
   #       kv {
-  #         default_keys = [ "from", "logstash@example.com",
+  #         default_keys => [ "from", "logstash@example.com",
   #                          "to", "default@dev.null" ]
   #       }
   #     }
@@ -206,13 +206,18 @@ class LogStash::Filters::KV < LogStash::Filters::Base
     if !event =~ /[@field_split]/
       return kv_keys
     end
+    
+    # Interpret dynamic keys for @include_keys and @exclude_keys
+    include_keys = @include_keys.map{|key| event.sprintf(key)}
+    exclude_keys = @exclude_keys.map{|key| event.sprintf(key)}
+    
     text.scan(@scan_re) do |key, v1, v2, v3|
       value = v1 || v2 || v3
       key = @trimkey.nil? ? key : key.gsub(@trimkey_re, "")
-
-      # Bail out as per the values of @include_keys and @exclude_keys
-      next if not @include_keys.empty? and not @include_keys.include?(key)
-      next if @exclude_keys.include?(key)
+      
+      # Bail out as per the values of include_keys and exclude_keys
+      next if not include_keys.empty? and not include_keys.include?(key)
+      next if exclude_keys.include?(key)
 
       key = event.sprintf(@prefix) + key
 

@@ -3,36 +3,35 @@ require "logstash/inputs/base"
 require "logstash/inputs/threadable"
 require "logstash/namespace"
 
-# Read events from a redis instance. Supports both redis channels and lists.
-# The list command (BLPOP) used by Logstash is supported in redis v1.3.1+ 
-# The channel commands used by Logstash are found in redis v1.3.8+
-# While you may be able to make these redis versions work the best performance
+# This input will read events from a Redis instance; it supports both Redis channels and lists.
+# The list command (BLPOP) used by Logstash is supported in Redis v1.3.1+, and
+# the channel commands used by Logstash are found in Redis v1.3.8+. 
+# While you may be able to make these Redis versions work, the best performance
 # and stability will be found in more recent stable versions.  Versions 2.6.0+
 # are recommended.
 #
-# For more information about redis, see <http://redis.io/>
+# For more information about Redis, see <http://redis.io/>
 #
-# ## `batch_count` note
-#
-# If you use the 'batch_count' setting, you *must* use a redis version 2.6.0 or
+# `batch_count` note: If you use the `batch_count` setting, you *must* use a Redis version 2.6.0 or
 # newer. Anything older does not support the operations used by batching.
+#
 class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   config_name "redis"
   milestone 2
 
   default :codec, "json"
 
-  # Name is used for logging in case there are multiple instances.
+  # The `name` configuration is used for logging in case there are multiple instances.
   # This feature has no real function and will be removed in future versions.
   config :name, :validate => :string, :default => "default", :deprecated => true
 
-  # The hostname of your redis server.
+  # The hostname of your Redis server.
   config :host, :validate => :string, :default => "127.0.0.1"
 
   # The port to connect on.
   config :port, :validate => :number, :default => 6379
 
-  # The redis database number.
+  # The Redis database number.
   config :db, :validate => :number, :default => 0
 
   # Initial connection timeout in seconds.
@@ -41,21 +40,21 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
   # Password to authenticate with. There is no authentication by default.
   config :password, :validate => :password
 
-  # The name of the redis queue (we'll use BLPOP against this).
+  # The name of the Redis queue (we'll use BLPOP against this).
   # TODO: remove soon.
   config :queue, :validate => :string, :deprecated => true
 
-  # The name of a redis list or channel.
+  # The name of a Redis list or channel.
   # TODO: change required to true
   config :key, :validate => :string, :required => false
 
-  # Either list or channel.  If redis\_type is list, then we will BLPOP the
-  # key.  If redis\_type is channel, then we will SUBSCRIBE to the key.
-  # If redis\_type is pattern_channel, then we will PSUBSCRIBE to the key.
+  # Specify either list or channel.  If `redis\_type` is `list`, then we will BLPOP the
+  # key.  If `redis\_type` is `channel`, then we will SUBSCRIBE to the key.
+  # If `redis\_type` is `pattern_channel`, then we will PSUBSCRIBE to the key.
   # TODO: change required to true
   config :data_type, :validate => [ "list", "channel", "pattern_channel" ], :required => false
 
-  # How many events to return from redis using EVAL
+  # The number of events to return from Redis using EVAL.
   config :batch_count, :validate => :number, :default => 1
 
   public
@@ -82,10 +81,10 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
     end
     # end TODO
 
-    @logger.info("Registering redis", :identity => identity)
+    @logger.info("Registering Redis", :identity => identity)
   end # def register
 
-  # A string used to identify a redis instance in log messages
+  # A string used to identify a Redis instance in log messages
   # TODO(sissel): Use instance variables for this once the @name config
   # option is removed.
   private
@@ -108,7 +107,7 @@ class LogStash::Inputs::Redis < LogStash::Inputs::Threadable
 
   private
   def load_batch_script(redis)
-    #A redis lua EVAL script to fetch a count of keys
+    #A Redis Lua EVAL script to fetch a count of keys
     #in case count is bigger than current items in queue whole queue will be returned without extra nil values
     redis_script = <<EOF
           local i = tonumber(ARGV[1])
@@ -165,9 +164,9 @@ EOF
       # using pipelined LPOP calls. This in practice has been observed to
       # perform exactly the same in terms of event throughput as
       # the evalsha method. Given that the EVALSHA implementation uses
-      # one call to redis instead of N (where N == @batch_count) calls,
+      # one call to Redis instead of N (where N == @batch_count) calls,
       # I decided to go with the 'evalsha' method of fetching N items
-      # from redis in bulk.
+      # from Redis in bulk.
       #redis.pipelined do
         #error, item = redis.lpop(@key)
         #(@batch_count-1).times { redis.lpop(@key) }
@@ -177,7 +176,7 @@ EOF
       # --- End commented out implementation of 'batch fetch'
     rescue Redis::CommandError => e
       if e.to_s =~ /NOSCRIPT/ then
-        @logger.warn("Redis may have been restarted, reloading redis batch EVAL script", :exception => e);
+        @logger.warn("Redis may have been restarted, reloading Redis batch EVAL script", :exception => e);
         load_batch_script(redis)
         retry
       else
@@ -232,8 +231,8 @@ EOF
         @logger.warn("Redis connection problem", :exception => e)
         sleep 1
         @redis = connect
-      rescue => e # redis error
-        @logger.warn("Failed to get event from redis", :name => @name,
+      rescue => e # Redis error
+        @logger.warn("Failed to get event from Redis", :name => @name,
                      :exception => e, :backtrace => e.backtrace)
         raise e
       end

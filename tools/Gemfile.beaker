@@ -1,0 +1,16 @@
+source 'https://rubygems.org'
+
+gem 'beaker'
+gem 'beaker-rspec'
+gem 'pry'
+gem 'docker-api', '~> 1.13.0'
+gem 'rubysl-securerandom'
+gem 'rspec_junit_formatter'
+gem 'rspec', '~> 2.14.0'
+
+case RUBY_VERSION
+when '1.8.7'
+  gem 'rake', '~> 10.1.0'
+else
+  gem 'rake'
+end

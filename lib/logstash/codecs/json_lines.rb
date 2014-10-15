@@ -1,10 +1,11 @@
 # encoding: utf-8
 require "logstash/codecs/base"
 require "logstash/codecs/line"
-require "json"
+require "logstash/json"
 
 # This codec will decode streamed JSON that is newline delimited.
-# For decoding JSON payload in the redis input for example, use the json codec instead.
+# For decoding line-oriented JSON payload in the redis or file inputs,
+# for example, use the json codec instead.
 # Encoding will emit a single JSON string ending in a '\n'
 class LogStash::Codecs::JSONLines < LogStash::Codecs::Base
   config_name "json_lines"
@@ -28,14 +29,14 @@ class LogStash::Codecs::JSONLines < LogStash::Codecs::Base
     @lines = LogStash::Codecs::Line.new
     @lines.charset = @charset
   end
-  
+
   public
   def decode(data)
 
     @lines.decode(data) do |event|
       begin
-        yield LogStash::Event.new(JSON.parse(event["message"]))
-      rescue JSON::ParserError => e
+        yield LogStash::Event.new(LogStash::Json.load(event["message"]))
+      rescue LogStash::Json::ParserError => e
         @logger.info("JSON parse failure. Falling back to plain-text", :error => e, :data => data)
         yield LogStash::Event.new("message" => event["message"])
       end
@@ -43,10 +44,10 @@ class LogStash::Codecs::JSONLines < LogStash::Codecs::Base
   end # def decode
 
   public
-  def encode(data)
+  def encode(event)
     # Tack on a \n for now because previously most of logstash's JSON
     # outputs emitted one per line, and whitespace is OK in json.
-    @on_event.call(data.to_json + "\n")
+    @on_event.call(event.to_json + NL)
   end # def encode
 
 end # class LogStash::Codecs::JSON

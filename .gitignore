@@ -22,3 +22,6 @@ data
 etc/jira-output.conf
 coverage/*
 .VERSION.mk
+.idea/*
+spec/reports
+rspec.xml

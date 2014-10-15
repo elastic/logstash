@@ -48,6 +48,7 @@ require "logstash/namespace"
 # * "thing.max" - the maximum value seen for this metric
 # * "thing.stddev" - the standard deviation for this metric
 # * "thing.mean" - the mean for this metric
+# * "thing.pXX" - the XXth percentile for this metric (see `percentiles`)
 #
 # #### Example: computing event rate
 #
@@ -73,14 +74,16 @@ require "logstash/namespace"
 #       # only emit events with the 'metric' tag
 #       if "metric" in [tags] {
 #         stdout {
-#           message => "rate: %{events.rate_1m}"
+#           codec => line {
+#             format => "rate: %{events.rate_1m}"
+#           }
 #         }
 #       }
 #     }
 #
 # Running the above:
 #
-#     % java -jar logstash.jar agent -f example.conf
+#     % bin/logstash -f example.conf
 #     rate: 23721.983566819246
 #     rate: 24811.395722536377
 #     rate: 25875.892745934525
@@ -157,7 +160,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     return unless filter?(event)
 
     # TODO(piavlo): This should probably be moved to base filter class.
-    if @ignore_older_than > 0 && Time.now - event["@timestamp"] > @ignore_older_than
+    if @ignore_older_than > 0 && Time.now - event.timestamp.time > @ignore_older_than
       @logger.debug("Skipping metriks for old event", :event => event)
       return
     end
@@ -197,7 +200,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
       event["#{name}.mean"] = metric.mean
 
       @percentiles.each do |percentile|
-        event["#{name}.p#{percentile}"] = metric.snapshot.value(percentile / 100)
+        event["#{name}.p#{percentile}"] = metric.snapshot.value(percentile / 100.0)
       end
       metric.clear if should_clear?
     end

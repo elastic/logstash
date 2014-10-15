@@ -4,16 +4,6 @@
 #     for unformatted text.
 en:
   oops: |-
-    +---------------------------------------------------------+
-    | An unexpected error occurred. This is probably a bug.   |
-    | You can find help with this problem in a few places:    |
-    |                                                         |
-    | * chat: #logstash IRC channel on freenode irc.          |
-    |     IRC via the web: http://goo.gl/TI4Ro                |
-    | * email: logstash-users@googlegroups.com                |
-    | * bug system: https://logstash.jira.com/                |
-    |                                                         |
-    +---------------------------------------------------------+
     The error reported is: 
       %{error}
   logstash:
@@ -121,7 +111,7 @@ en:
         # them in an 80-character terminal
         config: |+
           Load the logstash config from a specific file
-          or directory.  If a direcory is given, all
+          or directory.  If a directory is given, all
           files in that directory will be concatonated
           in lexicographical order and then parsed as a
           single config file. You can also specify

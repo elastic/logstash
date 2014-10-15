@@ -18,9 +18,9 @@ require "socket"
 # RFC3164 style or ISO8601. Otherwise the rest of RFC3164 must be obeyed.
 # If you do not use RFC3164, do not use this input.
 #
-# For more information see (the RFC3164 page)[http://www.ietf.org/rfc/rfc3164.txt].
+# For more information see [the RFC3164 page](http://www.ietf.org/rfc/rfc3164.txt).
 #
-# Note: this input will start listeners on both TCP and UDP.
+# Note: This input will start listeners on both TCP and UDP.
 class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   config_name "syslog"
   milestone 1
@@ -56,6 +56,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     @grok_filter = LogStash::Filters::Grok.new(
       "overwrite" => "message",
       "match" => { "message" => "<%{POSINT:priority}>%{SYSLOGLINE}" },
+      "tag_on_failure" => ["_grokparsefailure_sysloginput"],
     )
 
     @date_filter = LogStash::Filters::Date.new(
@@ -197,7 +198,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
   def syslog_relay(event)
     @grok_filter.filter(event)
 
-    if event["tags"].nil? || !event["tags"].include?("_grokparsefailure")
+    if event["tags"].nil? || !event["tags"].include?(@grok_filter.tag_on_failure)
       # Per RFC3164, priority = (facility * 8) + severity
       #                       = (facility << 3) & (severity)
       priority = event["priority"].to_i rescue 13

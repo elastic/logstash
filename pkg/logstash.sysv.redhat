@@ -5,7 +5,7 @@
 #       Starts Logstash as a daemon
 #
 # chkconfig: 2345 90 10
-# description: Starts Logstash as a daemon
+# description: Starts Logstash as a daemon.
 
 ### BEGIN INIT INFO
 # Provides: logstash
@@ -15,12 +15,10 @@
 # Default-Stop: S 0 1 6
 # Short-Description: Logstash
 # Description: Starts Logstash as a daemon.
-
 ### END INIT INFO
 
 . /etc/rc.d/init.d/functions
 
-PATH=/bin:/usr/bin:/sbin:/usr/sbin
 NAME=logstash
 DESC="Logstash Daemon"
 DEFAULT=/etc/sysconfig/$NAME
@@ -31,32 +29,20 @@ if [ `id -u` -ne 0 ]; then
 fi
 
 # The following variables can be overwritten in $DEFAULT
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
-export JAVA_HOME=/usr
-
-# Directory where the logstash all in one jar lives
-LS_HOME=/opt/logstash
-
-# Additional Java OPTS
-LS_JAVA_OPTS="-Xmx256m -Djava.io.tmpdir=$LS_HOME/tmp"
-
-# logstash log directory
-LOG_DIR=/var/log/logstash
-
-# logstash configuration directory
-CONF_DIR=/etc/logstash/conf.d
-
-# logstash log file
-LOG_FILE=$LOG_DIR/$NAME.log
-
-# Open File limit
-OPEN_FILES=2048
-
-# Nice level
-NICE=19
-
-# Filter threads
-FILTER_THREADS=1
+# See contents of file named in $DEFAULT for comments
+LS_USER=logstash
+LS_GROUP=logstash
+LS_HOME=/var/lib/logstash
+LS_HEAP_SIZE="500m"
+LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
+LS_LOG_FILE=/var/log/logstash/$NAME.log
+LS_CONF_DIR=/etc/logstash/conf.d
+LS_OPEN_FILES=16384
+LS_NICE=19
+LS_OPTS=""
+LS_PIDFILE=/var/run/$NAME/$NAME.pid
 
 # End of variables that can be overwritten in $DEFAULT
 
@@ -65,11 +51,10 @@ if [ -f "$DEFAULT" ]; then
 fi
 
 # Define other required variables
-PID_FILE=/var/run/$NAME.pid
+PID_FILE=${LS_PIDFILE}
 
-JAVA=`which java`
-JAR="${LS_HOME}/logstash.jar"
-ARGS="${LS_JAVA_OPTS} -jar ${JAR} agent --config ${CONF_DIR} --log ${LOG_FILE} -w ${FILTER_THREADS}"
+DAEMON="/opt/logstash/bin/logstash"
+DAEMON_OPTS="agent -f ${LS_CONF_DIR} -l ${LS_LOG_FILE} ${LS_OPTS}"
 
 #
 # Function that starts the daemon/service
@@ -77,30 +62,33 @@ ARGS="${LS_JAVA_OPTS} -jar ${JAR} agent --config ${CONF_DIR} --log ${LOG_FILE} -
 do_start()
 {
 
-  if [ -z "$JAVA" ]; then
-    echo "no JDK found - $JAVA"
-    exit 1
-  fi
-
-  if ! test -e "${JAR}"; then
-    echo "Jar file $JAR doesn't exist"
+  if [ -z "$DAEMON" ]; then
+    echo "not found - $DAEMON"
     exit 1
   fi
 
   if pidofproc -p "$PID_FILE" >/dev/null; then
-    failure
-    exit 99
+    exit 0
   fi
 
-  ulimit -n $OPEN_FILES
+  # Prepare environment
+  HOME="${HOME:-$LS_HOME}"
+  JAVA_OPTS="${LS_JAVA_OPTS}"
+  ulimit -n ${LS_OPEN_FILES}
+  cd "${LS_HOME}"
+  export PATH HOME JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
+  test -n "${JAVACMD}" && export JAVACMD
 
-  cd $LS_HOME
-  $JAVA $ARGS > /dev/null 1>&1 &
+  nice -n ${LS_NICE} runuser -s /bin/sh -c "exec $DAEMON $DAEMON_OPTS" ${LS_USER} >> $LS_LOG_FILE 2>&1 < /dev/null &
 
   RETVAL=$?
   local PID=$!
+  # runuser forks rather than execing our process.
+  usleep 500000
+  JAVA_PID=$(ps axo ppid,pid | awk -v "ppid=$PID" '$1==ppid {print $2}')
+  PID=${JAVA_PID:-$PID}
   echo $PID > $PID_FILE
-  success
+  [ "$PID" = "$JAVA_PID" ] && success
 }
 
 #

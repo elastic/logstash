@@ -34,13 +34,12 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   #           "line 2",
   #           "line 3"
   #         ]
+  #         # Emit all lines 3 times.
+  #         count => 3
   #       }
-  #
-  #       # Emit all lines 3 times.
-  #       count => 3
   #     }
   #
-  # The above will emit "line 1" then "line 2" then "line", then "line 1", etc... 
+  # The above will emit "line 1" then "line 2" then "line", then "line 1", etc...
   config :lines, :validate => :array
 
   # Set how many messages should be generated.
@@ -52,7 +51,6 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
   def register
     @host = Socket.gethostname
     @count = @count.first if @count.is_a?(Array)
-    @lines = [@message] if @lines.nil?
   end # def register
 
   def run(queue)
@@ -63,6 +61,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
       @message = $stdin.readline
       @logger.debug("Generator line read complete", :message => @message)
     end
+    @lines = [@message] if @lines.nil?
 
     while !finished? && (@count <= 0 || number < @count)
       @lines.each do |line|

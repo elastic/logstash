@@ -1,7 +1,7 @@
 require "rubygems"
 require "erb"
 require "optparse"
-require "bluecloth" # for markdown parsing
+require "kramdown" # markdown parser
 
 $: << Dir.pwd
 $: << File.join(File.dirname(__FILE__), "..", "lib")
@@ -27,6 +27,12 @@ class LogStashConfigDocGenerator
       /^ *flag[( ].*/ => lambda { |m| add_flag(m[0]) },
       /^ *(class|def|module) / => lambda { |m| clear_comments },
     }
+
+    if File.exists?("build/contrib_plugins")
+      @contrib_list = File.read("build/contrib_plugins").split("\n")
+    else
+      @contrib_list = []
+    end
   end
 
   def parse(string)
@@ -60,7 +66,7 @@ class LogStashConfigDocGenerator
     @class_description = @comments.join("\n")
     clear_comments
   end # def set_class_description
- 
+
   def add_comment(comment)
     return if comment == "encoding: utf-8"
     @comments << comment
@@ -78,7 +84,7 @@ class LogStashConfigDocGenerator
     # are gone from logstash.
     name = name.to_s unless name.is_a?(Regexp)
 
-    description = BlueCloth.new(@comments.join("\n")).to_html
+    description = Kramdown::Document.new(@comments.join("\n")).to_html
     @attributes[name][:description] = description
     clear_comments
   end # def add_config
@@ -169,7 +175,7 @@ class LogStashConfigDocGenerator
       mixin.downcase!
       parse(File.new(File.join(File.dirname(file), "..", "plugin_mixins", "#{mixin}.rb")).read)
     end
-    
+
     parse(code)
 
     puts "Generating docs for #{file}"
@@ -193,8 +199,10 @@ class LogStashConfigDocGenerator
     template_file = File.join(File.dirname(__FILE__), "plugin-doc.html.erb")
     template = ERB.new(File.new(template_file).read, nil, "-")
 
+    is_contrib_plugin = @contrib_list.include?(file)
+
     # descriptions are assumed to be markdown
-    description = BlueCloth.new(@class_description).to_html
+    description = Kramdown::Document.new(@class_description).to_html
 
     klass.get_config.each do |name, settings|
       @attributes[name].merge!(settings)
@@ -217,7 +225,7 @@ class LogStashConfigDocGenerator
         html.gsub!("%PLUGIN%", @name)
         out.puts(html)
       end
-    else 
+    else
       puts template.result(binding)
     end
   end # def generate
@@ -227,7 +235,7 @@ end # class LogStashConfigDocGenerator
 if __FILE__ == $0
   opts = OptionParser.new
   settings = {}
-  opts.on("-o DIR", "--output DIR", 
+  opts.on("-o DIR", "--output DIR",
           "Directory to output to; optional. If not specified,"\
           "we write to stdout.") do |val|
     settings[:output] = val

@@ -1,7 +1,8 @@
 # encoding: utf-8
+require "logstash/environment"
 require "logstash/namespace"
 require "logstash/outputs/base"
-require "json"
+require "logstash/json"
 require "uri"
 require "net/http"
 
@@ -40,7 +41,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   # ElasticSearch river configuration: bulk timeout in milliseconds
   config :es_bulk_timeout_ms, :validate => :number, :default => 100
-  
+
   # ElasticSearch river configuration: is ordered?
   config :es_ordered, :validate => :boolean, :default => false
 
@@ -61,7 +62,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   # RabbitMQ queue name
   config :queue, :validate => :string, :default => "elasticsearch"
-  
+
   # RabbitMQ exchange name
   config :exchange, :validate => :string, :default => "elasticsearch"
 
@@ -84,14 +85,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   public
   def register
-
-    # TODO(sissel): find a better way of declaring where the elasticsearch
-    # libraries are
-    # TODO(sissel): can skip this step if we're running from a jar.
-    jarpath = File.join(File.dirname(__FILE__), "../../../vendor/**/*.jar")
-    Dir[jarpath].each do |jar|
-        require jar
-    end
+    LogStash::Environment.load_elasticsearch_jars!
     prepare_river
   end
 
@@ -123,10 +117,10 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       # Name the river by our hostname
       require "socket"
       hostname = Socket.gethostname
-      
+
       # Replace spaces with hyphens and remove all non-alpha non-dash non-underscore characters
       river_name = "#{hostname} #{@queue}".gsub(' ', '-').gsub(/[^\w-]/, '')
-      
+
       api_path = "/_river/logstash-#{river_name}/_meta"
       @status_path = "/_river/logstash-#{river_name}/_status"
 
@@ -152,7 +146,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       @logger.info("ElasticSearch using river", :config => river_config)
       Net::HTTP.start(@es_host, @es_port) do |http|
         req = Net::HTTP::Put.new(api_path)
-        req.body = river_config.to_json
+        req.body = LogStash::Json.dump(river_config)
         response = http.request(req)
         response.value() # raise an exception if error
         @logger.info("River created: #{response.body}")
@@ -179,7 +173,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
           req = Net::HTTP::Get.new(@status_path)
           response = http.request(req)
           response.value
-          status = JSON.parse(response.body)
+          status = LogStash::Json.load(response.body)
           @logger.debug("Checking ES river status", :status => status)
           if status["_source"]["error"]
             reason = "ES river status: #{status["_source"]["error"]}"
@@ -207,6 +201,6 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       header["index"]["_id"] = event.sprintf(@document_id)
     end
 
-    @mq.publish_serialized(header.to_json + "\n" + event.to_json + "\n")
+    @mq.publish_serialized(LogStash::Json.dump(header) + "\n" + event.to_json + "\n")
   end # def receive
 end # LogStash::Outputs::ElasticSearchRiver

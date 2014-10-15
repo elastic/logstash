@@ -8,15 +8,22 @@ layout: content_right
 
 ### Download logstash:
 
-* [logstash-%VERSION%-flatjar.jar](https://download.elasticsearch.org/logstash/logstash/logstash-%VERSION%-flatjar.jar)
+* [logstash-%VERSION%.tar.gz](https://download.elasticsearch.org/logstash/logstash/logstash-%VERSION%.tar.gz)
+
+    curl -O https://download.elasticsearch.org/logstash/logstash/logstash-%VERSION%.tar.gz
+
+### Unpack it
+
+    tar -xzf logstash-%VERSION%.tar.gz
+    cd logstash-%VERSION%
 
 ### Requirements:
 
-* java
+* Java
 
 ### The Secret:
 
-logstash is written in JRuby, but I release standalone jar files for easy
+Logstash is written in JRuby, but I release standalone jar files for easy
 deployment, so you don't need to download JRuby or most any other dependencies.
 
 I bake as much as possible into the single release file.
@@ -29,9 +36,9 @@ I bake as much as possible into the single release file.
 
 ### Run it:
 
-    java -jar logstash-%VERSION%-flatjar.jar agent -f hello.conf
+    bin/logstash agent -f hello.conf
 
-Type stuff on standard input. Press enter. Watch what event logstash sees.
+Type stuff on standard input. Press enter. Watch what event Logstash sees.
 Press ^C to kill it.
 
 ## Step 3 - Add ElasticSearch
@@ -42,14 +49,14 @@ Press ^C to kill it.
 
 ### Run it:
 
-    java -jar logstash-%VERSION%-flatjar.jar agent -f hello-search.conf
+    bin/logstash agent -f hello-search.conf
 
 Same config as step 2, but now we are also writing events to ElasticSearch. Do
 a search for `*` (all):
 
     curl 'http://localhost:9200/_search?pretty=1&q=*'
 
-## Step 4 - logstash web
+## Step 4 - Logstash web
 
 The previous step is good, but a better frontend on elasticsearch would help!
 
@@ -57,22 +64,22 @@ The same config as step 3 is used.
 
 ### Run it:
 
-    java -jar logstash-%VERSION%-flatjar.jar agent -f hello-search.conf -- web
+    bin/logstash agent -f hello-search.conf web
 
-The above runs both the agent and the logstash web interface in the same
+The above runs both the agent and the Logstash web interface in the same
 process. Useful for simple deploys.
 
 ### Use it:
 
-Go to the logstash web interface in browser: <http://localhost:9292/>
+Go to the Logstash web interface in browser: <http://localhost:9292/>
 
-Type stuff on stdin on the agent, then search for it in the web interface.
+Type stuff on `STDIN` on the agent, then search for it in the web interface.
 
 ## Step 5 - real world example
 
-Let's backfill some old apache logs.  First, let's use grok.
+Let's backfill some old Apache logs.  First, let's use grok.
 
-Use the ['grok'](../../filters/grok) logstash filter to parse logs. 
+Use the ['grok'](../../filters/grok) Logstash filter to parse logs. 
 
 ### Download
 
@@ -81,9 +88,9 @@ Use the ['grok'](../../filters/grok) logstash filter to parse logs.
 
 ### Run it
 
-    java -jar logstash-%VERSION%-flatjar.jar agent -f apache-parse.conf
+    bin/logstash agent -f apache-parse.conf
 
-Logstash will now be listening on TCP port 3333. Send an apache log message at it:
+Logstash will now be listening on TCP port 3333. Send an Apache log message at it:
 
     nc localhost 3333 < apache_log.1
 
@@ -100,7 +107,7 @@ Same as the previous step, but we'll output to ElasticSearch now.
 
 ### Run it
 
-    java -jar logstash-%VERSION%-flatjar.jar agent -f apache-elasticsearch.conf -- web
+    bin/logstash agent -f apache-elasticsearch.conf web
 
 Logstash should be all set for you now. Start feeding it logs:
 
@@ -108,7 +115,7 @@ Logstash should be all set for you now. Start feeding it logs:
 
     nc localhost 3333 < apache_log.2 
 
-Go to the logstash web interface in browser: <http://localhost:9292/>
+Go to the Logstash web interface in browser: <http://localhost:9292/>
 
 Try some search queries. To see all the data, search for `*` (no quotes). Click
 on some results, drill around in some logs.
