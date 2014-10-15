@@ -93,12 +93,15 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   ## for example if you have single Instance.
   config :restore, :validate => :boolean, :default => false
 
- # The S3 canned ACL to use when putting the file. Defaults to "private".
- config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
-        :default => "private"
+  # The S3 canned ACL to use when putting the file. Defaults to "private".
+  config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
+         :default => "private"
 
   # Set the directory where logstash will store the tmp files before sending it to S3
   config :temp_directory, :validate => :string, :default => "/opt/logstash/S3_temp/"
+
+  # Specifix a prefix to the uploaded filename, this can simulate directories on S3
+  config :prefix, :validate => :string, :default => ''
 
   # Method to set up the aws configuration and establish connection
   def aws_s3_config
@@ -135,20 +138,22 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   # this method is used for write files on bucket. It accept the file and the name of file.
   def write_on_bucket(file_data, file_basename)
     # if you lose connection with s3, bad control implementation.
-    if ( @s3 == nil)
+    if ( @s3 == nil )
       aws_s3_config
     end
 
     # find and use the bucket
     bucket = @s3.buckets[@bucket]
 
-    @logger.debug "S3: ready to write "+file_basename+" in bucket "+@bucket+", Fire in the hole!"
+    remote_filename = "#{@prefix}#{file_basename}"
+
+    @logger.debug "S3: ready to write "+ remote_filename +" in bucket "+@bucket+", Fire in the hole!"
 
     # prepare for write the file
-    object = bucket.objects[file_basename]
+    object = bucket.objects[remote_filename]
     object.write(:file => file_data, :acl => @canned_acl)
 
-    @logger.debug "S3: has written "+file_basename+" in bucket "+@bucket + " with canned ACL \"" + @canned_acl + "\""
+    @logger.debug "S3: has written "+ remote_filename +" in bucket "+@bucket + " with canned ACL \"" + @canned_acl + "\""
   end
 
   # this method is used for create new path for name the file
@@ -204,6 +209,10 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       for i in (0..@tags.size-1)
         @tag_path += @tags[i].to_s+"."
       end
+    end
+
+    if @prefix && @prefix =~ /[\^`><]/
+      raise LogStash::ConfigurationError, "S3: prefix contains invalid characters"
     end
 
     if !File.directory?(@temp_directory)
