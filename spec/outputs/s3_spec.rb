@@ -1,7 +1,8 @@
 require "spec_helper"
 require "logstash/outputs/s3"
-require "aws-sdk"
 require "tempfile"
+require 'socket'
+require "aws-sdk"
 
 describe LogStash::Outputs::S3 do
   before { AWS.stub! }
@@ -55,6 +56,31 @@ describe LogStash::Outputs::S3 do
     end
   end
 
+  describe "#generate_temporary_filename" do
+    before :each do
+      Socket.stub(:gethostname) { "logstash.local" }
+      Time.stub(:now) { Time.new('2015-10-09-09:00') }
+    end
+
+    it "should add tags to the filename if present" do
+      config = minimal_settings.merge({ "tags" => ["elasticsearch", "logstash", "kibana"]})
+      s3 = LogStash::Outputs::S3.new(config)
+      s3.get_temporary_filename.should == "/opt/logstash/S3_temp/ls.s3.logstash.local.2015-01-01T00.00.tag_elasticsearch.logstash.kibana.part0.txt"
+    end
+
+    it "should not add the tags to the filename" do
+      config = minimal_settings.merge({ "tags" => [] })
+      s3 = LogStash::Outputs::S3.new(config)
+      s3.get_temporary_filename(3).should == "/opt/logstash/S3_temp/ls.s3.logstash.local.2015-01-01T00.00.part3.txt"
+    end
+
+    it "should allow to override the temp directory" do
+      config = minimal_settings.merge({ "tags" => [], "temp_directory" => '/tmp/more/' })
+      s3 = LogStash::Outputs::S3.new(config)
+      s3.get_temporary_filename(2).should == "/tmp/more/ls.s3.logstash.local.2015-01-01T00.00.part2.txt"
+    end
+  end
+
   describe "#write_on_bucket" do
     let(:fake_data) { Tempfile.new("fake_data") }
     let(:fake_bucket) do
@@ -71,8 +97,6 @@ describe LogStash::Outputs::S3 do
         "prefix" => prefix,
         "bucket" => "my-bucket"
       })
-
-
 
       AWS::S3::ObjectCollection.any_instance.should_receive(:[]).with("#{prefix}#{filename}") { fake_bucket }
 
@@ -92,6 +116,30 @@ describe LogStash::Outputs::S3 do
 
       s3 = LogStash::Outputs::S3.new(minimal_settings)
       s3.write_on_bucket(fake_data, filename)
+    end
+  end
+
+  describe "#write_events_to_multiples_files?" do
+    it 'returns true if the size_file is != 0 ' do
+      s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "size_file" => 200 }))
+      s3.write_events_to_multiples_files?.should be_true
+    end
+
+    it 'returns false if size_file is zero or not set' do
+      s3 = LogStash::Outputs::S3.new(minimal_settings)
+      s3.write_events_to_multiples_files?.should be_false
+    end
+  end
+
+
+  describe "#write_to_tempfile" do
+    xit "should append the event to a file" do
+      tmp = Tempfile.new('test-append-event')
+
+      s3 = LogStash::Outputs::S3.new(minimal_settings)
+      s3.append_to_tempfile('test-write')
+
+      tmp.should == "test-write\n"
     end
   end
 end

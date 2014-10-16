@@ -112,7 +112,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   def aws_service_endpoint(region)
     # Make the deprecated endpoint_region work
-    # TODO: Remove this after deprecation.
+    # TODO: (ph) Remove this after deprecation.
     if @endpoint_region
       region_to_use = @endpoint_region
     else
@@ -138,11 +138,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   # this method is used for write files on bucket. It accept the file and the name of file.
   def write_on_bucket(file_data, file_basename)
-    # if you lose connection with s3, bad control implementation.
-    if ( @s3 == nil )
-      aws_s3_config
-    end
-
     # find and use the bucket
     bucket = @s3.buckets[@bucket]
 
@@ -157,16 +152,10 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     @logger.debug "S3: has written "+ remote_filename +" in bucket "+@bucket + " with canned ACL \"" + @canned_acl + "\""
   end
 
-  # this method is used for create new path for name the file
-  def get_final_path
-    @pass_time = Time.now
-    return @temp_directory+"ls.s3."+Socket.gethostname+"."+(@pass_time).strftime("%Y-%m-%dT%H.%M")
-  end
-
   # This method is used for restore the previous crash of logstash or to prepare the files to send in bucket.
   # Take two parameter: flag and name. Flag indicate if you want to restore or not, name is the name of file
-  def up_file(flag, name)
-    Dir[@temp_directory+name].each do |file|
+  def up_file(flag, pattern)
+    Dir[@temp_directory+pattern].each do |file|
       name_file = File.basename(file)
 
       if (flag == true)
@@ -190,27 +179,19 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
   def new_file(flag)
    if (flag == true)
-     @current_final_path = get_final_path
      @sizeCounter = 0
    end
 
-   if (@tags.size != 0)
-     @tempFile = File.new(@current_final_path+".tag_"+@tag_path+"part"+@sizeCounter.to_s+".txt", "w")
-   else
-     @tempFile = File.new(@current_final_path+".part"+@sizeCounter.to_s+".txt", "w")
-   end
+   @tempFile = File.new(get_temporary_filename(@sizeCounter), "w")
   end
 
   public
   def register
     require "aws-sdk"
 
-    if (@tags.size != 0)
-      @tag_path = ""
-      for i in (0..@tags.size-1)
-        @tag_path += @tags[i].to_s+"."
-      end
-    end
+    @s3 = aws_s3_config
+
+    @pass_time = Time.now
 
     if @prefix && @prefix =~ /[\^`><]/
       raise LogStash::ConfigurationError, "S3: prefix contains invalid characters"
@@ -221,6 +202,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     end
 
    if (@restore == true )
+     restore_from_crashes()
      @logger.debug "S3: is attempting to verify previous crashes..."
 
      up_file(true, "*.txt")
@@ -229,16 +211,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
    new_file(true)
 
    if (time_file != 0)
-      first_time = true
-      @thread = time_alert(@time_file*60) do
-       if (first_time == false)
-         @logger.debug "S3: time_file triggered,  let's bucket the file if dosen't empty  and create new file "
-         up_file(false, File.basename(@tempFile))
-         new_file(true)
-       else
-         first_time = false
-       end
-     end
+     configure_periodic_uploader()
    end
 
     @codec.on_event do |event|
@@ -247,51 +220,82 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   public
+  def configure_periodic_uploader()
+    first_time = true
+    @thread = time_alert(@time_file * 60) do
+      if (first_time == false)
+        @logger.debug "S3: time_file triggered, let's bucket the file if dosen't empty and create new file "
 
+        up_file(false, File.basename(@tempFile))
+        new_file(true)
+      else
+        first_time = false
+      end
+    end
+  end
+
+  public
+  def get_temporary_filename(size_counter = 0)
+    current_time = Time.now
+    current_final_path = "#{@temp_directory}ls.s3.#{Socket.gethostname}.#{current_time.strftime("%Y-%m-%dT%H.%M")}"
+
+    if (@tags.size > 0)
+      return "#{current_final_path}.tag_#{@tags.join('.')}.part#{size_counter}.txt"
+    else
+      return "#{current_final_path}.part#{size_counter}.txt"
+    end
+  end
+
+  public
   def receive(event)
     return unless output?(event)
     @codec.encode(event)
   end
 
-  def handle_event(message)
+  def handle_event(event)
     if(time_file != 0)
-       @logger.debug "S3: trigger files after "+((@pass_time+60*time_file)-Time.now).to_s
+       @logger.debug("S3: trigger files ", :minutes => (@pass_time + 60 * time_file) - Time.now)
     end
 
     # if specific the size
-    if(size_file != 0)
+    if(write_events_to_multiple_files?)
 
-      if (@tempFile.size < @size_file )
+      if (rotate_events_log?)
+        @logger.debug("S3: tempfile is too large, let's bucket it and create new file", :tempfile => File.basename(@tempFile))
 
-        @logger.debug "S3: File have size: "+@tempFile.size.to_s+" and size_file is: "+ @size_file.to_s
-        @logger.debug "S3: put event into: "+File.basename(@tempFile)
-
-        # Put the event in the file, now!
-        File.open(@tempFile, 'a') do |file|
-          file.puts message
-          file.write "\n"
-        end
-
-      else
-
-        @logger.debug "S3: file: "+File.basename(@tempFile)+" is too large, let's bucket it and create new file"
         up_file(false, File.basename(@tempFile))
         @sizeCounter += 1
         new_file(false)
+      else
+        @logger.debug("S3: tempfile file size report.", :tempfile_size => @tempFile.size, :size_file => @size_file)
 
-       end
+        write_to_tempfile(event)
+      end
 
     # else we put all in one file
     else
-
-      @logger.debug "S3: put event into "+File.basename(@tempFile)
-      File.open(@tempFile, 'a') do |file|
-        file.puts messages
-        file.write "\n"
-      end
+      write_to_tempfile(event)
     end
+  end
 
+  public
+  def rotate_events_log?
+    @tempFile.size >= @size_file
+  end
+
+  public
+  def write_events_to_multiple_files?
+    size_file != 0
+  end
+
+  public
+  def write_to_tempfile(event)
+    @logger.debug("S3: put event into tempfile ", :tempfile => File.basename(@tempFile))
+
+    File.open(@tempFile, 'a') do |file|
+      file.puts(event)
+      file.write "\n"
+    end
   end
 end
-
 # Enjoy it, by Bistic:)
