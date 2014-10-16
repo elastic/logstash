@@ -112,6 +112,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   def aws_service_endpoint(region)
     # Make the deprecated endpoint_region work
+    # TODO: Remove this after deprecation.
     if @endpoint_region
       region_to_use = @endpoint_region
     else
@@ -240,21 +241,19 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
      end
    end
 
+    @codec.on_event do |event|
+      handle_event(event)
+    end
   end
 
   public
+
   def receive(event)
     return unless output?(event)
+    @codec.encode(event)
+  end
 
-    # Prepare format of Events
-    if (@format == "plain")
-      message = self.class.format_message(event)
-    elsif (@format == "json")
-      message = event.to_json
-    else
-      message = event.to_s
-    end
-
+  def handle_event(message)
     if(time_file != 0)
        @logger.debug "S3: trigger files after "+((@pass_time+60*time_file)-Time.now).to_s
     end
@@ -292,14 +291,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       end
     end
 
-  end
-
-  def self.format_message(event)
-    message = "Date: #{event[LogStash::Event::TIMESTAMP]}\n"
-    message << "Source: #{event["source"]}\n"
-    message << "Tags: #{Array(event["tags"]).join(', ')}\n"
-    message << "Fields: #{event.to_hash.inspect}\n"
-    message << "Message: #{event["message"]}"
   end
 end
 
