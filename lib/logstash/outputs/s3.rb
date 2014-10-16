@@ -166,9 +166,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
         write_on_bucket(file, name_file)
 
         if (flag == true)
-          @logger.debug "S3: file: "+name_file+" restored on bucket "+@bucket
+          @logger.debug("S3: file restored on bucket", :filename => name_file, :bucket => @bucket)
         else
-          @logger.debug "S3: file: "+name_file+" was put on bucket "+@bucket
+          @logger.debug("S3: file was put on bucket", :filename => name_file, :bucket => @bucket)
         end
       end
 
@@ -191,8 +191,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
     @s3 = aws_s3_config
 
-    @pass_time = Time.now
-
     if @prefix && @prefix =~ /[\^`><]/
       raise LogStash::ConfigurationError, "S3: prefix contains invalid characters"
     end
@@ -203,7 +201,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
    if (@restore == true )
      restore_from_crashes()
-     @logger.debug "S3: is attempting to verify previous crashes..."
+     @logger.debug("S3: is attempting to verify previous crashes...")
 
      up_file(true, "*.txt")
    end
@@ -221,10 +219,12 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   public
   def configure_periodic_uploader()
+    @pass_time = Time.now
+
     first_time = true
     @thread = time_alert(@time_file * 60) do
       if (first_time == false)
-        @logger.debug "S3: time_file triggered, let's bucket the file if dosen't empty and create new file "
+        @logger.debug("S3: time_file triggered, let's bucket the file if dosen't empty and create new file")
 
         up_file(false, File.basename(@tempFile))
         new_file(true)
