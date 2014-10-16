@@ -268,10 +268,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
         new_file(false)
       else
         @logger.debug("S3: tempfile file size report.", :tempfile_size => @tempFile.size, :size_file => @size_file)
-
-        write_to_tempfile(event)
       end
 
+      write_to_tempfile(event)
     # else we put all in one file
     else
       write_to_tempfile(event)
