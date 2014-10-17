@@ -63,6 +63,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   include LogStash::PluginMixins::AwsConfig
 
   TEMPFILE_EXTENSION = "txt"
+  KILOBYTE = 1024
 
   config_name "s3"
   milestone 1
@@ -108,6 +109,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   # Method to set up the aws configuration and establish connection
 
   attr_accessor :tempfile
+  attr_reader :page_counter
 
   def aws_s3_config
     @logger.info("Registering s3 output", :bucket => @bucket, :endpoint_region => @region)
@@ -142,17 +144,18 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   # this method is used for write files on bucket. It accept the file and the name of file.
-  def write_on_bucket(file_data, file_basename)
+  def write_on_bucket(file)
     # find and use the bucket
     bucket = @s3.buckets[@bucket]
 
-    remote_filename = "#{@prefix}#{file_basename}"
+    remote_filename = "#{@prefix}#{File.basename(file)}"
 
     @logger.debug("S3: ready to write file in bucket", :remote_filename => remote_filename, :bucket => @bucket)
 
     # prepare for write the file
+
     object = bucket.objects[remote_filename]
-    object.write(:file => file_data, :acl => @canned_acl)
+    object.write(:file => file.path, :acl => @canned_acl)
 
     @logger.debug("S3: has written remote file in bucket with canned ACL", :remote_filename => remote_filename, :bucket  => @bucket, :canned_acl => @canned_acl)
   end
@@ -160,7 +163,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
   public
   def create_temporary_file
-    @tempfile = File.new(get_temporary_filename(@size_counter), "w")
+    @tempfile = File.new(get_temporary_filename(@page_counter), "w")
   end
 
   public
@@ -195,11 +198,11 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   public
   def next_page
-    @size_counter += 1
+    @page_counter += 1
   end
 
   def reset_page_counter
-    @size_counter = 0
+    @page_counter = 0
   end
 
   public
@@ -217,10 +220,10 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   def move_file_to_bucket(file)
     if !File.zero?(file)
-      write_on_bucket(file, name_file)
-      @logger.debug("S3: file was put on bucket", :filename => name_file, :bucket => @bucket)
-      File.delete(file)
+      write_on_bucket(file)
+      @logger.debug("S3: file was put on bucket", :filename => File.basename(file), :bucket => @bucket)
     end
+    File.delete(file)
   end
 
   public
@@ -241,14 +244,14 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   public
-  def get_temporary_filename(size_counter = 0)
+  def get_temporary_filename(page_counter = 0)
     current_time = Time.now
-    current_final_path = "#{@temp_directory}ls.s3.#{Socket.gethostname}.#{current_time.strftime("%Y-%m-%dT%H.%M")}"
+    filename = "ls.s3.#{Socket.gethostname}.#{current_time.strftime("%Y-%m-%dT%H.%M")}"
 
     if @tags.size > 0
-      return "#{current_final_path}.tag_#{@tags.join('.')}.part#{size_counter}.#{TEMPFILE_EXTENSION}"
+      return File.join(@temp_directory, "#{filename}.tag_#{@tags.join('.')}.part#{page_counter}.#{TEMPFILE_EXTENSION}")
     else
-      return "#{current_final_path}.part#{size_counter}.#{TEMPFILE_EXTENSION}"
+      return File.join(@temp_directory, "#{filename}.part#{page_counter}.#{TEMPFILE_EXTENSION}")
     end
   end
 
@@ -269,14 +272,14 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
         @logger.debug("S3: tempfile is too large, let's bucket it and create new file", :tempfile => File.basename(@tempfile))
 
         move_file_to_bucket(@tempfile)
-        new_page()
+        next_page()
         create_temporary_file()
       else
-        @logger.debug("S3: tempfile file size report.", :tempfile_size => @tempfile.size, :size_file => @size_file)
+        @logger.debug("S3: tempfile file size report.", :tempfile_size => @tempfile.size / KILOBYTE, :size_file => @size_file)
       end
 
       write_to_tempfile(event)
-    # else we put all in one file
+      # else we put all in one file
     else
       write_to_tempfile(event)
     end
@@ -284,7 +287,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   public
   def rotate_events_log?
-    @tempfile.size > @size_file
+    @tempfile.size / KILOBYTE > @size_file
   end
 
   public
@@ -298,7 +301,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
     File.open(@tempfile, 'a') do |file|
       file.puts(event)
-      file.write "\n"
     end
   end
 end

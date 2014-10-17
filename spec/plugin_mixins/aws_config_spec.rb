@@ -23,7 +23,6 @@ describe LogStash::PluginMixins::AwsConfig do
 
   it 'should support reading configuration from a yaml file' do
     settings = { 'aws_credentials_file' => File.join(File.dirname(__FILE__), '..', 'support/aws_credentials_file_sample_test.yml') }
-    puts settings
     config = DummyInputAwsConfig.new(settings)
     config.aws_options_hash[:access_key_id].should == '1234'
     config.aws_options_hash[:secret_access_key].should == 'secret'
@@ -35,18 +34,4 @@ describe LogStash::PluginMixins::AwsConfig do
     config = DummyInputAwsConfig.new(settings)
     config.aws_options_hash[:dummy_input_aws_config_region].should == "us-west-2.awswebservice.local"
   end
-
-  #
-  # it 'should support passing aws configuration from the environment' do
-  #   # I think we should test this even if the support magicly coming from the aws-sdk gem
-  #
-  #   ENV.stub(:[]).with('AWS_ACCESS_KEY_ID') { '1234' }
-  #   ENV.stub(:[]).with('AWS_SECRET_ACCESS_KEY') { 'secret' }
-  #   ENV.stub(:[]).with('AWS_REGION') { 'us-west-2' }
-  #
-  #   AWS.config.access_key_id.should == '1234'
-  # end
-
-  # how to test the AIM role
-  # proxy test
 end
