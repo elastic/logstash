@@ -4,7 +4,7 @@ require "logstash/json"
 require "tempfile"
 
 describe LogStash::Outputs::File do
-
+  
 
   describe "ship lots of events to a file" do
     event_count = 10000 + rand(500)

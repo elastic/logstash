@@ -4,7 +4,7 @@ require "spec_helper"
 require "logstash/outputs/csv"
 
 describe LogStash::Outputs::CSV do
-
+  
 
   describe "Write a single field to a csv file" do
     tmpfile = Tempfile.new('logstash-spec-output-csv')
