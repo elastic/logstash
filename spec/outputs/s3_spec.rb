@@ -101,6 +101,7 @@ describe LogStash::Outputs::S3 do
       AWS::S3::ObjectCollection.any_instance.should_receive(:[]).with("#{prefix}#{filename}") { fake_bucket }
 
       s3 = LogStash::Outputs::S3.new(config)
+      s3.register
       s3.write_on_bucket(fake_data, filename)
     end
 
@@ -115,31 +116,50 @@ describe LogStash::Outputs::S3 do
       AWS::S3::ObjectCollection.any_instance.should_receive(:[]).with(filename) { fake_bucket }
 
       s3 = LogStash::Outputs::S3.new(minimal_settings)
+      s3.register
       s3.write_on_bucket(fake_data, filename)
     end
   end
 
-  describe "#write_events_to_multiples_files?" do
+  describe "#write_events_to_multiple_files?" do
     it 'returns true if the size_file is != 0 ' do
       s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "size_file" => 200 }))
-      s3.write_events_to_multiples_files?.should be_true
+      s3.write_events_to_multiple_files?.should be_true
     end
 
     it 'returns false if size_file is zero or not set' do
       s3 = LogStash::Outputs::S3.new(minimal_settings)
-      s3.write_events_to_multiples_files?.should be_false
+      s3.write_events_to_multiple_files?.should be_false
     end
   end
 
 
   describe "#write_to_tempfile" do
-    xit "should append the event to a file" do
+    it "should append the event to a file" do
       tmp = Tempfile.new('test-append-event')
 
       s3 = LogStash::Outputs::S3.new(minimal_settings)
-      s3.append_to_tempfile('test-write')
+      s3.tempfile = tmp
+      s3.write_to_tempfile('test-write')
 
-      tmp.should == "test-write\n"
+      tmp.read.should == "test-write\n\n"
     end
+  end
+
+  describe "#rotate_events_log" do
+    it "returns true if the tempfile is over the file_size limit" do
+      tmp = Tempfile.new('test-append-event')
+      tmp.stub(:size) { 400 }
+
+      s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "size_file" => 200 }))
+    end
+
+    it "returns false if the tempfile is under the file_size limit" do
+      tmp = Tempfile.new('test-append-event')
+      tmp.stub(:size) { 100 }
+
+      s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "size_file" => 200 }))
+    end
+
   end
 end

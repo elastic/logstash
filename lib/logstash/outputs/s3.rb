@@ -62,6 +62,8 @@ require "socket" # for Socket.gethostname
 class LogStash::Outputs::S3 < LogStash::Outputs::Base
   include LogStash::PluginMixins::AwsConfig
 
+  TEMPFILE_EXTENSION = "txt"
+
   config_name "s3"
   milestone 1
 
@@ -104,6 +106,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   config :prefix, :validate => :string, :default => ''
 
   # Method to set up the aws configuration and establish connection
+
+  attr_accessor :tempfile
+
   def aws_s3_config
     @logger.info("Registering s3 output", :bucket => @bucket, :endpoint_region => @region)
 
@@ -143,46 +148,19 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
     remote_filename = "#{@prefix}#{file_basename}"
 
-    @logger.debug "S3: ready to write "+ remote_filename +" in bucket "+@bucket+", Fire in the hole!"
+    @logger.debug("S3: ready to write file in bucket", :remote_filename => remote_filename, :bucket => @bucket)
 
     # prepare for write the file
     object = bucket.objects[remote_filename]
     object.write(:file => file_data, :acl => @canned_acl)
 
-    @logger.debug "S3: has written "+ remote_filename +" in bucket "+@bucket + " with canned ACL \"" + @canned_acl + "\""
-  end
-
-  # This method is used for restore the previous crash of logstash or to prepare the files to send in bucket.
-  # Take two parameter: flag and name. Flag indicate if you want to restore or not, name is the name of file
-  def up_file(flag, pattern)
-    Dir[@temp_directory+pattern].each do |file|
-      name_file = File.basename(file)
-
-      if (flag == true)
-        @logger.warn "S3: have found temporary file: "+name_file+", something has crashed before... Prepare for upload in bucket!"
-      end
-
-      if (!File.zero?(file))
-        write_on_bucket(file, name_file)
-
-        if (flag == true)
-          @logger.debug("S3: file restored on bucket", :filename => name_file, :bucket => @bucket)
-        else
-          @logger.debug("S3: file was put on bucket", :filename => name_file, :bucket => @bucket)
-        end
-      end
-
-      File.delete (file)
-    end
+    @logger.debug("S3: has written remote file in bucket with canned ACL", :remote_filename => remote_filename, :bucket  => @bucket, :canned_acl => @canned_acl)
   end
 
   # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
-  def new_file(flag)
-   if (flag == true)
-     @size_counter = 0
-   end
-
-   @tempFile = File.new(get_temporary_filename(@size_counter), "w")
+  public
+  def create_temporary_file
+    @tempfile = File.new(get_temporary_filename(@size_counter), "w")
   end
 
   public
@@ -199,13 +177,14 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       raise LogStash::ConfigurationError, "S3: Directory #{@temp_directory} doesn't exist, create it and start logstash."
     end
 
-   if (@restore == true )
+   if @restore == true
      restore_from_crashes()
    end
 
-   new_file(true)
+   reset_page_counter()
+   create_temporary_file()
 
-   if (time_file != 0)
+   if time_file != 0
      configure_periodic_uploader()
    end
 
@@ -215,22 +194,46 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   public
+  def next_page
+    @size_counter += 1
+  end
+
+  def reset_page_counter
+    @size_counter = 0
+  end
+
+  public
   def restore_from_crashes
     @logger.debug("S3: is attempting to verify previous crashes...")
-    up_file(true, "*.txt")
+
+    Dir[File.join(@temp_directory, "*.#{TEMPFILE_EXTENSION}")].each do |file|
+      name_file = File.basename(file)
+      @logger.warn("S3: have found temporary file the upload process crashed, uploading file to S3.", :filename => name_file)
+      move_file_to_bucket(file)
+    end
+  end
+
+  public
+
+  def move_file_to_bucket(file)
+    if !File.zero?(file)
+      write_on_bucket(file, name_file)
+      @logger.debug("S3: file was put on bucket", :filename => name_file, :bucket => @bucket)
+      File.delete(file)
+    end
   end
 
   public
   def configure_periodic_uploader()
-    @pass_time = Time.now
+    @output_started_at = Time.now
 
     first_time = true
     @thread = time_alert(@time_file * 60) do
-      if (first_time == false)
+      if first_time == false
         @logger.debug("S3: time_file triggered, let's bucket the file if dosen't empty and create new file")
 
-        up_file(false, File.basename(@tempFile))
-        new_file(true)
+        move_file_to_bucket(@tempfile)
+        create_temporary_file()
       else
         first_time = false
       end
@@ -242,10 +245,10 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     current_time = Time.now
     current_final_path = "#{@temp_directory}ls.s3.#{Socket.gethostname}.#{current_time.strftime("%Y-%m-%dT%H.%M")}"
 
-    if (@tags.size > 0)
-      return "#{current_final_path}.tag_#{@tags.join('.')}.part#{size_counter}.txt"
+    if @tags.size > 0
+      return "#{current_final_path}.tag_#{@tags.join('.')}.part#{size_counter}.#{TEMPFILE_EXTENSION}"
     else
-      return "#{current_final_path}.part#{size_counter}.txt"
+      return "#{current_final_path}.part#{size_counter}.#{TEMPFILE_EXTENSION}"
     end
   end
 
@@ -256,20 +259,20 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   def handle_event(event)
-    if(time_file != 0)
-       @logger.debug("S3: trigger files ", :minutes => (@pass_time + 60 * time_file) - Time.now)
+    if time_file != 0
+       @logger.debug("S3: trigger files ", :minutes => (@output_started_at + 60 * time_file) - Time.now)
     end
 
-    # if specific the size
-    if(write_events_to_multiple_files?)
-      if (rotate_events_log?)
-        @logger.debug("S3: tempfile is too large, let's bucket it and create new file", :tempfile => File.basename(@tempFile))
+    # if we rotate on filesize
+    if write_events_to_multiple_files?
+      if rotate_events_log?
+        @logger.debug("S3: tempfile is too large, let's bucket it and create new file", :tempfile => File.basename(@tempfile))
 
-        up_file(false, File.basename(@tempFile))
-        @size_counter += 1
-        new_file(false)
+        move_file_to_bucket(@tempfile)
+        new_page()
+        create_temporary_file()
       else
-        @logger.debug("S3: tempfile file size report.", :tempfile_size => @tempFile.size, :size_file => @size_file)
+        @logger.debug("S3: tempfile file size report.", :tempfile_size => @tempfile.size, :size_file => @size_file)
       end
 
       write_to_tempfile(event)
@@ -281,7 +284,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   public
   def rotate_events_log?
-    @tempFile.size >= @size_file
+    @tempfile.size > @size_file
   end
 
   public
@@ -291,9 +294,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   public
   def write_to_tempfile(event)
-    @logger.debug("S3: put event into tempfile ", :tempfile => File.basename(@tempFile))
+    @logger.debug("S3: put event into tempfile ", :tempfile => File.basename(@tempfile))
 
-    File.open(@tempFile, 'a') do |file|
+    File.open(@tempfile, 'a') do |file|
       file.puts(event)
       file.write "\n"
     end
