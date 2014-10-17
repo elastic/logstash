@@ -179,10 +179,10 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
   def new_file(flag)
    if (flag == true)
-     @sizeCounter = 0
+     @size_counter = 0
    end
 
-   @tempFile = File.new(get_temporary_filename(@sizeCounter), "w")
+   @tempFile = File.new(get_temporary_filename(@size_counter), "w")
   end
 
   public
@@ -201,9 +201,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
    if (@restore == true )
      restore_from_crashes()
-     @logger.debug("S3: is attempting to verify previous crashes...")
-
-     up_file(true, "*.txt")
    end
 
    new_file(true)
@@ -215,6 +212,12 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     @codec.on_event do |event|
       handle_event(event)
     end
+  end
+
+  public
+  def restore_from_crashes
+    @logger.debug("S3: is attempting to verify previous crashes...")
+    up_file(true, "*.txt")
   end
 
   public
@@ -259,12 +262,11 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
     # if specific the size
     if(write_events_to_multiple_files?)
-
       if (rotate_events_log?)
         @logger.debug("S3: tempfile is too large, let's bucket it and create new file", :tempfile => File.basename(@tempFile))
 
         up_file(false, File.basename(@tempFile))
-        @sizeCounter += 1
+        @size_counter += 1
         new_file(false)
       else
         @logger.debug("S3: tempfile file size report.", :tempfile_size => @tempFile.size, :size_file => @size_file)
