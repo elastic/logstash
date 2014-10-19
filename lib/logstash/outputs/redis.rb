@@ -19,6 +19,8 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   config_name "redis"
   milestone 2
 
+  default :codec, "json"
+
   # Name is used for logging in case there are multiple instances.
   # TODO: delete
   config :name, :validate => :string, :default => 'default',
@@ -138,46 +140,49 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     @host_idx = 0
 
     @congestion_check_times = Hash.new { |h,k| h[k] = Time.now.to_i - @congestion_interval }
+
+    @codec.on_event do |payload|
+      # How can I do this sort of thing with codecs?
+      #key = event.sprintf(@key)
+      key = @key
+
+      if @batch and @data_type == 'list' # Don't use batched method for pubsub.
+        # Stud::Buffer
+        buffer_receive(payload, key)
+        next
+      end
+
+      begin
+        @redis ||= connect
+        if @data_type == 'list'
+          congestion_check(key)
+          @redis.rpush(key, payload)
+        else
+          @redis.publish(key, payload)
+        end
+      rescue => e
+        @logger.warn("Failed to send event to Redis", :event => event,
+                     :identity => identity, :exception => e,
+                     :backtrace => e.backtrace)
+        sleep @reconnect_interval
+        @redis = nil
+        retry
+      end
+    end
   end # def register
 
   def receive(event)
     return unless output?(event)
 
-    if @batch and @data_type == 'list' # Don't use batched method for pubsub.
-      # Stud::Buffer
-      buffer_receive(event.to_json, event.sprintf(@key))
-      return
-    end
-
-    key = event.sprintf(@key)
     # TODO(sissel): We really should not drop an event, but historically
     # we have dropped events that fail to be converted to json.
     # TODO(sissel): Find a way to continue passing events through even
     # if they fail to convert properly.
     begin
-      payload = event.to_json
-    rescue Encoding::UndefinedConversionError, ArgumentError
-      puts "FAILUREENCODING"
-      @logger.error("Failed to convert event to JSON. Invalid UTF-8, maybe?",
-                    :event => event.inspect)
-      return
-    end
-
-    begin
-      @redis ||= connect
-      if @data_type == 'list'
-        congestion_check(key)
-        @redis.rpush(key, payload)
-      else
-        @redis.publish(key, payload)
-      end
-    rescue => e
-      @logger.warn("Failed to send event to Redis", :event => event,
-                   :identity => identity, :exception => e,
-                   :backtrace => e.backtrace)
-      sleep @reconnect_interval
-      @redis = nil
-      retry
+      @codec.encode(event)
+    rescue JSON::GeneratorError => e
+      @logger.warn("Trouble converting event to JSON", :exception => e,
+                   :event => event)
     end
   end # def receive
 
