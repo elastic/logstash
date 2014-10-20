@@ -335,7 +335,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   public
   def write_to_tempfile(event)
     @logger.debug("S3: put event into tempfile ", :tempfile => File.basename(@tempfile))
-    @tempfile.puts(event)
+    @tempfile.syswrite(event)
   end
 
   public
