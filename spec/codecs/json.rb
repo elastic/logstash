@@ -44,6 +44,7 @@ describe LogStash::Codecs::JSON do
           decoded = true
           insist { event.is_a?(LogStash::Event) }
           insist { event["message"] } == "something that isn't json"
+          insist { event["tags"] }.include?("_jsonparsefailure")
         end
         insist { decoded } == true
       end
