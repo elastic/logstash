@@ -272,7 +272,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     @output_started_at = Time.now
 
     first_time = true
-    @thread = time_alert(@time_file * 60) do
+    @periodic_uploader_thread = time_alert(@time_file * 60) do
       if first_time == false
         @logger.debug("S3: time_file triggered, let's bucket the file if dosen't empty and create new file")
 
@@ -303,10 +303,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   def handle_event(event)
-    if time_file != 0
-       @logger.debug("S3: trigger files ", :minutes => (@output_started_at + 60 * time_file) - Time.now)
-    end
-
     # if we rotate on filesize
     if write_events_to_multiple_files?
       if rotate_events_log?
