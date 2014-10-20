@@ -173,6 +173,8 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   def register
     require "aws-sdk"
 
+    workers_not_supported
+
     @s3 = aws_s3_config
 
     if @prefix && @prefix =~ /[\^`><]/
@@ -180,7 +182,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     end
 
     if !File.directory?(@temp_directory)
-      raise LogStash::ConfigurationError, "S3: Directory #{@temp_directory} doesn't exist, create it and start logstash."
+      FileUtils.mkdir_p(@temp_directory)
     end
 
    if @restore == true
@@ -308,4 +310,4 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     end
   end
 end
-# Enjoy it, by Bistic:)
+# Enjoy it, by Bistic:
