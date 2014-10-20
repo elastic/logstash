@@ -38,12 +38,12 @@ describe LogStash::Outputs::S3 do
         "bucket" => "logstash",
         "time_file" => 1,
         "size_file" => 10,
-        "temp_directory" => "/tmp/logstash-do-not-exist"
+        "temporary_directory" => "/tmp/logstash-do-not-exist"
       }
 
       s3 = LogStash::Outputs::S3.new(config)
 
-      expect { File }.to receive(:mkdir_p).with(config["temp_directory"])
+      expect { File }.to receive(:mkdir_p).with(config["temporary_directory"])
       s3.register
     end
 
@@ -67,25 +67,25 @@ describe LogStash::Outputs::S3 do
     end
 
     it "should add tags to the filename if present" do
-      config = minimal_settings.merge({ "tags" => ["elasticsearch", "logstash", "kibana"]})
+      config = minimal_settings.merge({ "tags" => ["elasticsearch", "logstash", "kibana"], "temporary_directory" => "/tmp/logstash"})
       s3 = LogStash::Outputs::S3.new(config)
-      expect(s3.get_temporary_filename).to eq("/opt/logstash/S3_temp/ls.s3.logstash.local.2015-01-01T00.00.tag_elasticsearch.logstash.kibana.part0.txt")
+      expect(s3.get_temporary_filename).to eq("/tmp/logstash/ls.s3.logstash.local.2015-01-01T00.00.tag_elasticsearch.logstash.kibana.part0.txt")
     end
 
     it "should not add the tags to the filename" do
-      config = minimal_settings.merge({ "tags" => [] })
+      config = minimal_settings.merge({ "tags" => [], "temporary_directory" => "/tmp/logstash" })
       s3 = LogStash::Outputs::S3.new(config)
-      expect(s3.get_temporary_filename(3)).to eq("/opt/logstash/S3_temp/ls.s3.logstash.local.2015-01-01T00.00.part3.txt")
+      expect(s3.get_temporary_filename(3)).to eq("/tmp/logstash/ls.s3.logstash.local.2015-01-01T00.00.part3.txt")
     end
 
-    it "should allow to override the temp directory" do
-      config = minimal_settings.merge({ "tags" => [], "temp_directory" => '/tmp/more/' })
+    it "should default to the os temporary directory" do
+      config = minimal_settings.merge({ "tags" => [] })
       s3 = LogStash::Outputs::S3.new(config)
-      expect(s3.get_temporary_filename(2)).to eq("/tmp/more/ls.s3.logstash.local.2015-01-01T00.00.part2.txt")
+      expect(s3.get_temporary_filename(2)).to eq(File.join(Dir.tmpdir, "logstash", "ls.s3.logstash.local.2015-01-01T00.00.part2.txt"))
     end
 
     it "normalized the temp directory to include the trailing slash if missing" do
-      s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "temp_directory" => "/tmp/logstash" }))
+      s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "temporary_directory" => "/tmp/logstash" }))
       expect(s3.get_temporary_filename).to eq("/tmp/logstash/ls.s3.logstash.local.2015-01-01T00.00.part0.txt")
     end
   end
@@ -209,7 +209,7 @@ describe LogStash::Outputs::S3 do
 
   describe "#restore_from_crashes" do
     it "read the temp directory and upload the matching file to s3" do
-      s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "temp_directory" => "/tmp/"}))
+      s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "temporary_directory" => "/tmp/"}))
 
       expect(Dir).to receive(:[]).with("/tmp/*.txt").and_return(["/tmp/01.txt"])
       expect(s3).to receive(:move_file_to_bucket).with("/tmp/01.txt")

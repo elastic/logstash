@@ -108,8 +108,8 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   # Specify how many workers to use to upload the files to S3
   config :upload_workers_count, :validate => :number, :default => 2
 
-  # Method to set up the aws configuration and establish connection
 
+  # Exposed attributes for testing purpose.
   attr_accessor :tempfile
   attr_reader :page_counter
 
@@ -184,6 +184,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     @upload_queue = Queue.new
 
     if @prefix && @prefix =~ /[\^`><]/
+      @logger.error("S3: prefix contains invalid characters", :prefix => @prefix)
       raise LogStash::ConfigurationError, "S3: prefix contains invalid characters"
     end
 
@@ -332,7 +333,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   public
   def write_events_to_multiple_files?
-    size_file > 0
+    @size_file > 0
   end
 
   public
