@@ -57,7 +57,6 @@ require "fileutils"
 #         bucket => "boss_please_open_your_bucket" (required)
 #         size_file => 2048                        (optional)
 #         time_file => 5                           (optional)
-#         format => "plain"                        (optional)
 #         canned_acl => "private"                  (optional. Options are "private", "public_read", "public_read_write", "authenticated_read". Defaults to "private" )
 #       }
 #    }
@@ -88,9 +87,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   # 0 stay all time on listerner, beware if you specific 0 and size_file 0, because you will not put the file on bucket,
   # for now the only thing this plugin can do is to put the file when logstash restart.
   config :time_file, :validate => :number, :default => 0
-
-  # The event format you want to store in files. Defaults to plain text.
-  config :format, :validate => [ "json", "plain", "nil" ], :default => "plain"
 
   ## IMPORTANT: if you use multiple instance of s3, you should specify on one of them the "restore=> true" and on the others "restore => false".
   ## This is hack for not destroy the new files after restoring the initial files.
