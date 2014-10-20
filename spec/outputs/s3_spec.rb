@@ -5,7 +5,12 @@ require 'socket'
 require "aws-sdk"
 
 describe LogStash::Outputs::S3 do
-  before { AWS.stub! }
+  before do
+    # We stub all the calls from S3, for more information see:
+    # http://ruby.awsblog.com/post/Tx2SU6TYJWQQLC3/Stubbing-AWS-Responses
+    AWS.stub!
+  end
+
   let(:minimal_settings)  {  { "access_key_id" => "1234",
                                "secret_access_key" => "secret",
                                "bucket" => "my-bucket" } }
@@ -14,13 +19,13 @@ describe LogStash::Outputs::S3 do
     it "should support the deprecated endpoint_region as a configuration option" do
       config = { "endpoint_region" => "sa-east-1" }
       s3 = LogStash::Outputs::S3.new(config)
-      s3.aws_options_hash[:s3_endpoint].should == "s3-sa-east-1.amazonaws.com"
+      expect(s3.aws_options_hash[:s3_endpoint]).to eq("s3-sa-east-1.amazonaws.com")
     end
 
     it "should use the depracated option before failling back to the region" do
       config = { "region" => "us-east-1", "endpoint_region" => "sa-east-1" }
       s3 = LogStash::Outputs::S3.new(config)
-      s3.aws_options_hash[:s3_endpoint].should == "s3-sa-east-1.amazonaws.com"
+      expect(s3.aws_options_hash[:s3_endpoint]).to eq("s3-sa-east-1.amazonaws.com")
     end
   end
 
@@ -38,9 +43,8 @@ describe LogStash::Outputs::S3 do
 
       s3 = LogStash::Outputs::S3.new(config)
 
-      expect {
-        s3.register
-      }.to raise_error(LogStash::ConfigurationError)
+      expect { File }.to receive(:mkdir_p).with(config["temp_directory"])
+      s3.register
     end
 
     it "should raise a ConfigurationError if the prefix contains one or more '\^`><' characters" do
@@ -57,7 +61,7 @@ describe LogStash::Outputs::S3 do
   end
 
   describe "#generate_temporary_filename" do
-    before :each do
+    before do
       Socket.stub(:gethostname) { "logstash.local" }
       Time.stub(:now) { Time.new('2015-10-09-09:00') }
     end
@@ -65,24 +69,24 @@ describe LogStash::Outputs::S3 do
     it "should add tags to the filename if present" do
       config = minimal_settings.merge({ "tags" => ["elasticsearch", "logstash", "kibana"]})
       s3 = LogStash::Outputs::S3.new(config)
-      s3.get_temporary_filename.should == "/opt/logstash/S3_temp/ls.s3.logstash.local.2015-01-01T00.00.tag_elasticsearch.logstash.kibana.part0.txt"
+      expect(s3.get_temporary_filename).to eq("/opt/logstash/S3_temp/ls.s3.logstash.local.2015-01-01T00.00.tag_elasticsearch.logstash.kibana.part0.txt")
     end
 
     it "should not add the tags to the filename" do
       config = minimal_settings.merge({ "tags" => [] })
       s3 = LogStash::Outputs::S3.new(config)
-      s3.get_temporary_filename(3).should == "/opt/logstash/S3_temp/ls.s3.logstash.local.2015-01-01T00.00.part3.txt"
+      expect(s3.get_temporary_filename(3)).to eq("/opt/logstash/S3_temp/ls.s3.logstash.local.2015-01-01T00.00.part3.txt")
     end
 
     it "should allow to override the temp directory" do
       config = minimal_settings.merge({ "tags" => [], "temp_directory" => '/tmp/more/' })
       s3 = LogStash::Outputs::S3.new(config)
-      s3.get_temporary_filename(2).should == "/tmp/more/ls.s3.logstash.local.2015-01-01T00.00.part2.txt"
+      expect(s3.get_temporary_filename(2)).to eq("/tmp/more/ls.s3.logstash.local.2015-01-01T00.00.part2.txt")
     end
 
     it "normalized the temp directory to include the trailing slash if missing" do
       s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "temp_directory" => "/tmp/logstash" }))
-      s3.get_temporary_filename.should == "/tmp/logstash/ls.s3.logstash.local.2015-01-01T00.00.part0.txt"
+      expect(s3.get_temporary_filename).to eq("/tmp/logstash/ls.s3.logstash.local.2015-01-01T00.00.part0.txt")
     end
   end
 
@@ -102,7 +106,7 @@ describe LogStash::Outputs::S3 do
         "bucket" => "my-bucket"
       })
 
-      AWS::S3::ObjectCollection.any_instance.should_receive(:[]).with("#{prefix}#{File.basename(fake_data)}") { fake_bucket }
+      expect_any_instance_of(AWS::S3::ObjectCollection).to receive(:[]).with("#{prefix}#{File.basename(fake_data)}") { fake_bucket }
 
       s3 = LogStash::Outputs::S3.new(config)
       s3.register
@@ -114,7 +118,7 @@ describe LogStash::Outputs::S3 do
         "bucket" => "my-bucket"
       })
 
-      AWS::S3::ObjectCollection.any_instance.should_receive(:[]).with(File.basename(fake_data)) { fake_bucket }
+      expect_any_instance_of(AWS::S3::ObjectCollection).to receive(:[]).with(File.basename(fake_data)) { fake_bucket }
 
       s3 = LogStash::Outputs::S3.new(minimal_settings)
       s3.register
@@ -125,12 +129,12 @@ describe LogStash::Outputs::S3 do
   describe "#write_events_to_multiple_files?" do
     it 'returns true if the size_file is != 0 ' do
       s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "size_file" => 200 }))
-      s3.write_events_to_multiple_files?.should be_true
+      expect(s3.write_events_to_multiple_files?).to eq(true)
     end
 
     it 'returns false if size_file is zero or not set' do
       s3 = LogStash::Outputs::S3.new(minimal_settings)
-      s3.write_events_to_multiple_files?.should be_false
+      expect(s3.write_events_to_multiple_files?).to eq(false)
     end
   end
 
@@ -155,7 +159,7 @@ describe LogStash::Outputs::S3 do
 
       s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "size_file" => 1024 }))
       s3.tempfile = tmp
-      s3.rotate_events_log?.should be_true
+      expect(s3.rotate_events_log?).to be(true)
     end
 
     it "returns false if the tempfile is under the file_size limit" do
@@ -164,7 +168,7 @@ describe LogStash::Outputs::S3 do
 
       s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "size_file" => 1024 }))
       s3.tempfile = tmp
-      s3.rotate_events_log?.should be_false
+      expect(s3.rotate_events_log?).to eq(false)
     end
   end
 
@@ -210,6 +214,7 @@ describe LogStash::Outputs::S3 do
       expect(Dir).to receive(:[]).with("/tmp/*.txt").and_return(["/tmp/01.txt"])
       expect(s3).to receive(:move_file_to_bucket).with("/tmp/01.txt")
 
+      s3.register
       s3.restore_from_crashes()
     end
   end
