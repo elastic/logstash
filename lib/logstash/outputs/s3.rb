@@ -258,7 +258,15 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       write_on_bucket(file)
       @logger.debug("S3: file was put on the upload thread", :filename => File.basename(file), :bucket => @bucket)
     end
-    File.delete(file)
+
+    begin
+      File.delete(file)
+    rescue Errno::ENOENT
+      # Something else deleted the file, logging but not raising the issue
+      @logger.warn("S3: Cannot delete the temporary file since it doesn't exist on disk", :filename => File.basename(file))
+    rescue Errno::EACCES
+      @logger.error("S3: Logstash doesnt have the permission to delete the file in the temporary_directory", :filename => File.basename, :temporary_directory => @temporary_directory)
+    end
   end
 
   def move_file_to_bucket_async(file)
@@ -269,8 +277,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   public
   def configure_periodic_uploader()
-    @output_started_at = Time.now
-
     first_time = true
     @periodic_uploader_thread = time_alert(@time_file * 60) do
       if first_time == false
