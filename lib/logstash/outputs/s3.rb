@@ -152,10 +152,13 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
     @logger.debug("S3: ready to write file in bucket", :remote_filename => remote_filename, :bucket => @bucket)
 
-    # prepare for write the file
-
-    object = bucket.objects[remote_filename]
-    object.write(:file => file.path, :acl => @canned_acl)
+    begin
+      # prepare for write the file
+      object = bucket.objects[remote_filename]
+      object.write(:file => file.path, :acl => @canned_acl)
+    rescue AWS::Errors::Base => e
+      raise RuntimeError.new("AWS")
+    end
 
     @logger.debug("S3: has written remote file in bucket with canned ACL", :remote_filename => remote_filename, :bucket  => @bucket, :canned_acl => @canned_acl)
   end
@@ -223,6 +226,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       write_on_bucket(file)
       @logger.debug("S3: file was put on bucket", :filename => File.basename(file), :bucket => @bucket)
     end
+    s
     File.delete(file)
   end
 
