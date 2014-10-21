@@ -112,7 +112,7 @@ en:
         config: |+
           Load the logstash config from a specific file
           or directory.  If a directory is given, all
-          files in that directory will be concatonated
+          files in that directory will be concatenated
           in lexicographical order and then parsed as a
           single config file. You can also specify
           wildcards (globs) and any matched files will
