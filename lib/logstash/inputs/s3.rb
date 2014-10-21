@@ -139,8 +139,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       process_files(queue)
       sleep(@interval)
     end
-
-    finished
   end # def run
 
   private
