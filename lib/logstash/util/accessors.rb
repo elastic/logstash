@@ -41,7 +41,7 @@ module LogStash::Util
     end
 
     def strict_set(accessor, value)
-      set(accessor, strict_value(value))
+      set(accessor, LogStash::Event.validate_value(value))
     end
 
     def del(accessor)
@@ -60,20 +60,5 @@ module LogStash::Util
       target = path.inject(@store) {|r, k| r[r.is_a?(Array) ? k.to_i : k] ||= {}}
       [target, key]
     end
-
-    def strict_value(value)
-      case value
-      when String
-        raise("expected UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.encoding == Encoding::UTF_8
-        raise("invalid UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.valid_encoding?
-        value
-      when Array
-        value.each{|v| strict_value(v)} # don't map, return original object
-        value
-      else
-        value
-      end
-    end
-
   end # class Accessors
 end # module LogStash::Util

@@ -33,11 +33,13 @@ puts("Using Accessor#strict_set for specs")
 # mokey path LogStash::Event to use strict_set in tests
 # ugly, I know, but this avoids adding conditionals in performance critical section
 class LogStash::Event
+  alias_method :setval, :[]=
   def []=(str, value)
     if str == TIMESTAMP && !value.is_a?(LogStash::Timestamp)
       raise TypeError, "The field '@timestamp' must be a LogStash::Timestamp, not a #{value.class} (#{value})"
     end
-    @accessors.strict_set(str, value)
+    LogStash::Event.validate_value(value)
+    setval(str, value)
   end # def []=
 end
 
