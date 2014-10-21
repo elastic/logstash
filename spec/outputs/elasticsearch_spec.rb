@@ -2,9 +2,10 @@ require "spec_helper"
 require "ftw"
 require "logstash/plugin"
 require "logstash/json"
+require "stud/try"
 
 describe "outputs/elasticsearch" do
-  
+
 
   it "should register" do
     output = LogStash::Plugin.lookup("output", "elasticsearch").new("embedded" => "false", "protocol" => "transport", "manage_template" => "false")
@@ -347,7 +348,7 @@ describe "outputs/elasticsearch" do
     end
   end
 
-  describe "elasticsearch protocol" do
+  describe "elasticsearch protocol", :elasticsearch => true do
     # ElasticSearch related jars
     LogStash::Environment.load_elasticsearch_jars!
     # Load elasticsearch protocol
