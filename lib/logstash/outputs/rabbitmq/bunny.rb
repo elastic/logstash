@@ -56,7 +56,7 @@ class LogStash::Outputs::RabbitMQ
     end
 
     def to_s
-      return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@exchange}\##{@key}"
+      return "amqp://#{@user}@#{@host[0]}:#{@port}#{@vhost}/#{@exchange_type}/#{@exchange}\##{@key}"
     end
 
     def teardown
@@ -73,15 +73,18 @@ class LogStash::Outputs::RabbitMQ
     #
 
     def connect
+      host, port = @host[@cur_host_index].split(":")
+      @cur_host_index = (@cur_host_index + 1) % @host.length
+    
       @vhost       ||= Bunny::DEFAULT_HOST
       # 5672. Will be switched to 5671 by Bunny if TLS is enabled.
-      @port        ||= AMQ::Protocol::DEFAULT_PORT
+      port        ||= @port || AMQ::Protocol::DEFAULT_PORT
       @routing_key ||= "#"
 
       @settings = {
         :vhost => @vhost,
-        :host  => @host,
-        :port  => @port,
+        :host  => host,
+        :port  => port,
         :automatically_recover => false
       }
       @settings[:user]      = @user || Bunny::DEFAULT_USER
@@ -105,7 +108,7 @@ class LogStash::Outputs::RabbitMQ
                                else
                                  "amqps"
                                end
-      @connection_url        = "#{proto}://#{@user}@#{@host}:#{@port}#{vhost}/#{@queue}"
+      @connection_url        = "#{proto}://#{@user}@#{host}:#{port}#{vhost}/#{@queue}"
 
       begin
         @conn = Bunny.new(@settings)

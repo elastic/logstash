@@ -11,6 +11,8 @@ class LogStash::Outputs::RabbitMQ
       require "march_hare"
       require "java"
 
+      @cur_host_index = 0
+
       @logger.info("Registering output", :plugin => self)
 
       @connected = java.util.concurrent.atomic.AtomicBoolean.new
@@ -62,7 +64,7 @@ class LogStash::Outputs::RabbitMQ
     end
 
     def to_s
-      return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@exchange}\##{@key}"
+      return "amqp://#{@user}@#{@host[0]}:#{@port}#{@vhost}/#{@exchange_type}/#{@exchange}\##{@key}"
     end
 
     def teardown
@@ -82,14 +84,18 @@ class LogStash::Outputs::RabbitMQ
     def connect
       return if terminating?
 
+      host, port = @host[@cur_host_index].split(":")
+      @cur_host_index = (@cur_host_index + 1) % @host.length
+      puts "@host is #{@host.inspect}, host is #{host.inspect}:#{port}"
+
       @vhost       ||= "127.0.0.1"
       # 5672. Will be switched to 5671 by Bunny if TLS is enabled.
-      @port        ||= 5672
+      port        ||= @port || 5672
 
       @settings = {
         :vhost => @vhost,
-        :host  => @host,
-        :port  => @port,
+        :host  => host,
+        :port  => port,
         :user  => @user,
         :automatic_recovery => false
       }
@@ -105,7 +111,7 @@ class LogStash::Outputs::RabbitMQ
                                else
                                  "amqps"
                                end
-      @connection_url        = "#{proto}://#{@user}@#{@host}:#{@port}#{vhost}/#{@queue}"
+      @connection_url        = "#{proto}://#{@user}@#{host}:#{port}#{vhost}/#{@queue}"
 
       begin
         @conn = MarchHare.connect(@settings)
