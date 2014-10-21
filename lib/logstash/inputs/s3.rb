@@ -135,9 +135,8 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
   public
   def run(queue)
-    loop do
+    Stud.interval(@interval) do
       process_files(queue)
-      sleep(@interval)
     end
   end # def run
 
