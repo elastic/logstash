@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "logstash/plugin_mixins/aws_config"
 
 require "time"
 require "tmpdir"
@@ -10,6 +11,7 @@ require "tmpdir"
 # Each line from each file generates an event.
 # Files ending in '.gz' are handled as gzip'ed files.
 class LogStash::Inputs::S3 < LogStash::Inputs::Base
+  include LogStash::PluginMixins::AwsConfig
   config_name "s3"
   milestone 1
 
@@ -17,26 +19,20 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   # support and readline usage). Support gzip through a gzip codec! ;)
   default :codec, "plain"
 
-  # The credentials of the AWS account used to access the bucket.
+  # DEPRECATED: The credentials of the AWS account used to access the bucket.
   # Credentials can be specified:
   # - As an ["id","secret"] array
   # - As a path to a file containing AWS_ACCESS_KEY_ID=... and AWS_SECRET_ACCESS_KEY=...
   # - In the environment, if not set (using variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)
-  config :credentials, :validate => :array, :default => []
+  config :credentials, :validate => :array, :default => [], :deprecated => "This only exists to be backwards compatible. This plugin now uses the AwsConfig from PluginMixins"
 
   # The name of the S3 bucket.
   config :bucket, :validate => :string, :required => true
 
   # The AWS region for your bucket.
-  config :region, :validate => ["us-east-1", "us-west-1", "us-west-2",
-                                "eu-west-1", "ap-southeast-1", "ap-southeast-2",
-                                "ap-northeast-1", "sa-east-1", "us-gov-west-1"],
-                                :deprecated => "'region' has been deprecated in favor of 'region_endpoint'"
-
-  # The AWS region for your bucket.
   config :region_endpoint, :validate => ["us-east-1", "us-west-1", "us-west-2",
                                 "eu-west-1", "ap-southeast-1", "ap-southeast-2",
-                                "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1"
+                                "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1", :deprecated => "This only exists to be backwards compatible. This plugin now uses the AwsConfig from PluginMixins"
 
   # If specified, the prefix the filenames in the bucket must match (not a regexp)
   config :prefix, :validate => :string, :default => nil
@@ -49,6 +45,11 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   # Name of a S3 bucket to backup processed files to.
   config :backup_to_bucket, :validate => :string, :default => nil
 
+  # Append a prefix to the key (full path including file name in s3) after processing.
+  # If backing up to another (or the same) bucket, this effectively lets you
+  # choose a new 'folder' to place the files in
+  config :backup_add_prefix, :validate => :string, :default => nil
+
   # Path of a local directory to backup processed files to.
   config :backup_to_dir, :validate => :string, :default => nil
 
@@ -59,19 +60,20 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   # Value is in seconds.
   config :interval, :validate => :number, :default => 60
 
+  # Ruby style regexp of keys to exclude from the bucket
+  config :exclude_pattern, :validate => :string, :default => nil
+
   public
   def register
     require "digest/md5"
     require "aws-sdk"
 
-    @region_endpoint = @region if @region && !@region.empty?
+    @region = @region_endpoint if @region_endpoint && !@region_endpoint.empty? && !@region
 
-    @logger.info("Registering s3 input", :bucket => @bucket, :region_endpoint => @region_endpoint)
+    @logger.info("Registering s3 input", :bucket => @bucket, :region => @region)
 
-    if @credentials.length == 0
-      @access_key_id = ENV['AWS_ACCESS_KEY_ID']
-      @secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
-    elsif @credentials.length == 1
+    # Deprecated
+    if @credentials.length == 1
       File.open(@credentials[0]) { |f| f.each do |line|
         unless (/^\#/.match(line))
           if(/\s*=\s*/.match(line))
@@ -90,30 +92,24 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     elsif @credentials.length == 2
       @access_key_id = @credentials[0]
       @secret_access_key = @credentials[1]
-    else
-      raise ArgumentError.new('Credentials must be of the form "/path/to/file" or ["id", "secret"]')
-    end
-
-    if @access_key_id.nil? or @secret_access_key.nil?
-      raise ArgumentError.new('Missing AWS credentials')
-    end
-
-    if @bucket.nil?
-      raise ArgumentError.new('Missing AWS bucket')
     end
 
     if @sincedb_path.nil?
       if ENV['HOME'].nil?
-        raise ArgumentError.new('No HOME or sincedb_path set')
+        raise ConfigurationError.new('No HOME or sincedb_path set')
       end
       @sincedb_path = File.join(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest("#{@bucket}+#{@prefix}"))
     end
 
-    s3 = AWS::S3.new(
+    if @credentials
+      s3 = AWS::S3.new(
       :access_key_id => @access_key_id,
       :secret_access_key => @secret_access_key,
-      :region => @region_endpoint
-    )
+      :region => @region
+      )
+    else
+      s3 = AWS::S3.new(aws_options_hash)
+    end
 
     @s3bucket = s3.buckets[@bucket]
 
@@ -156,7 +152,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
   end # def process_new
 
-  private
+  public
   def list_new(since=nil)
 
     if since.nil?
@@ -165,18 +161,33 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
     objects = {}
     @s3bucket.objects.with_prefix(@prefix).each do |log|
-      if log.last_modified > since
-        objects[log.key] = log.last_modified
+      @logger.debug("Found key: #{log.key}")
+
+      unless ignore_filename?(log.key)
+        if log.last_modified > since
+          objects[log.key] = log.last_modified
+          @logger.debug("Adding to objects[]: #{log.key}")
+        end
       end
     end
-
     return sorted_objects = objects.keys.sort {|a,b| objects[a] <=> objects[b]}
-
   end # def list_new
 
   private
-  def process_log(queue, key)
+  def ignore_filename?(filename)
+    if (@backup_add_prefix && @backup_to_bucket == @bucket && filename =~ /^#{backup_add_prefix}/)
+      return true
+    elsif @exclude_pattern.nil?
+      return false
+    elsif filename =~ Regexp.new(@exclude_pattern)
+      return true
+    else
+      return false
+    end
+  end
 
+  private
+  def process_log(queue, key)
     object = @s3bucket.objects[key]
     tmp = Dir.mktmpdir("logstash-")
     begin
@@ -186,29 +197,48 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
           s3file.write(chunk)
         end
       end
+
       process_local_log(queue, filename)
-      unless @backup_to_bucket.nil?
-        backup_object = @backup_bucket.objects[key]
-        backup_object.write(Pathname.new(filename))
-      end
-      unless @backup_to_dir.nil?
-        FileUtils.cp(filename, @backup_to_dir)
-      end
-      if @delete
-        object.delete()
-      end
+      process_backup_to_bucket(object, key)
+      process_backup_to_dir(filename)
+      delete_file_from_bucket()
     end
     FileUtils.remove_entry_secure(tmp, force=true)
 
   end # def process_log
 
+  public
+  def process_backup_to_bucket(object, key)
+    unless @backup_to_bucket.nil?
+      backup_key = "#{@backup_add_prefix}#{key}"
+      if @delete
+        object.move_to(backup_key, :bucket => @backup_bucket)
+      else
+        object.copy_to(backup_key, :bucket => @backup_bucket)
+      end
+    end
+  end
+
+  public
+  def process_backup_to_dir(filename)
+    unless @backup_to_dir.nil?
+      FileUtils.cp(filename, @backup_to_dir)
+    end
+  end
+
+  def delete_file_from_bucket
+    if @delete and @backup_to_bucket.nil?
+      object.delete()
+    end
+  end
+
   private
   def process_local_log(queue, filename)
-
     metadata = {
       :version => nil,
       :format => nil,
     }
+
     File.open(filename) do |file|
       if filename.end_with?('.gz')
         gz = Zlib::GzipReader.new(file)
@@ -274,5 +304,4 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     File.open(@sincedb_path, 'w') { |file| file.write(since.to_s) }
 
   end # def sincedb_write
-
 end # class LogStash::Inputs::S3
