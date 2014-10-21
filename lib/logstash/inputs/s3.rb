@@ -5,6 +5,7 @@ require "logstash/plugin_mixins/aws_config"
 
 require "time"
 require "tmpdir"
+require "stud/interval"
 
 # Stream events from files from a S3 bucket.
 #
@@ -129,49 +130,47 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
   public
   def aws_service_endpoint(region)
-    # NOTE: I dont think its needed anymore
     return { :s3_endpoint => region }
-
-    #   :s3_endpoint => region == 'us-east-1' ? 's3.amazonaws.com' : "s3-#{@region}.amazonaws.com"
-    # }
   end
 
   public
   def run(queue)
     loop do
-      process_new(queue)
+      process_files(queue)
       sleep(@interval)
     end
+
     finished
   end # def run
 
   private
-  def process_new(queue, since=nil)
-
+  def process_files(queue, since=nil)
     if since.nil?
         since = sincedb_read()
     end
 
-    objects = list_new(since)
+    objects = fetch_new_files(since)
+
     objects.each do |k|
       @logger.debug("S3 input processing", :bucket => @bucket, :key => k)
+
       lastmod = @s3bucket.objects[k].last_modified
       process_log(queue, k)
+
       sincedb_write(lastmod)
     end
-
   end # def process_new
 
   public
-  def list_new(since=nil)
-
+  def fetch_new_files(since=nil)
     if since.nil?
       since = Time.new(0)
     end
 
     objects = {}
+
     @s3bucket.objects.with_prefix(@prefix).each do |log|
-      @logger.debug("Found key: #{log.key}")
+      @logger.debug("S3 input: Found key", :key => log.key)
 
       unless ignore_filename?(log.key)
         if log.last_modified > since
@@ -200,18 +199,23 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   def process_log(queue, key)
     object = @s3bucket.objects[key]
     tmp = Dir.mktmpdir("logstash-")
+
     begin
       filename = File.join(tmp, File.basename(key))
-      File.open(filename, 'wb') do |s3file|
-        object.read do |chunk|
-          s3file.write(chunk)
-        end
-      end
 
+      download_remote_file(filename, key)
       process_local_log(queue, filename)
       process_backup_to_bucket(object, key)
       process_backup_to_dir(filename)
       delete_file_from_bucket()
+    end
+  end
+
+  def download_remote_file(key, local_filename)
+    File.open(filename, 'wb') do |s3file|
+      object.read do |chunk|
+        s3file.write(chunk)
+      end
     end
   end
 
@@ -247,7 +251,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   end
 
   private
-  def process_local_log(queue, filename)
+  def process_local_file(queue, filename)
     metadata = {
       :version => nil,
       :format => nil,
@@ -299,7 +303,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
   private
   def sincedb_read()
-
     if File.exists?(@sincedb_path)
       since = Time.parse(File.read(@sincedb_path).chomp.strip)
     else
