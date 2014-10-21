@@ -322,6 +322,8 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   def handle_event(event)
+    event = decorate(event)
+
     if write_events_to_multiple_files?
       if rotate_events_log?
         @logger.debug("S3: tempfile is too large, let's bucket it and create new file", :tempfile => File.basename(@tempfile))

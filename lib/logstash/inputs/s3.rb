@@ -19,7 +19,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
   # TODO(sissel): refactor to use 'line' codec (requires removing both gzip
   # support and readline usage). Support gzip through a gzip codec! ;)
-  default :codec, "plain"
+  default :codec, "line"
 
   # DEPRECATED: The credentials of the AWS account used to access the bucket.
   # Credentials can be specified:
@@ -152,6 +152,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       @logger.debug("S3 input processing", :bucket => @bucket, :key => k)
 
       lastmod = @s3bucket.objects[k].last_modified
+
       process_log(queue, k)
 
       sincedb_write(lastmod)
@@ -200,17 +201,19 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     begin
       filename = File.join(tmp, File.basename(key))
 
-      download_remote_file(filename, key)
+      download_remote_file(object, filename)
+
       process_local_log(queue, filename)
+
       process_backup_to_bucket(object, key)
       process_backup_to_dir(filename)
       delete_file_from_bucket()
     end
   end
 
-  def download_remote_file(key, local_filename)
-    File.open(filename, 'wb') do |s3file|
-      object.read do |chunk|
+  def download_remote_file(remote_object, local_filename)
+    File.open(local_filename, 'wb') do |s3file|
+      remote_object.read do |chunk|
         s3file.write(chunk)
       end
     end
@@ -248,25 +251,11 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   end
 
   private
-  def process_local_file(queue, filename)
-    metadata = {
-      :version => nil,
-      :format => nil,
-    }
-
-    File.open(filename) do |file|
-      if filename.end_with?('.gz')
-        gz = Zlib::GzipReader.new(file)
-        gz.each_line do |line|
-          metadata = process_line(queue, metadata, line)
-        end
-      else
-        file.each do |line|
-          metadata = process_line(queue, metadata, line)
-        end
-      end
+  def process_local_log(queue, filename)
+    @codec.decode(File.open(filename, 'rb')) do |event|
+      decorate(event)
+      queue << event
     end
-
   end # def process_local_log
 
   private

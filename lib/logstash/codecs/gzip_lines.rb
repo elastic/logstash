@@ -1,11 +1,11 @@
 # encoding: utf-8
 require "logstash/codecs/base"
-require "logstash/codecs/line"
+require "logstash/codecs/plain"
 require "logstash/json"
 
 # This codec will read gzip encoded content
-class LogStash::Codecs::Gzip < LogStash::Codecs::Base
-  config_name "gzip"
+class LogStash::Codecs::GzipLines < LogStash::Codecs::Base
+  config_name "gzip_lines"
 
   milestone 3
 
@@ -23,28 +23,21 @@ class LogStash::Codecs::Gzip < LogStash::Codecs::Base
   public
   def initialize(params={})
     super(params)
-    @lines = LogStash::Codecs::Line.new
-    @lines.charset = @charset
+    @converter = LogStash::Util::Charset.new(@charset)
+    @converter.logger = @logger
   end
 
   public
   def decode(data)
-    
-    @lines.decode(data) do |event|
-      begin
-        yield LogStash::Event.new(LogStash::Json.load(event["message"]))
-      rescue LogStash::Json::ParserError => e
-        @logger.info("JSON parse failure. Falling back to plain-text", :error => e, :data => data)
-        yield LogStash::Event.new("message" => event["message"])
-      end
-    end
-  end # def decode
+    yield LogStash::Event.new("message" => @converter.convert(data))
+  end
 
   public
-  def encode(event)
-    # Tack on a \n for now because previously most of logstash's JSON
-    # outputs emitted one per line, and whitespace is OK in json.
-    @on_event.call(event.to_json + NL)
-  end # def encode
+  def decode(data)
+    @decoder = Zlib::GzipReader.new(data)
 
+    @decoder.each_line do |line|
+      yield LogStash::Event.new("message" => @converter.convert(line))
+    end
+  end # def decode
 end # class LogStash::Codecs::JSON
