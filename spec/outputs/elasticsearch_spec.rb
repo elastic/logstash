@@ -2,6 +2,7 @@ require "spec_helper"
 require "ftw"
 require "logstash/plugin"
 require "logstash/json"
+require "stud/try"
 
 describe "outputs/elasticsearch" do
 
