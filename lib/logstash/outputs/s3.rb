@@ -3,10 +3,13 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 require "logstash/plugin_mixins/aws_config"
 
+require "stud/temporary"
+
 require "socket" # for Socket.gethostname
 require "thread"
 require "tmpdir"
 require "fileutils"
+
 
 # INFORMATION:
 
@@ -65,6 +68,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   include LogStash::PluginMixins::AwsConfig
 
   TEMPFILE_EXTENSION = "txt"
+  S3_INVALID_CHARACTERS = /[\^`><]/
 
   config_name "s3"
   milestone 1
@@ -106,7 +110,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   config :prefix, :validate => :string, :default => ''
 
   # Specify how many workers to use to upload the files to S3
-  config :upload_workers_count, :validate => :number, :default => 2
+  config :upload_workers_count, :validate => :number, :default => 1
 
 
   # Exposed attributes for testing purpose.
@@ -132,21 +136,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     }
   end
 
-  # This method is used to manage sleep and awaken thread.
-  def time_alert(interval)
-    Thread.new do
-      LogStash::Util::set_thread_name("<S3 periodic uploader")
-
-      loop do
-        start_time = Time.now
-        yield
-        elapsed = Time.now - start_time
-        sleep([interval - elapsed, 0].max)
-      end
-    end
-  end
-
-
   public
   def write_on_bucket(file)
     # find and use the bucket
@@ -159,9 +148,10 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     begin
       # prepare for write the file
       object = bucket.objects[remote_filename]
-      object.write(:file => file.path, :acl => @canned_acl)
+      object.write(:file => file, :acl => @canned_acl)
     rescue AWS::Errors::Base => e
-      raise RuntimeError.new("AWS")
+      @logger.error("S3: AWS error", :error => e)
+      raise LogStash::ConfigurationError, "AWS Configuration Error"
     end
 
     @logger.debug("S3: has written remote file in bucket with canned ACL", :remote_filename => remote_filename, :bucket  => @bucket, :canned_acl => @canned_acl)
@@ -170,21 +160,28 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
   public
   def create_temporary_file
-    @tempfile.close if @tempfile && @tempfile.active
-    @tempfile = File.open(get_temporary_filename(@page_counter), "a")
+    filename = get_temporary_filename(@page_counter)
+
+    @logger.debug("S3: Creating a new temporary file", :filename => filename)
+    @tempfile.close if @tempfile
+
+    @tempfile = File.open(filename, "a")
   end
 
   public
   def register
     require "aws-sdk"
+    # required if using ruby version < 2.0
+    # http://ruby.awsblog.com/post/Tx16QY1CI5GVBFT/Threading-with-the-AWS-SDK-for-Ruby
+    AWS.eager_autoload!(AWS::S3)
 
     workers_not_supported
 
     @s3 = aws_s3_config
     @upload_queue = Queue.new
 
-    if @prefix && @prefix =~ /[\^`><]/
-      @logger.error("S3: prefix contains invalid characters", :prefix => @prefix)
+    if @prefix && @prefix =~ S3_INVALID_CHARACTERS
+      @logger.error("S3: prefix contains invalid characters", :prefix => @prefix, :contains => S3_INVALID_CHARACTERS)
       raise LogStash::ConfigurationError, "S3: prefix contains invalid characters"
     end
 
@@ -192,11 +189,13 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       FileUtils.mkdir_p(@temporary_directory)
     end
 
-   configure_upload_workers()
-   restore_from_crashes() if @restore == true
-   reset_page_counter()
-   create_temporary_file()
-   configure_periodic_uploader() if time_file != 0
+    test_s3_write()
+
+    restore_from_crashes() if @restore == true
+    reset_page_counter()
+    create_temporary_file()
+    configure_periodic_uploader() if time_file != 0
+    configure_upload_workers()
 
     @codec.on_event do |event|
       handle_event(event)
@@ -205,24 +204,29 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   public
   def configure_upload_workers
-    @upload_workers = []
+    @logger.debug("S3: Configure upload workers")
 
-    @upload_workers_count.times do |worker_id|
-      t = Thread.new do
-        LogStash::Util::set_thread_name("<S3 upload worker")
+    @upload_workers = @upload_workers_count.times.map do |worker_id|
+      Thread.new do
+        LogStash::Util::set_thread_name("<S3 upload worker #{worker_id}")
 
-        loop do
-          file = @upload_queue.pop
-          move_file_to_bucket(file) if file
+        while true do
+          @logger.debug("S3: upload worker is waiting for a new file to upload.", :worker_id => worker_id)
+
+          file = @upload_queue.deq
+
+          case file
+            when LogStash::ShutdownEvent
+              @logger.debug("S3: upload worker is shutting down gracefuly")
+              @upload_queue.enq(LogStash::ShutdownEvent)
+              break
+            else
+              @logger.debug("S3: upload working is uploading a new file", :filename => File.basename(file))
+              move_file_to_bucket(file)
+          end
         end
-
-        sleep(0.5)
       end
-
-      @upload_workers << t
     end
-
-    #@upload_workers.each(&:join)
   end
 
   public
@@ -234,9 +238,16 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     @page_counter = 0
   end
 
+  # Use the same method that Amazon use to check
+  # permission on the user bucket by creating a small file
   public
   def test_s3_write
-    #aws-programmatic-access-test-object with test?
+    #logstash-programmatic-access-test-object with test?
+    @logger.debug("S3: Creating an test file on S3")
+
+    Stud::Temporary.file("logstash-programmatic-access-test-object") do |file|
+      write_on_bucket(file)
+    end
   end
 
   public
@@ -252,8 +263,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   public
   def move_file_to_bucket(file)
-    file.close
-
     if !File.zero?(file)
       write_on_bucket(file)
       @logger.debug("S3: file was put on the upload thread", :filename => File.basename(file), :bucket => @bucket)
@@ -265,27 +274,30 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       # Something else deleted the file, logging but not raising the issue
       @logger.warn("S3: Cannot delete the temporary file since it doesn't exist on disk", :filename => File.basename(file))
     rescue Errno::EACCES
-      @logger.error("S3: Logstash doesnt have the permission to delete the file in the temporary_directory", :filename => File.basename, :temporary_directory => @temporary_directory)
+      @logger.error("S3: Logstash doesnt have the permission to delete the file in the temporary directory.", :filename => File.basename, :temporary_directory => @temporary_directory)
     end
   end
 
   def move_file_to_bucket_async(file)
-    file_to_upload = file.dup
     @logger.debug("S3: Sending the file to the upload queue.", :filename => File.basename(file))
-    @upload_queue.push(file.dup)
+    @upload_queue.enq(file)
   end
 
   public
   def configure_periodic_uploader()
-    first_time = true
-    @periodic_uploader_thread = time_alert(@time_file * 60) do
-      if first_time == false
-        @logger.debug("S3: time_file triggered, let's bucket the file if dosen't empty and create new file")
+    @periodic_upload_thread = Thread.new do
+      LogStash::Util::set_thread_name("<S3 periodic uploader")
 
-        move_file_to_bucket(@tempfile)
-        create_temporary_file()
-      else
-        first_time = false
+      first_interval = true
+      Stud.interval(@time_file * 60) do
+        if first_interval == false
+          @logger.debug("S3: time_file triggered, bucketing the file")
+
+          move_file_to_bucket_async(@tempfile.path)
+          create_temporary_file()
+        else
+          first_interval = false
+        end
       end
     end
   end
@@ -309,12 +321,11 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   def handle_event(event)
-    # if we rotate on filesize
     if write_events_to_multiple_files?
       if rotate_events_log?
         @logger.debug("S3: tempfile is too large, let's bucket it and create new file", :tempfile => File.basename(@tempfile))
 
-        move_file_to_bucket(@tempfile)
+        move_file_to_bucket_async(@tempfile.path)
         next_page()
         create_temporary_file()
       else
@@ -322,7 +333,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       end
 
       write_to_tempfile(event)
-      # else we put all in one file
     else
       write_to_tempfile(event)
     end
@@ -342,11 +352,21 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   def write_to_tempfile(event)
     @logger.debug("S3: put event into tempfile ", :tempfile => File.basename(@tempfile))
     @tempfile.syswrite(event)
+  rescue Errno::ENOSPC
+    teardown()
+    @logger.error("S3: No space left in temporary directory", :temporary_directory => @temporary_directory)
   end
 
   public
-  #def teardown
-#    @upload_workers.each(&:stop)
-    #@tempfile.close
-  #end
+  def shutdown_upload_workers
+    @upload_queue << LogStash::ShutdownEvent
+  end
+
+  def teardown
+    # TODO: implement stop! in the Stud gem to gracefull stop the interval loop
+    # Could also add a skip_first_interval options.
+    shutdown_upload_workers
+
+    @tempfile.close
+  end
 end
