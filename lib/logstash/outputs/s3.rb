@@ -165,6 +165,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     @logger.debug("S3: Creating a new temporary file", :filename => filename)
     @tempfile.close if @tempfile
 
+
     @tempfile = File.open(filename, "a")
   end
 
@@ -185,7 +186,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       raise LogStash::ConfigurationError, "S3: prefix contains invalid characters"
     end
 
-    if !File.directory?(@temporary_directory)
+    if !Dir.exist?(@temporary_directory)
       FileUtils.mkdir_p(@temporary_directory)
     end
 

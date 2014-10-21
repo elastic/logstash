@@ -1,8 +1,9 @@
 require "spec_helper"
 require "logstash/outputs/s3"
-require "tempfile"
 require 'socket'
 require "aws-sdk"
+require "fileutils"
+require "stud/temporary"
 
 describe LogStash::Outputs::S3 do
   before do
@@ -30,21 +31,23 @@ describe LogStash::Outputs::S3 do
   end
 
   describe "#register" do
-    it "should raise a ConfigurationError if the tmp directory doesn't exist" do
+    it "should create the tmp directory if it doesn't exist" do
+      temporary_directory = Stud::Temporary.pathname("temporary_directory")
 
       config = {
         "access_key_id" => "1234",
         "secret_access_key" => "secret",
         "bucket" => "logstash",
-        "time_file" => 1,
         "size_file" => 10,
-        "temporary_directory" => "/tmp/logstash-do-not-exist"
+        "temporary_directory" => temporary_directory
       }
 
       s3 = LogStash::Outputs::S3.new(config)
 
-      expect { File }.to receive(:mkdir_p).with(config["temporary_directory"])
       s3.register
+
+      expect(Dir.exist?(temporary_directory)).to eq(true)
+      FileUtils.rm_r(temporary_directory)
     end
 
     it "should raise a ConfigurationError if the prefix contains one or more '\^`><' characters" do
@@ -91,7 +94,12 @@ describe LogStash::Outputs::S3 do
   end
 
   describe "#write_on_bucket" do
-    let(:fake_data) { Tempfile.new("fake_data") }
+    after(:all) do
+      File.unlink(fake_data.path)
+    end
+
+    let!(:fake_data) { Stud::Temporary.file }
+
     let(:fake_bucket) do
       s3 = double('S3Object')
       s3.stub(:write)
@@ -109,6 +117,7 @@ describe LogStash::Outputs::S3 do
       expect_any_instance_of(AWS::S3::ObjectCollection).to receive(:[]).with("#{prefix}#{File.basename(fake_data)}") { fake_bucket }
 
       s3 = LogStash::Outputs::S3.new(config)
+      allow(s3).to receive(:test_s3_write)
       s3.register
       s3.write_on_bucket(fake_data)
     end
@@ -121,6 +130,7 @@ describe LogStash::Outputs::S3 do
       expect_any_instance_of(AWS::S3::ObjectCollection).to receive(:[]).with(File.basename(fake_data)) { fake_bucket }
 
       s3 = LogStash::Outputs::S3.new(minimal_settings)
+      allow(s3).to receive(:test_s3_write)
       s3.register
       s3.write_on_bucket(fake_data)
     end
@@ -140,43 +150,50 @@ describe LogStash::Outputs::S3 do
 
   describe "#write_to_tempfile" do
     it "should append the event to a file" do
-      tmp = Tempfile.new('test-append-event')
-
-      s3 = LogStash::Outputs::S3.new(minimal_settings)
-      s3.tempfile = tmp
-      s3.write_to_tempfile('test-write')
-
-      tmp.read.should == "test-write\n"
-      tmp.close
-      tmp.unlink
+      Stud::Temporary.file("logstash", "a+") do |tmp|
+        s3 = LogStash::Outputs::S3.new(minimal_settings)
+        s3.tempfile = tmp
+        s3.write_to_tempfile("test-write")
+        tmp.rewind
+        expect(tmp.read).to eq("test-write")
+      end
     end
   end
 
   describe "#rotate_events_log" do
     it "returns true if the tempfile is over the file_size limit" do
-      tmp = Tempfile.new('test-append-event')
-      tmp.stub(:size) { 2024001 }
+      Stud::Temporary.file do |tmp|
+        tmp.stub(:size) { 2024001 }
 
-      s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "size_file" => 1024 }))
-      s3.tempfile = tmp
-      expect(s3.rotate_events_log?).to be(true)
+        s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "size_file" => 1024 }))
+        s3.tempfile = tmp
+        expect(s3.rotate_events_log?).to be(true)
+      end
     end
 
     it "returns false if the tempfile is under the file_size limit" do
-      tmp = Tempfile.new('test-append-event')
-      tmp.stub(:size) { 100 }
+      Stud::Temporary.file do |tmp|
+        tmp.stub(:size) { 100 }
 
-      s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "size_file" => 1024 }))
-      s3.tempfile = tmp
-      expect(s3.rotate_events_log?).to eq(false)
+        s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "size_file" => 1024 }))
+        s3.tempfile = tmp
+        expect(s3.rotate_events_log?).to eq(false)
+      end
     end
   end
 
   describe "#move_file_to_bucket" do
-    it "should always delete the source file" do
-      tmp = Tempfile.new("test-file")
-      s3 = LogStash::Outputs::S3.new(minimal_settings)
+    let!(:s3) { LogStash::Outputs::S3.new(minimal_settings) }
+
+    before do
+      # Assume the AWS test credentials pass.
+      allow(s3).to receive(:test_s3_write)
       s3.register
+    end
+
+    it "should always delete the source file" do
+      tmp = Stud::Temporary.file
+
       allow(File).to receive(:zero?).and_return(true)
       expect(File).to receive(:delete).with(tmp)
 
@@ -184,23 +201,17 @@ describe LogStash::Outputs::S3 do
     end
 
     it 'should not upload the file if the size of the file is zero' do
-      tmp = Tempfile.new("test-file")
-      allow(tmp).to receive(:zero?).and_return(true)
-
-      s3 = LogStash::Outputs::S3.new(minimal_settings)
-      s3.register
+      temp_file = Stud::Temporary.file
+      allow(temp_file).to receive(:zero?).and_return(true)
 
       expect(s3).not_to receive(:write_on_bucket)
-      s3.move_file_to_bucket(tmp)
+      s3.move_file_to_bucket(temp_file)
     end
 
     it "should upload the file if the size > 0" do
-      tmp = Tempfile.new("test-file")
+      tmp = Stud::Temporary.file
+
       allow(File).to receive(:zero?).and_return(false)
-
-      s3 = LogStash::Outputs::S3.new(minimal_settings)
-      s3.register
-
       expect(s3).to receive(:write_on_bucket)
 
       s3.move_file_to_bucket(tmp)
@@ -214,7 +225,10 @@ describe LogStash::Outputs::S3 do
       expect(Dir).to receive(:[]).with("/tmp/*.txt").and_return(["/tmp/01.txt"])
       expect(s3).to receive(:move_file_to_bucket).with("/tmp/01.txt")
 
+
+      allow(s3).to receive(:test_s3_write)
       s3.register
+
       s3.restore_from_crashes()
     end
   end
@@ -227,7 +241,9 @@ describe LogStash::Outputs::S3 do
       expect_any_instance_of(LogStash::Codecs::Plain).to receive(:encode).with(event)
 
       s3 = LogStash::Outputs::S3.new(minimal_settings)
+      allow(s3).to receive(:test_s3_write)
       s3.register
+
       s3.receive(event)
     end
   end
