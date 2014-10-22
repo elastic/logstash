@@ -15,10 +15,21 @@ namespace "artifact" do
     "Rakefile",
     "rakelib/*",
   ]
+
+  def exclude_globs
+    return @exclude_globs if @exclude_globs
+    @exclude_globs = []
+    #gitignore = File.join(File.dirname(__FILE__), "..", ".gitignore")
+    #if File.exists?(gitignore)
+      #@exclude_globs += File.read(gitignore).split("\n")
+    #end
+    @exclude_globs << "spec/reports/**/*"
+    return @exclude_globs
+  end
+
   
   desc "Build a tar.gz of logstash with all dependencies"
   task "tar" => ["vendor:elasticsearch", "vendor:collectd", "vendor:jruby", "vendor:gems"] do
-    Rake::Task["dependency:archive-tar-minitar"].invoke
     require "zlib"
     require "archive/tar/minitar"
     require "logstash/version"
@@ -26,9 +37,12 @@ namespace "artifact" do
     tarfile = File.new(tarpath, "wb")
     gz = Zlib::GzipWriter.new(tarfile, Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
+    excludes = exclude_globs.collect { |g| Rake::FileList[g] }.flatten
+    Rake::Task["gem:require"].invoke("pry", ">= 0", ENV["GEM_HOME"])
     package_files.each do |glob|
       Rake::FileList[glob].each do |path|
-        Archive::Tar::Minitar.pack_file(path, tar)
+        exclude = excludes.any? { |ex| path == ex || (File.directory?(ex) && path =~ /^#{ex}\//) }
+        Archive::Tar::Minitar.pack_file(path, tar) unless exclude
       end
     end
     tar.close
