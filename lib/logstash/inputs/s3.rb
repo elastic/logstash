@@ -42,7 +42,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   # Where to write the since database (keeps track of the date
   # the last handled file was added to S3). The default will write
   # sincedb files to some path matching "$HOME/.sincedb*"
-  config :sincedb_path, :validate => :string, :default => nil
+  config :sincedb_path, :validate => :string, :default => ENV['HOME']
 
   # Name of a S3 bucket to backup processed files to.
   config :backup_to_bucket, :validate => :string, :default => nil
@@ -65,6 +65,9 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   # Ruby style regexp of keys to exclude from the bucket
   config :exclude_pattern, :validate => :string, :default => nil
 
+
+  config :since_db_backend, :validate => ["local", "s3"]
+
   public
   def register
     require "digest/md5"
@@ -74,6 +77,28 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
     @logger.info("Registering s3 input", :bucket => @bucket, :region => @region)
 
+    if @sincedb_path.nil?
+      raise ConfigurationError.new('No HOME or sincedb_path set')
+    else
+      @sincedb = SinceDB::File.new(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest("#{@bucket}+#{@prefix}"))
+    end
+
+
+    @s3bucket = s3.buckets[@bucket]
+
+    unless @backup_to_bucket.nil?
+      @backup_bucket = s3.buckets[@backup_to_bucket]
+      unless @backup_bucket.exists?
+        s3.buckets.create(@backup_to_bucket)
+      end
+    end
+
+    unless @backup_to_dir.nil?
+      Dir.mkdir(@backup_to_dir, 0700) unless File.exists?(@backup_to_dir)
+    end
+  end # def register
+
+  def get_s3object
     # Deprecated
     if @credentials.length == 1
       File.open(@credentials[0]) { |f| f.each do |line|
@@ -96,13 +121,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       @secret_access_key = @credentials[1]
     end
 
-    if @sincedb_path.nil?
-      if ENV['HOME'].nil?
-        raise ConfigurationError.new('No HOME or sincedb_path set')
-      end
-      @sincedb_path = File.join(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest("#{@bucket}+#{@prefix}"))
-    end
-
     if @credentials
       s3 = AWS::S3.new(
       :access_key_id => @access_key_id,
@@ -112,21 +130,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     else
       s3 = AWS::S3.new(aws_options_hash)
     end
-
-    @s3bucket = s3.buckets[@bucket]
-
-    unless @backup_to_bucket.nil?
-      @backup_bucket = s3.buckets[@backup_to_bucket]
-      unless @backup_bucket.exists?
-        s3.buckets.create(@backup_to_bucket)
-      end
-    end
-
-    unless @backup_to_dir.nil?
-      Dir.mkdir(@backup_to_dir, 0700) unless File.exists?(@backup_to_dir)
-    end
-
-  end # def register
+  end
 
   public
   def aws_service_endpoint(region)
@@ -142,43 +146,35 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
   private
   def process_files(queue, since=nil)
-    if since.nil?
-        since = sincedb_read()
+    objects = fetch_new_files(@sincedb.read)
+
+    objects.each do |key|
+      @logger.debug("S3 input processing", :bucket => @bucket, :key => key)
+
+      lastmod = @s3bucket.objects[key].last_modified
+
+      process_log(queue, key)
+
+      @sincedb.write(lastmod)
     end
-
-    objects = fetch_new_files(since)
-
-    objects.each do |k|
-      @logger.debug("S3 input processing", :bucket => @bucket, :key => k)
-
-      lastmod = @s3bucket.objects[k].last_modified
-
-      process_log(queue, k)
-
-      sincedb_write(lastmod)
-    end
-  end # def process_new
+  end # def process_files
 
   public
-  def fetch_new_files(since=nil)
-    if since.nil?
-      since = Time.new(0)
-    end
-
+  def fetch_new_files(since)
     objects = {}
 
     @s3bucket.objects.with_prefix(@prefix).each do |log|
       @logger.debug("S3 input: Found key", :key => log.key)
 
       unless ignore_filename?(log.key)
-        if log.last_modified > since
+        if @sincedb.newer?(log.last_modified)
           objects[log.key] = log.last_modified
-          @logger.debug("Adding to objects[]: #{log.key}")
+          @logger.debug("S3 input: Adding to objects[]", :key => log.key)
         end
       end
     end
     return sorted_objects = objects.keys.sort {|a,b| objects[a] <=> objects[b]}
-  end # def list_new
+  end # def fetch_new_files
 
   private
   def ignore_filename?(filename)
@@ -196,19 +192,19 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   private
   def process_log(queue, key)
     object = @s3bucket.objects[key]
+
     tmp = Dir.mktmpdir("logstash-")
 
-    begin
-      filename = File.join(tmp, File.basename(key))
+    filename = File.join(tmp, File.basename(key))
 
-      download_remote_file(object, filename)
+    download_remote_file(object, filename)
 
-      process_local_log(queue, filename)
+    process_local_log(queue, filename)
 
-      process_backup_to_bucket(object, key)
-      process_backup_to_dir(filename)
-      delete_file_from_bucket()
-    end
+    process_backup_to_bucket(object, key)
+    process_backup_to_dir(filename)
+
+    delete_file_from_bucket()
   end
 
   def download_remote_file(remote_object, local_filename)
@@ -258,53 +254,30 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     end
   end # def process_local_log
 
-  private
-  def process_line(queue, metadata, line)
 
-    if /#Version: .+/.match(line)
-      junk, version = line.strip().split(/#Version: (.+)/)
-      unless version.nil?
-        metadata[:version] = version
+  module SinceDB
+    class File
+      def initialize(file)
+        @sincedb_path = file
       end
-    elsif /#Fields: .+/.match(line)
-      junk, format = line.strip().split(/#Fields: (.+)/)
-      unless format.nil?
-        metadata[:format] = format
+
+      def newer?(date)
+        date < read
       end
-    else
-      @codec.decode(line) do |event|
-        decorate(event)
-        unless metadata[:version].nil?
-          event["cloudfront_version"] = metadata[:version]
+
+      def read
+        if File.exists?(@sincedb_path)
+          since = Time.parse(File.read(@sincedb_path).chomp.strip)
+        else
+          since = Time.new(0)
         end
-        unless metadata[:format].nil?
-          event["cloudfront_fields"] = metadata[:format]
-        end
-        queue << event
+        return since
+      end
+
+      def write(since = nil)
+        since = Time.now() if since.nil?
+        File.open(@sincedb_path, 'w') { |file| file.write(since.to_s) }
       end
     end
-    return metadata
-
-  end # def process_line
-
-  private
-  def sincedb_read()
-    if File.exists?(@sincedb_path)
-      since = Time.parse(File.read(@sincedb_path).chomp.strip)
-    else
-      since = Time.new(0)
-    end
-    return since
-
-  end # def sincedb_read
-
-  private
-  def sincedb_write(since=nil)
-
-    if since.nil?
-      since = Time.now()
-    end
-    File.open(@sincedb_path, 'w') { |file| file.write(since.to_s) }
-
-  end # def sincedb_write
+  end
 end # class LogStash::Inputs::S3

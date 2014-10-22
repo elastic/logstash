@@ -29,15 +29,10 @@ class LogStash::Codecs::GzipLines < LogStash::Codecs::Base
 
   public
   def decode(data)
-    yield LogStash::Event.new("message" => @converter.convert(data))
-  end
-
-  public
-  def decode(data)
     @decoder = Zlib::GzipReader.new(data)
 
     @decoder.each_line do |line|
       yield LogStash::Event.new("message" => @converter.convert(line))
     end
   end # def decode
-end # class LogStash::Codecs::JSON
+end # class LogStash::Codecs::GzipLines
