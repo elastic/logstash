@@ -3,3 +3,11 @@ gemspec :path => File.expand_path(File.join(File.dirname(__FILE__), "..")), :nam
 
 # in development if a local, unpublished gems is required, you must add it first in the gemspec without the :path option
 # and also add it here with the :path option.
+
+# local dev setup
+# gem "jruby-mmap", :path => File.expand_path("../../../jruby-mmap", __FILE__)
+# gem "jruby-mmap-queues", :path => File.expand_path("../../../jruby-mmap-queues", __FILE__)
+
+# tmp PR WIP setup
+gem "jruby-mmap", :github => "colinsurprenant/jruby-mmap", :ref => "master"
+gem "jruby-mmap-queues", :github => "colinsurprenant/jruby-mmap-queues", :ref => "master"
