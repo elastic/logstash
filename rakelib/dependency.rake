@@ -1,15 +1,8 @@
 
 namespace "dependency" do
   task "bundler" do
-    begin
-      # Special handling because "gem 'bundler', '>=1.3.5'" will fail if
-      # bundler is already loaded.
-      require "bundler/cli"
-    rescue LoadError
-      Rake::Task["gem:require"].invoke("bundler", ">= 1.3.5", ENV["GEM_HOME"])
-      require "bundler/cli"
-    end
-    require_relative "bundler_patch"
+    Rake::Task["gem:require"].invoke("bundler", ">= 1.3.5", ENV["GEM_HOME"])
+    #require_relative "bundler_patch"
   end
 
   task "rbx-stdlib" do
