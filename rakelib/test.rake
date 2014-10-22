@@ -1,13 +1,13 @@
 
 namespace "test" do
-  task "default" => [ "vendor:all" ] do
+  task "default" => [ "bootstrap" ] do
     require "logstash/environment"
     LogStash::Environment.set_gem_paths!
     require 'rspec/core'
     RSpec::Core::Runner.run(Rake::FileList["spec/**/*.rb"])
   end
 
-  task "fail-fast" => [ "vendor:all" ] do
+  task "fail-fast" => [ "bootstrap" ] do
     require "logstash/environment"
     LogStash::Environment.set_gem_paths!
     require 'rspec/core'
