@@ -4,17 +4,19 @@ end
 
 namespace "artifact" do
   require "logstash/environment"
-  package_files = [
-    "LICENSE",
-    "CHANGELOG",
-    "CONTRIBUTORS",
-    "{bin,lib,spec,locales}/{,**/*}",
-    "patterns/**/*",
-    "vendor/??*/**/*",
-    File.join(LogStash::Environment.gem_home.gsub(Dir.pwd + "/", ""), "{gems,specifications}/**/*"),
-    "Rakefile",
-    "rakelib/*",
-  ]
+  def package_files
+    [
+      "LICENSE",
+      "CHANGELOG",
+      "CONTRIBUTORS",
+      "{bin,lib,spec,locales}/{,**/*}",
+      "patterns/**/*",
+      "vendor/??*/**/*",
+      File.join(LogStash::Environment.gem_home.gsub(Dir.pwd + "/", ""), "{gems,specifications}/**/*"),
+      "Rakefile",
+      "rakelib/*",
+    ]
+  end
 
   def exclude_globs
     return @exclude_globs if @exclude_globs
@@ -24,9 +26,26 @@ namespace "artifact" do
       #@exclude_globs += File.read(gitignore).split("\n")
     #end
     @exclude_globs << "spec/reports/**/*"
+    @exclude_globs << "**/*.gem"
+    @exclude_globs << "**/test/files/slow-xpath.xml"
     return @exclude_globs
   end
 
+  def excludes
+    return @excludes if @excludes
+    @excludes = exclude_globs.collect { |g| Rake::FileList[g] }.flatten
+  end
+
+  def exclude?(path)
+    excludes.any? { |ex| path == ex || (File.directory?(ex) && path =~ /^#{ex}\//) }
+  end
+
+  def files
+    return @files if @files
+    @files = package_files.collect do |glob|
+      Rake::FileList[glob].reject { |path| exclude?(path) }
+    end.flatten.uniq
+  end
   
   desc "Build a tar.gz of logstash with all dependencies"
   task "tar" => ["vendor:elasticsearch", "vendor:collectd", "vendor:jruby", "vendor:gems"] do
@@ -37,20 +56,15 @@ namespace "artifact" do
     tarfile = File.new(tarpath, "wb")
     gz = Zlib::GzipWriter.new(tarfile, Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
-    excludes = exclude_globs.collect { |g| Rake::FileList[g] }.flatten
-    Rake::Task["gem:require"].invoke("pry", ">= 0", ENV["GEM_HOME"])
-    package_files.each do |glob|
-      Rake::FileList[glob].each do |path|
-        exclude = excludes.any? { |ex| path == ex || (File.directory?(ex) && path =~ /^#{ex}\//) }
-        Archive::Tar::Minitar.pack_file(path, tar) unless exclude
-      end
+    files.each do |path|
+      Archive::Tar::Minitar.pack_file(path, tar)
     end
     tar.close
     gz.close
     puts "Complete: #{tarpath}"
   end
 
-  def package(platform, version, package_files)
+  def package(platform, version)
     Rake::Task["dependency:fpm"].invoke
     require "fpm/errors" # TODO(sissel): fix this in fpm
     require "fpm/package/dir"
@@ -58,10 +72,10 @@ namespace "artifact" do
 
     dir = FPM::Package::Dir.new
 
-    package_files.each do |glob|
-      Rake::FileList[glob].each do |path|
-        dir.input("#{path}=/opt/logstash/#{path}")
-      end
+    files.each do |path|
+      next if File.directory?(path)
+      p path
+      dir.input("#{path}=/opt/logstash/#{path}")
     end
 
     basedir = File.join(File.dirname(__FILE__), "..")
@@ -152,12 +166,12 @@ namespace "artifact" do
 
   desc "Build an RPM of logstash with all dependencies"
   task "rpm" => ["vendor:elasticsearch", "vendor:collectd", "vendor:jruby", "vendor:gems"] do
-    package("centos", "5", package_files)
+    package("centos", "5")
   end
 
   desc "Build an RPM of logstash with all dependencies"
   task "deb" do
-    package("ubuntu", "12.04", package_files)
+    package("ubuntu", "12.04")
   end
 end
 
