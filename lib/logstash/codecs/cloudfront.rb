@@ -29,11 +29,6 @@ class LogStash::Codecs::Cloudfront < LogStash::Codecs::Base
 
   public
   def decode(data)
-    yield LogStash::Event.new("message" => @converter.convert(data))
-  end
-
-  public
-  def decode(data)
     @gzip = Zlib::GzipReader.new(data)
 
     metadata = extract_metadata(@gzip)
@@ -46,7 +41,7 @@ class LogStash::Codecs::Cloudfront < LogStash::Codecs::Base
   public
   def extract_metadata(gzip)
     version = extract_version(gzip.gets)
-    fields = extract_format(gzip.gets)
+    fields = extract_fields(gzip.gets)
 
     return {
       :version => version,
@@ -59,46 +54,14 @@ class LogStash::Codecs::Cloudfront < LogStash::Codecs::Base
   def extract_version(line)
     if /#Version: .+/.match(line)
       junk, version = line.strip().split(/#Version: (.+)/)
-      unless version.nil?
-        version
-      end
+      version unless version.nil?
     end
   end
 
   def extract_fields(line)
     if /#Fields: .+/.match(line)
       junk, format = line.strip().split(/#Fields: (.+)/)
-      unless format.nil?
-        format
-      end
+      format unless format.nil?
     end
   end
-end # class LogStash::Codecs::JSON
-
-# def process_line(queue, metadata, line)
-#
-#   if /#Version: .+/.match(line)
-#     junk, version = line.strip().split(/#Version: (.+)/)
-#     unless version.nil?
-#       metadata[:version] = version
-#     end
-#   elsif /#Fields: .+/.match(line)
-#     junk, format = line.strip().split(/#Fields: (.+)/)
-#     unless format.nil?
-#       metadata[:format] = format
-#     end
-#   else
-#     @codec.decode(line) do |event|
-#       decorate(event)
-#       unless metadata[:version].nil?
-#         event["cloudfront_version"] = metadata[:version]
-#       end
-#       unless metadata[:format].nil?
-#         event["cloudfront_fields"] = metadata[:format]
-#       end
-#       queue << event
-#     end
-#   end
-#   return metadata
-#
-# end # def process_line
+end # class LogStash::Codecs::Cloudfront

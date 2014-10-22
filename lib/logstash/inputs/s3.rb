@@ -17,8 +17,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   config_name "s3"
   milestone 1
 
-  # TODO(sissel): refactor to use 'line' codec (requires removing both gzip
-  # support and readline usage). Support gzip through a gzip codec! ;)
   default :codec, "line"
 
   # DEPRECATED: The credentials of the AWS account used to access the bucket.
@@ -36,7 +34,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
                                 "eu-west-1", "ap-southeast-1", "ap-southeast-2",
                                 "ap-northeast-1", "sa-east-1", "us-gov-west-1"], :default => "us-east-1", :deprecated => "This only exists to be backwards compatible. This plugin now uses the AwsConfig from PluginMixins"
 
-  # If specified, the prefix the filenames in the bucket must match (not a regexp)
+  # If specified, the prefix of filenames in the bucket must match (not a regexp)
   config :prefix, :validate => :string, :default => nil
 
   # Where to write the since database (keeps track of the date
@@ -73,16 +71,19 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     require "digest/md5"
     require "aws-sdk"
 
-    @region = @region_endpoint if @region_endpoint && !@region_endpoint.empty? && !@region
+    @region = get_region
 
     @logger.info("Registering s3 input", :bucket => @bucket, :region => @region)
 
     if @sincedb_path.nil?
+      @logger.error("S3 input: Configuration error, no HOME or sincedb_path set")
       raise ConfigurationError.new('No HOME or sincedb_path set')
     else
-      @sincedb = SinceDB::File.new(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest("#{@bucket}+#{@prefix}"))
+      sincedb_file = File.join(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest("#{@bucket}+#{@prefix}"))
+      @sincedb = SinceDB::File.new(sincedb_file)
     end
 
+    s3 = get_s3object
 
     @s3bucket = s3.buckets[@bucket]
 
@@ -98,8 +99,17 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     end
   end # def register
 
+  def get_region
+    # TODO: (ph) Deprecated, it will be removed
+    if @region_endpoint && !@region_endpoint.empty? && !@region
+      @region_endpoint
+    else
+      @region
+    end
+  end
+
   def get_s3object
-    # Deprecated
+    # TODO: (ph) Deprecated, it will be removed
     if @credentials.length == 1
       File.open(@credentials[0]) { |f| f.each do |line|
         unless (/^\#/.match(line))
@@ -123,9 +133,9 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
     if @credentials
       s3 = AWS::S3.new(
-      :access_key_id => @access_key_id,
-      :secret_access_key => @secret_access_key,
-      :region => @region
+        :access_key_id => @access_key_id,
+        :secret_access_key => @secret_access_key,
+        :region => @region
       )
     else
       s3 = AWS::S3.new(aws_options_hash)
@@ -167,6 +177,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       @logger.debug("S3 input: Found key", :key => log.key)
 
       unless ignore_filename?(log.key)
+
         if @sincedb.newer?(log.last_modified)
           objects[log.key] = log.last_modified
           @logger.debug("S3 input: Adding to objects[]", :key => log.key)
@@ -208,6 +219,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   end
 
   def download_remote_file(remote_object, local_filename)
+    @logger.debug("S3 input: Download remove file", :remote_key => remote_object.key, :local_filename => local_filename)
     File.open(local_filename, 'wb') do |s3file|
       remote_object.read do |chunk|
         s3file.write(chunk)
@@ -254,7 +266,6 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     end
   end # def process_local_log
 
-
   module SinceDB
     class File
       def initialize(file)
@@ -262,12 +273,12 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       end
 
       def newer?(date)
-        date < read
+        date > read
       end
 
       def read
-        if File.exists?(@sincedb_path)
-          since = Time.parse(File.read(@sincedb_path).chomp.strip)
+        if ::File.exists?(@sincedb_path)
+          since = Time.parse(::File.read(@sincedb_path).chomp.strip)
         else
           since = Time.new(0)
         end
@@ -276,7 +287,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
       def write(since = nil)
         since = Time.now() if since.nil?
-        File.open(@sincedb_path, 'w') { |file| file.write(since.to_s) }
+        ::File.open(@sincedb_path, 'w') { |file| file.write(since.to_s) }
       end
     end
   end
