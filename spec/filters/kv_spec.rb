@@ -48,6 +48,11 @@ describe LogStash::Filters::KV do
     sample %{msg='truncated} do
       insist { subject["msg"] } == "truncated"
     end
+
+    sample %{msg="degenerate backslash=case\\\\" key2=value2} do
+      insist { subject["msg"] }  == "degenerate backslash=case\\\\"
+      insist { subject["key2"] } == "value2"
+    end
   end
 
    describe "LOGSTASH-624: allow escaped space in key or value " do
