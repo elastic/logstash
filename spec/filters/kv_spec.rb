@@ -40,6 +40,14 @@ describe LogStash::Filters::KV do
     sample %{msg='Running command \\'df --blocksize=1024\\''} do
       insist { subject["msg"] } == %{Running command \\'df --blocksize=1024\\'}
     end
+
+    sample %{msg="truncated} do
+      insist { subject["msg"] } == "truncated"
+    end
+
+    sample %{msg='truncated} do
+      insist { subject["msg"] } == "truncated"
+    end
   end
 
    describe "LOGSTASH-624: allow escaped space in key or value " do
