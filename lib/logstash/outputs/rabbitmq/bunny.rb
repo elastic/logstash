@@ -16,6 +16,8 @@ class LogStash::Outputs::RabbitMQ
 
       connect
       declare_exchange
+      
+      @cur_host_index = rand @host.length
     end # def register
 
 

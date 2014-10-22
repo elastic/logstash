@@ -11,7 +11,7 @@ class LogStash::Outputs::RabbitMQ
       require "march_hare"
       require "java"
 
-      @cur_host_index = 0
+      @cur_host_index = rand @host.length
 
       @logger.info("Registering output", :plugin => self)
 
