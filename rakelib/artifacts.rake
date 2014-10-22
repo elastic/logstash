@@ -48,7 +48,7 @@ namespace "artifact" do
   end
   
   desc "Build a tar.gz of logstash with all dependencies"
-  task "tar" => ["vendor:elasticsearch", "vendor:collectd", "vendor:jruby", "vendor:gems"] do
+  task "tar" => ["bootstrap"] do
     require "zlib"
     require "archive/tar/minitar"
     require "logstash/version"
@@ -165,7 +165,7 @@ namespace "artifact" do
   end # def package
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm" => ["vendor:elasticsearch", "vendor:collectd", "vendor:jruby", "vendor:gems"] do
+  task "rpm" => ["bootstrap"] do
     package("centos", "5")
   end
 
