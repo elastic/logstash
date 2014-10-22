@@ -74,7 +74,6 @@ namespace "artifact" do
 
     files.each do |path|
       next if File.directory?(path)
-      p path
       dir.input("#{path}=/opt/logstash/#{path}")
     end
 
@@ -170,7 +169,7 @@ namespace "artifact" do
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "deb" do
+  task "deb" => ["bootstrap"] do
     package("ubuntu", "12.04")
   end
 end
