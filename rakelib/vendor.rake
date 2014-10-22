@@ -225,7 +225,7 @@ namespace "vendor" do
         jruby = File.join("vendor", "jruby", "bin", "jruby")
         cmd = [jruby,  bundler, "install", "--gemfile=tools/Gemfile", "--path", LogStash::Environment::BUNDLE_DIR, "--standalone", "--clean", "--without", "development", "--jobs", "4"]
         system(*cmd)
-        raise $! unless $?.success?
+        raise RuntimeError, $!.to_s unless $?.success?
         break
       rescue Gem::RemoteFetcher::FetchError => e
         puts e.message
