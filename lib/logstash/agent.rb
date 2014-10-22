@@ -3,6 +3,8 @@ require "clamp" # gem 'clamp'
 require "logstash/environment"
 require "logstash/errors"
 require "i18n"
+require "uri"
+require "net/http"
 
 class LogStash::Agent < Clamp::Command
   option ["-f", "--config"], "CONFIG_PATH",
@@ -285,6 +287,21 @@ class LogStash::Agent < Clamp::Command
   end # def configure_plugin_path
 
   def load_config(path)
+
+    uri = URI.parse(path)
+    case uri.scheme
+    when nil then
+      local_config(path)
+    when /http/ then
+      fetch_config(uri)
+    when "file" then
+      local_config(uri.path)
+    else
+      fail(I18n.t("logstash.agent.configuration.scheme-not-supported", :path => path))
+    end
+  end
+
+  def local_config(path)
     path = File.join(path, "*") if File.directory?(path)
 
     if Dir.glob(path).length == 0
@@ -303,5 +320,13 @@ class LogStash::Agent < Clamp::Command
     end
     return config
   end # def load_config
+
+  def fetch_config(uri)
+    begin
+      Net::HTTP.get(uri) + "\n"
+    rescue Exception => e
+      fail(I18n.t("logstash.agent.configuration.fetch-failed", :path => uri.to_s, :message => e.message))
+    end
+  end
 
 end # class LogStash::Agent
