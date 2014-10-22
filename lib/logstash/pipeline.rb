@@ -9,9 +9,17 @@ require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
 
+require "jruby-mmap-queues"
+require "logstash/queue_serializer"
+
 class LogStash::Pipeline
 
   FLUSH_EVENT = LogStash::FlushEvent.new
+
+  MAX_QUEUE_ITEMS = 20
+  FILTER_QUEUE_PATH = "input_to_filter_queue"
+  OUTPUT_QUEUE_PATH = "filter_to_output_queue"
+  QUEUE_PAGE_SIZE = 20 * 1024 * 1024
 
   def initialize(configstr)
     @logger = Cabin::Channel.get(LogStash)
@@ -34,13 +42,24 @@ class LogStash::Pipeline
       raise
     end
 
-    @input_to_filter = SizedQueue.new(20)
+    # TBD the type of queuing should be made configurable
+    # for the persistent queue, the queue file path, page size and serializer should be made configurable
+
+    # @input_to_filter = SizedQueue.new(MAX_QUEUE_ITEMS)
+    @input_to_filter = Mmap::MappedSizedQueue.new(FILTER_QUEUE_PATH, MAX_QUEUE_ITEMS,
+      :page_handler => Mmap::SinglePage.new(FILTER_QUEUE_PATH, :page_size => QUEUE_PAGE_SIZE),
+      :serializer => LogStash::JsonSerializer.new
+    )
 
     # If no filters, pipe inputs directly to outputs
     if !filters?
       @filter_to_output = @input_to_filter
     else
-      @filter_to_output = SizedQueue.new(20)
+      # @filter_to_output = SizedQueue.new(MAX_QUEUE_ITEMS)
+      @filter_to_output = Mmap::MappedSizedQueue.new(OUTPUT_QUEUE_PATH, MAX_QUEUE_ITEMS,
+        :page_handler => Mmap::SinglePage.new(OUTPUT_QUEUE_PATH, :page_size => QUEUE_PAGE_SIZE),
+        :serializer => LogStash::JsonSerializer.new
+      )
     end
     @settings = {
       "filter-workers" => 1,
