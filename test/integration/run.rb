@@ -160,6 +160,6 @@ IO.popen(command.join(" "), "r+") do |io|
   end
 
   # the reader thread updates the @stats tps array
-  p = percentile(@stats, 0.70)
-  puts("elaspsed=#{"%.2f" % elaspsed}s, events=#{real_events_count}, avg tps=#{"%.0f" % (real_events_count / elaspsed)}, avg top 30% tps=#{"%.0f" % (p.reduce(:+) / p.size)}, best tps=#{p.last}")
+  p = percentile(@stats, 0.80)
+  puts("elaspsed=#{"%.2f" % elaspsed}s, events=#{real_events_count}, avg tps=#{"%.0f" % (real_events_count / elaspsed)}, best tps=#{p.last}, avg top 20% tps=#{"%.0f" % (p.reduce(:+) / p.size)}")
 end
