@@ -3,7 +3,7 @@ require "rubygems/commands/install_command"
 require "logstash/JRUBY-PR1448" if RUBY_PLATFORM == "java" && Gem.win_platform?
 
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = "build/bootstrap/"
-Gem.use_paths(ENV["GEM_HOME"], Gem.paths.path)
+Gem.use_paths(ENV["GEM_HOME"])
 
 namespace "gem" do
   task "require",  :name, :requirement, :target do |task, args|
