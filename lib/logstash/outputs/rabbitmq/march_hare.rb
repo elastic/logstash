@@ -71,7 +71,7 @@ class LogStash::Outputs::RabbitMQ
     end
 
     def to_s
-      return "amqp://#{@user}@#{@host[0]}:#{@port}#{@vhost}/#{@exchange_type}/#{@exchange}\##{@key}"
+      return "amqp://#{@user}@#{@host[@cur_host_index]}:#{@port}#{@vhost}/#{@exchange_type}/#{@exchange}\##{@key}"
     end
 
     def teardown
@@ -91,8 +91,8 @@ class LogStash::Outputs::RabbitMQ
     def connect
       return if terminating?
 
-      host, port = @host[@cur_host_index].split(":")
       @cur_host_index = (@cur_host_index + 1) % @host.length
+      host, port = @host[@cur_host_index].split(":")
       puts "@host is #{@host.inspect}, host is #{host.inspect}:#{port}"
 
       @vhost       ||= "127.0.0.1"
@@ -153,9 +153,6 @@ class LogStash::Outputs::RabbitMQ
     end
 
     def publish_backlog
-      if !@backlog.empty?
-        puts "\t@backlog = #{@backlog}"
-      end
       while !@backlog.empty?
         @x.publish(@backlog.shift, :routing_key => @key, :properties => {
           :persistent => @persistent
