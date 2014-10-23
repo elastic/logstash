@@ -3,7 +3,7 @@ require "logstash/codecs/base"
 require "logstash/codecs/plain"
 require "logstash/json"
 
-# This codec will read gzip encoded content
+# This codec will read cloudfront encoded content
 class LogStash::Codecs::Cloudfront < LogStash::Codecs::Base
   config_name "cloudfront"
 
@@ -29,7 +29,7 @@ class LogStash::Codecs::Cloudfront < LogStash::Codecs::Base
 
   public
   def decode(data)
-    # begin
+    begin
       @gzip = Zlib::GzipReader.new(data)
 
       metadata = extract_metadata(@gzip)
@@ -40,9 +40,12 @@ class LogStash::Codecs::Cloudfront < LogStash::Codecs::Base
         yield create_event(line, metadata)
       end
 
-    # rescue Zlib::GzipFile::Error
-    #   @logger.error("Cloudfront: Not a gzip file")
-    # end
+    rescue Zlib::Error, Zlib::GzipFile::Error=> e
+      file = data.is_a?(String) ? data : data.class
+
+      @logger.error("Cloudfront codec: We cannot uncompress the gzip file", :filename => file)
+      raise e
+    end
   end # def decode
 
   public
@@ -72,7 +75,7 @@ class LogStash::Codecs::Cloudfront < LogStash::Codecs::Base
     end
   end
 
-  
+
   def extract_fields(line)
     if /^#Fields: .+/.match(line)
       junk, format = line.strip().split(/#Fields: (.+)/)
