@@ -39,6 +39,8 @@ class LogStash::FlushEvent; end
 #       message: "hello world"
 #     }
 class LogStash::Event
+  attr_reader :metadata
+
   class DeprecatedMethod < StandardError; end
 
   CHAR_PLUS = "+"
@@ -68,6 +70,8 @@ class LogStash::Event
       {}
     end
     @metadata_accessors = LogStash::Util::Accessors.new(@metadata)
+
+    @json_cache = nil
   end # def initialize
 
   public
@@ -110,7 +114,7 @@ class LogStash::Event
 
   public
   def timestamp; return @data[TIMESTAMP]; end # def timestamp
-  def timestamp=(val); return @data[TIMESTAMP] = val; end # def timestamp=
+  def timestamp=(val); @json_cache = nil; return @data[TIMESTAMP] = val; end # def timestamp=
 
   def unix_timestamp
     raise DeprecatedMethod
@@ -139,6 +143,7 @@ class LogStash::Event
     if fieldref == TIMESTAMP && !value.is_a?(LogStash::Timestamp)
       raise TypeError, "The field '@timestamp' must be a (LogStash::Timestamp, not a #{value.class} (#{value})"
     end
+    @json_cache = nil
     if fieldref.start_with?(METADATA_BRACKETS)
       @metadata_accessors.set(fieldref[METADATA_BRACKETS.length .. -1], value)
     elsif fieldref == METADATA
@@ -156,16 +161,21 @@ class LogStash::Event
   public
   def to_json(*args)
     # ignore arguments to respect accepted to_json method signature
-    LogStash::Json.dump(@data)
+    # LogStash::Json.dump(@data)
+    @json_cache ||= LogStash::Json.dump(@data)
   end # def to_json
 
   public
   def to_hash
+    # TBD it is dangerous to give access to the internal hash, if a mutation occurs
+    # the @json_cache will not be invalidated. We need to think about this
     @data
   end # def to_hash
 
   public
   def overwrite(event)
+    @json_cache = nil
+
     # pickup new event @data and also pickup @accessors
     # otherwise it will be pointing on previous data
     @data = event.instance_variable_get(:@data)
@@ -185,6 +195,8 @@ class LogStash::Event
   # Append an event to this one.
   public
   def append(event)
+    @json_cache = nil
+
     # non-destructively merge that event with ourselves.
 
     # no need to reset @accessors here because merging will not disrupt any existing field paths
@@ -196,6 +208,7 @@ class LogStash::Event
   # deleted
   public
   def remove(fieldref)
+    @json_cache = nil
     @accessors.del(fieldref)
   end # def remove
 
