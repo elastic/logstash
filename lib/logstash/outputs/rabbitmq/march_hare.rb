@@ -12,6 +12,7 @@ class LogStash::Outputs::RabbitMQ
       require "java"
 
       @cur_host_index = rand @host.length
+      @backlog = []
 
       @logger.info("Registering output", :plugin => self)
 
@@ -40,11 +41,14 @@ class LogStash::Outputs::RabbitMQ
     def publish_serialized(message)
       begin
         if @connected.get
+          publish_backlog
+        
           @x.publish(message, :routing_key => @key, :properties => {
             :persistent => @persistent
           })
         else
-          @logger.warn("Tried to send a message, but not connected to RabbitMQ.")
+          @logger.warn("Tried to send a message, but not connected to RabbitMQ. Will attempt to send when connected.")
+          @backlog.push message
         end
       rescue MarchHare::Exception, IOError, com.rabbitmq.client.AlreadyClosedException => e
         @connected.set(false)
@@ -54,12 +58,15 @@ class LogStash::Outputs::RabbitMQ
                       :exception => e,
                       :backtrace => e.backtrace)
         return if terminating?
+        
+        @backlog.push message
 
-        sleep n
-
-        connect
-        declare_exchange
-        retry
+        Thread.new {
+          sleep n if @host.length == 1
+          
+          connect
+          declare_exchange
+        }
       end
     end
 
@@ -129,7 +136,7 @@ class LogStash::Outputs::RabbitMQ
                       :backtrace => e.backtrace)
         return if terminating?
 
-        sleep n
+        sleep n if @host.length == 1
         retry
       end
     end
@@ -145,5 +152,15 @@ class LogStash::Outputs::RabbitMQ
       @x
     end
 
+    def publish_backlog
+      if !@backlog.empty?
+        puts "\t@backlog = #{@backlog}"
+      end
+      while !@backlog.empty?
+        @x.publish(@backlog.shift, :routing_key => @key, :properties => {
+          :persistent => @persistent
+        })
+      end
+    end
   end # MarchHareImpl
 end
