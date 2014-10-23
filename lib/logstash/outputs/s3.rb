@@ -371,5 +371,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     shutdown_upload_workers
 
     @tempfile.close
+    finished
   end
 end
