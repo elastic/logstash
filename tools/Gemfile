@@ -9,5 +9,5 @@ gemspec :path => File.expand_path(File.join(File.dirname(__FILE__), "..")), :nam
 # gem "jruby-mmap-queues", :path => File.expand_path("../../../jruby-mmap-queues", __FILE__)
 
 # tmp PR WIP setup
-gem "jruby-mmap", :github => "colinsurprenant/jruby-mmap", :ref => "master"
-gem "jruby-mmap-queues", :github => "colinsurprenant/jruby-mmap-queues", :ref => "master"
+gem "jruby-mmap", ">= 0.1.1", :github => "colinsurprenant/jruby-mmap", :ref => "master"
+gem "jruby-mmap-queues", ">= 0.1.1", :github => "colinsurprenant/jruby-mmap-queues", :ref => "master"
