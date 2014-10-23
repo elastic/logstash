@@ -6,6 +6,15 @@ require "logstash/namespace"
 # of a Syslog (RFC3164) message.  If no priority is set, it will
 # default to 13 (per RFC).
 #
+# According to RFC3164, the PRI should be a 1,2,or 3 digit integer
+# at the beginning of the log message enclosed by <> and immediately
+# followed by the timestamp without any delimiter other than the
+# closing angle bracket.
+#
+# For example:
+#
+#     <34>Oct 11 22:14:15 mymachine su: 'su root' failed for lonvick
+#
 # This filter is based on the original syslog.rb code shipped
 # with logstash.
 class LogStash::Filters::Syslog_pri < LogStash::Filters::Base
