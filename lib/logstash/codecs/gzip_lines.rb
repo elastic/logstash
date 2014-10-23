@@ -31,8 +31,15 @@ class LogStash::Codecs::GzipLines < LogStash::Codecs::Base
   def decode(data)
     @decoder = Zlib::GzipReader.new(data)
 
-    @decoder.each_line do |line|
-      yield LogStash::Event.new("message" => @converter.convert(line))
+    begin
+      @decoder.each_line do |line|
+        yield LogStash::Event.new("message" => @converter.convert(line))
+      end
+    rescue Zlib::Error, Zlib::GzipFile::Error=> e
+      file = data.is_a?(String) ? data : data.class
+
+      @logger.error("Gzip codec: We cannot uncompress the gzip file", :filename => file)
+      raise e
     end
   end # def decode
 end # class LogStash::Codecs::GzipLines
