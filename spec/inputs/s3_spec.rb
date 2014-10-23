@@ -1,8 +1,10 @@
+# encoding: utf-8
 require "spec_helper"
 require "logstash/inputs/s3"
 require "logstash/errors"
+
 require "aws-sdk"
-require "tempfile"
+require "stud/temporary"
 
 describe LogStash::Inputs::S3 do
   before { AWS.stub! }
@@ -15,7 +17,7 @@ describe LogStash::Inputs::S3 do
     }
   }
 
-  describe "#list_new" do
+  describe "#list_new_files" do
     let(:present_object) { double(:key => 'this-should-be-present', :last_modified => Time.now) }
     let(:objects_list) {
       [
@@ -26,19 +28,19 @@ describe LogStash::Inputs::S3 do
     }
 
     it 'should allow user to exclude files from the s3 bucket' do
-      AWS::S3::ObjectCollection.any_instance.stub(:with_prefix).with(nil) { objects_list }
+      allow_any_instance_of(AWS::S3::ObjectCollection).to receive(:with_prefix).with(nil) { objects_list }
 
       config = LogStash::Inputs::S3.new(settings.merge({ "exclude_pattern" => "^exclude" }))
       config.register
-      config.list_new.should == [present_object.key]
+      expect(config.list_new_files).to eq([present_object.key])
     end
 
     it 'should support not providing a exclude pattern' do
-      AWS::S3::ObjectCollection.any_instance.stub(:with_prefix).with(nil) { objects_list }
+      allow_any_instance_of(AWS::S3::ObjectCollection).to receive(:with_prefix).with(nil) { objects_list }
 
       config = LogStash::Inputs::S3.new(settings)
       config.register
-      config.list_new.should == objects_list.map(&:key)
+      expect(config.list_new_files).to eq(objects_list.map(&:key))
     end
 
     context "If the bucket is the same as the backup bucket" do
@@ -48,21 +50,23 @@ describe LogStash::Inputs::S3 do
           present_object
         ]
 
-        AWS::S3::ObjectCollection.any_instance.stub(:with_prefix).with(nil) { objects_list }
+        allow_any_instance_of(AWS::S3::ObjectCollection).to receive(:with_prefix).with(nil) { objects_list }
 
         config = LogStash::Inputs::S3.new(settings.merge({ 'backup_add_prefix' => 'mybackup',
                                                            'backup_to_bucket' => settings['bucket']}))
         config.register
-        config.list_new.should == [present_object.key]
+        expect(config.list_new_files).to eq([present_object.key])
       end
     end
 
     it 'should ignore files older than X' do
-      AWS::S3::ObjectCollection.any_instance.stub(:with_prefix).with(nil) { objects_list }
-
+      allow_any_instance_of(AWS::S3::ObjectCollection).to receive(:with_prefix).with(nil) { objects_list }
       config = LogStash::Inputs::S3.new(settings.merge({ 'backup_add_prefix' => 'exclude-this-file'}))
+
+      expect_any_instance_of(LogStash::Inputs::S3::SinceDB::File).to receive(:read).exactly(objects_list.size) { Time.now - day }
       config.register
-      config.list_new(Time.now - day).should == [present_object.key]
+
+      expect(config.list_new_files).to eq([present_object.key])
     end
 
     it 'should sort return object sorted by last_modification date with older first' do
@@ -72,12 +76,12 @@ describe LogStash::Inputs::S3 do
         double(:key => 'TWO_DAYS_AGO', :last_modified => Time.now - 2 * day)
       ]
 
-      AWS::S3::ObjectCollection.any_instance.stub(:with_prefix).with(nil) { objects }
+      allow_any_instance_of(AWS::S3::ObjectCollection).to receive(:with_prefix).with(nil) { objects }
 
 
       config = LogStash::Inputs::S3.new(settings)
       config.register
-      config.list_new.should == ['TWO_DAYS_AGO', 'YESTERDAY', 'TODAY']
+      expect(config.list_new_files).to eq(['TWO_DAYS_AGO', 'YESTERDAY', 'TODAY'])
     end
 
     describe "when doing backup on the s3" do
@@ -86,9 +90,9 @@ describe LogStash::Inputs::S3 do
         config.register
 
         s3object = double()
-        s3object.stub(:copy_to).with('test-file', :bucket => an_instance_of(AWS::S3::Bucket))
+        expect(s3object).to receive(:copy_to).with('test-file', :bucket => an_instance_of(AWS::S3::Bucket))
 
-        config.process_backup_to_bucket(s3object, 'test-file')
+        config.backup_to_bucket(s3object, 'test-file')
       end
 
       it 'should move to another s3 bucket when deleting the original file' do
@@ -96,9 +100,9 @@ describe LogStash::Inputs::S3 do
         config.register
 
         s3object = double()
-        s3object.stub(:move_to).with('test-file', :bucket => an_instance_of(AWS::S3::Bucket))
+        expect(s3object).to receive(:move_to).with('test-file', :bucket => an_instance_of(AWS::S3::Bucket))
 
-        config.process_backup_to_bucket(s3object, 'test-file')
+        config.backup_to_bucket(s3object, 'test-file')
       end
 
       it 'should add the specified prefix to the backup file' do
@@ -107,27 +111,25 @@ describe LogStash::Inputs::S3 do
         config.register
 
         s3object = double()
-        s3object.stub(:copy_to).with('backup-test-file', :bucket => an_instance_of(AWS::S3::Bucket))
+        expect(s3object).to receive(:copy_to).with('backup-test-file', :bucket => an_instance_of(AWS::S3::Bucket))
 
-        config.process_backup_to_bucket(s3object, 'test-file')
+        config.backup_to_bucket(s3object, 'test-file')
       end
     end
 
     it 'should support doing local backup of files' do
       backup_dir = Dir.mktmpdir
 
-      source_file = Tempfile.new('tmp-logstash-file')
-      backup_file = File.join(backup_dir.to_s, Pathname.new(source_file.path).basename.to_s)
+      Stud::Temporary.directory do |backup_dir|
+        Stud::Temporary.file do |source_file|
+          backup_file = File.join(backup_dir.to_s, Pathname.new(source_file.path).basename.to_s)
 
-      begin
-        config = LogStash::Inputs::S3.new(settings.merge({ "backup_to_dir" => backup_dir }))
+          config = LogStash::Inputs::S3.new(settings.merge({ "backup_to_dir" => backup_dir }))
 
-        config.process_backup_to_dir(source_file)
+          config.backup_to_dir(source_file)
 
-        File.exists?(backup_file).should be_true
-      ensure
-        FileUtils.remove_entry_secure(backup_file, :force => true)
-        FileUtils.remove_entry_secure(backup_dir)
+          File.exists?(backup_file).should be_true
+        end
       end
     end
 

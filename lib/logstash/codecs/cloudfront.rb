@@ -29,37 +29,52 @@ class LogStash::Codecs::Cloudfront < LogStash::Codecs::Base
 
   public
   def decode(data)
-    @gzip = Zlib::GzipReader.new(data)
+    # begin
+      @gzip = Zlib::GzipReader.new(data)
 
-    metadata = extract_metadata(@gzip)
+      metadata = extract_metadata(@gzip)
 
-    @gzip.each_line do |line|
-      yield LogStash::Event.new("message" => @converter.convert(line), :metadata => metadata)
-    end
+      @logger.debug("Cloudfront: Extracting metadata", :metadata => metadata)
+
+      @gzip.each_line do |line|
+        yield create_event(line, metadata)
+      end
+
+    # rescue Zlib::GzipFile::Error
+    #   @logger.error("Cloudfront: Not a gzip file")
+    # end
   end # def decode
 
   public
-  def extract_metadata(gzip)
-    version = extract_version(gzip.gets)
-    fields = extract_fields(gzip.gets)
+  def create_event(line, metadata)
+    event = LogStash::Event.new("message" => @converter.convert(line))
+    event["cloudfront_version"] = metadata["cloudfront_version"]
+    event["cloudfront_fields"] = metadata["cloudfront_fields"]
+    event
+  end
+
+
+  def extract_metadata(io)
+    version = extract_version(io.gets)
+    fields = extract_fields(io.gets)
 
     return {
-      :version => version,
-      :format => fields,
-      :cloudfront_version => version,
-      :cloudfront_fields => fields,
+      "cloudfront_version" => version,
+      "cloudfront_fields" => fields,
     }
   end
 
+
   def extract_version(line)
-    if /#Version: .+/.match(line)
+    if /^#Version: .+/.match(line)
       junk, version = line.strip().split(/#Version: (.+)/)
       version unless version.nil?
     end
   end
 
+  
   def extract_fields(line)
-    if /#Fields: .+/.match(line)
+    if /^#Fields: .+/.match(line)
       junk, format = line.strip().split(/#Fields: (.+)/)
       format unless format.nil?
     end

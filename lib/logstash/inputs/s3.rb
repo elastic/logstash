@@ -6,6 +6,7 @@ require "logstash/plugin_mixins/aws_config"
 require "time"
 require "tmpdir"
 require "stud/interval"
+require "stud/temporary"
 
 # Stream events from files from a S3 bucket.
 #
@@ -156,8 +157,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
   private
   def process_files(queue, since=nil)
-    objects = fetch_new_files(@sincedb.read)
-
+    objects = list_new_files
     objects.each do |key|
       @logger.debug("S3 input processing", :bucket => @bucket, :key => key)
 
@@ -170,7 +170,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   end # def process_files
 
   public
-  def fetch_new_files(since)
+  def list_new_files
     objects = {}
 
     @s3bucket.objects.with_prefix(@prefix).each do |log|
@@ -204,7 +204,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   def process_log(queue, key)
     object = @s3bucket.objects[key]
 
-    tmp = Dir.mktmpdir("logstash-")
+    tmp = Stud::Temporary.directory("logstash-")
 
     filename = File.join(tmp, File.basename(key))
 
@@ -212,8 +212,8 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
 
     process_local_log(queue, filename)
 
-    process_backup_to_bucket(object, key)
-    process_backup_to_dir(filename)
+    backup_to_bucket(object, key)
+    backup_to_dir(filename)
 
     delete_file_from_bucket()
   end
@@ -234,7 +234,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   end
 
   public
-  def process_backup_to_bucket(object, key)
+  def backup_to_bucket(object, key)
     unless @backup_to_bucket.nil?
       backup_key = "#{@backup_add_prefix}#{key}"
       if @delete
@@ -246,7 +246,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   end
 
   public
-  def process_backup_to_dir(filename)
+  def backup_to_dir(filename)
     unless @backup_to_dir.nil?
       FileUtils.cp(filename, @backup_to_dir)
     end
