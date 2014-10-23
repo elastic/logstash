@@ -46,7 +46,7 @@ class LogStash::Pipeline
     # for the persistent queue, the queue file path, page size and serializer should be made configurable
 
     # @input_to_filter = SizedQueue.new(MAX_QUEUE_ITEMS)
-    @input_to_filter = Mmap::MappedSizedQueue.new(FILTER_QUEUE_PATH, MAX_QUEUE_ITEMS,
+    @input_to_filter = Mmap::SizedQueue.new(FILTER_QUEUE_PATH, MAX_QUEUE_ITEMS,
       :page_handler => Mmap::SinglePage.new(FILTER_QUEUE_PATH, :page_size => QUEUE_PAGE_SIZE),
       :serializer => LogStash::JsonSerializer.new
     )
@@ -56,7 +56,7 @@ class LogStash::Pipeline
       @filter_to_output = @input_to_filter
     else
       # @filter_to_output = SizedQueue.new(MAX_QUEUE_ITEMS)
-      @filter_to_output = Mmap::MappedSizedQueue.new(OUTPUT_QUEUE_PATH, MAX_QUEUE_ITEMS,
+      @filter_to_output = Mmap::SizedQueue.new(OUTPUT_QUEUE_PATH, MAX_QUEUE_ITEMS,
         :page_handler => Mmap::SinglePage.new(OUTPUT_QUEUE_PATH, :page_size => QUEUE_PAGE_SIZE),
         :serializer => LogStash::JsonSerializer.new
       )
