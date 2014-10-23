@@ -281,8 +281,7 @@ describe "outputs/elasticsearch" do
           @es = Elasticsearch::Client.new
           @es.indices.delete_template(:name => "*")
 
-          # This can fail if there are no indexes, ignore failure.
-          @es.indices.delete(:index => "*") rescue nil
+          @es.indices.delete(:index => "*")
 
           subject.register
 
