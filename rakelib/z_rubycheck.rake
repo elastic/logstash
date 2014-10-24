@@ -1,4 +1,4 @@
-unless ENV['USE_RUBY'] == '1'
+if ENV['USE_RUBY'] != '1'
   if RUBY_ENGINE != "jruby" or Gem.ruby !~ /vendor\/jruby\/bin\/jruby/
     puts "Restarting myself under Vendored JRuby (currently #{RUBY_ENGINE} #{RUBY_VERSION})" 
 
