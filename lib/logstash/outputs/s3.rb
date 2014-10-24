@@ -250,14 +250,16 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   def test_s3_write
     @logger.debug("S3: Creating a test file on S3")
 
-    begin
-      testfile = File.open(File.join(@temporary_directory, "logstash-programmatic-access-test-object"), 'a') do |file|
-        file.write('test')
-      end
+    test_filename = File.join(@temporary_directory, "logstash-programmatic-access-test-object")
 
-      write_on_bucket(testfile.path)
+    File.open(test_filename, 'a') do |file|
+      file.write('test')
+    end
+
+    begin
+      write_on_bucket(test_filename)
     ensure
-      File.delete(testfile)
+      File.delete(test_filename)
     end
   end
 
