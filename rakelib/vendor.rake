@@ -224,7 +224,7 @@ namespace "vendor" do
         bundler = File.join(Gem.bindir, "bundle")
         if ENV['USE_RUBY'] == '1'
           # Use the local jruby binary
-          jruby = 'jruby'
+          jruby = 'ruby'
         else
           # Use the vendored jruby binary
           jruby = File.join("vendor", "jruby", "bin", "jruby")
