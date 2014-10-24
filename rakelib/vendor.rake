@@ -222,7 +222,13 @@ namespace "vendor" do
         # gems are available. I asked about this in #bundler on freenode, and I
         # was told to stop using the bundler ruby api. Oh well :(
         bundler = File.join(Gem.bindir, "bundle")
-        jruby = File.join("vendor", "jruby", "bin", "jruby")
+        if ENV['USE_RUBY'] == '1'
+          # Use the local jruby binary
+          jruby = 'ruby'
+        else
+          # Use the vendored jruby binary
+          jruby = File.join("vendor", "jruby", "bin", "jruby")
+        end
         cmd = [jruby,  bundler, "install", "--gemfile=tools/Gemfile", "--path", LogStash::Environment::BUNDLE_DIR, "--standalone", "--clean", "--without", "development", "--jobs", "4"]
         system(*cmd)
         raise RuntimeError, $!.to_s unless $?.success?

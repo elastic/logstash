@@ -32,6 +32,9 @@ namespace "gem" do
     installer.options[:document] = []
     begin
       installer.execute
+    rescue Gem::LoadError => e
+    # For some weird reason the rescue from the 'require' task is being brought down here
+    # We don't know why placing this solves it, but it does.
     rescue Gem::SystemExitException => e
       if e.exit_code != 0
         puts "Installation of #{name} failed"

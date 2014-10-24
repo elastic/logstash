@@ -1,12 +1,12 @@
+require "net/http"
+require "uri"
+require "digest/sha1"
+
 directory "vendor/_" => ["vendor"] do |task, args|
   mkdir task.name
 end
 
 def fetch(url, sha1, output)
-  require "net/http"
-  require "uri"
-  require "digest/sha1"
-
   puts "Downloading #{url}"
   actual_sha1 = download(url, output)
 
