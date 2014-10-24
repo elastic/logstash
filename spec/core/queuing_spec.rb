@@ -35,5 +35,6 @@ describe "persistent queue" do
     expect(event.metadata).to eq({"baz" => "zoo"})
 
     expect(q.empty?).to be true
+    q.purge
   end
 end
