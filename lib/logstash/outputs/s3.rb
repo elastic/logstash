@@ -219,19 +219,24 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
         while true do
           @logger.debug("S3: upload worker is waiting for a new file to upload.", :worker_id => worker_id)
 
-          file = @upload_queue.deq
-
-          case file
-            when LogStash::ShutdownEvent
-              @logger.debug("S3: upload worker is shutting down gracefuly")
-              @upload_queue.enq(LogStash::ShutdownEvent)
-              break
-            else
-              @logger.debug("S3: upload working is uploading a new file", :filename => File.basename(file))
-              move_file_to_bucket(file)
-          end
+          upload_worker
         end
       end
+    end
+  end
+
+  private
+  def upload_worker
+    file = @upload_queue.deq
+
+    case file
+      when LogStash::ShutdownEvent
+        @logger.debug("S3: upload worker is shutting down gracefuly")
+        @upload_queue.enq(LogStash::ShutdownEvent)
+        break
+      else
+        @logger.debug("S3: upload working is uploading a new file", :filename => File.basename(file))
+        move_file_to_bucket(file)
     end
   end
 

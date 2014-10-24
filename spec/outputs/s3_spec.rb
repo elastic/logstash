@@ -222,16 +222,13 @@ describe LogStash::Outputs::S3 do
 
   describe "#restore_from_crashes" do
     it "read the temp directory and upload the matching file to s3" do
-      s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "temporary_directory" => "/tmp/"}))
+      s3 = LogStash::Outputs::S3.new(minimal_settings.merge({ "temporary_directory" => "/tmp/logstash/" }))
 
-      expect(Dir).to receive(:[]).with("/tmp/*.txt").and_return(["/tmp/01.txt"])
-      expect(s3).to receive(:move_file_to_bucket).with("/tmp/01.txt")
+      expect(Dir).to receive(:[]).with("/tmp/logstash/*.txt").and_return(["/tmp/logstash/01.txt"])
+      expect(s3).to receive(:move_file_to_bucket_async).with("/tmp/logstash/01.txt")
 
 
-      allow(s3).to receive(:test_s3_write)
-      s3.register
-
-      s3.restore_from_crashes()
+      s3.restore_from_crashes
     end
   end
 
