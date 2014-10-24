@@ -43,7 +43,7 @@ describe LogStash::Outputs::S3 do
       }
 
       s3 = LogStash::Outputs::S3.new(config)
-
+      allow(s3).to receive(:test_s3_write)
       s3.register
 
       expect(Dir.exist?(temporary_directory)).to eq(true)
@@ -152,6 +152,8 @@ describe LogStash::Outputs::S3 do
     it "should append the event to a file" do
       Stud::Temporary.file("logstash", "a+") do |tmp|
         s3 = LogStash::Outputs::S3.new(minimal_settings)
+        allow(s3).to receive(:test_s3_write)
+        s3.register
         s3.tempfile = tmp
         s3.write_to_tempfile("test-write")
         tmp.rewind

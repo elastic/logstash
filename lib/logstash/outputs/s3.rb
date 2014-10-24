@@ -163,10 +163,14 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     filename = get_temporary_filename(@page_counter)
 
     @logger.debug("S3: Creating a new temporary file", :filename => filename)
-    @tempfile.close if @tempfile
 
+    @file_rotation_lock.synchronize do
+      unless @tempfile.nil?
+        @tempfile.close
+      end
 
-    @tempfile = File.open(filename, "a")
+      @tempfile = File.open(filename, "a")
+    end
   end
 
   public
@@ -180,6 +184,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
     @s3 = aws_s3_config
     @upload_queue = Queue.new
+    @file_rotation_lock = Mutex.new
 
     if @prefix && @prefix =~ S3_INVALID_CHARACTERS
       @logger.error("S3: prefix contains invalid characters", :prefix => @prefix, :contains => S3_INVALID_CHARACTERS)
@@ -243,11 +248,16 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   # permission on the user bucket by creating a small file
   public
   def test_s3_write
-    #logstash-programmatic-access-test-object with test?
-    @logger.debug("S3: Creating an test file on S3")
+    @logger.debug("S3: Creating a test file on S3")
 
-    Stud::Temporary.file("logstash-programmatic-access-test-object") do |file|
-      write_on_bucket(file)
+    begin
+      testfile = File.open(File.join(@temporary_directory, "logstash-programmatic-access-test-object"), 'a') do |file|
+        file.write('test')
+      end
+
+      write_on_bucket(testfile.path)
+    ensure
+      File.delete(testfile)
     end
   end
 
@@ -285,7 +295,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   public
-  def configure_periodic_uploader()
+  def configure_periodic_uploader
     @periodic_upload_thread = Thread.new do
       LogStash::Util::set_thread_name("<S3 periodic uploader")
 
@@ -295,7 +305,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
           @logger.debug("S3: time_file triggered, bucketing the file")
 
           move_file_to_bucket_async(@tempfile.path)
-          create_temporary_file()
+          create_temporary_file
         else
           first_interval = false
         end
@@ -322,15 +332,12 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   def handle_event(event)
-    event = decorate(event)
-
     if write_events_to_multiple_files?
       if rotate_events_log?
         @logger.debug("S3: tempfile is too large, let's bucket it and create new file", :tempfile => File.basename(@tempfile))
 
         move_file_to_bucket_async(@tempfile.path)
         next_page()
-        create_temporary_file()
       else
         @logger.debug("S3: tempfile file size report.", :tempfile_size => @tempfile.size, :size_file => @size_file)
       end
@@ -353,11 +360,16 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   public
   def write_to_tempfile(event)
-    @logger.debug("S3: put event into tempfile ", :tempfile => File.basename(@tempfile))
-    @tempfile.syswrite(event)
-  rescue Errno::ENOSPC
-    teardown()
-    @logger.error("S3: No space left in temporary directory", :temporary_directory => @temporary_directory)
+    begin
+      @logger.debug("S3: put event into tempfile ", :tempfile => File.basename(@tempfile))
+
+      @file_rotation_lock.synchronize do
+        @tempfile.syswrite(event)
+      end
+    rescue Errno::ENOSPC
+      @logger.error("S3: No space left in temporary directory", :temporary_directory => @temporary_directory)
+      teardown()
+    end
   end
 
   public
