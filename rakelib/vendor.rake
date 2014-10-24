@@ -12,13 +12,16 @@ DOWNLOADS = {
   "kafka" => { "version" => "0.8.1.1", "sha1" => "d73cc87fcb01c62fdad8171b7bb9468ac1156e75", "scala_version" => "2.9.2" },
 }
 
+DONEFILE = File.join(LogStash::Environment.gem_home, ".done")
+
 def vendor(*args)
   return File.join("vendor", *args)
 end
 
+
 # Untar any files from the given tarball file name.
 #
-# A tar entry is passed to the block. The block should should return 
+# A tar entry is passed to the block. The block should should return
 # * nil to skip this file
 # * or, the desired string filename to write the file to.
 def untar(tarball, &block)
@@ -31,7 +34,7 @@ def untar(tarball, &block)
     path = block.call(entry)
     next if path.nil?
     parent = File.dirname(path)
-    
+
     mkdir_p parent unless File.directory?(parent)
 
     # Skip this file if the output file is the same size
@@ -79,7 +82,7 @@ namespace "vendor" do
     directory parent => "vendor" do
       mkdir parent
     end.invoke unless Rake::Task.task_defined?(parent)
-    
+
     prefix_re = /^#{Regexp.quote("jruby-#{version}/")}/
     untar(download) do |entry|
       out = entry.full_name.gsub(prefix_re, "")
@@ -200,15 +203,22 @@ namespace "vendor" do
   end
   task "all" => "collectd"
 
+  namespace "force" do
+    task "delete_donefile" do
+      File.delete(DONEFILE) if File.exist?(DONEFILE)
+    end
+
+    task "gems" => ["delete_donefile", "vendor:gems"]
+  end
+
   task "gems" => [ "dependency:bundler" ] do
     require "logstash/environment"
     Rake::Task["dependency:rbx-stdlib"] if LogStash::Environment.ruby_engine == "rbx"
     Rake::Task["dependency:stud"].invoke
 
     # Skip bundler if we've already done this recently.
-    donefile = File.join(LogStash::Environment.gem_home, ".done")
-    if File.file?(donefile) 
-      age = (Time.now - File.lstat(donefile).mtime)
+    if File.file?(DONEFILE)
+      age = (Time.now - File.lstat(DONEFILE).mtime)
       # Skip if the donefile was last modified recently
       next if age < 300
     end
@@ -233,7 +243,7 @@ namespace "vendor" do
         sleep 5 #slow down a bit before retry
       end
     end
-    File.write(donefile, Time.now.to_s)
+    File.write(DONEFILE, Time.now.to_s)
   end # task gems
   task "all" => "gems"
 end
