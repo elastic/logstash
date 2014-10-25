@@ -2,6 +2,7 @@
 
 require "benchmark"
 require "thread"
+require "open3"
 
 INITIAL_MESSAGE = ">>> lorem ipsum start".freeze
 LAST_MESSAGE = ">>> lorem ipsum stop".freeze
@@ -136,23 +137,23 @@ puts("launching #{command.join(" ")}") if @debug
 
 real_events_count = 0
 
-IO.popen(command.join(" "), "r+") do |io|
+Open3.popen3(*command) do |i, o, e|
   puts("sending initial event") if @debug
-  io.puts(INITIAL_MESSAGE)
-  io.flush
+  i.puts(INITIAL_MESSAGE)
+  i.flush
 
   puts("waiting for initial event") if @debug
-  expect_output(io, /#{INITIAL_MESSAGE}/)
+  expect_output(o, /#{INITIAL_MESSAGE}/)
 
   puts("starting output reader thread") if @debug
-  reader = detach_output_reader(io, /#{LAST_MESSAGE}/)
+  reader = detach_output_reader(o, /#{LAST_MESSAGE}/)
   puts("starting feeding input") if @debug
 
   elaspsed = Benchmark.realtime do
     real_events_count = if required_events_count > 0
-      feed_input_events(io, [required_events_count, input_lines.size].max, input_lines, LAST_MESSAGE)
+      feed_input_events(i, [required_events_count, input_lines.size].max, input_lines, LAST_MESSAGE)
     else
-      feed_input_interval(io, required_run_time, input_lines, LAST_MESSAGE)
+      feed_input_interval(i, required_run_time, input_lines, LAST_MESSAGE)
     end
 
     puts("waiting for output reader to complete") if @debug
