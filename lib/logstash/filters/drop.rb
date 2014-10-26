@@ -19,6 +19,20 @@ require "logstash/namespace"
 class LogStash::Filters::Drop < LogStash::Filters::Base
   config_name "drop"
   milestone 3
+  # Drop all the events within a pre-configured percentage.
+  #
+  # This is useful if you just need a sample but not the whole.
+  #
+  # Example, to only drop around 40% of the events that have the field loglevel wiht value "debug".
+  #
+  #     filter {
+  #       if [loglevel] == "debug" { 
+  #         drop { 
+  #           sample => 40
+  #         } 
+  #       }
+  #     }
+  config :sample, :validate => :number, :default => 100
 
   public
   def register
@@ -27,6 +41,6 @@ class LogStash::Filters::Drop < LogStash::Filters::Base
 
   public
   def filter(event)
-    event.cancel
+    event.cancel if rand < (@sample / 100.0)
   end # def filter
 end # class LogStash::Filters::Drop
