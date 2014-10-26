@@ -42,9 +42,14 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   config :prefix, :validate => :string, :default => nil
 
   # Where to write the since database (keeps track of the date
-  # the last handled file was added to S3). The default will write
+  # the last handled file was added to S3).
+  # If sincdb_in_s3 is specified, sincedb_path is interpreted as an s3 object key.
+  # Otherwise, it is interpreted as a file path. The default will write
   # sincedb files to some path matching "$HOME/.sincedb*"
   config :sincedb_path, :validate => :string, :default => nil
+
+  # Optional name of an existing, writable S3 bucket to store the sincedb database.
+  config :sincedb_in_s3_bucket, :validate => :string, :default => nil
 
   # Name of a S3 bucket to backup processed files to.
   config :backup_to_bucket, :validate => :string, :default => nil
@@ -103,10 +108,15 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     end
 
     if @sincedb_path.nil?
-      if ENV['HOME'].nil?
-        raise ArgumentError.new('No HOME or sincedb_path set')
+      if @sincedb_in_s3_bucket.nil?
+        if ENV['HOME'].nil?
+          raise ArgumentError.new('No HOME or sincedb_path set')
+        else
+          @sincedb_path = File.join(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest("#{@bucket}+#{@prefix}"))
+        end
+      else
+        raise ArgumentError.new('sincedb_path set while using sincedb_in_s3_bucket')
       end
-      @sincedb_path = File.join(ENV["HOME"], ".sincedb_" + Digest::MD5.hexdigest("#{@bucket}+#{@prefix}"))
     end
 
     s3 = AWS::S3.new(
@@ -122,6 +132,11 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
       unless @backup_bucket.exists?
         s3.buckets.create(@backup_to_bucket)
       end
+    end
+
+    unless @sincedb_in_s3_bucket.nil?
+      @sincedb_bucket = s3.buckets[@sincedb_in_s3_bucket]
+      @logger.info("configured for s3 sincedb: #{@sincedb_in_s3_bucket}[#{@sincedb_path}]")
     end
 
     unless @backup_to_dir.nil?
@@ -256,13 +271,20 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   private
   def sincedb_read()
 
-    if File.exists?(@sincedb_path)
-      since = Time.parse(File.read(@sincedb_path).chomp.strip)
+    if @sincedb_in_s3_bucket.nil?
+      if File.exists?(@sincedb_path)
+        since = Time.parse(File.read(@sincedb_path).chomp.strip)
+      else
+        since = Time.new(0)
+      end
     else
-      since = Time.new(0)
+      if @sincedb_bucket.objects[@sincedb_path].exists?
+        since = Time.parse(@sincedb_bucket.objects[@sincedb_path].read.chomp.strip)
+      else
+        since = Time.new(0)
+      end
     end
     return since
-
   end # def sincedb_read
 
   private
@@ -271,8 +293,14 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
     if since.nil?
       since = Time.now()
     end
-    File.open(@sincedb_path, 'w') { |file| file.write(since.to_s) }
 
+    if @sincedb_in_s3_bucket.nil?
+      File.open(@sincedb_path, 'w') { |file| file.write(since.to_s) }
+    else
+      # write since time in s3
+      since_obj = @sincedb_bucket.objects[@sincedb_path]
+      since_obj.write(since.to_s)
+    end
   end # def sincedb_write
 
 end # class LogStash::Inputs::S3
