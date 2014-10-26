@@ -18,13 +18,13 @@ class LogStash::Codecs::Spool < LogStash::Codecs::Base
   public
   def encode(event)
     @buffer ||= []
+    @buffer << event
+
     #buffer size is hard coded for now until a
     #better way to pass args into codecs is implemented
     if @buffer.length >= @spool_size
       @on_event.call @buffer
       @buffer = []
-    else
-      @buffer << event
     end
   end # def encode
 
