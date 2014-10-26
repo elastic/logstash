@@ -347,7 +347,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  def self.format_message(event)
     message = "Date: #{event[LogStash::Event::TIMESTAMP]}\n"
     message << "Source: #{event["source"]}\n"
-    message << "Tags: #{event["tags"].join(', ')}\n"
+    message << "Tags: #{event["tags"] ? event["tags"].join(', ') : ''}\n"
     message << "Fields: #{event.to_hash.inspect}\n"
     message << "Message: #{event["message"]}"
  end
