@@ -14,7 +14,7 @@ require "socket" # for Socket.gethostname
 
 # S3 plugin allows you to do something complex, let's explain:)
 
-# S3 outputs create temporary files into "/opt/logstash/S3_temp/". If you want, you can change the path at the start of register method.
+# S3 outputs create temporary files into "/opt/logstash/S3_temp/" by default, you can override this in the configuration file.
 # This files have a special name, for example:
 
 # ls.s3.ip-10-228-27-95.2013-04-18T10.00.tag_hello.part0.txt
@@ -72,6 +72,7 @@ require "socket" # for Socket.gethostname
 #      time_file => 5                           (optional)
 #      format => "plain"                        (optional)
 #      canned_acl => "private"                  (optional. Options are "private", "public_read", "public_read_write", "authenticated_read". Defaults to "private" )
+#      temp_directory => "/tmp/s3tmp/"          (optional)
 #    }
 # }
 
@@ -149,6 +150,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
         :default => "private"
 
+ # Temp directory for files top be copied to S3
+ config :temp_directory, :validate => :string, :default => "/opt/logstash/S3_temp/"
+  
  # Method to set up the aws configuration and establish connection
  def aws_s3_config
 
@@ -253,7 +257,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  public
  def register
    require "aws-sdk"
-   @temp_directory = "/opt/logstash/S3_temp/"
+   #@temp_directory = "/opt/logstash/S3_temp/"
 
    if (@tags.size != 0)
        @tag_path = ""
@@ -345,9 +349,14 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  end
 
  def self.format_message(event)
+    if(event["tags"])
+      tags = event["tags"].join(', ')
+    else
+      tags = ""
+    end
     message = "Date: #{event[LogStash::Event::TIMESTAMP]}\n"
     message << "Source: #{event["source"]}\n"
-    message << "Tags: #{event["tags"].join(', ')}\n"
+    message << "Tags: #{tags}\n"
     message << "Fields: #{event.to_hash.inspect}\n"
     message << "Message: #{event["message"]}"
  end
