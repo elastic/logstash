@@ -115,15 +115,30 @@ class LogStash::Inputs::RabbitMQ
           decorate(event)
           @output_queue << event if event
         end
-        @ch.ack(metadata.delivery_tag) if @ack
+        if @ack
+          if @ack_multi > 1
+            @last_handled_msg = metadata.delivery_tag
+            if metadata.delivery_tag.to_i > @last_ack.to_i
+              @last_ack = metadata.delivery_tag
+              @ch.ack(metadata.delivery_tag, true)
+            end
+          else 
+            @ch.ack(metadata.delivery_tag)
+          end
+        end
       end
+      @last_ack = 0
       @q.subscribe_with(@consumer, :manual_ack => @ack, :block => true)
     end
 
     def shutdown_consumer
       @break_out_of_the_loop.set(true)
-
       @consumer.cancel
+      begin
+        @ch.ack(@last_handled_msg, true)
+      rescue
+      end
+
       @consumer.gracefully_shut_down
     end
   end # MarchHareImpl
