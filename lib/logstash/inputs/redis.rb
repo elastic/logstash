@@ -5,7 +5,7 @@ require "logstash/namespace"
 
 # This input will read events from a Redis instance; it supports both Redis channels and lists.
 # The list command (BLPOP) used by Logstash is supported in Redis v1.3.1+, and
-# the channel commands used by Logstash are found in Redis v1.3.8+. 
+# the channel commands used by Logstash are found in Redis v1.3.8+.
 # While you may be able to make these Redis versions work, the best performance
 # and stability will be found in more recent stable versions.  Versions 2.6.0+
 # are recommended.
@@ -227,14 +227,11 @@ EOF
       begin
         @redis ||= connect
         self.send listener, @redis, output_queue
-      rescue Redis::CannotConnectError => e
+      rescue Redis::BaseError => e
         @logger.warn("Redis connection problem", :exception => e)
+        # Reset the redis variable to trigger reconnect
+        @redis = nil
         sleep 1
-        @redis = connect
-      rescue => e # Redis error
-        @logger.warn("Failed to get event from Redis", :name => @name,
-                     :exception => e, :backtrace => e.backtrace)
-        raise e
       end
     end # while !finished?
   end # listener_loop
@@ -252,15 +249,19 @@ EOF
 
   public
   def teardown
-    if @data_type == 'channel' and @redis
-      @redis.unsubscribe
-      @redis.quit
-      @redis = nil
+    if @redis
+      if @data_type == 'list'
+        @redis.quit
+      elsif @data_type == 'channel'
+        @redis.unsubscribe
+        @redis.quit
+      elsif @data_type == 'pattern_channel'
+        @redis.punsubscribe
+        @redis.quit
+      end
     end
-    if @data_type == 'pattern_channel' and @redis
-      @redis.punsubscribe
-      @redis.quit
-      @redis = nil
-    end
+  rescue Redis::BaseError
+  ensure
+    @redis = nil
   end
 end # class LogStash::Inputs::Redis
