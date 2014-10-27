@@ -71,7 +71,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       output = event.to_json
     end
 
-    fd.write(output)
+    fd.write(output.gsub!(/\\n/, "\n"))
     fd.write("\n")
 
     flush(fd)
