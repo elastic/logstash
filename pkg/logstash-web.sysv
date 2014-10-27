@@ -31,7 +31,8 @@ LS_GROUP=logstash
 LS_HOME=/var/lib/logstash
 LS_HEAP_SIZE="500m"
 LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
-LS_LOG_FILE=/var/log/logstash/$name.log
+LS_LOG_DIR=/var/log/logstash
+LS_LOG_FILE="${LS_LOG_DIR}/$name.log"
 LS_CONF_DIR=/etc/logstash/conf.d
 LS_OPEN_FILES=16384
 LS_NICE=19
@@ -56,8 +57,7 @@ start() {
     nice ${LS_NICE}
     ulimit -n ${LS_OPEN_FILES}
     exec \"$program\" $args
-  " > /var/log/logstash/$name.stdout 2> /var/log/logstash/$name.err &
-
+  " > "${LS_LOG_DIR}/$name.stdout" 2> "${LS_LOG_DIR}/$name.err" &
   # Generate the pidfile from here. If we instead made the forked process
   # generate it there will be a race condition between the pidfile writing
   # and a process possibly asking for status.
