@@ -38,3 +38,21 @@ describe "persistent queue" do
     q.purge
   end
 end
+
+describe "json serializer" do
+  it "should serialize an event with a newline" do
+    json = LogStash::JsonSerializer.new
+    source_event = LogStash::Event.new({"foo" => "bar\nbaz", "@metadata" => {"baz" => "zoo\nzoz"}})
+    result_event = json.deserialize(json.serialize(source_event))
+    expect(result_event["foo"]).to eq("bar\nbaz")
+    expect(result_event["@metadata"]["baz"]).to eq("zoo\nzoz")
+  end
+
+  it "should only serialize Event class otherwise return nil" do
+    json = LogStash::JsonSerializer.new
+    expect(json.serialize("test")).to be nil
+    expect(json.serialize({"foo" => "bar"})).to be nil
+    expect(json.serialize(LogStash::ShutdownEvent.new)).to be nil
+    expect(json.serialize(LogStash::FlushEvent.new)).to be nil
+  end
+end
