@@ -13,6 +13,12 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
   # ssl certificate to use
   config :ssl_certificate, :validate => :path, :required => true
 
+  # ssl key to use
+  config :ssl_key, :validate => :path, :required => true
+
+  # ssl key password to use
+  config :ssl_key_passphrase, :validate => :string, :required => false
+
   # window size
   config :window_size, :validate => :number, :default => 5000
 
@@ -46,12 +52,14 @@ class LogStash::Outputs::Lumberjack < LogStash::Outputs::Base
   def connect
     require 'resolv'
     @logger.info("Connecting to lumberjack server.", :addresses => @hosts, :port => @port, 
-        :ssl_certificate => @ssl_certificate, :window_size => @window_size)
+        :ssl_certificate => @ssl_certificate, :ssl_key => @ssl_key, :ssl_key_passphrase => @ssl_key_passphrase,
+        :window_size => @window_size)
     begin
       ips = []
       @hosts.each { |host| ips += Resolv.getaddresses host }
       @client = Lumberjack::Client.new(:addresses => ips.uniq, :port => @port, 
-        :ssl_certificate => @ssl_certificate, :window_size => @window_size)
+        :ssl_certificate => @ssl_certificate, :ssl_key => @ssl_key, :ssl_key_passphrase => @ssl_key_passphrase,
+        :window_size => @window_size)
     rescue Exception => e
       @logger.error("All hosts unavailable, sleeping", :hosts => ips.uniq, :e => e, 
         :backtrace => e.backtrace)
