@@ -92,6 +92,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # Only supported for `list` Redis `data_type`.
   config :congestion_threshold, :validate => :number, :default => 0
 
+	# Auto-Queue switching when full, instead of waiting.
+  config :congestion_switch, :validate => :boolean, :default => false
+
   # How often to check for congestion. Default is one second.
   # Zero means to check on every event.
   config :congestion_interval, :validate => :number, :default => 1
@@ -185,7 +188,13 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
     return if @congestion_threshold == 0
     if (Time.now.to_i - @congestion_check_times[key]) >= @congestion_interval # Check congestion only if enough time has passed since last check.
       while @redis.llen(key) > @congestion_threshold # Don't push event to Redis key which has reached @congestion_threshold.
-        @logger.warn? and @logger.warn("Redis key size has hit a congestion threshold #{@congestion_threshold} suspending output for #{@congestion_interval} seconds")
+        if @shuffle_hosts
+          # Switch to different server, and try again.
+          @logger.warn? and @logger.warn("Redis key size has hit a congrestion threshold #{@congestion_threshold} switching to next server.")
+          @redis = connect
+        else
+          @logger.warn? and @logger.warn("Redis key size has hit a congestion threshold #{@congestion_threshold} suspending output for #{@congestion_interval} seconds")
+        end
         sleep @congestion_interval
       end
       @congestion_check_time = Time.now.to_i
