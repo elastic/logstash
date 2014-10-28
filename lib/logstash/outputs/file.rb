@@ -42,6 +42,14 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # Gzip the output stream before writing to disk.
   config :gzip, :validate => :boolean, :default => false
 
+  # If the event try to create a file outside of the extracted file root
+  # we will tag the message and save it to @filepath_error.
+  config :tag_on_failure, :validate => :array, :default => ["_filepath_failure"]
+
+  # If the generated path is invalid, the events will be saved
+  # into this file and inside the defined path.
+  config :filename_failure, :validate => :string, :default => '_filepath_failures'
+
   public
   def register
     require "fileutils" # For mkdir_p
@@ -49,6 +57,12 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     workers_not_supported
 
     @files = {}
+
+    if interpolated_path?
+      @file_root = extract_file_root
+      @failure_path = File.join(@file_root, @filename_failure)
+    end
+
     now = Time.now
     @last_flush_cycle = now
     @last_stale_cleanup_cycle = now
@@ -60,23 +74,61 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    path = event.sprintf(@path)
-    fd = open(path)
+    log_path = generate_filepath(event)
+
+    if interpolated_path? && !inside_file_root?(log_path)
+      tag_as_filepath_failure(event)
+      log_path = @failure_path
+    end
+
+    output = format_message(event)
+    log_event(log_path, output)
+  end # def receive
+
+  def tag_as_filepath_failure(event)
+    event["tags"] ||= []
+    @tag_on_failure.each do |tag|
+      event["tags"] << tags unless event["tags"].include?(tag)
+    end
+  end
+  
+  def inside_file_root?(log_path)
+    target_file = File.expand_path(log_path)
+    return target_file.start_with?("#{@file_root.to_s}/")
+  end
+
+  def log_event(log_path, event)
+    @logger.debug("File, writing event to file.", :filename => log_path)
+    fd = open(log_path)
 
     # TODO(sissel): Check if we should rotate the file.
 
-    if @message_format
-      output = event.sprintf(@message_format)
-    else
-      output = event.to_json
-    end
-
-    fd.write(output)
+    fd.write(event)
     fd.write("\n")
 
     flush(fd)
     close_stale_files
-  end # def receive
+  end
+
+  def generate_filepath(event)
+    event.sprintf(@path)
+  end
+
+  def interpolated_path?
+    path =~ /%\{[^}]+\}/
+  end
+
+  def format_message(event)
+    if @message_format
+      event.sprintf(@message_format)
+    else
+      event.to_json
+    end
+  end
+  def extract_file_root
+    extracted_path = File.expand_path(path.gsub(/%{.+/, ''))
+    Pathname.new(extracted_path).expand_path
+  end
 
   def teardown
     @logger.debug("Teardown: closing files")
@@ -85,7 +137,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
         fd.close
         @logger.debug("Closed file #{path}", :fd => fd)
       rescue Exception => e
-        @logger.error("Excpetion while flushing and closing files.", :exception => e)
+        @logger.error("Exception while flushing and closing files.", :exception => e)
       end
     end
     finished
