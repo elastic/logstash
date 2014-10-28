@@ -6,7 +6,7 @@ describe "grok known timeout failures" do
   describe "more apache log timeouts" do
     subject { Grok.new }
     before :each do
-      patterns = Dir.glob(File.join(File.dirname(__FILE__), "../../../patterns/*"))
+      patterns = Dir.glob(File.join(File.dirname(__FILE__), "../../../../patterns/*"))
       patterns.each { |path| subject.add_patterns_from_file(path) }
       subject.add_pattern("RESPONSE_BYTES", '[0-9_-]+')
       subject.add_pattern("POST_CONN_STATUS", '[+-X]')
