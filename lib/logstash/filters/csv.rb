@@ -72,9 +72,8 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
 
       raw = event[@source].first
       begin
-        if @converters != nil
-            @converters = @converters.map { |s| s.to_sym }
-        end
+
+        @converters.map!(&:to_sym) unless @converters.nil?
 
         values = CSV.parse_line(raw, :col_sep => @separator, :quote_char => @quote_char, :converters => @converters)
 
