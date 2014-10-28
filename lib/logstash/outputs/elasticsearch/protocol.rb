@@ -51,37 +51,33 @@ module LogStash::Outputs::Elasticsearch
       }
 
       def initialize(options={})
-        require "ftw"
         super
         require "elasticsearch" # gem 'elasticsearch-ruby'
+        # manticore http transport
+        require "elasticsearch/transport/transport/http/manticore"
         @options = DEFAULT_OPTIONS.merge(options)
         @client = client
       end
 
       def build_client(options)
-        client = Elasticsearch::Client.new(
-          :host => [options[:host], options[:port]].join(":")
-        )
+        uri = "#{options[:protocol]}://#{options[:host]}:#{options[:port]}"
 
-        # Use FTW to do indexing requests, for now, until we
-        # can identify and resolve performance problems of elasticsearch-ruby
-        @bulk_url = "http://#{options[:host]}:#{options[:port]}/_bulk"
-        @agent = FTW::Agent.new
+        client_options = {
+          :host => [uri],
+          :transport_options => options[:client_settings]
+        }
+        client_options[:transport_class] = ::Elasticsearch::Transport::Transport::HTTP::Manticore
+        client_options[:ssl] = client_options[:transport_options].delete(:ssl)
 
-        return client
+        if options[:user] && options[:password] then
+          token = Base64.strict_encode64(options[:user] + ":" + options[:password])
+          client_options[:headers] = { "Authorization" => "Basic #{token}" }
+        end
+
+        Elasticsearch::Client.new client_options
       end
 
-      if ENV["BULK"] == "esruby"
-        def bulk(actions)
-          bulk_esruby(actions)
-        end
-      else
-        def bulk(actions)
-          bulk_ftw(actions)
-        end
-      end
-
-      def bulk_esruby(actions)
+      def bulk(actions)
         @client.bulk(:body => actions.collect do |action, args, source|
           if source
             next [ { action => args }, source ]
@@ -89,44 +85,7 @@ module LogStash::Outputs::Elasticsearch
             next { action => args }
           end
         end.flatten)
-      end # def bulk_esruby
-
-      # Avoid creating a new string for newline every time
-      NEWLINE = "\n".freeze
-      def bulk_ftw(actions)
-        body = actions.collect do |action, args, source|
-          header = { action => args }
-          if source
-            next [ LogStash::Json.dump(header), NEWLINE, LogStash::Json.dump(source), NEWLINE ]
-          else
-            next [ LogStash::Json.dump(header), NEWLINE ]
-          end
-        end.flatten.join("")
-        begin
-          response = @agent.post!(@bulk_url, :body => body)
-        rescue EOFError
-          @logger.warn("EOF while writing request or reading response header from elasticsearch", :host => @host, :port => @port)
-          raise
-        end
-
-        # Consume the body for error checking
-        # This will also free up the connection for reuse.
-        response_body = ""
-        begin
-          response.read_body { |chunk| response_body += chunk }
-        rescue EOFError
-          @logger.warn("EOF while reading response body from elasticsearch",
-                       :url => @bulk_url)
-          raise
-        end
-
-        if response.status != 200
-          @logger.error("Error writing (bulk) to elasticsearch",
-                        :response => response, :response_body => response_body,
-                        :request_body => body)
-          raise "Non-OK response code from Elasticsearch: #{response.status}"
-        end
-      end # def bulk_ftw
+      end # def bulk
 
       def template_exists?(name)
         @client.indices.get_template(:name => name)
@@ -292,4 +251,3 @@ module LogStash::Outputs::Elasticsearch
     class Delete; end
   end
 end
-

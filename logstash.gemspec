@@ -61,7 +61,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "bindata", [">= 1.5.0"]            #(Ruby license)
   gem.add_runtime_dependency "twitter", "5.0.0.rc.1"            #(MIT license)
   gem.add_runtime_dependency "edn"                              #(MIT license)
-  gem.add_runtime_dependency "elasticsearch"                    #(Apache 2.0 license)
+  gem.add_runtime_dependency "elasticsearch", "~> 1.0.6"        #(Apache 2.0 license)
 
   # Plugin manager dependencies
 
@@ -85,6 +85,7 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "msgpack-jruby"                       #(Apache 2.0 license)
     gem.add_runtime_dependency "jrjackson"                           #(Apache 2.0 license)
     gem.add_runtime_dependency "jruby-kafka", [">=0.1.0"]            #(Apache 2.0 license)
+    gem.add_runtime_dependency "manticore"                           #(Apache 2.0 license)
   else
     gem.add_runtime_dependency "excon"    #(MIT license)
     gem.add_runtime_dependency "msgpack"  #(Apache 2.0 license)
