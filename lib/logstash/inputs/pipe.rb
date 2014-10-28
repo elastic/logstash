@@ -22,6 +22,9 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
   #
   #    command => "echo hello world"
   config :command, :validate => :string, :required => true
+  #Interval to wait before repeating command(seconds)
+  config :interval, :validate => :number, :required => false, :default =>10
+  
 
   public
   def register
@@ -52,8 +55,8 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
         @logger.error("Exception while running command", :e => e, :backtrace => e.backtrace)
       end
 
-      # Keep running the command forever.
-      sleep(10)
+      # Keep running the command at a set interval 10 seconds is the default.
+      sleep(interval)
     end
   end # def run
 end # class LogStash::Inputs::Pipe
