@@ -149,6 +149,8 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
         :default => "private"
 
+ config :s3_key_format, :validate => :string, :default => ""
+
  # Method to set up the aws configuration and establish connection
  def aws_s3_config
 
@@ -190,13 +192,19 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   # find and use the bucket
   bucket = @s3.buckets[@bucket]
 
-  @logger.debug "S3: ready to write "+file_basename+" in bucket "+@bucket+", Fire in the hole!"
+  if @s3_key_format != ""
+    s3_object_key = format_object_key
+  else
+    s3_object_key = file_basename
+  end
+
+  @logger.info "S3: ready to write "+file_basename+" in bucket "+@bucket+" as #{s3_object_key}"
 
   # prepare for write the file
-  object = bucket.objects[file_basename]
+  object = bucket.objects[s3_object_key]
   object.write(:file => file_data, :acl => @canned_acl)
 
-  @logger.debug "S3: has written "+file_basename+" in bucket "+@bucket + " with canned ACL \"" + @canned_acl + "\""
+  @logger.debug "S3: has written "+s3_object_key+" in bucket "+@bucket + " with canned ACL \"" + @canned_acl + "\""
 
  end
 
@@ -208,6 +216,21 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
  end
 
+ def format_object_key
+   s3_key = @s3_key_format.dup
+   s3_key.gsub! "%{bucket}", @bucket
+   s3_key.gsub! "%{pass_time}", @pass_time.strftime("%Y-%m-%dT%H.%M")
+   s3_key.gsub! "%{canned_acl}", @canned_acl
+   s3_key.gsub! "%{hostname}", Socket.gethostname
+   s3_key.gsub! "%{endpoint_region}", @endpoint_region
+   s3_key.gsub! "%{date_directories}", @pass_time.strftime("%Y/%m/%d")
+   s3_key.gsub! "%{time}", @pass_time.strftime("%H.%M.%s")
+   s3_key.gsub! "%{part}", "part-#{@sizeCounter.to_s}"
+   s3_key.gsub! "%{tag_path}", @tag_path unless @tag_path.nil?
+
+   s3_key
+ end
+
  # This method is used for restore the previous crash of logstash or to prepare the files to send in bucket.
  # Take two parameter: flag and name. Flag indicate if you want to restore or not, name is the name of file
  def upFile(flag, name)
@@ -215,21 +238,15 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
    Dir[@temp_directory+name].each do |file|
      name_file = File.basename(file)
 
-     if (flag == true)
-      @logger.warn "S3: have found temporary file: "+name_file+", something has crashed before... Prepare for upload in bucket!"
-     end
-
      if (!File.zero?(file))
        write_on_bucket(file, name_file)
-
-       if (flag == true)
-          @logger.debug "S3: file: "+name_file+" restored on bucket "+@bucket
-       else
-          @logger.debug "S3: file: "+name_file+" was put on bucket "+@bucket
-       end
      end
 
-     File.delete (file)
+     begin
+       File.delete (file)
+     rescue
+       @logger.warn "S3: file: #{name_file} didn't exist when trying to delete"
+     end
 
    end
  end
@@ -320,7 +337,6 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
        # Put the event in the file, now!
        File.open(@tempFile, 'a') do |file|
          file.puts message
-         file.write "\n"
        end
 
      else
@@ -349,7 +365,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
     message << "Source: #{event["source"]}\n"
     message << "Tags: #{event["tags"].join(', ')}\n"
     message << "Fields: #{event.to_hash.inspect}\n"
-    message << "Message: #{event["message"]}"
+    message << "Message: #{event["message"]}\n"
  end
 
 end
