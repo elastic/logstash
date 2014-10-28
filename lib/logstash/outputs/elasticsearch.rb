@@ -177,6 +177,14 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # For more details on actions, check out the [Elasticsearch bulk API documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-bulk.html)
   config :action, :validate => :string, :default => "index"
 
+  # helper function to replace placeholders
+  # in index names to wildcards
+  # example:
+  #    "logs-%{YYYY}" -> "logs-*" 
+  def wildcard_substitute(name)
+    name.gsub(/%\{[^}]+\}/, "*")
+  end
+
   public
   def register
     client_settings = {}
@@ -303,8 +311,10 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
       end
     end
     template_json = IO.read(@template).gsub(/\n/,'')
-    @logger.info("Using mapping template", :template => template_json)
-    return LogStash::Json.load(template_json)
+    template = LogStash::Json.load(template_json)
+    template['template'] = wildcard_substitute(@index)
+    @logger.info("Using mapping template", :template => template)
+    return template
   end # def get_template
 
   protected
