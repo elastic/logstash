@@ -39,6 +39,8 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
 
   # Converters used for converting values in CSV
   # Defaults to none (previous behavior)
+  # Options are all, integer, float, numeric, date, date_time
+  # Note: This is a speed impact on using this function
   config :converters, :validate => :array, :default => nil
 
   public
