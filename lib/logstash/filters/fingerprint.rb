@@ -29,8 +29,12 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
     # require any library and set the anonymize function
     case @method
       when "IPV4_NETWORK"
+        if @key.nil?
+          raise LogStash::ConfigurationError, I18n.t("logstash.agent.configuration.invalid_plugin_register", 
+          :plugin => "filter", :type => "fingerprint",
+          :error => "Key value is empty. please fill in a subnet prefix length")
+        end
         require 'ipaddr'
-        @logger.error("Key value is empty. please fill in a subnet prefix length") if @key.nil?
         class << self; alias_method :anonymize, :anonymize_ipv4_network; end
       when "MURMUR3"
         require "murmurhash3"
@@ -40,8 +44,12 @@ class LogStash::Filters::Fingerprint < LogStash::Filters::Base
       when "PUNCTUATION"
         # nothing required
       else
+        if @key.nil?
+          raise LogStash::ConfigurationError, I18n.t("logstash.agent.configuration.invalid_plugin_register", 
+          :plugin => "filter", :type => "fingerprint",
+          :error => "Key value is empty. Please fill in an encryption key")
+        end
         require 'openssl'
-        @logger.error("Key value is empty. Please fill in an encryption key") if @key.nil?
         class << self; alias_method :anonymize, :anonymize_openssl; end
     end
   end # def register
