@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "securerandom"
 require "logstash/filters/base"
 require "logstash/namespace"
 
@@ -148,7 +147,9 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     require "thread_safe"
     @last_flush = Atomic.new(0) # how many seconds ago the metrics where flushed.
     @last_clear = Atomic.new(0) # how many seconds ago the metrics where cleared.
-    @random_key_preffix = SecureRandom.hex
+    # Prevent metric key collisions between multiple metric filters by prefixing
+    # them with the object's unique id.
+    @unique_key_prefix = __id__
     unless (@rates - [1, 5, 15]).empty?
       raise LogStash::ConfigurationError, "Invalid rates configuration. possible rates are 1, 5, 15. Rates: #{rates}."
     end
@@ -228,7 +229,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   end
 
   def metric_key(key)
-    "#{@random_key_preffix}_#{key}"
+    "#{@unique_key_prefix}_#{key}"
   end
 
   def should_flush?
