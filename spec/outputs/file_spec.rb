@@ -4,40 +4,41 @@ require "logstash/outputs/file"
 require "logstash/event"
 require "logstash/json"
 require "stud/temporary"
+require "tempfile"
 
 describe LogStash::Outputs::File do
   describe "ship lots of events to a file" do
-    Stud::Temporary.file('logstash-spec-output-file') do |tmp_file|
-      event_count = 10000 + rand(500)
+    tmp_file = Tempfile.new('logstash-spec-output-file')
+    event_count = 10000 + rand(500)
 
-      config <<-CONFIG
-      input {
-        generator {
-          message => "hello world"
-          count => #{event_count}
-          type => "generator"
-        }
+    config <<-CONFIG
+    input {
+      generator {
+        message => "hello world"
+        count => #{event_count}
+        type => "generator"
       }
-      output {
-        file {
-          path => "#{tmp_file.path}"
-        }
+    }
+    output {
+      file {
+        path => "#{tmp_file.path}"
       }
-          CONFIG
+    }
+    CONFIG
 
-      agent do
-        line_num = 0
-        # Now check all events for order and correctness.
-        tmp_file.each_line do |line|
-        # File.foreach(tmp_file) do |line|
-          event = LogStash::Event.new(LogStash::Json.load(line))
-          insist {event["message"]} == "hello world"
-          insist {event["sequence"]} == line_num
-          line_num += 1
-        end
-        insist {line_num} == event_count
-      end # agent
-    end
+    agent do
+      line_num = 0
+      
+      # Now check all events for order and correctness.
+      tmp_file.each_line do |line|
+        event = LogStash::Event.new(LogStash::Json.load(line))
+        insist {event["message"]} == "hello world"
+        insist {event["sequence"]} == line_num
+        line_num += 1
+      end
+
+      insist {line_num} == event_count
+    end # agent
   end
 
   describe "ship lots of events to a file gzipped" do
@@ -74,92 +75,109 @@ describe LogStash::Outputs::File do
     end
   end
 
-  describe "receiving events" do
-    context "when using an interpolated path" do
-      it 'permits to write inside the file root of the defined path' do
-        event = LogStash::Event.new('@metadata' => { "name" => 'application', 'error' => )
-      end
+  describe "#register" do
+    it 'doesnt allow the path to start with a dynamic string' do
+      path = '/%{name}'
+      output = LogStash::Outputs::File.new({ "path" => path })
+      expect { output.register }.to raise_error(LogStash::ConfigurationError)
+    end
+
+    it 'doesnt allow the root directory to have some dynamic part' do
+      path = '/a%{name}/'
+      output = LogStash::Outputs::File.new({ "path" => path })
+      expect { output.register }.to raise_error(LogStash::ConfigurationError)
+
+      path = '/a %{name}/'
+      output = LogStash::Outputs::File.new({ "path" => path })
+      expect { output.register }.to raise_error(LogStash::ConfigurationError)
+
+      path = '/a- %{name}/'
+      output = LogStash::Outputs::File.new({ "path" => path })
+      expect { output.register }.to raise_error(LogStash::ConfigurationError)
+
+      path = '/a- %{name}'
+      output = LogStash::Outputs::File.new({ "path" => path })
+      expect { output.register }.to raise_error(LogStash::ConfigurationError)
+    end
+
+    it 'allow to have dynamic part after the file root' do
+      path = '/tmp/%{name}'
+      output = LogStash::Outputs::File.new({ "path" => path })
+      expect { output.register }.not_to raise_error
     end
   end
 
-  # describe '#generate_filepath' do
-  #   let(:event) do
-  #     event = LogStash::Event.new
+  describe "receiving events" do
+    context "when using an interpolated path" do
+      context "when trying to write outside the files root directory" do
+        let(:bad_event) do
+          event = LogStash::Event.new
+          event['error'] = '../uncool/directory'
+          event
+        end
 
-  #     event["name"] = "name"
-  #     event["type"] = "awesome"
+        it 'tags the event as a file_path' do
+          output = LogStash::Outputs::File.new({ "path" =>  "/tmp/%{error}"})
+          output.register
+          output.receive(bad_event)
 
-  #     event
-  #   end
+          expect(bad_event["tags"]).to include("_filepath_failure")
+        end
 
-  #   it 'uses the event data to generated the path' do
-  #     path = '/tmp/%{type}/%{name}'
+        it 'writes the bad event in the specified error file' do
+          Stud::Temporary.directory('filepath_error') do |path|
+            config = { 
+              "path" => "#{path}/%{error}",
+              "filename_failure" => "_error"
+            }
 
-  #     output = LogStash::Outputs::File.new({ "path" => path })
-      
-  #     expect(output.generate_filepath(event)).to eq('/tmp/awesome/name')
-  #   end
+            # Trying to write outside the file root
+            outside_path = "#{'../' * path.split(File::SEPARATOR).size}notcool"
+            bad_event["error"] = outside_path
 
-  #   it 'ignores relative path' do
-  #     path = '/tmp/%{type}/%{name}/%{relative}/'
-  #     event[:relative] = '../aaa/'
 
-  #     output = LogStash::Outputs::File.new({ "path" => path })
-      
-  #     expect(output.generate_filepath(event)).to eq('/tmp/awesome/name/relative')
-  #   end
-  # end
+            output = LogStash::Outputs::File.new(config)
+            output.register
+            output.receive(bad_event)
 
-#   describe '#extract_file_root' do
-#     context 'with interpolated strings in the path' do
-#       it 'extracts the file root from the default path' do
-#         path = '/tmp/%{type}/%{name}.txt'
+            error_file = File.join(path, config["filename_failure"])
 
-#         output = LogStash::Outputs::File.new({ "path" => path })
-#         expect(output.extract_file_root().to_s).to eq('/tmp')
-#       end
+            expect(File.exist?(error_file)).to eq(true)
+          end
+        end
+      end
 
-#       it 'extracts to the file root down to the last concrete directory' do
-#         path = '/tmp/down/%{type}/%{name}.txt'
+      context 'when trying to write inside the file root directory' do
+        it 'write the event to the generated filename' do
+          good_event = LogStash::Event.new
+          good_event['error'] = '42.txt'
 
-#         output = LogStash::Outputs::File.new({ "path" => path })
-#         expect(output.extract_file_root.to_s).to eq('/tmp/down')
-#       end
-#     end
-    
-#     context "without interpolated strings" do
-#       it 'extracts the full path as the file root' do
-#         path = '/tmp/down/log.txt'
+          Stud::Temporary.directory do |path|
+            config = { "path" => "#{path}/%{error}" }
+            output = LogStash::Outputs::File.new(config)
+            output.register
+            output.receive(good_event)
 
-#         output = LogStash::Outputs::File.new({ "path" => path })
-#         expect(output.extract_file_root.to_s).to eq(path)
-#       end
-#     end
-#   end
+            good_file = File.join(path, good_event['error'])
+            expect(File.exist?(good_file)).to eq(true)
+          end
+        end
 
-#   describe '#inside_file_root?' do
-#     context 'when we follow relative paths' do
-#       let(:path) { '/tmp/%{type}/%{name}.txt' }
+        it 'write the event to the generated filename with multiple deep' do
+          good_event = LogStash::Event.new
+          good_event['error'] = '/inside/errors/42.txt'
 
-#       it 'returns false if the target file is outside the file root' do
-#         output = LogStash::Outputs::File.new({ 'path' => path })
-#         output.register
-#         expect(output.inside_file_root?('/tmp/../etc/eviluser/2004.txt')).to eq(false)
-#       end
+          Stud::Temporary.directory do |path|
+            config = { "path" => "#{path}/%{error}" }
+            output = LogStash::Outputs::File.new(config)
+            output.register
+            output.receive(good_event)
 
-#       it 'returns true if the target file is inside the file root' do
-#         output = LogStash::Outputs::File.new({ 'path' => path })
-#         output.register
-#         expect(output.inside_file_root?('/tmp/not/../etc/eviluser/2004.txt')).to eq(true)
-#       end
-
-#       it 'returns true if the target file is inside the file root' do
-#         Stud::Temporary.file('logstash-spec-output-file') do |tmp_file|
-#           output = LogStash::Outputs::File.new({ 'path' => tmp_file.path })
-#           output.register
-#           expect(output.inside_file_root?(tmp_file.path)).to eq(true)
-#         end
-#       end
-#     end
-#   end
+            good_file = File.join(path, good_event['error'])
+            expect(File.exist?(good_file)).to eq(true)
+          end
+        end
+      end
+    end
+  end
 end

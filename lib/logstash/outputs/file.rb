@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/namespace"
 require "logstash/outputs/base"
+require "logstash/errors"
 require "zlib"
 
 # This output will write events to files on disk. You can use fields
@@ -10,13 +11,16 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   config_name "file"
   milestone 2
 
-  # The path to the file to write. Event fields can be used here, 
+  # The path to the file to write. Event fields can be used here,
   # like "/var/log/logstash/%{host}/%{application}"
-  # One may also utilize the path option for date-based log 
+  # One may also utilize the path option for date-based log
   # rotation via the joda time format. This will use the event
   # timestamp.
-  # E.g.: path => "./test-%{+YYYY-MM-dd}.txt" to create 
-  # ./test-2013-05-29.txt 
+  # E.g.: path => "./test-%{+YYYY-MM-dd}.txt" to create
+  # ./test-2013-05-29.txt
+  #
+  # If you use an absolute path you cannot start with a dynamic string.
+  # E.g: /%{myfield}/, /test-%{myfield}/ are not valid paths
   config :path, :validate => :string, :required => true
 
   # The maximum size of file to write. When the file exceeds this
@@ -35,7 +39,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # event will be written as a single line.
   config :message_format, :validate => :string
 
-  # Flush interval (in seconds) for flushing writes to log files. 
+  # Flush interval (in seconds) for flushing writes to log files.
   # 0 will flush on every message.
   config :flush_interval, :validate => :number, :default => 2
 
@@ -57,6 +61,10 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     workers_not_supported
 
     @files = {}
+    
+    @path = File.expand_path(path)
+
+    validate_path
 
     if interpolated_path?
       @file_root = extract_file_root
@@ -66,9 +74,19 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     now = Time.now
     @last_flush_cycle = now
     @last_stale_cleanup_cycle = now
-    flush_interval = @flush_interval.to_i
+    @flush_interval = @flush_interval.to_i
     @stale_cleanup_interval = 10
   end # def register
+
+  private
+  def validate_path
+    root_directory = @path.split(File::SEPARATOR).select { |item| !item.empty? }.shift
+
+    if (root_directory =~ /%\{[^}]+\}/) != nil
+      @logger.error("File: The starting part of the path should not be dynamic.", :path => @path)
+      raise LogStash::ConfigurationError.new("The starting part of the path should not be dynamic.")
+    end
+  end
 
   public
   def receive(event)
@@ -82,22 +100,25 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     end
 
     output = format_message(event)
-    log_event(log_path, output)
+    write_event(log_path, output)
   end # def receive
 
+  private
   def tag_as_filepath_failure(event)
     event["tags"] ||= []
     @tag_on_failure.each do |tag|
-      event["tags"] << tags unless event["tags"].include?(tag)
+      event["tags"] << tag unless event["tags"].include?(tag)
     end
   end
-  
+
+  private
   def inside_file_root?(log_path)
     target_file = File.expand_path(log_path)
     return target_file.start_with?("#{@file_root.to_s}/")
   end
 
-  def log_event(log_path, event)
+  private
+  def write_event(log_path, event)
     @logger.debug("File, writing event to file.", :filename => log_path)
     fd = open(log_path)
 
@@ -110,10 +131,12 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     close_stale_files
   end
 
+  private
   def generate_filepath(event)
     event.sprintf(@path)
   end
 
+  private
   def interpolated_path?
     path =~ /%\{[^}]+\}/
   end
@@ -125,6 +148,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       event.to_json
     end
   end
+
   def extract_file_root
     extracted_path = File.expand_path(path.gsub(/%{.+/, ''))
     Pathname.new(extracted_path).expand_path
@@ -188,7 +212,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     dir = File.dirname(path)
     if !Dir.exists?(dir)
       @logger.info("Creating directory", :directory => dir)
-      FileUtils.mkdir_p(dir) 
+      FileUtils.mkdir_p(dir)
     end
 
     # work around a bug opening fifos (bug JRUBY-6280)
