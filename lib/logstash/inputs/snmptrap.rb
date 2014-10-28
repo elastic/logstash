@@ -49,14 +49,14 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
 
   public
   def run(output_queue)
-    begin
-      # snmp trap server
-      snmptrap_listener(output_queue)
-    rescue => e
-      @logger.warn("SNMP Trap listener died", :exception => e, :backtrace => e.backtrace)
-      sleep(5)
-      retry
-    end # begin
+    # snmp trap server
+    snmptrap_listener(output_queue)
+  rescue LogStash::ShutdownSignal
+    @snmptrap.exit
+  rescue => e
+    @logger.warn("SNMP Trap listener died", :exception => e, :backtrace => e.backtrace)
+    sleep(5)
+    retry
   end # def run
 
   private
@@ -69,17 +69,13 @@ class LogStash::Inputs::Snmptrap < LogStash::Inputs::Base
     @snmptrap = SNMP::TrapListener.new(traplistener_opts)
 
     @snmptrap.on_trap_default do |trap|
-      begin
-        event = LogStash::Event.new("message" => trap.inspect, "host" => trap.source_ip)
-        decorate(event)
-        trap.each_varbind do |vb|
-          event[vb.name.to_s] = vb.value.to_s
-        end
-        @logger.debug("SNMP Trap received: ", :trap_object => trap.inspect)
-        output_queue << event
-      rescue => event
-        @logger.error("Failed to create event", :trap_object => trap.inspect)
+      event = LogStash::Event.new("message" => trap.inspect, "host" => trap.source_ip)
+      decorate(event)
+      trap.each_varbind do |vb|
+        event[vb.name.to_s] = vb.value.to_s
       end
+      @logger.debug("SNMP Trap received: ", :trap_object => trap.inspect)
+      output_queue << event
     end
     @snmptrap.join
   end # def snmptrap_listener
