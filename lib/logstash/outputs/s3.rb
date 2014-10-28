@@ -2,6 +2,7 @@
 require "logstash/outputs/base"
 require "logstash/namespace"
 require "socket" # for Socket.gethostname
+require "thread"
 
 # TODO integrate aws_config in the future
 #require "logstash/plugin_mixins/aws_config"
@@ -149,6 +150,8 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
         :default => "private"
 
+ config :temp_directory, :validate => :string, :default => "/opt/logstash/S3_temp/"
+
  # Method to set up the aws configuration and establish connection
  def aws_s3_config
 
@@ -237,6 +240,11 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  # This method is used for create new empty temporary files for use. Flag is needed for indicate new subsection time_file.
  def newFile (flag)
 
+   if !@tempFile.nil?
+      @tempFile.close
+      @tempFile = nil
+   end
+
    if (flag == true)
      @current_final_path = getFinalPath
      @sizeCounter = 0
@@ -253,7 +261,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  public
  def register
    require "aws-sdk"
-   @temp_directory = "/opt/logstash/S3_temp/"
+   @lock = Mutex.new
 
    if (@tags.size != 0)
        @tag_path = ""
@@ -282,8 +290,12 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
       @thread = time_alert(@time_file*60) do
        if (first_time == false)
          @logger.debug "S3: time_file triggered,  let's bucket the file if dosen't empty  and create new file "
-         upFile(false, File.basename(@tempFile))
-         newFile(true)
+         last_filename = nil
+         @lock.synchronize {
+            last_filename = File.basename(@tempFile)
+            newFile(true)
+         }
+         upFile(false, last_filename)
        else
          first_time = false
        end
@@ -311,35 +323,41 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
 
   # if specific the size
   if(size_file !=0)
+    size_under = false
+    @lock.synchronize {
+        size_under = @tempFile.size < @size_file
+    }
 
-    if (@tempFile.size < @size_file )
-
-       @logger.debug "S3: File have size: "+@tempFile.size.to_s+" and size_file is: "+ @size_file.to_s
-       @logger.debug "S3: put event into: "+File.basename(@tempFile)
+    if (size_under)
 
        # Put the event in the file, now!
-       File.open(@tempFile, 'a') do |file|
-         file.puts message
-         file.write "\n"
-       end
+       @lock.synchronize {
+         @logger.debug "S3: File have size: "+@tempFile.size.to_s+" and size_file is: "+ @size_file.to_s
+         @logger.debug "S3: put event into: "+File.basename(@tempFile)
+
+         @tempFile.puts message
+         @tempFile.write "\n"
+       }
 
      else
-
-       @logger.debug "S3: file: "+File.basename(@tempFile)+" is too large, let's bucket it and create new file"
-       upFile(false, File.basename(@tempFile))
-       @sizeCounter += 1
-       newFile(false)
-
+       last_filename = nil
+       @lock.synchronize {
+           @logger.debug "S3: file: "+File.basename(@tempFile)+" is too large, let's bucket it and create new file"
+           last_filename = File.basename(@tempFile)
+           @sizeCounter += 1
+           newFile(false)
+       }
+       upFile(false, last_filename)
      end
 
   # else we put all in one file
   else
 
-    @logger.debug "S3: put event into "+File.basename(@tempFile)
-    File.open(@tempFile, 'a') do |file|
-      file.puts message
-      file.write "\n"
-    end
+    @lock.synchronize {
+      @logger.debug "S3: put event into "+File.basename(@tempFile)
+      @tempFile.puts message
+      @tempFile.write "\n"
+    }
   end
 
  end
