@@ -14,5 +14,6 @@ Packaging?
 
 Developing?
   `rake bootstrap`     installs any dependencies for doing Logstash development
+  `rake vendor:clean`  clean vendored dependencies used for Logstash development
 HELP
 end
