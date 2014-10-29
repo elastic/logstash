@@ -252,4 +252,9 @@ namespace "vendor" do
     File.write(DONEFILE, Time.now.to_s)
   end # task gems
   task "all" => "gems"
+
+  desc 'Clean the vendored files'
+  task :clean do
+    FileUtils.rm_rf(vendor) if Dir.exist?(vendor)
+  end
 end
