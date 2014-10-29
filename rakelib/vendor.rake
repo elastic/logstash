@@ -245,6 +245,6 @@ namespace "vendor" do
 
   desc 'Clean the vendored files'
   task :clean do
-    FileUtils.rm_rf(vendor) if Dir.exist?(vendor)
+    rm_rf vendor
   end
 end
