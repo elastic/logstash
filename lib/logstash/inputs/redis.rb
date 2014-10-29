@@ -252,13 +252,20 @@ EOF
 
   public
   def teardown
-    if @data_type == 'channel' and @redis
-      @redis.unsubscribe
-      @redis.quit
-      @redis = nil
-    end
-    if @data_type == 'pattern_channel' and @redis
-      @redis.punsubscribe
+    begin 
+      if @data_type == 'channel' and @redis
+        @redis.unsubscribe
+        @redis.quit
+        @redis = nil
+      end
+      if @data_type == 'pattern_channel' and @redis
+        @redis.punsubscribe
+        @redis.quit
+        @redis = nil
+      end
+    rescue => e
+      @logger.warn("Redis reconnection problem", :execption => e,
+                   :backtrace => e.backtrace)
       @redis.quit
       @redis = nil
     end
