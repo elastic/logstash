@@ -5,6 +5,7 @@ require "logstash/event"
 require "logstash/json"
 require "stud/temporary"
 require "tempfile"
+require "uri"
 
 describe LogStash::Outputs::File do
   describe "ship lots of events to a file" do
@@ -143,6 +144,36 @@ describe LogStash::Outputs::File do
             error_file = File.join(path, config["filename_failure"])
 
             expect(File.exist?(error_file)).to eq(true)
+          end
+        end
+
+        it 'doesnt decode relatives paths urlencoded' do
+          Stud::Temporary.directory('filepath_error') do |path|
+            encoded_once = "%2E%2E%2ftest"  # ../test
+            encoded_twice = "%252E%252E%252F%252E%252E%252Ftest" # ../../test
+
+            output = LogStash::Outputs::File.new({ "path" =>  "/#{path}/%{error}"})
+            output.register
+
+            bad_event['error'] = encoded_once
+            output.receive(bad_event)
+
+            bad_event['error'] = encoded_twice
+            output.receive(bad_event)
+
+            expect(Dir.glob(File.join(path, "*")).size).to eq(2)
+          end
+        end
+
+        it 'doesnt write outside the file if the path is double escaped' do
+          Stud::Temporary.directory('filepath_error') do |path|
+            output = LogStash::Outputs::File.new({ "path" =>  "/#{path}/%{error}"})
+            output.register
+
+            bad_event['error'] = '../..//test'
+            output.receive(bad_event)
+
+            expect(Dir.glob(File.join(path, "*")).size).to eq(1)
           end
         end
       end
