@@ -4,8 +4,6 @@ require "logstash/namespace"
 
 # The mutate filter allows you to perform general mutations on fields. You
 # can rename, remove, replace, and modify fields in your events.
-#
-# TODO(sissel): Support regexp replacements like String#gsub ?
 class LogStash::Filters::Mutate < LogStash::Filters::Base
   config_name "mutate"
   milestone 3
