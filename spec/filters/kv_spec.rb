@@ -20,6 +20,47 @@ describe LogStash::Filters::KV do
       insist { subject["singlequoted"] } == "hello world"
     end
 
+    sample "hello=\"world\" foo=\"bar\"" do
+      insist { subject["hello"] } == "world"
+      insist { subject["foo"] } == "bar"
+    end
+  end
+
+  describe "LOGSTASH-2272: allow escaped quotes" do
+    config <<-CONFIG
+      filter {
+        kv { }
+      }
+    CONFIG
+
+    sample %{msg="Running command \\"df --blocksize=1024\\""} do
+      insist { subject["msg"] } == %{Running command \\"df --blocksize=1024\\"}
+    end
+
+    sample %{msg='Running command \\'df --blocksize=1024\\''} do
+      insist { subject["msg"] } == %{Running command \\'df --blocksize=1024\\'}
+    end
+
+    sample %{msg="truncated} do
+      insist { subject["msg"] } == "truncated"
+    end
+
+    sample %{msg='truncated} do
+      insist { subject["msg"] } == "truncated"
+    end
+
+    sample %{msg="truncated\\} do
+      insist { subject["msg"] } == "truncated\\"
+    end
+
+    sample %{msg='truncated\\} do
+      insist { subject["msg"] } == "truncated\\"
+    end
+
+    sample %{msg="degenerate backslash=case\\\\" key2=value2} do
+      insist { subject["msg"] }  == "degenerate backslash=case\\\\"
+      insist { subject["key2"] } == "value2"
+    end
   end
 
    describe "LOGSTASH-624: allow escaped space in key or value " do
