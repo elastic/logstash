@@ -1,5 +1,6 @@
 require "logstash/outputs/elasticsearch"
 require "cabin"
+require "set"
 
 module LogStash::Outputs::Elasticsearch
   module Protocols
@@ -73,7 +74,7 @@ module LogStash::Outputs::Elasticsearch
 
       if ENV["BULK"] == "esruby"
         def bulk(actions)
-          bulk_esruby(actions)
+          return bulk_esruby(actions)
         end
       else
         def bulk(actions)
@@ -82,13 +83,19 @@ module LogStash::Outputs::Elasticsearch
       end
 
       def bulk_esruby(actions)
-        @client.bulk(:body => actions.collect do |action, args, source|
+        bulk_response = @client.bulk(:body => actions.collect do |action, args, source|
           if source
             next [ { action => args }, source ]
           else
             next { action => args }
           end
         end.flatten)
+
+        if bulk_response["errors"]
+          return {"errors" => true, "statuses" => bulk_response["items"].map { |i| i["status"] }}
+        else
+          return {"errors" => false}
+        end
       end # def bulk_esruby
 
       # Avoid creating a new string for newline every time
@@ -228,9 +235,17 @@ module LogStash::Outputs::Elasticsearch
         actions.each do |action, args, source|
           prep.add(build_request(action, args, source))
         end
-        response = prep.execute.actionGet()
 
-        # TODO(sissel): What format should the response be in?
+        response = prep.execute.actionGet()
+        
+        if response.has_failures()
+          return {"errors" => true,
+                  "statuses" => response.map { |i| (i.is_failed && i.get_failure.get_status.get_status) || 200 }}
+        else
+          return {"errors" => false}
+        end
+
+        # returns 200 for all successful actions, represents 201 & 200
       end # def bulk
 
       def build_request(action, args, source)

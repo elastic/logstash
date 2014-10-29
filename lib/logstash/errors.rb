@@ -5,6 +5,7 @@ module LogStash
   class ConfigurationError < Error; end
   class PluginLoadingError < Error; end
   class ShutdownSignal < StandardError; end
+  class BulkSendError < Error; end
 
   class Bug < Error; end
   class ThisMethodWasRemoved < Bug; end
