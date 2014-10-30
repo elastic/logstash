@@ -36,7 +36,9 @@ class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
   # Lifetime in seconds of this metric
   config :lifetime, :validate => :number, :default => 300
 
-  # Metric group
+  # Metric group. This supports dynamic strings like `%{node}`.
+  # Remember that in Ganglia metrics names have to differ
+  # even if groups names differ already.
   config :group, :validate => :string, :default => ""
 
   # Metric slope, represents metric behavior
@@ -66,7 +68,7 @@ class LogStash::Outputs::Ganglia < LogStash::Outputs::Base
       :units => @units,
       :type => @metric_type,
       :value => localvalue,
-      :group => @group,
+      :group => event.sprintf(@group),
       :slope => @slope,
       :tmax => @max_interval,
       :dmax => @lifetime
