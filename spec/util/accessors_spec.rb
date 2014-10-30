@@ -153,7 +153,14 @@ describe LogStash::Util::Accessors, :if => true do
       insist { accessors.get("[hello][world][0][a]") } == data["hello"]["world"][0]["a"]
       insist { accessors.get("[hello][world][1][b]") } == data["hello"]["world"][1]["b"]
     end
-  end
+
+    it "should handle delete of array element" do
+      str = "[geocoords][0]"
+      data = { "geocoords" => [4, 2] }
+      accessors = LogStash::Util::Accessors.new(data)
+      insist { accessors.del(str) } == 4
+      insist { data } == { "geocoords" => [2] }
+    end  end
 
   context "using invalid encoding" do
     it "strinct_set should raise on non UTF-8 string encoding" do
