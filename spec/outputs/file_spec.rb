@@ -117,14 +117,6 @@ describe LogStash::Outputs::File do
           event
         end
 
-        it 'tags the event as a file_path' do
-          output = LogStash::Outputs::File.new({ "path" =>  "/tmp/%{error}"})
-          output.register
-          output.receive(bad_event)
-
-          expect(bad_event["tags"]).to include("_filepath_failure")
-        end
-
         it 'writes the bad event in the specified error file' do
           Stud::Temporary.directory('filepath_error') do |path|
             config = { 

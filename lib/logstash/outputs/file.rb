@@ -46,10 +46,6 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # Gzip the output stream before writing to disk.
   config :gzip, :validate => :boolean, :default => false
 
-  # If the event try to create a file outside of the extracted file root
-  # we will tag the message and save it to @filepath_error.
-  config :tag_on_failure, :validate => :array, :default => ["_filepath_failure"]
-
   # If the generated path is invalid, the events will be saved
   # into this file and inside the defined path.
   config :filename_failure, :validate => :string, :default => '_filepath_failures'
@@ -66,7 +62,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
 
     validate_path
 
-    if interpolated_path?
+    if path_with_field_ref?
       @file_root = extract_file_root
       @failure_path = File.join(@file_root, @filename_failure)
     end
@@ -94,23 +90,14 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
 
     file_output_path = generate_filepath(event)
 
-    if interpolated_path? && !inside_file_root?(file_output_path)
+    if path_with_field_ref? && !inside_file_root?(file_output_path)
       @logger.warn("File: the event tried to write outside the files root, writing the event to the failure file",  :event => event, :filename => @failure_path)
-      tag_as_filepath_failure(event)
       file_output_path = @failure_path
     end
 
     output = format_message(event)
     write_event(file_output_path, output)
   end # def receive
-
-  private
-  def tag_as_filepath_failure(event)
-    event["tags"] ||= []
-    @tag_on_failure.each do |tag|
-      event["tags"] << tag unless event["tags"].include?(tag)
-    end
-  end
 
   private
   def inside_file_root?(log_path)
@@ -138,7 +125,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   end
 
   private
-  def interpolated_path?
+  def path_with_field_ref?
     path =~ /%\{[^}]+\}/
   end
 
