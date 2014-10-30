@@ -380,5 +380,4 @@ describe LogStash::Event do
     end
 
   end
-
 end
