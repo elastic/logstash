@@ -92,15 +92,15 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   def receive(event)
     return unless output?(event)
 
-    log_path = generate_filepath(event)
+    file_output_path = generate_filepath(event)
 
-    if interpolated_path? && !inside_file_root?(log_path)
+    if interpolated_path? && !inside_file_root?(file_output_path)
       tag_as_filepath_failure(event)
-      log_path = @failure_path
+      file_output_path = @failure_path
     end
 
     output = format_message(event)
-    write_event(log_path, output)
+    write_event(file_output_path, output)
   end # def receive
 
   private
