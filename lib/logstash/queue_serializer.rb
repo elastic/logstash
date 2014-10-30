@@ -13,6 +13,9 @@ class LogStash::JsonSerializer
     # exclude non LogStash::Event like the LogStash::ShutdownEvent and LogStash::FlushEvent
     return nil unless event.is_a?(LogStash::Event)
 
+    # separately serialize the event without metadata and the metadata
+    # to leverage the json wihout metadata caching by calling the Event#to_json
+    # method.
     event.to_json + NL + LogStash::Json.dump(event.metadata)
   end
 
