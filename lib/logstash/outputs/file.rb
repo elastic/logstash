@@ -95,6 +95,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     file_output_path = generate_filepath(event)
 
     if interpolated_path? && !inside_file_root?(file_output_path)
+      @logger.warn("File: the event tried to write outside the files root, writing the event to the failure file",  :event => event, :filename => @failure_path)
       tag_as_filepath_failure(event)
       file_output_path = @failure_path
     end
