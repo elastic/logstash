@@ -16,10 +16,6 @@ namespace "test" do
 
   task "prep" do
     plugins = [
-     'logstash-codec-json',
-     'logstash-codec-json_lines',
-     'logstash-codec-line',
-     'logstash-codec-plain',
      'logstash-filter-clone',
      'logstash-filter-mutate',
      'logstash-input-generator',
