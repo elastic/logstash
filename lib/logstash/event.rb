@@ -143,12 +143,12 @@ class LogStash::Event
     if fieldref == TIMESTAMP && !value.is_a?(LogStash::Timestamp)
       raise TypeError, "The field '@timestamp' must be a (LogStash::Timestamp, not a #{value.class} (#{value})"
     end
-    @json_cache = nil
     if fieldref.start_with?(METADATA_BRACKETS)
       @metadata_accessors.set(fieldref[METADATA_BRACKETS.length .. -1], value)
     elsif fieldref == METADATA
       @metadata = value
     else
+      @json_cache = nil
       @accessors.set(fieldref, value)
     end
   end # def []=
