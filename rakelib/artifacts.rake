@@ -57,7 +57,27 @@ namespace "artifact" do
     gz = Zlib::GzipWriter.new(tarfile, Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
     files.each do |path|
-      Archive::Tar::Minitar.pack_file(path, tar)
+      stat = File.lstat(path)
+      path_in_tar = "logstash-#{LOGSTASH_VERSION}/#{path}"
+      opts = {
+        :size => stat.size,
+        :mode => stat.mode,
+        :mtime => stat.mtime
+      }
+      if stat.directory?
+        tar.tar.mkdir(path_in_tar, opts)
+      else
+        tar.tar.add_file_simple(path_in_tar, opts) do |io|
+          File.open(path) do |fd|
+            chunk = nil
+            size = 0
+            size += io.write(chunk) while chunk = fd.read(16384)
+            if stat.size != size
+              raise "Failure to write the entire file (#{path}) to the tarball. Expected to write #{stat.size} bytes; actually write #{size}"
+            end
+          end
+        end
+      end
     end
     tar.close
     gz.close
