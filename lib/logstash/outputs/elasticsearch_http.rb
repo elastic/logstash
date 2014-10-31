@@ -20,11 +20,11 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # The index to write events to. This can be dynamic using the %{foo} syntax.
   # The default value will partition your indices by day so you can more easily
   # delete old data or only search specific date ranges.
-  config :index, :validate => :string, :default => "logstash-%{+YYYY.MM.dd}"
+  config :index, :validate => :string, :allow_dynamic => true, :default => "logstash-%{+YYYY.MM.dd}"
 
   # The index type to write events to. Generally you should try to write only
   # similar events to the same 'type'. String expansion '%{foo}' works here.
-  config :index_type, :validate => :string
+  config :index_type, :validate => :string, :allow_dynamic => true
 
   # Starting in Logstash 1.3 (unless you set option "manage_template" to false)
   # a default mapping template for Elasticsearch will be applied, if you do not
@@ -53,7 +53,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   config :template_overwrite, :validate => :boolean, :default => false
 
   # The hostname or IP address to reach your Elasticsearch server.
-  config :host, :validate => :string, :required => true
+  config :host, :validate => :string, :allow_dynamic => false, :required => true
 
   # The port for Elasticsearch HTTP interface to use.
   config :port, :validate => :number, :default => 9200
@@ -84,7 +84,7 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
 
   # The document ID for the index. Useful for overwriting existing entries in
   # Elasticsearch with the same ID.
-  config :document_id, :validate => :string, :default => nil
+  config :document_id, :validate => :string, :allow_dynamic => true, :default => nil
 
   # Set the type of Elasticsearch replication to use. If async
   # the index request to Elasticsearch to return after the primary
