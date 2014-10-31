@@ -10,8 +10,8 @@ require "logstash/namespace"
 #       ruby {
 #         # Cancel 90% of events
 #         code => "event.cancel if rand <= 0.90"
-#       } 
-#     } 
+#       }
+#     }
 #
 class LogStash::Filters::Ruby < LogStash::Filters::Base
   config_name "ruby"
@@ -27,15 +27,29 @@ class LogStash::Filters::Ruby < LogStash::Filters::Base
   public
   def register
     # TODO(sissel): Compile the ruby code
-    eval(@init, binding, "(ruby filter init)") if @init
-    eval("@codeblock = lambda { |event| #{@code} }", binding, "(ruby filter code)")
+    begin
+      eval(@init, binding, "(ruby filter init)") if @init
+    rescue Exception => exc
+      @logger.error('The ruby filter init raised an exception')
+    end
+
+    begin
+      eval("@codeblock = lambda { |event| #{@code} }", binding, "(ruby filter code)")
+    rescue Exception => exc
+      @codeblock = lambda { |event| }
+      @logger.error('The ruby filter code failed to parse')
+    end
   end # def register
 
   public
   def filter(event)
     return unless filter?(event)
 
-    @codeblock.call(event)
+    begin
+      @codeblock.call(event)
+    rescue Exception => exc
+      @logger.error('The ruby filter code raised an exception')
+    end
 
     filter_matched(event)
   end # def filter
