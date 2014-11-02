@@ -42,4 +42,35 @@ namespace "contribute" do
       end
     end
   end
+
+  task "clone-all-logstash-plugins" do
+    Rake::Task["gem:require"].invoke("git", ">= 0", ENV["GEM_HOME"])
+    Rake::Task["gem:require"].invoke("octokit", ">= 0", ENV["GEM_HOME"])
+    require 'octokit'
+    require 'git'
+    Octokit.auto_paginate = true
+    Octokit.organization_repositories("logstash-plugins").each do |plugin_repo|
+      puts "Cloning github.com/logstash-plugins/#{plugin_repo.name}"
+      Git.clone("https://github.com/logstash-plugins/#{plugin_repo.name}.git", "plugins/#{plugin_repo.name}")
+    end
+  end
+
+  task "documentation-live-reload" do  
+    Rake::Task["gem:require"].invoke("guard", ">= 0", ENV["GEM_HOME"])
+    Rake::Task["gem:require"].invoke("guard-shell", ">= 0", ENV["GEM_HOME"])
+    Rake::Task["gem:require"].invoke("rb-inotify", ">= 0", ENV["GEM_HOME"])
+    Rake::Task["gem:require"].invoke("asciidoctor", ">= 0", ENV["GEM_HOME"])
+    # Necessary gems could depends on something else
+    Rake::Task["gem:require"].invoke("cabin", ">= 0", ENV["GEM_HOME"])
+    Rake::Task["gem:require"].invoke("i18n", ">= 0", ENV["GEM_HOME"])
+    Rake::Task["gem:require"].invoke("oj", ">= 0", ENV["GEM_HOME"])
+    require 'guard'
+    ## add doc to path
+    $: << "#{Dir.pwd}"
+    
+    # Let's load Guard and process the Guardfile
+	Guard.setup
+	Guard.guards 'shell'
+	Guard.start :no_interactions => true
+  end
 end # namespace dependency
