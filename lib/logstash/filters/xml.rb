@@ -13,7 +13,7 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
   #
   #     source => source_field
   #
-  # For example, if you have the whole xml document in your @message field:
+  # For example, if you have the whole xml document in your message field:
   #
   #     filter {
   #       xml {
@@ -21,8 +21,8 @@ class LogStash::Filters::Xml < LogStash::Filters::Base
   #       }
   #     }
   #
-  # The above would parse the xml from the @message field
-  config :source, :validate => :string
+  # The above would parse the xml from the message field
+  config :source, :validate => :string, :required => true
 
   # Define target for placing the data
   #
