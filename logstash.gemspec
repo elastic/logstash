@@ -52,7 +52,6 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "jruby-httpclient"                    #(Apache 2.0 license)
     gem.add_runtime_dependency "msgpack-jruby"                       #(Apache 2.0 license)
     gem.add_runtime_dependency "jrjackson"                           #(Apache 2.0 license)
-    gem.add_runtime_dependency "jruby-kafka", [">=0.1.0"]            #(Apache 2.0 license)
   else
     gem.add_runtime_dependency "excon"    #(MIT license)
     gem.add_runtime_dependency "msgpack"  #(Apache 2.0 license)
