@@ -116,7 +116,7 @@ namespace "vendor" do
       tgz.close
     end
   end
-  task "all" => "geoip"
+  #task "all" => "geoip"
 
   task "kibana" do |task, args|
     name = task.name.split(":")[1]
@@ -155,7 +155,7 @@ namespace "vendor" do
       vendor(name, File.basename(entry.full_name))
     end
   end # task kafka
-  task "all" => "kafka"
+  #task "all" => "kafka"
 
   task "elasticsearch" do |task, args|
     name = task.name.split(":")[1]
@@ -174,7 +174,7 @@ namespace "vendor" do
       vendor(name, File.basename(entry.full_name))
     end # untar
   end # task elasticsearch
-  task "all" => "elasticsearch"
+  #task "all" => "elasticsearch"
 
   task "collectd" do |task, args|
     name = task.name.split(":")[1]
@@ -198,7 +198,7 @@ namespace "vendor" do
       end # untar
     end.invoke
   end
-  task "all" => "collectd"
+  #task "all" => "collectd"
 
   task "gems" => [ "dependency:bundler" ] do
     require "logstash/environment"
