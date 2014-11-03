@@ -188,7 +188,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
         @logger.warn? and @logger.warn("Redis key size has hit a congestion threshold #{@congestion_threshold} suspending output for #{@congestion_interval} seconds")
         sleep @congestion_interval
       end
-      @congestion_check_time = Time.now.to_i
+      @congestion_check_times[key] = Time.now.to_i
     end
   end
 
