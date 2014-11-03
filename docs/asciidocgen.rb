@@ -1,7 +1,6 @@
 require "rubygems"
 require "erb"
 require "optparse"
-require "kramdown" # markdown parser
 
 $: << Dir.pwd
 $: << File.join(File.dirname(__FILE__), "..", "lib")
@@ -84,7 +83,7 @@ class LogStashConfigAsciiDocGenerator
     # are gone from logstash.
     name = name.to_s unless name.is_a?(Regexp)
 
-    description = Kramdown::Document.new(@comments.join("\n")).to_kramdown
+    description = @comments.join("\n")
     @attributes[name][:description] = description
     clear_comments
   end # def add_config
@@ -156,24 +155,32 @@ class LogStashConfigAsciiDocGenerator
 
     # Loading the file will trigger the config dsl which should
     # collect all the config settings.
+
+    # include the plugin lib dir for loading specific files
+
+    $: << File.join(File.dirname(file), "..", "..")
+    # include the lib dir of the plugin it self for any local dependencies
     load file
 
+    # Get the correct base path
+    base = File.join(LogStash::Environment::LOGSTASH_HOME,'lib/logstash', file.split("/")[-2])
+
     # parse base first
-    parse(File.new(File.join(File.dirname(file), "base.rb"), "r").read)
+    parse(File.new(File.join(base, "base.rb"), "r").read)
 
     # Now parse the real library
     code = File.new(file).read
 
     # inputs either inherit from Base or Threadable.
     if code =~ /\< LogStash::Inputs::Threadable/
-      parse(File.new(File.join(File.dirname(file), "threadable.rb"), "r").read)
+      parse(File.new(File.join(base, "threadable.rb"), "r").read)
     end
 
     if code =~ /include LogStash::PluginMixins/
       mixin = code.gsub(/.*include LogStash::PluginMixins::(\w+)\s.*/m, '\1')
       mixin.gsub!(/(.)([A-Z])/, '\1_\2')
       mixin.downcase!
-      parse(File.new(File.join(File.dirname(file), "..", "plugin_mixins", "#{mixin}.rb")).read)
+      parse(File.new(File.join(base, "..", "plugin_mixins", "#{mixin}.rb")).read)
     end
 
     parse(code)
@@ -202,7 +209,7 @@ class LogStashConfigAsciiDocGenerator
     is_contrib_plugin = @contrib_list.include?(file)
 
     # descriptions are assumed to be markdown
-    description = Kramdown::Document.new(@class_description).to_kramdown
+    description = @class_description
 
     klass.get_config.each do |name, settings|
       @attributes[name].merge!(settings)
