@@ -1,7 +1,6 @@
 require "rubygems"
 require "erb"
 require "optparse"
-require "kramdown" # markdown parser
 
 $: << Dir.pwd
 $: << File.join(File.dirname(__FILE__), "..", "lib")
@@ -84,7 +83,7 @@ class LogStashConfigAsciiDocGenerator
     # are gone from logstash.
     name = name.to_s unless name.is_a?(Regexp)
 
-    description = Kramdown::Document.new(@comments.join("\n")).to_kramdown
+    description = @comments.join("\n")
     @attributes[name][:description] = description
     clear_comments
   end # def add_config
@@ -202,7 +201,7 @@ class LogStashConfigAsciiDocGenerator
     is_contrib_plugin = @contrib_list.include?(file)
 
     # descriptions are assumed to be markdown
-    description = Kramdown::Document.new(@class_description).to_kramdown
+    description = @class_description
 
     klass.get_config.each do |name, settings|
       @attributes[name].merge!(settings)
