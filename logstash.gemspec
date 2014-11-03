@@ -47,6 +47,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "mail"                             #(MIT license)
   gem.add_runtime_dependency "metriks"                          #(MIT license)
   gem.add_runtime_dependency "redis"                            #(MIT license)
+  gem.add_runtime_dependency "redis-sentinel"                   #(MIT license)
   gem.add_runtime_dependency "statsd-ruby", ["1.2.0"]           #(MIT license)
   gem.add_runtime_dependency "xml-simple"                       #(Ruby license?)
   gem.add_runtime_dependency "xmpp4r", ["0.5"]                  #(Ruby license)
