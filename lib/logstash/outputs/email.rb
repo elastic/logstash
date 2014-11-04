@@ -81,6 +81,12 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
   #
   #     mail.delivery_settings = { :address => 'some.host' }
   #
+  # Example:
+  #
+  #     options => { smtpIportHost" => "my.email.service" 
+  #                  port=> "55" 
+  #                  domain=> 'my.email.domain' }
+  #
   # The hash you supply is just merged against the defaults with "merge!" and the result
   # assigned to the mail object.  For instance, the above example will change only the
   # `:address` value of the global `smtp_settings` to be 'some.host', retaining all other values.
