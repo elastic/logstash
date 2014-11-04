@@ -14,6 +14,18 @@ describe "outputs/elasticsearch" do
     expect {output.register}.to_not raise_error
   end
 
+  describe "wildcard_subsitute" do
+    output = LogStash::Plugin.lookup("output", "elasticsearch").new("embedded" => "false", "protocol" => "transport", "manage_template" => "false")
+
+    it "should substitude placeholders" do
+      insist { output.wildcard_substitute("%{MM}-test-%{YYYY}") } == "*-test-*"
+    end
+
+    it "should do nothing to strings without placeholders" do
+      insist { output.wildcard_substitute("logs-index") } == "logs-index"
+    end
+  end
+
   describe "ship lots of events w/ default index_type", :elasticsearch => true do
     # Generate a random index name
     index = 10.times.collect { rand(10).to_s }.join("")
