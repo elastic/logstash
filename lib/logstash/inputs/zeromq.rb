@@ -33,9 +33,14 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
   #
   # If the predefined topology flows don't work for you,
   # you can change the 'mode' setting
-  # TODO (lusis) add req/rep MAYBE
   # TODO (lusis) add router/dealer
-  config :topology, :validate => ["pushpull", "pubsub", "pair"], :required => true
+  # Note: REQ/REP (request/reply) is esentially the same as REQ/ROUTER (request/router) from the
+  # REQ's perspective. There are use cases when you may want to swap out REP for ROUTER, so
+  # we'll use REQ on the logstash side: 
+  # see http://zguide.zeromq.org/page:all#The-Load-Balancing-Pattern. This is alternative to 
+  # PUSH/PULL in which the first PULL connections may grab too many messages and not be truly 
+  # load balanced.
+  config :topology, :validate => ["pushpull", "pubsub", "pair", "reqrep"], :required => true
 
   # 0mq topic
   # This is used for the 'pubsub' topology only
@@ -83,6 +88,8 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
       zmq_const = ZMQ::PULL
     when "pubsub"
       zmq_const = ZMQ::SUB
+    when "reqrep"
+      zmq_const = ZMQ::REQ
     end # case socket_type
     @zsocket = context.socket(zmq_const)
     error_check(@zsocket.setsockopt(ZMQ::LINGER, 1),
@@ -107,6 +114,12 @@ class LogStash::Inputs::ZeroMQ < LogStash::Inputs::Base
           error_check(@zsocket.setsockopt(ZMQ::SUBSCRIBE, t),
         "while setting ZMQ::SUBSCRIBE == #{t}")
         end
+      end
+    end
+
+    if @topology == "reqrep"
+      if @address.empty?
+	@logger.warn("ZMQ - REQ/REP topology requires an address")
       end
     end
 
