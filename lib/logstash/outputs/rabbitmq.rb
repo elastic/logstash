@@ -22,7 +22,7 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   #
 
   # RabbitMQ server address
-  config :host, :validate => :string, :required => true
+  config :host, :validate => :array, :required => true
 
   # RabbitMQ port to connect on
   config :port, :validate => :number, :default => 5672

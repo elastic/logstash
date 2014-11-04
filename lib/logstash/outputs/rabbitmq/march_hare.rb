@@ -11,6 +11,9 @@ class LogStash::Outputs::RabbitMQ
       require "march_hare"
       require "java"
 
+      @cur_host_index = rand @host.length
+      @backlog = []
+
       @logger.info("Registering output", :plugin => self)
 
       @connected = java.util.concurrent.atomic.AtomicBoolean.new
@@ -38,11 +41,14 @@ class LogStash::Outputs::RabbitMQ
     def publish_serialized(message)
       begin
         if @connected.get
+          publish_backlog
+        
           @x.publish(message, :routing_key => @key, :properties => {
             :persistent => @persistent
           })
         else
-          @logger.warn("Tried to send a message, but not connected to RabbitMQ.")
+          @logger.warn("Tried to send a message, but not connected to RabbitMQ. Will attempt to send when connected.")
+          @backlog.push message
         end
       rescue MarchHare::Exception, IOError, com.rabbitmq.client.AlreadyClosedException => e
         @connected.set(false)
@@ -52,17 +58,20 @@ class LogStash::Outputs::RabbitMQ
                       :exception => e,
                       :backtrace => e.backtrace)
         return if terminating?
+        
+        @backlog.push message
 
-        sleep n
-
-        connect
-        declare_exchange
-        retry
+        Thread.new {
+          sleep n if @host.length == 1
+          
+          connect
+          declare_exchange
+        }
       end
     end
 
     def to_s
-      return "amqp://#{@user}@#{@host}:#{@port}#{@vhost}/#{@exchange_type}/#{@exchange}\##{@key}"
+      return "amqp://#{@user}@#{@host[@cur_host_index]}:#{@port}#{@vhost}/#{@exchange_type}/#{@exchange}\##{@key}"
     end
 
     def teardown
@@ -82,14 +91,18 @@ class LogStash::Outputs::RabbitMQ
     def connect
       return if terminating?
 
+      @cur_host_index = (@cur_host_index + 1) % @host.length
+      host, port = @host[@cur_host_index].split(":")
+      puts "@host is #{@host.inspect}, host is #{host.inspect}:#{port}"
+
       @vhost       ||= "127.0.0.1"
       # 5672. Will be switched to 5671 by Bunny if TLS is enabled.
-      @port        ||= 5672
+      port        ||= @port || 5672
 
       @settings = {
         :vhost => @vhost,
-        :host  => @host,
-        :port  => @port,
+        :host  => host,
+        :port  => port,
         :user  => @user,
         :automatic_recovery => false
       }
@@ -105,7 +118,7 @@ class LogStash::Outputs::RabbitMQ
                                else
                                  "amqps"
                                end
-      @connection_url        = "#{proto}://#{@user}@#{@host}:#{@port}#{vhost}/#{@queue}"
+      @connection_url        = "#{proto}://#{@user}@#{host}:#{port}#{vhost}/#{@queue}"
 
       begin
         @conn = MarchHare.connect(@settings)
@@ -123,7 +136,7 @@ class LogStash::Outputs::RabbitMQ
                       :backtrace => e.backtrace)
         return if terminating?
 
-        sleep n
+        sleep n if @host.length == 1
         retry
       end
     end
@@ -139,5 +152,12 @@ class LogStash::Outputs::RabbitMQ
       @x
     end
 
+    def publish_backlog
+      while !@backlog.empty?
+        @x.publish(@backlog.shift, :routing_key => @key, :properties => {
+          :persistent => @persistent
+        })
+      end
+    end
   end # MarchHareImpl
 end
