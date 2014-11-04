@@ -44,6 +44,7 @@ class LogStash::Inputs::S3 < LogStash::Inputs::Base
   # Where to write the since database (keeps track of the date
   # the last handled file was added to S3). The default will write
   # sincedb files to some path matching "$HOME/.sincedb*"
+  # Should be a path with filename not just a directory.
   config :sincedb_path, :validate => :string, :default => nil
 
   # Name of a S3 bucket to backup processed files to.
