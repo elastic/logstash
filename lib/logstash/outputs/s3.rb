@@ -120,6 +120,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  # S3 bucket
  config :bucket, :validate => :string
 
+ # Dir for temp files
+ config :temp_directory, :validate => :string
+
  # Aws endpoint_region
  config :endpoint_region, :validate => ["us-east-1", "us-west-1", "us-west-2",
                                         "eu-west-1", "ap-southeast-1", "ap-southeast-2",
@@ -145,6 +148,8 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  ## for example if you have single Instance.
  config :restore, :validate => :boolean, :default => false
 
+ config :use_ssl, :validate => :boolean, :default => false
+
  # Aws canned ACL
  config :canned_acl, :validate => ["private", "public_read", "public_read_write", "authenticated_read"],
         :default => "private"
@@ -159,7 +164,8 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   AWS.config(
     :access_key_id => @access_key_id,
     :secret_access_key => @secret_access_key,
-    :s3_endpoint => @endpoint_region
+    :s3_endpoint => @endpoint_region,
+    :use_ssl => @use_ssl
   )
   @s3 = AWS::S3.new
 
@@ -253,7 +259,7 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
  public
  def register
    require "aws-sdk"
-   @temp_directory = "/opt/logstash/S3_temp/"
+   @temp_directory ||= "/var/tmp/"
 
    if (@tags.size != 0)
        @tag_path = ""
