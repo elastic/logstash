@@ -172,10 +172,11 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # What does each action do?
   #
   # - index: indexes a document (an event from logstash).
+  # - create: creates a document (fail when it already exists)
   # - delete: deletes a document by id
   #
   # For more details on actions, check out the [Elasticsearch bulk API documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-bulk.html)
-  config :action, :validate => :string, :default => "index"
+  config :action, :validate => [ "index", "create", "delete" ], :default => "index"
 
   public
   def register
@@ -335,7 +336,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
     index = event.sprintf(@index)
 
-    document_id = @document_id ? event.sprintf(@document_id) : nil
+    document_id = @document_id ? event.sprintf(@document_id) : event["_id"]
     buffer_receive([event.sprintf(@action), { :_id => document_id, :_index => index, :_type => type }, event.to_hash])
   end # def receive
 

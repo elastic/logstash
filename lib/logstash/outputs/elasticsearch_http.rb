@@ -93,6 +93,9 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
   # written.
   config :replication, :validate => ['async', 'sync'], :default => 'sync'
 
+  # Indexer action to perform.
+  config :action, :validate => ['index', 'create', 'delete'], :default => 'index'
+
   public
   def register
     require "ftw" # gem ftw
@@ -202,9 +205,13 @@ class LogStash::Outputs::ElasticSearchHTTP < LogStash::Outputs::Base
       else
         type = event.sprintf(@index_type)
       end
-      header = { "index" => { "_index" => index, "_type" => type } }
-      header["index"]["_id"] = event.sprintf(@document_id) if !@document_id.nil?
-
+      header = { "_index" => index, "_type" => type }
+      if !@document_id.nil?
+        header["_id"] = event.sprintf(@document_id)
+      elsif event["_id"]
+        header["_id"] = event["_id"]
+      end
+      header = { @action => header }
       [ LogStash::Json.dump(header), newline, event.to_json, newline ]
     end.flatten
 
