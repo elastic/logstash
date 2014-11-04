@@ -128,9 +128,12 @@ EOF
   end
 
   private
-  def queue_event(msg, output_queue)
+  def queue_event(msg, output_queue, channel = nil)
     begin
       @codec.decode(msg) do |event|
+	unless channel.nil?
+          event["channel"] = channel
+	end
         decorate(event)
         output_queue << event
       end
@@ -175,6 +178,7 @@ EOF
       #end
       # --- End commented out implementation of 'batch fetch'
     rescue Redis::CommandError => e
+	@logger.warn("Redis rescue")
       if e.to_s =~ /NOSCRIPT/ then
         @logger.warn("Redis may have been restarted, reloading Redis batch EVAL script", :exception => e);
         load_batch_script(redis)
@@ -209,8 +213,8 @@ EOF
         @logger.info("Subscribed", :channel => channel, :count => count)
       end
 
-      on.pmessage do |ch, event, message|
-        queue_event message, output_queue
+      on.pmessage do |ch, event, message|    
+        queue_event message, output_queue, event
       end
 
       on.punsubscribe do |channel, count|
