@@ -50,7 +50,7 @@ require "socket" # for Socket.gethostname
 # I think there are much thing to improve, but if you want some points to develop here a list:
 
 # TODO Integrate aws_config in the future
-# TODO Find a method to push them all files when logtstash close the session.
+# TODO Find a method to push them all files when logstash close the session.
 # TODO Integrate @field on the path file
 # TODO Permanent connection or on demand? For now on demand, but isn't a good implementation.
 #      Use a while or a thread to try the connection before break a time_out and signal an error.
