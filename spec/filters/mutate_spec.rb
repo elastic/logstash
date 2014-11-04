@@ -254,5 +254,104 @@ describe LogStash::Filters::Mutate do
       ]
     end
   end
+
+  describe "merge string field into inexisting field" do
+    config '
+      filter {
+        mutate {
+          merge => [ "list", "foo" ]
+        }
+      }'
+
+    sample("foo" => "bar") do
+      insist { subject["list"] } == ["bar"]
+      insist { subject["foo"] } == "bar"
+    end
+  end
+
+  describe "merge string field into empty array" do
+    config '
+      filter {
+        mutate {
+          merge => [ "list", "foo" ]
+        }
+      }'
+
+    sample("foo" => "bar", "list" => []) do
+      insist { subject["list"] } == ["bar"]
+      insist { subject["foo"] } == "bar"
+    end
+  end
+
+  describe "merge string field into existing array" do
+    config '
+      filter {
+        mutate {
+          merge => [ "list", "foo" ]
+        }
+      }'
+
+    sample("foo" => "bar", "list" => ["baz"]) do
+      insist { subject["list"] } == ["baz", "bar"]
+      insist { subject["foo"] } == "bar"
+    end
+  end
+
+  describe "merge non empty array field into existing array" do
+    config '
+      filter {
+        mutate {
+          merge => [ "list", "foo" ]
+        }
+      }'
+
+    sample("foo" => ["bar"], "list" => ["baz"]) do
+      insist { subject["list"] } == ["baz", "bar"]
+      insist { subject["foo"] } == ["bar"]
+    end
+  end
+
+  describe "merge empty array field into existing array" do
+    config '
+      filter {
+        mutate {
+          merge => [ "list", "foo" ]
+        }
+      }'
+
+    sample("foo" => [], "list" => ["baz"]) do
+      insist { subject["list"] } == ["baz"]
+      insist { subject["foo"] } == []
+    end
+  end
+
+  describe "merge array field into string field" do
+    config '
+      filter {
+        mutate {
+          merge => [ "list", "foo" ]
+        }
+      }'
+
+    sample("foo" => ["bar"], "list" => "baz") do
+      insist { subject["list"] } == ["baz", "bar"]
+      insist { subject["foo"] } == ["bar"]
+    end
+  end
+
+  describe "merge string field into string field" do
+    config '
+      filter {
+        mutate {
+          merge => [ "list", "foo" ]
+        }
+      }'
+
+    sample("foo" => "bar", "list" => "baz") do
+      insist { subject["list"] } == ["baz", "bar"]
+      insist { subject["foo"] } == "bar"
+    end
+  end
+
 end
 
