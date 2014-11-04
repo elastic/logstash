@@ -47,6 +47,22 @@ class LogStash::Agent < Clamp::Command
     I18n.t("logstash.agent.flag.configtest"),
     :attribute_name => :config_test
 
+  option ["--use-persistent-queues"], :flag,
+    "Enable global queue persistence",
+    :attribute_name => :use_persistent_queues
+
+  option ["--persistent-queues-path"], "PATH",
+    "Global persistent queues data files directory",
+    :attribute_name => :persistent_queues_path
+
+  option ["--persistent-queues-items"], "COUNT",
+    "Global persistent queues maximum items",
+    :attribute_name => :persistent_queues_items, &:to_i
+
+  option ["--persistent-queues-pagesize"], "BYTES",
+    "Global persistent queues size in bytes",
+    :attribute_name => :persistent_queues_pagesize, &:to_i
+
   # Emit a warning message.
   def warn(message)
     # For now, all warnings are fatal.
@@ -111,6 +127,7 @@ class LogStash::Agent < Clamp::Command
 
     begin
       pipeline = LogStash::Pipeline.new(@config_string)
+      configure_pipeline(pipeline)
     rescue LoadError => e
       fail("Configuration problem.")
     end
@@ -209,6 +226,28 @@ class LogStash::Agent < Clamp::Command
     configure_logging(log_file)
     configure_plugin_path(plugin_paths) if !plugin_paths.nil?
   end # def configure
+
+  def configure_pipeline(pipeline)
+    # persistent queue pipeline configuration
+    if use_persistent_queues?
+      pipeline.configure("use-persistent-queues", true)
+
+      if persistent_queues_path
+        fail("invalid persistent-queues-path=#{persistent_queues_path}") unless File.directory?(persistent_queues_path)
+        pipeline.configure("persistent-queues-path", persistent_queues_path)
+      end
+
+      if persistent_queues_items
+        fail("invalid persistent-queues-items=#{persistent_queues_items}") if persistent_queues_items <= 0
+        pipeline.configure("persistent-queues-items", persistent_queues_items)
+      end
+
+      if persistent_queues_pagesize
+        fail("invalid persistent-queues-pagesize=#{persistent_queues_pagesize}") if persistent_queues_pagesize <= 0
+        pipeline.configure("persistent-queues-pagesize", persistent_queues_pagesize)
+      end
+    end
+  end
 
   # Point logging at a specific path.
   def configure_logging(path)
