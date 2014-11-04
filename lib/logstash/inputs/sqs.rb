@@ -76,7 +76,13 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
 
   # Name of the event field in which to store the  SQS message Sent Timestamp
   config :sent_timestamp_field, :validate => :string
+  
+  # The number of events expected for a receive.
+  config :batch_events, :validate => :number, :default => 10
 
+  # Delay for thread if less than 10 messages are read in the batch from sqs
+  config :partial_batch_delay, :validate => :string, :default => 2
+  
   public
   def aws_service_endpoint(region)
     return {
@@ -106,7 +112,7 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
     @logger.debug("Polling SQS queue", :queue => @queue)
 
     receive_opts = {
-        :limit => 10,
+        :limit => @batch_events,
         :visibility_timeout => 30,
         :attributes => [:sent_at]
     }
@@ -114,25 +120,38 @@ class LogStash::Inputs::SQS < LogStash::Inputs::Threadable
     continue_polling = true
     while running? && continue_polling
       continue_polling = run_with_backoff(60, 1) do
-        @sqs_queue.receive_message(receive_opts) do |message|
-          if message
-            @codec.decode(message.body) do |event|
-              decorate(event)
-              if @id_field
-                event[@id_field] = message.id
-              end
-              if @md5_field
-                event[@md5_field] = message.md5
-              end
-              if @sent_timestamp_field
-                event[@sent_timestamp_field] = LogStash::Timestamp.new(message.sent_timestamp).utc
-              end
-              @logger.debug? && @logger.debug("Processed SQS message", :message_id => message.id, :message_md5 => message.md5, :sent_timestamp => message.sent_timestamp, :queue => @queue)
-              output_queue << event
-              message.delete
-            end # codec.decode
-          end # valid SQS message
-        end # receive_message
+        received_messages = @sqs_queue.receive_message(receive_opts)
+        messages_to_delete=[]
+        received_messages.each() do |message|
+          begin
+            if message
+              @codec.decode(message.body) do |event|
+                decorate(event)
+                if @id_field
+                  event[@id_field] = message.id
+                end
+                if @md5_field
+                  event[@md5_field] = message.md5
+                end
+                if @sent_timestamp_field
+                  event[@sent_timestamp_field] = message.sent_timestamp.utc
+                end
+                @logger.debug? && @logger.debug("Processed SQS message", :message_id => message.id, :message_md5 => message.md5, :sent_timestamp => message.sent_timestamp, :queue => @queue)
+                output_queue << event
+                messages_to_delete << message
+              end # codec.decode
+            end # valid SQS message
+          rescue Exception => e
+            @logger.warn("Processing a SQS message failed", :error => e, :message_id => message.id, :message_md5 => message.md5, :sent_timestamp => message.sent_timestamp, :queue => @queue)
+          end # begin
+        end # rm_each
+        if !messages_to_delete.empty?
+            if messages_to_delete.size < @batch_events and @partial_batch_delay > 0
+              sleep @partial_batch_delay
+              @logger.info("sleeping #{@partial_batch_delay} seconds, only #{messages_to_delete.size} messages read, out of max #{@batch_events}")
+            end
+          @sqs_queue.batch_delete(messages_to_delete)
+        end
       end # run_with_backoff
     end # polling loop
   end # def run
