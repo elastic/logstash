@@ -91,6 +91,8 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   end # def run
 
   def parse_mail(mail)
+    # Add a debug message so we can track what message might cause an error later
+    @logger.debug("Working with message_id", :message_id => mail.message_id)
     # TODO(sissel): What should a multipart message look like as an event?
     # For now, just take the plain-text part and set it as the message.
     if mail.parts.count == 0
