@@ -9,7 +9,7 @@ QUEUE_PATH = "persistent_queue_spec"
 
 describe "persistent queue" do
   it "should push a serialized event and reload a deserialized event" do
-    q = Mmap::SizedQueue.new(QUEUE_PATH, 20,
+    q = Mmap::SizedQueue.new(20,
       :page_handler => Mmap::SinglePage.new(QUEUE_PATH, :page_size => 1024 * 1024),
       :serializer => LogStash::JsonSerializer.new
     )
@@ -25,7 +25,7 @@ describe "persistent queue" do
     # queue has been closed with one event in it, repopening on the same data will
     # feed queue with persisted items
 
-    q = Mmap::SizedQueue.new(QUEUE_PATH, 20,
+    q = Mmap::SizedQueue.new(20,
       :page_handler => Mmap::SinglePage.new(QUEUE_PATH, :page_size => 1024 * 1024),
       :serializer => LogStash::JsonSerializer.new
     )
