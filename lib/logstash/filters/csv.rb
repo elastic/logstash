@@ -37,6 +37,12 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
   # Defaults to writing to the root of the event.
   config :target, :validate => :string
 
+  # Converters used for converting values in CSV
+  # Defaults to none (previous behavior)
+  # Options are all, integer, float, numeric, date, date_time
+  # Note: This is a speed impact on using this function
+  config :converters, :validate => :array, :default => nil
+
   public
   def register
 
@@ -66,7 +72,10 @@ class LogStash::Filters::CSV < LogStash::Filters::Base
 
       raw = event[@source].first
       begin
-        values = CSV.parse_line(raw, :col_sep => @separator, :quote_char => @quote_char)
+
+        @converters.map!(&:to_sym) unless @converters.nil?
+
+        values = CSV.parse_line(raw, :col_sep => @separator, :quote_char => @quote_char, :converters => @converters)
 
         if @target.nil?
           # Default is to write to the root of the event.
