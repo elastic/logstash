@@ -20,7 +20,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   #
   # If you try to set a type on an event that already has one (for
   # example when you send an event from a shipper to an indexer) then
-  # a new input will not override the existing type. A type set at 
+  # a new input will not override the existing type. A type set at
   # the shipper stays with that event for its life even
   # when sent to another Logstash server.
   config :type, :validate => :string
@@ -100,7 +100,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   end # def tag
 
   protected
-  def to_event(raw, source) 
+  def to_event(raw, source)
     raise LogStash::ThisMethodWasRemoved("LogStash::Inputs::Base#to_event - you should use codecs now instead of to_event. Not sure what this means? Get help on logstash-users@googlegroups.com!")
   end # def to_event
 

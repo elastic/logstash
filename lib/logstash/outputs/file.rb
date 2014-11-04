@@ -10,13 +10,13 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   config_name "file"
   milestone 2
 
-  # The path to the file to write. Event fields can be used here, 
+  # The path to the file to write. Event fields can be used here,
   # like "/var/log/logstash/%{host}/%{application}"
-  # One may also utilize the path option for date-based log 
+  # One may also utilize the path option for date-based log
   # rotation via the joda time format. This will use the event
   # timestamp.
-  # E.g.: path => "./test-%{+YYYY-MM-dd}.txt" to create 
-  # ./test-2013-05-29.txt 
+  # E.g.: path => "./test-%{+YYYY-MM-dd}.txt" to create
+  # ./test-2013-05-29.txt
   config :path, :validate => :string, :required => true
 
   # The maximum size of file to write. When the file exceeds this
@@ -35,7 +35,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
   # event will be written as a single line.
   config :message_format, :validate => :string
 
-  # Flush interval (in seconds) for flushing writes to log files. 
+  # Flush interval (in seconds) for flushing writes to log files.
   # 0 will flush on every message.
   config :flush_interval, :validate => :number, :default => 2
 
@@ -136,7 +136,7 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
     dir = File.dirname(path)
     if !Dir.exists?(dir)
       @logger.info("Creating directory", :directory => dir)
-      FileUtils.mkdir_p(dir) 
+      FileUtils.mkdir_p(dir)
     end
 
     # work around a bug opening fifos (bug JRUBY-6280)
