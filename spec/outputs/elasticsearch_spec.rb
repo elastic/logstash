@@ -347,7 +347,71 @@ describe "outputs/elasticsearch" do
     end
   end
 
-  describe "elasticsearch protocol", :elasticsearch => true do
+  describe "failures in bulk class expected behavior", :elasticsearch => true do
+
+    def mock_actions_with_response(*resp)
+      LogStash::Outputs::Elasticsearch::Protocols::HTTPClient
+        .any_instance.stub(:bulk).and_return(*resp)
+      LogStash::Outputs::Elasticsearch::Protocols::NodeClient
+        .any_instance.stub(:bulk).and_return(*resp)
+      LogStash::Outputs::Elasticsearch::Protocols::TransportClient
+        .any_instance.stub(:bulk).and_return(*resp)
+    end
+
+    def send_actions(subject)
+      subject.register
+      subject.receive(LogStash::Event.new("somevalue" => 100))
+      subject.receive(LogStash::Event.new("geoip" => { "location" => [ 0.0, 0.0] }))
+      subject.buffer_flush(:final => true)
+    end
+
+    ["node", "transport", "http"].each do |protocol|
+      context "with protocol => #{protocol}" do
+        subject do
+          require "logstash/outputs/elasticsearch"
+          settings = {
+            "manage_template" => true,
+            "template_overwrite" => true,
+            "protocol" => protocol,
+            "host" => "localhost"
+          }
+          next LogStash::Outputs::ElasticSearch.new(settings)
+        end
+
+        before :each do
+          # Delete all templates first.
+          require "elasticsearch"
+
+          # Clean ES of data before we start.
+          @es = Elasticsearch::Client.new
+          @es.indices.delete_template(:name => "*")
+          @es.indices.delete(:index => "*")
+          @es.indices.refresh
+        end
+
+        it "should return no errors if all bulk actions are successful" do
+          mock_actions_with_response({"errors" => false})
+          send_actions(subject)
+        end
+
+        it "should retry actions 3 times with response status of 503" do
+          mock_actions_with_response({"errors" => true, "statuses" => [200, 503]},
+                                     {"errors" => true, "statuses" => [503]},
+                                     {"errors" => false})
+          send_actions(subject)
+        end
+        
+        it "should retry actions 3 times with response status of 429" do
+          mock_actions_with_response({"errors" => true, "statuses" => [200, 429]},
+                                     {"errors" => true, "statuses" => [429]},
+                                     {"errors" => false})
+          send_actions(subject)
+        end
+      end
+    end
+  end
+
+  describe "elasticsearch protocol", :todo => true do
     # ElasticSearch related jars
     LogStash::Environment.load_elasticsearch_jars!
     # Load elasticsearch protocol

@@ -342,7 +342,18 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   def flush(actions, teardown=false)
     begin
       @logger.debug? and @logger.debug "Sending bulk of actions to client[#{@client_idx}]: #{@host[@client_idx]}"
-      @current_client.bulk(actions)
+
+      Stud::try(3.times) do
+        bulk_response = @current_client.bulk(actions)
+        if bulk_response["errors"]
+          failed_actions = bulk_response['statuses'].map.with_index {|x, i| actions[i] unless [200, 201].include?(x)}.compact
+          if failed_actions
+            @logger.debug? and @logger.debug "#{failed_actions.size}/#{actions.size} events were unsuccessful in sending, retrying."
+            actions = failed_actions
+            raise LogStash::BulkSendError, "Unsuccessful bulk request, some messages did not make it to Elasticsearch"
+          end
+        end
+      end
     rescue => e
       @logger.error "Got error to send bulk of actions to elasticsearch server at #{@host[@client_idx]} : #{e.message}"
       raise e
@@ -352,10 +363,8 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
           shift_client
       end
     end
-    # TODO(sissel): Handle errors. Since bulk requests could mostly succeed
-    # (aka partially fail), we need to figure out what documents need to be
-    # retried.
-    #
+    # TODO(talevy): We need to figure out how to prevent replaying successful events when
+    # Stud::try does not succeed.
     # In the worst case, a failing flush (exception) will incur a retry from Stud::Buffer.
   end # def flush
 
