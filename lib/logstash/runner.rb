@@ -141,11 +141,11 @@ class LogStash::Runner
         plugin_manager = LogStash::PluginManager::Main.new($0)
         begin
           plugin_manager.parse(args)
-          return plugin_manager.execute
+          plugin_manager.execute
         rescue Clamp::HelpWanted => e
           show_help(e.command)
-          return 0
         end
+        return 0
       end,
       "agent" => lambda do
         require "logstash/agent"
