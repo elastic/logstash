@@ -95,6 +95,17 @@ module LogStash::Outputs::Elasticsearch
       NEWLINE = "\n".freeze
       def bulk_ftw(actions)
         body = actions.collect do |action, args, source|
+          #(sn0wtiger) update & upsert requests with fallback to index request if no id or type are given
+          if (action == 'update' || action == 'upsert') && (!args[:_id] || args[:_id].nil?)
+            action = 'index'
+          else
+            if source && action == 'update'
+              source = { 'doc' => source }
+            elsif source && action == 'upsert'
+              source = { 'doc' => source, 'doc_as_upsert' => true }
+              action = 'update'
+            end           
+          end
           header = { action => args }
           if source
             next [ LogStash::Json.dump(header), NEWLINE, LogStash::Json.dump(source), NEWLINE ]
@@ -242,7 +253,26 @@ module LogStash::Outputs::Elasticsearch
           when "delete"
             request = org.elasticsearch.action.delete.DeleteRequest.new(args[:_index])
             request.id(args[:_id])
-          #when "update"
+          #(sn0wtiger) update & upsert requests with fallback to index request if no id or type are given
+          when "update"
+            if args[:_id] && args[:_type]
+              request = org.elasticsearch.action.update.UpdateRequest.new(args[:_index],args[:_type],args[:_id])
+              request.doc(source)             
+            else
+              request = org.elasticsearch.action.index.IndexRequest.new(args[:_index])
+              request.id(args[:_id]) if args[:_id]
+              request.source(source)
+            end
+          when "upsert"
+            if args[:_id] && args[:_type]
+              request = org.elasticsearch.action.update.UpdateRequest.new(args[:_index],args[:_type],args[:_id])
+              request.docAsUpsert(true)
+              request.doc(source)
+            else
+              request = org.elasticsearch.action.index.IndexRequest.new(args[:_index])
+              request.id(args[:_id]) if args[:_id]
+              request.source(source)
+            end
           #when "create"
         end # case action
 
@@ -290,6 +320,8 @@ module LogStash::Outputs::Elasticsearch
     class Bulk; end
     class Index; end
     class Delete; end
+    class Update; end
+    class Upsert; end
   end
 end
 
