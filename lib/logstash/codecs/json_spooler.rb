@@ -3,7 +3,7 @@ require "logstash/codecs/base"
 require "logstash/codecs/spool"
 require "logstash/json"
 
-# This is the base class for logstash codecs.
+# This codec is deprecated and will be removed in a future release.
 class LogStash::Codecs::JsonSpooler < LogStash::Codecs::Spool
   config_name "json_spooler"
   milestone 0
