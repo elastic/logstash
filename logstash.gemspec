@@ -58,6 +58,15 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "oj"       #(MIT-style license)
   end
 
+  if RUBY_ENGINE == "rbx"
+    # rubinius puts the ruby stdlib into gems.
+    gem.add_runtime_dependency "rubysl"
+
+    # Include racc to make the xml tests pass.
+    # https://github.com/rubinius/rubinius/issues/2632#issuecomment-26954565
+    gem.add_runtime_dependency "racc"
+  end
+
   # These are runtime-deps so you can do 'java -jar logstash.jar rspec <test>'
   gem.add_runtime_dependency "spoon"              #(Apache 2.0 license)
   gem.add_runtime_dependency "mocha"              #(MIT license)
