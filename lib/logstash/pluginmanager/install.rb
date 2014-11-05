@@ -53,7 +53,7 @@ class LogStash::PluginManager::Install < Clamp::Command
     end
 
     ::Gem.configuration.verbose = false
-    LogStash::PluginManager::Vendor.new().setup_hook
+    LogStash::PluginManager::Vendor.setup_hook
     options = {}
     options[:document] = []
     inst = Gem::DependencyInstaller.new(options)
