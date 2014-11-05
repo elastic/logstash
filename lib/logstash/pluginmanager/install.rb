@@ -34,7 +34,7 @@ class LogStash::PluginManager::Install < Clamp::Command
       return 99
     end
 
-    puts ("valid logstash plugin. Continueing...")
+    puts ("Valid logstash plugin. Continuing...")
 
     if LogStash::PluginManager::Util.installed?(gem_meta.name)
 
