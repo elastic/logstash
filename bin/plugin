@@ -1,8 +1,8 @@
 #!/bin/sh
-# Install contrib plugins.
+# Install plugins.
 #
 # Usage:
 #     bin/plugin --help
 
 basedir=$(cd `dirname $0`/..; pwd)
-. ${basedir}/bin/logstash plugin "$@"
+exec ${basedir}/bin/logstash plugin "$@"
