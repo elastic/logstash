@@ -48,7 +48,7 @@ namespace "artifact" do
   end
   
   desc "Build a tar.gz of logstash with all dependencies"
-  task "tar" => ["bootstrap"] do
+  task "tar" => ["bootstrap", "plugin:install-defaults"] do
     require "zlib"
     require "archive/tar/minitar"
     require "logstash/version"
@@ -190,12 +190,12 @@ namespace "artifact" do
   end # def package
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm" => ["bootstrap"] do
+  task "rpm" => ["bootstrap", "plugin:install-defaults"] do
     package("centos", "5")
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "deb" => ["bootstrap"] do
+  task "deb" => ["bootstrap", "plugin:install-defaults"] do
     package("ubuntu", "12.04")
   end
 end
