@@ -1,3 +1,4 @@
+require_relative "default_plugins"
 namespace "plugin" do
   task "install",  :name do |task, args|
     name = args[:name]
@@ -9,4 +10,10 @@ namespace "plugin" do
 
     task.reenable # Allow this task to be run again
   end # task "install"
+
+  task "install-defaults" do
+    DEFAULT_PLUGINS.each do |plugin|
+      Rake::Task["plugin:install"].invoke(plugin)
+    end
+  end
 end # namespace "plugin"
