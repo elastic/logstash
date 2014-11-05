@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/timestamp"
 
 describe LogStash::Timestamp do

@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/runner"
 require "logstash/agent"
 require "logstash/kibana"
