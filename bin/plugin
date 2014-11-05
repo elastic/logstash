@@ -2,7 +2,7 @@
 # Install contrib plugins.
 #
 # Usage:
-#     bin/plugin install contrib
+#     bin/plugin --help
 
 basedir=$(cd `dirname $0`/..; pwd)
 . ${basedir}/bin/logstash plugin "$@"
