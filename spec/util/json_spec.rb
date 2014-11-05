@@ -63,13 +63,13 @@ describe LogStash::Json do
     ### MRI specific
 
     it "should respond to load and deserialize object on mri" do
-      expect(Oj).to receive(:load).with(json).and_call_original
-      expect(LogStash::Json.load(json)).to eql(hash)
+      expect(Oj).to receive(:load).with(json_hash).and_call_original
+      expect(LogStash::Json.load(json_hash)).to eql(hash)
     end
 
     it "should respond to dump and serialize object on mri" do
       expect(Oj).to receive(:dump).with(hash, anything).and_call_original
-      expect(LogStash::Json.dump(hash)).to eql(json)
+      expect(LogStash::Json.dump(hash)).to eql(json_hash)
     end
   end
 
