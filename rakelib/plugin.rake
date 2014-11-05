@@ -3,7 +3,7 @@ namespace "plugin" do
     name = args[:name]
     puts "[plugin] Installing plugin: #{name}"
 
-    cmd = ['bin/logstash', 'plugin', 'install', name ]
+    cmd = ['bin/logstash', 'plugin', 'install', *name ]
     system(*cmd)
     raise RuntimeError, $!.to_s unless $?.success?
 
