@@ -1,6 +1,6 @@
 
 DOWNLOADS = {
-  "elasticsearch" => { "version" => "1.3.0", "sha1" => "f9e02e2cdcb55e7e8c5c60e955f793f68b7dec75" },
+  "elasticsearch" => { "version" => "1.4.0", "sha1" => "f9e02e2cdcb55e7e8c5c60e955f793f68b7dec75" },
   "collectd" => { "version" => "5.4.0", "sha1" => "a90fe6cc53b76b7bdd56dc57950d90787cb9c96e" },
   #"jruby" => { "version" => "1.7.13", "sha1" => "0dfca68810a5eed7f12ae2007dc2cc47554b4cc6" }, # jruby-complete
   "jruby" => { "version" => "1.7.16", "sha1" => "4c912b648f6687622ba590ca2a28746d1cd5d550" },
