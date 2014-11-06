@@ -8,6 +8,7 @@ LogStash::Environment.load_locale!
 class LogStash::Agent < Clamp::Command
   option ["-f", "--config"], "CONFIG_PATH",
     I18n.t("logstash.agent.flag.config"),
+    :multivalued => true,
     :attribute_name => :config_path
 
   option "-e", "CONFIG_STRING",
@@ -285,24 +286,25 @@ class LogStash::Agent < Clamp::Command
     end
   end # def configure_plugin_path
 
-  def load_config(path)
-    path = File.join(path, "*") if File.directory?(path)
-
-    if Dir.glob(path).length == 0
-      fail(I18n.t("logstash.agent.configuration.file-not-found", :path => path))
-    end
-
+  def load_config(paths)
     config = ""
-    Dir.glob(path).sort.each do |file|
-      next unless File.file?(file)
-      if file.match(/~$/)
-        @logger.debug("NOT reading config file because it is a temp file", :file => file)
-        next
+    paths.each do |path|
+      path = File.join(path, "*") if File.directory?(path)
+
+      if Dir.glob(path).length == 0
+        fail(I18n.t("logstash.agent.configuration.file-not-found", :path => path))
       end
-      @logger.debug("Reading config file", :file => file)
-      config << File.read(file) + "\n"
+      Dir.glob(path).sort.each do |file|
+        next unless File.file?(file)
+        if file.match(/~$/)
+          @logger.debug("NOT reading config file because it is a temp file", :file => file)
+          next
+        end
+        @logger.debug("Reading config file", :file => file)
+        config << File.read(file) + "\n"
+      end
     end
     return config
   end # def load_config
-
+  
 end # class LogStash::Agent
