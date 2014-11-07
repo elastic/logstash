@@ -4,6 +4,8 @@ require File.join(File.dirname(__FILE__), 'fixtures.rb')
 require "logstash/codecs/netflow"
 require "logstash/event"
 require "insist"
+require "pry"
+require "pry-rescue"
 
 describe LogStash::Codecs::Netflow do
   context "#decode NetFlow v9" do
@@ -77,6 +79,8 @@ describe LogStash::Codecs::Netflow do
         netflow_v9_data_flowset_complex
       }
       it "should return a valid event" do
+require 'pry'
+binding.pry
         events = Array.new
         subject.decode(message) do |event|
           events << event        
@@ -84,6 +88,14 @@ describe LogStash::Codecs::Netflow do
         insist { events.length } == 1
         events.each do |event|
           insist { event.is_a? LogStash::Event }
+          insist { event["netflow"]["tcp_flags"] } == 0x13
+          insist { event["netflow"]["input_snmp"] } == 1
+          insist { event["netflow"]["output_snmp"] } == 2
+          insist { event["netflow"]["last_switched"] } == 0
+          insist { event["netflow"]["first_switched"] } == 0
+          insist { event["netflow"]["if_name"] } == "FE1/0"
+          insist { event["netflow"]["if_desc"] } == "FastEthernet 1/0"
+          insist { event["netflow"]["forwarding_status"] } == 0x42
         end
       end
     end

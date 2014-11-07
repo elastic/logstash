@@ -77,9 +77,9 @@ end
 def netflow_v9_template_flowset_complex
   [
     0x00, 0x00, # FlowSet ID = 0 (NetFlow v9 Template)
-    0x00, 0x2C, # Length: 44 bytes (including the ID and Length)
+    0x00, 0x30, # Length: 48 bytes (including the ID and Length)
     0x01, 0xC8, # Template ID: 456 (must be < 255)
-    0x00, 0x09, # Field Count: 9 Fields
+    0x00, 0x0A, # Field Count: 10 Fields
     # Field 1
     0x00, 0x06, # TCP_FLAGS
     0x00, 0x01, # Length: 1 byte
@@ -107,10 +107,9 @@ def netflow_v9_template_flowset_complex
     # Field 9
     0x00, 0x53, # IF_DESC
     0x00, 0x20, # Length: 32 bytes
-    # TODO: Add support for FORWARDING_STATUS
     # Field 10
-    # 0x00, 0x59, # FORWARDING_STATUS
-    # 0x00, 0x01, # Length: 1 byte
+    0x00, 0x59, # FORWARDING_STATUS
+    0x00, 0x01, # Length: 1 byte
   ].flatten.pack('C*')
 end
 
@@ -136,11 +135,10 @@ def netflow_v9_data_flowset_complex
     "FE1/0".ljust(16, "\0").bytes, # (null-padded to 16 bytes)
     # Field 9: IF_DESC
     "FastEthernet 1/0".ljust(32, "\0").bytes, # (null-padded to 32 bytes)
-    # TODO: Add support for FORWARDING_STATUS
     # Field 10: FORWARDING_STATUS
-    # 0x42, # Forwarded not Fragmented (Reason Code 66)
+    0x42, # Forwarded not Fragmented (Reason Code 66)
     # Padding to 32-bit boundary
-    0x00, 0x00, 0x00
+    0x00, 0x00
   ].flatten.pack('C*')
 end
 
