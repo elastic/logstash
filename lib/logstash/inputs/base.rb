@@ -39,7 +39,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # This setting is useful if your log files are in `Latin-1` (aka `cp1252`)
   # or in another character set other than `UTF-8`.
   #
-  # This only affects "plain" format logs since json is `UTF-8` already.
+  # This only affects `plain` format logs since json is `UTF-8` already.
   config :charset, :validate => ::Encoding.name_list, :deprecated => true
 
   # If format is `json`, an event `sprintf` string to build what
