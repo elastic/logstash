@@ -13,7 +13,7 @@
 
 [cols="<,<,<,<m",options="header",]
 |=======================================================================
-|Setting |Input type|Required/optional|Default value
+|Setting |Input type|Required|Default value
 <% sorted_attributes.each do |name, config|
    next if config[:deprecated]
    if config[:validate].is_a?(Array) 
@@ -28,9 +28,9 @@
      name = "/" + name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
    end
    if config[:required]
-     annotation += "|required"
+     annotation += "|Yes"
    else
-     annotation += "|optional"
+     annotation += "|No"
    end
    if config.include?(:default)
      if config[:default].is_a?(String)
