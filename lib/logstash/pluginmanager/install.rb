@@ -49,7 +49,7 @@ class LogStash::PluginManager::Install < Clamp::Command
 
       puts ("removing existing plugin before installation")
       ::Gem.done_installing_hooks.clear
-      ::Gem::Uninstaller.new(gem_meta.name, {}).uninstall
+      ::Gem::Uninstaller.new(gem_meta.name, {:force => true}).uninstall
     end
 
     ::Gem.configuration.verbose = false

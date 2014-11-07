@@ -59,7 +59,7 @@ class LogStash::PluginManager::Update < Clamp::Command
 
     if LogStash::PluginManager::Util.installed?(spec.name)
       ::Gem.done_installing_hooks.clear
-      ::Gem::Uninstaller.new(gem_meta.name, {}).uninstall
+      ::Gem::Uninstaller.new(gem_meta.name, {:force => true}).uninstall
     end
 
     ::Gem.configuration.verbose = false
