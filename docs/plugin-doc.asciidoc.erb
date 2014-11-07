@@ -2,12 +2,11 @@
 [[plugins-<%= section %>s-<%= name %>]]
 === <%= name %>
 
-
 <%= description %>
 
 ==== Synopsis
 
-These are the config options
+This plugin supports the following configuration options:
 
 <%= synopsis -%>
 
@@ -29,7 +28,7 @@ These are the config options
   * This is a required setting.
 <% end -%>
 <% if config[:deprecated] -%>
-  * DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version.
+  * DEPRECATED WARNING: This configuration item is deprecated and may not be available in future versions.
 <% end -%>
 <% if is_regexp -%>
   * The configuration attribute name here is anything that matches the above regular expression.
