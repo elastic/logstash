@@ -13,7 +13,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   config_name "output"
 
   # The type to act on. If a type is given, then this output will only
-  # act on messages with the same type. See any input plugin's "type"
+  # act on messages with the same type. See any input plugin's `type`
   # attribute for more.
   # Optional.
   config :type, :validate => :string, :default => "", :deprecated => "You can achieve this same behavior with the new conditionals, like: `if [type] == \"sometype\" { %PLUGIN% { ... } }`."
