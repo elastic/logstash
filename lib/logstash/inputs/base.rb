@@ -11,7 +11,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
   config_name "input"
 
-  # Add a 'type' field to all events handled by this input.
+  # Add a `type` field to all events handled by this input.
   #
   # Types are used mainly for filter activation.
   #
@@ -33,20 +33,20 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # The codec used for input data. Input codecs are a convenient method for decoding your data before it enters the input, without needing a separate filter in your Logstash pipeline.
   config :codec, :validate => :codec, :default => "plain"
 
-  # The character encoding used in this input. Examples include "UTF-8"
-  # and "cp1252"
+  # The character encoding used in this input. Examples include `UTF-8`
+  # and `cp1252`
   #
-  # This setting is useful if your log files are in Latin-1 (aka cp1252)
-  # or in another character set other than UTF-8.
+  # This setting is useful if your log files are in `Latin-1` (aka `cp1252`)
+  # or in another character set other than `UTF-8`.
   #
-  # This only affects "plain" format logs since json is UTF-8 already.
+  # This only affects "plain" format logs since json is `UTF-8` already.
   config :charset, :validate => ::Encoding.name_list, :deprecated => true
 
-  # If format is "json", an event sprintf string to build what
-  # the display @message should be given (defaults to the raw JSON).
-  # sprintf format strings look like %{fieldname}
+  # If format is `json`, an event `sprintf` string to build what
+  # the display `@message` should be given (defaults to the raw JSON).
+  # `sprintf` format strings look like `%{fieldname}`
   #
-  # If format is "json_event", ALL fields except for @type
+  # If format is `json_event`, ALL fields except for `@type`
   # are expected to be present. Not receiving all fields
   # will cause unexpected results.
   config :message_format, :validate => :string, :deprecated => true
