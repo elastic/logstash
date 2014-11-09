@@ -11,6 +11,7 @@
 <%= "  " if section == "codec" %>}
 --------------------------
 
+<% if sorted_attributes.count > 0 %>
 [cols="<,<,<,<m",options="header",]
 |=======================================================================
 |Setting |Input type|Required|Default value
@@ -33,11 +34,7 @@
      annotation += "|No"
    end
    if config.include?(:default)
-     if config[:default].is_a?(String)
-       annotation += "|`#{config[:default]}`"
-     else
-       annotation += "|#{config[:default].inspect}"
-     end
+     annotation += "|`#{config[:default].inspect}`"
    else 
      annotation += "|"
    end
@@ -45,3 +42,4 @@
 | <<plugins-<%= section %>s-<%=plugin_name%>-<%= name %>>> <%= annotation %>
 <% end -%>
 |=======================================================================
+<% end %>
