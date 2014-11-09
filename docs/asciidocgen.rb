@@ -180,7 +180,11 @@ class LogStashConfigAsciiDocGenerator
       mixin = code.gsub(/.*include LogStash::PluginMixins::(\w+)\s.*/m, '\1')
       mixin.gsub!(/(.)([A-Z])/, '\1_\2')
       mixin.downcase!
-      parse(File.new(File.join(base, "..", "plugin_mixins", "#{mixin}.rb")).read)
+      #parse(File.new(File.join(base, "..", "plugin_mixins", "#{mixin}.rb")).read)
+      #TODO: RP make this work better with the naming
+      mixinfile = Dir.glob(File.join(LogStash::Environment.plugins_home,'gems',"logstash-mixin-#{mixin.split('_').first}-*",'lib/logstash/plugin_mixins', "#{mixin}.rb")).first
+      parse(File.new(mixinfile).read)
+  
     end
 
     parse(code)
