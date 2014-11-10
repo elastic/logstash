@@ -22,7 +22,8 @@ class LogStash::PluginManager::Util
       return false
     end
     spec, source = specs_and_sources.max_by { |s,| s.version }
-    path = source.download( spec, java.lang.System.getProperty("java.io.tmpdir"))
+    require 'tmpdir'
+    path = source.download( spec, Dir.tmpdir() )
     path
   end
 
