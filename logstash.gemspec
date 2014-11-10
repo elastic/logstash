@@ -33,10 +33,11 @@ Gem::Specification.new do |gem|
 
   # Plugin manager dependencies
 
-  # jar-dependencies 0.1.2 is included in jruby 1.7.6 no need to include here and
-  # this avoids the gemspec jar path parsing issue of jar-dependencies 0.1.2
-  #
-  # gem.add_runtime_dependency "jar-dependencies", [">= 0.1.2"]   #(MIT license)
+  if RUBY_PLATFORM == 'java'
+    # jar-dependencies is included in jruby, no need to include here
+  else
+    gem.add_runtime_dependency "jar-dependencies", [">= 0.1.4"]   #(MIT license)
+  end
 
   gem.add_runtime_dependency "ruby-maven"                       #(EPL license)
   gem.add_runtime_dependency "minitar"
