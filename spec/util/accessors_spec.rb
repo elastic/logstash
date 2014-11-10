@@ -140,6 +140,14 @@ describe LogStash::Util::Accessors, :if => true do
       insist { data } == { "hello" => { "world" => ["foo", "bar"] } }
     end
 
+    it "should set element within array value" do
+      str = "[hello][0]"
+      data = {"hello" => ["foo", "bar"]}
+      accessors = LogStash::Util::Accessors.new(data)
+      insist { accessors.set(str, "world") } == "world"
+      insist { data } == {"hello" => ["world", "bar"]}
+    end
+
     it "should retrieve array item" do
       data = { "hello" => { "world" => ["a", "b"], "bar" => "baz" } }
       accessors = LogStash::Util::Accessors.new(data)
