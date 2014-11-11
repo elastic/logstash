@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'clamp'
 require 'logstash/namespace'
 require 'logstash/environment'
@@ -6,12 +7,15 @@ require 'logstash/pluginmanager/util'
 require 'logstash/pluginmanager/vendor'
 require 'rubygems/dependency_installer'
 require 'rubygems/uninstaller'
-require 'jar-dependencies'
-require 'jar_install_post_install_hook'
+
+if LogStash::Environment.jruby?
+  require 'jar-dependencies'
+  require 'jar_install_post_install_hook'
+end
 
 class LogStash::PluginManager::Install < Clamp::Command
 
-  parameter "PLUGIN", "plugin name or file"
+  parameter "PLUGIN ...", "plugin name or file"
 
   option "--version", "VERSION", "version of the plugin to install", :default => ">= 0"
 
@@ -23,6 +27,15 @@ class LogStash::PluginManager::Install < Clamp::Command
     ::Gem.configuration.verbose = false
     ::Gem.configuration[:http_proxy] = proxy 
 
+    status = 0
+    plugin_list.each do |plugin|
+      status = install(plugin)
+      return status if status != 0
+    end
+    return status
+  end # def execute
+
+  def install(plugin)
     puts ("validating #{plugin} #{version}")
 
     unless gem_path = (plugin =~ /\.gem$/ && File.file?(plugin)) ? plugin : LogStash::PluginManager::Util.download_gem(plugin, version)
@@ -61,6 +74,6 @@ class LogStash::PluginManager::Install < Clamp::Command
     specs, _ = inst.installed_gems
     puts ("Successfully installed '#{specs.name}' with version '#{specs.version}'")
     return 0
-  end
+  end # def install
 
 end # class Logstash::PluginManager

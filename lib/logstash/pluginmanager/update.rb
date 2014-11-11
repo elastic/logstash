@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'clamp'
 require 'logstash/namespace'
 require 'logstash/pluginmanager'
@@ -5,8 +6,11 @@ require 'logstash/pluginmanager/util'
 require 'logstash/pluginmanager/vendor'
 require 'rubygems/dependency_installer'
 require 'rubygems/uninstaller'
-require 'jar-dependencies'
-require 'jar_install_post_install_hook'
+
+if LogStash::Environment.jruby?
+  require 'jar-dependencies'
+  require 'jar_install_post_install_hook'
+end
 
 class LogStash::PluginManager::Update < Clamp::Command
 

@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "insist"
 
 describe "web tests" do

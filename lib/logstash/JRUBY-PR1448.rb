@@ -1,3 +1,4 @@
+# encoding: utf-8
 # This patch fixes a problem that exists in JRuby prior to 1.7.11 where the
 # ruby binary path used by rubygems is malformed on Windows, causing
 # dependencies to not install cleanly when using `.\bin\logstash.bat deps`.

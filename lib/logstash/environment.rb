@@ -1,5 +1,7 @@
+# encoding: utf-8
 require "logstash/errors"
 require 'logstash/version'
+require "tmpdir"
 
 module LogStash
   module Environment
@@ -62,6 +64,14 @@ module LogStash
 
     def jruby?
       @jruby ||= !!(RUBY_PLATFORM == "java")
+    end
+
+    def tmpdir
+      if jruby?
+        java.lang.System.getProperty("java.io.tmpdir")
+      else
+        Dir.tmpdir
+      end
     end
 
     def vendor_path(path)

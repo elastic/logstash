@@ -1,3 +1,4 @@
+# encoding: utf-8
 
 class LogStash::PluginManager::Util
 
@@ -22,8 +23,7 @@ class LogStash::PluginManager::Util
       return false
     end
     spec, source = specs_and_sources.max_by { |s,| s.version }
-    path = source.download( spec, java.lang.System.getProperty("java.io.tmpdir"))
-    path
+    source.download( spec, LogStash::Environment.tmpdir)
   end
 
   def self.installed?(name)

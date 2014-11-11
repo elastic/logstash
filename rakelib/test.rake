@@ -23,9 +23,7 @@ namespace "test" do
      'logstash-input-tcp',
      'logstash-output-stdout'
     ]
-    plugins.each do |plugin|
-      Rake::Task["plugin:install"].invoke(plugin)
-    end
+    Rake::Task["plugin:install"].invoke(plugins)
   end
 
 end

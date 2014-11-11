@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'clamp'
 require 'logstash/namespace'
 require 'logstash/pluginmanager'

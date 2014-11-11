@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/logging"
 require 'logstash_helpers'
 require "insist"
