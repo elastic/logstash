@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/namespace"
-require "logstash/outputs/http"
 
 # This output allows you to write events to [slack](https://api.slack.com/).
 #
