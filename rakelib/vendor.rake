@@ -4,7 +4,7 @@ DOWNLOADS = {
   "collectd" => { "version" => "5.4.0", "sha1" => "a90fe6cc53b76b7bdd56dc57950d90787cb9c96e" },
   #"jruby" => { "version" => "1.7.13", "sha1" => "0dfca68810a5eed7f12ae2007dc2cc47554b4cc6" }, # jruby-complete
   "jruby" => { "version" => "1.7.16", "sha1" => "4c912b648f6687622ba590ca2a28746d1cd5d550" },
-  "kibana" => { "version" => "3.1.0", "sha1" => "effc20c83c0cb8d5e844d2634bd1854a1858bc43" },
+  "kibana" => { "version" => "3.1.2", "sha1" => "a59ea4abb018a7ed22b3bc1c3bcc6944b7009dc4" },
   "geoip" => {
     "GeoLiteCity" => { "version" => "2013-01-18", "sha1" => "15aab9a90ff90c4784b2c48331014d242b86bf82", },
     "GeoIPASNum" => { "version" => "2014-02-12", "sha1" => "6f33ca0b31e5f233e36d1f66fbeae36909b58f91", }
