@@ -1,6 +1,6 @@
-= Logstash Config Language
-
-== Basic Layout
+== Logstash Config Language
+[float]
+=== Basic Layout
 
 The Logstash config language aims to be simple.
 
@@ -24,12 +24,12 @@ output {
   ...
 }
 ----------------------------------
-
-== Filters and Ordering
+[float]
+=== Filters and Ordering
 
 For a given event, filters are applied in the order of appearance in the configuration file.
-
-== Comments
+[float]
+=== Comments
 
 Comments are the same as in perl, ruby, and python. A comment starts with a '#' character, and does not need to be at the beginning of a line. For example:
 
@@ -41,8 +41,8 @@ input { # comments can appear at the end of a line, too
   # ...
 }
 ----------------------------------
-
-== Plugins
+[float]
+=== Plugins
 
 The input, filter and output sections all let you configure plugins. Plugin
 configuration consists of the plugin name followed by a block of settings for
@@ -65,15 +65,15 @@ input {
 
 The above configures two file separate inputs. Both set two configuration settings each: 'path' and 'type'. Each plugin has different settings for configuring it; seek the documentation for your plugin to learn what settings are available and what they mean. For example, the [file input][fileinput] documentation will explain the meanings of the path and type settings.
 
-[fileinput]: inputs/file
-
-== Value Types
+[float]
+=== Value Types
 
 The documentation for a plugin may enforce a configuration field having a
 certain type.  Examples include boolean, string, array, number, hash,
 etc.
-
-=== Boolean
+[[boolean]]
+[float]
+==== Boolean
 
 A boolean must be either `true` or `false`. Note the lack of quotes around `true` and `false`.
 
@@ -83,8 +83,9 @@ Examples:
 ----------------------------------
   ssl_enable => true
 ----------------------------------
-
-=== String
+[[string]]
+[float]
+==== String
 
 A string must be a single value.
 
@@ -96,8 +97,9 @@ Example:
 ----------------------------------
 
 You should use quotes around string values.
-
-=== Number
+[[number]]
+[float]
+==== Number
 
 Numbers must be valid numerics (floating point or integer are OK).
 
@@ -107,8 +109,9 @@ Example:
 ----------------------------------
   port => 33
 ----------------------------------
-
-=== Array
+[[array]]
+[float]
+==== Array
 
 An array can be a single string value or multiple. If you specify the same
 field multiple times, it appends to the array.
@@ -122,8 +125,9 @@ Examples:
 ----------------------------------
 
 The above makes 'path' a 3-element array including all 3 strings.
-
-=== Hash
+[[hash]]
+[float]
+==== Hash
 
 A hash is basically the same syntax as Ruby hashes. 
 The key and value are simply pairs, such as:
@@ -137,7 +141,57 @@ match => {
 }
 ----------------------------------
 
-== Field References
+[[password]]
+[float]
+==== Password
+
+A hash is basically the same syntax as Ruby hashes. 
+The key and value are simply pairs, such as:
+
+[source,js]
+----------------------------------
+match => {
+  "field1" => "value1"
+  "field2" => "value2"
+  ...
+}
+----------------------------------
+
+[[path]]
+[float]
+==== Path
+
+A hash is basically the same syntax as Ruby hashes. 
+The key and value are simply pairs, such as:
+
+[source,js]
+----------------------------------
+match => {
+  "field1" => "value1"
+  "field2" => "value2"
+  ...
+}
+----------------------------------
+
+[[codec]]
+[float]
+==== Codec
+
+A hash is basically the same syntax as Ruby hashes. 
+The key and value are simply pairs, such as:
+
+[source,js]
+----------------------------------
+match => {
+  "field1" => "value1"
+  "field2" => "value2"
+  ...
+}
+----------------------------------
+
+
+[float]
+=== Field References
 
 All events have properties. For example, an apache access log would have things
 like status code (200, 404), request path ("/", "index.html"), HTTP verb (GET, POST),
@@ -171,7 +225,8 @@ simply say `fieldname`.
 - in the case of **nested fields**, like the "os" field above, you need
 the full path to that field: `[ua][os]`.
 
-=== sprintf format
+[float]
+==== sprintf format
 
 This syntax is also used in what Logstash calls 'sprintf format'. This format
 allows you to refer to field values from within other strings. For example, the
@@ -201,7 +256,8 @@ output {
 }
 ----------------------------------
 
-== Conditionals
+[float]
+=== Conditionals
 
 Sometimes you only want a filter or output to process an event under
 certain conditions. For that, you'll want to use a conditional!
@@ -332,6 +388,7 @@ output {
 }
 ----------------------------------
 
-== Further Reading
+[float]
+=== Further Reading
 
 For more information, see [the plugin docs index](index)

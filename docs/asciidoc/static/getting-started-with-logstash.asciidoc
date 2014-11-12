@@ -1,11 +1,13 @@
-= Getting Started with Logstash
+== Getting Started with Logstash
 
-== Introduction
+[float]
+=== Introduction
 Logstash is a tool for receiving, processing and outputting logs. All kinds of logs. System logs, webserver logs, error logs, application logs and just about anything you can throw at it. Sounds great, eh?
 
 Using Elasticsearch as a backend datastore, and kibana as a frontend reporting tool, Logstash acts as the workhorse, creating a powerful pipeline for storing, querying and analyzing your logs. With an arsenal of built-in inputs, filters, codecs and outputs, you can harness some powerful functionality with a small amount of effort. So, let's get started!
 
-=== Prerequisite: Java
+[float]
+==== Prerequisite: Java
 The only prerequisite required by Logstash is a Java runtime. You can check that you have it installed by running the  command `java -version` in your shell. Here's something similar to what you might see:
 [source,js]
 ----------------------------------
@@ -24,9 +26,11 @@ http://www.oracle.com/technetwork/java/index.html
 
 Once you have verified the existence of Java on your system, we can move on!
 
-== Up and Running!
+[float]
+=== Up and Running!
 
-=== Logstash in two commands
+[float]
+==== Logstash in two commands
 First, we're going to download the 'logstash' binary and run it with a very simple configuration.
 [source,js]
 ----------------------------------
@@ -73,7 +77,8 @@ goodnight moon
 
 So, by re-configuring the "stdout" output (adding a "codec"), we can change the output of Logstash. By adding inputs, outputs and filters to your configuration, it's possible to massage the log data in many ways, in order to maximize flexibility of the stored data when you are querying it.
 
-== Storing logs with Elasticsearch
+[float]
+=== Storing logs with Elasticsearch
 Now, you're probably saying, "that's all fine and dandy, but typing all my logs into Logstash isn't really an option, and merely seeing them spit to STDOUT isn't very useful." Good point. First, let's set up Elasticsearch to store the messages we send into Logstash. If you don't have Elasticearch already installed, you can http://www.elasticsearch.org/download/[download the RPM or DEB package], or install manually by downloading the current release tarball, by issuing the following four commands:
 
 [source,js]
@@ -136,7 +141,8 @@ which should return something like this:
 
 Congratulations! You've successfully stashed logs in Elasticsearch via Logstash.
 
-=== Elasticsearch Plugins (an aside)
+[float]
+==== Elasticsearch Plugins (an aside)
 Another very useful tool for querying your Logstash data (and Elasticsearch in general) is the Elasticearch-kopf plugin. Here is more information on http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-plugins.html[Elasticsearch plugins]. To install elasticsearch-kopf, simply issue the following command in your Elasticsearch directory (the same one in which you ran Elasticsearch earlier):
 
 [source,js]
@@ -145,7 +151,8 @@ bin/plugin -install lmenezes/elasticsearch-kopf
 ----------------------------------
 Now you can browse to http://localhost:9200/_plugin/kopf/[http://localhost:9200/_plugin/kopf/] to browse your Elasticsearch data, settings and mappings!
 
-=== Multiple Outputs
+[float]
+==== Multiple Outputs
 As a quick exercise in configuring multiple Logstash outputs, let's invoke Logstash again, using both the 'stdout' as well as the 'elasticsearch' output:
 
 [source,js]
@@ -154,17 +161,20 @@ bin/logstash -e 'input { stdin { } } output { elasticsearch { host => localhost 
 ----------------------------------
 Typing a phrase will now echo back to your terminal, as well as save in Elasticsearch! (Feel free to verify this using curl or elasticsearch-kopf).
 
-=== Default - Daily Indices
+[float]
+==== Default - Daily Indices
 You might notice that Logstash was smart enough to create a new index in Elasticsearch... The default index name is in the form of 'logstash-YYYY.MM.DD', which essentially creates one index per day. At midnight (UTC), Logstash will automagically rotate the index to a fresh new one, with the new current day's timestamp. This allows you to keep windows of data, based on how far retroactively you'd like to query your log data. Of course, you can always archive (or re-index) your data to an alternate location, where you are able to query further into the past. If you'd like to simply delete old indices after a certain time period, you can use the https://github.com/elasticsearch/curator[Elasticsearch Curator tool].
 
-== Moving On
+[float]
+=== Moving On
 Now you're ready for more advanced configurations. At this point, it makes sense for a quick discussion of some of the core features of Logstash, and how they interact with the Logstash engine.
-
-=== The Life of an Event
+[float]
+==== The Life of an Event
 
 Inputs, Outputs, Codecs and Filters are at the heart of the Logstash configuration. By creating a pipeline of event processing, Logstash is able to extract the relevant data from your logs and make it available to elasticsearch, in order to efficiently query your data. To get you thinking about the various options available in Logstash, let's discuss some of the more common configurations currently in use. For more details, read about http://logstash.net/docs/latest/life-of-an-event[the Logstash event pipeline].
 
-==== Inputs
+[float]
+===== Inputs
 Inputs are the mechanism for passing log data to Logstash. Some of the more useful, commonly-used ones are:
 
 * *file*: reads from a file on the filesystem, much like the UNIX command "tail -0a"
@@ -172,7 +182,8 @@ Inputs are the mechanism for passing log data to Logstash. Some of the more usef
 * *redis*: reads from a redis server, using both redis channels and also redis lists. Redis is often used as a "broker" in a centralized Logstash installation, which queues Logstash events from remote Logstash "shippers".
 * *lumberjack*: processes events sent in the lumberjack protocol. Now called https://github.com/elasticsearch/logstash-forwarder[logstash-forwarder].
 
-==== Filters
+[float]
+===== Filters
 Filters are used as intermediary processing devices in the Logstash chain. They are often combined with conditionals in order to perform a certain action on an event, if it matches particular criteria. Some useful filters:
 
 * *grok*: parses arbitrary text and structure it. Grok is currently the best way in Logstash to parse unstructured log data into something structured and queryable. With 120 patterns shipped built-in to Logstash, it's more than likely you'll find one that meets your needs!
@@ -180,16 +191,16 @@ Filters are used as intermediary processing devices in the Logstash chain. They 
 * *drop*: drop an event completely, for example, 'debug' events.
 * *clone*: make a copy of an event, possibly adding or removing fields.
 * *geoip*: adds information about geographical location of IP addresses (and displays amazing charts in kibana)
-
-==== Outputs
+[float]
+===== Outputs
 Outputs are the final phase of the Logstash pipeline. An event may pass through multiple outputs during processing, but once all outputs are complete, the event has finished its execution. Some commonly used outputs include:
 
 * *elasticsearch*: If you're planning to save your data in an efficient, convenient and easily queryable format... Elasticsearch is the way to go. Period. Yes, we're biased :)
 * *file*: writes event data to a file on disk.
 * *graphite*: sends event data to graphite, a popular open source tool for storing and graphing metrics. http://graphite.wikidot.com/
 * *statsd*: a service which "listens for statistics, like counters and timers, sent over UDP and sends aggregates to one or more pluggable backend services". If you're already using statsd, this could be useful for you!
-
-==== Codecs
+[float]
+===== Codecs
 Codecs are basically stream filters which can operate as part of an input, or an output. Codecs allow you to easily separate the transport of your messages from the serialization process. Popular codecs include 'json', 'msgpack' and 'plain' (text).
 
 * *json*: encode / decode data in JSON format
@@ -198,8 +209,10 @@ Codecs are basically stream filters which can operate as part of an input, or an
 For the complete list of (current) configurations, visit the Logstash "plugin configuration" section of the http://logstash.net/docs/latest/[Logstash documentation page].
 
 
-== More fun with Logstash
-=== Persistent Configuration files
+[float]
+=== More fun with Logstash
+[float]
+==== Persistent Configuration files
 
 Specifying configurations on the command line using '-e' is only so helpful, and more advanced setups will require more lengthy, long-lived configurations. First, let's create a simple configuration file, and invoke Logstash using it. Create a file named "logstash-simple.conf" and save it in the same directory as Logstash.
 
@@ -221,7 +234,8 @@ bin/logstash -f logstash-simple.conf
 
 Et voilà! Logstash will read in the configuration file you just created and run as in the example we saw earlier. Note that we used the '-f' to read in the file, rather than the '-e' to read the configuration from the command line. This is a very simple case, of course, so let's move on to some more complex examples.
 
-=== Filters
+[float]
+==== Filters
 Filters are an in-line processing mechanism which provide the flexibility to slice and dice your data to fit your needs. Let's see one in action, namely the *grok filter*.
 
 [source,js]
@@ -282,9 +296,11 @@ As you can see, Logstash (with help from the *grok* filter) was able to parse th
 
 The other filter used in this example is the *date* filter. This filter parses out a timestamp and uses it as the timestamp for the event (regardless of when you're ingesting the log data). You'll notice that the @timestamp field in this example is set to December 11, 2013, even though Logstash is ingesting the event at some point afterwards. This is handy when backfilling logs, for example... the ability to tell Logstash "use this value as the timestamp for this event".
 
-== Useful Examples
+[float]
+=== Useful Examples
 
-=== Apache logs (from files)
+[float]
+==== Apache logs (from files)
 Now, let's configure something actually *useful*... apache2 access log files! We are going to read the input from a file on the localhost, and use a *conditional* to process the event according to our needs. First, create a file called something like 'logstash-apache.conf' with the following contents (you'll need to change the log's file path to suit your needs):
 
 [source,js]
@@ -349,7 +365,8 @@ Now, rerun Logstash, and you will see both the error and access logs processed v
 
 Also, you might have noticed that Logstash did not reprocess the events which were already seen in the access_log file. Logstash is able to save its position in files, only processing new lines as they are added to the file. Neat!
 
-=== Conditionals
+[float]
+==== Conditionals
 Now we can build on the previous example, where we introduced the concept of a *conditional*. A conditional should be familiar to most Logstash users, in the general sense. You may use 'if', 'else if' and 'else' statements, as in many other programming languages. Let's label each event according to which file it appeared in (access_log, error_log and other random files which end with "log").
 
 [source,js]
@@ -384,7 +401,8 @@ output {
 
 You'll notice we've labeled all events using the "type" field, but we didn't actually parse the "error" or "random" files... There are so many types of error logs that it's better left as an exercise for you, depending on the logs you're seeing.
 
-=== Syslog
+[float]
+==== Syslog
 OK, now we can move on to another incredibly useful example: *syslog*. Syslog is one of the most common use cases for Logstash, and one it handles exceedingly well (as long as the log lines conform roughly to RFC3164 :). Syslog is the de facto UNIX networked logging standard, sending messages from client machines to a local file, or to a centralized log server via rsyslog. For this example, you won't need a functioning syslog instance; we'll fake it from the command line, so you can get a feel for what happens.
 
 First, let's make a simple configuration file for Logstash + syslog, called 'logstash-syslog.conf'.
