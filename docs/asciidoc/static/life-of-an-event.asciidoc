@@ -1,8 +1,9 @@
-= the life of an event
+== the life of an event
 
 The Logstash agent is an event pipeline.
 
-== The Pipeline
+[float]
+=== The Pipeline
 
 The Logstash agent is a processing pipeline with 3 stages: inputs -> filters -> outputs. Inputs generate events, filters modify them, outputs ship them elsewhere.
 
@@ -10,7 +11,8 @@ Internal to Logstash, events are passed from each phase using internal queues. I
 
 Logstash sets each queue size to 20. This means only 20 events can be pending into the next phase - this helps reduce any data loss and in general avoids Logstash trying to act as a data storage system. These internal queues are not for storing messages long-term.
 
-== Fault Tolerance
+[float]
+=== Fault Tolerance
 
 Starting at outputs, here's what happens when things break.
 
@@ -24,7 +26,8 @@ A full filter queue will cause inputs to block when writing to the filters. This
 
 In ideal circumstances, this will behave similarly to when the tcp window closes to 0, no new data is sent because the receiver hasn't finished processing the current queue of data, but as soon as the downstream (output) problem is resolved, messages will begin flowing again..
 
-== Thread Model
+[float]
+=== Thread Model
 
 The thread model in Logstash is currently:
 
@@ -51,7 +54,8 @@ The output worker model is currently a single thread. Outputs will receive event
 Outputs may decide to buffer events temporarily before publishing them, possibly in a separate thread. One example of this is the elasticsearch output
 which will buffer events and flush them all at once, in a separate thread. This mechanism (buffering many events + writing in a separate thread) can improve performance so the Logstash pipeline isn't stalled waiting for a response from elasticsearch.
 
-== Consequences and Expectations
+[float]
+=== Consequences and Expectations
 
 Small queue sizes mean that Logstash simply blocks and stalls safely during times of load or other temporary pipeline problems. There are two alternatives to this - unlimited queue length and dropping messages. Unlimited queues grow grow unbounded and eventually exceed memory causing a crash which loses all of those messages. Dropping messages is also an undesirable behavior in most cases.
 

@@ -1,12 +1,11 @@
-= Add a new filter
-
 == Adding a sample filter to Logstash
 
 This document shows you how to add a new filter to Logstash.
 
 For a general overview of how to add a new plugin, see [the extending Logstash](.) overview.
 
-== Write code.
+[float]
+=== Write code.
 
 Let's write a 'hello world' filter. This filter will replace the 'message' in the event with "Hello world!"
 
@@ -89,7 +88,8 @@ output {
 
 Call this file 'example.conf'
 
-== Tell Logstash about it.
+[float]
+=== Tell Logstash about it.
 
 Depending on how you installed Logstash, you have a few ways of including this
 plugin.

@@ -1,6 +1,6 @@
-= contrib plugins
-
-== Why contrib?
+== contrib plugins
+[float]
+=== Why contrib?
 As Logstash has grown, we've accumulated a massive repository of plugins. Well over 100 plugins, it became difficult for the project maintainers to adequately support everything effectively.
 
 In order to improve the quality of popular plugins, we've moved the less-commonly-used plugins to a separate repository we're calling "contrib". Concentrating common plugin usage into core solves a few problems, most notably user complaints about the size of Logstash releases, support/maintenance costs, etc.
@@ -11,11 +11,13 @@ If a plugin is available in the 'contrib' package, the documentation for that pl
 
 Contrib plugins reside in a [separate github project](https://github.com/elasticsearch/logstash-contrib).
 
-== Packaging
+[float]
+=== Packaging
 
 At present, the contrib modules are available as a tarball.
 
-== Automated Installation
+[float]
+=== Automated Installation
 
 The `bin/plugin` script will handle the installation for you:
 
@@ -24,7 +26,8 @@ The `bin/plugin` script will handle the installation for you:
 cd /path/to/logstash
 bin/plugin install contrib
 ----------------------------------
-== Manual Installation
+[float]
+=== Manual Installation
 
 The contrib plugins can be extracted on top of an existing Logstash installation. 
 
