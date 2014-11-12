@@ -1,6 +1,7 @@
-= Command-line flags
+== Command-line flags
 
-== Agent
+[float]
+=== Agent
 
 The Logstash agent has the following flags (also try using the '--help' flag)
 
@@ -35,8 +36,8 @@ The Logstash agent has the following flags (also try using the '--help' flag)
  A colon-delimited path to find other Logstash plugins in 
 ----------------------------------
 
-
-== Web
+[float]
+=== Web
 
 [source,js]
 ----------------------------------
