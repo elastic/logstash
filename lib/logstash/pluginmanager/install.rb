@@ -58,8 +58,9 @@ class LogStash::PluginManager::Install < Clamp::Command
     options[:document] = []
     inst = Gem::DependencyInstaller.new(options)
     inst.install plugin, version
-    specs, _ = inst.installed_gems
-    puts ("Successfully installed '#{specs.name}' with version '#{specs.version}'")
+    specs = inst.installed_gems
+    specs.reject! { |gemspec| gemspec.name != gem_meta.name }
+    puts ("Successfully installed '#{specs.first.name}' with version '#{specs.first.version}'")
     return 0
   end
 
