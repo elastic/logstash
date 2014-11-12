@@ -91,11 +91,7 @@ module LogStash
     alias_method :to_s, :to_iso8601
 
     def -(value)
-      if value.is_a?(Timestamp)
-        @time - value.time
-      else
-        @time - value
-      end
+      @time - (value.is_a?(Timestamp) ? value.time : value)
     end
   end
 end
