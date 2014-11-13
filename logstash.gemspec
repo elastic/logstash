@@ -12,7 +12,7 @@ Gem::Specification.new do |gem|
   gem.files         = `git ls-files`.split($\)
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "logstash"
-  gem.require_paths = ["lib"]
+  gem.require_paths = ["lib", "spec"]
   gem.version       = LOGSTASH_VERSION
 
   # Core dependencies
