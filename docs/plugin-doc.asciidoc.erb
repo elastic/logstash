@@ -1,16 +1,20 @@
 <%- plugin_name = name -%>
 [[plugins-<%= section %>s-<%= name %>]]
 === <%= name %>
-&nbsp;
+
 <%= description %>
+
 &nbsp;
+
 ==== Synopsis
 
 This plugin supports the following configuration options:
-&nbsp;
+
 <%= synopsis -%>
-&nbsp;
+
 ==== Details
+
+&nbsp;
 
 <% sorted_attributes.each do |name, config| -%>
 <%
