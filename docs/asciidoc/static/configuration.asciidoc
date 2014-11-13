@@ -145,48 +145,46 @@ match => {
 [float]
 ==== Password
 
-A hash is basically the same syntax as Ruby hashes.
-The key and value are simply pairs, such as:
+A password field is basically a String field with a single value, but it will
+not be logged or printed
+
+Example:
 
 [source,js]
 ----------------------------------
-match => {
-  "field1" => "value1"
-  "field2" => "value2"
-  ...
-}
+  my_password => "password"
 ----------------------------------
+
 
 [[path]]
 [float]
 ==== Path
 
-A hash is basically the same syntax as Ruby hashes.
-The key and value are simply pairs, such as:
+A path field is a String field which represents a valid operating system path
+
+Example:
 
 [source,js]
 ----------------------------------
-match => {
-  "field1" => "value1"
-  "field2" => "value2"
-  ...
-}
+  my_path => "/tmp/logstash"
 ----------------------------------
 
 [[codec]]
 [float]
 ==== Codec
 
-A hash is basically the same syntax as Ruby hashes.
-The key and value are simply pairs, such as:
+A codec is the name of Logstash codec used to represent the data. Codec can be
+used in both inputs and outputs.
+Input codecs are a convenient method for decoding your data before it enters the input,
+without needing a separate filter in your Logstash pipeline.
+Output codecs are a convenient method for encoding your data before it leaves the output,
+without needing a separate filter in your Logstash pipeline.
+
+Example:
 
 [source,js]
 ----------------------------------
-match => {
-  "field1" => "value1"
-  "field2" => "value2"
-  ...
-}
+  codec => "json"
 ----------------------------------
 
 
