@@ -37,7 +37,7 @@ module LogStash::Util
 
     def set(accessor, value)
       target, key = lookup(accessor)
-      target[key] = value
+      target[target.is_a?(Array) ? key.to_i : key] = value
     end
 
     def strict_set(accessor, value)
