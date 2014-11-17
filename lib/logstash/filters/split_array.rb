@@ -33,8 +33,8 @@ class LogStash::Filters::SplitArray < LogStash::Filters::Base
 
     original_value.each do |value|
 
-      event_split = event.clone
-      event_split[@field] = value
+      new_event = event.clone
+      new_event[@target] = value
       filter_matched(new_event)
 
       #print new_event
