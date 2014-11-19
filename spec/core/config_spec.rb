@@ -1,6 +1,6 @@
 # config syntax tests
 #
-
+require "spec_helper"
 require "logstash/config/grammar"
 require "logstash/config/config_ast"
 
