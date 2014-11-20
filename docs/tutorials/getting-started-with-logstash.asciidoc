@@ -75,7 +75,7 @@ cd elasticsearch-%ELASTICSEARCH_VERSION%/
 ./bin/elasticsearch
 ----
 
-NOTE: This tutorial specifies running Logstash %VERSION% with Elasticsearch %ELASTICSEARCH_VERSION%. Each release of Logstash has a *recommended* version of Elasticsearch to pair with. Make sure the versions match based on the http://logstash.net/docs/latest[Logstash version] you're running!
+NOTE: This tutorial specifies running Logstash %VERSION% with Elasticsearch %ELASTICSEARCH_VERSION%. Each release of Logstash has a *recommended* version of Elasticsearch to pair with. Make sure the versions match based on the http://www.elasticsearch.org/overview/logstash[Logstash version] you're running!
 
 More detailed information on installing and configuring Elasticsearch can be found on http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/index.html[The Elasticsearch reference pages]. However, for the purposes of Getting Started with Logstash, the default installation and configuration of Elasticsearch should be sufficient.
 
@@ -174,7 +174,7 @@ Codecs are basically stream filters which can operate as part of an input, or an
 * *json*: encode / decode data in JSON format
 * *multiline*: Takes multiple-line text events and merge them into a single event, e.g. java exception and stacktrace messages
 
-For the complete list of (current) configurations, visit the Logstash "plugin configuration" section of the http://logstash.net/docs/latest/[Logstash documentation page].
+For the complete list of (current) configurations, visit the Logstash "plugin configuration" section of the http://www.elasticsearch.org/overview/logstash[Logstash documentation page].
 
 
 == More fun with Logstash
