@@ -12,8 +12,10 @@ namespace "plugin" do
   end # task "install"
 
   task "install-defaults" do
-    DEFAULT_PLUGINS.each do |plugin|
-      Rake::Task["plugin:install"].invoke(plugin)
-    end
+    env = {
+      "GEM_PATH" => "#{ENV['GEM_PATH']}:vendor/bundle/jruby/1.9",
+      "GEM_HOME" => "vendor/plugins/jruby/1.9"
+    }
+    system(env, "bundle install")
   end
 end # namespace "plugin"
