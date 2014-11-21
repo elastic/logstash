@@ -78,6 +78,7 @@ Gem::Specification.new do |gem|
 
   # Development Deps
   gem.add_development_dependency "coveralls"
+  gem.add_runtime_dependency "logstash-devutils"
 
   # Jenkins Deps
   gem.add_runtime_dependency "ci_reporter", "1.9.3"
