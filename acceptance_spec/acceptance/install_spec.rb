@@ -6,7 +6,7 @@ describe "Logstash class:" do
   when 'RedHat'
     core_package_name    = 'logstash'
     service_name         = 'logstash'
-    core_url             = 'https://s3-us-west-2.amazonaws.com/build.elasticsearch.org/logstash/master/nightly/logstash-latest.rpm'
+    core_url             = 'https://s3-eu-west-1.amazonaws.com/users.eu.elasticsearch.org/electrical/logstash-2.0.0.dev-1.noarch.rpm'
     pid_file             = '/var/run/logstash.pid'
   when 'Debian'
     core_package_name    = 'logstash'
