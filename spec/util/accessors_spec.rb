@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-require "spec_helper"
+require "logstash/devutils/rspec/spec_helper"
 require "logstash/util/accessors"
 
 describe LogStash::Util::Accessors, :if => true do
