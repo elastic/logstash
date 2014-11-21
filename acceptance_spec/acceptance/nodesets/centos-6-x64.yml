@@ -5,7 +5,7 @@ HOSTS:
       - database
       - dashboard
     platform: el-6-x86_64
-    image: jordansissel/system:centos-6.4
+    image: electrical/centos:6.4-1
     hypervisor: docker
     docker_cmd: '["/sbin/init"]'
     docker_image_commands:
