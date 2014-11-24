@@ -42,10 +42,10 @@ The old way to run logstash of `java -jar logstash.jar` is now replaced with
 For example:
 
     # Old way:
-    % java -jar logstash-1.3.3-flatjar.jar agent -f logstash.conf
+    `% java -jar logstash-1.3.3-flatjar.jar agent -f logstash.conf`
 
     # New way:
-    % bin/logstash agent -f logstash.conf
+    `% bin/logstash agent -f logstash.conf`
 
 ### plugins
 
@@ -58,5 +58,7 @@ felt strongly we could support, and those now ship by default with Logstash.
 All the other plugins are now available in a contrib package. All plugins
 continue to be open source and free, of course! Installing plugins is very easy:
 
+....
     % cd /path/to/logstash-%VERSION%/
     % bin/plugin install [PLUGIN_NAME]
+....
