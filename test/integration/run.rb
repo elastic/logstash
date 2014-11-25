@@ -132,7 +132,7 @@ input_lines = read_input_file(options[:input])
 
 puts("using config file=#{options[:config]}, input file=#{options[:input]}") if @debug
 
-command = [LOGSTASH_BIN, "-f", options[:config], "2>&1"]
+command = [LOGSTASH_BIN, "-f", options[:config]]
 puts("launching #{command.join(" ")}") if @debug
 
 real_events_count = 0
