@@ -206,7 +206,7 @@ Codecs are basically stream filters which can operate as part of an input, or an
 * *json*: encode / decode data in JSON format
 * *multiline*: Takes multiple-line text events and merge them into a single event, e.g. java exception and stacktrace messages
 
-For the complete list of (current) configurations, visit the Logstash "plugin configuration" section of the http://www.elasticsearch.org/overview/logstash/[Logstash documentation page].
+For the complete list of (current) configurations, visit the Logstash <<plugin_configuration, plugin configuration>> section of the http://www.elasticsearch.org/guide/en/logstash/current/[Logstash documentation page].
 
 
 [float]
@@ -488,3 +488,7 @@ Now you should see the output of Logstash in your original shell as it processes
 ----------------------------------
 
 Congratulations! You're well on your way to being a real Logstash power user. You should be comfortable configuring, running and sending events to Logstash, but there's much more to explore.
+
+|=======================================================================
+
+include::static/configuration.asciidoc[]
