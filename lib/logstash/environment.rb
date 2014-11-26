@@ -40,7 +40,7 @@ module LogStash
 
     def set_gem_paths!
       require ::File.join(BUNDLE_DIR, "bundler", "setup.rb")
-      ENV["GEM_PATH"] = plugins_home
+      ENV["GEM_PATH"] = gem_home
       ENV["GEM_HOME"] = plugins_home
       Gem.paths = plugins_home
     end
