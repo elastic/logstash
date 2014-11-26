@@ -42,6 +42,7 @@ input { # comments can appear at the end of a line, too
 }
 ----------------------------------
 [float]
+[[plugin_configuration]]
 === Plugins
 
 The input, filter and output sections all let you configure plugins. Plugin
