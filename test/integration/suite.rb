@@ -3,7 +3,6 @@
 RUNNER = File.join(File.expand_path(File.dirname(__FILE__)), "run.rb")
 BASE_DIR = File.expand_path(File.dirname(__FILE__))
 
-#
 ## script main
 
 if ARGV.size != 1
@@ -17,9 +16,9 @@ tests = eval(IO.read(ARGV[0]))
 
 tests.each do |test|
   duration = test[:events] ? ["--events", test[:events]] : ["--time", test[:time]]
-  command = ["ruby", RUNNER, *duration, "--config", File.join(BASE_DIR, test[:config]), "--input", File.join(BASE_DIR, test[:input])]
+  command = ["ruby", RUNNER, *duration, "--config", File.join(BASE_DIR, test[:config]), "--input", File.join(BASE_DIR, test[:input]), "--headers", true]
   IO.popen(command.join(" "), "r") do |io|
-    print("name=#{test[:name]}, ")
+    puts("#{test[:name]}")
     io.each_line{|line| puts(line)}
   end
 end
