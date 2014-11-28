@@ -4,94 +4,106 @@ require "benchmark"
 require "thread"
 require "open3"
 
+require 'test/integration/stats'
+
 INITIAL_MESSAGE = ">>> lorem ipsum start".freeze
 LAST_MESSAGE = ">>> lorem ipsum stop".freeze
-LOGSTASH_BIN = File.join(File.expand_path("../../../bin/", __FILE__), "logstash")
-REFRESH_COUNT = 100
 
 Thread.abort_on_exception = true
 
-def feed_input_events(io, events_count, lines, last_message)
-  loop_count = (events_count / lines.size).ceil # how many time we send the input file over
+class Runner
 
-  (1..loop_count).each{lines.each {|line| io.puts(line)}}
+  LOGSTASH_BIN  = File.join(File.expand_path("../../../bin/", __FILE__), "logstash").freeze
+  REFRESH_COUNT = 100
 
-  io.puts(last_message)
-  io.flush
+  attr_reader :command
 
-  loop_count * lines.size
-end
+  def initialize(config, debug=false)
+    @debug = debug
+    @command = [LOGSTASH_BIN, "-f", config, "2>&1"]
+  end
 
-def feed_input_interval(io, seconds, lines, last_message)
-  loop_count = (2000 / lines.size).ceil # check time every ~2000(ceil) input lines
-  lines_per_iteration = loop_count * lines.size
-  start_time = Time.now
-  count = 0
 
-  while true
+  def run(required_events_count, required_run_time, input_lines)
+    puts("launching #{command.join(" ")}") if @debug
+    stats = Stats.new
+    real_events_count = 0
+    Open3.popen3(*@command) do |i, o, e|
+      puts("sending initial event") if @debug
+      i.puts(INITIAL_MESSAGE)
+      i.flush
+
+      puts("waiting for initial event") if @debug
+      expect_output(o, /#{INITIAL_MESSAGE}/)
+
+      puts("starting output reader thread") if @debug
+      reader = stats.detach_output_reader(o, /#{LAST_MESSAGE}/)
+      puts("starting feeding input") if @debug
+
+      elaspsed = Benchmark.realtime do
+        real_events_count = if required_events_count > 0
+                              feed_input_events(i, [required_events_count, input_lines.size].max, input_lines, LAST_MESSAGE)
+                            else
+                              feed_input_interval(i, required_run_time, input_lines, LAST_MESSAGE)
+                            end
+
+        puts("waiting for output reader to complete") if @debug
+        reader.join
+      end
+      p = percentile(stats.stats, 0.80)
+      [p, elaspsed, real_events_count]
+    end
+  end
+
+  def read_input_file(file_path)
+    IO.readlines(file_path).map(&:chomp)
+  end
+
+
+  private
+
+  def feed_input_events(io, events_count, lines, last_message)
+    loop_count = (events_count / lines.size).ceil # how many time we send the input file over
+
     (1..loop_count).each{lines.each {|line| io.puts(line)}}
-    count += lines_per_iteration
-    break if (Time.now - start_time) >= seconds
+
+    io.puts(last_message)
+    io.flush
+
+    loop_count * lines.size
   end
 
-  io.puts(last_message)
-  io.flush
+  def feed_input_interval(io, seconds, lines, last_message)
+    loop_count = (2000 / lines.size).ceil # check time every ~2000(ceil) input lines
+    lines_per_iteration = loop_count * lines.size
+    start_time = Time.now
+    count = 0
 
-  count
-end
-
-# below stats counter and output reader threads are sharing state using
-# the @stats_lock mutex, @stats_count and @stats. this is a bit messy and should be
-# refactored into a proper class eventually
-
-def detach_stats_counter
-  Thread.new do
-    loop do
-      start = @stats_lock.synchronize{@stats_count}
-      sleep(1)
-      @stats_lock.synchronize{@stats << (@stats_count - start)}
-    end
-  end
-end
-
-# detach_output_reader spawns a thread that will fill in the @stats instance var with tps samples for every seconds
-# @stats access is synchronized using the @stats_lock mutex but can be safely used
-# once the output reader thread is completed.
-def detach_output_reader(io, regex)
-  Thread.new(io, regex) do |io, regex|
-    i = 0
-    @stats = []
-    @stats_count = 0
-    @stats_lock = Mutex.new
-    t = detach_stats_counter
-
-    expect_output(io, regex) do
-      i += 1
-      # avoid mutex synchronize on every loop cycle, using REFRESH_COUNT = 100 results in
-      # much lower mutex overhead and still provides a good resolution since we are typically
-      # have 2000..100000 tps
-      @stats_lock.synchronize{@stats_count = i} if (i % REFRESH_COUNT) == 0
+    while true
+      (1..loop_count).each{lines.each {|line| io.puts(line)}}
+      count += lines_per_iteration
+      break if (Time.now - start_time) >= seconds
     end
 
-    @stats_lock.synchronize{t.kill}
+    io.puts(last_message)
+    io.flush
+
+    count
   end
-end
 
-def read_input_file(file_path)
-  IO.readlines(file_path).map(&:chomp)
-end
-
-def expect_output(io, regex)
-  io.each_line do |line|
-    puts("received: #{line}") if @debug
-    yield if block_given?
-    break if line =~ regex
+  def expect_output(io, regex)
+    io.each_line do |line|
+      puts("received: #{line}") if @debug
+      yield if block_given?
+      break if line =~ regex
+    end
   end
-end
 
-def percentile(array, percentile)
-  count = (array.length * (1.0 - percentile)).floor
-  array.sort[-count..-1]
+  def percentile(array, percentile)
+    count = (array.length * (1.0 - percentile)).floor
+    array.sort[-count..-1]
+  end
+
 end
 
 #
@@ -128,39 +140,9 @@ end
 
 required_events_count = options[:events].to_i # total number of events to feed, independant of input file size
 required_run_time = options[:time].to_i
-input_lines = read_input_file(options[:input])
 
 puts("using config file=#{options[:config]}, input file=#{options[:input]}") if @debug
 
-command = [LOGSTASH_BIN, "-f", options[:config], "2>&1"]
-puts("launching #{command.join(" ")}") if @debug
-
-real_events_count = 0
-
-Open3.popen3(*command) do |i, o, e|
-  puts("sending initial event") if @debug
-  i.puts(INITIAL_MESSAGE)
-  i.flush
-
-  puts("waiting for initial event") if @debug
-  expect_output(o, /#{INITIAL_MESSAGE}/)
-
-  puts("starting output reader thread") if @debug
-  reader = detach_output_reader(o, /#{LAST_MESSAGE}/)
-  puts("starting feeding input") if @debug
-
-  elaspsed = Benchmark.realtime do
-    real_events_count = if required_events_count > 0
-      feed_input_events(i, [required_events_count, input_lines.size].max, input_lines, LAST_MESSAGE)
-    else
-      feed_input_interval(i, required_run_time, input_lines, LAST_MESSAGE)
-    end
-
-    puts("waiting for output reader to complete") if @debug
-    reader.join
-  end
-
-  # the reader thread updates the @stats tps array
-  p = percentile(@stats, 0.80)
-  puts("elaspsed=#{"%.2f" % elaspsed}s, events=#{real_events_count}, avg tps=#{"%.0f" % (real_events_count / elaspsed)}, best tps=#{p.last}, avg top 20% tps=#{"%.0f" % (p.reduce(:+) / p.size)}")
-end
+runner = Runner.new(options[:config], @debug)
+p, elaspsed, real_events_count = runner.run(required_events_count, required_run_time, runner.read_input_file(options[:input]))
+puts("elaspsed=#{"%.2f" % elaspsed}s, events=#{real_events_count}, avg tps=#{"%.0f" % (real_events_count / elaspsed)}, best tps=#{p.last}, avg top 20% tps=#{"%.0f" % (p.reduce(:+) / p.size)}")
