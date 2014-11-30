@@ -35,7 +35,7 @@ tests.each do |test|
   runner = Runner.new(config, @debug)
   p, elaspsed, events_count = runner.run(events, time, runner.read_input_file(input))
 
-  lines << "name, #{runner.headers.join(' ')}" if first
+  lines << "name, #{runner.headers.join(',')}" if first
   lines << "#{test[:name]}, #{"%.2f" % elaspsed}, #{events_count}, #{"%.0f" % (events_count / elaspsed)},#{p.last}, #{"%.0f" % (p.reduce(:+) / p.size)}"
   first = false
 end
