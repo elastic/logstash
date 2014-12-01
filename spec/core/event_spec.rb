@@ -23,7 +23,8 @@ describe LogStash::Event do
           "k3" => {"4" => "m"},
           5 => 6,
           "5" => 7
-      }
+      },
+      "@metadata" => { "fancy" => "pants", "have-to-go" => { "deeper" => "inception" } }
     )
   end
 
@@ -86,6 +87,14 @@ describe LogStash::Event do
 
     it "should be able to take a non-string for the format" do
       insist { subject.sprintf(2) } == "2"
+    end
+
+    it "should allow to use the metadata when calling #sprintf" do
+      expect(subject.sprintf("super-%{[@metadata][fancy]}")).to eq("super-pants")
+    end
+
+    it "should allow to use nested hash from the metadata field" do
+      expect(subject.sprintf("%{[@metadata][have-to-go][deeper]}")).to eq("inception")
     end
   end
 
@@ -320,6 +329,7 @@ describe LogStash::Event do
   context "metadata" do
     context "with existing metadata" do
       subject { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => "pants" }) }
+
       it "should not include metadata in to_hash" do
         reject { subject.to_hash.keys }.include?("@metadata")
 
