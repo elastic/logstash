@@ -16,14 +16,12 @@ class Runner
   LOGSTASH_BIN  = File.join(File.expand_path("../../../bin/", __FILE__), "logstash").freeze
   REFRESH_COUNT = 100
 
-  attr_reader :command, :headers
+  attr_reader :command
 
   def initialize(config, debug=false)
     @debug   = debug
     @command = [LOGSTASH_BIN, "-f", config, "2>&1"]
-    @headers = ["elaspsed", "events", "avg tps", "best tps", "avg top 20% tps"]
   end
-
 
   def run(required_events_count, required_run_time, input_lines)
     puts("launching #{command.join(" ")} #{required_events_count} #{required_run_time}") if @debug
@@ -42,17 +40,24 @@ class Runner
       puts("starting feeding input") if @debug
 
       elaspsed = Benchmark.realtime do
-        real_events_count = if required_events_count > 0
-                              feed_input_events(i, [required_events_count, input_lines.size].max, input_lines, LAST_MESSAGE)
-                            else
-                              feed_input_interval(i, required_run_time, input_lines, LAST_MESSAGE)
-                            end
-
+        real_events_count = feed_input_with(required_events_count, required_run_time, input_lines, i)
         puts("waiting for output reader to complete") if @debug
         reader.join
       end
       p = percentile(stats.stats, 0.80)
       [p, elaspsed, real_events_count]
+    end
+  end
+
+  def self.headers
+    ["elaspsed", "events", "avg tps", "best tps", "avg top 20% tps"]
+  end
+
+  def feed_input_with(required_events_count, required_run_time, input_lines, i)
+    if required_events_count > 0
+      feed_input_events(i, [required_events_count, input_lines.size].max, input_lines, LAST_MESSAGE)
+    else
+      feed_input_interval(i, required_run_time, input_lines, LAST_MESSAGE)
     end
   end
 
