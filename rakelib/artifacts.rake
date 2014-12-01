@@ -86,6 +86,8 @@ namespace "artifact" do
 
   def package(platform, version)
     Rake::Task["dependency:fpm"].invoke
+    Rake::Task["dependency:stud"].invoke
+    require "stud/temporary"
     require "fpm/errors" # TODO(sissel): fix this in fpm
     require "fpm/package/dir"
     require "fpm/package/gem" # TODO(sissel): fix this in fpm; rpm needs it.
@@ -101,6 +103,13 @@ namespace "artifact" do
 
     File.join(basedir, "pkg", "logrotate.conf").tap do |path|
       dir.input("#{path}=/etc/logrotate.d/logstash")
+    end
+
+    # Create an empty /var/log/logstash/ directory in the package
+    # This is a bit obtuse, I suppose, but it is necessary until
+    # we find a better way to do this with fpm.
+    Stud::Temporary.directory do |empty|
+      dir.input("#{empty}/=/var/log/logstash")
     end
 
     case platform
