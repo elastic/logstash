@@ -142,7 +142,7 @@ end
 if __FILE__ == $0
   # standalone quick & dirty options parsing
   args = ARGV.dup
-  if args.size != 8
+  if args.size != 6
     $stderr.puts("usage: ruby run.rb --events [events count] --config [config file] --input [input file]")
     $stderr.puts("       ruby run.rb --time [seconds] --config [config file] --input [input file]")
     exit(1)
