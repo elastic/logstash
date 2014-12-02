@@ -110,6 +110,7 @@ namespace "artifact" do
     # we find a better way to do this with fpm.
     Stud::Temporary.directory do |empty|
       dir.input("#{empty}/=/var/log/logstash")
+      dir.input("#{empty}/=/var/lib/logstash")
     end
 
     case platform
