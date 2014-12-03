@@ -16,7 +16,6 @@ logstash-codec-netflow
 logstash-codec-oldlogstashjson
 logstash-codec-plain
 logstash-codec-rubydebug
-logstash-codec-spool
 logstash-output-udp
 logstash-filter-anonymize
 logstash-filter-checksum
