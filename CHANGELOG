@@ -1,16 +1,16 @@
 1.5.0.beta1
   # general
   - Allow spaces in field references (#1513)
-  - Add Plugin manager to Logstash
+  - Add Plugin manager functionality to Logstash
   - RFC: Remove ability to run multiple subcommands from bin/logstash (#1747)
   - Fixed Logstash crashing on converting from ASCII to UTF-8 (LOGSTASH-1789)
-  - Allow 'metadata' to an event that is not sent on output (#1834)
-  - accept file and http uri in -f (#1873)
+  - Allow 'metadata' to an event that is not sent/encoded on output (#1834)
+  - accept file and http uri in -f command line option (#1873)
   - Bump kibana to 3.1.2
 
   # input
-  - Logstash crashes with Java Out Of Memory with the lumberjack input (#LOGSTASH-2168)
-  - fixed tcp input connection threads tracking leak (#1509)
+  - fixed Logstash crashes with Java Out Of Memory with the lumberjack input (#LOGSTASH-2168)
+  - fixed tcp input connection threads leak (#1509)
   - prevent overwrite of event host field (#1668)
   - S3 input config - credentials never nil (#1619)
   - Merge @joekiller's Kafka plugin to logstash (#1472)
@@ -30,17 +30,17 @@
   - Support almost-ISO8601 patterns in date filter ISO8601 config
   - ISO8601 date format not matching %{TIMESTAMP_ISO8601} (#LOGSTASH-180)
   - kv filter should allow dynamic include/exclude keys
-  - Config conditionals ignored for flushed filter events (#1431)
+  - Fixed config conditionals ignored for flushed filter events (#1431)
   - Fingerprint filter doesn't work with timestamp field (#1572)
   - DNS filter add_tag adds tags even if filter was unsuccessful (#1785)
-  - UndefinedConversionError with UTF-8 encoding in xml plugin (LOGSTASH-2246)
+  - Fixed UndefinedConversionError with UTF-8 encoding in xml plugin (LOGSTASH-2246)
   - allow user@hostname in commonapache log (#1500 #1736)
-  - nested field notation for arrays in mutate broken (#1401)
+  - Fixed nested field notation for arrays in mutate (#1401)
 
   # output
   - RabbitMQ causes logstash to eventually crash (LOGSTASH-1886)
   - statsd output is converting very small float numbers to scientific notation before sending to statsd (#1670)
-  - undefined method `flat_map' for nil:NilClass when conditional on an output (#LOGSTASH-2288)
+  - fixed undefined method when conditional on an output (#LOGSTASH-2288)
   - Elasticsearch output: support multiple hosts and enhance stability
   - Elasticsearch output: Logstash should not create a "message.raw" by default
   - Elasticsearch output: provide SSL and http authentication support for elasticserach output plugin (#1453)
