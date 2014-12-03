@@ -11,7 +11,7 @@ describe "Logstash class:" do
   when 'Debian'
     core_package_name    = 'logstash'
     service_name         = 'logstash'
-    core_url             = 'https://s3-us-west-2.amazonaws.com/build.elasticsearch.org/logstash/master/nightly/logstash-latest.deb'
+    core_url             = 'https://s3-eu-west-1.amazonaws.com/users.eu.elasticsearch.org/electrical/logstash_2.0.0.dev-1_all.deb'
     pid_file             = '/var/run/logstash.pid'
   end
 
