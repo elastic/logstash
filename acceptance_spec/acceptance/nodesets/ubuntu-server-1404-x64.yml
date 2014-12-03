@@ -1,0 +1,14 @@
+HOSTS:
+  ubuntu-14-04:
+    roles:
+      - master
+      - database
+      - dashboard
+    platform: ubuntu-14.04-amd64
+    image: electrical/ubuntu:14.04
+    hypervisor: docker
+    docker_cmd: '["/sbin/init"]'
+    docker_image_commands:
+      - 'apt-get install -yq ruby ruby1.9.1-dev libaugeas-dev libaugeas-ruby lsb-release wget net-tools curl'
+CONFIG:
+  type: foss
