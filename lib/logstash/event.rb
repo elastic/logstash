@@ -96,17 +96,10 @@ class LogStash::Event
     return self.class.new(copy)
   end # def clone
 
-  if RUBY_ENGINE == "jruby"
-    public
-    def to_s
-      return self.sprintf("%{+yyyy-MM-dd'T'HH:mm:ss.SSSZ} %{host} %{message}")
-    end # def to_s
-  else
-    public
-    def to_s
-      return self.sprintf("#{timestamp.to_iso8601} %{host} %{message}")
-    end # def to_s
-  end
+  public
+  def to_s
+    self.sprintf("#{timestamp.to_iso8601} %{host} %{message}")
+  end # def to_s
 
   public
   def timestamp; return @data[TIMESTAMP]; end # def timestamp
