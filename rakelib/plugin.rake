@@ -15,15 +15,20 @@ namespace "plugin" do
     gem_path = ENV['GEM_PATH']
     gem_home = ENV['GEM_HOME']
     env = {
-      "GEM_PATH" => "#{ENV['GEM_PATH']}:vendor/bundle/jruby/1.9",
+      "GEM_PATH" => [
+        ENV['GEM_PATH'],
+        ::File.join(LogStash::Environment::LOGSTASH_HOME, 'build/bootstrap'),
+        ::File.join(LogStash::Environment::LOGSTASH_HOME, 'vendor/bundle/jruby/1.9'),
+        ::File.join(LogStash::Environment::LOGSTASH_HOME, 'vendor/jruby/lib/ruby/gems/shared')
+      ].join(":"),
       "GEM_HOME" => "vendor/plugins/jruby/1.9"
     }
     if ENV['USE_RUBY'] != '1'
       jruby = File.join("vendor", "jruby", "bin", "jruby")
       bundle = File.join("build", "bootstrap", "bin", "bundle")
-      system(env, jruby, "-S", bundle, "install")
+      system(env, jruby, "-S", bundle, "install", "--gemfile=tools/Gemfile.plugins")
     else
-      system(env, "bundle", "install")
+      system(env, "bundle", "install", "--gemfile=tools/Gemfile.plugins")
     end
     ENV['GEM_PATH'] = gem_path
     ENV['GEM_HOME'] = gem_home
