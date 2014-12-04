@@ -1,7 +1,32 @@
-JAVACLASS (?:[a-zA-Z$_][a-zA-Z$_0-9]*\.)*[a-zA-Z$_][a-zA-Z$_0-9]*
-#Space is an allowed character to match special cases like 'Native Method' or 'Unknown Source'
+# JAVACLASS (?:[a-zA-Z0-9_-]+\.)+[A-Za-z0-9$_]+
+# JAVASTACKTRACEPART at %{JAVACLASS:class}\.%{WORD:method}\(%{JAVAFILE:file}:%{NUMBER:line}\)
+
+LAMBDA1 Lambda\$\d+/\d+
+LAMBDA2 lambda\$\w+\$\d+
+LAMBDA3 \w+\$\d+
+LAMBDA %{LAMBDA1}|%{LAMBDA2}|%{LAMBDA3}
+
+NAMEDCLASSNAME [a-zA-Z0-9_]+
+ANONYMOUSCLASSNAME \d+
+
+CLASSNAME %{NAMEDCLASSNAME}|%{ANONYMOUSCLASSNAME}
+
+JAVACLASS %{CLASSNAME}(?:(?:\$%{CLASSNAME})|(?:\$\$%{LAMBDA}))*
+
+PACKAGENAME [a-zA-Z0-9_-]+
+JAVAPACKAGE %{PACKAGENAME}(?:\.%{PACKAGENAME})*
+
+QUALIFIEDNAME (?:%{JAVAPACKAGE}\.)?%{JAVACLASS}
+
 JAVAFILE (?:[A-Za-z0-9_. -]+)
-#Allow special <init> method
-JAVAMETHOD (?:(<init>)|[a-zA-Z$_][a-zA-Z$_0-9]*)
-#Line number is optional in special cases 'Native method' or 'Unknown source'
-JAVASTACKTRACEPART %{SPACE}at %{JAVACLASS:class}\.%{JAVAMETHOD:method}\(%{JAVAFILE:file}(?::%{NUMBER:line})?\)
+JAVALOCATION (?:%{JAVAFILE:file}:%{NUMBER:line})|(?:Unknown Source)|(?:Native Method)
+JARLOCATION ~?\[%{DATA:jarfile}:%{DATA:version}\]
+
+METHOD %{WORD}|(?:<init>)|%{LAMBDA}
+
+METHODPART \s+at %{QUALIFIEDNAME}\.%{METHOD:method}\(%{JAVALOCATION}\) %{JARLOCATION}
+CAUSEPART Caused by: %{JAVAEXCEPTIONHEADER}
+MOREPART \s+\.\.\. \d+ more
+
+JAVAEXCEPTIONHEADER %{QUALIFIEDNAME:exception_class}(?:: %{GREEDYDATA:exception_message})?
+JAVASTACKTRACEPART %{METHODPART}|%{CAUSEPART}|%{MOREPART}
