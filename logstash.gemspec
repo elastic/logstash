@@ -39,6 +39,7 @@ Gem::Specification.new do |gem|
   # gem.add_runtime_dependency "jar-dependencies", [">= 0.1.2"]   #(MIT license)
 
   gem.add_runtime_dependency "ruby-maven"                       #(EPL license)
+  gem.add_runtime_dependency "maven-tools", "= 1.0.5"
   gem.add_runtime_dependency "minitar"
 
   if RUBY_PLATFORM == 'java'
