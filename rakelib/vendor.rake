@@ -238,9 +238,19 @@ namespace "vendor" do
         else
           # Use the vendored jruby binary
           jruby = File.join("vendor", "jruby", "bin", "jruby")
+          bundler = File.join("build", "bootstrap", "bin", "bundle")
         end
-        cmd = [jruby,  bundler, "install", "--gemfile=tools/Gemfile", "--path", LogStash::Environment::BUNDLE_DIR, "--standalone", "--clean", "--without", "development", "--jobs", "4"]
+        backup_gem_home = ENV['GEM_HOME']
+        backup_gem_path = ENV['GEM_PATH']
+        ENV['GEM_HOME'] = LogStash::Environment.gem_home
+        ENV['GEM_PATH'] = [
+          ::File.join(LogStash::Environment::LOGSTASH_HOME, 'build/bootstrap'),
+          ::File.join(LogStash::Environment::LOGSTASH_HOME, 'vendor/jruby/lib/ruby/gems/shared')
+        ].join(":")
+        cmd = [jruby, "-S", bundler, "install", "--gemfile=tools/Gemfile"]
         system(*cmd)
+        ENV['GEM_HOME'] = backup_gem_home
+        ENV['GEM_PATH'] = backup_gem_path
         raise RuntimeError, $!.to_s unless $?.success?
         break
       rescue Gem::RemoteFetcher::FetchError => e
