@@ -81,12 +81,12 @@ module LogStash
 
     def to_json(*args)
       # ignore arguments to respect accepted to_json method signature
-      LogStash::Json.dump(@time.iso8601(ISO8601_PRECISION))
+      "\"" + to_iso8601 + "\""
     end
     alias_method :inspect, :to_json
 
     def to_iso8601
-      @time.iso8601(ISO8601_PRECISION)
+      @iso8601 ||= @time.iso8601(ISO8601_PRECISION)
     end
     alias_method :to_s, :to_iso8601
 
