@@ -2,6 +2,6 @@ require 'rakelib/default_plugins'
 
 source 'https://rubygems.org'
 
-gemspec :name => "logstash"
+gemspec :name => "logstash", :path => ".."
 
 DEFAULT_PLUGINS.each {|p| gem p}
