@@ -111,6 +111,7 @@ namespace "artifact" do
     Stud::Temporary.directory do |empty|
       dir.input("#{empty}/=/var/log/logstash")
       dir.input("#{empty}/=/var/lib/logstash")
+      dir.input("#{empty}/=/etc/logstash/conf.d")
     end
 
     case platform
