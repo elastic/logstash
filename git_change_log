@@ -1,0 +1,1771 @@
+commit c867ef0ce93ec94cc1db816d93adf9a4a657fc56
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Wed Oct 22 17:52:48 2014 -0400
+
+    added apache logs, changed description and now computes top 20%
+    
+    Fixes #2120
+
+commit 2373bb68d3ae1f20032994d2ad81ffccb2f0c62c
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Tue Aug 19 12:38:07 2014 +0000
+
+    Update Gemfile for package testing
+    
+    Fixes #2119
+
+commit 1c30c239f98345c9c7aad74585d7fe9f3d2ade3a
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Fri Nov 21 17:51:35 2014 +0000
+
+    Use logstash-devutils
+    
+    Fixes #2117
+
+commit 61d56ee55c17872b62153c58377609afc4596b3e
+Author: Tobias Pfeiffer <pragtob@gmail.com>
+Date:   Fri Nov 21 12:59:06 2014 +0100
+
+    Add code climate badge to show off :)
+    
+    Fixes #2114
+
+commit 8e55185f7379e9e1fc89b7b3daa87b6a36d457fb
+Author: Bernd <bernd@eckenfels.net>
+Date:   Sat May 10 01:23:57 2014 +0200
+
+    [JIRA-2046][JIRA-2181] fix usage help
+    
+    Fixes #1354
+
+commit d291d6eefb3bf4ce086dfa6e19558cb59670375f
+Author: Tal Levy <JubBoy333@gmail.com>
+Date:   Mon Nov 10 13:51:07 2014 -0800
+
+    Fix for handling accessor sets on array elements.
+    
+    Previously: Filters like mutate would throw an exception when attempting
+    to convert an element within an array to a specific type. This was
+    raising an error because the index in the field reference was being
+    treated as a String instead of an integer representing the index of the
+    field to convert.
+    
+    Now: Plugins like Mutate can access and convert elements within arrays
+    to specific types, or, updating their values.
+    
+    Fixes #2051
+
+commit bca5d0d9735ab966aefc43c29afa87f7cd3e2dc2
+Author: Pier-Hugues Pellerin <phpellerin@gmail.com>
+Date:   Wed Nov 12 12:19:20 2014 -0500
+
+    style preference
+    
+    Fixes #2061
+
+commit d192df9356cdb71fd69ea5a41c801d3412c7e84f
+Author: Pier-Hugues Pellerin <phpellerin@gmail.com>
+Date:   Tue Nov 11 13:57:42 2014 -0500
+
+    Allow unary operators and comparable on timestamp object closes #2052
+    
+    Fixes #2061
+
+commit 366dfe8fd1b28fa90d52624d676e7548a5459b8e
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Thu Oct 30 15:59:06 2014 -0400
+
+    fix removing field with reference to array items & specs
+    
+    Fixes #1990
+
+commit fe22f9b34fcf0e90f03457637cf6a7dbdc6d1078
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Thu Nov 13 17:08:52 2014 +0000
+
+    Use detect call to simplify it after review
+    
+    Fixes #2063
+
+commit 00eaa3753b9026ec28a436d4914ea3a9d585339a
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Wed Nov 12 13:11:59 2014 +0000
+
+    Modify the way we fetch the installed version of the plugin
+    
+    Fixes #2025
+    
+    Fixes #2063
+
+commit 9df90cb9caebb78471b54e6487e5ad679e857147
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Wed Nov 5 04:14:21 2014 +0000
+
+    Include 99 plugins by default.
+    
+    This plugin set should be the same as the ones included in "core" in
+    Logstash 1.4.2, so users should experience no negative impact of this.
+    
+    Fixes #2020
+
+commit 64dc01c4199d8a726d7d2b20b13857f2132ef458
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Thu Nov 13 08:29:01 2014 -0800
+
+    Fix after @electrical changes
+    
+    Fixes #2068
+
+commit 2ac81d9efd6f8b12022f2223deca81e64c22b31f
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Thu Nov 13 07:48:29 2014 -0800
+
+    Fix for missing type links in generated docs
+    
+    Fixes #2068
+
+commit babdaea7a85e5750673e9fa2ad0311bd30a51972
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Wed Nov 12 15:47:43 2014 +0000
+
+    Modify static docs to work with Generated plugin docs
+    
+    Fixes #2067
+
+commit 85fcd846b65ce85e47e92789c3c9424e2af0dfce
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Thu Nov 13 12:13:18 2014 +0000
+
+    Update templates
+    
+    - Fix empty lines
+    - Add some more text
+    
+    Fixes #2045
+
+commit ece3b3439117e0e2fe52365f07ff4a82178a96ae
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Sun Nov 9 11:14:09 2014 +0000
+
+    Some plugin generation fixes.
+    
+    - Ensure empty lines in some places
+    - Only print the table if we actually have items to put in there
+    - Always use inspect function when printing out the defaults
+    
+    Fixes #2045
+
+commit 4e416b3aec7002df20c2404ec4c6708cee45ff2c
+Author: Joao Duarte <jsvduarte@gmail.com>
+Date:   Tue Nov 11 14:42:40 2014 +0000
+
+    bump kibana to 3.1.2
+    
+    Fixes #2059
+
+commit 4151b4a1d410b0417cea9107a10f5453ff00b7f9
+Author: Pier-Hugues Pellerin <phpellerin@gmail.com>
+Date:   Wed Oct 29 14:32:47 2014 -0400
+
+    Rake way of deleting files
+    
+    Fixes #1981
+
+commit 38d71e604f31a6f3a368ddc6cda4e2394391648c
+Author: Pier-Hugues Pellerin <phpellerin@gmail.com>
+Date:   Wed Oct 29 14:18:14 2014 -0400
+
+    Exposing the rake vendor:clean method to the help message
+    
+    Fixes #1981
+
+commit f0cfebf83b4341f18d4122a5924487cfdc3daa28
+Author: Pier-Hugues Pellerin <phpellerin@gmail.com>
+Date:   Wed Oct 29 14:12:41 2014 -0400
+
+    Added a task to clean the vendor directory
+    
+    Fixes #1981
+
+commit 267a8d753d6b90951863b45c7a7cd9cf9a195c13
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Tue Nov 11 00:19:35 2014 +0000
+
+    Accept file and http URI in the `-f` flag.
+    
+    This patch was slightly modified to make it merge correctly against
+    master
+    (original patch by @jsvd is #1873)
+    
+    Closes #1873
+
+commit 5272daa3aec63ee201b930109a7b2794c1ae89d3
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Fri Nov 7 12:21:22 2014 +0000
+
+    Force the uninstall of a plugin at install or update time.
+    
+    It can happen we want to update a plugin that is a dependency for an other plugin
+    which will result in a warning and a manual action at uninstall phase of the install/update tasks
+    Since we are 100% sure in these cases that the plugin will be installed again we can force the uninstall part
+    not to alert us about it.
+    
+    This solves the issue we otherwise would get:
+    
+    Gem::DependencyRemovalException: Uninstallation aborted due to dependent gem(s)
+    
+    Fixes #2034
+
+commit dfeb512b55154fe2d56db8b2bcd0befa1a1d8fe1
+Author: Paul Echeverri <paul.echeverri@elasticsearch.com>
+Date:   Fri Nov 7 16:01:38 2014 -0800
+
+    Handling feedback for PR#2041
+
+commit a0e81fed0071bf0624ccc9158d0152bb6ec9cc71
+Author: Paul Echeverri <paul.echeverri@elasticsearch.com>
+Date:   Fri Nov 7 14:54:33 2014 -0800
+
+    Changes to generated docs and their templates.
+
+commit a238d87c3dbb844f126ad1d589fca50556f189d2
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Fri Nov 7 14:38:26 2014 -0800
+
+    Fix formatting for word plain
+    
+    Fixes #2038
+
+commit ceb5a8a5e6ee663de356a589cb0fd1a6423d9a45
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Fri Nov 7 14:20:26 2014 -0800
+
+    More asciidoc fixes for base input and output
+    
+    Fixes #2038
+
+commit f3383e98996793ef17424d1a1da0378136f39d1d
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Fri Nov 7 13:22:17 2014 -0800
+
+    Fix asciidoc link to string reference
+    
+    Fixes #2038
+
+commit d5e158bc10a55c4a774601ff9ec67c93475b11b7
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Fri Nov 7 08:15:59 2014 -0800
+
+    Fix asciidoc formatting of the base config options
+    
+    Fixes #2035
+
+commit d54dd2e762f870e919ff04d1996af27cc0f00e14
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Wed Nov 5 20:48:44 2014 -0800
+
+    Update License
+    
+    Fixes #2030
+
+commit 53802b803d63dfe36aeb1b9f1f7cd4f9f22faecf
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Wed Nov 5 23:51:39 2014 +0000
+
+    Update after review
+    
+    Fixes #2029
+
+commit f28eae6878999a9a050f5b204b860c00c2b8e6f8
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Wed Nov 5 23:42:08 2014 +0000
+
+    Move most common functions away into a util method
+    
+    Fixes #2029
+
+commit 461b60152b8a71d78c25156c28ef7aeeb8a88b6c
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Wed Nov 5 23:04:02 2014 +0000
+
+    Adding option to download remote files as part of the gem
+    
+    - Adding minitar as dependency
+    - Adding vendor file to handle the tasks
+    - Adding vendor hook to install and update actions
+    
+    the vendor.json file should be placed at the root of the gem file
+    This file defines all the remote sources that should be downloaded.
+    The content of it is an array of hashes.
+    Each hash has the following settings:
+    - url
+    - sha1
+    - files
+    
+    url is the url of the remote source
+    sha1 is the sha1 fingerprint we use for validation of the downloaded file
+    files can have different settings and is only used for .tar.gz / .tgz files
+    not setting it extracts the whole tar.gz file
+    An array of files allows to extract specific files
+    A Regexp allows extracting specific files
+    
+    Fixes #2029
+
+commit d57a50167a5897c552ba18796d1b455c52a4d9c3
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Wed Nov 5 01:08:20 2014 +0000
+
+    Add init scripts to rpm and deb
+    
+    Fixes #2018
+
+commit 9f74dcbc33fb4af332012f6e427ca6f9ffe9ef15
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Tue Nov 4 18:53:44 2014 -0800
+
+    Fix typo in install
+    
+    Fixes #2019
+
+commit 5315cecd7b532b3438071da82d4f4a204f6b19be
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Tue Nov 4 17:44:36 2014 -0800
+
+    Use exec instead of sourcing
+    
+    Fixes #2017
+
+commit 160430561b401f3689797819032def7dfe1b8c6d
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Tue Nov 4 16:30:57 2014 -0800
+
+    Fixed usage comments
+    
+    Fixes #2017
+
+commit b27646e03dd95f788354f0a4ea94f39102f00ad5
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Tue Nov 4 16:29:06 2014 -0800
+
+    Wrapper for bin/logstash plugin Closes #1969
+    
+    Fixes #2017
+
+commit fec0be423a1f194eb907d1c070fad8a88c2ba62b
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Thu Oct 30 09:57:11 2014 +0000
+
+    Cleanup plugins to move to plugin system
+    
+    Plugins have moved to https://github.com/logstash-plugins/... into
+    individual repositories. One plugin per repo.
+    
+    * Add plugin install task and add required plugins for testing
+    * Adding a plugin task to install plugins
+    * Added required plugins to a prep task for the test part.
+    
+    Fixes #1984
+    
+    Conflicts:
+    	lib/logstash/filters/multiline.rb
+    	lib/logstash/outputs/hipchat.rb
+    	logstash.gemspec
+
+commit b37ef67b2f14b368edd7bedd564d93445b1ffebb
+Author: Joao Duarte <jsvduarte@gmail.com>
+Date:   Fri Oct 31 16:39:57 2014 +0000
+
+    bump ftw dependency to 0.0.40
+    
+    Fixes #2000
+
+commit 9bbe17227f1f6b180fcad5069e374d68e92201a0
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Mon Nov 3 19:27:00 2014 +0000
+
+    Remove some vendor tasks from vendor:all
+    
+    kafka, geoip, elasticsearch, and collectd moved into separate plugins
+    
+    Fixes #1995
+
+commit 00d639281005ca45cd2e5946e2549dba137bfd71
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Thu Oct 30 21:42:10 2014 +0000
+
+    Fix tarball packaging to be rooted in logstash-<VERSION>
+    
+    Fixes #1982
+    
+    Fixes #1995
+
+commit 7f5c7bf590eb25d3c8acc82c780819dfff4668c7
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Thu Oct 30 21:17:17 2014 +0000
+
+    Only print 'relaunching' if run under debug.
+    
+    Fixes #1995
+
+commit 85583701b4c183ab5fa7a0dabdaaf68e172010ab
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Fri Oct 3 09:54:07 2014 +0000
+
+    Use returns instead of exit
+    
+    Need to return the exit code and let the runner app perform the exit
+    
+    Fixes #1838
+
+commit f16cdfba51dca296b71177a53d2102d2bbfb59cb
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Thu Oct 23 20:50:17 2014 -0400
+
+    added rake vendor:force:gems option for forcing a bundle install
+    
+    Fixes #1952
+
+commit ecc2628cb15309fb68c03a0f960d41096eb722f4
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Mon Nov 3 14:10:53 2014 +0000
+
+    Some documentation generation fixes
+    
+    - Add docgen command to use internal libraries
+    - Fix loading of base files due to plugin path changes
+    - Fix loading of jar dependency files
+    - Remove kramdown gem and actions
+    - Cleanup the generated synopsis a bit
+    
+    Fixes #2009
+
+commit 03b7f57c01a1fb142ab506c0ad15b20fe2f0273b
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Fri Oct 10 19:46:35 2014 +0000
+
+    Fix for default codec. Based on PR #1829
+    
+    Fixes #1741
+
+commit b13fa12848d67a08bcd57af6b5057990925d317e
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Thu Oct 2 20:12:36 2014 +0000
+
+    Minor doc fixes
+    
+    Fixes #1741
+
+commit a500ed8a02826462b05b69fe1b7287d073c927ac
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Tue Sep 16 10:17:27 2014 +0000
+
+    [DOCS] Add index page generation for each plugin type
+    
+    Fixes #1741
+
+commit 8d958152ae8eb225eec1290fcfcdb4f5391aa8b6
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Fri Aug 29 15:14:45 2014 +0000
+
+    Add Plugin docs in ascii format
+    
+    Fixes #1741
+
+commit 9fa53acdb429da388f69eb546b33b65c3306d6cc
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Sun Aug 17 16:41:46 2014 +0000
+
+    Initial commit for creating plugin documentation into asciidoc
+    
+    Fixes #1741
+
+commit 6aa94f378039abd744ca974a597cef57762bb39b
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Fri Oct 24 23:58:42 2014 -0400
+
+    use Open3.popen3 to fix hanging IO in JRuby 9k
+
+commit 429cf5b523bbec5bf7089210c936c61fbdb7aea2
+Author: Scott Wilkerson <swilkerson@nagios.com>
+Date:   Wed Aug 20 00:53:29 2014 -0500
+
+    TCP input host field contains source port
+    
+    Fixes LOGSTASH-1849
+    https://logstash.jira.com/browse/LOGSTASH-1849
+    
+    Fixes #1649
+
+commit e86647b09759424477ce16cc1fb2461db38669d4
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Fri Oct 24 10:01:22 2014 +0000
+
+    Add option to use a local jruby version instead of the vendored one
+    
+    If we want to test against custom Jruby versions we need to ensure we use the correct jruby binary
+    Like what we can do with USE_RUBY=1 ./bin/logstash to use the local ruby binary we can do the same with the rake bootstrap job
+    
+    Use ruby instead of jruby as binary in case we try out something else then jruby
+    
+    Fixing a few issues with the build process
+    
+    - Fix a very very very weird issue where the Gem::LoadError was being passed down
+    - Adhere to the USE_RUBY=1 logic to use the local ruby binary
+    
+    Use if instead unless
+    
+    Move require's to top of the file to avoid issues
+
+commit def76f3e7d21ad3be086ab8383f6a2d799363344
+Author: Michael Klishin <michael@novemberain.com>
+Date:   Tue Oct 14 21:57:53 2014 +0400
+
+    [rabbitmq] Use Bunny 1.5.0+
+    
+    Fixes #1894
+
+commit 74647331e69d6dc1472ee520e5b3ee3a1a3c74bd
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Thu Oct 23 18:53:40 2014 -0400
+
+    isolate gems into build/dependencies, do not use any system gems
+
+commit 06be3c1fa5566d972f2719209f792856df06bc1f
+Author: zhujinhe <zhujinhe@vip.qq.com>
+Date:   Tue Oct 21 10:11:04 2014 +0800
+
+    Update en.yml
+    Closes #1924
+
+commit b2560086167ac04cf87ba17e6a40b4772c1191e8
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Wed Oct 22 20:00:54 2014 +0000
+
+    Add bootstrap dependency for deb target
+    
+    Fixes #1940
+
+commit e542b58895d14a5aa01772781685d32886f6ed64
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Wed Oct 22 19:56:43 2014 +0000
+
+    Make most things depend on bootstrap
+    
+    Fixes #1940
+
+commit 99aed3e2b79ad7489ea986b62161f961a94cc234
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Wed Oct 22 19:47:54 2014 +0000
+
+    Refactor files/exclusion
+    
+    Fixes #1940
+
+commit 37a0729518a3fb27f7ed8d43805f80690f8008c9
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Wed Oct 22 19:29:32 2014 +0000
+
+    Exclude certain files from packaging
+    
+    Fixes #1940
+
+commit 8f27c185f24616b675e330d77389ea64c92c1822
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Wed Oct 22 19:29:05 2014 +0000
+
+    Don't try to load bundler/cli anymore since we don't use it
+    
+    This should help incorrectly installing bundler when it isn't present.
+    
+    Fixes #1940
+
+commit d4ce452a7eb3291a753aac07f1bad75c719c6940
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Wed Jul 23 07:38:49 2014 +0000
+
+    Refactor build tooling to use Ruby
+    
+    The new way to build is using 'rake' and not 'make'.
+    
+    For some some attempt at compatibility, any 'make' invocation will
+    invoke rake. `make foo` will invoke `rake foo`.
+    
+    This is for #1640
+    
+    Major changes:
+    * rake is used instead of make. This allows us to more easily improve,
+      debug, and test the build tooling.
+    * The build process can be bootstrapped from any Ruby that has
+      Rake available. Bootstrapping rake is automatic will download JRuby and
+      re-execute itself under JRuby.
+    * rpm and deb packages no longer list any java as dependencies. This
+      is the result of user discomfort and discussions which concluded
+      that there is no good way to "depend" on Java via rpm or deb.
+    
+    Internal changes:
+    * Vendoring paths are project-based. Each vendor directory is now
+      specific as vendor/<project>/... For example, JRuby is dumped into
+      vendor/jruby/...
+    
+    Other changes:
+    
+    * We don't use jruby-complete anymore. We now use bin/jruby as the entry point.
+      This improves the startup time of Logstash on my laptop by approximately
+      1.5 seconds (~25% speedup of startup time). Testing `bin/logstash
+      version` speed; 5 runs each:
+    
+      * Before patch: 7.27 7.55 7.26 7.42 7.47
+      * After patch: 5.54 5.97 5.67 5.58 5.54
+    
+    Smaller changes:
+    - removed 'env' subcommand
+    - Remove 'deps' subcommand. Replaced by 'rake vendor:all'
+    - Add gem_home method for this platform's GEM_HOME
+    - .travis.yml removed because we haven't used Travis in a long time.
+    - bin/logstash exits nonzero with a useful message if JRuby can't be found.
+    
+    Notes:
+    
+    Invoke bundler via system() call instead of Bundler::CLI.
+    After some discussion in #bundler on freenode (very helpful!) on how
+    to do what we need to do with bundler, I was encouraged to not use the
+    bundler api from ruby, so system() it is.
+    
+    Patch slightly modified to fit the new model of packaging (ruby instead
+    of shell invocation), but original author is obazoud in #1008.
+    
+    Richard Pijnenburg helped with some of the code and was lovely in
+    helping test it.
+    
+    Fixes #1640
+
+commit 585691c83e0e83af16511c35ce4a9fdcb9467907
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Tue Oct 21 20:45:16 2014 +0000
+
+    Fix metadata testing failures
+    
+    This bug was introduced in the recent metadata patch. The problem was
+    caused by a testing-specific monkeypatch on LogStash::Event#[]=
+    
+    I fixed this by moving the strict_set input validation from
+    LogStash::Util::Accessors to LogStash::Event as a class method.
+    Then monkeypatched the Event#[]=  to invoke validation before doing
+    the set operation. This now makes it call the original []= method
+    and should help keep future breakages from happening.
+    
+    Fixes #1936
+
+commit f523f0a0634178ce9365821ae8984257824c7bb1
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Tue Oct 21 17:20:16 2014 -0700
+
+    Remove the rescue so we can see what errors we get
+    Closes #1931
+
+commit 475afda874e643531109ff8172db4ddb2fef3ff9
+Author: Tal Levy <JubBoy333@gmail.com>
+Date:   Tue Oct 21 09:46:33 2014 -0700
+
+    Include stud/try module to elasticsearch_spec test
+    
+    Previously, a few elasticsearch integration tests relied on this module,
+    but the module could not be found.
+    
+    Fixes #1929
+
+commit a91c3c80f78f55a5af6c9a23c8de775d65527556
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Fri Sep 26 13:57:19 2014 -0400
+
+    track per second tps and report top & avg tps
+    
+    Fixes #1773
+
+commit 9909a15e01d8637b1c7ef2563954198b9dffccb4
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Mon Sep 22 20:58:34 2014 -0400
+
+    first draft for performance integration tests
+    
+    Fixes #1773
+
+commit 36a574773a4a036b77887e86862881746a4663ae
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Tue Oct 21 16:03:13 2014 +0000
+
+    Fix typo.
+    
+    Fixes #1927
+    
+    Fixes #1928
+
+commit b7f33f6f7021e17cf8b2a34eeb262741a7d27e6d
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Mon Oct 20 13:52:44 2014 -0400
+
+    add elasticsearch spec tag to exclude on external ES dependency
+    
+    Fixes #1920
+
+commit fefe61ac1c901ae6982be5d9540559f2b5d5b1b8
+Author: Pier-Hugues Pellerin <ph@heykimo.com>
+Date:   Fri Oct 10 11:43:28 2014 -0400
+
+    DNS Filter spec should always mock the call to the resolv library Fix: #1875
+    
+    Fixes #1878
+
+commit 27075cbcce5870a2037b1a336596b00ad7da3b5a
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Wed Oct 15 16:02:38 2014 +0000
+
+    Bump to 1.5.0.dev
+
+commit 30dd6217de193aea054a50da33f9bdd2bd5bd17e
+Author: Kurt Hurtado <github@kurtado.com>
+Date:   Tue Oct 14 15:17:10 2014 -0700
+
+    incorporate @wibaa feedback
+
+commit 0c89cffc63e200a12dca90bc78aa037fb1c1d46f
+Author: Kurt Hurtado <github@kurtado.com>
+Date:   Thu Sep 4 09:44:31 2014 -0700
+
+    adding converted static asciidocs
+
+commit bc5620a3684890fc43a2e8f09eafc8ee34b69888
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Thu Oct 2 22:00:32 2014 +0000
+
+    Add metadata via @metadata field
+    
+    This makes @metadata basically a way to store data along with an event
+    that is *NOT* included when serialized to an output.
+    
+    Use cases:
+    - For elasticsearch output, set the index, type, document_id, routing
+      key, etc with metadata and you won't be burdened by storing a filed
+      named 'index' in your document!
+    - For elasticsearch input, we can set @metadata fields for the
+      index/type/document_id instead of polluting the event data itself.
+    - No need for "short-lived fields" such as timestamps. For example, a
+      common pattern is to use grok to capture a timestamp text  and give that
+      to the date filter and finally use mutate to remove that captured text
+      field.
+    - Provide a kind of scratch space for events that are not part of the
+      event data.
+    
+    Fixes #1834
+    
+    Fixes #1836
+
+commit a31ec08f9fd38d00bea5964b75b4df8e8913c336
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Fri Oct 10 10:54:05 2014 -0700
+
+    Use v1.9.3 for gem ci_reporter. Fixes Jenkins tests
+
+commit 462216d1c9b14de0bbea88480c6908ee1811cf54
+Author: Chen,Hao <cn.haochen@gmail.com>
+Date:   Fri Sep 26 06:24:31 2014 +0000
+
+    ElasticSearch output plugin to support multiple hosts and enhance stability. (by Hao Chen)
+    Closes #1791
+
+commit fbf7bd0790a3ffc013a74360a6b7f42906391f61
+Author: Simon Mulser <simonmulser@gmail.com>
+Date:   Fri Jul 4 11:34:02 2014 +0200
+
+    allow user@hostname in commonapache log
+    Closes #1500 #1736
+
+commit 16585ff8ad449cb92fe6a6010713757a22110f0b
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Wed Oct 1 20:20:52 2014 -0400
+
+    gem bundling refactor
+    
+    update jruby jar to 1.7.15
+    
+    pinned i18n dependency and cosmetic cleanups
+    
+    new generated Gemfile lock
+    
+    refactor gem bundling using stadalone setup & use standard Gemfile with gemspec
+    
+    update to jruby 1.7.16 and remove jar-dependencies, bouncy-castle-java, jruby-openssl from gemspec
+    
+    get ready for future plugins mechanism
+    
+    Conflicts:
+    	logstash.gemspec
+
+commit db5c8ff9e69e3021457278764f8e74705ac2f3ad
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Mon Jun 16 20:06:25 2014 +0000
+
+    Remove the "how to get help" banner because nobody reads it.
+    
+    There's several indications that folks don't actually read this banner
+    when unexpected errors occur. If nobody's reading it, then it's just
+    wasting space in the output.
+    
+    I would cite references, but will not because there's no need to shame
+    anyone.
+    
+    Fixes #1442
+
+commit c52bf786d6bbeed369424c17cdb17aadbc5f5800
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Thu Jul 10 17:39:24 2014 +0000
+
+    codec/line: do charset conversion on flush
+    
+    Add tests to verify line codec does charset conversion on flush.
+    
+    Fixes #1520
+
+commit 730363b2693d3d0a967078cdf96c5b7ba2dfac59
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Wed Jul 16 16:38:17 2014 -0700
+
+    Update to reflect new JRuby default and USE_RUBY env option
+
+commit 8b6c8e035c2ea51d636179e07cb9d28177625977
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Mon Sep 29 13:01:05 2014 -0700
+
+    remove kafka source since they moved to separate plugin
+    Closes #1801
+
+commit 54cb320adc31497c25a5f2370481d40240b5b96e
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Tue Sep 30 10:00:34 2014 +0000
+
+    [TESTING] Convert ruby filter spec after rebase
+    
+    Fixes #1758
+
+commit 98583e577fe33a745c09aa67368712b9d5948ec2
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Mon Sep 22 19:20:19 2014 +0000
+
+    Minor fixes after review
+    
+    Fixes #1758
+
+commit e7d41e3c80d253bac3c128f569b55c55ccd8ceef
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Mon Sep 22 11:46:13 2014 +0000
+
+    [TESTING] Fix Kafka output test
+    
+    When doing randomized testing, one of the tests failed because kafka was not initialized yet
+    
+    Fixes #1758
+
+commit 7732d2287db28c86257969a54fbf82e6fbd0a9b8
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Mon Sep 22 10:38:40 2014 +0000
+
+    [TESTING] Fix tcp input spec test
+    
+    Fixes #1758
+
+commit bb583bd8ebd45bdb4024d33c26407bb61da2a607
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Sun Sep 21 18:25:12 2014 +0000
+
+    Fix performance tests
+    
+    - date speed test only run when performance is enabled
+    
+    Fixes #1758
+
+commit 12740347cf6836ab5fb961f3b88d0cf5ba7d67a0
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Sun Sep 21 16:35:19 2014 +0000
+
+    An other missing one
+    
+    Fixes #1758
+
+commit 3bf6de99951879ffb4396cc6fee3c582d00b9889
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Sun Sep 21 16:30:01 2014 +0000
+
+    Add missing tests
+    
+    Fixes #1758
+
+commit 7d64c1e20453ed524fee8fbaf4b1bf380a01c9c9
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Sun Sep 21 13:34:43 2014 +0000
+
+    Update gitignore file
+    
+    Fixes #1758
+
+commit 88a7ae3283bc85a7e6bbceca2f44ffb33ff3debe
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Tue Sep 16 14:05:07 2014 +0000
+
+    [RSPEC] Refactoring step 1
+    
+    - Move helper functions in own modules and extend Rspec
+    - Refactor files into correct naming and paths
+    - Modify files to use new spec_helper and helpers
+    - Pin rspec to 2.14.x
+    
+    Fixes #1758
+
+commit f13a0cc0b015b3f59a824f035b7a8f6f47f8b74c
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Mon Sep 29 23:57:25 2014 +0000
+
+    Set the string encoding when parsing XML
+    
+    Improves upon #1790
+    
+    Fixes #1803
+
+commit cce16b19f8bff949973e2793d72763fff9303ea5
+Author: wiibaa <philippeweber57@yahoo.fr>
+Date:   Fri Sep 26 07:18:15 2014 +0200
+
+    filter/xml fix for LOGSTASH-2246: extract non-ascii content with xpath
+    
+    Fixes #1803
+
+commit e3b30751703e14117fb9dc8efbd8f677699de3a6
+Author: Joao Duarte <jsvduarte@gmail.com>
+Date:   Sat Sep 27 23:59:50 2014 +0200
+
+    Fix add_tag behaviour in dns filter
+    
+    The filter should only modify the event's fields and tags if and only if
+    all resolves/reverses succeed. So we clone the event, modify the new
+    copy and return it if all operations succeed. Otherwise the original
+    event is not modified.
+    
+    For performance reasons we could reverse the clone logic: clone the
+    event, modify the original event and, it case of failure, return the
+    backup.
+    
+    Note: this changes the dns filter behaviour towards add_tag
+    
+    Fixes #1795
+
+commit 456adf21abdea581fdc43fc543e7478c31b086c6
+Author: Kurt Hurtado <github@kurtado.com>
+Date:   Tue Sep 23 01:15:28 2014 +0000
+
+    CTRL-C Enter is OK too
+    
+    
+    Fixes #1767
+
+commit 6af8212bff62fd1e1ade7ee6ba840c234aa22afb
+Author: Kurt Hurtado <github@kurtado.com>
+Date:   Tue Sep 23 01:10:48 2014 +0000
+
+    specify ctrl-d to halt pipeline
+    
+    
+    Fixes #1767
+
+commit c042cc9fee1782e1dd7e2066e4106d11edd293d6
+Author: James Turnbull <james@lovedthanlost.net>
+Date:   Sat Sep 13 02:48:27 2014 +0000
+
+    Updated link in syslog documentation
+    
+    
+    Fixes #1724
+
+commit f4ef87f863d78228e5a5236be1450c9b3c8354e5
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Tue Sep 23 19:39:37 2014 +0000
+
+    add ruby filter spec
+    
+    
+    Fixes #1772
+
+commit 72eec77a15a9ade0ed967d4019888ad4e12bf14d
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Tue Sep 23 19:36:48 2014 +0000
+
+    honor common to_json method signature
+    
+    
+    Fixes #1772
+
+commit 4d7f8938b0674212b808dde868a0c269fb28d669
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Wed Jun 18 20:50:24 2014 +0000
+
+    support :symbolize_keys options for json parsing
+    
+    
+    Fixes #1450
+
+commit 61970d91da7f528972a8d5f96219185c57b7984e
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Wed Jun 18 20:49:47 2014 +0000
+
+    monkey patch twitter gem to trap json parsing exceptions and use our own json parser
+    
+    
+    Fixes #1450
+
+commit 3092dee80099b3100f340e49c97772d6aea71b18
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Wed Jun 18 18:10:14 2014 +0000
+
+    add robustness to tweets stream handling
+    
+    
+    Fixes #1450
+
+commit 603ad12cc253562a38258e73073b08df56385166
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Wed Jun 18 17:16:45 2014 +0000
+
+    stringify all symbols in twitter hash
+    
+    
+    Fixes #1450
+
+commit ebb4893598c4d6880aa5666dd2c3627e2bb65e5b
+Author: Joao Duarte <jsvduarte@gmail.com>
+Date:   Fri Sep 19 09:14:29 2014 +0000
+
+    spec the absense and wrong commands
+    
+    PR: #1752
+
+commit d4f1da794fc117520fa6b4e1938d44e53a862192
+Author: Joao Duarte <jsvduarte@gmail.com>
+Date:   Thu Sep 18 21:07:04 2014 +0000
+
+    Remove the ability to run multiple commands
+    
+    Addresses #1747.
+    This removes the argument list iteration and spawning of multiple
+    tasks.
+    It's still possible to specify aditional arguments but now they're
+    ignored.
+    
+    PR: #1752
+
+commit 3d463ac6c87f8bd564fa583dd0bbb4b045f2421e
+Author: wiibaa <philippeweber57@yahoo.fr>
+Date:   Tue Sep 23 07:21:05 2014 +0200
+
+    test and fix for LOGSTASH-2288
+
+commit bb1c0e1340fb517bd230f13181365ed982893e4a
+Author: Joseph Lawson <joe@joekiller.com>
+Date:   Mon Sep 15 22:34:37 2014 -0400
+
+    this should fix logstash #1738
+    Closes #1738
+
+commit 825398b1d46db44172d143dad3567b4313537988
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Wed Sep 10 13:43:57 2014 +0000
+
+    Move logstash gemspec loading into environment module
+    
+    Previously the loading of the logstash gemspec was limited to the plugin manager
+    After more tests we need the gemspec to be loaded for any action with the plugins
+    Moving it to the environment module makes it available for more generic loading
+    
+    Make sure plugin manager uses new function for loading gemspec
+
+commit d9b4b13acafce6e3bdc3b3fa85f66978f2bc157a
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Wed Sep 10 10:00:00 2014 +0000
+
+    Improvements to plugin manager
+    
+    - Use better installer method to avoid documentation installation
+      With the previous method it would install the documentation which didn't exist.
+    
+    - Create Fake gemspec info for logstash to help dependency management for plugins
+      Previously we would create a real gem and install it to aid in dependency management for plugins and logstash
+      Now we create a fake gemspec on the fly with the real version of logstash avoiding having to build it every time.
+
+commit 94b3252c27eee68d52e415bd9bea8594c54f8352
+Author: Avishai Ish-Shalom <avishai@fewbytes.com>
+Date:   Thu Aug 7 08:38:51 2014 +0300
+
+    LOGSTASH-2276 fixed if/else branch mixup in rabbitmq input
+
+commit 2711c23f62869df34f36eaaf1b85bddaed7cd6e7
+Author: Andreas Lappe <nd@off-pist.de>
+Date:   Fri Apr 18 18:44:12 2014 +0200
+
+    Remove the log parameter as web doesn't allow it
+
+commit f6e5494ae73239c6627294f9bbaeff6ef946302f
+Author: Tray Torrance <torrancew@gmail.com>
+Date:   Mon Aug 4 11:14:11 2014 -0700
+
+    Fixes finterprint filter handling of timestamp field
+    
+    Fixes #1572
+
+commit 277a890451184d419af728b076fc4473e0e7afb0
+Author: Joao Duarte <jsvduarte@gmail.com>
+Date:   Thu Sep 4 15:03:38 2014 +0100
+
+    Prevents event.sprintf from converting floats to sci notation
+    
+    This allows sprintf to correctly print floats up to 15 decimal
+    places, which should be enough for most. Without this, very big
+    or very small floats will be converted to scientific notation.
+    
+    closes #1670
+
+commit 6096d3013dda56fe443b8d85a04180ad7f281739
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Sat Apr 12 13:50:40 2014 -0700
+
+    Add recurse method for doing breadth-first traversal of the AST
+    
+    This will be used by the filter flush compiler
+    
+    Add generation of a flush lambda for each filter.
+    
+    This allows filters to flush and have any generated events proceed
+    downward through the config as you would expect, respecting any
+    branches or future plugins.
+    
+    Die on IOError which occurs when reading from a closed STDIN
+    
+    Make filter_flusher invoke the new (and correct, I hope!) way to flush.
+    
+    - On shutdown, we will also flush all filters.
+    - The flusher thread will terminate if we are shutting down.
+    
+    Clarify the comment
+    
+    Fix comment generation in the code to avoid newlines.
+    
+    Add 'max_age' setting to multiline for flushing.
+    
+    This setting chooses how long (in seconds) an event is considered to be
+    fresh before it will be automatically flushed.
+    
+    This is useful for:
+    * slow log sources to get the 'last event' flushed,
+    * transaction-id-style events that have no obvious "end" event and also
+      are mixed among other-id events in the same stream.
+    
+    Also:
+    - Make filters have no teardown by default.
+    - Remove 'enable_flush' since it is not needed anymore; flush is always
+      enabled.
+    
+    refactor flush
+    
+    new spool filter and specs, mainly for testing flushing
+    
+    turn off unrelated test error for now
+    
+    fix the flush logic, fix the flush compiles code to not include output section
+    
+    synchronize cross-thread  access to @pending
+    
+    refactor for performance and readability
+    
+    synchronize cross-thread access to @spool
+    
+    unused code
+    
+    input:udp removed boggus ShutdownSignal handling, morphed loop do into while true, cosmetic reformat
+    
+    use transcient events and not exceptions for in-flow pipeline signaling
+    
+    inline flushing into  filterworker
+    
+    removed now unnecessary flushing thread safety
+    
+    fix conditionals bug for new events generated by filters & specs
+    
+    spec for issue #793
+    
+    performance tweeks
+    
+    simplify filter handling of events and new_events
+    
+    this removes unecessary duplication when treating the original event as
+    a special case (different from new_events generated by a filter).
+    Also, since @filter_func only outputs non-cancelled events, some checks
+    were also removed.
+    
+    Move multiple filter specs to a filter_chains file
+    
+    append events generated by a filter using unshift instead of insert
+    
+    closes #793, closes #1429, closes #1431, closes #1548
+
+commit 8bc6d34bb203135e6b13c2bc863f04f62cbf055f
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Thu Sep 4 11:52:50 2014 -0700
+
+    Dont add kafka metadata by default
+    Closes #1691
+
+commit cdf6c855881701c63c9379f3f32e7321f55a6269
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Mon Jul 14 14:56:10 2014 -0700
+
+    Merge @joekiller's Kafka plugin to logstash-core
+    Add documentation and tests
+    Use scala version 2.9.2 and Kafka 0.8.1.1
+    Closes #1472
+
+commit 26323cb08cdb77589e61c10078feb63ec2f2a1a2
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Wed Sep 3 13:52:38 2014 -0700
+
+    Removed nil check
+    Closes #1661
+
+commit b28ed35570f2d6a6be074a7cb638e3d3881a42c4
+Author: John Pariseau <jparisea@umich.edu>
+Date:   Mon Aug 25 10:36:14 2014 -0400
+
+    Change credentials default to [], use empty array
+    
+    closes /elasticsearch/logstash/#1619
+
+commit a5f407c85a4a1f59da7d4a29c1281c1e6d4fe1a9
+Author: Paul Fletcher-Hill <pfletcherhill@gmail.com>
+Date:   Fri Aug 8 14:18:00 2014 -0400
+
+    Dynamic include_keys and exclude_keys for kv filter
+    Closes #1618
+
+commit 96a3a26ee08b3b690584cce008309df5aefee271
+Author: wickeddoc <ythommes@gmail.com>
+Date:   Tue Sep 2 12:07:19 2014 +0200
+
+    String has to be surrounded by quotes
+
+commit c17ef738548ae7cdff6651abeb3ecb04b966e225
+Author: Fredrik Gustafsson <frgustaf@kth.se>
+Date:   Wed Aug 27 10:10:17 2014 +0200
+
+    prevent overwrite of event host field
+    Closes #1668
+
+commit 609b006757226b2cb26b3f389116503fdc1876d3
+Author: wiibaa <philippeweber57@yahoo.fr>
+Date:   Tue Aug 26 09:08:49 2014 +0200
+
+    filter/date fix locale config
+    Closes #1664
+
+commit 33e20135d09c1d7d94e561ddebef6c8df8182649
+Author: Richard Pijnenburg <richard@ispavailability.com>
+Date:   Fri Jul 25 17:38:03 2014 +0000
+
+    Add Plugin manager to Logstash
+    
+    The plugin manager allows users to install, uninstall, update and list plugins for logstash
+
+commit 43e7d72d2e10d66aee305b1643f9ffaf2749a38c
+Author: wiibaa <philippeweber57@yahoo.fr>
+Date:   Fri Aug 1 06:30:40 2014 +0200
+
+    fix rebase
+    Closes #769
+
+commit ad2480d55923fae7d657ac533b6c39dadc0e9695
+Author: Wiibaa <philippeweber57@yahoo.fr>
+Date:   Mon Nov 11 08:20:23 2013 +0100
+
+    Support almost-ISO8601 patterns in date filter ISO8601 config
+
+commit cbb8a94d23869bdd26b47379373b70b3296fea9a
+Author: Marc Fournier <marc.fournier@camptocamp.com>
+Date:   Tue Aug 26 11:59:26 2014 +0200
+
+    LOGSTASH-1886: intercept exception raised by march_hare
+    
+    Since ae867bc64, the march_hare version we use raises an error when the
+    network link is broken while the socket is idle. This case must be
+    handled by logstash to initiate the reconnection process.
+    
+    From PR #1665
+
+commit 1249ca56710c061c0b687073188f424437c2b724
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Fri Aug 22 13:01:10 2014 -0700
+
+    Clean up code
+    Closes #1657
+
+commit e57264ccc08fef01501377c47aac35d32c336136
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Fri Aug 22 12:57:23 2014 -0700
+
+    Use updated grok version
+
+commit 6563a8866dc071ce669d978bd83de4e6ff6dbe9b
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Mon Aug 11 11:47:43 2014 -0700
+
+    More fixes to use new grok lib
+
+commit 041571e18211d2636c7e9ffea14c3db152a2ae8d
+Author: wiibaa <philippeweber57@yahoo.fr>
+Date:   Fri Aug 22 13:23:55 2014 +0200
+
+    filter/mutate raise configError in register
+    Closes #1656
+
+commit 376bbb838266faa979b170b728114d3baa7471ec
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Tue Aug 26 14:36:27 2014 -0700
+
+    Added more tests without the need for live syslog input
+    Closes #1593
+
+commit f4a897ff202cc614aac84ff63a2ef0d9f33baf84
+Author: Simon Mulser <simonmulser@gmail.com>
+Date:   Mon Aug 4 00:13:17 2014 +0200
+
+    add unique tag for grok parser in module input
+
+commit 52a374af18618cbd729e120af1cc7fe5374bd2c2
+Author: Victor Garcia <vgarcia@thousandeyes.com>
+Date:   Wed Jul 16 12:10:24 2014 -0700
+
+    Adding delaycompress to logrotate
+    
+    To avoid issues like:
+    
+    /etc/cron.daily/logrotate:
+    gzip: stdin: file size changed while zipping
+    
+    This change is harmless and will prevent errors like this one
+
+commit 384dffd2d81587496cb3b5dc953071185b60cd3d
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Tue Jul 8 22:58:46 2014 +0000
+
+    config grammar: Allow spaces in [field references][like this]
+    
+    Tests included.
+    
+    Note about grammar compilation:
+      I had to use treetop 1.4.15 (1.5.3 generates ruby code that fails to
+      parse, haven't spent any time debugging)
+    
+    Fixes #1513
+
+commit 7db44419eec6c75b6ab93ee31f23e917b1f60de8
+Author: wiibaa <philippeweber57@yahoo.fr>
+Date:   Wed Jul 30 07:58:25 2014 +0200
+
+    use non-capturing group in float regex
+
+commit e59cc99481f914ecca10f2feb31e030c1394a459
+Author: wiibaa <philippeweber57@yahoo.fr>
+Date:   Mon Jun 23 14:08:22 2014 +0200
+
+    fix failing test
+
+commit 44c5aacb581c0da0d69e60c2fdb624e42fe1b7f5
+Author: wiibaa <philippeweber57@yahoo.fr>
+Date:   Sun May 11 18:02:10 2014 +0200
+
+    stronger regex and code-style change
+
+commit 485661c18f282dcee0fd07df3d334e922449f0eb
+Author: Wiibaa <philippeweber57@yahoo.fr>
+Date:   Fri Apr 11 07:31:27 2014 +0200
+
+    reject invalid UNIX timestamp
+
+commit 8f39b53322e8bd37fce3c9220e1c46268e6be0f6
+Author: Brian DeFreitas <briandef@pandora.com>
+Date:   Fri Mar 21 12:58:51 2014 -0700
+
+    Add tilde to UNIXPATH
+    
+    Tilde '~' is a valid character in UNIXPATHs.
+    
+    Closes #1195
+
+commit 5b362976e5f063cd6a9043efbb8adf96cae11073
+Author: Alejandro E Brito Monedero <alejandro.monedero@gmail.com>
+Date:   Tue May 13 11:30:49 2014 +0200
+
+    Update metrics.rb example
+    
+    Update the example because output doesn't have the message parameter, instead it should use a a codec.
+    Also update the way how logstash is executed.
+    
+    Conflicts:
+    	lib/logstash/filters/metrics.rb
+
+commit 5209bbcc7457c25785c12e0786402eb387069c51
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Fri Jul 25 17:38:13 2014 -0700
+
+    Removed version info in LS command
+    Closes #1362
+    
+    Conflicts:
+    	lib/logstash/filters/metrics.rb
+
+commit 9e5e215c00c8bd657bf11df122ff4297deb2aee4
+Author: Gaurav Arora <garora@nimbuzz.com>
+Date:   Thu May 15 15:03:49 2014 +0530
+
+    correct documentation of some config elements
+    
+    Closes #1380
+
+commit e6b07a732f8f53adf18ea9317d6103346a64cb4f
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Thu Jul 24 07:35:31 2014 -0700
+
+    Update ES version docs
+    
+    ES version 1.0 or greater is now supported by all protocols.
+    
+    The Elasticsearch eng team has tests to ensure client nodes from all ES versions >=1.0 work with all ES clusters version >=1.0
+
+commit 4aea932d49a025f46dbd299668dbf7721608be06
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Mon Jul 14 17:41:06 2014 -0400
+
+    use bundler compatible ruby version string
+
+commit 40bf50561603b8d59ddd47cf19191f06f6cb2d1a
+Author: Joseph Lawson <joe@joekiller.com>
+Date:   Tue Jul 22 16:53:22 2014 -0400
+
+    call vendor-geoip instead of $(GEOIP) in prepare-tarball
+    Closes #1563
+
+commit 2ab856439e82a42c707d608f60fc15b1a3f76521
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Mon Jul 21 15:00:39 2014 -0700
+
+    Add tests for issue to reproduce behavior
+    
+    Fix break_on_match issue while evaluating multiple patterns
+    
+    Closes #1547
+    
+    Make better exception message
+    
+    Add more specs for inputs with arrays
+    
+    Closes #1547
+
+commit df483cbeb6cd0d1bed5bb7244be09e684bcb3fc3
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Fri Jul 18 15:26:56 2014 -0700
+
+    Evaluate dynamic fields in event when used with gsub
+    
+    Closes #1529
+
+commit 3adac6a8f0b126cb7bb2974f26aa34bcbdba2e19
+Author: Ehtesh Choudhury <ehtesh.choudhury@gmail.com>
+Date:   Thu Jul 10 05:23:35 2014 +0000
+
+    Use the newer { "fieldname" => "pattern" } for grok filters.
+    
+    Replace the older grok style:
+    
+        { match => [ "fieldname", "pattern" ] }
+    
+    With the newer one:
+    
+        { match => { "fieldname" => "pattern" } }
+    
+    Also see https://github.com/elasticsearch/logstash/issues/1499
+    for more examples.
+    
+    Closes #1516
+
+commit 63a36788284b80024ccfcb0e0c6a789e118ec6d2
+Author: bonky42 <bernard.chesnoy@gmail.com>
+Date:   Tue Jul 1 16:22:38 2014 +0200
+
+    Fix a missing coma in doc for remove_field
+    
+    Closes #1490
+
+commit 2de63a76508bef2f0610370b4817006fe64229f6
+Author: Marcus McCurdy <mmccurdy@50onred.com>
+Date:   Wed Jul 16 16:58:32 2014 -0400
+
+    Fixes spelling in en.yml
+    
+    Closes #1544
+
+commit 3006f2d67d2df3f7bc213de2f98d58f79a67d88f
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Tue Jul 15 13:18:56 2014 -0700
+
+    Ignore RubyMine/IntelliJ dirs
+
+commit 634014ca6835e4bb90e6bc2f87a7449855ae840d
+Author: Philippe Weber <philippe.weber@atos.net>
+Date:   Thu Jul 10 12:42:40 2014 +0200
+
+    consolidate java grok patterns
+
+commit 445786258d784c8120eb3c393405acb34f3af77e
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Thu Jul 10 19:53:09 2014 +0000
+
+    inputs/base: Copy the codec's charset when switching.
+    
+    Includes tests
+
+commit 7f4b1c57f0dce73afa17b58ac025e95263a52054
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Tue May 20 19:33:15 2014 +0000
+
+    Add tests to cover codec autoswitch for stdin + tcp inputs
+    
+    json->json_lines & plain->line
+    
+    Tests for #1392
+    Closes #1394
+
+commit 184ec2d38c8f68a69bdb25af0e8a5cbca90fa1b1
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Wed Jun 18 16:42:19 2014 -0700
+
+    Verify method is getting called
+
+commit 4ab3f5a986156cd8f607e949c43bd11152a2b8c9
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Wed Jun 18 15:29:32 2014 -0700
+
+    Squash extra lines
+
+commit d5fa8a718ca120e9783eb4bac6d1f7ae2ca572d5
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Mon Jul 7 22:34:25 2014 +0000
+
+    Reference github issues now.
+    
+    Hosted Jira (logstash.jira.com) is currently busted because we have
+    exceeded the maximum number of users that platform can accomodate
+    (according to Atlassian support). Until that is resolved, let's point
+    everyone at github issues instead.
+    
+    closes #1508
+
+commit d694431ff63d25f71bc3ba8efa5ce516a9981b5e
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Tue Jun 24 13:07:51 2014 +0000
+
+    Fix typo
+
+commit 9d3948d95ef308ed0ef0c4fc47323300deae37c7
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Tue Jun 24 12:15:48 2014 +0000
+
+    Fix missing require
+
+commit 001ced5f9521d56f6cde4ee49440f8aedd429e0f
+Author: Suyog Rao <suyog.rao@elasticsearch.com>
+Date:   Wed Jun 18 15:18:54 2014 -0700
+
+    Fix for #1451
+    
+    Line codec was using an undefined variable which casued it to throw and exception.
+    
+    Fixed and added tests for line codes
+    
+    Closes #1451
+
+commit 11bdc6df93444a1cc0f8d20f359b39d2104b9bc1
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Wed May 14 17:17:50 2014 -0700
+
+    Disable coverage for now
+    
+    This is to make tests run. Currently we are not using coverage reports,
+    and a recent fix to remove development dependencies from the normal
+    installation has caused coverage dependencies to be removed and thus
+    fail.
+    
+    We will revert this once we figure out how to make tests run with
+    separate bundler groups.
+
+commit daf22ed1e780297f76288293f2fab690d8ba7483
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Fri Jun 13 17:21:25 2014 -0400
+
+    logstash boot sequence cleanup & drip support fix
+    deprecated USE_JRUBY environment var
+    added USE_RUBY and USE_DRIP environment vars
+    centralized gem path handling in LogStash::Environment
+    
+    use consistent discovery strategy
+
+commit 4e03232bda0d86781f06663cb2473332a5d6ac05
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Thu Jul 10 17:39:36 2014 -0400
+
+    fix connection threads tracking leak
+    
+    better mutex name, loop with while true
+    
+    event per connection & thread cleanups specs
+    
+    remove leftover
+    
+    closes #1509
+
+commit 68ba67a3f7ad47259c37d7a7568b8c9dab888e43
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Tue Jun 24 14:07:39 2014 +0200
+
+    changelog for 1.4.2
+
+commit 005ea644c41af032a4e7957753bf7269040347a7
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Thu Jun 5 18:48:23 2014 -0400
+
+    fix external command invocation
+
+commit 84d938ebdc308555d5d7bfcfab2036cabb5c2b62
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Mon May 26 17:21:13 2014 -0400
+
+    replace json parsers with JrJackson and Oj
+    refactored timestamps with new Timestamp class
+    closes #1434
+
+commit 024e9ad0826676548c6b6f750c29835d6ebf5565
+Author: Philippe Weber <philippe.weber@atos.net>
+Date:   Sat May 17 15:44:54 2014 +0200
+
+    initial spec for pipe input
+    
+    removed logging
+    
+    fixed encoding header
+    
+    closes 1385
+
+commit a085cc989cd4853369b9cfa167498a3f65a1fede
+Author: Igor Urazov <z0rc@users.noreply.github.com>
+Date:   Thu May 8 12:59:53 2014 +0300
+
+    Pass correct HOME env into chroot
+    
+    Without this patch the logstash isn't able to start on Debian 7 when using file input, as both HOME and SINCEDB_DIR aren't set in chroot.
+
+commit 9d2ca278a13fe8ffd6405ed50e58f99f535a7acc
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Sat May 17 18:17:55 2014 -0400
+
+    fix stdin message handling & specs
+    
+    closes #1386
+
+commit 4f086c7e771d9d4faa8b8f305fcdcef70bd42d86
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Tue May 20 04:52:58 2014 +0000
+
+    Automatically choose most correct codec for bytestream inputs.
+    
+    Now, if you try to use `plain` or `json` codecs with either `stdin` or
+    `tcp` inputs, it will automatically select `line` or `json_lines` codec
+    respectively.
+    
+    Right now, many users try to use json codec with tcp input. This
+    *should* work, but due to technical limitations[1], it does not.
+    To compensate, we have always provided a json_lines codec to help
+    parse "streams of line-delimited json" which is what most folks
+    seem to be handling these days.
+    
+    [1] I haven't found a JSON library capable of processing a byte stream.
+    Jackson has one, but it requires an input stream model which logstash
+    does not currently expose. Future work will make this possible.
+    
+    Related: #1391
+
+commit 7dedb3e36bcd2f901b9680fb90d04739cb7cf46a
+Author: Aaron Mildenstein <aaron@mildensteins.com>
+Date:   Wed May 14 19:33:21 2014 -0500
+
+    Fixing relative path issues left over from flatjar era
+    
+    Use plugin_path and pattern_path
+    
+    closes 1377
+
+commit 9e1023a41d705791b48d41e1944694200dc0c241
+Author: Jordan Sissel <jls@semicomplete.com>
+Date:   Wed May 14 16:37:22 2014 -0700
+
+    Don't install development gems.
+    
+    For whatever reason, the 'development' group is installed by default via
+    bundler. This was not intentiona.
+    
+    The effect is that we might be unintentionally violating a dependency's
+    license (term-ansicolor is GPL2) by including it in our release.
+    Definitely do not wish such things.
+    
+    With this patch, the next run of `bin/logstash deps` shows all dev
+    dependencies being removed:
+    
+        Removing coveralls (0.7.0)
+        Removing docile (1.1.3)
+        Removing kramdown (1.3.3)
+        Removing rest-client (1.6.7)
+        Removing simplecov (0.8.2)
+        Removing simplecov-html (0.8.0)
+        Removing term-ansicolor (1.3.0)
+        Removing thor (0.18.1)
+        Removing tins (1.0.0)
+    
+    Fixes #1372
+
+commit 92a26d2da59b46602b4e10d97a499e77dfc2065c
+Author: Aaron Mildenstein <aaron@mildensteins.com>
+Date:   Tue May 13 11:47:03 2014 -0500
+
+    Add `NaN` support back in to collectd codec
+    
+    * Add spec tests for NaN support
+    * Catch warning on NaN with nan_handling set to warn
+    * Make lambdas ivars and initialize so they can reference other ivars
+    * Fixed reference to point to ivar
+    * Streamline ivar declarations in one method
+    * Improve tests to cover more cases
+    * Make lambdas not be ivars
+    * Change idiomatic calling of init_lambdas to reflect lack of return value
+    
+    closes 1363
+
+commit 2802b6b6f4989695f78738793ce7d701cffde7b2
+Author: Colin Surprenant <colin.surprenant@gmail.com>
+Date:   Thu May 8 17:16:18 2014 -0400
+
+    missing require
+    
+    cosmetic
+    
+    closes #1345
