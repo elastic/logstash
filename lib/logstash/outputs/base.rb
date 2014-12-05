@@ -33,6 +33,8 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Note that this setting may not be useful for all outputs.
   config :workers, :validate => :number, :default => 1
 
+  attr_reader :worker_plugins
+
   public
   def workers_not_supported(message=nil)
     return if @workers == 1
@@ -62,20 +64,20 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   public
   def worker_setup
-    return unless @workers > 1
-
-    define_singleton_method(:handle, method(:handle_worker))
-    @worker_queue = SizedQueue.new(20)
-
-    @worker_threads = @workers.times do |i|
-      Thread.new(original_params, @worker_queue) do |params, queue|
-        LogStash::Util::set_thread_name(">#{self.class.config_name}.#{i}")
-        worker_params = params.merge("workers" => 1, "codec" => @codec.clone)
-        worker_plugin = self.class.new(worker_params)
-        worker_plugin.register
-        while true
-          event = queue.pop
-          worker_plugin.handle(event)
+    if @workers == 1
+      @worker_plugins = [self]
+    else
+      define_singleton_method(:handle, method(:handle_worker))
+      @worker_queue = SizedQueue.new(20)
+      @worker_plugins = @workers.times.map { self.class.new(params.merge("workers" => 1, "codec" => @codec.clone)) }
+      @worker_plugins.map.with_index do |plugin, i|
+        Thread.new(original_params, @worker_queue) do |params, queue|
+          LogStash::Util::set_thread_name(">#{self.class.config_name}.#{i}")
+          plugin.register
+          while true
+            event = queue.pop
+            plugin.handle(event)
+          end
         end
       end
     end
