@@ -32,5 +32,6 @@ namespace "plugin" do
     end
     ENV['GEM_PATH'] = gem_path
     ENV['GEM_HOME'] = gem_home
+    raise RuntimeError, $!.to_s unless $?.success?
   end
 end # namespace "plugin"
