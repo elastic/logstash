@@ -18,10 +18,9 @@ namespace "plugin" do
       "GEM_PATH" => [
         ENV['GEM_PATH'],
         ::File.join(LogStash::Environment::LOGSTASH_HOME, 'build/bootstrap'),
-        ::File.join(LogStash::Environment::LOGSTASH_HOME, 'vendor/bundle/jruby/1.9'),
-        ::File.join(LogStash::Environment::LOGSTASH_HOME, 'vendor/jruby/lib/ruby/gems/shared')
+        LogStash::Environment.gem_home
       ].join(":"),
-      "GEM_HOME" => ::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor/plugins/jruby/1.9"),
+      "GEM_HOME" => LogStash::Environment.plugins_home,
       "BUNDLE_GEMFILE" => "tools/Gemfile.plugins"
     }
     if ENV['USE_RUBY'] != '1'
