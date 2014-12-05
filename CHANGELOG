@@ -1,3 +1,61 @@
+1.5.0.beta1
+  # general
+  - Allow spaces in field references like [hello world] (#1513)
+  - Add Plugin manager functionality to Logstash which allows to install, delete and 
+    update Logstash plugins
+  - Remove ability to run multiple subcommands from bin/logstash like 
+    bin/logstash agent -f something.conf -- web (#1747)
+  - Fixed Logstash crashing on converting from ASCII to UTF-8. This was caused by charset
+    conversion issues in input codec (LOGSTASH-1789)
+  - Allow storing 'metadata' to an event which is not sent/encoded on output. This eliminates
+    the need for intermediate fields for example, while using date filter. (#1834)
+  - Accept file and http uri in -f command line option for specifying config files (#1873)
+  - Conditions in filters which emits an event will now only be propogated to the next logical 
+    line in the filter (#1431)
+  - Bump Kibana version to 3.1.2
+
+  # input
+  - Lumberjack: fixed Logstash crashes with Java Out Of Memory because of TCP 
+    thread leaks (#LOGSTASH-2168)
+  - TCP: fixed connection threads leak (#1509)
+  - Stdin: prevent overwrite of host field if already present in Event (#1668)
+  - S3: AWS credentials can be specfied through environment variables (#1619)
+  - Kafka: merge @joekiller's plugin to Logstash to get events from Kafka (#1472)
+  - RabbitMQ: fixed march_hare client uses incorrect connection url (LOGSTASH-2276)
+  - RabbitMQ: use Bunny 1.5.0+ (#1894)
+  - Twitter: added improvements, robustness, fixes. full_tweet  option now works, 
+    handle Twitter rate limiting errors (#1471)
+  - TCP: fixed input host field also contains source port (LOGSTASH-1849)
+  - Syslog: if input does not match syslog format, add tag _grokparsefailure_sysloginputplugin
+    which can be used to debug (#1593)
+
+  # filter
+  - Mutate: gsub evaluates variables like %{format} in the replacement text (#1529)
+  - Grok: "break_on_match => false" option now works correctly (#1547)
+  - Grok: allow user@hostname in commonapache log (#1500 #1736)
+  - Grok: use optimized ruby-grok library which improves throughput in some cases by 50% (#1657)
+  - Date: fixed match defaults to 1970-01-01 when none of the formats matches and 
+    UNIX format is present in the list (#1236, LOGSTASH-1597)
+  - Mutate: fixed confusing error message for invalid type conversion (#1656, LOGSTASH-2003)
+  - Date: support parsing almost-ISO8601 patterns like 2001-11-06 20:45:45.123-0000 (without a T) which 
+    does not match %{TIMESTAMP_ISO8601}
+  - KV: allows dynamic include/exclude keys. For example, if an event has a key field and the user wants
+    to parse out a value using the kv filter, the user should be able to include_keys: [ "%{key}" ]
+  - DNS: fixed add_tag adds tags even if filter was unsuccessful (#1785)
+  - XML: fixed UndefinedConversionError with UTF-8 encoding (LOGSTASH-2246)
+  - Mutate: fixed nested field notation for convert option like 'convert => [ "[a][0]", "float" ]' (#1401)
+
+  # output
+  - RabbitMQ: fixed crash while running Logstash for longer periods, typically when there's no
+    traffic on the logstash<->rabbitmq socket (LOGSTASH-1886)
+  - Statsd: fixed issue of converting very small float numbers to scientific notation like 9.3e-05 (#1670)
+  - Fixed undefined method error when conditional on an output (#LOGSTASH-2288)
+  - Elasticsearch output: support multiple hosts and enhance stability
+  - Elasticsearch output: Logstash should not create a "message.raw" by default
+  - Elasticsearch output: provide SSL and http authentication support for elasticserach
+    output plugin (#1453)
+  - Kafka: merge @joekiller's plugin into Logstash to produce events to Kafka (#1472)  
+
 1.4.2 (June 24, 2014)
   # general
   - fixed path issues when invoking bin/logstash outside its home directory
