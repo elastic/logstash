@@ -242,13 +242,25 @@ namespace "vendor" do
         end
         backup_gem_home = ENV['GEM_HOME']
         backup_gem_path = ENV['GEM_PATH']
-        ENV['GEM_HOME'] = LogStash::Environment.gem_home
-        ENV['GEM_PATH'] = [
-          ::File.join(LogStash::Environment::LOGSTASH_HOME, 'build/bootstrap'),
-          ::File.join(LogStash::Environment::LOGSTASH_HOME, 'vendor/jruby/lib/ruby/gems/shared')
-        ].join(":")
-        cmd = [jruby, "-S", bundler, "install", "--gemfile=tools/Gemfile"]
-        system(*cmd)
+        env = {
+          'GEM_HOME' => ::File.join(LogStash::Environment::LOGSTASH_HOME, LogStash::Environment.gem_home),
+          'GEM_PATH' => [
+            ::File.join(LogStash::Environment::LOGSTASH_HOME, 'build/bootstrap'),
+            ::File.join(LogStash::Environment::LOGSTASH_HOME, 'vendor/jruby/lib/ruby/gems/shared')
+          ].join(":")
+        }
+        cmd = [jruby, "-S", bundler, "install", "--gemfile=tools/Gemfile",
+                                                "--standalone",
+                                                "--clean",
+                                                "--without", "development",
+                                                "--jobs", "4",
+                                                "--path", LogStash::Environment::BUNDLE_DIR
+              ]
+        system(env, *cmd)
+
+        # because --path creates a .bundle/config file and changes bundler path
+        # we need to remove this file so it doesn't influence following bundler calls
+        FileUtils.rm_rf(::File.join(LogStash::Environment::LOGSTASH_HOME, "tools/.bundle"))
         ENV['GEM_HOME'] = backup_gem_home
         ENV['GEM_PATH'] = backup_gem_path
         raise RuntimeError, $!.to_s unless $?.success?

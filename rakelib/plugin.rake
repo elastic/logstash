@@ -21,7 +21,7 @@ namespace "plugin" do
         ::File.join(LogStash::Environment::LOGSTASH_HOME, 'vendor/bundle/jruby/1.9'),
         ::File.join(LogStash::Environment::LOGSTASH_HOME, 'vendor/jruby/lib/ruby/gems/shared')
       ].join(":"),
-      "GEM_HOME" => "vendor/plugins/jruby/1.9",
+      "GEM_HOME" => ::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor/plugins/jruby/1.9"),
       "BUNDLE_GEMFILE" => "tools/Gemfile.plugins"
     }
     if ENV['USE_RUBY'] != '1'
