@@ -225,12 +225,16 @@ class LogStash::Pipeline
   def outputworker
     LogStash::Util::set_thread_name(">output")
     @outputs.each(&:worker_setup)
+
     while true
       event = @filter_to_output.pop
       break if event.is_a?(LogStash::ShutdownEvent)
       output(event)
     end # while true
-    @outputs.each(&:teardown)
+
+    @outputs.each do |output|
+      output.worker_plugins.each(&:teardown)
+    end
   end # def outputworker
 
   # Shutdown this pipeline.
