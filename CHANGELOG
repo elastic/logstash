@@ -54,7 +54,9 @@
   - Elasticsearch output: Logstash should not create a "message.raw" by default
   - Elasticsearch output: provide SSL and http authentication support for elasticserach
     output plugin (#1453)
-  - Kafka: merge @joekiller's plugin into Logstash to produce events to Kafka (#1472)  
+  - Kafka: merge @joekiller's plugin into Logstash to produce events to Kafka (#1472)
+  - File: Added enhancements and validations for destination path. Absolute path cannot start with a dynamic
+    string like /%{myfield}/, /test-%{myfield}/
 
 1.4.2 (June 24, 2014)
   # general
