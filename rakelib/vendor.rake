@@ -243,7 +243,7 @@ namespace "vendor" do
         backup_gem_home = ENV['GEM_HOME']
         backup_gem_path = ENV['GEM_PATH']
         env = {
-          'GEM_HOME' => ::File.join(LogStash::Environment::LOGSTASH_HOME, LogStash::Environment.gem_home),
+          'GEM_HOME' => LogStash::Environment.gem_home,
           'GEM_PATH' => [
             ::File.join(LogStash::Environment::LOGSTASH_HOME, 'build/bootstrap'),
             ::File.join(LogStash::Environment::LOGSTASH_HOME, 'vendor/jruby/lib/ruby/gems/shared')
