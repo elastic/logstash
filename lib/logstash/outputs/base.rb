@@ -34,8 +34,19 @@ class LogStash::Outputs::Base < LogStash::Plugin
   config :workers, :validate => :number, :default => 1
 
   public
+
+  def initialize(params = {})
+    super
+    config_init(params)
+  end
+
+  def has_workers?
+    @workers > 1
+  end
+
   def workers_not_supported(message=nil)
-    return if @workers == 1
+    return unless has_workers?
+
     if message
       @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported-with-message", :plugin => self.class.config_name, :worker_count => @workers, :message => message))
     else
@@ -44,28 +55,20 @@ class LogStash::Outputs::Base < LogStash::Plugin
     @workers = 1
   end
 
-  public
-  def initialize(params={})
-    super
-    config_init(params)
-  end
-
-  public
   def register
     raise "#{self.class}#register must be overidden"
   end # def register
 
-  public
   def receive(event)
     raise "#{self.class}#receive must be overidden"
   end # def receive
 
-  public
-  def worker_setup
-    return unless @workers > 1
+  # @param queue [SizedQueue] the queue instance for the output with multiple workers
+  def workers_setup(queue)
+    raise(ArgumentError, "workers_setup must be called only on when multiple workers are configured") unless @workers > 1
 
     define_singleton_method(:handle, method(:handle_worker))
-    @worker_queue = SizedQueue.new(20)
+    @worker_queue = queue
 
     @worker_threads = @workers.times do |i|
       Thread.new(original_params, @worker_queue) do |params, queue|
@@ -81,16 +84,16 @@ class LogStash::Outputs::Base < LogStash::Plugin
     end
   end
 
-  public
   def handle(event)
     receive(event)
   end # def handle
-  
+
   def handle_worker(event)
     @worker_queue.push(event)
   end
 
   private
+
   def output?(event)
     if !@type.empty?
       if event["type"] != @type

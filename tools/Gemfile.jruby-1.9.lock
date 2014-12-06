@@ -1,14 +1,29 @@
+GIT
+  remote: git://github.com/colinsurprenant/jruby-mmap-queues.git
+  revision: 9510329557c4f4ad142e8485dc294b855a8b555e
+  ref: master
+  specs:
+    jruby-mmap-queues (0.1.0-java)
+      jruby-mmap
+
+GIT
+  remote: git://github.com/colinsurprenant/jruby-mmap.git
+  revision: 8b658d195eed54ddc66ef2943f072638b583aa96
+  ref: master
+  specs:
+    jruby-mmap (0.1.1-java)
+
 PATH
   remote: /Users/colin/dev/src/elasticsearch/logstash
   specs:
-    logstash (1.5.0.dev-java)
+    logstash (2.0.0.dev-java)
       addressable
       awesome_print
       aws-sdk
       beefcake (= 0.3.7)
       bindata (>= 1.5.0)
       cabin (>= 0.6.0)
-      ci_reporter
+      ci_reporter (= 1.9.3)
       cinch
       clamp
       edn
@@ -67,18 +82,18 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.3.6)
     atomic (1.1.16-java)
-    avl_tree (1.1.3)
+    avl_tree (1.2.0)
     awesome_print (1.2.0)
-    aws-sdk (1.54.0)
-      aws-sdk-v1 (= 1.54.0)
-    aws-sdk-v1 (1.54.0)
+    aws-sdk (1.56.0)
+      aws-sdk-v1 (= 1.56.0)
+    aws-sdk-v1 (1.56.0)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
     axiom-types (0.1.1)
       descendants_tracker (~> 0.0.4)
       ice_nine (~> 0.11.0)
       thread_safe (~> 0.3, >= 0.3.1)
-    backports (3.6.1)
+    backports (3.6.3)
     beefcake (0.3.7)
     bindata (2.1.0)
     buftok (0.1)
@@ -114,7 +129,7 @@ GEM
     extlib (0.9.16)
     faraday (0.9.0)
       multipart-post (>= 1.2, < 3)
-    ffi (1.9.5-java)
+    ffi (1.9.6-java)
     ffi-rzmq (1.0.0)
       ffi
     filewatch (0.5.1)
@@ -156,9 +171,9 @@ GEM
       virtus (~> 1.0)
     metaclass (0.0.4)
     method_source (0.8.2)
-    metriks (0.9.9.6)
+    metriks (0.9.9.7)
       atomic (~> 1.0)
-      avl_tree (~> 1.1.2)
+      avl_tree (~> 1.2.0)
       hitimes (~> 1.1)
     mime-types (1.25.1)
     minitest (5.4.2)
@@ -233,97 +248,6 @@ GEM
     tins (1.3.3)
     treetop (1.4.15)
       polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
-      polyglot (>= 0.3.1)
       polyglot (>= 0.3.1)
     twitter (5.0.0.rc.1)
       buftok (~> 0.1.0)
@@ -348,5 +272,7 @@ PLATFORMS
 
 DEPENDENCIES
   coveralls
+  jruby-mmap!
+  jruby-mmap-queues!
   kramdown
   logstash!
