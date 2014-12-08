@@ -13,8 +13,8 @@
   - Conditions in filters which emits an event will now correctly propogate to the next logical 
     line in the filter (#1431)
   - Bump Kibana version to 3.1.2
-  - Fixed file descriptors are leaked when using HTTP, which prevents Logstash from 
-    stalling (#1604, LOGSTASH-892)
+  - Fixed file descriptors are leaked when using HTTP. This prevents Logstash from 
+    stalling and in some cases crashing with out of memory (#1604, LOGSTASH-892)
 
   # input
   - Lumberjack: fixed Logstash crashes with Java Out Of Memory because of TCP 
