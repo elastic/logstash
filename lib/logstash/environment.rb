@@ -11,6 +11,7 @@ module LogStash
     BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
     PLUGINS_DIR = ::File.join(LOGSTASH_HOME, "vendor", "plugins")
     GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "tools", "Gemfile")
+    BOOTSTRAP_GEM_PATH = ::File.join(LOGSTASH_HOME, 'build', 'bootstrap')
 
     # loads currently embedded elasticsearch jars
     # @raise LogStash::EnvironmentError if not running under JRuby or if no jar files are found
@@ -30,7 +31,7 @@ module LogStash
     end
 
     def gem_home
-      ::File.join(BUNDLE_DIR, ruby_engine, gem_ruby_version)
+      [::File.join(BUNDLE_DIR, ruby_engine, gem_ruby_version), BOOTSTRAP_GEM_PATH].join(':')
     end
 
     def plugins_home
@@ -44,6 +45,7 @@ module LogStash
       ENV["GEM_HOME"] = plugins_home
       Gem.paths = plugins_home
     end
+
 
     # @return [String] major.minor ruby version, ex 1.9
     def ruby_abi_version
