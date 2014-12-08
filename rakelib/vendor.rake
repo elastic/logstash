@@ -12,7 +12,7 @@ DOWNLOADS = {
   "kafka" => { "version" => "0.8.1.1", "sha1" => "d73cc87fcb01c62fdad8171b7bb9468ac1156e75", "scala_version" => "2.9.2" },
 }
 
-DONEFILE = File.join(LogStash::Environment.gem_home, ".done")
+DONEFILE = File.join(LogStash::Environment::LOGSTASH_HOME, ".install-done")
 
 def vendor(*args)
   return File.join("vendor", *args)
