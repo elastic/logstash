@@ -4,7 +4,6 @@ pkg/*.deb
 pkg/*.rpm
 *.class
 .rbx
-Gemfile.lock
 .rbx
 *.tar.gz
 *.jar
@@ -26,4 +25,3 @@ coverage/*
 spec/reports
 rspec.xml
 .install-done
-tools/Gemfile.plugins.lock
