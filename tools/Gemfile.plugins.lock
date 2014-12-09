@@ -1,5 +1,5 @@
 PATH
-  remote: ..
+  remote: /Users/colin/dev/src/elasticsearch/logstash
   specs:
     logstash (2.0.0.dev-java)
       cabin (>= 0.6.0)
@@ -8,6 +8,7 @@ PATH
       ftw (~> 0.0.40)
       i18n (= 0.6.9)
       insist (= 1.0.0)
+      jar-dependencies (= 0.1.2)
       jrjackson
       jruby-httpclient
       logstash-devutils
@@ -106,7 +107,7 @@ GEM
     i18n (0.6.9)
     ice_nine (0.11.1)
     insist (1.0.0)
-    jar-dependencies (0.1.7)
+    jar-dependencies (0.1.2)
     jbundler (0.5.5)
       bundler (~> 1.5)
       ruby-maven (>= 3.1.1.0.1, < 3.1.2)
