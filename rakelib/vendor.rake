@@ -226,43 +226,18 @@ namespace "vendor" do
     # Try installing a few times in case we hit the "bad_record_mac" ssl error during installation.
     10.times do
       begin
-        #Bundler::CLI.start(["install", "--gemfile=tools/Gemfile", "--path", LogStash::Environment.gem_home, "--clean", "--standalone", "--without", "development", "--jobs", 4])
-        # There doesn't seem to be a way to invoke Bundler::CLI *and* have a
-        # different GEM_HOME set that doesn't impact Bundler's view of what
-        # gems are available. I asked about this in #bundler on freenode, and I
-        # was told to stop using the bundler ruby api. Oh well :(
-        bundler = File.join(Gem.bindir, "bundle")
-        if ENV['USE_RUBY'] == '1'
-          # Use the local jruby binary
-          jruby = 'ruby'
-        else
-          # Use the vendored jruby binary
-          jruby = File.join("vendor", "jruby", "bin", "jruby")
-          bundler = File.join("build", "bootstrap", "bin", "bundle")
-        end
-        backup_gem_home = ENV['GEM_HOME']
-        backup_gem_path = ENV['GEM_PATH']
         env = {
-          'GEM_HOME' => LogStash::Environment.gem_home,
           'GEM_PATH' => [
+            LogStash::Environment.logstash_gem_home,
             ::File.join(LogStash::Environment::LOGSTASH_HOME, 'build/bootstrap'),
-            ::File.join(LogStash::Environment::LOGSTASH_HOME, 'vendor/jruby/lib/ruby/gems/shared')
           ].join(":")
         }
-        cmd = [jruby, "-S", bundler, "install", "--gemfile=tools/Gemfile",
-                                                "--standalone",
-                                                "--clean",
-                                                "--without", "development",
-                                                "--jobs", "4",
-                                                "--path", LogStash::Environment::BUNDLE_DIR
-              ]
+        cmd = [LogStash::Environment.ruby_bin, "-S"] + LogStash::Environment.bundler_install_command("tools/Gemfile", LogStash::Environment::BUNDLE_DIR)
         system(env, *cmd)
 
         # because --path creates a .bundle/config file and changes bundler path
         # we need to remove this file so it doesn't influence following bundler calls
         FileUtils.rm_rf(::File.join(LogStash::Environment::LOGSTASH_HOME, "tools/.bundle"))
-        ENV['GEM_HOME'] = backup_gem_home
-        ENV['GEM_PATH'] = backup_gem_path
         raise RuntimeError, $!.to_s unless $?.success?
         break
       rescue Gem::RemoteFetcher::FetchError => e

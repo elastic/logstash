@@ -12,26 +12,16 @@ namespace "plugin" do
   end # task "install"
 
   task "install-defaults" do
-    gem_path = ENV['GEM_PATH']
-    gem_home = ENV['GEM_HOME']
+
     env = {
       "GEM_PATH" => [
-        ENV['GEM_PATH'],
-        ::File.join(LogStash::Environment::LOGSTASH_HOME, 'build/bootstrap'),
-        LogStash::Environment.gem_home
-      ].join(":"),
-      "GEM_HOME" => LogStash::Environment.plugins_home,
-      "BUNDLE_GEMFILE" => "tools/Gemfile.plugins"
+        LogStash::Environment.logstash_gem_home,
+        LogStash::Environment.plugins_gem_home,
+        ::File.join(LogStash::Environment::LOGSTASH_HOME, "build/bootstrap"),
+      ].join(":")
     }
-    if ENV['USE_RUBY'] != '1'
-      jruby = File.join("vendor", "jruby", "bin", "jruby")
-      bundle = File.join("build", "bootstrap", "bin", "bundle")
-      system(env, jruby, "-S", bundle, "install")
-    else
-      system(env, "bundle", "install")
-    end
-    ENV['GEM_PATH'] = gem_path
-    ENV['GEM_HOME'] = gem_home
+    cmd = [LogStash::Environment.ruby_bin, "-S"] + LogStash::Environment.bundler_install_command("tools/Gemfile.plugins", LogStash::Environment::PLUGINS_DIR)
+    system(env, *cmd)
     raise RuntimeError, $!.to_s unless $?.success?
   end
 end # namespace "plugin"
