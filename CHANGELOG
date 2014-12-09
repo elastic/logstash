@@ -10,11 +10,11 @@
   - Allow storing 'metadata' to an event which is not sent/encoded on output. This eliminates
     the need for intermediate fields for example, while using date filter. (#1834)
   - Accept file and http uri in -f command line option for specifying config files (#1873)
-  - Conditions in filters which emits an event will now correctly propogate to the next logical 
-    line in the filter (#1431)
+  - Filters that generated events (multiline, clone, split, metrics) now propagate those events 
+    correctly to future conditionals (#1431)
   - Bump Kibana version to 3.1.2
-  - Fixed file descriptors are leaked when using HTTP. This prevents Logstash from 
-    stalling and in some cases crashing with out of memory (#1604, LOGSTASH-892)
+  - Fixed file descriptor leaks when using HTTP. The fix prevents Logstash from stalling, and
+    in some cases crashing from out-of-memory errors (#1604, LOGSTASH-892)
 
   # input
   - Lumberjack: fixed Logstash crashes with Java Out Of Memory because of TCP 
