@@ -12,7 +12,7 @@ namespace "artifact" do
       "{bin,lib,spec,locales}/{,**/*}",
       "patterns/**/*",
       "vendor/??*/**/*",
-      File.join(LogStash::Environment.gem_home.gsub(Dir.pwd + "/", ""), "{gems,specifications}/**/*"),
+      "build/bootstrap/**/*",
       "Rakefile",
       "rakelib/*",
     ]
@@ -46,7 +46,7 @@ namespace "artifact" do
       Rake::FileList[glob].reject { |path| exclude?(path) }
     end.flatten.uniq
   end
-  
+
   desc "Build a tar.gz of logstash with all dependencies"
   task "tar" => ["bootstrap", "plugin:install-defaults"] do
     require "zlib"
@@ -189,7 +189,7 @@ namespace "artifact" do
     # - rpm: https://github.com/elasticsearch/logstash/pull/1290
     # - rpm: https://github.com/elasticsearch/logstash/issues/1673
     # - rpm: https://logstash.jira.com/browse/LOGSTASH-1020
-    
+
     out.attributes[:force?] = true # overwrite the rpm/deb/etc being created
     begin
       path = File.join(basedir, "build", out.to_s)
