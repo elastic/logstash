@@ -1,5 +1,12 @@
 1.5.0.beta1
   # general
+  - Performance improvements: Logstash 1.5.0 is much faster -- we have improved the throughput 
+    of grok filter in some cases by 100%. In our benchmark testing, using only grok filter and
+    ingesting apache logs, throughput increased from 34K eps to 50K eps. 
+    JSON serialization/deserialization are now implemented using JrJackson library which 
+    improved performance significantly. Ingesting JSON events 1.3KB in size measured a throughput
+    increase from 16Keps to 30K eps. With events 45KB in size, throughput increased from 
+    850 eps to 3.5K eps
   - Allow spaces in field references like [hello world] (#1513)
   - Add Plugin manager functionality to Logstash which allows to install, delete and 
     update Logstash plugins
