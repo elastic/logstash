@@ -12,8 +12,6 @@ DOWNLOADS = {
   "kafka" => { "version" => "0.8.1.1", "sha1" => "d73cc87fcb01c62fdad8171b7bb9468ac1156e75", "scala_version" => "2.9.2" },
 }
 
-DONEFILE = File.join(LogStash::Environment::LOGSTASH_HOME, ".install-done")
-
 def vendor(*args)
   return File.join("vendor", *args)
 end
@@ -204,11 +202,7 @@ namespace "vendor" do
   #task "all" => "collectd"
 
   namespace "force" do
-    task "delete_donefile" do
-      File.delete(DONEFILE) if File.exist?(DONEFILE)
-    end
-
-    task "gems" => ["delete_donefile", "vendor:gems"]
+    task "gems" => ["vendor:gems"]
   end
 
   task "gems" => [ "dependency:bundler" ] do
@@ -217,21 +211,26 @@ namespace "vendor" do
     Rake::Task["dependency:rbx-stdlib"] if LogStash::Environment.ruby_engine == "rbx"
     Rake::Task["dependency:stud"].invoke
 
-    # Skip bundler if we've already done this recently.
-    if File.file?(DONEFILE)
-      age = (Time.now - File.lstat(DONEFILE).mtime)
-      # Skip if the donefile was last modified recently
-      next if age < 300
+    10.times do
+      begin
+        ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
+        ENV["BUNDLE_PATH"] = LogStash::Environment.logstash_gem_home
+        ENV["BUNDLE_GEMFILE"] = "tools/Gemfile"
+        # Bundler::Retry.attempts = 0
+        Bundler.definition(true)
+        Bundler::CLI.start(LogStash::Environment.bundler_install_command("tools/Gemfile", LogStash::Environment::BUNDLE_DIR))
+        break
+      rescue => e
+        # for now catch all, looks like bundler now throws Bundler::InstallError, Errno::EBADF
+        puts(e.message)
+        puts("--> Retrying vendor:gems upon exception=#{e.class}")
+        sleep(1)
+      end
     end
-
-    ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
-    Bundler::CLI.start(LogStash::Environment.bundler_install_command("tools/Gemfile", LogStash::Environment::BUNDLE_DIR))
 
     # because --path creates a .bundle/config file and changes bundler path
     # we need to remove this file so it doesn't influence following bundler calls
     FileUtils.rm_rf(::File.join(LogStash::Environment::LOGSTASH_HOME, "tools/.bundle"))
-
-    File.write(DONEFILE, Time.now.to_s)
   end # task gems
   task "all" => "gems"
 
