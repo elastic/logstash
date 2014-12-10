@@ -9,7 +9,6 @@ module LogStash
     JAR_DIR = ::File.join(LOGSTASH_HOME, "vendor", "jar")
     ELASTICSEARCH_DIR = ::File.join(LOGSTASH_HOME, "vendor", "elasticsearch")
     BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
-    PLUGINS_DIR = ::File.join(LOGSTASH_HOME, "vendor", "plugins")
     GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "tools", "Gemfile")
     BOOTSTRAP_GEM_PATH = ::File.join(LOGSTASH_HOME, 'build', 'bootstrap')
 
@@ -32,11 +31,6 @@ module LogStash
 
     def logstash_gem_home
       ::File.join(BUNDLE_DIR, ruby_engine, gem_ruby_version)
-    end
-
-    def plugins_gem_home
-      # plugins are gems, respect same path structure as core gems_home
-      ::File.join(PLUGINS_DIR, ruby_engine, gem_ruby_version)
     end
 
     # set GEM_PATH for logstash runtime
