@@ -13,8 +13,22 @@ namespace "plugin" do
   end # task "install"
 
   task "install-defaults" => [ "dependency:bundler" ] do
-    ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
-    Bundler::CLI.start(LogStash::Environment.bundler_install_command("tools/Gemfile.plugins", LogStash::Environment::BUNDLE_DIR))
+    10.times do
+      begin
+        ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
+        ENV["BUNDLE_PATH"] = LogStash::Environment.logstash_gem_home
+        ENV["BUNDLE_GEMFILE"] = "tools/Gemfile.plugins"
+        # Bundler::Retry.attempts = 0
+        Bundler.definition(true)
+        Bundler::CLI.start(LogStash::Environment.bundler_install_command("tools/Gemfile.plugins", LogStash::Environment::BUNDLE_DIR))
+        break
+      rescue => e
+        # for now catch all, looks like bundler now throws Bundler::InstallError, Errno::EBADF
+        puts(e.message)
+        puts("--> Retrying install-defaults upon exception=#{e.class}")
+        sleep(1)
+      end
+    end
 
     # because --path creates a .bundle/config file and changes bundler path
     # we need to remove this file so it doesn't influence following bundler calls
