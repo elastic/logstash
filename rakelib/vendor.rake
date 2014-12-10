@@ -213,6 +213,7 @@ namespace "vendor" do
 
   task "gems" => [ "dependency:bundler" ] do
     require "logstash/environment"
+
     Rake::Task["dependency:rbx-stdlib"] if LogStash::Environment.ruby_engine == "rbx"
     Rake::Task["dependency:stud"].invoke
 
@@ -223,34 +224,18 @@ namespace "vendor" do
       next if age < 300
     end
 
-    # Try installing a few times in case we hit the "bad_record_mac" ssl error during installation.
-    10.times do
-      begin
-        env = {
-          'GEM_PATH' => [
-            LogStash::Environment.logstash_gem_home,
-            ::File.join(LogStash::Environment::LOGSTASH_HOME, 'build/bootstrap'),
-          ].join(":")
-        }
-        cmd = [LogStash::Environment.ruby_bin, "-S"] + LogStash::Environment.bundler_install_command("tools/Gemfile", LogStash::Environment::BUNDLE_DIR)
-        system(env, *cmd)
+    ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
+    Bundler::CLI.start(LogStash::Environment.bundler_install_command("tools/Gemfile", LogStash::Environment::BUNDLE_DIR))
 
-        # because --path creates a .bundle/config file and changes bundler path
-        # we need to remove this file so it doesn't influence following bundler calls
-        FileUtils.rm_rf(::File.join(LogStash::Environment::LOGSTASH_HOME, "tools/.bundle"))
-        raise RuntimeError, $!.to_s unless $?.success?
-        break
-      rescue Gem::RemoteFetcher::FetchError => e
-        puts e.message
-        puts e.backtrace.inspect
-        sleep 5 #slow down a bit before retry
-      end
-    end
+    # because --path creates a .bundle/config file and changes bundler path
+    # we need to remove this file so it doesn't influence following bundler calls
+    FileUtils.rm_rf(::File.join(LogStash::Environment::LOGSTASH_HOME, "tools/.bundle"))
+
     File.write(DONEFILE, Time.now.to_s)
   end # task gems
   task "all" => "gems"
 
-  desc 'Clean the vendored files'
+  desc "Clean the vendored files"
   task :clean do
     rm_rf vendor
   end
