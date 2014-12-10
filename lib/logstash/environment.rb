@@ -48,12 +48,12 @@ module LogStash
     end
 
     def bundler_install_command(gem_file, gem_path)
+      # for now avoid multiple jobs, ex.: --jobs 4
+      # it produces erratic exceptions and hangs (with Bundler 1.7.9)
       [
         "install",
           "--gemfile=#{gem_file}",
-          "--clean",
           "--without", "development",
-          "--jobs", "4",
           "--path", gem_path,
       ]
     end
