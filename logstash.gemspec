@@ -77,10 +77,12 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "insist", "1.0.0"    #(Apache 2.0 license)
   gem.add_runtime_dependency "rumbster"           #(Apache 2.0 license) For faking smtp in email tests
 
-  # Development Deps
-  gem.add_development_dependency "coveralls"
   gem.add_runtime_dependency "logstash-devutils"
 
   # Jenkins Deps
   gem.add_runtime_dependency "ci_reporter", "1.9.3"
+
+  # Development Deps
+  # coveralls temporarily disabled because of Bundler bug with "without development" and gemspec
+  # gem.add_development_dependency "coveralls"
 end
