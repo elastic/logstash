@@ -1,5 +1,5 @@
 PATH
-  remote: /Users/colin/dev/src/elasticsearch/logstash
+  remote: /Users/ph/es/logstash
   specs:
     logstash (2.0.0.dev-java)
       cabin (>= 0.6.0)
