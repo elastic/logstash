@@ -12,7 +12,6 @@ namespace "artifact" do
       "{bin,lib,spec,locales}/{,**/*}",
       "patterns/**/*",
       "vendor/??*/**/*",
-      "build/bootstrap/**/*",
       "Rakefile",
       "rakelib/*",
     ]
