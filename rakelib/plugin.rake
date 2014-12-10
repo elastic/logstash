@@ -1,4 +1,5 @@
 require_relative "default_plugins"
+
 namespace "plugin" do
   task "install",  :name do |task, args|
     name = args[:name]
@@ -11,27 +12,12 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end # task "install"
 
-  task "install-defaults" do
-    gem_path = ENV['GEM_PATH']
-    gem_home = ENV['GEM_HOME']
-    env = {
-      "GEM_PATH" => [
-        ENV['GEM_PATH'],
-        ::File.join(LogStash::Environment::LOGSTASH_HOME, 'build/bootstrap'),
-        LogStash::Environment.gem_home
-      ].join(":"),
-      "GEM_HOME" => LogStash::Environment.plugins_home,
-      "BUNDLE_GEMFILE" => "tools/Gemfile.plugins"
-    }
-    if ENV['USE_RUBY'] != '1'
-      jruby = File.join("vendor", "jruby", "bin", "jruby")
-      bundle = File.join("build", "bootstrap", "bin", "bundle")
-      system(env, jruby, "-S", bundle, "install")
-    else
-      system(env, "bundle", "install")
-    end
-    ENV['GEM_PATH'] = gem_path
-    ENV['GEM_HOME'] = gem_home
-    raise RuntimeError, $!.to_s unless $?.success?
+  task "install-defaults" => [ "dependency:bundler" ] do
+    ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
+    Bundler::CLI.start(LogStash::Environment.bundler_install_command("tools/Gemfile.plugins", LogStash::Environment::BUNDLE_DIR))
+
+    # because --path creates a .bundle/config file and changes bundler path
+    # we need to remove this file so it doesn't influence following bundler calls
+    FileUtils.rm_rf(::File.join(LogStash::Environment::LOGSTASH_HOME, "tools/.bundle"))
   end
 end # namespace "plugin"
