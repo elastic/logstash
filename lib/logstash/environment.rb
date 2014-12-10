@@ -11,7 +11,7 @@ module LogStash
     BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
     PLUGINS_DIR = ::File.join(LOGSTASH_HOME, "vendor", "plugins")
     GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "tools", "Gemfile")
-    BOOTSTRAP_GEM_PATH = ::File.join(LOGSTASH_HOME, 'build', 'bootstrap')
+    LOGSTASH_BUILD_PATH = ::File.join(LOGSTASH_HOME, 'build')
 
     # loads currently embedded elasticsearch jars
     # @raise LogStash::EnvironmentError if not running under JRuby or if no jar files are found
