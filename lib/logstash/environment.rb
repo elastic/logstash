@@ -53,7 +53,7 @@ module LogStash
       [
         "install",
           "--gemfile=#{gem_file}",
-          "--without", "development",
+          "--without=development",
           "--path", gem_path,
       ]
     end
