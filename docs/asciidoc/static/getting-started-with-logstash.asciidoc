@@ -9,7 +9,7 @@ Using Elasticsearch as a backend datastore, and kibana as a frontend reporting t
 [float]
 ==== Prerequisite: Java
 The only prerequisite required by Logstash is a Java runtime. You can check that you have it installed by running the  command `java -version` in your shell. Here's something similar to what you might see:
-[source,js]
+[source,java]
 ----------------------------------
 > java -version
 java version "1.7.0_45"
@@ -32,15 +32,15 @@ Once you have verified the existence of Java on your system, we can move on!
 [float]
 ==== Logstash in two commands
 First, we're going to download the 'logstash' binary and run it with a very simple configuration.
-[source,js]
+["source","sh",subs="attributes,callouts"]
 ----------------------------------
-curl -O https://download.elasticsearch.org/logstash/logstash/logstash-%VERSION%.tar.gz
+curl -O https://download.elasticsearch.org/logstash/logstash/logstash-{logstash_version}.tar.gz
 ----------------------------------
-Now you should have the file named 'logstash-%VERSION%.tar.gz' on your local filesystem. Let's unpack it:
-[source,js]
+Now you should have the file named 'logstash-{logstash_version}.tar.gz' on your local filesystem. Let's unpack it:
+["source","sh",subs="attributes,callouts"]
 ----------------------------------
-tar zxvf logstash-%VERSION%.tar.gz
-cd logstash-%VERSION%
+tar zxvf logstash-{logstash_version}.tar.gz
+cd logstash-{logstash_version}
 ----------------------------------
 Now let's run it:
 [source,js]
@@ -55,16 +55,16 @@ hello world
 2013-11-21T01:22:14.405+0000 0.0.0.0 hello world
 ----------------------------------
 
-OK, that's interesting... We ran Logstash with an input called "stdin", and an output named "stdout", and Logstash basically echoed back whatever we typed in some sort of structured format. Note that specifying the *-e* command line flag allows Logstash to accept a configuration directly from the command line. This is especially useful for quickly testing configurations without having to edit a file between iterations.
+OK, that's interesting... We ran Logstash with an input called `stdin`, and an output named `stdout`, and Logstash basically echoed back whatever we typed in some sort of structured format. Note that specifying the `-e` command line flag allows Logstash to accept a configuration directly from the command line. This is especially useful for quickly testing configurations without having to edit a file between iterations.
 
-Let's try a slightly fancier example. First, you should exit Logstash by issuing a 'CTRL-C' command in the shell in which it is running. Now run Logstash again with the following command:
-[source,js]
+Let's try a slightly fancier example. First, you should exit Logstash by issuing a `CTRL-C` command in the shell in which it is running. Now run Logstash again with the following command:
+[source,ruby]
 ----------------------------------
 bin/logstash -e 'input { stdin { } } output { stdout { codec => rubydebug } }'
 ----------------------------------
 
 And then try another test input, typing the text "goodnight moon":
-[source,js]
+[source,ruby]
 ----------------------------------
 goodnight moon
 {
@@ -75,21 +75,21 @@ goodnight moon
 }
 ----------------------------------
 
-So, by re-configuring the "stdout" output (adding a "codec"), we can change the output of Logstash. By adding inputs, outputs and filters to your configuration, it's possible to massage the log data in many ways, in order to maximize flexibility of the stored data when you are querying it.
+So, by re-configuring the `stdout` output (adding a "codec"), we can change the output of Logstash. By adding inputs, outputs and filters to your configuration, it's possible to massage the log data in many ways, in order to maximize flexibility of the stored data when you are querying it.
 
 [float]
 === Storing logs with Elasticsearch
 Now, you're probably saying, "that's all fine and dandy, but typing all my logs into Logstash isn't really an option, and merely seeing them spit to STDOUT isn't very useful." Good point. First, let's set up Elasticsearch to store the messages we send into Logstash. If you don't have Elasticearch already installed, you can http://www.elasticsearch.org/download/[download the RPM or DEB package], or install manually by downloading the current release tarball, by issuing the following four commands:
 
-[source,js]
+["source","sh",subs="attributes,callouts"]
 ----------------------------------
-curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-%ELASTICSEARCH_VERSION%.tar.gz
-tar zxvf elasticsearch-%ELASTICSEARCH_VERSION%.tar.gz
-cd elasticsearch-%ELASTICSEARCH_VERSION%/
+curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-{elasticsearch_version}.tar.gz
+tar zxvf elasticsearch-{elasticsearch_version}.tar.gz
+cd elasticsearch-{elasticsearch_version}/
 ./bin/elasticsearch
 ----------------------------------
 
-NOTE: This tutorial is running Logstash %VERSION% with Elasticsearch %ELASTICSEARCH_VERSION%, although you can use it with a cluster running 1.0.0 or later. Each release of Logstash has a *recommended* version of Elasticsearch to pair with. Make sure they match based on the http://www.elasticsearch.org/overview/logstash[Logstash version] you're running!
+NOTE: This tutorial is running running Logstash {logstash_version} with Elasticsearch {elasticsearch_version}, although you can use it with a cluster running 1.0.0 or later. Each release of Logstash has a *recommended* version of Elasticsearch to pair with. Make sure they match based on the http://www.elasticsearch.org/overview/logstash[Logstash version] you're running!
 
 More detailed information on installing and configuring Elasticsearch can be found on http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/index.html[The Elasticsearch reference pages]. However, for the purposes of Getting Started with Logstash, the default installation and configuration of Elasticsearch should be sufficient.
 
@@ -163,7 +163,7 @@ Typing a phrase will now echo back to your terminal, as well as save in Elastics
 
 [float]
 ==== Default - Daily Indices
-You might notice that Logstash was smart enough to create a new index in Elasticsearch... The default index name is in the form of 'logstash-YYYY.MM.DD', which essentially creates one index per day. At midnight (UTC), Logstash will automagically rotate the index to a fresh new one, with the new current day's timestamp. This allows you to keep windows of data, based on how far retroactively you'd like to query your log data. Of course, you can always archive (or re-index) your data to an alternate location, where you are able to query further into the past. If you'd like to simply delete old indices after a certain time period, you can use the https://github.com/elasticsearch/curator[Elasticsearch Curator tool].
+You might notice that Logstash was smart enough to create a new index in Elasticsearch... The default index name is in the form of `logstash-YYYY.MM.DD`, which essentially creates one index per day. At midnight (UTC), Logstash will automagically rotate the index to a fresh new one, with the new current day's timestamp. This allows you to keep windows of data, based on how far retroactively you'd like to query your log data. Of course, you can always archive (or re-index) your data to an alternate location, where you are able to query further into the past. If you'd like to simply delete old indices after a certain time period, you can use the https://github.com/elasticsearch/curator[Elasticsearch Curator tool].
 
 [float]
 === Moving On
@@ -177,7 +177,7 @@ Inputs, Outputs, Codecs and Filters are at the heart of the Logstash configurati
 ===== Inputs
 Inputs are the mechanism for passing log data to Logstash. Some of the more useful, commonly-used ones are:
 
-* *file*: reads from a file on the filesystem, much like the UNIX command "tail -0a"
+* *file*: reads from a file on the filesystem, much like the UNIX command `tail -0a`
 * *syslog*: listens on the well-known port 514 for syslog messages and parses according to RFC3164 format
 * *redis*: reads from a redis server, using both redis channels and also redis lists. Redis is often used as a "broker" in a centralized Logstash installation, which queues Logstash events from remote Logstash "shippers".
 * *lumberjack*: processes events sent in the lumberjack protocol. Now called https://github.com/elasticsearch/logstash-forwarder[logstash-forwarder].
@@ -201,7 +201,7 @@ Outputs are the final phase of the Logstash pipeline. An event may pass through 
 * *statsd*: a service which "listens for statistics, like counters and timers, sent over UDP and sends aggregates to one or more pluggable backend services". If you're already using statsd, this could be useful for you!
 [float]
 ===== Codecs
-Codecs are basically stream filters which can operate as part of an input, or an output. Codecs allow you to easily separate the transport of your messages from the serialization process. Popular codecs include 'json', 'msgpack' and 'plain' (text).
+Codecs are basically stream filters which can operate as part of an input, or an output. Codecs allow you to easily separate the transport of your messages from the serialization process. Popular codecs include `json`, `msgpack` and `plain` (text).
 
 * *json*: encode / decode data in JSON format
 * *multiline*: Takes multiple-line text events and merge them into a single event, e.g. java exception and stacktrace messages
@@ -216,7 +216,7 @@ For the complete list of (current) configurations, visit the Logstash <<plugin_c
 
 Specifying configurations on the command line using '-e' is only so helpful, and more advanced setups will require more lengthy, long-lived configurations. First, let's create a simple configuration file, and invoke Logstash using it. Create a file named "logstash-simple.conf" and save it in the same directory as Logstash.
 
-[source,js]
+[source,ruby]
 ----------------------------------
 input { stdin { } }
 output {
@@ -227,7 +227,7 @@ output {
 
 Then, run this command:
 
-[source,js]
+[source,ruby]
 ----------------------------------
 bin/logstash -f logstash-simple.conf
 ----------------------------------
@@ -238,7 +238,7 @@ Et voilà! Logstash will read in the configuration file you just created and run
 ==== Filters
 Filters are an in-line processing mechanism which provide the flexibility to slice and dice your data to fit your needs. Let's see one in action, namely the *grok filter*.
 
-[source,js]
+[source,ruby]
 ----------------------------------
 input { stdin { } }
 
@@ -258,20 +258,20 @@ output {
 ----------------------------------
 Run Logstash with this configuration:
 
-[source,js]
+[source,ruby]
 ----------------------------------
 bin/logstash -f logstash-filter.conf
 ----------------------------------
 
 Now paste this line into the terminal (so it will be processed by the stdin input):
-[source,js]
+[source,ruby]
 ----------------------------------
 127.0.0.1 - - [11/Dec/2013:00:01:45 -0800] "GET /xampp/status.php HTTP/1.1" 200 3891 "http://cadenza/xampp/navi.php" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:25.0) Gecko/20100101 Firefox/25.0"
 ----------------------------------
 
 You should see something returned to STDOUT which looks like this:
 
-[source,js]
+[source,ruby]
 ----------------------------------
 {
         "message" => "127.0.0.1 - - [11/Dec/2013:00:01:45 -0800] \"GET /xampp/status.php HTTP/1.1\" 200 3891 \"http://cadenza/xampp/navi.php\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:25.0) Gecko/20100101 Firefox/25.0\"",
@@ -369,7 +369,7 @@ Also, you might have noticed that Logstash did not reprocess the events which we
 ==== Conditionals
 Now we can build on the previous example, where we introduced the concept of a *conditional*. A conditional should be familiar to most Logstash users, in the general sense. You may use 'if', 'else if' and 'else' statements, as in many other programming languages. Let's label each event according to which file it appeared in (access_log, error_log and other random files which end with "log").
 
-[source,js]
+[source,ruby]
 ----------------------------------
 input {
   file {
@@ -407,7 +407,7 @@ OK, now we can move on to another incredibly useful example: *syslog*. Syslog is
 
 First, let's make a simple configuration file for Logstash + syslog, called 'logstash-syslog.conf'.
 
-[source,js]
+[source,ruby]
 ----------------------------------
 input {
   tcp {
@@ -441,21 +441,21 @@ output {
 ----------------------------------
 Run it as normal:
 
-[source,js]
+[source,ruby]
 ----------------------------------
 bin/logstash -f logstash-syslog.conf
 ----------------------------------
 
 Normally, a client machine would connect to the Logstash instance on port 5000 and send its message. In this simplified case, we're simply going to telnet to Logstash and enter a log line (similar to how we entered log lines into STDIN earlier). First, open another shell window to interact with the Logstash syslog input and type the following command:
 
-[source,js]
+[source,ruby]
 ----------------------------------
 telnet localhost 5000
 ----------------------------------
 
 You can copy and paste the following lines as samples (feel free to try some of your own, but keep in mind they might not parse if the grok filter is not correct for your data):
 
-[source,js]
+[source,ruby]
 ----------------------------------
 Dec 23 12:11:43 louis postfix/smtpd[31499]: connect from unknown[95.75.93.154]
 Dec 23 14:42:56 louis named[16000]: client 199.48.164.7#64817: query (cache) 'amsterdamboothuren.com/MX/IN' denied
@@ -465,7 +465,7 @@ Dec 22 18:28:06 louis rsyslogd: [origin software="rsyslogd" swVersion="4.2.0" x-
 
 Now you should see the output of Logstash in your original shell as it processes and parses messages!
 
-[source,js]
+[source,ruby]
 ----------------------------------
 {
                  "message" => "Dec 23 14:30:01 louis CRON[619]: (www-data) CMD (php /usr/share/cacti/site/poller.php >/dev/null 2>/var/log/cacti/poller-error.log)",
@@ -488,7 +488,3 @@ Now you should see the output of Logstash in your original shell as it processes
 ----------------------------------
 
 Congratulations! You're well on your way to being a real Logstash power user. You should be comfortable configuring, running and sending events to Logstash, but there's much more to explore.
-
-|=======================================================================
-
-include::static/configuration.asciidoc[]
