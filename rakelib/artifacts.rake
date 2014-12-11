@@ -81,6 +81,19 @@ namespace "artifact" do
     puts "Complete: #{tarpath}"
   end
 
+  task "zip" => ["bootstrap", "plugin:install-defaults"] do
+    Rake::Task["dependency:rubyzip"].invoke
+    require 'zip'
+    zippath = "build/logstash-#{LOGSTASH_VERSION}.zip"
+    Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
+      files.each do |path|
+        path_in_zip = "logstash-#{LOGSTASH_VERSION}/#{path}"
+        zipfile.add(path_in_zip, path)
+      end
+    end
+    puts "Complete: #{zippath}"
+  end
+
   def package(platform, version)
     Rake::Task["dependency:fpm"].invoke
     Rake::Task["dependency:stud"].invoke
