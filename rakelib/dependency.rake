@@ -21,4 +21,9 @@ namespace "dependency" do
   task "fpm" do
     Rake::Task["gem:require"].invoke("fpm", ">= 0", LogStash::Environment.logstash_gem_home)
   end # task stud
+
+  task "rubyzip" do
+    Rake::Task["gem:require"].invoke("rubyzip", ">= 0", LogStash::Environment.logstash_gem_home)
+  end # task stud
+
 end # namespace dependency
