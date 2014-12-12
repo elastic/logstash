@@ -220,8 +220,7 @@ namespace "vendor" do
         ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
         ENV["BUNDLE_PATH"] = LogStash::Environment.logstash_gem_home
         ENV["BUNDLE_GEMFILE"] = "tools/Gemfile"
-        # Bundler::Retry.attempts = 0
-        Bundler.definition(true)
+        Bundler.reset!
         Bundler::CLI.start(LogStash::Environment.bundler_install_command("tools/Gemfile", LogStash::Environment::BUNDLE_DIR))
         break
       rescue => e
