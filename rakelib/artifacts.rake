@@ -11,9 +11,7 @@ namespace "artifact" do
       "CONTRIBUTORS",
       "{bin,lib,spec,locales}/{,**/*}",
       "patterns/**/*",
-      "vendor/??*/**/*",
-      "Rakefile",
-      "rakelib/*",
+      "vendor/??*/**/*"
     ]
   end
 
