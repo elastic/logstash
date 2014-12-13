@@ -1,6 +1,7 @@
 
 namespace "test" do
   task "default" => [ "bootstrap", "test:prep" ] do
+    Gem.clear_paths
     require "logstash/environment"
     LogStash::Environment.set_gem_paths!
     require 'rspec/core'
@@ -8,6 +9,7 @@ namespace "test" do
   end
 
   task "fail-fast" => [ "bootstrap", "test:prep" ] do
+    Gem.clear_paths
     require "logstash/environment"
     LogStash::Environment.set_gem_paths!
     require 'rspec/core'
@@ -30,4 +32,4 @@ namespace "test" do
 
 end
 
-task "test" => [ "test:default" ] 
+task "test" => [ "test:default" ]
