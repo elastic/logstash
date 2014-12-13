@@ -182,7 +182,7 @@ class LogStashConfigAsciiDocGenerator
       mixin.downcase!
       #parse(File.new(File.join(base, "..", "plugin_mixins", "#{mixin}.rb")).read)
       #TODO: RP make this work better with the naming
-      mixinfile = Dir.glob(File.join(LogStash::Environment.plugins_home,'gems',"logstash-mixin-#{mixin.split('_').first}-*",'lib/logstash/plugin_mixins', "#{mixin}.rb")).first
+      mixinfile = Dir.glob(File.join(LogStash::Environment.logstash_gem_home,'gems',"logstash-mixin-#{mixin.split('_').first}-*",'lib/logstash/plugin_mixins', "#{mixin}.rb")).first
       parse(File.new(mixinfile).read)
   
     end
