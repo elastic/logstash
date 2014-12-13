@@ -205,23 +205,28 @@ namespace "vendor" do
     task "gems" => ["vendor:gems"]
   end
 
-  task "gems" => [ "dependency:bundler" ] do
+  task "gems" do
     require "logstash/environment"
 
     Rake::Task["dependency:rbx-stdlib"] if LogStash::Environment.ruby_engine == "rbx"
     Rake::Task["dependency:stud"].invoke
+    Rake::Task["vendor:bundle"].invoke("tools/Gemfile")
 
+  end # task gems
+  task "all" => "gems"
+
+  task "bundle", [:gemfile] => [ "dependency:bundler" ] do |task, args|
+    task.reenable
     # because --path creates a .bundle/config file and changes bundler path
     # we need to remove this file so it doesn't influence following bundler calls
     FileUtils.rm_rf(::File.join(LogStash::Environment::LOGSTASH_HOME, "tools/.bundle"))
-
     10.times do
       begin
         ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
         ENV["BUNDLE_PATH"] = LogStash::Environment.logstash_gem_home
-        ENV["BUNDLE_GEMFILE"] = "tools/Gemfile"
+        ENV["BUNDLE_GEMFILE"] = args[:gemfile]
         Bundler.reset!
-        Bundler::CLI.start(LogStash::Environment.bundler_install_command("tools/Gemfile", LogStash::Environment::BUNDLE_DIR))
+        Bundler::CLI.start(LogStash::Environment.bundler_install_command(args[:gemfile], LogStash::Environment::BUNDLE_DIR))
         break
       rescue => e
         # for now catch all, looks like bundler now throws Bundler::InstallError, Errno::EBADF
@@ -234,8 +239,7 @@ namespace "vendor" do
     # because --path creates a .bundle/config file and changes bundler path
     # we need to remove this file so it doesn't influence following bundler calls
     FileUtils.rm_rf(::File.join(LogStash::Environment::LOGSTASH_HOME, "tools/.bundle"))
-  end # task gems
-  task "all" => "gems"
+  end
 
   desc "Clean the vendored files"
   task :clean do
