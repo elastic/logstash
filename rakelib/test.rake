@@ -17,17 +17,7 @@ namespace "test" do
   end
 
   task "prep" do
-    plugins = [
-     'logstash-filter-clone',
-     'logstash-filter-mutate',
-     'logstash-input-generator',
-     'logstash-input-stdin',
-     'logstash-input-tcp',
-     'logstash-output-stdout'
-    ]
-    plugins.each do |plugin|
-      Rake::Task["plugin:install"].invoke(plugin)
-    end
+    Rake::Task["plugin:install-test"].invoke
   end
 
 end
