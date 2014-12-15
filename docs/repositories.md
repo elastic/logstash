@@ -16,7 +16,7 @@ Add the key:
 
 Add the repo to /etc/apt/sources.list
 
-     deb https://packages.elasticsearch.org/logstash/1.4/debian stable main
+     deb http://packages.elasticsearch.org/logstash/1.4/debian stable main
 
 
 ## YUM based distributions
