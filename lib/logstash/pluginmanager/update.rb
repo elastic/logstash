@@ -2,11 +2,11 @@ require 'clamp'
 require 'logstash/namespace'
 require 'logstash/pluginmanager'
 require 'logstash/pluginmanager/util'
-require 'logstash/pluginmanager/vendor'
 require 'rubygems/dependency_installer'
 require 'rubygems/uninstaller'
 require 'jar-dependencies'
 require 'jar_install_post_install_hook'
+require 'file-dependencies/gem'
 
 class LogStash::PluginManager::Update < Clamp::Command
 
@@ -63,7 +63,7 @@ class LogStash::PluginManager::Update < Clamp::Command
     end
 
     ::Gem.configuration.verbose = false
-    LogStash::PluginManager::Vendor.setup_hook
+    FileDependencies::Gem.hook
     options = {}
     options[:document] = []
     inst = Gem::DependencyInstaller.new(options)
