@@ -4,7 +4,7 @@ NETSCREENSESSIONLOG %{SYSLOGTIMESTAMP:date} %{IPORHOST:device} %{IPORHOST}: NetS
 #== Cisco ASA ==
 CISCO_TAGGED_SYSLOG ^<%{POSINT:syslog_pri}>%{CISCOTIMESTAMP:timestamp}( %{SYSLOGHOST:sysloghost})?: %%{CISCOTAG:ciscotag}:
 CISCOTIMESTAMP %{MONTH} +%{MONTHDAY}(?: %{YEAR})? %{TIME}
-CISCOTAG [A-Z0-9]+-%{INT}-(?:[A-Z0-9_]+)
+CISCOTAG [A-Z0-9_]+-%{INT}-(?:[A-Z0-9_]+)
 # Common Particles
 CISCO_ACTION Built|Teardown|Deny|Denied|denied|requested|permitted|denied by ACL|discarded|est-allowed|Dropping|created|deleted
 CISCO_REASON Duplicate TCP SYN|Failed to locate egress interface|Invalid transport field|No matching connection|DNS Response|DNS Query|(?:%{WORD}\s*)*
