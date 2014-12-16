@@ -1,6 +1,6 @@
 
 namespace "test" do
-  task "default" => [ "bootstrap", "test:prep" ] do
+  task "default" => [ "bootstrap:test", "test:prep" ] do
     Gem.clear_paths
     require "logstash/environment"
     LogStash::Environment.set_gem_paths!
@@ -17,6 +17,7 @@ namespace "test" do
   end
 
   task "prep" do
+    Rake::Task["vendor:gems"].invoke(false)
     Rake::Task["plugin:install-test"].invoke
   end
 
