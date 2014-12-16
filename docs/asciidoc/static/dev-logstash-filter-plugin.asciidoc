@@ -2,7 +2,7 @@
 
 This HOWTO will walk you through the process of developing a new filter plugin for Logstash. The workflow has changed as of version 1.5 of Logstash, so you'll want to follow these new and improved steps to contribute a new plugin!
 
-For this example, we are going to create a new filter which will replace the 'message' field in the event with the string "Hello world!"
+For this example, we are going to create a new filter which will replace the 'message' field in the event with the string "Hello world!" (or any other string of your choosing - just specify in the Logstash "new_message" configuration).
 
 === Create a new GitHub repo
 As of version 1.5 of Logstash, the code for each plugin lives in its own GitHub repository. So first, you'll need to create a new repo as a home for your nascent filter. When logged into GitHub, click on the "Repositories" tab. You may see a list of repositories you've forked and/or contributed to, or it may be blank. Either way, you're fine! Now click on the green "New" button near the top right of the page.
@@ -23,7 +23,7 @@ Gemfile.lock
 vendor
 ----------------------------------
 
-=== Write the filter code.
+=== write the filter code
 First, you'll need to clone the new repo you just created. Use a command something like this:
 
 [source,sh]
@@ -42,7 +42,8 @@ Then, add the following ruby code to a file named 'helloworld.rb' in the directo
 
 [source,js]
 ----------------------------------
-# Place this file in 'lib/logstash/filters/helloworld.rb'
+# encoding: utf-8
+# Call this file 'helloworld.rb'
 require "logstash/filters/base"
 require "logstash/namespace"
 
@@ -52,7 +53,7 @@ class LogStash::Filters::Helloworld < LogStash::Filters::Base
   # configure this filter from your Logstash config.
   #
   # filter {
-  #   helloworld { ... }
+  #   helloworld { new_message => "Hello World" }
   # }
   config_name "helloworld"
 
@@ -69,8 +70,7 @@ class LogStash::Filters::Helloworld < LogStash::Filters::Base
 
   public
   def filter(event)
-
-    if @message
+    if @new_message
       # Replace the event message with our message as configured in the
       # config file.
       event["message"] = @new_message
@@ -93,7 +93,7 @@ It seems like a small thing, but please don’t omit adding
 
 [source,sh]
 ----------------------------------
-encoding: utf-8
+# encoding: utf-8
 ----------------------------------
 
 to the top of your input plugin. Logstash depends on things being in UTF-8, so we put this here to tell the Ruby interpreter that we’re going to be using the UTF-8 encoding.
@@ -107,8 +107,6 @@ A Logstash filter plugin requires some parent classes that can be referenced thr
 require "logstash/filters/base"
 require "logstash/namespace"
 ----------------------------------
-
-You may also need the socket require statement if your plugin is going to obtain the local hostname by way of a Socket.gethostname call (more here).
 
 Of course, the plugin you build may depend on other code, or even gems. Just put them here along with these Logstash dependencies.
 
@@ -165,12 +163,11 @@ This section will allow us to define as many (or as few) parameters as we need t
 Logstash filters contain two main methods: `register` and `filter`.
 
 ==== register method
+The Logstash `register` method is like an `initialize` method. It was originally created to enforce having `super` called, preventing headaches for newbies. (Note: It may go away in favor of `initialize`, in conjunction with some enforced testing to ensure `super` is called.)
 
-* The Logstash `register` method is like an `initialize` method. It was originally created to enforce having `super` called, preventing headaches for newbies. (Note: It may go away in favor of `initialize`, in conjunction with some enforced testing to ensure `super` is called.)
-* `public` This means the method can be called anywhere, not just within the class. This is the default behavior for methods in Ruby, but it is called explicitly here anyway.
-* Assign instance variables here. In the example, @host is defined here.
-Calling fix_streaming_codecs will automatically override the assigned codec if you use the plain or json codecs. This may or may not be needed for your plugin.
+`public` means the method can be called anywhere, not just within the class. This is the default behavior for methods in Ruby, but it is called explicitly here anyway.
 
+You may also assign instance variables here. 
 
 ==== filter method
 The plugin's `filter` method is where the actual filtering work takes place! Inside the `filter` method you can refer to the event data using the `event` hash. For example, to modify the `message` field directly in the event, we can use this code:
@@ -187,6 +184,15 @@ After this line of code is executed, the original message in the event will be r
   filter_matched(event)
 ----------------------------------
 Calling the `filter_matched` method upon succesful execution of the plugin will ensure that any fields or tags added through the Logstash configuration for this filter will be handled correctly. For example, any `add_field`, `remove_field`, `add_tag` and/or `remove_tag` actions will be performed at this time.
+
+=== add a Gemfile
+
+[source,ruby]
+----------------------------------
+source 'https://rubygems.org'
+gemspec
+gem "logstash", :github => "elasticsearch/logstash", :branch => "1.5"
+----------------------------------
 
 === add a gemspec file
 
@@ -213,47 +219,81 @@ Gem::Specification.new do |s|
 
   # Gem dependencies
   s.add_runtime_dependency 'logstash', '>= 1.4.0', '< 2.0.0'
-#  s.add_runtime_dependency 'logstash-codec-plain'
-#  s.add_runtime_dependency 'stud'
   s.add_development_dependency 'logstash-devutils'
 end
 ----------------------------------
 
-=== gemspec file
-Now let's create a "gemspec":
+=== add some specs
+Logstash loves tests. Lots of tests. If you're using this new filter in any sort of production environment, you'll want to have some tests to ensure you are not breaking any existing functionality.
+
+So, with that in mind, let's create some Rspec tests. First, make the directory to contain the rspec file:
 [source,ruby]
 ----------------------------------
 mkdir -p spec/filters
 ----------------------------------
 
-Create a file in this directory, e.g. `spec/filters/helloworld_spec.rb`. Contents should be:
+Then, create a file in this directory, e.g. `spec/filters/helloworld_spec.rb`. The contents should be something like this:
 
 [source,ruby]
 ----------------------------------
 require "logstash/devutils/rspec/spec_helper"
+require "logstash/filters/helloworld"
+
+describe LogStash::Filters::Helloworld do
+  describe "Set to Hello World" do
+    config <<-CONFIG
+      filter {
+        helloworld {
+          new_message => "Hello World"
+        }
+      }
+    CONFIG
+
+    sample("message" => "some text") do
+      insist { subject }.include?("message")
+      insist { subject["message"] } == "Hello World"
+    end
+  end
+end
+----------------------------------
+If you read through the above file, you can see it does several things:
+* It requires the rspec/spec_helper class, which runs rspec tests
+* It requires the actual filter we're testing
+
+
+=== Clone and test!
+Now let's start with a fresh clone of the plugin, build it and run the tests.
+
+[source,sh]
+----------------------------------
+git clone git@github.com:kurtado/logstash-filter-helloworld.git
+cd logstash-filter-helloworld
 ----------------------------------
 
-
-
-=== smoke test
-Now let's run this simple example, using just stdin input and stdout output. The config file looks like this:
-
-[source,js]
+Then, you'll need to install the bundle:
+[source,sh]
 ----------------------------------
-input { 
-  stdin { } 
-}
-filter {
-  helloworld {
-      message => "Hello world!"
-  }
-}
-output {
-  stdout { }
-}
+bundle install
 ----------------------------------
 
+And finally, run the tests:
+[source,sh]
+----------------------------------
+bundle exec rspec
+----------------------------------
 
+You should see a success message, which looks something like this:
+
+[source,sh]
+----------------------------------
+Finished in 0.034 seconds
+1 example, 0 failures
+----------------------------------
+
+Hooray! You're almost there!
+
+=== submitting to rubygems/logstash
+do it up.
 
 === documentation
 
@@ -264,33 +304,3 @@ For formatting code or config example, you can use the asciidoc [source,ruby] di
 For more asciidoc formatting tips, see the excellent reference here https://github.com/elasticsearch/docs#asciidoc-guide
 
 
-
-[float]
-=== Tell Logstash about it.
-
-Depending on how you installed Logstash, you have a few ways of including this
-plugin.
-
-You can use the agent flag --pluginpath flag to specify where the root of your
-plugin tree is. In our case, it's the current directory.
-
-[source,js]
-----------------------------------
-% bin/logstash --pluginpath your/plugin/root -f example.conf
-----------------------------------
-
-## Example running
-
-In the example below, I typed in "the quick brown fox" after running the java
-command.
-
-[source,js]
-----------------------------------
-% bin/logstash --pluginpath your/plugin/root -f example.conf
-the quick brown fox   
-2011-05-12T01:05:09.495000Z mylocalhost: Hello world!
-----------------------------------
-
-The output is the standard Logstash stdout output, but in this case our "the quick brown fox" message was replaced with "Hello world!"
-
-All done! :)
