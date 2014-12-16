@@ -90,6 +90,7 @@ namespace "vendor" do
     end # untar
   end # jruby
   task "all" => "jruby"
+  task "test" => "jruby"
 
   task "geoip" do |task, args|
     vendor_name = "geoip"
@@ -137,6 +138,7 @@ namespace "vendor" do
     end # untar
   end # task kibana
   task "all" => "kibana"
+  task "test" => "kibana"
 
   task "kafka" do |task, args|
     name = task.name.split(":")[1]
@@ -205,12 +207,11 @@ namespace "vendor" do
     task "gems" => ["vendor:gems"]
   end
 
-  task "gems" do
+  task "gems", [:bundle] do |task, args|
     require "logstash/environment"
-
     Rake::Task["dependency:rbx-stdlib"] if LogStash::Environment.ruby_engine == "rbx"
     Rake::Task["dependency:stud"].invoke
-    Rake::Task["vendor:bundle"].invoke("tools/Gemfile")
+    Rake::Task["vendor:bundle"].invoke("tools/Gemfile") if args.to_hash.empty? || args[:bundle]
 
   end # task gems
   task "all" => "gems"
