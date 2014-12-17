@@ -8,7 +8,7 @@ namespace "test" do
     RSpec::Core::Runner.run(Rake::FileList["spec/**/*.rb"])
   end
 
-  task "fail-fast" => [ "bootstrap", "test:prep" ] do
+  task "fail-fast" => [ "bootstrap:test", "test:prep" ] do
     Gem.clear_paths
     require "logstash/environment"
     LogStash::Environment.set_gem_paths!
