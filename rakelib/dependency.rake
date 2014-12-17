@@ -26,4 +26,8 @@ namespace "dependency" do
     Rake::Task["gem:require"].invoke("rubyzip", ">= 0", LogStash::Environment.logstash_gem_home)
   end # task stud
 
+  task "octokit" do
+    Rake::Task["gem:require"].invoke("octokit", ">= 0", LogStash::Environment.logstash_gem_home)
+  end # task octokit
+
 end # namespace dependency
