@@ -40,7 +40,7 @@ mkdir -p lib/logstash/filters
 
 Then, add the following ruby code to a file named 'helloworld.rb' in the directory you just created, e.g. `lib/logstash/filters/helloworld.rb`:
 
-[source,js]
+[source,ruby]
 ----------------------------------
 # encoding: utf-8
 # Call this file 'helloworld.rb'
