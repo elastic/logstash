@@ -64,6 +64,9 @@ input {
 <% elsif config[:validate].is_a?(Array) -%>
   <li> Value can be any of: <%= config[:validate].map(&:inspect).join(", ") %> </li>
 <% end -%>
+<% if config[:allow_dynamic] -%>
+  <li> This config item allow usage of dynamic value aka <a href="../configuration#sprintf">sprintf format</a> </li>
+<% end -%>
 <% if config.include?(:default) -%>
   <li> Default value is <%= config[:default].inspect %> </li>
 <% else -%>
