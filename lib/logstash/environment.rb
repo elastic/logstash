@@ -18,7 +18,7 @@ module LogStash
       load_jars!(ELASTICSEARCH_DIR, "**","*.jar")
     end
 
-    # loads specific jars located under vendor/jar
+    # loads specific jars located under jars_path
     # @raise LogStash::EnvironmentError if not running under JRuby or if no jar files are found
     def load_jars!(*jars_path)
       raise(LogStash::EnvironmentError, "JRuby is required") unless jruby?
