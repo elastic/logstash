@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "spec_helper"
 require "logstash/json"
 require "logstash/environment"
 require "logstash/util"
@@ -35,24 +36,20 @@ describe LogStash::Json do
 
     context "jruby deserialize" do
       it "should respond to load and deserialize object" do
-        expect(JrJackson::Raw).to receive(:parse_raw).with(json_hash).and_call_original
         expect(LogStash::Json.load(json_hash)).to eql(hash)
       end
     end
 
     context "jruby serialize" do
       it "should respond to dump and serialize object" do
-        expect(JrJackson::Json).to receive(:dump).with(string).and_call_original
         expect(LogStash::Json.dump(string)).to eql(json_string)
       end
 
       it "should call JrJackson::Raw.generate for Hash" do
-        expect(JrJackson::Raw).to receive(:generate).with(hash).and_call_original
         expect(LogStash::Json.dump(hash)).to eql(json_hash)
       end
 
       it "should call JrJackson::Raw.generate for Array" do
-        expect(JrJackson::Raw).to receive(:generate).with(array).and_call_original
         expect(LogStash::Json.dump(array)).to eql(json_array)
       end
 

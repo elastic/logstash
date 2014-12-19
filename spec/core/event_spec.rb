@@ -1,121 +1,132 @@
 # encoding: utf-8
+require 'spec_helper'
 
 require "logstash/event"
-require "insist"
 
 describe LogStash::Event do
-  subject do
-    LogStash::Event.new(
-      "@timestamp" => Time.iso8601("2013-01-01T00:00:00.000Z"),
-      "type" => "sprintf",
-      "message" => "hello world",
-      "tags" => [ "tag1" ],
-      "source" => "/home/foo",
-      "a" => "b",
-      "c" => {
-        "d" => "f",
-        "e" => {"f" => "g"}
-      },
-      "f" => { "g" => { "h" => "i" } },
-      "j" => {
-          "k1" => "v",
-          "k2" => [ "w", "x" ],
-          "k3" => {"4" => "m"},
-          5 => 6,
-          "5" => 7
-      },
-      "@metadata" => { "fancy" => "pants", "have-to-go" => { "deeper" => "inception" } }
-    )
-  end
+
+  subject { sample_logstash_event }
 
   context "[]=" do
+
     it "should raise an exception if you attempt to set @timestamp to a value type other than a Time object" do
-      insist { subject["@timestamp"] = "crash!" }.raises(TypeError)
+      expect { subject["@timestamp"] = "crash!" }.to raise_error(TypeError)
     end
 
-    it "should assign simple fields" do
-      insist { subject["foo"] }.nil?
-      insist { subject["foo"] = "bar" } == "bar"
-      insist { subject["foo"] } == "bar"
+    context "simple fields" do
+      it "access values" do
+        expect(subject["foo"]).to be_nil
+      end
+
+      it "assign values" do
+        expect(subject["foo"] = "bar").to eq("bar")
+      end
+
+      it "change values" do
+        subject["foo"] = "bar"
+        expect(subject["foo"]).to eq("bar")
+      end
+
+      it "overrite values" do
+        subject["foo"] = "bar"
+        subject["foo"] = "baz"
+        expect(subject["foo"]).to eq("baz")
+      end
+
     end
 
-    it "should overwrite simple fields" do
-      insist { subject["foo"] }.nil?
-      insist { subject["foo"] = "bar"} == "bar"
-      insist { subject["foo"] } == "bar"
+    context "deep fields" do
 
-      insist { subject["foo"] = "baz"} == "baz"
-      insist { subject["foo"] } == "baz"
-    end
+      it "access nil values" do
+        expect(subject["[foo][bar]"]).to be_nil
+      end
 
-    it "should assign deep fields" do
-      insist { subject["[foo][bar]"] }.nil?
-      insist { subject["[foo][bar]"] = "baz"} == "baz"
-      insist { subject["[foo][bar]"] } == "baz"
-    end
+      it "assign values" do
+        expect(subject["[foo][bar]"] = "baz").to eq("baz")
+      end
 
-    it "should overwrite deep fields" do
-      insist { subject["[foo][bar]"] }.nil?
-      insist { subject["[foo][bar]"] = "baz"} == "baz"
-      insist { subject["[foo][bar]"] } == "baz"
+      it "change values" do
+        subject["[foo][bar]"] = "baz"
+        expect(subject["[foo][bar]"]).to eq("baz")
+      end
 
-      insist { subject["[foo][bar]"] = "zab"} == "zab"
-      insist { subject["[foo][bar]"] } == "zab"
+      it "overwrite values" do
+        subject["[foo][bar]"] = "baz"
+        subject["[foo][bar]"] = "zab"
+        expect(subject["[foo][bar]"]).to eq("zab")
+      end
+
     end
   end
 
   context "#sprintf" do
-    it "should report a unix timestamp for %{+%s}" do
-      insist { subject.sprintf("%{+%s}") } == "1356998400"
+
+    it "reports a unix timestamp for %{+%s}" do
+      expect(subject.sprintf("%{+%s}")).to eq("1356998400")
     end
 
-    it "should report a time with %{+format} syntax", :if => RUBY_ENGINE == "jruby" do
-      insist { subject.sprintf("%{+YYYY}") } == "2013"
-      insist { subject.sprintf("%{+MM}") } == "01"
-      insist { subject.sprintf("%{+HH}") } == "00"
+    it "reports a time with %{+format} syntax", :if => RUBY_ENGINE == "jruby" do
+      expect(subject.sprintf("%{+DD/MM/YYYY}")).to eq("01/01/2013")
     end
 
-    it "should report fields with %{field} syntax" do
-      insist { subject.sprintf("%{type}") } == "sprintf"
-      insist { subject.sprintf("%{message}") } == subject["message"]
+    it "reports fields with %{field} syntax" do
+      expect(subject.sprintf("%{message}")).to eq(subject["message"])
     end
 
-    it "should print deep fields" do
-      insist { subject.sprintf("%{[j][k1]}") } == "v"
-      insist { subject.sprintf("%{[j][k2][0]}") } == "w"
+    it "prints deep fields" do
+      expect(subject.sprintf("%{[j][k2][0]}")).to eq("w")
     end
 
-    it "should be able to take a non-string for the format" do
-      insist { subject.sprintf(2) } == "2"
+    it "is able to take a non-string for the format" do
+      expect(subject.sprintf(2)).to eq("2")
     end
 
-    it "should allow to use the metadata when calling #sprintf" do
+    it "allows to use the metadata" do
       expect(subject.sprintf("super-%{[@metadata][fancy]}")).to eq("super-pants")
     end
 
-    it "should allow to use nested hash from the metadata field" do
+    it "allows to use nested hash from the metadata field" do
       expect(subject.sprintf("%{[@metadata][have-to-go][deeper]}")).to eq("inception")
     end
   end
 
   context "#[]" do
-    it "should fetch data" do
-      insist { subject["type"] } == "sprintf"
-    end
-    it "should fetch fields" do
-      insist { subject["a"] } == "b"
-      insist { subject['c']['d'] } == "f"
-    end
-    it "should fetch deep fields" do
-      insist { subject["[j][k1]"] } == "v"
-      insist { subject["[c][d]"] } == "f"
-      insist { subject['[f][g][h]'] } == "i"
-      insist { subject['[j][k3][4]'] } == "m"
-      insist { subject['[j][5]'] } == 7
 
+    it "fetch data" do
+      expect(subject["type"]).to eq("sprintf")
     end
 
-    it "should be fast?", :performance => true do
+    it "fetch single fields" do
+      expect(subject["a"]).to  eq("b")
+    end
+
+    it "fecth inner fields" do
+      expect(subject['c']['d']).to eq("f")
+    end
+
+    context "deep fields" do
+
+      it "fetch values by name" do
+        expect(subject["[j][k1]"]).to eq("v")
+      end
+
+      it "fetch values by index" do
+        expect(subject['[j][5]']).to eq(7)
+      end
+
+      context "multilevel" do
+        it "fetch values by name" do
+          expect(subject['[f][g][h]']).to eq("i")
+        end
+
+        it "fetch values by index" do
+          expect(subject['[j][k3][4]']).to eq("m")
+        end
+      end
+    end
+
+    # have to be move somewhere else more relevant.
+    xit "is fast enough", :performance => true do
       count = 1000000
       2.times do
         start = Time.now
@@ -127,83 +138,102 @@ describe LogStash::Event do
   end
 
   context "#overwrite" do
-    it "should swap data with new content" do
-      new_event = LogStash::Event.new(
-        "type" => "new",
-        "message" => "foo bar",
-      )
+    let(:new_event) { LogStash::Event.new("type" => "new", "message" => "foo bar")}
+
+    before(:each) do
       subject.overwrite(new_event)
+    end
 
-      insist { subject["message"] } == "foo bar"
-      insist { subject["type"] } == "new"
+    it "swap the data with new content" do
+      expect(subject["message"]).to eq("foo bar")
+    end
 
+    it "remove old values from the event" do
       ["tags", "source", "a", "c", "f", "j"].each do |field|
-        insist { subject[field] } == nil
+        expect(subject[field]).to be_nil
       end
     end
+
   end
 
   context "#append" do
-    it "should append strings to an array" do
+
+    it "append strings to an array" do
       subject.append(LogStash::Event.new("message" => "another thing"))
-      insist { subject["message"] } == [ "hello world", "another thing" ]
+      expect(subject["message"]).to include("hello world", "another thing")
     end
 
-    it "should concatenate tags" do
+    it "concatenate tags" do
       subject.append(LogStash::Event.new("tags" => [ "tag2" ]))
-      insist { subject["tags"] } == [ "tag1", "tag2" ]
+      expect(subject["tags"]).to include("tag1", "tag2")
     end
 
     context "when event field is nil" do
-      it "should add single value as string" do
+
+      it "add single value as string" do
         subject.append(LogStash::Event.new({"field1" => "append1"}))
-        insist { subject[ "field1" ] } == "append1"
+        expect(subject[ "field1" ]).to eq("append1")
       end
-      it "should add multi values as array" do
+
+      it "add multi values as array" do
         subject.append(LogStash::Event.new({"field1" => [ "append1","append2" ]}))
-        insist { subject[ "field1" ] } == [ "append1","append2" ]
+        expect(subject[ "field1" ]).to include("append1","append2")
       end
+
     end
 
     context "when event field is a string" do
-      before { subject[ "field1" ] = "original1" }
 
-      it "should append string to values, if different from current" do
+      before(:each) do
+        subject[ "field1" ] = "original1"
+      end
+
+      it "append string to values, if different from current" do
         subject.append(LogStash::Event.new({"field1" => "append1"}))
-        insist { subject[ "field1" ] } == [ "original1", "append1" ]
+        expect(subject[ "field1" ]).to include("original1", "append1")
       end
-      it "should not change value, if appended value is equal current" do
+
+      it "not change value, if appended value is equal current" do
         subject.append(LogStash::Event.new({"field1" => "original1"}))
-        insist { subject[ "field1" ] } == "original1"
+        expect(subject[ "field1" ]).to eq("original1")
       end
-      it "should concatenate values in an array" do
+
+      it "concatenate values in an array" do
         subject.append(LogStash::Event.new({"field1" => [ "append1" ]}))
-        insist { subject[ "field1" ] } == [ "original1", "append1" ]
+        expect(subject[ "field1" ]).to include("original1", "append1")
       end
-      it "should join array, removing duplicates" do
+
+      it "join array, removing duplicates" do
         subject.append(LogStash::Event.new({"field1" => [ "append1","original1" ]}))
-        insist { subject[ "field1" ] } == [ "original1", "append1" ]
+        expect(subject[ "field1" ]).to include("original1", "append1")
       end
     end
-    context "when event field is an array" do
-      before { subject[ "field1" ] = [ "original1", "original2" ] }
 
-      it "should append string values to array, if not present in array" do
+    context "when event field is an array" do
+
+      before(:each) do
+        subject[ "field1" ] = [ "original1", "original2" ]
+      end
+
+      it "append string values to array, if not present in array" do
         subject.append(LogStash::Event.new({"field1" => "append1"}))
-        insist { subject[ "field1" ] } == [ "original1", "original2", "append1" ]
+        expect(subject[ "field1" ]).to include("original1", "original2", "append1")
       end
-      it "should not append string values, if the array already contains it" do
+
+      it "not append string values, if the array already contains it" do
         subject.append(LogStash::Event.new({"field1" => "original1"}))
-        insist { subject[ "field1" ] } == [ "original1", "original2" ]
+        expect(subject[ "field1" ]).to include("original1", "original2")
       end
-      it "should join array, removing duplicates" do
+
+      it "join array, removing duplicates" do
         subject.append(LogStash::Event.new({"field1" => [ "append1","original1" ]}))
-        insist { subject[ "field1" ] } == [ "original1", "original2", "append1" ]
+        expect(subject[ "field1" ]).to include("original1", "original2", "append1")
       end
     end
   end
 
-  it "timestamp parsing speed", :performance => true do
+  # Should be move somewhere else more relevant
+  xit "timestamp parsing speed", :performance => true do
     warmup = 10000
     count = 1000000
 
@@ -223,36 +253,31 @@ describe LogStash::Event do
     puts "event @timestamp parse rate: #{"%02.0f/sec" % (count / duration)}, elapsed: #{duration}s"
   end
 
-  context "acceptable @timestamp formats" do
+  context "@timestamp formats" do
+
     subject { LogStash::Event.new }
 
-    formats = [
-      "YYYY-MM-dd'T'HH:mm:ss.SSSZ",
-      "YYYY-MM-dd'T'HH:mm:ss.SSSSSSZ",
-      "YYYY-MM-dd'T'HH:mm:ss.SSS",
-      "YYYY-MM-dd'T'HH:mm:ss",
-      "YYYY-MM-dd'T'HH:mm:ssZ",
-    ]
+    formats = [ "YYYY-MM-dd'T'HH:mm:ss.SSSZ", "YYYY-MM-dd'T'HH:mm:ss.SSSSSSZ",
+                "YYYY-MM-dd'T'HH:mm:ss.SSS", "YYYY-MM-dd'T'HH:mm:ss", "YYYY-MM-dd'T'HH:mm:ssZ"]
+
     formats.each do |format|
-      it "includes #{format}" do
+      it "includes #{format} as a valid format" do
         time = subject.sprintf("%{+#{format}}")
-        begin
-          LogStash::Event.new("@timestamp" => time)
-        rescue => e
-          raise StandardError, "Time '#{time}' was rejected. #{e.class}: #{e.to_s}"
-        end
+        expect{LogStash::Event.new("@timestamp" => time)}.not_to raise_error
       end
     end
 
     context "from LOGSTASH-1738" do
       it "does not error" do
-        LogStash::Event.new("@timestamp" => "2013-12-29T23:12:52.371240+02:00")
+        timestamp = "2013-12-29T23:12:52.371240+02:00"
+        expect{LogStash::Event.new("@timestamp" => timestamp)}.not_to raise_error
       end
     end
 
     context "from LOGSTASH-1732" do
       it "does not error" do
-        LogStash::Event.new("@timestamp" => "2013-12-27T11:07:25+00:00")
+        timestamp = "2013-12-27T11:07:25+00:00"
+        expect{LogStash::Event.new("@timestamp" => timestamp)}.not_to raise_error
       end
     end
   end
@@ -260,85 +285,126 @@ describe LogStash::Event do
   context "timestamp initialization" do
     let(:logger) { double("logger") }
 
-    it "should coerce timestamp" do
-      t = Time.iso8601("2014-06-12T00:12:17.114Z")
-      expect(LogStash::Timestamp).to receive(:coerce).exactly(3).times.and_call_original
-      insist{LogStash::Event.new("@timestamp" => t).timestamp.to_i} == t.to_i
-      insist{LogStash::Event.new("@timestamp" => LogStash::Timestamp.new(t)).timestamp.to_i} == t.to_i
-      insist{LogStash::Event.new("@timestamp" => "2014-06-12T00:12:17.114Z").timestamp.to_i} == t.to_i
+    context "time coercion" do
+      let(:t) { Time.iso8601("2014-06-12T00:12:17.114Z") }
+
+      before(:each) do
+        expect(LogStash::Timestamp).to receive(:coerce).exactly(1).times.and_call_original
+      end
+
+      it "match with time" do
+        event = LogStash::Event.new("@timestamp" => t)
+        expect(event.timestamp.to_i).to eq(t.to_i)
+      end
+
+      it "match with a new timestamp" do
+        event = LogStash::Event.new("@timestamp" => LogStash::Timestamp.new(t))
+        expect(event.timestamp.to_i).to eq(t.to_i)
+      end
+
+      it "match with a string" do
+        event = LogStash::Event.new("@timestamp" => "2014-06-12T00:12:17.114Z")
+        expect(event.timestamp.to_i).to eq(t.to_i)
+      end
     end
 
-    it "should assign current time when no timestamp" do
+    it "assign current time when no timestamp" do
       ts = LogStash::Timestamp.now
-      expect(LogStash::Timestamp).to receive(:now).and_return(ts)
-      insist{LogStash::Event.new({}).timestamp.to_i} == ts.to_i
+      event = LogStash::Event.new({})
+      expect(event.timestamp.to_i).to eq(ts.to_i)
     end
 
-    it "should tag and warn for invalid value" do
-      ts = LogStash::Timestamp.now
-      expect(LogStash::Timestamp).to receive(:now).twice.and_return(ts)
-      expect(Cabin::Channel).to receive(:get).twice.and_return(logger)
-      expect(logger).to receive(:warn).twice
+    context "invalid values" do
 
-      event = LogStash::Event.new("@timestamp" => :foo)
-      insist{event.timestamp.to_i} == ts.to_i
-      insist{event["tags"]} == [LogStash::Event::TIMESTAMP_FAILURE_TAG]
-      insist{event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]} == :foo
+      let(:ts) { LogStash::Timestamp.now }
 
-      event = LogStash::Event.new("@timestamp" => 666)
-      insist{event.timestamp.to_i} == ts.to_i
-      insist{event["tags"]} == [LogStash::Event::TIMESTAMP_FAILURE_TAG]
-      insist{event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]} == 666
-    end
+      before(:each) do
+        expect(Cabin::Channel).to receive(:get).and_return(logger)
+        expect(logger).to receive(:warn)
+      end
 
-    it "should tag and warn for invalid string format" do
-      ts = LogStash::Timestamp.now
-      expect(LogStash::Timestamp).to receive(:now).and_return(ts)
-      expect(Cabin::Channel).to receive(:get).and_return(logger)
-      expect(logger).to receive(:warn)
+      context "timestamp as an invalid sym" do
+        let(:event) { LogStash::Event.new("@timestamp" => :foo) }
 
-      event = LogStash::Event.new("@timestamp" => "foo")
-      insist{event.timestamp.to_i} == ts.to_i
-      insist{event["tags"]} == [LogStash::Event::TIMESTAMP_FAILURE_TAG]
-      insist{event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]} == "foo"
+        it "return the current time" do
+          expect(event.timestamp.to_i).to eq(ts.to_i)
+        end
+
+        it "add a faliure tag" do
+          expect(event["tags"]).to include(LogStash::Event::TIMESTAMP_FAILURE_TAG)
+        end
+
+        it "add track the invalid value" do
+          expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq(:foo)
+        end
+      end
+
+      context "timestamp as an invalid number" do
+        let(:event) { LogStash::Event.new("@timestamp" => 666) }
+
+        it "return the current time" do
+          expect(event.timestamp.to_i).to eq(ts.to_i)
+        end
+
+        it "add a faliure tag" do
+          expect(event["tags"]).to include(LogStash::Event::TIMESTAMP_FAILURE_TAG)
+        end
+
+        it "add track the invalid value" do
+          expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq(666)
+        end
+      end
+
+      context "timestamp as an invalid string" do
+        let(:event) { LogStash::Event.new("@timestamp" => "foo") }
+
+        it "return the current time" do
+          expect(event.timestamp.to_i).to eq(ts.to_i)
+        end
+
+        it "add a faliure tag" do
+          expect(event["tags"]).to include(LogStash::Event::TIMESTAMP_FAILURE_TAG)
+        end
+
+        it "add track the invalid value" do
+          expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq("foo")
+        end
+      end
+
     end
   end
 
   context "to_json" do
-    it "should support to_json" do
-      new_event = LogStash::Event.new(
-        "@timestamp" => Time.iso8601("2014-09-23T19:26:15.832Z"),
-        "message" => "foo bar",
-      )
-      json = new_event.to_json
+    let (:timestamp) { Time.iso8601("2014-09-23T19:26:15.832Z") }
+    let (:new_event) { LogStash::Event.new("@timestamp" => timestamp, "message" => "foo bar")}
 
-      insist { json } ==  "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}"
+    it "support to_json" do
+      json = new_event.to_json
+      expect(json).to eq("{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}")
     end
 
-    it "should support to_json and ignore arguments" do
-      new_event = LogStash::Event.new(
-        "@timestamp" => Time.iso8601("2014-09-23T19:26:15.832Z"),
-        "message" => "foo bar",
-      )
+    it "support to ignore arguments" do
       json = new_event.to_json(:foo => 1, :bar => "baz")
-
-      insist { json } ==  "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}"
+      expect(json).to eq("{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}")
     end
   end
 
   context "metadata" do
+
     context "with existing metadata" do
-      subject { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => "pants" }) }
 
-      it "should not include metadata in to_hash" do
-        reject { subject.to_hash.keys }.include?("@metadata")
+      subject { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => "pants" }).to_hash }
 
-        # 'hello', '@timestamp', and '@version'
-        insist { subject.to_hash.keys.count } == 3
+      it "not include in to_hash" do
+        expect(subject).not_to include("@metadata")
       end
 
-      it "should still allow normal field access" do
-        insist { subject["hello"] } == "world"
+      it "have expected keys" do
+        expect(subject).to include("hello", "@timestamp", "@version")
+      end
+
+      it "allow normal field access" do
+        expect(subject).to include("hello" => "world")
       end
     end
 
@@ -346,46 +412,45 @@ describe LogStash::Event do
       let(:fieldref) { "[@metadata][foo][bar]" }
       let(:value) { "bar" }
       subject { LogStash::Event.new("normal" => "normal") }
-      before do
-        # Verify the test is configured correctly.
-        insist { fieldref }.start_with?("[@metadata]")
 
-        # Set it.
+      before(:each) do
         subject[fieldref] = value
       end
 
-      it "should still allow normal field access" do
-        insist { subject["normal"] } == "normal"
+      it "allow normal field access" do
+        expect(subject.to_hash).to include("normal" => "normal")
       end
 
-      it "should allow getting" do
-        insist { subject[fieldref] } == value
+      it "allow getting" do
+        expect(subject[fieldref]).to eq(value)
       end
 
-      it "should be hidden from .to_json" do
+      it "is hidden from .to_json" do
         require "json"
         obj = JSON.parse(subject.to_json)
-        reject { obj }.include?("@metadata")
+        expect(obj).not_to include("@metadata")
       end
 
-      it "should be hidden from .to_hash" do
-        reject { subject.to_hash }.include?("@metadata")
+      it "is hidden from .to_hash" do
+        expect(subject.to_hash).not_to include("@metadata")
       end
 
-      it "should be accessible through #to_hash_with_metadata" do
+      it "is accessible through #to_hash_with_metadata" do
         obj = subject.to_hash_with_metadata
-        insist { obj }.include?("@metadata")
-        insist { obj["@metadata"]["foo"]["bar"] } == value
+        expect(obj["@metadata"]["foo"]["bar"]).to eq(value)
       end
     end
-    
+
     context "with no metadata" do
+
       subject { LogStash::Event.new("foo" => "bar") }
-      it "should have no metadata" do
-        insist { subject["@metadata"] }.empty?
+
+      it "is hidden from to_hash" do
+        expect(subject.to_hash).not_to include("@metadata")
       end
-      it "should still allow normal field access" do
-        insist { subject["foo"] } == "bar"
+
+      it "allow normal field access" do
+        expect(subject["foo"]).to eq("bar")
       end
     end
 

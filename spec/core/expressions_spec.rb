@@ -1,0 +1,83 @@
+require 'spec_helper'
+
+describe "operators" do
+
+  let(:defs)     { "conditionals/mutate.conf" }
+
+  describe "value as expression" do
+
+    context "with a placeholder message" do
+      it "add the success tag to any message" do
+        config   = load_fixtures(defs, "[message]" )
+        expect(sample_from("apple", config)).to include("tags" => ["success"])
+      end
+
+      it "add the failure tag to any message" do
+        config   = load_fixtures(defs, "[missing]" )
+        expect(sample_from("apple", config)).to include("tags" => ["failure"])
+      end
+    end
+
+    context "when using logic operators" do
+
+      describe "and" do
+        it "add the success tag for true expressions" do
+          config   = load_fixtures(defs, "[message] and [message]" )
+          expect(sample_from("apple", config)).to include("tags" => ["success"])
+        end
+
+        it "add the failure tag for false expressions" do
+          config   = load_fixtures(defs, "[message] and ![message]" )
+          expect(sample_from("apple", config)).to include("tags" => ["failure"])
+        end
+
+        it "add the failure tag for double negated expressions" do
+          config   = load_fixtures(defs, "![message] and ![message]" )
+          expect(sample_from("apple", config)).to include("tags" => ["failure"])
+        end
+      end
+
+      describe "or" do
+        it "add the success tag for true expressions" do
+          config   = load_fixtures(defs, "[message] or [message]" )
+          expect(sample_from("apple", config)).to include("tags" => ["success"])
+        end
+
+        it "add the success tag for one negated term expressions" do
+          config   = load_fixtures(defs, "[message] or ![message]" )
+          expect(sample_from("apple", config)).to include("tags" => ["success"])
+        end
+
+        it "add the failure tag for double negated expressions" do
+          config   = load_fixtures(defs, "![message] or ![message]" )
+          expect(sample_from("apple", config)).to include("tags" => ["failure"])
+        end
+      end
+
+    end
+
+    context "with field references" do
+
+      context "having spaces in the criteria" do
+
+        it "add the success tag when using a field" do
+          config   = load_fixtures(defs, "[field with space]" )
+          expect(sample_from({"field with space" => "hurray"}, config)).to include("tags" => ["success"])
+        end
+
+        it "add the success tag when using an eq comparison" do
+          config   = load_fixtures(defs, "[field with space] == 'hurray'" )
+          expect(sample_from({"field with space" => "hurray"}, config)).to include("tags" => ["success"])
+        end
+
+        it "add the success tag when using nested fields" do
+          config   = load_fixtures(defs, "[nested field][reference with][some spaces] == 'hurray'" )
+          event    = {"nested field" => { "reference with" => { "some spaces" => "hurray" } } }
+          expect(sample_from(event, config)).to include("tags" => ["success"])
+        end
+
+      end
+    end
+
+  end
+end

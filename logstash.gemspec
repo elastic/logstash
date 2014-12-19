@@ -67,13 +67,13 @@ Gem::Specification.new do |gem|
   end
 
   # These are runtime-deps so you can do 'java -jar logstash.jar rspec <test>'
-  gem.add_runtime_dependency "rspec", "~> 2.14.0" #(MIT license)
+  gem.add_runtime_dependency "rspec", "~> 3.1.0"   #(MIT license)
   gem.add_runtime_dependency "insist", "1.0.0"    #(Apache 2.0 license)
 
   gem.add_runtime_dependency "logstash-devutils"
 
   # Jenkins Deps
-  gem.add_runtime_dependency "ci_reporter", "1.9.3"
+  gem.add_runtime_dependency "ci_reporter_rspec", "1.0.0"
 
   # Development Deps
   # coveralls temporarily disabled because of Bundler bug with "without development" and gemspec
