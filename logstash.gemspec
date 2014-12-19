@@ -16,11 +16,14 @@ Gem::Specification.new do |gem|
   gem.version       = LOGSTASH_VERSION
 
   # Core dependencies
-  gem.add_runtime_dependency "cabin", [">=0.6.0"] #(Apache 2.0 license)
-  gem.add_runtime_dependency "minitest"           #(MIT license) for running the tests from the jar,
-  gem.add_runtime_dependency "pry"                #(Ruby license)
-  gem.add_runtime_dependency "stud"               #(Apache 2.0 license)
-  gem.add_runtime_dependency "clamp"              #(MIT license) for command line args/flags
+  gem.add_runtime_dependency "cabin", [">=0.6.0"]    #(Apache 2.0 license)
+  gem.add_runtime_dependency "pry"                   #(Ruby license)
+  gem.add_runtime_dependency "stud"                  #(Apache 2.0 license)
+  gem.add_runtime_dependency "clamp"                 #(MIT license) for command line args/flags
+
+  # TODO(sissel): Treetop 1.5.x doesn't seem to work well, but I haven't
+  # investigated what the cause might be. -Jordan
+  gem.add_runtime_dependency "treetop", ["~> 1.4.0"] #(MIT license)
 
   # upgrade i18n only post 0.6.11, see https://github.com/svenfuchs/i18n/issues/270
   gem.add_runtime_dependency "i18n", ["=0.6.9"]   #(MIT license)
@@ -47,16 +50,10 @@ Gem::Specification.new do |gem|
 
     # bouncy-castle-java 1.5.0147 and jruby-openssl 0.9.5 are included in jruby 1.7.6 no need to include here
     # and this avoids the gemspec jar path parsing issue of jar-dependencies 0.1.2
-    #
-    # gem.add_runtime_dependency "bouncy-castle-java", ["~> 1.5.0147"] #(MIT license)
-    # gem.add_runtime_dependency "jruby-openssl", ["~> 0.9.5"]         #(CPL/GPL/LGPL license)
-
     gem.add_runtime_dependency "jruby-httpclient"                    #(Apache 2.0 license)
-    gem.add_runtime_dependency "msgpack-jruby"                       #(Apache 2.0 license)
     gem.add_runtime_dependency "jrjackson"                           #(Apache 2.0 license)
   else
     gem.add_runtime_dependency "excon"    #(MIT license)
-    gem.add_runtime_dependency "msgpack"  #(Apache 2.0 license)
     gem.add_runtime_dependency "oj"       #(MIT-style license)
   end
 
@@ -70,12 +67,8 @@ Gem::Specification.new do |gem|
   end
 
   # These are runtime-deps so you can do 'java -jar logstash.jar rspec <test>'
-  gem.add_runtime_dependency "spoon"              #(Apache 2.0 license)
-  gem.add_runtime_dependency "mocha"              #(MIT license)
-  gem.add_runtime_dependency "shoulda"            #(MIT license)
   gem.add_runtime_dependency "rspec", "~> 2.14.0" #(MIT license)
   gem.add_runtime_dependency "insist", "1.0.0"    #(Apache 2.0 license)
-  gem.add_runtime_dependency "rumbster"           #(Apache 2.0 license) For faking smtp in email tests
 
   gem.add_runtime_dependency "logstash-devutils"
 
@@ -85,4 +78,4 @@ Gem::Specification.new do |gem|
   # Development Deps
   # coveralls temporarily disabled because of Bundler bug with "without development" and gemspec
   # gem.add_development_dependency "coveralls"
-end
+  end
