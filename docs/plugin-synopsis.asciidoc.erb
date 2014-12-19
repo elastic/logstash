@@ -18,9 +18,9 @@ Required configuration options:
 
 Available configuration options:
 
-[cols="<,<,<,<m",options="header",]
+[cols="<,<,<,<,<m",options="header",]
 |=======================================================================
-|Setting |Input type|Required|Default value
+|Setting |Input type|Required|Allow dynamic value|Default value
 <% sorted_attributes.each do |name, config|
    next if config[:deprecated]
    if config[:validate].is_a?(Array) 
@@ -38,6 +38,15 @@ Available configuration options:
      annotation += "|Yes"
    else
      annotation += "|No"
+   end
+   if section == "filter" || section == "output"
+     if config[:allow_dynamic] == true
+       annotation += "|Yes"
+     elsif config[:allow_dynamic] == false
+       annotation += "|No"
+     else
+       annotation += "|Unknown"
+     end
    end
    if config.include?(:default)
      annotation += "|`#{config[:default].inspect}`"
