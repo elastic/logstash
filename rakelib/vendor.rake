@@ -1,5 +1,5 @@
 DOWNLOADS = {
-  "jruby" => { "version" => "1.7.16", "sha1" => "4c912b648f6687622ba590ca2a28746d1cd5d550" },
+  "jruby" => { "version" => "1.7.17", "sha1" => "e4621bbcc51242061eaa9b62caee69c2a2b433f0" },
   "kibana" => { "version" => "3.1.2", "sha1" => "a59ea4abb018a7ed22b3bc1c3bcc6944b7009dc4" },
 }
 
@@ -15,8 +15,7 @@ end
 def untar(tarball, &block)
   Rake::Task["dependency:archive-tar-minitar"].invoke
   require "archive/tar/minitar"
-  tgz = Zlib::GzipReader.new(File.open(tarball))
-  # Pull out typesdb
+  tgz = Zlib::GzipReader.new(File.open(tarball,"rb"))
   tar = Archive::Tar::Minitar::Input.open(tgz)
   tar.each do |entry|
     path = block.call(entry)
@@ -36,10 +35,15 @@ def untar(tarball, &block)
         # expose headers in the entry.
         entry_size = entry.instance_eval { @size }
         # If file sizes are same, skip writing.
-        next if stat.size == entry_size && (stat.mode & 0777) == entry_mode
+        if Gem.win_platform?
+          #Do not fight with windows permission scheme
+          next if stat.size == entry_size
+        else
+          next if stat.size == entry_size && (stat.mode & 0777) == entry_mode
+        end
       end
       puts "Extracting #{entry.full_name} from #{tarball} #{entry_mode.to_s(8)}"
-      File.open(path, "w") do |fd|
+      File.open(path, "wb") do |fd|
         # eof? check lets us skip empty files. Necessary because the API provided by
         # Archive::Tar::Minitar::Reader::EntryStream only mostly acts like an
         # IO object. Something about empty files in this EntryStream causes
@@ -62,7 +66,6 @@ namespace "vendor" do
     name = task.name.split(":")[1]
     info = DOWNLOADS[name]
     version = info["version"]
-    #url = "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-complete-#{version}.jar"
     url = "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-bin-#{version}.tar.gz"
 
     download = file_fetch(url, info["sha1"])

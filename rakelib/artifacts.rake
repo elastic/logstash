@@ -50,8 +50,7 @@ namespace "artifact" do
     require "archive/tar/minitar"
     require "logstash/version"
     tarpath = "build/logstash-#{LOGSTASH_VERSION}.tar.gz"
-    tarfile = File.new(tarpath, "wb")
-    gz = Zlib::GzipWriter.new(tarfile, Zlib::BEST_COMPRESSION)
+    gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
     files.each do |path|
       stat = File.lstat(path)
@@ -65,7 +64,7 @@ namespace "artifact" do
         tar.tar.mkdir(path_in_tar, opts)
       else
         tar.tar.add_file_simple(path_in_tar, opts) do |io|
-          File.open(path) do |fd|
+          File.open(path,'rb') do |fd|
             chunk = nil
             size = 0
             size += io.write(chunk) while chunk = fd.read(16384)
