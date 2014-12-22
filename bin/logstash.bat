@@ -2,12 +2,23 @@
 
 SETLOCAL
 
-if not defined JAVA_HOME goto missing_java_home
-
 set SCRIPT_DIR=%~dp0
 for %%I in ("%SCRIPT_DIR%..") do set LS_HOME=%%~dpfI
 
+if "%USE_RUBY%" == "1" (
+goto setup_ruby
+) else (
+goto setup_jruby
+)
 
+:setup_ruby
+set RUBYCMD=ruby
+set VENDORED_JRUBY=
+goto EXEC
+
+:setup_jruby
+REM setup_java()
+if not defined JAVA_HOME goto missing_java_home
 REM ***** JAVA options *****
 
 if "%LS_MIN_MEM%" == "" (
@@ -46,26 +57,23 @@ REM The path to the heap dump location, note directory must exists and have enou
 REM space for a full heap dump.
 REM JAVA_OPTS=%JAVA_OPTS% -XX:HeapDumpPath=$LS_HOME/logs/heapdump.hprof
 
+REM setup_vendored_jruby()
+set JRUBY_BIN="%LS_HOME%\vendor\jruby\bin\jruby"
+if exist "%JRUBY_BIN%" (
+set VENDORED_JRUBY=1
+goto EXEC
+) else (
+goto missing_jruby
+)
+
+:EXEC
+REM run logstash
 set RUBYLIB=%LS_HOME%\lib
-set GEM_HOME=%LS_HOME%\vendor\bundle\jruby\1.9\
-set GEM_PATH=%GEM_HOME%
-
-for %%I in ("%LS_HOME%\vendor\jar\jruby-complete-*.jar") do set JRUBY_JAR_FILE=%%I
-if not defined JRUBY_JAR_FILE goto missing_jruby_jar
-
-set RUBY_CMD="%JAVA_HOME%\bin\java" %JAVA_OPTS% %LS_JAVA_OPTS% -jar "%JRUBY_JAR_FILE%"
-
-if "%*"=="deps" goto install_deps
-goto run_logstash
-
-:install_deps
-if not exist "%LS_HOME%\logstash.gemspec" goto missing_gemspec
-echo Installing gem dependencies. This will probably take a while the first time.
-%RUBY_CMD% "%LS_HOME%\gembag.rb"
-goto finally
-
-:run_logstash
-%RUBY_CMD% "%LS_HOME%\lib\logstash\runner.rb" %*
+if "%VENDORED_JRUBY%" == "" (
+%RUBYCMD% "%LS_HOME%\lib\logstash\runner.rb" %*
+) else (
+%JRUBY_BIN% %jruby_opts% "%LS_HOME%\lib\logstash\runner.rb" %*
+)
 goto finally
 
 :missing_java_home
@@ -73,15 +81,10 @@ echo JAVA_HOME environment variable must be set!
 pause
 goto finally
 
-:missing_jruby_jar
-md "%LS_HOME%\vendor\jar\"
-echo Please download the JRuby Complete .jar from http://jruby.org/download to %LS_HOME%\vendor\jar\ and re-run this command.
-pause
-goto finally
-
-:missing_gemspec
-echo Cannot install dependencies; missing logstash.gemspec. This 'deps' command only works from a logstash git clone.
-pause
+:missing_jruby
+echo Unable to find JRuby.
+echo If you are a user, this is a bug.
+echo If you are a developer, please run 'rake bootstrap'. Running 'rake' requires the 'ruby' program be available.
 goto finally
 
 :finally
