@@ -78,4 +78,4 @@ Gem::Specification.new do |gem|
   # Development Deps
   # coveralls temporarily disabled because of Bundler bug with "without development" and gemspec
   # gem.add_development_dependency "coveralls"
-  end
+end
