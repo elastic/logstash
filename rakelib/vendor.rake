@@ -71,6 +71,8 @@ namespace "vendor" do
     download = file_fetch(url, info["sha1"])
     parent = vendor(name).gsub(/\/$/, "")
     directory parent => "vendor" do
+      next if parent =~ /lib\/ruby\/1.8/
+      next if parent =~ /lib\/ruby\/2.0/
       mkdir parent
     end.invoke unless Rake::Task.task_defined?(parent)
 
@@ -79,6 +81,8 @@ namespace "vendor" do
       out = entry.full_name.gsub(prefix_re, "")
       next if out =~ /^samples/
       next if out =~ /@LongLink/
+      next if out =~ /lib\/ruby\/1.8/
+      next if out =~ /lib\/ruby\/2.0/
       vendor(name, out)
     end # untar
   end # jruby
