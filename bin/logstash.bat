@@ -69,10 +69,21 @@ goto missing_jruby
 :EXEC
 REM run logstash
 set RUBYLIB=%LS_HOME%\lib
-if "%VENDORED_JRUBY%" == "" (
-%RUBYCMD% "%LS_HOME%\lib\logstash\runner.rb" %*
+REM is the first argument a flag? If so, assume 'agent'
+set first_arg=%1
+setlocal EnableDelayedExpansion
+if "!first_arg:~0,1!" equ "-" (
+  if "%VENDORED_JRUBY%" == "" (
+    %RUBYCMD% "%LS_HOME%\lib\logstash\runner.rb" agent %*
+  ) else (
+    %JRUBY_BIN% %jruby_opts% "%LS_HOME%\lib\logstash\runner.rb" agent %*
+  )
 ) else (
-%JRUBY_BIN% %jruby_opts% "%LS_HOME%\lib\logstash\runner.rb" %*
+  if "%VENDORED_JRUBY%" == "" (
+    %RUBYCMD% "%LS_HOME%\lib\logstash\runner.rb" %*
+  ) else (
+    %JRUBY_BIN% %jruby_opts% "%LS_HOME%\lib\logstash\runner.rb" %*
+  )
 )
 goto finally
 
