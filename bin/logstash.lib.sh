@@ -87,6 +87,7 @@ setup_ruby() {
 }
 
 jruby_opts() {
+  echo "--1.9"
   for i in $JAVA_OPTS ; do
     echo "-J$i"
   done
