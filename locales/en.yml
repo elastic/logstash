@@ -4,16 +4,6 @@
 #     for unformatted text.
 en:
   oops: |-
-    +---------------------------------------------------------+
-    | An unexpected error occurred. This is probably a bug.   |
-    | You can find help with this problem in a few places:    |
-    |                                                         |
-    | * chat: #logstash IRC channel on freenode irc.          |
-    |     IRC via the web: http://goo.gl/TI4Ro                |
-    | * email: logstash-users@googlegroups.com                |
-    | * bug system: https://logstash.jira.com/                |
-    |                                                         |
-    +---------------------------------------------------------+
     The error reported is: 
       %{error}
   logstash:
@@ -79,6 +69,12 @@ en:
         file-not-found: |-
           No config files found: %{path}
           Can you make sure this path is a logstash config file?
+        scheme-not-supported: |-
+          URI scheme not supported: %{path}
+          Either pass a local file path or "file|http://" URI
+        fetch-failed: |-
+          Unable to fetch config from: %{path}
+          Reason: %{message}
         setting_missing: |-
           Missing a required setting for the %{plugin} %{type} plugin:
 
@@ -122,18 +118,20 @@ en:
         config: |+
           Load the logstash config from a specific file
           or directory.  If a directory is given, all
-          files in that directory will be concatonated
+          files in that directory will be concatenated
           in lexicographical order and then parsed as a
           single config file. You can also specify
           wildcards (globs) and any matched files will
           be loaded in the order described above.
         config-string: |+
           Use the given string as the configuration
-          data. Same syntax as the config file. If not
-          input is specified, then 'stdin { type =>
-          stdin }' is the default input. If no output
-          is specified, then 'stdout { debug => true
-          }}' is default output.
+          data. Same syntax as the config file. If no
+          input is specified, then 'stdin 
+          { type => stdin }' is the default input.
+          If no output is specified, then  'stdout
+          { codec => rubydebug } }' is default output.
+        configtest: |+
+          Check configuration, then exit.
         filterworkers: |+
           Sets the number of filter workers to run.
         watchdog-timeout: |+

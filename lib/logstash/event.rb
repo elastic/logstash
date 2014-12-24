@@ -61,6 +61,13 @@ class LogStash::Event
     @accessors = LogStash::Util::Accessors.new(data)
     @data[VERSION] ||= VERSION_ONE
     @data[TIMESTAMP] = init_timestamp(@data[TIMESTAMP])
+
+    @metadata = if @data.include?("@metadata")
+      @data.delete("@metadata")
+    else
+      {}
+    end
+    @metadata_accessors = LogStash::Util::Accessors.new(@metadata)
   end # def initialize
 
   public
@@ -89,17 +96,10 @@ class LogStash::Event
     return self.class.new(copy)
   end # def clone
 
-  if RUBY_ENGINE == "jruby"
-    public
-    def to_s
-      return self.sprintf("%{+yyyy-MM-dd'T'HH:mm:ss.SSSZ} %{host} %{message}")
-    end # def to_s
-  else
-    public
-    def to_s
-      return self.sprintf("#{timestamp.to_iso8601} %{host} %{message}")
-    end # def to_s
-  end
+  public
+  def to_s
+    self.sprintf("#{timestamp.to_iso8601} %{host} %{message}")
+  end # def to_s
 
   public
   def timestamp; return @data[TIMESTAMP]; end # def timestamp
@@ -114,19 +114,31 @@ class LogStash::Event
   end # def unix_timestamp
 
   # field-related access
+  METADATA = "@metadata".freeze
+  METADATA_BRACKETS = "[#{METADATA}]".freeze
   public
   def [](fieldref)
-    @accessors.get(fieldref)
+    if fieldref.start_with?(METADATA_BRACKETS)
+      @metadata_accessors.get(fieldref[METADATA_BRACKETS.length .. -1])
+    elsif fieldref == METADATA
+      @metadata
+    else
+      @accessors.get(fieldref)
+    end
   end # def []
 
   public
-  # keep []= implementation in sync with spec/test_utils.rb monkey patch
-  # which redefines []= but using @accessors.strict_set
   def []=(fieldref, value)
     if fieldref == TIMESTAMP && !value.is_a?(LogStash::Timestamp)
       raise TypeError, "The field '@timestamp' must be a (LogStash::Timestamp, not a #{value.class} (#{value})"
     end
-    @accessors.set(fieldref, value)
+    if fieldref.start_with?(METADATA_BRACKETS)
+      @metadata_accessors.set(fieldref[METADATA_BRACKETS.length .. -1], value)
+    elsif fieldref == METADATA
+      @metadata = value
+    else
+      @accessors.set(fieldref, value)
+    end
   end # def []=
 
   public
@@ -135,7 +147,8 @@ class LogStash::Event
   end
 
   public
-  def to_json
+  def to_json(*args)
+    # ignore arguments to respect accepted to_json method signature
     LogStash::Json.dump(@data)
   end # def to_json
 
@@ -264,4 +277,34 @@ class LogStash::Event
 
     LogStash::Timestamp.now
   end
+
+  public
+  def to_hash_with_metadata
+    if @metadata.nil?
+      to_hash
+    else
+      to_hash.merge("@metadata" => @metadata)
+    end
+  end
+
+  public
+  def to_json_with_metadata(*args)
+    # ignore arguments to respect accepted to_json method signature
+    LogStash::Json.dump(to_hash_with_metadata)
+  end # def to_json
+
+  def self.validate_value(value)
+    case value
+    when String
+      raise("expected UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.encoding == Encoding::UTF_8
+      raise("invalid UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.valid_encoding?
+      value
+    when Array
+      value.each{|v| validate_value(v)} # don't map, return original object
+      value
+    else
+      value
+    end
+  end
+
 end # class LogStash::Event

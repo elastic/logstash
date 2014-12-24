@@ -2,7 +2,9 @@
 require "clamp" # gem 'clamp'
 require "logstash/environment"
 require "logstash/errors"
-require "i18n"
+require "uri"
+require "net/http"
+LogStash::Environment.load_locale!
 
 class LogStash::Agent < Clamp::Command
   option ["-f", "--config"], "CONFIG_PATH",
@@ -285,6 +287,21 @@ class LogStash::Agent < Clamp::Command
   end # def configure_plugin_path
 
   def load_config(path)
+
+    uri = URI.parse(path)
+    case uri.scheme
+    when nil then
+      local_config(path)
+    when /http/ then
+      fetch_config(uri)
+    when "file" then
+      local_config(uri.path)
+    else
+      fail(I18n.t("logstash.agent.configuration.scheme-not-supported", :path => path))
+    end
+  end
+
+  def local_config(path)
     path = File.join(path, "*") if File.directory?(path)
 
     if Dir.glob(path).length == 0
@@ -292,6 +309,7 @@ class LogStash::Agent < Clamp::Command
     end
 
     config = ""
+    encoding_issue_files = []
     Dir.glob(path).sort.each do |file|
       next unless File.file?(file)
       if file.match(/~$/)
@@ -299,9 +317,24 @@ class LogStash::Agent < Clamp::Command
         next
       end
       @logger.debug("Reading config file", :file => file)
-      config << File.read(file) + "\n"
+      cfg = File.read(file)
+      if !cfg.ascii_only? && !cfg.valid_encoding?
+        encoding_issue_files << file
+      end
+      config << cfg + "\n"
+    end
+    if (encoding_issue_files.any?)
+      fail("The following config files contains non-ascii characters but are not UTF-8 encoded #{encoding_issue_files}")
     end
     return config
   end # def load_config
+
+  def fetch_config(uri)
+    begin
+      Net::HTTP.get(uri) + "\n"
+    rescue Exception => e
+      fail(I18n.t("logstash.agent.configuration.fetch-failed", :path => uri.to_s, :message => e.message))
+    end
+  end
 
 end # class LogStash::Agent

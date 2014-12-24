@@ -4,7 +4,6 @@ pkg/*.deb
 pkg/*.rpm
 *.class
 .rbx
-Gemfile.lock
 .rbx
 *.tar.gz
 *.jar
@@ -23,3 +22,6 @@ etc/jira-output.conf
 coverage/*
 .VERSION.mk
 .idea/*
+spec/reports
+rspec.xml
+.install-done

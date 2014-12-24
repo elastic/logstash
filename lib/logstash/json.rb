@@ -17,7 +17,7 @@ module LogStash
 
     ### MRI
 
-    def mri_load(data)
+    def mri_load(data, options = {})
       Oj.load(data)
     rescue Oj::ParseError => e
       raise LogStash::Json::ParserError.new(e.message)
@@ -31,8 +31,8 @@ module LogStash
 
     ### JRuby
 
-    def jruby_load(data)
-      JrJackson::Raw.parse_raw(data)
+    def jruby_load(data, options = {})
+      options[:symbolize_keys] ? JrJackson::Raw.parse_sym(data) : JrJackson::Raw.parse_raw(data)
     rescue JrJackson::ParseError => e
       raise LogStash::Json::ParserError.new(e.message)
     end

@@ -136,5 +136,17 @@ module LogStash::Util
     def self.normalize(o); o; end
   end
 
+  def self.stringify_symbols(o)
+    case o
+    when Hash
+      o.inject({}){|r, (k, v)| r[k.is_a?(Symbol) ? k.to_s : k] = stringify_symbols(v); r}
+    when Array
+      o.map{|i| stringify_symbols(i)}
+    when Symbol
+      o.to_s
+    else
+      o
+    end
+  end
 
 end # module LogStash::Util

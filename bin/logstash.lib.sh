@@ -69,13 +69,27 @@ setup_drip() {
 }
 
 setup_vendored_jruby() {
-  JRUBY_JAR=$(ls "${basedir}"/vendor/jar/jruby-complete-*.jar)
+  #JRUBY_JAR=$(ls "${basedir}"/vendor/jruby/jruby-complete-*.jar)
+  JRUBY_BIN="${basedir}/vendor/jruby/bin/jruby"
+
+  if [ ! -f "${JRUBY_BIN}" ] ; then
+    echo "Unable to find JRuby."
+    echo "If you are a user, this is a bug."
+    echo "If you are a developer, please run 'rake bootstrap'. Running 'rake' requires the 'ruby' program be available."
+    exit 1
+  fi
   VENDORED_JRUBY=1
 }
 
 setup_ruby() {
   RUBYCMD="ruby"
   VENDORED_JRUBY=
+}
+
+jruby_opts() {
+  for i in $JAVA_OPTS ; do
+    echo "-J$i"
+  done
 }
 
 setup() {
@@ -99,16 +113,4 @@ setup() {
   fi
 
   export RUBYLIB="${basedir}/lib"
-}
-
-install_deps() {
-  if [ -f "$basedir/logstash.gemspec" ] ; then
-    if [ -z "$VENDORED_JRUBY" ] ; then
-      exec "${RUBYCMD}" "${basedir}/gembag.rb" "${basedir}/logstash.gemspec" "$@"
-    else
-      exec "${JAVACMD}" $JAVA_OPTS "-jar" "$JRUBY_JAR" "${basedir}/gembag.rb" "${basedir}/logstash.gemspec" "$@"
-    fi
-  else
-    echo "Cannot install dependencies; missing logstash.gemspec. This 'deps' command only works from a logstash git clone."
-  fi
 }

@@ -1,3 +1,4 @@
+
 class LogStash::PluginManager::Util
 
   def self.logstash_plugin?(gem)

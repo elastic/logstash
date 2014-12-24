@@ -1,11 +1,16 @@
 require "logstash/errors"
+require 'logstash/version'
 
 module LogStash
   module Environment
     extend self
 
-    LOGSTASH_HOME = ::File.expand_path(::File.join(::File.dirname(__FILE__), "/../.."))
-    JAR_DIR = ::File.join(LOGSTASH_HOME, "/vendor/jar")
+    LOGSTASH_HOME = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", ".."))
+    JAR_DIR = ::File.join(LOGSTASH_HOME, "vendor", "jar")
+    ELASTICSEARCH_DIR = ::File.join(LOGSTASH_HOME, "vendor", "elasticsearch")
+    BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
+    GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "tools", "Gemfile")
+    BOOTSTRAP_GEM_PATH = ::File.join(LOGSTASH_HOME, 'build', 'bootstrap')
 
     # loads currently embedded elasticsearch jars
     # @raise LogStash::EnvironmentError if not running under JRuby or if no jar files are found
@@ -13,10 +18,10 @@ module LogStash
       raise(LogStash::EnvironmentError, "JRuby is required") unless jruby?
 
       require "java"
-      jars_path = ::File.join(JAR_DIR, "/elasticsearch*/lib/*.jar")
+      jars_path = ::File.join(ELASTICSEARCH_DIR, "**", "*.jar")
       jar_files = Dir.glob(jars_path)
 
-      raise(LogStash::EnvironmentError, "Could not find Elasticsearch jar files under #{JAR_DIR}") if jar_files.empty?
+      raise(LogStash::EnvironmentError, "Could not find Elasticsearch jar files under #{ELASTICSEARCH_DIR}") if jar_files.empty?
 
       jar_files.each do |jar|
         loaded = require jar
@@ -24,14 +29,31 @@ module LogStash
       end
     end
 
-    def gem_target
-      "#{LOGSTASH_HOME}/vendor/bundle"
+    def logstash_gem_home
+      ::File.join(BUNDLE_DIR, ruby_engine, gem_ruby_version)
     end
 
+    # set GEM_PATH for logstash runtime
+    # GEM_PATH should include the logstash gems, the plugin gems and the bootstrap gems.
+    # the bootstrap gems are required specificly for bundler which is a runtime dependency
+    # of some plugins dependedant gems.
     def set_gem_paths!
-      gemdir = "#{gem_target}/#{ruby_engine}/#{gem_ruby_version}/"
-      ENV["GEM_HOME"] = gemdir
-      ENV["GEM_PATH"] = gemdir
+      ENV["GEM_HOME"] = ENV["GEM_PATH"] = logstash_gem_home
+    end
+
+    def bundler_install_command(gem_file, gem_path)
+      # for now avoid multiple jobs, ex.: --jobs 4
+      # it produces erratic exceptions and hangs (with Bundler 1.7.9)
+      [
+        "install",
+          "--gemfile=#{gem_file}",
+          "--without=development",
+          "--path", gem_path,
+      ]
+    end
+
+    def ruby_bin
+      ENV["USE_RUBY"] == "1" ? "ruby" : File.join("vendor", "jruby", "bin", "jruby")
     end
 
     # @return [String] major.minor ruby version, ex 1.9
@@ -58,7 +80,7 @@ module LogStash
     end
 
     def plugin_path(path)
-      return ::File.join(LOGSTASH_HOME, "lib/logstash", path)
+      return ::File.join(LOGSTASH_HOME, "lib", "logstash", path)
     end
 
     def pattern_path(path)
@@ -67,6 +89,30 @@ module LogStash
 
     def locales_path(path)
       return ::File.join(LOGSTASH_HOME, "locales", path)
+    end
+
+    def load_logstash_gemspec!
+      logstash_spec = Gem::Specification.new do |gem|
+        gem.authors       = ["Jordan Sissel", "Pete Fritchman"]
+        gem.email         = ["jls@semicomplete.com", "petef@databits.net"]
+        gem.description   = %q{scalable log and event management (search, archive, pipeline)}
+        gem.summary       = %q{logstash - log and event management}
+        gem.homepage      = "http://logstash.net/"
+        gem.license       = "Apache License (2.0)"
+
+        gem.name          = "logstash"
+        gem.version       = LOGSTASH_VERSION
+      end
+
+      Gem::Specification.add_spec logstash_spec
+    end
+
+    def load_locale!
+      require "i18n"
+      I18n.enforce_available_locales = true
+      I18n.load_path << LogStash::Environment.locales_path("en.yml")
+      I18n.reload!
+      fail "No locale? This is a bug." if I18n.available_locales.empty?
     end
   end
 end

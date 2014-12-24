@@ -6,6 +6,8 @@ $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
 require "logstash/environment"
 LogStash::Environment.set_gem_paths!
+LogStash::Environment.load_logstash_gemspec!
+LogStash::Environment.load_locale!
 
 Thread.abort_on_exception = true
 if ENV["PROFILE_BAD_LOG_CALLS"] || $DEBUGLIST.include?("log")
@@ -47,10 +49,6 @@ require "logstash/monkeypatches-for-debugging"
 require "logstash/namespace"
 require "logstash/program"
 
-require "i18n"
-I18n.enforce_available_locales = true
-I18n.load_path << LogStash::Environment.locales_path("en.yml")
-
 class LogStash::RSpecsRunner
   def initialize(args)
     @args = args
@@ -68,10 +66,6 @@ end
 class LogStash::Runner
   include LogStash::Program
 
-  def initialize
-    @runners = []
-  end
-
   def main(args)
     require "logstash/util"
     require "stud/trap"
@@ -88,24 +82,8 @@ class LogStash::Runner
 
     Stud::untrap("INT", @startup_interruption_trap)
 
-    args = [nil] if args.empty?
-
-    while args != nil && !args.empty?
-      args = run(args)
-    end
-
-    status = []
-    @runners.each do |r|
-      #$stderr.puts "Waiting on #{r.wait.inspect}"
-      status << r.wait
-    end
-
-    # Avoid running test/unit's at_exit crap
-    if status.empty? || status.first.nil?
-      exit(0)
-    else
-      exit(status.first)
-    end
+    task = run(args)
+    exit(task.wait)
   end # def self.main
 
   def run(args)
@@ -117,14 +95,12 @@ class LogStash::Runner
         if args.include?("--verbose")
           agent_args << "--verbose"
         end
-        LogStash::Agent.run($0, agent_args)
-        return []
+        return LogStash::Agent.run($0, agent_args)
       end,
       "web" => lambda do
         # Give them kibana.
         require "logstash/kibana"
         kibana = LogStash::Kibana::Runner.new
-        @runners << kibana
         return kibana.run(args)
       end,
       "rspec" => lambda do
@@ -132,42 +108,44 @@ class LogStash::Runner
         require "rspec"
         spec_path = File.expand_path(File.join(File.dirname(__FILE__), "/../../spec"))
         $LOAD_PATH << spec_path
-        require "test_utils"
-        all_specs = Dir.glob(File.join(spec_path, "/**/*.rb"))
+        all_specs = Dir.glob(File.join(spec_path, "/**/*_spec.rb"))
         rspec = LogStash::RSpecsRunner.new(args.empty? ? all_specs : args)
-        rspec.run
-        @runners << rspec
-        return []
+        return rspec.run
       end,
       "irb" => lambda do
         require "irb"
-        IRB.start(__FILE__)
-        return []
-      end,
-      "ruby" => lambda do
-        require(args[0])
-        return []
+        return IRB.start(__FILE__)
       end,
       "pry" => lambda do
         require "pry"
         return binding.pry
+      end,
+      "docgen" => lambda do
+        require 'docs/asciidocgen'
+        opts = OptionParser.new
+        settings = {}
+        opts.on("-o DIR", "--output DIR",
+          "Directory to output to; optional. If not specified,"\
+          "we write to stdout.") do |val|
+          settings[:output] = val
+        end
+        args = opts.parse(ARGV)
+        docs = LogStashConfigAsciiDocGenerator.new
+        args.each do |arg|
+          docs.generate(arg, settings)
+        end
+        return 0
       end,
       "plugin" => lambda do
         require 'logstash/pluginmanager'
         plugin_manager = LogStash::PluginManager::Main.new($0)
         begin
           plugin_manager.parse(args)
+          return plugin_manager.execute
         rescue Clamp::HelpWanted => e
           show_help(e.command)
+          return 0
         end
-
-        begin
-          plugin_manager.execute
-        rescue Clamp::HelpWanted => e
-          show_help(e.command)
-        end
-
-        return []
       end,
       "agent" => lambda do
         require "logstash/agent"
@@ -177,21 +155,20 @@ class LogStash::Runner
           agent.parse(args)
         rescue Clamp::HelpWanted => e
           show_help(e.command)
-          return []
+          return 0
         rescue Clamp::UsageError => e
           # If 'too many arguments' then give the arguments to
           # the next command. Otherwise it's a real error.
           raise if e.message != "too many arguments"
           remaining = agent.remaining_arguments
         end
-        @runners << Stud::Task.new { agent.execute }
 
-        return remaining
+        return agent.execute
       end
     } # commands
 
     if commands.include?(command)
-      args = commands[command].call
+      return Stud::Task.new { commands[command].call }
     else
       if command.nil?
         $stderr.puts "No command given"
@@ -201,21 +178,20 @@ class LogStash::Runner
           $stderr.puts "No such command #{command.inspect}"
         end
       end
-      $stderr.puts "Usage: logstash <command> [command args]"
-      $stderr.puts "Run a command with the --help flag to see the arguments."
-      $stderr.puts "For example: logstash agent --help"
-      $stderr.puts
-      # hardcode the available commands to reduce confusion.
-      $stderr.puts "Available commands:"
-      $stderr.puts "  agent - runs the logstash agent"
-      $stderr.puts "  version - emits version info about this logstash"
-      $stderr.puts "  web - runs the logstash web ui (called Kibana)"
-      $stderr.puts "  rspec - runs tests"
-      #$stderr.puts commands.keys.map { |s| "  #{s}" }.join("\n")
-      exit 1
-    end
+      $stderr.puts %q[
+Usage: logstash <command> [command args]
+Run a command with the --help flag to see the arguments.
+For example: logstash agent --help
 
-    return args
+Available commands:
+  agent - runs the logstash agent
+  version - emits version info about this logstash
+  web - runs the logstash web ui (called Kibana)
+  rspec - runs tests
+      ]
+      #$stderr.puts commands.keys.map { |s| "  #{s}" }.join("\n")
+      return Stud::Task.new { 1 }
+    end
   end # def run
 
   # @return true if this file is the main file being run and not via rspec
