@@ -32,11 +32,13 @@ module LogStash::Util
 
     def get(accessor)
       target, key = lookup(accessor)
-      target.is_a?(Array) ? target[key.to_i] : target[key]
+      unless target.nil?
+        target.is_a?(Array) ? target[key.to_i] : target[key]
+      end
     end
 
     def set(accessor, value)
-      target, key = lookup(accessor)
+      target, key = store_and_lookup(accessor)
       target[target.is_a?(Array) ? key.to_i : key] = value
     end
 
@@ -52,7 +54,27 @@ module LogStash::Util
     private
 
     def lookup(accessor)
+      target, key = lookup_path(accessor)
+      if target.nil?
+        [target, key]
+      else
+        @lut[accessor] = [target, key]
+      end
+    end
+
+    def store_and_lookup(accessor)
       @lut[accessor] ||= store_path(accessor)
+    end
+
+    def lookup_path(accessor)
+      key, path = PathCache.get(accessor)
+      target = path.inject(@store) do |r, k|
+        if r.nil?
+          return nil
+        end
+        r[r.is_a?(Array) ? k.to_i : k]
+      end
+      [target, key]
     end
 
     def store_path(accessor)

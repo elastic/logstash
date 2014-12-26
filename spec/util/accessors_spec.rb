@@ -83,11 +83,14 @@ describe LogStash::Util::Accessors, :if => true do
       insist { accessors.get(str) } == data["hello"]["world"]
     end
 
-    it "should get deep string value" do
+    it "should return nil when getting a non-existant field (with no side-effects on original data)" do
       str = "[hello][world]"
-      data = { "hello" => { "world" => "foo", "bar" => "baz" } }
+      data = {}
       accessors = LogStash::Util::Accessors.new(data)
-      insist { accessors.get(str) } == data["hello"]["world"]
+      insist { accessors.get(str) }.nil?
+      insist { data } == {}
+      insist { accessors.set(str, "foo") } == "foo"
+      insist { data } == { "hello" => {"world" => "foo"} }
     end
 
     it "should handle delete" do
