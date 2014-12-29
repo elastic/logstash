@@ -159,8 +159,8 @@ en:
           multiple paths. Plugins are expected to be
           in a specific directory hierarchy:
           'PATH/logstash/TYPE/NAME.rb' where TYPE is
-          'input' 'filter' or 'output' and NAME is the
-          name of the plugin.
+          'inputs' 'filters', 'outputs' or 'codecs'
+          and NAME is the name of the plugin.
         quiet: |+
           Quieter logstash logging. This causes only 
           errors to be emitted.
