@@ -25,6 +25,7 @@ namespace "artifact" do
     @exclude_globs << "spec/reports/**/*"
     @exclude_globs << "**/*.gem"
     @exclude_globs << "**/test/files/slow-xpath.xml"
+    @exclude_globs << "**/logstash-*/spec"
     return @exclude_globs
   end
 
