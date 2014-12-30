@@ -66,23 +66,26 @@ namespace "vendor" do
     name = task.name.split(":")[1]
     info = DOWNLOADS[name]
     version = info["version"]
-    url = "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-bin-#{version}.tar.gz"
 
+    discard_patterns = Regexp.union([ /^samples/,
+                                      /@LongLink/,
+                                      /lib\/ruby\/1.8/,
+                                      /lib\/ruby\/2.0/,
+                                      /lib\/ruby\/shared\/rdoc/])
+
+    url = "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-bin-#{version}.tar.gz"
     download = file_fetch(url, info["sha1"])
+
     parent = vendor(name).gsub(/\/$/, "")
     directory parent => "vendor" do
-      next if parent =~ /lib\/ruby\/1.8/
-      next if parent =~ /lib\/ruby\/2.0/
+      next if parent =~ discard_patterns
       mkdir parent
     end.invoke unless Rake::Task.task_defined?(parent)
 
     prefix_re = /^#{Regexp.quote("jruby-#{version}/")}/
     untar(download) do |entry|
       out = entry.full_name.gsub(prefix_re, "")
-      next if out =~ /^samples/
-      next if out =~ /@LongLink/
-      next if out =~ /lib\/ruby\/1.8/
-      next if out =~ /lib\/ruby\/2.0/
+      next if out =~ discard_patterns
       vendor(name, out)
     end # untar
   end # jruby
