@@ -15,23 +15,23 @@ namespace "artifact" do
     ]
   end
 
-  def exclude_globs
-    return @exclude_globs if @exclude_globs
-    @exclude_globs = []
+  def exclude_paths
+    return @exclude_paths if @exclude_paths
+    @exclude_paths = []
     #gitignore = File.join(File.dirname(__FILE__), "..", ".gitignore")
     #if File.exists?(gitignore)
-      #@exclude_globs += File.read(gitignore).split("\n")
+      #@exclude_paths += File.read(gitignore).split("\n")
     #end
-    @exclude_globs << "spec/reports/**/*"
-    @exclude_globs << "**/*.gem"
-    @exclude_globs << "**/test/files/slow-xpath.xml"
-    @exclude_globs << "**/logstash-*/spec"
-    return @exclude_globs
+    @exclude_paths << "spec/reports/**/*"
+    @exclude_paths << "**/*.gem"
+    @exclude_paths << "**/test/files/slow-xpath.xml"
+    @exclude_paths << "**/logstash-*/spec"
+    return @exclude_paths
   end
 
   def excludes
     return @excludes if @excludes
-    @excludes = exclude_globs.collect { |g| Rake::FileList[g] }.flatten
+    @excludes = exclude_paths.collect { |g| Rake::FileList[g] }.flatten
   end
 
   def exclude?(path)
