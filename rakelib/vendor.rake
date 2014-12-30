@@ -144,12 +144,6 @@ namespace "vendor" do
         sleep(1)
       end
     end
-
-    # We aim to clean up specs within the logstash related projects, as we know they
-    # not necessary to have while packaging.
-    Dir.glob("vendor/bundle/jruby/*/gems/logstash-*/spec").each do |dir|
-      FileUtils.rm_rf(dir)
-    end
     # because --path creates a .bundle/config file and changes bundler path
     # we need to remove this file so it doesn't influence following bundler calls
     FileUtils.rm_rf(::File.join(LogStash::Environment::LOGSTASH_HOME, "tools/.bundle"))
