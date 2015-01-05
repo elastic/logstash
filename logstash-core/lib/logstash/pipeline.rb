@@ -16,7 +16,7 @@ require "logstash/shutdown_controller"
 module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :input_to_filter, :filter_to_output
 
-  def initialize(configstr)
+  def initialize(config_str, settings = {})
     @logger = Cabin::Channel.get(LogStash)
 
     @inputs = nil
@@ -24,7 +24,7 @@ module LogStash; class Pipeline
     @outputs = nil
 
     grammar = LogStashConfigParser.new
-    @config = grammar.parse(configstr)
+    @config = grammar.parse(config_str)
 
     if @config.nil?
       raise LogStash::ConfigurationError, grammar.failure_reason
@@ -53,6 +53,7 @@ module LogStash; class Pipeline
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
     @input_threads = []
+    settings.each {|setting, value| configure(setting, value) }
   end # def initialize
 
   def ready?

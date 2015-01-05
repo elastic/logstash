@@ -22,11 +22,4 @@ unset CDPATH
 . "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
 setup
 
-case $1 in
-  -*)
-    ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/environment.rb" "logstash/runner.rb" "agent" "$@"
-    ;;
-  *)
-    ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/environment.rb" "logstash/runner.rb" "$@"
-    ;;
-esac
+ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/environment.rb" "logstash/runner.rb" "$@"

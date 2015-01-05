@@ -64,5 +64,11 @@ end
 if $0 == __FILE__
   LogStash::Bundler.setup!({:without => [:build, :development]})
   require ARGV.shift
-  LogStash::Runner.new.main(ARGV)
+  # TODO deprecate these arguments in the next major version. use -i only
+  if ARGV == ["irb"] || ARGV == ["pry"]
+    puts "Warn: option \"#{ARGV.first}\" is deprecated, use \"-i #{ARGV.first}\" or \"--interactive=#{ARGV.first}\" instead"
+    LogStash::Runner.run("bin/logstash", ["--interactive", ARGV.first])
+  else
+    LogStash::Runner.run("bin/logstash", ARGV)
+  end
 end
