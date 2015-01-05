@@ -1,7 +1,8 @@
+require 'config_factory'
 require "logstash/devutils/rspec/spec_helper"
 require "logstash/agent"
-require "logstash/pipeline"
 require "logstash/event"
+require "logstash/pipeline"
 
 
 RSpec.configure do |config|
@@ -29,68 +30,6 @@ module ConditionalFanciness
     end
   end
 end
-
-class NullRunner
-  def run(args); end
-end
-
-
-class DummyInput < LogStash::Inputs::Base
-  config_name "dummyinput"
-  milestone 2
-
-  def register
-  end
-
-  def run(queue)
-  end
-
-  def teardown
-  end
-end
-
-class DummyCodec < LogStash::Codecs::Base
-  config_name "dummycodec"
-  milestone 2
-
-  def decode(data) 
-    data
-  end
-
-  def encode(event) 
-    event
-  end
-
-  def teardown
-  end
-end
-
-class DummyOutput < LogStash::Outputs::Base
-  config_name "dummyoutput"
-  milestone 2
-
-  attr_reader :num_teardowns
-
-  def initialize(params={})
-    super
-    @num_teardowns = 0
-  end
-
-  def register
-  end
-
-  def receive(event)
-  end
-
-  def teardown
-    @num_teardowns += 1
-  end
-end
-
-class TestPipeline < LogStash::Pipeline
-  attr_reader :outputs
-end
-
 
 def load_fixtures(name, *pattern)
   content = File.read(File.join('spec', 'fixtures', name))
@@ -148,4 +87,60 @@ def sample_with(events, pipeline)
   end
   results.to_a.map! { |m| m.to_hash }
   (results.count == 1 ? results.first : results)
+end
+
+class DummyInput < LogStash::Inputs::Base
+  config_name "dummyinput"
+  milestone 2
+
+  def register
+  end
+
+  def run(queue)
+  end
+
+  def teardown
+  end
+end
+
+class DummyCodec < LogStash::Codecs::Base
+  config_name "dummycodec"
+  milestone 2
+
+  def decode(data) 
+    data
+  end
+
+  def encode(event) 
+    event
+  end
+
+  def teardown
+  end
+end
+
+class DummyOutput < LogStash::Outputs::Base
+  config_name "dummyoutput"
+  milestone 2
+
+  attr_reader :num_teardowns
+
+  def initialize(params={})
+    super
+    @num_teardowns = 0
+  end
+
+  def register
+  end
+
+  def receive(event)
+  end
+
+  def teardown
+    @num_teardowns += 1
+  end
+end
+
+class TestPipeline < LogStash::Pipeline
+  attr_reader :outputs
 end

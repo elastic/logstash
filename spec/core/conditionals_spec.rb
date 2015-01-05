@@ -2,13 +2,26 @@ require 'spec_helper'
 
 describe "conditionals" do
 
-  let(:pipeline) {LogStash::Pipeline.new(config)}
+  let(:pipeline) { LogStash::Pipeline.new(config.to_s) }
 
   context "in outputs" do
 
     describe "simple" do
-      let(:config) { load_fixtures('conditionals/in_output.conf') }
-
+      let(:config) {
+        <<-CONFIG
+          input {
+            generator {
+              message => '{"foo":{"bar"},"baz": "quux"}'
+              count => 1
+            }
+          }
+          output {
+             if [foo] == "bar" {
+             stdout { }
+          }
+        }
+      CONFIG
+      }
       it "doesn't not fail raising an exeption starting an agent" do
         expect { pipeline.run }.to_not raise_error
       end
@@ -19,7 +32,14 @@ describe "conditionals" do
   context "in filters" do
 
     describe "simple" do
-      let(:config) { load_fixtures('conditionals/in_filter.conf') }
+      let(:config) { ConfigFactory.filter.add_field("always" => "awesome").
+                      if("[foo] == 'bar'").
+                        add_field("hello" => "world").
+                      elseif("[bar] == 'baz'").
+                        add_field("fancy" => "pants").
+                      else.
+                        add_field("free" => "hugs").
+                      endif }
 
       context "first conditional meet" do
 
@@ -64,7 +84,12 @@ describe "conditionals" do
     end
 
     describe "nested" do
-      let(:config) { load_fixtures("conditionals/nested.conf") }
+      let(:config) { ConfigFactory.filter.
+                             if("[nest] == 123").add_field("always" => "awesome").
+                             if("[foo] == 'bar'").add_field("hello" => "world").
+                             elseif("[bar] == 'baz'").add_field("fancy" => "pants").
+                             else.add_field("free" => "hugs").endif.
+                             endif }
 
       context "no crietria meet" do
         subject { sample(["foo" => "bar", "nest" => 124])  }
@@ -115,7 +140,10 @@ describe "conditionals" do
     end
 
     describe "comparing two fields" do
-      let(:config) { load_fixtures("conditionals/two_fields.conf") }
+      let(:config) { ConfigFactry.filter.if("[foo] == [bar]").
+                                         add_tag("woot").
+                                         endif }
+
       subject { sample(["foo" => 123, "bar" => 123])  }
 
       it "add the fields that meet the filter crieria" do
@@ -125,7 +153,12 @@ describe "conditionals" do
 
     describe "new events created from root" do
 
-      let(:config) { load_fixtures('events/new_events_from_root.conf') }
+      let(:config)  { ConfigFactory.filter.if("[type] == 'original'").
+                                           clones('clone').
+                                           add_field("cond1" => "true").
+                                           else.add_field("cond2" => "true").
+                                           endif }
+
       subject { sample("type" => "original").to_a }
 
       it "returns an array of events" do

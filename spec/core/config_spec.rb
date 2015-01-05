@@ -6,8 +6,16 @@ require "logstash/config/config_ast"
 describe LogStashConfigParser do
 
   let(:parser) { LogStashConfigParser.new }
-  let(:single_quote_config) { load_fixtures('parser/single_quote.conf') }
-  let(:empty_config)        { load_fixtures('parser/empty.conf') }
+  let(:single_quote_config) { <<-CONFIG
+                              input {
+                                  example {
+                                    'foo' => 'bar'
+                                    test => { 'bar' => 'baz' }
+                                  }
+                              }
+                              CONFIG
+  }
+  let(:empty_config)        { 'filter {}' }
 
   it "permits single-quoted attribute names" do
     config = parser.parse(single_quote_config)
