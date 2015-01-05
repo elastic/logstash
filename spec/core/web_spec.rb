@@ -1,4 +1,4 @@
-require "insist"
+require 'spec_helper'
 
 describe "web tests" do
   context "rack rubygem" do

@@ -1,4 +1,3 @@
-
 namespace "test" do
   task "default" => [ "bootstrap:test", "test:prep" ] do
     Gem.clear_paths

@@ -1,96 +1,137 @@
-require "logstash/devutils/rspec/spec_helper"
+require "spec_helper"
 require "logstash/util/fieldreference"
 
 describe LogStash::Util::FieldReference, :if => true do
 
   context "using simple accessor" do
 
-    it "should retrieve value" do
-      str = "hello"
-      m = eval(subject.compile(str))
-      data = { "hello" => "world" }
-      insist { m.call(data) } == data[str]
+    let(:key)  { "hello" }
+    let(:data) { { "hello" => "world" } }
+
+    let(:m)    { eval(subject.compile(key)) }
+
+    it "retrieve value" do
+      expect(m.call(data)).to eq("world")
     end
 
-    it "should handle delete in block" do
-      str = "simple"
-      m = eval(subject.compile(str))
-      data = { "simple" => "things" }
+    it "handle delete in block" do
       m.call(data) { |obj, key| obj.delete(key) }
-      insist { data }.empty?
+      expect(data).to be_empty
     end
 
-    it "should handle assignment in block" do
-      str = "simple"
-      m = eval(subject.compile(str))
-      data = {}
-      insist { m.call(data) { |obj, key| obj[key] = "things" }} == "things"
-      insist { data } == { "simple" => "things" }
-    end
+    context "in assignment" do
 
-    it "should handle assignment using set" do
-      str = "simple"
-      data = {}
-      insist { subject.set(str, "things", data) } == "things"
-      insist { data } == { "simple" => "things" }
+      let(:data) { {} }
+
+      it "return the assigned value in blocks" do
+        assign = m.call(data) { |obj, key| obj[key] = "things" }
+        expect(assign).to eq("things")
+      end
+
+      it "updates the internal hash" do
+        m.call(data) { |obj, key| obj[key] = "things" }
+        expect(data).to include("hello" => "things")
+      end
+
+      context "using set" do
+
+        it "return the assigned value" do
+          assigned =  subject.set(key, "things", data)
+          expect(assigned).to eq("things")
+        end
+
+        it "udpates the internal hash" do
+          subject.set(key, "things", data)
+          expect(data).to include("hello" => "things")
+        end
+      end
+
     end
   end
 
   context "using accessor path" do
 
-    it "should retrieve shallow value" do
-      str = "[hello]"
-      m = eval(subject.compile(str))
-      data = { "hello" =>  "world" }
-      insist { m.call(data) } == "world"
+    let(:key) { "[hello]" }
+    let(:m)   { eval(subject.compile(key)) }
+    let(:data) { { "hello" =>  "world" } }
+
+    it "retrieve shallow value" do
+      expect(m.call(data)).to eq("world")
     end
 
-    it "should retrieve deep value" do
-      str = "[hello][world]"
-      m = eval(subject.compile(str))
-      data = { "hello" => { "world" => "foo", "bar" => "baz" } }
-      insist { m.call(data) } == data["hello"]["world"]
+    context "using set" do
+
+      let(:data) {{}}
+
+      it "return the assigned value" do
+        assigned = subject.set(key, "foo", data)
+        expect(assigned).to eq("foo")
+      end
+
+      it "update the internal hash" do
+        subject.set(key, "foo", data)
+        expect(data).to include("hello" => "foo")
+      end
+
     end
 
-    it "should handle delete in block" do
-      str = "[hello][world]"
-      m = eval(subject.compile(str))
-      data = { "hello" => { "world" => "foo", "bar" => "baz" } }
-      m.call(data) { |obj, key| obj.delete(key) }
+    context "with deep values" do
 
-      # Make sure the "world" key is removed.
-      insist { data["hello"] } == { "bar" => "baz" }
+      let(:key) { "[hello][world]" }
+      let(:data) { { "hello" => { "world" => "foo", "bar" => "baz" } } }
+
+      it "retrieve deep value" do
+        expect(m.call(data)).to eq("foo")
+      end
+
+      it "handle delete in block" do
+        m.call(data) { |obj, key| obj.delete(key) }
+        expect(data["hello"]).to_not include("world" => "foo")
+      end
+
+      context "using set" do
+        let(:data) {{}}
+
+        it "return the assigned value" do
+          assigned = subject.set(key, "foo", data)
+          expect(assigned).to eq("foo")
+        end
+        it "update the internal hash" do
+          subject.set(key, "foo", data)
+          expect(data).to include( "hello" => { "world" => "foo" } )
+        end
+      end
+
+      context "with assignment" do
+
+        let(:data) {{}}
+
+        it "not handle assignment in block" do
+          assign = m.call(data) { |obj, key| obj[key] = "things" }
+          expect(assign).to be_nil
+        end
+
+        it "doesn't not affect the data hash" do
+          m.call(data) { |obj, key| obj[key] = "things" }
+          expect(data).to be_empty
+        end
+      end
     end
 
-    it "should not handle assignment in block" do
-      str = "[hello][world]"
-      m = eval(subject.compile(str))
-      data = {}
-      insist { m.call(data) { |obj, key| obj[key] = "things" }}.nil?
-      insist { data } == { }
-    end
+    context "with arrays" do
 
-    it "should set shallow value" do
-      str = "[hello]"
-      data = {}
-      insist { subject.set(str, "foo", data) } == "foo"
-      insist { data } == { "hello" => "foo" }
-    end
+      let(:data) { { "hello" => { "world" => ["a", "b"], "bar" => "baz" } } }
+      let(:base_key) { "[hello][world]" }
 
-    it "should set deep value" do
-      str = "[hello][world]"
-      data = {}
-      insist { subject.set(str, "foo", data) } == "foo"
-      insist { data } == { "hello" => { "world" => "foo" } }
-    end
+      it "retrieve the first array item" do
+        m = eval(subject.compile("#{base_key}[0]"))
+        expect(m.call(data)).to eq("a")
+      end
 
-    it "should retrieve array item" do
-      data = { "hello" => { "world" => ["a", "b"], "bar" => "baz" } }
-      m = eval(subject.compile("[hello][world][0]"))
-      insist { m.call(data) } == data["hello"]["world"][0]
-
-      m = eval(subject.compile("[hello][world][1]"))
-      insist { m.call(data) } == data["hello"]["world"][1]
+      it "retrieve the second array item" do
+        m = eval(subject.compile("#{base_key}[1]"))
+        expect(m.call(data)).to eq("b")
+      end
     end
   end
 end

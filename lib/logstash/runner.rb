@@ -52,6 +52,7 @@ require "logstash/program"
 class LogStash::RSpecsRunner
   def initialize(args)
     @args = args
+    configure
   end
 
   def run
@@ -60,6 +61,15 @@ class LogStash::RSpecsRunner
 
   def wait
     return @result
+  end
+
+  private
+
+  def configure
+    RSpec.configure do |config|
+      config.formatter = 'documentation'
+      config.color    = true
+    end if ENV['LOGSTASH_TEST']
   end
 end
 

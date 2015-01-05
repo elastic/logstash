@@ -1,75 +1,177 @@
 # encoding: utf-8
 
-require "logstash/devutils/rspec/spec_helper"
+require "spec_helper"
 require "logstash/util/charset"
 
 describe LogStash::Util::Charset do
-  let(:logger) { double("logger") }
+
+  let(:logger)   { double("logger") }
+  let(:encoding) { "UTF-8" }
+  let(:charset)  { LogStash::Util::Charset.new(encoding) }
+  let(:data)    { "" }
+
+  subject { charset.convert(data) }
 
   context "with valid UTF-8 source encoding" do
-    subject {LogStash::Util::Charset.new("UTF-8")}
 
-    it "should return untouched data" do
-      ["foobar", "κόσμε"].each do |data|
-        insist { data.encoding.name } == "UTF-8"
-        insist { subject.convert(data) } == data
-        insist { subject.convert(data).encoding.name } == "UTF-8"
+    context "when using regular characters" do
+
+      let(:data) { "foobar" }
+
+      it "returns the encoded data" do eq(data) end
+
+      it "returns the encoding name used" do
+        expect(subject.encoding.name).to eq("UTF-8")
       end
     end
+
+    context "when using non common characters" do
+
+      let(:data) { "κόσμε" }
+
+      it "returns the encoded data" do eq(data) end
+
+      it "returns the encoding name used" do
+        expect(subject.encoding.name).to eq("UTF-8")
+      end
+    end
+
   end
 
   context "with invalid UTF-8 source encoding" do
-    subject do
-      LogStash::Util::Charset.new("UTF-8").tap do |charset|
-        charset.logger = logger
+
+    let(:charset) do
+      LogStash::Util::Charset.new(encoding).tap do |object|
+        object.logger = logger
       end
     end
 
-    it "should escape invalid sequences" do
-      ["foo \xED\xB9\x81\xC3", "bar \xAD"].each do |data|
-        insist { data.encoding.name } == "UTF-8"
-        insist { data.valid_encoding? } == false
-        expect(logger).to receive(:warn).exactly(2).times
-#logger.should_receive(:warn).twice
-        insist { subject.convert(data) } == data.inspect[1..-2]
-        insist { subject.convert(data).encoding.name } == "UTF-8"
+    context "when the invalid value is long" do
+
+      let(:data) { "foo \xED\xB9\x81\xC3" }
+
+      it "return the encoding name" do
+        expect(data.encoding.name).to eq("UTF-8")
       end
+
+      it "return invalid encoding" do
+        expect(data.valid_encoding?).to eq(false)
+      end
+
+      it "scapes invalid sequence" do eq("foo") end
+
+      it "return the converted encoding name" do
+        expect(logger).to receive(:warn)
+        expect(subject.encoding.name).to eq("UTF-8")
+      end
+    end
+
+    context "when the invalid value is short" do
+
+      let(:data) { "bar \xAD" }
+
+      it "return the encoding name" do
+        expect(data.encoding.name).to eq("UTF-8")
+      end
+
+      it "return invalid encoding" do
+        expect(data.valid_encoding?).to eq(false)
+      end
+
+      it "scapes invalid sequence" do eq("foo") end
+
+      it "return the converted encoding name" do
+        expect(logger).to receive(:warn)
+        expect(subject.encoding.name).to eq("UTF-8")
+      end
+
     end
 
   end
 
-  context "with valid non UTF-8 source encoding" do
-    subject {LogStash::Util::Charset.new("ISO-8859-1")}
+  context "with a valid non UTF-8 encoding" do
 
-    it "should encode to UTF-8" do
-      samples = [
-        ["foobar", "foobar"],
-        ["\xE0 Montr\xE9al", "à Montréal"],
-      ]
-      samples.map{|(a, b)| [a.force_encoding("ISO-8859-1"), b]}.each do |(a, b)|
-        insist { a.encoding.name } == "ISO-8859-1"
-        insist { b.encoding.name } == "UTF-8"
-        insist { a.valid_encoding? } == true
-        insist { subject.convert(a).encoding.name } == "UTF-8"
-        insist { subject.convert(a) } == b
+    let(:encoding) { "ISO-8859-1" }
+
+    context "when using regular characters" do
+
+      let(:original) { "foobar" }
+      let(:data)     { original.force_encoding(encoding) }
+
+      it "return the encoding name" do
+        expect(data.encoding.name).to eq("ISO-8859-1")
       end
+
+      it "return a valid encoding" do
+        expect(data.valid_encoding?).to eq(true)
+      end
+
+      it "return the converted value encoding name as UTF-8" do
+        expect(subject.encoding.name).to eq("UTF-8")
+      end
+
+      it "converts without any loss" do eq(original) end
+
+    end
+
+    context "when using extended characters" do
+
+      let(:original) {  "à Montréal" }
+      let(:data)     { "\xE0 Montr\xE9al".force_encoding(encoding) }
+
+      it "return the encoding name" do
+        expect(data.encoding.name).to eq("ISO-8859-1")
+      end
+
+      it "return a valid encoding" do
+        expect(data.valid_encoding?).to eq(true)
+      end
+
+      it "return the converted value encoding name as UTF-8" do
+        expect(subject.encoding.name).to eq("UTF-8")
+      end
+
+      it "converts without any loss" do eq(original) end
+
     end
   end
 
-  context "with invalid non UTF-8 source encoding" do
-    subject {LogStash::Util::Charset.new("ASCII-8BIT")}
+  context "with an invalid non UTF-8 encoding" do
 
-    it "should encode to UTF-8 and replace invalid chars" do
-      samples = [
-        ["\xE0 Montr\xE9al", "� Montr�al"],
-        ["\xCE\xBA\xCF\x8C\xCF\x83\xCE\xBC\xCE\xB5", "����������"],
-      ]
-      samples.map{|(a, b)| [a.force_encoding("ASCII-8BIT"), b]}.each do |(a, b)|
-        insist { a.encoding.name } == "ASCII-8BIT"
-        insist { b.encoding.name } == "UTF-8"
-        insist { subject.convert(a).encoding.name } == "UTF-8"
-        insist { subject.convert(a) } == b
+    let(:encoding) { "ASCII-8BIT" }
+
+    context "when using some regular characters" do
+
+      let(:original) { "� Montr�al" }
+      let(:data)     { "\xE0 Montr\xE9al".force_encoding(encoding) }
+
+      it "return the encoding name" do
+        expect(data.encoding.name).to eq("ASCII-8BIT")
       end
+
+      it "return the converted value encoding name as UTF-8" do
+        expect(subject.encoding.name).to eq("UTF-8")
+      end
+
+      it "converts without any loss" do eq(original) end
+
+    end
+
+    context "when using extended characters" do
+
+      let(:original) {  "����������" }
+      let(:data)     { "\xCE\xBA\xCF\x8C\xCF\x83\xCE\xBC\xCE\xB5".force_encoding(encoding) }
+
+      it "return the encoding name" do
+        expect(data.encoding.name).to eq("ASCII-8BIT")
+      end
+
+      it "return the converted value encoding name as UTF-8" do
+        expect(subject.encoding.name).to eq("UTF-8")
+      end
+
+      it "converts without any loss" do eq(original) end
+
     end
   end
 end

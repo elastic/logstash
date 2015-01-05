@@ -7,7 +7,6 @@ PATH
       clamp
       ftw (~> 0.0.40)
       i18n (= 0.6.9)
-      insist (= 1.0.0)
       jar-dependencies (= 0.1.2)
       jrjackson
       jruby-httpclient
@@ -88,7 +87,6 @@ GEM
     http_parser.rb (0.6.0-java)
     i18n (0.6.9)
     ice_nine (0.11.1)
-    insist (1.0.0)
     jar-dependencies (0.1.2)
     jbundler (0.5.5)
       bundler (~> 1.5)

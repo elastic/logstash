@@ -1,396 +1,160 @@
-require "logstash/devutils/rspec/spec_helper"
+require 'spec_helper'
 
-module ConditionalFanciness
-  def description
-    return example.metadata[:example_group][:description_args][0]
-  end
+describe "conditionals" do
 
-  def conditional(expression, &block)
-    describe(expression) do
-      config <<-CONFIG
-        filter {
-          if #{expression} {
-            mutate { add_tag => "success" }
-          } else {
-            mutate { add_tag => "failure" }
+  let(:pipeline) { LogStash::Pipeline.new(config.to_s) }
+
+  context "within outputs" do
+
+    describe "having a simple conditional" do
+      let(:config) {
+        <<-CONFIG
+          input {
+            generator {
+              message => '{"foo":{"bar"},"baz": "quux"}'
+              count => 1
+            }
+          }
+          output {
+             if [foo] == "bar" {
+             stdout { }
           }
         }
       CONFIG
-      instance_eval(&block)
-    end
-  end
-end
-
-describe "conditionals in output" do
-  extend ConditionalFanciness
-
-  describe "simple" do
-    config <<-CONFIG
-      input {
-        generator {
-          message => '{"foo":{"bar"},"baz": "quux"}'
-          count => 1
-        }
       }
-      output {
-        if [foo] == "bar" {
-          stdout { }
-        }
-      }
-    CONFIG
 
-    agent do
-      #LOGSTASH-2288, should not fail raising an exception
-    end
-  end
-end
+      context"when starting an agent" do
+        it "doesn't not fail" do
+          expect { pipeline.run }.to_not raise_error
+        end
+      end
 
-describe "conditionals in filter" do
-  extend ConditionalFanciness
-
-  describe "simple" do
-    config <<-CONFIG
-      filter {
-        mutate { add_field => { "always" => "awesome" } }
-        if [foo] == "bar" {
-          mutate { add_field => { "hello" => "world" } }
-        } else if [bar] == "baz" {
-          mutate { add_field => { "fancy" => "pants" } }
-        } else {
-          mutate { add_field => { "free" => "hugs" } }
-        }
-      }
-    CONFIG
-
-    sample({"foo" => "bar"}) do
-      insist { subject["always"] } == "awesome"
-      insist { subject["hello"] } == "world"
-      insist { subject["fancy"] }.nil?
-      insist { subject["free"] }.nil?
-    end
-
-    sample({"notfoo" => "bar"}) do
-      insist { subject["always"] } == "awesome"
-      insist { subject["hello"] }.nil?
-      insist { subject["fancy"] }.nil?
-      insist { subject["free"] } == "hugs"
-    end
-
-    sample({"bar" => "baz"}) do
-      insist { subject["always"] } == "awesome"
-      insist { subject["hello"] }.nil?
-      insist { subject["fancy"] } == "pants"
-      insist { subject["free"] }.nil?
     end
   end
 
-  describe "nested" do
-    config <<-CONFIG
-      filter {
-        if [nest] == 123 {
-          mutate { add_field => { "always" => "awesome" } }
-          if [foo] == "bar" {
-            mutate { add_field => { "hello" => "world" } }
-          } else if [bar] == "baz" {
-            mutate { add_field => { "fancy" => "pants" } }
-          } else {
-            mutate { add_field => { "free" => "hugs" } }
-          }
-        }
-      }
-    CONFIG
+  context "within filters" do
 
-    sample("foo" => "bar", "nest" => 124) do
-      insist { subject["always"] }.nil?
-      insist { subject["hello"] }.nil?
-      insist { subject["fancy"] }.nil?
-      insist { subject["free"] }.nil?
-    end
+    describe "having a simple conditional" do
+      let(:config) { ConfigFactory.filter.add_field("always" => "awesome").
+                      if("[foo] == 'bar'").
+                        add_field("hello" => "world").
+                      elseif("[bar] == 'baz'").
+                        add_field("fancy" => "pants").
+                      else.
+                        add_field("free" => "hugs").
+                      endif }
 
-    sample("foo" => "bar", "nest" => 123) do
-      insist { subject["always"] } == "awesome"
-      insist { subject["hello"] } == "world"
-      insist { subject["fancy"] }.nil?
-      insist { subject["free"] }.nil?
-    end
+      it "include the default field" do include("always" => "awesome") end
 
-    sample("notfoo" => "bar", "nest" => 123) do
-      insist { subject["always"] } == "awesome"
-      insist { subject["hello"] }.nil?
-      insist { subject["fancy"] }.nil?
-      insist { subject["free"] } == "hugs"
-    end
+      context "when the if is true" do
 
-    sample("bar" => "baz", "nest" => 123) do
-      insist { subject["always"] } == "awesome"
-      insist { subject["hello"] }.nil?
-      insist { subject["fancy"] } == "pants"
-      insist { subject["free"] }.nil?
-    end
-  end
+        subject      {  sample("foo" => "bar") }
 
-  describe "comparing two fields" do
-    config <<-CONFIG
-      filter {
-        if [foo] == [bar] {
-          mutate { add_tag => woot }
-        }
-      }
-    CONFIG
-
-    sample("foo" => 123, "bar" => 123) do
-      insist { subject["tags"] }.include?("woot")
-    end
-  end
-
-  describe "the 'in' operator" do
-    config <<-CONFIG
-      filter {
-        if [foo] in [foobar] {
-          mutate { add_tag => "field in field" }
-        }
-        if [foo] in "foo" {
-          mutate { add_tag => "field in string" }
-        }
-        if "hello" in [greeting] {
-          mutate { add_tag => "string in field" }
-        }
-        if [foo] in ["hello", "world", "foo"] {
-          mutate { add_tag => "field in list" }
-        }
-        if [missing] in [alsomissing] {
-          mutate { add_tag => "shouldnotexist" }
-        }
-        if !("foo" in ["hello", "world"]) {
-          mutate { add_tag => "shouldexist" }
-        }
-      }
-    CONFIG
-
-    sample("foo" => "foo", "foobar" => "foobar", "greeting" => "hello world") do
-      insist { subject["tags"] }.include?("field in field")
-      insist { subject["tags"] }.include?("field in string")
-      insist { subject["tags"] }.include?("string in field")
-      insist { subject["tags"] }.include?("field in list")
-      reject { subject["tags"] }.include?("shouldnotexist")
-      insist { subject["tags"] }.include?("shouldexist")
-    end
-  end
-
-  describe "the 'not in' operator" do
-    config <<-CONFIG
-      filter {
-        if "foo" not in "baz" { mutate { add_tag => "baz" } }
-        if "foo" not in "foo" { mutate { add_tag => "foo" } }
-        if !("foo" not in "foo") { mutate { add_tag => "notfoo" } }
-        if "foo" not in [somelist] { mutate { add_tag => "notsomelist" } }
-        if "one" not in [somelist] { mutate { add_tag => "somelist" } }
-        if "foo" not in [alsomissing] { mutate { add_tag => "no string in missing field" } }
-      }
-    CONFIG
-
-    sample("foo" => "foo", "somelist" => [ "one", "two" ], "foobar" => "foobar", "greeting" => "hello world", "tags" => [ "fancypantsy" ]) do
-      # verify the original exists
-      insist { subject["tags"] }.include?("fancypantsy")
-
-      insist { subject["tags"] }.include?("baz")
-      reject { subject["tags"] }.include?("foo")
-      insist { subject["tags"] }.include?("notfoo")
-      insist { subject["tags"] }.include?("notsomelist")
-      reject { subject["tags"] }.include?("somelist")
-      insist { subject["tags"] }.include?("no string in missing field")
-    end
-  end
-
-  describe "operators" do
-    conditional "[message] == 'sample'" do
-      sample("sample") { insist { subject["tags"] }.include?("success") }
-      sample("different") { insist { subject["tags"] }.include?("failure") }
-    end
-
-    conditional "[message] != 'sample'" do
-      sample("sample") { insist { subject["tags"] }.include?("failure") }
-      sample("different") { insist { subject["tags"] }.include?("success") }
-    end
-
-    conditional "[message] < 'sample'" do
-      sample("apple") { insist { subject["tags"] }.include?("success") }
-      sample("zebra") { insist { subject["tags"] }.include?("failure") }
-    end
-
-    conditional "[message] > 'sample'" do
-      sample("zebra") { insist { subject["tags"] }.include?("success") }
-      sample("apple") { insist { subject["tags"] }.include?("failure") }
-    end
-
-    conditional "[message] <= 'sample'" do
-      sample("apple") { insist { subject["tags"] }.include?("success") }
-      sample("zebra") { insist { subject["tags"] }.include?("failure") }
-      sample("sample") { insist { subject["tags"] }.include?("success") }
-    end
-
-    conditional "[message] >= 'sample'" do
-      sample("zebra") { insist { subject["tags"] }.include?("success") }
-      sample("sample") { insist { subject["tags"] }.include?("success") }
-      sample("apple") { insist { subject["tags"] }.include?("failure") }
-    end
-
-    conditional "[message] =~ /sample/" do
-      sample("apple") { insist { subject["tags"] }.include?("failure") }
-      sample("sample") { insist { subject["tags"] }.include?("success") }
-      sample("some sample") { insist { subject["tags"] }.include?("success") }
-    end
-
-    conditional "[message] !~ /sample/" do
-      sample("apple") { insist { subject["tags"] }.include?("success") }
-      sample("sample") { insist { subject["tags"] }.include?("failure") }
-      sample("some sample") { insist { subject["tags"] }.include?("failure") }
-    end
-
-  end
-
-  describe "negated expressions" do
-    conditional "!([message] == 'sample')" do
-      sample("sample") { reject { subject["tags"] }.include?("success") }
-      sample("different") { reject { subject["tags"] }.include?("failure") }
-    end
-
-    conditional "!([message] != 'sample')" do
-      sample("sample") { reject { subject["tags"] }.include?("failure") }
-      sample("different") { reject { subject["tags"] }.include?("success") }
-    end
-
-    conditional "!([message] < 'sample')" do
-      sample("apple") { reject { subject["tags"] }.include?("success") }
-      sample("zebra") { reject { subject["tags"] }.include?("failure") }
-    end
-
-    conditional "!([message] > 'sample')" do
-      sample("zebra") { reject { subject["tags"] }.include?("success") }
-      sample("apple") { reject { subject["tags"] }.include?("failure") }
-    end
-
-    conditional "!([message] <= 'sample')" do
-      sample("apple") { reject { subject["tags"] }.include?("success") }
-      sample("zebra") { reject { subject["tags"] }.include?("failure") }
-      sample("sample") { reject { subject["tags"] }.include?("success") }
-    end
-
-    conditional "!([message] >= 'sample')" do
-      sample("zebra") { reject { subject["tags"] }.include?("success") }
-      sample("sample") { reject { subject["tags"] }.include?("success") }
-      sample("apple") { reject { subject["tags"] }.include?("failure") }
-    end
-
-    conditional "!([message] =~ /sample/)" do
-      sample("apple") { reject { subject["tags"] }.include?("failure") }
-      sample("sample") { reject { subject["tags"] }.include?("success") }
-      sample("some sample") { reject { subject["tags"] }.include?("success") }
-    end
-
-    conditional "!([message] !~ /sample/)" do
-      sample("apple") { reject { subject["tags"] }.include?("success") }
-      sample("sample") { reject { subject["tags"] }.include?("failure") }
-      sample("some sample") { reject { subject["tags"] }.include?("failure") }
-    end
-
-  end
-
-  describe "value as an expression" do
-    # testing that a field has a value should be true.
-    conditional "[message]" do
-      sample("apple") { insist { subject["tags"] }.include?("success") }
-      sample("sample") { insist { subject["tags"] }.include?("success") }
-      sample("some sample") { insist { subject["tags"] }.include?("success") }
-    end
-
-    # testing that a missing field has a value should be false.
-    conditional "[missing]" do
-      sample("apple") { insist { subject["tags"] }.include?("failure") }
-      sample("sample") { insist { subject["tags"] }.include?("failure") }
-      sample("some sample") { insist { subject["tags"] }.include?("failure") }
-    end
-  end
-
-  describe "logic operators" do
-    describe "and" do
-      conditional "[message] and [message]" do
-        sample("whatever") { insist { subject["tags"] }.include?("success") }
+        it "include the if field"  do include("hello" => "world") end
+        it "not include the elseif field" do should_not include("fancy", "hugs") end
       end
-      conditional "[message] and ![message]" do
-        sample("whatever") { insist { subject["tags"] }.include?("failure") }
+
+      context "when the else is true" do
+
+        subject      {  sample("notfoo" => "bar") }
+
+        it "include the else field" do include("free" => "hugs" ) end
+        it "not include the elseif field" do should_not include("hello", "fancy") end
       end
-      conditional "![message] and [message]" do
-        sample("whatever") { insist { subject["tags"] }.include?("failure") }
+
+
+      context "when the elseif is true" do
+
+        subject      {  sample("bar" => "baz") }
+
+        it "include the elseif field" do include("fancy" => "pants") end
+        it "not include the if field" do should_not include("hello", "free") end
       end
-      conditional "![message] and ![message]" do
-        sample("whatever") { insist { subject["tags"] }.include?("failure") }
+
+    end
+
+    describe "having nested conditionals" do
+      let(:config) { ConfigFactory.filter.
+                             if("[nest] == 123").add_field("always" => "awesome").
+                             if("[foo] == 'bar'").add_field("hello" => "world").
+                             elseif("[bar] == 'baz'").add_field("fancy" => "pants").
+                             else.add_field("free" => "hugs").endif.
+                             endif }
+
+      context "when the main if is not true" do
+
+        subject { sample(["foo" => "bar", "nest" => 124])  }
+
+        it "add no field" do should_not include("always", "hello", "fancy", "free") end
+      end
+
+      context "if the main if is true" do
+
+        it "include the primary if field" do include("always" => "awesome") end
+
+        context "when the nested if is true" do
+
+          subject { sample(["foo" => "bar", "nest" => 123])  }
+
+          it "not include the elseif field" do should_not include("fancy", "free") end
+          it "include the nested if field"  do include("hello" => "world") end
+        end
+
+        context "when the nested else is true" do
+          subject { sample(["notfoo" => "bar", "nest" => 123])  }
+
+          it "not include the if field" do should_not include("hello") end
+          it "not include the elseif field" do should_not include("fancy") end
+          it "include the else field" do include("free" => "hugs") end
+        end
+
+        context "when the nested elseif is true" do
+
+          subject { sample(["bar" => "baz", "nest" => 123])  }
+
+          it "not include the else field" do should_not include("free") end
+          it "not include the if field" do should_not include("hello") end
+          it "add the elseif field" do include("fancy" => "pants") end
+        end
       end
     end
 
-    describe "or" do
-      conditional "[message] or [message]" do
-        sample("whatever") { insist { subject["tags"] }.include?("success") }
-      end
-      conditional "[message] or ![message]" do
-        sample("whatever") { insist { subject["tags"] }.include?("success") }
-      end
-      conditional "![message] or [message]" do
-        sample("whatever") { insist { subject["tags"] }.include?("success") }
-      end
-      conditional "![message] or ![message]" do
-        sample("whatever") { insist { subject["tags"] }.include?("failure") }
-      end
-    end
-  end
+      describe "when comparing two fields" do
+        let(:config) { ConfigFactry.filter.if("[foo] == [bar]").
+                       add_tag("woot").
+                       endif }
 
-  describe "field references" do
-    conditional "[field with space]" do
-      sample("field with space" => "hurray") do
-        insist { subject["tags"].include?("success") }
+        subject { sample(["foo" => 123, "bar" => 123])  }
+
+        context "when the if is true" do
+          it "include the if tag" do
+            include("tags" => ["woot"])
+          end
+        end
       end
-    end
 
-    conditional "[field with space] == 'hurray'" do
-      sample("field with space" => "hurray") do
-        insist { subject["tags"].include?("success") }
+    describe "when a new events is created" do
+
+      let(:config)  { ConfigFactory.filter.if("[type] == 'original'").
+                                           clones('clone').
+                                           add_field("cond1" => "true").
+                                           else.add_field("cond2" => "true").
+                                           endif }
+
+      subject { sample("type" => "original").to_a }
+
+      it "the first message has type original" do
+        expect(subject[0]).to include("type" => "original")
       end
-    end
 
-    conditional "[nested field][reference with][some spaces] == 'hurray'" do
-      sample({"nested field" => { "reference with" => { "some spaces" => "hurray" } } }) do
-        insist { subject["tags"].include?("success") }
+      it "the first message has a new field" do
+        expect(subject[0]).to include("cond1" => "true")
       end
-    end
-  end
 
-  describe "new events from root" do
-    config <<-CONFIG
-      filter {
-        if [type] == "original" {
-          clone {
-            clones => ["clone"]
-          }
-        }
-        if [type] == "original" {
-          mutate { add_field => { "cond1" => "true" } }
-        } else {
-          mutate { add_field => { "cond2" => "true" } }
-        }
-      }
-    CONFIG
+      it "has a message with type clone" do
+        expect(subject[1]).to include("type" => "clone")
+      end
 
-    sample({"type" => "original"}) do
-      insist { subject }.is_a?(Array)
-      insist { subject.length } == 2
-
-      insist { subject[0]["type"] } == "original"
-      insist { subject[0]["cond1"] } == "true"
-      insist { subject[0]["cond2"] } == nil
-
-      insist { subject[1]["type"] } == "clone"
-      # insist { subject[1]["cond1"] } == nil
-      # insist { subject[1]["cond2"] } == "true"
     end
   end
 end
