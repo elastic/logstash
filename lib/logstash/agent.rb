@@ -134,7 +134,7 @@ class LogStash::Agent < Clamp::Command
     Stud::untrap("TERM", sigterm_id) unless sigterm_id.nil?
   end # def execute
 
-  def format_config config_path, config_string
+  def format_config(config_path, config_string)
     config_string = config_string.to_s
     if config_path
       # Append the config string.
