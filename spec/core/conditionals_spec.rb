@@ -4,9 +4,9 @@ describe "conditionals" do
 
   let(:pipeline) { LogStash::Pipeline.new(config.to_s) }
 
-  context "in outputs" do
+  context "within outputs" do
 
-    describe "simple" do
+    describe "having a simple conditional" do
       let(:config) {
         <<-CONFIG
           input {
@@ -22,16 +22,19 @@ describe "conditionals" do
         }
       CONFIG
       }
-      it "doesn't not fail raising an exeption starting an agent" do
-        expect { pipeline.run }.to_not raise_error
+
+      context"when starting an agent" do
+        it "doesn't not fail" do
+          expect { pipeline.run }.to_not raise_error
+        end
       end
 
     end
   end
 
-  context "in filters" do
+  context "within filters" do
 
-    describe "simple" do
+    describe "having a simple conditional" do
       let(:config) { ConfigFactory.filter.add_field("always" => "awesome").
                       if("[foo] == 'bar'").
                         add_field("hello" => "world").
@@ -41,49 +44,36 @@ describe "conditionals" do
                         add_field("free" => "hugs").
                       endif }
 
-      context "first conditional meet" do
+      it "include the default field" do include("always" => "awesome") end
+
+      context "when the if is true" do
 
         subject      {  sample("foo" => "bar") }
 
-        it "by default it add a new field" do include("always" => "awesome") end
-
-        it "add a new field when conditional is meet" do include("hello" => "world") end
-
-        it "does not add a new field, when the conditional is not reach" do
-          should_not include("fancy", "free")
-        end
+        it "include the if field"  do include("hello" => "world") end
+        it "not include the elseif field" do should_not include("fancy", "hugs") end
       end
 
-      context "last else conditional meet" do
+      context "when the else is true" do
 
         subject      {  sample("notfoo" => "bar") }
 
-        it ("by default it add a new field") { include("always" => "awesome" ) }
-
-        it ("add a new field when conditional is meet") { include("free" => "hugs" ) }
-
-        it "does not add a new field, when the conditional is not reach" do
-          should_not include("hello", "fancy")
-        end
+        it "include the else field" do include("free" => "hugs" ) end
+        it "not include the elseif field" do should_not include("hello", "fancy") end
       end
 
 
-      context "an elseif conditional meet" do
+      context "when the elseif is true" do
 
         subject      {  sample("bar" => "baz") }
 
-        it ("by default it add a new field") { include("always" => "awesome") }
-
-        it ("does not add a new field, when the conditional is false") { include("fancy" => "pants") }
-
-        it "does not add a new field, when the conditional is not reach" do
-          should_not include("hello", "free")
-        end
+        it "include the elseif field" do include("fancy" => "pants") end
+        it "not include the if field" do should_not include("hello", "free") end
       end
 
     end
 
-    describe "nested" do
+    describe "having nested conditionals" do
       let(:config) { ConfigFactory.filter.
                              if("[nest] == 123").add_field("always" => "awesome").
                              if("[foo] == 'bar'").add_field("hello" => "world").
@@ -91,67 +81,59 @@ describe "conditionals" do
                              else.add_field("free" => "hugs").endif.
                              endif }
 
-      context "no crietria meet" do
+      context "when the main if is not true" do
+
         subject { sample(["foo" => "bar", "nest" => 124])  }
 
-        it "meet no crieria at all" do
-          should_not include("always", "hello", "fancy", "free")
-        end
+        it "add no field" do should_not include("always", "hello", "fancy", "free") end
       end
 
-      context "nested crieria meet" do
-        subject { sample(["foo" => "bar", "nest" => 123])  }
+      context "if the main if is true" do
 
-        it "does not add unmeet criteria" do
-          should_not include("fancy", "free")
+        it "include the primary if field" do include("always" => "awesome") end
+
+        context "when the nested if is true" do
+
+          subject { sample(["foo" => "bar", "nest" => 123])  }
+
+          it "not include the elseif field" do should_not include("fancy", "free") end
+          it "include the nested if field"  do include("hello" => "world") end
         end
 
-        it "add positive conditionals" do
-          include("always" => "awesome", "hello" => "world")
+        context "when the nested else is true" do
+          subject { sample(["notfoo" => "bar", "nest" => 123])  }
+
+          it "not include the if field" do should_not include("hello") end
+          it "not include the elseif field" do should_not include("fancy") end
+          it "include the else field" do include("free" => "hugs") end
         end
 
-      end
+        context "when the nested elseif is true" do
 
-      context "nested crieria meet with else" do
-        subject { sample(["notfoo" => "bar", "nest" => 123])  }
+          subject { sample(["bar" => "baz", "nest" => 123])  }
 
-        it "does not add unmeet criteria" do
-          should_not include("fancy", "hello")
+          it "not include the else field" do should_not include("free") end
+          it "not include the if field" do should_not include("hello") end
+          it "add the elseif field" do include("fancy" => "pants") end
         end
-
-        it "add positive conditionals" do
-          include("always" => "awesome", "free" => "hugs")
-        end
-
-      end
-
-      context "nested crieria meet with elseif" do
-        subject { sample(["bar" => "baz", "nest" => 123])  }
-
-        it "does not add unmeet criteria" do
-          should_not include("free", "hello")
-        end
-
-        it "add positive conditionals" do
-          include("always" => "awesome", "fancy" => "pants")
-        end
-
       end
     end
 
-    describe "comparing two fields" do
-      let(:config) { ConfigFactry.filter.if("[foo] == [bar]").
-                                         add_tag("woot").
-                                         endif }
+      describe "when comparing two fields" do
+        let(:config) { ConfigFactry.filter.if("[foo] == [bar]").
+                       add_tag("woot").
+                       endif }
 
-      subject { sample(["foo" => 123, "bar" => 123])  }
+        subject { sample(["foo" => 123, "bar" => 123])  }
 
-      it "add the fields that meet the filter crieria" do
-        include("tags" => ["woot"])
+        context "when the if is true" do
+          it "include the if tag" do
+            include("tags" => ["woot"])
+          end
+        end
       end
-    end
 
-    describe "new events created from root" do
+    describe "when a new events is created" do
 
       let(:config)  { ConfigFactory.filter.if("[type] == 'original'").
                                            clones('clone').
@@ -161,19 +143,15 @@ describe "conditionals" do
 
       subject { sample("type" => "original").to_a }
 
-      it "returns an array of events" do
-        expect(subject).to be_an(Array)
-      end
-
-      it "has a first event with type original" do
+      it "the first message has type original" do
         expect(subject[0]).to include("type" => "original")
       end
 
-      it "has a first event with a new property" do
+      it "the first message has a new field" do
         expect(subject[0]).to include("cond1" => "true")
       end
 
-      it "has a second event with type cloned" do
+      it "has a message with type clone" do
         expect(subject[1]).to include("type" => "clone")
       end
 
