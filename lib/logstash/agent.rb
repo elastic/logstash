@@ -76,7 +76,6 @@ class LogStash::Agent < Clamp::Command
     require "cabin" # gem 'cabin'
     require "logstash/plugin"
     @logger = Cabin::Channel.get(LogStash)
-
     if version?
       show_version
       return 0
@@ -88,36 +87,6 @@ class LogStash::Agent < Clamp::Command
 
     if show_startup_errors
       stdout_logs = @logger.subscribe(STDOUT)
-    end
-    configure
-
-    # You must specify a config_string or config_path
-    if @config_string.nil? && @config_path.nil?
-      fail(help + "\n" + I18n.t("logstash.agent.missing-configuration"))
-    end
-
-    @config_string = @config_string.to_s
-
-    if @config_path
-      # Append the config string.
-      # This allows users to provide both -f and -e flags. The combination
-      # is rare, but useful for debugging.
-      @config_string = @config_string + load_config(@config_path)
-    else
-      # include a default stdin input if no inputs given
-      if @config_string !~ /input *{/
-        @config_string += DEFAULT_INPUT
-      end
-      # include a default stdout output if no outputs given
-      if @config_string !~ /output *{/
-        @config_string += DEFAULT_OUTPUT
-      end
-    end
-
-    begin
-      pipeline = LogStash::Pipeline.new(@config_string)
-    rescue LoadError => e
-      fail("Configuration problem.")
     end
 
     # Make SIGINT shutdown the pipeline.
@@ -145,36 +114,45 @@ class LogStash::Agent < Clamp::Command
       configure_logging(log_file)
     end
 
-    pipeline.configure("filter-workers", filter_workers)
-
-    # Stop now if we are only asking for a config test.
-    if config_test?
-      report "Configuration OK"
-      return
+    if @config_string || @config_path then
+      @config_string = format_config @config_path, @config_string
+      @pipeline = setup_pipeline
+    else
+      fail(help + "\n" + I18n.t("logstash.agent.missing-configuration"))
     end
 
-    @logger.unsubscribe(stdout_logs) if show_startup_errors
-
-    # TODO(sissel): Get pipeline completion status.
-    pipeline.run
     return 0
-  rescue LogStash::ConfigurationError => e
-    @logger.unsubscribe(stdout_logs) if show_startup_errors
-    report I18n.t("logstash.agent.error", :error => e)
-    if !config_test?
-      report I18n.t("logstash.agent.configtest-flag-information")
-    end
-    return 1
+
   rescue => e
-    @logger.unsubscribe(stdout_logs) if show_startup_errors
     report I18n.t("oops", :error => e)
     report e.backtrace if @logger.debug? || $DEBUGLIST.include?("stacktrace")
     return 1
   ensure
+    @logger.unsubscribe(stdout_logs) if show_startup_errors
     @log_fd.close if @log_fd
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?
     Stud::untrap("TERM", sigterm_id) unless sigterm_id.nil?
   end # def execute
+
+  def format_config config_path, config_string
+    config_string = config_string.to_s
+    if config_path
+      # Append the config string.
+      # This allows users to provide both -f and -e flags. The combination
+      # is rare, but useful for debugging.
+      config_string = config_string + load_config(config_path)
+    else
+      # include a default stdin input if no inputs given
+      if config_string !~ /input *{/
+        config_string += "input { stdin { type => stdin } }"
+      end
+      # include a default stdout output if no outputs given
+      if config_string !~ /output *{/
+        config_string += "output { stdout { codec => rubydebug } }"
+      end
+    end
+    config_string
+  end
 
   def show_version
     show_version_logstash
@@ -185,6 +163,32 @@ class LogStash::Agent < Clamp::Command
       show_gems if [:debug].include?(verbosity?) || debug?
     end
   end # def show_version
+
+  def setup_pipeline
+
+    pipeline = LogStash::Pipeline.new(@config_string)
+
+    pipeline.configure("filter-workers", filter_workers)
+
+    # Stop now if we are only asking for a config test.
+    if config_test?
+      report "Configuration OK"
+    else
+      pipeline.run
+    end
+
+    return pipeline
+
+  # TODO(sissel): Get pipeline completion status.
+  rescue LoadError => e
+    fail("Configuration problem.")
+  rescue LogStash::ConfigurationError => e
+    report I18n.t("logstash.agent.error", :error => e)
+    if !config_test?
+      report I18n.t("logstash.agent.configtest-flag-information")
+    end
+    return 1
+  end
 
   def show_version_logstash
     require "logstash/version"
