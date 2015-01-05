@@ -7,6 +7,8 @@ en:
     The error reported is: 
       %{error}
   logstash:
+    error: >-
+      Error: %{error}
     environment:
       jruby-required:  >-
         JRuby is required
@@ -57,11 +59,6 @@ en:
     agent:
       sighup: >-
         SIGHUP received.
-      missing-configuration: >-
-        No configuration file was specified. Perhaps you forgot to provide
-        the '-f yourlogstash.conf' flag?
-      error: >-
-        Error: %{error}
       sigint: >-
         SIGINT received. Shutting down the pipeline.
       sigterm: >-
@@ -72,10 +69,22 @@ en:
         data loss.
       forced_sigint: >-
         SIGINT received. Terminating immediately..
+    runner:
+      short-help: |-
+        usage:
+          bin/logstash -f CONFIG_FILE [-t] [--quiet|verbose|debug] [-w COUNT] [-l LOG]
+          bin/logstash -e CONFIG_STR [-t] [--quiet|verbose|debug] [-w COUNT] [-l LOG]
+          bin/logstash -i SHELL [--quiet|verbose|debug]
+          bin/logstash -V [--verbose|debug]
+          bin/logstash --help
+      missing-configuration: >-
+        No configuration file was specified. Perhaps you forgot to provide
+        the '-f yourlogstash.conf' flag?
+      invalid-shell: >-
+        Invalid option for interactive Ruby shell. Use either "irb" or "pry"
       configtest-flag-information: |-
-        You may be interested in the '--configtest' flag which you can
-        use to validate logstash's configuration before you choose
-        to restart a running system.
+        You may be interested in the '--configtest' flag which you can use to validate
+        logstash's configuration before you choose to restart a running system.
       configuration:
         obsolete: >-
           The setting `%{name}` in plugin `%{plugin}` is obsolete and is no
@@ -192,3 +201,6 @@ en:
           if there are still inflight events in memory.
           By default, logstash will refuse to quit until all
           received events have been pushed to the outputs.
+        rubyshell: |+
+          Drop to shell instead of running as normal.
+          Valid shells are "irb" and "pry"

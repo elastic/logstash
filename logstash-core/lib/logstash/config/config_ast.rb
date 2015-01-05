@@ -339,7 +339,7 @@ module LogStash; module Config; module AST
 
       if duplicate_values.size > 0
         raise ConfigurationError.new(
-          I18n.t("logstash.agent.configuration.invalid_plugin_settings_duplicate_keys",
+          I18n.t("logstash.runner.configuration.invalid_plugin_settings_duplicate_keys",
                  :keys => duplicate_values.join(', '),
                  :line => input.line_of(interval.first),
                  :column => input.column_of(interval.first),

@@ -101,7 +101,7 @@ module LogStash::Config::Mixin
 
     if !self.class.validate(params)
       raise LogStash::ConfigurationError,
-        I18n.t("logstash.agent.configuration.invalid_plugin_settings")
+        I18n.t("logstash.runner.configuration.invalid_plugin_settings")
     end
 
     # We remove any config options marked as obsolete,
@@ -287,7 +287,7 @@ module LogStash::Config::Mixin
         elsif config_key.is_a?(String)
           next if params.keys.member?(config_key)
         end
-        @logger.error(I18n.t("logstash.agent.configuration.setting_missing",
+        @logger.error(I18n.t("logstash.runner.configuration.setting_missing",
                              :setting => config_key, :plugin => @plugin_name,
                              :type => @plugin_type))
         is_valid = false
@@ -314,7 +314,7 @@ module LogStash::Config::Mixin
             # Used for converting values in the config to proper objects.
             params[key] = result if !result.nil?
           else
-            @logger.error(I18n.t("logstash.agent.configuration.setting_invalid",
+            @logger.error(I18n.t("logstash.runner.configuration.setting_invalid",
                                  :plugin => @plugin_name, :type => @plugin_type,
                                  :setting => key, :value => value.inspect,
                                  :value_type => config_val,
