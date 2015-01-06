@@ -58,16 +58,13 @@ end
 
 describe LogStash::Pipeline do
 
-  context "teardown" do
+context "teardown" do
 
-    before(:each) do
-      LogStash::Plugin.stub(:lookup)
-        .with("input", "dummyinput").and_return(DummyInput)
-      LogStash::Plugin.stub(:lookup)
-        .with("codec", "plain").and_return(DummyCodec)
-      LogStash::Plugin.stub(:lookup)
-        .with("output", "dummyoutput").and_return(DummyOutput)
-    end
+  before(:each) do
+    allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
+    allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+    allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+  end
 
     let(:test_config_without_output_workers) {
       <<-eos

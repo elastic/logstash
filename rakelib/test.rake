@@ -10,6 +10,7 @@ namespace "test" do
 
     require "rspec/core/runner"
     require "rspec"
+    require 'ci/reporter/rake/rspec_loader'
   end
 
   desc "run core specs"
