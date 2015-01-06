@@ -99,14 +99,15 @@ class LogStash::Agent < Clamp::Command
         @logger.warn(I18n.t("logstash.agent.sigint"))
         Thread.new(@logger) {|logger| sleep 5; logger.warn(I18n.t("logstash.agent.slow_shutdown")) }
         @interrupted_once = true
-        pipeline.shutdown
+        pipeline.shutdown if pipeline
       end
     end
 
     # Make SIGTERM shutdown the pipeline.
     sigterm_id = Stud::trap("TERM") do
       @logger.warn(I18n.t("logstash.agent.sigterm"))
-      pipeline.shutdown
+      pipeline.shutdown if pipeline
+      @logger.warn(I18n.t("logstash.agent.interrupted"))
     end
 
     Stud::trap("HUP") do
@@ -116,7 +117,7 @@ class LogStash::Agent < Clamp::Command
 
     if @config_string || @config_path then
       @config_string = format_config @config_path, @config_string
-      @pipeline = setup_pipeline
+      pipeline = setup_pipeline
     else
       fail(help + "\n" + I18n.t("logstash.agent.missing-configuration"))
     end
