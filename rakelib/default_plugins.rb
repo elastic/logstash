@@ -64,11 +64,9 @@ logstash-input-gelf
 logstash-output-lumberjack
 logstash-input-generator
 logstash-input-graphite
-logstash-output-kafka
 logstash-input-imap
 logstash-input-irc
 logstash-output-juggernaut
-logstash-input-kafka
 logstash-input-log4j
 logstash-input-lumberjack
 logstash-input-pipe
