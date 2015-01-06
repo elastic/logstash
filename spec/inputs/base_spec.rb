@@ -8,6 +8,6 @@ describe "LogStash::Inputs::Base#fix_streaming_codecs" do
     plain = LogStash::Codecs::Plain.new("charset" => "CP1252")
     tcp = LogStash::Inputs::Tcp.new("codec" => plain, "port" => 3333)
     tcp.instance_eval { fix_streaming_codecs }
-    insist { tcp.codec.charset } == "CP1252"
+    expect(tcp.codec.charset).to eq("CP1252")
   end
 end
