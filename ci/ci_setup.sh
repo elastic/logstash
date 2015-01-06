@@ -18,4 +18,5 @@ rake bootstrap # Bootstrap your logstash instance
 
 # Set up some general options for the rspec runner
 echo "--order rand" > .rspec
-echo "--format CI::Reporter::RSpec" >> .rspec
+echo "--format progress" >> .rspec
+echo "--format CI::Reporter::RSpecFormatter" >> .rspec
