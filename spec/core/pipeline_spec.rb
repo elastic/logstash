@@ -98,19 +98,19 @@ describe LogStash::Pipeline do
       pipeline = TestPipeline.new(test_config_without_output_workers)
       pipeline.run
 
-      insist { pipeline.outputs.size } == 1
-      insist { pipeline.outputs.first.worker_plugins.size } == 1
-      insist { pipeline.outputs.first.worker_plugins.first.num_teardowns } == 1
+      expect(pipeline.outputs.size ).to eq(1)
+      expect(pipeline.outputs.first.worker_plugins.size ).to eq(1)
+      expect(pipeline.outputs.first.worker_plugins.first.num_teardowns ).to eq(1)
     end
 
     it "should call output teardown correctly with output workers" do
       pipeline = TestPipeline.new(test_config_with_output_workers)
       pipeline.run
 
-      insist { pipeline.outputs.size } == 1
-      insist { pipeline.outputs.first.num_teardowns } == 0
+      expect(pipeline.outputs.size ).to eq(1)
+      expect(pipeline.outputs.first.num_teardowns).to eq(0)
       pipeline.outputs.first.worker_plugins.each do |plugin|
-        insist { plugin.num_teardowns } == 1
+        expect(plugin.num_teardowns ).to eq(1)
       end
     end
   end

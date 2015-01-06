@@ -16,7 +16,7 @@ describe LogStashConfigParser do
       }
     ))
 
-    reject { config }.nil?
+    expect(config).not_to be_nil
   end
 
   it "should permit empty plugin sections" do
@@ -26,6 +26,6 @@ describe LogStashConfigParser do
       }
     ))
 
-    reject { config }.nil?
+    expect(config).not_to be_nil
   end
 end
