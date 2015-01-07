@@ -39,6 +39,8 @@ module LogStash::Config::Mixin
     Regexp => 100,
   }
 
+  GEM_NAME_PREFIX = 'logstash'
+
   # This method is called when someone does 'include LogStash::Config'
   def self.included(base)
     # Add the DSL methods to the 'base' given.
@@ -121,13 +123,16 @@ module LogStash::Config::Mixin
       return @config_name
     end
 
+    # Deprecated: Declare the version of the plugin
+    # inside the gemspec.
     def plugin_status(status=nil)
       milestone(status)
     end
 
+    # Deprecated: Declare the version of the plugin
+    # inside the gemspec.
     def milestone(m=nil)
-      @milestone = m if !m.nil?
-      return @milestone
+      @logger.error(I18n.t('logstash.plugin.deprecated'))
     end
 
     # Define a new configuration setting
@@ -184,7 +189,7 @@ module LogStash::Config::Mixin
         end
       end
       subclass.instance_variable_set("@config", subconfig)
-      @@milestone_notice_given = false
+      @@version_notice_given = false
     end # def inherited
 
     def validate(params)
@@ -193,7 +198,7 @@ module LogStash::Config::Mixin
       @logger = Cabin::Channel.get(LogStash)
       is_valid = true
 
-      is_valid &&= validate_milestone
+      is_valid &&= validate_plugin_version
       is_valid &&= validate_check_invalid_parameter_names(params)
       is_valid &&= validate_check_required_parameter_names(params)
       is_valid &&= validate_check_parameter_values(params)
@@ -201,23 +206,36 @@ module LogStash::Config::Mixin
       return is_valid
     end # def validate
 
-    def validate_milestone
-      return true if @@milestone_notice_given
-      docmsg = "For more information about plugin milestones, see http://logstash.net/docs/#{LOGSTASH_VERSION}/plugin-milestones "
-      plugin_type = ancestors.find { |a| a.name =~ /::Base$/ }.config_name
-      case @milestone
-        when 0,1,2
-          @logger.warn(I18n.t("logstash.plugin.milestone.#{@milestone}", 
-                              :type => plugin_type, :name => @config_name,
+    def plugin_version
+      specification = Gem::Specification.find_by_name(plugin_gem_name)
+      major, minor, patch = specification.version.segments
+
+      Struct.new(:major, :minor, :patch)
+        .new(major, minor, patch)
+    end
+
+    def plugin_gem_name
+      [GEM_NAME_PREFIX, @plugin_type, @plugin_name].join('-')
+    end
+
+    def validate_plugin_version
+      return true if @@version_notice_given
+
+      if plugin_version.major < 1
+        if plugin_version.minor == 9
+          @logger.warn(I18n.t("logstash.plugin.version.0-9-0", 
+                              :type => @plugin_type,
+                              :name => @config_name,
                               :LOGSTASH_VERSION => LOGSTASH_VERSION))
-        when 3
-          # No message to log for milestone 3 plugins.
-        when nil
-          raise "#{@config_name} must set a milestone. #{docmsg}"
         else
-          raise "#{@config_name} set an invalid plugin status #{@milestone}. Valid values are 0, 1, 2, or 3. #{docmsg}"
+          @logger.warn(I18n.t("logstash.plugin.version.0-1-0", 
+                              :type => @plugin_type,
+                              :name => @config_name,
+                              :LOGSTASH_VERSION => LOGSTASH_VERSION))
+        end
       end
-      @@milestone_notice_given = true
+
+      @@version_notice_given = true
       return true
     end
 
