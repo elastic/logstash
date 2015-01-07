@@ -20,6 +20,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "pry"                   #(Ruby license)
   gem.add_runtime_dependency "stud"                  #(Apache 2.0 license)
   gem.add_runtime_dependency "clamp"                 #(MIT license) for command line args/flags
+  gem.add_runtime_dependency "filesize"              #(MIT license) for :bytes config validator
 
   # TODO(sissel): Treetop 1.5.x doesn't seem to work well, but I haven't
   # investigated what the cause might be. -Jordan

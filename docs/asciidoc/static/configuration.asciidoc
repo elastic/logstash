@@ -188,6 +188,27 @@ Example:
   codec => "json"
 ----------------------------------
 
+[[bytes]]
+[float]
+==== Bytes
+
+A bytes field is a String field which represents a valid unit of bytes. It is a 
+convenient method for declaring specific sizes in your plugin options. Both SI(k M G T P E Z Y)
+and Binary(Ki Mi Gi Ti Pi Ei Zi Yi) units are supported. Binary units are in 
+base-1024, while SI units are in base-1000. This field is case-insensitive 
+and accepts space between the value and the unit. When no unit is specified, the integer string
+represents the number of bytes.
+
+Examples:
+
+[source,js]
+----------------------------------
+  my_bytes => "1113"   # 1113 bytes
+  my_bytes => "10MiB"  # 10485760 bytes
+  my_bytes => "100kib" # 102400 bytes
+  my_bytes => "180 mb" # 180000000 bytes
+----------------------------------
+
 
 [float]
 === Field References
