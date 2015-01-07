@@ -29,4 +29,60 @@ describe LogStash::Plugin do
     end
     expect(LogStash::Plugin.lookup("filter", "lady_gaga")).to eq(LogStash::Filters::LadyGaga)
   end
+
+  context "when validating the plugin version" do
+    let(:plugin_name) { 'logstash-filter-stromae' }
+    subject do
+      Class.new(LogStash::Filters::Base) do
+        config_name 'stromae'
+      end
+    end
+
+    it "doesn't warn the user if the version is superior or equal to 1.0.0" do
+      allow(Gem::Specification).to receive(:find_by_name)
+        .with(plugin_name)
+        .and_return(double(:version => Gem::Version.new('1.0.0')))
+
+      expect_any_instance_of(Cabin::Channel).not_to receive(:warn)
+      subject.validate({})
+    end
+
+    it 'warns the user if the plugin version is between 0.9.x and 1.0.0' do
+      allow(Gem::Specification).to receive(:find_by_name)
+        .with(plugin_name)
+        .and_return(double(:version => Gem::Version.new('0.9.1')))
+
+      expect_any_instance_of(Cabin::Channel).to receive(:warn)
+        .with(/Using version 0.9.x/)
+
+      subject.validate({})
+    end
+
+    it 'warns the user if the plugin version is inferior to 0.9.x' do
+      allow(Gem::Specification).to receive(:find_by_name)
+        .with(plugin_name)
+        .and_return(double(:version => Gem::Version.new('0.1.1')))
+
+      expect_any_instance_of(Cabin::Channel).to receive(:warn)
+        .with(/Using version 0.1.x/)
+      subject.validate({})
+    end
+
+    it "doesnt show the version notice more than once" do
+      class LogStash::Filters::Stromae < LogStash::Filters::Base
+        config_name "stromae"
+      end
+
+      allow(Gem::Specification).to receive(:find_by_name)
+        .with(plugin_name)
+        .and_return(double(:version => Gem::Version.new('0.1.1')))
+
+      expect_any_instance_of(Cabin::Channel).to receive(:warn)
+        .once
+        .with(/Using version 0.1.x/)
+
+      LogStash::Filters::Stromae.validate({})
+      LogStash::Filters::Stromae.validate({})
+    end
+  end
 end
