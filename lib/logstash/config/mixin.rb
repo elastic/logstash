@@ -7,6 +7,7 @@ require "logstash/util/password"
 require "logstash/version"
 require "logstash/environment"
 require "logstash/util/plugin_version"
+require "filesize"
 
 LogStash::Environment.load_locale!
 
@@ -466,6 +467,13 @@ module LogStash::Config::Mixin
             end
 
             result = value.first
+          when :bytes
+            begin
+              bytes = Integer(value.first) rescue nil
+              result = bytes || Filesize.from(value.first).to_i
+            rescue ArgumentError
+              return false, "Unparseable filesize: #{value.first}. possible units (KiB, MiB, ...) e.g. '10 KiB'. doc reference: http://www.elasticsearch.org/guide/en/logstash/current/_logstash_config_language.html#bytes"
+            end
           else
             return false, "Unknown validator symbol #{validator}"
         end # case validator
