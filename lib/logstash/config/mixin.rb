@@ -132,6 +132,7 @@ module LogStash::Config::Mixin
     # Deprecated: Declare the version of the plugin
     # inside the gemspec.
     def milestone(m=nil)
+      @logger = Cabin::Channel.get(LogStash)
       @logger.error(I18n.t('logstash.plugin.deprecated'))
     end
 
