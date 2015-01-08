@@ -133,7 +133,7 @@ module LogStash::Config::Mixin
     # inside the gemspec.
     def milestone(m=nil)
       @logger = Cabin::Channel.get(LogStash)
-      @logger.error(I18n.t('logstash.plugin.deprecated'))
+      @logger.error(I18n.t('logstash.plugin.deprecated_milestone', :plugin => config_name))
     end
 
     # Define a new configuration setting
