@@ -84,5 +84,15 @@ describe LogStash::Plugin do
       LogStash::Filters::Stromae.validate({})
       LogStash::Filters::Stromae.validate({})
     end
+
+    it 'logs an error if the plugin use the milestone option' do
+      expect_any_instance_of(Cabin::Channel).to receive(:error)
+        .with(/stromae plugin is using the 'milestone' method/)
+
+      class LogStash::Filters::Stromae < LogStash::Filters::Base
+        config_name "stromae"
+        milestone 2
+      end
+    end
   end
 end
