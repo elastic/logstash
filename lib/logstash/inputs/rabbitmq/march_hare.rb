@@ -92,12 +92,22 @@ class LogStash::Inputs::RabbitMQ
 
       @arguments_hash = Hash[*@arguments]
 
-      @q = @ch.queue(@queue,
-        :durable     => @durable,
-        :auto_delete => @auto_delete,
-        :exclusive   => @exclusive,
-        :passive     => @passive,
-        :arguments   => @arguments)
+      if @declare
+        @q = @ch.queue(@queue,
+          :durable     => @durable,
+          :auto_delete => @auto_delete,
+          :exclusive   => @exclusive,
+          :passive     => @passive,
+          :arguments   => @arguments)
+      else
+        @q = MarchHare::Queue.new(@ch,@queue,
+          :durable     => @durable,
+          :auto_delete => @auto_delete,
+          :exclusive   => @exclusive,
+          :passive     => @passive,
+          :arguments   => @arguments)
+        @ch.register_queue(@q)
+      end
 
       # exchange binding is optional for the input
       if @exchange

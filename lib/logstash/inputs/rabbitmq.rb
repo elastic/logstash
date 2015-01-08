@@ -82,7 +82,7 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Passive queue creation? Useful for checking queue existance without modifying server state
   config :passive, :validate => :boolean, :default => false
 
-
+  config :declare, :validate => :boolean, :default => true
 
   #
   # (Optional) Exchange binding
