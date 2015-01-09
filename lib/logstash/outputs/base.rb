@@ -103,14 +103,14 @@ class LogStash::Outputs::Base < LogStash::Plugin
       return false if !event["tags"]
       @include_method = :any?
       if !@tags.send(@include_method) {|tag| event["tags"].include?(tag)}
-        @logger.debug? and @logger.debug("outputs/#{self.class.name}: Dropping event because tags don't match #{@tags.inspect}", event)
+        @logger.debug? and @logger.debug(["outputs/#{self.class.name}: Dropping event because tags don't match #{@tags.inspect}", event])
         return false
       end
     end
 
     if !@exclude_tags.empty? && event["tags"]
       if @exclude_tags.send(@exclude_method) {|tag| event["tags"].include?(tag)}
-        @logger.debug? and @logger.debug("outputs/#{self.class.name}: Dropping event because tags contains excluded tags: #{exclude_tags.inspect}", event)
+        @logger.debug? and @logger.debug(["outputs/#{self.class.name}: Dropping event because tags contains excluded tags: #{exclude_tags.inspect}", event])
         return false
       end
     end
