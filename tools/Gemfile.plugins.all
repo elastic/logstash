@@ -1,5 +1,5 @@
 require 'octokit'
-skiplist = ['logstash-input-gemfire', 'logstash-output-gemfire', 'logstash-input-couchdb_changes', 'logstash-filter-metricize', 'logstash-filter-yaml']
+skiplist = ['logstash-codec-cef', 'logstash-input-gemfire', 'logstash-output-gemfire', 'logstash-input-couchdb_changes', 'logstash-filter-metricize', 'logstash-filter-yaml']
 
 source 'https://rubygems.org'
 
