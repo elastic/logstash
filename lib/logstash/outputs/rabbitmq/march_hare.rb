@@ -132,6 +132,16 @@ class LogStash::Outputs::RabbitMQ
       @logger.debug("Declaring an exchange", :name => @exchange, :type => @exchange_type,
                     :durable => @durable)
       @x = @ch.exchange(@exchange, :type => @exchange_type.to_sym, :durable => @durable)
+      if @declare
+        @x = @ch.exchange(@exchange,
+          :type => @exchange_type.to_sym,
+          :durable     => @durable)
+      else
+        @x = MarchHare::Exchange.new(@ch,@exchange,
+          :type => @exchange_type.to_sym,
+          :durable     => @durable)
+        @ch.register_exchange(@x)
+      end
 
       # sets @connected to true during recovery. MK.
       @connected.set(true)

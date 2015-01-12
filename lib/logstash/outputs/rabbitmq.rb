@@ -42,6 +42,9 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   # Validate SSL certificate
   config :verify_ssl, :validate => :boolean, :default => false
 
+  # If declare the exchange or Use the existed exchange without declaration
+  config :declare, :validate => :boolean, :default => true
+
   # Enable or disable logging
   config :debug, :validate => :boolean, :default => false, :deprecated => "Use the logstash --debug flag for this instead."
 
