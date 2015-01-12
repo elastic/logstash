@@ -129,14 +129,14 @@ class LogStash::Outputs::RabbitMQ
     end
 
     def declare_exchange
-      @logger.debug("Declaring an exchange", :name => @exchange, :type => @exchange_type,
-                    :durable => @durable)
-      @x = @ch.exchange(@exchange, :type => @exchange_type.to_sym, :durable => @durable)
       if @declare
+        @logger.debug("Declaring an exchange", :name => @exchange, :type => @exchange_type,
+                    :durable => @durable)
         @x = @ch.exchange(@exchange,
           :type => @exchange_type.to_sym,
           :durable     => @durable)
       else
+        @logger.debug("do not decalre the exchange")
         @x = MarchHare::Exchange.new(@ch,@exchange,
           :type => @exchange_type.to_sym,
           :durable     => @durable)
