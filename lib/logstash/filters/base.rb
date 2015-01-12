@@ -13,17 +13,16 @@ class LogStash::Filters::Base < LogStash::Plugin
   # `exclude_fields`) must be met in order for the event to be handled by the filter.
 
   # The type to act on. If a type is given, then this filter will only
-  # act on messages with the same type. See any input plugin's "type"
+  # act on messages with the same type. See any input plugin's `type`
   # attribute for more.
   # Optional.
   config :type, :validate => :string, :default => "", :deprecated => "You can achieve this same behavior with the new conditionals, like: `if [type] == \"sometype\" { %PLUGIN% { ... } }`."
 
-  # Only handle events with all/any (controlled by `include_any` config option) of these tags.
+  # Only handle events with all of these tags.
   # Optional.
   config :tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if \"sometag\" in [tags] { %PLUGIN% { ... } }`"
 
-  # Only handle events without all/any (controlled by `exclude_any` config
-  # option) of these tags.
+  # Only handle events without any of these tags.
   # Optional.
   config :exclude_tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if !(\"sometag\" in [tags]) { %PLUGIN% { ... } }`"
 
@@ -203,7 +202,8 @@ class LogStash::Filters::Base < LogStash::Plugin
   def filter?(event)
     if !@type.empty?
       if event["type"] != @type
-        @logger.debug? and @logger.debug(["filters/#{self.class.name}: Skipping event because type doesn't match #{@type}", event])
+        @logger.debug? and @logger.debug("filters/#{self.class.name}: Skipping event because type doesn't match",
+                                         :type=> @type, :event => event)
         return false
       end
     end
@@ -215,14 +215,16 @@ class LogStash::Filters::Base < LogStash::Plugin
 
       # Is @tags a subset of the event's tags? If not, skip it.
       if (event["tags"] & @tags).size != @tags.size
-        @logger.debug(["filters/#{self.class.name}: Skipping event because tags don't match #{@tags.inspect}", event])
+        @logger.debug? and @logger.debug("filters/#{self.class.name}: Skipping event because tags don't match",
+                                         :tags => tags, :event => event)
         return false
       end
     end
 
     if !@exclude_tags.empty? && event["tags"]
       if (diff_tags = (event["tags"] & @exclude_tags)).size != 0
-        @logger.debug(["filters/#{self.class.name}: Skipping event because tags contains excluded tags: #{diff_tags.inspect}", event])
+        @logger.debug("filters/#{self.class.name}: Skipping event because tags contains excluded tags:",
+                      :diff_tags => diff_tags, :exclude_tags => @exclude_tags, :event => event)
         return false
       end
     end

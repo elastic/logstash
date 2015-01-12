@@ -18,12 +18,12 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Optional.
   config :type, :validate => :string, :default => "", :deprecated => "You can achieve this same behavior with the new conditionals, like: `if [type] == \"sometype\" { %PLUGIN% { ... } }`."
 
-  # Only handle events with all of these tags.  Note that if you specify
-  # a type, the event must also match that type.
+  # Only handle events with all of these tags.
   # Optional.
   config :tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if \"sometag\" in [tags] { %PLUGIN% { ... } }`"
 
-  # Only handle events without any of these tags. Note this check is additional to type and tags.
+  # Only handle events without any of these tags.
+  # Optional.
   config :exclude_tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if !(\"sometag\" in [tags]) { %PLUGIN% { ... } }`"
 
   # The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output, without needing a separate filter in your Logstash pipeline.
@@ -87,7 +87,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def handle(event)
     receive(event)
   end # def handle
-  
+
   def handle_worker(event)
     @worker_queue.push(event)
   end
@@ -96,23 +96,25 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def output?(event)
     if !@type.empty?
       if event["type"] != @type
-        @logger.debug? and @logger.debug(["outputs/#{self.class.name}: Dropping event because type doesn't match #{@type}", event])
+        @logger.debug? and @logger.debug("outputs/#{self.class.name}: Dropping event because type doesn't match",
+                                         :type => @type, :event => event)
         return false
       end
     end
 
     if !@tags.empty?
       return false if !event["tags"]
-      @include_method = :any?
-      if !@tags.send(@include_method) {|tag| event["tags"].include?(tag)}
-        @logger.debug? and @logger.debug("outputs/#{self.class.name}: Dropping event because tags don't match #{@tags.inspect}", event)
+      if (event["tags"] & @tags).size != @tags.size
+        @logger.debug? and @logger.debug("outputs/#{self.class.name}: Dropping event because tags don't match",
+                                         :tags => @tags, :event => event)
         return false
       end
     end
 
     if !@exclude_tags.empty? && event["tags"]
-      if @exclude_tags.send(@exclude_method) {|tag| event["tags"].include?(tag)}
-        @logger.debug? and @logger.debug("outputs/#{self.class.name}: Dropping event because tags contains excluded tags: #{@exclude_tags.inspect}", event)
+      if (diff_tags = (event["tags"] & @exclude_tags)).size != 0
+        @logger.debug? and @logger.debug("outputs/#{self.class.name}: Dropping event because tags contains excluded tags",
+                                         :diff_tags => diff_tags, :exclude_tags => @exclude_tags, :event => event)
         return false
       end
     end
