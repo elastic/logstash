@@ -1,5 +1,6 @@
 require 'octokit'
-skiplist = ['logstash-codec-cef', 'logstash-input-gemfire', 'logstash-output-gemfire', 'logstash-input-couchdb_changes', 'logstash-filter-metricize', 'logstash-filter-yaml']
+skiplist = Regexp.union([ /^logstash-codec-cef$/, /^logstash-input-gemfire$/, /^logstash-output-gemfire$/,
+    /^logstash-input-couchdb_changes$/, /^logstash-filter-metricize$/, /^logstash-filter-yaml$/, /example/])
 
 source 'https://rubygems.org'
 
@@ -8,6 +9,6 @@ gemspec :name => "logstash", :path => ".."
 Octokit.auto_paginate = true
 repo_list = Octokit.organization_repositories("logstash-plugins")
 repo_list.each do |repo|
-  next if skiplist.include?(repo.name)
+  next if repo.name =~ skiplist
   gem repo.name
 end
