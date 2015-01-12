@@ -82,7 +82,6 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Passive queue creation? Useful for checking queue existance without modifying server state
   config :passive, :validate => :boolean, :default => false
 
-  config :declare, :validate => :boolean, :default => true
 
   #
   # (Optional) Exchange binding
@@ -101,6 +100,9 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # * Routing keys are ignored on fanout exchanges.
   # * Wildcards are not valid on direct exchanges.
   config :key, :validate => :string, :default => "logstash"
+
+  # If declare the queue or Use the existed queue without declaration
+  config :declare, :validate => :boolean, :default => true
 
 
   def initialize(params)
