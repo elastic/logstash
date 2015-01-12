@@ -16,6 +16,11 @@ namespace "test" do
     RSpec::Core::Runner.run(["--fail-fast", *Rake::FileList["spec/**/*.rb"]])
   end
 
+  task "plugins" => [ "bootstrap","plugin:install-all" ] do
+    pattern = "vendor/bundle/jruby/1.9/gems/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb"
+    sh "./bin/logstash rspec #{pattern}"
+  end
+
   task "prep" do
     Rake::Task["vendor:gems"].invoke(false)
     Rake::Task["plugin:install-test"].invoke
