@@ -199,7 +199,8 @@ module LogStash::Config::Mixin
       @logger = Cabin::Channel.get(LogStash)
       is_valid = true
 
-      is_valid &&= validate_plugin_version
+      print_version_notice
+
       is_valid &&= validate_check_invalid_parameter_names(params)
       is_valid &&= validate_check_required_parameter_names(params)
       is_valid &&= validate_check_parameter_values(params)
@@ -211,25 +212,28 @@ module LogStash::Config::Mixin
       specification = Gem::Specification.find_by_name(plugin_gem_name)
       major, minor, patch = specification.version.segments
 
-      Struct.new(:major, :minor, :patch)
-        .new(major, minor, patch)
+      return {
+        :major => major,
+        :minor => minor,
+        :patch => patch 
+      }
     end
 
     def plugin_gem_name
       [GEM_NAME_PREFIX, @plugin_type, @plugin_name].join('-')
     end
 
-    def validate_plugin_version
+    def print_version_notice
       return true if @@version_notice_given
 
-      if plugin_version.major < 1
-        if plugin_version.minor == 9
-          @logger.warn(I18n.t("logstash.plugin.version.0-9-0", 
+      if plugin_version[:major] < 1
+        if plugin_version[:minor] == 9
+          @logger.warn(I18n.t("logstash.plugin.version.0-9-x", 
                               :type => @plugin_type,
                               :name => @config_name,
                               :LOGSTASH_VERSION => LOGSTASH_VERSION))
         else
-          @logger.warn(I18n.t("logstash.plugin.version.0-1-0", 
+          @logger.warn(I18n.t("logstash.plugin.version.0-1-x", 
                               :type => @plugin_type,
                               :name => @config_name,
                               :LOGSTASH_VERSION => LOGSTASH_VERSION))
