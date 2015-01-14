@@ -69,7 +69,7 @@ describe LogStash::Plugin do
     end
 
     it "doesnt show the version notice more than once" do
-      class LogStash::Filters::Stromae < LogStash::Filters::Base
+      one_notice = Class.new(LogStash::Filters::Base) do
         config_name "stromae"
       end
 
@@ -81,8 +81,8 @@ describe LogStash::Plugin do
         .once
         .with(/Using version 0.1.x/)
 
-      LogStash::Filters::Stromae.validate({})
-      LogStash::Filters::Stromae.validate({})
+      one_notice.validate({})
+      one_notice.validate({})
     end
 
     it 'logs an error if the plugin use the milestone option' do
