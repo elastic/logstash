@@ -85,6 +85,15 @@ describe LogStash::Plugin do
       one_notice.validate({})
     end
 
+    it "warns the user if we can't find a defined version" do
+      expect_any_instance_of(Cabin::Channel).to receive(:warn)
+        .once
+        .with(/plugin doesn't have a version/)
+
+      subject.validate({})
+    end
+    
+
     it 'logs an error if the plugin use the milestone option' do
       expect_any_instance_of(Cabin::Channel).to receive(:error)
         .with(/stromae plugin is using the 'milestone' method/)
