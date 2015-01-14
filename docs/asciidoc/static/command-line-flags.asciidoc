@@ -3,7 +3,7 @@
 [float]
 === Agent
 
-The Logstash agent has the following flags (also try using the '--help' flag)
+The Logstash agent has the following flags. (You can use the '--help' flag to display this information.)
 
 [source,js]
 ----------------------------------

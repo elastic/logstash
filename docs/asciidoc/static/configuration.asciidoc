@@ -1,12 +1,13 @@
-== Logstash Config Language
+== Logstash Configuration Language
+
+Logstash config files enable you to specify which plugins you want to use and settings for each plugin.
+You can reference event fields in a configuration and use conditionals to process events when they meet certain
+criteria.
+
 [float]
-=== Basic Layout
+=== Structure of a Config File
 
-The Logstash config language aims to be simple.
-
-There are 3 main sections: inputs, filters, outputs. Each section has configurations for each plugin available in that section.
-
-Example:
+A Logstash config file has a separate section for each type of plugin you want to add to the event processing pipeline. For example:
 
 [source,js]
 ----------------------------------
@@ -24,30 +25,17 @@ output {
   ...
 }
 ----------------------------------
-[float]
-=== Filters and Ordering
 
-For a given event, filters are applied in the order of appearance in the configuration file.
-[float]
-=== Comments
+Each section contains the configuration options for one or more plugins. If you specify 
+multiple filters, they are applied in the order of their appearance in the configuration file.
 
-Comments are the same as in perl, ruby, and python. A comment starts with a '#' character, and does not need to be at the beginning of a line. For example:
 
-[source,js]
-----------------------------------
-# this is a comment
-
-input { # comments can appear at the end of a line, too
-  # ...
-}
-----------------------------------
 [float]
 [[plugin_configuration]]
 === Plugins
 
-The input, filter and output sections all let you configure plugins. Plugin
-configuration consists of the plugin name followed by a block of settings for
-that plugin. For example, how about two file inputs:
+The configuration of a plugin consists of the plugin name followed 
+by a block of settings for that plugin. For example, this input section configures two file inputs:
 
 [source,js]
 ----------------------------------
@@ -64,60 +52,25 @@ input {
 }
 ----------------------------------
 
-The above configures two file separate inputs. Both set two configuration settings each: 'path' and 'type'. Each plugin has different settings for configuring it; seek the documentation for your plugin to learn what settings are available and what they mean. For example, the [file input][fileinput] documentation will explain the meanings of the path and type settings.
+In this example, two settings are configured for each of the file inputs: 'path' and 'type'. 
+
+The settings you can configure vary according to the plugin type. For information about each plugin, see <<input-plugins,Input Plugins>>, <<output-plugins, Output Plugins>>, <<filter-plugins,Filter Plugins>>, and <<codec-plugins,Codec Plugins>>.
 
 [float]
 === Value Types
 
-The documentation for a plugin may enforce a configuration field having a
-certain type.  Examples include boolean, string, array, number, hash,
-etc.
-[[boolean]]
-[float]
-==== Boolean
+A plugin can require that the value for a setting be a
+certain type, such as boolean or hash. The following value
+types are supported.
 
-A boolean must be either `true` or `false`. Note the lack of quotes around `true` and `false`.
-
-Examples:
-
-[source,js]
-----------------------------------
-  ssl_enable => true
-----------------------------------
-[[string]]
-[float]
-==== String
-
-A string must be a single value.
-
-Example:
-
-[source,js]
-----------------------------------
-  name => "Hello world"
-----------------------------------
-
-You should use quotes around string values.
-[[number]]
-[float]
-==== Number
-
-Numbers must be valid numerics (floating point or integer are OK).
-
-Example:
-
-[source,js]
-----------------------------------
-  port => 33
-----------------------------------
 [[array]]
 [float]
 ==== Array
 
-An array can be a single string value or multiple. If you specify the same
-field multiple times, it appends to the array.
+An array can be a single string value or multiple values. If you specify the same
+setting multiple times, it appends to the array.
 
-Examples:
+Example:
 
 [source,js]
 ----------------------------------
@@ -125,78 +78,32 @@ Examples:
   path => "/data/mysql/mysql.log"
 ----------------------------------
 
-The above makes 'path' a 3-element array including all 3 strings.
-[[hash]]
+This example configures `path` to be an array that contains an element for each of the three strings.
+
+
+[[boolean]]
 [float]
-==== Hash
+==== Boolean
 
-A hash is basically the same syntax as Ruby hashes.
-The key and value are simply pairs, such as:
-
-[source,js]
-----------------------------------
-match => {
-  "field1" => "value1"
-  "field2" => "value2"
-  ...
-}
-----------------------------------
-
-[[password]]
-[float]
-==== Password
-
-A password field is basically a String field with a single value, but it will
-not be logged or printed
+A boolean must be either `true` or `false`. Note that the `true` and `false` keywords
+are not enclosed in quotes.
 
 Example:
 
 [source,js]
 ----------------------------------
-  my_password => "password"
-----------------------------------
-
-
-[[path]]
-[float]
-==== Path
-
-A path field is a String field which represents a valid operating system path
-
-Example:
-
-[source,js]
-----------------------------------
-  my_path => "/tmp/logstash"
-----------------------------------
-
-[[codec]]
-[float]
-==== Codec
-
-A codec is the name of Logstash codec used to represent the data. Codec can be
-used in both inputs and outputs.
-Input codecs are a convenient method for decoding your data before it enters the input,
-without needing a separate filter in your Logstash pipeline.
-Output codecs are a convenient method for encoding your data before it leaves the output,
-without needing a separate filter in your Logstash pipeline.
-
-Example:
-
-[source,js]
-----------------------------------
-  codec => "json"
+  ssl_enable => true
 ----------------------------------
 
 [[bytes]]
 [float]
 ==== Bytes
 
-A bytes field is a String field which represents a valid unit of bytes. It is a 
-convenient method for declaring specific sizes in your plugin options. Both SI(k M G T P E Z Y)
-and Binary(Ki Mi Gi Ti Pi Ei Zi Yi) units are supported. Binary units are in 
-base-1024, while SI units are in base-1000. This field is case-insensitive 
-and accepts space between the value and the unit. When no unit is specified, the integer string
+A bytes field is a string field that represents a valid unit of bytes. It is a 
+convenient way to declare specific sizes in your plugin options. Both SI (k M G T P E Z Y)
+and Binary (Ki Mi Gi Ti Pi Ei Zi Yi) units are supported. Binary units are in 
+base-1024 and SI units are in base-1000. This field is case-insensitive 
+and accepts space between the value and the unit. If no unit is specified, the integer string
 represents the number of bytes.
 
 Examples:
@@ -209,18 +116,125 @@ Examples:
   my_bytes => "180 mb" # 180000000 bytes
 ----------------------------------
 
+[[codec]]
+[float]
+==== Codec
+
+A codec is the name of Logstash codec used to represent the data. Codecs can be
+used in both inputs and outputs.
+
+Input codecs provide a convenient way to decode your data before it enters the input.
+Output codecs provide a convenient way to encode your data before it leaves the output.
+Using an input or output codec eliminates the need for a separate filter in your Logstash pipeline.
+
+Example:
+
+[source,js]
+----------------------------------
+  codec => "json"
+----------------------------------
+
+[[hash]]
+[float]
+==== Hash
+
+A hash is a collection of key value pairs specified in the format `"field1" => "value1"`. 
+Note that mutliple key value entries are separated by spaces rather than commas. 
+
+Example:
+
+[source,js]
+----------------------------------
+match => {
+  "field1" => "value1"
+  "field2" => "value2"
+  ...
+}
+----------------------------------
+
+[[number]]
+[float]
+==== Number
+
+Numbers must be valid numeric values (floating point or integer).
+
+Example:
+
+[source,js]
+----------------------------------
+  port => 33
+----------------------------------
+
+[[password]]
+[float]
+==== Password
+
+A password is a string with a single value that is not logged or printed.
+
+Example:
+
+[source,js]
+----------------------------------
+  my_password => "password"
+----------------------------------
+
+[[path]]
+[float]
+==== Path
+
+A path is a string that represents a valid operating system path.
+
+Example:
+
+[source,js]
+----------------------------------
+  my_path => "/tmp/logstash"
+----------------------------------
+
+[[string]]
+[float]
+==== String
+
+A string must be a single character sequence. Note that string values are enclosed in quotes.
+
+Example:
+
+[source,js]
+----------------------------------
+  name => "Hello world"
+----------------------------------
+
+[float]
+=== Comments
+
+Comments are the same as in perl, ruby, and python. A comment starts with a '#' character, and does not need to be at the beginning of a line. For example:
+
+[source,js]
+----------------------------------
+# this is a comment
+
+input { # comments can appear at the end of a line, too
+  # ...
+}
+----------------------------------
 
 [float]
 === Field References
 
-All events have properties. For example, an apache access log would have things
+All events have properties. For example, an apache access log has things
 like status code (200, 404), request path ("/", "index.html"), HTTP verb (GET, POST),
-client IP address, etc. Logstash calls these properties "fields."
+and client IP address. Logstash calls these properties fields.
 
-In many cases, it is useful to be able to refer to a field by name. To do this,
+It is often useful to be able to refer to a field by name. To do this,
 you can use the Logstash field reference syntax.
 
-By way of example, let us suppose we have this event:
+The syntax to access a field is `[fieldname]`. If you are referring to a 
+**top-level field**, you can omit the `[]` and simply use `fieldname`.
+To refer to a **nested field**, you specify
+the full path to that field: `[top-level field][nested field]`.
+
+For example, the following event has five top-level fields (agent, ip, request, response, 
+ua) and three nested fields (status, bytes, os). 
 
 [source,js]
 ----------------------------------
@@ -239,18 +253,15 @@ By way of example, let us suppose we have this event:
 
 ----------------------------------
 
-- the syntax to access fields is `[fieldname]`.
-- if you are only referring to a **top-level field**, you can omit the `[]` and
-simply say `fieldname`.
-- in the case of **nested fields**, like the "os" field above, you need
-the full path to that field: `[ua][os]`.
+To reference the `os` field, you specify `[ua][os]`. To reference a top-level
+field such as `request`, you can simply specify the field name.
 
 [float]
 ==== sprintf format
 
-This syntax is also used in what Logstash calls 'sprintf format'. This format
-allows you to refer to field values from within other strings. For example, the
-statsd output has an 'increment' setting, to allow you to keep a count of
+The field reference format is also used in what Logstash calls 'sprintf format'. This format
+enables you to refer to field values from within other strings. For example, the
+statsd output has an 'increment' setting that enables you to keep a count of
 apache logs by status code:
 
 [source,js]
@@ -262,7 +273,7 @@ output {
 }
 ----------------------------------
 
-You can also do time formatting in this sprintf format. Instead of specifying a field name, use the `+FORMAT` syntax where `FORMAT` is a [time format](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html).
+You can also format times using in this sprintf format. Instead of specifying a field name, use the `+FORMAT` syntax where `FORMAT` is a http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html[time format].
 
 For example, if you want to use the file output to write to logs based on the
 hour and the 'type' field:
@@ -279,14 +290,14 @@ output {
 [float]
 === Conditionals
 
-Sometimes you only want a filter or output to process an event under
-certain conditions. For that, you'll want to use a conditional!
+Sometimes you only want to filter or output an event under
+certain conditions. For that, you can use a conditional.
 
 Conditionals in Logstash look and act the same way they do in programming
-languages. You have `if`, `else if` and `else` statements. Conditionals may be
-nested if you need that.
+languages. Conditionals support `if`, `else if` and `else` statements
+and can be nested.
 
-The syntax is follows:
+The conditional syntax is:
 
 [source,js]
 ----------------------------------
@@ -299,27 +310,26 @@ if EXPRESSION {
 }
 ----------------------------------
 
-What's an expression? Comparison tests, boolean logic, etc!
+What's an expression? Comparison tests, boolean logic, and so on!
 
-The following comparison operators  are supported:
+You can use the following comparison operators:
 
-* equality, etc: ==,  !=,  <,  >,  <=,  >=
+* equality: ==,  !=,  <,  >,  <=,  >=
 * regexp: =~, !~
 * inclusion: in, not in
 
-The following boolean operators are supported:
+The supported boolean operators are:
 
 * and, or, nand, xor
 
-The following unary operators are supported:
+The supported unary operators are:
 
 * !
 
-Expressions may contain expressions. Expressions may be negated with `!`.
-Expressions may be grouped with parentheses `(...)`. Expressions can be long
-and complex.
+Expressions can be long and complex. Expressions can contain other expressions,
+you can negate expressions with `!`, and you can group them with parentheses `(...)`. 
 
-For example, if we want to remove the field `secret` if the field
+For example, the following conditional uses the mutate filter to remove the field `secret` if the field
 `action` has a value of `login`:
 
 [source,js]
@@ -331,17 +341,17 @@ filter {
 }
 ----------------------------------
 
-The above uses the field reference syntax to get the value of the
-`action` field. It is compared against the text `login` and, if equal,
-allows the mutate filter to delete the field named `secret`.
-
 How about a more complex example?
 
 * alert nagios of any apache events with status 5xx
 * record any 4xx status to elasticsearch
 * record all status code hits via statsd
 
-How about telling nagios of any http event that has a status code of 5xx?
+To tell nagios about any http event that has a 5xx status code, you
+first need to check the value of the `type` field. If it's apache, then you can 
+check to see if the `status` field contains a 5xx error. If it is, send it to nagios. If it isn't 
+a 5xx error, check to see if the `status` field contains a 4xx error. If so, send it to Elasticsearch. 
+Finally, send all apache status codes to statsd no matter what the `status` field contains:
 
 [source,js]
 ----------------------------------
@@ -357,7 +367,7 @@ output {
 }
 ----------------------------------
 
-You can also do multiple expressions in a single condition:
+You can specify multiple expressions in a single condition:
 
 [source,js]
 ----------------------------------
@@ -371,7 +381,7 @@ output {
 }
 ----------------------------------
 
-Here are some examples for testing with the in conditional:
+Here are some examples for testing with the `in` conditional:
 
 [source,js]
 ----------------------------------
@@ -407,8 +417,3 @@ output {
   }
 }
 ----------------------------------
-
-[float]
-=== Further Reading
-
-For more information, see [the plugin docs index](index)

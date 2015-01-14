@@ -1,17 +1,19 @@
-== Adding a sample filter to Logstash
+== Adding a filter to Logstash
 
-This document shows you how to add a new filter to Logstash.
+To add a filter to Logstash, you need to:
 
-For a general overview of how to add a new plugin, see [the extending Logstash](.) overview.
+. Write code to extend the  LogStash::Filters::Base class.
+. Tell Logstash about your new filter.
+
+For a general overview of how to add plugins, see [the extending Logstash](.) overview.
 
 [float]
 === Write code.
 
-Let's write a 'hello world' filter. This filter will replace the 'message' in the event with "Hello world!"
+Let's write a 'hello world' filter. This filter replaces the 'message' in an event with "Hello world!"
 
-First, Logstash expects plugins in a certain directory structure: `logstash/TYPE/PLUGIN_NAME.rb`
-
-Since we're creating a filter, let's mkdir this:
+Logstash expects plugins to be in a certain directory structure: `logstash/TYPE/PLUGIN_NAME.rb`, 
+so first create a directory where you can store the new filter.
 
 [source,js]
 ----------------------------------
@@ -19,12 +21,10 @@ mkdir -p logstash/filters/
 cd logstash/filters
 ----------------------------------
 
-Now add the code:
+Now save the following code to a file called `foo.rb` in the `logstash/filters` directory.
 
 [source,js]
 ----------------------------------
-# Call this file 'foo.rb' (in logstash/filters, as above)
-
 require "logstash/filters/base"
 require "logstash/namespace"
 
@@ -66,8 +66,8 @@ class LogStash::Filters::Foo < LogStash::Filters::Base
   ## Add it to your configuration
 ----------------------------------
 
-For this simple example, let's just use stdin input and stdout output.
-The config file looks like this:
+Create a configuration file called `example.conf` that uses the new filter. You
+can just use stdin input and stdout output.
 
 [source,js]
 ----------------------------------
@@ -86,34 +86,23 @@ output {
 }
 ----------------------------------
 
-Call this file 'example.conf'
-
 [float]
 === Tell Logstash about it.
 
-Depending on how you installed Logstash, you have a few ways of including this
-plugin.
-
-You can use the agent flag --pluginpath flag to specify where the root of your
-plugin tree is. In our case, it's the current directory.
+You can use the agent flag `--pluginpath` flag to specify where the root of your
+plugin tree is. In this example, it's the current directory.
 
 [source,js]
 ----------------------------------
 % bin/logstash --pluginpath your/plugin/root -f example.conf
 ----------------------------------
 
-## Example running
-
-In the example below, I typed in "the quick brown fox" after running the java
-command.
+Now, the message text you input is transformed by the `foo` filter. For example: 
 
 [source,js]
 ----------------------------------
-% bin/logstash --pluginpath your/plugin/root -f example.conf
 the quick brown fox   
 2011-05-12T01:05:09.495000Z mylocalhost: Hello world!
 ----------------------------------
 
-The output is the standard Logstash stdout output, but in this case our "the quick brown fox" message was replaced with "Hello world!"
-
-All done! :)
+The output is the standard Logstash stdout output, but the "the quick brown fox" message is replaced with "Hello world!"
