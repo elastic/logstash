@@ -36,8 +36,8 @@ module LogStash::Util
       find_version!(plugin_name)
     end
 
-    def <=>(obj)
-      version <=> obj.version
+    def <=>(other)
+      version <=> other.version
     end
   end
 end
