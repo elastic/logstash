@@ -5,9 +5,9 @@ PATH
       cabin (>= 0.6.0)
       ci_reporter (= 1.9.3)
       clamp
-      file-dependencies
       ftw (~> 0.0.40)
       i18n (= 0.6.9)
+      insist (= 1.0.0)
       jar-dependencies (= 0.1.2)
       jrjackson
       jruby-httpclient
@@ -70,8 +70,6 @@ GEM
     ffi (1.9.6-java)
     ffi-rzmq (1.0.0)
       ffi
-    file-dependencies (0.1.4)
-      minitar
     filewatch (0.5.1)
     ftw (0.0.42)
       addressable
@@ -92,11 +90,16 @@ GEM
     ice_nine (0.11.1)
     insist (1.0.0)
     jar-dependencies (0.1.2)
+    jbundler (0.5.5)
+      bundler (~> 1.5)
+      ruby-maven (>= 3.1.1.0.1, < 3.1.2)
     jls-grok (0.11.0)
       cabin (>= 0.6.0)
     jls-lumberjack (0.0.20)
-    jrjackson (0.2.8)
+    jrjackson (0.2.7)
     jruby-httpclient (1.1.1-java)
+    jruby-kafka (0.2.1-java)
+      jbundler (= 0.5.5)
     jruby-win32ole (0.8.5)
     json (1.8.1-java)
     logstash-codec-collectd (0.1.2)
@@ -140,9 +143,8 @@ GEM
     logstash-codec-rubydebug (0.1.4)
       awesome_print
       logstash (>= 1.4.0, < 2.0.0)
-    logstash-devutils (0.0.7-java)
+    logstash-devutils (0.0.6-java)
       gem_publisher
-      insist (= 1.0.0)
       jar-dependencies
       minitar
       rake
@@ -250,6 +252,12 @@ GEM
     logstash-input-irc (0.1.1)
       cinch
       logstash (>= 1.4.0, < 2.0.0)
+      logstash-codec-plain
+    logstash-input-kafka (0.1.5)
+      jar-dependencies (~> 0.1.0)
+      jruby-kafka (>= 0.2.1)
+      logstash (>= 1.4.0, < 2.0.0)
+      logstash-codec-json
       logstash-codec-plain
     logstash-input-log4j (0.1.1)
       jar-dependencies
@@ -364,6 +372,12 @@ GEM
     logstash-output-juggernaut (0.1.1)
       logstash (>= 1.4.0, < 2.0.0)
       redis
+    logstash-output-kafka (0.1.3)
+      jar-dependencies
+      jruby-kafka (>= 0.2.1)
+      logstash (>= 1.4.0, < 2.0.0)
+      logstash-codec-json
+      logstash-codec-plain
     logstash-output-lumberjack (0.1.2)
       jls-lumberjack (>= 0.0.20)
       logstash (>= 1.4.0, < 2.0.0)
@@ -499,7 +513,7 @@ GEM
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
     user_agent_parser (2.2.0)
-    virtus (1.0.4)
+    virtus (1.0.3)
       axiom-types (~> 0.1)
       coercible (~> 1.0)
       descendants_tracker (~> 0.0, >= 0.0.3)
@@ -561,6 +575,7 @@ DEPENDENCIES
   logstash-input-graphite
   logstash-input-imap
   logstash-input-irc
+  logstash-input-kafka
   logstash-input-log4j
   logstash-input-lumberjack
   logstash-input-pipe
@@ -590,6 +605,7 @@ DEPENDENCIES
   logstash-output-http
   logstash-output-irc
   logstash-output-juggernaut
+  logstash-output-kafka
   logstash-output-lumberjack
   logstash-output-nagios
   logstash-output-nagios_nsca
