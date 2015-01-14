@@ -120,7 +120,7 @@ module LogStash::Config::Mixin
 
     # If name is given, set the name and return it.
     # If no name given (nil), return the current name.
-    def config_name(name=nil)
+    def config_name(name = nil)
       @config_name = name if !name.nil?
       LogStash::Config::Registry.registry[@config_name] = self
       return @config_name
@@ -128,13 +128,13 @@ module LogStash::Config::Mixin
 
     # Deprecated: Declare the version of the plugin
     # inside the gemspec.
-    def plugin_status(status=nil)
+    def plugin_status(status = nil)
       milestone(status)
     end
 
     # Deprecated: Declare the version of the plugin
     # inside the gemspec.
-    def milestone(m=nil)
+    def milestone(m = nil)
       @logger = Cabin::Channel.get(LogStash)
       @logger.error(I18n.t('logstash.plugin.deprecated_milestone', :plugin => config_name))
     end
