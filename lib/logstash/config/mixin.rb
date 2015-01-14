@@ -6,6 +6,8 @@ require "logstash/logging"
 require "logstash/util/password"
 require "logstash/version"
 require "logstash/environment"
+require "logstash/util/plugin_version"
+
 LogStash::Environment.load_locale!
 
 # This module is meant as a mixin to classes wishing to be configurable from
@@ -212,11 +214,7 @@ module LogStash::Config::Mixin
       specification = Gem::Specification.find_by_name(plugin_gem_name)
       major, minor, patch = specification.version.segments
 
-      return {
-        :major => major,
-        :minor => minor,
-        :patch => patch 
-      }
+      return LogStash::Util::PluginVersion.new(major, minor, patch)
     end
 
     def plugin_gem_name
@@ -226,8 +224,8 @@ module LogStash::Config::Mixin
     def print_version_notice
       return true if @@version_notice_given
 
-      if plugin_version[:major] < 1
-        if plugin_version[:minor] == 9
+      if plugin_version.major < 1
+        if plugin_version.minor == 9
           @logger.warn(I18n.t("logstash.plugin.version.0-9-x", 
                               :type => @plugin_type,
                               :name => @config_name,
