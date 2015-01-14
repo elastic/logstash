@@ -56,6 +56,10 @@ class LogStash::PluginManager::Install < Clamp::Command
     FileDependencies::Gem.hook
     options = {}
     options[:document] = []
+    if  LogStash::Environment.env == 'test'
+      options[:dev_shallow] = true
+      options[:development] = true
+    end
     inst = Gem::DependencyInstaller.new(options)
     inst.install plugin, version
     specs = inst.installed_gems.detect { |gemspec| gemspec.name == gem_meta.name }
