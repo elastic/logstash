@@ -12,6 +12,8 @@ module LogStash
     GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "tools", "Gemfile")
     BOOTSTRAP_GEM_PATH = ::File.join(LOGSTASH_HOME, 'build', 'bootstrap')
 
+    LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
+
     # loads currently embedded elasticsearch jars
     # @raise LogStash::EnvironmentError if not running under JRuby or if no jar files are found
     def load_elasticsearch_jars!
@@ -31,6 +33,10 @@ module LogStash
 
     def logstash_gem_home
       ::File.join(BUNDLE_DIR, ruby_engine, gem_ruby_version)
+    end
+
+    def env
+      LOGSTASH_ENV
     end
 
     # set GEM_PATH for logstash runtime
