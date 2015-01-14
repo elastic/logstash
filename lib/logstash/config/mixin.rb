@@ -41,7 +41,8 @@ module LogStash::Config::Mixin
     Regexp => 100,
   }
 
-  GEM_NAME_PREFIX = 'logstash'
+  PLUGIN_VERSION_1_0_0 = LogStash::Util::PluginVersion.new(1, 0, 0)
+  PLUGIN_VERSION_0_9_0 = LogStash::Util::PluginVersion.new(0, 9, 0)
 
   # This method is called when someone does 'include LogStash::Config'
   def self.included(base)
@@ -210,36 +211,36 @@ module LogStash::Config::Mixin
       return is_valid
     end # def validate
 
-    def plugin_version
-      specification = Gem::Specification.find_by_name(plugin_gem_name)
-      major, minor, patch = specification.version.segments
-
-      return LogStash::Util::PluginVersion.new(major, minor, patch)
-    end
-
-    def plugin_gem_name
-      [GEM_NAME_PREFIX, @plugin_type, @plugin_name].join('-')
-    end
-
     def print_version_notice
-      return true if @@version_notice_given
+      return if @@version_notice_given
 
-      if plugin_version.major < 1
-        if plugin_version.minor == 9
-          @logger.warn(I18n.t("logstash.plugin.version.0-9-x", 
-                              :type => @plugin_type,
-                              :name => @config_name,
-                              :LOGSTASH_VERSION => LOGSTASH_VERSION))
-        else
-          @logger.warn(I18n.t("logstash.plugin.version.0-1-x", 
-                              :type => @plugin_type,
-                              :name => @config_name,
-                              :LOGSTASH_VERSION => LOGSTASH_VERSION))
+      begin
+        plugin_version = LogStash::Util::PluginVersion.find_plugin_version!(@plugin_type, @config_name)
+
+        if plugin_version < PLUGIN_VERSION_1_0_0
+          if plugin_version < PLUGIN_VERSION_0_9_0
+            @logger.warn(I18n.t("logstash.plugin.version.0-1-x", 
+                                :type => @plugin_type,
+                                :name => @config_name,
+                                :LOGSTASH_VERSION => LOGSTASH_VERSION))
+          else
+            @logger.warn(I18n.t("logstash.plugin.version.0-9-x", 
+                                :type => @plugin_type,
+                                :name => @config_name,
+                                :LOGSTASH_VERSION => LOGSTASH_VERSION))
+          end
         end
+      rescue LogStash::PluginNoVersionError
+        # If we cannot find a version in the currently installed gems we
+        # will display this message. This could happen in the test, if you 
+        # create an anonymous class to test a plugin.
+        @logger.warn(I18n.t("logstash.plugin.no_version",
+                                :type => @plugin_type,
+                                :name => @config_name,
+                                :LOGSTASH_VERSION => LOGSTASH_VERSION))
+      ensure 
+        @@version_notice_given = true
       end
-
-      @@version_notice_given = true
-      return true
     end
 
     def validate_check_invalid_parameter_names(params)
