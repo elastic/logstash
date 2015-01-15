@@ -39,6 +39,18 @@ module LogStash
       LOGSTASH_ENV
     end
 
+    def production?
+      env.downcase == "production"
+    end
+
+    def development?
+      env.downcase == "development"
+    end
+
+    def test?
+      env.downcase == "test"
+    end
+
     # set GEM_PATH for logstash runtime
     # GEM_PATH should include the logstash gems, the plugin gems and the bootstrap gems.
     # the bootstrap gems are required specificly for bundler which is a runtime dependency

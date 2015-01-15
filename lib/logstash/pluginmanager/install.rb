@@ -56,7 +56,9 @@ class LogStash::PluginManager::Install < Clamp::Command
     FileDependencies::Gem.hook
     options = {}
     options[:document] = []
-    if  LogStash::Environment.env == 'test'
+    if LogStash::Environment.test?
+      # More info on what do this options means
+      # https://github.com/rubygems/rubygems/blob/master/lib/rubygems/dependency_installer.rb#L56
       options[:dev_shallow] = true
       options[:development] = true
     end
