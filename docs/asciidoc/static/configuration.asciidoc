@@ -406,7 +406,7 @@ filter {
 
 You use the `not in` conditional the same way. For example,
 you could use `not in` to only route events to elasticsearch
-when grok is successful:
+when `grok` is successful:
 
 [source,js]
 ----------------------------------
@@ -427,7 +427,7 @@ The following examples illustrate how you can configure Logstash to filter event
 [float]
 [[filter-example]]
 ==== Configuring Filters
-Filters are an in-line processing mechanism that provide the flexibility to slice and dice your data to fit your needs. Let's take a look at some filters in action. The following configuration file sets up the *grok* and *date* filters.
+Filters are an in-line processing mechanism that provide the flexibility to slice and dice your data to fit your needs. Let's take a look at some filters in action. The following configuration file sets up the `grok` and `date` filters.
 
 [source,ruby]
 ----------------------------------
@@ -484,9 +484,9 @@ You should see something returned to stdout that looks like this:
 }
 ----------------------------------
 
-As you can see, Logstash (with help from the *grok* filter) was able to parse the log line (which happens to be in Apache "combined log" format) and break it up into many different discrete bits of information. This is extremely useful once you start querying and analyzing our log data. For example, you'll be able to easily run reports on HTTP response codes, IP addresses, referrers, and so on. There are quite a few grok patterns included with Logstash out-of-the-box, so it's quite likely if you need to parse a common log format, someone has already done the work for you. For more information, see the list of https://github.com/logstash-plugins/logstash-patterns-core/tree/master/patterns[Logstash grok patterns] on GitHub.
+As you can see, Logstash (with help from the `grok` filter) was able to parse the log line (which happens to be in Apache "combined log" format) and break it up into many different discrete bits of information. This is extremely useful once you start querying and analyzing our log data. For example, you'll be able to easily run reports on HTTP response codes, IP addresses, referrers, and so on. There are quite a few grok patterns included with Logstash out-of-the-box, so it's quite likely if you need to parse a common log format, someone has already done the work for you. For more information, see the list of https://github.com/logstash-plugins/logstash-patterns-core/tree/master/patterns[Logstash grok patterns] on GitHub.
 
-The other filter used in this example is the *date* filter. This filter parses out a timestamp and uses it as the timestamp for the event (regardless of when you're ingesting the log data). You'll notice that the @timestamp field in this example is set to December 11, 2013, even though Logstash is ingesting the event at some point afterwards. This is handy when backfilling logs. It gives you the ability to tell Logstash "use this value as the timestamp for this event".
+The other filter used in this example is the `date` filter. This filter parses out a timestamp and uses it as the timestamp for the event (regardless of when you're ingesting the log data). You'll notice that the `@timestamp` field in this example is set to December 11, 2013, even though Logstash is ingesting the event at some point afterwards. This is handy when backfilling logs. It gives you the ability to tell Logstash "use this value as the timestamp for this event".
 
 [float]
 ==== Processing Apache Logs
@@ -540,7 +540,7 @@ bin/logstash -f logstash-apache.conf
 
 Now you should see your apache log data in Elasticsearch! Logstash opened and read the specified input file, processing each event it encountered. Any additional lines logged to this file will also be captured, processed by Logstash as events, and stored in Elasticsearch. As an added bonus, they are stashed with the field "type" set to "apache_access" (this is done by the type => "apache_access" line in the input configuration).
 
-In this configuration, Logstash is only watching the apache access_log, but it's easy enough to watch both the access_log and the error_log (actually, any file matching '*log'), by changing one line in the above configuration:
+In this configuration, Logstash is only watching the apache access_log, but it's easy enough to watch both the access_log and the error_log (actually, any file matching `*log`), by changing one line in the above configuration:
 
 [source,js]
 ----------------------------------
@@ -550,7 +550,7 @@ input {
 ...
 ----------------------------------
 
-When you restart Logstash, it will process both the error and access logs. However, if you inspect your data (using elasticsearch-kopf, perhaps), you'll see that the access_log is broken up into discrete fields, but the error_log isn't. That's because we used a "grok" filter to match the standard combined apache log format and automatically split the data into separate fields. Wouldn't it be nice *if* we could control how a line was parsed, based on its format? Well, we can...
+When you restart Logstash, it will process both the error and access logs. However, if you inspect your data (using elasticsearch-kopf, perhaps), you'll see that the access_log is broken up into discrete fields, but the error_log isn't. That's because we used a `grok` filter to match the standard combined apache log format and automatically split the data into separate fields. Wouldn't it be nice *if* we could control how a line was parsed, based on its format? Well, we can...
 
 Note that Logstash did not reprocess the events that were already seen in the access_log file. When reading from a file, Logstash saves its position and only processes new lines as they are added. Neat!
 
@@ -589,7 +589,7 @@ output {
 }
 ----------------------------------
 
-This example labels all events using the "type" field, but doesn't actually parse the "error" or "random" files. There are so many types of error logs that how they should be labeled really depends on what logs you're working with.
+This example labels all events using the `type` field, but doesn't actually parse the `error` or `random` files. There are so many types of error logs that how they should be labeled really depends on what logs you're working with.
 
 Similarly, you can use conditionals to direct events to particular outputs. For example, you could:
 
@@ -670,7 +670,7 @@ Normally, a client machine would connect to the Logstash instance on port 5000 a
 telnet localhost 5000
 ----------------------------------
 
-Copy and paste the following lines as samples. (Feel free to try some of your own, but keep in mind they might not parse if the grok filter is not correct for your data).
+Copy and paste the following lines as samples. (Feel free to try some of your own, but keep in mind they might not parse if the `grok` filter is not correct for your data).
 
 [source,ruby]
 ----------------------------------
