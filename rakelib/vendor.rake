@@ -124,6 +124,32 @@ namespace "vendor" do
   end # task gems
   task "all" => "gems"
 
+  task "deps", [:gemfile] => [ "dependency:bundler" ] do |task, args|
+    dependencies = {}
+    # grab the development dependencies
+    Dir.glob("vendor/bundle/jruby/*/gems/logstash-*/*.gemspec") do |gemspec|
+      spec = Gem::Specification.load(gemspec)
+      spec.development_dependencies.each do |dependency|
+        dependencies[dependency.name] = dependency
+      end
+    end
+    deps_gemfile = args[:gemfile]
+    temp_data    = File.read(deps_gemfile)
+    # generate the gemfile.
+    File.open(deps_gemfile, "a") do |file|
+      dependencies.values.each do |dependency|
+        next if dependency.name.start_with?('logstash-')
+        requirements = dependency.requirement.to_s.split(',').map { |s| "'#{s.strip}'" }.join(',')
+        s =  "gem '#{dependency.name}', #{requirements}"
+        file.puts s
+      end
+    end
+    # run bundle install with this new gemfile
+    Rake::Task["vendor:bundle"].invoke(deps_gemfile)
+    FileUtils.rm(deps_gemfile)
+    File.write(deps_gemfile, temp_data)
+  end
+
   task "bundle", [:gemfile] => [ "dependency:bundler" ] do |task, args|
     task.reenable
     # because --path creates a .bundle/config file and changes bundler path
