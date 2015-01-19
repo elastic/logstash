@@ -16,9 +16,11 @@ namespace "test" do
     RSpec::Core::Runner.run(["--fail-fast", *Rake::FileList["spec/**/*.rb"]])
   end
 
-  task "plugins" => [ "bootstrap","plugin:install-all" ] do
-    pattern = "vendor/bundle/jruby/1.9/gems/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb"
-    sh "./bin/logstash rspec #{pattern}"
+  task "all-plugins" => [ "bootstrap","plugin:install-all" ] do
+    require "logstash/environment"
+    gem_home = LogStash::Environment.logstash_gem_home
+    pattern = "#{gem_home}/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb"
+    sh "#{LogStath::Environment::LOGSTASH_HOME}/bin/logstash rspec --order rand #{pattern}"
   end
 
   task "prep" do
