@@ -57,6 +57,22 @@ module LogStash
     # of some plugins dependedant gems.
     def set_gem_paths!
       ENV["GEM_HOME"] = ENV["GEM_PATH"] = logstash_gem_home
+      ENV["BUNDLE_GEMFILE"] = GEMFILE_PATH
+
+      require 'bundler'
+      require 'logstash/bundler_patch'
+
+      Bundler.setup
+
+      # Bundler.setup will wipe the existing $LOAD_PATH.
+      # Since we are using gems not declared in the gemfile we need to
+      # recalculate the $LOAD_PATH with all the available gems
+      load_paths = Gem::Specification
+        .collect(&:load_paths)
+        .flatten
+        .reject { |path| $LOAD_PATH.include?(path) }
+
+      $LOAD_PATH.unshift(*load_paths)
     end
 
     def bundler_install_command(gem_file, gem_path)
