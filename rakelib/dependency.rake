@@ -3,7 +3,7 @@ namespace "dependency" do
   task "bundler" do
     Rake::Task["gem:require"].invoke("bundler", ">= 1.3.5", LogStash::Environment.logstash_gem_home)
     require "bundler/cli"
-    require_relative "bundler_patch"
+    require "logstash/bundler_patch"
   end
 
   task "rbx-stdlib" do
