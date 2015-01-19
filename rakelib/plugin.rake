@@ -23,7 +23,6 @@ namespace "plugin" do
 
   task "install-all" => [ "dependency:octokit" ] do
     Rake::Task["vendor:bundle"].invoke("tools/Gemfile.plugins.all")
-    Rake::Task["vendor:deps"].invoke("tools/Gemfile.plugins.all")
   end
 
 end # namespace "plugin"
