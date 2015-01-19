@@ -61,6 +61,9 @@ class LogStash::PluginManager::Install < Clamp::Command
       # all development dependencies as you can do from the command line
       # tool.
       #
+      # :development option for installing development dependencies.
+      # :dev_shallow option for checking on the top level gems if there.
+      #
       # Comments from the command line tool.
       # --development     - Install additional development dependencies
       #
