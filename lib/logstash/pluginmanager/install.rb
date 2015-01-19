@@ -57,8 +57,15 @@ class LogStash::PluginManager::Install < Clamp::Command
     options = {}
     options[:document] = []
     if LogStash::Environment.test?
-      # More info on what do this options means
-      # https://github.com/rubygems/rubygems/blob/master/lib/rubygems/dependency_installer.rb#L56
+      # This two options are the ones used to ask the rubygems to install
+      # all development dependencies as you can do from the command line
+      # tool.
+      #
+      # Comments from the command line tool.
+      # --development     - Install additional development dependencies
+      #
+      # Links: https://github.com/rubygems/rubygems/blob/master/lib/rubygems/install_update_options.rb#L150
+      #        http://guides.rubygems.org/command-reference/#gem-install
       options[:dev_shallow] = true
       options[:development] = true
     end
