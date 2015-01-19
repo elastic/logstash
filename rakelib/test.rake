@@ -19,7 +19,7 @@ namespace "test" do
   task "all-plugins" => [ "bootstrap","plugin:install-all" ] do
     require "logstash/environment"
     gem_home = LogStash::Environment.logstash_gem_home
-    pattern = "#{gem_home}/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb"
+    pattern = "#{gem_home}/gems/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb"
     sh "#{LogStath::Environment::LOGSTASH_HOME}/bin/logstash rspec --order rand #{pattern}"
   end
 
