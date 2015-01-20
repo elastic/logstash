@@ -10,15 +10,29 @@ are pretty much free to use it however you want in whatever way.
 
 For more info, see <http://logstash.net/>
 
-## logstash-contrib
+## Logstash Plugins
 ### AKA "Where'd that plugin go??"
 
-Since version 1.4.0 of Logstash, some of the community-contributed plugins were
-moved to a new home in the
-[Elasticsearch logstash-contrib repo](https://github.com/elasticsearch/logstash-contrib).
-If you can't find a plugin here which you've previously used, odds are it is now
-located there. The good news is that these plugins are simple to install using the
-[Logstash manual plugin installation script](http://logstash.net/docs/latest/contrib-plugins).
+Since version **1.5.0 beta1 (and current master)** of Logstash, *all* plugins have been separated into their own
+repositories under the [logstash-plugins](https://github.com/logstash-plugins) github organization. Each plugin is now a self-contained Ruby gem which
+gets published to RubyGems.org. Logstash has added plugin infrastructure to easily maintain the lifecyle of the plugin.
+For more details and rationale behind these changes, see our [blogpost](http://www.elasticsearch.org/blog/plugin-ecosystem-changes/). 
+
+[Elasticsearch logstash-contrib repo](https://github.com/elasticsearch/logstash-contrib) will slowly be deprecated. We
+have moved all of the plugins that existed there into their own repositories.
+
+For more info on developing and testing these plugins, please see the [README](https://github.com/logstash-plugins/logstash-output-elasticsearch/blob/master/README.md) on *any* plugin repository.
+
+### Plugin Issues and Pull Requests
+
+We are migrating all of the existing pull requests to their respective repositories. Rest assured, we will maintain
+all of the git history for these requests. 
+
+**Please open new issues and pull requests for plugins under its own repository**
+
+For example, if you have to report an issue/enhancement for the Elasticsearch output, please do so [here](https://github.com/logstash-plugins/logstash-output-elasticsearch/issues).
+
+Logstash core will continue to exist under this repository and all related issues and pull requests can be submitted here.
 
 ## Need Help?
 
@@ -56,11 +70,11 @@ tell Logstash to use drip, set `USE_DRIP=1` in your environment.
 There are a few ways to run the tests. For development, using `bin/logstash
 rspec <some spec>` will suffice:
 
-    % bin/logstash rspec spec/filters/grok.rb
-    ...................
-
-    Finished in 0.123 seconds
-    19 examples, 0 failures
+    % bin/logstash rspec spec/core/timestamp_spec.rb
+    Using Accessor#strict_set for spec
+    .............
+    13 examples, 0 failures
+    Randomized with seed 8026
 
 If you want to run all the tests from source, do:
 
