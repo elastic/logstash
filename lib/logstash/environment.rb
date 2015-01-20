@@ -78,12 +78,19 @@ module LogStash
     def bundler_install_command(gem_file, gem_path)
       # for now avoid multiple jobs, ex.: --jobs 4
       # it produces erratic exceptions and hangs (with Bundler 1.7.9)
-      [
+      options = [
         "install",
-          "--gemfile=#{gem_file}",
-          "--without=development",
-          "--path", gem_path,
+        "--gemfile=#{gem_file}",
+        "--path",
+        gem_path,
       ]
+
+      # We don't install development gem from the gemfile.
+      # If you add a gem with `git` or the `github` option bundler will mark
+      # them as development and he will not install them.
+      # To install them you need to do LOGSTASH_ENV=development rake gems:vendor
+      options << "--without=development" unless LogStash::Environment.development?
+      options
     end
 
     def ruby_bin
