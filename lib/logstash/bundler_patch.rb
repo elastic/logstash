@@ -23,7 +23,13 @@ module Bundler
       end
 
       def merge_specs(specs)
-        merged_array = Gem::Specification.to_a + specs.to_a
+        gem_path_specifications = Gem::Specification.to_a
+        
+        # If the specs is available in the gem_path and declared in the gemfile
+        # the gem in the Gemfile should have the priority.
+        gem_path_specifications.delete_if { |specification| specs.to_a.collect(&:name).include?(specification.name) }
+
+        merged_array = gem_path_specifications + specs.to_a
         SpecSet.new(merged_array)
       end
     end
