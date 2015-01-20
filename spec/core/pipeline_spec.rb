@@ -114,4 +114,45 @@ describe LogStash::Pipeline do
       end
     end
   end
+
+  context "when filters raise exceptions" do
+
+    let(:config_with_faulty_output) {
+      <<-eos
+      input { dummyinput {} }
+      output { dummyoutput {} }
+      eos
+    }
+
+    context "output" do
+
+      it "should call teardown of output" do
+
+        expect_any_instance_of(DummyOutput).to receive(:receive).and_return do |event|
+          unknown_method(event)
+        end
+
+        expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
+          queue << LogStash::Event.new("message" => "hello")
+        end
+
+        expect_any_instance_of(DummyOutput).to receive(:teardown).once
+        expect { TestPipeline.new(config_with_faulty_output).run }.to_not raise_error
+      end
+    end
+
+    context "input" do
+      it "should call teardown of inputs" do
+
+        expect_any_instance_of(DummyOutput).to_not receive(:receive)
+
+        expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
+          unknown_method(event)
+        end
+
+        expect_any_instance_of(DummyInput).to receive(:teardown)
+        expect { TestPipeline.new(config_with_faulty_output).run }.to_not raise_error
+      end
+    end
+  end
 end

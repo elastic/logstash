@@ -185,9 +185,6 @@ class LogStash::Pipeline
                              :plugin => plugin.inspect, :error => e))
       end
       puts e.backtrace if @logger.debug?
-      plugin.teardown
-      sleep 1
-      retry
     end
   rescue LogStash::ShutdownSignal
     # nothing
@@ -234,7 +231,9 @@ class LogStash::Pipeline
       break if event.is_a?(LogStash::ShutdownEvent)
       output(event)
     end # while true
-
+  rescue => e
+    puts e.backtrace if @logger.debug?
+  ensure
     @outputs.each do |output|
       output.worker_plugins.each(&:teardown)
     end
