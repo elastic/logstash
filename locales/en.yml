@@ -95,6 +95,10 @@ en:
             }
         invalid_plugin_settings: >-
           Something is wrong with your configuration.
+        invalid_plugin_settings_duplicate_keys: |-
+          Duplicate keys found in your configuration: [%{keys}]
+          At line: %{line}, column %{column} (byte %{byte})
+          after %{after}
         invalid_plugin_register: >-
           Cannot register %{plugin} %{type} plugin.
           The error reported is: 

@@ -1,4 +1,5 @@
 # encoding: utf-8
+require 'logstash/errors'
 require "treetop"
 class Treetop::Runtime::SyntaxNode
   def compile
@@ -28,6 +29,12 @@ class Treetop::Runtime::SyntaxNode
     return results
   end
 
+  # When Treetop parses the configuration file
+  # it will generate a tree, the generated tree will contain
+  # a few `Empty` nodes to represent the actual space/tab or newline in the file.
+  # Some of theses node will point to our concrete class.
+  # To fetch a specific types of object we need to follow each branch
+  # and ignore the empty nodes.
   def recursive_select(klass)
     return recursive_inject { |e| e.is_a?(klass) }
   end
@@ -50,6 +57,7 @@ end
 
 module LogStash; module Config; module AST
   class Node < Treetop::Runtime::SyntaxNode; end
+
   class Config < Node
     def compile
       code = []
@@ -309,11 +317,36 @@ module LogStash; module Config; module AST
     end
   end
   class Hash < Value
+    def validate!
+      duplicate_values = find_duplicate_keys
+
+      if duplicate_values.size > 0
+        raise ConfigurationError.new(
+          I18n.t("logstash.agent.configuration.invalid_plugin_settings_duplicate_keys",
+                 :keys => duplicate_values.join(', '),
+                 :line => input.line_of(interval.first),
+                 :column => input.column_of(interval.first),
+                 :byte => interval.first + 1,
+                 :after => input[0..interval.first]
+                )
+        )
+      end
+    end
+
+    def find_duplicate_keys
+      values = recursive_select(HashEntry).collect { |hash_entry| hash_entry.name.text_value }
+      values.find_all { |v| values.count(v) > 1 }.uniq
+    end
+
     def compile
+      validate!
       return "{" << recursive_select(HashEntry).collect(&:compile).reject(&:empty?).join(", ") << "}"
     end
   end
-  class HashEntries < Node; end
+
+  class HashEntries < Node
+  end
+
   class HashEntry < Node
     def compile
       return %Q(#{name.compile} => #{value.compile})

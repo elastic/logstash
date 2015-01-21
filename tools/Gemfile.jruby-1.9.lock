@@ -5,9 +5,10 @@ PATH
       cabin (>= 0.6.0)
       ci_reporter (= 1.9.3)
       clamp
+      file-dependencies
+      filesize
       ftw (~> 0.0.40)
       i18n (= 0.6.9)
-      insist (= 1.0.0)
       jar-dependencies (= 0.1.2)
       jrjackson
       jruby-httpclient
@@ -45,6 +46,9 @@ GEM
     diff-lcs (1.2.5)
     equalizer (0.0.9)
     ffi (1.9.6-java)
+    file-dependencies (0.1.4)
+      minitar
+    filesize (0.0.4)
     ftw (0.0.42)
       addressable
       backports (>= 2.6.2)
@@ -56,10 +60,11 @@ GEM
     ice_nine (0.11.1)
     insist (1.0.0)
     jar-dependencies (0.1.2)
-    jrjackson (0.2.7)
+    jrjackson (0.2.8)
     jruby-httpclient (1.1.1-java)
-    logstash-devutils (0.0.6-java)
+    logstash-devutils (0.0.7-java)
       gem_publisher
+      insist (= 1.0.0)
       jar-dependencies
       minitar
       rake
