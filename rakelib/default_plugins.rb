@@ -16,6 +16,7 @@ logstash-codec-netflow
 logstash-codec-oldlogstashjson
 logstash-codec-plain
 logstash-codec-rubydebug
+logstash-codec-es_bulk
 logstash-output-udp
 logstash-filter-anonymize
 logstash-filter-checksum
@@ -97,4 +98,5 @@ logstash-input-zeromq
 logstash-output-elasticsearch
 logstash-output-csv
 logstash-filter-json
+logstash-input-couchdb_changes
 )
