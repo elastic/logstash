@@ -14,6 +14,20 @@ class DummyInput < LogStash::Inputs::Base
   end
 end
 
+class DummyFilter < LogStash::Filters::Base
+  config_name "dummyfilter"
+  milestone 2
+
+  def register
+  end
+
+  def filter(event)
+  end
+
+  def teardown
+  end
+end
+
 class DummyCodec < LogStash::Codecs::Base
   config_name "dummycodec"
   milestone 2
@@ -65,6 +79,8 @@ describe LogStash::Pipeline do
       .with("codec", "plain").and_return(DummyCodec)
     LogStash::Plugin.stub(:lookup)
       .with("output", "dummyoutput").and_return(DummyOutput)
+    LogStash::Plugin.stub(:lookup)
+      .with("filter", "dummyfilter").and_return(DummyFilter)
   end
 
   let(:test_config_without_output_workers) {
@@ -120,13 +136,14 @@ describe LogStash::Pipeline do
     let(:config_with_faulty_output) {
       <<-eos
       input { dummyinput {} }
+      filter { dummyfilter {} }
       output { dummyoutput {} }
       eos
     }
 
     context "output" do
 
-      it "should call teardown of output" do
+      it "should call teardown and not raise exceptions" do
 
         expect_any_instance_of(DummyOutput).to receive(:receive).and_return do |event|
           unknown_method(event)
@@ -142,7 +159,7 @@ describe LogStash::Pipeline do
     end
 
     context "input" do
-      it "should call teardown of inputs" do
+      it "should call teardown and not raise exceptions" do
 
         expect_any_instance_of(DummyOutput).to_not receive(:receive)
 
@@ -150,7 +167,25 @@ describe LogStash::Pipeline do
           unknown_method(event)
         end
 
-        expect_any_instance_of(DummyInput).to receive(:teardown)
+        expect_any_instance_of(DummyInput).to receive(:teardown).once
+        expect { TestPipeline.new(config_with_faulty_output).run }.to_not raise_error
+      end
+    end
+
+    context "filter" do
+      it "should call teardown and not raise exceptions" do
+
+        expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
+          queue << LogStash::Event.new("message" => "hello")
+        end
+
+        expect_any_instance_of(DummyFilter).to receive(:filter).and_return do |queue|
+          unknown_method(event)
+        end
+
+        expect_any_instance_of(DummyOutput).to_not receive(:receive)
+
+        expect_any_instance_of(DummyFilter).to receive(:teardown).once
         expect { TestPipeline.new(config_with_faulty_output).run }.to_not raise_error
       end
     end
