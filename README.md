@@ -18,8 +18,9 @@ repositories under the [logstash-plugins](https://github.com/logstash-plugins) g
 gets published to RubyGems.org. Logstash has added plugin infrastructure to easily maintain the lifecyle of the plugin.
 For more details and rationale behind these changes, see our [blogpost](http://www.elasticsearch.org/blog/plugin-ecosystem-changes/). 
 
-[Elasticsearch logstash-contrib repo](https://github.com/elasticsearch/logstash-contrib) will slowly be deprecated. We
-have moved all of the plugins that existed there into their own repositories.
+[Elasticsearch logstash-contrib repo](https://github.com/elasticsearch/logstash-contrib) is deprecated. We
+have moved all of the plugins that existed there into their own repositories. We are migrating all of the pull requests
+and issues from logstash-contrib to the new repositories.
 
 For more info on developing and testing these plugins, please see the [README](https://github.com/logstash-plugins/logstash-output-elasticsearch/blob/master/README.md) on *any* plugin repository.
 
