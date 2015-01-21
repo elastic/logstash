@@ -131,7 +131,7 @@ describe LogStash::Pipeline do
     end
   end
 
-  context "when filters raise exceptions" do
+  context "when plugins raise exceptions" do
 
     let(:config_with_faulty_output) {
       <<-eos
