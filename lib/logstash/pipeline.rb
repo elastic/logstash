@@ -184,7 +184,7 @@ class LogStash::Pipeline
         @logger.error(I18n.t("logstash.pipeline.worker-error",
                              :plugin => plugin.inspect, :error => e))
       end
-      puts e.backtrace if @logger.debug?
+      @logger.error("Exception in inputworker", "exception" => e, "backtrace" => e.backtrace)
     end
   rescue LogStash::ShutdownSignal
     # nothing
@@ -232,7 +232,7 @@ class LogStash::Pipeline
       output(event)
     end # while true
   rescue => e
-    puts e.backtrace if @logger.debug?
+    @logger.error("Exception in outputworker", "exception" => e, "backtrace" => e.backtrace)
   ensure
     @outputs.each do |output|
       output.worker_plugins.each(&:teardown)
