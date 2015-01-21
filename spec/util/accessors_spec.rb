@@ -36,6 +36,17 @@ describe LogStash::Util::Accessors, :if => true do
       expect(data).to be_empty
     end
 
+    it "should handle delete on non-existent field" do
+      str = "[foo][bar]"
+      data = { "hello" => "world" }
+      accessors = LogStash::Util::Accessors.new(data)
+      expect(accessors.del(str)).to be_nil
+      expect(data).not_to be_empty
+      # assert no side effects
+      expect(accessors.get("foo")).to be_nil
+      expect(accessors.get("hello")).to eq("world")
+    end
+
     it "should set string value" do
       str = "simple"
       data = {}
