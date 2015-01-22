@@ -5,6 +5,7 @@ require "logstash/plugin"
 require "logstash/logging"
 require "logstash/config/mixin"
 require "logstash/codecs/base"
+require "logstash/util/decorators"
 
 # This is the base class for Logstash inputs.
 class LogStash::Inputs::Base < LogStash::Plugin
@@ -109,14 +110,8 @@ class LogStash::Inputs::Base < LogStash::Plugin
     # Only set 'type' if not already set. This is backwards-compatible behavior
     event["type"] = @type if @type && !event.include?("type")
 
-    if @tags.any?
-      event["tags"] ||= []
-      event["tags"] += @tags
-    end
-
-    @add_field.each do |field, value|
-      event[field] = value
-    end
+    LogStash::Util::Decorators.add_fields(@add_field,event,"inputs/#{self.class.name}")
+    LogStash::Util::Decorators.add_tags(@tags,event,"inputs/#{self.class.name}")
   end
 
   protected
