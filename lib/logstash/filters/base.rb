@@ -4,6 +4,7 @@ require "logstash/event"
 require "logstash/logging"
 require "logstash/plugin"
 require "logstash/config/mixin"
+require "logstash/util/decorators"
 
 class LogStash::Filters::Base < LogStash::Plugin
   include LogStash::Config::Mixin
@@ -179,21 +180,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   # matches the filter's conditions (right type, etc)
   protected
   def filter_matched(event)
-    @add_field.each do |field, value|
-      field = event.sprintf(field)
-      value = [value] if !value.is_a?(Array)
-      value.each do |v|
-        v = event.sprintf(v)
-        if event.include?(field)
-          event[field] = [event[field]] if !event[field].is_a?(Array)
-          event[field] << v
-        else
-          event[field] = v
-        end
-        @logger.debug? and @logger.debug("filters/#{self.class.name}: adding value to field",
-                                       :field => field, :value => value)
-      end
-    end
+    LogStash::Util::Decorators.add_fields(@add_field,event,"filters/#{self.class.name}")
 
     @remove_field.each do |field|
       field = event.sprintf(field)
@@ -202,12 +189,7 @@ class LogStash::Filters::Base < LogStash::Plugin
       event.remove(field)
     end
 
-    @add_tag.each do |tag|
-      tag = event.sprintf(tag)
-      @logger.debug? and @logger.debug("filters/#{self.class.name}: adding tag",
-                                       :tag => tag)
-      (event["tags"] ||= []) << tag
-    end
+    LogStash::Util::Decorators.add_tags(@add_tag,event,"filters/#{self.class.name}")
 
     @remove_tag.each do |tag|
       break if event["tags"].nil?
