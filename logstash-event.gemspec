@@ -10,6 +10,7 @@ Gem::Specification.new do |gem|
   gem.files = %w{
     lib/logstash-event.rb
     lib/logstash/event.rb
+    lib/logstash/json.rb
     lib/logstash/namespace.rb
     lib/logstash/util/fieldreference.rb
     lib/logstash/util.rb
@@ -25,4 +26,11 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "rspec"
   gem.add_development_dependency "guard"
   gem.add_development_dependency "guard-rspec"
+
+  if RUBY_PLATFORM == 'java'
+    gem.platform = RUBY_PLATFORM
+    gem.add_runtime_dependency "jrjackson"                           #(Apache 2.0 license)
+  else
+    gem.add_runtime_dependency "oj"       #(MIT-style license)
+  end
 end
