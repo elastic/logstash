@@ -4,7 +4,6 @@
 require "spec_helper"
 require "logstash/config/grammar"
 require "logstash/config/config_ast"
-require "logstash/errors"
 
 describe LogStashConfigParser do
   context '#parse' do

@@ -1,6 +1,5 @@
 require "spec_helper"
 require "logstash/runner"
-require "logstash/agent"
 require "logstash/kibana"
 require "stud/task"
 
