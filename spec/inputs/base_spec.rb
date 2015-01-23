@@ -1,5 +1,5 @@
 # encoding: utf-8
-require "logstash/devutils/rspec/spec_helper"
+require "spec_helper"
 
 describe "LogStash::Inputs::Base#fix_streaming_codecs" do
   it "should carry the charset setting along when switching" do

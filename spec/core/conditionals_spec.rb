@@ -1,4 +1,4 @@
-require "logstash/devutils/rspec/spec_helper"
+require 'spec_helper'
 
 module ConditionalFanciness
   def description

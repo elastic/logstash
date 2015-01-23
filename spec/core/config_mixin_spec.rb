@@ -1,5 +1,5 @@
+require "spec_helper"
 require "logstash/config/mixin"
-require "logstash/filters/base"
 
 describe LogStash::Config::Mixin do
   context "when validating :bytes successfully" do
