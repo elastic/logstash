@@ -1,6 +1,5 @@
 require "spec_helper"
 require "logstash/util/plugin_version"
-require "logstash/errors"
 
 describe LogStash::Util::PluginVersion do
   subject { LogStash::Util::PluginVersion }
