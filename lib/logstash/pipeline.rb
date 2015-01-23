@@ -81,6 +81,8 @@ class LogStash::Pipeline
     @ready = true
 
     @logger.info("Pipeline started")
+    @logger.terminal("Logstash startup completed")
+
     wait_inputs
 
     if filters?
@@ -93,6 +95,7 @@ class LogStash::Pipeline
     wait_outputs
 
     @logger.info("Pipeline shutdown complete.")
+    @logger.terminal("Logstash shutdown completed")
 
     # exit code
     return 0
