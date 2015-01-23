@@ -1,3 +1,4 @@
+require "spec_helper"
 require "logstash/util/plugin_version"
 require "logstash/errors"
 

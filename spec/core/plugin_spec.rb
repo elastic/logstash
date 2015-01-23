@@ -1,6 +1,5 @@
-require "logstash/namespace"
+require "spec_helper"
 require "logstash/plugin"
-require "logstash/filters/base"
 
 describe LogStash::Plugin do
   it "should fail lookup on inexisting type" do

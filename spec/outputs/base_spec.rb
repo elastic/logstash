@@ -1,7 +1,5 @@
 # encoding: utf-8
-require "logstash/devutils/rspec/spec_helper"
-require "logstash/outputs/base"
-require "logstash/namespace"
+require "spec_helper"
 
 # use a dummy NOOP output to test Outputs::Base
 class LogStash::Outputs::NOOP < LogStash::Outputs::Base

@@ -1,4 +1,4 @@
-require "logstash/devutils/rspec/spec_helper"
+require "spec_helper"
 
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"

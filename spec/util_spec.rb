@@ -1,5 +1,6 @@
-require "logstash/util"
+require 'spec_helper'
 
+require "logstash/util"
 
 describe LogStash::Util do
 
