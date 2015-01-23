@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "spec_helper"
 require "logstash/json"
 require "logstash/environment"
 require "logstash/util"

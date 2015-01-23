@@ -1,7 +1,7 @@
 # encoding: utf-8
 # config syntax tests
 #
-require "logstash/devutils/rspec/spec_helper"
+require "spec_helper"
 require "logstash/config/grammar"
 require "logstash/config/config_ast"
 require "logstash/errors"

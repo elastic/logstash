@@ -1,4 +1,4 @@
-require "logstash/devutils/rspec/spec_helper"
+require "spec_helper"
 require "logstash/util/fieldreference"
 
 describe LogStash::Util::FieldReference, :if => true do

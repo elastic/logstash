@@ -4,6 +4,10 @@ source 'https://rubygems.org'
 
 gemspec :name => "logstash", :path => File.expand_path(File.join(File.dirname(__FILE__), ".."))
 
+##
+# Install a set of plugins that are necessary for testing purpouses.
+##
+
 plugins = [ 'logstash-filter-clone',
             'logstash-filter-mutate',
             'logstash-input-generator',
@@ -14,3 +18,10 @@ plugins = [ 'logstash-filter-clone',
 plugins.each do |plugin|
   gem plugin
 end
+
+##
+# Dependencies related with coverage analysis
+##
+
+gem 'simplecov'
+gem 'coveralls'

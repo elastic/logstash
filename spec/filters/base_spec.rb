@@ -1,7 +1,5 @@
 # encoding: utf-8
-require "logstash/devutils/rspec/spec_helper"
-require "logstash/filters/base"
-require "logstash/namespace"
+require "spec_helper"
 
 # use a dummy NOOP filter to test Filters::Base
 class LogStash::Filters::NOOP < LogStash::Filters::Base

@@ -75,8 +75,4 @@ Gem::Specification.new do |gem|
 
   # Jenkins Deps
   gem.add_runtime_dependency "ci_reporter", "1.9.3"
-
-  # Development Deps
-  # coveralls temporarily disabled because of Bundler bug with "without development" and gemspec
-  # gem.add_development_dependency "coveralls"
 end
