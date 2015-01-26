@@ -30,6 +30,13 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   # SSL key passphrase to use.
   config :ssl_key_passphrase, :validate => :password
 
+  # A flag to signal that we want messages to ack only when they've gone into an
+  # ha output.
+  #
+  # This only works if you flag an output with provides_ha
+  # e.g. elasticsearch with 3 nodes, and it's output declaring provides_ha => true
+  config :needs_ha, :validate => :boolean, :default => false
+
   # TODO(sissel): Add CA to authenticate clients with.
 
   public
@@ -46,7 +53,8 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   def run(output_queue)            # Run lumberjack with output queue
     @lumberjack.run do |client|    # ...using lumberjack server (gem)
       Thread.new(client) do |fd|   # ...then we wrap client connections inside threads
-        bundle = LogStash::EventBundle.new
+        bundle_class = if @needs_ha then LogStash::EventBundle::HA else LogStash::EventBundle end
+        bundle = bundle_class.new
 
         Lumberjack::Connection.new(fd).run() do |map, &ack_sequence|
           @codec.decode(map.delete("line")) do |event|
@@ -55,17 +63,17 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
             map.each { |k,v| event[k] = v; v.force_encoding(Encoding::UTF_8) }
 
             # Process and record record events
+            bundle.add(event) # Register bundle callbacks before defaults get triggered.
             output_queue << event
-            bundle.add(event)
 
             # Close bundle, bundle will ack when sequence has ended
             if ack_sequence != nil
               bundle.ready(ack_sequence)
-              bundle = LogStash::EventBundle.new
+              bundle = bundle_class.new
             end
           end
         end
       end
     end
-  end # def run
+  end
 end # class LogStash::Inputs::Lumberjack

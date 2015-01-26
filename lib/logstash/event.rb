@@ -41,6 +41,7 @@ end
 #       "@version": "1",
 #       message: "hello world"
 #     }
+
 class LogStash::Event
   class DeprecatedMethod < StandardError; end
 
@@ -314,4 +315,62 @@ class LogStash::EventBundle
     throw "Cannot add event to ready bundle" if @ready
     @events.push(event)
   end
-end # class LogStash::EventBundle
+
+  class HA < LogStash::EventBundle
+    def initialize
+      super()
+      @processed_count = 0
+      @sent_count = 0
+      @semaphore = Mutex.new
+    end
+
+    def ready(ack_sequence)
+      @ack_sequence = ack_sequence
+
+      all_processed = @semaphore.synchronize do
+        @ready = true
+        @processed_count == @events.size
+      end
+
+      broadcast "output_send" if all_processed
+    end
+
+    def add(event)
+      throw "Cannot add event to ready bundle" if @ready
+
+      event.on('filter_processed') do
+        all_processed = @semaphore.synchronize do
+          @processed_count += 1
+          @processed_count == @events.size and @ready
+        end
+
+        broadcast "output_send" if all_processed
+      end
+
+      event.on("output_sent") do
+        unless @ready
+          throw "Should not be receiving 'output_sent' on an open bundle!
+          Did you queue it for processing before adding it to this bundle? That creates a race condition."
+        end
+        all_sent = @semaphore.synchronize do
+          @sent_count += 1
+          @sent_count == @events.size
+        end
+
+        if all_sent
+          @ack_sequence.call
+          broadcast "input_acknowledged"
+        end
+      end
+
+      super(event) # add event, et al
+    end
+
+    private
+    def broadcast(state)
+      @events.each do |e|
+        e.trigger state
+      end
+    end
+  end
+end

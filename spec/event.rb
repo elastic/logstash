@@ -247,4 +247,47 @@ describe LogStash::Event do
       end
     end
   end
+
+  context LogStash::EventBundle::HA do
+    it "should acknowledge only when done" do
+      bundle_closed = false
+      bundle = LogStash::EventBundle::HA.new
+
+      20.times do
+        event = LogStash::Event.new
+        bundle.add(event)
+        event.trigger "filter_processed"
+      end
+
+      bundle_closed = true
+      bundle.close(Proc.new do
+        insist { bundle_closed } == true
+      end)
+    end
+    it "should be able to acknowledge after garbage collect" do
+      passed = false
+      bundle = LogStash::EventBundle::HA.new
+
+      event = LogStash::Event.new
+      bundle.add(event)
+      bundle.close(Proc.new do
+        passed = true
+      end)
+      bundle = nil
+      GC.start
+
+      event.trigger "filter_processed"
+      insist { passed } == true
+    end
+  end
+  context LogStash::EventBundle do
+    it "should acknowledge when closed" do
+      passed = false
+      bundle = LogStash::EventBundle.new
+      bundle.close(Proc.new do
+        passed = true
+      end)
+      insist { passed } == true
+    end
+  end
 end
