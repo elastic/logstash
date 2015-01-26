@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.version       = LOGSTASH_VERSION
 
   # Core dependencies
-  gem.add_runtime_dependency "cabin", [">=0.6.0"]    #(Apache 2.0 license)
+  gem.add_runtime_dependency "cabin", [">=0.7.0"]    #(Apache 2.0 license)
   gem.add_runtime_dependency "pry"                   #(Ruby license)
   gem.add_runtime_dependency "stud"                  #(Apache 2.0 license)
   gem.add_runtime_dependency "clamp"                 #(MIT license) for command line args/flags

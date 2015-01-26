@@ -41,6 +41,8 @@ en:
       no_version: >-
         %{name} plugin doesn't have a version. This plugin isn't well
          supported by the community and likely has no maintainer.
+      activated_sucessfully: >-
+        %{name} %{type} plugin activated successfully.
       version:
         0-9-x:
          Using version 0.9.x %{type} plugin '%{name}'. This plugin should work but
