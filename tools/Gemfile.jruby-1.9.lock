@@ -1,8 +1,8 @@
 PATH
-  remote: /Users/ph/es/logstash
+  remote: /Users/purbon/work/logstash
   specs:
     logstash (2.0.0.dev-java)
-      cabin (>= 0.6.0)
+      cabin (>= 0.7.0)
       ci_reporter (= 1.9.3)
       clamp
       file-dependencies
@@ -34,7 +34,7 @@ GEM
       thread_safe (~> 0.3, >= 0.3.1)
     backports (3.6.4)
     builder (3.2.2)
-    cabin (0.6.1)
+    cabin (0.7.1)
     ci_reporter (1.9.3)
       builder (>= 2.1.2)
     clamp (0.6.3)
@@ -108,7 +108,7 @@ GEM
     treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
-    virtus (1.0.3)
+    virtus (1.0.4)
       axiom-types (~> 0.1)
       coercible (~> 1.0)
       descendants_tracker (~> 0.0, >= 0.0.3)
