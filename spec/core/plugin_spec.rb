@@ -42,7 +42,7 @@ describe LogStash::Plugin do
         .with(plugin_name)
         .and_return(double(:version => Gem::Version.new('1.0.0')))
 
-      expect_any_instance_of(Cabin::Channel).not_to receive(:warn)
+      expect_any_instance_of(Cabin::Channel).not_to receive(:info)
       subject.validate({})
     end
 
@@ -51,7 +51,7 @@ describe LogStash::Plugin do
         .with(plugin_name)
         .and_return(double(:version => Gem::Version.new('0.9.1')))
 
-      expect_any_instance_of(Cabin::Channel).to receive(:warn)
+      expect_any_instance_of(Cabin::Channel).to receive(:info)
         .with(/Using version 0.9.x/)
 
       subject.validate({})
@@ -62,7 +62,7 @@ describe LogStash::Plugin do
         .with(plugin_name)
         .and_return(double(:version => Gem::Version.new('0.1.1')))
 
-      expect_any_instance_of(Cabin::Channel).to receive(:warn)
+      expect_any_instance_of(Cabin::Channel).to receive(:info)
         .with(/Using version 0.1.x/)
       subject.validate({})
     end
@@ -76,7 +76,7 @@ describe LogStash::Plugin do
         .with(plugin_name)
         .and_return(double(:version => Gem::Version.new('0.1.1')))
 
-      expect_any_instance_of(Cabin::Channel).to receive(:warn)
+      expect_any_instance_of(Cabin::Channel).to receive(:info)
         .once
         .with(/Using version 0.1.x/)
 
