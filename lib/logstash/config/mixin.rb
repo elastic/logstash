@@ -220,12 +220,12 @@ module LogStash::Config::Mixin
 
         if plugin_version < PLUGIN_VERSION_1_0_0
           if plugin_version < PLUGIN_VERSION_0_9_0
-            @logger.warn(I18n.t("logstash.plugin.version.0-1-x", 
+            @logger.info(I18n.t("logstash.plugin.version.0-1-x", 
                                 :type => @plugin_type,
                                 :name => @config_name,
                                 :LOGSTASH_VERSION => LOGSTASH_VERSION))
           else
-            @logger.warn(I18n.t("logstash.plugin.version.0-9-x", 
+            @logger.info(I18n.t("logstash.plugin.version.0-9-x", 
                                 :type => @plugin_type,
                                 :name => @config_name,
                                 :LOGSTASH_VERSION => LOGSTASH_VERSION))
