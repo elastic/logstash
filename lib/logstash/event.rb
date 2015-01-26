@@ -51,6 +51,7 @@ class LogStash::Event
 
   public
   def initialize(data={})
+    @logger = Cabin::Channel.get(LogStash)
     @cancelled = false
 
     @data = data
@@ -65,6 +66,32 @@ class LogStash::Event
     else
       data[TIMESTAMP] = ::Time.now.utc
     end
+
+    # Used to store proc callbacks given to the event class
+    # event.on("some_event", &my_proc)
+    @change_listeners = {}
+
+    @default_change_listeners = {
+      # When an event has gone through all filters and are pretty much ready to be sent
+      "filter_processed" => [Proc.new {
+        trigger("output_send")
+      }],
+
+      # After an input has seen enough filter_processed events for a batch of messages to be 'ready'
+      "output_send" => [Proc.new {
+        trigger("output_sent")
+      }],
+
+      # After an output has confirmed the message has been sent to an HA store
+      "output_sent" => [Proc.new {
+        trigger("input_acknowledged")
+      }],
+
+      # After an input has acked back to a batch of messages
+      "input_acknowledged" => [Proc.new {
+        #@logger.debug "acked message"
+      }],
+    }
   end # def initialize
 
   public
@@ -251,10 +278,29 @@ class LogStash::Event
     self["tags"] ||= []
     self["tags"] << value unless self["tags"].include?(value)
   end
+
+  # State change notifications
+  def trigger(state_change)
+    callbacks = (
+      @change_listeners[state_change] or
+      @default_change_listeners[state_change]
+    )
+
+    callbacks.each do |callback|
+      callback.call(self)
+    end
+  end
+
+  def on(state_change, &callback)
+    # Initialize state_change if it's not set already
+    @change_listeners[state_change] ||= []
+    @change_listeners[state_change].push(callback)
+  end
 end # class LogStash::Event
 
 class LogStash::EventBundle
   def initialize
+    @logger = Cabin::Channel.get(LogStash)
     @events = []
     @ready = false
   end

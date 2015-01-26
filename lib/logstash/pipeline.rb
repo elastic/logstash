@@ -30,6 +30,8 @@ class LogStash::Pipeline
       raise
     end
 
+    validate_ha
+
     @input_to_filter = SizedQueue.new(20)
 
     # If no filters, pipe inputs directly to outputs
@@ -49,6 +51,58 @@ class LogStash::Pipeline
 
   def started?
     return @started
+  end
+
+  # Validates that the plugins that have been configured for HA correctly
+  # Or that there is no HA configuration specified
+  #
+  # If there are multiple HA outputs, this raises an exception
+  # If there are HA inputs but no HA outputs, this raises an exception
+  # If there are HA outputs but no HA inputs, this prints a warning
+  def validate_ha
+    ha_inputs = @inputs.select do |input|
+      if input.class.method_defined? :needs_ha
+        input.needs_ha
+      else
+        false
+      end
+    end
+
+    ha_outputs = @outputs.select do |output|
+      if output.class.method_defined? :provides_ha
+        output.provides_ha
+      else
+        false
+      end
+    end
+
+    if ha_outputs.size > 1 # Can only have 1 critical path through
+      plugins = ha_outputs.map{|f|f.class.config_name}.join(', ')
+      raise LogStash::ConfigurationError,
+        "Configuration specifies more than one Highly Available output which is unsupported. " +
+        "Please choose _one_ of these: #{plugins}"
+
+    elsif ha_outputs.size == 0 and ha_inputs.size > 0 # Don't have an HA path but do have the need for one
+      plugins = ha_inputs.map{|f|f.class.config_name}.join(', ')
+      raise LogStash::ConfigurationError,
+        "Configuration specifies that you need Highly Available outputs for some of your " +
+        "inputs, but there are no HA outputs set. Please set provides_ha on an output, or " +
+        "remove needs_ha from these plugins: #{plugins}"
+
+    elsif ha_outputs.size == 1 and ha_inputs.size == 0
+      plugin = ha_outputs[0].class.config_name
+      @logger.warn(
+        "You have configured a Highly Available output (#{plugin}), but there are no HA " +
+        "inputs set (so you may still loose messages). If you have inputs that can't loose " +
+        "messages, please set needs_ha => true on them."
+      );
+
+    else
+      # Either
+      # 1. We have no HA setup (inputs or outputs)
+      # 2. We have HA in one place, and 1 to many needs for it
+      # ...and both are fine
+    end
   end
 
   def configure(setting, value)
