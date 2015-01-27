@@ -278,6 +278,13 @@ You can also do multiple expressions in a single condition:
         }
       }
     }
+    
+You can test whether a field was present, regardless of its value:
+
+    if [exception_message] {
+      # If the event has an exception_message field, set the level
+      mutate { add_field => { "level" => "ERROR" } }
+    }
 
 Here are some examples for testing with the in conditional:
 
