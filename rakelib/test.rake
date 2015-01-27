@@ -20,7 +20,7 @@ namespace "test" do
     require "logstash/environment"
     gem_home = LogStash::Environment.logstash_gem_home
     pattern = "#{gem_home}/gems/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb"
-    sh "#{LogStath::Environment::LOGSTASH_HOME}/bin/logstash rspec --order rand #{pattern}"
+    sh "#{LogStash::Environment::LOGSTASH_HOME}/bin/logstash rspec --order rand #{pattern}"
   end
 
   task "prep" do
