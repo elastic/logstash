@@ -1,4 +1,4 @@
-# Logstash [![Code Climate](https://codeclimate.com/github/elasticsearch/logstash/badges/gpa.svg)](https://codeclimate.com/github/elasticsearch/logstash) [![Coverage Status](https://coveralls.io/repos/elasticsearch/logstash/badge.svg)](https://coveralls.io/r/elasticsearch/logstash)
+# Logstash [![Code Climate](https://codeclimate.com/github/elasticsearch/logstash/badges/gpa.svg)](https://codeclimate.com/github/elasticsearch/logstash) [![Coverage Status](https://coveralls.io/repos/elasticsearch/logstash/badge.svg?branch=origin%2Fmaster)](https://coveralls.io/r/elasticsearch/logstash?branch=origin%2Fmaster)
 
 Logstash is a tool for managing events and logs. You can use it to collect
 logs, parse them, and store them for later use (like, for searching). Speaking
