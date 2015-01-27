@@ -104,6 +104,7 @@ module LogStash::Config::Mixin
         I18n.t("logstash.agent.configuration.invalid_plugin_settings")
     end
 
+
     # set instance variables like '@foo'  for each config value given.
     params.each do |key, value|
       next if key[0, 1] == "@"
@@ -112,6 +113,10 @@ module LogStash::Config::Mixin
       @logger.debug("config #{self.class.name}/@#{key} = #{value.inspect}")
       instance_variable_set("@#{key}", value)
     end
+
+    @logger.terminal(I18n.t("logstash.plugin.activated_sucessfully", 
+                           :name => @plugin_type,
+                           :type => @plugin_type))
 
     @config = params
   end # def config_init
