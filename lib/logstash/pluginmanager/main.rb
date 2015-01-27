@@ -1,11 +1,12 @@
 require "logstash/namespace"
 require "logstash/errors"
-require 'clamp'
-require 'logstash/pluginmanager/install'
-require 'logstash/pluginmanager/uninstall'
-require 'logstash/pluginmanager/list'
-require 'logstash/pluginmanager/update'
-require 'logstash/pluginmanager/util'
+require "logstash/pluginmanager/install"
+require "logstash/pluginmanager/uninstall"
+require "logstash/pluginmanager/list"
+require "logstash/pluginmanager/update"
+require "logstash/pluginmanager/util"
+require "clamp"
+
 
 class LogStash::PluginManager::Main < Clamp::Command
 

@@ -1,6 +1,25 @@
 require 'bundler'
 
 module Bundler
+  class SpecSet
+    # Usually Bundler's SpecSet is a read only/created once database
+    # I am modifying this behavior to allow `Gem` to uninstall gems.
+    def delete(key)
+      value = @specs.delete(key)
+      reset_state!
+      value
+    end
+
+    def delete_if(&block)
+      @specs.delete_if(&block)
+      reset_state!
+    end
+
+    def reset_state!
+      @lookup = nil
+      @sorted = nil
+    end
+  end
   class RubygemsIntegration
     # When you call Bundler#setup it will bootstrap
     # a new rubygems environment and wipe all the existing
