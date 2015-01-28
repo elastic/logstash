@@ -51,29 +51,11 @@ module LogStash
       env.downcase == "test"
     end
 
-    # set GEM_PATH for logstash runtime
-    # GEM_PATH should include the logstash gems, the plugin gems and the bootstrap gems.
-    # the bootstrap gems are required specificly for bundler which is a runtime dependency
-    # of some plugins dependedant gems.
     def set_gem_paths!
-      ENV["GEM_PATH"] = ENV["BUNDLE_PATH"] = logstash_gem_home
-      ENV["BUNDLE_GEMFILE"] = GEMFILE_PATH unless ENV['BUNDLE_GEMFILE']
-
       require 'bundler'
       require 'logstash/bundler_patch'
 
       Bundler.setup
-      ENV["GEM_HOME"] = ENV["GEM_PATH"] = logstash_gem_home
-
-      # Bundler.setup will wipe the existing $LOAD_PATH.
-      # Since we are using gems not declared in the gemfile we need to
-      # recalculate the $LOAD_PATH with all the available gems.
-      load_paths = Gem::Specification
-        .collect(&:load_paths)
-        .flatten
-        .reject { |path| $LOAD_PATH.include?(path) }
-
-      $LOAD_PATH.unshift(*load_paths)
     end
 
     def bundler_install_command(gem_file, gem_path)
@@ -135,22 +117,6 @@ module LogStash
 
     def locales_path(path)
       return ::File.join(LOGSTASH_HOME, "locales", path)
-    end
-
-    def load_logstash_gemspec!
-      logstash_spec = Gem::Specification.new do |gem|
-        gem.authors       = ["Jordan Sissel", "Pete Fritchman"]
-        gem.email         = ["jls@semicomplete.com", "petef@databits.net"]
-        gem.description   = %q{scalable log and event management (search, archive, pipeline)}
-        gem.summary       = %q{logstash - log and event management}
-        gem.homepage      = "http://logstash.net/"
-        gem.license       = "Apache License (2.0)"
-
-        gem.name          = "logstash"
-        gem.version       = LOGSTASH_VERSION
-      end
-
-      Gem::Specification.add_spec logstash_spec
     end
 
     def load_locale!
