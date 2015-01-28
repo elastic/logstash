@@ -37,17 +37,17 @@ Gem::Specification.new do |gem|
 
   # Plugin manager dependencies
 
-  # Currently there is a blocking issue with the latest (3.1.1.0.9) version of 
-  # `ruby-maven` # and installing jars dependencies. If you are declaring a gem 
+  # Currently there is a blocking issue with the latest (3.1.1.0.9) version of
+  # `ruby-maven` # and installing jars dependencies. If you are declaring a gem
   # in a gemfile # using the :github option it will make the bundle install crash,
   # before upgrading this gem you need to test the version with any plugins
   # that require jars.
   #
-  # Ticket: https://github.com/elasticsearch/logstash/issues/2595 
+  # Ticket: https://github.com/elasticsearch/logstash/issues/2595
   gem.add_runtime_dependency "jar-dependencies", '0.1.7'   #(MIT license)
   gem.add_runtime_dependency "ruby-maven", '3.1.1.0.8'                       #(EPL license)
   gem.add_runtime_dependency "maven-tools", '1.0.7'
-  
+
   gem.add_runtime_dependency "minitar"
   gem.add_runtime_dependency "file-dependencies"
 

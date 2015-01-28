@@ -53,8 +53,6 @@ module LogStash
 
     def set_gem_paths!
       require 'bundler'
-      require 'logstash/bundler_patch'
-
       Bundler.setup
     end
 
