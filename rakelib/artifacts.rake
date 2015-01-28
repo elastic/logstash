@@ -85,6 +85,7 @@ namespace "artifact" do
     Rake::Task["dependency:rubyzip"].invoke
     require 'zip'
     zippath = "build/logstash-#{LOGSTASH_VERSION}.zip"
+    File.unlink(zippath) if File.exists?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
       files.each do |path|
         path_in_zip = "logstash-#{LOGSTASH_VERSION}/#{path}"
