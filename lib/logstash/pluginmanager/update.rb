@@ -1,76 +1,50 @@
 require 'clamp'
 require 'logstash/namespace'
-require 'logstash/pluginmanager'
 require 'logstash/pluginmanager/util'
-require 'rubygems/dependency_installer'
-require 'rubygems/uninstaller'
 require 'jar-dependencies'
 require 'jar_install_post_install_hook'
 require 'file-dependencies/gem'
 
+require "logstash/gemfile"
+require "logstash/bundler"
+
 class LogStash::PluginManager::Update < Clamp::Command
-
-  parameter "[PLUGIN]", "Plugin name"
-
-  option "--version", "VERSION", "version of the plugin to install", :default => ">= 0"
-
-  option "--proxy", "PROXY", "Use HTTP proxy for remote operations"
+  parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version"
 
   def execute
+    gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
+    # keep a copy of the gemset to revert on error
+    original_gemset = gemfile.gemset.copy
 
-    LogStash::Environment.load_logstash_gemspec!
-    ::Gem.configuration.verbose = false
-    ::Gem.configuration[:http_proxy] = proxy
-
-    if plugin.nil?
-      puts ("Updating all plugins")
+    # create list of plugins to update
+    plugins = unless plugin_list.empty?
+      not_installed = plugin_list.find{|plugin| !LogStash::PluginManager.installed_plugin?(plugin, gemfile)}
+      raise(LogStash::PluginManager::Error, "Plugin #{not_installed} has not been previously installed, aborting") if not_installed
+      plugin_list
     else
-      puts ("Updating #{plugin} plugin")
+      LogStash::PluginManager.all_installed_plugins_gem_specs(gemfile).map{|spec| spec.name}
     end
 
-    specs = LogStash::PluginManager::Util.matching_specs(plugin).select{|spec| LogStash::PluginManager::Util.logstash_plugin?(spec) }
-    if specs.empty?
-      $stderr.puts ("No plugins found to update or trying to update a non logstash plugin.")
-      return 99
+    # remove any version constrain from the Gemfile so the plugin(s) can be updated to latest version
+    # calling update without requiremend will remove any previous requirements
+    plugins.each{|plugin| gemfile.update(plugin)}
+    gemfile.save
+
+    puts("Updating " + plugins.join(", "))
+
+    # any errors will be logged to $stderr by invoke_bundler!
+    output, exception = LogStash::Bundler.invoke_bundler!(:update => plugins)
+
+    if ENV["DEBUG"]
+      $stderr.puts(output)
+      $stderr.puts("Error: #{exception.class}, #{exception.message}") if exception
     end
-    specs.each { |spec| update_gem(spec, version) }
-    return 0
+
+    if exception
+      # revert to original Gemfile content
+      gemfile.gemset = original_gemset
+      gemfile.save
+      raise(LogStash::PluginManager::Error, "Update aborted")
+    end
   end
-
-
-  def update_gem(spec, version)
-
-    unless gem_path = LogStash::PluginManager::Util.download_gem(spec.name, version)
-      $stderr.puts ("Plugin '#{spec.name}' does not exist remotely. Skipping.")
-      return 0
-    end
-
-    unless gem_meta = LogStash::PluginManager::Util.logstash_plugin?(gem_path)
-      $stderr.puts ("Invalid logstash plugin gem. skipping.")
-      return 99
-    end
-
-    unless Gem::Version.new(gem_meta.version) > Gem::Version.new(spec.version)
-      puts ("No newer version available for #{spec.name}. skipping.")
-      return 0
-    end
-
-    puts ("Updating #{spec.name} from version #{spec.version} to #{gem_meta.version}")
-
-    if LogStash::PluginManager::Util.installed?(spec.name)
-      ::Gem.done_installing_hooks.clear
-      ::Gem::Uninstaller.new(gem_meta.name, {:force => true}).uninstall
-    end
-
-    ::Gem.configuration.verbose = false
-    FileDependencies::Gem.hook
-    options = {}
-    options[:document] = []
-    inst = Gem::DependencyInstaller.new(options)
-    inst.install spec.name, gem_meta.version
-    specs, _ = inst.installed_gems
-    puts ("Update successful")
-    return 0
-  end
-
-end # class Logstash::PluginManager
+end

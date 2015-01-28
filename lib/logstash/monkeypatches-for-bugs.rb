@@ -1,6 +1,6 @@
 require "logstash/environment"
 
-if LogStash::Environment.windows? && LogStash::Environment.jruby? then
+if LogStash::Environment.windows? && LogStash::Environment.jruby?
   require "socket"
   module JRubyBug2558SocketPeerAddrBugFix
     def peeraddr

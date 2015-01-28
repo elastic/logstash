@@ -5,8 +5,7 @@ $START = Time.now
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
 require "logstash/environment"
-LogStash::Environment.set_gem_paths!
-LogStash::Environment.load_logstash_gemspec!
+LogStash::Environment.bundler_setup!
 LogStash::Environment.load_locale!
 
 Thread.abort_on_exception = true

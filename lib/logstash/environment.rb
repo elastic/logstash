@@ -1,6 +1,40 @@
 require "logstash/errors"
 require 'logstash/version'
 
+# monkey patch RubyGems to silence ffi warnings:
+#
+# WARN: Unresolved specs during Gem::Specification.reset:
+#       ffi (>= 0)
+# WARN: Clearing out unresolved specs.
+# Please report a bug if this causes problems.
+#
+# see https://github.com/elasticsearch/logstash/issues/2556 and https://github.com/rubygems/rubygems/issues/1070
+#
+# this code is from Rubygems v2.1.9 in JRuby 1.7.17. Per tickets this issue should be solved at JRuby >= 1.7.20.
+class Gem::Specification
+  def self.reset
+    @@dirs = nil
+    Gem.pre_reset_hooks.each { |hook| hook.call }
+    @@all = nil
+    @@stubs = nil
+    _clear_load_cache
+    unresolved = unresolved_deps
+    unless unresolved.empty?
+      unless (unresolved.size == 1 && unresolved["ffi"])
+        w = "W" + "ARN"
+        warn "#{w}: Unresolved specs during Gem::Specification.reset:"
+        unresolved.values.each do |dep|
+          warn "      #{dep}"
+        end
+        warn "#{w}: Clearing out unresolved specs."
+        warn "Please report a bug if this causes problems."
+      end
+      unresolved.clear
+    end
+    Gem.post_reset_hooks.each { |hook| hook.call }
+  end
+end
+
 module LogStash
   module Environment
     extend self
@@ -9,7 +43,7 @@ module LogStash
     JAR_DIR = ::File.join(LOGSTASH_HOME, "vendor", "jar")
     ELASTICSEARCH_DIR = ::File.join(LOGSTASH_HOME, "vendor", "elasticsearch")
     BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
-    GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "tools", "Gemfile")
+    GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "Gemfile")
     BOOTSTRAP_GEM_PATH = ::File.join(LOGSTASH_HOME, 'build', 'bootstrap')
 
     LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
@@ -51,47 +85,19 @@ module LogStash
       env.downcase == "test"
     end
 
-    # set GEM_PATH for logstash runtime
-    # GEM_PATH should include the logstash gems, the plugin gems and the bootstrap gems.
-    # the bootstrap gems are required specificly for bundler which is a runtime dependency
-    # of some plugins dependedant gems.
-    def set_gem_paths!
-      ENV["GEM_PATH"] = ENV["BUNDLE_PATH"] = logstash_gem_home
-      ENV["BUNDLE_GEMFILE"] = GEMFILE_PATH unless ENV['BUNDLE_GEMFILE']
+    def bundler_setup!
+      begin
+        require "bundler"
+      rescue LoadError
+        Gem.clear_paths
+        Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = logstash_gem_home
+        require "bundler"
+      end
+      require "logstash/bundler"
 
-      require 'bundler'
-      require 'logstash/bundler_patch'
-
-      Bundler.setup
-      ENV["GEM_HOME"] = ENV["GEM_PATH"] = logstash_gem_home
-
-      # Bundler.setup will wipe the existing $LOAD_PATH.
-      # Since we are using gems not declared in the gemfile we need to
-      # recalculate the $LOAD_PATH with all the available gems.
-      load_paths = Gem::Specification
-        .collect(&:load_paths)
-        .flatten
-        .reject { |path| $LOAD_PATH.include?(path) }
-
-      $LOAD_PATH.unshift(*load_paths)
-    end
-
-    def bundler_install_command(gem_file, gem_path)
-      # for now avoid multiple jobs, ex.: --jobs 4
-      # it produces erratic exceptions and hangs (with Bundler 1.7.9)
-      options = [
-        "install",
-        "--gemfile=#{gem_file}",
-        "--path",
-        gem_path,
-      ]
-
-      # We don't install development gem from the gemfile.
-      # If you add a gem with `git` or the `github` option bundler will mark
-      # them as development and he will not install them.
-      # To install them you need to do LOGSTASH_ENV=development rake gems:vendor
-      options << "--without=development" unless LogStash::Environment.development?
-      options
+      ::Bundler.reset_settings # our monkey patched method
+      ::Bundler.reset!
+      ::Bundler.setup
     end
 
     def ruby_bin
@@ -135,22 +141,6 @@ module LogStash
 
     def locales_path(path)
       return ::File.join(LOGSTASH_HOME, "locales", path)
-    end
-
-    def load_logstash_gemspec!
-      logstash_spec = Gem::Specification.new do |gem|
-        gem.authors       = ["Jordan Sissel", "Pete Fritchman"]
-        gem.email         = ["jls@semicomplete.com", "petef@databits.net"]
-        gem.description   = %q{scalable log and event management (search, archive, pipeline)}
-        gem.summary       = %q{logstash - log and event management}
-        gem.homepage      = "http://logstash.net/"
-        gem.license       = "Apache License (2.0)"
-
-        gem.name          = "logstash"
-        gem.version       = LOGSTASH_VERSION
-      end
-
-      Gem::Specification.add_spec logstash_spec
     end
 
     def load_locale!
