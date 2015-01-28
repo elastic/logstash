@@ -1,33 +1,33 @@
-
 namespace "test" do
-  task "default" => [ "bootstrap:test", "test:prep" ] do
-    Gem.clear_paths
+  def run_rspec(*args)
     require "logstash/environment"
-    LogStash::Environment.set_gem_paths!
-    require 'rspec/core'
-    RSpec::Core::Runner.run(Rake::FileList["spec/**/*.rb"])
+    LogStash::Environment.bundler_setup!
+    require "rspec/core/runner"
+    require "rspec"
+    RSpec::Core::Runner.run([*args])
   end
 
-  task "fail-fast" => [ "bootstrap:test", "test:prep" ] do
-    Gem.clear_paths
-    require "logstash/environment"
-    LogStash::Environment.set_gem_paths!
-    require 'rspec/core'
-    RSpec::Core::Runner.run(["--fail-fast", *Rake::FileList["spec/**/*.rb"]])
+  task "core" do
+    run_rspec(Rake::FileList["spec/**/*_spec.rb"])
   end
 
-  task "all-plugins" => [ "bootstrap","plugin:install-all" ] do
-    require "logstash/environment"
-    gem_home = LogStash::Environment.logstash_gem_home
-    pattern = "#{gem_home}/gems/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb"
-    sh "#{LogStash::Environment::LOGSTASH_HOME}/bin/logstash rspec --order rand #{pattern}"
+  task "core-fail-fast" do
+    run_rspec("--fail-fast", Rake::FileList["spec/**/*_spec.rb"])
   end
 
-  task "prep" do
-    Rake::Task["vendor:gems"].invoke(false)
-    Rake::Task["plugin:install-test"].invoke
+  task "plugins" do
+    run_rspec("--order", "rand", Rake::FileList[File.join(ENV["GEM_HOME"], "gems/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb")])
   end
 
+  task "install-core" => ["bootstrap", "plugin:install-core", "plugin:install-development-dependencies"]
+
+  task "install-default" => ["bootstrap", "plugin:install-default", "plugin:install-development-dependencies"]
+
+  task "install-all" => ["bootstrap", "plugin:install-all", "plugin:install-development-dependencies"]
+
+  task "install-vendor-plugins" => ["bootstrap", "plugin:install-vendor", "plugin:install-development-dependencies"]
+
+  task "install-jar-dependencies-plugins" => ["bootstrap", "plugin:install-jar-dependencies", "plugin:install-development-dependencies"]
 end
 
-task "test" => [ "test:default" ]
+task "test" => [ "test:core" ]

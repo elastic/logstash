@@ -2,34 +2,48 @@ require "logstash/namespace"
 require "logstash/logging"
 require "logstash/errors"
 require "logstash/environment"
-require "logstash/pluginmanager"
 require "logstash/pluginmanager/util"
-require "rubygems/uninstaller"
 require "clamp"
 
-class LogStash::PluginManager::Uninstall < Clamp::Command
+require "logstash/gemfile"
+require "logstash/bundler"
 
+class LogStash::PluginManager::Uninstall < Clamp::Command
   parameter "PLUGIN", "plugin name"
 
-  public
+
   def execute
-    ::Gem.configuration.verbose = false
+    raise(LogStash::PluginManager::Error, "File #{LogStash::Environment::GEMFILE_PATH} does not exist or is not writable, aborting") unless File.writable?(LogStash::Environment::GEMFILE_PATH)
 
-    puts ("Validating removal of #{plugin}.")
-    
-    #
-    # TODO: This is a special case, Bundler doesnt allow you to uninstall 1 gem.
-    # Bundler will only uninstall the gems if they dont exist in his Gemfile.lock
-    # (source of truth)
-    #
-    unless gem_data = LogStash::PluginManager::Util.logstash_plugin?(plugin)
-      $stderr.puts ("Trying to remove a non logstash plugin. Aborting")
-      return 99
+    gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
+    # keep a copy of the gemset to revert on error
+    original_gemset = gemfile.gemset.copy
+
+    # make sure this is an installed plugin and present in Gemfile.
+    # it is not possible to uninstall a dependency not listed in the Gemfile, for example a dependent codec
+    raise(LogStash::PluginManager::Error, "This plugin has not been previously installed, aborting") unless LogStash::PluginManager.installed_plugin?(plugin, gemfile)
+
+    # since we previously did a gemfile.find(plugin) there is no reason why
+    # remove would not work (return nil) here
+    if gemfile.remove(plugin)
+      gemfile.save
+
+      puts("Uninstalling #{plugin}")
+
+      # any errors will be logged to $stderr by invoke_bundler!
+      output, exception = LogStash::Bundler.invoke_bundler!(:clean => true)
+
+      if ENV["DEBUG"]
+        $stderr.puts(output)
+        $stderr.puts("Error: #{exception.class}, #{exception.message}") if exception
+      end
+
+      if exception
+        # revert to original Gemfile content
+        gemfile.gemset = original_gemset
+        gemfile.save
+        raise(LogStash::PluginManager::Error, "Uninstall aborted")
+      end
     end
-
-    puts ("Uninstalling plugin '#{plugin}' with version '#{gem_data.version}'.")
-    ::Gem::Uninstaller.new(plugin, {}).uninstall
-    return 
   end
-
-end # class Logstash::PluginManager
+end
