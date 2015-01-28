@@ -1,5 +1,5 @@
 PATH
-  remote: /Users/purbon/work/logstash
+  remote: /Users/jls/projects/logstash
   specs:
     logstash (2.0.0.dev-java)
       cabin (>= 0.7.0)
@@ -62,7 +62,7 @@ GEM
     jar-dependencies (0.1.7)
     jrjackson (0.2.8)
     jruby-httpclient (1.1.1-java)
-    logstash-devutils (0.0.7-java)
+    logstash-devutils (0.0.8-java)
       gem_publisher
       insist (= 1.0.0)
       jar-dependencies
