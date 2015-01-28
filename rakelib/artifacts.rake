@@ -1,9 +1,5 @@
-def staging
-  "build/staging"
-end
-
 namespace "artifact" do
-  require "logstash/environment"
+
   def package_files
     [
       "LICENSE",
@@ -11,7 +7,9 @@ namespace "artifact" do
       "CONTRIBUTORS",
       "{bin,lib,spec,locales}/{,**/*}",
       "patterns/**/*",
-      "vendor/??*/**/*"
+      "vendor/??*/**/*",
+      "Gemfile*",
+      "logstash.gemspec",
     ]
   end
 
@@ -45,8 +43,10 @@ namespace "artifact" do
     end.flatten.uniq
   end
 
+  task "prepare" => ["bootstrap", "plugin:install-default"]
+
   desc "Build a tar.gz of logstash with all dependencies"
-  task "tar" => ["bootstrap", "plugin:install-defaults"] do
+  task "tar" => ["prepare"] do
     require "zlib"
     require "archive/tar/minitar"
     require "logstash/version"
@@ -81,7 +81,7 @@ namespace "artifact" do
     puts "Complete: #{tarpath}"
   end
 
-  task "zip" => ["bootstrap", "plugin:install-defaults"] do
+  task "zip" => ["prepare"] do
     Rake::Task["dependency:rubyzip"].invoke
     require 'zip'
     zippath = "build/logstash-#{LOGSTASH_VERSION}.zip"
@@ -212,12 +212,12 @@ namespace "artifact" do
   end # def package
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm" => ["bootstrap", "plugin:install-defaults"] do
+  task "rpm" => ["prepare"] do
     package("centos", "5")
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "deb" => ["bootstrap", "plugin:install-defaults"] do
+  task "deb" => ["prepare"] do
     package("ubuntu", "12.04")
   end
 end

@@ -1,102 +1,147 @@
-::DEFAULT_PLUGINS = %w(
-logstash-output-zeromq
-logstash-codec-collectd
-logstash-output-xmpp
-logstash-codec-dots
-logstash-codec-edn
-logstash-codec-edn_lines
-logstash-codec-fluent
-logstash-codec-graphite
-logstash-codec-json
-logstash-codec-json_lines
-logstash-codec-line
-logstash-codec-msgpack
-logstash-codec-multiline
-logstash-codec-netflow
-logstash-codec-oldlogstashjson
-logstash-codec-plain
-logstash-codec-rubydebug
-logstash-codec-es_bulk
-logstash-output-udp
-logstash-filter-anonymize
-logstash-filter-checksum
-logstash-output-tcp
-logstash-output-stdout
-logstash-filter-clone
-logstash-output-statsd
-logstash-filter-csv
-logstash-filter-date
-logstash-filter-dns
-logstash-filter-drop
-logstash-output-sqs
-logstash-output-sns
-logstash-output-s3
-logstash-output-redis
-logstash-filter-fingerprint
-logstash-filter-geoip
-logstash-filter-grok
-logstash-output-rabbitmq
-logstash-output-cloudwatch
-logstash-output-pipe
-logstash-filter-kv
-logstash-filter-metrics
-logstash-filter-multiline
-logstash-filter-mutate
-logstash-output-pagerduty
-logstash-output-opentsdb
-logstash-output-null
-logstash-filter-ruby
-logstash-filter-sleep
-logstash-filter-split
-logstash-filter-syslog_pri
-logstash-filter-throttle
-logstash-output-nagios_nsca
-logstash-filter-urldecode
-logstash-filter-useragent
-logstash-filter-uuid
-logstash-filter-xml
-logstash-output-nagios
-logstash-input-elasticsearch
-logstash-input-eventlog
-logstash-input-exec
-logstash-input-file
-logstash-input-ganglia
-logstash-input-gelf
-logstash-output-lumberjack
-logstash-input-generator
-logstash-input-graphite
-logstash-output-kafka
-logstash-input-imap
-logstash-input-irc
-logstash-output-juggernaut
-logstash-input-kafka
-logstash-input-log4j
-logstash-input-lumberjack
-logstash-input-pipe
-logstash-output-irc
-logstash-input-rabbitmq
-logstash-output-http
-logstash-input-redis
-logstash-output-hipchat
-logstash-input-s3
-logstash-input-snmptrap
-logstash-output-graphite
-logstash-input-sqs
-logstash-input-stdin
-logstash-output-gelf
-logstash-input-syslog
-logstash-input-tcp
-logstash-input-twitter
-logstash-input-udp
-logstash-input-unix
-logstash-output-ganglia
-logstash-output-file
-logstash-output-exec
-logstash-input-xmpp
-logstash-output-email
-logstash-input-zeromq
-logstash-output-elasticsearch
-logstash-output-csv
-logstash-filter-json
-logstash-input-couchdb_changes
-)
+module LogStash
+  module RakeLib
+
+    # plugins included by default in the logstash distribution
+    DEFAULT_PLUGINS = %w(
+      logstash-output-zeromq
+      logstash-codec-collectd
+      logstash-output-xmpp
+      logstash-codec-dots
+      logstash-codec-edn
+      logstash-codec-edn_lines
+      logstash-codec-fluent
+      logstash-codec-es_bulk
+      logstash-codec-graphite
+      logstash-codec-json
+      logstash-codec-json_lines
+      logstash-codec-line
+      logstash-codec-msgpack
+      logstash-codec-multiline
+      logstash-codec-netflow
+      logstash-codec-oldlogstashjson
+      logstash-codec-plain
+      logstash-codec-rubydebug
+      logstash-filter-anonymize
+      logstash-filter-checksum
+      logstash-filter-clone
+      logstash-filter-csv
+      logstash-filter-date
+      logstash-filter-dns
+      logstash-filter-drop
+      logstash-filter-fingerprint
+      logstash-filter-geoip
+      logstash-filter-grok
+      logstash-filter-json
+      logstash-filter-kv
+      logstash-filter-metrics
+      logstash-filter-multiline
+      logstash-filter-mutate
+      logstash-filter-ruby
+      logstash-filter-sleep
+      logstash-filter-split
+      logstash-filter-syslog_pri
+      logstash-filter-throttle
+      logstash-filter-urldecode
+      logstash-filter-useragent
+      logstash-filter-uuid
+      logstash-filter-xml
+      logstash-input-couchdb_changes
+      logstash-input-elasticsearch
+      logstash-input-eventlog
+      logstash-input-exec
+      logstash-input-file
+      logstash-input-ganglia
+      logstash-input-gelf
+      logstash-input-generator
+      logstash-input-graphite
+      logstash-input-imap
+      logstash-input-irc
+      logstash-input-kafka
+      logstash-input-log4j
+      logstash-input-lumberjack
+      logstash-input-pipe
+      logstash-input-rabbitmq
+      logstash-input-redis
+      logstash-input-s3
+      logstash-input-snmptrap
+      logstash-input-sqs
+      logstash-input-stdin
+      logstash-input-syslog
+      logstash-input-tcp
+      logstash-input-twitter
+      logstash-input-udp
+      logstash-input-unix
+      logstash-input-xmpp
+      logstash-input-zeromq
+      logstash-output-cloudwatch
+      logstash-output-csv
+      logstash-output-elasticsearch
+      logstash-output-email
+      logstash-output-exec
+      logstash-output-file
+      logstash-output-ganglia
+      logstash-output-gelf
+      logstash-output-graphite
+      logstash-output-hipchat
+      logstash-output-http
+      logstash-output-irc
+      logstash-output-juggernaut
+      logstash-output-kafka
+      logstash-output-lumberjack
+      logstash-output-nagios
+      logstash-output-nagios_nsca
+      logstash-output-null
+      logstash-output-opentsdb
+      logstash-output-pagerduty
+      logstash-output-pipe
+      logstash-output-rabbitmq
+      logstash-output-redis
+      logstash-output-s3
+      logstash-output-sns
+      logstash-output-sqs
+      logstash-output-statsd
+      logstash-output-stdout
+      logstash-output-tcp
+      logstash-output-udp
+    )
+
+    # plugins required to run the logstash core specs
+    CORE_SPECS_PLUGINS = %w(
+      logstash-filter-clone
+      logstash-filter-mutate
+      logstash-input-generator
+      logstash-input-stdin
+      logstash-input-tcp
+      logstash-output-stdout
+    )
+
+    TEST_JAR_DEPENDENCIES_PLUGINS = %w(
+      logstash-input-kafka
+    )
+
+    TEST_VENDOR_PLUGINS = %w(
+      logstash-codec-collectd
+    )
+
+    ALL_PLUGINS_SKIP_LIST = Regexp.union([
+      /^logstash-codec-cef$/,
+      /^logstash-input-gemfire$/,
+      /^logstash-output-gemfire$/,
+      /^logstash-filter-metricize$/,
+      /^logstash-filter-yaml$/,
+      /jms$/,
+      /example$/,
+      /drupal/i
+    ])
+
+
+    # @return [Array<String>] list of all plugin names as defined in the logstash-plugins github organization, minus names that matches the ALL_PLUGINS_SKIP_LIST
+    def self.fetch_all_plugins
+      require 'octokit'
+
+      Octokit.auto_paginate = true
+      repos = Octokit.organization_repositories("logstash-plugins")
+      repos.map(&:name).reject{|name| name =~ ALL_PLUGINS_SKIP_LIST}
+    end
+  end
+end
