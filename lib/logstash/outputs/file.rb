@@ -114,7 +114,11 @@ class LogStash::Outputs::File < LogStash::Outputs::Base
       @logger.warn("Failed to rotate #{path} to #{path}.#{i}")
       return
     end
-    @files[path].close
+    begin
+      @files[path].close
+    rescue
+      @logger.warn("Failed to close #{path}")
+    end
     @files.delete(path)
   
   end
