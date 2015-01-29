@@ -55,9 +55,9 @@ it before you copy the example.
 ** `cp -R * /path/to/logstash-{plugintype}-mypluginname/`
 
 . **Rename the following files to match the name of your plugin.**
-** `logstash-pass:attributes[{plugintype}]-pass:attributes[{pluginname}].gemspec`
-** `pass:attributes[{pluginname}].rb`
-** `pass:attributes[{pluginname}]_spec.rb`
+** logstash-{plugintype}-{pluginname}.gemspec
+** {pluginname}.rb`
+** {pluginname}_spec.rb`
 +
 [source,sh]
 [subs="attributes"]
@@ -308,7 +308,7 @@ interpreter that we’re going to be using the UTF-8 encoding.
 === `require` Statements
 
 Logstash {plugintype} plugins require parent classes defined in
-`logstash/pass:attributes[{plugintype}]s/base` and `logstash/namespace`:
+logstash/{plugintype}s/base and logstash/namespace:
 
 [source,ruby]
 [subs="attributes"]
@@ -372,8 +372,8 @@ https://github.com/elasticsearch/docs#asciidoc-guide
 
 [float]
 === `class` Declaration
-A {plugintype} plugin class should be a subclass of
-`LogStash::pass:attributes[{pluginclass}]::Base`:
+A {plugintype} plugin class should be a subclass of LogStash::{pluginclass}::Base:
+
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
@@ -397,7 +397,7 @@ LogStash::{pluginclass}::{pluginnamecap}
 This is the name your plugin will call inside the {plugintype} configuration
 block.
 
-If you set `config_name "pass:attributes[{pluginname}]"` in your plugin code,
+If you set `config_name` with a value of "{pluginname}" in your plugin code,
 the corresponding Logstash configuration block would need to look like this:
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -589,7 +589,8 @@ endif::encode_method[]
 ifdef::run_method[]
 [float]
 ==== `run` Method
-The `pass:attributes[{pluginname}]` input plugin has the following `run` Method:
+The {pluginname} input plugin has the following `run` Method:
+
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
@@ -861,9 +862,18 @@ are not breaking any existing functionality.
 NOTE: A full exposition on RSpec is outside the scope of this document. Learn
 more about RSpec at http://rspec.info
 
-For help learning about tests and testing, look in the
-`spec/pass:attributes[{plugintype}]s/` directory of several other similar
-plugins.
+[TIP]
+====
+For help learning about tests and testing, look for files like
+`pluginname_spec.rb` in the
+
+[source,ruby]
+[subs="attributes"]
+----------------------------------
+spec/{plugintype}s/
+----------------------------------
+directory of several other similar plugins.
+====
 
 [float]
 === Clone and test!
