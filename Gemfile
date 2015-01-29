@@ -1,10 +1,8 @@
 source 'https://rubygems.org'
 
+ruby '1.9.3',  :engine => 'jruby', :engine_version => '1.7.17'
 gem 'logstash', :path => File.dirname(__FILE__)
 
-gem 'logstash-input-generator'
-gem 'logstash-output-stdout'
-gem 'logstash-codec-rubydebug'
 gem 'logstash-output-zeromq'
 gem 'logstash-codec-collectd'
 gem 'logstash-output-xmpp'
