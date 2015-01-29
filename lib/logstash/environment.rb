@@ -52,6 +52,7 @@ module LogStash
     end
 
     def set_gem_paths!
+      require 'rubygems'
       require 'bundler'
       Bundler.setup
     end
