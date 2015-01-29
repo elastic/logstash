@@ -11,7 +11,9 @@ namespace "artifact" do
       "CONTRIBUTORS",
       "{bin,lib,spec,locales}/{,**/*}",
       "patterns/**/*",
-      "vendor/??*/**/*"
+      "vendor/??*/**/*",
+      "Gemfile*",
+      ".bundle/*"
     ]
   end
 
