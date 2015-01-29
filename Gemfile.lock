@@ -9,7 +9,7 @@ PATH
       filesize
       ftw (~> 0.0.40)
       i18n (= 0.6.9)
-      jar-dependencies (~> 0.1.7)
+      jar-dependencies (= 0.1.7)
       jrjackson
       jruby-httpclient
       logstash-devutils

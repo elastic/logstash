@@ -52,9 +52,16 @@ module LogStash
     end
 
     def set_gem_paths!
-      ENV['GEM_PATH'] = logstash_gem_home
       require 'rubygems'
-      require 'bundler'
+
+      begin
+        require 'bundler'
+      rescue LoadError
+        # Required If your local installation only have rake
+        ENV['GEM_PATH'] = logstash_gem_home
+        require 'bundler'
+      end
+
       Bundler.setup
     end
 
