@@ -27,7 +27,7 @@ Each Logstash plugin lives in its own GitHub repository. To create a new reposit
 . Click the **Repositories** tab. You'll see a list of other repositories you've forked or contributed to.
 . Click the green **New** button in the upper right.
 . Specify the following settings for your new repo:
-** **Repository name** -- a unique name of the form logstash-{plugintype}-pluginname.
+** **Repository name** -- a unique name of the form +logstash-pass:attributes[{plugintype}]-pluginname+.
 ** **Public or Private** -- your choice, but the repository must be Public if you want to submit it as an official plugin.
 ** **Initialize this repository with a README** -- enables you to immediately clone the repository to your computer.
 . Click **Create Repository**.
@@ -39,9 +39,9 @@ Each Logstash plugin lives in its own GitHub repository. To create a new reposit
 ==== Build your local repository
 . **Clone your plugin.** Replace `GITUSERNAME` with your github username, and
 `MYPLUGINNAME` with your plugin name.
-** `git clone https://github.com/GITUSERNAME/logstash-{plugintype}-MYPLUGINNAME.git`
-*** alternately, via ssh: `git clone git@github.com:GITUSERNAME/logstash-{plugintype}-MYPLUGINNAME.git`
-** `cd logstash-{plugintype}-MYPLUGINNAME`
+** +git clone https://github.com/GITUSERNAME/logstash-pass:attributes[{plugintype}]-MYPLUGINNAME.git+
+*** alternately, via ssh: +git clone git@github.com:GITUSERNAME/logstash-pass:attributes[{plugintype}]-MYPLUGINNAME.git+
+** +cd logstash-pass:attributes[{plugintype}]-MYPLUGINNAME+
 
 . **Clone the {inputtype} plugin example and copy it to your plugin branch.**
 +
@@ -49,17 +49,17 @@ You don't want to include the example .git directory or its contents, so delete
 it before you copy the example.
 +
 ** `cd /tmp`
-** `git clone https://github.com/logstash-plugins/logstash-{plugintype}-{pluginname}.git`
-** `cd logstash-{plugintype}-{pluginname}`
-** `rm -rf .git`
-** `cp -R * /path/to/logstash-{plugintype}-mypluginname/`
+** +git clone https://github.com/logstash-plugins/logstash-{plugintype}-{pluginname}.git+
+** +cd logstash-pass:attributes[{plugintype}]-pass:attributes[{pluginname}]+
+** +rm -rf .git+
+** +cp -R * /path/to/logstash-pass:attributes[{plugintype}]-mypluginname/+
 
 . **Rename the following files to match the name of your plugin.**
-** logstash-{plugintype}-{pluginname}.gemspec
-** {pluginname}.rb`
-** {pluginname}_spec.rb`
+** +logstash-pass:attributes[{plugintype}]-pass:attributes[{pluginname}].gemspec+
+** +pass:attributes[{pluginname}].rb+
+** +pass:attributes[{pluginname}]_spec.rb+
 +
-[source,sh]
+[source,txt]
 [subs="attributes"]
 ----
 cd /path/to/logstash-{plugintype}-mypluginname
@@ -307,8 +307,8 @@ interpreter that we’re going to be using the UTF-8 encoding.
 [float]
 === `require` Statements
 
-Logstash {plugintype} plugins require parent classes defined in
-logstash/{plugintype}s/base and logstash/namespace:
+Logstash +pass:attributes[{plugintype}]+ plugins require parent classes defined
+in +logstash/pass:attributes[{plugintype}]s/base+ and logstash/namespace:
 
 [source,ruby]
 [subs="attributes"]
@@ -372,7 +372,8 @@ https://github.com/elasticsearch/docs#asciidoc-guide
 
 [float]
 === `class` Declaration
-A {plugintype} plugin class should be a subclass of LogStash::{pluginclass}::Base:
+The {plugintype} plugin class should be a subclass of
++LogStash::pass:attributes[{pluginclass}]::Base+:
 
 [source,ruby]
 [subs="attributes"]
@@ -397,7 +398,7 @@ LogStash::{pluginclass}::{pluginnamecap}
 This is the name your plugin will call inside the {plugintype} configuration
 block.
 
-If you set `config_name` with a value of "{pluginname}" in your plugin code,
+If you set +config_name "pass:attributes[{pluginname}]"+ in your plugin code,
 the corresponding Logstash configuration block would need to look like this:
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -862,18 +863,9 @@ are not breaking any existing functionality.
 NOTE: A full exposition on RSpec is outside the scope of this document. Learn
 more about RSpec at http://rspec.info
 
-[TIP]
-====
-For help learning about tests and testing, look for files like
-`pluginname_spec.rb` in the
-
-[source,ruby]
-[subs="attributes"]
-----------------------------------
-spec/{plugintype}s/
-----------------------------------
-directory of several other similar plugins.
-====
+For help learning about tests and testing, look in the
++spec/pass:attributes[{plugintype}]s/+ directory of several other similar
+plugins.
 
 [float]
 === Clone and test!
