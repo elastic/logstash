@@ -14,7 +14,7 @@ namespace "plugin" do
   end # task "install"
 
   task "install-defaults" do
-    Rake::Task["vendor:bundle"].invoke("tools/Gemfile.plugins")
+    Rake::Task["vendor:bundle"].invoke("Gemfile")
   end
 
   task "install-test" do

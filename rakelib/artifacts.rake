@@ -46,7 +46,7 @@ namespace "artifact" do
   end
 
   desc "Build a tar.gz of logstash with all dependencies"
-  task "tar" => ["bootstrap", "plugin:install-defaults"] do
+  task "tar" => ["bootstrap"] do
     require "zlib"
     require "archive/tar/minitar"
     require "logstash/version"
@@ -81,7 +81,7 @@ namespace "artifact" do
     puts "Complete: #{tarpath}"
   end
 
-  task "zip" => ["bootstrap", "plugin:install-defaults"] do
+  task "zip" => ["bootstrap"] do
     Rake::Task["dependency:rubyzip"].invoke
     require 'zip'
     zippath = "build/logstash-#{LOGSTASH_VERSION}.zip"
@@ -212,12 +212,12 @@ namespace "artifact" do
   end # def package
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm" => ["bootstrap", "plugin:install-defaults"] do
+  task "rpm" => ["bootstrap"] do
     package("centos", "5")
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "deb" => ["bootstrap", "plugin:install-defaults"] do
+  task "deb" => ["bootstrap"] do
     package("ubuntu", "12.04")
   end
 end
