@@ -52,6 +52,7 @@ module LogStash
     end
 
     def set_gem_paths!
+      ENV['GEM_PATH'] = logstash_gem_home
       require 'rubygems'
       require 'bundler'
       Bundler.setup
