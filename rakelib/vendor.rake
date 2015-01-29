@@ -120,7 +120,7 @@ namespace "vendor" do
     require "logstash/environment"
     Rake::Task["dependency:rbx-stdlib"] if LogStash::Environment.ruby_engine == "rbx"
     Rake::Task["dependency:stud"].invoke
-    Rake::Task["vendor:bundle"].invoke("tools/Gemfile") if args.to_hash.empty? || args[:bundle]
+    Rake::Task["vendor:bundle"].invoke("Gemfile") if args.to_hash.empty? || args[:bundle]
   end # task gems
   task "all" => "gems"
 
