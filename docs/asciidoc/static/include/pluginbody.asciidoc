@@ -307,8 +307,8 @@ interpreter that we’re going to be using the UTF-8 encoding.
 [float]
 === `require` Statements
 
-Logstash +pass:attributes[{plugintype}]+ plugins require parent classes defined
-in +logstash/pass:attributes[{plugintype}]s/base+ and logstash/namespace:
+Logstash {plugintype} plugins require parent classes defined in
++logstash/pass:attributes[{plugintype}]s/base+ and logstash/namespace:
 
 [source,ruby]
 [subs="attributes"]
@@ -873,9 +873,9 @@ Now let's start with a fresh clone of the plugin, build it and run the tests.
 
 * **Clone your plugin into a temporary location** Replace `GITUSERNAME` with
 your github username, and `MYPLUGINNAME` with your plugin name.
-** `git clone https://github.com/GITUSERNAME/logstash-{plugintype}-MYPLUGINNAME.git`
-*** alternately, via ssh: `git clone git@github.com:GITUSERNAME/logstash-{plugintype}-MYPLUGINNAME.git`
-** `cd logstash-{plugintype}-MYPLUGINNAME`
+** +git clone https://github.com/GITUSERNAME/logstash-pass:attributes[{plugintype}]-MYPLUGINNAME.git+
+*** alternately, via ssh: +git clone git@github.com:GITUSERNAME/logstash-pass:attributes[{plugintype}]-MYPLUGINNAME.git+
+** +cd logstash-pass:attributes[{plugintype}]-MYPLUGINNAME+
 
 Then, you'll need to install your plugins dependencies with bundler:
 
