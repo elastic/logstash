@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '1.9.3',  :engine => 'jruby', :engine_version => '1.7.17'
+# ruby '1.9.3',  :engine => 'jruby', :engine_version => '1.7.17'
 
 # This could replace with a logstash or logstash-core gem
 gem 'logstash', :path => File.dirname(__FILE__)
