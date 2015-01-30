@@ -17,10 +17,17 @@ namespace "test" do
   end
 
   task "all-plugins" => [ "bootstrap","plugin:install-all" ] do
+    Rake::Task["test:plugins"].invoke
+  end
+
+  task "plugins" => [ "bootstrap", "plugin:install-defaults" ] do
     require "logstash/environment"
-    gem_home = LogStash::Environment.logstash_gem_home
+    LogStash::Environment.set_gem_paths!
+    require 'rspec/core'
     pattern = "#{gem_home}/gems/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb"
-    sh "#{LogStash::Environment::LOGSTASH_HOME}/bin/logstash rspec --order rand #{pattern}"
+    gem_home = LogStash::Environment.logstash_gem_home
+    RSpec::Core::Runner.run(Rake::FileList[pattern])
+    #sh "#{LogStash::Environment::LOGSTASH_HOME}/bin/logstash rspec --order rand #{pattern}"
   end
 
   task "prep" do
