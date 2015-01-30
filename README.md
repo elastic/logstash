@@ -44,7 +44,7 @@ You can also find documentation on the <http://logstash.net> site.
 
 ## Developing
 
-To get started, you'll need *any* ruby available and it should come with the `rake` tool.
+To get started, you'll need ruby version 1.9.x or above and it should come with the `rake` tool.
 
 Here's how to get started with Logstash development:
 
@@ -63,8 +63,15 @@ Notes about using other rubies. If you don't use rvm, you can probably skip
 this paragraph. Logstash works with other rubies, and if you wish to use your
 own ruby you must set `USE_RUBY=1` in your environment.
 
-We recommend using flatland/drip for faster startup times during development. To
-tell Logstash to use drip, set `USE_DRIP=1` in your environment.
+## Drip Launcher
+
+[Drip](https://github.com/ninjudd/drip) is a launcher for the Java Virtual Machine that provides much faster startup times than the `java` command. The drip script is intended to be a drop-in replacement for the java command, only faster. We recommend using drip during development. 
+
+To tell Logstash to use drip, either set the `USE_DRIP=1` environment variable or set `JAVACMD=which drip`.
+
+**Caveats**
+
+Unlike [nailgun](https://github.com/martylamb/nailgun), drip does not reuse the same JVM. So once your app quits, drip will launch another JVM. This means that if you try to re-run Logstash right after it exited, you might still have a startup delay
 
 ## Testing
 
