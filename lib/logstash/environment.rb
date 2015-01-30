@@ -58,7 +58,7 @@ module LogStash
         require 'bundler'
       rescue LoadError
         # Required If your local installation only have rake
-        ENV['GEM_PATH'] = logstash_gem_home
+        Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = logstash_gem_home
         require 'bundler'
       end
 
