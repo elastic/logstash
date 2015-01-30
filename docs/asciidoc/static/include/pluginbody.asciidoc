@@ -39,8 +39,8 @@ Each Logstash plugin lives in its own GitHub repository. To create a new reposit
 ==== Build your local repository
 . **Clone your plugin.** Replace `GITUSERNAME` with your github username, and
 `MYPLUGINNAME` with your plugin name.
-** +git clone https://github.com/GITUSERNAME/logstash-pass:attributes[{plugintype}]-MYPLUGINNAME.git+
-*** alternately, via ssh: +git clone git@github.com:GITUSERNAME/logstash-pass:attributes[{plugintype}]-MYPLUGINNAME.git+
+** `git clone https://github.com/GITUSERNAME/logstash-`+pass:attributes[{plugintype}]-MYPLUGINNAME.git+
+*** alternately, via ssh: `git clone git@github.com:GITUSERNAME/logstash`+-pass:attributes[{plugintype}]-MYPLUGINNAME.git+
 ** +cd logstash-pass:attributes[{plugintype}]-MYPLUGINNAME+
 
 . **Clone the {inputtype} plugin example and copy it to your plugin branch.**
@@ -49,7 +49,7 @@ You don't want to include the example .git directory or its contents, so delete
 it before you copy the example.
 +
 ** `cd /tmp`
-** +git clone https://github.com/logstash-plugins/logstash-{plugintype}-{pluginname}.git+
+** `git clone https://github.com/logstash-plugins/logstash`+-{plugintype}-{pluginname}.git+
 ** +cd logstash-pass:attributes[{plugintype}]-pass:attributes[{pluginname}]+
 ** +rm -rf .git+
 ** +cp -R * /path/to/logstash-pass:attributes[{plugintype}]-mypluginname/+
@@ -873,8 +873,8 @@ Now let's start with a fresh clone of the plugin, build it and run the tests.
 
 * **Clone your plugin into a temporary location** Replace `GITUSERNAME` with
 your github username, and `MYPLUGINNAME` with your plugin name.
-** +git clone https://github.com/GITUSERNAME/logstash-pass:attributes[{plugintype}]-MYPLUGINNAME.git+
-*** alternately, via ssh: +git clone git@github.com:GITUSERNAME/logstash-pass:attributes[{plugintype}]-MYPLUGINNAME.git+
+** `git clone https://github.com/GITUSERNAME/logstash-`+pass:attributes[{plugintype}]-MYPLUGINNAME.git+
+*** alternately, via ssh: `git clone git@github.com:GITUSERNAME/logstash-`+pass:attributes[{plugintype}]-MYPLUGINNAME.git+
 ** +cd logstash-pass:attributes[{plugintype}]-MYPLUGINNAME+
 
 Then, you'll need to install your plugins dependencies with bundler:
