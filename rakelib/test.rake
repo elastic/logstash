@@ -20,7 +20,7 @@ namespace "test" do
     Rake::Task["test:plugins"].invoke
   end
 
-  task "plugins" => [ "bootstrap", "plugin:install-defaults" ] do
+  task "plugins" => [ "bootstrap"] do
     gem_root = ENV["GEM_HOME"]
     pattern = File.join(*"gems/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb".split("/"))
     sh "#{LogStash::Environment::LOGSTASH_HOME}/bin/logstash rspec --order rand #{gem_root} -P '#{pattern}'"

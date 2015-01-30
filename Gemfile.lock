@@ -502,6 +502,8 @@ GEM
     ruby-maven-libs (3.1.1)
     rufus-scheduler (2.0.24)
       tzinfo (>= 0.3.22)
+    rumbster (1.1.0)
+      mail
     simple_oauth (0.3.1)
     sinatra (1.4.5)
       rack (~> 1.4)
@@ -645,3 +647,4 @@ DEPENDENCIES
   logstash-output-udp
   logstash-output-xmpp
   logstash-output-zeromq
+  rumbster
