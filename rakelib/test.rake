@@ -21,13 +21,9 @@ namespace "test" do
   end
 
   task "plugins" => [ "bootstrap", "plugin:install-defaults" ] do
-    require "logstash/environment"
-    LogStash::Environment.set_gem_paths!
-    require 'rspec/core'
-    pattern = "#{gem_home}/gems/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb"
-    gem_home = LogStash::Environment.logstash_gem_home
-    RSpec::Core::Runner.run(Rake::FileList[pattern])
-    #sh "#{LogStash::Environment::LOGSTASH_HOME}/bin/logstash rspec --order rand #{pattern}"
+    gem_root = ENV["GEM_HOME"]
+    pattern = File.join(*"gems/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb".split("/"))
+    sh "#{LogStash::Environment::LOGSTASH_HOME}/bin/logstash rspec --order rand #{gem_root} -P '#{pattern}'"
   end
 
   task "prep" do
