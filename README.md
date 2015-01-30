@@ -67,7 +67,7 @@ own ruby you must set `USE_RUBY=1` in your environment.
 
 [Drip](https://github.com/ninjudd/drip) is a launcher for the Java Virtual Machine that provides much faster startup times than the `java` command. The drip script is intended to be a drop-in replacement for the java command, only faster. We recommend using drip during development. 
 
-To tell Logstash to use drip, either set the `USE_DRIP=1` environment variable or set `JAVACMD=which drip`.
+To tell Logstash to use drip, either set the `USE_DRIP=1` environment variable or set `` JAVACMD=`which drip` ``.
 
 **Caveats**
 
