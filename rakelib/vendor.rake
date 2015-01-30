@@ -71,7 +71,13 @@ namespace "vendor" do
                                       /@LongLink/,
                                       /lib\/ruby\/1.8/,
                                       /lib\/ruby\/2.0/,
-                                      /lib\/ruby\/shared\/rdoc/])
+                                      /lib\/ruby\/shared\/rdoc/,
+
+                                      # Don't provide jar_installer.rb from jruby's release
+                                      # We'll provide a newer version with some bugfixes.
+                                      # See the 'vendor:jruby-patch' task for this.
+                                      /lib\/ruby\/shared\/jar_installer\.rb$/,
+    ])
 
     url = "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-bin-#{version}.tar.gz"
     download = file_fetch(url, info["sha1"])
@@ -88,7 +94,15 @@ namespace "vendor" do
       next if out =~ discard_patterns
       vendor(name, out)
     end # untar
+    Rake::Task["vendor:jruby-patch"].invoke
   end # jruby
+
+  task "jruby-patch" do |task, args|
+    # Patch JRuby's old jar-dependencies thing. This fixes bugs on windows
+    patched_jar_installer = File.join(File.dirname(__FILE__), "..", "tools", "patches", "jar_installer.rb")
+    patch_target = File.join(File.dirname(__FILE__), "..", "vendor", "jruby", "lib", "ruby", "shared", "jar_installer.rb")
+    FileUtils.cp(patched_jar_installer, patch_target)
+  end
   task "all" => "jruby"
   task "test" => "jruby"
 
