@@ -9,7 +9,7 @@ module LogStash
     JAR_DIR = ::File.join(LOGSTASH_HOME, "vendor", "jar")
     ELASTICSEARCH_DIR = ::File.join(LOGSTASH_HOME, "vendor", "elasticsearch")
     BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
-    GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "tools", "Gemfile")
+    GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "Gemfile")
     BOOTSTRAP_GEM_PATH = ::File.join(LOGSTASH_HOME, 'build', 'bootstrap')
 
     LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
