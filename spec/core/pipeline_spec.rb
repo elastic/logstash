@@ -141,41 +141,93 @@ describe LogStash::Pipeline do
       eos
     }
 
-    context "output" do
-      it "should call teardown and not raise exceptions" do
-        expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
-          queue << LogStash::Event.new("message" => "hello")
+    let(:bad_event) { LogStash::Event.new("message" => "bad message") }
+    let(:good_event) { LogStash::Event.new("message" => "good message") }
+    let(:pipeline) { LogStash::Pipeline.new(dummy_config) }
+
+    context "transient exceptions" do
+      context "input" do
+        it "should restart and generate more events" do
+          expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
+            raise StandardError
+          end
+          expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
+            queue << good_event
+          end
+          expect_any_instance_of(DummyOutput).to receive(:receive).once.with(good_event)
+          expect_any_instance_of(DummyInput).to receive(:teardown).once
+          expect { pipeline.run }.to_not raise_error
         end
-        expect_any_instance_of(DummyOutput).to receive(:receive).and_return do |event|
-          unknown_method(event)
+      end
+
+      context "filter" do
+        it "should restart and process the next event" do
+          expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
+            queue << bad_event
+            queue << good_event
+          end
+          expect_any_instance_of(DummyFilter).to receive(:filter).with(bad_event).and_return do |event|
+            raise StandardError
+          end
+          expect_any_instance_of(DummyFilter).to receive(:filter).with(good_event)
+          expect_any_instance_of(DummyOutput).to receive(:receive).once.with(good_event)
+          expect_any_instance_of(DummyFilter).to receive(:teardown).once
+          expect { pipeline.run }.to_not raise_error
         end
-        expect_any_instance_of(DummyOutput).to receive(:teardown).once
-        expect { TestPipeline.new(dummy_config).run }.to_not raise_error
+      end
+
+      context "output" do
+        it "should restart and process the next message" do
+          expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
+            queue << bad_event
+            queue << good_event
+          end
+          expect_any_instance_of(DummyOutput).to receive(:receive).with(bad_event).and_return do |event|
+            raise StandardError
+          end
+          expect_any_instance_of(DummyOutput).to receive(:receive).with(good_event).and_return do |event|
+            # ...
+          end
+          expect_any_instance_of(DummyOutput).to receive(:teardown).once
+          expect { pipeline.run }.to_not raise_error
+        end
       end
     end
 
-    context "input" do
-      it "should call teardown and not raise exceptions" do
-        expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
-          unknown_method(event)
+    context "fatal exceptions" do
+      context "input" do
+        it "should raise exception" do
+          expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
+            raise Exception
+          end
+          expect_any_instance_of(DummyFilter).to_not receive(:filter)
+          expect { pipeline.run }.to raise_error(Exception)
         end
-        expect_any_instance_of(DummyOutput).to_not receive(:receive)
-        expect_any_instance_of(DummyInput).to receive(:teardown).once
-        expect { TestPipeline.new(dummy_config).run }.to_not raise_error
       end
-    end
 
-    context "filter" do
-      it "should call teardown and not raise exceptions" do
-        expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
-          queue << LogStash::Event.new("message" => "hello")
+      context "filter" do
+        it "should raise exception" do
+          expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
+            queue << bad_event
+          end
+          expect_any_instance_of(DummyFilter).to receive(:filter).with(bad_event).and_return do |event|
+            raise Exception
+          end
+          expect_any_instance_of(DummyOutput).to_not receive(:receive)
+          expect { pipeline.run }.to raise_error(Exception)
         end
-        expect_any_instance_of(DummyFilter).to receive(:filter).and_return do |queue|
-          unknown_method(event)
+      end
+
+      context "output" do
+        it "should raise exception" do
+          expect_any_instance_of(DummyInput).to receive(:run).and_return do |queue|
+            queue << bad_event
+          end
+          expect_any_instance_of(DummyOutput).to receive(:receive).with(bad_event).and_return do |event|
+            raise Exception
+          end
+          expect { pipeline.run }.to raise_error(Exception)
         end
-        expect_any_instance_of(DummyOutput).to_not receive(:receive)
-        expect_any_instance_of(DummyFilter).to receive(:teardown).once
-        expect { TestPipeline.new(dummy_config).run }.to_not raise_error
       end
     end
   end

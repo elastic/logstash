@@ -12,6 +12,7 @@ require "logstash/outputs/base"
 class LogStash::Pipeline
 
   FLUSH_EVENT = LogStash::FlushEvent.new
+  RETRY_INTERVAL = 0.5 # seconds
 
   def initialize(configstr)
     @logger = Cabin::Channel.get(LogStash)
@@ -159,9 +160,8 @@ class LogStash::Pipeline
 
   def start_outputs
     @outputs.each(&:register)
-    @output_threads = [
-      Thread.new { outputworker }
-    ]
+    @outputs.each(&:worker_setup)
+    @output_threads = [ Thread.new { outputworker } ]
   end
 
   def start_input(plugin)
@@ -170,22 +170,12 @@ class LogStash::Pipeline
 
   def inputworker(plugin)
     LogStash::Util::set_thread_name("<#{plugin.class.config_name}")
-    begin
-      plugin.run(@input_to_filter)
-    rescue LogStash::ShutdownSignal
-      return
-    rescue => e
-      if @logger.debug?
-        @logger.error(I18n.t("logstash.pipeline.worker-error-debug",
-                             :plugin => plugin.inspect, :error => e.to_s,
-                             :exception => e.class,
-                             :stacktrace => e.backtrace.join("\n")))
-      else
-        @logger.error(I18n.t("logstash.pipeline.worker-error",
-                             :plugin => plugin.inspect, :error => e))
-      end
-      @logger.error("Exception in inputworker", "exception" => e, "backtrace" => e.backtrace)
-    end
+    plugin.run(@input_to_filter)
+  rescue => e
+    print_exception_information(e)
+    # TODO: find a way to obtain the event caused the exception
+    sleep RETRY_INTERVAL
+    retry
   rescue LogStash::ShutdownSignal
     # nothing
   ensure
@@ -195,9 +185,7 @@ class LogStash::Pipeline
   def filterworker
     LogStash::Util::set_thread_name("|worker")
     begin
-      while true
-        event = @input_to_filter.pop
-
+      while(event = @input_to_filter.pop)
         case event
         when LogStash::Event
           # use events array to guarantee ordering of origin vs created events
@@ -216,26 +204,32 @@ class LogStash::Pipeline
         end
       end
     rescue => e
-      @logger.error("Exception in filterworker", "exception" => e, "backtrace" => e.backtrace)
+      print_exception_information(e)
+      @logger.warn("Discarded event: #{event.to_hash}")
+      sleep RETRY_INTERVAL
+      retry
+    ensure
+      @filters.each(&:teardown)
     end
-
-    @filters.each(&:teardown)
   end # def filterworker
 
   def outputworker
     LogStash::Util::set_thread_name(">output")
-    @outputs.each(&:worker_setup)
 
-    while true
-      event = @filter_to_output.pop
-      break if event.is_a?(LogStash::ShutdownEvent)
-      output(event)
-    end # while true
-  rescue => e
-    @logger.error("Exception in outputworker", "exception" => e, "backtrace" => e.backtrace)
-  ensure
-    @outputs.each do |output|
-      output.worker_plugins.each(&:teardown)
+    begin
+      while(event = @filter_to_output.pop)
+        break if event.is_a?(LogStash::ShutdownEvent)
+        output(event)
+      end # while true
+    rescue => e
+      print_exception_information(e)
+      @logger.warn("Discarded event: #{event.to_hash}")
+      sleep RETRY_INTERVAL
+      retry
+    ensure
+      @outputs.each do |output|
+        output.worker_plugins.each(&:teardown)
+      end
     end
   end # def outputworker
 
@@ -301,4 +295,8 @@ class LogStash::Pipeline
     end
   end # flush_filters_to_output!
 
+  private
+  def print_exception_information(exception)
+    @logger.error("Restarting worker: #{exception} => #{exception.backtrace}")
+  end
 end # class Pipeline
