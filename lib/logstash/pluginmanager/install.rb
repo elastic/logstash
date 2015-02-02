@@ -9,19 +9,55 @@ require 'jar-dependencies'
 require 'jar_install_post_install_hook'
 require 'file-dependencies/gem'
 
+
+require "logstash/gemfile"
+require "bundler/cli"
+require "logstash/bundler_patch"
+
+
 class LogStash::PluginManager::Install < Clamp::Command
 
   parameter "PLUGIN", "plugin name or file"
 
-  option "--version", "VERSION", "version of the plugin to install", :default => ">= 0"
+  option "--version", "VERSION", "version of the plugin to install", :default => ""
 
   option "--proxy", "PROXY", "Use HTTP proxy for remote operations"
 
+
   def execute
+    gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
+    gemfile.add(plugin, version)
+    gemfile.save
+
+    10.times do
+      begin
+        ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
+        ENV["BUNDLE_PATH"] = LogStash::Environment.logstash_gem_home
+        ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
+        Bundler.reset!
+        Bundler::CLI.start(LogStash::Environment.bundler_install_command(LogStash::Environment::GEMFILE_PATH, LogStash::Environment::BUNDLE_DIR))
+        break
+      rescue Bundler::VersionConflict => e
+        puts(e.message)
+        puts('Cannot retry')
+        break
+      rescue => e
+        # for now catch all, looks like bundler now throws Bundler::InstallError, Errno::EBADF
+        puts(e.message)
+        puts("--> Retrying bundle install upon exception=#{e.class}")
+        sleep(1)
+      end
+    end
+
+    return 0
+  end
+
+
+  def execute_old
     LogStash::Environment.load_logstash_gemspec!
 
     ::Gem.configuration.verbose = false
-    ::Gem.configuration[:http_proxy] = proxy 
+    ::Gem.configuration[:http_proxy] = proxy
 
     puts ("validating #{plugin} #{version}")
 
