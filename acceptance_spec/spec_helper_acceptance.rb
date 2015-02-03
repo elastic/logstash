@@ -34,25 +34,6 @@ hosts.each do |host|
 
   end
 
-  case fact('osfamily')
-    when 'RedHat'
-      scp_to(host, "#{files_dir}/elasticsearch-1.3.1.noarch.rpm", '/tmp/elasticsearch-1.3.1.noarch.rpm')
-    when 'Debian'
-      case fact('lsbmajdistrelease')
-        when '6'
-          scp_to(host, "#{files_dir}/elasticsearch-1.1.0.deb", '/tmp/elasticsearch-1.1.0.deb')
-        else
-          scp_to(host, "#{files_dir}/elasticsearch-1.3.1.deb", '/tmp/elasticsearch-1.3.1.deb')
-      end
-    when 'Suse'
-      case fact('operatingsystem')
-        when 'OpenSuSE'
-          scp_to(host, "#{files_dir}/elasticsearch-1.1.0.noarch.rpm", '/tmp/elasticsearch-1.1.0.noarch.rpm')
-        else
-          scp_to(host, "#{files_dir}/elasticsearch-1.3.1.noarch.rpm", '/tmp/elasticsearch-1.3.1.noarch.rpm')
-      end
-  end
-
   # on debian/ubuntu nodes ensure we get the latest info
   # Can happen we have stalled data in the images
   if fact('osfamily') == 'Debian'
