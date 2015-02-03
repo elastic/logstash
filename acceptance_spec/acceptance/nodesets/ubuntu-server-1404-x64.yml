@@ -9,6 +9,7 @@ HOSTS:
     hypervisor: docker
     docker_cmd: '["/sbin/init"]'
     docker_image_commands:
-      - 'apt-get install -yq ruby ruby1.9.1-dev libaugeas-dev libaugeas-ruby lsb-release wget net-tools curl'
+      - 'apt-get install -yq ruby ruby1.9.1-dev libaugeas-dev libaugeas-ruby lsb-release wget net-tools curl logrotate'
+    docker_preserve_image: true
 CONFIG:
   type: foss

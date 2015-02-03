@@ -1,17 +1,20 @@
 require_relative '../spec_helper_acceptance'
 
+branch = ENV['LS_BRANCH'] || 'master'
+build_url = 'https://s3-eu-west-1.amazonaws.com/build-eu.elasticsearch.org/logstash'
+
 describe "Logstash class:" do
 
   case fact('osfamily')
   when 'RedHat'
     core_package_name    = 'logstash'
     service_name         = 'logstash'
-    core_url             = 'https://s3-eu-west-1.amazonaws.com/users.eu.elasticsearch.org/electrical/logstash-2.0.0.dev-1.noarch.rpm'
+    core_url             = "#{build_url}/#{branch}/nightly/JDK7/logstash-latest-SNAPSHOT.rpm"
     pid_file             = '/var/run/logstash.pid'
   when 'Debian'
     core_package_name    = 'logstash'
     service_name         = 'logstash'
-    core_url             = 'https://s3-eu-west-1.amazonaws.com/users.eu.elasticsearch.org/electrical/logstash_2.0.0.dev-1_all.deb'
+    core_url             = "#{build_url}/#{branch}/nightly/JDK7/logstash-latest-SNAPSHOT.deb"
     pid_file             = '/var/run/logstash.pid'
   end
 
