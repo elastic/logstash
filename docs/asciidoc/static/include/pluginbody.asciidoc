@@ -739,6 +739,46 @@ At this point in the process you have coded your plugin and are ready to build
 a Ruby Gem from it.  The following steps will help you complete the process.
 
 [float]
+=== External dependencies
+
+A `require` statement in Ruby is used to include necessary code. In some cases
+your plugin may require additional files.  For example, the collectd plugin
+https://github.com/logstash-plugins/logstash-codec-collectd/blob/master/lib/logstash/codecs/collectd.rb#L148[uses]
+the `types.db` file provided by collectd.  In the main directory of your plugin,
+a file called `vendor.json` is where these files are described.
+
+The `vendor.json` file contains an array of JSON objects, each describing a file
+dependency. This example comes from the
+https://github.com/logstash-plugins/logstash-codec-collectd/blob/master/vendor.json[collectd]
+codec plugin:
+
+[source,json]
+----------------------------------
+[{
+        "sha1": "a90fe6cc53b76b7bdd56dc57950d90787cb9c96e",
+        "url": "http://collectd.org/files/collectd-5.4.0.tar.gz",
+        "files": [ "/src/types.db" ]
+}]
+----------------------------------
+
+** `sha1` is the sha1 signature used to verify the integrity of the file
+referenced by `url`.
+** `url` is the address from where Logstash will download the file.
+** `files` is an optional array of files to extract from the downloaded file.
+Note that while tar archives can use absolute or relative paths, treat them as
+absolute in this array.  If `files` is not present, all files will be
+uncompressed and extracted into the vendor directory.
+
+Another example of the `vendor.json` file is the
+https://github.com/logstash-plugins/logstash-filter-geoip/blob/master/vendor.json[`geoip` filter]
+
+The process used to download these dependencies is to call `rake vendor`.  This
+will be discussed further in the testing section of this document.
+
+Another kind of external dependency is on jar files.  This will be described
+in the "Add a `gemspec` file" section.
+
+[float]
 === Add a Gemfile
 Gemfiles allow Ruby's Bundler to maintain the dependencies for your plugin.
 Currently, all we'll need is the Logstash gem, for testing, but if you require
@@ -855,6 +895,24 @@ IMPORTANT: All plugins have a runtime dependency on the `logstash` core gem, and
 a development dependency on `logstash-devutils`.
 
 [float]
+==== Jar dependencies
+In some cases, such as the
+https://github.com/logstash-plugins/logstash-output-elasticsearch/blob/master/logstash-output-elasticsearch.gemspec#L22-L23[Elasticsearch output plugin],
+your code may depend on a jar file.  In cases such as this, the dependency is
+added in the gemspec file in this manner:
+
+[source,ruby]
+[subs="attributes"]
+----------------------------------
+  # Jar dependencies
+  s.requirements << "jar 'org.elasticsearch:elasticsearch', '1.4.0'"
+  s.add_runtime_dependency 'jar-dependencies'
+----------------------------------
+
+With these both defined, the install process will search for the required jar
+file at http://mvnrepository.com and download the specified version.
+
+[float]
 === Add Tests
 Logstash loves tests. Lots of tests. If you're using your new {plugintype}
 plugin in a production environment, you'll want to have some tests to ensure you
@@ -882,6 +940,18 @@ Then, you'll need to install your plugins dependencies with bundler:
 ----------------------------------
 bundle install
 ----------------------------------
+
+[IMPORTANT]
+======
+
+If your plugin has an external file dependency described in `vendor.json`, you
+must download that dependency before running or testing.  You can do this by
+running:
+
+----------------------------------
+rake vendor
+----------------------------------
+======
 
 And finally, run the tests:
 
