@@ -42,14 +42,17 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   end # def register
 
   public
-  def run(output_queue)                                # Run with output queue
-    @lumberjack.run do |client|                        # ...using lumberjack server
-      Thread.new(client) do |fd|                       # ...which passes back clients
-        Lumberjack::Connection.new(fd).run() do |map|  # ...managed as connection threads
-          @codec.decode(map.delete("line")) do |event| # ...which emits events to be decoded
+  def run(output_queue)            # Run lumberjack with output queue
+    @lumberjack.run do |client|    # ...using lumberjack server (gem)
+      Thread.new(client) do |fd|   # ...then we wrap client connections inside threads
+        Lumberjack::Connection.new(fd).run() do |map, &ack_sequence|
+          @codec.decode(map.delete("line")) do |event|
             decorate(event)
             map.each { |k,v| event[k] = v; v.force_encoding(Encoding::UTF_8) }
-            output_queue << event                      # ...and we stuff these into the output queue
+            output_queue << event  # ...stuff events into the output queue
+            if ack_sequence != nil # ...ack when sequence has ended
+              ack_sequence.call
+            end
           end
         end
       end
