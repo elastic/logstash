@@ -1,10 +1,11 @@
 :register_method:	true
 :receive_method:	true
-:teardown_method: true
 :plugintype:    	output
 :pluginclass:   	Outputs
 :pluginname:    	example
 :pluginnamecap: 	Example
+
+:blockfilter:		true
 
 :getstarted: Let's step through creating an {plugintype} plugin using the https://github.com/logstash-plugins/logstash-output-example/[example {plugintype} plugin].
 
