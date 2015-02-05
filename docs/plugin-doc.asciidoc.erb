@@ -8,9 +8,15 @@
 
 ==== Synopsis
 
+<% if sorted_attributes.count > 0 -%>
 This plugin supports the following configuration options:
+<% else -%>
+This plugin has no configuration options.
+<% end -%>
 
 <%= synopsis -%>
+
+<% if sorted_attributes.count > 0 -%>
 
 ==== Details
 
@@ -51,5 +57,7 @@ This plugin supports the following configuration options:
 <% end -%>
 
 <%= config[:description] %>
+
+<% end -%>
 
 <% end -%>
