@@ -1,8 +1,38 @@
 #!/bin/sh
-# Install plugins.
+# Run logstash from source
+#
+# This is most useful when done from a git checkout.
 #
 # Usage:
-#     bin/plugin --help
+#     bin/logstash <command> [arguments]
+#
+# See 'bin/logstash help' for a list of commands.
+#
+# Defaults you can override with environment variables
+LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
 
+unset CDPATH
 basedir=$(cd `dirname $0`/..; pwd)
-exec ${basedir}/bin/logstash plugin "$@"
+. "${basedir}/bin/logstash.lib.sh"
+
+setup
+
+# Export these so that they can be picked up by file input (and others?).
+export HOME SINCEDB_DIR
+
+case $1 in
+  -*)
+    if [ -z "$VENDORED_JRUBY" ] ; then
+      exec "${RUBYCMD}" "${basedir}/lib/logstash/pluginmanager.rb" "$@"
+    else
+      exec "$JRUBY_BIN" $(jruby_opts) "${basedir}/lib/logstash/pluginmanager.rb" "$@"
+    fi
+    ;;
+  *)
+    if [ -z "$VENDORED_JRUBY" ] ; then
+      exec "${RUBYCMD}" "${basedir}/lib/logstash/pluginmanager.rb" "$@"
+    else
+      exec "$JRUBY_BIN" $(jruby_opts) "${basedir}/lib/logstash/pluginmanager.rb" "$@"
+    fi
+    ;;
+esac
