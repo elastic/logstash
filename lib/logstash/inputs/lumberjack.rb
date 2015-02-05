@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
+require "logstash/event"
 
 # Receive events using the lumberjack protocol.
 #
@@ -45,13 +46,22 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
   def run(output_queue)            # Run lumberjack with output queue
     @lumberjack.run do |client|    # ...using lumberjack server (gem)
       Thread.new(client) do |fd|   # ...then we wrap client connections inside threads
+        bundle = LogStash::EventBundle.new
+
         Lumberjack::Connection.new(fd).run() do |map, &ack_sequence|
           @codec.decode(map.delete("line")) do |event|
+            # Add logstash required fields (type+tags) and re-add keys from map
             decorate(event)
             map.each { |k,v| event[k] = v; v.force_encoding(Encoding::UTF_8) }
-            output_queue << event  # ...stuff events into the output queue
-            if ack_sequence != nil # ...ack when sequence has ended
-              ack_sequence.call
+
+            # Process and record record events
+            output_queue << event
+            bundle.add(event)
+
+            # Close bundle, bundle will ack when sequence has ended
+            if ack_sequence != nil
+              bundle.ready(ack_sequence)
+              bundle = LogStash::EventBundle.new
             end
           end
         end

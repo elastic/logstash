@@ -252,3 +252,20 @@ class LogStash::Event
     self["tags"] << value unless self["tags"].include?(value)
   end
 end # class LogStash::Event
+
+class LogStash::EventBundle
+  def initialize
+    @events = []
+    @ready = false
+  end
+
+  def ready(ack_sequence)
+    ack_sequence.call
+    @ready = true
+  end
+
+  def add(event)
+    throw "Cannot add event to ready bundle" if @ready
+    @events.push(event)
+  end
+end # class LogStash::EventBundle
