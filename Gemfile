@@ -1,10 +1,8 @@
-source 'https://rubygems.org'
+# This is a Logstash generated Gemfile.
+# If you modify this file manually all comments and formatting will be lost.
 
-# ruby '1.9.3',  :engine => 'jruby', :engine_version => '1.7.17'
-
-# This could replace with a logstash or logstash-core gem
-gem 'logstash', :path => File.dirname(__FILE__)
-
+source "https://rubygems.org"
+gemspec :name => "logstash"
 gem 'logstash-output-zeromq'
 gem 'logstash-codec-collectd'
 gem 'logstash-output-xmpp'
