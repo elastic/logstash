@@ -1,6 +1,5 @@
 :register_method:	true
-:run_method:		  true
-:teardown_method: true
+:run_method:		true
 :plugintype:    	input
 :pluginclass:   	Inputs
 :pluginname:    	example
