@@ -139,13 +139,20 @@ describe "logstash Gemfile Manager" do
         file = <<-END
           source "https://rubygems.org"
           gemspec :a => "a", "b" => 1
-          gem "test", "> 1.0", "< 2.0", :b => "b"
+          gem "foo", "> 1.0", "< 2.0", :b => "b"
+          gem "bar"
         END
 
         io = StringIO.new(file)
         gemfile = LogStash::Gemfile.new(io).load
         gemfile.save
-        expect(file).to eq("source \"https://rubygems.org\"\ngemspec :a => \"a\", \"b\" => 1\ngem \"test\", \"> 1.0\", \"< 2.0\", :b => \"b\"")
+        expect(file).to eq(
+          LogStash::Gemfile::HEADER + \
+          "source \"https://rubygems.org\"\n" + \
+          "gemspec :a => \"a\", \"b\" => 1\n" + \
+          "gem \"foo\", \"> 1.0\", \"< 2.0\", :b => \"b\"\n" + \
+          "gem \"bar\"\n"
+        )
       end
     end
   end
