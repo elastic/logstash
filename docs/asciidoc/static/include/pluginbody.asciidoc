@@ -101,6 +101,7 @@ and take a look.
 // Input (conditionally recognized by the presence of the run_method attribute)
 // /////////////////////////////////////////////////////////////////////////////
 ifdef::run_method[]
+ifndef::blockinput[]
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
@@ -144,6 +145,7 @@ class LogStash::{pluginclass}::{pluginnamecap} < LogStash::{pluginclass}::Base
 
 end # class LogStash::{pluginclass}::{pluginnamecap}
 ----------------------------------
+endif::blockinput[]
 endif::run_method[]
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -151,6 +153,7 @@ endif::run_method[]
 // attribute)
 // /////////////////////////////////////////////////////////////////////////////
 ifdef::encode_method[]
+ifndef::blockcodec[]
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
@@ -201,6 +204,7 @@ class LogStash::{pluginclass}::{pluginnamecap} < LogStash::{pluginclass}::Base
 
 end # class LogStash::{pluginclass}::{pluginnamecap}
 ----------------------------------
+endif::blockcodec[]
 endif::encode_method[]
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -208,6 +212,7 @@ endif::encode_method[]
 // attribute)
 // /////////////////////////////////////////////////////////////////////////////
 ifdef::filter_method[]
+ifndef::blockfilter[]
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
@@ -254,6 +259,7 @@ class LogStash::{pluginclass}::{pluginnamecap} < LogStash::{pluginclass}::Base
 
 end # class LogStash::{pluginclass}::{pluginnamecap}
 ----------------------------------
+endif::blockfilter[]
 endif::filter_method[]
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -405,6 +411,7 @@ the corresponding Logstash configuration block would need to look like this:
 // If encode_method is NOT defined (not a codec)
 // /////////////////////////////////////////////////////////////////////////////
 ifndef::encode_method[]
+ifndef::blockcodec[]
 [source,js]
 [subs="attributes"]
 ----------------------------------
@@ -412,12 +419,14 @@ ifndef::encode_method[]
   {pluginname} {...}
 }
 ----------------------------------
+endif::blockcodec[]
 endif::encode_method[]
 
 // /////////////////////////////////////////////////////////////////////////////
 // If encode_method IS defined (for codecs only)
 // /////////////////////////////////////////////////////////////////////////////
 ifdef::encode_method[]
+ifndef::blockinput[]
 [source,js]
 [subs="attributes"]
 ----------------------------------
@@ -435,6 +444,7 @@ output {
   codec => {pluginname} {...}
 }
 ----------------------------------
+endif::blockinput[]
 endif::encode_method[]
 
 [float]
@@ -497,6 +507,7 @@ endif::register_method[]
 // If filter_method is defined (should only be for filter plugin page)
 // /////////////////////////////////////////////////////////////////////////////
 ifdef::filter_method[]
+ifndef::blockfilter[]
 [float]
 ==== `filter` Method
 [source,ruby]
@@ -531,12 +542,14 @@ filter will be handled correctly. For example, any `add_field`, `remove_field`,
 
 Event methods such as `event.cancel` are now available to control the workflow
 of the event being processed.
+endif::blockfilter[]
 endif::filter_method[]
 
 // /////////////////////////////////////////////////////////////////////////////
 // If decode_method is defined (should only be for codec plugin page)
 // /////////////////////////////////////////////////////////////////////////////
 ifdef::decode_method[]
+ifndef::blockcodec[]
 [float]
 ==== `decode` Method
 [source,ruby]
@@ -558,12 +571,14 @@ codec.
 
 There must be a `yield` statement as part of the `decode` method which will
 return decoded events to the pipeline.
+endif::blockcodec[]
 endif::decode_method[]
 
 // /////////////////////////////////////////////////////////////////////////////
 // If encode_method is defined (should only be for codec plugin page)
 // /////////////////////////////////////////////////////////////////////////////
 ifdef::encode_method[]
+ifndef::blockcodec[]
 [float]
 ==== `encode` Method
 [source,ruby]
@@ -582,12 +597,14 @@ codec.
 
 In most cases, your `encode` method should have an `@on_event.call()` statement.
 This call will output data per event in the described way.
+endif::blockcodec[]
 endif::encode_method[]
 
 // /////////////////////////////////////////////////////////////////////////////
 // If run_method is defined (should only be for input plugin page)
 // /////////////////////////////////////////////////////////////////////////////
 ifdef::run_method[]
+ifndef::blockinput[]
 [float]
 ==== `run` Method
 The {pluginname} input plugin has the following `run` Method:
@@ -668,6 +685,7 @@ more examples of how they have been created:
 
 There are many more more examples in the https://github.com/logstash-plugins?query=logstash-input[logstash-plugin github repository].
 ======
+endif::blockinput[]
 endif::run_method[]
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -713,25 +731,26 @@ For more examples of output plugins, see the https://github.com/logstash-plugins
 
 endif::receive_method[]
 
+// Teardown is now in the base class... can be pruned?
 // /////////////////////////////////////////////////////////////////////////////
 // If teardown_method is defined (should only be for input or output plugin page)
 // /////////////////////////////////////////////////////////////////////////////
-ifdef::teardown_method[]
-[float]
-==== `teardown` Method
-[source,ruby]
-[subs="attributes"]
-----------------------------------
-  public
-  def teardown
-    @udp.close if @udp && !@udp.closed?
-  end
-----------------------------------
-The `teardown` method is not present in all input or output plugins.  It is
-called when a shutdown happens to ensure that sockets, files, connections and
-threads are all closed down properly.  If your plugin uses these connections,
-you should include a teardown method.
-endif::teardown_method[]
+// ifdef::teardown_method[]
+// [float]
+// ==== `teardown` Method
+// [source,ruby]
+// [subs="attributes"]
+// ----------------------------------
+// public
+// def teardown
+//   @udp.close if @udp && !@udp.closed?
+// end
+// ----------------------------------
+// The `teardown` method is not present in all input or output plugins.  It is
+// called when a shutdown happens to ensure that sockets, files, connections and
+// threads are all closed down properly.  If your plugin uses these connections,
+// you should include a teardown method.
+// endif::teardown_method[]
 
 [float]
 == Building the Plugin
@@ -752,7 +771,7 @@ dependency. This example comes from the
 https://github.com/logstash-plugins/logstash-codec-collectd/blob/master/vendor.json[collectd]
 codec plugin:
 
-[source,json]
+[source,txt]
 ----------------------------------
 [{
         "sha1": "a90fe6cc53b76b7bdd56dc57950d90787cb9c96e",
@@ -1049,6 +1068,7 @@ command-line, using the `-e` flag.
 Your results will depend on what your {plugintype} plugin is designed to do.
 
 ifdef::run_method[]
+ifndef::blockinput[]
 [source,sh]
 [subs="attributes"]
 ----------------------------------
@@ -1076,9 +1096,11 @@ Feel free to experiment and test this by changing the `message` and `interval` p
 ----------------------------------
 bin/logstash -e 'input { {pluginname}{ message => "A different message" interval => 5 } } output {stdout { codec => rubydebug }}'
 ----------------------------------
+endif::blockinput[]
 endif::run_method[]
 
 ifdef::encode_method[]
+ifndef::blockcodec[]
 [source,sh]
 [subs="attributes"]
 ----------------------------------
@@ -1111,9 +1133,11 @@ Feel free to experiment and test this by changing the `append` parameter:
 bin/logstash -e 'input { stdin{ codec => {pluginname}{ append => ", I am appending this! }} } output {stdout { codec => rubydebug }}'
 ----------------------------------
 
+endif::blockcodec[]
 endif::encode_method[]
 
 ifdef::filter_method[]
+ifndef::blockfilter[]
 [source,sh]
 [subs="attributes"]
 ----------------------------------
@@ -1146,6 +1170,7 @@ Feel free to experiment and test this by changing the `message` parameter:
 bin/logstash -e 'input { stdin{} } {plugintype} { {pluginname} { message => "This is a new message!"} } output {stdout { codec => rubydebug }}'
 ----------------------------------
 
+endif::blockfilter[]
 endif::filter_method[]
 
 ifdef::receive_method[]
