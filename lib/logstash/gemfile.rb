@@ -3,7 +3,11 @@ module LogStash
   class GemfileError < StandardError; end
 
   class Gemfile
-    attr_reader :gemset
+    attr_accessor :gemset
+
+    HEADER = \
+      "# This is a Logstash generated Gemfile.\n" + \
+      "# If you modify this file manually all comments and formatting will be lost.\n\n"
 
     # @params io [IO] any IO object that supports read, write, truncate, rewind
     def initialize(io)
@@ -20,6 +24,7 @@ module LogStash
       raise(GemfileError, "a Gemfile must first be loaded") unless @gemset
       @io.truncate(0)
       @io.rewind
+      @io.write(HEADER)
       @io.write(@gemset.to_s)
       @io.flush
     end
@@ -44,7 +49,7 @@ module LogStash
 
     # @return [Gem] removed gem or nil if not found
     def remove(name)
-      @gemset.remove(name)
+      @gemset.remove_gem(name)
     end
   end
 
@@ -59,8 +64,6 @@ module LogStash
     end
 
     def to_s
-      "# This is a Logstash generated Gemfile.\n" + \
-      "# If you modify this file manually all comments will be lost after invoking the bin/plugin commands.\n\n" + \
       [sources_to_s, gemspec_to_s, gems_to_s].compact.join("\n") + "\n"
     end
 
@@ -94,6 +97,11 @@ module LogStash
       _gem
     end
 
+    # deep clone self
+    def copy
+      Marshal.load(Marshal.dump(self))
+    end
+
     private
 
     def sources_to_s
@@ -107,7 +115,7 @@ module LogStash
         requirements = gem.requirements.empty? ? nil : gem.requirements.map{|r| r.inspect}.join(", ")
         options = gem.options.empty? ? nil : gem.options.map{|k, v| "#{k.inspect} => #{v.inspect}"}.join(", ")
         "gem " + [gem.name.inspect, requirements, options].compact.join(", ")
-      end
+      end.join("\n")
     end
 
     def gemspec_to_s
@@ -152,7 +160,7 @@ module LogStash
 
     def initialize(name, requirements = [], options = {})
       @name = name
-      @requirements = requirements.map{|r| r.strip}.select{|r| !r.empty?}
+      @requirements = requirements.map{|r| r.to_s.strip}.select{|r| !r.empty?}
       @options = options
     end
 
