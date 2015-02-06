@@ -14,7 +14,6 @@ require "logstash/bundler_patch"
 class LogStash::PluginManager::Install < Clamp::Command
   parameter "PLUGIN", "plugin name or file"
   option "--version", "VERSION", "version of the plugin to install"
-  option "--proxy", "PROXY", "Use HTTP proxy for remote operations"
 
   def execute
     unless File.writable?(LogStash::Environment::GEMFILE_PATH)
