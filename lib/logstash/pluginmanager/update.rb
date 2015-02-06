@@ -1,22 +1,27 @@
 require 'clamp'
 require 'logstash/namespace'
 require 'logstash/pluginmanager/util'
-require 'rubygems/dependency_installer'
-require 'rubygems/uninstaller'
 require 'jar-dependencies'
 require 'jar_install_post_install_hook'
 require 'file-dependencies/gem'
 
+require "logstash/gemfile"
+require "bundler/cli"
+require "logstash/bundler_patch"
+
 class LogStash::PluginManager::Update < Clamp::Command
-
-  parameter "[PLUGIN]", "Plugin name"
-
-  option "--version", "VERSION", "version of the plugin to install", :default => ">= 0"
-
-  option "--proxy", "PROXY", "Use HTTP proxy for remote operations"
+  parameter "[PLUGIN]", "Plugin name to upgrade to latest version"
 
   def execute
-    raise("WIP")
+    puts("Updating " + (plugin ? plugin : "all plugins"))
+
+    # any errors will be logged to $stderr by invoke_bundler!
+    output, exception = LogStash::PluginManager.invoke_bundler!(:update => (plugin || true))
+    if ENV["DEBUG"]
+      $stderr.puts(output)
+      $stderr.puts("Error: #{exception.class}, #{exception.message}") if exception
+    end
+    return exception ? 99 : 0
   end
 
   # def execute
