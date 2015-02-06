@@ -10,7 +10,8 @@ class LogStash::PluginManager::List < Clamp::Command
   option "--group", "NAME", "Show all plugins from a certain group. Can be one of 'output', 'input', 'codec', 'filter'"
 
   def execute
-    raise("WIP")
+    $stdout.puts("the plugin list command is not yet supported")
+    99
   end
 
   # def execute
