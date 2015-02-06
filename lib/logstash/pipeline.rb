@@ -171,65 +171,73 @@ class LogStash::Pipeline
   def inputworker(plugin)
     LogStash::Util::set_thread_name("<#{plugin.class.config_name}")
     plugin.run(@input_to_filter)
+  rescue LogStash::ShutdownSignal
+    # nothing
   rescue => e
-    print_exception_information(e)
+    @logger.error exception_information(e)
     # TODO: find a way to obtain the event caused the exception
     sleep RETRY_INTERVAL
     retry
-  rescue LogStash::ShutdownSignal
-    # nothing
+  rescue Exception => e
+    @logger.fatal exception_information(e)
+    shutdown
   ensure
     plugin.teardown
   end # def inputworker
 
   def filterworker
     LogStash::Util::set_thread_name("|worker")
-    begin
-      while(event = @input_to_filter.pop)
-        case event
-        when LogStash::Event
-          # use events array to guarantee ordering of origin vs created events
-          # where created events are emitted by filters like split or metrics
-          events = []
-          filter(event) { |newevent| events << newevent }
-          events.each { |event| @filter_to_output.push(event) }
-        when LogStash::FlushEvent
-          # handle filter flushing here so that non threadsafe filters (thus only running one filterworker)
-          # don't have to deal with thread safety implementing the flush method
-          @flusher_lock.synchronize { flush_filters_to_output! }
-        when LogStash::ShutdownEvent
-          # pass it down to any other filterworker and stop this worker
-          @input_to_filter.push(event)
-          break
-        end
+
+    while(event = @input_to_filter.pop)
+      case event
+      when LogStash::Event
+        # use events array to guarantee ordering of origin vs created events
+        # where created events are emitted by filters like split or metrics
+        events = []
+        filter(event) { |newevent| events << newevent }
+        events.each { |event| @filter_to_output.push(event) }
+      when LogStash::FlushEvent
+        # handle filter flushing here so that non threadsafe filters (thus only running one filterworker)
+        # don't have to deal with thread safety implementing the flush method
+        @flusher_lock.synchronize { flush_filters_to_output! }
+      when LogStash::ShutdownEvent
+        # pass it down to any other filterworker and stop this worker
+        @input_to_filter.push(event)
+        break
       end
-    rescue => e
-      print_exception_information(e)
-      @logger.warn("Discarded event: #{event.to_hash}")
-      sleep RETRY_INTERVAL
-      retry
-    ensure
-      @filters.each(&:teardown)
     end
+
+  rescue => e
+    @logger.error exception_information(e)
+    @logger.warn("Discarded event: #{event.to_hash}")
+    sleep RETRY_INTERVAL
+    retry
+  rescue Exception => e
+    @logger.fatal exception_information(e)
+    shutdown
+  ensure
+    @filters.each(&:teardown)
   end # def filterworker
 
   def outputworker
     LogStash::Util::set_thread_name(">output")
 
-    begin
-      while(event = @filter_to_output.pop)
-        break if event.is_a?(LogStash::ShutdownEvent)
-        output(event)
-      end # while true
-    rescue => e
-      print_exception_information(e)
-      @logger.warn("Discarded event: #{event.to_hash}")
-      sleep RETRY_INTERVAL
-      retry
-    ensure
-      @outputs.each do |output|
-        output.worker_plugins.each(&:teardown)
-      end
+    while(event = @filter_to_output.pop)
+      break if event.is_a?(LogStash::ShutdownEvent)
+      output(event)
+    end # while true
+
+  rescue => e
+    @logger.error exception_information(e)
+    @logger.warn("Discarded event: #{event.to_hash}")
+    sleep RETRY_INTERVAL
+    retry
+  rescue Exception => e
+    @logger.fatal exception_information(e)
+    shutdown
+  ensure
+    @outputs.each do |output|
+      output.worker_plugins.each(&:teardown)
     end
   end # def outputworker
 
@@ -296,7 +304,7 @@ class LogStash::Pipeline
   end # flush_filters_to_output!
 
   private
-  def print_exception_information(exception)
-    @logger.error("Restarting worker: #{exception} => #{exception.backtrace}")
+  def exception_information(exception)
+    "Exception information: #{exception} => #{exception.backtrace}"
   end
 end # class Pipeline
