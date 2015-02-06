@@ -32,6 +32,14 @@ class LogStashConfigAsciiDocGenerator
     else
       @contrib_list = []
     end
+
+    if File.exists?("rakelib/default_plugins.rb")
+      # list of supported / shipped with Logstash plugins
+      @supported_plugins = eval(File.read("rakelib/default_plugins.rb"))
+    else
+      # we support nothing???
+      @supported_plugins = []
+    end
   end
 
   def parse(string)
@@ -206,6 +214,9 @@ class LogStashConfigAsciiDocGenerator
     elsif klass.ancestors.include?(LogStash::Codecs::Base)
       section = "codec"
     end
+
+    plugin_name = "logstash-" + section + "-" + @name
+    default_plugin = @supported_plugins.include?(plugin_name)
 
     template_file = File.join(File.dirname(__FILE__), "plugin-doc.asciidoc.erb")
     template = ERB.new(File.new(template_file).read, nil, "-")
