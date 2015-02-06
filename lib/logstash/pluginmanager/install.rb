@@ -44,8 +44,14 @@ class LogStash::PluginManager::Install < Clamp::Command
 
     puts("Installing #{plugin} #{version}")
 
-    # any errors will be logged to $stderr by bundle_install!
-    output, exception = LogStash::PluginManager.bundle_install!
+    # any errors will be logged to $stderr by invoke_bundler!
+    output, exception = LogStash::PluginManager.invoke_bundler!(:install => true)
+
+    if ENV["DEBUG"]
+      $stderr.puts(output)
+      $stderr.puts("Error: #{exception.class}, #{exception.message}") if exception
+    end
+
     if exception
       # revert to original Gemfile content
       gemfile.gemset = original_gemset

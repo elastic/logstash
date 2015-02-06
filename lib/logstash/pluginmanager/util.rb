@@ -22,8 +22,8 @@ module LogStash::PluginManager
   # execute bundle install and capture any $stdout output. any raised exception in the process will be trapped
   # and returned. logs errors to $stdout.
   # @return [String, Exception] the installation captured output and any raised exception or nil if none
-  def self.bundle_install!(options = {})
-    options = {:max_tries => 10, :clean => false}.merge(options)
+  def self.invoke_bundler!(options = {})
+    options = {:max_tries => 10, :clean => false, :install => false, :update => false}.merge(options)
 
     ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
     ENV["BUNDLE_PATH"] = LogStash::Environment.logstash_gem_home
@@ -35,32 +35,50 @@ module LogStash::PluginManager
     capture_stdout do
       loop do
         begin
-          arguments = LogStash::Environment.bundler_install_command(LogStash::Environment::GEMFILE_PATH, LogStash::Environment::BUNDLE_DIR)
-          arguments << "--clean" if options[:clean]
           # t = $stdout; $stdout = STDOUT; require "pry"; binding.pry; $stdout = t
           Bundler.reset!
-          Bundler::CLI.start(arguments)
+          Bundler::CLI.start(bundler_arguments(options))
           break
         rescue Bundler::VersionConflict => e
-          $stderr.puts("Plugin version conflict, aborting installation")
+          $stderr.puts("Plugin version conflict, aborting")
           raise(e)
         rescue Bundler::GemNotFound => e
-          $stderr.puts("Plugin not found, aborting installation")
+          $stderr.puts("Plugin not found, aborting")
           raise(e)
         rescue => e
           if try >= options[:max_tries]
-            $stderr.puts("Too many retries, aborting installation, caused by #{e.class}")
-            # TODO: add e.message in debug mode?
+            $stderr.puts("Too many retries, aborting, caused by #{e.class}")
+            $stderr.puts(e.message) if ENV["DEBUG"]
             raise(e)
           end
 
           try += 1
-          $stderr.puts("Installation aborted, caused by #{e.class}, retrying #{try}/#{options[:max_tries]}")
-          # TODO: add e.message in debug mode?
+          $stderr.puts("Error #{e.class}, retrying #{try}/#{options[:max_tries]}")
+          $stderr.puts(e.message) if ENV["DEBUG"]
           sleep(0.5)
         end
       end
     end
+  end
+
+  def self.bundler_arguments(options = {})
+    arguments = []
+
+    if options[:install]
+      arguments << "install"
+      arguments << "--gemfile=#{LogStash::Environment::GEMFILE_PATH}"
+      arguments << ["--path", LogStash::Environment::BUNDLE_DIR]
+      arguments << "--without=development" unless LogStash::Environment.development?
+    end
+
+    if options[:update]
+      arguments << "update"
+      arguments << options[:update] if options[:update].is_a?(String)
+    end
+
+    arguments << "--clean" if options[:clean]
+
+    arguments.flatten
   end
 
   # check for valid logstash plugin gem name & version or .gem file, logs errors to $stdout
@@ -73,7 +91,7 @@ module LogStash::PluginManager
         return is_logstash_plugin_gem_spec?(plugin_file_spec(plugin))
       rescue => e
         $stderr.puts("Error reading plugin file #{plugin}, caused by #{e.class}")
-        # TODO: add e.message in debug mode?
+        $stderr.puts(e.message) if ENV["DEBUG"]
         return false
       end
     else
