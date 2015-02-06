@@ -296,7 +296,6 @@ class LogStash::Event
   def self.validate_value(value)
     case value
     when String
-      value.force_encoding("UTF-8") if LogStash::Environment.windows?
       raise("expected UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.encoding == Encoding::UTF_8
       raise("invalid UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.valid_encoding?
       value
