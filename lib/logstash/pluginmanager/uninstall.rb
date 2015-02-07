@@ -23,13 +23,12 @@ class LogStash::PluginManager::Uninstall < Clamp::Command
     # keep a copy of the gemset to revert on error
     original_gemset = gemfile.gemset.copy
 
-    unless gemfile.find(plugin)
+    # make sure this is an installed plugin and present in Gemfile.
+    # it is not possible to uninstall a dependency not listed in the Gemfile, for example a dependent codec
+    unless LogStash::PluginManager.is_installed_plugin?(plugin, gemfile)
       $stderr.puts("This plugin has not been previously installed, aborting")
       return 99
     end
-
-    # do we really need to verify this here?
-    return 99 unless LogStash::PluginManager.is_logstash_plugin?(plugin)
 
     # since we previously did a gemfile.find(plugin) there is no reason why
     # remove would not work (return nil) here
@@ -54,28 +53,6 @@ class LogStash::PluginManager::Uninstall < Clamp::Command
       end
     end
 
-    return 0
+    0
   end
-
-
-  # def execute
-  #   ::Gem.configuration.verbose = false
-
-  #   puts ("Validating removal of #{plugin}.")
-
-  #   #
-  #   # TODO: This is a special case, Bundler doesnt allow you to uninstall 1 gem.
-  #   # Bundler will only uninstall the gems if they dont exist in his Gemfile.lock
-  #   # (source of truth)
-  #   #
-  #   unless gem_data = LogStash::PluginManager::Util.logstash_plugin?(plugin)
-  #     $stderr.puts ("Trying to remove a non logstash plugin. Aborting")
-  #     return 99
-  #   end
-
-  #   puts ("Uninstalling plugin '#{plugin}' with version '#{gem_data.version}'.")
-  #   ::Gem::Uninstaller.new(plugin, {}).uninstall
-  #   return
-  # end
-
-end # class Logstash::PluginManager
+end
