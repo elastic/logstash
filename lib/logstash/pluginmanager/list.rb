@@ -13,20 +13,15 @@ class LogStash::PluginManager::List < Clamp::Command
   end
 
   def execute
-    plugin_name = group ? nil : plugin
-
     Gem.configuration.verbose = false
 
-    # If we are listing a group make sure we check all gems
-    specs = LogStash::PluginManager::Util.matching_specs(plugin_name) \
-            .select{|spec| LogStash::PluginManager::Util.logstash_plugin?(spec) } \
-            .select{|spec| group ? group == spec.metadata['logstash_group'] : true}
-    if specs.empty?
-      $stderr.puts ("No plugins found.")
-      return 0
-    end
-    specs.each {|spec| puts ("#{spec.name} (#{spec.version})") }
-    return 0
+    specs = LogStash::PluginManager.find_plugins_gem_specs
+    specs = specs.select{|spec| spec.name =~ /#{plugin}/i} if plugin
+    specs = specs.select{|spec| spec.metadata['logstash_group'] == group} if group
+
+    $stderr.puts("No plugins found") if specs.empty?
+
+    specs.each {|spec| puts("#{spec.name} (#{spec.version})") }
   end
 
 end # class Logstash::PluginManager
