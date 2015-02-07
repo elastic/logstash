@@ -131,6 +131,34 @@ module LogStash::PluginManager
     (plugin =~ /\.gem$/ && File.file?(plugin))
   end
 
+  # retrieve gem specs for all or specified name valid logstash plugins locally installed
+  # @param name [String] specific plugin name to find or nil for all plungins
+  # @return [Array<Gem::Specification>] all local logstash plugin gem specs
+  def self.find_plugins_gem_specs(name = nil)
+    specs = name ? Gem::Specification.find_all_by_name(name) : Gem::Specification.find_all
+    specs.select{|spec| is_logstash_plugin_gem_spec?(spec)}
+  end
+
+  # list of all locally installed plugins specified in the Gemfile.
+  # note that an installed plugin dependecies like codecs will not be listed, only those
+  # specifically listed in the Gemfile.
+  # @param gemfile [LogStash::Gemfile] the gemfile to validate against
+  # @return [Array<String>] list of plugin names
+  def self.all_installed_plugins(gemfile)
+    # we start form the installed gemspecs so we can verify the metadata for valid logstash plugin
+    # then filter out those not included in the Gemfile
+    find_plugins_gem_specs.map{|spec| spec.name}.select{|name| !!gemfile.find(name)}
+  end
+
+  # @param plugin [String] plugin name
+  # @param gemfile [LogStash::Gemfile] the gemfile to validate against
+  # @return [Boolean] true if the plugin is an installed logstash plugin and spefificed in the Gemfile
+  def self.is_installed_plugin?(plugin, gemfile)
+    !!gemfile.find(plugin) && !find_plugins_gem_specs(plugin).empty?
+  end
+
+
+
   class Util
     def self.logstash_plugin?(gem)
       gem_data = case
