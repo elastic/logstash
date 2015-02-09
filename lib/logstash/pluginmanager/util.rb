@@ -21,6 +21,7 @@ module LogStash::PluginManager
 
   # execute bundle install and capture any $stdout output. any raised exception in the process will be trapped
   # and returned. logs errors to $stdout.
+  # @param options [Hash] invoke options with default values, :max_tries => 10, :clean => false, :install => false, :update => false
   # @return [String, Exception] the installation captured output and any raised exception or nil if none
   def self.invoke_bundler!(options = {})
     options = {:max_tries => 10, :clean => false, :install => false, :update => false}.merge(options)
@@ -61,6 +62,9 @@ module LogStash::PluginManager
     end
   end
 
+  # build Bundler::CLI.start arguments array from the given options hash
+  # @param option [Hash] the invoke_bundler! options hash
+  # @return [Array<String>] Bundler::CLI.start string arguments array
   def self.bundler_arguments(options = {})
     arguments = []
 
@@ -82,6 +86,7 @@ module LogStash::PluginManager
   end
 
   # check for valid logstash plugin gem name & version or .gem file, logs errors to $stdout
+  # uses Rubygems API and will remotely validated agains the current Gem.sources
   # @param plugin [String] plugin name or .gem file path
   # @param version [String] gem version requirement string
   # @return [Boolean] true if valid logstash plugin gem name & version or a .gem file
@@ -139,15 +144,15 @@ module LogStash::PluginManager
     specs.select{|spec| is_logstash_plugin_gem_spec?(spec)}
   end
 
-  # list of all locally installed plugins specified in the Gemfile.
+  # list of all locally installed plugins specs specified in the Gemfile.
   # note that an installed plugin dependecies like codecs will not be listed, only those
   # specifically listed in the Gemfile.
   # @param gemfile [LogStash::Gemfile] the gemfile to validate against
-  # @return [Array<String>] list of plugin names
-  def self.all_installed_plugins(gemfile)
+  # @return [Array<Gem::Specification>] list of plugin names
+  def self.all_installed_plugins_gem_specs(gemfile)
     # we start form the installed gemspecs so we can verify the metadata for valid logstash plugin
     # then filter out those not included in the Gemfile
-    find_plugins_gem_specs.map{|spec| spec.name}.select{|name| !!gemfile.find(name)}
+    find_plugins_gem_specs.select{|spec| !!gemfile.find(spec.name)}
   end
 
   # @param plugin [String] plugin name
