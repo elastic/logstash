@@ -10,7 +10,7 @@ require "bundler/cli"
 require "logstash/bundler_patch"
 
 class LogStash::PluginManager::Update < Clamp::Command
-  parameter "[PLUGIN]", "Plugin name to upgrade to latest version"
+  parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version"
 
   def execute
     gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
@@ -18,15 +18,17 @@ class LogStash::PluginManager::Update < Clamp::Command
     original_gemset = gemfile.gemset.copy
 
     # create list of plugins to update
-    plugins = if plugin
-      unless LogStash::PluginManager.is_installed_plugin?(plugin, gemfile)
-        $stderr.puts("Plugin #{plugin} has not been previously installed, aborting")
+    plugins = unless plugin_list.empty?
+      if not_installed = plugin_list.find{|plugin| !LogStash::PluginManager.is_installed_plugin?(plugin, gemfile)}
+        $stderr.puts("Plugin #{not_installed} has not been previously installed, aborting")
         return 99
       end
-      [plugin]
+      plugin_list
     else
-      LogStash::PluginManager.all_installed_plugins(gemfile)
+      LogStash::PluginManager.all_installed_plugins_gem_specs(gemfile).map{|spec| spec.name}
     end
+
+    require "pry"; binding.pry
 
     # remove any version constrain from the Gemfile so the plugin(s) can be updated to latest version
     # calling update without requiremend will remove any previous requirements
