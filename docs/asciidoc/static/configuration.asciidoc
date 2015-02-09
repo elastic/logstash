@@ -240,6 +240,7 @@ input { # comments can appear at the end of a line, too
 }
 ----------------------------------
 
+[[logstash-config-field-references]]
 [float]
 === Field References
 
