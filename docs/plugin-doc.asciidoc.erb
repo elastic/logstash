@@ -2,6 +2,10 @@
 [[plugins-<%= section %>s-<%= name %>]]
 === <%= name %>
 
+<% unless default_plugin %>
+NOTE: This is a community-maintained plugin! It does not ship with Logstash by default, but it is easy to install by running `bin/plugin install logstash-<%= section %>-<%= plugin_name %>`.
+<% end %>
+
 <%= description %>
 
 &nbsp;
