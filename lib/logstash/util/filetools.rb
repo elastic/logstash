@@ -177,7 +177,7 @@ module LogStash::Util::FileTools
         end
 
       elsif download =~ /.gz/
-        ungz(download)
+        do_ungz(download)
       end
     end
   end
