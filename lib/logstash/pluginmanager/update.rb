@@ -28,8 +28,6 @@ class LogStash::PluginManager::Update < Clamp::Command
       LogStash::PluginManager.all_installed_plugins_gem_specs(gemfile).map{|spec| spec.name}
     end
 
-    require "pry"; binding.pry
-
     # remove any version constrain from the Gemfile so the plugin(s) can be updated to latest version
     # calling update without requiremend will remove any previous requirements
     plugins.each{|plugin| gemfile.update(plugin)}
@@ -38,7 +36,7 @@ class LogStash::PluginManager::Update < Clamp::Command
     puts("Updating " + plugins.join(", "))
 
     # any errors will be logged to $stderr by invoke_bundler!
-    output, exception = LogStash::PluginManager.invoke_bundler!(:update => (plugin || true))
+    output, exception = LogStash::PluginManager.invoke_bundler!(:update => plugins)
     if exception
       # revert to original Gemfile content
       gemfile.gemset = original_gemset
