@@ -24,11 +24,13 @@ module LogStash::PluginManager
   # @param options [Hash] invoke options with default values, :max_tries => 10, :clean => false, :install => false, :update => false
   # @return [String, Exception] the installation captured output and any raised exception or nil if none
   def self.invoke_bundler!(options = {})
-    options = {:max_tries => 10, :clean => false, :install => false, :update => false}.merge(options)
+    options = {:max_tries => 10, :clean => false, :install => false, :update => false, :without => [:development]}.merge(options)
+    options[:without] = Array(options[:without])
 
     ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
     ENV["BUNDLE_PATH"] = LogStash::Environment.logstash_gem_home
     ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
+    ENV["BUNDLE_WITHOUT"] = options[:without].empty? ? "" : options[:without].join(":")
 
     try = 0
 
@@ -36,7 +38,6 @@ module LogStash::PluginManager
     capture_stdout do
       loop do
         begin
-          # t = $stdout; $stdout = STDOUT; require "pry"; binding.pry; $stdout = t
           Bundler.reset!
           Bundler::CLI.start(bundler_arguments(options))
           break
@@ -72,12 +73,13 @@ module LogStash::PluginManager
       arguments << "install"
       arguments << "--gemfile=#{LogStash::Environment::GEMFILE_PATH}"
       arguments << ["--path", LogStash::Environment::BUNDLE_DIR]
-      arguments << "--without=development" unless LogStash::Environment.development?
+      # note that generating "--without=" when options[:without] is empty is intended
+      arguments << "--without=#{options[:without].join(' ')}"
     end
 
     if options[:update]
       arguments << "update"
-      arguments << options[:update] if options[:update].is_a?(String)
+      arguments << options[:update].join(" ")
     end
 
     arguments << "--clean" if options[:clean]
