@@ -45,7 +45,7 @@ class LogStash::PluginManager::Uninstall < Clamp::Command
         $stderr.puts("Error: #{exception.class}, #{exception.message}") if exception
       end
 
-     if exception
+      if exception
         # revert to original Gemfile content
         gemfile.gemset = original_gemset
         gemfile.save
