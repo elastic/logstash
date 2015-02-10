@@ -85,8 +85,8 @@ module LogStash
         @gems[@gems.index(old)] = _gem
       else
         @gems << _gem
-        @gems_by_name[_gem.name.downcase] = _gem
       end
+      @gems_by_name[_gem.name.downcase] = _gem
     end
 
     # @return [Gem] removed gem or nil if not found
@@ -125,6 +125,7 @@ module LogStash
     end
   end
 
+  # Dsl is a minimal, incomplete Gemfile DSL subset parser, only what is currently required is implemented.
   class Dsl
     attr_reader :gemset
 
