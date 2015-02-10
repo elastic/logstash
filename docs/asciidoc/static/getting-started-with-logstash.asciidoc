@@ -129,7 +129,7 @@ This should return something like the following:
     "hits" : [ {
       "_index" : "logstash-2013.11.21",
       "_type" : "logs",
-      "_id" : "2ijaoKqARqGvbMgP3BspJA",
+      "_id" : "2ijaoKqARGHvbMgP3BspJA",
       "_score" : 1.0, "_source" : {"message":"you know, for logs","@timestamp":"2013-11-21T18:45:09.862Z","@version":"1","host":"my-laptop"}
     } ]
   }
