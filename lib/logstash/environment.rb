@@ -54,33 +54,16 @@ module LogStash
     def set_gem_paths!
       require 'rubygems'
 
+      # Required If your local installation only have rake
+      Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = logstash_gem_home
       begin
-        require 'bundler'
+        require "bundler"
       rescue LoadError
-        # Required If your local installation only have rake
-        Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = logstash_gem_home
-        require 'bundler'
+        require "bundler"
       end
+      require "logstash/bundler"
 
-      Bundler.setup
-    end
-
-    def bundler_install_command(gem_file, gem_path)
-      # for now avoid multiple jobs, ex.: --jobs 4
-      # it produces erratic exceptions and hangs (with Bundler 1.7.9)
-      options = [
-        "install",
-        "--gemfile=#{gem_file}",
-        "--path",
-        gem_path,
-      ]
-
-      # We don't install development gem from the gemfile.
-      # If you add a gem with `git` or the `github` option bundler will mark
-      # them as development and he will not install them.
-      # To install them you need to do LOGSTASH_ENV=development rake gems:vendor
-      options << "--without=development" unless LogStash::Environment.development?
-      options
+      ::Bundler.setup
     end
 
     def ruby_bin
