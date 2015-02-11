@@ -64,8 +64,8 @@ module LogStash
       end
       require "logstash/bundler"
 
-      ::Bundler.real_fuckin_reset
-
+      ::Bundler.reset_settings # our monkey patched method
+      ::Bundler.reset!
       ::Bundler.setup
     end
 
