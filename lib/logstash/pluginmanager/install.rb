@@ -7,7 +7,7 @@ require 'jar_install_post_install_hook'
 require 'file-dependencies/gem'
 
 require "logstash/gemfile"
-require "logstash/bundler_patch"
+require "logstash/bundler"
 
 class LogStash::PluginManager::Install < Clamp::Command
   parameter "[PLUGIN] ...", "plugin name(s) or file"
@@ -22,14 +22,13 @@ class LogStash::PluginManager::Install < Clamp::Command
   # TODO: find right syntax to allow specifying list of plugins with optional version specification for each
 
   def execute
-
     if development?
       unless plugin_list.empty?
         $stderr.puts("Cannot specify plugin(s) with --development, it will add the development dependencies of the currently installed plugins")
         return 99
       end
     else
-      if plugin_list.empty?
+      if plugin_list.empty? && !force?
         $stderr.puts("No plugin specified")
         return 99
       end
@@ -87,13 +86,13 @@ class LogStash::PluginManager::Install < Clamp::Command
     install_list.each{|tuple| gemfile.update(*tuple)}
     gemfile.save
 
-    puts("Installing " + install_list.map{|tuple| tuple.first}.join(", "))
+    puts("Installing" + (install_list.empty? ? "..." : " " + install_list.map{|tuple| tuple.first}.join(", ")))
 
     bundler_options = {:install => true}
     bundler_options = bundler_options.merge({:without => []}) if development?
 
     # any errors will be logged to $stderr by invoke_bundler!
-    output, exception = LogStash::PluginManager.invoke_bundler!(bundler_options)
+    output, exception = LogStash::Bundler.invoke_bundler!(bundler_options)
 
     if ENV["DEBUG"]
       $stderr.puts(output)

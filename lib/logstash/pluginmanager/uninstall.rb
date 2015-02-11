@@ -6,8 +6,7 @@ require "logstash/pluginmanager/util"
 require "clamp"
 
 require "logstash/gemfile"
-require "bundler/cli"
-require "logstash/bundler_patch"
+require "logstash/bundler"
 
 class LogStash::PluginManager::Uninstall < Clamp::Command
   parameter "PLUGIN", "plugin name"
@@ -38,7 +37,7 @@ class LogStash::PluginManager::Uninstall < Clamp::Command
       puts("Uninstalling #{plugin}")
 
       # any errors will be logged to $stderr by invoke_bundler!
-      output, exception = LogStash::PluginManager.invoke_bundler!(:clean => true)
+      output, exception = LogStash::Bundler.invoke_bundler!(:clean => true)
 
       if ENV["DEBUG"]
         $stderr.puts(output)

@@ -6,8 +6,7 @@ require 'jar_install_post_install_hook'
 require 'file-dependencies/gem'
 
 require "logstash/gemfile"
-require "bundler/cli"
-require "logstash/bundler_patch"
+require "logstash/bundler"
 
 class LogStash::PluginManager::Update < Clamp::Command
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version"
@@ -36,7 +35,7 @@ class LogStash::PluginManager::Update < Clamp::Command
     puts("Updating " + plugins.join(", "))
 
     # any errors will be logged to $stderr by invoke_bundler!
-    output, exception = LogStash::PluginManager.invoke_bundler!(:update => plugins)
+    output, exception = LogStash::Bundler.invoke_bundler!(:update => plugins)
     if exception
       # revert to original Gemfile content
       gemfile.gemset = original_gemset
@@ -48,6 +47,7 @@ class LogStash::PluginManager::Update < Clamp::Command
       $stderr.puts(output)
       $stderr.puts("Error: #{exception.class}, #{exception.message}") if exception
     end
+
     return exception ? 99 : 0
   end
 end
