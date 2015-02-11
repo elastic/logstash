@@ -104,7 +104,6 @@ namespace "vendor" do
     FileUtils.cp(patched_jar_installer, patch_target)
   end
   task "all" => "jruby"
-  task "test" => "jruby"
 
   task "kibana" do |task, args|
     name = task.name.split(":")[1]
@@ -124,7 +123,6 @@ namespace "vendor" do
     end # untar
   end # task kibana
   task "all" => "kibana"
-  task "test" => "kibana"
 
   namespace "force" do
     task "gems" => ["vendor:gems"]
@@ -134,61 +132,14 @@ namespace "vendor" do
     require "logstash/environment"
     Rake::Task["dependency:rbx-stdlib"] if LogStash::Environment.ruby_engine == "rbx"
     Rake::Task["dependency:stud"].invoke
-    Rake::Task["vendor:bundle"].invoke("Gemfile") if args.to_hash.empty? || args[:bundle]
+    Rake::Task["dependency:bundler"].invoke
+
+    puts("Invoking bundler install...")
+    output, exception = LogStash::Bundler.invoke_bundler!(:install => true)
+    puts(output)
+    raise(exception) if exception
   end # task gems
   task "all" => "gems"
-
-  task "append_development_dependencies", [:gemfile] do |task, args|
-    dependencies = []
-    # grab the development dependencies
-    gem_home = LogStash::Environment.logstash_gem_home
-    Dir.glob("#{gem_home}/gems/logstash-*/*.gemspec") do |gemspec|
-      spec = Gem::Specification.load(gemspec)
-      spec.development_dependencies.each do |dependency|
-        dependencies << dependency
-      end
-    end
-    deps_gemfile = args[:gemfile]
-    # generate the gemfile.
-    File.open(deps_gemfile, "a") do |file|
-      dependencies.each do |dependency|
-        next if dependency.name.start_with?('logstash-')
-        requirements = dependency.requirement.to_s.split(',').map { |s| "'#{s.strip}'" }.join(',')
-        s =  "gem '#{dependency.name}', #{requirements}"
-        file.puts s
-      end
-    end
-  end
-
-  task "bundle", [:gemfile] => [ "dependency:bundler" ] do |task, args|
-    task.reenable
-    # because --path creates a .bundle/config file and changes bundler path
-    # we need to remove this file so it doesn't influence following bundler calls
-    FileUtils.rm_rf(::File.join(LogStash::Environment::LOGSTASH_HOME, "tools/.bundle"))
-    puts("GEMFILE: #{args[:gemfile]}")
-    10.times do
-      begin
-        ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
-        ENV["BUNDLE_PATH"] = LogStash::Environment.logstash_gem_home
-        ENV["BUNDLE_GEMFILE"] = args[:gemfile]
-        Bundler.reset!
-        Bundler::CLI.start(LogStash::Environment.bundler_install_command(args[:gemfile], LogStash::Environment::BUNDLE_DIR))
-        break
-      rescue Bundler::VersionConflict => e
-        puts(e.message)
-        puts('Cannot retry')
-        break
-      rescue => e
-        # for now catch all, looks like bundler now throws Bundler::InstallError, Errno::EBADF
-        puts(e.message)
-        puts("--> Retrying vendor:gems upon exception=#{e.class}")
-        sleep(1)
-      end
-    end
-    # because --path creates a .bundle/config file and changes bundler path
-    # we need to remove this file so it doesn't influence following bundler calls
-    FileUtils.rm_rf(::File.join(LogStash::Environment::LOGSTASH_HOME, "tools/.bundle"))
-  end
 
   desc "Clean the vendored files"
   task :clean do
