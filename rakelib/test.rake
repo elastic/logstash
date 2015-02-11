@@ -1,7 +1,6 @@
 
 namespace "test" do
   task "default" => ["bootstrap", "test:prep"] do
-    Gem.clear_paths
     require "logstash/environment"
     LogStash::Environment.set_gem_paths!
     require "rspec/core/runner"
@@ -10,10 +9,10 @@ namespace "test" do
   end
 
   task "fail-fast" => ["bootstrap", "test:prep"] do
-    Gem.clear_paths
     require "logstash/environment"
     LogStash::Environment.set_gem_paths!
-    require 'rspec/core'
+    require "rspec/core/runner"
+    require "rspec"
     RSpec::Core::Runner.run(["--fail-fast", *Rake::FileList["spec/**/*.rb"]])
   end
 
