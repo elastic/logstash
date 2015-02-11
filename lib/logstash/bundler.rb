@@ -18,6 +18,16 @@ module Bundler
         @definition = nil
       end
     end
+
+    def real_fuckin_reset
+      reset!
+      clear_gemspec_cache
+
+      remove_instance_variable(:@setup) if defined?(@setup)
+      remove_instance_variable(:@locked_gems) if defined?(@locked_gems)
+      remove_instance_variable(:@load) if defined?(@load)
+      remove_instance_variable(:@settings) if defined?(@settings)
+    end
   end
 end
 
