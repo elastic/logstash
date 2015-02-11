@@ -83,6 +83,8 @@ class LogStash::PluginManager::Install < Clamp::Command
       # end
     end
 
+
+    install_list = LogStash::PluginManager.merge_duplicates(install_list)
     install_list.each{|tuple| gemfile.update(*tuple)}
     gemfile.save
 

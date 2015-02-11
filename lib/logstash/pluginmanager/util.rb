@@ -77,6 +77,14 @@ module LogStash::PluginManager
     !!gemfile.find(plugin) && !find_plugins_gem_specs(plugin).empty?
   end
 
+  # @param plugin_list [Array] array of [plugin name, version] tuples
+  # @return [Array] array of [plugin name, version, ...] tuples when duplciate names have been merged and non duplicate version requirements added
+  def self.merge_duplicates(plugin_list)
+
+    # quick & dirty naive dedup for now
+    # TODO: properly merge versions requirements
+    plugin_list.uniq{|plugin| plugin.first}
+  end
 
 
   class Util
