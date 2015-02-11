@@ -1,6 +1,9 @@
-DOWNLOADS = {
+VERSIONS = {
   "jruby" => { "version" => "1.7.17", "sha1" => "e4621bbcc51242061eaa9b62caee69c2a2b433f0" },
   "kibana" => { "version" => "3.1.2", "sha1" => "a59ea4abb018a7ed22b3bc1c3bcc6944b7009dc4" },
+
+  # make sure this rake version is in sync with the logstash-devutils rake version in the gemspec runtime dependency
+  "rake" => { "version" => "10.4.2" },
 }
 
 def vendor(*args)
@@ -64,7 +67,7 @@ end # def untar
 namespace "vendor" do
   task "jruby" do |task, args|
     name = task.name.split(":")[1]
-    info = DOWNLOADS[name]
+    info = VERSIONS[name]
     version = info["version"]
 
     discard_patterns = Regexp.union([ /^samples/,
@@ -107,7 +110,7 @@ namespace "vendor" do
 
   task "kibana" do |task, args|
     name = task.name.split(":")[1]
-    info = DOWNLOADS[name]
+    info = VERSIONS[name]
     version = info["version"]
     url = "https://download.elasticsearch.org/kibana/kibana/kibana-#{version}.tar.gz"
     download = file_fetch(url, info["sha1"])
@@ -123,6 +126,22 @@ namespace "vendor" do
     end # untar
   end # task kibana
   task "all" => "kibana"
+
+  task "rake", :jruby_bin do |task, args|
+    jruby_bin = args[:jruby_bin]
+
+    # make sure this version is in sync with the logstash-devutils rake runtime dependency version in he gemspec.
+    version = VERSIONS["rake"]["version"]
+
+    IO.popen([jruby_bin, "-S", "gem", "list", "rake", "--version", version, "--installed"], "r") do |io|
+      io.readlines # ignore
+    end
+    unless $?.success?
+      puts("Installing rake #{version} because the build process needs it.")
+      system(jruby_bin, "-S", "gem", "install", "rake", "-v", version, "--no-ri", "--no-rdoc")
+      raise RuntimeError, $!.to_s unless $?.success?
+    end
+  end
 
   namespace "force" do
     task "gems" => ["vendor:gems"]

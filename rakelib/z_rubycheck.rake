@@ -6,7 +6,7 @@ if ENV['USE_RUBY'] != '1'
       # Use our own SSL certs when on Windows
       # There seems to be no other workaround other than monkeypatching.
       # If we're on windows, we have to provide a correct SSL CA cert for validating
-      # rubygems.org ssl certificate. 
+      # rubygems.org ssl certificate.
       # Lots of folks report this problem: https://gist.github.com/luislavena/f064211759ee0f806c88
       # https://github.com/elasticsearch/logstash/issues/2402
       class Gem::Request
@@ -26,9 +26,12 @@ if ENV['USE_RUBY'] != '1'
 
     # Make sure we have JRuby, then rerun ourselves under jruby.
     Rake::Task["vendor:jruby"].invoke
-
     jruby = File.join("vendor", "jruby", "bin", "jruby")
+
+    # force installation of specific version of Rake to avoid version mismatch with system Ruby
+    Rake::Task["vendor:rake"].invoke(jruby)
     rake = File.join("vendor", "jruby", "bin", "rake")
+
     exec(jruby, "-S", rake, *ARGV)
   end
 end
