@@ -54,12 +54,11 @@ module LogStash
     def set_gem_paths!
       require 'rubygems'
 
-      Gem.clear_paths
-      Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = logstash_gem_home
-
       begin
         require "bundler"
       rescue LoadError
+        Gem.clear_paths
+        Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = logstash_gem_home
         require "bundler"
       end
       require "logstash/bundler"
