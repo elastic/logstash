@@ -29,7 +29,7 @@ namespace "test" do
   end
 
   task "install-plugins" => ["bootstrap"] do
-    Rake::Task["plugin:plugin:install-all"].invoke
+    Rake::Task["plugin:install-all"].invoke
     Rake::Task["plugin:install-development-dependencies"].invoke
     # Rake::Task["test:plugins"].invoke
   end
