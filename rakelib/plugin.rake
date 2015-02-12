@@ -1,9 +1,8 @@
 require_relative "default_plugins"
 
 def install_plugins(*args)
-  cmd = ["bin/plugin", "install", *args]
-  system(*cmd)
-  raise RuntimeError, $!.to_s unless $?.success?
+  system("bin/plugin", "install", *args)
+  raise(RuntimeError, $!.to_s) unless $?.success?
 end
 
 namespace "plugin" do
@@ -15,7 +14,7 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end
 
-  task "install",  :name do |task, args|
+  task "install", :name do |task, args|
     name = args[:name]
     puts("[plugin:install] Installing plugin: #{name}")
     install_plugins("--force", name)
@@ -23,22 +22,22 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end # task "install"
 
-  task "install-defaults" do
-    puts("[plugin:install-defaults] Installing default plugins")
+  task "install-default" do
+    puts("[plugin:install-default] Installing default plugins")
     install_plugins("--force", *::DEFAULT_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
-  task "install-test" do
-    puts("[plugin:install-test] Installing test plugins")
-    install_plugins("--force", *::TEST_PLUGINS)
+  task "install-core" do
+    puts("[plugin:install-core] Installing core plugins")
+    install_plugins("--force", *::CORE_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
   task "install-all" => [ "dependency:octokit" ] do
-    puts("[plugin:install-all] Installing all plugins based on all repos in the logstash-plugins github organization")
+    puts("[plugin:install-all] Installing all plugins from https://github.com/logstash-plugins")
     install_plugins("--force", *all_plugins)
 
     task.reenable # Allow this task to be run again

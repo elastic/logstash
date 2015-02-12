@@ -1,6 +1,6 @@
 
 namespace "test" do
-  task "default" do
+  task "core" do
     require "logstash/environment"
     LogStash::Environment.set_gem_paths!
     require "rspec/core/runner"
@@ -8,7 +8,7 @@ namespace "test" do
     RSpec::Core::Runner.run(Rake::FileList["spec/**/*.rb"])
   end
 
-  task "fail-fast" do
+  task "core-fail-fast" do
     require "logstash/environment"
     LogStash::Environment.set_gem_paths!
     require "rspec/core/runner"
@@ -22,17 +22,11 @@ namespace "test" do
     sh "#{LogStash::Environment::LOGSTASH_HOME}/bin/logstash rspec --order rand #{gem_root} -P '#{pattern}'"
   end
 
-  task "install" => ["bootstrap"] do
-    # Rake::Task["vendor:gems"].invoke(false)
-    Rake::Task["plugin:install-test"].invoke
-    Rake::Task["plugin:install-development-dependencies"].invoke
-  end
+  task "install-core" => ["bootstrap", "plugin:install-core", "plugin:install-development-dependencies"]
 
-  task "install-plugins" => ["bootstrap"] do
-    Rake::Task["plugin:install-all"].invoke
-    Rake::Task["plugin:install-development-dependencies"].invoke
-    # Rake::Task["test:plugins"].invoke
-  end
+  task "install-default" => ["bootstrap", "plugin:install-default", "plugin:install-development-dependencies"]
+
+  task "install-all" => ["bootstrap", "plugin:install-all", "plugin:install-development-dependencies"]
 end
 
-task "test" => [ "test:default" ]
+task "test" => [ "test:core" ]
