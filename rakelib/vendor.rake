@@ -1,9 +1,6 @@
 VERSIONS = {
   "jruby" => { "version" => "1.7.17", "sha1" => "e4621bbcc51242061eaa9b62caee69c2a2b433f0" },
   "kibana" => { "version" => "3.1.2", "sha1" => "a59ea4abb018a7ed22b3bc1c3bcc6944b7009dc4" },
-
-  # make sure this rake version is in sync with the logstash-devutils rake version in the gemspec runtime dependency
-  "rake" => { "version" => "10.4.2" },
 }
 
 def vendor(*args)
@@ -127,20 +124,20 @@ namespace "vendor" do
   end # task kibana
   task "all" => "kibana"
 
-  task "rake", :jruby_bin do |task, args|
+  task "system_gem", :jruby_bin, :name, :version do |task, args|
     jruby_bin = args[:jruby_bin]
+    name = args[:name]
+    version = args[:version]
 
-    # make sure this version is in sync with the logstash-devutils rake runtime dependency version in he gemspec.
-    version = VERSIONS["rake"]["version"]
-
-    IO.popen([jruby_bin, "-S", "gem", "list", "rake", "--version", version, "--installed"], "r") do |io|
+    IO.popen([jruby_bin, "-S", "gem", "list", name, "--version", version, "--installed"], "r") do |io|
       io.readlines # ignore
     end
     unless $?.success?
-      puts("Installing rake #{version} because the build process needs it.")
-      system(jruby_bin, "-S", "gem", "install", "rake", "-v", version, "--no-ri", "--no-rdoc")
+      puts("Installing #{name} #{version} because the build process needs it.")
+      system(jruby_bin, "-S", "gem", "install", name, "-v", version, "--no-ri", "--no-rdoc")
       raise RuntimeError, $!.to_s unless $?.success?
     end
+    task.reenable # Allow this task to be run again
   end
 
   namespace "force" do

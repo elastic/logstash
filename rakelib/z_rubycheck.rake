@@ -28,8 +28,13 @@ if ENV['USE_RUBY'] != '1'
     Rake::Task["vendor:jruby"].invoke
     jruby = File.join("vendor", "jruby", "bin", "jruby")
 
-    # force installation of specific version of Rake to avoid version mismatch with system Ruby
-    Rake::Task["vendor:rake"].invoke(jruby)
+    # # force installation of specific version of ffi to avoid  mismatch between system Ruby version and bundled version
+    # # make sure this ffi version is in sync with the logstash.gemspec ffi version
+    # Rake::Task["vendor:system_gem"].invoke(jruby, "ffi", "1.9.6")
+
+    # # force installation of specific version of rake to avoid  mismatch between system Ruby version and bundled version
+    # # make sure this rake version is in sync with the logstash-devutils rake version in the gemspec runtime dependency
+    # Rake::Task["vendor:system_gem"].invoke(jruby, "rake", "10.4.2")
     rake = File.join("vendor", "jruby", "bin", "rake")
 
     exec(jruby, "-S", rake, *ARGV)
