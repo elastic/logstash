@@ -1,5 +1,5 @@
 PATH
-  remote: /Users/jls/projects/logstash
+  remote: /Users/ph/es/logstash
   specs:
     logstash (2.0.0.dev-java)
       cabin (>= 0.7.0)
@@ -13,13 +13,13 @@ PATH
       jrjackson
       jruby-httpclient
       logstash-devutils
-      maven-tools
+      maven-tools (= 1.0.7)
       mime-types
       minitar
       pry
       rack
       rspec (~> 2.14.0)
-      ruby-maven
+      ruby-maven (= 3.1.1.0.8)
       sinatra
       stud
       treetop (~> 1.4.0)
@@ -27,7 +27,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    addressable (2.3.6)
+    addressable (2.3.7)
     axiom-types (0.1.1)
       descendants_tracker (~> 0.0.4)
       ice_nine (~> 0.11.0)
@@ -102,7 +102,7 @@ GEM
     slop (3.6.0)
     spoon (0.0.4)
       ffi
-    stud (0.0.18)
+    stud (0.0.19)
     thread_safe (0.3.4-java)
     tilt (1.4.1)
     treetop (1.4.15)
