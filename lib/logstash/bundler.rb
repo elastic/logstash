@@ -59,6 +59,7 @@ module LogStash
     def self.invoke_bundler!(options = {})
       options = {:max_tries => 10, :clean => false, :install => false, :update => false, :without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
+      options[:update] = Array(options[:update])
 
       ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
       ENV["BUNDLE_PATH"] = LogStash::Environment.logstash_gem_home
@@ -112,7 +113,7 @@ module LogStash
 
       if options[:update]
         arguments << "update"
-        arguments << options[:update].join(" ")
+        arguments << options[:update]
       end
 
       arguments << "--clean" if options[:clean]
