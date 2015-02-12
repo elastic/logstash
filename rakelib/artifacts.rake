@@ -13,7 +13,8 @@ namespace "artifact" do
       "patterns/**/*",
       "vendor/??*/**/*",
       "Gemfile*",
-      ".bundle/*"
+      ".bundle/*",
+      "logstash.gemspec",
     ]
   end
 
