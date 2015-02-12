@@ -5,7 +5,7 @@ require 'rubygems/spec_fetcher'
 
 class LogStash::PluginManager::List < Clamp::Command
 
-  parameter "[PLUGIN]", "Plugin name to search for, leave empty for all plugins"
+  parameter "[PLUGIN]", "Part of plugin name to search for, leave empty for all plugins"
 
   option "--all", :flag, "Also list plugins installed as dependencies"
   option "--group", "NAME", "Filter plugins per group: input, output, filter or codec" do |arg|
@@ -27,13 +27,19 @@ class LogStash::PluginManager::List < Clamp::Command
       exit(1)
     end
 
-    puts("> Installed plugins:")
     if all?
       installed, dependencies = specs.partition{|spec| !!gemfile.find(spec.name)}
-      show_plugins(installed)
-      puts("> Plugins dependencies:")
-      show_plugins(dependencies)
+
+      unless installed.empty?
+        puts("> Installed plugins:")
+        show_plugins(installed)
+      end
+      unless dependencies.empty?
+        puts("> Plugins dependencies:")
+        show_plugins(dependencies)
+      end
     else
+      puts("> Installed plugins:")
       show_plugins(specs)
     end
   end
