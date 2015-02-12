@@ -1,3 +1,4 @@
+# plugins included by default in the logstash distribution
 ::DEFAULT_PLUGINS = %w(
   logstash-output-zeromq
   logstash-codec-collectd
@@ -101,7 +102,8 @@
   logstash-output-udp
 )
 
-TEST_PLUGINS = %w(
+# plugins required to run the logstash core specs
+::CORE_PLUGINS = %w(
   logstash-filter-clone
   logstash-filter-mutate
   logstash-input-generator
