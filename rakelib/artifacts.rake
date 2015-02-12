@@ -48,8 +48,10 @@ namespace "artifact" do
     end.flatten.uniq
   end
 
+  task "build-image" => ["bootstrap", "plugin:install-default"]
+
   desc "Build a tar.gz of logstash with all dependencies"
-  task "tar" => ["bootstrap"] do
+  task "tar" => ["build-image"] do
     require "zlib"
     require "archive/tar/minitar"
     require "logstash/version"
@@ -84,7 +86,7 @@ namespace "artifact" do
     puts "Complete: #{tarpath}"
   end
 
-  task "zip" => ["bootstrap"] do
+  task "zip" => ["build-image"] do
     Rake::Task["dependency:rubyzip"].invoke
     require 'zip'
     zippath = "build/logstash-#{LOGSTASH_VERSION}.zip"
@@ -215,12 +217,12 @@ namespace "artifact" do
   end # def package
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm" => ["bootstrap"] do
+  task "rpm" => ["build-image"] do
     package("centos", "5")
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "deb" => ["bootstrap"] do
+  task "deb" => ["build-image"] do
     package("ubuntu", "12.04")
   end
 end
