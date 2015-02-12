@@ -15,7 +15,7 @@ class LogStash::PluginManager::Uninstall < Clamp::Command
   def execute
     unless File.writable?(LogStash::Environment::GEMFILE_PATH)
       $stderr.puts("File #{LogStash::Environment::GEMFILE_PATH} does not exist or is not writable, aborting")
-      return 99
+      exit(1)
     end
 
     gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
@@ -26,7 +26,7 @@ class LogStash::PluginManager::Uninstall < Clamp::Command
     # it is not possible to uninstall a dependency not listed in the Gemfile, for example a dependent codec
     unless LogStash::PluginManager.is_installed_plugin?(plugin, gemfile)
       $stderr.puts("This plugin has not been previously installed, aborting")
-      return 99
+      exit(1)
     end
 
     # since we previously did a gemfile.find(plugin) there is no reason why
@@ -48,10 +48,8 @@ class LogStash::PluginManager::Uninstall < Clamp::Command
         # revert to original Gemfile content
         gemfile.gemset = original_gemset
         gemfile.save
-        return 99
+        exit(1)
       end
     end
-
-    0
   end
 end

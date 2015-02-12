@@ -25,23 +25,23 @@ class LogStash::PluginManager::Install < Clamp::Command
     if development?
       unless plugin_list.empty?
         $stderr.puts("Cannot specify plugin(s) with --development, it will add the development dependencies of the currently installed plugins")
-        return 99
+        exit(1)
       end
     else
       if plugin_list.empty? && !force?
         $stderr.puts("No plugin specified")
-        return 99
+        exit(1)
       end
       if version && plugin_list.size > 1
         # temporary until we fullfil TODO ^^
         $stderr.puts("Only 1 plugin name can be specified with --version")
-        return 99
+        exit(1)
       end
     end
 
     unless File.writable?(LogStash::Environment::GEMFILE_PATH)
       $stderr.puts("File #{LogStash::Environment::GEMFILE_PATH} does not exist or is not writable, aborting")
-      return 99
+      exit(1)
     end
 
     gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
@@ -68,14 +68,14 @@ class LogStash::PluginManager::Install < Clamp::Command
         puts("Validating #{tuple.compact.join("-")}")
         unless LogStash::PluginManager.is_logstash_plugin?(*tuple)
           $stderr.puts("Installation aborted")
-          return 99
+          exit(1)
         end
       end unless force?
 
       # at this point we know that we either have a valid gem name & version or a valid .gem file path
 
       # if LogStash::PluginManager.is_plugin_file?(plugin)
-      #   return 99 unless cache_gem_file(plugin)
+      #   exit(1) unless cache_gem_file(plugin)
       #   spec = LogStash::PluginManager.plugin_file_spec(plugin)
       #   gemfile.update(spec.name, spec.version.to_s)
       # else
@@ -106,11 +106,10 @@ class LogStash::PluginManager::Install < Clamp::Command
       gemfile.gemset = original_gemset
       gemfile.save
       $stderr.puts("Installation aborted")
-      return 99
+      exit(1)
     end
 
     puts("Installation successful")
-    return 0
   end
 
   # copy .gem file into bundler cache directory, log any error to $stderr

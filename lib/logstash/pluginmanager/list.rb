@@ -24,7 +24,7 @@ class LogStash::PluginManager::List < Clamp::Command
 
     if specs.empty?
       $stderr.puts("No plugins found")
-      return 99
+      exit(1)
     end
 
     puts("> Installed plugins:")

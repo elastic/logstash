@@ -20,7 +20,7 @@ class LogStash::PluginManager::Update < Clamp::Command
     plugins = unless plugin_list.empty?
       if not_installed = plugin_list.find{|plugin| !LogStash::PluginManager.is_installed_plugin?(plugin, gemfile)}
         $stderr.puts("Plugin #{not_installed} has not been previously installed, aborting")
-        return 99
+        exit(1)
       end
       plugin_list
     else
@@ -40,7 +40,7 @@ class LogStash::PluginManager::Update < Clamp::Command
       # revert to original Gemfile content
       gemfile.gemset = original_gemset
       gemfile.save
-      return 99
+      exit(1)
     end
 
     if ENV["DEBUG"]
@@ -48,6 +48,6 @@ class LogStash::PluginManager::Update < Clamp::Command
       $stderr.puts("Error: #{exception.class}, #{exception.message}") if exception
     end
 
-    return exception ? 99 : 0
+    exit(1) if exception
   end
 end
