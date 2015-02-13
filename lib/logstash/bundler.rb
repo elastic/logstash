@@ -55,11 +55,12 @@ module LogStash
     # execute bundle install and capture any $stdout output. any raised exception in the process will be trapped
     # and returned. logs errors to $stdout.
     # @param options [Hash] invoke options with default values, :max_tries => 10, :clean => false, :install => false, :update => false
+    # @param   options[:update] must be either false or a String or an Array of String
     # @return [String, Exception] the installation captured output and any raised exception or nil if none
     def self.invoke_bundler!(options = {})
       options = {:max_tries => 10, :clean => false, :install => false, :update => false, :without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
-      options[:update] = Array(options[:update])
+      options[:update] = Array(options[:update]) if options[:update]
 
       ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
       ENV["BUNDLE_PATH"] = LogStash::Environment.logstash_gem_home
