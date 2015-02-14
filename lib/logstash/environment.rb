@@ -52,8 +52,6 @@ module LogStash
     end
 
     def set_gem_paths!
-      require 'rubygems'
-
       begin
         require "bundler"
       rescue LoadError
