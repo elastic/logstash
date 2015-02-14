@@ -33,23 +33,22 @@ end
 
 module LogStash
   module Bundler
+
     # capture any $stdout from the passed block. also trap any exception in that block, in which case the trapped exception will be returned
     # @param [Proc] the code block to execute
     # @return [String, Exception] the captured $stdout string and any trapped exception or nil if none
-    def self.capture_stdout
+    def self.capture_stdout(&block)
+      old_stdout = $stdout
+      $stdout = StringIO.new("", "w")
       begin
-        old_stdout = $stdout
-        $stdout = StringIO.new('', 'w')
-        begin
-          yield
-        rescue => e
-          return [$stdout.string, e]
-        end
-
-        [$stdout.string, nil]
-      ensure
-        $stdout = old_stdout
+        block.call
+      rescue => e
+        return [$stdout.string, e]
       end
+
+      [$stdout.string, nil]
+    ensure
+      $stdout = old_stdout
     end
 
     # execute bundle install and capture any $stdout output. any raised exception in the process will be trapped
