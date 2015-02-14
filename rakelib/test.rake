@@ -1,6 +1,6 @@
 def run_rspec(*args)
   require "logstash/environment"
-  LogStash::Environment.set_gem_paths!
+  LogStash::Environment.bundler_setup!
   require "rspec/core/runner"
   require "rspec"
   RSpec::Core::Runner.run([*args])

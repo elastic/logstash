@@ -51,7 +51,7 @@ module LogStash
       env.downcase == "test"
     end
 
-    def set_gem_paths!
+    def bundler_setup!
       begin
         require "bundler"
       rescue LoadError
