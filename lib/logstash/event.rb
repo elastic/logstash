@@ -316,12 +316,18 @@ class LogStash::EventBundle
     @events.push(event)
   end
 
+  def bail()
+    # Unless it's an HA output, we've already acked
+    # so do nothing here :)
+  end
+
   class HA < LogStash::EventBundle
     def initialize
       super()
       @processed_count = 0
       @sent_count = 0
       @semaphore = Mutex.new
+      @bailing = false
     end
 
     def ready(ack_sequence)
@@ -329,41 +335,57 @@ class LogStash::EventBundle
 
       all_processed = @semaphore.synchronize do
         @ready = true
-        @processed_count == @events.size
+        not @bailing and @processed_count == @events.size
       end
 
       broadcast "output_send" if all_processed
     end
 
-    def add(event)
-      throw "Cannot add event to ready bundle" if @ready
+    def bail()
+      @semaphore.synchronize do
+        @events.each do |e| e.cancel end
+        @bailing = true
+      end
+    end
 
+    def setup_callbacks(event)
       event.on('filter_processed') do
         all_processed = @semaphore.synchronize do
           @processed_count += 1
-          @processed_count == @events.size and @ready
+          not @bailing and @ready and @processed_count == @events.size
         end
 
         broadcast "output_send" if all_processed
       end
 
       event.on("output_sent") do
-        unless @ready
-          throw "Should not be receiving 'output_sent' on an open bundle!
-          Did you queue it for processing before adding it to this bundle? That creates a race condition."
-        end
-        all_sent = @semaphore.synchronize do
-          @sent_count += 1
-          @sent_count == @events.size
+        if not @ready
+          # Would be triggered in race condition
+          #   Make sure you added the event object to the bundle _before_ allowing it to be processed
+          #   Default actions inside the event may have triggered output_send sooner than add()
+          throw "Triggered output_send on bundled event when bundle is not ready"
         end
 
-        if all_sent
-          @ack_sequence.call
-          broadcast "input_acknowledged"
+        ack_ready = @semaphore.synchronize do
+          @sent_count += 1
+          not @bailing and @sent_count == @events.size
+        end
+
+        if ack_ready
+          begin
+            # Try to ack sequence, but if this fails there's nothing we can do anyway
+            @ack_sequence.call
+            broadcast "input_acknowledged"
+          rescue
+            @logger.info "Failed to ack sequence, perhaps the connection is closing?"
+          end
         end
       end
+    end
 
-      super(event) # add event, et al
+    def add(event)
+      setup_callbacks(event)
+      super(event) # add event to @events, et al
     end
 
     private

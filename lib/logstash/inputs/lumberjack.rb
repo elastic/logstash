@@ -73,6 +73,12 @@ class LogStash::Inputs::Lumberjack < LogStash::Inputs::Base
             end
           end
         end
+
+        # run loop only exits when the connection closes, tidyup time
+        if @needs_ha
+          @logger.info("Dropped connection, tidying up messages to avoid dups on resend")
+          bundle.bail()
+        end
       end
     end
   end
