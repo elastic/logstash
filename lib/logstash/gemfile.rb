@@ -153,7 +153,7 @@ module LogStash
     end
 
     def gemspec(options = {})
-      raise(GemfileError, "multiple gemspec") unless @gemset.gemspec.empty?
+      raise(GemfileError, "cannot declare multiple gemspec directives") unless @gemset.gemspec.empty?
       @gemset.gemspec = options
     end
   end
