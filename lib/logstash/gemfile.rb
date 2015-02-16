@@ -16,7 +16,7 @@ module LogStash
     end
 
     def load
-      @gemset ||= Dsl.parse(@io.read)
+      @gemset ||= DSL.parse(@io.read)
       self
     end
 
@@ -125,8 +125,8 @@ module LogStash
     end
   end
 
-  # Dsl is a minimal, incomplete Gemfile DSL subset parser, only what is currently required is implemented.
-  class Dsl
+  # DSL is a minimal, incomplete Gemfile DSL subset parser, only what is currently required is implemented.
+  class DSL
     attr_reader :gemset
 
     def initialize
