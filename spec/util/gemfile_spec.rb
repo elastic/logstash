@@ -156,4 +156,19 @@ describe "logstash Gemfile Manager" do
       end
     end
   end
+
+  context LogStash::DSL do
+    context "parse" do
+      it "should parse Gemfile content string" do
+        gemfile = <<-END
+          source "https://rubygems.org"
+          gemspec
+          gem "foo"
+        END
+
+        gemset = LogStash::DSL.parse(gemfile)
+        expect(gemset).to be_an(LogStash::Gemset)
+      end
+    end
+  end
 end

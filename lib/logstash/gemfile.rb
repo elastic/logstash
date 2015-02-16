@@ -133,9 +133,11 @@ module LogStash
       @gemset = Gemset.new
     end
 
-    def self.parse(gemfile)
+    # @param gemfile_content [String] the Gemfile string content
+    # @return [Gemset] parsed Gemfile content as a Gemset
+    def self.parse(gemfile_content)
       dsl = self.new
-      dsl.instance_eval(gemfile)
+      dsl.instance_eval(gemfile_content)
       dsl.gemset
     end
 
