@@ -260,7 +260,7 @@ describe LogStash::Event do
       end
 
       bundle_closed = true
-      bundle.close(Proc.new do
+      bundle.ready(Proc.new do
         insist { bundle_closed } == true
       end)
     end
@@ -270,7 +270,7 @@ describe LogStash::Event do
 
       event = LogStash::Event.new
       bundle.add(event)
-      bundle.close(Proc.new do
+      bundle.ready(Proc.new do
         passed = true
       end)
       bundle = nil
@@ -284,7 +284,7 @@ describe LogStash::Event do
     it "should acknowledge when closed" do
       passed = false
       bundle = LogStash::EventBundle.new
-      bundle.close(Proc.new do
+      bundle.ready(Proc.new do
         passed = true
       end)
       insist { passed } == true
