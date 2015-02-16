@@ -22,10 +22,7 @@ class LogStash::PluginManager::List < Clamp::Command
     specs = specs.select{|spec| spec.name =~ /#{plugin}/i} if plugin
     specs = specs.select{|spec| spec.metadata['logstash_group'] == group} if group
 
-    if specs.empty?
-      $stderr.puts("No plugins found")
-      exit(1)
-    end
+    raise(LogStash::PluginManager::Error, "No plugins found") if specs.empty?
 
     if all?
       installed, dependencies = specs.partition{|spec| !!gemfile.find(spec.name)}

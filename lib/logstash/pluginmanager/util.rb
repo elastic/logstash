@@ -35,7 +35,7 @@ module LogStash::PluginManager
   # @param spec [Gem::Specification] plugin gem specification
   # @return [Boolean] true if this spec is for an installable logstash plugin
   def self.is_logstash_plugin_gem_spec?(spec)
-    spec.metadata["logstash_plugin"] == "true"
+    spec.metadata && spec.metadata["logstash_plugin"] == "true"
   end
 
   # @param path [String] path to .gem file

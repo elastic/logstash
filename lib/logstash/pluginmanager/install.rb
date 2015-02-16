@@ -23,26 +23,14 @@ class LogStash::PluginManager::Install < Clamp::Command
 
   def execute
     if development?
-      unless plugin_list.empty?
-        $stderr.puts("Cannot specify plugin(s) with --development, it will add the development dependencies of the currently installed plugins")
-        exit(1)
-      end
+      raise(LogStash::PluginManager::Error, "Cannot specify plugin(s) with --development, it will add the development dependencies of the currently installed plugins") if plugin_list.empty?
     else
-      if plugin_list.empty? && verify?
-        $stderr.puts("No plugin specified")
-        exit(1)
-      end
-      if version && plugin_list.size > 1
-        # temporary until we fullfil TODO ^^
-        $stderr.puts("Only 1 plugin name can be specified with --version")
-        exit(1)
-      end
-    end
+      raise(LogStash::PluginManager::Error, "No plugin specified") if plugin_list.empty? && verify?
 
-    unless File.writable?(LogStash::Environment::GEMFILE_PATH)
-      $stderr.puts("File #{LogStash::Environment::GEMFILE_PATH} does not exist or is not writable, aborting")
-      exit(1)
+      # temporary until we fullfil TODO ^^
+      raise(LogStash::PluginManager::Error, "Only 1 plugin name can be specified with --version") if version && plugin_list.size > 1
     end
+    raise(LogStash::PluginManager::Error, "File #{LogStash::Environment::GEMFILE_PATH} does not exist or is not writable, aborting") unless File.writable?(LogStash::Environment::GEMFILE_PATH)
 
     gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
     # keep a copy of the gemset to revert on error
@@ -66,16 +54,13 @@ class LogStash::PluginManager::Install < Clamp::Command
 
       install_list.each do |tuple|
         puts("Validating #{tuple.compact.join("-")}")
-        unless LogStash::PluginManager.is_logstash_plugin?(*tuple)
-          $stderr.puts("Installation aborted")
-          exit(1)
-        end
+        raise(LogStash::PluginManager::Error, "Installation aborted") unless LogStash::PluginManager.is_logstash_plugin?(*tuple)
       end if verify?
 
       # at this point we know that we either have a valid gem name & version or a valid .gem file path
 
       # if LogStash::PluginManager.is_plugin_file?(plugin)
-      #   exit(1) unless cache_gem_file(plugin)
+      #   raise(LogStash::PluginManager::Error) unless cache_gem_file(plugin)
       #   spec = LogStash::PluginManager.plugin_file_spec(plugin)
       #   gemfile.update(spec.name, spec.version.to_s)
       # else
@@ -105,8 +90,7 @@ class LogStash::PluginManager::Install < Clamp::Command
       # revert to original Gemfile content
       gemfile.gemset = original_gemset
       gemfile.save
-      $stderr.puts("Installation aborted")
-      exit(1)
+      raise(LogStash::PluginManager::Error, "Installation aborted")
     end
 
     puts("Installation successful")

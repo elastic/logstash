@@ -5,4 +5,11 @@ Gem.use_paths(LogStash::Environment.logstash_gem_home)
 
 require 'logstash/pluginmanager/main'
 
-LogStash::PluginManager::Main.run("bin/plugin", ARGV) if __FILE__ == $0
+if __FILE__ == $0
+  begin
+    LogStash::PluginManager::Main.run("bin/plugin", ARGV)
+  rescue LogStash::PluginManager::Error => e
+    $stderr.puts(e.message)
+    exit(1)
+  end
+end

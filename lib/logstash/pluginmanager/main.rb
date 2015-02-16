@@ -9,6 +9,8 @@ require "clamp"
 
 module LogStash
   module PluginManager
+    class Error < StandardError; end
+
     class Main < Clamp::Command
       subcommand "install", "Install a plugin", LogStash::PluginManager::Install
       subcommand "uninstall", "Uninstall a plugin", LogStash::PluginManager::Uninstall

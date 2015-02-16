@@ -18,10 +18,8 @@ class LogStash::PluginManager::Update < Clamp::Command
 
     # create list of plugins to update
     plugins = unless plugin_list.empty?
-      if not_installed = plugin_list.find{|plugin| !LogStash::PluginManager.is_installed_plugin?(plugin, gemfile)}
-        $stderr.puts("Plugin #{not_installed} has not been previously installed, aborting")
-        exit(1)
-      end
+      not_installed = plugin_list.find{|plugin| !LogStash::PluginManager.is_installed_plugin?(plugin, gemfile)}
+      raise(LogStash::PluginManager::Error, "Plugin #{not_installed} has not been previously installed, aborting") if not_installed
       plugin_list
     else
       LogStash::PluginManager.all_installed_plugins_gem_specs(gemfile).map{|spec| spec.name}
@@ -36,18 +34,17 @@ class LogStash::PluginManager::Update < Clamp::Command
 
     # any errors will be logged to $stderr by invoke_bundler!
     output, exception = LogStash::Bundler.invoke_bundler!(:update => plugins)
-    if exception
-      # revert to original Gemfile content
-      gemfile.gemset = original_gemset
-      gemfile.save
-      exit(1)
-    end
 
     if ENV["DEBUG"]
       $stderr.puts(output)
       $stderr.puts("Error: #{exception.class}, #{exception.message}") if exception
     end
 
-    exit(1) if exception
+    if exception
+      # revert to original Gemfile content
+      gemfile.gemset = original_gemset
+      gemfile.save
+      raise(LogStash::PluginManager::Error, "Update aborted")
+    end
   end
 end
