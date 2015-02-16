@@ -23,7 +23,7 @@ class LogStash::PluginManager::Install < Clamp::Command
 
   def execute
     if development?
-      raise(LogStash::PluginManager::Error, "Cannot specify plugin(s) with --development, it will add the development dependencies of the currently installed plugins") if plugin_list.empty?
+      raise(LogStash::PluginManager::Error, "Cannot specify plugin(s) with --development, it will add the development dependencies of the currently installed plugins") unless plugin_list.empty?
     else
       raise(LogStash::PluginManager::Error, "No plugin specified") if plugin_list.empty? && verify?
 
@@ -76,7 +76,7 @@ class LogStash::PluginManager::Install < Clamp::Command
     puts("Installing" + (install_list.empty? ? "..." : " " + install_list.map{|plugin, version| plugin}.join(", ")))
 
     bundler_options = {:install => true}
-    bundler_options = bundler_options.merge({:without => []}) if development?
+    bundler_options[:without] = [] if development?
 
     # any errors will be logged to $stderr by invoke_bundler!
     output, exception = LogStash::Bundler.invoke_bundler!(bundler_options)
