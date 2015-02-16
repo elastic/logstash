@@ -12,8 +12,8 @@ require "logstash/bundler"
 class LogStash::PluginManager::Install < Clamp::Command
   parameter "[PLUGIN] ...", "plugin name(s) or file"
   option "--version", "VERSION", "version of the plugin to install"
-  option "--force", :flag, "force install without verifying plugin validity"
-  option "--development", :flag, "install all development dependencies of currently installed plugins"
+  option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
+  option "--development", :flag, "install all development dependencies of currently installed plugins", :default => false
 
   # the install logic below support installing multiple plugins with each a version specification
   # but the argument parsing does not support it for now so currently if specifying --version only
@@ -28,7 +28,7 @@ class LogStash::PluginManager::Install < Clamp::Command
         exit(1)
       end
     else
-      if plugin_list.empty? && !force?
+      if plugin_list.empty? && verify?
         $stderr.puts("No plugin specified")
         exit(1)
       end
@@ -70,7 +70,7 @@ class LogStash::PluginManager::Install < Clamp::Command
           $stderr.puts("Installation aborted")
           exit(1)
         end
-      end unless force?
+      end if verify?
 
       # at this point we know that we either have a valid gem name & version or a valid .gem file path
 
