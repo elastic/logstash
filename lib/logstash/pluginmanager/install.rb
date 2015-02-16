@@ -52,9 +52,9 @@ class LogStash::PluginManager::Install < Clamp::Command
 
       install_list = version ? [plugin_list << version] : plugin_list.map{|plugin| [plugin, nil]}
 
-      install_list.each do |tuple|
-        puts("Validating #{tuple.compact.join("-")}")
-        raise(LogStash::PluginManager::Error, "Installation aborted") unless LogStash::PluginManager.is_logstash_plugin?(*tuple)
+      install_list.each do |plugin, version|
+        puts("Validating #{[plugin, version].compact.join("-")}")
+        raise(LogStash::PluginManager::Error, "Installation aborted") unless LogStash::PluginManager.is_logstash_plugin?(plugin, version)
       end if verify?
 
       # at this point we know that we either have a valid gem name & version or a valid .gem file path
@@ -70,10 +70,10 @@ class LogStash::PluginManager::Install < Clamp::Command
 
 
     install_list = LogStash::PluginManager.merge_duplicates(install_list)
-    install_list.each{|tuple| gemfile.update(*tuple)}
+    install_list.each{|plugin, version| gemfile.update(plugin, version)}
     gemfile.save
 
-    puts("Installing" + (install_list.empty? ? "..." : " " + install_list.map{|tuple| tuple.first}.join(", ")))
+    puts("Installing" + (install_list.empty? ? "..." : " " + install_list.map{|plugin, version| plugin}.join(", ")))
 
     bundler_options = {:install => true}
     bundler_options = bundler_options.merge({:without => []}) if development?
