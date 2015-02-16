@@ -64,7 +64,7 @@ module LogStash
     end
 
     def to_s
-      [sources_to_s, gemspec_to_s, gems_to_s].compact.join("\n") + "\n"
+      [sources_to_s, gemspec_to_s, gems_to_s].select{|s| !s.empty?}.join("\n") + "\n"
     end
 
     # @return [Gem] found gem or nil if not found
@@ -105,12 +105,12 @@ module LogStash
     private
 
     def sources_to_s
-      return nil if @sources.empty?
+      return "" if @sources.empty?
       @sources.map{|source| "source #{source.inspect}"}.join("\n")
     end
 
     def gems_to_s
-      return nil if @gems.empty?
+      return "" if @gems.empty?
       @gems.map do |gem|
         requirements = gem.requirements.empty? ? nil : gem.requirements.map{|r| r.inspect}.join(", ")
         options = gem.options.empty? ? nil : gem.options.map{|k, v| "#{k.inspect} => #{v.inspect}"}.join(", ")
@@ -119,7 +119,7 @@ module LogStash
     end
 
     def gemspec_to_s
-      return nil if @gemspec.empty?
+      return "" if @gemspec.empty?
       options = @gemspec.map{|k, v| "#{k.inspect} => #{v.inspect}"}.join(", ")
       "gemspec #{options}"
     end
