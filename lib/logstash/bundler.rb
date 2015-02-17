@@ -64,7 +64,7 @@ module LogStash
       ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
       ENV["BUNDLE_PATH"] = LogStash::Environment.logstash_gem_home
       ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
-      ENV["BUNDLE_WITHOUT"] = options[:without].empty? ? "" : options[:without].join(":")
+      ENV["BUNDLE_WITHOUT"] = options[:without].join(":")
 
       try = 0
 
