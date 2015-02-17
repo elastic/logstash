@@ -1,0 +1,7 @@
+require 'rakelib/default_plugins'
+
+source 'https://rubygems.org'
+
+gemspec :name => "logstash-core", :path => File.expand_path(File.join(File.dirname(__FILE__), ".."))
+
+DEFAULT_PLUGINS.each {|p| gem p}
