@@ -5,6 +5,7 @@ require "logstash/pluginmanager/uninstall"
 require "logstash/pluginmanager/list"
 require "logstash/pluginmanager/update"
 require "logstash/pluginmanager/util"
+require "logstash/pluginmanager/maven_tools_patch"
 require "clamp"
 
 module LogStash
