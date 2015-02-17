@@ -8,11 +8,11 @@ namespace "test" do
   end
 
   task "core" do
-    run_rspec(Rake::FileList["spec/**/*.rb"])
+    run_rspec(Rake::FileList["spec/**/*_spec.rb"])
   end
 
   task "core-fail-fast" do
-    run_rspec("--fail-fast", Rake::FileList["spec/**/*.rb"])
+    run_rspec("--fail-fast", Rake::FileList["spec/**/*_spec.rb"])
   end
 
   task "plugins" do
