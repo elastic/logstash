@@ -1,9 +1,5 @@
-def staging
-  "build/staging"
-end
-
 namespace "artifact" do
-  require "logstash/environment"
+
   def package_files
     [
       "LICENSE",

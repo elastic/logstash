@@ -1,12 +1,12 @@
-def run_rspec(*args)
-  require "logstash/environment"
-  LogStash::Environment.bundler_setup!
-  require "rspec/core/runner"
-  require "rspec"
-  RSpec::Core::Runner.run([*args])
-end
-
 namespace "test" do
+  def run_rspec(*args)
+    require "logstash/environment"
+    LogStash::Environment.bundler_setup!
+    require "rspec/core/runner"
+    require "rspec"
+    RSpec::Core::Runner.run([*args])
+  end
+
   task "core" do
     run_rspec(Rake::FileList["spec/**/*.rb"])
   end
