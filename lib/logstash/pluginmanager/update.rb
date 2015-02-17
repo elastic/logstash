@@ -18,7 +18,7 @@ class LogStash::PluginManager::Update < Clamp::Command
 
     # create list of plugins to update
     plugins = unless plugin_list.empty?
-      not_installed = plugin_list.find{|plugin| !LogStash::PluginManager.is_installed_plugin?(plugin, gemfile)}
+      not_installed = plugin_list.find{|plugin| !LogStash::PluginManager.installed_plugin?(plugin, gemfile)}
       raise(LogStash::PluginManager::Error, "Plugin #{not_installed} has not been previously installed, aborting") if not_installed
       plugin_list
     else

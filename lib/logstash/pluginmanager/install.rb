@@ -54,12 +54,12 @@ class LogStash::PluginManager::Install < Clamp::Command
 
       install_list.each do |plugin, version|
         puts("Validating #{[plugin, version].compact.join("-")}")
-        raise(LogStash::PluginManager::Error, "Installation aborted") unless LogStash::PluginManager.is_logstash_plugin?(plugin, version)
+        raise(LogStash::PluginManager::Error, "Installation aborted") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
       end if verify?
 
       # at this point we know that we either have a valid gem name & version or a valid .gem file path
 
-      # if LogStash::PluginManager.is_plugin_file?(plugin)
+      # if LogStash::PluginManager.plugin_file?(plugin)
       #   raise(LogStash::PluginManager::Error) unless cache_gem_file(plugin)
       #   spec = LogStash::PluginManager.plugin_file_spec(plugin)
       #   gemfile.update(spec.name, spec.version.to_s)
