@@ -17,28 +17,28 @@ namespace "plugin" do
   task "install", :name do |task, args|
     name = args[:name]
     puts("[plugin:install] Installing plugin: #{name}")
-    install_plugins("--force", name)
+    install_plugins("--no-verify", name)
 
     task.reenable # Allow this task to be run again
   end # task "install"
 
   task "install-default" do
     puts("[plugin:install-default] Installing default plugins")
-    install_plugins("--force", *::DEFAULT_PLUGINS)
+    install_plugins("--no-verify", *::DEFAULT_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
   task "install-core" do
     puts("[plugin:install-core] Installing core plugins")
-    install_plugins("--force", *::CORE_PLUGINS)
+    install_plugins("--no-verify", *::CORE_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
   task "install-all" => [ "dependency:octokit" ] do
     puts("[plugin:install-all] Installing all plugins from https://github.com/logstash-plugins")
-    install_plugins("--force", *all_plugins)
+    install_plugins("--no-verify", *all_plugins)
 
     task.reenable # Allow this task to be run again
   end
