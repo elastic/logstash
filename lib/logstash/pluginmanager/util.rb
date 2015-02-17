@@ -26,7 +26,7 @@ module LogStash::PluginManager
         end
         return valid
       else
-        $stderr.puts("Plugin #{plugin}" + (version ? " version #{version}" : "") + " does not exists")
+        $stderr.puts("Plugin #{plugin}" + (version ? " version #{version}" : "") + " does not exist")
         return false
       end
     end
@@ -74,7 +74,7 @@ module LogStash::PluginManager
   # @param gemfile [LogStash::Gemfile] the gemfile to validate against
   # @return [Boolean] true if the plugin is an installed logstash plugin and spefificed in the Gemfile
   def self.installed_plugin?(plugin, gemfile)
-    !!gemfile.find(plugin) && !find_plugins_gem_specs(plugin).empty?
+    !!gemfile.find(plugin) && find_plugins_gem_specs(plugin).any?
   end
 
   # @param plugin_list [Array] array of [plugin name, version] tuples
