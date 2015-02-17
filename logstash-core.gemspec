@@ -81,5 +81,4 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "ci_reporter", "1.9.3"
   gem.add_development_dependency "simplecov"
   gem.add_development_dependency "coveralls"
-
 end
