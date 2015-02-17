@@ -49,7 +49,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "maven-tools", '1.0.7'
 
   gem.add_runtime_dependency "minitar"
-  gem.add_runtime_dependency "file-dependencies"
+  gem.add_runtime_dependency "file-dependencies", '0.1.5'
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
