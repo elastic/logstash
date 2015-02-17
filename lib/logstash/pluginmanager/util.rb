@@ -20,7 +20,7 @@ module LogStash::PluginManager
 
       # depending on version requirements, multiple specs can be returned in which case
       # we will grab the one with the highest version number
-      if latest = specs.map{|tuple| tuple.first}.max_by{|spec| spec.version}
+      if latest = specs.map(&:first).max_by(&:version)
         unless valid = logstash_plugin_gem_spec?(latest)
           $stderr.puts("#{plugin} is not a Logstash plugin")
         end
@@ -83,7 +83,7 @@ module LogStash::PluginManager
 
     # quick & dirty naive dedup for now
     # TODO: properly merge versions requirements
-    plugin_list.uniq{|plugin| plugin.first}
+    plugin_list.uniq(&:first)
   end
 
   # This adds the "repo" element to the jar-dependencies DSL
