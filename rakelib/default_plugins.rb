@@ -115,7 +115,7 @@ module LogStash
       logstash-output-stdout
     )
 
-    ALL_PLUGINS_SKIP_LIST = [
+    ALL_PLUGINS_SKIP_LIST = Regexp.union([
       /^logstash-codec-cef$/,
       /^logstash-input-gemfire$/,
       /^logstash-output-gemfire$/,
@@ -123,17 +123,15 @@ module LogStash
       /^logstash-filter-yaml$/,
       /jms$/,
       /example$/,
-    ]
+    ])
 
-    # @return [Array<String>] list of all plugin names as defined in the logstash-plugins github organization
+    # @return [Array<String>] list of all plugin names as defined in the logstash-plugins github organization, minus names that matches the ALL_PLUGINS_SKIP_LIST
     def self.fetch_all_plugins
       require 'octokit'
 
-      skiplist = Regexp.union(ALL_PLUGINS_SKIP_LIST)
-
       Octokit.auto_paginate = true
       repos = Octokit.organization_repositories("logstash-plugins")
-      repos.map{|repo| repo.name}.reject{|name| name =~ skiplist}
+      repos.map(&:name).reject{|name| name =~ ALL_PLUGINS_SKIP_LIST}
     end
   end
 end
