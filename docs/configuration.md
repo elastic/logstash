@@ -32,7 +32,8 @@ configuration file.
 
 ## Comments
 
-Comments are the same as in ruby, perl, and python. Starts with a '#' character. Example:
+Comments are the same as in ruby, perl, and python. Starts with a '#' character.
+Example:
 
     # this is a comment
 
@@ -75,7 +76,8 @@ etc.
 
 ### <a name="boolean"></a>Boolean
 
-A boolean must be either `true` or `false`. Note the lack of quotes around `true` and `false`.
+A boolean must be either `true` or `false`. Note the lack of quotes around
+`true` and `false`.
 
 Examples:
 
@@ -113,7 +115,7 @@ The above makes 'path' a 3-element array including all 3 strings.
 
 ### <a name="hash"></a>Hash
 
-A hash is basically the same syntax as Ruby hashes. 
+A hash is basically the same syntax as Ruby hashes.
 The key and value are simply pairs, such as:
 
     match => {
@@ -122,11 +124,24 @@ The key and value are simply pairs, such as:
       ...
     }
 
-## <a name="fieldreferences"></a>Field References
+## <a name="eventdependent"></a>Event Dependent Configuration
+
+The logstash agent is a processing pipeline with 3 stages: inputs -> filters ->
+outputs. Inputs generate events, filters modify them, outputs ship them
+elsewhere.
 
 All events have properties. For example, an apache access log would have things
-like status code (200, 404), request path ("/", "index.html"), HTTP verb (GET, POST),
-client IP address, etc. Logstash calls these properties "fields." 
+like status code (200, 404), request path ("/", "index.html"), HTTP verb
+(GET, POST), client IP address, etc. Logstash calls these properties "fields."
+
+Some of the configuration options in Logstash require the existence of fields in
+order to function.  Because inputs generate events, there are no fields to
+evaluate within the input block--they do not exist yet!  
+
+Because of their dependency on events and fields, the following configuration
+options will only work within filter and output blocks.
+
+### <a name="fieldreferences"></a>Field References
 
 In many cases, it is useful to be able to refer to a field by name. To do this,
 you can use the Logstash field reference syntax.
@@ -152,7 +167,7 @@ simply say `fieldname`.
 - in the case of **nested fields**, like the "os" field above, you need
 the full path to that field: `[ua][os]`.
 
-## <a name="sprintf"></a>sprintf format
+### <a name="sprintf"></a>sprintf format
 
 This syntax is also used in what Logstash calls 'sprintf format'. This format
 allows you to refer to field values from within other strings. For example, the
@@ -165,7 +180,9 @@ apache logs by status code:
       }
     }
 
-You can also do time formatting in this sprintf format. Instead of specifying a field name, use the `+FORMAT` syntax where `FORMAT` is a [time format](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html). 
+You can also do time formatting in this sprintf format. Instead of specifying a
+field name, use the `+FORMAT` syntax where `FORMAT` is a
+[time format](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html).
 
 For example, if you want to use the file output to write to logs based on the
 hour and the 'type' field:
@@ -176,7 +193,7 @@ hour and the 'type' field:
       }
     }
 
-## <a name="conditionals"></a>Conditionals
+### <a name="conditionals"></a>Conditionals
 
 Sometimes you only want a filter or output to process an event under
 certain conditions. For that, you'll want to use a conditional!
@@ -199,8 +216,8 @@ What's an expression? Comparison tests, boolean logic, etc!
 
 The following comparison operators  are supported:
 
-* equality, etc: ==,  !=,  <,  >,  <=,  >= 
-* regexp: =~, !~ 
+* equality, etc: ==,  !=,  <,  >,  <=,  >=
+* regexp: =~, !~
 * inclusion: in, not in
 
 The following boolean operators are supported:
