@@ -7,7 +7,8 @@ class LogStash::PluginManager::List < Clamp::Command
 
   parameter "[PLUGIN]", "Part of plugin name to search for, leave empty for all plugins"
 
-  option "--all", :flag, "Also list plugins installed as dependencies"
+  option "--installed", :flag, "List only explicitly installed plugins using bin/plugin install ...", :default => false
+  option "--verbose", :flag, "Also show plugin version number", :default => false
   option "--group", "NAME", "Filter plugins per group: input, output, filter or codec" do |arg|
     raise(ArgumentError, "should be one of: input, output, filter or codec") unless ['input', 'output', 'filter', 'codec'].include?(arg)
     arg
@@ -18,33 +19,20 @@ class LogStash::PluginManager::List < Clamp::Command
 
     gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
 
-    specs = all? ? LogStash::PluginManager.find_plugins_gem_specs : LogStash::PluginManager.all_installed_plugins_gem_specs(gemfile)
+    # start with all locally installed plugin gems regardless of the Gemfile content
+    specs = LogStash::PluginManager.find_plugins_gem_specs
+
+    # apply filters
+    specs = specs.select{|spec| gemfile.find(spec.name)} if installed?
     specs = specs.select{|spec| spec.name =~ /#{plugin}/i} if plugin
     specs = specs.select{|spec| spec.metadata['logstash_group'] == group} if group
 
     raise(LogStash::PluginManager::Error, "No plugins found") if specs.empty?
 
-    if all?
-      installed, dependencies = specs.partition{|spec| !!gemfile.find(spec.name)}
-
-      unless installed.empty?
-        puts("> Installed plugins:")
-        show_plugins(installed)
-      end
-      unless dependencies.empty?
-        puts("> Plugins dependencies:")
-        show_plugins(dependencies)
-      end
-    else
-      puts("> Installed plugins:")
-      show_plugins(specs)
+    specs.sort_by{|spec| spec.name}.each do |spec|
+      line = "#{spec.name}"
+      line += " (#{spec.version})" if verbose?
+      puts(line)
     end
   end
-
-  private
-
-  def show_plugins(specs)
-    specs.sort_by{|spec| spec.name}.each{|spec| puts("#{spec.name} (#{spec.version})")}
-  end
-
 end # class Logstash::PluginManager
