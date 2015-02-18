@@ -34,5 +34,7 @@ class LogStash::PluginManager::List < Clamp::Command
       line += " (#{spec.version})" if verbose?
       puts(line)
     end
+
+    return 0
   end
 end # class Logstash::PluginManager
