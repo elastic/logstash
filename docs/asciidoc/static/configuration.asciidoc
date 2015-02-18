@@ -48,7 +48,7 @@ output {
 }
 ----------------------------------
 
-Each section contains the configuration options for one or more plugins. If you specify 
+Each section contains the configuration options for one or more plugins. If you specify
 multiple filters, they are applied in the order of their appearance in the configuration file.
 
 
@@ -56,7 +56,7 @@ multiple filters, they are applied in the order of their appearance in the confi
 [[plugin_configuration]]
 === Plugins
 
-The configuration of a plugin consists of the plugin name followed 
+The configuration of a plugin consists of the plugin name followed
 by a block of settings for that plugin. For example, this input section configures two file inputs:
 
 [source,js]
@@ -74,7 +74,7 @@ input {
 }
 ----------------------------------
 
-In this example, two settings are configured for each of the file inputs: 'path' and 'type'. 
+In this example, two settings are configured for each of the file inputs: 'path' and 'type'.
 
 The settings you can configure vary according to the plugin type. For information about each plugin, see <<input-plugins,Input Plugins>>, <<output-plugins, Output Plugins>>, <<filter-plugins,Filter Plugins>>, and <<codec-plugins,Codec Plugins>>.
 
@@ -121,10 +121,10 @@ Example:
 [float]
 ==== Bytes
 
-A bytes field is a string field that represents a valid unit of bytes. It is a 
+A bytes field is a string field that represents a valid unit of bytes. It is a
 convenient way to declare specific sizes in your plugin options. Both SI (k M G T P E Z Y)
-and Binary (Ki Mi Gi Ti Pi Ei Zi Yi) units are supported. Binary units are in 
-base-1024 and SI units are in base-1000. This field is case-insensitive 
+and Binary (Ki Mi Gi Ti Pi Ei Zi Yi) units are supported. Binary units are in
+base-1024 and SI units are in base-1000. This field is case-insensitive
 and accepts space between the value and the unit. If no unit is specified, the integer string
 represents the number of bytes.
 
@@ -160,8 +160,8 @@ Example:
 [float]
 ==== Hash
 
-A hash is a collection of key value pairs specified in the format `"field1" => "value1"`. 
-Note that mutliple key value entries are separated by spaces rather than commas. 
+A hash is a collection of key value pairs specified in the format `"field1" => "value1"`.
+Note that mutliple key value entries are separated by spaces rather than commas.
 
 Example:
 
@@ -240,24 +240,39 @@ input { # comments can appear at the end of a line, too
 }
 ----------------------------------
 
-[[logstash-config-field-references]]
 [float]
-=== Field References
+[[event-dependent-configuration]]
+=== Event Dependent Configuration
 
-All events have properties. For example, an apache access log has things
-like status code (200, 404), request path ("/", "index.html"), HTTP verb (GET, POST),
-and client IP address. Logstash calls these properties fields.
+The logstash agent is a processing pipeline with 3 stages: inputs -> filters ->
+outputs. Inputs generate events, filters modify them, outputs ship them
+elsewhere.
+
+All events have properties. For example, an apache access log would have things
+like status code (200, 404), request path ("/", "index.html"), HTTP verb
+(GET, POST), client IP address, etc. Logstash calls these properties "fields."
+
+Some of the configuration options in Logstash require the existence of fields in
+order to function.  Because inputs generate events, there are no fields to
+evaluate within the input block--they do not exist yet!
+
+Because of their dependency on events and fields, the following configuration
+options will only work within filter and output blocks.
+
+[float]
+[[logstash-config-field-references]]
+==== Field References
 
 It is often useful to be able to refer to a field by name. To do this,
 you can use the Logstash field reference syntax.
 
-The syntax to access a field is `[fieldname]`. If you are referring to a 
+The syntax to access a field is `[fieldname]`. If you are referring to a
 **top-level field**, you can omit the `[]` and simply use `fieldname`.
 To refer to a **nested field**, you specify
 the full path to that field: `[top-level field][nested field]`.
 
-For example, the following event has five top-level fields (agent, ip, request, response, 
-ua) and three nested fields (status, bytes, os). 
+For example, the following event has five top-level fields (agent, ip, request, response,
+ua) and three nested fields (status, bytes, os).
 
 [source,js]
 ----------------------------------
@@ -280,6 +295,7 @@ To reference the `os` field, you specify `[ua][os]`. To reference a top-level
 field such as `request`, you can simply specify the field name.
 
 [float]
+[[sprintf]]
 ==== sprintf format
 
 The field reference format is also used in what Logstash calls 'sprintf format'. This format
@@ -312,7 +328,7 @@ output {
 
 [float]
 [[conditionals]]
-=== Conditionals
+==== Conditionals
 
 Sometimes you only want to filter or output an event under
 certain conditions. For that, you can use a conditional.
@@ -351,7 +367,7 @@ The supported unary operators are:
 * !
 
 Expressions can be long and complex. Expressions can contain other expressions,
-you can negate expressions with `!`, and you can group them with parentheses `(...)`. 
+you can negate expressions with `!`, and you can group them with parentheses `(...)`.
 
 For example, the following conditional uses the mutate filter to remove the field `secret` if the field
 `action` has a value of `login`:
@@ -599,9 +615,9 @@ Similarly, you can use conditionals to direct events to particular outputs. For 
 * record all status code hits via statsd
 
 To tell nagios about any http event that has a 5xx status code, you
-first need to check the value of the `type` field. If it's apache, then you can 
-check to see if the `status` field contains a 5xx error. If it is, send it to nagios. If it isn't 
-a 5xx error, check to see if the `status` field contains a 4xx error. If so, send it to Elasticsearch. 
+first need to check the value of the `type` field. If it's apache, then you can
+check to see if the `status` field contains a 5xx error. If it is, send it to nagios. If it isn't
+a 5xx error, check to see if the `status` field contains a 4xx error. If so, send it to Elasticsearch.
 Finally, send all apache status codes to statsd no matter what the `status` field contains:
 
 [source,js]
