@@ -3,3 +3,4 @@
 
 source "https://rubygems.org"
 gemspec :name => "logstash"
+gem 'file-dependencies', :github => 'ph/file-dependencies', :branch => 'fix/close-file-handlers'
