@@ -125,6 +125,14 @@ module LogStash
       /example$/,
     ])
 
+    TEST_JAR_DEPENDENCIES_PLUGINS = %w(
+      logstash-input-kafka
+    )
+
+    TEST_VENDOR_PLUGINS = %w(
+      logstash-codec-collectd
+    )
+
     # @return [Array<String>] list of all plugin names as defined in the logstash-plugins github organization, minus names that matches the ALL_PLUGINS_SKIP_LIST
     def self.fetch_all_plugins
       require 'octokit'

@@ -24,6 +24,10 @@ namespace "test" do
   task "install-default" => ["bootstrap", "plugin:install-default", "plugin:install-development-dependencies"]
 
   task "install-all" => ["bootstrap", "plugin:install-all", "plugin:install-development-dependencies"]
+
+  task "install-vendor-plugins" => ["bootstrap", "plugin:install-vendor", "plugin:install-development-dependencies"]
+
+  task "install-jar-dependencies-plugins" => ["bootstrap", "plugin:install-jar-dependencies", "plugin:install-development-dependencies"]
 end
 
 task "test" => [ "test:core" ]
