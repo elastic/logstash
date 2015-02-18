@@ -35,3 +35,7 @@ if ENV['USE_RUBY'] != '1'
     exec(jruby, "-S", rake, *ARGV)
   end
 end
+
+def discover_rake()
+  Dir.glob('vendor', 'bundle', 'rake')
+end
