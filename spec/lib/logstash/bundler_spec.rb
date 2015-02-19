@@ -7,11 +7,12 @@ describe LogStash::Bundler do
   context "capture_stdout" do
 
     it "should capture stdout from block" do
+      original_stdout = $stdout
       output, exception = LogStash::Bundler.capture_stdout do
-        expect($stdout).not_to eq(STDOUT)
+        expect($stdout).not_to eq(original_stdout)
         puts("foobar")
       end
-      expect($stdout).to eq(STDOUT)
+      expect($stdout).to eq(original_stdout)
       expect(output).to eq("foobar\n")
       expect(exception).to eq(nil)
     end
