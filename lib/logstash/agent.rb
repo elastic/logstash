@@ -294,17 +294,24 @@ class LogStash::Agent < Clamp::Command
   end # def configure_plugin_path
 
   def load_config(path)
+    begin
+      uri = URI.parse(path)
 
-    uri = URI.parse(path)
-    case uri.scheme
-    when nil then
+      case uri.scheme
+      when nil then
+        local_config(path)
+      when /http/ then
+        fetch_config(uri)
+      when "file" then
+        local_config(uri.path)
+      else
+        fail(I18n.t("logstash.agent.configuration.scheme-not-supported", :path => path))
+      end
+    rescue URI::InvalidURIError
+      # fallback for windows.
+      # if the parsing of the file failed we assume we can reach it locally.
+      # some relative path on windows arent parsed correctly (.\logstash.conf)
       local_config(path)
-    when /http/ then
-      fetch_config(uri)
-    when "file" then
-      local_config(uri.path)
-    else
-      fail(I18n.t("logstash.agent.configuration.scheme-not-supported", :path => path))
     end
   end
 
