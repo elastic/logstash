@@ -19,32 +19,19 @@ The Logstash agent has the following flags. (You can use the '--help' flag to di
 --watchdog-timeout TIMEOUT
  Set watchdog timeout value in seconds. Default is 10.
 
--l, --log FILE 
- Log to a given path. Default is to log to stdout 
+-l, --log FILE
+ Log to a given path. Default is to log to stdout
 
---verbose 
+--verbose
  Increase verbosity to the first level, less verbose.
 
---debug 
+--debug
  Increase verbosity to the last level, more verbose.
 
--v  
+-v
  *DEPRECATED: see --verbose/debug* Increase verbosity. There are multiple levels of verbosity available with
-'-vv' currently being the highest 
+'-vv' currently being the highest
 
---pluginpath PLUGIN_PATH 
- A colon-delimited path to find other Logstash plugins in 
+--pluginpath PLUGIN_PATH
+ A colon-delimited path to find other Logstash plugins in
 ----------------------------------
-
-[float]
-=== Web
-
-[source,js]
-----------------------------------
--a, --address ADDRESS 
- Address on which to start webserver. Default is 0.0.0.0.
-
--p, --port PORT
- Port on which to start webserver. Default is 9292.
-----------------------------------
-

@@ -97,12 +97,6 @@ class LogStash::Runner
         end
         return LogStash::Agent.run($0, agent_args)
       end,
-      "web" => lambda do
-        # Give them kibana.
-        require "logstash/kibana"
-        kibana = LogStash::Kibana::Runner.new
-        return kibana.run(args)
-      end,
       "rspec" => lambda do
         require "rspec/core/runner"
         require "rspec"
@@ -186,7 +180,6 @@ For example: logstash agent --help
 Available commands:
   agent - runs the logstash agent
   version - emits version info about this logstash
-  web - runs the logstash web ui (called Kibana)
   rspec - runs tests
       ]
       #$stderr.puts commands.keys.map { |s| "  #{s}" }.join("\n")

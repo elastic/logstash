@@ -1,7 +1,6 @@
 namespace "vendor" do
   VERSIONS = {
     "jruby" => { "version" => "1.7.17", "sha1" => "e4621bbcc51242061eaa9b62caee69c2a2b433f0" },
-    "kibana" => { "version" => "3.1.2", "sha1" => "a59ea4abb018a7ed22b3bc1c3bcc6944b7009dc4" },
   }
 
   def vendor(*args)
@@ -104,25 +103,6 @@ namespace "vendor" do
     FileUtils.cp(patched_jar_installer, patch_target)
   end
   task "all" => "jruby"
-
-  task "kibana" do |task, args|
-    name = task.name.split(":")[1]
-    info = VERSIONS[name]
-    version = info["version"]
-    url = "https://download.elasticsearch.org/kibana/kibana/kibana-#{version}.tar.gz"
-    download = file_fetch(url, info["sha1"])
-
-    parent = vendor(name).gsub(/\/$/, "")
-    directory parent => "vendor" do
-      FileUtils.mkdir(parent)
-    end.invoke unless Rake::Task.task_defined?(parent)
-
-    prefix_re = /^#{Regexp.quote("kibana-#{version}/")}/
-    untar(download) do |entry|
-      vendor(name, entry.full_name.gsub(prefix_re, ""))
-    end # untar
-  end # task kibana
-  task "all" => "kibana"
 
   task "system_gem", :jruby_bin, :name, :version do |task, args|
     jruby_bin = args[:jruby_bin]

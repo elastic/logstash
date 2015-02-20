@@ -1,9 +1,7 @@
 # Logstash [![Code Climate](https://codeclimate.com/github/elasticsearch/logstash/badges/gpa.svg)](https://codeclimate.com/github/elasticsearch/logstash) [![Coverage Status](https://coveralls.io/repos/elasticsearch/logstash/badge.svg?branch=origin%2Fmaster)](https://coveralls.io/r/elasticsearch/logstash?branch=origin%2Fmaster)
 
 Logstash is a tool for managing events and logs. You can use it to collect
-logs, parse them, and store them for later use (like, for searching). Speaking
-of searching, Logstash comes with a web interface for searching and drilling
-into all of your logs.
+logs, parse them, and store them for later use (like, for searching). 
 
 It is fully free and fully open source. The license is Apache 2.0, meaning you
 are pretty much free to use it however you want in whatever way.
@@ -16,7 +14,7 @@ For more info, see <http://logstash.net/>
 Since version **1.5.0 beta1 (and current master)** of Logstash, *all* plugins have been separated into their own
 repositories under the [logstash-plugins](https://github.com/logstash-plugins) github organization. Each plugin is now a self-contained Ruby gem which
 gets published to RubyGems.org. Logstash has added plugin infrastructure to easily maintain the lifecyle of the plugin.
-For more details and rationale behind these changes, see our [blogpost](http://www.elasticsearch.org/blog/plugin-ecosystem-changes/). 
+For more details and rationale behind these changes, see our [blogpost](http://www.elasticsearch.org/blog/plugin-ecosystem-changes/).
 
 [Elasticsearch logstash-contrib repo](https://github.com/elasticsearch/logstash-contrib) is deprecated. We
 have moved all of the plugins that existed there into their own repositories. We are migrating all of the pull requests
@@ -27,7 +25,7 @@ For more info on developing and testing these plugins, please see the [README](h
 ### Plugin Issues and Pull Requests
 
 We are migrating all of the existing pull requests to their respective repositories. Rest assured, we will maintain
-all of the git history for these requests. 
+all of the git history for these requests.
 
 **Please open new issues and pull requests for plugins under its own repository**
 
@@ -49,7 +47,7 @@ To get started, you'll need ruby version 1.9.x or above and it should come with 
 Here's how to get started with Logstash development:
 
     rake bootstrap
-    
+
 Other commands:
 
     # to use Logstash gems or libraries in irb, use the following
@@ -65,7 +63,7 @@ own ruby you must set `USE_RUBY=1` in your environment.
 
 ## Drip Launcher
 
-[Drip](https://github.com/ninjudd/drip) is a launcher for the Java Virtual Machine that provides much faster startup times than the `java` command. The drip script is intended to be a drop-in replacement for the java command, only faster. We recommend using drip during development. 
+[Drip](https://github.com/ninjudd/drip) is a launcher for the Java Virtual Machine that provides much faster startup times than the `java` command. The drip script is intended to be a drop-in replacement for the java command, only faster. We recommend using drip during development.
 
 To tell Logstash to use drip, either set the `USE_DRIP=1` environment variable or set `` JAVACMD=`which drip` ``.
 

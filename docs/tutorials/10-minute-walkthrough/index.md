@@ -56,31 +56,6 @@ a search for `*` (all):
 
     curl 'http://localhost:9200/_search?pretty=1&q=*'
 
-## Step 4 - Logstash web
-
-The previous step is good, but a better frontend on elasticsearch would help!
-
-The same config as step 3 is used.
-
-### Run it:
-
-    bin/logstash agent -f hello-search.conf web
-
-The above runs both the agent and the Logstash web interface in the same
-process. Useful for simple deploys.
-
-### Use it:
-
-Go to the Logstash web interface in browser: <http://localhost:9292/>
-
-Type stuff on `STDIN` on the agent, then search for it in the web interface.
-
-## Step 5 - real world example
-
-Let's backfill some old Apache logs.  First, let's use grok.
-
-Use the ['grok'](../../filters/grok) Logstash filter to parse logs. 
-
 ### Download
 
 * [apache-parse.conf](apache-parse.conf)
@@ -107,18 +82,13 @@ Same as the previous step, but we'll output to ElasticSearch now.
 
 ### Run it
 
-    bin/logstash agent -f apache-elasticsearch.conf web
+    bin/logstash agent -f apache-elasticsearch.conf
 
 Logstash should be all set for you now. Start feeding it logs:
 
     bzip2 -d apache_log.2.bz2
 
-    nc localhost 3333 < apache_log.2 
-
-Go to the Logstash web interface in browser: <http://localhost:9292/>
-
-Try some search queries. To see all the data, search for `*` (no quotes). Click
-on some results, drill around in some logs.
+    nc localhost 3333 < apache_log.2
 
 ## Want more?
 
@@ -126,6 +96,6 @@ For further learning, try these:
 
 * [Watch a presentation on logstash](http://www.youtube.com/embed/RuUFnog29M4)
 * [Getting started 'standalone' guide](http://logstash.net/docs/%VERSION%/tutorials/getting-started-simple)
-* [Getting started 'centralized' guide](http://logstash.net/docs/%VERSION%/tutorials/getting-started-centralized) - 
+* [Getting started 'centralized' guide](http://logstash.net/docs/%VERSION%/tutorials/getting-started-centralized) -
   learn how to build out your logstash infrastructure and centralize your logs.
 * [Dive into the docs](http://logstash.net/docs/%VERSION%/)
