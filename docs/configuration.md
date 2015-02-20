@@ -141,6 +141,9 @@ evaluate within the input block--they do not exist yet!
 Because of their dependency on events and fields, the following configuration
 options will only work within filter and output blocks.
 
+**IMPORTANT: Field references, sprintf format and conditionals will not work in
+an input block.
+
 ### <a name="fieldreferences"></a>Field References
 
 In many cases, it is useful to be able to refer to a field by name. To do this,
