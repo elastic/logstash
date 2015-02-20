@@ -1295,7 +1295,8 @@ coherence, quality, readability, stability and security.
 * **Tests** Your plugin must contain tests to be accepted.  These tests are also
 subject to code review for scope and completeness.  It's ok if you don't know
 how to write tests -- we will guide you. We are working on publishing a guide to
-creating tests for Logstash which will make it easier.
+creating tests for Logstash which will make it easier.  In the meantime, you can
+refer to http://betterspecs.org/ for examples.
 
 To begin migrating your plugin to logstash-plugins, simply create a new
 https://github.com/elasticsearch/logstash/issues[issue] in
