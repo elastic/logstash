@@ -35,7 +35,5 @@ describe LogStash::Runner do
       expect(subject.run(args).wait).to eq(1)
     end
 
-      expect(LogStash::Kibana::Runner).to_not receive(:new)
-    end
   end
 end
