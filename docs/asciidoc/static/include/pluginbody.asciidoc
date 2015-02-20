@@ -1272,8 +1272,31 @@ It is not required to contribute your source code to
 https://github.com/logstash-plugins[logstash-plugins] github organization, but
 we always welcome new plugins!
 
-To migrate your plugin to logstash-plugins,
+[float]
+==== Benefits
+
+Some of the many benefits of having your plugin in the logstash-plugins
+repository are:
+
+* **Discovery** Your plugin will appear in the http://www.elasticsearch.org/guide/en/logstash/current/index.html[Logstash Reference],
+where Logstash users look first for plugins and documentation.
+* **Documentation** Your plugin documentation will automatically be added to the
+ http://www.elasticsearch.org/guide/en/logstash/current/index.html[Logstash Reference].
+* **Testing** With our testing infrastructure, your plugin will be continuously
+tested against current and future releases of Logstash.  As a result, users will
+have the assurance that if incompatibilities arise, they will be quickly
+discovered and corrected.
+
+[float]
+==== Acceptance Guidelines
+
+* **Code Review** Your plugin must be reviewed by members of the community for
+coherence, quality, readability, stability and security.
+* **Tests** Your plugin must contain tests to be accepted.  These tests are also
+subject to code review for scope and completeness.
+
+To begin the acceptance process for migrating your plugin to logstash-plugins,
 simply create a new https://github.com/elasticsearch/logstash/issues[issue] in
-the Logstash repository. We will facilitate the move to the logstash-plugins
-organization using the recommended
+the Logstash repository. When complete, we will facilitate the move to the
+logstash-plugins organization using the recommended
 https://help.github.com/articles/transferring-a-repository/#transferring-from-a-user-to-an-organization[github process].
