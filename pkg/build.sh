@@ -13,7 +13,7 @@ DESCRIPTION="An extensible logging pipeline"
 
 if [ "$#" -ne 2 ] ; then
   echo "Usage: $0 <os> <release>"
-  echo 
+  echo
   echo "Example: $0 ubuntu 12.10"
   exit 1
 fi
@@ -55,8 +55,6 @@ case $os@$release in
     install -m644 logrotate.conf $destdir/etc/logrotate.d/logstash
     install -m644 logstash.default $destdir/etc/sysconfig/logstash
     install -m755 logstash.sysv $destdir/etc/init.d/logstash
-    install -m644 logstash-web.default $destdir/etc/sysconfig/logstash
-    install -m755 logstash-web.sysv $destdir/etc/init.d/logstash-web
     ;;
   ubuntu@*|debian@*)
     mkdir -p $destdir/etc/logstash/conf.d
@@ -71,11 +69,8 @@ case $os@$release in
     install -m644 logstash.default $destdir/etc/default/logstash
     install -m755 logstash.upstart.ubuntu $destdir/etc/init/logstash.conf
     install -m755 logstash.sysv $destdir/etc/init.d/logstash
-    install -m644 logstash-web.default $destdir/etc/default/logstash-web
-    install -m755 logstash-web.upstart.ubuntu $destdir/etc/init/logstash-web.conf
-    install -m755 logstash-web.sysv $destdir/etc/init.d/logstash-web
     ;;
-  *) 
+  *)
     echo "Unknown OS: $os $release"
     exit 1
     ;;
@@ -83,7 +78,7 @@ esac
 
 description="logstash is a system for managing and processing events and logs"
 case $os in
-  centos|fedora|redhat|sl) 
+  centos|fedora|redhat|sl)
     fpm -s dir -t rpm -n logstash -v "$RELEASE" \
       -a noarch --iteration "1_${RPM_REVISION}" \
       --url "$URL" \
@@ -120,7 +115,6 @@ case $os in
       --before-remove $os/before-remove.sh \
       --after-install $os/after-install.sh \
       --config-files /etc/default/logstash \
-      --config-files /etc/default/logstash-web \
       --config-files /etc/logrotate.d/logstash \
       -f -C $destdir .
     ;;
