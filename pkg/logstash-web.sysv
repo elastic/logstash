@@ -38,11 +38,12 @@ LS_NICE=19
 LS_OPTS=""
 LS_WEB_ADDRESS="0.0.0.0"
 LS_WEB_PORT=9292
+LS_PROG=/opt/logstash/bin/logstash
 
 [ -r /etc/default/$name ] && . /etc/default/$name
 [ -r /etc/sysconfig/$name ] && . /etc/sysconfig/$name
 
-program=/opt/logstash/bin/logstash
+program=$LS_PROG
 args="web -a ${LS_WEB_ADDRESS} -p ${LS_WEB_PORT}"
 
 start() {
