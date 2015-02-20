@@ -1293,10 +1293,12 @@ discovered and corrected.
 * **Code Review** Your plugin must be reviewed by members of the community for
 coherence, quality, readability, stability and security.
 * **Tests** Your plugin must contain tests to be accepted.  These tests are also
-subject to code review for scope and completeness.
+subject to code review for scope and completeness.  It's ok if you don't know
+how to write tests -- we will guide you. We are working on publishing a guide to
+creating tests for Logstash which will make it easier.
 
-To begin the acceptance process for migrating your plugin to logstash-plugins,
-simply create a new https://github.com/elasticsearch/logstash/issues[issue] in
-the Logstash repository. When complete, we will facilitate the move to the
-logstash-plugins organization using the recommended
+To begin migrating your plugin to logstash-plugins, simply create a new
+https://github.com/elasticsearch/logstash/issues[issue] in
+the Logstash repository. When the acceptance guidelines are completed, we will
+facilitate the move to the logstash-plugins organization using the recommended
 https://help.github.com/articles/transferring-a-repository/#transferring-from-a-user-to-an-organization[github process].
