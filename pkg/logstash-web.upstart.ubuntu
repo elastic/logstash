@@ -30,6 +30,7 @@ script
   LS_OPEN_FILES=2048
   LS_NICE=19
   LS_OPTS=""
+  LS_PROG=/opt/logstash/bin/logstash
 
   # Override our defaults with user defaults:
   [ -f /etc/default/logstash-web ] && . /etc/default/logstash-web
@@ -44,5 +45,5 @@ script
   export PATH HOME JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
   test -n "${JAVACMD}" && export JAVACMD
 
-  exec nice -n ${LS_NICE} /opt/logstash/bin/logstash web ${LS_OPTS}
+  exec nice -n ${LS_NICE} $LS_PROG web ${LS_OPTS}
 end script
