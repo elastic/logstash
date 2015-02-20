@@ -43,6 +43,7 @@ LS_OPEN_FILES=16384
 LS_NICE=19
 LS_OPTS=""
 LS_PIDFILE=/var/run/$NAME/$NAME.pid
+LS_DAEMON=/opt/logstash/bin/logstash
 
 # End of variables that can be overwritten in $DEFAULT
 
@@ -53,7 +54,7 @@ fi
 # Define other required variables
 PID_FILE=${LS_PIDFILE}
 
-DAEMON="/opt/logstash/bin/logstash"
+DAEMON=$LS_DAEMON
 DAEMON_OPTS="agent -f ${LS_CONF_DIR} -l ${LS_LOG_FILE} ${LS_OPTS}"
 
 #
