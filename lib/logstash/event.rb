@@ -41,6 +41,7 @@ end
 #       "@version": "1",
 #       message: "hello world"
 #     }
+
 class LogStash::Event
   class DeprecatedMethod < StandardError; end
 
@@ -51,6 +52,7 @@ class LogStash::Event
 
   public
   def initialize(data={})
+    @logger = Cabin::Channel.get(LogStash)
     @cancelled = false
 
     @data = data
@@ -65,6 +67,32 @@ class LogStash::Event
     else
       data[TIMESTAMP] = ::Time.now.utc
     end
+
+    # Used to store proc callbacks given to the event class
+    # event.on("some_event", &my_proc)
+    @change_listeners = {}
+
+    @default_change_listeners = {
+      # When an event has gone through all filters and are pretty much ready to be sent
+      "filter_processed" => [Proc.new {
+        trigger("output_send")
+      }],
+
+      # After an input has seen enough filter_processed events for a batch of messages to be 'ready'
+      "output_send" => [Proc.new {
+        trigger("output_sent")
+      }],
+
+      # After an output has confirmed the message has been sent to an HA store
+      "output_sent" => [Proc.new {
+        trigger("input_acknowledged")
+      }],
+
+      # After an input has acked back to a batch of messages
+      "input_acknowledged" => [Proc.new {
+        #@logger.debug "acked message"
+      }],
+    }
   end # def initialize
 
   public
@@ -251,4 +279,120 @@ class LogStash::Event
     self["tags"] ||= []
     self["tags"] << value unless self["tags"].include?(value)
   end
+
+  # State change notifications
+  def trigger(state_change)
+    callbacks = (
+      @change_listeners[state_change] or
+      @default_change_listeners[state_change]
+    )
+
+    callbacks.each do |callback|
+      callback.call(self)
+    end
+  end
+
+  def on(state_change, &callback)
+    # Initialize state_change if it's not set already
+    @change_listeners[state_change] ||= []
+    @change_listeners[state_change].push(callback)
+  end
 end # class LogStash::Event
+
+class LogStash::EventBundle
+  def initialize
+    @logger = Cabin::Channel.get(LogStash)
+    @events = []
+    @ready = false
+  end
+
+  def ready(ack_sequence)
+    ack_sequence.call
+    @ready = true
+  end
+
+  def add(event)
+    throw "Cannot add event to ready bundle" if @ready
+    @events.push(event)
+  end
+
+  def bail()
+    # Unless it's an HA output, we've already acked
+    # so do nothing here :)
+  end
+
+  class HA < LogStash::EventBundle
+    def initialize
+      super()
+      @processed_count = 0
+      @sent_count = 0
+      @semaphore = Mutex.new
+      @bailing = false
+    end
+
+    def ready(ack_sequence)
+      @ack_sequence = ack_sequence
+
+      all_processed = @semaphore.synchronize do
+        @ready = true
+        not @bailing and @processed_count == @events.size
+      end
+
+      broadcast "output_send" if all_processed
+    end
+
+    def bail()
+      @semaphore.synchronize do
+        @events.each do |e| e.cancel end
+        @bailing = true
+      end
+    end
+
+    def setup_callbacks(event)
+      event.on('filter_processed') do
+        all_processed = @semaphore.synchronize do
+          @processed_count += 1
+          not @bailing and @ready and @processed_count == @events.size
+        end
+
+        broadcast "output_send" if all_processed
+      end
+
+      event.on("output_sent") do
+        if not @ready
+          # Would be triggered in race condition
+          #   Make sure you added the event object to the bundle _before_ allowing it to be processed
+          #   Default actions inside the event may have triggered output_send sooner than add()
+          throw "Triggered output_send on bundled event when bundle is not ready"
+        end
+
+        ack_ready = @semaphore.synchronize do
+          @sent_count += 1
+          not @bailing and @sent_count == @events.size
+        end
+
+        if ack_ready
+          begin
+            # Try to ack sequence, but if this fails there's nothing we can do anyway
+            @ack_sequence.call
+            broadcast "input_acknowledged"
+          rescue
+            @logger.info "Failed to ack sequence, perhaps the connection is closing?"
+          end
+        end
+      end
+    end
+
+    def add(event)
+      setup_callbacks(event)
+      super(event) # add event to @events, et al
+    end
+
+    private
+    def broadcast(state)
+      @events.each do |e|
+        e.trigger state
+      end
+    end
+  end
+end

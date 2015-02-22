@@ -173,6 +173,11 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
   # For more details on actions, check out the [Elasticsearch bulk API documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-bulk.html)
   config :action, :validate => :string, :default => "index"
 
+  # A flag to signal that your Elasticsearch setup is Highly Available
+  #
+  # i.e. you have at least 3 nodes running
+  config :provides_ha, :validate => :boolean, :default => false
+
   public
   def register
     client_settings = {}
@@ -291,7 +296,12 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
 
   public
   def receive(event)
-    return unless output?(event)
+    unless output?(event)
+      # Drop, but first let listening inputs know it got this far
+      # Defaults will handle the rest
+      event.trigger "filter_processed" if @provides_ha
+      return
+    end
 
     # Set the 'type' value for the index.
     if @index_type
@@ -303,11 +313,46 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     index = event.sprintf(@index)
 
     document_id = @document_id ? event.sprintf(@document_id) : nil
-    buffer_receive([event.sprintf(@action), { :_id => document_id, :_index => index, :_type => type }, event.to_hash])
+
+    # Used to signal to the input that generated the message that
+    # it's been sent. Delay calling this till flush().
+    trigger_output_sent = Proc.new {
+      event.trigger "output_sent" if @provides_ha
+    }
+
+    # Used to delay putting this into the buffer till the input triggers
+    # output_send
+    save_to_elasticsearch = Proc.new {
+      buffer_receive({
+        :on_complete => trigger_output_sent,
+        :action => [
+          event.sprintf(@action),
+          { :_id => document_id, :_index => index, :_type => type },
+          event.to_hash,
+        ],
+      })
+    }
+
+    if @provides_ha
+      # Triggered by inputs or defaults
+      event.on("output_send", &save_to_elasticsearch)
+      event.trigger "filter_processed"
+    else
+      save_to_elasticsearch.call()
+    end
   end # def receive
 
-  def flush(actions, teardown=false)
-    @client.bulk(actions)
+  def flush(buff, teardown=false)
+    es_actions = buff.map { |b| b[:action] }
+    ack_callbacks = buff.map { |b| b[:on_complete] }
+
+    @client.bulk(es_actions)
+
+    # Ack all processed messages
+    ack_callbacks.each do |trigger_output_sent|
+       trigger_output_sent.call
+    end
+
     # TODO(sissel): Handle errors. Since bulk requests could mostly succeed
     # (aka partially fail), we need to figure out what documents need to be
     # retried.
