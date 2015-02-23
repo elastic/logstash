@@ -1,5 +1,5 @@
 # encoding: utf-8
-if $DEBUGLIST.include?("require")
+if ($DEBUGLIST || []).include?("require")
   ROOT = File.dirname(__FILE__)
   module Kernel
     alias_method :require_debug, :require
