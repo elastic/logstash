@@ -152,3 +152,5 @@ module LogStash
     end
   end
 end
+
+require "logstash/patches"
