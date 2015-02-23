@@ -62,7 +62,7 @@ module LogStash
       options[:update] = Array(options[:update]) if options[:update]
 
       ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
-      ENV["BUNDLE_PATH"] = LogStash::Environment.logstash_gem_home
+      ENV["BUNDLE_PATH"] = LogStash::Environment::BUNDLE_DIR
       ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
       ENV["BUNDLE_WITHOUT"] = options[:without].join(":")
 
