@@ -1,3 +1,5 @@
+$DEBUGLIST = (ENV["DEBUG"] || "").split(",")
+
 require "logstash/environment"
 
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
