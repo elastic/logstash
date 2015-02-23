@@ -44,6 +44,7 @@ module LogStash
     ELASTICSEARCH_DIR = ::File.join(LOGSTASH_HOME, "vendor", "elasticsearch")
     BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
     GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "Gemfile")
+    BUNDLE_CONFIG_PATH = ::File.join(LOGSTASH_HOME, ".bundle", "config")
     BOOTSTRAP_GEM_PATH = ::File.join(LOGSTASH_HOME, 'build', 'bootstrap')
 
     LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
@@ -86,6 +87,13 @@ module LogStash
     end
 
     def bundler_setup!
+      # if there's no .bundle/config setup the runtime environment.
+      unless File.exists?(BUNDLE_CONFIG_PATH)
+        ENV["BUNDLE_PATH"] = LogStash::Environment::BUNDLE_DIR
+        ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
+        ENV["BUNDLE_WITHOUT"] = "development"
+      end
+
       begin
         require "bundler"
       rescue LoadError
