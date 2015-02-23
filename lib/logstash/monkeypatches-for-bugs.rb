@@ -32,3 +32,19 @@ if LogStash::Environment.windows? && LogStash::Environment.jruby?
     include JRubyBug2558SocketPeerAddrBugFix
   end
 end
+
+if LogStash::Environment.windows?
+  # make sure all strings pulled out of ENV are UTF8
+  class <<ENV
+    alias_method :orig_getter, :[]
+    def [](key)
+      case value = orig_getter(key)
+      when String
+        # dup is necessary since force_encoding is destructive
+        value.dup.force_encoding(Encoding::UTF_8)
+      else
+        value
+      end
+    end
+  end
+end
