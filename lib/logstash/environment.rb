@@ -88,7 +88,7 @@ module LogStash
 
     def bundler_setup!
       # if there's no .bundle/config setup the runtime environment.
-      unless File.exists?(BUNDLE_CONFIG_PATH)
+      unless ::File.exists?(BUNDLE_CONFIG_PATH)
         ENV["BUNDLE_PATH"] = LogStash::Environment::BUNDLE_DIR
         ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
         ENV["BUNDLE_WITHOUT"] = "development"
