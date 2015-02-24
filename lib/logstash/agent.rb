@@ -316,6 +316,7 @@ class LogStash::Agent < Clamp::Command
   end
 
   def local_config(path)
+    path = File.expand_path(path)
     path = File.join(path, "*") if File.directory?(path)
 
     if Dir.glob(path).length == 0
