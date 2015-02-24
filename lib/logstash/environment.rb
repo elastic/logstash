@@ -94,13 +94,11 @@ module LogStash
         ENV["BUNDLE_WITHOUT"] = "development"
       end
 
-      begin
-        require "bundler"
-      rescue LoadError
-        Gem.clear_paths
-        Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = logstash_gem_home
-        require "bundler"
-      end
+      # make sure we use our own nicely installed bundler and not a rogue, bad, mean, ugly, stupid other bundler. bad bundler, bad bad bundler go away.
+      Gem.clear_paths
+      Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = logstash_gem_home
+      require "bundler"
+
       require "logstash/bundler"
 
       ::Bundler.reset_settings # our monkey patched method
