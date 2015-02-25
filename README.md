@@ -48,7 +48,7 @@ To get started, you'll need ruby version 1.9.x or above and it should come with 
 
 Here's how to get started with Logstash development:
 
-    rake bootstrap
+    rake test:install-core
 
 Other commands:
 
