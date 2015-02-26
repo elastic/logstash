@@ -91,23 +91,15 @@ module LogStash
     end
 
     def bundler_setup!
-      # if there's no .bundle/config setup the runtime environment.
-      unless ::File.exists?(BUNDLE_CONFIG_PATH)
-        ENV["BUNDLE_PATH"] = LogStash::Environment::BUNDLE_DIR
-        ENV["BUNDLE_WITHOUT"] = "development"
-      end
-      # force BUNDLE_GEMFILE since Bundler does not store it in its ./bundle/config. this is required otherwise Bundler will look for the Gemfile in the CWD
-      # and will crash when invoking logstash outside its home dir.
-      ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
-
       # make sure we use our own nicely installed bundler and not a rogue, bad, mean, ugly, stupid other bundler. bad bundler, bad bad bundler go away.
       Gem.clear_paths
       Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = logstash_gem_home
       require "bundler"
-
       require "logstash/bundler"
 
-      ::Bundler.reset_settings # our monkey patched method
+      ::Bundler.settings[:path] = LogStash::Environment::BUNDLE_DIR
+      ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
+      ::Bundler.settings[:without] = "development"
       ::Bundler.reset!
       ::Bundler.setup
     end
