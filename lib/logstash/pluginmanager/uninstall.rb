@@ -31,7 +31,7 @@ class LogStash::PluginManager::Uninstall < Clamp::Command
       puts("Uninstalling #{plugin}")
 
       # any errors will be logged to $stderr by invoke_bundler!
-      output, exception = LogStash::Bundler.invoke_bundler!(:clean => true)
+      output, exception = LogStash::Bundler.invoke_bundler!(:install => true, :clean => true)
 
       if ENV["DEBUG"]
         $stderr.puts(output)
