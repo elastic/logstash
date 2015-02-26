@@ -34,17 +34,23 @@ class LogStash::PluginManager::Update < Clamp::Command
 
     # any errors will be logged to $stderr by invoke_bundler!
     output, exception = LogStash::Bundler.invoke_bundler!(:update => plugins)
-
-    if ENV["DEBUG"]
-      $stderr.puts(output)
-      $stderr.puts("Error: #{exception.class}, #{exception.message}") if exception
-    end
+    output, exception = LogStash::Bundler.invoke_bundler!(:clean => true) unless exception
 
     if exception
       # revert to original Gemfile content
       gemfile.gemset = original_gemset
       gemfile.save
-      raise(LogStash::PluginManager::Error, "Update aborted")
+
+      report_exception(output, exception)
     end
+  end
+
+  def report_exception(output, exception)
+    if ENV["DEBUG"]
+      $stderr.puts(output)
+      $stderr.puts("Error: #{exception.class}, #{exception.message}") if exception
+    end
+
+    raise(LogStash::PluginManager::Error, "Update aborted")
   end
 end
