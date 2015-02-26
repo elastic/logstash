@@ -1,4 +1,6 @@
 # encoding: utf-8
+require "logstash/codecs/ha"
+
 class LogStash::Outputs::RabbitMQ
   module MarchHareImpl
 
@@ -19,6 +21,9 @@ class LogStash::Outputs::RabbitMQ
       declare_exchange
 
       @connected.set(true)
+
+      # Decorate the codec to add HA support.
+      @codec = LogStash::Codecs::HA.new(@codec) if @provides_ha
 
       @codec.on_event(&method(:publish_serialized))
     end
@@ -41,6 +46,13 @@ class LogStash::Outputs::RabbitMQ
           @x.publish(message, :routing_key => @key, :properties => {
             :persistent => @persistent
           })
+
+          if @provides_ha
+            success = @ch.wait_for_confirms
+
+            # The server may reply with a 'nack', which we report to Codecs::HA
+            return success
+          end
         else
           @logger.warn("Tried to send a message, but not connected to RabbitMQ.")
         end
@@ -133,6 +145,17 @@ class LogStash::Outputs::RabbitMQ
                     :durable => @durable)
       @x = @ch.exchange(@exchange, :type => @exchange_type.to_sym, :durable => @durable)
 
+      if @provides_ha
+        @ch.confirm_select
+
+        # todo(alcinnz): would be nice to verify we succeeded in enabling server acknowledgements
+        # as not all queue servers may support it,
+        # but this method apparently doesn't exist although it is documented in:
+        #     http://rubymarchhare.info/articles/extensions.html#how-to-use-it-with-march-hare
+##        if !@ch.using_publisher_confirmations?
+##          @logger.error("Failed to enable HA on RabbitMQ server #{@connection_url}")
+##        end
+      end
       # sets @connected to true during recovery. MK.
       @connected.set(true)
 

@@ -69,6 +69,8 @@ class LogStash::Outputs::RabbitMQ < LogStash::Outputs::Base
   # Should RabbitMQ persist messages to disk?
   config :persistent, :validate => :boolean, :default => true
 
+  # A flag to signal that your RabbitMQ setup is Highly Available
+  config :provides_ha, :validate => :boolean, :default => false
 
 
   def initialize(params)
