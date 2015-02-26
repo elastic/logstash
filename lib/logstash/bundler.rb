@@ -18,16 +18,6 @@ module Bundler
         @definition = nil
       end
     end
-
-    def reset_settings
-      # reset!
-      # clear_gemspec_cache
-
-      # remove_instance_variable(:@setup) if defined?(@setup)
-      # remove_instance_variable(:@locked_gems) if defined?(@locked_gems)
-      # remove_instance_variable(:@load) if defined?(@load)
-      remove_instance_variable(:@settings) if defined?(@settings)
-    end
   end
 end
 
@@ -62,9 +52,10 @@ module LogStash
       options[:update] = Array(options[:update]) if options[:update]
 
       ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
-      ENV["BUNDLE_PATH"] = LogStash::Environment::BUNDLE_DIR
-      ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
-      ENV["BUNDLE_WITHOUT"] = options[:without].join(":")
+
+      ::Bundler.settings[:path] = LogStash::Environment::BUNDLE_DIR
+      ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
+      ::Bundler.settings[:without] = options[:without].join(":")
 
       try = 0
 
@@ -105,13 +96,7 @@ module LogStash
 
       if options[:install]
         arguments << "install"
-        arguments << "--gemfile=#{LogStash::Environment::GEMFILE_PATH}"
-        arguments << ["--path", LogStash::Environment::BUNDLE_DIR]
-        # note that generating "--without=" when options[:without] is empty is intended
-        arguments << "--without=#{options[:without].join(' ')}"
-      end
-
-      if options[:update]
+      elsif options[:update]
         arguments << "update"
         arguments << options[:update]
       end
