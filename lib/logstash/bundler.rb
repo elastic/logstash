@@ -1,5 +1,7 @@
 require "bundler"
 require "bundler/cli"
+require 'fileutils'
+require 'yaml'
 
 module Bundler
   # Patch bundler to write a .lock file specific to the version of ruby.
@@ -66,6 +68,10 @@ module LogStash
       ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
       ENV["BUNDLE_WITHOUT"] = options[:without].join(":")
 
+      # Update the `.bundler/config` to contains at least the BUNDLE_PATH
+      # This is necessary because `bundle clean` doesnt obey to ENV['BUNDLE_PATH']
+      update_bundler_config({ "BUNDLE_PATH" => LogStash::Environment::BUNDLE_DIR })
+
       try = 0
 
       # capture_stdout also traps any raised exception and pass them back as the function return [output, exception]
@@ -95,6 +101,21 @@ module LogStash
           end
         end
       end
+    end
+
+    def self.update_bundler_config(options)
+      bundle_config_path = ::File.join(LogStash::Environment::LOGSTASH_HOME, '.bundle')
+      config_file = ::File.join(bundle_config_path, 'config')
+
+      if ::File.exist?(config_file)
+        content = YAML.load_file(config_file)
+      else
+        FileUtils.mkdir_p(bundle_config_path)
+        content = {}
+      end
+
+      content.merge!(options)
+      ::File.open(config_file, 'w') { |f| f.write(content.to_yaml) }
     end
 
     # build Bundler::CLI.start arguments array from the given options hash
