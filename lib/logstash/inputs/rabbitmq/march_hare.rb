@@ -6,6 +6,9 @@ class LogStash::Inputs::RabbitMQ
       require "hot_bunnies"
       require "java"
 
+      # @needs_ha implies @ack
+      @ack = true if @needs_ha
+
       @vhost       ||= "127.0.0.1"
       # 5672. Will be switched to 5671 by Bunny if TLS is enabled.
       @port        ||= 5672
@@ -108,14 +111,21 @@ class LogStash::Inputs::RabbitMQ
     def consume
       return if terminating?
 
+      bundle_class = if @needs_ha then LogStash::EventBundle::HA else LogStash::EventBundle end
+
       # we manually build a consumer here to be able to keep a reference to it
       # in an @ivar even though we use a blocking version of HB::Queue#subscribe
       @consumer = @q.build_consumer(:block => true) do |metadata, data|
+        bundle = bundle_class.new
         @codec.decode(data) do |event|
           decorate(event)
+          bundle.add(event)
           @output_queue << event if event
         end
-        @ch.ack(metadata.delivery_tag) if @ack
+        acknowledge_message = Proc.new do
+          @ch.ack(metadata.delivery_tag) if @ack
+        end
+        bundle.ready(acknowledge_message)
       end
       @q.subscribe_with(@consumer, :manual_ack => @ack, :block => true)
     end

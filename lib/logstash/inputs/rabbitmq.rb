@@ -82,6 +82,10 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # Passive queue creation? Useful for checking queue existance without modifying server state
   config :passive, :validate => :boolean, :default => false
 
+  # Indicates that acknowledgements should be deferred until after the output has sent it.
+  # Implies the ack flag when set.
+  config :needs_ha, :validate => :boolean, :default => false
+
 
 
   #
