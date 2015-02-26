@@ -96,12 +96,13 @@ module LogStash
 
       if options[:install]
         arguments << "install"
+        arguments << "--clean" if options[:clean]
       elsif options[:update]
         arguments << "update"
         arguments << options[:update]
+      elsif options[:clean]
+        arguments << "clean"
       end
-
-      arguments << "--clean" if options[:clean]
 
       arguments.flatten
     end
