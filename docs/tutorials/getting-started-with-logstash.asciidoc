@@ -67,7 +67,7 @@ goodnight moon
 So, by re-configuring the "stdout" output (adding a "codec"), we can change the output of Logstash. By adding inputs, outputs and filters to your configuration, it's possible to massage the log data in many ways, in order to maximize flexibility of the stored data when you are querying it.
 
 == Storing logs with Elasticsearch
-Now, you're probably saying, "that's all fine and dandy, but typing all my logs into Logstash isn't really an option, and merely seeing them spit to STDOUT isn't very useful." Good point. First, let's set up Elasticsearch to store the messages we send into Logstash. If you don't have Elasticearch already installed, you can http://www.elasticsearch.org/download/[download the RPM or DEB package], or install manually by downloading the current release tarball, by issuing the following four commands:
+Now, you're probably saying, "that's all fine and dandy, but typing all my logs into Logstash isn't really an option, and merely seeing them spit to STDOUT isn't very useful." Good point. First, let's set up Elasticsearch to store the messages we send into Logstash. If you don't have Elasticsearch already installed, you can http://www.elasticsearch.org/download/[download the RPM or DEB package], or install manually by downloading the current release tarball, by issuing the following four commands:
 ----
 curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-%ELASTICSEARCH_VERSION%.tar.gz
 tar zxvf elasticsearch-%ELASTICSEARCH_VERSION%.tar.gz
@@ -120,7 +120,7 @@ which should return something like this:
 Congratulations! You've successfully stashed logs in Elasticsearch via Logstash.
 
 === Elasticsearch Plugins (an aside)
-Another very useful tool for querying your Logstash data (and Elasticsearch in general) is the Elasticearch-kopf plugin. Here is more information on http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-plugins.html[Elasticsearch plugins]. To install elasticsearch-kopf, simply issue the following command in your Elasticsearch directory (the same one in which you ran Elasticsearch earlier):
+Another very useful tool for querying your Logstash data (and Elasticsearch in general) is the Elasticsearch-kopf plugin. Here is more information on http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-plugins.html[Elasticsearch plugins]. To install elasticsearch-kopf, simply issue the following command in your Elasticsearch directory (the same one in which you ran Elasticsearch earlier):
 ----
 bin/plugin -install lmenezes/elasticsearch-kopf
 ----
