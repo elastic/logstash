@@ -98,8 +98,13 @@ module LogStash
       require "logstash/bundler"
 
       ::Bundler.settings[:path] = LogStash::Environment::BUNDLE_DIR
-      ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
       ::Bundler.settings[:without] = "development"
+
+      ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
+      # also set ENV because bundler does not check settings for :gemfile here
+      # https://github.com/bundler/bundler/blob/v1.8.3/lib/bundler/shared_helpers.rb#L103
+      ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
+
       ::Bundler.reset!
       ::Bundler.setup
     end
