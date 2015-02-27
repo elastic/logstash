@@ -15,7 +15,7 @@ We will not track concrete milestones on this page, because we often make adjust
 
 We recently released http://www.elasticsearch.org/blog/logstash-1-5-0-beta1-released/[Logstash 1.5 beta1]! The main themes of this release are improved plugin management, increased performance, and Apache Kafka integration (see more details in the Logstash 1.5 beta1 announcement). We are currently working to incorporate community feedback and to release Logstash 1.5 GA. You can track our progress on GitHub by looking at issues with the milestone https://github.com/elasticsearch/logstash/issues?q=is%3Aopen+is%3Aissue+milestone%3Av1.5.0[v1.5.0]. 
 
-== Plugin Framework (status: ongoing, v1.5)
+== Plugin Framework (status: ongoing; v1.5)
 
 Logstash has a rich collection of 165+ plugins, which are developed by Elasticsearch and contributed by the community. Previously, most commonly-used plugins were bundled with Logstash to make the getting started experience easier. However, there was no way to update plugins outside of the Logstash release cycle. In Logstash 1.5, we created a powerful plugin framework based on https://rubygems.org/[RubyGems.org] to facilitate per-plugin installation and updates. We will continue to distribute commonly-used plugins with Logstash, but now users will be able to install new plugins and receive plugin updates at any time. Read more about these changes in the http://www.elasticsearch.org/blog/plugin-ecosystem-changes/[Logstash Plugin Ecosystem Changes] announcement.
 
