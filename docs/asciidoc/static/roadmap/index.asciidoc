@@ -11,23 +11,32 @@ While GitHub is great for sharing our work, it can be difficult to get an overvi
 
 We will not track concrete milestones on this page, because we often make adjustments to our timelines based on community feedback. For the latest release status information, please search for the {LABELS}roadmap[roadmap] tag in GitHub. 
 
-== Logstash 1.5 GA status
+== Logstash 1.5-GA status
 
 We recently released http://www.elasticsearch.org/blog/logstash-1-5-0-beta1-released/[Logstash 1.5 beta1]! The main themes of this release are improved plugin management, increased performance, and Apache Kafka integration (see more details in the Logstash 1.5 beta1 announcement). We are currently working to incorporate community feedback and to release Logstash 1.5 GA. You can track our progress on GitHub by looking at issues with the milestone https://github.com/elasticsearch/logstash/issues?q=is%3Aopen+is%3Aissue+milestone%3Av1.5.0[v1.5.0]. 
 
-== Plugin Framework (status: ongoing; v1.5)
+== Plugin Framework 
+[float]
+=== status: ongoing; v1.5
 
 Logstash has a rich collection of 165+ plugins, which are developed by Elasticsearch and contributed by the community. Previously, most commonly-used plugins were bundled with Logstash to make the getting started experience easier. However, there was no way to update plugins outside of the Logstash release cycle. In Logstash 1.5, we created a powerful plugin framework based on https://rubygems.org/[RubyGems.org] to facilitate per-plugin installation and updates. We will continue to distribute commonly-used plugins with Logstash, but now users will be able to install new plugins and receive plugin updates at any time. Read more about these changes in the http://www.elasticsearch.org/blog/plugin-ecosystem-changes/[Logstash Plugin Ecosystem Changes] announcement.
 
-== Windows Support (status: ongoing; v1.5, v2.x)
+== Windows Support
+[float]
+=== status: ongoing; v1.5, v2.x
 
 Leading up to the 1.5 release, we greatly improved automated Windows testing of Logstash. As a result of this testing, we identified and https://github.com/elasticsearch/logstash/issues?q=is%3Aissue+label%3Awindows+is%3Aclosed[resolved] a number of critical issues affecting the Windows platform, pertaining to initial setup, upgrade, and file input plugin. You can follow the outstanding issues we are still working on using the GitHub https://github.com/elasticsearch/logstash/issues?q=is%3Aissue+label%3Awindows+is%3Aopen[windows] label.
 
-== Performance (status: ongoing; v1.5, v2.x)
+
+== Performance
+[float]
+=== status: ongoing; v1.5, v2.x
 
 In the 1.5 release, we significantly improved the performance of the Grok filter, which is used to parse text via regular expressions. Based on our internal benchmarks, parsing common log formats, such as Apache logs, was 2x faster in Logstash 1.5 compared to previous versions. We also sped up JSON serialization and deserialization. In future releases of Logstash, we plan to incorporate additional JRuby optimizations to make the code even more efficient. We also plan to seek community feedback in terms of prioritizing other aspects of performance, such as startup time, resource utilization, and pipeline latency. 
 
-== Resiliency (status: ongoing; v2.x)
+== Resiliency
+[float]
+=== status: ongoing; v2.x
 
 The Logstash team is committed to continuously improving the resiliency of Logstash. As with any modular system, Logstash has many moving parts and a multitude of deployment architectures, all of which need to be considered in the context of resiliency. Our resiliency project is an ongoing effort to identify and enhance areas where Logstash can provide additional resiliency guarantees. You can follow this effort on GitHub by searching for issues that have the {LABELS}resiliency[resiliency] tag.
 
@@ -43,7 +52,9 @@ The Logstash team is committed to continuously improving the resiliency of Logst
 
 *Known unknowns.* If we don’t know it’s happening, it’s hard for us to fix it! Please report your issues in GitHub, under the https://github.com/elasticsearch/logstash/issues[Logstash], https://github.com/elasticsearch/logstash-forwarder/issues[Logstash Forwarder], or individual https://github.com/logstash-plugins/[Logstash plugin] repositories. 
 
-== Manageability (status: ongoing; v2.x)
+== Manageability
+[float]
+=== status: ongoing; v2.x
 
 As Logstash deployments scale up, managing and monitoring multiple Logstash instances using configuration and log files can become challenging. Our manageability project aims to improve this experience by adding functionality that makes administration of Logstash more efficient and less error-prone. You can follow this effort on GitHub by searching for issues that have the {LABELS}manageability[manageability] tag.
 
@@ -55,11 +66,14 @@ As Logstash deployments scale up, managing and monitoring multiple Logstash inst
 
 *High availability and load balancing ({ISSUES}2633[#2633]).* Currently, if a specific instance of Logstash becomes overloaded or unavailable, it can result in a performance degradation or outage until the problem is resolved, unless you use a dedicated load balancer to distribute traffic over the available instances. In a clustered deployment, we have the option of automatically distributing the load between instances based on the latest cluster state. This is a complex use case that will require input from the community on current approaches to implementing HA and load balancing of Logstash instances. 
 
-== Logstash Forwarder (status: ongoing; v2.x)
+== Logstash Forwarder
+[float]
+=== status: ongoing; v2.x
 
 Logstash Forwarder uses a different code base from Logstash, and as a result it has been a challenge for us to keep feature parity between the two projects. We are experimenting with unifying the two code bases to improve ongoing maintenance of the Logstash Forwarder. Currently, Logstash Forwarder is written in Go and Logstash is written in Ruby and runs on JRuby. We are investigating the feasibility of replacing Logstash Forwarder with Logstash Ruby code executed on Matz Ruby Interpreter (http://en.wikipedia.org/wiki/Ruby_MRI[MRI]). Important criteria for success in this POC is to keep Logstash Forwarder lightweight and still distribute it as a binary so it doesn’t introduce language dependencies on the servers where it is deployed. You can follow this effort on GitHub through the Logstash Forwarder https://github.com/elasticsearch/logstash-forwarder/issues[issues list].
 
-== New Plugins (status: ongoing)
+== New Plugins
+[float]
+=== status: ongoing
 
 Logstash plugins are continuously added to the Logstash plugin ecosystem, both by us and by our wonderful community of plugin contributors. Recent additions include https://github.com/logstash-plugins?query=kafka[Kafka], https://github.com/logstash-plugins?query=couchdb[CouchDB], and https://github.com/logstash-plugins/logstash-input-rss[RSS], just to name a few. In Logstash 1.5, we made it easier than ever to add and maintain plugins by putting each plugin into its own repository (read more about that in http://www.elasticsearch.org/blog/plugin-ecosystem-changes/[Logstash Plugin Ecosystem Changes]). We also greatly improved the S3, Twitter, RabbitMQ plugins. To follow requests for new Logstash plugins or contribute to the discussion, look for issues that have the {LABELS}new-plugin[new-plugin] tag in Github. 
-
