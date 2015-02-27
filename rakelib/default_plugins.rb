@@ -132,7 +132,8 @@ module LogStash
       /jms$/,
       /example$/,
       /drupal/i,
-      /logstash-output-logentries/i
+      /logstash-output-logentries$/,
+      /logstash-input-jdbc$/
     ])
 
 
