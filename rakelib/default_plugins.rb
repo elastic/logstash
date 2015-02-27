@@ -131,7 +131,8 @@ module LogStash
       /^logstash-filter-yaml$/,
       /jms$/,
       /example$/,
-      /drupal/i
+      /drupal/i,
+      /logstash-output-logentries/i
     ])
 
 
