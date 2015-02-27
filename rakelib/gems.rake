@@ -1,6 +1,5 @@
 require "rubygems/specification"
 require "rubygems/commands/install_command"
-require "logstash/JRUBY-PR1448" if RUBY_PLATFORM == "java" && Gem.win_platform?
 
 namespace "gem" do
   task "require",  :name, :requirement, :target do |task, args|
