@@ -4,7 +4,7 @@
     associated with a particular plugin. Patterns in this dir will be loaded by default (#2225)
   - We now check if the config file is correctly encoded. Otherwise we show a verbose error message
     to convert the failing config file(s) to UTF-8 (#LOGSTASH-1103)
-  - Fixed bug in pipeline to gracefully teardown output workers when num workers > 1
+  - Fixed bug in pipeline to gracefully teardown output workers when num workers > 1 (#2180)
   - Fixed nologin path in release debian packages (#2283)
   - Resolved issue where Logstash was crashing for users still using exclude_tags in their output
     configuration (#2323)
@@ -12,18 +12,18 @@
   - Windows: Significantly improved the initial user experience with Windows platform. Fixed many
     issues in File input. Added support for using the plugin framework (installing, upgrading, removing)
   - With the release of Kibana 4, we have removed the `bin/logstash web` command and any reference to
-    Kibana from Logstash. Kibana can be started very simply by running `bin/kibana` from the installed directory
+    Kibana from Logstash
 
   # input
   - Added new CouchDB input plugin to fetch data from CouchDB. Using the _changes API, data can be kept
-    in sync with any output like Elasticsearch by using this input
+    in sync with any output like Elasticsearch by using this input.
   - File Input: Fixed a number of issues on Windows platform. These include resolving file locking
     issues which was causing log files to not rotate. Also added support for using SinceDB to record
     multiple files' last read information. Also fixed encoding issues which applies to many inputs (#2507). 
   - Kafka: Added support for whitelisting and blacklisting topics in the input. 
   - EventLog: For Windows, this input gracefully shutsdown if there is a timeout while receiving events
   - Heartbeat: We created a new input plugin for generating heartbeat messages at periodic intervals. 
-    Use this to monitor Logstash -- you can measure the latency of the pipeline using these dummy events,
+    Use this to monitor Logstash -- you can measure the latency of the pipeline using these heartbeat events,
     and also check for availability
   - S3: Added IAM roles support so you can securely read and write events from S3 without providing your
     AWS credentials. Added support for using temporary credentials obtained from AWS STS
