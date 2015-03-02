@@ -1,7 +1,7 @@
 namespace "test" do
   def run_rspec(*args)
     require "logstash/environment"
-    LogStash::Environment.bundler_setup!
+    LogStash::Environment.bundler_setup!({:without => []})
     require "rspec/core/runner"
     require "rspec"
     RSpec::Core::Runner.run([*args])
