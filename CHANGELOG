@@ -1,3 +1,55 @@
+1.5.0.rc1
+  # general
+  - You can now use LS_HOME/patterns directory to add generic patterns for those that may not be
+    associated with a particular plugin. Patterns in this dir will be loaded by default (#2225)
+  - We now check if the config file is correctly encoded. Otherwise we show a verbose error message
+    to convert the failing config file(s) to UTF-8 (#LOGSTASH-1103)
+  - Fixed bug in pipeline to gracefully teardown output workers when num workers > 1
+  - Fixed nologin path in release debian packages (#2283)
+  - Resolved issue where Logstash was crashing for users still using exclude_tags in their output
+    configuration (#2323)
+  - Updated and releases a new version of the logstash-event gem with latest changes in 1.5.0 RC1
+  - Windows: Significantly improved the initial user experience with Windows platform. Fixed many
+    issues in File input. Added support for using the plugin framework (installing, upgrading, removing)
+  - With the release of Kibana 4, we have removed the `bin/logstash web` command and any reference to
+    Kibana from Logstash. Kibana can be started very simply by running `bin/kibana` from the installed directory
+
+  # input
+  - Added new CouchDB input plugin to fetch data from CouchDB. Using the _changes API, data can be kept
+    in sync with any output like Elasticsearch by using this input
+  - File Input: Fixed a number of issues on Windows platform. These include resolving file locking
+    issues which was causing log files to not rotate. Also added support for using SinceDB to record
+    multiple files' last read information. Also fixed encoding issues which applies to many inputs (#2507). 
+  - Kafka: Added support for whitelisting and blacklisting topics in the input. 
+  - EventLog: For Windows, this input gracefully shutsdown if there is a timeout while receiving events
+  - Heartbeat: We created a new input plugin for generating heartbeat messages at periodic intervals. 
+    Use this to monitor Logstash -- you can measure the latency of the pipeline using these dummy events,
+    and also check for availability
+  - S3: Added IAM roles support so you can securely read and write events from S3 without providing your
+    AWS credentials. Added support for using temporary credentials obtained from AWS STS
+  - Lumberjack: Resolved issue where unrelated events were getting merged into a single event while using
+    this input with with the multiline codec
+
+  # filter
+  - Mutate: Resolved issue where convert option was creating an extra field in the event (#2268)
+  - Mutate: Fixed issue where mutate with non-existent field was throwing an error (#2379)
+  - Multiline: Handled cases where we dropped lines from certain multiline xml messages 
+
+  # output
+  - Elasticsearch: Added support to be more resilient to transient errors in Elasticsearch. Previously, partial
+    failures from the bulk indexing functionality were not handled properly. With this fix, we added the ability
+    to capture failed requests from Elasticsearch and retry them. Error codes like 429 (too many requests) will
+    now be retried by default for 3 times. The number of retries and the interval between consecutive retries 
+    can be configured
+  - S3: Fixed a critical problem in the S3 Output plugin when using the size_file option. This could cause data loss
+    and data corruption of old logs. Added IAM roles support so you can securely read and write events from S3 
+    without providing your AWS credentials. Added support for using temporary credentials obtained from AWS STS
+
+  # codec
+  - Added new Elasticsearch bulk codec which can be used to read data formatted in the Elasticsearch 
+    Bulk API (multiline json) format. For example, this codec can be used in combination with RabbitMQ input
+  - Cloudfront: Added support for handling Amazon CloudFront events
+
 1.5.0.beta1
   # general
   - Performance improvements: Logstash 1.5.0 is much faster -- we have improved the throughput 
