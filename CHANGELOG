@@ -28,7 +28,7 @@
   - S3: Added IAM roles support so you can securely read and write events from S3 without providing your
     AWS credentials. Added support for using temporary credentials obtained from AWS STS
   - Lumberjack: Resolved issue where unrelated events were getting merged into a single event while using
-    this input with with the multiline codec
+    this input with with the multiline codec (#2016)
 
   # filter
   - Mutate: Resolved issue where convert option was creating an extra field in the event (#2268)
