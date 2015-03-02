@@ -93,8 +93,8 @@ describe LogStash::Plugin do
     end
     
 
-    it 'logs an error if the plugin use the milestone option' do
-      expect_any_instance_of(Cabin::Channel).to receive(:error)
+    it 'logs a warning if the plugin use the milestone option' do
+      expect_any_instance_of(Cabin::Channel).to receive(:warn)
         .with(/stromae plugin is using the 'milestone' method/)
 
       class LogStash::Filters::Stromae < LogStash::Filters::Base
