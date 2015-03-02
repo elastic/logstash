@@ -94,8 +94,8 @@ module LogStash
       options = {:without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
       # make sure we use our own nicely installed bundler and not a rogue, bad, mean, ugly, stupid other bundler. bad bundler, bad bad bundler go away.
-      Gem.clear_paths
-      Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = logstash_gem_home
+      ::Gem.clear_paths
+      ::Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = logstash_gem_home
 
       # set BUNDLE_GEMFILE ENV before requiring bundler to avoid bundler recurse and load unrelated Gemfile(s)
       ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
