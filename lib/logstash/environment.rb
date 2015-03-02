@@ -90,7 +90,9 @@ module LogStash
       env.downcase == "test"
     end
 
-    def bundler_setup!
+    def bundler_setup!(options = {})
+      options = {:without => [:development]}.merge(options)
+      options[:without] = Array(options[:without])
       # make sure we use our own nicely installed bundler and not a rogue, bad, mean, ugly, stupid other bundler. bad bundler, bad bad bundler go away.
       Gem.clear_paths
       Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = logstash_gem_home
@@ -101,9 +103,8 @@ module LogStash
       require "bundler"
       require "logstash/bundler"
 
-      ::Bundler.settings[:path] = LogStash::Environment::BUNDLE_DIR
-      ::Bundler.settings[:without] = "development"
-
+      ::Bundler.settings[:path]    = LogStash::Environment::BUNDLE_DIR
+      ::Bundler.settings[:without] = options[:without].join(":")
       # in the context of Bundler.setup it looks like this is useless here because Gemfile path can only be specified using
       # the ENV, see https://github.com/bundler/bundler/blob/v1.8.3/lib/bundler/shared_helpers.rb#L103
       ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
