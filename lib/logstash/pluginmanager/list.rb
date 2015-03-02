@@ -15,6 +15,9 @@ class LogStash::PluginManager::List < Clamp::Command
   end
 
   def execute
+    require 'logstash/environment'
+    LogStash::Environment.bundler_setup!
+
     Gem.configuration.verbose = false
 
     gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
