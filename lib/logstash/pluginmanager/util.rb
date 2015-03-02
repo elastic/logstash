@@ -63,7 +63,7 @@ module LogStash::PluginManager
   # note that an installed plugin dependecies like codecs will not be listed, only those
   # specifically listed in the Gemfile.
   # @param gemfile [LogStash::Gemfile] the gemfile to validate against
-  # @return [Array<Gem::Specification>] list of plugin names
+  # @return [Array<Gem::Specification>] list of plugin specs
   def self.all_installed_plugins_gem_specs(gemfile)
     # we start form the installed gemspecs so we can verify the metadata for valid logstash plugin
     # then filter out those not included in the Gemfile
