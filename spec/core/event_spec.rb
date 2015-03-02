@@ -67,10 +67,24 @@ describe LogStash::Event do
       expect(subject.sprintf("%{+%s}")).to eq("1356998400")
     end
 
+    it "should raise error when formatting %{+%s} when @timestamp field is missing" do
+      str = "hello-%{+%s}"
+      subj = subject.clone
+      subj.remove("[@timestamp]")
+      expect{ subj.sprintf(str) }.to raise_error(LogStash::Error)
+    end
+
     it "should report a time with %{+format} syntax", :if => RUBY_ENGINE == "jruby" do
       expect(subject.sprintf("%{+YYYY}")).to eq("2013")
       expect(subject.sprintf("%{+MM}")).to eq("01")
       expect(subject.sprintf("%{+HH}")).to eq("00")
+    end
+
+    it "should raise error with %{+format} syntax when @timestamp field is missing", :if => RUBY_ENGINE == "jruby" do
+      str = "logstash-%{+YYYY}"
+      subj = subject.clone
+      subj.remove("[@timestamp]")
+      expect{ subj.sprintf(str) }.to raise_error(LogStash::Error)
     end
 
     it "should report fields with %{field} syntax" do
