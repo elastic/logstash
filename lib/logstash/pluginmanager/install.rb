@@ -32,7 +32,7 @@ class LogStash::PluginManager::Install < Clamp::Command
     end
     raise(LogStash::PluginManager::Error, "File #{LogStash::Environment::GEMFILE_PATH} does not exist or is not writable, aborting") unless File.writable?(LogStash::Environment::GEMFILE_PATH)
 
-    gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
+    gemfile = LogStash::Gemfile.open(LogStash::Environment::GEMFILE_PATH)
     # keep a copy of the gemset to revert on error
     original_gemset = gemfile.gemset.copy
 
@@ -58,16 +58,7 @@ class LogStash::PluginManager::Install < Clamp::Command
       end if verify?
 
       # at this point we know that we either have a valid gem name & version or a valid .gem file path
-
-      # if LogStash::PluginManager.plugin_file?(plugin)
-      #   raise(LogStash::PluginManager::Error) unless cache_gem_file(plugin)
-      #   spec = LogStash::PluginManager.plugin_file_spec(plugin)
-      #   gemfile.update(spec.name, spec.version.to_s)
-      # else
-      #   plugins.each{|tuple| gemfile.update(*tuple)}
-      # end
     end
-
 
     install_list = LogStash::PluginManager.merge_duplicates(install_list)
     install_list.each{|plugin, version| gemfile.update(plugin, version)}
@@ -94,6 +85,9 @@ class LogStash::PluginManager::Install < Clamp::Command
     end
 
     puts("Installation successful")
+
+  ensure
+    gemfile.close if gemfile
   end
 
   # copy .gem file into bundler cache directory, log any error to $stderr
