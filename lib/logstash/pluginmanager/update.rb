@@ -21,7 +21,7 @@ class LogStash::PluginManager::Update < Clamp::Command
     # create list of plugins to update
     plugins = unless plugin_list.empty?
       not_installed = plugin_list.select{|plugin| !previous_gem_specs_map.has_key?(plugin.downcase)}
-      raise(LogStash::PluginManager::Error, "Plugin #{not_installed.join(', ')} has not been previously installed, aborting") unless not_installed.empty?
+      raise(LogStash::PluginManager::Error, "Plugin #{not_installed.join(', ')} is not installed so it cannot be updated, aborting") unless not_installed.empty?
       plugin_list
     else
       previous_gem_specs_map.values.map{|spec| spec.name}
