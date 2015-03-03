@@ -15,7 +15,7 @@ class LogStash::PluginManager::Uninstall < Clamp::Command
   def execute
     raise(LogStash::PluginManager::Error, "File #{LogStash::Environment::GEMFILE_PATH} does not exist or is not writable, aborting") unless File.writable?(LogStash::Environment::GEMFILE_PATH)
 
-    gemfile = LogStash::Gemfile.open(LogStash::Environment::GEMFILE_PATH)
+    gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
     # keep a copy of the gemset to revert on error
     original_gemset = gemfile.gemset.copy
 
@@ -45,7 +45,5 @@ class LogStash::PluginManager::Uninstall < Clamp::Command
         raise(LogStash::PluginManager::Error, "Uninstall aborted")
       end
     end
-  ensure
-    gemfile.close if gemfile
   end
 end
