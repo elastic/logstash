@@ -12,7 +12,7 @@ class LogStash::PluginManager::Update < Clamp::Command
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version"
 
   def execute
-    gemfile = LogStash::Gemfile.open(LogStash::Environment::GEMFILE_PATH)
+    gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
     # keep a copy of the gemset to revert on error
     original_gemset = gemfile.gemset.copy
 
@@ -60,8 +60,6 @@ class LogStash::PluginManager::Update < Clamp::Command
       end
     end
     puts("No plugin updated") if update_count.zero?
-  ensure
-    gemfile.close
   end
 
   private
