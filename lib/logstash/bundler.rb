@@ -1,25 +1,4 @@
-require "bundler"
-require "bundler/cli"
-
-module Bundler
-  # Patch bundler to write a .lock file specific to the version of ruby.
-  # This keeps MRI/JRuby/RBX from conflicting over the Gemfile.lock updates
-  module SharedHelpers
-    def default_lockfile
-      ruby = "#{LogStash::Environment.ruby_engine}-#{LogStash::Environment.ruby_abi_version}"
-      Pathname.new("#{default_gemfile}.#{ruby}.lock")
-    end
-  end
-
-  # Add the Bundler.reset! method which has been added in master but is not in 1.7.9.
-  class << self
-    unless self.method_defined?("reset!")
-      def reset!
-        @definition = nil
-      end
-    end
-  end
-end
+require "logstash/environment"
 
 module LogStash
   module Bundler
@@ -44,6 +23,32 @@ module LogStash
       package.extract_files(target_path)
 
       return [package, target_path]
+    end
+
+    def self.setup!(options = {})
+      options = {:without => [:development]}.merge(options)
+      options[:without] = Array(options[:without])
+
+      # make sure we use our own installed bundler
+      require "logstash/patches/rubygems" # patch rubygems before clear_paths
+      ::Gem.clear_paths
+      ::Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = LogStash::Environment.logstash_gem_home
+
+      # set BUNDLE_GEMFILE ENV before requiring bundler to avoid bundler recurse and load unrelated Gemfile(s)
+      ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
+
+      require "bundler"
+      require "logstash/bundler"
+      require "logstash/patches/bundler"
+
+      ::Bundler.settings[:path]    = LogStash::Environment::BUNDLE_DIR
+      ::Bundler.settings[:without] = options[:without].join(":")
+      # in the context of Bundler.setup it looks like this is useless here because Gemfile path can only be specified using
+      # the ENV, see https://github.com/bundler/bundler/blob/v1.8.3/lib/bundler/shared_helpers.rb#L103
+      ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
+
+      ::Bundler.reset!
+      ::Bundler.setup
     end
 
     # capture any $stdout from the passed block. also trap any exception in that block, in which case the trapped exception will be returned
@@ -73,7 +78,19 @@ module LogStash
       options[:without] = Array(options[:without])
       options[:update] = Array(options[:update]) if options[:update]
 
-      ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
+      # make sure we use our own installed bundler
+      require "logstash/patches/rubygems" # patch rubygems before clear_paths
+      ::Gem.clear_paths
+      ::Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = LogStash::Environment.logstash_gem_home
+
+      # set BUNDLE_GEMFILE ENV before requiring bundler to avoid bundler recurse and load unrelated Gemfile(s).
+      # in the context of calling Bundler::CLI this is not really required since Bundler::CLI will look at
+      # Bundler.settings[:gemfile] unlike Bundler.setup. For the sake of consistency and defensive/future proofing, let's keep it here.
+      ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
+
+      require "bundler"
+      require "bundler/cli"
+      require "logstash/patches/bundler"
 
       # force Rubygems sources to our Gemfile sources
       ::Gem.sources = options[:rubygems_source] if options[:rubygems_source]
