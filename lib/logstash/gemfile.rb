@@ -15,12 +15,6 @@ module LogStash
       @gemset = nil
     end
 
-    def self.open(file_path)
-      gemfile = new(::File.new(file_path, "r+"))
-      gemfile.load
-      gemfile
-    end
-
     def load
       @gemset ||= DSL.parse(@io.read)
       self
@@ -56,11 +50,6 @@ module LogStash
     # @return [Gem] removed gem or nil if not found
     def remove(name)
       @gemset.remove_gem(name)
-    end
-
-    def close
-      save if @gemset
-      @io.close
     end
   end
 
