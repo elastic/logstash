@@ -13,7 +13,7 @@
     Fixed many issues related to File input. Added support for using the plugin 
     framework (installing, upgrading, removing)
   - With the release of Kibana 4, we have removed the `bin/logstash web` command and any reference to
-    Kibana from Logstash
+    Kibana from Logstash (#2661)
 
   # input
   - Added new CouchDB input plugin to fetch data from CouchDB. Using the _changes API, data can be kept
@@ -40,7 +40,8 @@
   - Mutate: 
     - Resolved issue where convert option was creating an extra field in the event (#2268)
     - Fixed issue where mutate with non-existent field was throwing an error (#2379)
-  - Multiline: Handled cases where we dropped lines from certain multiline xml messages (#3) 
+  - Multiline: Handled cases where we unintentionally deduplicated lines, such
+    as repeated lines in xml messages (#3) 
 
   # output
   - Elasticsearch: 
