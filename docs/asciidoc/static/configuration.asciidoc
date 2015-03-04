@@ -358,7 +358,7 @@ What's an expression? Comparison tests, boolean logic, and so on!
 You can use the following comparison operators:
 
 * equality: ==,  !=,  <,  >,  <=,  >=
-* regexp: =~, !~
+* regexp: =\~, !~
 * inclusion: in, not in
 
 The supported boolean operators are:
