@@ -43,7 +43,17 @@ namespace "artifact" do
     end.flatten.uniq
   end
 
-  task "prepare" => ["bootstrap", "plugin:install-default"]
+  task "use-defaults-gemfile" do
+    FileUtils.cp("Gemfile.defaults", "Gemfile")
+    FileUtils.cp("Gemfile.jruby-1.9.lock.defaults", "Gemfile.jruby-1.9.lock")
+  end
+
+  task "freeze-defaults-gemfile" => ["bootstrap", "plugin:install-default"] do
+    FileUtils.cp("Gemfile", "Gemfile.defaults")
+    FileUtils.cp("Gemfile.jruby-1.9.lock", "Gemfile.jruby-1.9.lock.defaults")
+  end
+
+  task "prepare" => ["bootstrap", "use-defaults-gemfile", "plugin:install-default"]
 
   desc "Build a tar.gz of logstash with all dependencies"
   task "tar" => ["prepare"] do
