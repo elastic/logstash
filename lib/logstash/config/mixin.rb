@@ -451,7 +451,7 @@ module LogStash::Config::Mixin
               return false, "Expected password (one value), got #{value.size} values?"
             end
 
-            result = ::LogStash::Util::Password.new(value.first)
+            result = value.first.is_a?(::LogStash::Util::Password) ? value.first : ::LogStash::Util::Password.new(value.first)
           when :path
             if value.size > 1 # Only 1 value wanted
               return false, "Expected path (one value), got #{value.size} values?"

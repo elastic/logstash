@@ -66,4 +66,34 @@ describe LogStash::Config::Mixin do
       }.to raise_error(LogStash::ConfigurationError)
     end
   end
+
+  context "when validating :password" do
+    let(:klass) do
+      Class.new(LogStash::Filters::Base)  do
+        config_name "fake"
+        config :password, :validate => :password
+      end
+    end
+
+    let(:secret) { "fancy pants" }
+    subject { klass.new("password" => secret) }
+
+    it "should be a Password object" do
+      expect(subject.password).to(be_a(LogStash::Util::Password))
+    end
+
+    it "should make password values hidden" do
+      expect(subject.password.to_s).to(be == "<password>")
+      expect(subject.password.inspect).to(be == "<password>")
+    end
+
+    it "should show password values via #value" do
+      expect(subject.password.value).to(be == secret)
+    end
+
+    it "should correctly copy password types" do
+      clone = subject.class.new(subject.params)
+      expect(clone.password.value).to(be == secret)
+    end
+  end
 end
