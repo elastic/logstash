@@ -297,9 +297,7 @@ GEM
       logstash-codec-json
       logstash-core (>= 1.4.0, < 2.0.0)
       redis
-    logstash-input-s3 (0.1.5)
-      aws-sdk
-      logstash-codec-line
+    logstash-input-s3 (0.1.6)
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-mixin-aws
       stud (~> 0.0.18)
