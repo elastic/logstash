@@ -75,8 +75,9 @@ Unlike [nailgun](https://github.com/martylamb/nailgun), drip does not reuse the 
 
 ## Testing
 
-There are a few ways to run the tests. For development, using `bin/logstash
-rspec <some spec>` will suffice:
+There are a few ways to run the tests. For development, using `bin/logstash rspec <some spec>` will suffice, however you need to run ```bin/plugin install --development``` beforehand so you've all development dependencies installed.
+
+If everything goes as expected you will see an output like:
 
     % bin/logstash rspec spec/core/timestamp_spec.rb
     Using Accessor#strict_set for spec
@@ -84,7 +85,8 @@ rspec <some spec>` will suffice:
     13 examples, 0 failures
     Randomized with seed 8026
 
-If you want to run all the tests from source, do:
+If you want to run all the tests from source, keep in mind to run ```rake
+test:install-core``` beforehand, you can do:
 
     rake test
 
