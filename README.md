@@ -93,6 +93,9 @@ If you want to run all the tests from source, do:
 Building is not required. You are highly recommended to download the releases
 we provide from the Logstash site!
 
+**Note** Before you build the artifacts, you need to run:
+    rake artifact:freeze-defaults-gemfile 
+
 If you want to build the release tarball yourself, run:
 
     rake artifact:tar
