@@ -101,7 +101,7 @@ GEM
     jar-dependencies (0.1.7)
     jls-grok (0.11.1)
       cabin (>= 0.6.0)
-    jls-lumberjack (0.0.21)
+    jls-lumberjack (0.0.22)
     jrjackson (0.2.8)
     jruby-httpclient (1.1.1-java)
     jruby-kafka (1.1.2-java)
