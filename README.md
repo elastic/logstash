@@ -94,6 +94,7 @@ Building is not required. You are highly recommended to download the releases
 we provide from the Logstash site!
 
 **Note** Before you build the artifacts, you need to run:
+
     rake artifact:freeze-defaults-gemfile 
 
 If you want to build the release tarball yourself, run:
