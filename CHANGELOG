@@ -1,3 +1,12 @@
+1.5.0.rc2
+  # general
+  - Fixed an issue with packaging our release artifacts. Release artifacts were missing jar files
+    which caused Logstash to not start with Elasticsearch output while using the node or transport
+    client. (#2780)
+
+  # input
+  - Lumberjack: Fixed Logstash crashing because it was using old jls-lumberjack version (#7)
+
 1.5.0.rc1
   # general
   - You can now use LS_HOME/patterns directory to add generic patterns for those that may not be
