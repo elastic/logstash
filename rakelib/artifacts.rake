@@ -1,5 +1,7 @@
 namespace "artifact" do
 
+  DEFAULT_GEMFILE_DIR = "pkg/gemfile/defaults"
+
   def package_files
     [
       "LICENSE",
@@ -43,17 +45,21 @@ namespace "artifact" do
     end.flatten.uniq
   end
 
+  task "set-base-gemfile" do
+    FileUtils.cp("#{DEFAULT_GEMFILE_DIR}/Gemfile.original", "Gemfile")
+  end
+
   task "use-defaults-gemfile" do
-    FileUtils.cp("Gemfile.defaults", "Gemfile")
-    FileUtils.cp("Gemfile.jruby-1.9.lock.defaults", "Gemfile.jruby-1.9.lock")
+    FileUtils.cp("#{DEFAULT_GEMFILE_DIR}/Gemfile.defaults", "Gemfile")
+    FileUtils.cp("#{DEFAULT_GEMFILE_DIR}/Gemfile.jruby-1.9.lock.defaults", "Gemfile.jruby-1.9.lock")
   end
 
   task "freeze-defaults-gemfile" => ["bootstrap", "plugin:install-default"] do
-    FileUtils.cp("Gemfile", "Gemfile.defaults")
-    FileUtils.cp("Gemfile.jruby-1.9.lock", "Gemfile.jruby-1.9.lock.defaults")
+    FileUtils.cp("Gemfile", "#{DEFAULT_GEMFILE_DIR}/Gemfile.defaults")
+    FileUtils.cp("Gemfile.jruby-1.9.lock", "#{DEFAULT_GEMFILE_DIR}/Gemfile.jruby-1.9.lock.defaults")
   end
 
-  task "prepare" => ["bootstrap", "use-defaults-gemfile", "plugin:install-default"]
+  task "prepare" => ["set-base-gemfile","bootstrap", "use-defaults-gemfile", "plugin:install-default"]
 
   desc "Build a tar.gz of logstash with all dependencies"
   task "tar" => ["prepare"] do
