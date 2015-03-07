@@ -13,7 +13,7 @@ We will not track concrete milestones on this page, because we often make adjust
 
 == Logstash 1.5-GA status
 
-We recently released http://www.elasticsearch.org/blog/logstash-1-5-0-beta1-released/[Logstash 1.5 beta1]! The main themes of this release are improved plugin management, increased performance, and Apache Kafka integration (see more details in the Logstash 1.5 beta1 announcement). We are currently working to incorporate community feedback and to release Logstash 1.5 GA. You can track our progress on GitHub by looking at issues with the milestone https://github.com/elasticsearch/logstash/issues?q=is%3Aopen+is%3Aissue+milestone%3Av1.5.0[v1.5.0]. 
+We recently released http://www.elasticsearch.org/blog/logstash-1-5-0-beta1-released/[Logstash 1.5 beta1], http://www.elasticsearch.org/blog/announcing-logstash-1-5-0-release-candidate/[Logstash 1.5 RC1], and http://www.elasticsearch.org/blog/logstash-1-5-0-rc2-released/[Logstash 1.5 RC2]! The main themes of this release are improved plugin management, increased performance, and Apache Kafka integration (see more details in the Logstash 1.5 beta1 announcement). We are currently working to incorporate community feedback and to release Logstash 1.5 GA. You can track our progress on GitHub by looking at issues with the milestone https://github.com/elasticsearch/logstash/issues?q=is%3Aopen+is%3Aissue+milestone%3Av1.5.0[v1.5.0]. 
 
 == Plugin Framework 
 [float]
@@ -71,6 +71,8 @@ As Logstash deployments scale up, managing and monitoring multiple Logstash inst
 === status: ongoing; v2.x
 
 Logstash Forwarder uses a different code base from Logstash, and as a result it has been a challenge for us to keep feature parity between the two projects. We are experimenting with unifying the two code bases to improve ongoing maintenance of the Logstash Forwarder. Currently, Logstash Forwarder is written in Go and Logstash is written in Ruby and runs on JRuby. We are investigating the feasibility of replacing Logstash Forwarder with Logstash Ruby code executed on Matz Ruby Interpreter (http://en.wikipedia.org/wiki/Ruby_MRI[MRI]). Important criteria for success in this POC is to keep Logstash Forwarder lightweight and still distribute it as a binary so it doesn’t introduce language dependencies on the servers where it is deployed. You can follow this effort on GitHub through the Logstash Forwarder https://github.com/elasticsearch/logstash-forwarder/issues[issues list].
+
+While we are working on these enhancements, we are committed to maintaining the Logstash Forwarder. We recently delivered http://www.elasticsearch.org/blog/logstash-forwarder-0-4-0-released/[Logstash Forwarder 0.4.0], which addressed many existing issues our users have been reporting. 
 
 == New Plugins
 [float]
