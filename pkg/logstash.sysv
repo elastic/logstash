@@ -27,7 +27,6 @@ name=logstash
 pidfile="/var/run/$name.pid"
 
 LS_USER=logstash
-LS_GROUP=logstash
 LS_HOME=/var/lib/logstash
 LS_HEAP_SIZE="500m"
 LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
@@ -55,16 +54,12 @@ start() {
   ulimit -n ${LS_OPEN_FILES}
 
   # Run the program!
-  nice -n ${LS_NICE} chroot --userspec $LS_USER:$LS_GROUP / sh -c "
+  nice -n ${LS_NICE} su -s /bin/sh -c "
     cd $LS_HOME
     ulimit -n ${LS_OPEN_FILES}
-    exec \"$program\" $args
-  " > "${LS_LOG_DIR}/$name.stdout" 2> "${LS_LOG_DIR}/$name.err" &
-
-  # Generate the pidfile from here. If we instead made the forked process
-  # generate it there will be a race condition between the pidfile writing
-  # and a process possibly asking for status.
-  echo $! > $pidfile
+    \"$program\" $args 3>/dev/null &
+    echo \$! >&3
+  " $LS_USER > "${LS_LOG_DIR}/$name.stdout" 2> "${LS_LOG_DIR}/$name.err" 3> $pidfile
 
   echo "$name started."
   return 0
