@@ -34,7 +34,19 @@ describe LogStash::Filters::Urldecode do
     end
   end
 
-   describe "urldecode with all_fields set to true" do
+  describe "urldecode should replace invalid UTF-8" do
+    config <<-CONFIG
+      filter {
+        urldecode {}
+      }
+    CONFIG
+
+    sample("message" => "/a/sa/search?rgu=0;+%C3%BB%D3%D0%D5%D2%B5%BD=;+%B7%A2%CB%CD=") do
+      insist { subject["message"] } == "/a/sa/search?rgu=0;+û\\xD3\\xD0\\xD5ҵ\\xBD=;+\\xB7\\xA2\\xCB\\xCD="
+     end
+  end
+
+  describe "urldecode with all_fields set to true" do
     # The logstash config goes here.
     # At this time, only filters are supported.
     config <<-CONFIG
