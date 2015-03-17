@@ -32,6 +32,10 @@ class LogStash::Agent < Clamp::Command
     I18n.t("logstash.agent.flag.verbosity"),
     :attribute_name => :verbosity, :multivalued => true
 
+  option ["-c", "--classpath"], "CLASSPATH",
+    I18n.t("logstash.agent.flag.classpath"),
+    :attribute_name => :classpath
+
   option "--quiet", :flag, I18n.t("logstash.agent.flag.quiet")
   option "--verbose", :flag, I18n.t("logstash.agent.flag.verbose")
   option "--debug", :flag, I18n.t("logstash.agent.flag.debug")
@@ -76,6 +80,12 @@ class LogStash::Agent < Clamp::Command
     if version?
       show_version
       return 0
+    end
+
+    # add user-specified classpath to main classpath
+    if @classpath
+      require 'java'
+      $CLASSPATH << @classpath if @classpath
     end
 
     # temporarily send logs to stdout as well if a --log is specified
