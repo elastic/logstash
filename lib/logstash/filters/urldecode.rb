@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/filters/base"
 require "logstash/namespace"
+require "logstash/util/charset"
 require "uri"
 
 # The urldecode filter is for decoding fields that are urlencoded.
@@ -14,9 +15,17 @@ class LogStash::Filters::Urldecode < LogStash::Filters::Base
   # Urldecode all fields
   config :all_fields, :validate => :boolean, :default => false
 
+  # Thel character encoding used in this filter. Examples include `UTF-8`
+  # and `cp1252`
+  #
+  # This setting is useful if your url decoded string are in `Latin-1` (aka `cp1252`)
+  # or in another character set other than `UTF-8`.
+  config :charset, :validate => ::Encoding.name_list, :default => "UTF-8"
+
   public
   def register
-    # Nothing to do
+    @converter = LogStash::Util::Charset.new(@charset)
+    @converter.logger = logger
   end #def register
 
   public
@@ -25,9 +34,7 @@ class LogStash::Filters::Urldecode < LogStash::Filters::Base
 
     # If all_fields is true then try to decode them all
     if @all_fields
-      event.to_hash.each do |name, value|
-        event[name] = urldecode(value)
-      end
+      event.to_hash.each { |name, value| event[name] = urldecode(value) }
     # Else decode the specified field
     else
       event[@field] = urldecode(event[@field])
@@ -41,7 +48,8 @@ class LogStash::Filters::Urldecode < LogStash::Filters::Base
   def urldecode(value)
     case value
     when String
-      return URI.unescape(value)
+      escaped = URI.unescape(value)
+      return @converter.convert(escaped)
     when Array
       ret_values = []
       value.each { |v| ret_values << urldecode(v) }
