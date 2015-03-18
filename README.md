@@ -46,6 +46,8 @@ You can also find documentation on the <http://logstash.net> site.
 
 To get started, you'll need ruby version 1.9.x or above and it should come with the `rake` tool.
 
+**Windows only** Please set the `JAVA_HOME` path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
+
 Here's how to get started with Logstash development:
 
     rake test:install-core
