@@ -439,6 +439,94 @@ output {
 
 For more complex examples, see <<using-conditionals, Using Conditionals>>.
 
+[float]
+[[metadata]]
+==== The @metadata field
+
+In Logstash 1.5 there is a new, special field, called `@metadata`.  The contents
+of `@metadata` will not be part of any of your events at output time, which
+makes it great to use for conditionals, or extending and building event fields
+with field reference and sprintf formatting.
+
+The following configuration file will yield events from STDIN.  Whatever is
+typed will become the `message` field in the event.  The `mutate` events in the
+filter block will add a few fields, some nested in the `@metadata` field.
+
+[source, ruby]
+----------------------------------
+input { stdin { } }
+
+filter {
+  mutate { add_field => { "show" => "This data will be in the output" } }
+  mutate { add_field => { "[@metadata][test]" => "Hello" } }
+  mutate { add_field => { "[@metadata][no_show]" => "This data will not be in the output" } }
+}
+
+output {
+  if [@metadata][test] == "Hello" {
+    stdout { codec => rubydebug }
+  }
+}
+
+----------------------------------
+
+Let's see what comes out:
+
+[source, ruby]
+----------------------------------
+
+$ bin/logstash -f ../test.conf
+Logstash startup completed
+asdf
+{
+       "message" => "asdf",
+      "@version" => "1",
+    "@timestamp" => "2015-03-18T23:09:29.595Z",
+          "host" => "example.com",
+          "show" => "This data will be in the output"
+}
+----------------------------------
+
+The "asdf" typed in became the `message` field contents, and the conditional
+successfully evaluated the contents of the `test` field nested within the
+`@metadata` field.  But the output did not show a field called `@metadata`, or
+its contents.
+
+The `rubydebug` codec allows you to reveal the contents of the `@metadata` field
+if you add a config flag, `metadata => true`:
+
+[source, ruby]
+----------------------------------
+    stdout { codec => rubydebug { metadata => true } }
+----------------------------------
+
+Let's see what the output looks like with this change:
+
+[source, ruby]
+----------------------------------
+$ bin/logstash -f ../test.conf
+Logstash startup completed
+asdf
+{
+       "message" => "asdf",
+      "@version" => "1",
+    "@timestamp" => "2015-03-18T23:10:19.859Z",
+          "host" => "example.com",
+          "show" => "This data will be in the output",
+     "@metadata" => {
+           "test" => "Hello",
+        "no_show" => "This data will not be in the output"
+    }
+}
+----------------------------------
+
+Now you can see the `@metadata` field and its sub-fields.
+
+IMPORTANT: Only the `rubydebug` codec allows you to show the contents of the
+`@metadata` field.
+
+Make use of the `@metadata` field any time you need a temporary field but do not
+want it to be in the final output.
 
 [[config-examples]]
 === Logstash Configuration Examples
