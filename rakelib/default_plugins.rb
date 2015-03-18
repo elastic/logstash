@@ -3,6 +3,7 @@ module LogStash
 
     # plugins included by default in the logstash distribution
     DEFAULT_PLUGINS = %w(
+      logstash-input-heartbeat
       logstash-output-zeromq
       logstash-codec-collectd
       logstash-output-xmpp
