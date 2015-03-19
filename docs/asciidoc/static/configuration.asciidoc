@@ -452,7 +452,7 @@ The following configuration file will yield events from STDIN.  Whatever is
 typed will become the `message` field in the event.  The `mutate` events in the
 filter block will add a few fields, some nested in the `@metadata` field.
 
-[source, ruby]
+[source,ruby]
 ----------------------------------
 input { stdin { } }
 
@@ -472,7 +472,7 @@ output {
 
 Let's see what comes out:
 
-[source, ruby]
+[source,ruby]
 ----------------------------------
 
 $ bin/logstash -f ../test.conf
@@ -495,14 +495,14 @@ its contents.
 The `rubydebug` codec allows you to reveal the contents of the `@metadata` field
 if you add a config flag, `metadata => true`:
 
-[source, ruby]
+[source,ruby]
 ----------------------------------
     stdout { codec => rubydebug { metadata => true } }
 ----------------------------------
 
 Let's see what the output looks like with this change:
 
-[source, ruby]
+[source,ruby]
 ----------------------------------
 $ bin/logstash -f ../test.conf
 Logstash startup completed
@@ -527,6 +527,69 @@ IMPORTANT: Only the `rubydebug` codec allows you to show the contents of the
 
 Make use of the `@metadata` field any time you need a temporary field but do not
 want it to be in the final output.
+
+Perhaps one of the most common use cases for this new field is with the `date`
+filter and having a temporary timestamp.
+
+This configuration file has been simplified, but uses the timestamp format
+common to Apache and Nginx web servers.  In the past, you'd have to delete
+the timestamp field yourself, after using it to overwrite the `@timestamp`
+field.  With the `@metadata` field, this is no longer necessary:
+
+[source,ruby]
+----------------------------------
+input { stdin { } }
+
+filter {
+  grok { match => [ "message", "%{HTTPDATE:[@metadata][timestamp]}" ] }
+  date { match => [ "[@metadata][timestamp]", "dd/MMM/yyyy:HH:mm:ss Z" ] }
+}
+
+output {
+  stdout { codec => rubydebug }
+}
+----------------------------------
+
+Notice that this configuration puts the extracted date into the
+`[@metadata][timestamp]` field in the `grok` filter.  Let's feed this
+configuration a sample date string and see what comes out:
+
+[source,ruby]
+----------------------------------
+$ bin/logstash -f ../test.conf
+Logstash startup completed
+02/Mar/2014:15:36:43 +0100
+{
+       "message" => "02/Mar/2014:15:36:43 +0100",
+      "@version" => "1",
+    "@timestamp" => "2014-03-02T14:36:43.000Z",
+          "host" => "example.com"
+}
+----------------------------------
+
+That's it!  No extra fields in the output, and a cleaner config file because you
+do not have to delete a "timestamp" field after conversion in the `date` filter.
+
+Another use case is the CouchDB Changes input plugin (See
+https://github.com/logstash-plugins/logstash-input-couchdb_changes).
+This plugin automatically captures CouchDB document field metadata into the
+`@metadata` field within the input plugin itself.  When the events pass through
+to be indexed by Elasticsearch, the Elasticsearch output plugin allows you to
+specify the `action` (delete, update, insert, etc.) and the `document_id`, like
+this:
+
+[source,ruby]
+----------------------------------
+output {
+  elasticsearch {
+    action => "%{[@metadata][action]}"
+    document_id => "%{[@metadata][_id]}"
+    host => "example.com"
+    index => "index_name"
+    protocol => "http"
+  }
+}
+----------------------------------
 
 [[config-examples]]
 === Logstash Configuration Examples
