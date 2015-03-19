@@ -14,6 +14,35 @@ class LogStash::Filters::NOOP < LogStash::Filters::Base
   end
 end
 
+describe LogStash::Filters::Base do
+  subject {LogStash::Filters::Base.new({})}
+
+  it "should provide method interfaces to override" do
+    expect{subject.register}.to raise_error(RuntimeError)
+    expect{subject.filter(:foo)}.to raise_error(RuntimeError)
+  end
+
+  it "should provide class public API" do
+    [:register, :filter, :multi_filter, :execute, :threadsafe?, :filter_matched, :filter?, :teardown].each do |method|
+      expect(subject).to respond_to(method)
+    end
+  end
+
+  it "should multi_filter without new events" do
+    allow(subject).to receive(:filter) do |event, &block|
+      nil
+    end
+    expect(subject.multi_filter([:foo])).to eq([:foo])
+  end
+
+  it "should multi_filter with new events" do
+    allow(subject).to receive(:filter) do |event, &block|
+      block.call(:bar)
+    end
+    expect(subject.multi_filter([:foo])).to eq([:foo, :bar])
+  end
+end
+
 describe LogStash::Filters::NOOP do
 
   describe "adding multiple values to one field" do
