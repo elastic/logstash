@@ -11,8 +11,6 @@ require "logstash/outputs/base"
 
 class LogStash::Pipeline
 
-  FLUSH_EVENT = LogStash::FlushEvent.new
-
   def initialize(configstr)
     @logger = Cabin::Channel.get(LogStash)
     grammar = LogStashConfigParser.new
@@ -113,7 +111,7 @@ class LogStash::Pipeline
 
   def shutdown_filters
     @flusher_lock.synchronize { @flusher_thread.kill }
-    @input_to_filter.push(LogStash::ShutdownEvent.new)
+    @input_to_filter.push(LogStash::SHUTDOWN)
   end
 
   def wait_filters
@@ -122,7 +120,7 @@ class LogStash::Pipeline
 
   def shutdown_outputs
     # nothing, filters will do this
-    @filter_to_output.push(LogStash::ShutdownEvent.new)
+    @filter_to_output.push(LogStash::SHUTDOWN)
   end
 
   def wait_outputs
@@ -154,7 +152,7 @@ class LogStash::Pipeline
     end
 
     @flusher_lock = Mutex.new
-    @flusher_thread = Thread.new { Stud.interval(5) { @flusher_lock.synchronize { @input_to_filter.push(FLUSH_EVENT) } } }
+    @flusher_thread = Thread.new { Stud.interval(5) { @flusher_lock.synchronize { @input_to_filter.push(LogStash::FLUSH) } } }
   end
 
   def start_outputs
@@ -203,11 +201,7 @@ class LogStash::Pipeline
 
         case event
         when LogStash::Event
-          # use events array to guarantee ordering of origin vs created events
-          # where created events are emitted by filters like split or metrics
-          events = []
-          filter(event) { |newevent| events << newevent }
-          events.each { |event| @filter_to_output.push(event) }
+          filter_func(event).each { |e| @filter_to_output.push(e) unless e.cancelled? }
         when LogStash::FlushEvent
           # handle filter flushing here so that non threadsafe filters (thus only running one filterworker)
           # don't have to deal with thread safety implementing the flush method
@@ -231,8 +225,8 @@ class LogStash::Pipeline
 
     while true
       event = @filter_to_output.pop
-      break if event.is_a?(LogStash::ShutdownEvent)
-      output(event)
+      break if event == LogStash::SHUTDOWN
+      output_func(event)
     end # while true
 
     @outputs.each do |output|
@@ -271,12 +265,9 @@ class LogStash::Pipeline
     return klass.new(*args)
   end
 
+  # for backward compatibility in devutils for the rspec helpers
   def filter(event, &block)
-    @filter_func.call(event, &block)
-  end
-
-  def output(event)
-    @output_func.call(event)
+    filter_func(event).each { |e| block.call(e) }
   end
 
   # perform filters flush and yeild flushed event to the passed block
