@@ -98,7 +98,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
 
   # How many times to try reconnecting before giving up. Default is 0.
   # Zero means to try reconnecting forever.
-  config :reconnection_threshold, :validate => :number, :default => 1
+  config :reconnection_threshold, :validate => :number, :default => 0
   def register
     require 'redis'
 
