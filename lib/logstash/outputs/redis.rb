@@ -181,6 +181,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
                    :backtrace => e.backtrace)
       if @reconnection_threshold != 0 and @reconnection_tries > @reconnection_threshold
         raise e
+      end
       sleep @reconnect_interval
       @redis = nil
       @reconnection_tries += 1
