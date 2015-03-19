@@ -81,16 +81,15 @@ module LogStash; module Config; module AST
       ["filter", "output"].each do |type|
         # defines @filter_func and @output_func
 
-        definitions << "@#{type}_func = lambda do |event, &block|"
-        definitions << "  events = [event]"
+        definitions << "def #{type}_func(event)"
+        definitions << "  events = [event]" if type == "filter"
         definitions << "  @logger.debug? && @logger.debug(\"#{type} received\", :event => event.to_hash)"
+
         sections.select { |s| s.plugin_type.text_value == type }.each do |s|
           definitions << s.compile.split("\n", -1).map { |e| "  #{e}" }
         end
 
-        if type == "filter"
-          definitions << "  events.flatten.each{|e| block.call(e) }"
-        end
+        definitions << "  events" if type == "filter"
         definitions << "end"
       end
 
@@ -211,13 +210,7 @@ module LogStash; module Config; module AST
         return "start_input(#{variable_name})"
       when "filter"
         return <<-CODE
-          events = events.flat_map do |event|
-            next [] if event.cancelled?
-
-            new_events = []
-            #{variable_name}.filter(event){|new_event| new_events << new_event}
-            event.cancelled? ? new_events : new_events.unshift(event)
-          end
+          events = #{variable_name}.multi_filter(events)
         CODE
       when "output"
         return "#{variable_name}.handle(event)\n"
@@ -287,7 +280,7 @@ module LogStash; module Config; module AST
 
   module Unicode
     def self.wrap(text)
-      return "(" + text.inspect + ".force_encoding(Encoding::UTF_8)" + ")"
+      return "(" + text.force_encoding(Encoding::UTF_8).inspect + ")"
     end
   end
 
@@ -364,12 +357,8 @@ module LogStash; module Config; module AST
       # at the end, events is returned to handle the case where no branch match and no branch code is executed
       # so we must make sure to return the current event.
 
-      return <<-CODE
-        events = events.flat_map do |event|
-          events = [event]
-          #{super}
-          end
-          events
+      <<-CODE
+        #{super}
         end
       CODE
     end

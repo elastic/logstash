@@ -289,8 +289,7 @@ describe LogStash::Event do
     it "should tag and warn for invalid value" do
       ts = LogStash::Timestamp.now
       expect(LogStash::Timestamp).to receive(:now).twice.and_return(ts)
-      expect(Cabin::Channel).to receive(:get).twice.and_return(logger)
-      expect(logger).to receive(:warn).twice
+      expect(LogStash::Event::LOGGER).to receive(:warn).twice
 
       event = LogStash::Event.new("@timestamp" => :foo)
       expect(event.timestamp.to_i).to eq(ts.to_i)
@@ -306,8 +305,7 @@ describe LogStash::Event do
     it "should tag and warn for invalid string format" do
       ts = LogStash::Timestamp.now
       expect(LogStash::Timestamp).to receive(:now).and_return(ts)
-      expect(Cabin::Channel).to receive(:get).and_return(logger)
-      expect(logger).to receive(:warn)
+      expect(LogStash::Event::LOGGER).to receive(:warn)
 
       event = LogStash::Event.new("@timestamp" => "foo")
       expect(event.timestamp.to_i).to eq(ts.to_i)
@@ -400,7 +398,15 @@ describe LogStash::Event do
         expect(subject["foo"]).to eq("bar")
       end
     end
+  end
 
+  context "signal events" do
+    it "should define the shutdown event" do
+      # the SHUTDOWN and FLUSH constants are part of the plugin API contract
+      # if they are changed, all plugins must be updated
+      expect(LogStash::SHUTDOWN).to be_a(LogStash::ShutdownEvent)
+      expect(LogStash::FLUSH).to be_a(LogStash::FlushEvent)
+    end
   end
 
 end
