@@ -2,6 +2,7 @@ namespace "artifact" do
 
   def package_files
     [
+      ".bundle/config",
       "LICENSE",
       "CHANGELOG",
       "CONTRIBUTORS",
@@ -53,7 +54,15 @@ namespace "artifact" do
     FileUtils.cp("Gemfile.jruby-1.9.lock", "Gemfile.jruby-1.9.lock.defaults")
   end
 
-  task "prepare" => ["bootstrap", "use-defaults-gemfile", "plugin:install-default"]
+  # We create an empty bundle config file
+  # This will allow the deb and rpm to create a file
+  # with the correct user group and permission.
+  task "clean-bundle-config" do
+    FileUtils.mkdir_p(".bundle")
+    File.open(".bundle/config", "w") { }
+  end
+
+  task "prepare" => ["bootstrap", "use-defaults-gemfile", "plugin:install-default", "clean-bundle-config"]
 
   desc "Build a tar.gz of logstash with all dependencies"
   task "tar" => ["prepare"] do
