@@ -7,7 +7,7 @@ require "stud/buffer"
 # The RPUSH command is supported in Redis v0.0.7+. Using
 # PUBLISH to a channel requires at least v1.3.8+.
 # While you may be able to make these Redis versions work,
-# the best performance and stability will be found in more 
+# the best performance and stability will be found in more
 # recent stable versions.  Versions 2.6.0+ are recommended.
 #
 # For more information about Redis, see <http://redis.io/>
@@ -96,6 +96,9 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
   # Zero means to check on every event.
   config :congestion_interval, :validate => :number, :default => 1
 
+  # How many times to try reconnecting before giving up. Default is 0.
+  # Zero means to try reconnecting forever.
+  config :reconnection_threshold, :validate => :number, :default => 1
   def register
     require 'redis'
 
@@ -163,6 +166,7 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       return
     end
 
+    @reconnection_tries = 0
     begin
       @redis ||= connect
       if @data_type == 'list'
@@ -175,8 +179,11 @@ class LogStash::Outputs::Redis < LogStash::Outputs::Base
       @logger.warn("Failed to send event to Redis", :event => event,
                    :identity => identity, :exception => e,
                    :backtrace => e.backtrace)
+      if @reconnection_threshold != 0 and @reconnection_tries > @reconnection_threshold
+        raise e
       sleep @reconnect_interval
       @redis = nil
+      @reconnection_tries += 1
       retry
     end
   end # def receive
