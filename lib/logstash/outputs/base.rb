@@ -98,12 +98,12 @@ class LogStash::Outputs::Base < LogStash::Plugin
     begin
       receive(event)
     rescue Exception => e
-      if attempt <= retries
+      if attempt < retries
         safe_handle(event, attempt += 1)
-      elsif @on_error_strategy == "shutdown"
-        raise e
       elsif @on_error_strategy == "ignore"
         @logger.warn(I18n.t("logstash.pipeline.output-worker-ignore-error", :plugin => self.class.config_name, :event => event, :exception => e))
+      else
+        raise e
       end
     end
   end # def deal
