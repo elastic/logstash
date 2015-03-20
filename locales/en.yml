@@ -33,6 +33,11 @@ en:
         %{plugin} output plugin: setting 'workers => %{worker_count}' is not
         supported by this plugin. I will continue working as if you had not set
         this setting.
+      output-worker-ignore-error: >-
+        %{plugin} output plugin: when trying to send the event: '%{event}'
+        the error: '%{exception}' was raised.
+        As I am configured to ignore errors: 'on_error_strategy => "ignore"'
+        I will continue working as if nothing happened.
     plugin:
       deprecated_milestone: >-
         %{plugin} plugin is using the 'milestone' method to declare the version
