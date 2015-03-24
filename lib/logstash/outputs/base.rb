@@ -69,7 +69,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
     else
       define_singleton_method(:handle, method(:handle_worker))
       @worker_queue = SizedQueue.new(20)
-      @worker_plugins = @workers.times.map { self.class.new(@original_params.merge("workers" => 1, "codec" => @codec.clone)) }
+      @worker_plugins = @workers.times.map { self.class.new(@original_params.merge("workers" => 1)) }
       @worker_plugins.map.with_index do |plugin, i|
         Thread.new(original_params, @worker_queue) do |params, queue|
           LogStash::Util::set_thread_name(">#{self.class.config_name}.#{i}")
