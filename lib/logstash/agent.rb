@@ -2,6 +2,7 @@
 require "clamp" # gem 'clamp'
 require "logstash/environment"
 require "logstash/errors"
+require "logstash/pipeline"
 require "uri"
 require "net/http"
 LogStash::Environment.load_locale!
@@ -17,7 +18,11 @@ class LogStash::Agent < Clamp::Command
 
   option ["-w", "--filterworkers"], "COUNT",
     I18n.t("logstash.agent.flag.filterworkers"),
-    :attribute_name => :filter_workers, :default => 1, &:to_i
+    :attribute_name => :filter_workers, &:to_i
+
+  option ["--filter-flush-opportunity-interval"], "SECONDS",
+    I18n.t("logstash.agent.flag.filter-flush-opportunity-interval"),
+    :attribute_name => :filter_flush_opportunity_interval, :default => LogStash::Pipeline::DEFAULTS[LogStash::Pipeline::FILTER_FLUSH_OPPORTUNITY_INTERVAL], &:to_f
 
   option "--watchdog-timeout", "SECONDS",
     I18n.t("logstash.agent.flag.watchdog-timeout"),
@@ -133,7 +138,8 @@ class LogStash::Agent < Clamp::Command
       configure_logging(log_file)
     end
 
-    pipeline.configure("filter-workers", filter_workers)
+    pipeline.configure(LogStash::Pipeline::FILTER_WORKERS, filter_workers) if filter_workers
+    pipeline.configure(LogStash::Pipeline::FILTER_FLUSH_OPPORTUNITY_INTERVAL, filter_flush_opportunity_interval)
 
     # Stop now if we are only asking for a config test.
     if config_test?

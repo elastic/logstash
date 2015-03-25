@@ -138,6 +138,9 @@ en:
           Check configuration, then exit.
         filterworkers: |+
           Sets the number of filter workers to run.
+        filter-flush-opportunity-interval: |+
+          Set the interval (in seconds) on which 
+          filters are given the opportunity to flush.
         watchdog-timeout: |+
           Set the filter watchdog timeout (in seconds).
           This timeout is used to detect stuck filters;

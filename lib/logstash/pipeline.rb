@@ -12,6 +12,13 @@ require "logstash/outputs/base"
 class LogStash::Pipeline
 
   FLUSH_EVENT = LogStash::FlushEvent.new
+  FILTER_FLUSH_OPPORTUNITY_INTERVAL = "filter-flush-opportunity-interval"
+  FILTER_WORKERS = "filter-workers"
+
+  DEFAULTS = {
+    FILTER_WORKERS => 1,
+    FILTER_FLUSH_OPPORTUNITY_INTERVAL => 5
+  }
 
   def initialize(configstr)
     @logger = Cabin::Channel.get(LogStash)
@@ -43,7 +50,8 @@ class LogStash::Pipeline
       @filter_to_output = SizedQueue.new(20)
     end
     @settings = {
-      "filter-workers" => 1,
+      FILTER_WORKERS => DEFAULTS[FILTER_WORKERS],
+      FILTER_FLUSH_OPPORTUNITY_INTERVAL => DEFAULTS[FILTER_FLUSH_OPPORTUNITY_INTERVAL]
     }
   end # def initialize
 
@@ -56,7 +64,7 @@ class LogStash::Pipeline
   end
 
   def configure(setting, value)
-    if setting == "filter-workers"
+    if setting == FILTER_WORKERS
       # Abort if we have any filters that aren't threadsafe
       if value > 1 && @filters.any? { |f| !f.threadsafe? }
         plugins = @filters.select { |f| !f.threadsafe? }.collect { |f| f.class.config_name }
@@ -149,12 +157,19 @@ class LogStash::Pipeline
 
   def start_filters
     @filters.each(&:register)
-    @filter_threads = @settings["filter-workers"].times.collect do
+    @filter_threads = @settings[FILTER_WORKERS].times.collect do
       Thread.new { filterworker }
     end
 
     @flusher_lock = Mutex.new
-    @flusher_thread = Thread.new { Stud.interval(5) { @flusher_lock.synchronize { @input_to_filter.push(FLUSH_EVENT) } } }
+    @flusher_thread = Thread.new do
+      Stud.interval(@settings[FILTER_FLUSH_OPPORTUNITY_INTERVAL]) do
+        @flusher_lock.synchronize do
+          @logger.debug? && @logger.debug("Signalling flush opportunity")
+          @input_to_filter.push(FLUSH_EVENT)
+        end
+      end
+    end
   end
 
   def start_outputs
