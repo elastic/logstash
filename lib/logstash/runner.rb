@@ -8,7 +8,7 @@ require "logstash/environment"
 LogStash::Environment.bundler_setup!
 LogStash::Environment.load_locale!
 
-Thread.abort_on_exception = true
+Thread.abort_on_exception = false
 
 require "logstash/namespace"
 require "logstash/program"
