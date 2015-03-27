@@ -1,2 +1,2 @@
 # hp procurve switch log files
-PROCURVE %{TIMESTAMP_ISO8601:syslog_timestamp} <%{WORD:syslog_facility}.%{WORD:syslog_severity}> %{SYSLOGHOST:syslog_hostname} %{PROG:syslog_program}:  %{GREEDYDATA:syslog_message}
+PROCURVE %{TIMESTAMP_ISO8601:timestamp} <%{WORD:facility}.%{WORD:severity}> %{SYSLOGHOST:logsource} %{PROG:program}:  %{GREEDYDATA:message}
