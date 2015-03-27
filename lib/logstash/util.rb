@@ -148,5 +148,4 @@ module LogStash::Util
       o
     end
   end
-
 end # module LogStash::Util

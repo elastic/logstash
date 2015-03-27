@@ -1,15 +1,16 @@
-require 'clamp'
-require 'logstash/namespace'
-require 'logstash/environment'
-require 'logstash/pluginmanager/util'
-require 'jar-dependencies'
-require 'jar_install_post_install_hook'
-require 'file-dependencies/gem'
-
+require "clamp"
+require "logstash/namespace"
+require "logstash/environment"
+require "logstash/pluginmanager/util"
+require "logstash/pluginmanager/base"
+require "jar-dependencies"
+require "jar_install_post_install_hook"
+require "file-dependencies/gem"
 require "logstash/gemfile"
 require "logstash/bundler"
+require "fileutils"
 
-class LogStash::PluginManager::Install < Clamp::Command
+class LogStash::PluginManager::Install < LogStash::PluginManager::Base
   parameter "[PLUGIN] ...", "plugin name(s) or file"
   option "--version", "VERSION", "version of the plugin to install"
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
@@ -18,95 +19,119 @@ class LogStash::PluginManager::Install < Clamp::Command
   # the install logic below support installing multiple plugins with each a version specification
   # but the argument parsing does not support it for now so currently if specifying --version only
   # one plugin name can be also specified.
-  #
-  # TODO: find right syntax to allow specifying list of plugins with optional version specification for each
-
   def execute
-    if development?
-      raise(LogStash::PluginManager::Error, "Cannot specify plugin(s) with --development, it will add the development dependencies of the currently installed plugins") unless plugin_list.empty?
+    validate_cli_options!
+    
+    if local_gems?
+      gems = extract_local_gems_plugins
+    elsif development?
+      gems = plugins_development_gems
     else
-      raise(LogStash::PluginManager::Error, "No plugin specified") if plugin_list.empty? && verify?
-
-      # temporary until we fullfil TODO ^^
-      raise(LogStash::PluginManager::Error, "Only 1 plugin name can be specified with --version") if version && plugin_list.size > 1
+      gems = plugins_gems
+      verify!(gems)
     end
-    raise(LogStash::PluginManager::Error, "File #{LogStash::Environment::GEMFILE_PATH} does not exist or is not writable, aborting") unless File.writable?(LogStash::Environment::GEMFILE_PATH)
 
-    gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
-    # keep a copy of the gemset to revert on error
-    original_gemset = gemfile.gemset.copy
+    install_gems_list!(gems)
+    remove_unused_locally_installed_gems! 
+  end
 
-    # force Rubygems sources to our Gemfile sources
-    Gem.sources = gemfile.gemset.sources
-
-    # install_list will be an array of [plugin name, version] tuples, version can be nil
-    install_list = []
-
+  private
+  def validate_cli_options!
     if development?
-      specs = LogStash::PluginManager.all_installed_plugins_gem_specs(gemfile)
-      install_list = specs.inject([]) do |result, spec|
-        result = result + spec.dependencies.select{|dep| dep.type == :development}.map{|dep| [dep.name] + dep.requirement.as_list + [{:group => :development}]}
-      end
+      signal_usage_error("Cannot specify plugin(s) with --development, it will add the development dependencies of the currently installed plugins") unless plugin_list.empty?
     else
-      # at this point we know that plugin_list is not empty and if the --version is specified there is only one plugin in plugin_list
+      signal_usage_error("No plugin specified") if plugin_list.empty? && verify?
+      # TODO: find right syntax to allow specifying list of plugins with optional version specification for each
+      signal_usage_error("Only 1 plugin name can be specified with --version") if version && plugin_list.size > 1
+    end
+    signal_error("File #{LogStash::Environment::GEMFILE_PATH} does not exist or is not writable, aborting") unless ::File.writable?(LogStash::Environment::GEMFILE_PATH)
+  end
 
-      install_list = version ? [plugin_list << version] : plugin_list.map{|plugin| [plugin, nil]}
-
-      install_list.each do |plugin, version|
+  # Check if the specified gems contains
+  # the logstash `metadata`
+  def verify!(gems)
+    if verify?
+      gems.each do |plugin, version|
         puts("Validating #{[plugin, version].compact.join("-")}")
-        raise(LogStash::PluginManager::Error, "Installation aborted") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
-      end if verify?
-
-      # at this point we know that we either have a valid gem name & version or a valid .gem file path
-
-      # if LogStash::PluginManager.plugin_file?(plugin)
-      #   raise(LogStash::PluginManager::Error) unless cache_gem_file(plugin)
-      #   spec = LogStash::PluginManager.plugin_file_spec(plugin)
-      #   gemfile.update(spec.name, spec.version.to_s)
-      # else
-      #   plugins.each{|tuple| gemfile.update(*tuple)}
-      # end
+        signal_error("Installation aborted, verification failed for #{plugin} #{version}") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
+      end 
     end
+  end
 
+  def plugins_development_gems
+    # Get currently defined gems and their dev dependencies
+    specs = []
 
+    specs = LogStash::PluginManager.all_installed_plugins_gem_specs(gemfile)
+
+    # Construct the list of dependencies to add to the current gemfile
+    specs.each_with_object([]) do |spec, install_list|
+      dependencies = spec.dependencies 
+        .select { |dep| dep.type == :development }
+        .map { |dep| [dep.name] + dep.requirement.as_list }
+
+      install_list.concat(dependencies)
+    end
+  end
+
+  def plugins_gems
+    version ? [plugin_list << version] : plugin_list.map { |plugin| [plugin, nil] }
+  end
+
+  # install_list will be an array of [plugin name, version, options] tuples, version it
+  # can be nil at this point we know that plugin_list is not empty and if the
+  # --version is specified there is only one plugin in plugin_list
+  #
+  def install_gems_list!(install_list)
+    # If something goes wrong during the installation `LogStash::Gemfile` will restore a backup version.
     install_list = LogStash::PluginManager.merge_duplicates(install_list)
-    install_list.each{|plugin, version| gemfile.update(plugin, version)}
-    gemfile.save
 
-    puts("Installing" + (install_list.empty? ? "..." : " " + install_list.map{|plugin, version| plugin}.join(", ")))
+    # Add plugins/gems to the current gemfile
+    puts("Installing" + (install_list.empty? ? "..." : " " + install_list.collect(&:first).join(", ")))
+    install_list.each { |plugin, version, options| gemfile.update(plugin, version, options) }
+
+    # Sync gemfiles changes to disk to make them available to the `bundler install`'s API
+    gemfile.save
 
     bundler_options = {:install => true}
     bundler_options[:without] = [] if development?
+    bundler_options[:rubygems_source] = gemfile.gemset.sources
 
-    # any errors will be logged to $stderr by invoke_bundler!
-    output, exception = LogStash::Bundler.invoke_bundler!(bundler_options)
-
-    if ENV["DEBUG"]
-      $stderr.puts(output)
-      $stderr.puts("Error: #{exception.class}, #{exception.message}") if exception
-    end
-
-    if exception
-      # revert to original Gemfile content
-      gemfile.gemset = original_gemset
-      gemfile.save
-      raise(LogStash::PluginManager::Error, "Installation aborted")
-    end
+    output = LogStash::Bundler.invoke_bundler!(bundler_options)
 
     puts("Installation successful")
+  rescue => exception
+    gemfile.restore!
+    report_exception("Installation Aborded", exception)
+  ensure
+    display_bundler_output(output)
   end
 
-  # copy .gem file into bundler cache directory, log any error to $stderr
-  # @param path [String] the source .gem file to copy
-  # @return [Boolean] true if successful
-  def cache_gem_file(path)
-    dest = ::File.join(LogStash::Environment.logstash_gem_home, "cache")
-    begin
-      FileUtils.cp(path, dest)
-    rescue => e
-      $stderr.puts("Error copying #{plugin} to #{dest}, caused by #{e.class}")
-      return false
+  # Extract the specified local gems in a predefined local path 
+  # Update the gemfile to use a relative path to this plugin and run
+  # Bundler, this will mark the gem not updatable by `bin/plugin update`
+  # This is the most reliable way to make it work in bundler without 
+  # hacking with `how bundler works`
+  #
+  # Bundler 2.0, will have support for plugins source we could create a .gem source
+  # to support it.
+  def extract_local_gems_plugins
+    plugin_list.collect do |plugin| 
+      package, path = LogStash::Bundler.unpack(plugin, LogStash::Environment::LOCAL_GEM_PATH)
+      [package.spec.name, package.spec.version, { :path => relative_path(path) }]
     end
-    true
+  end
+
+  # We cannot install both .gem and normal plugin in one call of `plugin install`
+  def local_gems?
+    return false if plugin_list.empty?
+
+    local_gem = plugin_list.collect { |plugin| ::File.extname(plugin) == ".gem" }.uniq
+
+    if local_gem.size == 1
+      return local_gem.first
+    else
+      signal_usage_error("Mixed source of plugins, you can't mix local `.gem` and remote gems")
+    end
   end
 end # class Logstash::PluginManager

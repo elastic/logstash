@@ -1,3 +1,4 @@
+require "logstash/util"
 module LogStash
 
   class GemfileError < StandardError; end
@@ -17,6 +18,7 @@ module LogStash
 
     def load
       @gemset ||= DSL.parse(@io.read)
+      backup
       self
     end
 
@@ -50,6 +52,23 @@ module LogStash
     # @return [Gem] removed gem or nil if not found
     def remove(name)
       @gemset.remove_gem(name)
+    end
+
+    def backup
+      @orignal_backup = @gemset.copy
+    end
+
+    def restore
+      @gemset = @orignal_backup
+    end
+
+    def restore!
+      restore
+      save
+    end
+
+    def locally_installed_gems
+      @gemset.gems.select { |gem| gem.options.include?(:path) }
     end
   end
 
@@ -101,7 +120,6 @@ module LogStash
     def copy
       Marshal.load(Marshal.dump(self))
     end
-
     private
 
     def sources_to_s

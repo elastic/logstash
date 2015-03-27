@@ -1,5 +1,4 @@
 module LogStash::PluginManager
-
   # check for valid logstash plugin gem name & version or .gem file, logs errors to $stdout
   # uses Rubygems API and will remotely validated agains the current Gem.sources
   # @param plugin [String] plugin name or .gem file path
