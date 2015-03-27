@@ -134,6 +134,44 @@ describe "logstash Gemfile Manager" do
       end
     end
 
+    describe "Locally installed gems" do
+      subject { LogStash::Gemfile.new(StringIO.new(file)).load.locally_installed_gems }
+
+      context "has gems defined with a path" do
+        let(:file) {
+          %Q[ 
+          source "https://rubygems.org"
+          gemspec :a => "a", "b" => 1
+          gem "foo", "> 1.0", :path => "/tmp/foo"
+          gem "bar", :path => "/tmp/bar"
+          gem "no-fun"
+          ]
+        }
+
+        it "returns the list of gems" do
+          expect(subject.collect(&:name)).to eq(["foo", "bar"])
+        end
+      end
+
+      context "no gems defined with a path" do
+        let(:file) {
+          %Q[ 
+          source "https://rubygems.org"
+          gemspec :a => "a", "b" => 1
+          gem "no-fun"
+          ]
+        }
+
+        it "return an empty list" do
+          expect(subject.size).to eq(0)
+        end
+      end
+
+      context "keep a backup of the original file" do
+        
+      end
+    end
+
     context "save" do
       it "should save" do
         file = <<-END

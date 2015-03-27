@@ -18,24 +18,24 @@ class LogStash::PluginManager::List < Clamp::Command
     require 'logstash/environment'
     LogStash::Environment.bundler_setup!
 
-    Gem.configuration.verbose = false
+    signal_error("No plugins found") if filtered_specs.empty?
 
-    gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
-
-    # start with all locally installed plugin gems regardless of the Gemfile content
-    specs = LogStash::PluginManager.find_plugins_gem_specs
-
-    # apply filters
-    specs = specs.select{|spec| gemfile.find(spec.name)} if installed?
-    specs = specs.select{|spec| spec.name =~ /#{plugin}/i} if plugin
-    specs = specs.select{|spec| spec.metadata['logstash_group'] == group} if group
-
-    raise(LogStash::PluginManager::Error, "No plugins found") if specs.empty?
-
-    specs.sort_by{|spec| spec.name}.each do |spec|
+    filtered_specs.sort_by{|spec| spec.name}.each do |spec|
       line = "#{spec.name}"
       line += " (#{spec.version})" if verbose?
       puts(line)
     end
+  end
+
+  def filtered_specs
+    @filtered_specs ||= begin
+                          # start with all locally installed plugin gems regardless of the Gemfile content
+                          specs = LogStash::PluginManager.find_plugins_gem_specs
+
+                          # apply filters
+                          specs = specs.select{|spec| gemfile.find(spec.name)} if installed?
+                          specs = specs.select{|spec| spec.name =~ /#{plugin}/i} if plugin
+                          specs = specs.select{|spec| spec.metadata['logstash_group'] == group} if group
+                        end
   end
 end # class Logstash::PluginManager

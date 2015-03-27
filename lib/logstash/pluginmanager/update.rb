@@ -1,51 +1,80 @@
 require 'clamp'
 require 'logstash/namespace'
 require 'logstash/pluginmanager/util'
+require 'logstash/pluginmanager/base'
 require 'jar-dependencies'
 require 'jar_install_post_install_hook'
 require 'file-dependencies/gem'
-
 require "logstash/gemfile"
 require "logstash/bundler"
 
-class LogStash::PluginManager::Update < Clamp::Command
+class LogStash::PluginManager::Update < LogStash::PluginManager::Base
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version"
 
   def execute
-    gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
-    # keep a copy of the gemset to revert on error
-    original_gemset = gemfile.gemset.copy
+    local_gems = gemfile.locally_installed_gems
 
-    previous_gem_specs_map = find_latest_gem_specs
-
-    # create list of plugins to update
-    plugins = unless plugin_list.empty?
-      not_installed = plugin_list.select{|plugin| !previous_gem_specs_map.has_key?(plugin.downcase)}
-      raise(LogStash::PluginManager::Error, "Plugin #{not_installed.join(', ')} is not installed so it cannot be updated, aborting") unless not_installed.empty?
-      plugin_list
+    if update_all? || !local_gems.empty?
+      error_plugin_that_use_path!(local_gems)
     else
-      previous_gem_specs_map.values.map{|spec| spec.name}
+      plugins_with_path = plugin_list & local_gems
+      error_plugin_that_use_path!(plugins_with_path) if plugins_with_path.size > 0 
     end
+
+    update_gems!
+  end
+
+  private
+  def error_plugin_that_use_path!(plugins)
+    signal_error("You have installed plugins from a .gem or you have manually defined a plugin in the Gemfile, we cannot update all or update this specific plugin, problematic plugins: #{plugins.collect(&:name).join(",")}")
+  end
+
+  def update_all?
+    plugin_list.size == 0
+  end
+
+  def update_gems!
+    # If any error is raise inside the block the Gemfile will restore a backup of the Gemfile
+    previous_gem_specs_map = find_latest_gem_specs
 
     # remove any version constrain from the Gemfile so the plugin(s) can be updated to latest version
     # calling update without requiremend will remove any previous requirements
-    plugins.select{|plugin| gemfile.find(plugin)}.each{|plugin| gemfile.update(plugin)}
+    plugins = plugins_to_update(previous_gem_specs_map)
+    plugins
+      .select { |plugin| gemfile.find(plugin) }
+      .each { |plugin| gemfile.update(plugin) }
+
+    # force a disk sync before running bundler
     gemfile.save
 
     puts("Updating " + plugins.join(", "))
 
     # any errors will be logged to $stderr by invoke_bundler!
-    output, exception = LogStash::Bundler.invoke_bundler!(:update => plugins)
-    output, exception = LogStash::Bundler.invoke_bundler!(:clean => true) unless exception
+    # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
+    output = LogStash::Bundler.invoke_bundler!(:update => plugins)
+    output = LogStash::Bundler.invoke_bundler!(:clean => true) 
 
-    if exception
-      # revert to original Gemfile content
-      gemfile.gemset = original_gemset
-      gemfile.save
+    display_updated_plugins(previous_gem_specs_map)
+  rescue => exception
+    gemfile.restore!
+    report_exception("Updated Aborded", exception)
+  ensure
+    display_bundler_output(output)
+  end
 
-      report_exception(output, exception)
+  # create list of plugins to update
+  def plugins_to_update(previous_gem_specs_map)
+    unless plugin_list.empty?
+      not_installed = plugin_list.select{|plugin| !previous_gem_specs_map.has_key?(plugin.downcase)}
+      signal_error("Plugin #{not_installed.join(', ')} is not installed so it cannot be updated, aborting") unless not_installed.empty?
+      plugin_list
+    else
+      previous_gem_specs_map.values.map{|spec| spec.name}
     end
+  end
 
+  # We compare the before the update and after the update
+  def display_updated_plugins(previous_gem_specs_map)
     update_count = 0
     find_latest_gem_specs.values.each do |spec|
       name = spec.name.downcase
@@ -59,10 +88,9 @@ class LogStash::PluginManager::Update < Clamp::Command
         update_count += 1
       end
     end
+
     puts("No plugin updated") if update_count.zero?
   end
-
-  private
 
   # retrieve only the latest spec for all locally installed plugins
   # @return [Hash] result hash {plugin_name.downcase => plugin_spec}
@@ -72,14 +100,5 @@ class LogStash::PluginManager::Update < Clamp::Command
       result[spec.name.downcase] = previous ? [previous, spec].max_by{|s| s.version} : spec
       result
     end
-  end
-
-  def report_exception(output, exception)
-    if ENV["DEBUG"]
-      $stderr.puts(output)
-      $stderr.puts("Error: #{exception.class}, #{exception.message}") if exception
-    end
-
-    raise(LogStash::PluginManager::Error, "Update aborted")
   end
 end
