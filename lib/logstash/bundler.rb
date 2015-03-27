@@ -23,6 +23,28 @@ end
 
 module LogStash
   module Bundler
+    # Take a gem package and extract it to a specific target
+    # @param [String] Gem file, this must be a path
+    # @param [String, String] Return a Gem::Package and the installed path
+    def self.unpack(file, path)
+      require "rubygems/package"
+      require "securerandom"
+
+      # We are creating a random directory per extract,
+      # if we dont do this bundler will not trigger download of the dependencies.
+      # Use case is:
+      # - User build his own gem with a fix
+      # - User doesnt increment the version
+      # - User install the same version but different code or dependencies multiple times..
+      basename  = ::File.basename(file, '.gem') 
+      unique = SecureRandom.hex(4)
+      target_path = ::File.expand_path(::File.join(path, unique, basename))
+      
+      package = ::Gem::Package.new(file)
+      package.extract_files(target_path)
+
+      return [package, target_path]
+    end
 
     # capture any $stdout from the passed block. also trap any exception in that block, in which case the trapped exception will be returned
     # @param [Proc] the code block to execute
@@ -53,6 +75,9 @@ module LogStash
 
       ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
 
+      # force Rubygems sources to our Gemfile sources
+      ::Gem.sources = options[:rubygems_source] if options[:rubygems_source]
+
       ::Bundler.settings[:path] = LogStash::Environment::BUNDLE_DIR
       ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
       ::Bundler.settings[:without] = options[:without].join(":")
@@ -60,7 +85,7 @@ module LogStash
       try = 0
 
       # capture_stdout also traps any raised exception and pass them back as the function return [output, exception]
-      capture_stdout do
+      output, exception = capture_stdout do
         loop do
           begin
             ::Bundler.reset!
@@ -81,11 +106,15 @@ module LogStash
 
             try += 1
             $stderr.puts("Error #{e.class}, retrying #{try}/#{options[:max_tries]}")
-            $stderr.puts(e.message) if ENV["DEBUG"]
+            $stderr.puts(e.message)
             sleep(0.5)
           end
         end
       end
+
+      raise exception if exception
+
+      return output
     end
 
     # build Bundler::CLI.start arguments array from the given options hash
