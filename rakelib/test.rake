@@ -5,25 +5,37 @@
 # In general this is not a problem, because the most common rspec usage
 # is throw the rake task, where rspec sets this himself internally.
 ##
+require "logstash/pluginmanager/util"
+
 namespace "test" do
-  def run_rspec(*args)
+  task "setup" do
     require "logstash/environment"
     LogStash::Environment.bundler_setup!({:without => []})
     require "rspec/core/runner"
     require "rspec"
-    RSpec::Core::Runner.run([*args])
   end
 
-  task "core" do
-    exit run_rspec(Rake::FileList["spec/**/*_spec.rb"])
+  desc "run core specs"
+  task "core" => ["setup"] do
+    exit(RSpec::Core::Runner.run([Rake::FileList["spec/**/*_spec.rb"]]))
   end
 
-  task "core-fail-fast" do
-    exit run_rspec("--fail-fast", Rake::FileList["spec/**/*_spec.rb"])
+  desc "run core specs in fail-fast mode"
+  task "core-fail-fast" => ["setup"] do
+    exit(Spec::Core::Runner.run(["--fail-fast", Rake::FileList["spec/**/*_spec.rb"]]))
   end
 
-  task "plugins" do
-    exit run_rspec("--order", "rand", Rake::FileList[File.join(ENV["GEM_HOME"], "gems/logstash-*/spec/{input,filter,codec,output}s/*_spec.rb")])
+  desc "run all installed plugins specs"
+  task "plugins" => ["setup"] do
+    # grab all spec files using the live plugins gem specs. this allows correclty also running the specs
+    # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
+    # not be run because they were not under the vendor/bundle/jruby/1.9/gems path
+    test_files = LogStash::PluginManager.find_plugins_gem_specs.map do |spec|
+      Rake::FileList[File.join(spec.gem_dir, "spec/{input,filter,codec,output}s/*_spec.rb")]
+    end.flatten
+
+    # "--format=documentation"
+    exit(RSpec::Core::Runner.run(["--order", "rand", test_files]))
   end
 
   task "install-core" => ["bootstrap", "plugin:install-core", "plugin:install-development-dependencies"]
