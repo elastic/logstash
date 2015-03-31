@@ -1,11 +1,13 @@
+require "logstash/bundler"
 module LogStash::PluginManager
-
   # check for valid logstash plugin gem name & version or .gem file, logs errors to $stdout
   # uses Rubygems API and will remotely validated agains the current Gem.sources
   # @param plugin [String] plugin name or .gem file path
   # @param version [String] gem version requirement string
   # @return [Boolean] true if valid logstash plugin gem name & version or a .gem file
   def self.logstash_plugin?(plugin, version = nil)
+    LogStash::Bundler.configure_http_proxy!
+
     if plugin_file?(plugin)
       begin
         return logstash_plugin_gem_spec?(plugin_file_spec(plugin))

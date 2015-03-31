@@ -41,6 +41,15 @@ module LogStash
       $stdout = old_stdout
     end
 
+    def self.configure_http_proxy!
+      if ENV["http_proxy"]
+        # Since we are using the class ourself not all the setup is done
+        # we need to manually setup the http_proxy
+        Gem.configuration[:http_proxy] = ENV['http_proxy']
+        Gem.configuration[:proxy] = ENV['http_proxy'] # The old jar-dependencies is using the wrong params
+      end
+    end
+
     # execute bundle install and capture any $stdout output. any raised exception in the process will be trapped
     # and returned. logs errors to $stdout.
     # @param options [Hash] invoke options with default values, :max_tries => 10, :clean => false, :install => false, :update => false
@@ -52,6 +61,8 @@ module LogStash
       options[:update] = Array(options[:update]) if options[:update]
 
       ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
+
+      configure_http_proxy!
 
       ::Bundler.settings[:path] = LogStash::Environment::BUNDLE_DIR
       ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
