@@ -215,6 +215,7 @@ class LogStash::Pipeline
 
         case event
         when LogStash::Event
+          # filter_func returns all filtered events, including cancelled ones
           filter_func(event).each { |e| @filter_to_output.push(e) unless e.cancelled? }
         when LogStash::FlushEvent
           # handle filter flushing here so that non threadsafe filters (thus only running one filterworker)
@@ -291,8 +292,10 @@ class LogStash::Pipeline
     return klass.new(*args)
   end
 
-  # for backward compatibility in devutils for the rspec helpers
+  # for backward compatibility in devutils for the rspec helpers, this method is not used
+  # in the pipeline anymore.
   def filter(event, &block)
+    # filter_func returns all filtered events, including cancelled ones
     filter_func(event).each { |e| block.call(e) }
   end
 
