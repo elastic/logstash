@@ -228,13 +228,13 @@ class LogStash::Outputs::CloudWatch < LogStash::Outputs::Base
       end # data.each
 
       begin
-        metric_data.slice(20) do |sliced_metric_data|
+        metric_data.each_slice(20) do |sliced_metric_data|
           @cw.put_metric_data(
               :namespace => namespace,
               :metric_data => sliced_metric_data
           )
+          @logger.info("Sent data to AWS CloudWatch OK", :namespace => namespace, :metric_data => sliced_metric_data)
         end
-        @logger.info("Sent data to AWS CloudWatch OK", :namespace => namespace, :metric_data => metric_data)
       rescue Exception => e
         @logger.warn("Failed to send to AWS CloudWatch", :exception => e, :namespace => namespace, :metric_data => metric_data)
         break
