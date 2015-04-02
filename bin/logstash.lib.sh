@@ -19,15 +19,26 @@ setup_java() {
     exit 1
   fi
 
-  JAVA_OPTS="$JAVA_OPTS -Xmx${LS_HEAP_SIZE}"
-  JAVA_OPTS="$JAVA_OPTS -XX:+UseParNewGC"
-  JAVA_OPTS="$JAVA_OPTS -XX:+UseConcMarkSweepGC"
-  JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true"
+  if [ "$LS_HEAP_SIZE" ] ; then
+    JAVA_OPTS="$JAVA_OPTS -Xmx${LS_HEAP_SIZE}"
+  fi
 
-  JAVA_OPTS="$JAVA_OPTS -XX:CMSInitiatingOccupancyFraction=75"
-  JAVA_OPTS="$JAVA_OPTS -XX:+UseCMSInitiatingOccupancyOnly"
+  if [ -z "$LS_JAVA_OPTS" ] ; then
+    # There are no JAVA_OPTS set from the client, we set a predefined
+    # set of options that think are good in general
+    JAVA_OPTS="$JAVA_OPTS -XX:+UseParNewGC"
+    JAVA_OPTS="$JAVA_OPTS -XX:+UseConcMarkSweepGC"
+    JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true"
 
-  if [ ! -z "$LS_USE_GC_LOGGING" ] ; then
+    JAVA_OPTS="$JAVA_OPTS -XX:CMSInitiatingOccupancyFraction=75"
+    JAVA_OPTS="$JAVA_OPTS -XX:+UseCMSInitiatingOccupancyOnly"
+  else
+    # The client set the variable LS_JAVA_OPTS, choosing his own
+    # set of java opts.
+    JAVA_OPTS="$JAVA_OPTS $LS_JAVA_OPTS"
+  fi
+
+  if [ "$LS_USE_GC_LOGGING" ] ; then
     JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDetails"
     JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCTimeStamps"
     JAVA_OPTS="$JAVA_OPTS -XX:+PrintClassHistogram"
@@ -96,7 +107,7 @@ jruby_opts() {
 setup() {
   # first check if we want to use drip, which can be used in vendored jruby mode
   # and also when setting USE_RUBY=1 if the ruby interpretor is in fact jruby
-  if [ ! -z "$JAVACMD" ] ; then
+  if [ "$JAVACMD" ] ; then
     if [ "$(basename $JAVACMD)" = "drip" ] ; then
       DRIP_JAVACMD=1
       USE_DRIP=1

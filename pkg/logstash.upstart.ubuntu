@@ -23,7 +23,6 @@ script
   PATH=/bin:/usr/bin
   LS_HOME=/var/lib/logstash
   LS_HEAP_SIZE="500m"
-  LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
   LS_LOG_FILE=/var/log/logstash/logstash.log
   LS_USE_GC_LOGGING=""
   LS_CONF_DIR=/etc/logstash/conf.d
@@ -35,7 +34,9 @@ script
   [ -f /etc/default/logstash ] && . /etc/default/logstash
 
   HOME="${HOME:-$LS_HOME}"
-  JAVA_OPTS="${LS_JAVA_OPTS}"
+  # Set JAVA_OPTS to avoid sharing configuration between other
+  # JVM based programs running on the same time
+  JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
   # Reset filehandle limit
   ulimit -n ${LS_OPEN_FILES}
   cd "${LS_HOME}"
