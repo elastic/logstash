@@ -393,4 +393,36 @@ describe "conditionals in filter" do
       # expect(subject[1]["cond2"]).to eq("true")
     end
   end
+
+  describe "multiple new events from root" do
+    config <<-CONFIG
+      filter {
+        if [type] == "original" {
+          clone {
+            clones => ["clone1", "clone2"]
+          }
+        }
+        if [type] == "clone1" {
+          mutate { add_field => { "cond1" => "true" } }
+        } else if [type] == "clone2" {
+          mutate { add_field => { "cond2" => "true" } }
+        }
+      }
+    CONFIG
+
+    sample({"type" => "original"}) do
+      # puts subject.inspect
+      expect(subject[0]["cond1"]).to eq(nil)
+      expect(subject[0]["cond2"]).to eq(nil)
+
+      expect(subject[1]["type"]).to eq("clone1")
+      expect(subject[1]["cond1"]).to eq("true")
+      expect(subject[1]["cond2"]).to eq(nil)
+
+      expect(subject[2]["type"]).to eq("clone2")
+      expect(subject[2]["cond1"]).to eq(nil)
+      expect(subject[2]["cond2"]).to eq("true")
+    end
+  end
+
 end

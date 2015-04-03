@@ -1,7 +1,9 @@
 # encoding: utf-8
 require 'logstash/errors'
 require "treetop"
+
 class Treetop::Runtime::SyntaxNode
+
   def compile
     return "" if elements.nil?
     return elements.collect(&:compile).reject(&:empty?).join("")
@@ -55,11 +57,31 @@ class Treetop::Runtime::SyntaxNode
   end
 end
 
+
 module LogStash; module Config; module AST
+
+  def self.defered_conditionals=(val)
+    @defered_conditionals = val
+  end
+
+  def self.defered_conditionals
+    @defered_conditionals
+  end
+
+  def self.defered_conditionals_index
+    @defered_conditionals_index
+  end
+
+  def self.defered_conditionals_index=(val)
+    @defered_conditionals_index = val
+  end
+
   class Node < Treetop::Runtime::SyntaxNode; end
 
   class Config < Node
     def compile
+      LogStash::Config::AST.defered_conditionals = []
+      LogStash::Config::AST.defered_conditionals_index = 0
       code = []
 
       code << <<-CODE
@@ -94,6 +116,9 @@ module LogStash; module Config; module AST
       end
 
       code += definitions.join("\n").split("\n", -1).collect { |l| "  #{l}" }
+
+      code += LogStash::Config::AST.defered_conditionals
+
       return code.join("\n")
     end
   end
@@ -124,20 +149,15 @@ module LogStash; module Config; module AST
             #{name}_flush = lambda do |options, &block|
               @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name})
 
-              flushed_events = #{name}.flush(options)
+              events = #{name}.flush(options)
 
-              return if flushed_events.nil? || flushed_events.empty?
+              return if events.nil? || events.empty?
 
-              flushed_events.each do |event|
-                @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name}, :event => event)
+              @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name}, :events => events)
 
-                events = [event]
-                #{plugin.compile_starting_here.gsub(/^/, "  ")}
+              #{plugin.compile_starting_here.gsub(/^/, "  ")}
 
-                block.call(event)
-                events.flatten.each{|e| block.call(e) if e != event}
-              end
-
+              events.each{|e| block.call(e)}
             end
 
             if #{name}.respond_to?(:flush)
@@ -357,14 +377,38 @@ module LogStash; module Config; module AST
       # at the end, events is returned to handle the case where no branch match and no branch code is executed
       # so we must make sure to return the current event.
 
-      <<-CODE
-        #{super}
-        end
-      CODE
+      type = recursive_select_parent(PluginSection).first.plugin_type.text_value
+
+      if type == "filter"
+        i = LogStash::Config::AST.defered_conditionals_index += 1
+        source = <<-CODE
+          def cond_func_#{i}(input_events)
+            result = []
+            input_events.each do |event|
+              events = [event]
+              #{super}
+              end
+              result += events
+            end
+            result
+          end
+        CODE
+        LogStash::Config::AST.defered_conditionals << source
+
+        <<-CODE
+          events = cond_func_#{i}(events)
+        CODE
+      else
+        <<-CODE
+          #{super}
+          end
+        CODE
+      end
     end
   end
 
   class BranchEntry < Node; end
+
   class If < BranchEntry
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
