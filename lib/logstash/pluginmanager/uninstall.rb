@@ -3,13 +3,13 @@ require "logstash/logging"
 require "logstash/errors"
 require "logstash/environment"
 require "logstash/pluginmanager/util"
-require "logstash/pluginmanager/base"
+require "logstash/pluginmanager/command"
 require "clamp"
 
 require "logstash/gemfile"
 require "logstash/bundler"
 
-class LogStash::PluginManager::Uninstall < LogStash::PluginManager::Base
+class LogStash::PluginManager::Uninstall < LogStash::PluginManager::Command
   parameter "PLUGIN", "plugin name"
 
   def execute

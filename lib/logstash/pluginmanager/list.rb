@@ -1,9 +1,10 @@
 require 'clamp'
 require 'logstash/namespace'
 require 'logstash/pluginmanager/util'
+require 'logstash/pluginmanager/command'
 require 'rubygems/spec_fetcher'
 
-class LogStash::PluginManager::List < Clamp::Command
+class LogStash::PluginManager::List < LogStash::PluginManager::Command
 
   parameter "[PLUGIN]", "Part of plugin name to search for, leave empty for all plugins"
 
@@ -36,6 +37,8 @@ class LogStash::PluginManager::List < Clamp::Command
                           specs = specs.select{|spec| gemfile.find(spec.name)} if installed?
                           specs = specs.select{|spec| spec.name =~ /#{plugin}/i} if plugin
                           specs = specs.select{|spec| spec.metadata['logstash_group'] == group} if group
+
+                          specs
                         end
   end
 end # class Logstash::PluginManager
