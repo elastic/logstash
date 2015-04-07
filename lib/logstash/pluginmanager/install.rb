@@ -2,7 +2,7 @@ require "clamp"
 require "logstash/namespace"
 require "logstash/environment"
 require "logstash/pluginmanager/util"
-require "logstash/pluginmanager/base"
+require "logstash/pluginmanager/command"
 require "jar-dependencies"
 require "jar_install_post_install_hook"
 require "file-dependencies/gem"
@@ -10,7 +10,7 @@ require "logstash/gemfile"
 require "logstash/bundler"
 require "fileutils"
 
-class LogStash::PluginManager::Install < LogStash::PluginManager::Base
+class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   parameter "[PLUGIN] ...", "plugin name(s) or file"
   option "--version", "VERSION", "version of the plugin to install"
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
