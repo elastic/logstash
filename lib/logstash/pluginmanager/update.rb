@@ -1,14 +1,14 @@
-require 'clamp'
-require 'logstash/namespace'
-require 'logstash/pluginmanager/util'
-require 'logstash/pluginmanager/base'
-require 'jar-dependencies'
-require 'jar_install_post_install_hook'
-require 'file-dependencies/gem'
+require "clamp"
+require "logstash/namespace"
+require "logstash/pluginmanager/util"
+require "logstash/pluginmanager/command"
+require "jar-dependencies"
+require "jar_install_post_install_hook"
+require "file-dependencies/gem"
 require "logstash/gemfile"
 require "logstash/bundler"
 
-class LogStash::PluginManager::Update < LogStash::PluginManager::Base
+class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version"
 
   def execute
