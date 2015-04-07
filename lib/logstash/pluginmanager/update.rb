@@ -26,7 +26,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
 
   private
   def error_plugin_that_use_path!(plugins)
-    signal_error("You have installed plugins from a .gem or you have manually defined a plugin in the Gemfile, we cannot update all or update this specific plugin, problematic plugins: #{plugins.collect(&:name).join(",")}")
+    signal_error("Update is not supported for manually defined plugins or local .gem plugin installations: #{plugins.collect(&:name).join(",")}")
   end
 
   def update_all?
