@@ -55,11 +55,11 @@ module LogStash
     end
 
     def backup
-      @orignal_backup = @gemset.copy
+      @original_backup = @gemset.copy
     end
 
     def restore
-      @gemset = @orignal_backup
+      @gemset = @original_backup
     end
 
     def restore!
