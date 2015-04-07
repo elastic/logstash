@@ -50,7 +50,7 @@ module LogStash
     GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "Gemfile")
     BUNDLE_CONFIG_PATH = ::File.join(LOGSTASH_HOME, ".bundle", "config")
     BOOTSTRAP_GEM_PATH = ::File.join(LOGSTASH_HOME, 'build', 'bootstrap')
-    LOCAL_GEM_PATH = ::File.join(LOGSTASH_HOME, 'vendor', 'locally_installed_gem')
+    LOCAL_GEM_PATH = ::File.join(LOGSTASH_HOME, 'vendor', 'local_gems')
 
     LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
 
