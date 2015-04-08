@@ -9,7 +9,7 @@ require "logstash/gemfile"
 require "logstash/bundler"
 
 class LogStash::PluginManager::Update < LogStash::PluginManager::Command
-  parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version"
+  parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version", :attribute_name => :plugins_arg
 
   def execute
     local_gems = gemfile.locally_installed_gems
@@ -17,7 +17,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     if update_all? || !local_gems.empty?
       error_plugin_that_use_path!(local_gems)
     else
-      plugins_with_path = plugin_list & local_gems
+      plugins_with_path = plugins_arg & local_gems
       error_plugin_that_use_path!(plugins_with_path) if plugins_with_path.size > 0 
     end
 
@@ -30,7 +30,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   end
 
   def update_all?
-    plugin_list.size == 0
+    plugins_arg.size == 0
   end
 
   def update_gems!
@@ -67,9 +67,9 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     if update_all?
       previous_gem_specs_map.values.map{|spec| spec.name}
     else
-      not_installed = plugin_list.select{|plugin| !previous_gem_specs_map.has_key?(plugin.downcase)}
+      not_installed = plugins_arg.select{|plugin| !previous_gem_specs_map.has_key?(plugin.downcase)}
       signal_error("Plugin #{not_installed.join(', ')} is not installed so it cannot be updated, aborting") unless not_installed.empty?
-      plugin_list
+      plugins_arg
     end
   end
 
