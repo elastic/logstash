@@ -64,12 +64,12 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
 
   # create list of plugins to update
   def plugins_to_update(previous_gem_specs_map)
-    unless plugin_list.empty?
+    if update_all?
+      previous_gem_specs_map.values.map{|spec| spec.name}
+    else
       not_installed = plugin_list.select{|plugin| !previous_gem_specs_map.has_key?(plugin.downcase)}
       signal_error("Plugin #{not_installed.join(', ')} is not installed so it cannot be updated, aborting") unless not_installed.empty?
       plugin_list
-    else
-      previous_gem_specs_map.values.map{|spec| spec.name}
     end
   end
 
