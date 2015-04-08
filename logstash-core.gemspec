@@ -13,7 +13,7 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "logstash-core"
   gem.require_paths = ["lib"]
-  gem.version       = LOGSTASH_VERSION
+  gem.version       = LOGSTASH_VERSION.gsub(/-/, '.')
 
   # Core dependencies
   gem.add_runtime_dependency "cabin", [">=0.7.0"]    #(Apache 2.0 license)
