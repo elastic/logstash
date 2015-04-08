@@ -13,7 +13,7 @@ You use inputs to get data into Logstash. Some of the more commonly-used inputs
 are:
 
 * *file*: reads from a file on the filesystem, much like the UNIX command
-`tail -0a`
+`tail -0F`
 * *syslog*: listens on the well-known port 514 for syslog messages and parses
 according to the RFC3164 format
 * *redis*: reads from a redis server, using both redis channels and redis lists.
