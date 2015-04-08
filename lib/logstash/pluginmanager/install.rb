@@ -28,7 +28,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
       gems = plugins_development_gems
     else
       gems = plugins_gems
-      verify!(gems) if verify?
+      verify_remote!(gems) if verify?
     end
 
     install_gems_list!(gems)
@@ -49,7 +49,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
 
   # Check if the specified gems contains
   # the logstash `metadata`
-  def verify!(gems)
+  def verify_remote!(gems)
     gems.each do |plugin, version|
       puts("Validating #{[plugin, version].compact.join("-")}")
       signal_error("Installation aborted, verification failed for #{plugin} #{version}") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
@@ -115,6 +115,12 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   # to support it.
   def extract_local_gems_plugins
     plugins_arg.collect do |plugin| 
+      # We do the verify before extracting the gem so we dont have to deal with unused path
+      if verify?
+        puts("Validating #{plugin}")
+        signal_error("Installation aborted, verification failed for #{plugin}") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
+      end
+
       package, path = LogStash::Bundler.unpack(plugin, LogStash::Environment::LOCAL_GEM_PATH)
       [package.spec.name, package.spec.version, { :path => relative_path(path) }]
     end
