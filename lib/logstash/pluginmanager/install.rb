@@ -28,7 +28,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
       gems = plugins_development_gems
     else
       gems = plugins_gems
-      verify!(gems)
+      verify!(gems) if verify?
     end
 
     install_gems_list!(gems)
@@ -50,12 +50,10 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   # Check if the specified gems contains
   # the logstash `metadata`
   def verify!(gems)
-    if verify?
-      gems.each do |plugin, version|
-        puts("Validating #{[plugin, version].compact.join("-")}")
-        signal_error("Installation aborted, verification failed for #{plugin} #{version}") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
-      end 
-    end
+    gems.each do |plugin, version|
+      puts("Validating #{[plugin, version].compact.join("-")}")
+      signal_error("Installation aborted, verification failed for #{plugin} #{version}") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
+    end 
   end
 
   def plugins_development_gems
