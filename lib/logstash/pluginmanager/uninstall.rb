@@ -36,7 +36,7 @@ class LogStash::PluginManager::Uninstall < LogStash::PluginManager::Command
     end
   rescue => exception
     gemfile.restore!
-    report_exception("Uninstall aborded", exception)
+    report_exception("Uninstall Aborted", exception)
   ensure
     display_bundler_output(output)
   end

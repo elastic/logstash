@@ -57,7 +57,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     display_updated_plugins(previous_gem_specs_map)
   rescue => exception
     gemfile.restore!
-    report_exception("Updated Aborded", exception)
+    report_exception("Updated Aborted", exception)
   ensure
     display_bundler_output(output)
   end
