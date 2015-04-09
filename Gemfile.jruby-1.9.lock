@@ -66,7 +66,7 @@ GEM
     jar-dependencies (0.1.7)
     jrjackson (0.2.8)
     jruby-httpclient (1.1.1-java)
-    logstash-devutils (0.0.10-java)
+    logstash-devutils (0.0.12-java)
       gem_publisher
       insist (= 1.0.0)
       jar-dependencies
