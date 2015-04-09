@@ -56,7 +56,6 @@ Gem::Specification.new do |gem|
 
     # bouncy-castle-java 1.5.0147 and jruby-openssl 0.9.5 are included in jruby 1.7.6 no need to include here
     # and this avoids the gemspec jar path parsing issue of jar-dependencies 0.1.2
-    gem.add_runtime_dependency "jruby-httpclient"                    #(Apache 2.0 license)
     gem.add_runtime_dependency "jrjackson"                           #(Apache 2.0 license)
   else
     gem.add_runtime_dependency "excon"    #(MIT license)
