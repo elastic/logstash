@@ -1,7 +1,7 @@
 :branch: 1.4
 
-[[setup-repositories]]
-== Repositories
+[[package-repositories]]
+== Package Repositories
 
 We also have repositories available for APT and YUM based distributions. Note
 that we only provide binary packages, but no source packages, as the packages
