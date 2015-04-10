@@ -172,7 +172,6 @@ class LogStash::Agent < Clamp::Command
 
       if RUBY_PLATFORM == "java"
         show_version_java
-        show_version_elasticsearch
       end
 
       if [:debug].include?(verbosity?) || debug?
@@ -189,13 +188,6 @@ class LogStash::Agent < Clamp::Command
   def show_version_ruby
     puts RUBY_DESCRIPTION
   end # def show_version_ruby
-
-  def show_version_elasticsearch
-    LogStash::Environment.load_elasticsearch_jars!
-
-    $stdout.write("Elasticsearch: ");
-    org.elasticsearch.Version::main([])
-  end # def show_version_elasticsearch
 
   def show_version_java
     properties = java.lang.System.getProperties

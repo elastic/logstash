@@ -1,5 +1,5 @@
 require "logstash/errors"
-require 'logstash/version'
+require "logstash/version"
 
 # monkey patch RubyGems to silence ffi warnings:
 #
@@ -44,8 +44,6 @@ module LogStash
     extend self
 
     LOGSTASH_HOME = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", ".."))
-    JAR_DIR = ::File.join(LOGSTASH_HOME, "vendor", "jar")
-    ELASTICSEARCH_DIR = ::File.join(LOGSTASH_HOME, "vendor", "elasticsearch")
     BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
     GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "Gemfile")
     BUNDLE_CONFIG_PATH = ::File.join(LOGSTASH_HOME, ".bundle", "config")
@@ -53,23 +51,6 @@ module LogStash
     LOCAL_GEM_PATH = ::File.join(LOGSTASH_HOME, 'vendor', 'local_gems')
 
     LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
-
-    # loads currently embedded elasticsearch jars
-    # @raise LogStash::EnvironmentError if not running under JRuby or if no jar files are found
-    def load_elasticsearch_jars!
-      raise(LogStash::EnvironmentError, "JRuby is required") unless jruby?
-
-      require "java"
-      jars_path = ::File.join(ELASTICSEARCH_DIR, "**", "*.jar")
-      jar_files = Dir.glob(jars_path)
-
-      raise(LogStash::EnvironmentError, "Could not find Elasticsearch jar files under #{ELASTICSEARCH_DIR}") if jar_files.empty?
-
-      jar_files.each do |jar|
-        loaded = require jar
-        puts("Loaded #{jar}") if $DEBUG && loaded
-      end
-    end
 
     def logstash_gem_home
       ::File.join(BUNDLE_DIR, ruby_engine, gem_ruby_version)
@@ -112,6 +93,43 @@ module LogStash
 
       ::Bundler.reset!
       ::Bundler.setup
+    end
+
+    def runtime_jars_root(dir_name, package)
+      ::File.join(dir_name, package, "runtime-jars")
+    end
+
+    def test_jars_root(dir_name, package)
+      ::File.join(dir_name, package, "test-jars")
+    end
+
+    def load_runtime_jars!(dir_name="vendor", package="jar-dependencies")
+      load_jars!(::File.join(runtime_jars_root(dir_name, package), "*.jar"))
+    end
+
+    def load_test_jars!(dir_name="vendor", package="jar-dependencies")
+      load_jars!(::File.join(test_jars_root(dir_name, package), "*.jar"))
+    end
+
+    def load_jars!(pattern)
+      raise(LogStash::EnvironmentError, I18n.t("logstash.environment.jruby-required")) unless LogStash::Environment.jruby?
+
+      jar_files = find_jars(pattern)
+      require_jars! jar_files
+    end
+
+    def find_jars(pattern)
+      require 'java'
+      jar_files = Dir.glob(pattern)
+      raise(LogStash::EnvironmentError, I18n.t("logstash.environment.missing-jars", :pattern => pattern)) if jar_files.empty?
+      jar_files
+    end
+
+    def require_jars!(files)
+      files.each do |jar_file|
+        loaded = require jar_file
+        puts("Loaded #{jar_file}") if $DEBUG && loaded
+      end
     end
 
     def ruby_bin
