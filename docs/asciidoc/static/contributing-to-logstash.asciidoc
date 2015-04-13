@@ -1,5 +1,4 @@
 [[contributing-to-logstash]]
-
 == Contributing to Logstash
 
 Before version 1.5, Logstash included all plugins in each release.  This made it
@@ -25,6 +24,8 @@ deploying your own plugins:
 
 We also welcome contributions and bug fixes to the Logstash core feature set.
 
-Please read through our https://github.com/elasticsearch/logstash/blob/master/CONTRIBUTING.md[contribution]
-guide, and the Logstash https://github.com/elasticsearch/logstash/blob/master/README.md[readme]
+Please read through our
+https://github.com/elasticsearch/logstash/blob/master/CONTRIBUTING.md[contribution]
+guide, and the Logstash
+https://github.com/elasticsearch/logstash/blob/master/README.md[readme]
 document.

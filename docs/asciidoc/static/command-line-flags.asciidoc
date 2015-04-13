@@ -3,15 +3,20 @@
 [float]
 === Agent
 
-The Logstash agent has the following flags. (You can use the '--help' flag to display this information.)
+The Logstash agent has the following flags. (You can use the '--help' flag to
+display this information.)
 
 [source,js]
 ----------------------------------
 -f, --config CONFIGFILE
- Load the Logstash config from a specific file, directory, or a wildcard. If given a directory or wildcard, config files will be read from the directory in alphabetical order.
+ Load the Logstash config from a specific file, directory, or a wildcard. If
+ given a directory or wildcard, config files will be read from the directory in
+ alphabetical order.
 
 -e CONFIGSTRING
- Use the given string as the configuration data. Same syntax as the config file. If not input is specified, 'stdin { type => stdin }' is default. If no output is specified, 'stdout { codec => rubydebug }}' is default.
+ Use the given string as the configuration data. Same syntax as the config file.
+ If not input is specified, 'stdin { type => stdin }' is default. If no output
+ is specified, 'stdout { codec => rubydebug }}' is default.
 
 -w, --filterworkers COUNT
  Run COUNT filter workers (default: 1)
@@ -29,9 +34,21 @@ The Logstash agent has the following flags. (You can use the '--help' flag to di
  Increase verbosity to the last level, more verbose.
 
 -v
- *DEPRECATED: see --verbose/debug* Increase verbosity. There are multiple levels of verbosity available with
-'-vv' currently being the highest
+ *DEPRECATED: see --verbose/debug* Increase verbosity. There are multiple levels
+ of verbosity available with '-vv' currently being the highest
 
 --pluginpath PLUGIN_PATH
  A colon-delimited path to find other Logstash plugins in
+----------------------------------
+
+[float]
+=== Web
+
+[source,js]
+----------------------------------
+-a, --address ADDRESS
+ Address on which to start webserver. Default is 0.0.0.0.
+
+-p, --port PORT
+ Port on which to start webserver. Default is 9292.
 ----------------------------------

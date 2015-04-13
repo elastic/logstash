@@ -1,6 +1,3 @@
-:branch:          1.5
-:ls_version:		  1.5.0.beta1
-
 == How to write a Logstash {plugintype} plugin
 
 To develop a new {plugintype} for Logstash, you build a self-contained Ruby gem
@@ -1023,9 +1020,9 @@ http://www.elasticsearch.org/overview/logstash/download/[Logstash downloads page
 [source,sh]
 [subs="attributes"]
 ----------------------------------
-curl -O http://download.elasticsearch.org/logstash/logstash/logstash-{ls_version}.tar.gz
-tar xzvf logstash-{ls_version}.tar.gz
-cd logstash-{ls_version}
+curl -O http://download.elasticsearch.org/logstash/logstash/logstash-{logstash_version}.tar.gz
+tar xzvf logstash-{logstash_version}.tar.gz
+cd logstash-{logstash_version}
 ----------------------------------
 . Using the plugin tool, we can install the gem we just built.
 +
