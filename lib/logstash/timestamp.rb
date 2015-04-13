@@ -36,7 +36,11 @@ module LogStash
     end
 
     # coerce tries different strategies based on the time object class to convert into a Timestamp.
-    # @param [String, Time, Timestamp] time the time object to try coerce
+    # Supports following types:
+    #   - String: ISO 8601 representations of timestamps.
+    #   - Numeric: Unix times in seconds
+    #   - Time: Standard Ruby time object
+    # @param [String, Time, Timestamp, Numeric] time the time object to try coerce
     # @return [Timestamp, nil] Timestamp will be returned if successful otherwise nil
     # @raise [TimestampParserError] on String with invalid format
     def self.coerce(time)
@@ -47,6 +51,8 @@ module LogStash
         time
       when Time
         LogStash::Timestamp.new(time)
+      when Numeric
+        Timestamp.new(::Time.at(time))
       else
         nil
       end

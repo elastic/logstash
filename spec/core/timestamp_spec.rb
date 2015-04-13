@@ -25,6 +25,11 @@ describe LogStash::Timestamp do
     expect(LogStash::Timestamp.coerce(t).to_i).to eq(t.to_i)
   end
 
+  it "should coerce unix time" do
+    epoch_time = 1428713843 # ISO 8601: 2015-04-11T00:57:23Z
+    expect(LogStash::Timestamp.coerce(epoch_time).to_i).to eq(epoch_time)
+  end
+
   it "should raise on invalid string coerce" do
     expect{LogStash::Timestamp.coerce("foobar")}.to raise_error LogStash::TimestampParserError
   end
