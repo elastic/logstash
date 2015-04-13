@@ -176,8 +176,14 @@ class LogStash::Event
   end
 
   public
-  def include?(key)
-    return !self[key].nil?
+  def include?(fieldref)
+    if fieldref.start_with?(METADATA_BRACKETS)
+      @metadata_accessors.include?(fieldref[METADATA_BRACKETS.length .. -1])
+    elsif fieldref == METADATA
+      true
+    else
+      @accessors.include?(fieldref)
+    end
   end # def include?
 
   # Append an event to this one.

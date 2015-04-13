@@ -22,6 +22,7 @@ describe LogStash::Event do
           5 => 6,
           "5" => 7
       },
+      "nilfield" => nil,
       "@metadata" => { "fancy" => "pants", "have-to-go" => { "deeper" => "inception" } }
     )
   end
@@ -121,6 +122,30 @@ describe LogStash::Event do
         duration = Time.now - start
         puts "event #[] rate: #{"%02.0f/sec" % (count / duration)}, elapsed: #{duration}s"
       end
+    end
+  end
+
+  context "#include?" do
+    it "should include existing fields" do
+      expect(subject.include?("c")).to be_true
+      expect(subject.include?("[c][d]")).to be_true
+    end
+
+    it "should include field with nil value" do
+      expect(subject.include?("nilfield")).to be_true
+    end
+
+    it "should include @metadata field" do
+      expect(subject.include?("@metadata")).to be_true
+    end
+
+    it "should include field within @metadata" do
+      expect(subject.include?("[@metadata][fancy]")).to be_true
+    end
+
+    it "should not include non-existing fields" do
+      expect(subject.include?("doesnotexist")).to be_false
+      expect(subject.include?("[j][doesnotexist]")).to be_false
     end
   end
 
