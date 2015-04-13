@@ -1,14 +1,16 @@
+[[getting-started-with-logstash]]
 == Getting Started with Logstash
-
-Logstash is a tool for receiving, processing and outputting logs. All kinds of logs. System logs, webserver logs, error logs, application logs, and just about anything you can throw at it. Sounds great, eh?
-
-Logstash provides a powerful pipeline for storing, querying, and analyzing your logs. When using Elasticsearch as a backend data store and Kibana as a frontend reporting tool, Logstash acts as the workhorse.  It includes an arsenal of built-in inputs, filters, codecs, and outputs, enabling you to harness some powerful functionality with a small amount of effort. So, let's get started!
 
 [float]
 ==== Prerequisite: Java
-A Java runtime is required to run Logstash. We recommend running the latest version of Java. At a minimum, you need Java 7. You can use the http://www.oracle.com/technetwork/java/javase/downloads/index.html[official Oracle distribution], or an open-source distribution such as http://openjdk.java.net/[OpenJDK].
+A Java runtime is required to run Logstash. We recommend running the latest
+version of Java. At a minimum, you need Java 7. You can use the
+http://www.oracle.com/technetwork/java/javase/downloads/index.html[official Oracle distribution],
+or an open-source distribution such as http://openjdk.java.net/[OpenJDK].
 
-You can verify that you have Java installed by running the  command `java -version` in your shell. Here's something similar to what you might see:
+You can verify that you have Java installed by running the  command
+`java -version` in your shell. Here's something similar to what you might see:
+
 [source,java]
 ----------------------------------
 > java -version
@@ -21,8 +23,7 @@ Once you have verified the existence of Java on your system, we can move on!
 
 [float]
 === Up and Running!
-
-To get started, download and extract the 'logstash' binary and run 
+To get started, download and extract the 'logstash' binary and run
 it with a very simple configuration.
 
 First, download the Logstash tar file.
@@ -31,7 +32,7 @@ First, download the Logstash tar file.
 ----------------------------------
 curl -O https://download.elasticsearch.org/logstash/logstash/logstash-{logstash_version}.tar.gz
 ----------------------------------
-Then, unpack 'logstash-{logstash_version}.tar.gz' on your local filesystem. 
+Then, unpack 'logstash-{logstash_version}.tar.gz' on your local filesystem.
 
 ["source","sh",subs="attributes,callouts"]
 ----------------------------------
@@ -44,7 +45,7 @@ cd logstash-{logstash_version}
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 ----------------------------------
 
-This simply takes input from stdin and outputs it to stdout.  
+This simply takes input from stdin and outputs it to stdout.
 Type something at the command prompt, and you will see it output by Logstash:
 [source,js]
 ----------------------------------
@@ -52,9 +53,16 @@ hello world
 2013-11-21T01:22:14.405+0000 0.0.0.0 hello world
 ----------------------------------
 
-OK, that's interesting... By running Logstash with the input called `stdin` and the output named `stdout`, Logstash echoes whatever you type in a structured format. The `-e` flag enables you to specify a configuration directly from the command line. This is especially useful for quickly testing configurations without having to edit a file between iterations.
+OK, that's interesting... By running Logstash with the input called `stdin` and
+the output named `stdout`, Logstash echoes whatever you type in a structured
+format. The `-e` flag enables you to specify a configuration directly from the
+command line. This is especially useful for quickly testing configurations
+without having to edit a file between iterations.
 
-Let's try a slightly fancier example. First, exit Logstash by issuing a `CTRL-C` command in the shell in which it is running. Then, start Logstash again with the following command:
+Let's try a slightly fancier example. First, exit Logstash by issuing a `CTRL-C`
+command in the shell in which it is running. Then, start Logstash again with the
+following command:
+
 [source,ruby]
 ----------------------------------
 bin/logstash -e 'input { stdin { } } output { stdout { codec => rubydebug } }'
@@ -72,11 +80,21 @@ goodnight moon
 }
 ----------------------------------
 
-Re-configuring the `stdout` output by adding a "codec" enables you to change what Logstash outputs. By adding inputs, outputs, and filters to your configuration, you can massage the log data and maximize the flexibility of the stored data when you query it.
+Re-configuring the `stdout` output by adding a "codec" enables you to change
+what Logstash outputs. By adding inputs, outputs, and filters to your
+configuration, you can massage the log data and maximize the flexibility of the
+stored data when you query it.
 
 [float]
 === Storing logs with Elasticsearch
-Now, you're probably saying, "that's all fine and dandy, but typing all my logs into Logstash isn't really an option, and merely seeing them spit to STDOUT isn't very useful." Good point. First, let's set up Elasticsearch to store the messages we send into Logstash. If you don't have Elasticearch already installed, you can http://www.elasticsearch.org/download/[download the RPM or DEB package], or install manually by downloading the current release tarball, by issuing the following four commands:
+Now, you're probably saying, "that's all fine and dandy, but typing all my logs
+into Logstash isn't really an option, and merely seeing them spit to STDOUT
+isn't very useful." Good point. First, let's set up Elasticsearch to store the
+messages we send into Logstash. If you don't have Elasticearch already
+installed, you can
+http://www.elastic.co/download/[download the RPM or DEB package], or install
+manually by downloading the current release tarball, by issuing the following
+four commands:
 
 ["source","sh",subs="attributes,callouts"]
 ----------------------------------
@@ -86,25 +104,37 @@ cd elasticsearch-{elasticsearch_version}/
 ./bin/elasticsearch
 ----------------------------------
 
-NOTE: This tutorial runs Logstash {logstash_version} with Elasticsearch {elasticsearch_version}, although you can use it with a cluster running 1.0.0 or later. Each release of Logstash has a *recommended* version of Elasticsearch you should use. Make sure they match based on the http://www.elasticsearch.org/overview/logstash[Logstash version] you're running!
+NOTE: This tutorial runs Logstash {logstash_version} with Elasticsearch
+{elasticsearch_version}, although you can use it with a cluster running 1.0.0 or
+later. Each release of Logstash has a *recommended* version of Elasticsearch you
+should use. Make sure they match based on the
+http://www.elastic.co/overview/logstash[Logstash version] you're running!
 
-You can get started with Logstash using the default Elasticsearch installation and configuration. See the http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/index.html[Elasticsearch Reference] for more  information about installing and running Elasticsearch. 
+You can get started with Logstash using the default Elasticsearch installation
+and configuration. See the
+http://www.elastic.co/guide/en/elasticsearch/reference/current/index.html[Elasticsearch Reference]
+for more  information about installing and running Elasticsearch.
 
-Now that you have Elasticsearch running on port 9200 (you do, right?), you can easily configure Logstash to use Elasticsearch as its backend. The defaults for both Logstash and Elasticsearch are fairly sane and well thought out, so you can omit the optional configurations within the elasticsearch output:
+Now that you have Elasticsearch running on port 9200 (you do, right?), you can
+easily configure Logstash to use Elasticsearch as its backend. The defaults for
+both Logstash and Elasticsearch are fairly sane and well thought out, so you can
+omit the optional configurations within the elasticsearch output:
 
 [source,js]
 ----------------------------------
 bin/logstash -e 'input { stdin { } } output { elasticsearch { host => localhost } }'
 ----------------------------------
 
-Type something and Logstash processes it as before. However, this time you won't see any output, since the stdout output isn't configured.
+Type something and Logstash processes it as before. However, this time you won't
+see any output, since the stdout output isn't configured.
 
 [source,js]
 ----------------------------------
 you know, for logs
 ----------------------------------
 
-You can confirm that Elasticsearch actually received the data by submitting a curl request:
+You can confirm that Elasticsearch actually received the data by submitting a
+curl request:
 
 [source,js]
 ----------------------------------
@@ -129,7 +159,7 @@ This should return something like the following:
     "hits" : [ {
       "_index" : "logstash-2013.11.21",
       "_type" : "logs",
-      "_id" : "2ijaoKqARqGvbMgP3BspJA",
+      "_id" : "2ijaoKqARGHvbMgP3BspJB",
       "_score" : 1.0, "_source" : {"message":"you know, for logs","@timestamp":"2013-11-21T18:45:09.862Z","@version":"1","host":"my-laptop"}
     } ]
   }
@@ -140,29 +170,53 @@ Congratulations! You've successfully stashed logs in Elasticsearch via Logstash.
 
 [float]
 ==== Elasticsearch Plugins (an aside)
-Another very useful tool for querying your Logstash data (and Elasticsearch in general) is the Elasticearch-kopf plugin. (For more information about Elasticsearch plugins, see http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-plugins.html[Elasticsearch plugins].) To install elasticsearch-kopf,  issue the following command from your Elasticsearch directory (the same one from which you started Elasticsearch):
+Another very useful tool for querying your Logstash data (and Elasticsearch in
+general) is the Elasticearch-kopf plugin. (For more information about
+Elasticsearch plugins, see
+http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-plugins.html[Elasticsearch plugins].)
+To install elasticsearch-kopf,  issue the following command from your
+Elasticsearch directory (the same one from which you started Elasticsearch):
 
 [source,js]
 ----------------------------------
 bin/plugin -install lmenezes/elasticsearch-kopf
 ----------------------------------
-Now you can go to http://localhost:9200/_plugin/kopf/[http://localhost:9200/_plugin/kopf/] to browse your Elasticsearch data, settings, and mappings!
+Now you can go to
+http://localhost:9200/_plugin/kopf/[http://localhost:9200/_plugin/kopf/]
+to browse your Elasticsearch data, settings, and mappings!
 
 [float]
 ==== Multiple Outputs
-As a quick exercise in configuring multiple Logstash outputs, let's invoke Logstash again, using both  'stdout' and 'elasticsearch' as outputs:
+
+As a quick exercise in configuring multiple Logstash outputs, let's invoke
+Logstash again, using both  'stdout' and 'elasticsearch' as outputs:
 
 [source,js]
 ----------------------------------
 bin/logstash -e 'input { stdin { } } output { elasticsearch { host => localhost } stdout { } }'
 ----------------------------------
-Now when you enter a phrase, it is echoed to the terminal and saved in Elasticsearch! (You can verify this using curl or elasticsearch-kopf).
+Now when you enter a phrase, it is echoed to the terminal and saved in
+Elasticsearch! (You can verify this using curl or elasticsearch-kopf).
 
 [float]
 ==== Default - Daily Indices
-You might have noticed that Logstash is smart enough to create a new index in Elasticsearch. The default index name is in the form of `logstash-YYYY.MM.DD`, which essentially creates one index per day. At midnight (UTC), Logstash automagically rotates the index to a fresh one, with the new current day's timestamp. This allows you to keep windows of data, based on how far retroactively you'd like to query your log data. Of course, you can always archive (or re-index) your data to an alternate location so you can query further into the past. If you want to delete old indices after a certain time period, you can use the https://github.com/elasticsearch/curator[Elasticsearch Curator tool].
+You might have noticed that Logstash is smart enough to create a new index in
+Elasticsearch. The default index name is in the form of `logstash-YYYY.MM.DD`,
+which essentially creates one index per day. At midnight (UTC), Logstash
+automagically rotates the index to a fresh one, with the new current day's
+timestamp. This allows you to keep windows of data, based on how far
+retroactively you'd like to query your log data. Of course, you can always
+archive (or re-index) your data to an alternate location so you can query
+further into the past. If you want to delete old indices after a certain time
+period, you can use the
+http://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html[Elasticsearch Curator tool].
 
 [float]
 === Moving On
-Configuring inputs and outputs from the command line is convenient for getting started and doing quick testing. To move beyond
-these simple examples, however, you need to know a bit more about the Logstash event processing pipeline and how to specify pipeline options in a config file. To learn about the event processing pipeline, see <<pipeline,Logstash Processing Pipeline>>. To see how to configure more complex pipelines using config files, see <<configuration, Configuring Logstash>>.
+Configuring inputs and outputs from the command line is convenient for getting
+started and doing quick testing. To move beyond these simple examples, however,
+you need to know a bit more about the Logstash event processing pipeline and how
+to specify pipeline options in a config file. To learn about the event
+processing pipeline, see <<pipeline,Logstash Processing Pipeline>>. To see how
+to configure more complex pipelines using config files, see
+<<configuration, Configuring Logstash>>.
