@@ -53,6 +53,11 @@ module LogStash::Util
       end
     end
 
+    def include?(accessor)
+      target, key = lookup_path(accessor)
+      return target.include?(key)
+    end
+
     private
 
     def lookup(accessor)
