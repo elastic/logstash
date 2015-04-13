@@ -20,7 +20,7 @@ according to the RFC3164 format
 Redis is often used as a "broker" in a centralized Logstash installation, which
 queues Logstash events from remote Logstash "shippers".
 * *lumberjack*: processes events sent in the lumberjack protocol. Now called
-https://github.com/elasticsearch/logstash-forwarder[logstash-forwarder].
+https://github.com/elastic/logstash-forwarder[logstash-forwarder].
 
 For more information about the available inputs, see
 <<input-plugins,Input Plugins>>.
