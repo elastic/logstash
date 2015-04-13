@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["jls@semicomplete.com", "petef@databits.net", "info@elasticsearch.com"]
   gem.description   = %q{scalable log and event management (search, archive, pipeline)}
   gem.summary       = %q{logstash - log and event management}
-  gem.homepage      = "http://logstash.net/"
+  gem.homepage      = "http://www.elastic.co/guide/en/logstash/current/index.html"
   gem.license       = "Apache License (2.0)"
 
   gem.files         = Dir.glob(["lib/**/*.rb", "locales/*"])
