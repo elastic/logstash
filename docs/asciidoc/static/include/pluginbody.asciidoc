@@ -61,7 +61,7 @@ it before you copy the example.
 ----
 cd /path/to/logstash-{plugintype}-mypluginname
 mv logstash-{plugintype}-{pluginname}.gemspec logstash-{plugintype}-mypluginname.gemspec
-mv lib/logstash/{plugintype}/example.rb lib/logstash/{plugintype}/mypluginname.rb
+mv lib/logstash/{plugintype}s/example.rb lib/logstash/{plugintype}s/mypluginname.rb
 mv spec/{plugintype}s/{pluginname}_spec.rb spec/{plugintype}s/mypluginname_spec.rb
 ----
 
