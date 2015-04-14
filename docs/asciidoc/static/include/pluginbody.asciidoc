@@ -828,8 +828,8 @@ Gem::Specification.new do |s|
   s.summary = "This {plugintype} does x, y, z in Logstash"
   s.description = "This gem is a logstash plugin required to be installed on top of the Logstash core pipeline using $LS_HOME/bin/plugin install gemname. This gem is not a stand-alone program"
   s.authors = ["Elasticsearch"]
-  s.email = 'info@elasticsearch.com'
-  s.homepage = "http://www.elasticsearch.org/guide/en/logstash/current/index.html"
+  s.email = 'info@elastic.co'
+  s.homepage = "http://www.elastic.co/guide/en/logstash/current/index.html"
   s.require_paths = ["lib"]
 
   # Files
@@ -853,7 +853,7 @@ It is appropriate to change these values to fit your plugin. In particular,
 you are ready to publish your plugin.
 
 Logstash and all its plugins are licensed under
-https://github.com/elasticsearch/logstash/blob/master/LICENSE[Apache License, version 2 ("ALv2")].
+https://github.com/elastic/logstash/blob/master/LICENSE[Apache License, version 2 ("ALv2")].
 If you make your plugin publicly available via http://rubygems.org[RubyGems.org],
 please make sure to have this line in your gemspec:
 
@@ -1014,14 +1014,14 @@ this case, `0.1.0`.
 ==== Test installation
 You should test install your plugin into a clean installation of Logstash.
 Download the latest version from the
-http://www.elasticsearch.org/overview/logstash/download/[Logstash downloads page].
+https://www.elastic.co/downloads/logstash/[Logstash downloads page].
 
 . Untar and cd in to the directory:
 +
 [source,sh]
 [subs="attributes"]
 ----------------------------------
-curl -O http://download.elasticsearch.org/logstash/logstash/logstash-{logstash_version}.tar.gz
+curl -O https://download.elastic.co/logstash/logstash/logstash-{logstash_version}.tar.gz
 tar xzvf logstash-{logstash_version}.tar.gz
 cd logstash-{logstash_version}
 ----------------------------------
