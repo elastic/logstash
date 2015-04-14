@@ -57,13 +57,19 @@ module LogStash
     # loads currently embedded elasticsearch jars
     # @raise LogStash::EnvironmentError if not running under JRuby or if no jar files are found
     def load_elasticsearch_jars!
+      load_jars!(ELASTICSEARCH_DIR, "**","*.jar")
+    end
+
+    # loads specific jars located under jars_path
+    # @raise LogStash::EnvironmentError if not running under JRuby or if no jar files are found
+    def load_jars!(*jars_path)
       raise(LogStash::EnvironmentError, "JRuby is required") unless jruby?
 
       require "java"
-      jars_path = ::File.join(ELASTICSEARCH_DIR, "**", "*.jar")
+      jars_path = ::File.join(jars_path)
       jar_files = Dir.glob(jars_path)
 
-      raise(LogStash::EnvironmentError, "Could not find Elasticsearch jar files under #{ELASTICSEARCH_DIR}") if jar_files.empty?
+      raise(LogStash::EnvironmentError, "Could not find jar files under #{jars_path}") if jar_files.empty?
 
       jar_files.each do |jar|
         loaded = require jar
