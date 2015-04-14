@@ -357,17 +357,17 @@ What's an expression? Comparison tests, boolean logic, and so on!
 
 You can use the following comparison operators:
 
-* equality: ==,  !=,  <,  >,  <=,  >=
-* regexp: =\~, !~
-* inclusion: in, not in
+* equality: `==`,  `!=`,  `<`,  `>`,  `<=`, `>=`
+* regexp: `=~`, `!~`
+* inclusion: `in`, `not in`
 
 The supported boolean operators are:
 
-* and, or, nand, xor
+* `and`, `or`, `nand`, `xor`
 
 The supported unary operators are:
 
-* !
+* `!`
 
 Expressions can be long and complex. Expressions can contain other expressions,
 you can negate expressions with `!`, and you can group them with parentheses `(...)`.
