@@ -3,9 +3,7 @@ require "spec_helper"
 require "logstash/bundler"
 
 describe LogStash::Bundler do
-
   context "capture_stdout" do
-
     it "should capture stdout from block" do
       original_stdout = $stdout
       output, exception = LogStash::Bundler.capture_stdout do
@@ -54,7 +52,7 @@ describe LogStash::Bundler do
 
     it 'should call Bundler::CLI.start with the correct arguments' do
       expect(::Bundler::CLI).to receive(:start).with(bundler_args)
-      subject
+      LogStash::Bundler.invoke_bundler!(options)
     end
 
     context 'abort with an exception' do
