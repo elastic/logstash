@@ -235,6 +235,10 @@ class LogStash::Event
       # Take the inside of the %{ ... }
       key = tok[2 ... -1]
 
+      if key[0] == "+" && !@data.has_key?(TIMESTAMP)
+        raise LogStash::Error, "Unable to format \"#{key}\" in string \"#{format}\", #{TIMESTAMP} field not found"
+      end
+
       if key == "+%s"
         # Got %{+%s}, support for unix epoch time
         next @data[TIMESTAMP].to_i

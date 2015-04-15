@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
+require "logstash/json"
 
 # use a dummy NOOP filter to test Filters::Base
 class LogStash::Filters::NOOP < LogStash::Filters::Base
@@ -196,7 +197,19 @@ describe LogStash::Filters::NOOP do
       insist { subject["tags"] } == ["t1"]
     end
 
+    # also test from Json deserialized data to test the handling of native Java collections by JrJackson
+    # see https://github.com/elastic/logstash/issues/2261
+    sample(LogStash::Json.load("{\"type\":\"noop\", \"tags\":[\"t1\", \"t2\", \"t3\"]}")) do
+      insist { subject["tags"] } == ["t1"]
+    end
+
     sample("type" => "noop", "tags" => ["t1", "t2"]) do
+      insist { subject["tags"] } == ["t1"]
+    end
+
+    # also test from Json deserialized data to test the handling of native Java collections by JrJackson
+    # see https://github.com/elastic/logstash/issues/2261
+    sample(LogStash::Json.load("{\"type\":\"noop\", \"tags\":[\"t1\", \"t2\"]}")) do
       insist { subject["tags"] } == ["t1"]
     end
   end
@@ -213,6 +226,12 @@ describe LogStash::Filters::NOOP do
     CONFIG
 
     sample("type" => "noop", "tags" => ["t1", "goaway", "t3"], "blackhole" => "goaway") do
+      insist { subject["tags"] } == ["t1", "t3"]
+    end
+
+    # also test from Json deserialized data to test the handling of native Java collections by JrJackson
+    # see https://github.com/elastic/logstash/issues/2261
+    sample(LogStash::Json.load("{\"type\":\"noop\", \"tags\":[\"t1\", \"goaway\", \"t3\"], \"blackhole\":\"goaway\"}")) do
       insist { subject["tags"] } == ["t1", "t3"]
     end
   end
