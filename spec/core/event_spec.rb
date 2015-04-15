@@ -120,6 +120,7 @@ describe LogStash::Event do
       it "should include existing fields" do
         expect(subject.include?("c")).to be_true
         expect(subject.include?("[c][d]")).to be_true
+        expect(subject.include?("[j][k4][0][nested]")).to be_true
       end
 
       it "should include field with nil value" do
@@ -137,6 +138,12 @@ describe LogStash::Event do
       it "should not include non-existing fields" do
         expect(subject.include?("doesnotexist")).to be_false
         expect(subject.include?("[j][doesnotexist]")).to be_false
+        expect(subject.include?("[tag][0][hello][yes]")).to be_false
+      end
+
+      it "should include within arrays" do
+        expect(subject.include?("[tags][0]")).to be_true
+        expect(subject.include?("[tags][1]")).to be_false
       end
     end
 
@@ -432,6 +439,7 @@ describe LogStash::Event do
           "k1" => "v",
           "k2" => [ "w", "x" ],
           "k3" => {"4" => "m"},
+          "k4" => [ {"nested" => "cool"} ],
           5 => 6,
           "5" => 7
       },
