@@ -57,20 +57,22 @@ describe LogStash::Bundler do
       subject
     end
 
-    it 'should abort if a gem is conflicting' do
-      allow(::Bundler::CLI).to receive(:start).with(bundler_args) { raise ::Bundler::VersionConflict.new('conflict') }
-      expect(subject.last).to be_a_kind_of(::Bundler::VersionConflict)
-    end 
+    context 'abort with an exception' do
+      it 'gem conflict' do
+        allow(::Bundler::CLI).to receive(:start).with(bundler_args) { raise ::Bundler::VersionConflict.new('conflict') }
+        expect { subject }.to raise_error(::Bundler::VersionConflict)
+      end 
 
-    it 'should abort if the gem is not found' do
-      allow(::Bundler::CLI).to receive(:start).with(bundler_args) { raise ::Bundler::GemNotFound.new('conflict') }
-      expect(subject.last).to be_a_kind_of(::Bundler::GemNotFound)
-    end
+      it 'gem is not found' do
+        allow(::Bundler::CLI).to receive(:start).with(bundler_args) { raise ::Bundler::GemNotFound.new('conflict') }
+        expect { subject }.to raise_error(::Bundler::GemNotFound)
+      end
 
-    it 'should retry until hitting :max_tries on any other error' do 
-      options.merge!({ :max_tries => 2 })
-      expect(::Bundler::CLI).to receive(:start).with(bundler_args).at_most(options[:max_tries] + 1) { raise RuntimeError }
-      subject
+      it 'on max retries' do 
+        options.merge!({ :max_tries => 2 })
+        expect(::Bundler::CLI).to receive(:start).with(bundler_args).at_most(options[:max_tries] + 1) { raise RuntimeError }
+        expect { subject }.to raise_error(RuntimeError)
+      end
     end
   end
 
