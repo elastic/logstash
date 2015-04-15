@@ -55,7 +55,8 @@ module LogStash::Util
 
     def include?(accessor)
       target, key = lookup_path(accessor)
-      return target.include?(key)
+      return false unless target
+      target.is_a?(Array) ? !target[key.to_i].nil? : target.include?(key)
     end
 
     private
