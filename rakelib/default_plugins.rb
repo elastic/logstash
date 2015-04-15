@@ -146,10 +146,16 @@ module LogStash
     # @return [Array<String>] list of all plugin names as defined in the logstash-plugins github organization, minus names that matches the ALL_PLUGINS_SKIP_LIST
     def self.fetch_all_plugins
       require 'octokit'
-
       Octokit.auto_paginate = true
       repos = Octokit.organization_repositories("logstash-plugins")
-      repos.map(&:name).reject{|name| name =~ ALL_PLUGINS_SKIP_LIST}
+      repos.map(&:name).reject do |name|
+        name =~ ALL_PLUGINS_SKIP_LIST || !is_released?(name)
+      end
+    end
+
+    def self.is_released?(plugin)
+      require 'gems'
+      !Gems.search(plugin).empty?
     end
   end
 end

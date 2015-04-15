@@ -29,4 +29,8 @@ namespace "dependency" do
     Rake::Task["gem:require"].invoke("octokit", ">= 0", LogStash::Environment.logstash_gem_home)
   end # task octokit
 
+  task "gems" do
+    Rake::Task["gem:require"].invoke("gems", ">= 0", LogStash::Environment.logstash_gem_home)
+  end # task gems
+
 end # namespace dependency
