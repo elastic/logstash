@@ -168,6 +168,10 @@ class LogStash::Filters::Base < LogStash::Plugin
         if event.include?(field)
           event[field] = [event[field]] if !event[field].is_a?(Array)
           event[field] << v
+        elsif v == 'true'
+          event[field] = true
+        elsif v == 'false'
+          event[field] = false
         else
           event[field] = v
         end
