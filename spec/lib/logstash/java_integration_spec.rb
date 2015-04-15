@@ -166,4 +166,63 @@ describe "Java integration" do
       end
     end
   end
+
+  context "Enumerable implementation" do
+    context "Java Map interface should report key with nil value as included" do
+
+      it "should support include? method" do
+        expect(Java::JavaUtil::LinkedHashMap.new({"foo" => nil}).include?("foo")).to be_true
+      end
+
+      it "should support has_key? method" do
+        expect(Java::JavaUtil::LinkedHashMap.new({"foo" => nil}).has_key?("foo")).to be_true
+      end
+
+      it "should support member? method" do
+        expect(Java::JavaUtil::LinkedHashMap.new({"foo" => nil}).member?("foo")).to be_true
+      end
+
+      it "should support key? method" do
+        expect(Java::JavaUtil::LinkedHashMap.new({"foo" => nil}).key?("foo")).to be_true
+      end
+    end
+
+    context "Java Map interface should report key with a value as included" do
+
+      it "should support include? method" do
+        expect(Java::JavaUtil::LinkedHashMap.new({"foo" => 1}).include?("foo")).to be_true
+      end
+
+      it "should support has_key? method" do
+        expect(Java::JavaUtil::LinkedHashMap.new({"foo" => 1}).has_key?("foo")).to be_true
+      end
+
+      it "should support member? method" do
+        expect(Java::JavaUtil::LinkedHashMap.new({"foo" => 1}).member?("foo")).to be_true
+      end
+
+      it "should support key? method" do
+        expect(Java::JavaUtil::LinkedHashMap.new({"foo" => 1}).key?("foo")).to be_true
+      end
+    end
+
+    context "Java Map interface should report non existing key as not included" do
+
+      it "should support include? method" do
+        expect(Java::JavaUtil::LinkedHashMap.new({"foo" => 1}).include?("bar")).to be_false
+      end
+
+      it "should support has_key? method" do
+        expect(Java::JavaUtil::LinkedHashMap.new({"foo" => 1}).has_key?("bar")).to be_false
+      end
+
+      it "should support member? method" do
+        expect(Java::JavaUtil::LinkedHashMap.new({"foo" => 1}).member?("bar")).to be_false
+      end
+
+      it "should support key? method" do
+        expect(Java::JavaUtil::LinkedHashMap.new({"foo" => 1}).key?("bar")).to be_false
+      end
+    end
+  end
 end
