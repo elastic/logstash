@@ -47,6 +47,24 @@ describe LogStash::Filters::NOOP do
     end
   end
 
+  describe "add_field with string booleans" do
+    config <<-CONFIG
+    filter {
+      noop {
+        add_field => ["true_field", "true"]
+        add_field => ["false_field", "false"]
+      }
+    }
+    CONFIG
+    sample 'add_field => ["true_field", "true"]' do
+      expect(subject["true_field"]).to eq(true)
+    end
+
+    sample 'add_field => ["false_field", "false"]' do
+      expect(subject["false_field"]).to eq(false)
+    end
+  end
+
   describe "type parsing" do
     config <<-CONFIG
     filter {
