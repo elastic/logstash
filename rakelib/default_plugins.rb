@@ -134,8 +134,12 @@ module LogStash
       /jms$/,
       /example$/,
       /drupal/i,
-      /logstash-output-logentries$/,
-      /logstash-input-jdbc$/
+      /^logstash-output-logentries$/,
+      /^logstash-input-jdbc$/,
+      /^logstash-output-newrelic$/,
+      /^logstash-output-slack$/,
+      /^logstash-input-neo4j$/,
+      /^logstash-output-neo4j$/
     ])
 
 
