@@ -12,7 +12,7 @@ If you're looking to extend logstash today, please look at the existing plugins.
 
 * [inputs/tcp](https://github.com/logstash/logstash/blob/master/lib/logstash/inputs/tcp.rb)
 * [filters/multiline](https://github.com/logstash/logstash/blob/master/lib/logstash/filters/multiline.rb)
-* [outputs/mongodb](https://github.com/logstash/logstash/blob/master/lib/logstash/outputs/mongodb.rb)
+* [outputs/mongodb](https://github.com/logstash-plugins/logstash-output-mongodb)
 
 ## Common concepts
 
@@ -87,5 +87,3 @@ Outputs have two methods: `register` and `receive`.
 ## Example: a new filter
 
 Learn by example how to [add a new filter to logstash](example-add-a-new-filter)
-
-
