@@ -24,23 +24,38 @@ class Hash
   end
 end
 
+# map_mixin to patch LinkedHashMap and HashMap. it must be done directly on the classes,
+# using a module mixin does not work, and injecting in the Map interface does not work either
+# but injecting in the class works.
 
-# this is a temporary fix to solve a bug in JRuby where classes implementing the Map interface, like LinkedHashMap
-# have a bug in the has_key? method that is implemented in the Enumerable module that is somehow mixed in the Map interface.
-# this bug makes has_key? (and all its aliases) return false for a key that has a nil value.
-# Only LinkedHashMap is patched here because patching the Map interface is not working.
-# TODO find proper fix, and submit upstream
-# releavant JRuby files:
-# https://github.com/jruby/jruby/blob/master/core/src/main/ruby/jruby/java/java_ext/java.util.rb
-# https://github.com/jruby/jruby/blob/master/core/src/main/java/org/jruby/java/proxies/MapJavaProxy.java
-class Java::JavaUtil::LinkedHashMap
+map_mixin = lambda do
+  # this is a temporary fix to solve a bug in JRuby where classes implementing the Map interface, like LinkedHashMap
+  # have a bug in the has_key? method that is implemented in the Enumerable module that is somehow mixed in the Map interface.
+  # this bug makes has_key? (and all its aliases) return false for a key that has a nil value.
+  # Only LinkedHashMap is patched here because patching the Map interface is not working.
+  # TODO find proper fix, and submit upstream
+  # releavant JRuby files:
+  # https://github.com/jruby/jruby/blob/master/core/src/main/ruby/jruby/java/java_ext/java.util.rb
+  # https://github.com/jruby/jruby/blob/master/core/src/main/java/org/jruby/java/proxies/MapJavaProxy.java
   def has_key?(key)
     self.containsKey(key)
   end
   alias_method :include?, :has_key?
   alias_method :member?, :has_key?
   alias_method :key?, :has_key?
+
+  # Java 8 Map implements a merge method with a different signature from
+  # the Ruby Hash#merge. see https://github.com/jruby/jruby/issues/1249
+  # this can be removed when fixed upstream
+  if ENV_JAVA['java.specification.version'] >= '1.8'
+    def merge(other)
+      dup.merge!(other)
+    end
+  end
 end
+
+Java::JavaUtil::LinkedHashMap.module_exec(&map_mixin)
+Java::JavaUtil::HashMap.module_exec(&map_mixin)
 
 module java::util::Map
   # have Map objects like LinkedHashMap objects report is_a?(Array) == true
