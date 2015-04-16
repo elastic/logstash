@@ -50,6 +50,35 @@ describe "Java integration" do
     end
   end
 
+  context "Java::JavaUtil::Map" do
+    # this is to test the Java 8 Map interface change for the merge method
+
+    let(:merger){{:a => 1, :b => 2}}
+    let(:mergee){{:b => 3, :c => 4}}
+
+    shared_examples "map merge" do
+      it "should support merging" do
+        expect(subject.merge(mergee)).to eq({:a => 1, :b => 3, :c => 4})
+      end
+
+      it "should return a new hash and not change original hash" do
+        expect{subject.merge(mergee)}.to_not change{subject}
+      end
+    end
+
+    context "with Java::JavaUtil::LinkedHashMap" do
+      it_behaves_like "map merge" do
+        subject{Java::JavaUtil::LinkedHashMap.new(merger)}
+      end
+    end
+
+    context "with Java::JavaUtil::HashMap" do
+      it_behaves_like "map merge" do
+        subject{Java::JavaUtil::HashMap.new(merger)}
+      end
+    end
+  end
+
   context "Java::JavaUtil::Collection" do
     subject{Java::JavaUtil::ArrayList.new(initial_array)}
 
