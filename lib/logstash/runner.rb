@@ -1,14 +1,16 @@
 # encoding: utf-8
 
+Thread.abort_on_exception = true
+
 Encoding.default_external = Encoding::UTF_8
 $START = Time.now
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
-require "logstash/environment"
-LogStash::Environment.bundler_setup!
-LogStash::Environment.load_locale!
+require "logstash/bundler"
+LogStash::Bundler.setup!
 
-Thread.abort_on_exception = true
+require "logstash/environment"
+LogStash::Environment.load_locale!
 
 require "logstash/namespace"
 require "logstash/program"

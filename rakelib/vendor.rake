@@ -126,6 +126,7 @@ namespace "vendor" do
 
   task "gems", [:bundle] do |task, args|
     require "logstash/environment"
+    require "logstash/bundler"
     Rake::Task["dependency:rbx-stdlib"] if LogStash::Environment.ruby_engine == "rbx"
     Rake::Task["dependency:stud"].invoke
     Rake::Task["dependency:bundler"].invoke

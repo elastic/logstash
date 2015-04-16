@@ -9,8 +9,8 @@ require "logstash/pluginmanager/util"
 
 namespace "test" do
   task "setup" do
-    require "logstash/environment"
-    LogStash::Environment.bundler_setup!({:without => []})
+    require "logstash/bundler"
+    LogStash::Bundler.setup!({:without => []})
     require "rspec/core/runner"
     require "rspec"
   end

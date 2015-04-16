@@ -2,6 +2,7 @@ require 'clamp'
 require 'logstash/namespace'
 require 'logstash/pluginmanager/util'
 require 'logstash/pluginmanager/command'
+require "logstash/bundler"
 require 'rubygems/spec_fetcher'
 
 class LogStash::PluginManager::List < LogStash::PluginManager::Command
@@ -16,8 +17,7 @@ class LogStash::PluginManager::List < LogStash::PluginManager::Command
   end
 
   def execute
-    require 'logstash/environment'
-    LogStash::Environment.bundler_setup!
+    LogStash::Bundler.setup!
 
     signal_error("No plugins found") if filtered_specs.empty?
 

@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/bundler"
+require "bundler/cli"
 
 describe LogStash::Bundler do
   context "capture_stdout" do
@@ -25,7 +26,7 @@ describe LogStash::Bundler do
       expect(exception.message).to eq("baz")
     end
   end
-  
+
   context 'when invoking bundler' do
     original_stderr = $stderr
 
@@ -59,14 +60,14 @@ describe LogStash::Bundler do
       it 'gem conflict' do
         allow(::Bundler::CLI).to receive(:start).with(bundler_args) { raise ::Bundler::VersionConflict.new('conflict') }
         expect { subject }.to raise_error(::Bundler::VersionConflict)
-      end 
+      end
 
       it 'gem is not found' do
         allow(::Bundler::CLI).to receive(:start).with(bundler_args) { raise ::Bundler::GemNotFound.new('conflict') }
         expect { subject }.to raise_error(::Bundler::GemNotFound)
       end
 
-      it 'on max retries' do 
+      it 'on max retries' do
         options.merge!({ :max_tries => 2 })
         expect(::Bundler::CLI).to receive(:start).with(bundler_args).at_most(options[:max_tries] + 1) { raise RuntimeError }
         expect { subject }.to raise_error(RuntimeError)
@@ -80,7 +81,7 @@ describe LogStash::Bundler do
 
     context 'when installing' do
       let(:options) { { :install => true } }
-    
+
       it 'should call bundler install' do
         expect(subject).to include('install')
       end
