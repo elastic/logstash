@@ -46,11 +46,9 @@ args="agent -f ${LS_CONF_DIR} -l ${LS_LOG_FILE} ${LS_OPTS}"
 
 start() {
 
-  # Set JAVA_OPTS to avoid sharing configuration between other
-  # JVM based programs running on the same time
-  JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
+  LS_JAVA_OPTS="${LS_JAVA_OPTS} -Djava.io.tmpdir=${LS_HOME}"
   HOME=${LS_HOME}
-  export PATH HOME JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
+  export PATH HOME LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
 
   # set ulimit as (root, presumably) first, before we drop privileges
   ulimit -n ${LS_OPEN_FILES}

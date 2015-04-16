@@ -15,27 +15,31 @@ setup_java() {
   fi
 
   if [ ! -x "$JAVACMD" ] ; then
-    echo "Could not find any executable java binary. Please install java in your PATH or set JAVA_HOME."
+    echo "Could not find any executable java binary. Please install java in your PATH or set JAVA_HOME." 1>&2
     exit 1
   fi
 
-  if [ "$LS_HEAP_SIZE" ] ; then
-    JAVA_OPTS="$JAVA_OPTS -Xmx${LS_HEAP_SIZE}"
-  fi
-
-  if [ -z "$LS_JAVA_OPTS" ] ; then
+  if [ "$JAVA_OPTS" ] ; then
+    echo "WARNING: Default JAVA_OPTS will be overridden by the JAVA_OPTS defined in the environment. Environment JAVA_OPTS are $JAVA_OPTS"  1>&2
+  else
     # There are no JAVA_OPTS set from the client, we set a predefined
     # set of options that think are good in general
-    JAVA_OPTS="$JAVA_OPTS -XX:+UseParNewGC"
+    JAVA_OPTS="-XX:+UseParNewGC"
     JAVA_OPTS="$JAVA_OPTS -XX:+UseConcMarkSweepGC"
     JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true"
 
     JAVA_OPTS="$JAVA_OPTS -XX:CMSInitiatingOccupancyFraction=75"
     JAVA_OPTS="$JAVA_OPTS -XX:+UseCMSInitiatingOccupancyOnly"
-  else
+  fi
+
+  if [ "$LS_JAVA_OPTS" ] ; then
     # The client set the variable LS_JAVA_OPTS, choosing his own
     # set of java opts.
     JAVA_OPTS="$JAVA_OPTS $LS_JAVA_OPTS"
+  fi
+
+  if [ "$LS_HEAP_SIZE" ] ; then
+    JAVA_OPTS="$JAVA_OPTS -Xmx${LS_HEAP_SIZE}"
   fi
 
   if [ "$LS_USE_GC_LOGGING" ] ; then
