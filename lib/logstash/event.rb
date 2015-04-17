@@ -295,11 +295,7 @@ class LogStash::Event
 
   public
   def to_hash_with_metadata
-    if @metadata.nil?
-      to_hash
-    else
-      to_hash.merge(METADATA => @metadata)
-    end
+    @metadata.empty? ? to_hash : to_hash.merge(METADATA => @metadata)
   end
 
   public
