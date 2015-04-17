@@ -409,6 +409,10 @@ describe LogStash::Event do
         it "should still allow normal field access" do
           expect(subject["foo"]).to eq("bar")
         end
+
+        it "should not include the @metadata key" do
+          expect(subject.to_hash_with_metadata).not_to include("@metadata")
+        end
       end
     end
 
