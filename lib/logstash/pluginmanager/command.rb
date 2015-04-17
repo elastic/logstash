@@ -32,6 +32,7 @@ class LogStash::PluginManager::Command < Clamp::Command
   end
 
   def relative_path(path)
-    Pathname.new(path).relative_path_from(Pathname.new(LogStash::Environment::LOGSTASH_HOME)).to_s
+    require "pathname"
+    ::Pathname.new(path).relative_path_from(::Pathname.new(LogStash::Environment::LOGSTASH_HOME)).to_s
   end
 end
