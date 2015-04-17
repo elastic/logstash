@@ -16,16 +16,15 @@ namespace "artifact" do
 
   def exclude_paths
     return @exclude_paths if @exclude_paths
+
     @exclude_paths = []
-    #gitignore = File.join(File.dirname(__FILE__), "..", ".gitignore")
-    #if File.exists?(gitignore)
-      #@exclude_paths += File.read(gitignore).split("\n")
-    #end
     @exclude_paths << "spec/reports/**/*"
     @exclude_paths << "**/*.gem"
     @exclude_paths << "**/test/files/slow-xpath.xml"
     @exclude_paths << "**/logstash-*/spec"
-    return @exclude_paths
+    @exclude_paths << "bin/bundle"
+
+    @exclude_paths
   end
 
   def excludes
