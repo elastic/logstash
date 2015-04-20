@@ -1,3 +1,41 @@
+1.5.0-rc3
+  # general
+  - Added back the ability to install plugin gems built locally on top of Logstash. This will 
+    help plugin developers iterate and test locally without having to publish plugins (#2779)
+  - Fixed performance regressions from 1.4.2 especially for configurations which have 
+    conditionals in filter and output. Throughput numbers are either inline with 1.4.2
+    or improved for certain configurations (#2870)
+  - Fixed issue in core which was causing Logstash to not shutdown properly (#2796)    
+  - Added ability to add extra JVM options while running LS. You can use the LS_JAVA_OPTS 
+    environment variable to add to the default JVM options set out of the box. You could also
+    completely overwrite all the default options if you wish by setting JAVA_OPTS before
+    starting Logstash (#2942)
+  - Fixed a regression from 1.4.2 where removing a tag in filter fails if the input event is
+    JSON formatted (#2261)
+  - Fixed issue where setting workers > 1 would trigger messages like
+    "You are using a deprecated config setting ..." (#2865)
+  - Deprecated elasticsearch_http output plugin: All functionality is ported to
+    logstash-output-elasticsearch plugin using http protocol (#1757). If you try to use
+    the elasticsearch_http plugin, it will log a deprecated notice now.
+
+  # input
+  - File: When shutting down Logstash with file input, it would log a "permissions denied"
+    message. We fixed the underlying sinceDB issue while writing to a directory with no
+    permissions (#2964, #2935, #2882, file-input#16)
+
+  # filter
+  - Multiline: Fixed an issue where Logstash would crash while processing JSON formatted
+    events on Java 8 (#10)
+  - Mutate: Fixed issue where you can safely delete/rename fields which can have nil
+    values (#2977)
+
+  # output
+  - Deprecate the usage of index_type configuration. Added document_type to be consistent
+    with document_id (#102)
+  - Added warning when used with config embedded => true. Starting an embedded Elasticsearch
+    node is only recommended while prototyping. This should never be used in 
+    production setting (#99)
+
 1.5.0.rc2
   # general
   - Fixed an issue with packaging our release artifacts. Release artifacts were missing jar files
