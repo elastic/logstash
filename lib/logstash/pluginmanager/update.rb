@@ -14,7 +14,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   def execute
     local_gems = gemfile.locally_installed_gems
 
-    if update_all? || !local_gems.empty?
+    if update_all? && !local_gems.empty?
       error_plugin_that_use_path!(local_gems)
     else
       plugins_with_path = plugins_arg & local_gems
