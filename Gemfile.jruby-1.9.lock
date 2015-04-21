@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    logstash-core (1.5.0.rc3.snapshot5-java)
+    logstash-core (1.5.0.rc3.snapshot6-java)
       cabin (>= 0.7.0)
       clamp
       file-dependencies (= 0.1.6)
