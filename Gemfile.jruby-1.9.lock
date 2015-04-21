@@ -53,7 +53,7 @@ GEM
     http_parser.rb (0.6.0-java)
     i18n (0.6.9)
     insist (1.0.0)
-    jar-dependencies (0.1.13)
+    jar-dependencies (0.1.7)
     jrjackson (0.2.8)
     json (1.8.2-java)
     logstash-devutils (0.0.12-java)
