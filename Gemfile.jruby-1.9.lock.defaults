@@ -118,7 +118,7 @@ GEM
     logstash-codec-rubydebug (0.1.7)
       awesome_print
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-core (1.5.0.rc3.snapshot6-java)
+    logstash-core (1.5.0.rc3-java)
       cabin (>= 0.7.0)
       clamp
       file-dependencies (= 0.1.6)
