@@ -17,8 +17,15 @@ basedir=$(cd `dirname $0`/..; pwd)
 
 setup
 
+# If we don't have the HOSTNAME enviroment (which is BASH specific), grab it using hostname
+if [ ! -n "$HOSTNAME" ] 
+then
+    HOSTNAME=$(hostname)
+fi
+
 # Export these so that they can be picked up by file input (and others?).
-export HOME SINCEDB_DIR
+# Make HOSTNAME available to ENV
+export HOME SINCEDB_DIR HOSTNAME
 
 case $1 in
   -*)
