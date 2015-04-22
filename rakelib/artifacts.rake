@@ -48,11 +48,6 @@ namespace "artifact" do
     FileUtils.cp("Gemfile.jruby-1.9.lock.defaults", "Gemfile.jruby-1.9.lock")
   end
 
-  task "freeze-defaults-gemfile" => ["bootstrap", "plugin:install-default"] do
-    FileUtils.cp("Gemfile", "Gemfile.defaults")
-    FileUtils.cp("Gemfile.jruby-1.9.lock", "Gemfile.jruby-1.9.lock.defaults")
-  end
-
   # We create an empty bundle config file
   # This will allow the deb and rpm to create a file
   # with the correct user group and permission.
