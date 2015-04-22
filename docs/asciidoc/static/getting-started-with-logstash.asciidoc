@@ -22,6 +22,20 @@ Java HotSpot(TM) 64-Bit Server VM (build 24.45-b08, mixed mode)
 Once you have verified the existence of Java on your system, we can move on!
 
 [float]
+=== Environment Variables
+Logstash startup script uses environment variables so you can easily configure your
+environment if you wish to do so.
+
+When you start Logstash using the startup script, we launch Java with pre-configured JVM options. 
+Most times it is better to leave the options as is, but you have the ability to pass in
+extra JVM options. For example, if you want to monitor Logstash using JMX, you can add these settings
+using the environment variable `LS_JAVA_OPTS` and start Logstash
+
+In some cases, you may want to completely override the default JVM options chosen by Logstash and use
+your own settings. Setting JAVA_OPTS before you start Logstash will ignore the defaults in the scripts
+
+
+[float]
 === Up and Running!
 To get started, download and extract the 'logstash' binary and run
 it with a very simple configuration.
