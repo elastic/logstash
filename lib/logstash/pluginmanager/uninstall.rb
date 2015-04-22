@@ -13,8 +13,6 @@ class LogStash::PluginManager::Uninstall < LogStash::PluginManager::Command
   parameter "PLUGIN", "plugin name"
 
   def execute
-    LogStash::Bundler.setup!
-
     signal_error("File #{LogStash::Environment::GEMFILE_PATH} does not exist or is not writable, aborting") unless File.writable?(LogStash::Environment::GEMFILE_PATH)
 
     # make sure this is an installed plugin and present in Gemfile.
@@ -30,7 +28,7 @@ class LogStash::PluginManager::Uninstall < LogStash::PluginManager::Command
 
       # any errors will be logged to $stderr by invoke_bundler!
       # output, exception = LogStash::Bundler.invoke_bundler!(:install => true, :clean => true)
-      output = LogStash::Bundler.invoke_bundler!(:install => true)
+      output = LogStash::Bundler.invoke_bundler!(:install => true, :clean => true)
 
       remove_unused_locally_installed_gems!
     end
