@@ -2,15 +2,14 @@ namespace "artifact" do
 
   def package_files
     [
-      ".bundle/config",
       "LICENSE",
       "CHANGELOG",
       "CONTRIBUTORS",
       "{bin,lib,spec,locales}/{,**/*}",
       "patterns/**/*",
       "vendor/??*/**/*",
-      "Gemfile*",
-      "logstash-core.gemspec",
+      "Gemfile",
+      "Gemfile.jruby-1.9.lock",
     ]
   end
 
