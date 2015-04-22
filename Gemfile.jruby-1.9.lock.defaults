@@ -1,22 +1,3 @@
-PATH
-  remote: .
-  specs:
-    logstash-core (1.5.0.rc3.snapshot5-java)
-      cabin (>= 0.7.0)
-      clamp
-      file-dependencies (= 0.1.6)
-      filesize
-      ftw (~> 0.0.40)
-      i18n (= 0.6.9)
-      jrjackson
-      mime-types
-      minitar
-      pry
-      rack
-      sinatra
-      stud
-      treetop (~> 1.4.0)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -37,28 +18,15 @@ GEM
     backports (3.6.4)
     bindata (2.1.0)
     buftok (0.2.0)
-    builder (3.2.2)
     cabin (0.7.1)
-    ci_reporter (1.9.3)
-      builder (>= 2.1.2)
     cinch (2.2.5)
     clamp (0.6.4)
     coderay (1.1.0)
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
     concurrent-ruby (0.8.0-java)
-    coveralls (0.8.1)
-      json (~> 1.8)
-      rest-client (>= 1.6.8, < 2)
-      simplecov (~> 0.10.0)
-      term-ansicolor (~> 1.3)
-      thor (~> 0.19.1)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
-    diff-lcs (1.2.5)
-    docile (1.1.5)
-    domain_name (0.5.24)
-      unf (>= 0.0.5, < 1.0.0)
     edn (1.0.6)
     elasticsearch (1.0.8)
       elasticsearch-api (= 1.0.7)
@@ -88,18 +56,14 @@ GEM
     gelf (1.3.2)
       json
     gelfd (0.2.0)
-    gem_publisher (1.5.0)
     geoip (1.5.0)
     gmetric (0.1.3)
     hitimes (1.2.2-java)
     http (0.6.4)
       http_parser.rb (~> 0.6.0)
-    http-cookie (1.0.2)
-      domain_name (~> 0.5)
     http_parser.rb (0.6.0-java)
     i18n (0.6.9)
     ice_nine (0.11.1)
-    insist (1.0.0)
     jar-dependencies (0.1.7)
     jls-grok (0.11.2)
       cabin (>= 0.6.0)
@@ -154,13 +118,21 @@ GEM
     logstash-codec-rubydebug (0.1.7)
       awesome_print
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-devutils (0.0.12-java)
-      gem_publisher
-      insist (= 1.0.0)
-      jar-dependencies
+    logstash-core (1.5.0.rc3.snapshot6-java)
+      cabin (>= 0.7.0)
+      clamp
+      file-dependencies (= 0.1.6)
+      filesize
+      ftw (~> 0.0.40)
+      i18n (= 0.6.9)
+      jrjackson
+      mime-types
       minitar
-      rake
-      rspec (~> 2.14.0)
+      pry
+      rack
+      sinatra
+      stud
+      treetop (~> 1.4.0)
     logstash-filter-anonymize (0.1.5)
       logstash-core (>= 1.4.0, < 2.0.0)
       murmurhash3
@@ -202,7 +174,7 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-filter-mutate
       logstash-patterns-core
-    logstash-filter-mutate (0.1.6)
+    logstash-filter-mutate (0.1.7)
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-filter-grok
       logstash-patterns-core
@@ -361,7 +333,7 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-filter-json
       logstash-output-file
-    logstash-output-elasticsearch (0.2.3-java)
+    logstash-output-elasticsearch (0.2.4-java)
       cabin (~> 0.6)
       concurrent-ruby
       elasticsearch (~> 1.0, >= 1.0.6)
@@ -487,7 +459,6 @@ GEM
     multipart-post (2.0.0)
     murmurhash3 (0.1.6-java)
     naught (1.0.0)
-    netrc (0.10.3)
     nokogiri (1.6.6.2-java)
     polyglot (0.3.5)
     pry (0.10.1-java)
@@ -498,20 +469,7 @@ GEM
     rack (1.6.0)
     rack-protection (1.5.3)
       rack
-    rake (10.4.2)
     redis (3.2.1)
-    rest-client (1.8.0)
-      http-cookie (>= 1.0.2, < 2.0)
-      mime-types (>= 1.16, < 3.0)
-      netrc (~> 0.7)
-    rspec (2.14.1)
-      rspec-core (~> 2.14.0)
-      rspec-expectations (~> 2.14.0)
-      rspec-mocks (~> 2.14.0)
-    rspec-core (2.14.8)
-    rspec-expectations (2.14.5)
-      diff-lcs (>= 1.1.3, < 2.0)
-    rspec-mocks (2.14.6)
     ruby-maven (3.1.1.0.8)
       maven-tools (~> 1.0.1)
       ruby-maven-libs (= 3.1.1)
@@ -519,11 +477,6 @@ GEM
     rufus-scheduler (2.0.24)
       tzinfo (>= 0.3.22)
     simple_oauth (0.3.1)
-    simplecov (0.10.0)
-      docile (~> 1.1.0)
-      json (~> 1.8)
-      simplecov-html (~> 0.10.0)
-    simplecov-html (0.10.0)
     sinatra (1.4.6)
       rack (~> 1.4)
       rack-protection (~> 1.4)
@@ -534,12 +487,8 @@ GEM
       ffi
     statsd-ruby (1.2.0)
     stud (0.0.19)
-    term-ansicolor (1.3.0)
-      tins (~> 1.0)
-    thor (0.19.1)
     thread_safe (0.3.5-java)
     tilt (2.0.1)
-    tins (1.3.5)
     treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
@@ -556,7 +505,6 @@ GEM
       simple_oauth (~> 0.3.0)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    unf (0.1.4-java)
     user_agent_parser (2.2.0)
     virtus (1.0.5)
       axiom-types (~> 0.1)
@@ -570,8 +518,6 @@ PLATFORMS
   java
 
 DEPENDENCIES
-  ci_reporter (= 1.9.3)
-  coveralls
   logstash-codec-collectd
   logstash-codec-dots
   logstash-codec-edn
@@ -588,8 +534,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core!
-  logstash-devutils
+  logstash-core
   logstash-filter-anonymize
   logstash-filter-checksum
   logstash-filter-clone
@@ -676,5 +621,3 @@ DEPENDENCIES
   logstash-output-udp
   logstash-output-xmpp
   logstash-output-zeromq
-  rspec (~> 2.14.0)
-  simplecov
