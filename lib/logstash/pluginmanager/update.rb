@@ -18,7 +18,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
       error_plugin_that_use_path!(local_gems)
     else
       plugins_with_path = plugins_arg & local_gems
-      error_plugin_that_use_path!(plugins_with_path) if plugins_with_path.size > 0 
+      error_plugin_that_use_path!(plugins_with_path) if plugins_with_path.size > 0
     end
 
     update_gems!
@@ -52,7 +52,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     # any errors will be logged to $stderr by invoke_bundler!
     # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
     output = LogStash::Bundler.invoke_bundler!(:update => plugins)
-    output = LogStash::Bundler.invoke_bundler!(:clean => true) 
+    # output = LogStash::Bundler.invoke_bundler!(:clean => true)
 
     display_updated_plugins(previous_gem_specs_map)
   rescue => exception
