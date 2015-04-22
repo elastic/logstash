@@ -2,15 +2,14 @@ namespace "artifact" do
 
   def package_files
     [
-      ".bundle/config",
       "LICENSE",
       "CHANGELOG",
       "CONTRIBUTORS",
       "{bin,lib,spec,locales}/{,**/*}",
       "patterns/**/*",
       "vendor/??*/**/*",
-      "Gemfile*",
-      "logstash-core.gemspec",
+      "Gemfile",
+      "Gemfile.jruby-1.9.lock",
     ]
   end
 
@@ -47,11 +46,6 @@ namespace "artifact" do
   task "use-defaults-gemfile" do
     FileUtils.cp("Gemfile.defaults", "Gemfile")
     FileUtils.cp("Gemfile.jruby-1.9.lock.defaults", "Gemfile.jruby-1.9.lock")
-  end
-
-  task "freeze-defaults-gemfile" => ["bootstrap", "plugin:install-default"] do
-    FileUtils.cp("Gemfile", "Gemfile.defaults")
-    FileUtils.cp("Gemfile.jruby-1.9.lock", "Gemfile.jruby-1.9.lock.defaults")
   end
 
   # We create an empty bundle config file
