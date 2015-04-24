@@ -155,7 +155,9 @@ module LogStash; module Config; module AST
 
               @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name}, :events => events)
 
-              #{plugin.compile_starting_here.gsub(/^/, "  ")}
+              events.each do |event|
+                #{plugin.compile_starting_here.gsub(/^/, "  ")}
+              end
 
               events.each{|e| block.call(e)}
             end
