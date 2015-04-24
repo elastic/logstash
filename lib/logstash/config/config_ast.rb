@@ -233,7 +233,14 @@ module LogStash; module Config; module AST
       when "filter"
         return <<-CODE
           #{variable_name}.filter(event) {|new_event| events << new_event }
+
+          # Break early if the event was cancelled
+          return [] if events.all?(&:cancelled?)
         CODE
+        # TODO(sissel): The above break-early is probably not the best
+        # implementation because a filter could possibly emit many events and
+        # only cancel one of them. I don't know of any plugins that do this,
+        # though.
       when "output"
         return "#{variable_name}.handle(event)\n"
       when "codec"
