@@ -1,33 +1,15 @@
 # encoding: utf-8
 
 Thread.abort_on_exception = true
-
 Encoding.default_external = Encoding::UTF_8
-$START = Time.now
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
-require "logstash/bundler"
-LogStash::Bundler.setup!
-
 require "logstash/environment"
+
 LogStash::Environment.load_locale!
 
 require "logstash/namespace"
 require "logstash/program"
-
-class LogStash::RSpecsRunner
-  def initialize(args)
-    @args = args
-  end
-
-  def run
-    @result = RSpec::Core::Runner.run(@args)
-  end
-
-  def wait
-    return @result
-  end
-end
 
 class LogStash::Runner
   include LogStash::Program
@@ -39,7 +21,6 @@ class LogStash::Runner
     @startup_interruption_trap = Stud::trap("INT") { puts "Interrupted"; exit 0 }
 
     LogStash::Util::set_thread_name(self.class.name)
-    #$LOAD_PATH << File.join(File.dirname(__FILE__), "..")
 
     if RUBY_VERSION < "1.9.2"
       $stderr.puts "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
@@ -62,15 +43,6 @@ class LogStash::Runner
           agent_args << "--verbose"
         end
         return LogStash::Agent.run($0, agent_args)
-      end,
-      "rspec" => lambda do
-        require "rspec/core/runner"
-        require "rspec"
-        spec_path = File.expand_path(File.join(File.dirname(__FILE__), "/../../spec"))
-        $LOAD_PATH << spec_path
-        all_specs = Dir.glob(File.join(spec_path, "/**/*_spec.rb"))
-        rspec = LogStash::RSpecsRunner.new(args.empty? ? all_specs : args)
-        return rspec.run
       end,
       "irb" => lambda do
         require "irb"
@@ -96,21 +68,10 @@ class LogStash::Runner
         end
         return 0
       end,
-      "plugin" => lambda do
-        require 'logstash/pluginmanager'
-        plugin_manager = LogStash::PluginManager::Main.new($0)
-        begin
-          plugin_manager.parse(args)
-          return plugin_manager.execute
-        rescue Clamp::HelpWanted => e
-          show_help(e.command)
-          return 0
-        end
-      end,
       "agent" => lambda do
         require "logstash/agent"
         # Hack up a runner
-        agent = LogStash::Agent.new($0)
+        agent = LogStash::Agent.new("/bin/logstash agent", $0)
         begin
           agent.parse(args)
         rescue Clamp::HelpWanted => e
@@ -146,18 +107,11 @@ For example: logstash agent --help
 Available commands:
   agent - runs the logstash agent
   version - emits version info about this logstash
-  rspec - runs tests
-      ]
+]
       #$stderr.puts commands.keys.map { |s| "  #{s}" }.join("\n")
       return Stud::Task.new { 1 }
     end
   end # def run
-
-  # @return true if this file is the main file being run and not via rspec
-  def self.autorun?
-    # caller is the current execution stack
-    $0 == __FILE__ && caller.none?{|entry| entry =~ /rspec/}
-  end
 
   private
 
@@ -165,5 +119,3 @@ Available commands:
     puts command.help
   end
 end # class LogStash::Runner
-
-LogStash::Runner.new.main(ARGV) if LogStash::Runner.autorun?

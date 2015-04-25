@@ -1,5 +1,3 @@
-require 'logstash/environment'
-
 namespace "docs" do
 
   task "generate" do
@@ -10,6 +8,8 @@ namespace "docs" do
   end
 
   task "generate-docs" do
+    require "bootstrap/environment"
+
     list = Dir.glob("#{LogStash::Environment.logstash_gem_home}/gems/logstash-*/lib/logstash/{input,output,filter,codec}s/*.rb").join(" ")
     cmd = "bin/logstash docgen -o asciidoc_generated #{list}"
     system(cmd)

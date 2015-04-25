@@ -56,4 +56,28 @@ namespace "plugin" do
 
     task.reenable # Allow this task to be run again
   end
+
+  task "clean-logstash-core-gem" do
+    Dir["logstash-core*.gem"].each do |gem|
+      rm(gem)
+    end
+  end
+
+  task "build-logstash-core-gem" => [ "clean-logstash-core-gem" ] do
+    puts("[plugin:build-logstash-core-gem] Building logstash-core.gemspec")
+
+    system("gem build logstash-core.gemspec")
+
+    task.reenable # Allow this task to be run again
+  end
+
+  task "install-local-logstash-core-gem" => [ "build-logstash-core-gem" ] do
+    gems = Dir["logstash-core*.gem"]
+    abort("ERROR: logstash-core gem not found") if gems.size != 1
+    puts("[plugin:install-local-logstash-core-gem] Installing #{gems.first}")
+    install_plugins("--no-verify", gems.first)
+
+    task.reenable # Allow this task to be run again
+  end
+
 end # namespace "plugin"

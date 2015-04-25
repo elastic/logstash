@@ -5,7 +5,9 @@ namespace "artifact" do
       "LICENSE",
       "CHANGELOG",
       "CONTRIBUTORS",
-      "{bin,lib,spec,locales}/{,**/*}",
+      "bin/**/*",
+      "lib/bootstrap/**/*",
+      "lib/pluginmanager/**/*",
       "patterns/**/*",
       "vendor/??*/**/*",
       "Gemfile",
@@ -17,12 +19,10 @@ namespace "artifact" do
     return @exclude_paths if @exclude_paths
 
     @exclude_paths = []
-    @exclude_paths << "spec/reports/**/*"
     @exclude_paths << "**/*.gem"
     @exclude_paths << "**/test/files/slow-xpath.xml"
     @exclude_paths << "**/logstash-*/spec"
     @exclude_paths << "bin/bundle"
-    @exclude_paths << "bin/rspec"
 
     @exclude_paths
   end
@@ -43,11 +43,6 @@ namespace "artifact" do
     end.flatten.uniq
   end
 
-  task "use-defaults-gemfile" do
-    FileUtils.cp("Gemfile.defaults", "Gemfile")
-    FileUtils.cp("Gemfile.jruby-1.9.lock.defaults", "Gemfile.jruby-1.9.lock")
-  end
-
   # We create an empty bundle config file
   # This will allow the deb and rpm to create a file
   # with the correct user group and permission.
@@ -56,7 +51,7 @@ namespace "artifact" do
     File.open(".bundle/config", "w") { }
   end
 
-  task "prepare" => ["bootstrap", "use-defaults-gemfile", "plugin:install-default", "clean-bundle-config"]
+  task "prepare" => ["bootstrap", "plugin:install-default", "plugin:install-local-logstash-core-gem", "clean-bundle-config"]
 
   desc "Build a tar.gz of logstash with all dependencies"
   task "tar" => ["prepare"] do
@@ -64,6 +59,7 @@ namespace "artifact" do
     require "archive/tar/minitar"
     require "logstash/version"
     tarpath = "build/logstash-#{LOGSTASH_VERSION}.tar.gz"
+    puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
     files.each do |path|
@@ -98,6 +94,7 @@ namespace "artifact" do
     Rake::Task["dependency:rubyzip"].invoke
     require 'zip'
     zippath = "build/logstash-#{LOGSTASH_VERSION}.zip"
+    puts("[artifact:zip] building #{zippath}")
     File.unlink(zippath) if File.exists?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
       files.each do |path|
@@ -226,11 +223,13 @@ namespace "artifact" do
 
   desc "Build an RPM of logstash with all dependencies"
   task "rpm" => ["prepare"] do
+    puts("[artifact:rpm] building rpm package")
     package("centos", "5")
   end
 
   desc "Build an RPM of logstash with all dependencies"
   task "deb" => ["prepare"] do
+    puts("[artifact:deb] building deb package")
     package("ubuntu", "12.04")
   end
 end

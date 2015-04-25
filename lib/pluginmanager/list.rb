@@ -1,8 +1,3 @@
-require 'clamp'
-require 'logstash/namespace'
-require 'logstash/pluginmanager/util'
-require 'logstash/pluginmanager/command'
-require "logstash/bundler"
 require 'rubygems/spec_fetcher'
 
 class LogStash::PluginManager::List < LogStash::PluginManager::Command

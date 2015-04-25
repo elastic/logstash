@@ -1,4 +1,9 @@
-basedir=$(cd `dirname $0`/..; pwd)
+unset CDPATH
+LOGSTASH_HOME=$(cd `dirname $0`/..; pwd)
+export LOGSTASH_HOME
+
+# Defaults you can override with environment variables
+LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
 
 setup_java() {
   if [ -z "$JAVACMD" ] ; then
@@ -57,7 +62,7 @@ setup_java() {
 }
 
 setup_drip() {
-  if [ -z $DRIP_JAVACMD ] ; then
+  if [ -z "$DRIP_JAVACMD" ] ; then
     JAVACMD="drip"
   fi
 
@@ -74,7 +79,7 @@ setup_drip() {
   # faster JRuby startup options https://github.com/jruby/jruby/wiki/Improving-startup-time
   # since we are using drip to speed up, we may as well throw these in also
   if [ "$USE_RUBY" = "1" ] ; then
-    export JRUBY_OPTS="-J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify"
+    export JRUBY_OPTS="$JRUBY_OPTS -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify"
   else
     JAVA_OPTS="$JAVA_OPTS -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -noverify"
   fi
@@ -84,8 +89,7 @@ setup_drip() {
 }
 
 setup_vendored_jruby() {
-  #JRUBY_JAR=$(ls "${basedir}"/vendor/jruby/jruby-complete-*.jar)
-  JRUBY_BIN="${basedir}/vendor/jruby/bin/jruby"
+  JRUBY_BIN="${LOGSTASH_HOME}/vendor/jruby/bin/jruby"
 
   if [ ! -f "${JRUBY_BIN}" ] ; then
     echo "Unable to find JRuby."
@@ -102,9 +106,9 @@ setup_ruby() {
 }
 
 jruby_opts() {
-  echo "--1.9"
+  printf "%s" "--1.9"
   for i in $JAVA_OPTS ; do
-    echo "-J$i"
+    printf "%s" " -J$i"
   done
 }
 
@@ -127,6 +131,24 @@ setup() {
     setup_java
     setup_vendored_jruby
   fi
+}
 
-  export RUBYLIB="${basedir}/lib"
+ruby_exec() {
+  if [ -z "$VENDORED_JRUBY" ] ; then
+
+    # $VENDORED_JRUBY is empty so use the local "ruby" command
+
+    if [ "$DEBUG" ] ; then
+      echo "DEBUG: exec ${RUBYCMD} $@"
+    fi
+    exec "${RUBYCMD}" "$@"
+  else
+
+    # $VENDORED_JRUBY is non-empty so use the vendored JRuby
+
+    if [ "$DEBUG" ] ; then
+      echo "DEBUG: exec ${JRUBY_BIN} $(jruby_opts) $@"
+    fi
+    exec "${JRUBY_BIN}" $(jruby_opts) "$@"
+  fi
 }

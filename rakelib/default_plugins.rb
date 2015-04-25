@@ -57,7 +57,6 @@ module LogStash
       logstash-input-graphite
       logstash-input-imap
       logstash-input-irc
-      logstash-input-kafka
       logstash-input-log4j
       logstash-input-lumberjack
       logstash-input-pipe
@@ -74,6 +73,7 @@ module LogStash
       logstash-input-unix
       logstash-input-xmpp
       logstash-input-zeromq
+      logstash-input-kafka
       logstash-output-cloudwatch
       logstash-output-csv
       logstash-output-elasticsearch
@@ -88,7 +88,6 @@ module LogStash
       logstash-output-http
       logstash-output-irc
       logstash-output-juggernaut
-      logstash-output-kafka
       logstash-output-lumberjack
       logstash-output-nagios
       logstash-output-nagios_nsca
@@ -105,6 +104,7 @@ module LogStash
       logstash-output-stdout
       logstash-output-tcp
       logstash-output-udp
+      logstash-output-kafka
     )
 
     # plugins required to run the logstash core specs

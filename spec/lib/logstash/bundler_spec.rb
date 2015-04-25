@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/bundler"
 require "bundler/cli"
 
 describe LogStash::Bundler do
@@ -30,7 +29,7 @@ describe LogStash::Bundler do
   context 'when invoking bundler' do
     original_stderr = $stderr
 
-    subject { LogStash::Bundler.invoke_bundler!(options) }
+    subject { LogStash::Bundler.invoke!(options) }
     # by default we want to fail fast on the test
     let(:options) { { :install => true, :max_tries => 0, :without => [:development]} }
     let(:bundler_args) { LogStash::Bundler.bundler_arguments(options) }
@@ -53,7 +52,7 @@ describe LogStash::Bundler do
 
     it 'should call Bundler::CLI.start with the correct arguments' do
       expect(::Bundler::CLI).to receive(:start).with(bundler_args)
-      LogStash::Bundler.invoke_bundler!(options)
+      LogStash::Bundler.invoke!(options)
     end
 
     context 'abort with an exception' do

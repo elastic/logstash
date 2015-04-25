@@ -1,16 +1,13 @@
-##
-# In Logstash we use rspec throw the runner interface so we need to
-# call explicity to exit in order to set the proper exit code, otherwise
+# we need to call exit explicity  in order to set the proper exit code, otherwise
 # most common CI systems can not know whats up with this tests.
-# In general this is not a problem, because the most common rspec usage
-# is throw the rake task, where rspec sets this himself internally.
-##
-require "logstash/pluginmanager/util"
+
+require "pluginmanager/util"
 
 namespace "test" do
   task "setup" do
-    require "logstash/bundler"
+    require "bootstrap/environment"
     LogStash::Bundler.setup!({:without => []})
+
     require "rspec/core/runner"
     require "rspec"
   end

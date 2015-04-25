@@ -5,18 +5,18 @@ module LogStash
   module Environment
     extend self
 
-    LOGSTASH_HOME = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", ".."))
-    BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
-    GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "Gemfile")
+    # rehydrate the bootstrap environment if the startup was not done by executing bootstrap.rb
+    unless LogStash::Environment.const_defined?("LOGSTASH_HOME")
+      abort("ERROR: missing LOGSTASH_HOME environment variable") if ENV["LOGSTASH_HOME"].to_s.empty?
+      $LOAD_PATH << ::File.join(ENV["LOGSTASH_HOME"], "lib")
+      require "bootstrap/environment"
+    end
+
+    LOGSTASH_CORE = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", ".."))
     BUNDLE_CONFIG_PATH = ::File.join(LOGSTASH_HOME, ".bundle", "config")
     BOOTSTRAP_GEM_PATH = ::File.join(LOGSTASH_HOME, 'build', 'bootstrap')
-    LOCAL_GEM_PATH = ::File.join(LOGSTASH_HOME, 'vendor', 'local_gems')
 
     LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
-
-    def logstash_gem_home
-      ::File.join(BUNDLE_DIR, ruby_engine, gem_ruby_version)
-    end
 
     def env
       LOGSTASH_ENV
@@ -75,21 +75,6 @@ module LogStash
       ENV["USE_RUBY"] == "1" ? "ruby" : File.join("vendor", "jruby", "bin", "jruby")
     end
 
-    # @return [String] major.minor ruby version, ex 1.9
-    def ruby_abi_version
-      RUBY_VERSION[/(\d+\.\d+)(\.\d+)*/, 1]
-    end
-
-    # @return [String] the ruby version string bundler uses to craft its gem path
-    def gem_ruby_version
-      RbConfig::CONFIG["ruby_version"]
-    end
-
-    # @return [String] jruby, ruby, rbx, ...
-    def ruby_engine
-      RUBY_ENGINE
-    end
-
     def jruby?
       @jruby ||= !!(RUBY_PLATFORM == "java")
     end
@@ -102,16 +87,12 @@ module LogStash
       return ::File.join(LOGSTASH_HOME, "vendor", path)
     end
 
-    def plugin_path(path)
-      return ::File.join(LOGSTASH_HOME, "lib", "logstash", path)
-    end
-
     def pattern_path(path)
       return ::File.join(LOGSTASH_HOME, "patterns", path)
     end
 
     def locales_path(path)
-      return ::File.join(LOGSTASH_HOME, "locales", path)
+      return ::File.join(LOGSTASH_CORE, "locales", path)
     end
 
     def load_locale!

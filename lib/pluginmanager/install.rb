@@ -1,13 +1,6 @@
-require "clamp"
-require "logstash/namespace"
-require "logstash/environment"
-require "logstash/pluginmanager/util"
-require "logstash/pluginmanager/command"
 require "jar-dependencies"
 require "jar_install_post_install_hook"
 require "file-dependencies/gem"
-require "logstash/gemfile"
-require "logstash/bundler"
 require "fileutils"
 
 class LogStash::PluginManager::Install < LogStash::PluginManager::Command
@@ -21,7 +14,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   # one plugin name can be also specified.
   def execute
     validate_cli_options!
-    
+
     if local_gems?
       gems = extract_local_gems_plugins
     elsif development?
@@ -32,7 +25,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     end
 
     install_gems_list!(gems)
-    remove_unused_locally_installed_gems! 
+    remove_unused_locally_installed_gems!
   end
 
   private
@@ -53,7 +46,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     gems.each do |plugin, version|
       puts("Validating #{[plugin, version].compact.join("-")}")
       signal_error("Installation aborted, verification failed for #{plugin} #{version}") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
-    end 
+    end
   end
 
   def plugins_development_gems
@@ -64,7 +57,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
 
     # Construct the list of dependencies to add to the current gemfile
     specs.each_with_object([]) do |spec, install_list|
-      dependencies = spec.dependencies 
+      dependencies = spec.dependencies
         .select { |dep| dep.type == :development }
         .map { |dep| [dep.name] + dep.requirement.as_list }
 
@@ -95,7 +88,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     bundler_options[:without] = [] if development?
     bundler_options[:rubygems_source] = gemfile.gemset.sources
 
-    output = LogStash::Bundler.invoke_bundler!(bundler_options)
+    output = LogStash::Bundler.invoke!(bundler_options)
 
     puts("Installation successful")
   rescue => exception
@@ -105,23 +98,23 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     display_bundler_output(output)
   end
 
-  # Extract the specified local gems in a predefined local path 
+  # Extract the specified local gems in a predefined local path
   # Update the gemfile to use a relative path to this plugin and run
   # Bundler, this will mark the gem not updatable by `bin/plugin update`
-  # This is the most reliable way to make it work in bundler without 
+  # This is the most reliable way to make it work in bundler without
   # hacking with `how bundler works`
   #
   # Bundler 2.0, will have support for plugins source we could create a .gem source
   # to support it.
   def extract_local_gems_plugins
-    plugins_arg.collect do |plugin| 
+    plugins_arg.collect do |plugin|
       # We do the verify before extracting the gem so we dont have to deal with unused path
       if verify?
         puts("Validating #{plugin}")
         signal_error("Installation aborted, verification failed for #{plugin}") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
       end
 
-      package, path = LogStash::Bundler.unpack(plugin, LogStash::Environment::LOCAL_GEM_PATH)
+      package, path = LogStash::Rubygems.unpack(plugin, LogStash::Environment::LOCAL_GEM_PATH)
       [package.spec.name, package.spec.version, { :path => relative_path(path) }]
     end
   end

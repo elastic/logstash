@@ -1,14 +1,3 @@
-require "logstash/namespace"
-require "logstash/logging"
-require "logstash/errors"
-require "logstash/environment"
-require "logstash/pluginmanager/util"
-require "logstash/pluginmanager/command"
-require "clamp"
-
-require "logstash/gemfile"
-require "logstash/bundler"
-
 class LogStash::PluginManager::Uninstall < LogStash::PluginManager::Command
   parameter "PLUGIN", "plugin name"
 
@@ -26,9 +15,9 @@ class LogStash::PluginManager::Uninstall < LogStash::PluginManager::Command
 
       puts("Uninstalling #{plugin}")
 
-      # any errors will be logged to $stderr by invoke_bundler!
-      # output, exception = LogStash::Bundler.invoke_bundler!(:install => true, :clean => true)
-      output = LogStash::Bundler.invoke_bundler!(:install => true, :clean => true)
+      # any errors will be logged to $stderr by invoke!
+      # output, exception = LogStash::Bundler.invoke!(:install => true, :clean => true)
+      output = LogStash::Bundler.invoke!(:install => true, :clean => true)
 
       remove_unused_locally_installed_gems!
     end

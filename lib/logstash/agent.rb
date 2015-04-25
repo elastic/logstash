@@ -39,11 +39,6 @@ class LogStash::Agent < Clamp::Command
   option ["-V", "--version"], :flag,
     I18n.t("logstash.agent.flag.version")
 
-  option ["-p", "--pluginpath"] , "PATH",
-    I18n.t("logstash.agent.flag.pluginpath"),
-    :multivalued => true,
-    :attribute_name => :plugin_paths
-
   option ["-t", "--configtest"], :flag,
     I18n.t("logstash.agent.flag.configtest"),
     :attribute_name => :config_test
@@ -207,7 +202,6 @@ class LogStash::Agent < Clamp::Command
   # Log file stuff, plugin path checking, etc.
   def configure
     configure_logging(log_file)
-    configure_plugin_path(plugin_paths) if !plugin_paths.nil?
   end # def configure
 
   # Point logging at a specific path.
@@ -257,33 +251,6 @@ class LogStash::Agent < Clamp::Command
     # TODO(sissel): redirect stdout/stderr to the log as well
     # http://jira.codehaus.org/browse/JRUBY-7003
   end # def configure_logging
-
-  # Validate and add any paths to the list of locations
-  # logstash will look to find plugins.
-  def configure_plugin_path(paths)
-    # Append any plugin paths to the ruby search path
-    paths.each do |path|
-      # Verify the path exists
-      if !Dir.exists?(path)
-        warn(I18n.t("logstash.agent.configuration.plugin_path_missing",
-                    :path => path))
-
-      end
-
-      # TODO(sissel): Verify the path looks like the correct form.
-      # aka, there must be file in path/logstash/{inputs,codecs,filters,outputs}/*.rb
-      plugin_glob = File.join(path, "logstash", "{inputs,codecs,filters,outputs}", "*.rb")
-      if Dir.glob(plugin_glob).empty?
-        @logger.warn(I18n.t("logstash.agent.configuration.no_plugins_found",
-                    :path => path, :plugin_glob => plugin_glob))
-      end
-
-      # We push plugin paths to the front of the LOAD_PATH so that folks
-      # can override any core logstash plugins if they need to.
-      @logger.debug("Adding plugin path", :path => path)
-      $LOAD_PATH.unshift(path)
-    end
-  end # def configure_plugin_path
 
   def load_config(path)
     begin
