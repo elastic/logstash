@@ -111,6 +111,7 @@ module LogStash
     CORE_SPECS_PLUGINS = %w(
       logstash-filter-clone
       logstash-filter-mutate
+      logstash-filter-multiline
       logstash-input-generator
       logstash-input-stdin
       logstash-input-tcp

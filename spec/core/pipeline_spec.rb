@@ -18,11 +18,11 @@ class DummyCodec < LogStash::Codecs::Base
   config_name "dummycodec"
   milestone 2
 
-  def decode(data) 
+  def decode(data)
     data
   end
 
-  def encode(event) 
+  def encode(event)
     event
   end
 
@@ -33,7 +33,7 @@ end
 class DummyOutput < LogStash::Outputs::Base
   config_name "dummyoutput"
   milestone 2
-  
+
   attr_reader :num_teardowns
 
   def initialize(params={})
@@ -58,60 +58,141 @@ end
 
 describe LogStash::Pipeline do
 
-  before(:each) do
-    LogStash::Plugin.stub(:lookup)
-      .with("input", "dummyinput").and_return(DummyInput)
-    LogStash::Plugin.stub(:lookup)
-      .with("codec", "plain").and_return(DummyCodec)
-    LogStash::Plugin.stub(:lookup)
-      .with("output", "dummyoutput").and_return(DummyOutput)
-  end
+  context "teardown" do
 
-  let(:test_config_without_output_workers) {
-    <<-eos
-    input {
-      dummyinput {}
-    }
-  
-    output {
-      dummyoutput {}
-    }
-    eos
-  }
-
-  let(:test_config_with_output_workers) {
-    <<-eos
-    input {
-      dummyinput {}
-    }
-  
-    output {
-      dummyoutput {
-        workers => 2
-      }
-    }
-    eos
-  }
-
-  context "output teardown" do
-    it "should call teardown of output without output-workers" do
-      pipeline = TestPipeline.new(test_config_without_output_workers)
-      pipeline.run
-
-      expect(pipeline.outputs.size ).to eq(1)
-      expect(pipeline.outputs.first.worker_plugins.size ).to eq(1)
-      expect(pipeline.outputs.first.worker_plugins.first.num_teardowns ).to eq(1)
+    before(:each) do
+      LogStash::Plugin.stub(:lookup)
+        .with("input", "dummyinput").and_return(DummyInput)
+      LogStash::Plugin.stub(:lookup)
+        .with("codec", "plain").and_return(DummyCodec)
+      LogStash::Plugin.stub(:lookup)
+        .with("output", "dummyoutput").and_return(DummyOutput)
     end
 
-    it "should call output teardown correctly with output workers" do
-      pipeline = TestPipeline.new(test_config_with_output_workers)
-      pipeline.run
+    let(:test_config_without_output_workers) {
+      <<-eos
+      input {
+        dummyinput {}
+      }
 
-      expect(pipeline.outputs.size ).to eq(1)
-      expect(pipeline.outputs.first.num_teardowns).to eq(0)
-      pipeline.outputs.first.worker_plugins.each do |plugin|
-        expect(plugin.num_teardowns ).to eq(1)
+      output {
+        dummyoutput {}
+      }
+      eos
+    }
+
+    let(:test_config_with_output_workers) {
+      <<-eos
+      input {
+        dummyinput {}
+      }
+
+      output {
+        dummyoutput {
+          workers => 2
+        }
+      }
+      eos
+    }
+
+    context "output teardown" do
+      it "should call teardown of output without output-workers" do
+        pipeline = TestPipeline.new(test_config_without_output_workers)
+        pipeline.run
+
+        expect(pipeline.outputs.size ).to eq(1)
+        expect(pipeline.outputs.first.worker_plugins.size ).to eq(1)
+        expect(pipeline.outputs.first.worker_plugins.first.num_teardowns ).to eq(1)
+      end
+
+      it "should call output teardown correctly with output workers" do
+        pipeline = TestPipeline.new(test_config_with_output_workers)
+        pipeline.run
+
+        expect(pipeline.outputs.size ).to eq(1)
+        expect(pipeline.outputs.first.num_teardowns).to eq(0)
+        pipeline.outputs.first.worker_plugins.each do |plugin|
+          expect(plugin.num_teardowns ).to eq(1)
+        end
       end
     end
+  end
+
+  context "compiled flush function" do
+
+    context "cancelled events should not propagate down the filters" do
+      config <<-CONFIG
+        filter {
+          multiline {
+           pattern => "hello"
+           what => next
+          }
+          multiline {
+           pattern => "hello"
+           what => next
+          }
+        }
+      CONFIG
+
+      sample("hello") do
+        expect(subject["message"]).to eq("hello")
+      end
+    end
+
+    context "new events should propagate down the filters" do
+      config <<-CONFIG
+        filter {
+          clone {
+            clones => ["clone1"]
+          }
+          multiline {
+            pattern => "bar"
+            what => previous
+          }
+        }
+      CONFIG
+
+      sample(["foo", "bar"]) do
+        expect(subject.size).to eq(2)
+
+        expect(subject[0]["message"]).to eq("foo\nbar")
+        expect(subject[0]["type"]).to be_nil
+        expect(subject[1]["message"]).to eq("foo\nbar")
+        expect(subject[1]["type"]).to eq("clone1")
+      end
+    end
+  end
+
+  context "compiled filter funtions" do
+
+    context "new events should propagate down the filters" do
+      config <<-CONFIG
+        filter {
+          clone {
+            clones => ["clone1", "clone2"]
+          }
+          mutate {
+            add_field => {"foo" => "bar"}
+          }
+        }
+      CONFIG
+
+      sample("hello") do
+        expect(subject.size).to eq(3)
+
+        expect(subject[0]["message"]).to eq("hello")
+        expect(subject[0]["type"]).to be_nil
+        expect(subject[0]["foo"]).to eq("bar")
+
+        expect(subject[1]["message"]).to eq("hello")
+        expect(subject[1]["type"]).to eq("clone1")
+        expect(subject[1]["foo"]).to eq("bar")
+
+        expect(subject[2]["message"]).to eq("hello")
+        expect(subject[2]["type"]).to eq("clone2")
+        expect(subject[2]["foo"]).to eq("bar")
+      end
+    end
+
   end
 end

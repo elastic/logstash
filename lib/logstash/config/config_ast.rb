@@ -230,7 +230,7 @@ module LogStash; module Config; module AST
         return "start_input(#{variable_name})"
       when "filter"
         return <<-CODE
-          #{variable_name}.filter(event) {|new_event| events << new_event }
+          events = #{variable_name}.multi_filter(events)
         CODE
       when "output"
         return "#{variable_name}.handle(event)\n"

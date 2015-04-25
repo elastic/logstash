@@ -24,8 +24,27 @@ describe LogStash::Filters::Base do
   end
 
   it "should provide class public API" do
-    [:register, :filter, :execute, :threadsafe?, :filter_matched, :filter?, :teardown].each do |method|
+    [:register, :filter, :multi_filter, :execute, :threadsafe?, :filter_matched, :filter?, :teardown].each do |method|
       expect(subject).to respond_to(method)
+    end
+  end
+
+  context "multi_filter" do
+    let(:event1){LogStash::Event.new}
+    let(:event2){LogStash::Event.new}
+
+    it "should multi_filter without new events" do
+      allow(subject).to receive(:filter) do |event, &block|
+        nil
+      end
+      expect(subject.multi_filter([event1])).to eq([event1])
+    end
+
+    it "should multi_filter with new events" do
+      allow(subject).to receive(:filter) do |event, &block|
+        block.call(event2)
+      end
+      expect(subject.multi_filter([event1])).to eq([event1, event2])
     end
   end
 end
