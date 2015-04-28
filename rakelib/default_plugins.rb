@@ -127,10 +127,6 @@ module LogStash
     )
 
     ALL_PLUGINS_SKIP_LIST = Regexp.union([
-      /^logstash-codec-cef$/,
-      /^logstash-input-gemfire$/,
-      /^logstash-output-gemfire$/,
-      /^logstash-filter-metricize$/,
       /^logstash-filter-yaml$/,
       /jms$/,
       /example$/,
@@ -138,9 +134,7 @@ module LogStash
       /^logstash-output-logentries$/,
       /^logstash-input-jdbc$/,
       /^logstash-output-newrelic$/,
-      /^logstash-output-slack$/,
-      /^logstash-input-neo4j$/,
-      /^logstash-output-neo4j$/
+      /^logstash-output-slack$/
     ])
 
 
