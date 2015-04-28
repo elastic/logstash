@@ -4,6 +4,7 @@ require "optparse"
 
 $: << Dir.pwd
 $: << File.join(File.dirname(__FILE__), "..", "lib")
+$: << File.join(File.dirname(__FILE__), "..", "rakelib")
 
 require "logstash/config/mixin"
 require "logstash/inputs/base"
@@ -11,6 +12,7 @@ require "logstash/codecs/base"
 require "logstash/filters/base"
 require "logstash/outputs/base"
 require "logstash/version"
+require "rakelib/default_plugins"
 
 class LogStashConfigAsciiDocGenerator
   COMMENT_RE = /^ *#(?: (.*)| *$)/
@@ -18,7 +20,7 @@ class LogStashConfigAsciiDocGenerator
   def initialize
     @rules = {
       COMMENT_RE => lambda { |m| add_comment(m[1]) },
-      /^ *class.*< *LogStash::(Outputs|Filters|Inputs|Codecs)::(Base|Threadable)/ => \
+      /^ *class.*< *::LogStash::(Outputs|Filters|Inputs|Codecs)::(Base|Threadable)/ => \
         lambda { |m| set_class_description },
       /^ *config +[^=].*/ => lambda { |m| add_config(m[0]) },
       /^ *milestone .*/ => lambda { |m| set_milestone(m[0]) },
@@ -26,20 +28,7 @@ class LogStashConfigAsciiDocGenerator
       /^ *flag[( ].*/ => lambda { |m| add_flag(m[0]) },
       /^ *(class|def|module) / => lambda { |m| clear_comments },
     }
-
-    if File.exists?("build/contrib_plugins")
-      @contrib_list = File.read("build/contrib_plugins").split("\n")
-    else
-      @contrib_list = []
-    end
-
-    if File.exists?("rakelib/default_plugins.rb")
-      # list of supported / shipped with Logstash plugins
-      @supported_plugins = eval(File.read("rakelib/default_plugins.rb"))
-    else
-      # we support nothing???
-      @supported_plugins = []
-    end
+    @supported_plugins = *::LogStash::RakeLib::DEFAULT_PLUGINS
   end
 
   def parse(string)
@@ -151,15 +140,16 @@ class LogStashConfigAsciiDocGenerator
 
     # local scoping for the monkeypatch belowg
     attributes = @attributes
+    
     # Monkeypatch the 'config' method to capture
     # Note, this monkeypatch requires us do the config processing
     # one at a time.
-    #LogStash::Config::Mixin::DSL.instance_eval do
-      #define_method(:config) do |name, opts={}|
-        #p name => opts
-        #attributes[name].merge!(opts)
-      #end
-    #end
+    # LogStash::Config::Mixin::DSL.instance_eval do
+    #   define_method(:config) do |name, opts={}|
+    #     p name => opts
+    #     attributes[name].merge!(opts)
+    #   end
+    # end
 
     # Loading the file will trigger the config dsl which should
     # collect all the config settings.
@@ -171,7 +161,7 @@ class LogStashConfigAsciiDocGenerator
     load file
 
     # Get the correct base path
-    base = File.join(LogStash::Environment::LOGSTASH_HOME,'lib/logstash', file.split("/")[-2])
+    base = File.join(::LogStash::Environment::LOGSTASH_HOME,'lib/logstash', file.split("/")[-2])
 
     # parse base first
     parse(File.new(File.join(base, "base.rb"), "r").read)
@@ -180,19 +170,18 @@ class LogStashConfigAsciiDocGenerator
     code = File.new(file).read
 
     # inputs either inherit from Base or Threadable.
-    if code =~ /\< LogStash::Inputs::Threadable/
+    if code =~ /\< ::LogStash::Inputs::Threadable/
       parse(File.new(File.join(base, "threadable.rb"), "r").read)
     end
 
-    if code =~ /include LogStash::PluginMixins/
-      mixin = code.gsub(/.*include LogStash::PluginMixins::(\w+)\s.*/m, '\1')
+    if code =~ /include ::LogStash::PluginMixins/
+      mixin = code.gsub(/.*include ::LogStash::PluginMixins::(\w+)\s.*/m, '\1')
       mixin.gsub!(/(.)([A-Z])/, '\1_\2')
       mixin.downcase!
       #parse(File.new(File.join(base, "..", "plugin_mixins", "#{mixin}.rb")).read)
       #TODO: RP make this work better with the naming
-      mixinfile = Dir.glob(File.join(LogStash::Environment.logstash_gem_home,'gems',"logstash-mixin-#{mixin.split('_').first}-*",'lib/logstash/plugin_mixins', "#{mixin}.rb")).first
+      mixinfile = Dir.glob(File.join(::LogStash::Environment.logstash_gem_home,'gems',"logstash-mixin-#{mixin.split('_').first}-*",'lib/logstash/plugin_mixins', "#{mixin}.rb")).first
       parse(File.new(mixinfile).read)
-  
     end
 
     parse(code)
@@ -204,14 +193,14 @@ class LogStashConfigAsciiDocGenerator
       return nil
     end
 
-    klass = LogStash::Config::Registry.registry[@name]
-    if klass.ancestors.include?(LogStash::Inputs::Base)
+    klass = ::LogStash::Config::Registry.registry[@name]
+    if klass.ancestors.include?(::LogStash::Inputs::Base)
       section = "input"
-    elsif klass.ancestors.include?(LogStash::Filters::Base)
+    elsif klass.ancestors.include?(::LogStash::Filters::Base)
       section = "filter"
-    elsif klass.ancestors.include?(LogStash::Outputs::Base)
+    elsif klass.ancestors.include?(::LogStash::Outputs::Base)
       section = "output"
-    elsif klass.ancestors.include?(LogStash::Codecs::Base)
+    elsif klass.ancestors.include?(::LogStash::Codecs::Base)
       section = "codec"
     end
 
@@ -221,7 +210,7 @@ class LogStashConfigAsciiDocGenerator
     template_file = File.join(File.dirname(__FILE__), "plugin-doc.asciidoc.erb")
     template = ERB.new(File.new(template_file).read, nil, "-")
 
-    is_contrib_plugin = @contrib_list.include?(file)
+    is_contrib_plugin = !default_plugin
 
     # descriptions are assumed to be markdown
     description = @class_description
@@ -234,7 +223,7 @@ class LogStashConfigAsciiDocGenerator
       end
     end
     sorted_attributes = @attributes.sort { |a,b| a.first.to_s <=> b.first.to_s }
-    klassname = LogStash::Config::Registry.registry[@name].to_s
+    klassname = ::LogStash::Config::Registry.registry[@name].to_s
     name = @name
 
     synopsis_file = File.join(File.dirname(__FILE__), "plugin-synopsis.asciidoc.erb")
