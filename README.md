@@ -2,13 +2,13 @@
 
 Logstash is a tool for managing events and logs. You can use it to collect
 logs, parse them, and store them for later use (like, for searching).  If you
-store them in [Elasticsearch](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/index.html),
-you can view and analyze them with [Kibana](http://www.elasticsearch.org/guide/en/kibana/current/index.html).
+store them in [Elasticsearch](http://www.elastic.co/guide/en/elasticsearch/reference/current/index.html),
+you can view and analyze them with [Kibana](http://www.elastic.co/guide/en/kibana/current/index.html).
 
 It is fully free and fully open source. The license is Apache 2.0, meaning you
 are pretty much free to use it however you want in whatever way.
 
-For more info, see <http://logstash.net/>
+For more info, see <https://www.elastic.co/products/logstash>
 
 ## Logstash Plugins
 ### AKA "Where'd that plugin go??"
@@ -16,7 +16,7 @@ For more info, see <http://logstash.net/>
 Since version **1.5.0 beta1 (and current master)** of Logstash, *all* plugins have been separated into their own
 repositories under the [logstash-plugins](https://github.com/logstash-plugins) github organization. Each plugin is now a self-contained Ruby gem which
 gets published to RubyGems.org. Logstash has added plugin infrastructure to easily maintain the lifecyle of the plugin.
-For more details and rationale behind these changes, see our [blogpost](http://www.elasticsearch.org/blog/plugin-ecosystem-changes/).
+For more details and rationale behind these changes, see our [blogpost](https://www.elastic.co/blog/plugin-ecosystem-changes/).
 
 [Elasticsearch logstash-contrib repo](https://github.com/elasticsearch/logstash-contrib) is deprecated. We
 have moved all of the plugins that existed there into their own repositories. We are migrating all of the pull requests
@@ -37,80 +37,108 @@ Logstash core will continue to exist under this repository and all related issue
 
 ## Need Help?
 
-Need help? Try #logstash on freenode irc or the logstash-users@googlegroups.com
-mailing list.
-
-You can also find documentation on the <http://logstash.net> site.
+- [#logstash on freenode IRC](https://webchat.freenode.net/?channels=logstash)
+- [logstash-users on Google Groups](https://groups.google.com/d/forum/logstash-users)
+- [Logstash Documentation](http://www.elastic.co/guide/en/logstash/current/index.html)
+- [Logstash Product Information](https://www.elastic.co/products/logstash)
+- [Elastic Support](https://www.elastic.co/subscriptions)
 
 ## Developing
 
-To get started, you'll need ruby version 1.9.x or above and it should come with the `rake` tool.
+Logstash uses [JRuby](http://jruby.org/) which gets embedded in the `vendor/jruby/` directory. It is recommended but not mandatory that you also use JRuby as your local Ruby interpreter and for this you should consider using a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv). It is possible to run the rake tasks and the `bin/` commands without having JRuby locally installed in which case the embedded JRuby will be used automatically. If you have a local JRuby installed you can force logstash to use your local JRuby instead of the embedded JRuby with the `USE_RUBY=1` environment variable.
 
-**Windows only** Please set the `JAVA_HOME` path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
+To get started, make sure you have a local JRuby or Ruby version 1.9.x or above with the `rake` tool installed.
 
-Here's how to get started with Logstash development:
+**On Windows** make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
+
+To run logstash from the repo you must bootstrap the environment
+
+    rake bootstrap
+
+or bootstrap & install the core plugins required to run the tests
 
     rake test:install-core
 
-Other commands:
+To verify your environment, run `bin/logstash version` which should look like this
 
-    # to use Logstash gems or libraries in irb, use the following
-    # this gets you an 'irb' shell with Logstash's environment
-    bin/logstash irb
-
-    # Run Logstash
-    bin/logstash agent [options]
-
-Notes about using other rubies. If you don't use rvm, you can probably skip
-this paragraph. Logstash works with other rubies, and if you wish to use your
-own ruby you must set `USE_RUBY=1` in your environment.
-
-## Drip Launcher
-
-[Drip](https://github.com/ninjudd/drip) is a launcher for the Java Virtual Machine that provides much faster startup times than the `java` command. The drip script is intended to be a drop-in replacement for the java command, only faster. We recommend using drip during development.
-
-To tell Logstash to use drip, either set the `USE_DRIP=1` environment variable or set `` JAVACMD=`which drip` ``.
-
-**Caveats**
-
-Unlike [nailgun](https://github.com/martylamb/nailgun), drip does not reuse the same JVM. So once your app quits, drip will launch another JVM. This means that if you try to re-run Logstash right after it exited, you might still have a startup delay
+    $ bin/logstash version
+    logstash 2.0.0.dev
 
 ## Testing
 
-There are a few ways to run the tests. For development, using `bin/logstash rspec <some spec>` will suffice, however you need to run ```bin/plugin install --development``` beforehand so you've all development dependencies installed.
+For tesing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below. Note that the `bin/logstash rspec` command has been replaced by `bin/rspec`.
 
-If everything goes as expected you will see an output like:
+### Core tests
 
-    % bin/logstash rspec spec/core/timestamp_spec.rb
-    Using Accessor#strict_set for spec
-    .............
-    13 examples, 0 failures
-    Randomized with seed 8026
+1- In order to run the core tests, a small set of plugins must first be installed:
 
-If you want to run all the tests from source, keep in mind to run ```rake
-test:install-core``` beforehand, you can do:
+    rake test:install-core
 
-    rake test
+2- To run the logstash core tests you can use the rake task:
+
+    rake test:core
+
+  or use the `rspec` tool to run all tests or run a specific test:
+
+    bin/rspec
+    bin/rspec spec/foo/bar_spec.rb
+
+---
+Note that if a plugin is installed using the plugin manager `bin/plugin install ...` do not forget to also install the plugins development dependencies using the following command after the plugin installation:
+
+    bin/plugin install --development
+
+### Plugins tests
+
+To run the tests of all currently installed plugins:
+
+    rake test:plugin
+
+You can install the default set of plugins included in the logstash package or all plugins:
+
+    rake test:install-default
+    rake test:install-all
+
+---
+Note that if a plugin is installed using the plugin manager `bin/plugin install ...` do not forget to also install the plugins development dependencies using the following command after the plugin installation:
+
+    bin/plugin install --development
+
+## Developing plugins
+
+The documentation for developing plugins can be found in the plugins README, see our example plugins:
+
+- <https://github.com/logstash-plugins/logstash-input-example>
+- <https://github.com/logstash-plugins/logstash-filter-example>
+- <https://github.com/logstash-plugins/logstash-output-example>
+- <https://github.com/logstash-plugins/logstash-codec-example>
+
+## Drip Launcher
+
+[Drip](https://github.com/ninjudd/drip) is a tool which help solve the slow JVM startup problem. The drip script is intended to be a drop-in replacement for the java command. We recommend using drip during development, in particular for running tests. Using drip, the first invokation of a command will not be faster but the subsequent commands will be swift.
+
+To tell logstash to use drip, either set the `USE_DRIP=1` environment variable or set `` JAVACMD=`which drip` ``.
+
+Examples:
+
+    USE_DRIP=1 bin/rspec
+    USE_DRIP=1 bin/rspec
+
+**Caveats**
+
+Drip does not work with STDIN. You cannot use drip for running configs which uses the stdin plugin.
+
 
 ## Building
 
-Building is not required. You are highly recommended to download the releases
-we provide from the Logstash site!
-
-**Note** Before you build the artifacts, you need to run:
-
-    rake artifact:freeze-defaults-gemfile 
-
-If you want to build the release tarball yourself, run:
+You can build a logstash package as tarball or zip file
 
     rake artifact:tar
+    rake artifact:zip
 
-You can build rpms and debs, if you need those. Building rpms requires you have [fpm](https://github.com/jordansissel/fpm), then do this:
+You can also build .rpm and .deb, but the [fpm](https://github.com/jordansissel/fpm) tool is required.
 
-    # Build an RPM
     rake artifact:rpm
-
-    # Build a Debian/Ubuntu package
     rake artifact:deb
 
 ## Project Principles
