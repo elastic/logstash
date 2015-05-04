@@ -12,7 +12,7 @@
 LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
 
 unset CDPATH
-basedir=$(cd `dirname $0`/..; pwd)
+basedir=$(cd "$(dirname "$0")"/..; pwd)
 . "${basedir}/bin/logstash.lib.sh"
 
 setup

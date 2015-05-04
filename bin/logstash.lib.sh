@@ -1,4 +1,4 @@
-basedir=$(cd `dirname $0`/..; pwd)
+basedir=$(cd "$(dirname "$0")"/..; pwd)
 
 setup_java() {
   if [ -z "$JAVACMD" ] ; then
