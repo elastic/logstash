@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
-require File.expand_path('../lib/logstash/version', __FILE__)
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'logstash/version'
 
 Gem::Specification.new do |gem|
   gem.authors       = ["Jordan Sissel", "Pete Fritchman", "Elasticsearch"]
@@ -9,45 +11,33 @@ Gem::Specification.new do |gem|
   gem.homepage      = "http://www.elastic.co/guide/en/logstash/current/index.html"
   gem.license       = "Apache License (2.0)"
 
-  gem.files         = Dir.glob(["lib/**/*.rb", "locales/*"])
+  gem.files         = Dir.glob(["logstash-core.gemspec", "lib/logstash-core.rb", "lib/logstash/**/*.rb", "spec/**/*.rb", "locales/*"])
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "logstash-core"
   gem.require_paths = ["lib"]
   gem.version       = LOGSTASH_VERSION.gsub(/-/, '.')
 
-  # Core dependencies
-  gem.add_runtime_dependency "cabin", [">=0.7.0"]    #(Apache 2.0 license)
-  gem.add_runtime_dependency "pry"                   #(Ruby license)
-  gem.add_runtime_dependency "stud"                  #(Apache 2.0 license)
-  gem.add_runtime_dependency "clamp"                 #(MIT license) for command line args/flags
-  gem.add_runtime_dependency "filesize"              #(MIT license) for :bytes config validator
+  gem.add_runtime_dependency "cabin", "~> 0.7.0" #(Apache 2.0 license)
+  gem.add_runtime_dependency "pry", "~> 0.10.1" #(Ruby license)
+  gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
+  gem.add_runtime_dependency "clamp", "~> 0.6.5" #(MIT license) for command line args/flags
+  gem.add_runtime_dependency "filesize", "0.0.4" #(MIT license) for :bytes config validator
 
   # TODO(sissel): Treetop 1.5.x doesn't seem to work well, but I haven't
   # investigated what the cause might be. -Jordan
-  gem.add_runtime_dependency "treetop", ["~> 1.4.0"] #(MIT license)
+  gem.add_runtime_dependency "treetop", "< 1.5.0" #(MIT license)
 
   # upgrade i18n only post 0.6.11, see https://github.com/svenfuchs/i18n/issues/270
-  gem.add_runtime_dependency "i18n", ["=0.6.9"]   #(MIT license)
+  gem.add_runtime_dependency "i18n", "= 0.6.9" #(MIT license)
 
-  # Web dependencies
-  gem.add_runtime_dependency "ftw", ["~> 0.0.40"] #(Apache 2.0 license)
-  gem.add_runtime_dependency "mime-types"         #(GPL 2.0)
-  gem.add_runtime_dependency "rack"               #(MIT-style license)
-  gem.add_runtime_dependency "sinatra"            #(MIT-style license)
-
-  # Plugin manager dependencies
-  gem.add_runtime_dependency "minitar"
-  gem.add_runtime_dependency "file-dependencies", '0.1.6'
+  # filetools and rakelib
+  gem.add_runtime_dependency "minitar", "~> 0.5.4"
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
-
-    # bouncy-castle-java 1.5.0147 and jruby-openssl 0.9.5 are included in jruby 1.7.6 no need to include here
-    # and this avoids the gemspec jar path parsing issue of jar-dependencies 0.1.2
-    gem.add_runtime_dependency "jrjackson"                           #(Apache 2.0 license)
+    gem.add_runtime_dependency "jrjackson", "~> 0.2.8" #(Apache 2.0 license)
   else
-    gem.add_runtime_dependency "excon"    #(MIT license)
-    gem.add_runtime_dependency "oj"       #(MIT-style license)
+    gem.add_runtime_dependency "oj" #(MIT-style license)
   end
 
   if RUBY_ENGINE == "rbx"
@@ -59,14 +49,6 @@ Gem::Specification.new do |gem|
     gem.add_runtime_dependency "racc"
   end
 
-  # These are runtime-deps so you can do 'java -jar logstash.jar rspec <test>'
-  gem.add_development_dependency "rspec", "~> 2.14.0" #(MIT license)
-
-  gem.add_development_dependency "logstash-devutils"
-
-  # Testing dependencies
-  gem.add_development_dependency "ci_reporter", "1.9.3"
-  gem.add_development_dependency "simplecov"
-  gem.add_development_dependency "coveralls"
-
+  gem.add_development_dependency "rspec", "~> 2.14" #(MIT license)
+  gem.add_development_dependency "logstash-devutils", "~> 0"
 end

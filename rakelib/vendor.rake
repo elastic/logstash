@@ -125,14 +125,14 @@ namespace "vendor" do
   end
 
   task "gems", [:bundle] do |task, args|
-    require "logstash/environment"
-    require "logstash/bundler"
+    require "bootstrap/environment"
+
     Rake::Task["dependency:rbx-stdlib"] if LogStash::Environment.ruby_engine == "rbx"
     Rake::Task["dependency:stud"].invoke
     Rake::Task["dependency:bundler"].invoke
 
     puts("Invoking bundler install...")
-    output, exception = LogStash::Bundler.invoke_bundler!(:install => true)
+    output, exception = LogStash::Bundler.invoke!(:install => true)
     puts(output)
     raise(exception) if exception
   end # task gems

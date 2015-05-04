@@ -4,35 +4,28 @@
 # This is most useful when done from a git checkout.
 #
 # Usage:
-#     bin/logstash <command> [arguments]
+#   bin/logstash <command> [arguments]
 #
 # See 'bin/logstash help' for a list of commands.
 #
-# Defaults you can override with environment variables
-LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
+# Supported environment variables:
+#   LS_HEAP_SIZE="xxx" size for the -Xmx${LS_HEAP_SIZE} maximum Java heap size option, default is "500m"
+#   LS_JAVA_OPTS="xxx" to append extra options to the defaults JAVA_OPTS provided by logstash
+#   JAVA_OPTS="xxx" to *completely override* the defauls set of JAVA_OPTS provided by logstash
+#
+# Development environment variables:
+#   USE_RUBY=1 to force use the local "ruby" command to launch logstash instead of using the vendored JRuby
+#   USE_DRIP=1 to force use drip
+#   DEBUG=1 to output debugging information
 
-unset CDPATH
-basedir=$(cd `dirname $0`/..; pwd)
-. "${basedir}/bin/logstash.lib.sh"
-
+. "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
 setup
-
-# Export these so that they can be picked up by file input (and others?).
-export HOME SINCEDB_DIR
 
 case $1 in
   -*)
-    if [ -z "$VENDORED_JRUBY" ] ; then
-      exec "${RUBYCMD}" "${basedir}/lib/logstash/runner.rb" "agent" "$@"
-    else
-      exec "$JRUBY_BIN" $(jruby_opts) "${basedir}/lib/logstash/runner.rb" "agent" "$@"
-    fi
+    ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/environment.rb" "logstash/runner.rb" "agent" "$@"
     ;;
   *)
-    if [ -z "$VENDORED_JRUBY" ] ; then
-      exec "${RUBYCMD}" "${basedir}/lib/logstash/runner.rb" "$@"
-    else
-      exec "$JRUBY_BIN" $(jruby_opts) "${basedir}/lib/logstash/runner.rb" "$@"
-    fi
+    ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/environment.rb" "logstash/runner.rb" "$@"
     ;;
 esac

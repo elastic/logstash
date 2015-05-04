@@ -2,9 +2,10 @@ require "rubygems/specification"
 require "rubygems/commands/install_command"
 
 namespace "gem" do
-  task "require",  :name, :requirement, :target do |task, args|
-    name, requirement, target = args[:name], args[:requirement], args[:target]
+  task "require",  :name, :requirement do |task, args|
+    name, requirement = args[:name], args[:requirement]
 
+    require "bootstrap/environment"
     ENV["GEM_HOME"] = ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
     Gem.use_paths(LogStash::Environment.logstash_gem_home)
 
@@ -12,7 +13,7 @@ namespace "gem" do
       gem name, requirement
     rescue Gem::LoadError => e
       puts "Installing #{name} #{requirement} because the build process needs it."
-      Rake::Task["gem:install"].invoke(name, requirement, target)
+      Rake::Task["gem:install"].invoke(name, requirement, LogStash::Environment.logstash_gem_home)
     end
     task.reenable # Allow this task to be run again
   end

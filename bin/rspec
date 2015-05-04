@@ -1,14 +1,9 @@
-#!/usr/bin/env ruby
+#!/bin/sh
 
-$LOAD_PATH << File.expand_path(File.join("__FILE__", "..", "lib"))
-$LOAD_PATH << File.expand_path(File.join(File.dirname(__FILE__), "../spec"))
+. "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
+setup
 
-require "logstash/environment"
-require "logstash/bundler"
-LogStash::Bundler.setup!
+# use faster starting JRuby options see https://github.com/jruby/jruby/wiki/Improving-startup-time
+export JRUBY_OPTS="$JRUBY_OPTS -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1"
 
-require "rspec/core"
-require "rspec"
-
-status = RSpec::Core::Runner.run(ARGV).to_i
-exit status if status != 0
+ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/rspec.rb" "$@"

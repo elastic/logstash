@@ -1,6 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/gemfile"
+require "pluginmanager/gemfile"
 
 describe "logstash Gemfile Manager" do
 
@@ -139,7 +139,7 @@ describe "logstash Gemfile Manager" do
 
       context "has gems defined with a path" do
         let(:file) {
-          %Q[ 
+          %Q[
           source "https://rubygems.org"
           gemspec :a => "a", "b" => 1
           gem "foo", "> 1.0", :path => "/tmp/foo"
@@ -155,7 +155,7 @@ describe "logstash Gemfile Manager" do
 
       context "no gems defined with a path" do
         let(:file) {
-          %Q[ 
+          %Q[
           source "https://rubygems.org"
           gemspec :a => "a", "b" => 1
           gem "no-fun"
@@ -168,7 +168,7 @@ describe "logstash Gemfile Manager" do
       end
 
       context "keep a backup of the original file" do
-        
+
       end
     end
 

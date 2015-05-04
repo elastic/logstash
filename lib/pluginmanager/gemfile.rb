@@ -1,6 +1,4 @@
-require "logstash/util"
 module LogStash
-
   class GemfileError < StandardError; end
 
   class Gemfile

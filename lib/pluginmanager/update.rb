@@ -1,12 +1,6 @@
-require "clamp"
-require "logstash/namespace"
-require "logstash/pluginmanager/util"
-require "logstash/pluginmanager/command"
 require "jar-dependencies"
 require "jar_install_post_install_hook"
 require "file-dependencies/gem"
-require "logstash/gemfile"
-require "logstash/bundler"
 
 class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version", :attribute_name => :plugins_arg
@@ -49,10 +43,10 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
 
     puts("Updating " + plugins.join(", "))
 
-    # any errors will be logged to $stderr by invoke_bundler!
+    # any errors will be logged to $stderr by invoke!
     # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
-    output = LogStash::Bundler.invoke_bundler!(:update => plugins)
-    output = LogStash::Bundler.invoke_bundler!(:clean => true)
+    output = LogStash::Bundler.invoke!(:update => plugins)
+    output = LogStash::Bundler.invoke!(:clean => true)
 
     display_updated_plugins(previous_gem_specs_map)
   rescue => exception

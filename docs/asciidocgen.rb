@@ -140,7 +140,6 @@ class LogStashConfigAsciiDocGenerator
 
     # local scoping for the monkeypatch belowg
     attributes = @attributes
-    
     # Monkeypatch the 'config' method to capture
     # Note, this monkeypatch requires us do the config processing
     # one at a time.
