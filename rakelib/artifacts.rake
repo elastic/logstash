@@ -51,7 +51,20 @@ namespace "artifact" do
     File.open(".bundle/config", "w") { }
   end
 
-  task "prepare" => ["bootstrap", "plugin:install-default", "plugin:install-local-logstash-core-gem", "clean-bundle-config"]
+  # locate the "gem "logstash-core" ..." line in Gemfile, and if the :path => "." option if specified
+  # build and install the local logstash-core gem otherwise just do nothing, bundler will deal with it.
+  task "install-logstash-core" do
+    lines = File.readlines("Gemfile")
+    matches = lines.select{|line| line[/^gem\s+["']logstash-core["']/i]}
+    abort("ERROR: Gemfile format error, need a single logstash-core gem specification") if matches.size != 1
+    if matches.first =~ /:path\s*=>\s*["']\.["']/
+      Rake::Task["plugin:install-local-logstash-core-gem"].invoke
+    else
+      puts("[artifact:install-logstash-core] using logstash-core from Rubygems")
+    end
+  end
+
+  task "prepare" => ["bootstrap", "plugin:install-default", "install-logstash-core", "clean-bundle-config"]
 
   desc "Build a tar.gz of logstash with all dependencies"
   task "tar" => ["prepare"] do
