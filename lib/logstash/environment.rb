@@ -7,14 +7,17 @@ module LogStash
 
     # rehydrate the bootstrap environment if the startup was not done by executing bootstrap.rb
     unless LogStash::Environment.const_defined?("LOGSTASH_HOME")
-      abort("ERROR: missing LOGSTASH_HOME environment variable") if ENV["LOGSTASH_HOME"].to_s.empty?
-      $LOAD_PATH << ::File.join(ENV["LOGSTASH_HOME"], "lib")
-      require "bootstrap/environment"
+      if ENV["LOGSTASH_HOME"].to_s.empty?
+        # if no constant or env var defined we can assume it's a plugin spec run
+        # so there is no package, therefore no LOGSTASH_HOME
+        LogStash::Environment::LOGSTASH_HOME = ""
+      else
+        $LOAD_PATH << ::File.join(ENV["LOGSTASH_HOME"], "lib")
+        require "bootstrap/environment"
+      end
     end
 
     LOGSTASH_CORE = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", ".."))
-    BUNDLE_CONFIG_PATH = ::File.join(LOGSTASH_HOME, ".bundle", "config")
-    BOOTSTRAP_GEM_PATH = ::File.join(LOGSTASH_HOME, 'build', 'bootstrap')
 
     LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
 
