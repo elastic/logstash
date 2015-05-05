@@ -61,6 +61,8 @@ namespace "plugin" do
     Dir["logstash-core*.gem"].each do |gem|
       rm(gem)
     end
+
+    task.reenable # Allow this task to be run again
   end
 
   task "build-logstash-core-gem" => [ "clean-logstash-core-gem" ] do
