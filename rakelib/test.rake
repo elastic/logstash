@@ -6,7 +6,7 @@ require "pluginmanager/util"
 namespace "test" do
   task "setup" do
     require "bootstrap/environment"
-    LogStash::Bundler.setup!({:without => []})
+    LogStash::Bundler.setup!({:without => [:build]})
 
     require "rspec/core/runner"
     require "rspec"

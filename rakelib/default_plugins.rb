@@ -134,7 +134,9 @@ module LogStash
       /^logstash-output-logentries$/,
       /^logstash-input-jdbc$/,
       /^logstash-output-newrelic$/,
-      /^logstash-output-slack$/
+      /^logstash-output-slack$/,
+      /^logstash-input-neo4j$/,
+      /^logstash-output-neo4j$/,
     ])
 
 

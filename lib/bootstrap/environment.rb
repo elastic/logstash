@@ -43,7 +43,7 @@ end
 # defined and exposing the LogStash::Runner#main instance method which will be called with the current ARGV
 # currently lib/logstash/runner.rb and lib/pluginmanager/main.rb are called using this.
 if $0 == __FILE__
-  LogStash::Bundler.setup!
+  LogStash::Bundler.setup!({:without => [:build, :development]})
   require ARGV.shift
   LogStash::Runner.new.main(ARGV)
 end

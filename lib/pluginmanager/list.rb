@@ -12,7 +12,7 @@ class LogStash::PluginManager::List < LogStash::PluginManager::Command
   end
 
   def execute
-    LogStash::Bundler.setup!
+    LogStash::Bundler.setup!({:without => [:build, :development]})
 
     signal_error("No plugins found") if filtered_specs.empty?
 

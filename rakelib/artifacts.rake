@@ -1,3 +1,5 @@
+require "logstash/version"
+
 namespace "artifact" do
 
   def package_files
@@ -119,8 +121,6 @@ namespace "artifact" do
   end
 
   def package(platform, version)
-    Rake::Task["dependency:fpm"].invoke
-    Rake::Task["dependency:stud"].invoke
     require "stud/temporary"
     require "fpm/errors" # TODO(sissel): fix this in fpm
     require "fpm/package/dir"

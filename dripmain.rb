@@ -2,7 +2,7 @@
 # that we can do to speedup future startup using drip.
 
 require_relative "lib/bootstrap/environment"
-LogStash::Bundler.setup!
+LogStash::Bundler.setup!({:without => [:build]})
 
 # typical required gems and libs
 require "logstash/environment"

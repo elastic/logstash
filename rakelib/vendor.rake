@@ -128,7 +128,6 @@ namespace "vendor" do
     require "bootstrap/environment"
 
     Rake::Task["dependency:rbx-stdlib"] if LogStash::Environment.ruby_engine == "rbx"
-    Rake::Task["dependency:stud"].invoke
     Rake::Task["dependency:bundler"].invoke
 
     puts("Invoking bundler install...")
