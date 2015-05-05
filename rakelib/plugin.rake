@@ -50,7 +50,7 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end
 
-  task "install-all" => [ "dependency:octokit", "dependency:gems" ] do
+  task "install-all" => [ "dependency:gems" ] do
     puts("[plugin:install-all] Installing all plugins from https://github.com/logstash-plugins")
     install_plugins("--no-verify", *LogStash::RakeLib.fetch_all_plugins)
 

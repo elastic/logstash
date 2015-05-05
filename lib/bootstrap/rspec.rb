@@ -1,5 +1,5 @@
 require_relative "environment"
-LogStash::Bundler.setup!({:without => []})
+LogStash::Bundler.setup!({:without => [:build]})
 require "logstash/environment"
 
 $LOAD_PATH.unshift(File.join(LogStash::Environment::LOGSTASH_CORE, "spec"))
