@@ -3,28 +3,33 @@ require "jar_install_post_install_hook"
 require "file-dependencies/gem"
 
 class LogStash::PluginManager::Update < LogStash::PluginManager::Command
+  REJECTED_OPTIONS = [:path, :git, :github]
+
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version", :attribute_name => :plugins_arg
 
   def execute
     local_gems = gemfile.locally_installed_gems
 
-    if update_all? && !local_gems.empty?
-      error_plugin_that_use_path!(local_gems)
-    else
-      plugins_with_path = plugins_arg & local_gems
-      error_plugin_that_use_path!(plugins_with_path) if plugins_with_path.size > 0
+    if local_gems.size > 0
+      if update_all?
+        plugins_with_path = local_gems.map(&:name)
+      else
+        plugins_with_path = plugins_arg & local_gems.map(&:name)
+      end
+
+      warn_local_gems(plugins_with_path)
     end
 
     update_gems!
   end
 
   private
-  def error_plugin_that_use_path!(plugins)
-    signal_error("Update is not supported for manually defined plugins or local .gem plugin installations: #{plugins.collect(&:name).join(",")}")
-  end
-
   def update_all?
     plugins_arg.size == 0
+  end
+
+  def warn_local_gems(plugins_with_path)
+    puts("Update is not supported for manually defined plugins or local .gem plugin installations, skipping: #{plugins_with_path.join(", ")}")
   end
 
   def update_gems!
@@ -34,14 +39,15 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     # remove any version constrain from the Gemfile so the plugin(s) can be updated to latest version
     # calling update without requiremend will remove any previous requirements
     plugins = plugins_to_update(previous_gem_specs_map)
-    plugins
-      .select { |plugin| gemfile.find(plugin) }
-      .each { |plugin| gemfile.update(plugin) }
+    filtered_plugins = plugins.map { |plugin| gemfile.find(plugin) }
+      .compact
+      .reject { |plugin| REJECTED_OPTIONS.any? { |key| plugin.options.has_key?(key) } }
+      .each { |plugin| gemfile.update(plugin.name) }
 
     # force a disk sync before running bundler
     gemfile.save
 
-    puts("Updating " + plugins.join(", "))
+    puts("Updating #{filtered_plugins.collect(&:name).join(", ")}")
 
     # any errors will be logged to $stderr by invoke!
     # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
@@ -61,7 +67,10 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     if update_all?
       previous_gem_specs_map.values.map{|spec| spec.name}
     else
-      not_installed = plugins_arg.select{|plugin| !previous_gem_specs_map.has_key?(plugin.downcase)}
+      # If the plugins isn't available in the gemspec or in 
+      # the gemfile defined with a local path, we assume the plugins is not
+      # installed.
+      not_installed = plugins_arg.select{|plugin| !previous_gem_specs_map.has_key?(plugin.downcase) && !gemfile.find(plugin) }
       signal_error("Plugin #{not_installed.join(', ')} is not installed so it cannot be updated, aborting") unless not_installed.empty?
       plugins_arg
     end
