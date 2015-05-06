@@ -313,7 +313,7 @@ GEM
       logstash-codec-line
       logstash-codec-plain
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-input-syslog (0.1.5)
+    logstash-input-syslog (0.1.6)
       concurrent-ruby
       logstash-codec-plain
       logstash-core (>= 1.4.0, < 2.0.0)
@@ -459,7 +459,7 @@ GEM
       ffi-rzmq (~> 2.0.4)
       logstash-codec-json
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-patterns-core (0.1.7)
+    logstash-patterns-core (0.1.10)
       logstash-core (>= 1.4.0, < 2.0.0)
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
@@ -509,9 +509,9 @@ GEM
       maven-tools (~> 1.0.1)
       ruby-maven-libs (= 3.1.1)
     ruby-maven-libs (3.1.1)
+    rubyzip (1.1.7)
     rufus-scheduler (3.0.9)
       tzinfo
-    rubyzip (1.1.7)
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
