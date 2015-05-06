@@ -1,3 +1,23 @@
+1.5.0-rc4:
+  # general
+  - Fixed a regression introduced in RC3 performance work. Using filters which flush 
+    periodically would crash Logstash. Filters like multiline and metrics were affected
+    by this bug (#3100)
+  - Fixed a bug where cancelled events were still processed by the pipeline. For example,
+    this caused split filter to not work correctly when used after another filter
+    step (#3100)  
+
+  # input
+  - Lumberjack: Created a temporary fix to handle out of memory and eventual Logstash
+    crash resulting from pipeline backpressure. With this fix, you can create an upper
+    limit on the number of Lumberjack connections after which no new connections
+    will be accepted. This is defaulted to 1000 connections, but can be changed using the
+    config (#3003)
+
+  # codec
+  - Netflow: Fixed a JSON serialization issue while using this codec (#2945)  
+
+
 1.5.0-rc3
   # general
   - Added back the ability to install plugin gems built locally on top of Logstash. This will 
