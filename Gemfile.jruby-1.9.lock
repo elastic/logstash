@@ -511,6 +511,7 @@ GEM
     ruby-maven-libs (3.1.1)
     rufus-scheduler (3.0.9)
       tzinfo
+    rubyzip (1.1.7)
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
@@ -670,5 +671,6 @@ DEPENDENCIES
   logstash-output-zeromq
   octokit (= 3.8.0)
   rspec (~> 2.14.0)
+  rubyzip (~> 1.1.7)
   simplecov
   stud (~> 0.0.19)

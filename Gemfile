@@ -11,6 +11,7 @@ gem "rspec", "~> 2.14.0", :group => :development
 gem "octokit", "3.8.0", :group => :build
 gem "stud", "~> 0.0.19", :group => :build
 gem "fpm", "~> 1.3.3", :group => :build
+gem "rubyzip", "~> 1.1.7", :group => :build
 gem "logstash-input-heartbeat"
 gem "logstash-output-zeromq"
 gem "logstash-codec-collectd"

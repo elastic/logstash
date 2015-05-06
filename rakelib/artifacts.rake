@@ -106,7 +106,6 @@ namespace "artifact" do
   end
 
   task "zip" => ["prepare"] do
-    Rake::Task["dependency:rubyzip"].invoke
     require 'zip'
     zippath = "build/logstash-#{LOGSTASH_VERSION}.zip"
     puts("[artifact:zip] building #{zippath}")
