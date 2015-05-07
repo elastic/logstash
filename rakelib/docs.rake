@@ -1,7 +1,6 @@
 namespace "docs" do
 
   task "generate" do
-    Rake::Task['dependency:octokit'].invoke
     Rake::Task['plugin:install-all'].invoke
     Rake::Task['docs:generate-docs'].invoke
     Rake::Task['docs:generate-index'].invoke
@@ -9,9 +8,9 @@ namespace "docs" do
 
   task "generate-docs" do
     require "bootstrap/environment"
-
-    list = Dir.glob("#{LogStash::Environment.logstash_gem_home}/gems/logstash-*/lib/logstash/{input,output,filter,codec}s/*.rb").join(" ")
-    cmd = "bin/logstash docgen -o asciidoc_generated #{list}"
+    pattern = "#{LogStash::Environment.logstash_gem_home}/gems/logstash-*/lib/logstash/{input,output,filter,codec}s/*.rb"
+    list    = Dir.glob(pattern).join(" ")
+    cmd     = "bin/logstash docgen -o asciidoc_generated #{list}"
     system(cmd)
   end
 
