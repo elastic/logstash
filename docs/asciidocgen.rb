@@ -20,7 +20,7 @@ class LogStashConfigAsciiDocGenerator
   def initialize
     @rules = {
       COMMENT_RE => lambda { |m| add_comment(m[1]) },
-      /^ *class.*< *::LogStash::(Outputs|Filters|Inputs|Codecs)::(Base|Threadable)/ => \
+      /^ *class.*< *(::)?LogStash::(Outputs|Filters|Inputs|Codecs)::(Base|Threadable)/ => \
         lambda { |m| set_class_description },
       /^ *config +[^=].*/ => lambda { |m| add_config(m[0]) },
       /^ *milestone .*/ => lambda { |m| set_milestone(m[0]) },
