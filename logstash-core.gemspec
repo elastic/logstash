@@ -48,7 +48,4 @@ Gem::Specification.new do |gem|
     # https://github.com/rubinius/rubinius/issues/2632#issuecomment-26954565
     gem.add_runtime_dependency "racc"
   end
-
-  gem.add_development_dependency "rspec", "~> 2.14" #(MIT license)
-  gem.add_development_dependency "logstash-devutils", "~> 0"
 end
