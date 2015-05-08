@@ -141,6 +141,7 @@ class LogStash::Event
       @metadata_accessors.set(fieldref[METADATA_BRACKETS.length .. -1], value)
     elsif fieldref == METADATA
       @metadata = value
+      @metadata_accessors = LogStash::Util::Accessors.new(@metadata)
     else
       @accessors.set(fieldref, value)
     end
