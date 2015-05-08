@@ -38,6 +38,11 @@ describe LogStash::Event do
         expect(subject["[foo][bar]"] = "zab").to eq("zab")
         expect(subject["[foo][bar]"]).to eq("zab")
       end
+
+      it "allow to set the @metadata key to a hash" do
+        subject["@metadata"] = { "action" => "index" }
+        expect(subject["[@metadata][action]"]).to eq("index")
+      end
     end
 
     context "#sprintf" do
