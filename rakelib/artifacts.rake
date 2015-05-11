@@ -180,6 +180,7 @@ namespace "artifact" do
         out.attributes[:deb_user] = "root"
         out.attributes[:deb_group] = "root"
         out.attributes[:deb_suggests] = "java7-runtime-headless"
+        out.dependencies << "libc6-dev"
         out.config_files << "/etc/default/logstash"
         out.config_files << "/etc/logrotate.d/logstash"
         out.config_files << "/etc/init.d/logstash"
