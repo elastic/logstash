@@ -18,6 +18,7 @@
 #   USE_DRIP=1 to force use drip
 #   DEBUG=1 to output debugging information
 
+unset CDPATH
 . "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
 setup
 

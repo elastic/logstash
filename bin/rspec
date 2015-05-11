@@ -1,5 +1,6 @@
 #!/bin/sh
 
+unset CDPATH
 . "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
 setup
 
