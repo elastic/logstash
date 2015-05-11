@@ -148,7 +148,7 @@ GEM
     logstash-codec-rubydebug (0.1.7)
       awesome_print
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-core (1.5.0.rc4-java)
+    logstash-core (1.5.0.snapshot1-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       filesize (= 0.0.4)
@@ -313,7 +313,8 @@ GEM
       aws-sdk
       logstash-codec-json
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-input-stdin (0.1.5)
+    logstash-input-stdin (0.1.6)
+      concurrent-ruby
       logstash-codec-json
       logstash-codec-json_lines
       logstash-codec-line
@@ -587,7 +588,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 1.5.0.rc4)
+  logstash-core (= 1.5.0.snapshot1)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
