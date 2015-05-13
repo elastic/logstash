@@ -2,15 +2,15 @@
 #   rsync
 #   wget or curl
 #
-JRUBY_VERSION=1.7.11
-ELASTICSEARCH_VERSION=1.1.1
+JRUBY_VERSION=1.7.17
+ELASTICSEARCH_VERSION=1.5.2
 
 WITH_JRUBY=java -jar $(shell pwd)/$(JRUBY) -S
 JRUBY=vendor/jar/jruby-complete-$(JRUBY_VERSION).jar
 JRUBY_URL=http://jruby.org.s3.amazonaws.com/downloads/$(JRUBY_VERSION)/jruby-complete-$(JRUBY_VERSION).jar
 JRUBY_CMD=bin/logstash env java -jar $(JRUBY)
 
-ELASTICSEARCH_URL=http://download.elasticsearch.org/elasticsearch/elasticsearch
+ELASTICSEARCH_URL=https://download.elastic.co/elasticsearch/elasticsearch
 ELASTICSEARCH=vendor/jar/elasticsearch-$(ELASTICSEARCH_VERSION)
 TYPESDB=vendor/collectd/types.db
 COLLECTD_VERSION=5.4.0
@@ -19,7 +19,7 @@ GEOIP=vendor/geoip/GeoLiteCity.dat
 GEOIP_URL=http://logstash.objects.dreamhost.com/maxmind/GeoLiteCity-2013-01-18.dat.gz
 GEOIP_ASN=vendor/geoip/GeoIPASNum.dat
 GEOIP_ASN_URL=http://logstash.objects.dreamhost.com/maxmind/GeoIPASNum-2014-02-12.dat.gz
-KIBANA_URL=https://download.elasticsearch.org/kibana/kibana/kibana-3.0.1.tar.gz
+KIBANA_URL=https://download.elastic.co/kibana/kibana/kibana-3.1.2.tar.gz
 PLUGIN_FILES=$(shell find lib -type f| egrep '^lib/logstash/(inputs|outputs|filters|codecs)/[^/]+$$' | egrep -v '/(base|threadable).rb$$|/inputs/ganglia/')
 QUIET=@
 ifeq (@,$(QUIET))
