@@ -2,18 +2,18 @@
 title: Learn - logstash
 layout: content_right
 ---
-# What is logstash?
+# What is Logstash?
 
-logstash is a tool for managing your logs.
+Logstash is a tool for managing your logs.
 
 It helps you take logs and other event data from your systems and move it into
-a central place. logstash is open source and completely free. You can find
-support on the mailing list and on IRC.
+a central place. Logstash is open source and completely free. You can find
+support on the discussion forum and on IRC.
 
-For an overview of logstash and why you would use it, you should watch the
+For an overview of Logstash and why you would use it, you should watch the
 presentation I gave at CarolinaCon 2011: 
 [video here](http://carolinacon.blip.tv/file/5105901/). This presentation covers
-logstash, how you can use it, some alternatives, logging best practices,
+Logstash, how you can use it, some alternatives, logging best practices,
 parsing tools, etc. Video also below:
 
 <!--
@@ -28,8 +28,8 @@ The slides are available online here: [slides](http://semicomplete.com/presentat
 
 ## Getting Help
 
-There's [documentation](.) here on this site. If that isn't sufficient, you can
-email the mailing list (logstash-users@googlegroups.com). Further, there is also
+There's [documentation](http://www.elastic.co/guide/en/logstash/current/index.html) here on this site. If that isn't sufficient, you can
+use the discussion [forum](https://discuss.elastic.co/c/logstash). Further, there is also
 an IRC channel - #logstash on irc.freenode.org.
 
 If you find a bug or have a feature request, file them
@@ -38,9 +38,9 @@ for such things, that works for me, too.)
 
 ## Download It
 
-[Download logstash-%VERSION%](https://download.elasticsearch.org/logstash/logstash/logstash-%VERSION%.tar.gz)
+[Download logstash-%VERSION%](https://download.elastic.co/logstash/logstash/logstash-%VERSION%.tar.gz)
 
 ## What's next?
 
-Try this [guide](tutorials/getting-started-with-logstash) for a simple
-real-world example getting started using logstash.
+Try this [guide](http://www.elastic.co/guide/en/logstash/current/getting-started-with-logstash.html) for a simple
+real-world example getting started using Logstash.
