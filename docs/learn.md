@@ -28,7 +28,7 @@ The slides are available online here: [slides](http://semicomplete.com/presentat
 
 ## Getting Help
 
-There's [documentation](http://www.elastic.co/guide/en/logstash/current/index.html) here on this site. If that isn't sufficient, you can
+There's [documentation](.) here on this site. If that isn't sufficient, you can
 use the discussion [forum](https://discuss.elastic.co/c/logstash). Further, there is also
 an IRC channel - #logstash on irc.freenode.org.
 
