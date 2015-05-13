@@ -42,5 +42,5 @@ for such things, that works for me, too.)
 
 ## What's next?
 
-Try this [guide](http://www.elastic.co/guide/en/logstash/current/getting-started-with-logstash.html) for a simple
+Try this [guide](tutorials/getting-started-with-logstash) for a simple
 real-world example getting started using Logstash.
