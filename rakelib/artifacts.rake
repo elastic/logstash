@@ -209,6 +209,13 @@ namespace "artifact" do
     out.vendor = "Elasticsearch"
     out.dependencies << "logrotate"
 
+    # Because we made a mistake in naming the RC version numbers, both rpm and deb view
+    # "1.5.0.rc1" higher than "1.5.0". Setting the epoch to 1 ensures that we get a kind
+    # of clean slate as to how we compare package versions. The default epoch is 0, and
+    # epoch is sorted first, so a version 1:1.5.0 will have greater priority
+    # than 1.5.0.rc4
+    out.epoch = 1
+
     # We don't specify a dependency on Java because:
     # - On Red Hat, Oracle and Red Hat both label their java packages in
     #   incompatible ways. Further, there is no way to guarantee a qualified
