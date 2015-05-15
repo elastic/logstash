@@ -1,6 +1,6 @@
 if ENV['USE_RUBY'] != '1'
   if RUBY_ENGINE != "jruby" or Gem.ruby !~ /vendor\/jruby\/bin\/jruby/
-    puts "Restarting myself under Vendored JRuby (currently #{RUBY_ENGINE} #{RUBY_VERSION})"  if $DEBUG
+    puts "Restarting myself under Vendored JRuby (currently #{RUBY_ENGINE} #{RUBY_VERSION})" if ENV['DEBUG']
 
     if ["mingw32", "mswin32"].include?(RbConfig::CONFIG["host_os"])
       # Use our own SSL certs when on Windows
