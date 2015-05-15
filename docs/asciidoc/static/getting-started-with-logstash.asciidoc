@@ -104,7 +104,7 @@ stored data when you query it.
 Now, you're probably saying, "that's all fine and dandy, but typing all my logs
 into Logstash isn't really an option, and merely seeing them spit to STDOUT
 isn't very useful." Good point. First, let's set up Elasticsearch to store the
-messages we send into Logstash. If you don't have Elasticearch already
+messages we send into Logstash. If you don't have Elasticsearch already
 installed, you can
 http://www.elastic.co/download/[download the RPM or DEB package], or install
 manually by downloading the current release tarball, by issuing the following
