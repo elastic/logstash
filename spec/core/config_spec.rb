@@ -106,3 +106,16 @@ describe LogStashConfigParser do
     end
   end
 end
+
+describe LogStash::Config::AST do
+
+  context "when doing unicode transformations" do
+    subject(:unicode) { LogStash::Config::AST::Unicode }
+
+    it "convert newline characters without modifying them" do
+      expect(unicode.wrap("\\n")).to eq("('\\n')")
+    end
+
+  end
+
+end
