@@ -300,7 +300,7 @@ module LogStash; module Config; module AST
 
   module Unicode
     def self.wrap(text)
-      return "(" + text.force_encoding(Encoding::UTF_8).inspect + ")"
+      return "('#{text.force_encoding(Encoding::UTF_8)}')"
     end
   end
 
