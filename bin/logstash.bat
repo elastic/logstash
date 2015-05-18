@@ -3,7 +3,7 @@
 SETLOCAL
 
 set SCRIPT_DIR=%~dp0
-CALL %SCRIPT_DIR%\setup.bat
+CALL "%SCRIPT_DIR%\setup.bat"
 
 :EXEC
 REM is the first argument a flag? If so, assume 'agent'
