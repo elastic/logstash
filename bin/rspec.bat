@@ -2,7 +2,9 @@
 
 SETLOCAL
 
-set SCRIPT_DIR=%~dp0
+REM get logstash/bin absolute path: d => drive letter, p => path, s => use short names (no-spaces)
+REM as explained on https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/percent.mspx?mfr=true
+set SCRIPT_DIR=%~dps0
 CALL %SCRIPT_DIR%\setup.bat
 
 :EXEC
