@@ -412,7 +412,7 @@ module LogStash; module Config; module AST
   class If < BranchEntry
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
-      return "if #{condition.compile} # if #{condition.text_value}\n" \
+      return "if #{condition.compile} # if #{condition.text_value.gsub(/[\r\n]/, " ")}\n" \
         << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
