@@ -48,6 +48,24 @@ describe LogStashConfigParser do
   end
 
   context "#compile" do
+    context "with multiline conditionals" do
+      let(:config) { <<-CONFIG }
+        filter {
+          if [something]
+             or [anotherthing]
+             or [onemorething] {
+          }
+        }
+      CONFIG
+      subject { LogStashConfigParser.new }
+         
+      it "should compile successfully" do
+        result = subject.parse(config)
+        expect(result).not_to(be_nil)
+        expect { eval(result.compile) }.not_to(raise_error)
+      end
+    end
+
     context "invalid configuration" do
       it "rejects duplicate hash key" do
         parser = LogStashConfigParser.new
