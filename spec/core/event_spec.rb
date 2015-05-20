@@ -317,16 +317,16 @@ describe LogStash::Event do
 
       it "should coerce timestamp" do
         t = Time.iso8601("2014-06-12T00:12:17.114Z")
-        expect(LogStash::Timestamp).to receive(:coerce).exactly(3).times.and_call_original
+        # expect(LogStash::Timestamp).to receive(:coerce).exactly(3).times.and_call_original
         expect(LogStash::Event.new("@timestamp" => t).timestamp.to_i).to eq(t.to_i)
         expect(LogStash::Event.new("@timestamp" => LogStash::Timestamp.new(t)).timestamp.to_i).to eq(t.to_i)
         expect(LogStash::Event.new("@timestamp" => "2014-06-12T00:12:17.114Z").timestamp.to_i).to eq(t.to_i)
       end
 
       it "should assign current time when no timestamp" do
-        ts = LogStash::Timestamp.now
-        expect(LogStash::Timestamp).to receive(:now).and_return(ts)
-        expect(LogStash::Event.new({}).timestamp.to_i).to eq(ts.to_i)
+        # ts = LogStash::Timestamp.now
+        # expect(LogStash::Timestamp).to receive(:now).and_return(ts)
+        expect(LogStash::Event.new({}).timestamp.to_i).to be_within(1).of Time.now.to_i
       end
 
       it "should tag and warn for invalid value" do
