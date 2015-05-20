@@ -1,0 +1,45 @@
+begin
+  require 'ant'
+rescue
+  puts("error: unable to load Ant, make sure Ant is installed, in your PATH and $ANT_HOME is defined properly")
+  puts("\nerror details:\n#{$!}")
+  exit(1)
+end
+
+BASEDIR = File.expand_path("../../../", __FILE__)
+
+TARGET = File.join(BASEDIR, "out/production/main/")
+SRC = File.join(BASEDIR, "src/main/java")
+JAR = File.join(BASEDIR, "lib/jruby_event/jruby_event.jar")
+
+task :setup do
+  ant.mkdir 'dir' => TARGET
+  ant.path 'id' => 'classpath' do
+    fileset 'dir' => TARGET
+  end
+end
+
+desc "compile Java classes"
+task :build => [:setup] do |t, args|
+  require 'jruby/jrubyc'
+  ant.javac(
+      :srcdir => SRC,
+      :destdir => TARGET,
+      :classpathref => "classpath",
+      :debug => true,
+      :includeantruntime => "no",
+      :verbose => false,
+      :listfiles => true,
+      :source => "1.7",
+      :target => "1.7",
+  ) {}
+end
+
+task :setup_jar do
+  ant.delete 'file' => JAR
+end
+
+desc "build the jar"
+task :jar => [:setup_jar, :build] do
+  ant.jar :basedir => TARGET, :destfile => JAR, :includes => "**/*.class"
+end
