@@ -121,14 +121,6 @@ describe LogStash::Util::Accessors, :if => true do
       expect(data).to eq({ "hello" => "foo" })
     end
 
-    it "should strict_set shallow string value" do
-      str = "[hello]"
-      data = {}
-      accessors = LogStash::Util::Accessors.new(data)
-      expect(accessors.strict_set(str, "foo")).to eq("foo")
-      expect(data).to eq({ "hello" => "foo"})
-    end
-
     it "should set deep string value" do
       str = "[hello][world]"
       data = {}
@@ -142,14 +134,6 @@ describe LogStash::Util::Accessors, :if => true do
       data = {}
       accessors = LogStash::Util::Accessors.new(data)
       expect(accessors.set(str, ["foo", "bar"])).to eq(["foo", "bar"])
-      expect(data).to eq({ "hello" => { "world" => ["foo", "bar"] } })
-    end
-
-    it "should strict_set deep array value" do
-      str = "[hello][world]"
-      data = {}
-      accessors = LogStash::Util::Accessors.new(data)
-      expect(accessors.strict_set(str, ["foo", "bar"]) ).to eq(["foo", "bar"])
       expect(data).to eq({ "hello" => { "world" => ["foo", "bar"] } })
     end
 
@@ -181,35 +165,6 @@ describe LogStash::Util::Accessors, :if => true do
       accessors = LogStash::Util::Accessors.new(data)
       expect(accessors.del(str)).to eq(4)
       expect(data).to eq({ "geocoords" => [2] })
-    end  end
-
-  context "using invalid encoding" do
-    it "strinct_set should raise on non UTF-8 string encoding" do
-      str = "[hello]"
-      data = {}
-      accessors = LogStash::Util::Accessors.new(data)
-      expect { accessors.strict_set(str, "foo".encode("US-ASCII")) }.to raise_error
-    end
-
-    it "strinct_set should raise on non UTF-8 string encoding in array" do
-      str = "[hello]"
-      data = {}
-      accessors = LogStash::Util::Accessors.new(data)
-      expect { accessors.strict_set(str, ["foo", "bar".encode("US-ASCII")]) }.to raise_error
-    end
-
-    it "strinct_set should raise on invalid UTF-8 string encoding" do
-      str = "[hello]"
-      data = {}
-      accessors = LogStash::Util::Accessors.new(data)
-      expect { accessors.strict_set(str, "foo \xED\xB9\x81\xC3") }.to raise_error
-    end
-
-    it "strinct_set should raise on invalid UTF-8 string encoding in array" do
-      str = "[hello]"
-      data = {}
-      accessors = LogStash::Util::Accessors.new(data)
-      expect { accessors.strict_set(str, ["foo", "bar \xED\xB9\x81\xC3"]) }.to raise_error
     end
   end
 end

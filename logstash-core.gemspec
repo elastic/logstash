@@ -33,6 +33,8 @@ Gem::Specification.new do |gem|
   # filetools and rakelib
   gem.add_runtime_dependency "minitar", "~> 0.5.4"
 
+  gem.add_runtime_dependency "thread_safe", "~> 0.3.5" #(Apache 2.0 license)
+
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
     gem.add_runtime_dependency "jrjackson", "~> 0.2.8" #(Apache 2.0 license)
