@@ -1,6 +1,6 @@
 namespace "vendor" do
   VERSIONS = {
-    "jruby" => { "version" => "1.7.19", "sha1" => "a3296d1ae9b9aa78825b8d65a0d2498b449eaa3d" },
+    "jruby" => { "version" => "1.7.20", "sha1" => "3c11f01d38b9297cef2c281342f8bb799772e481" },
   }
 
   def vendor(*args)
@@ -53,7 +53,6 @@ namespace "vendor" do
             chunk = entry.read(16384)
             fd.write(chunk)
           end
-            #IO.copy_stream(entry, fd)
         end
         File.chmod(entry_mode, path)
       end
@@ -66,16 +65,12 @@ namespace "vendor" do
     info = VERSIONS[name]
     version = info["version"]
 
-    discard_patterns = Regexp.union([ /^samples/,
-                                      /@LongLink/,
-                                      /lib\/ruby\/1.8/,
-                                      /lib\/ruby\/2.0/,
-                                      /lib\/ruby\/shared\/rdoc/,
-
-                                      # Don't provide jar_installer.rb from jruby's release
-                                      # We'll provide a newer version with some bugfixes.
-                                      # See the 'vendor:jruby-patch' task for this.
-                                      /lib\/ruby\/shared\/jar_installer\.rb$/,
+    discard_patterns = Regexp.union([
+      /^samples/,
+      /@LongLink/,
+      /lib\/ruby\/1.8/,
+      /lib\/ruby\/2.0/,
+      /lib\/ruby\/shared\/rdoc/,
     ])
 
     url = "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-bin-#{version}.tar.gz"
@@ -93,15 +88,8 @@ namespace "vendor" do
       next if out =~ discard_patterns
       vendor(name, out)
     end # untar
-    Rake::Task["vendor:jruby-patch"].invoke
   end # jruby
 
-  task "jruby-patch" do |task, args|
-    # Patch JRuby's old jar-dependencies thing. This fixes bugs on windows
-    patched_jar_installer = File.join(File.dirname(__FILE__), "..", "tools", "patches", "jar_installer.rb")
-    patch_target = File.join(File.dirname(__FILE__), "..", "vendor", "jruby", "lib", "ruby", "shared", "jar_installer.rb")
-    FileUtils.cp(patched_jar_installer, patch_target)
-  end
   task "all" => "jruby"
 
   task "system_gem", :jruby_bin, :name, :version do |task, args|
