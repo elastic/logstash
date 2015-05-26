@@ -13,7 +13,6 @@ namespace "vendor" do
   # * nil to skip this file
   # * or, the desired string filename to write the file to.
   def self.untar(tarball, &block)
-    Rake::Task["dependency:archive-tar-minitar"].invoke
     require "archive/tar/minitar"
     tgz = Zlib::GzipReader.new(File.open(tarball,"rb"))
     tar = Archive::Tar::Minitar::Input.open(tgz)
@@ -61,7 +60,7 @@ namespace "vendor" do
     tar.close
   end # def untar
 
-  task "jruby" do |task, args|
+  task "jruby" => [ "vendor:gems" ] do |task, args|
     name = task.name.split(":")[1]
     info = VERSIONS[name]
     version = info["version"]
@@ -135,7 +134,7 @@ namespace "vendor" do
     puts(output)
     raise(exception) if exception
   end # task gems
-  task "all" => "gems"
+  #task "all" => "gems"
 
   desc "Clean the vendored files"
   task :clean do
