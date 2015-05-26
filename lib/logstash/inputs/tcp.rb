@@ -59,10 +59,16 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
 
   public
   def register
-    fix_streaming_codecs
     require "socket"
     require "timeout"
     require "openssl"
+
+    # monkey patch TCPSocket and SSLSocket to include socket peer
+    TCPSocket.module_eval{include ::LogStash::Util::SocketPeer}
+    OpenSSL::SSL::SSLSocket.module_eval{include ::LogStash::Util::SocketPeer}
+
+    fix_streaming_codecs
+
     if @ssl_enable
       @ssl_context = OpenSSL::SSL::SSLContext.new
       @ssl_context.cert = OpenSSL::X509::Certificate.new(File.read(@ssl_cert))
@@ -86,8 +92,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
       begin
         @server_socket = TCPServer.new(@host, @port)
       rescue Errno::EADDRINUSE
-        @logger.error("Could not start TCP server: Address in use",
-                      :host => @host, :port => @port)
+        @logger.error("Could not start TCP server: Address in use", :host => @host, :port => @port)
         raise
       end
       if @ssl_enable
@@ -100,8 +105,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   def handle_socket(socket, client_address, output_queue, codec)
     while true
       buf = nil
-      # NOTE(petef): the timeout only hits after the line is read
-      # or socket dies
+      # NOTE(petef): the timeout only hits after the line is read or socket dies
       # TODO(sissel): Why do we have a timeout here? What's the point?
       if @data_timeout == -1
         buf = read(socket)
@@ -116,19 +120,35 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         decorate(event)
         output_queue << event
       end
-    end # loop do
+    end # loop
   rescue EOFError
-    @logger.debug("Connection closed", :client => socket.peer)
+    @logger.debug? && @logger.debug("Connection closed", :client => socket.peer)
+  rescue Errno::ECONNRESET
+    @logger.debug? && @logger.debug("Connection reset by peer", :client => socket.peer)
   rescue => e
-    @logger.debug("An error occurred. Closing connection",
-                  :client => socket.peer, :exception => e, :backtrace => e.backtrace)
+    @logger.error("An error occurred. Closing connection", :client => socket.peer, :exception => e, :backtrace => e.backtrace)
   ensure
-    socket.close rescue IOError nil
+    socket.close rescue nil
+
     codec.respond_to?(:flush) && codec.flush do |event|
       event["host"] ||= client_address
       event["sslsubject"] ||= socket.peer_cert.subject if @ssl_enable && @ssl_verify
       decorate(event)
       output_queue << event
+    end
+  end
+
+  private
+  def client_thread(output_queue, socket)
+    Thread.new(output_queue, socket) do |q, s|
+      begin
+        @logger.debug? && @logger.debug("Accepted connection", :client => s.peer, :server => "#{@host}:#{@port}")
+        handle_socket(s, s.peer, q, @codec.clone)
+      rescue Interrupted
+        s.close rescue nil
+      ensure
+        @client_threads_lock.synchronize{@client_threads.delete(Thread.current)}
+      end
     end
   end
 
@@ -154,36 +174,29 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
   def run_server(output_queue)
     @thread = Thread.current
     @client_threads = []
-    loop do
-      # Start a new thread for each connection.
-      begin
-        @client_threads << Thread.start(@server_socket.accept) do |s|
-          # TODO(sissel): put this block in its own method.
+    @client_threads_lock = Mutex.new
 
-          # monkeypatch a 'peer' method onto the socket.
-          s.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
-          @logger.debug("Accepted connection", :client => s.peer,
-                        :server => "#{@host}:#{@port}")
-          begin
-            handle_socket(s, s.peer, output_queue, @codec.clone)
-          rescue Interrupted
-            s.close rescue nil
-          end
-        end # Thread.start
+    while true
+      begin
+        socket = @server_socket.accept
+        # start a new thread for each connection.
+        @client_threads_lock.synchronize{@client_threads << client_thread(output_queue, socket)}
       rescue OpenSSL::SSL::SSLError => ssle
         # NOTE(mrichar1): This doesn't return a useful error message for some reason
-        @logger.error("SSL Error", :exception => ssle,
-                      :backtrace => ssle.backtrace)
+        @logger.error("SSL Error", :exception => ssle, :backtrace => ssle.backtrace)
       rescue IOError, LogStash::ShutdownSignal
         if @interrupted
-          # Intended shutdown, get out of the loop
-          @server_socket.close
-          @client_threads.each do |thread|
-            thread.raise(LogStash::ShutdownSignal)
+          @server_socket.close rescue nil
+
+          threads = @client_threads_lock.synchronize{@client_threads.dup}
+          threads.each do |thread|
+            thread.raise(LogStash::ShutdownSignal) if thread.alive?
           end
+
+          # intended shutdown, get out of the loop
           break
         else
-          # Else it was a genuine IOError caused by something else, so propagate it up..
+          # it was a genuine IOError, propagate it up
           raise
         end
       end
@@ -194,7 +207,7 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
     @server_socket.close rescue nil
   end # def run_server
 
-  def run_client(output_queue) 
+  def run_client(output_queue)
     @thread = Thread.current
     while true
       client_socket = TCPSocket.new(@host, @port)
@@ -203,19 +216,17 @@ class LogStash::Inputs::Tcp < LogStash::Inputs::Base
         begin
           client_socket.connect
         rescue OpenSSL::SSL::SSLError => ssle
-          @logger.error("SSL Error", :exception => ssle,
-                        :backtrace => ssle.backtrace)
+          @logger.error("SSL Error", :exception => ssle, :backtrace => ssle.backtrace)
           # NOTE(mrichar1): Hack to prevent hammering peer
           sleep(5)
           next
         end
       end
-      client_socket.instance_eval { class << self; include ::LogStash::Util::SocketPeer end }
       @logger.debug("Opened connection", :client => "#{client_socket.peer}")
       handle_socket(client_socket, client_socket.peer, output_queue, @codec.clone)
     end # loop
   ensure
-    client_socket.close
+    client_socket.close rescue nil
   end # def run
 
   public

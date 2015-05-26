@@ -56,6 +56,7 @@ class LogStash::Inputs::Syslog < LogStash::Inputs::Base
     @grok_filter = LogStash::Filters::Grok.new(
       "overwrite" => "message",
       "match" => { "message" => "<%{POSINT:priority}>%{SYSLOGLINE}" },
+      "tag_on_failure" => ["_grokparsefailure_sysloginputplugin"],
     )
 
     @date_filter = LogStash::Filters::Date.new(

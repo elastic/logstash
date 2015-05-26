@@ -26,7 +26,7 @@ irc.freenode.org and ask for help there!
 
 ## Have an Idea or Feature Request?
 
-* File a ticket on [jira](https://logstash.jira.com/secure/Dashboard.jspa), or email the
+* File a ticket on [github](https://github.com/elasticsearch/logstash/issues), or email the
   [mailing list](http://groups.google.com/group/logstash-users), or email
   me personally (jls@semicomplete.com) if that is more comfortable.
 
@@ -34,14 +34,14 @@ irc.freenode.org and ask for help there!
 
 If you think you found a bug, it probably is a bug.
 
-* File it on [jira](https://logstash.jira.com/secure/Dashboard.jspa)
+* File it on [github](https://github.com/elasticsearch/logstash/issues)
 * or the [mailing list](http://groups.google.com/group/logstash-users).
 
 # Contributing Documentation and Code Changes
 
 If you have a bugfix or new feature that you would like to contribute to
 logstash, and you think it will take more than a few minutes to produce the fix
-(ie; write code), it is worth discussing the change with the logstash users and developers first! You can reach us via [jira](https://logstash.jira.com/secure/Dashboard.jspa), the [mailing list](http://groups.google.com/group/logstash-users), or via IRC (#logstash on freenode irc)
+(ie; write code), it is worth discussing the change with the logstash users and developers first! You can reach us via [github](https://github.com/elasticsearch/logstash/issues), the [mailing list](http://groups.google.com/group/logstash-users), or via IRC (#logstash on freenode irc)
 
 ## Contribution Steps
 
@@ -55,7 +55,7 @@ logstash, and you think it will take more than a few minutes to produce the fix
 3. Send a pull request! Push your changes to your fork of the repository and
    [submit a pull
    request](https://help.github.com/articles/using-pull-requests). In the pull
-   request, describe what your changes do and mention any jira issues related
+   request, describe what your changes do and mention any bugs/issues related
    to the pull request.
 
 

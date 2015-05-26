@@ -31,7 +31,7 @@ HOSTPORT %{IPORHOST}:%{POSINT}
 
 # paths
 PATH (?:%{UNIXPATH}|%{WINPATH})
-UNIXPATH (?>/(?>[\w_%!$@:.,-]+|\\.)*)+
+UNIXPATH (?>/(?>[\w_%!$@:.,~-]+|\\.)*)+
 TTY (?:/dev/(pts|tty([pq])?)(\w+)?/?(?:[0-9]+))
 WINPATH (?>[A-Za-z]+:|\\)(?:\\[^\\?*]*)+
 URIPROTO [A-Za-z]+(\+[A-Za-z+]+)?

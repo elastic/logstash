@@ -500,4 +500,133 @@ describe LogStash::Filters::Grok do
       insist { subject["foo"] }.is_a?(String)
     end
   end
+
+  describe "break_on_match default should be true and first match should exit filter" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => "%{INT:foo}"
+                     "somefield" => "%{INT:bar}"}
+        }
+      }
+    CONFIG
+
+    sample("message" => "hello world 123", "somefield" => "testme abc 999") do
+      insist { subject["foo"] } == "123"
+      insist { subject["bar"] }.nil?
+    end
+  end
+
+  describe "break_on_match when set to false should try all patterns" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => "%{INT:foo}"
+                     "somefield" => "%{INT:bar}"}
+          break_on_match => false
+        }
+      }
+    CONFIG
+
+    sample("message" => "hello world 123", "somefield" => "testme abc 999") do
+      insist { subject["foo"] } == "123"
+      insist { subject["bar"] } == "999"
+    end
+  end
+
+  describe "LOGSTASH-1547 - break_on_match should work on fields with multiple patterns" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => ["%{GREEDYDATA:name1}beard", "tree%{GREEDYDATA:name2}"] }
+          break_on_match => false
+        }
+      }
+    CONFIG
+
+    sample "treebranch" do
+      insist { subject["name2"] } == "branch"
+    end
+
+    sample "bushbeard" do
+      insist { subject["name1"] } == "bush"
+    end
+
+    sample "treebeard" do
+      insist { subject["name1"] } == "tree"
+      insist { subject["name2"] } == "beard"
+    end
+  end
+
+  describe "break_on_match default for array input with single grok pattern" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => "%{INT:foo}"}
+        }
+      }
+    CONFIG
+
+    # array input --
+    sample("message" => ["hello world 123", "line 23"]) do
+      insist { subject["foo"] } == ["123", "23"]
+      insist { subject["tags"] }.nil?
+    end
+
+    # array input, one of them matches
+    sample("message" => ["hello world 123", "abc"]) do
+      insist { subject["foo"] } == "123"
+      insist { subject["tags"] }.nil?
+    end
+  end
+
+  describe "break_on_match = true (default) for array input with multiple grok pattern" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => ["%{INT:foo}", "%{WORD:bar}"] }
+        }
+      }
+    CONFIG
+
+    # array input --
+    sample("message" => ["hello world 123", "line 23"]) do
+      insist { subject["foo"] } == ["123", "23"]
+      insist { subject["bar"] }.nil?
+      insist { subject["tags"] }.nil?
+    end
+
+    # array input, one of them matches
+    sample("message" => ["hello world", "line 23"]) do
+      insist { subject["bar"] } == "hello"
+      insist { subject["foo"] } == "23"
+      insist { subject["tags"] }.nil?
+    end
+  end
+
+  describe "break_on_match = false for array input with multiple grok pattern" do
+    config <<-CONFIG
+      filter {
+        grok {
+          match => { "message" => ["%{INT:foo}", "%{WORD:bar}"] }
+          break_on_match => false
+        }
+      }
+    CONFIG
+
+    # array input --
+    sample("message" => ["hello world 123", "line 23"]) do
+      insist { subject["foo"] } == ["123", "23"]
+      insist { subject["bar"] } == ["hello", "line"]
+      insist { subject["tags"] }.nil?
+    end
+
+    # array input, one of them matches
+    sample("message" => ["hello world", "line 23"]) do
+      insist { subject["bar"] } == ["hello", "line"]
+      insist { subject["foo"] } == "23"
+      insist { subject["tags"] }.nil?
+    end
+  end
+
 end

@@ -164,4 +164,39 @@ describe LogStash::Filters::Fingerprint do
     end
   end
 
+  context 'Timestamps' do
+    epoch_time = Time.at(0).gmtime
+
+    describe 'OpenSSL Fingerprinting' do
+      config <<-CONFIG
+        filter {
+          fingerprint {
+            source => ['@timestamp']
+            key    => '0123'
+            method => 'SHA1'
+          }
+        }
+      CONFIG
+
+      sample("@timestamp" => epoch_time) do
+        insist { subject["fingerprint"] } == '1d5379ec92d86a67cfc642d55aa050ca312d3b9a'
+      end
+    end
+
+    describe 'MURMUR3 Fingerprinting' do
+      config <<-CONFIG
+        filter {
+          fingerprint {
+            source => ['@timestamp']
+            method => 'MURMUR3'
+          }
+        }
+      CONFIG
+
+      sample("@timestamp" => epoch_time) do
+        insist { subject["fingerprint"] } == 743372282
+      end
+    end
+  end
+
 end

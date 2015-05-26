@@ -33,7 +33,7 @@ email the mailing list (logstash-users@googlegroups.com). Further, there is also
 an IRC channel - #logstash on irc.freenode.org.
 
 If you find a bug or have a feature request, file them
-on <http://logstash.jira.com/>. (Honestly though, if you prefer email or irc
+on [github](https://github.com/elasticsearch/logstas/issues). (Honestly though, if you prefer email or irc
 for such things, that works for me, too.)
 
 ## Download It
