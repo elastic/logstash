@@ -9,6 +9,14 @@ module ::Bundler
     end
   end
 
+  # Patch to prevent Bundler to save a .bundle/config file in the root 
+  # of the application
+  class Settings
+    def set_key(key, value, hash, file)
+      value
+    end
+  end
+
   # Add the Bundler.reset! method which has been added in master but is not in 1.7.9.
   class << self
     unless self.method_defined?("reset!")
