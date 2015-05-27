@@ -11,6 +11,14 @@ module LogStash
           Pathname.new("#{default_gemfile}.#{ruby}.lock")
         end
       end
+
+      # Patch to prevent Bundler to save a .bundle/config file in the root 
+      # of the application
+      ::Bundler::Settings.module_exec do
+        def set_key(key, value, hash, file)
+          value
+        end
+      end
     end
 
     def setup!(options = {})
