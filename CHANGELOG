@@ -1,3 +1,11 @@
+1.4.3 ()
+  # general
+  - Updated to Elasticsearch 1.5.2, Kibana 3.1.2 and JRuby 1.7.17
+
+  # output
+  - File: Sandbox output to protect against issues like creating new files
+    outside defined paths
+
 1.5.0 (May 14, 2015)
   # general
   - Performance improvements: Logstash 1.5.0 is much faster -- we have improved the throughput 
