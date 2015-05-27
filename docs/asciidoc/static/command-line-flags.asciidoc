@@ -63,6 +63,6 @@ Alternatively, using a file location:
 
 `bin/plugin list`
 
-`bin/plugin list elasticsearch` Will list all plugins containing a name
+`bin/plugin list <namefragment>` Will list all plugins containing a `namefragment`
 
 `bin/plugin list --group output` Will list plugins for a particular group
