@@ -1,12 +1,12 @@
 == Command-line flags
 
 [float]
-=== Agent
+=== Pipeline
 
-The Logstash agent has the following flags. (You can use the '--help' flag to
+The Logstash pipeline has the following flags. (You can use the `--help` flag to
 display this information.)
 
-[source,js]
+[source,shell]
 ----------------------------------
 -f, --config CONFIGFILE
  Load the Logstash config from a specific file, directory, or a wildcard. If
@@ -36,19 +36,33 @@ display this information.)
 -v
  *DEPRECATED: see --verbose/debug* Increase verbosity. There are multiple levels
  of verbosity available with '-vv' currently being the highest
-
---pluginpath PLUGIN_PATH
- A colon-delimited path to find other Logstash plugins in
 ----------------------------------
 
 [float]
-=== Web
+=== Plugins
 
-[source,js]
-----------------------------------
--a, --address ADDRESS
- Address on which to start webserver. Default is 0.0.0.0.
+`$LS_HOME/bin/plugin` script will be used for all plugin lifecycle interaction
 
--p, --port PORT
- Port on which to start webserver. Default is 9292.
-----------------------------------
+### Installing a plugin
+`bin/plugin install logstash-output-kafka`
+
+Alternatively, using a file location:
+`bin/plugin install /path/to/logstash-output-kafka-1.0.0.gem`
+
+### Removing a plugin
+
+`bin/plugin uninstall logstash-output-kafka`
+
+### Updating one or all plugins
+
+`bin/plugin update` will update all installed plugins
+
+`bin/plugin update logstash-output-kafka` will update only this plugin
+
+### Listing plugins
+
+`bin/plugin list`
+
+`bin/plugin list elasticsearch` Will list all plugins containing a name
+
+`bin/plugin list --group output` Will list plugins for a particular group
