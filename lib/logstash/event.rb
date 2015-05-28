@@ -246,7 +246,7 @@ class LogStash::Event
       elsif key[0,1] == "+"
         t = @data[TIMESTAMP]
         formatter = org.joda.time.format.DateTimeFormat.forPattern(key[1 .. -1])\
-          .withZone(org.joda.time.DateTimeZone::UTC)
+          .withZone(org.joda.time.DateTimeZone.getDefault())
         #next org.joda.time.Instant.new(t.tv_sec * 1000 + t.tv_usec / 1000).toDateTime.toString(formatter)
         # Invoke a specific Instant constructor to avoid this warning in JRuby
         #  > ambiguous Java methods found, using org.joda.time.Instant(long)
