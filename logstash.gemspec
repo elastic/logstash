@@ -25,7 +25,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "i18n", [">=0.6.6"]  #(MIT license)
 
   # Web dependencies
-  gem.add_runtime_dependency "ftw", ["~> 0.0.39"] #(Apache 2.0 license)
+  gem.add_runtime_dependency "ftw", ["~> 0.0.42"] #(Apache 2.0 license)
   gem.add_runtime_dependency "mime-types"         #(GPL 2.0)
   gem.add_runtime_dependency "rack"               # (MIT-style license)
   gem.add_runtime_dependency "sinatra"            # (MIT-style license)

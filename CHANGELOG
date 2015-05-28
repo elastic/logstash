@@ -1,6 +1,8 @@
 1.4.3 (June 2, 2015)
   # general
   - Updated to Elasticsearch 1.5.2, Kibana 3.1.2 and JRuby 1.7.17
+  - Bumped ruby-ftw version to 0.0.42 which properly handled closing of socket 
+    connections and prevents file descriptor leaks (#2000)
 
   # output
   - File: Sandbox output to protect against issues like creating new files
