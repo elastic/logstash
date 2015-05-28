@@ -30,6 +30,7 @@ describe LogStash::Bundler do
     original_stderr = $stderr
 
     subject { LogStash::Bundler.invoke!(options) }
+
     # by default we want to fail fast on the test
     let(:options) { { :install => true, :max_tries => 0, :without => [:development]} }
     let(:bundler_args) { LogStash::Bundler.bundler_arguments(options) }
@@ -41,9 +42,9 @@ describe LogStash::Bundler do
     end
 
     after do
-      expect(::Bundler.settings[:path]).to eq(nil)
-      expect(::Bundler.settings[:gemfile]).to eq(nil)
-      expect(::Bundler.settings[:without]).to eq(nil)
+      expect(::Bundler.settings[:path]).to eq(LogStash::Environment::BUNDLE_DIR)
+      expect(::Bundler.settings[:gemfile]).to eq(LogStash::Environment::GEMFILE_PATH)
+      expect(::Bundler.settings[:without]).to eq(options.fetch(:without, []).join(':'))
 
       expect(ENV['GEM_PATH']).to eq(LogStash::Environment.logstash_gem_home)
 

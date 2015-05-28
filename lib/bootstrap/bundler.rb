@@ -16,6 +16,13 @@ module LogStash
       # of the application
       ::Bundler::Settings.module_exec do
         def set_key(key, value, hash, file)
+          key = key_for(key)
+
+          unless hash[key] == value
+            hash[key] = value
+            hash.delete(key) if value.nil?
+          end
+
           value
         end
       end
@@ -69,7 +76,6 @@ module LogStash
 
       require "bundler"
       require "bundler/cli"
-      # require "logstash/patches/bundler"
       LogStash::Bundler.patch!
 
       # force Rubygems sources to our Gemfile sources

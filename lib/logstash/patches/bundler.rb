@@ -13,6 +13,13 @@ module ::Bundler
   # of the application
   class Settings
     def set_key(key, value, hash, file)
+      key = key_for(key)
+
+      unless hash[key] == value
+        hash[key] = value
+        hash.delete(key) if value.nil?
+      end
+
       value
     end
   end
