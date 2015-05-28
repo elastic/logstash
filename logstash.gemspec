@@ -58,7 +58,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "snmp"                             #(ruby license)
   gem.add_runtime_dependency "rbnacl"                           #(MIT license)
   gem.add_runtime_dependency "bindata", [">= 1.5.0"]            #(ruby license)
-  gem.add_runtime_dependency "twitter", "5.0.0.rc.1"            #(MIT license)
+  gem.add_runtime_dependency "twitter", "5.11.0"            #(MIT license)
   gem.add_runtime_dependency "edn"                              #(MIT license)
   gem.add_runtime_dependency "elasticsearch"                    #9Apache 2.0 license)
 
