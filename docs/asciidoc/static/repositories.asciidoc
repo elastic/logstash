@@ -1,5 +1,3 @@
-:branch: 1.4
-
 [[package-repositories]]
 == Package Repositories
 
@@ -8,12 +6,12 @@ that we only provide binary packages, but no source packages, as the packages
 are created as part of the Logstash build.
 
 We have split the major versions in separate urls to avoid accidental upgrades
-across major version. For all 1.4.x releases use 1.4 as version number, for
-1.3.x use 1.3, etc.
+across major version. For all 1.5.x releases use 1.5 as version number, for
+1.4.x use 1.4, etc.
 
 We use the PGP key
 http://pgp.mit.edu/pks/lookup?op=vindex&search=0xD27D666CD88E42B4[D88E42B4],
-Elasticsearch Signing Key, with fingerprint
+Elastic's Signing Key, with fingerprint
 
     4609 5ACC 8548 582C 1A26 99A9 D27D 666C D88E 42B4
 
