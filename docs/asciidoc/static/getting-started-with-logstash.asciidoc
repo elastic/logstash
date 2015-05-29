@@ -183,23 +183,6 @@ This should return something like the following:
 Congratulations! You've successfully stashed logs in Elasticsearch via Logstash.
 
 [float]
-==== Elasticsearch Plugins (an aside)
-Another very useful tool for querying your Logstash data (and Elasticsearch in
-general) is the Elasticearch-kopf plugin. (For more information about
-Elasticsearch plugins, see
-http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-plugins.html[Elasticsearch plugins].)
-To install elasticsearch-kopf,  issue the following command from your
-Elasticsearch directory (the same one from which you started Elasticsearch):
-
-[source,js]
-----------------------------------
-bin/plugin -install lmenezes/elasticsearch-kopf
-----------------------------------
-Now you can go to
-http://localhost:9200/_plugin/kopf/[http://localhost:9200/_plugin/kopf/]
-to browse your Elasticsearch data, settings, and mappings!
-
-[float]
 ==== Multiple Outputs
 
 As a quick exercise in configuring multiple Logstash outputs, let's invoke
