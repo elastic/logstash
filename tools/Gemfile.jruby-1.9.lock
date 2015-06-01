@@ -239,3 +239,6 @@ DEPENDENCIES
   user_agent_parser (>= 2.0.0)
   xml-simple
   xmpp4r (= 0.5)
+
+BUNDLED WITH
+   1.10.2
