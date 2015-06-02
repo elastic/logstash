@@ -101,7 +101,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   protected
   def to_event(raw, source)
-    raise LogStash::ThisMethodWasRemoved("LogStash::Inputs::Base#to_event - you should use codecs now instead of to_event. Not sure what this means? Get help on logstash-users@googlegroups.com!")
+    raise LogStash::ThisMethodWasRemoved("LogStash::Inputs::Base#to_event - you should use codecs now instead of to_event. Not sure what this means? Get help on https://discuss.elastic.co/c/logstash")
   end # def to_event
 
   protected
