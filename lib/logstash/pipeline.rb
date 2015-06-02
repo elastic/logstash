@@ -157,7 +157,16 @@ class LogStash::Pipeline
     end
 
     @flusher_lock = Mutex.new
-    @flusher_thread = Thread.new { Stud.interval(5) { @flusher_lock.synchronize { @input_to_filter.push(LogStash::FLUSH) } } }
+    @flusher_pending = false
+    @flusher_thread = Thread.new do
+      Stud.interval(5) do
+        @flusher_lock.synchronize do
+          next if @flusher_pending
+          @flusher_pending = true
+          @input_to_filter.push(LogStash::FLUSH)
+        end
+      end
+    end
   end
 
   def start_outputs
@@ -220,7 +229,10 @@ class LogStash::Pipeline
         when LogStash::FlushEvent
           # handle filter flushing here so that non threadsafe filters (thus only running one filterworker)
           # don't have to deal with thread safety implementing the flush method
-          @flusher_lock.synchronize { flush_filters_to_output! }
+          @flusher_lock.synchronize do
+            @flusher_pending = false
+            flush_filters_to_output!
+          end
         when LogStash::ShutdownEvent
           # pass it down to any other filterworker and stop this worker
           @input_to_filter.push(event)
