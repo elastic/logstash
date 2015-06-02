@@ -84,4 +84,26 @@ public class EventTest {
         Event e = new EventImpl(data);
         assertEquals("baz", e.getField("[foo][0][bar]"));
     }
+
+
+    @Test
+    public void testClone() throws Exception {
+        Map data = new HashMap();
+        List l = new ArrayList();
+        data.put("array", l);
+
+        Map m = new HashMap();
+        m.put("foo", "bar");
+        l.add(m);
+
+        data.put("foo", 1.0);
+        data.put("bar", "bar");
+        data.put("baz", 1);
+
+        Event e = new EventImpl(data);
+
+        Event f = e.clone();
+        assertEquals("{\"bar\":\"bar\",\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"array\":[{\"foo\":\"bar\"}],\"foo\":1.0,\"@version\":\"1\",\"baz\":1}", f.toJson());
+        assertEquals(f.toJson(), e.toJson());
+    }
 }

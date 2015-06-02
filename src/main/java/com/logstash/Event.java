@@ -1,11 +1,9 @@
 package com.logstash;
 
-import org.codehaus.jackson.JsonGenerationException;
-
 import java.io.IOException;
 import java.util.Map;
 
-public interface Event {
+public interface Event extends Cloneable {
 
     String toString();
 
@@ -15,11 +13,13 @@ public interface Event {
 
     boolean isCancelled();
 
-    Event clone();
-
     Map<String, Object> getData();
 
+    void setData(Map<String, Object> data);
+
     Accessors getAccessors();
+
+    void setAccessors(Accessors accessors);
 
     Timestamp getTimestamp();
 
@@ -43,4 +43,8 @@ public interface Event {
     Event append(Event e);
 
     String sprintf(String s) throws IOException;
+
+    void tag(String tag);
+
+    Event clone() throws CloneNotSupportedException;
 }

@@ -11,7 +11,7 @@ import org.jruby.RubyString;
 import java.util.Date;
 
 @JsonSerialize(using = TimestampSerializer.class)
-public class Timestamp {
+public class Timestamp implements Cloneable {
 
     private DateTime time;
     // TODO: is this DateTimeFormatter thread safe?
@@ -49,6 +49,10 @@ public class Timestamp {
         return time;
     }
 
+    public void setTime(DateTime time) {
+        this.time = time;
+    }
+
     public static Timestamp now() {
         return new Timestamp();
     }
@@ -59,5 +63,12 @@ public class Timestamp {
 
     public String toString() {
         return toIso8601();
+    }
+
+    @Override
+    public Timestamp clone() throws CloneNotSupportedException {
+        Timestamp clone = (Timestamp)super.clone();
+        clone.setTime(this.getTime());
+        return clone;
     }
 }

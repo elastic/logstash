@@ -121,14 +121,16 @@ public class JrubyTimestampExtLibrary implements Library {
             return RubyString.newString(context.runtime,  "\"" + this.timestamp.toIso8601() + "\"");
         }
 
-        @JRubyMethod(name = "at", required = 1, meta = true)
-        public static IRubyObject ruby_at(ThreadContext context, IRubyObject recv, IRubyObject epoch)
+        @JRubyMethod(name = "at", required = 1, optional = 1, meta = true)
+        public static IRubyObject ruby_at(ThreadContext context, IRubyObject recv, IRubyObject[] args)
         {
-            if (!(epoch instanceof RubyInteger)) {
-                throw context.runtime.newTypeError("wrong argument type " + epoch.getMetaClass() + " (expected integer Fixnum)");
+            RubyTime t;
+            if (args.length == 1) {
+                t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), args[0]);
+            } else {
+                t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), args[0], args[1]);
             }
-            //
-            return RubyTimestamp.newRubyTimestamp(context.runtime, (((RubyInteger) epoch).getLongValue()));
+            return RubyTimestamp.newRubyTimestamp(context.runtime,  new Timestamp(t.getDateTime()));
         }
 
         @JRubyMethod(name = "now", meta = true)
