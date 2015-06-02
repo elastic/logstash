@@ -1,6 +1,5 @@
 package com.logstash;
 
-
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -27,38 +26,38 @@ public class Timestamp {
     }
 
     public Timestamp(Timestamp t) {
-        this.time = t.getTime();
-    }
+    this.time = t.getTime();
+  }
 
     public Timestamp(long epoch_milliseconds) {
-        this.time = new DateTime(epoch_milliseconds, DateTimeZone.UTC);
-    }
+    this.time = new DateTime(epoch_milliseconds, DateTimeZone.UTC);
+  }
 
     public Timestamp(Long epoch_milliseconds) {
-        this.time = new DateTime(epoch_milliseconds, DateTimeZone.UTC);
-    }
+    this.time = new DateTime(epoch_milliseconds, DateTimeZone.UTC);
+  }
 
     public Timestamp(Date date) {
-        this.time = new DateTime(date, DateTimeZone.UTC);
-    }
+    this.time = new DateTime(date, DateTimeZone.UTC);
+  }
 
     public Timestamp(DateTime date) {
-        this.time = date.toDateTime(DateTimeZone.UTC);
-    }
+    this.time = date.toDateTime(DateTimeZone.UTC);
+  }
 
     public DateTime getTime() {
-        return time;
-    }
+    return time;
+  }
 
     public static Timestamp now() {
-        return new Timestamp();
-    }
+    return new Timestamp();
+  }
 
     public String toIso8601() {
-        return this.iso8601Formatter.print(this.time);
-    }
+    return this.iso8601Formatter.print(this.time);
+  }
 
     public String toString() {
-        return toIso8601();
-    }
- }
+    return toIso8601();
+  }
+}
