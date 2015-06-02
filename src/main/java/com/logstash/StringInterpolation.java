@@ -1,7 +1,9 @@
 package com.logstash;
 
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,11 +17,19 @@ public class StringInterpolation {
     }
 
     private StringInterpolation() {
-        // TODO: this may need some tweaking for the concurrency level to get better memory usage.
+        // TODO:
+        // This may need some tweaking for the concurrency level to get better memory usage.
+        // The current implementation doesn't allow the keys to expire, I think under normal usage
+        // the keys will converge to a fixed number.
+        //
+        // If this code make logstash goes OOM, we have the following options:
+        //  - If the key doesn't contains a `%` do not cache it, this will reduce the key size at a performance cost.
+        //  - Use some kind LRU cache
+        //  - Create a new data structure that use weakref or use Google Guava for the cache https://code.google.com/p/guava-libraries/
         this.cache = new ConcurrentHashMap<>();
     }
 
-    public String evaluate(Event event, String template) {
+    public String evaluate(Event event, String template) throws IOException {
         TemplateNode compiledTemplate = (TemplateNode) this.cache.get(template);
 
         if(compiledTemplate == null) {
@@ -46,11 +56,11 @@ public class StringInterpolation {
             while (matcher.find()) {
                 if (matcher.start() > 0) {
                     compiledTemplate.add(new StaticNode(template.substring(pos, matcher.start())));
-                    pos = matcher.end();
                 }
 
                 tag = matcher.group(1);
                 compiledTemplate.add(identifyTag(tag));
+                pos = matcher.end();
             }
 
             if(pos < template.length() - 1) {
@@ -67,11 +77,12 @@ public class StringInterpolation {
         }
     }
 
-    // TODO: add support for array, hash, float and epoch
     public TemplateNode identifyTag(String tag) {
-        // Doesnt support parsing the float yet
-        if(tag.charAt(0) == '+') {
-            return new DateNode(tag.substring(1));
+        if(tag.equals("+%s")) {
+            return new EpochNode();
+        } else if(tag.charAt(0) == '+') {
+                return new DateNode(tag.substring(1));
+
         } else {
             return new KeyNode(tag);
         }

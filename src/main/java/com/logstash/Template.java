@@ -1,5 +1,6 @@
 package com.logstash;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class Template implements TemplateNode {
     }
 
     @Override
-    public String evaluate(Event event) {
+    public String evaluate(Event event) throws IOException {
         StringBuffer results = new StringBuffer();
 
         for (int i = 0; i < nodes.size(); i++) {

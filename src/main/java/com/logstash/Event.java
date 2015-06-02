@@ -42,5 +42,5 @@ public interface Event {
 
     Event append(Event e);
 
-    String sprintf(String s);
+    String sprintf(String s) throws IOException;
 }

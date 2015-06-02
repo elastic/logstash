@@ -1,5 +1,7 @@
 package com.logstash;
 
+import java.io.IOException;
+
 /**
  * Created by ph on 15-05-22.
  */
@@ -11,7 +13,7 @@ public class StaticNode implements TemplateNode {
     }
 
     @Override
-    public String evaluate(Event event) {
+    public String evaluate(Event event) throws IOException {
         return this.content;
     }
 }
