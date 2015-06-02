@@ -3,8 +3,8 @@ require "logstash/environment"
 if LogStash::Environment.windows? && LogStash::Environment.jruby?
   require "socket"
   module JRubyBug2558SocketPeerAddrBugFix
-    def peeraddr
-      orig_peeraddr.map do |v|
+    def peeraddr(*args)
+      orig_peeraddr(*args).map do |v|
         case v
         when String
           v.force_encoding(Encoding::UTF_8)
