@@ -157,4 +157,20 @@ public class AccessorsTest {
         assertEquals(accessors.lutGet(reference), data.get("foo"));
         assertEquals(accessors.get(reference), "baz");
     }
+
+    @Test
+    public void testDel() throws Exception {
+        Map data = new HashMap();
+        List inner = new ArrayList();
+        data.put("foo", inner);
+        inner.add("bar");
+        data.put("bar", "baz");
+        TestableAccessors accessors = new TestableAccessors(data);
+
+        assertEquals(accessors.del("[foo][0]"), "bar");
+        assertEquals(accessors.del("[foo][0]"), null);
+        assertEquals(accessors.get("[foo]"), new ArrayList<>());
+        assertEquals(accessors.del("[bar]"), "baz");
+        assertEquals(accessors.get("[bar]"), null);
+    }
 }

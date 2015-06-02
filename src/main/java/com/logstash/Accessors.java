@@ -27,7 +27,21 @@ public class Accessors {
     }
 
     public Object del(String reference) {
-        // TODO: implement
+        FieldReference field = PathCache.getInstance().cache(reference);
+        Object target = findTarget(field);
+        if (target != null) {
+            if (target instanceof Map) {
+                return ((Map<String, Object>) target).remove(field.getKey());
+            } else if (target instanceof List) {
+                int i = Integer.parseInt(field.getKey());
+                if (i < 0 || i >= ((List) target).size()) {
+                    return null;
+                }
+                return ((List<Object>) target).remove(i);
+            } else {
+                throw new ClassCastException("expecting List or Map");
+            }
+        }
         return null;
     }
 
@@ -90,9 +104,6 @@ public class Accessors {
     private Object fetch(Object target, String key) {
         if (target instanceof Map) {
             Object result = ((Map<String, Object>) target).get(key);
-//            if (result != null) {
-//                System.out.println("fetch class=" + result.getClass().getName() + ", toString=" + result.toString());
-//            }
             return result;
         } else if (target instanceof List) {
             int i = Integer.parseInt(key);
@@ -100,9 +111,6 @@ public class Accessors {
                 return null;
             }
             Object result = ((List<Object>) target).get(i);
-//            if (result != null) {
-//                System.out.println("fetch class=" + result.getClass().getName() + ", toString=" + result.toString());
-//            }
             return result;
         } else {
             throw new ClassCastException("expecting List or Map");

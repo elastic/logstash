@@ -41,7 +41,7 @@ public class JrubyEventExtLibrary implements Library {
         }
 
         public RubyEvent(Ruby runtime) {
-            this(runtime, runtime.getModule("LogStash").getClass("Timestamp"));
+            this(runtime, runtime.getModule("LogStash").getClass("Event"));
         }
 
         public RubyEvent(Ruby runtime, Event event) {
@@ -115,6 +115,10 @@ public class JrubyEventExtLibrary implements Library {
                 } else if (value instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
                     // RubyTimestamp could be assigned in another field thant @timestamp
                     this.event.setField(r, ((JrubyTimestampExtLibrary.RubyTimestamp) value).getTimestamp());
+                } else if (value instanceof RubyArray) {
+                    this.event.setField(r, new ArrayList<Object>(Arrays.asList(((RubyArray) value).toJavaArray())));
+                } else {
+                    throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass());
                 }
             }
             return value;
@@ -171,7 +175,11 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "clone")
         public IRubyObject ruby_clone(ThreadContext context)
         {
-            return RubyEvent.newRubyEvent(context.runtime, this.event.clone());
+            try {
+                return RubyEvent.newRubyEvent(context.runtime, this.event.clone());
+            } catch (CloneNotSupportedException e) {
+                throw context.runtime.newRuntimeError(e.getMessage());
+            }
         }
 
         @JRubyMethod(name = "overwrite", required = 1)
@@ -231,6 +239,13 @@ public class JrubyEventExtLibrary implements Library {
         {
             // TODO: add UTF-8 validation
             return value;
+        }
+
+        @JRubyMethod(name = "tag", required = 1)
+        public IRubyObject ruby_tag(ThreadContext context, RubyString value)
+        {
+            this.event.tag(((RubyString) value).asJavaString());
+            return context.runtime.getNil();
         }
     }
 }
