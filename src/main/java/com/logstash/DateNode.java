@@ -4,6 +4,9 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.io.IOError;
+import java.io.IOException;
+
 /**
  * Created by ph on 15-05-22.
  */
@@ -15,7 +18,7 @@ public class DateNode implements TemplateNode {
     }
 
     @Override
-    public String evaluate(Event event) {
+    public String evaluate(Event event) throws IOException {
         return event.getTimestamp().getTime().toString(this.formatter);
     }
 }

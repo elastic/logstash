@@ -193,8 +193,7 @@ public class JrubyEventExtLibrary implements Library {
         }
 
         @JRubyMethod(name = "sprintf", required = 1)
-        public IRubyObject ruby_sprintf(ThreadContext context, IRubyObject format)
-        {
+        public IRubyObject ruby_sprintf(ThreadContext context, IRubyObject format) throws IOException {
             return RubyString.newString(context.runtime, event.sprintf(format.toString()));
         }
 
