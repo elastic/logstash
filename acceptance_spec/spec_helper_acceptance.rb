@@ -4,34 +4,40 @@ require 'securerandom'
 
 files_dir = ENV['files_dir'] || '/home/jenkins/puppet'
 
-proxy_host = ENV['proxy_host'] || ''
+proxy_host = ENV['BEAKER_PACKAGE_PROXY'] || ''
 
-gem_proxy = ''
-gem_proxy = "http_proxy=http://#{proxy_host}" unless proxy_host.empty?
+if !proxy_host.empty?
+  gem_proxy = "http_proxy=#{proxy_host}" unless proxy_host.empty?
+
+  hosts.each do |host|
+    on host, "echo 'export http_proxy='#{proxy_host}'' >> /root/.bashrc"
+    on host, "echo 'export https_proxy='#{proxy_host}'' >> /root/.bashrc"
+    on host, "echo 'export no_proxy=\"localhost,127.0.0.1,localaddress,.localdomain.com,#{host.name}\"' >> /root/.bashrc"
+  end
+else
+  gem_proxy = ''
+end
 
 hosts.each do |host|
   # Install Puppet
   if host.is_pe?
     install_pe
   else
-    puppetversion = ENV['VM_PUPPET_VERSION'] || '3.4.0'
-    install_package host, 'rubygems'
+    puppetversion = ENV['VM_PUPPET_VERSION']
     on host, "#{gem_proxy} gem install puppet --no-ri --no-rdoc --version '~> #{puppetversion}'"
     on host, "mkdir -p #{host['distmoduledir']}"
 
     if fact('osfamily') == 'Suse'
-      install_package host, 'ruby-devel augeas-devel libxml2-devel'
-      on host, 'gem install ruby-augeas --no-ri --no-rdoc'
+      install_package host, 'rubygems ruby-devel augeas-devel libxml2-devel'
+      on host, "#{gem_proxy} gem install ruby-augeas --no-ri --no-rdoc"
     end
 
   end
 
-  # Setup proxy if its enabled
+  # on debian/ubuntu nodes ensure we get the latest info
+  # Can happen we have stalled data in the images
   if fact('osfamily') == 'Debian'
-          on host, "echo 'Acquire::http::Proxy \"http://#{proxy_host}/\";' >> /etc/apt/apt.conf.d/10proxy" unless proxy_host.empty?
-  end
-  if fact('osfamily') == 'RedHat'
-    on host, "echo 'proxy=http://#{proxy_host}/' >> /etc/yum.conf" unless proxy_host.empty?
+    on host, "apt-get update"
   end
 
 end

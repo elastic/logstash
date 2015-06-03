@@ -1,6 +1,5 @@
 # encoding: utf-8
-
-require "test_utils"
+require "spec_helper"
 require "logstash/util/charset"
 
 describe LogStash::Util::Charset do
@@ -11,9 +10,9 @@ describe LogStash::Util::Charset do
 
     it "should return untouched data" do
       ["foobar", "κόσμε"].each do |data|
-        insist { data.encoding.name } == "UTF-8"
-        insist { subject.convert(data) } == data
-        insist { subject.convert(data).encoding.name } == "UTF-8"
+        expect(data.encoding.name).to eq("UTF-8")
+        expect(subject.convert(data)).to eq(data)
+        expect(subject.convert(data).encoding.name).to eq("UTF-8")
       end
     end
   end
@@ -27,11 +26,12 @@ describe LogStash::Util::Charset do
 
     it "should escape invalid sequences" do
       ["foo \xED\xB9\x81\xC3", "bar \xAD"].each do |data|
-        insist { data.encoding.name } == "UTF-8"
-        insist { data.valid_encoding? } == false
-        logger.should_receive(:warn).twice
-        insist { subject.convert(data) } == data.inspect[1..-2]
-        insist { subject.convert(data).encoding.name } == "UTF-8"
+        expect(data.encoding.name).to eq("UTF-8")
+        expect(data.valid_encoding?).to eq(false)
+        expect(logger).to receive(:warn).exactly(2).times
+        #logger.should_receive(:warn).twice
+        expect(subject.convert(data)).to eq(data.inspect[1..-2])
+        expect(subject.convert(data).encoding.name).to eq("UTF-8")
       end
     end
 
@@ -46,11 +46,11 @@ describe LogStash::Util::Charset do
         ["\xE0 Montr\xE9al", "à Montréal"],
       ]
       samples.map{|(a, b)| [a.force_encoding("ISO-8859-1"), b]}.each do |(a, b)|
-        insist { a.encoding.name } == "ISO-8859-1"
-        insist { b.encoding.name } == "UTF-8"
-        insist { a.valid_encoding? } == true
-        insist { subject.convert(a).encoding.name } == "UTF-8"
-        insist { subject.convert(a) } == b
+        expect(a.encoding.name).to eq("ISO-8859-1")
+        expect(b.encoding.name).to eq("UTF-8")
+        expect(a.valid_encoding?).to eq(true)
+        expect(subject.convert(a).encoding.name).to eq("UTF-8")
+        expect(subject.convert(a)).to eq(b)
       end
     end
   end
@@ -64,10 +64,10 @@ describe LogStash::Util::Charset do
         ["\xCE\xBA\xCF\x8C\xCF\x83\xCE\xBC\xCE\xB5", "����������"],
       ]
       samples.map{|(a, b)| [a.force_encoding("ASCII-8BIT"), b]}.each do |(a, b)|
-        insist { a.encoding.name } == "ASCII-8BIT"
-        insist { b.encoding.name } == "UTF-8"
-        insist { subject.convert(a).encoding.name } == "UTF-8"
-        insist { subject.convert(a) } == b
+        expect(a.encoding.name).to eq("ASCII-8BIT")
+        expect(b.encoding.name).to eq("UTF-8")
+        expect(subject.convert(a).encoding.name).to eq("UTF-8")
+        expect(subject.convert(a)).to eq(b)
       end
     end
   end

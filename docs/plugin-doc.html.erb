@@ -5,17 +5,13 @@ layout: content_right
 <h2><%= name %></h2>
 <h3>Milestone: <a href="../plugin-milestones"><%= @milestone %></a></h3>
 <% if is_contrib_plugin -%>
-<div class="community-plugin-notice">
-  <strong>This is a community-contributed plugin!</strong> It does not ship with logstash by default, but it is easy to install!
-  To use this, you must have <a href="../contrib-plugins">installed the contrib plugins package</a>.
-</div>
 <% end -%>
 
 <%= description %>
 
 <h3> Synopsis </h3>
 
-This is what it might look like in your config file:
+A sample configuration file is shown here:
 
 <pre><code><% if section == "codec" -%>
 # with an input plugin:
@@ -56,7 +52,7 @@ input {
 
 <ul>
 <% if config[:deprecated] -%>
-  <li> DEPRECATED WARNING: This config item is deprecated. It may be removed in a further version. </li>
+  <li> DEPRECATED WARNING: This configuration item is deprecated and may not be included in later versions.</li>
 <% end -%>
 <% if is_regexp -%>
   <li> The configuration attribute name here is anything that matches the above regular expression. </li>

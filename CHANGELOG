@@ -1,3 +1,202 @@
+1.4.3 ()
+  # general
+  - Updated to Elasticsearch 1.5.2, Kibana 3.1.2 and JRuby 1.7.17
+
+  # output
+  - File: Sandbox output to protect against issues like creating new files
+    outside defined paths
+
+1.5.0 (May 14, 2015)
+  # general
+  - Performance improvements: Logstash 1.5.0 is much faster -- we have improved the throughput 
+    of grok filter in some cases by 100%. In our benchmark testing, using only grok filter and
+    ingesting apache logs, throughput increased from 34K eps to 50K eps. 
+    JSON serialization/deserialization are now implemented using JrJackson library which 
+    improved performance significantly. Ingesting JSON events 1.3KB in size measured a throughput
+    increase from 16Keps to 30K eps. With events 45KB in size, throughput increased from 
+    850 eps to 3.5K eps
+  - Fixed performance regressions from 1.4.2 especially for configurations which have 
+    conditionals in filter and output. Throughput numbers are either inline with 1.4.2
+    or improved for certain configurations (#2870)  
+  - Add Plugin manager functionality to Logstash which allows to install, delete and 
+    update Logstash plugins. Plugins are separated from core and published to RubyGems.org
+  - Added the ability to install plugin gems built locally on top of Logstash. This will 
+    help plugin developers iterate and test locally without having to publish plugins (#2779)  
+  - With the release of Kibana 4, we have removed the `bin/logstash web` command and any reference 
+    to Kibana from Logstash (#2661)
+  - Windows: Significantly improved the initial user experience with Windows platform (#2504, #1426). 
+    Fixed many issues related to File input. Added support for using the plugin 
+    framework (installing, upgrading, removing)  
+  - Deprecated elasticsearch_http output plugin: All functionality is ported to
+    logstash-output-elasticsearch plugin using http protocol (#1757). If you try to use
+    the elasticsearch_http plugin, it will log a deprecated notice now.   
+  - Fixed issue in core which was causing Logstash to not shutdown properly (#2796)    
+  - Added ability to add extra JVM options while running LS. You can use the LS_JAVA_OPTS 
+    environment variable to add to the default JVM options set out of the box. You could also
+    completely overwrite all the default options if you wish by setting JAVA_OPTS before
+    starting Logstash (#2942)
+  - Fixed a regression from 1.4.2 where removing a tag in filter fails if the input event is
+    JSON formatted (#2261)
+  - Fixed issue where setting workers > 1 would trigger messages like
+    "You are using a deprecated config setting ..." (#2865) 
+  - Remove ability to run multiple subcommands from bin/logstash like 
+    bin/logstash agent -f something.conf -- web (#1747)  
+  - Fixed Logstash crashing on converting from ASCII to UTF-8. This was caused by charset
+    conversion issues in input codec (LOGSTASH-1789)
+  - Allow storing 'metadata' to an event which is not sent/encoded on output. This eliminates
+    the need for intermediate fields for example, while using date filter. (#1834)
+  - Accept file and http uri in -f command line option for specifying config files (#1873)
+  - Filters that generated events (multiline, clone, split, metrics) now propagate those events 
+    correctly to future conditionals (#1431)
+  - Fixed file descriptor leaks when using HTTP. The fix prevents Logstash from stalling, and
+    in some cases crashing from out-of-memory errors (#1604, LOGSTASH-892)
+  - You can now use LS_HOME/patterns directory to add generic patterns for those that may not be
+    associated with a particular plugin. Patterns in this dir will be loaded by default (#2225)
+  - We now check if the config file is correctly encoded. Otherwise we show a verbose error message
+    to convert the failing config file(s) to UTF-8 (#LOGSTASH-1103)
+  - Fixed bug in pipeline to gracefully teardown output workers when num workers > 1 (#2180)
+  - Fixed nologin path in release debian packages (#2283)
+  - Resolved issue where Logstash was crashing for users still using exclude_tags in their output
+    configuration (#2323)
+  - Allow spaces in field references like [hello world] (#1513)    
+
+  # input
+  - Lumberjack: 
+    - Fixed Logstash crashes with Java Out Of Memory because of TCP thread leaks (#LOGSTASH-2168)
+    - Created a temporary fix to handle out of memory and eventual Logstash crash resulting from
+      pipeline backpressure. With this fix, you can create an upper limit on the number of 
+      Lumberjack connections after which no new connections will be accepted. This is defaulted
+      to 1000 connections, but can be changed using the config (#3003)
+    - Resolved issue where unrelated events were getting merged into a single event while using 
+      this input with with the multiline codec (#2016)
+    - Fixed Logstash crashing because it was using old jls-lumberjack version (#7)  
+  - TCP: 
+    - Fixed connection threads leak (#1509)
+    - Fixed input host field also contains source port (LOGSTASH-1849)
+  - Stdin: prevent overwrite of host field if already present in Event (#1668)
+  - Kafka: 
+    - Merged @joekiller's plugin to Logstash to get events from Kafka (#1472)
+    - Added support for whitelisting and blacklisting topics in the input.
+  - S3: 
+    - Added IAM roles support so you can securely read and write events from S3 without providing your
+      AWS credentials (#1575). 
+    - Added support for using temporary credentials obtained from AWS STS (#1946)
+    - AWS credentials can be specfied through environment variables (#1619)  
+  - RabbitMQ: 
+    - Fixed march_hare client uses incorrect connection url (LOGSTASH-2276)
+    - Use Bunny 1.5.0+ (#1894)
+  - Twitter: added improvements, robustness, fixes. full_tweet option now works, we handle 
+    Twitter rate limiting errors (#1471)
+  - Syslog: if input does not match syslog format, add tag _grokparsefailure_sysloginputplugin
+    which can be used to debug (#1593)
+  - File: When shutting down Logstash with file input, it would log a "permissions denied"
+    message. We fixed the underlying sinceDB issue while writing to a directory with no
+    permissions (#2964, #2935, #2882, file-input#16)
+  - File: Fixed a number of issues on Windows platform. These include:
+    - Resolving file locking issues which was causing log files to not rotate (#1557, #1389)
+    - Added support for using SinceDB to record multiple files' last read information (#1902)
+    - Fixed encoding issues which applies to many inputs (#2507)
+    - Resolved Logstash skipping lines when moving between files which are being followed (#1902)
+  - CouchDB: Added new input plugin to fetch data from CouchDB. Using the _changes API, data can be kept
+    in sync with any output like Elasticsearch by using this input  
+  - EventLog: For Windows, this input gracefully shutsdown if there is a timeout while receiving events
+    This also prevents Logstash from being stuck (#1672)
+  - Heartbeat: We created a new input plugin for generating heartbeat messages at periodic intervals. 
+    Use this to monitor Logstash -- you can measure the latency of the pipeline using these heartbeat 
+    events, and also check for availability
+
+  # filter
+  - Multiline: 
+    - Fixed an issue where Logstash would crash while processing JSON formatted events on
+      Java 8 (#10)
+    - Handled cases where we unintentionally deduplicated lines, such as repeated lines in
+      xml messages (#3) 
+  - Grok: 
+    - "break_on_match => false" option now works correctly (#1547)
+    - allow user@hostname in commonapache log pattern (#1500 #1736)
+    - use optimized ruby-grok library which improves throughput in some cases by 50% (#1657)
+  - Date: 
+    - Fixed match defaults to 1970-01-01 when none of the formats matches and UNIX format is present
+      in the list (#1236, LOGSTASH-1597)
+    - support parsing almost-ISO8601 patterns like 2001-11-06 20:45:45.123-0000 (without a T)
+      which does not match %{TIMESTAMP_ISO8601}
+  - KV: allows dynamic include/exclude keys. For example, if an event has a key field and the user 
+    wants to parse out a value using the kv filter, the user should be able to 
+    include_keys: [ "%{key}" ]
+  - DNS: fixed add_tag adds tags even if filter was unsuccessful (#1785)
+  - XML: fixed UndefinedConversionError with UTF-8 encoding (LOGSTASH-2246)
+  - Mutate: 
+    - Fixed nested field notation for convert option like 'convert => [ "[a][0]", "float" ]' (#1401)
+    - Fixed issue where you can safely delete/rename fields which can have nil values (#2977)  
+    - gsub evaluates variables like %{format} in the replacement text (#1529)
+    - fixed confusing error message for invalid type conversion (#1656, LOGSTASH-2003)
+    - Resolved issue where convert option was creating an extra field in the event (#2268)
+    - Fixed issue where mutate with non-existent field was throwing an error (#2379)
+
+  # output
+  - Elasticsearch:
+    - We have improved the security of the Elasticsearch output, input, and filter by adding
+      authentication and transport encryption support. In http protocol you can configure SSL/TLS to
+      enable encryption and HTTP basic authentication to provide a username and password while making
+      requests (#1453)
+    - Added support to be more resilient to transient errors in Elasticsearch. Previously, partial
+      failures from the bulk indexing functionality were not handled properly. With this fix, we added
+      the ability to capture failed requests from Elasticsearch and retry them. Error codes like 
+      429 (too many requests) will now be retried by default for 3 times. The number of retries and the
+      interval between consecutive retries can be configured (#1631)
+    - Logstash does not create a "message.raw" by default whic is usually not_analyzed; this
+      helps save disk space (#11)
+    - Added sniffing config to be able to list machines in the cluster while using the transport client (#22) 
+    - Deprecate the usage of index_type configuration. Added document_type to be consistent
+      with document_id (#102)
+    - Added warning when used with config embedded => true. Starting an embedded Elasticsearch
+      node is only recommended while prototyping. This should never be used in 
+      production setting (#99)
+    - Added support for multiple hosts in configuration and enhanced stability
+    - Logstash will not create a message.raw field by default now. Message field is not_analyzed
+      by Elasticsearch and adding a multi-field was essentially doubling the disk space required,
+      with no benefit
+
+  - S3: 
+    - Fixed a critical problem in the S3 Output plugin when using the size_file option. This could cause
+      data loss and data corruption of old logs ()
+    - Added IAM roles support so you can securely read and write events from S3 without providing your AWS
+      credentials (#1575)
+    - Added support for using temporary credentials obtained from AWS STS (#1946)
+    - Fixed a bug when the tags were not set in the plain text format (#1626)
+
+  - Kafka: merge @joekiller's plugin into Logstash to produce events to Kafka (#1472)
+  - File: Added enhancements and validations for destination path. Absolute path cannot start with a
+    dynamic string like /%{myfield}/, /test-%{myfield}/
+  - RabbitMQ: fixed crash while running Logstash for longer periods, typically when there's no
+    traffic on the logstash<->rabbitmq socket (LOGSTASH-1886)
+  - Statsd: fixed issue of converting very small float numbers to scientific notation 
+    like 9.3e-05 (#1670)
+  - Fixed undefined method error when conditional on an output (#LOGSTASH-2288)
+  
+  # codec
+  - Netflow: Fixed a JSON serialization issue while using this codec (#2945)
+  - Added new Elasticsearch bulk codec which can be used to read data formatted in the Elasticsearch 
+    Bulk API (multiline json) format. For example, this codec can be used in combination with RabbitMQ 
+    input to mirror the functionality of the RabbitMQ Elasticsearch river
+  - Cloudfront: Added support for handling Amazon CloudFront events
+  - Avro: We added a new codec for data serialization (#1566)
+
+1.4.2 (June 24, 2014)
+  # general
+  - fixed path issues when invoking bin/logstash outside its home directory
+
+  # input
+  - bugfix: generator: fixed stdin option support
+  - bugfix: file: fixed debian 7 path issue
+
+  # codecs
+  - improvement: stdin/tcp: automatically select json_line and line codecs with the tcp and stdin streaming imputs
+  - improvement: collectd: add support for NaN values
+
+  # outputs
+  - improvement: nagios_nsca: fix external command invocation to avoid shell escaping
+
 1.4.1 (May 6, 2014)
   # General
   - bumped Elasticsearch to 1.1.1 and Kibana to 3.0.1

@@ -1,0 +1,43 @@
+[[codec-plugins]]
+== Codec plugins
+
+A codec plugin changes the data representation of an event. Codecs are essentially stream filters that can operate as part of an input or output.
+
+The following codec plugins are available:
+
+<%-
+full_list=[]
+letters=[]
+docs.each do |doc|
+letter = doc[0]
+letters << letter
+-%>
+<<plugins-codecs-letters-<%= letter %>, <%=letter %>>>
+<%- end -%>
+
+<%-
+cols=3
+rows=(docs.count/cols)+1
+item=0
+r=0
+-%>
+[cols="asciidoc,asciidoc,asciidoc"]
+|=======================================================================
+<%- while r < rows do -%>
+<%- c=0; while c < cols do -%>|<% if letters[item].nil? %>&nbsp; <% else %>[[plugins-codecs-letters-<%=letters[item] %>]] <% end %>
+<%- letter = letters[item];
+arr = docs[letter]
+if ! arr.nil?
+arr.each do |plugin_item|
+full_list << plugin_item
+%>* <<plugins-codecs-<%=plugin_item -%>,<%=plugin_item -%>>>
+<%- end 
+end -%>
+<%- item+=1; c+=1; end; r+=1 end -%>
+|=======================================================================
+
+<%-
+full_list.each do |plugin|
+-%>
+include::codecs/<%=plugin %>.asciidoc[]
+<%- end -%>

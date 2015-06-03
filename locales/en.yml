@@ -4,19 +4,14 @@
 #     for unformatted text.
 en:
   oops: |-
-    +---------------------------------------------------------+
-    | An unexpected error occurred. This is probably a bug.   |
-    | You can find help with this problem in a few places:    |
-    |                                                         |
-    | * chat: #logstash IRC channel on freenode irc.          |
-    |     IRC via the web: http://goo.gl/TI4Ro                |
-    | * email: logstash-users@googlegroups.com                |
-    | * bug system: https://logstash.jira.com/                |
-    |                                                         |
-    +---------------------------------------------------------+
     The error reported is: 
       %{error}
   logstash:
+    environment:
+      jruby-required:  >-
+        JRuby is required
+      missing-jars: >-
+        Could not find jar files under %{pattern}
     pipeline:
       worker-error: |-
         A plugin had an unrecoverable error. Will restart this plugin.
@@ -44,23 +39,21 @@ en:
         supported by this plugin. I will continue working as if you had not set
         this setting.
     plugin:
-      milestone:
-        "0": >-
-          Using milestone 0 %{type} plugin '%{name}'. This plugin isn't well
-          supported by the community and likely has no maintainer. For more
-          information on plugin milestones, see
-          http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin-milestones
-        "1": >-
-          Using milestone 1 %{type} plugin '%{name}'. This plugin should work,
-          but would benefit from use by folks like you. Please let us know if you
-          find bugs or have suggestions on how to improve this plugin.  For more
-          information on plugin milestones, see
-          http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin-milestones
-        "2": >-
-          Using milestone 2 %{type} plugin '%{name}'. This plugin should be
-          stable, but if you see strange behavior, please let us know!
-          For more information on plugin milestones, see
-          http://logstash.net/docs/%{LOGSTASH_VERSION}/plugin-milestones
+      deprecated_milestone: >-
+        %{plugin} plugin is using the 'milestone' method to declare the version
+        of the plugin this method is deprecated in favor of declaring the
+        version inside the gemspec.
+      no_version: >-
+        %{name} plugin doesn't have a version. This plugin isn't well
+         supported by the community and likely has no maintainer.
+      version:
+        0-9-x:
+         Using version 0.9.x %{type} plugin '%{name}'. This plugin should work but
+         would benefit from use by folks like you. Please let us know if you
+         find bugs or have suggestions on how to improve this plugin.
+        0-1-x: >-
+         Using version 0.1.x %{type} plugin '%{name}'. This plugin isn't well
+         supported by the community and likely has no maintainer.
     agent:
       sighup: >-
         SIGHUP received.
@@ -69,8 +62,10 @@ en:
         the '-f yourlogstash.conf' flag?
       error: >-
         Error: %{error}
-      interrupted: >-
-        Interrupt received. Shutting down the pipeline.
+      sigint: >-
+        SIGINT received. Shutting down the pipeline.
+      sigterm: >-
+        SIGTERM received. Shutting down the pipeline.
       configtest-flag-information: |-
         You may be interested in the '--configtest' flag which you can
         use to validate logstash's configuration before you choose
@@ -79,6 +74,12 @@ en:
         file-not-found: |-
           No config files found: %{path}
           Can you make sure this path is a logstash config file?
+        scheme-not-supported: |-
+          URI scheme not supported: %{path}
+          Either pass a local file path or "file|http://" URI
+        fetch-failed: |-
+          Unable to fetch config from: %{path}
+          Reason: %{message}
         setting_missing: |-
           Missing a required setting for the %{plugin} %{type} plugin:
 
@@ -101,6 +102,10 @@ en:
             }
         invalid_plugin_settings: >-
           Something is wrong with your configuration.
+        invalid_plugin_settings_duplicate_keys: |-
+          Duplicate keys found in your configuration: [%{keys}]
+          At line: %{line}, column %{column} (byte %{byte})
+          after %{after}
         invalid_plugin_register: >-
           Cannot register %{plugin} %{type} plugin.
           The error reported is: 
@@ -121,19 +126,21 @@ en:
         # them in an 80-character terminal
         config: |+
           Load the logstash config from a specific file
-          or directory.  If a direcory is given, all
-          files in that directory will be concatonated
+          or directory.  If a directory is given, all
+          files in that directory will be concatenated
           in lexicographical order and then parsed as a
           single config file. You can also specify
           wildcards (globs) and any matched files will
           be loaded in the order described above.
         config-string: |+
           Use the given string as the configuration
-          data. Same syntax as the config file. If not
-          input is specified, then 'stdin { type =>
-          stdin }' is the default input. If no output
-          is specified, then 'stdout { debug => true
-          }}' is default output.
+          data. Same syntax as the config file. If no
+          input is specified, then 'stdin 
+          { type => stdin }' is the default input.
+          If no output is specified, then  'stdout
+          { codec => rubydebug } }' is default output.
+        configtest: |+
+          Check configuration, then exit.
         filterworkers: |+
           Sets the number of filter workers to run.
         watchdog-timeout: |+
@@ -161,8 +168,8 @@ en:
           multiple paths. Plugins are expected to be
           in a specific directory hierarchy:
           'PATH/logstash/TYPE/NAME.rb' where TYPE is
-          'input' 'filter' or 'output' and NAME is the
-          name of the plugin.
+          'inputs' 'filters', 'outputs' or 'codecs'
+          and NAME is the name of the plugin.
         quiet: |+
           Quieter logstash logging. This causes only 
           errors to be emitted.

@@ -1,0 +1,68 @@
+== Command-line flags
+
+[float]
+=== Pipeline
+
+The Logstash pipeline has the following flags. (You can use the `--help` flag to
+display this information.)
+
+[source,shell]
+----------------------------------
+-f, --config CONFIGFILE
+ Load the Logstash config from a specific file, directory, or a wildcard. If
+ given a directory or wildcard, config files will be read from the directory in
+ alphabetical order.
+
+-e CONFIGSTRING
+ Use the given string as the configuration data. Same syntax as the config file.
+ If not input is specified, 'stdin { type => stdin }' is default. If no output
+ is specified, 'stdout { codec => rubydebug }}' is default.
+
+-w, --filterworkers COUNT
+ Run COUNT filter workers (default: 1)
+
+--watchdog-timeout TIMEOUT
+ Set watchdog timeout value in seconds. Default is 10.
+
+-l, --log FILE
+ Log to a given path. Default is to log to stdout
+
+--verbose
+ Increase verbosity to the first level, less verbose.
+
+--debug
+ Increase verbosity to the last level, more verbose.
+
+-v
+ *DEPRECATED: see --verbose/debug* Increase verbosity. There are multiple levels
+ of verbosity available with '-vv' currently being the highest
+----------------------------------
+
+[float]
+=== Plugins
+
+`$LS_HOME/bin/plugin` script will be used for all plugin lifecycle interaction
+
+### Installing a plugin
+`bin/plugin install logstash-output-kafka`
+
+Alternatively, using a file location:
+`bin/plugin install /path/to/logstash-output-kafka-1.0.0.gem`
+
+### Removing a plugin
+
+`bin/plugin uninstall logstash-output-kafka`
+
+### Updating one or all plugins
+
+`bin/plugin update` will update all installed plugins
+
+`bin/plugin update logstash-output-kafka` will update only this plugin
+
+### Listing plugins
+
+`bin/plugin list`
+
+`bin/plugin list <namefragment>` Will list all plugins containing a `namefragment`
+
+`bin/plugin list --group output` Will list plugins for a particular group

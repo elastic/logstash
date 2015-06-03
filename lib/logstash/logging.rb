@@ -71,10 +71,12 @@ class LogStash::Logger
         properties.setProperty("log4j.appender.logstash",
                       "org.apache.log4j.ConsoleAppender")
         properties.setProperty("log4j.appender.logstash.Target", "System.err")
-      else
+      when target.is_a?(File)
         properties.setProperty("log4j.appender.logstash",
                       "org.apache.log4j.FileAppender")
         properties.setProperty("log4j.appender.logstash.File", target.path)
+      else
+        properties.setProperty("log4j.appender.logstash", "org.apache.log4j.varia.NullAppender")
     end # case target
 
     properties.setProperty("log4j.appender.logstash.layout",

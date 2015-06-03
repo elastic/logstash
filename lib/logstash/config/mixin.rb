@@ -5,7 +5,11 @@ require "logstash/config/registry"
 require "logstash/logging"
 require "logstash/util/password"
 require "logstash/version"
-require "i18n"
+require "logstash/environment"
+require "logstash/util/plugin_version"
+require "filesize"
+
+LogStash::Environment.load_locale!
 
 # This module is meant as a mixin to classes wishing to be configurable from
 # config files
@@ -37,6 +41,9 @@ module LogStash::Config::Mixin
     String => 0,
     Regexp => 100,
   }
+
+  PLUGIN_VERSION_1_0_0 = LogStash::Util::PluginVersion.new(1, 0, 0)
+  PLUGIN_VERSION_0_9_0 = LogStash::Util::PluginVersion.new(0, 9, 0)
 
   # This method is called when someone does 'include LogStash::Config'
   def self.included(base)
@@ -114,19 +121,23 @@ module LogStash::Config::Mixin
 
     # If name is given, set the name and return it.
     # If no name given (nil), return the current name.
-    def config_name(name=nil)
+    def config_name(name = nil)
       @config_name = name if !name.nil?
       LogStash::Config::Registry.registry[@config_name] = self
       return @config_name
     end
 
-    def plugin_status(status=nil)
+    # Deprecated: Declare the version of the plugin
+    # inside the gemspec.
+    def plugin_status(status = nil)
       milestone(status)
     end
 
-    def milestone(m=nil)
-      @milestone = m if !m.nil?
-      return @milestone
+    # Deprecated: Declare the version of the plugin
+    # inside the gemspec.
+    def milestone(m = nil)
+      @logger = Cabin::Channel.get(LogStash)
+      @logger.warn(I18n.t('logstash.plugin.deprecated_milestone', :plugin => config_name))
     end
 
     # Define a new configuration setting
@@ -183,7 +194,7 @@ module LogStash::Config::Mixin
         end
       end
       subclass.instance_variable_set("@config", subconfig)
-      @@milestone_notice_given = false
+      @@version_notice_given = false
     end # def inherited
 
     def validate(params)
@@ -192,7 +203,8 @@ module LogStash::Config::Mixin
       @logger = Cabin::Channel.get(LogStash)
       is_valid = true
 
-      is_valid &&= validate_milestone
+      print_version_notice
+
       is_valid &&= validate_check_invalid_parameter_names(params)
       is_valid &&= validate_check_required_parameter_names(params)
       is_valid &&= validate_check_parameter_values(params)
@@ -200,24 +212,36 @@ module LogStash::Config::Mixin
       return is_valid
     end # def validate
 
-    def validate_milestone
-      return true if @@milestone_notice_given
-      docmsg = "For more information about plugin milestones, see http://logstash.net/docs/#{LOGSTASH_VERSION}/plugin-milestones "
-      plugin_type = ancestors.find { |a| a.name =~ /::Base$/ }.config_name
-      case @milestone
-        when 0,1,2
-          @logger.warn(I18n.t("logstash.plugin.milestone.#{@milestone}", 
-                              :type => plugin_type, :name => @config_name,
-                              :LOGSTASH_VERSION => LOGSTASH_VERSION))
-        when 3
-          # No message to log for milestone 3 plugins.
-        when nil
-          raise "#{@config_name} must set a milestone. #{docmsg}"
-        else
-          raise "#{@config_name} set an invalid plugin status #{@milestone}. Valid values are 0, 1, 2, or 3. #{docmsg}"
+    def print_version_notice
+      return if @@version_notice_given
+
+      begin
+        plugin_version = LogStash::Util::PluginVersion.find_plugin_version!(@plugin_type, @config_name)
+
+        if plugin_version < PLUGIN_VERSION_1_0_0
+          if plugin_version < PLUGIN_VERSION_0_9_0
+            @logger.info(I18n.t("logstash.plugin.version.0-1-x", 
+                                :type => @plugin_type,
+                                :name => @config_name,
+                                :LOGSTASH_VERSION => LOGSTASH_VERSION))
+          else
+            @logger.info(I18n.t("logstash.plugin.version.0-9-x", 
+                                :type => @plugin_type,
+                                :name => @config_name,
+                                :LOGSTASH_VERSION => LOGSTASH_VERSION))
+          end
+        end
+      rescue LogStash::PluginNoVersionError
+        # If we cannot find a version in the currently installed gems we
+        # will display this message. This could happen in the test, if you 
+        # create an anonymous class to test a plugin.
+        @logger.warn(I18n.t("logstash.plugin.no_version",
+                                :type => @plugin_type,
+                                :name => @config_name,
+                                :LOGSTASH_VERSION => LOGSTASH_VERSION))
+      ensure 
+        @@version_notice_given = true
       end
-      @@milestone_notice_given = true
-      return true
     end
 
     def validate_check_invalid_parameter_names(params)
@@ -427,7 +451,7 @@ module LogStash::Config::Mixin
               return false, "Expected password (one value), got #{value.size} values?"
             end
 
-            result = ::LogStash::Util::Password.new(value.first)
+            result = value.first.is_a?(::LogStash::Util::Password) ? value.first : ::LogStash::Util::Password.new(value.first)
           when :path
             if value.size > 1 # Only 1 value wanted
               return false, "Expected path (one value), got #{value.size} values?"
@@ -443,6 +467,13 @@ module LogStash::Config::Mixin
             end
 
             result = value.first
+          when :bytes
+            begin
+              bytes = Integer(value.first) rescue nil
+              result = bytes || Filesize.from(value.first).to_i
+            rescue ArgumentError
+              return false, "Unparseable filesize: #{value.first}. possible units (KiB, MiB, ...) e.g. '10 KiB'. doc reference: http://www.elastic.co/guide/en/logstash/current/configuration.html#bytes"
+            end
           else
             return false, "Unknown validator symbol #{validator}"
         end # case validator

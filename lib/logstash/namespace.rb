@@ -1,5 +1,4 @@
 # encoding: utf-8
-#$: << File.join(File.dirname(__FILE__), "..", "..", "vendor", "bundle")
 
 module LogStash
   module Inputs; end
@@ -11,6 +10,5 @@ module LogStash
   module Web; end
   module Util; end
   module PluginMixins; end
-
-  SHUTDOWN = :shutdown
+  module PluginManager; end
 end # module LogStash

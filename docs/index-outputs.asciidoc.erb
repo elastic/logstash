@@ -1,0 +1,43 @@
+[[output-plugins]]
+== Output plugins
+
+An output plugin sends event data to a particular destination. Outputs are the final stage in the event pipeline.
+
+The following output plugins are available:
+
+<%-
+full_list=[]
+letters=[]
+docs.each do |doc|
+letter = doc[0]
+letters << letter
+-%>
+<<plugins-outputs-letters-<%= letter %>, <%=letter %>>>
+<%- end -%>
+
+<%-
+cols=3
+rows=(docs.count/cols)+1
+item=0
+r=0
+-%>
+[cols="asciidoc,asciidoc,asciidoc"]
+|=======================================================================
+<%- while r < rows do -%>
+<%- c=0; while c < cols do -%>|<% if letters[item].nil? %>&nbsp; <% else %>[[plugins-outputs-letters-<%=letters[item] %>]] <% end %>
+<%- letter = letters[item];
+arr = docs[letter]
+if ! arr.nil?
+arr.each do |plugin_item|
+full_list << plugin_item
+%>* <<plugins-outputs-<%=plugin_item -%>,<%=plugin_item -%>>>
+<%- end 
+end -%>
+<%- item+=1; c+=1; end; r+=1 end -%>
+|=======================================================================
+
+<%-
+full_list.each do |plugin|
+-%>
+include::outputs/<%=plugin %>.asciidoc[]
+<%- end -%>

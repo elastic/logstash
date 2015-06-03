@@ -1,4 +1,4 @@
-require "test_utils"
+require "spec_helper"
 require "logstash/util/fieldreference"
 
 describe LogStash::Util::FieldReference, :if => true do
@@ -9,7 +9,7 @@ describe LogStash::Util::FieldReference, :if => true do
       str = "hello"
       m = eval(subject.compile(str))
       data = { "hello" => "world" }
-      insist { m.call(data) } == data[str]
+      expect(m.call(data)).to eq(data[str])
     end
 
     it "should handle delete in block" do
@@ -17,22 +17,22 @@ describe LogStash::Util::FieldReference, :if => true do
       m = eval(subject.compile(str))
       data = { "simple" => "things" }
       m.call(data) { |obj, key| obj.delete(key) }
-      insist { data }.empty?
+      expect(data).to be_empty
     end
 
     it "should handle assignment in block" do
       str = "simple"
       m = eval(subject.compile(str))
       data = {}
-      insist { m.call(data) { |obj, key| obj[key] = "things" }} == "things"
-      insist { data } == { "simple" => "things" }
+      expect(m.call(data) { |obj, key| obj[key] = "things" }).to eq("things")
+      expect(data).to eq({ "simple" => "things" })
     end
 
     it "should handle assignment using set" do
       str = "simple"
       data = {}
-      insist { subject.set(str, "things", data) } == "things"
-      insist { data } == { "simple" => "things" }
+      expect(subject.set(str, "things", data)).to eq("things")
+      expect(data).to eq({ "simple" => "things" })
     end
   end
 
@@ -42,14 +42,14 @@ describe LogStash::Util::FieldReference, :if => true do
       str = "[hello]"
       m = eval(subject.compile(str))
       data = { "hello" =>  "world" }
-      insist { m.call(data) } == "world"
+      expect(m.call(data)).to eq("world")
     end
 
     it "should retrieve deep value" do
       str = "[hello][world]"
       m = eval(subject.compile(str))
       data = { "hello" => { "world" => "foo", "bar" => "baz" } }
-      insist { m.call(data) } == data["hello"]["world"]
+      expect(m.call(data)).to eq(data["hello"]["world"])
     end
 
     it "should handle delete in block" do
@@ -59,38 +59,38 @@ describe LogStash::Util::FieldReference, :if => true do
       m.call(data) { |obj, key| obj.delete(key) }
 
       # Make sure the "world" key is removed.
-      insist { data["hello"] } == { "bar" => "baz" }
+      expect(data["hello"]).to eq({ "bar" => "baz" })
     end
 
     it "should not handle assignment in block" do
       str = "[hello][world]"
       m = eval(subject.compile(str))
       data = {}
-      insist { m.call(data) { |obj, key| obj[key] = "things" }}.nil?
-      insist { data } == { }
+      expect(m.call(data) { |obj, key| obj[key] = "things" }).to be_nil
+      expect(data).to be_empty
     end
 
     it "should set shallow value" do
       str = "[hello]"
       data = {}
-      insist { subject.set(str, "foo", data) } == "foo"
-      insist { data } == { "hello" => "foo" }
+      expect(subject.set(str, "foo", data)).to eq("foo")
+      expect(data).to eq({ "hello" => "foo" })
     end
 
     it "should set deep value" do
       str = "[hello][world]"
       data = {}
-      insist { subject.set(str, "foo", data) } == "foo"
-      insist { data } == { "hello" => { "world" => "foo" } }
+      expect(subject.set(str, "foo", data)).to eq("foo")
+      expect(data).to eq({ "hello" => { "world" => "foo" } })
     end
 
     it "should retrieve array item" do
       data = { "hello" => { "world" => ["a", "b"], "bar" => "baz" } }
       m = eval(subject.compile("[hello][world][0]"))
-      insist { m.call(data) } == data["hello"]["world"][0]
+      expect(m.call(data)).to eq(data["hello"]["world"][0])
 
       m = eval(subject.compile("[hello][world][1]"))
-      insist { m.call(data) } == data["hello"]["world"][1]
+      expect(m.call(data)).to eq(data["hello"]["world"][1])
     end
   end
 end

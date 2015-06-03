@@ -23,13 +23,14 @@ module LogStash::Codecs; class Base < LogStash::Plugin
   alias_method :<<, :decode
 
   public
-  def encode(data)
+  def encode(event)
     raise "#{self.class}#encode must be overidden"
   end # def encode
 
   public 
   def teardown; end;
 
+  # @param block [Proc(event, data)] the callback proc passing the original event and the encoded event
   public
   def on_event(&block)
     @on_event = block

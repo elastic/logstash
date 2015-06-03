@@ -32,27 +32,57 @@ module LogStash::Util
 
     def get(accessor)
       target, key = lookup(accessor)
-      target.is_a?(Array) ? target[key.to_i] : target[key]
+      unless target.nil?
+        target.is_a?(Array) ? target[key.to_i] : target[key]
+      end
     end
 
     def set(accessor, value)
-      target, key = lookup(accessor)
-      target[key] = value
+      target, key = store_and_lookup(accessor)
+      target[target.is_a?(Array) ? key.to_i : key] = value
     end
 
     def strict_set(accessor, value)
-      set(accessor, strict_value(value))
+      set(accessor, LogStash::Event.validate_value(value))
     end
 
     def del(accessor)
       target, key = lookup(accessor)
-      target.delete(key)
+      unless target.nil?
+        target.is_a?(Array) ? target.delete_at(key.to_i) : target.delete(key)
+      end
+    end
+
+    def include?(accessor)
+      target, key = lookup_path(accessor)
+      return false unless target
+      target.is_a?(Array) ? !target[key.to_i].nil? : target.include?(key)
     end
 
     private
 
     def lookup(accessor)
+      target, key = lookup_path(accessor)
+      if target.nil?
+        [target, key]
+      else
+        @lut[accessor] = [target, key]
+      end
+    end
+
+    def store_and_lookup(accessor)
       @lut[accessor] ||= store_path(accessor)
+    end
+
+    def lookup_path(accessor)
+      key, path = PathCache.get(accessor)
+      target = path.inject(@store) do |r, k|
+        if r.nil?
+          return nil
+        end
+        r[r.is_a?(Array) ? k.to_i : k]
+      end
+      [target, key]
     end
 
     def store_path(accessor)
@@ -60,20 +90,5 @@ module LogStash::Util
       target = path.inject(@store) {|r, k| r[r.is_a?(Array) ? k.to_i : k] ||= {}}
       [target, key]
     end
-
-    def strict_value(value)
-      case value
-      when String
-        raise("expected UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.encoding == Encoding::UTF_8
-        raise("invalid UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.valid_encoding?
-        value
-      when Array
-        value.each{|v| strict_value(v)} # don't map, return original object
-        value
-      else
-        value
-      end
-    end
-
   end # class Accessors
 end # module LogStash::Util

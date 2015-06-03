@@ -42,12 +42,12 @@ The old way to run logstash of `java -jar logstash.jar` is now replaced with
 For example:
 
     # Old way:
-    % java -jar logstash-1.3.3-flatjar.jar agent -f logstash.conf
+    `% java -jar logstash-1.3.3-flatjar.jar agent -f logstash.conf`
 
     # New way:
-    % bin/logstash agent -f logstash.conf
+    `% bin/logstash agent -f logstash.conf`
 
-### contrib plugins
+### plugins
 
 Logstash has grown brilliantly over the past few years with great contributions
 from the community. Now having 165 plugins, it became hard for us (the Logstash
@@ -56,15 +56,9 @@ contributed plugin. We combed through all the plugins and picked the ones we
 felt strongly we could support, and those now ship by default with Logstash.
 
 All the other plugins are now available in a contrib package. All plugins
-continue to be open source and free, of course! Installing plugins from the
-contrib package is very easy:
+continue to be open source and free, of course! Installing plugins is very easy:
 
+....
     % cd /path/to/logstash-%VERSION%/
-    % bin/plugin install contrib
-
-A bonus effect of this decision is that the default Logstash download size
-shrank by 19MB compared to the previous release because we were able to shed
-some lesser-used dependencies.
-
-You can learn more about contrib plugins on the [contrib plugins
-page](http://logstash.net/docs/%VERSION%/contrib-plugins)
+    % bin/plugin install [PLUGIN_NAME]
+....

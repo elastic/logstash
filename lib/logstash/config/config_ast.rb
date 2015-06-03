@@ -1,9 +1,21 @@
 # encoding: utf-8
+require 'logstash/errors'
 require "treetop"
+
 class Treetop::Runtime::SyntaxNode
+
   def compile
     return "" if elements.nil?
     return elements.collect(&:compile).reject(&:empty?).join("")
+  end
+
+  # Traverse the syntax tree recursively.
+  # The order should respect the order of the configuration file as it is read
+  # and written by humans (and the order in which it is parsed).
+  def recurse(e, depth=0, &block)
+    r = block.call(e, depth)
+    e.elements.each { |e| recurse(e, depth + 1, &block) } if r && e.elements
+    nil
   end
 
   def recursive_inject(results=[], &block)
@@ -19,6 +31,12 @@ class Treetop::Runtime::SyntaxNode
     return results
   end
 
+  # When Treetop parses the configuration file
+  # it will generate a tree, the generated tree will contain
+  # a few `Empty` nodes to represent the actual space/tab or newline in the file.
+  # Some of theses node will point to our concrete class.
+  # To fetch a specific types of object we need to follow each branch
+  # and ignore the empty nodes.
   def recursive_select(klass)
     return recursive_inject { |e| e.is_a?(klass) }
   end
@@ -39,44 +57,68 @@ class Treetop::Runtime::SyntaxNode
   end
 end
 
-module LogStash; module Config; module AST 
+
+module LogStash; module Config; module AST
+
+  def self.defered_conditionals=(val)
+    @defered_conditionals = val
+  end
+
+  def self.defered_conditionals
+    @defered_conditionals
+  end
+
+  def self.defered_conditionals_index
+    @defered_conditionals_index
+  end
+
+  def self.defered_conditionals_index=(val)
+    @defered_conditionals_index = val
+  end
+
   class Node < Treetop::Runtime::SyntaxNode; end
+
   class Config < Node
     def compile
-      # TODO(sissel): Move this into config/config_ast.rb
+      LogStash::Config::AST.defered_conditionals = []
+      LogStash::Config::AST.defered_conditionals_index = 0
       code = []
-      code << "@inputs = []"
-      code << "@filters = []"
-      code << "@outputs = []"
+
+      code << <<-CODE
+        @inputs = []
+        @filters = []
+        @outputs = []
+        @periodic_flushers = []
+        @shutdown_flushers = []
+      CODE
+
       sections = recursive_select(LogStash::Config::AST::PluginSection)
       sections.each do |s|
         code << s.compile_initializer
       end
 
       # start inputs
-      #code << "class << self"
       definitions = []
-        
-      ["filter", "output"].each do |type|
-        #definitions << "def #{type}(event)"
-        definitions << "@#{type}_func = lambda do |event, &block|"
-        if type == "filter"
-          definitions << "  extra_events = []"
-        end
 
+      ["filter", "output"].each do |type|
+        # defines @filter_func and @output_func
+
+        definitions << "def #{type}_func(event)"
+        definitions << "  events = [event]" if type == "filter"
         definitions << "  @logger.debug? && @logger.debug(\"#{type} received\", :event => event.to_hash)"
+
         sections.select { |s| s.plugin_type.text_value == type }.each do |s|
           definitions << s.compile.split("\n", -1).map { |e| "  #{e}" }
         end
 
-        if type == "filter"
-          definitions << "  extra_events.each(&block)"
-        end
+        definitions << "  events" if type == "filter"
         definitions << "end"
       end
 
       code += definitions.join("\n").split("\n", -1).collect { |l| "  #{l}" }
-      #code << "end"
+
+      code += LogStash::Config::AST.defered_conditionals
+
       return code.join("\n")
     end
   end
@@ -84,14 +126,47 @@ module LogStash; module Config; module AST
   class Comment < Node; end
   class Whitespace < Node; end
   class PluginSection < Node
+    # Global plugin numbering for the janky instance variable naming we use
+    # like @filter_<name>_1
     @@i = 0
+
     # Generate ruby code to initialize all the plugins.
     def compile_initializer
       generate_variables
       code = []
-      @variables.collect do |plugin, name|
-        code << "#{name} = #{plugin.compile_initializer}"
-        code << "@#{plugin.plugin_type}s << #{name}"
+      @variables.each do |plugin, name|
+
+
+        code << <<-CODE
+          #{name} = #{plugin.compile_initializer}
+          @#{plugin.plugin_type}s << #{name}
+        CODE
+
+        # The flush method for this filter.
+        if plugin.plugin_type == "filter"
+
+          code << <<-CODE
+            #{name}_flush = lambda do |options, &block|
+              @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name})
+
+              events = #{name}.flush(options)
+
+              return if events.nil? || events.empty?
+
+              @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name}, :events => events)
+
+              #{plugin.compile_starting_here.gsub(/^/, "  ")}
+
+              events.each{|e| block.call(e)}
+            end
+
+            if #{name}.respond_to?(:flush)
+              @periodic_flushers << #{name}_flush if #{name}.periodic_flush
+              @shutdown_flushers << #{name}_flush
+            end
+          CODE
+
+        end
       end
       return code.join("\n")
     end
@@ -151,38 +226,63 @@ module LogStash; module Config; module AST
 
     def compile
       case plugin_type
-        when "input"
-          return "start_input(#{variable_name})"
-        when "filter"
-          # This is some pretty stupid code, honestly.
-          # I'd prefer much if it were put into the Pipeline itself
-          # and this should simply compile to 
-          #   #{variable_name}.filter(event)
-          return [
-            "newevents = []",
-            "extra_events.each do |event|",
-            "  #{variable_name}.filter(event) do |newevent|",
-            "    newevents << newevent",
-            "  end",
-            "end",
-            "extra_events += newevents",
-
-            "#{variable_name}.filter(event) do |newevent|",
-            "  extra_events << newevent",
-            "end",
-            "if event.cancelled?",
-            "  extra_events.each(&block)",
-            "  return",
-            "end",
-          ].map { |l| "#{l}\n" }.join("")
-        when "output"
-          return "#{variable_name}.handle(event)\n"
-        when "codec"
-          settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
-          attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
-          return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})"
+      when "input"
+        return "start_input(#{variable_name})"
+      when "filter"
+        return <<-CODE
+          events = #{variable_name}.multi_filter(events)
+        CODE
+      when "output"
+        return "#{variable_name}.handle(event)\n"
+      when "codec"
+        settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
+        attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})"
       end
     end
+
+    def compile_starting_here
+      return unless plugin_type == "filter" # only filter supported.
+
+      expressions = [
+        LogStash::Config::AST::Branch,
+        LogStash::Config::AST::Plugin
+      ]
+      code = []
+
+      # Find the branch we are in, if any (the 'if' statement, etc)
+      self_branch = recursive_select_parent(LogStash::Config::AST::BranchEntry).first
+
+      # Find any siblings to our branch so we can skip them later.  For example,
+      # if we are in an 'else if' we want to skip any sibling 'else if' or
+      # 'else' blocks.
+      branch_siblings = []
+      if self_branch
+        branch_siblings = recursive_select_parent(LogStash::Config::AST::Branch).first \
+          .recursive_select(LogStash::Config::AST::BranchEntry) \
+          .reject { |b| b == self_branch }
+      end
+
+      #ast = recursive_select_parent(LogStash::Config::AST::PluginSection).first
+      ast = recursive_select_parent(LogStash::Config::AST::Config).first
+
+      found = false
+      recurse(ast) do |element, depth|
+        next false if element.is_a?(LogStash::Config::AST::PluginSection) && element.plugin_type.text_value != "filter"
+        if element == self
+          found = true
+          next false
+        end
+        if found && expressions.include?(element.class)
+          code << element.compile
+          next false
+        end
+        next false if branch_siblings.include?(element)
+        next true
+      end
+
+      return code.collect { |l| "#{l}\n" }.join("")
+    end # def compile_starting_here
   end
 
   class Name < Node
@@ -200,7 +300,7 @@ module LogStash; module Config; module AST
 
   module Unicode
     def self.wrap(text)
-      return "(" + text.inspect + ".force_encoding(\"UTF-8\")" + ")"
+      return "(" + text.force_encoding(Encoding::UTF_8).inspect + ")"
     end
   end
 
@@ -230,11 +330,36 @@ module LogStash; module Config; module AST
     end
   end
   class Hash < Value
+    def validate!
+      duplicate_values = find_duplicate_keys
+
+      if duplicate_values.size > 0
+        raise ConfigurationError.new(
+          I18n.t("logstash.agent.configuration.invalid_plugin_settings_duplicate_keys",
+                 :keys => duplicate_values.join(', '),
+                 :line => input.line_of(interval.first),
+                 :column => input.column_of(interval.first),
+                 :byte => interval.first + 1,
+                 :after => input[0..interval.first]
+                )
+        )
+      end
+    end
+
+    def find_duplicate_keys
+      values = recursive_select(HashEntry).collect { |hash_entry| hash_entry.name.text_value }
+      values.find_all { |v| values.count(v) > 1 }.uniq
+    end
+
     def compile
+      validate!
       return "{" << recursive_select(HashEntry).collect(&:compile).reject(&:empty?).join(", ") << "}"
     end
   end
-  class HashEntries < Node; end
+
+  class HashEntries < Node
+  end
+
   class HashEntry < Node
     def compile
       return %Q(#{name.compile} => #{value.compile})
@@ -245,24 +370,60 @@ module LogStash; module Config; module AST
 
   class Branch < Node
     def compile
-      return super + "end\n"
+
+      # this construct is non obvious. we need to loop through each event and apply the conditional.
+      # each branch of a conditional will contain a construct (a filter for example) that also loops through
+      # the events variable so we have to initialize it to [event] for the branch code.
+      # at the end, events is returned to handle the case where no branch match and no branch code is executed
+      # so we must make sure to return the current event.
+
+      type = recursive_select_parent(PluginSection).first.plugin_type.text_value
+
+      if type == "filter"
+        i = LogStash::Config::AST.defered_conditionals_index += 1
+        source = <<-CODE
+          def cond_func_#{i}(input_events)
+            result = []
+            input_events.each do |event|
+              events = [event]
+              #{super}
+              end
+              result += events
+            end
+            result
+          end
+        CODE
+        LogStash::Config::AST.defered_conditionals << source
+
+        <<-CODE
+          events = cond_func_#{i}(events)
+        CODE
+      else
+        <<-CODE
+          #{super}
+          end
+        CODE
+      end
     end
   end
-  class If < Node
+
+  class BranchEntry < Node; end
+
+  class If < BranchEntry
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
-      return "if #{condition.compile}\n" \
+      return "if #{condition.compile} # if #{condition.text_value.gsub(/[\r\n]/, " ")}\n" \
         << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
-  class Elsif < Node
+  class Elsif < BranchEntry
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
-      return "elsif #{condition.compile}\n" \
+      return "elsif #{condition.compile} # else if #{condition.text_value}\n" \
         << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
-  class Else < Node
+  class Else < BranchEntry
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
       return "else\n" \
@@ -325,7 +486,7 @@ module LogStash; module Config; module AST
     end
   end
 
-  module ComparisonOperator 
+  module ComparisonOperator
     def compile
       return " #{text_value} "
     end

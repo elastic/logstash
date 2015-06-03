@@ -37,7 +37,6 @@ LS_USER=logstash
 LS_GROUP=logstash
 LS_HOME=/var/lib/logstash
 LS_HEAP_SIZE="500m"
-LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
 LS_LOG_FILE=/var/log/logstash/$NAME.log
 LS_CONF_DIR=/etc/logstash/conf.d
 LS_OPEN_FILES=16384
@@ -85,10 +84,10 @@ case "$1" in
       >/dev/null; then
          # Prepare environment
          HOME="${HOME:-$LS_HOME}"
-         JAVA_OPTS="${LS_JAVA_OPTS}"
+         LS_JAVA_OPTS="${LS_JAVA_OPTS} -Djava.io.tmpdir=${LS_HOME}"
          ulimit -n ${LS_OPEN_FILES}
 	 cd "${LS_HOME}"
-         export PATH HOME JAVACMD JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
+         export PATH HOME JAVACMD LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
 
          # Start Daemon
          start-stop-daemon --start -b --user "$LS_USER" -c "$LS_USER":"$LS_GROUP" \

@@ -1,0 +1,56 @@
+<%- plugin_name = name -%>
+
+<% if sorted_attributes.count > 0 -%>
+Required configuration options:
+<% else -%>
+Complete configuration example:
+<% end -%>
+
+[source,json]
+--------------------------
+<%= name %> {
+<% if sorted_attributes.count > 0 -%>
+<% sorted_attributes.each do |name, config|
+   next if config[:deprecated]
+   next if !config[:required]
+-%>
+<%= "  " if section == "codec" %>    <%= name %> => ...
+<% end -%>
+<%= "  " if section == "codec" %><% ; end -%>}
+--------------------------
+
+<% if sorted_attributes.count > 0 %>
+
+Available configuration options:
+
+[cols="<,<,<,<m",options="header",]
+|=======================================================================
+|Setting |Input type|Required|Default value
+<% sorted_attributes.each do |name, config|
+   next if config[:deprecated]
+   if config[:validate].is_a?(Array)
+     annotation = "|<<string,string>>, one of `#{config[:validate].inspect}`"
+   elsif config[:validate] == :path
+     annotation = "|a valid filesystem path"
+   else
+     annotation = "|<<#{config[:validate]},#{config[:validate]}>>"
+   end
+
+   if name.is_a?(Regexp)
+     name = "/" + name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
+   end
+   if config[:required]
+     annotation += "|Yes"
+   else
+     annotation += "|No"
+   end
+   if config.include?(:default)
+     annotation += "|`#{config[:default].inspect}`"
+   else
+     annotation += "|"
+   end
+-%>
+| <<plugins-<%= section %>s-<%=plugin_name%>-<%= name %>>> <%= annotation %>
+<% end -%>
+|=======================================================================
+<% end %>

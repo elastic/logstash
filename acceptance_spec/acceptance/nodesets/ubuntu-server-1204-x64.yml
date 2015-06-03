@@ -5,10 +5,11 @@ HOSTS:
       - database
       - dashboard
     platform: ubuntu-12.04-amd64
-    image: jordansissel/system:ubuntu-12.04
+    image: electrical/ubuntu:12.04
     hypervisor: docker
     docker_cmd: '["/sbin/init"]'
     docker_image_commands:
-      - 'apt-get install -yq ruby1.8-dev libaugeas-dev libaugeas-ruby ruby rubygems lsb-release wget net-tools curl'
+      - 'apt-get install -yq ruby1.8-dev libaugeas-dev libaugeas-ruby ruby rubygems lsb-release wget net-tools curl logrotate'
+    docker_preserve_image: true
 CONFIG:
   type: foss
