@@ -3,7 +3,7 @@
 SETLOCAL
 
 set SCRIPT_DIR=%~dp0
-CALL %SCRIPT_DIR%\setup.bat
+CALL "%SCRIPT_DIR%\setup.bat"
 
 :EXEC
 if "%VENDORED_JRUBY%" == "" (
