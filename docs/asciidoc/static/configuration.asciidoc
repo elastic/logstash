@@ -315,7 +315,7 @@ output {
 }
 ----------------------------------
 
-You can also format times using in this sprintf format. Instead of specifying a field name, use the `+FORMAT` syntax where `FORMAT` is a http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html[time format].
+You can also format times using this sprintf format. Instead of specifying a field name, use the `+FORMAT` syntax where `FORMAT` is a http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html[time format].
 
 For example, if you want to use the file output to write to logs based on the
 hour and the 'type' field:
