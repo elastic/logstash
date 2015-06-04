@@ -113,8 +113,16 @@ class LogStash::Agent < Clamp::Command
 
     # Make SIGINT shutdown the pipeline.
     sigint_id = Stud::trap("INT") do
-      @logger.warn(I18n.t("logstash.agent.sigint"))
-      pipeline.shutdown
+
+      if @interrupted_once
+        @logger.fatal(I18n.t("logstash.agent.forced_sigint"))
+        exit
+      else
+        @logger.warn(I18n.t("logstash.agent.sigint"))
+        Thread.new(@logger) {|logger| sleep 5; logger.warn(I18n.t("logstash.agent.slow_shutdown")) }
+        @interrupted_once = true
+        pipeline.shutdown
+      end
     end
 
     # Make SIGTERM shutdown the pipeline.

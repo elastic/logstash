@@ -66,6 +66,11 @@ en:
         SIGINT received. Shutting down the pipeline.
       sigterm: >-
         SIGTERM received. Shutting down the pipeline.
+      slow_shutdown: |-
+        Shutdown still ocurring. Send another ^C to force termination..
+        Warning: Data loss may occur if shutdown is forced!
+      forced_sigint: >-
+        SIGINT received. Terminating immediately..
       configtest-flag-information: |-
         You may be interested in the '--configtest' flag which you can
         use to validate logstash's configuration before you choose
