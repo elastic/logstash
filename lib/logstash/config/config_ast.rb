@@ -76,7 +76,11 @@ module LogStash; module Config; module AST
     @defered_conditionals_index = val
   end
 
-  class Node < Treetop::Runtime::SyntaxNode; end
+  class Node < Treetop::Runtime::SyntaxNode
+    def text_value_for_comments
+      text_value.gsub(/[\r\n]/, " ")
+    end
+  end
 
   class Config < Node
     def compile
@@ -412,14 +416,14 @@ module LogStash; module Config; module AST
   class If < BranchEntry
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
-      return "if #{condition.compile} # if #{condition.text_value.gsub(/[\r\n]/, " ")}\n" \
+      return "if #{condition.compile} # if #{condition.text_value_for_comments}\n" \
         << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
   class Elsif < BranchEntry
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
-      return "elsif #{condition.compile} # else if #{condition.text_value}\n" \
+      return "elsif #{condition.compile} # else if #{condition.text_value_for_comments}\n" \
         << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
