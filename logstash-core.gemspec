@@ -30,9 +30,6 @@ Gem::Specification.new do |gem|
   # upgrade i18n only post 0.6.11, see https://github.com/svenfuchs/i18n/issues/270
   gem.add_runtime_dependency "i18n", "= 0.6.9" #(MIT license)
 
-  # filetools and rakelib
-  gem.add_runtime_dependency "minitar", "~> 0.5.4"
-
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
     gem.add_runtime_dependency "jrjackson", "~> 0.2.8" #(Apache 2.0 license)

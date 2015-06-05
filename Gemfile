@@ -14,3 +14,5 @@ gem "stud", "~> 0.0.19", :group => :build
 gem "fpm", "~> 1.3.3", :group => :build
 gem "rubyzip", "~> 1.1.7", :group => :build
 gem "gems", "~> 0.8.3", :group => :build
+gem "minitar", "~> 0.5.4", :group => :build
+
