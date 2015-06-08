@@ -152,7 +152,7 @@ module LogStash
 
     def self.is_released?(plugin)
       require 'gems'
-      !Gems.search(plugin).reject{ |h| h['name'] != plugin }.empty?
+      Gems.info(plugin) != "This rubygem could not be found."
     end
   end
 end
