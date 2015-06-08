@@ -34,7 +34,6 @@ end
 
 if $0 == __FILE__
   begin
-    LogStash::Bundler.setup!({:without => [:build, :development]})
     LogStash::PluginManager::Main.run("bin/plugin", ARGV)
   rescue LogStash::PluginManager::Error => e
     $stderr.puts(e.message)
