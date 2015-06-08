@@ -40,7 +40,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # or in another character set other than `UTF-8`.
   #
   # This only affects `plain` format logs since json is `UTF-8` already.
-  config :charset, :validate => ::Encoding.name_list, :deprecated => true
+  config :charset, :deprecated => "Use the codec setting instead. For example: input { %PLUGIN% { codec => plain { charset => \"UTF-8\" } }"
 
   # If format is `json`, an event `sprintf` string to build what
   # the display `@message` should be given (defaults to the raw JSON).
