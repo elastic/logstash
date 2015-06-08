@@ -152,7 +152,7 @@ module LogStash
 
     def self.is_released?(plugin)
       require 'gems'
-      !Gems.search(plugin).empty?
+      !Gems.search(plugin).reject{ |h| h['name'] != plugin }.empty?
     end
   end
 end
