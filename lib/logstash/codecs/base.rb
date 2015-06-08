@@ -5,46 +5,42 @@ require "logstash/plugin"
 require "logstash/logging"
 
 # This is the base class for logstash codecs.
-module LogStash::Codecs; class Base < LogStash::Plugin
-  include LogStash::Config::Mixin
-  config_name "codec"
+module LogStash::Codecs
+  class Base < LogStash::Plugin
+    include LogStash::Config::Mixin
+    config_name "codec"
 
-  def initialize(params={})
-    super
-    config_init(params)
-    register if respond_to?(:register)
+    def initialize(params={})
+      super
+      config_init(params)
+      register if respond_to?(:register)
+    end
+
+    def decode(data)
+      raise "#{self.class}#decode must be overidden"
+    end # def decode
+
+    alias_method :<<, :decode
+
+    def encode(event)
+      raise "#{self.class}#encode must be overidden"
+    end # def encode
+
+    def teardown
+      # override if needed
+    end
+
+    # @param block [Proc(event, data)] the callback proc passing the original event and the encoded event
+    def on_event(&block)
+      @on_event = block
+    end
+
+    def flush(&block)
+      # override if needed
+    end
+
+    def clone
+      return self.class.new(params)
+    end
   end
-
-  public
-  def decode(data)
-    raise "#{self.class}#decode must be overidden"
-  end # def decode
-
-  alias_method :<<, :decode
-
-  public
-  def encode(event)
-    raise "#{self.class}#encode must be overidden"
-  end # def encode
-
-  public 
-  def teardown; end;
-
-  # @param block [Proc(event, data)] the callback proc passing the original event and the encoded event
-  public
-  def on_event(&block)
-    @on_event = block
-  end
-
-  public
-  def flush(&block)
-    # does nothing by default.
-    # if your codec needs a flush method (like you are spooling things)
-    # you must implement this.
-  end
-
-  public
-  def clone
-    return self.class.new(params)
-  end
-end; end # class LogStash::Codecs::Base
+end

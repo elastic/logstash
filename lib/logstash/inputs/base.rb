@@ -80,31 +80,28 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
     # Backwards compat for the 'format' setting
     case @format
-      when "plain"; # do nothing
-      when "json"
-        @codec = LogStash::Plugin.lookup("codec", "json").new
-      when "json_event"
-        @codec = LogStash::Plugin.lookup("codec", "oldlogstashjson").new
+    when "plain"; # do nothing
+    when "json"
+      @codec = LogStash::Plugin.lookup("codec", "json").new
+    when "json_event"
+      @codec = LogStash::Plugin.lookup("codec", "oldlogstashjson").new
     end
+  end
 
-  end # def initialize
-
-  public
   def register
     raise "#{self.class}#register must be overidden"
   end # def register
 
-  public
   def tag(newtag)
     @tags << newtag
   end # def tag
 
   protected
+
   def to_event(raw, source)
     raise LogStash::ThisMethodWasRemoved("LogStash::Inputs::Base#to_event - you should use codecs now instead of to_event. Not sure what this means? Get help on https://discuss.elastic.co/c/logstash")
   end # def to_event
 
-  protected
   def decorate(event)
     # Only set 'type' if not already set. This is backwards-compatible behavior
     event["type"] = @type if @type && !event.include?("type")
@@ -119,19 +116,18 @@ class LogStash::Inputs::Base < LogStash::Plugin
     end
   end
 
-  protected
   def fix_streaming_codecs
     require "logstash/codecs/plain"
     require "logstash/codecs/line"
     require "logstash/codecs/json"
     require "logstash/codecs/json_lines"
     case @codec
-      when LogStash::Codecs::Plain
-        @logger.info("Automatically switching from #{@codec.class.config_name} to line codec", :plugin => self.class.config_name)
-        @codec = LogStash::Codecs::Line.new("charset" => @codec.charset)
-      when LogStash::Codecs::JSON
-        @logger.info("Automatically switching from #{@codec.class.config_name} to json_lines codec", :plugin => self.class.config_name)
-        @codec = LogStash::Codecs::JSONLines.new("charset" => @codec.charset)
+    when LogStash::Codecs::Plain
+      @logger.info("Automatically switching from #{@codec.class.config_name} to line codec", :plugin => self.class.config_name)
+      @codec = LogStash::Codecs::Line.new("charset" => @codec.charset)
+    when LogStash::Codecs::JSON
+      @logger.info("Automatically switching from #{@codec.class.config_name} to json_lines codec", :plugin => self.class.config_name)
+      @codec = LogStash::Codecs::JSONLines.new("charset" => @codec.charset)
     end
   end
-end # class LogStash::Inputs::Base
+end

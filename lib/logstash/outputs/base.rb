@@ -35,8 +35,12 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   attr_reader :worker_plugins
 
-  public
-  def workers_not_supported(message=nil)
+  def initialize(params = {})
+    super
+    config_init(params)
+  end
+
+  def workers_not_supported(message = nil)
     return if @workers == 1
     if message
       @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported-with-message", :plugin => self.class.config_name, :worker_count => @workers, :message => message))
@@ -46,23 +50,18 @@ class LogStash::Outputs::Base < LogStash::Plugin
     @workers = 1
   end
 
-  public
-  def initialize(params={})
-    super
-    config_init(params)
-  end
-
-  public
   def register
     raise "#{self.class}#register must be overidden"
-  end # def register
+  end
 
-  public
   def receive(event)
     raise "#{self.class}#receive must be overidden"
-  end # def receive
+  end
 
-  public
+  def teardown
+    # override if needed
+  end
+
   def worker_setup
     if @workers == 1
       @worker_plugins = [self]
@@ -83,16 +82,16 @@ class LogStash::Outputs::Base < LogStash::Plugin
     end
   end
 
-  public
   def handle(event)
     receive(event)
-  end # def handle
+  end
 
   def handle_worker(event)
     @worker_queue.push(event)
   end
 
   private
+
   def output?(event)
     if !@type.empty?
       if event["type"] != @type
@@ -121,4 +120,4 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
     return true
   end
-end # class LogStash::Outputs::Base
+end
