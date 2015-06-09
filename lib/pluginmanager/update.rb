@@ -9,6 +9,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
 
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version", :attribute_name => :plugins_arg
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
+  option "--local", :flag, "force local-only plugin update. see bin/plugin package|unpack", :default => false
 
   def execute
     local_gems = gemfile.locally_installed_gems
@@ -41,10 +42,12 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     # remove any version constrain from the Gemfile so the plugin(s) can be updated to latest version
     # calling update without requiremend will remove any previous requirements
     plugins = plugins_to_update(previous_gem_specs_map)
+    # Skipping the major version validation when using a local cache as we can have situations
+    # without internet connection.
     filtered_plugins = plugins.map { |plugin| gemfile.find(plugin) }
       .compact
       .reject { |plugin| REJECTED_OPTIONS.any? { |key| plugin.options.has_key?(key) } }
-      .select { |plugin| (verify? ? validates_version(plugin.name) : true) }
+      .select { |plugin| local? || (verify? ? validates_version(plugin.name) : true) }
       .each   { |plugin| gemfile.update(plugin.name) }
 
     # force a disk sync before running bundler
@@ -54,7 +57,9 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
 
     # any errors will be logged to $stderr by invoke!
     # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
-    output = LogStash::Bundler.invoke!(:update => plugins, :rubygems_source => gemfile.gemset.sources)
+    options = {:update => plugins, :rubygems_source => gemfile.gemset.sources}
+    options[:local] = true if local?
+    output = LogStash::Bundler.invoke!(options)
     output = LogStash::Bundler.invoke!(:clean => true)
     display_updated_plugins(previous_gem_specs_map)
   rescue => exception

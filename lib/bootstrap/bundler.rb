@@ -27,6 +27,16 @@ module LogStash
           value
         end
       end
+
+      # This patch makes rubygems fetch directly from the remote servers
+      # the dependencies he need and might not have downloaded in a local
+      # repository. This basically enabled the offline feature to work as
+      # we remove the gems from the vendor directory before packacing.
+      ::Bundler::Source::Rubygems.module_exec do
+        def cached_gem(spec)
+          cached_built_in_gem(spec)
+        end
+      end
     end
 
     def setup!(options = {})
@@ -56,11 +66,19 @@ module LogStash
 
     # execute bundle install and capture any $stdout output. any raised exception in the process will be trapped
     # and returned. logs errors to $stdout.
-    # @param options [Hash] invoke options with default values, :max_tries => 10, :clean => false, :install => false, :update => false
-    # @param   options[:update] must be either false or a String or an Array of String
+    # @param [Hash] options invoke options with default values, :max_tries => 10, :clean => false, :install => false, :update => false
+    # @option options [Boolean] :max_tries The number of times bundler is going to try the installation before failing (default: 10)
+    # @option options [Boolean] :clean It cleans the unused gems (default: false)
+    # @option options [Boolean] :install Run the installation of a set of gems defined in a Gemfile (default: false)
+    # @option options [Boolean, String, Array] :update Update the current environment, must be either false or a String or an Array of String (default: false)
+    # @option options [Boolean] :local Do not attempt to fetch gems remotely and use the gem cache instead (default: false)
+    # @option options [Boolean] :package Locks and then caches all dependencies to be reused later on (default: false)
+    # @option options [Boolean] :all It packages dependencies defined with :git or :path (default: false)
+    # @option options [Array] :without  Exclude gems that are part of the specified named group (default: [:development])
     # @return [String, Exception] the installation captured output and any raised exception or nil if none
     def invoke!(options = {})
-      options = {:max_tries => 10, :clean => false, :install => false, :update => false, :without => [:development]}.merge(options)
+      options = {:max_tries => 10, :clean => false, :install => false, :update => false, :local => false,
+                 :all => false, :package => false, :without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
       options[:update] = Array(options[:update]) if options[:update]
 
@@ -87,7 +105,6 @@ module LogStash
       ::Bundler.settings[:without] = options[:without].join(":")
 
       try = 0
-
       # capture_stdout also traps any raised exception and pass them back as the function return [output, exception]
       output, exception = capture_stdout do
         loop do
@@ -130,11 +147,19 @@ module LogStash
       if options[:install]
         arguments << "install"
         arguments << "--clean" if options[:clean]
+        if options[:local]
+          arguments << "--local"
+          arguments << "--no-prune" # From bundler docs: Don't remove stale gems from the cache.
+        end
       elsif options[:update]
         arguments << "update"
         arguments << options[:update]
+        arguments << "--local" if options[:local]
       elsif options[:clean]
         arguments << "clean"
+      elsif options[:package]
+        arguments << "package"
+        arguments << "--all" if options[:all]
       end
 
       arguments.flatten
