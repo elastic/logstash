@@ -10,6 +10,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   option "--version", "VERSION", "version of the plugin to install"
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
   option "--development", :flag, "install all development dependencies of currently installed plugins", :default => false
+  option "--local", :flag, "force local-only plugin installation. see bin/plugin package|unpack", :default => false
 
   # the install logic below support installing multiple plugins with each a version specification
   # but the argument parsing does not support it for now so currently if specifying --version only
@@ -23,7 +24,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
       gems = plugins_development_gems
     else
       gems = plugins_gems
-      verify_remote!(gems) if verify?
+      verify_remote!(gems) if !local? && verify?
     end
 
     install_gems_list!(gems)
@@ -97,6 +98,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     bundler_options = {:install => true}
     bundler_options[:without] = [] if development?
     bundler_options[:rubygems_source] = gemfile.gemset.sources
+    bundler_options[:local] = true if local?
 
     output = LogStash::Bundler.invoke!(bundler_options)
 
