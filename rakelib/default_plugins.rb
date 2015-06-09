@@ -138,7 +138,8 @@ module LogStash
       /^logstash-input-neo4j$/,
       /^logstash-output-neo4j$/,
       /^logstash-input-perfmon$/,
-      /^logstash-input-http$/
+      /^logstash-input-http$/,
+      /^logstash-output-webhdfs$/
     ])
 
 
