@@ -137,7 +137,8 @@ module LogStash
       /^logstash-output-slack$/,
       /^logstash-input-neo4j$/,
       /^logstash-output-neo4j$/,
-      /^logstash-input-perfmon$/
+      /^logstash-input-perfmon$/,
+      /^logstash-input-http$/
     ])
 
 
