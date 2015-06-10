@@ -17,7 +17,10 @@ module LogStash::PluginManager
       end
     else
       dep = Gem::Dependency.new(plugin, version || Gem::Requirement.default)
-      specs, error = Gem::SpecFetcher.fetcher.spec_for_dependency(dep)
+      specs, errors = Gem::SpecFetcher.fetcher.spec_for_dependency(dep)
+
+      # dump errors
+      errors.each { |error| $stderr.puts(error.wordy) }
 
       # depending on version requirements, multiple specs can be returned in which case
       # we will grab the one with the highest version number
@@ -27,7 +30,7 @@ module LogStash::PluginManager
         end
         return valid
       else
-        $stderr.puts("Plugin #{plugin}" + (version ? " version #{version}" : "") + " does not exist")
+        $stderr.puts("Plugin #{plugin}" + (version ? " version #{version}" : "") + " does not exist") if errors.empty?
         return false
       end
     end
