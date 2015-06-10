@@ -372,7 +372,7 @@ match => {
 
 
 TIP: For more asciidoc formatting tips, see the excellent reference at
-https://github.com/elasticsearch/docs#asciidoc-guide
+https://github.com/elastic/docs#asciidoc-guide
 
 [float]
 === `class` Declaration
