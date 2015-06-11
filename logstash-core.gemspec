@@ -18,10 +18,11 @@ Gem::Specification.new do |gem|
   gem.version       = LOGSTASH_VERSION
 
   gem.add_runtime_dependency "cabin", "~> 0.7.0" #(Apache 2.0 license)
-  gem.add_runtime_dependency "pry", "~> 0.10.1" #(Ruby license)
+  gem.add_runtime_dependency "pry", "~> 0.10.1"  #(Ruby license)
   gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
   gem.add_runtime_dependency "clamp", "~> 0.6.5" #(MIT license) for command line args/flags
   gem.add_runtime_dependency "filesize", "0.0.4" #(MIT license) for :bytes config validator
+  gem.add_runtime_dependency "gems", "~> 0.8.3"  #(MIT license)
 
   # TODO(sissel): Treetop 1.5.x doesn't seem to work well, but I haven't
   # investigated what the cause might be. -Jordan
@@ -32,7 +33,6 @@ Gem::Specification.new do |gem|
 
   # filetools and rakelib
   gem.add_runtime_dependency "minitar", "~> 0.5.4"
-
   gem.add_runtime_dependency "thread_safe", "~> 0.3.5" #(Apache 2.0 license)
 
   if RUBY_PLATFORM == 'java'
