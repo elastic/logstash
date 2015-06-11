@@ -7,6 +7,7 @@ require "logstash/util/fieldreference"
 require "logstash/util/accessors"
 require "logstash/timestamp"
 require "logstash/json"
+require "logstash/string_interpolation"
 
 # transcient pipeline events for normal in-flow signaling as opposed to
 # flow altering exceptions. for now having base classes is adequate and
@@ -221,7 +222,7 @@ class LogStash::Event
   # TODO(sissel): It is not clear what the value of a field that
   # is an array (or hash?) should be. Join by comma? Something else?
   public
-  def sprintf(format)
+  def old_sprintf(format)
     if format.is_a?(Float) and
         (format < MIN_FLOAT_BEFORE_SCI_NOT or format >= MAX_FLOAT_BEFORE_SCI_NOT) then
       format = ("%.15f" % format).sub(/0*$/,"")
@@ -268,6 +269,10 @@ class LogStash::Event
       end # 'key' checking
     end # format.gsub...
   end # def sprintf
+
+  def sprintf(format)
+    LogStash::StringInterpolation.evaluate(self, format)
+  end
 
   def tag(value)
     # Generalize this method for more usability
