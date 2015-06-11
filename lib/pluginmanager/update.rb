@@ -42,12 +42,13 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     filtered_plugins = plugins.map { |plugin| gemfile.find(plugin) }
       .compact
       .reject { |plugin| REJECTED_OPTIONS.any? { |key| plugin.options.has_key?(key) } }
-      .each { |plugin| gemfile.update(plugin.name) }
+      .select { |plugin| validate_major_version(plugin.name) }
+      .each   { |plugin| gemfile.update(plugin.name) }
 
     # force a disk sync before running bundler
     gemfile.save
 
-    puts("Updating #{filtered_plugins.collect(&:name).join(", ")}")
+    puts("Updating #{filtered_plugins.collect(&:name).join(", ")}") unless filtered_plugins.empty?
 
     # any errors will be logged to $stderr by invoke!
     # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
@@ -60,6 +61,20 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     report_exception("Updated Aborted", exception)
   ensure
     display_bundler_output(output)
+  end
+
+  # validate if there is any major version update so then we can ask the user if he is
+  # sure to update or not.
+  def validate_major_version(plugin)
+    require "gems"
+    latest_version  = Gems.versions(plugin)[0]['number'].split(".")
+    current_version = Gem::Specification.find_by_name(plugin).version.version.split(".")
+    if (latest_version[0].to_i > current_version[0].to_i)
+      ## warn if users want to continue
+      puts("You are updating #{plugin} to a new version #{latest_version.join('.')}, which may not be compatible with #{current_version.join('.')}. are you sure you want to proceed (Y/N)?")
+      return ( "y" == STDIN.gets.strip.downcase ? true : false)
+    end
+    true
   end
 
   # create list of plugins to update
