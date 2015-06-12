@@ -41,14 +41,15 @@ module LogStash
       nodes = Template.new
 
       position = 0
-      matches = template.scan(TEMPLATE_TAG_REGEXP)
+      matches = template.to_enum(:scan, TEMPLATE_TAG_REGEXP).map { |m| $~ }
 
       if matches 
         matches.each do |match|
-          start = Regexp.last_match.begin(0)
+          tag = match[0][2..-2]
+          start = match.offset(0).first
           nodes << StaticNode.new(template[position..(start-1)]) if start > 0
-          nodes << identify(match[2..-2])
-          position = Regexp.last_match.end(0)
+          nodes << identify(tag)
+          position = match.offset(0).last
         end
       end
 

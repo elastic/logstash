@@ -63,6 +63,10 @@ describe LogStash::Event do
         expect(subject.sprintf("%{+HH}")).to eq("00")
       end
 
+      it "should support mixed string" do
+        expect(subject.sprintf("foo %{+YYYY-MM-dd} %{type}")).to eq("foo 2013-01-01 sprintf")
+      end
+
       it "should raise error with %{+format} syntax when @timestamp field is missing", :if => RUBY_ENGINE == "jruby" do
         str = "logstash-%{+YYYY}"
         subj = subject.clone
