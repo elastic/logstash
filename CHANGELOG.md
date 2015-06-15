@@ -1,3 +1,32 @@
+## 1.5.2 (June 16, 2015)
+### general
+  - Fixed an issue which caused Logstash to hang when used with single worker (`-w 1`) configuration. 
+    This issue was caused by a deadlock in the internal queue when the filter worker was trying to
+    exclusively remove elements which conflicted with the periodic flushing in filters (#3361).
+  - Fixed performance regression when using field reference syntax in config like `[tweet][username]`. 
+    This fix increases throughput in certain configs by 30% (#3238)
+  - Windows: Added support to launch Logstash from a path with spaces (#2904)
+  - Update to jruby-1.7.20 which brings in numerous fixes. This will also make file input work
+    properly on FreeBSD.
+  - Fixed regression in 1.5.0 where conditionals spread over multiple lines in a config was not
+    working properly (#2850)
+  - Fixed a permission issue in rpm and debian repos. When Logstash was installed using these 
+    repos, only the logstash user was able to run commands like `bin/logstash version` (#3249)
+
+### filter
+  - GeoIP: Logstash no longer crashes when IPv6 addresses are used in lookup (#8)
+
+### output
+  - Elasticsearch: 
+    - Added an option to disable SSL certificate verification (#160)
+    - Bulk requests were timing out because of aggressive timeout setting in the HTTP client.
+      Restored this to 1.4.2 behavior where there are no timeouts by default. As a follow up
+      to this, we will be exposing an option to control timeouts in the HTTP client (#103)
+  - JIRA: 
+    - Newly created issues now have description set (#3)
+    - Summary field now expands variables in events
+    - API authentication method changed from cookie to basic
+
 ## 1.4.3 (June 2, 2015)
 ### general
   - Updated to Elasticsearch 1.5.2, Kibana 3.1.2 and JRuby 1.7.17
