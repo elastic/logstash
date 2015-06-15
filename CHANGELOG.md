@@ -1,4 +1,4 @@
-## 1.5.2 (June 16, 2015)
+## 1.5.1 (June 16, 2015)
 ### general
   - Fixed an issue which caused Logstash to hang when used with single worker (`-w 1`) configuration. 
     This issue was caused by a deadlock in the internal queue when the filter worker was trying to
