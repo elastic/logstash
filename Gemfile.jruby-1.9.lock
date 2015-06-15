@@ -142,7 +142,7 @@ GEM
     logstash-codec-rubydebug (0.1.7)
       awesome_print
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-core (1.5.1.snapshot1-java)
+    logstash-core (1.5.1-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       filesize (= 0.0.4)
@@ -281,7 +281,7 @@ GEM
     logstash-input-log4j (0.1.7-java)
       logstash-codec-plain
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-input-lumberjack (0.1.8)
+    logstash-input-lumberjack (0.1.9)
       concurrent-ruby
       jls-lumberjack (>= 0.0.20)
       logstash-codec-plain
@@ -358,7 +358,7 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-filter-json
       logstash-output-file
-    logstash-output-elasticsearch (0.2.7-java)
+    logstash-output-elasticsearch (0.2.8-java)
       cabin (~> 0.6)
       concurrent-ruby
       elasticsearch (~> 1.0, >= 1.0.10)
@@ -475,7 +475,7 @@ GEM
     mime-types (2.6.1)
     minitar (0.5.4)
     msgpack-jruby (1.4.1-java)
-    multi_json (1.11.0)
+    multi_json (1.11.1)
     multipart-post (2.0.0)
     murmurhash3 (0.1.6-java)
     naught (1.0.0)
@@ -579,7 +579,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 1.5.1.snapshot1)
+  logstash-core (= 1.5.1)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
