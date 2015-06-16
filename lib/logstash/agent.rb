@@ -172,14 +172,8 @@ class LogStash::Agent < Clamp::Command
 
     if [:info, :debug].include?(verbosity?) || debug? || verbose?
       show_version_ruby
-
-      if RUBY_PLATFORM == "java"
-        show_version_java
-      end
-
-      if [:debug].include?(verbosity?) || debug?
-        show_gems
-      end
+      show_version_java if LogStash::Environment.jruby?
+      show_gems if [:debug].include?(verbosity?) || debug?
     end
   end # def show_version
 
