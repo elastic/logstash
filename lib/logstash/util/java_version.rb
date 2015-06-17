@@ -2,7 +2,7 @@ module LogStash::Util::JavaVersion
   # Print a warning if we're on a bad version of java
   def self.warn_on_bad_java_version
     if self.bad_java_version?(self.version)
-      STDERR.puts("Please upgrade your java version, the current version '#{self.version}' may cause problems. We recommend a minimum version of 1.7.0_51")
+      STDERR.puts("!!! Please upgrade your java version, the current version '#{self.version}' may cause problems. We recommend a minimum version of 1.7.0_51")
     end
   end
 
@@ -40,7 +40,7 @@ module LogStash::Util::JavaVersion
     return nil if version_string.nil?
 
     parsed = parse_java_version(version_string)
-
+    
     if parsed[:major] >= 1 && parsed[:minor] == 7 && parsed[:patch] == 0 && parsed[:update] < 51
       return true
     elsif parsed[:major] >= 1 && parsed[:minor] < 7
