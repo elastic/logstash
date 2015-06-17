@@ -13,9 +13,8 @@ module LogStash
     TEMPLATE_TAG_REGEXP = /%\{[^}]+\}/
 
     def evaluate(event, template)
-      if template.is_a?(Float) and
-          (template < MIN_FLOAT_BEFORE_SCI_NOT or template >= MAX_FLOAT_BEFORE_SCI_NOT) then
-        return template = ("%.15f" % template).sub(/0*$/,"")
+      if template.is_a?(Float) && (template < MIN_FLOAT_BEFORE_SCI_NOT || template >= MAX_FLOAT_BEFORE_SCI_NOT)
+        return ("%.15f" % template).sub(/0*$/,"")
       end
       
       template = template.to_s
@@ -41,14 +40,12 @@ module LogStash
       position = 0
       matches = template.to_enum(:scan, TEMPLATE_TAG_REGEXP).map { |m| $~ }
 
-      if matches 
-        matches.each do |match|
-          tag = match[0][2..-2]
-          start = match.offset(0).first
-          nodes << StaticNode.new(template[position..(start-1)]) if start > 0
-          nodes << identify(tag)
-          position = match.offset(0).last
-        end
+      matches.each do |match|
+        tag = match[0][2..-2]
+        start = match.offset(0).first
+        nodes << StaticNode.new(template[position..(start-1)]) if start > 0
+        nodes << identify(tag)
+        position = match.offset(0).last
       end
 
       if position < template.size - 1
