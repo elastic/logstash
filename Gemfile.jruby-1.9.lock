@@ -16,6 +16,7 @@ GEM
     backports (3.6.4)
     bindata (2.1.0)
     buftok (0.2.0)
+    benchmark-ips (2.2.0)
     builder (3.2.2)
     cabin (0.7.1)
     childprocess (0.5.6)
@@ -558,6 +559,7 @@ PLATFORMS
   java
 
 DEPENDENCIES
+  benchmark-ips
   ci_reporter_rspec (= 1.0.0)
   coveralls
   file-dependencies (= 0.1.6)
