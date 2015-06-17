@@ -1,16 +1,16 @@
 require 'spec_helper'
 require 'rakelib/default_plugins'
 
-describe "Plugin licenses" do
+describe "Project licenses" do
 
-  let(:common_licenses) {
+  let(:expected_licenses) {
     Regexp.union([ /mit/,
                    /apache*/,
                    /bsd/,
                    /ruby/])
   }
 
-  shared_examples "a license test" do
+  shared_examples "runtime license test" do
 
     subject(:gem_name) do |example|
       example.metadata[:example_group][:parent_example_group][:description]
@@ -18,9 +18,9 @@ describe "Plugin licenses" do
 
     let(:spec) { Gem::Specification.find_all_by_name(gem_name)[0] }
 
-    it "should have an expected licenses" do
+    it "have an expected license" do
       spec.licenses.each do |license|
-        expect(license.downcase).to match(common_licenses)
+        expect(license.downcase).to match(expected_licenses)
       end
     end
 
@@ -28,19 +28,19 @@ describe "Plugin licenses" do
       spec.runtime_dependencies.map { |dep| dep.to_spec }.each do |runtime_spec|
         next unless runtime_spec
         runtime_spec.licenses.each do |license|
-          expect(license.downcase).to match(common_licenses)
+          expect(license.downcase).to match(expected_licenses)
         end
       end
     end
   end
 
   describe "logstash-core" do
-    it_behaves_like "a license test"
+    it_behaves_like "runtime license test"
   end
 
-  installed_plugins.each do |default_plugin|
-    describe default_plugin do
-      it_behaves_like "a license test"
+  installed_plugins.each do |plugin|
+    describe plugin do
+      it_behaves_like "runtime license test"
     end
   end
 
