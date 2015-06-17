@@ -21,7 +21,7 @@ describe "LogStash::Util::JavaVersion" do
   it "should mark a good standard java version as good" do
     expect(mod.bad_java_version?("1.7.0_51")).to be_falsey
   end
-  
+
   it "should mark a good beta version as good" do
     expect(mod.bad_java_version?("1.8.0-beta")).to be_falsey
   end
@@ -31,41 +31,36 @@ describe "LogStash::Util::JavaVersion" do
       expect(mod.parse_java_version(nil)).to be_nil
     end
 
-    it "should parse a plain version" do
-      parsed = mod.parse_java_version("1.3.0")
-      expect(parsed[:major]).to eql(1)
-      expect(parsed[:minor]).to eql(3)
-      expect(parsed[:patch]).to eql(0)
-      expect(parsed[:update]).to eql(0)
-      expect(parsed[:build]).to be_nil
+    shared_examples("version parsing") do |desc, string, major, minor, patch, update, build|
+      context("#{desc} with version #{string}") do
+        subject(:parsed) { LogStash::Util::JavaVersion.parse_java_version(string) }
+
+        it "should have the correct major version" do
+          expect(parsed[:major]).to eql(major)
+        end
+
+        it "should have the correct minor version" do
+          expect(parsed[:minor]).to eql(minor)
+        end
+
+        it "should have the correct patch version" do
+          expect(parsed[:patch]).to eql(patch)
+        end
+
+        it "should have the correct update version" do
+          expect(parsed[:update]).to eql(update)
+        end
+
+        it "should have the correct build string" do
+          expect(parsed[:build]).to eql(build)
+        end
+      end
     end
 
-    it "should parse an update" do
-      parsed = mod.parse_java_version("1.4.0_03")
-      expect(parsed[:major]).to eql(1)
-      expect(parsed[:minor]).to eql(4)
-      expect(parsed[:patch]).to eql(0)
-      expect(parsed[:update]).to eql(3)
-      expect(parsed[:build]).to be_nil
-    end
-
-    it "should parse a version with just a build" do
-      parsed = mod.parse_java_version("1.4.0-beta")
-      expect(parsed[:major]).to eql(1)
-      expect(parsed[:minor]).to eql(4)
-      expect(parsed[:patch]).to eql(0)
-      expect(parsed[:update]).to eql(0)
-      expect(parsed[:build]).to eql("beta")
-    end
-
-    it "should parse a version with an update and a build" do
-      parsed = mod.parse_java_version("1.4.0_03-beta")
-      expect(parsed[:major]).to eql(1)
-      expect(parsed[:minor]).to eql(4)
-      expect(parsed[:patch]).to eql(0)
-      expect(parsed[:update]).to eql(3)
-      expect(parsed[:build]).to eql("beta")
-    end
+    include_examples("version parsing", "a plain version", "1.3.0", 1, 3, 0, 0, nil)
+    include_examples("version parsing", "an update", "1.4.0_03", 1, 4, 0, 3, nil)
+    include_examples("version parsing", "a build", "1.4.0-beta", 1, 4, 0, 0,"beta")
+    include_examples("version parsing", "an update+build", "1.4.0_03-beta", 1, 4, 0, 3, "beta")
   end
 
 end
