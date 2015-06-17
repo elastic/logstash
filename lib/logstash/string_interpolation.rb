@@ -19,13 +19,11 @@ module LogStash
       end
       
       template = template.to_s
+      
+      return template if not_cachable?(template)
 
-      if not_cachable?(template)
-        return template
-      else
-        compiled = CACHE.get_or_default(template, nil) || CACHE.put(template, compile_template(template))
-        compiled.evaluate(event)
-      end
+      compiled = CACHE.get_or_default(template, nil) || CACHE.put(template, compile_template(template))
+      compiled.evaluate(event)
     end
 
     def self.evaluate(event, format)
@@ -61,11 +59,7 @@ module LogStash
     end
 
     def optimize(nodes)
-      if nodes.size == 1
-        nodes.first 
-      else 
-        nodes
-      end
+      nodes.size == 1 ?  nodes.first : nodes
     end
 
     def identify(tag)
@@ -95,9 +89,7 @@ module LogStash
   class EpocNode
     def evaluate(event)
       t = event.timestamp
-      if t.nil?
-        raise LogStash::Error, "Unable to format in string \"#{@format}\", #{LogStash::Event::TIMESTAMP} field not found"
-      end
+      raise LogStash::Error, "Unable to format in string \"#{@format}\", #{LogStash::Event::TIMESTAMP} field not found" unless t
       t.to_i.to_s
     end
   end
@@ -143,9 +135,7 @@ module LogStash
     def evaluate(event)
       t = event.timestamp
 
-      if t.nil?
-        raise LogStash::Error, "Unable to format in string \"#{@format}\", #{LogStash::Event::TIMESTAMP} field not found"
-      end
+      raise LogStash::Error, "Unable to format in string \"#{@format}\", #{LogStash::Event::TIMESTAMP} field not found" unless t
 
       org.joda.time.Instant.java_class.constructor(Java::long).new_instance(
         t.tv_sec * 1000 + t.tv_usec / 1000
