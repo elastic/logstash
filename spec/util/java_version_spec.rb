@@ -4,7 +4,7 @@ require 'logstash/util/java_version'
 describe "LogStash::Util::JavaVersion" do
   let(:mod) { LogStash::Util::JavaVersion }
   it "should get the current java version if we're on Java" do
-    if RUBY_ENGINE == "jruby"
+    if LogStash::Environment.jruby?
       expect(LogStash::Util::JavaVersion.version).to be_a(String)
     end
   end

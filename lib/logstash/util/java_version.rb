@@ -9,12 +9,12 @@ module LogStash::Util::JavaVersion
   # Check to see if this is a recommended java version, print a warning to stdout if this is a bad version
   # Returns the current java version
   def self.version
-    return nil if RUBY_ENGINE != "jruby"
+    return nil unless LogStash::Environment.jruby?
 
     require 'java'
     java_import "java.lang.System"
 
-    System.getProperties["java.runtime.version"]
+    System.getProperty("java.runtime.version")
   end
 
   def self.parse_java_version(version_string)
@@ -45,6 +45,8 @@ module LogStash::Util::JavaVersion
       return true
     elsif parsed[:major] == 1 && parsed[:minor] < 7
       return true
+    else
+      return false
     end
   end
 end
