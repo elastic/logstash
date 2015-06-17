@@ -218,58 +218,7 @@ class LogStash::Event
   #
   # If a %{name} value is an array, then we will join by ','
   # If a %{name} value does not exist, then no substitution occurs.
-  #
-  # TODO(sissel): It is not clear what the value of a field that
-  # is an array (or hash?) should be. Join by comma? Something else?
   public
-  def old_sprintf(format)
-    if format.is_a?(Float) and
-        (format < MIN_FLOAT_BEFORE_SCI_NOT or format >= MAX_FLOAT_BEFORE_SCI_NOT) then
-      format = ("%.15f" % format).sub(/0*$/,"")
-    else
-      format = format.to_s
-    end
-    if format.index("%").nil?
-      return format
-    end
-
-    return format.gsub(/%\{[^}]+\}/) do |tok|
-      # Take the inside of the %{ ... }
-      key = tok[2 ... -1]
-
-      if key[0] == "+" && !@data.has_key?(TIMESTAMP)
-        raise LogStash::Error, "Unable to format \"#{key}\" in string \"#{format}\", #{TIMESTAMP} field not found"
-      end
-
-      if key == "+%s"
-        # Got %{+%s}, support for unix epoch time
-        next @data[TIMESTAMP].to_i
-      elsif key[0,1] == "+"
-        t = @data[TIMESTAMP]
-        formatter = org.joda.time.format.DateTimeFormat.forPattern(key[1 .. -1])\
-          .withZone(org.joda.time.DateTimeZone::UTC)
-        #next org.joda.time.Instant.new(t.tv_sec * 1000 + t.tv_usec / 1000).toDateTime.toString(formatter)
-        # Invoke a specific Instant constructor to avoid this warning in JRuby
-        #  > ambiguous Java methods found, using org.joda.time.Instant(long)
-        org.joda.time.Instant.java_class.constructor(Java::long).new_instance(
-          t.tv_sec * 1000 + t.tv_usec / 1000
-        ).to_java.toDateTime.toString(formatter)
-      else
-        value = self[key]
-        case value
-          when nil
-            tok # leave the %{foo} if this field does not exist in this event.
-          when Array
-            value.join(",") # Join by ',' if value is an array
-          when Hash
-            LogStash::Json.dump(value) # Convert hashes to json
-          else
-            value # otherwise return the value
-        end # case value
-      end # 'key' checking
-    end # format.gsub...
-  end # def sprintf
-
   def sprintf(format)
     LogStash::StringInterpolation.evaluate(self, format)
   end

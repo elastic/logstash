@@ -2,13 +2,14 @@ require "thread_safe"
 require "forwardable"
 
 module LogStash
-  class StringInterpolation
+  module StringInterpolation
+    extend self 
+
     # Floats outside of these upper and lower bounds are forcibly converted
     # to scientific notation by Float#to_s
     MIN_FLOAT_BEFORE_SCI_NOT = 0.0001
     MAX_FLOAT_BEFORE_SCI_NOT = 1000000000000000.0
 
-    INSTANCE = StringInterpolation.new
     CACHE = ThreadSafe::Cache.new
     TEMPLATE_TAG_REGEXP = /%\{[^}]+\}/
 
@@ -23,10 +24,6 @@ module LogStash
 
       compiled = CACHE.get_or_default(template, nil) || CACHE.put(template, compile_template(template))
       compiled.evaluate(event)
-    end
-
-    def self.evaluate(event, format)
-      INSTANCE.evaluate(event, format)
     end
 
     private
