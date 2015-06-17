@@ -5,7 +5,8 @@ namespace "artifact" do
   def package_files
     [
       "LICENSE",
-      "CHANGELOG",
+      "CHANGELOG.md",
+      "NOTICE.TXT"
       "CONTRIBUTORS",
       "bin/**/*",
       "lib/bootstrap/**/*",
