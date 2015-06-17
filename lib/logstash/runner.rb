@@ -16,6 +16,7 @@ class LogStash::Runner
 
   def main(args)
     require "logstash/util"
+    require "logstash/util/java_version"
     require "stud/trap"
     require "stud/task"
     @startup_interruption_trap = Stud::trap("INT") { puts "Interrupted"; exit 0 }
@@ -26,6 +27,9 @@ class LogStash::Runner
       $stderr.puts "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
       return 1
     end
+
+    # Print a warning to STDERR for bad java versions
+    LogStash::Util::JavaVersion.warn_on_bad_java_version
 
     Stud::untrap("INT", @startup_interruption_trap)
 
