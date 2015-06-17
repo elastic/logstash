@@ -26,7 +26,7 @@ module LogStash::Util::JavaVersion
     match = version_string.match(/\A(\d+)\.(\d+)\.(\d+)(_(\d+))?(-(.+))?\Z/)
     major, minor, patch, ufull, update, bfull, build = match.captures
 
-    return {
+    {
       :full => version_string,
       :major => major.to_i,
       :minor => minor.to_i,
@@ -42,11 +42,11 @@ module LogStash::Util::JavaVersion
     parsed = parse_java_version(version_string)
 
     if parsed[:major] == 1 && parsed[:minor] == 7 && parsed[:patch] == 0 && parsed[:update] < 51
-      return true
+      true
     elsif parsed[:major] == 1 && parsed[:minor] < 7
-      return true
+      true
     else
-      return false
+      false
     end
   end
 end
