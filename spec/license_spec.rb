@@ -4,6 +4,10 @@ require 'rakelib/default_plugins'
 describe "Project licenses" do
 
   let(:expected_licenses) {
+    ##
+    # Expected licenses are Apache License 2.0, BSD license, MIT license and the ruby one,
+    # this not exclude that this list change in the feature.
+    ##
     Regexp.union([ /mit/,
                    /apache*/,
                    /bsd/,
