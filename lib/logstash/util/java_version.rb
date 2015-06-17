@@ -40,10 +40,10 @@ module LogStash::Util::JavaVersion
     return nil if version_string.nil?
 
     parsed = parse_java_version(version_string)
-    
-    if parsed[:major] >= 1 && parsed[:minor] == 7 && parsed[:patch] == 0 && parsed[:update] < 51
+
+    if parsed[:major] == 1 && parsed[:minor] == 7 && parsed[:patch] == 0 && parsed[:update] < 51
       return true
-    elsif parsed[:major] >= 1 && parsed[:minor] < 7
+    elsif parsed[:major] == 1 && parsed[:minor] < 7
       return true
     end
   end
