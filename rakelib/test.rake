@@ -4,7 +4,13 @@
 require "pluginmanager/util"
 
 namespace "test" do
+
   task "setup" do
+    # Need to be run here as because if run aftewarse (after the bundler.setup task) then the report got wrong
+    # numbers and misses files. There is an issue with our setup! method as this does not happen with the regular
+    # bundler.setup used in regular bundler flows.
+    Rake::Task["test:setup-simplecov"].invoke if ENV['COVERAGE']
+
     require "bootstrap/environment"
     LogStash::Bundler.setup!({:without => [:build]})
 
@@ -45,6 +51,30 @@ namespace "test" do
   task "install-vendor-plugins" => ["bootstrap", "plugin:install-vendor", "plugin:install-development-dependencies"]
 
   task "install-jar-dependencies-plugins" => ["bootstrap", "plugin:install-jar-dependencies", "plugin:install-development-dependencies"]
+
+  # Setup simplecov to group files per functional modules, like this is easier to spot places with small coverage
+  task "setup-simplecov" do
+    require "simplecov"
+    SimpleCov.start do
+      # Skip non core related directories and files.
+      ["vendor/", "spec/", "bootstrap/rspec", "Gemfile", "gemspec"].each do |pattern|
+        add_filter pattern
+      end
+
+      add_group "bootstrap", "bootstrap/" # This module is used during bootstraping of LS
+      add_group "plugin manager", "pluginmanager/" # Code related to the plugin manager
+      add_group "core" do |src_file| # The LS core codebase
+        /logstash\/\w+.rb/.match(src_file.filename)
+      end
+      add_group "core-util", "logstash/util" # Set of LS utils module
+      add_group "core-config", "logstash/config" # LS Configuration modules
+      add_group "core-patches", "logstash/patches" # Patches used to overcome known issues in dependencies.
+      # LS Core plugins code base.
+      add_group "core-plugins", [ "logstash/codecs", "logstash/filters", "logstash/outputs", "logstash/inputs" ]
+    end
+    task.reenable
+  end
+
 end
 
 task "test" => [ "test:core" ]
