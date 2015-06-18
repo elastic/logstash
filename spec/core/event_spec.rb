@@ -332,13 +332,20 @@ describe LogStash::Event do
 
     # This is a custom method on Event
     context "inspect" do
+      let(:str) { subject.inspect }
+
       it "should include the json metadata" do
-        expect(subject.inspect).to include(subject.to_json_with_metadata)
+        expect(str).to include(subject.to_json_with_metadata)
       end
 
-      it "should include the object id" do
-        expect(subject.inspect).to include(subject.object_id.to_s)
+      it "should include the hex hash" do
+        expect(str).to include(subject.hash.to_s(16))
       end
+
+      it "should start with the class name" do
+        expect(str).to start_with("#<#{subject.class}")
+      end
+
     end
 
     context "to_json" do
