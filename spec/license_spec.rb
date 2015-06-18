@@ -11,7 +11,8 @@ describe "Project licenses" do
     Regexp.union([ /mit/,
                    /apache*/,
                    /bsd/,
-                   /ruby/])
+                   /ruby/,
+                   /lgpl/])
   }
 
   shared_examples "runtime license test" do
