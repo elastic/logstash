@@ -17,6 +17,9 @@ module LogStash::Util::JavaVersion
     System.getProperty("java.runtime.version")
   end
 
+  # Takes a string of a java version ex: "1.8.0_24-beta"
+  # and returns a parsed map of the components.
+  # nil inputs will be returned as nil.
   def self.parse_java_version(version_string)
     return nil if version_string.nil?
 
@@ -36,6 +39,9 @@ module LogStash::Util::JavaVersion
     }
   end
 
+  # Determine if the given java version string is a bad version of java
+  # If it is, return true, if it isn't return false.
+  # Accepts nil, returning nil.
   def self.bad_java_version?(version_string)
     return nil if version_string.nil?
 
