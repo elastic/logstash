@@ -19,7 +19,6 @@ Gem::Specification.new do |gem|
     lib/logstash/version.rb
     lib/logstash/util.rb
     lib/logstash/util/accessors.rb
-    lib/logstash/util/fieldreference.rb
     LICENSE
   }
 
