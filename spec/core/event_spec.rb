@@ -2,7 +2,6 @@
 require "spec_helper"
 
 describe LogStash::Event do
-
   shared_examples "all event tests" do
     context "[]=" do
       it "should raise an exception if you attempt to set @timestamp to a value type other than a Time object" do
@@ -333,6 +332,24 @@ describe LogStash::Event do
         expect(event["tags"]).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
         expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq("foo")
       end
+    end
+
+    # This is a custom method on Event
+    context "inspect" do
+      let(:str) { subject.inspect }
+
+      it "should include the json metadata" do
+        expect(str).to include(subject.to_json_with_metadata)
+      end
+
+      it "should include the hex hash" do
+        expect(str).to include(subject.hash.to_s(16))
+      end
+
+      it "should start with the class name" do
+        expect(str).to start_with("#<#{subject.class}")
+      end
+
     end
 
     context "to_json" do

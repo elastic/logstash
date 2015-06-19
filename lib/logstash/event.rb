@@ -273,4 +273,10 @@ class LogStash::Event
     end
   end
 
+  # Java classes like ArrayList don't inspect properly. Make this easier
+  # on the eyes
+  def inspect
+    "#<#{self.class}:#{self.hash.to_s(16)}> #{self.to_json_with_metadata}"
+  end
+
 end # class LogStash::Event
