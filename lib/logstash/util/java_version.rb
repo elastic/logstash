@@ -1,8 +1,16 @@
+require 'cabin'
+
 module LogStash::Util::JavaVersion
+  def self.logger
+    @logger ||= Cabin::Channel.get(LogStash)
+  end
+
   # Print a warning if we're on a bad version of java
   def self.warn_on_bad_java_version
     if self.bad_java_version?(self.version)
-      STDERR.puts("!!! Please upgrade your java version, the current version '#{self.version}' may cause problems. We recommend a minimum version of 1.7.0_51")
+      msg = "!!! Please upgrade your java version, the current version '#{self.version}' may cause problems. We recommend a minimum version of 1.7.0_51"
+      STDERR.puts(msg)
+      logger.warn(msg)
     end
   end
 
