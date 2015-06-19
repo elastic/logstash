@@ -6,7 +6,7 @@ namespace "artifact" do
     [
       "LICENSE",
       "CHANGELOG.md",
-      "NOTICE.TXT"
+      "NOTICE.TXT",
       "CONTRIBUTORS",
       "bin/**/*",
       "lib/bootstrap/**/*",
