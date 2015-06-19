@@ -92,4 +92,8 @@ module java::util::Collection
     duped.addAll(other)
     duped
   end
+
+  def inspect
+    "<#{self.class.name}:#{self.hashCode} #{self.to_a(&:inspect)}>"
+  end
 end
