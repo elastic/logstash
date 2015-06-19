@@ -14,15 +14,10 @@ module LogStash::Util::JavaVersion
     end
   end
 
-  # Check to see if this is a recommended java version, print a warning to stdout if this is a bad version
-  # Returns the current java version
+  # Return the current java version string. Returns nil if this is a non-java platform (e.g. MRI).
   def self.version
     return nil unless LogStash::Environment.jruby?
-
-    require 'java'
-    java_import "java.lang.System"
-
-    System.getProperty("java.runtime.version")
+    java.lang.System.getProperty("java.runtime.version")
   end
 
   # Takes a string of a java version ex: "1.8.0_24-beta"
