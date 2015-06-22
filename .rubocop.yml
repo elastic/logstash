@@ -1,0 +1,13 @@
+Style/Encoding:
+  Enabled: false
+
+AllCops:
+  Include:
+    - 'lib/**/*'
+    - 'rakelib/**/*'
+  Exclude:
+    - 'vendor/**/*'
+    - 'spec/**/*'
+    - 'acceptance_spec/**/*'
+    - 'bin/**/*'
+    - 'bot/**/*'
