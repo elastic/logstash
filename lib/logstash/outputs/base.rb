@@ -33,7 +33,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Note that this setting may not be useful for all outputs.
   config :workers, :validate => :number, :default => 1
 
-  attr_reader :worker_plugins
+  attr_reader :worker_plugins, :worker_queue
 
   public
   def workers_not_supported(message=nil)
