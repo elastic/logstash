@@ -21,13 +21,9 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
 
 ## Source Code Layout
 
-* <a name="utf-8"></a>
-  Use `UTF-8` as the source file encoding.
-<sup>[[link](#utf-8)]</sup>
+  * Use `UTF-8` as the source file encoding. If you're using a ruby version older than 2.0, adding ```# encoding: utf-8``` on top of a ruby file will tell the compiler to use this encoding by default. If using a ruby VM older than 2.0, `UTF-8` is the default encoding.
 
-* <a name="spaces-indentation"></a>
-  Use two **spaces** per indentation level (aka soft tabs). No hard tabs.
-<sup>[[link](#spaces-indentation)]</sup>
+ * Use two **spaces** per indentation level (aka soft tabs). No hard tabs.
 
   ```Ruby
   # bad - four spaces
@@ -41,23 +37,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   end
   ```
 
-* <a name="crlf"></a>
-  Use Unix-style line endings. (*BSD/Solaris/Linux/OS X users are covered by
-  default, Windows users have to be extra careful.)
-<sup>[[link](#crlf)]</sup>
-
-  * If you're using Git you might want to add the following
-    configuration setting to protect your project from Windows line
-    endings creeping in:
-
-    ```bash
-    $ git config --global core.autocrlf true
-    ```
-
-* <a name="no-semicolon"></a>
-  Don't use `;` to separate statements and expressions. As a corollary - use one
-  expression per line.
-<sup>[[link](#no-semicolon)]</sup>
+ *  Don't use `;` to separate statements and expressions. As a corollary - use one expression per line.
 
   ```Ruby
   # bad
@@ -74,9 +54,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   puts 'foo', 'bar' # this applies to puts in particular
   ```
 
-* <a name="single-line-classes"></a>
-  Prefer a single-line format for class definitions with no body.
-<sup>[[link](#single-line-classes)]</sup>
+  * Prefer a single-line format for class definitions with no body.
 
   ```Ruby
   # bad
@@ -90,12 +68,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   FooError = Class.new(StandardError)
   ```
 
-* <a name="no-single-line-methods"></a>
-  Avoid single-line methods. Although they are somewhat popular in the wild,
-  there are a few peculiarities about their definition syntax that make their
-  use undesirable. At any rate - there should be no more than one expression in
-  a single-line method.
-<sup>[[link](#no-single-line-methods)]</sup>
+  * Avoid single-line methods. Although they are somewhat popular in the wild, there are a few peculiarities about their definition syntax that make their use undesirable. At any rate - there should be no more than one expression in a single-line method.
 
   ```Ruby
   # bad
@@ -123,11 +96,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   def no_op; end
   ```
 
-* <a name="spaces-operators"></a>
-  Use spaces around operators, after commas, colons and semicolons, around `{`
-  and before `}`. Whitespace might be (mostly) irrelevant to the Ruby
-  interpreter, but its proper use is the key to writing easily readable code.
-<sup>[[link](#spaces-operators)]</sup>
+  * Use spaces around operators, after commas, colons and semicolons, around `{` and before `}`. Whitespace might be (mostly) irrelevant to the Ruby interpreter, but its proper use is the key to writing easily readable code.
 
   ```Ruby
   sum = 1 + 2
@@ -146,9 +115,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   e = M * c**2
   ```
 
-  `{` and `}` deserve a bit of clarification, since they are used
-  for block and hash literals, as well as string interpolation.
-  For hash literals two styles are considered acceptable.
+  `{` and `}` deserve a bit of clarification, since they are used for block and hash literals, as well as string interpolation. For hash literals two styles are considered acceptable.
 
   ```Ruby
   # good - space after { and before }
@@ -158,23 +125,16 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   {one: 1, two: 2}
   ```
 
-  The first variant is slightly more readable (and arguably more
-  popular in the Ruby community in general). The second variant has
-  the advantage of adding visual difference between block and hash
-  literals. Whichever one you pick - apply it consistently.
+  The first variant is slightly more readable (and arguably more popular in the Ruby community in general). The second variant has the advantage of adding visual difference between block and hash literals. Whichever one you pick - apply it consistently.
 
-* <a name="no-spaces-braces"></a>
-  No spaces after `(`, `[` or before `]`, `)`.
-<sup>[[link](#no-spaces-braces)]</sup>
+  * No spaces after `(`, `[` or before `]`, `)`.
 
   ```Ruby
   some(arg).other
   [1, 2, 3].size
   ```
 
-* <a name="no-space-bang"></a>
-  No space after `!`.
-<sup>[[link](#no-space-bang)]</sup>
+ *  No space after `!`.
 
   ```Ruby
   # bad
@@ -184,9 +144,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   !something
   ```
 
-* <a name="no-space-inside-range-literals"></a>
-  No space inside range literals.
-<sup>[[link](#no-space-inside-range-literals)]</sup>
+  * No space inside range literals.
 
     ```Ruby
     # bad
@@ -198,11 +156,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
     'a'...'z'
     ```
 
-* <a name="indent-when-to-case"></a>
-  Indent `when` as deep as `case`. I know that many would disagree
-  with this one, but it's the style established in both "The Ruby
-  Programming Language" and "Programming Ruby".
-<sup>[[link](#indent-when-to-case)]</sup>
+* Indent `when` as deep as `case`. I know that many would disagree with this one, but it's the style established in both "The Ruby Programming Language" and "Programming Ruby".
 
   ```Ruby
   # bad
@@ -230,10 +184,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   end
   ```
 
-* <a name="indent-conditional-assignment"></a>
-  When assigning the result of a conditional expression to a variable,
-  preserve the usual alignment of its branches.
-<sup>[[link](#indent-conditional-assignment)]</sup>
+* When assigning the result of a conditional expression to a variable, preserve the usual alignment of its branches.
 
   ```Ruby
   # bad - pretty convoluted
@@ -287,10 +238,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
     end
   ```
 
-* <a name="empty-lines-between-methods"></a>
-  Use empty lines between method definitions and also to break up a method
-  into logical paragraphs internally.
-<sup>[[link](#empty-lines-between-methods)]</sup>
+* Use empty lines between method definitions and also to break up a method into logical paragraphs internally.
 
   ```Ruby
   def some_method
@@ -306,10 +254,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   end
   ```
 
-* <a name="no-trailing-params-comma"></a>
-  Avoid comma after the last parameter in a method call, especially when the
-  parameters are not on separate lines.
-<sup>[[link](#no-trailing-params-comma)]</sup>
+* Avoid comma after the last parameter in a method call, especially when the parameters are not on separate lines.
 
   ```Ruby
   # bad - easier to move/add/remove parameters, but still not preferred
@@ -326,30 +271,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   some_method(size, count, color)
   ```
 
-* <a name="spaces-around-equals"></a>
-  Use spaces around the `=` operator when assigning default values to method
-  parameters:
-<sup>[[link](#spaces-around-equals)]</sup>
-
-  ```Ruby
-  # bad
-  def some_method(arg1=:default, arg2=nil, arg3=[])
-    # do something...
-  end
-
-  # good
-  def some_method(arg1 = :default, arg2 = nil, arg3 = [])
-    # do something...
-  end
-  ```
-
-  While several Ruby books suggest the first style, the second is much more
-  prominent in practice (and arguably a bit more readable).
-
-* <a name="no-trailing-backslash"></a>
-  Avoid line continuation `\` where not required. In practice, avoid using
-  line continuations for anything but string concatenation.
-<sup>[[link](#no-trailing-backslash)]</sup>
+* Avoid line continuation `\` where not required. In practice, avoid using line continuations for anything but string concatenation.
 
   ```Ruby
   # bad
@@ -364,11 +286,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
                 ' and second part of the long string'
   ```
 
-* <a name="consistent-multi-line-chains"></a>
-    Adopt a consistent multi-line method chaining style. There are two
-    popular styles in the Ruby community, both of which are considered
-    good - leading `.` (Option A) and trailing `.` (Option B).
-<sup>[[link](#consistent-multi-line-chains)]</sup>
+* Adopt a consistent multi-line method chaining style. There are two popular styles in the Ruby community, both of which are considered good - leading `.` (Option A) and trailing `.` (Option B).
 
   * **(Option A)** When continuing a chained method invocation on
     another line keep the `.` on the second line.
@@ -400,12 +318,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   A discussion on the merits of both alternative styles can be found
   [here](https://github.com/bbatsov/ruby-style-guide/pull/176).
 
-* <a name="no-double-indent"></a>
-    Align the parameters of a method call if they span more than one
-    line. When aligning parameters is not appropriate due to line-length
-    constraints, single indent for the lines after the first is also
-    acceptable.
-<sup>[[link](#no-double-indent)]</sup>
+* Align the parameters of a method call if they span more than one line. When aligning parameters is not appropriate due to line-length constraints, single indent for the lines after the first is also acceptable.
 
   ```Ruby
   # starting point (line is too long)
@@ -441,9 +354,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   end
   ```
 
-* <a name="align-multiline-arrays"></a>
-  Align the elements of array literals spanning multiple lines.
-<sup>[[link](#align-multiline-arrays)]</sup>
+* Align the elements of array literals spanning multiple lines.
 
   ```Ruby
   # bad - single indent
@@ -462,9 +373,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
      'Baked beans', 'Spam', 'Spam', 'Spam', 'Spam', 'Spam']
   ```
 
-* <a name="underscores-in-numerics"></a>
-  Add underscores to large numeric literals to improve their readability.
-<sup>[[link](#underscores-in-numerics)]</sup>
+* Add underscores to large numeric literals to improve their readability.
 
   ```Ruby
   # bad - how many 0s are there?
@@ -474,27 +383,12 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   num = 1_000_000
   ```
 
-* <a name="rdoc-conventions"></a>
-    Use RDoc and its conventions for API documentation.  Don't put an
-    empty line between the comment block and the `def`.
-<sup>[[link](#rdoc-conventions)]</sup>
+ * Use RDoc and its conventions for API documentation.  Don't put an empty line between the comment block and the `def`.
 
-* <a name="80-character-limits"></a>
-  Limit lines to 80 characters.
-<sup>[[link](#80-character-limits)]</sup>
-
-* <a name="no-trailing-whitespace"></a>
-  Avoid trailing whitespace.
-<sup>[[link](#no-trailing-whitespace)]</sup>
-
-* <a name="newline-eof"></a>
-  End each file with a newline.
-<sup>[[link](#newline-eof)]</sup>
-
-* <a name="no-block-comments"></a>
-    Don't use block comments. They cannot be preceded by whitespace and are not
-    as easy to spot as regular comments.
-<sup>[[link](#no-block-comments)]</sup>
+  * Limit lines to 80 characters.
+  * Avoid trailing whitespace.
+  * End each file with a newline.
+  * Don't use block comments. They cannot be preceded by whitespace and are not as easy to spot as regular comments.
 
   ```Ruby
   # bad
@@ -673,27 +567,8 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   result = some_condition ? something : something_else
   ```
 
-* <a name="no-nested-ternary"></a>
-  Use one expression per branch in a ternary operator. This
-  also means that ternary operators must not be nested. Prefer
-  `if/else` constructs in these cases.
-<sup>[[link](#no-nested-ternary)]</sup>
-
-  ```Ruby
-  # bad
-  some_condition ? (nested_condition ? nested_something : nested_something_else) : something_else
-
-  # good
-  if some_condition
-    nested_condition ? nested_something : nested_something_else
-  else
-    something_else
-  end
-  ```
-
 * <a name="no-semicolon-ifs"></a>
-  Do not use `if x; ...`. Use the ternary
-  operator instead.
+  Do not use `if x; ...`. Use the ternary operator instead.
 <sup>[[link](#no-semicolon-ifs)]</sup>
 
   ```Ruby
@@ -703,37 +578,6 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   # good
   result = some_condition ? something : something_else
   ```
-
-* <a name="use-if-case-returns"></a>
-  Leverage the fact that `if` and `case` are expressions which return a
-  result.
-<sup>[[link](#use-if-case-returns)]</sup>
-
-  ```Ruby
-  # bad
-  if condition
-    result = x
-  else
-    result = y
-  end
-
-  # good
-  result =
-    if condition
-      x
-    else
-      y
-    end
-  ```
-
-* <a name="one-line-cases"></a>
-  Use `when x then ...` for one-line cases. The alternative syntax `when x:
-  ...` has been removed as of Ruby 1.9.
-<sup>[[link](#one-line-cases)]</sup>
-
-* <a name="no-when-semicolons"></a>
-  Do not use `when x; ...`. See the previous rule.
-<sup>[[link](#no-when-semicolons)]</sup>
 
 * <a name="bang-not-not"></a>
   Use `!` instead of `not`.
@@ -771,8 +615,7 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   ```
 
 * <a name="no-and-or-or"></a>
-  The `and` and `or` keywords are banned. It's just not worth it. Always use
-  `&&` and `||` instead.
+  No usage of the `and` and `or` keywords is accepted. Always use `&&` and `||` instead.
 <sup>[[link](#no-and-or-or)]</sup>
 
   ```Ruby
@@ -837,18 +680,17 @@ This style guide is based on the [guide][rails-style-guide] created by Bozhidar 
   ```
 
 * <a name="unless-for-negatives"></a>
-  Favor `unless` over `if` for negative conditions (or control flow `||`).
+
+Avoid usage of `unless` over negative conditions (or control flow), it
+can cause issues when having multi term expressions.
 <sup>[[link](#unless-for-negatives)]</sup>
 
   ```Ruby
   # bad
-  do_something if !some_condition
-
-  # bad
-  do_something if not some_condition
+  do_something unless some_condition
 
   # good
-  do_something unless some_condition
+  do_something if !some_condition
 
   # another good option
   some_condition || do_something
@@ -915,33 +757,7 @@ condition](#safe-assignment-in-condition).
   until x > 5
     # body omitted
   end
-  ```
-
-* <a name="while-as-a-modifier"></a>
-  Favor modifier `while/until` usage when you have a single-line body.
-<sup>[[link](#while-as-a-modifier)]</sup>
-
-  ```Ruby
-  # bad
-  while some_condition
-    do_something
-  end
-
-  # good
-  do_something while some_condition
-  ```
-
-* <a name="until-for-negatives"></a>
-  Favor `until` over `while` for negative conditions.
-<sup>[[link](#until-for-negatives)]</sup>
-
-  ```Ruby
-  # bad
-  do_something while !some_condition
-
-  # good
-  do_something until some_condition
-  ```
+```
 
 * <a name="infinite-loop"></a>
   Use `Kernel#loop` instead of `while/until` when you need an infinite loop.
@@ -1018,21 +834,6 @@ condition](#safe-assignment-in-condition).
 
   # good
   user.set(name: 'John', age: 45, permissions: { read: true })
-  ```
-
-* <a name="no-dsl-decorating"></a>
-  Omit both the outer braces and parentheses for methods that are part of an
-  internal DSL.
-<sup>[[link](#no-dsl-decorating)]</sup>
-
-  ```Ruby
-  class Person < ActiveRecord::Base
-    # bad
-    validates(:name, { presence: true, length: { within: 1..10 } })
-
-    # good
-    validates :name, presence: true, length: { within: 1..10 }
-  end
   ```
 
 * <a name="no-args-no-parens"></a>
@@ -1224,42 +1025,6 @@ condition](#safe-assignment-in-condition).
   end
   ```
 
-* <a name="self-assignment"></a>
-  Use shorthand self assignment operators whenever applicable.
-<sup>[[link](#self-assignment)]</sup>
-
-  ```Ruby
-  # bad
-  x = x + y
-  x = x * y
-  x = x**y
-  x = x / y
-  x = x || y
-  x = x && y
-
-  # good
-  x += y
-  x *= y
-  x **= y
-  x /= y
-  x ||= y
-  x &&= y
-  ```
-
-* <a name="double-pipe-for-uninit"></a>
-  Use `||=` to initialize variables only if they're not already initialized.
-<sup>[[link](#double-pipe-for-uninit)]</sup>
-
-  ```Ruby
-  # bad
-  name = name ? name : 'Bozhidar'
-
-  # bad
-  name = 'Bozhidar' unless name
-
-  # good - set name to Bozhidar, only if it's nil or false
-  name ||= 'Bozhidar'
-  ```
 
 * <a name="no-double-pipes-for-bools"></a>
   Don't use `||=` to initialize boolean variables. (Consider what would happen
@@ -1363,10 +1128,6 @@ condition](#safe-assignment-in-condition).
   use parentheses in the method invocation. For example, write `f((3 + 2) + 1)`.
 <sup>[[link](#parens-as-args)]</sup>
 
-* <a name="always-warn-at-runtime"></a>
-  Always run the Ruby interpreter with the `-w` option so it will warn you if
-  you forget either of the rules above!
-<sup>[[link](#always-warn-at-runtime)]</sup>
 
 * <a name="no-nested-methods"></a>
   Do not use nested method definitions, use lambda instead.
@@ -1425,19 +1186,6 @@ condition](#safe-assignment-in-condition).
     tmp = a * 7
     tmp * b / 50
   end
-  ```
-
-* <a name="stabby-lambda-no-args"></a>
-Omit the parameter parentheses when defining a stabby lambda with
-no parameters.
-<sup>[[link](#stabby-lambda-no-args)]</sup>
-
-  ```Ruby
-  # bad
-  l = ->() { something }
-
-  # good
-  l = -> { something }
   ```
 
 * <a name="proc"></a>
@@ -1663,37 +1411,9 @@ no parameters.
   Avoid the use of flip-flops.
 <sup>[[link](#no-flip-flops)]</sup>
 
-* <a name="no-nested-conditionals"></a>
-  Avoid use of nested conditionals for flow of control.
-<sup>[[link](#no-nested-conditionals)]</sup>
-
-  Prefer a guard clause when you can assert invalid data. A guard clause
-  is a conditional statement at the top of a function that bails out as
-  soon as it can.
-
-  ```Ruby
-  # bad
-  def compute_thing(thing)
-    if thing[:foo]
-      update_with_bar(thing)
-      if thing[:foo][:bar]
-        partial_compute(thing)
-      else
-        re_compute(thing)
-      end
-    end
-  end
-
-  # good
-  def compute_thing(thing)
-    return unless thing[:foo]
-    update_with_bar(thing[:foo])
-    return re_compute(thing) unless thing[:foo][:bar]
-    partial_compute(thing)
-  end
-  ```
-
-  Prefer `next` in loops instead of conditional blocks.
+* <a name="prefer-next-in-loops"></a>
+Prefer `next` in loops instead of conditional blocks.
+<sup>[[link](#prefer-next-in-loops)]</sup>
 
   ```Ruby
   # bad
@@ -1709,16 +1429,6 @@ no parameters.
     puts item
   end
   ```
-
-* <a name="map-find-select-reduce-size"></a>
-  Prefer `map` over `collect`, `find` over `detect`, `select` over `find_all`,
-  `reduce` over `inject` and `size` over `length`. This is not a hard
-  requirement; if the use of the alias enhances readability, it's ok to use it.
-  The rhyming methods are inherited from Smalltalk and are not common in other
-  programming languages. The reason the use of `select` is encouraged over
-  `find_all` is that it goes together nicely with `reject` and its name is
-  pretty self-explanatory.
-<sup>[[link](#map-find-select-reduce-size)]</sup>
 
 * <a name="count-vs-size"></a>
   Don't use `count` as a substitute for `size`. For `Enumerable` objects other
@@ -1766,10 +1476,6 @@ no parameters.
   ```
 
 ## Naming
-
-> The only real difficulties in programming are cache invalidation and
-> naming things. <br>
-> -- Phil Karlton
 
 * <a name="english-identifiers"></a>
   Name identifiers in English.
