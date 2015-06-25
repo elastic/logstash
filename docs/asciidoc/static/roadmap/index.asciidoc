@@ -159,7 +159,7 @@ serialization and deserialization. In future releases of Logstash, we plan to
 incorporate additional JRuby optimizations to make the code even more efficient.
 We also plan to seek community feedback in terms of prioritizing other aspects
 of performance, such as startup time, resource utilization, and pipeline
-latency.
+latency. You can follow our benchmarking and performance improvements in this issue ({ISSUES}3499[#3499]).
 
 == Windows Support
 [float]
