@@ -116,3 +116,4 @@ gem "logstash-output-stdout"
 gem "logstash-output-tcp"
 gem "logstash-output-udp"
 gem "logstash-output-kafka"
+gem "flores", "~> 0.0.4", :group => :development
