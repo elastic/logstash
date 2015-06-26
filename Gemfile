@@ -9,6 +9,7 @@ gem "simplecov", :group => :development
 gem "coveralls", :group => :development
 gem "rspec", "~> 3.1.0", :group => :development
 gem "logstash-devutils", "~> 0", :group => :development
+gem "rubocop", "~> 0", :group => :development
 gem "octokit", "3.8.0", :group => :build
 gem "stud", "~> 0.0.19", :group => :build
 gem "fpm", "~> 1.3.3", :group => :build
