@@ -55,6 +55,7 @@ module LogStash
       logstash-input-gelf
       logstash-input-generator
       logstash-input-graphite
+      logstash-input-http
       logstash-input-imap
       logstash-input-irc
       logstash-input-log4j
@@ -138,7 +139,6 @@ module LogStash
       /^logstash-input-neo4j$/,
       /^logstash-output-neo4j$/,
       /^logstash-input-perfmon$/,
-      /^logstash-input-http$/,
       /^logstash-output-webhdfs$/,
       /^logstash-input-rackspace$/,
       /^logstash-output-rackspace$/
