@@ -1,3 +1,27 @@
+## 1.5.2 (July 1, 2015)
+### general
+  - Plugin manager: Added validation and warning when updating plugins between major versions (#3383).
+  - Performance improvements: String interpolation is widely used in LS to create keys combining dynamic
+    values from extracted fields. Added a caching mechanism where we compile this template on first use
+    and reuse them subsequently, giving us a good performance gain in configs that do a lot of date 
+    processing, sprintf, and use field reference syntax (#3425).
+  - Added warning when LS is running on a JVM version which has known issues/bugs (#2547).  
+  - Updated AWS based plugins to v2 of AWS ruby SDK. This involves an update to s3-input, s3-output,
+    sqs-input, sns-output.
+
+### input
+  - Lumberjack: This input was not handling backpressure properly from downstream plugins and
+    would continue to accept data, eventually running out of memory. We added a circuit breaker to stop
+    accepting new connections when we detect this situation. (#12)
+  - Http: Added new input to receive data via http(s)
+  - File: Fixed a critical bug where new files being added to a dir being watched would crash LS.
+    This issue also happens when using a wildcard to watch files matching a pattern (#3473).
+
+### output
+  - SNS: Provided support to use codecs for formatting output (#3)
+  - Elasticsearch: Added path setting for `http` protocol. When ES is running behind a proxy, you can use
+    the path option to specify the exact location of the ES end point (#168)
+
 ## 1.5.1 (June 16, 2015)
 ### general
   - Fixed an issue which caused Logstash to hang when used with single worker (`-w 1`) configuration. 
