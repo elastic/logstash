@@ -2,7 +2,7 @@
 # If you modify this file manually all comments and formatting will be lost.
 
 source "https://rubygems.org"
-gem "logstash-core", "1.5.1"
+gem "logstash-core", "1.5.2.snapshot1"
 gem "file-dependencies", "0.1.6"
 gem "ci_reporter_rspec", "1.0.0", :group => :development
 gem "simplecov", :group => :development
@@ -67,6 +67,7 @@ gem "logstash-input-ganglia"
 gem "logstash-input-gelf"
 gem "logstash-input-generator"
 gem "logstash-input-graphite"
+gem "logstash-input-http"
 gem "logstash-input-imap"
 gem "logstash-input-irc"
 gem "logstash-input-log4j"
