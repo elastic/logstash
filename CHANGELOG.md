@@ -12,15 +12,15 @@
 ### input
   - Lumberjack: This input was not handling backpressure properly from downstream plugins and
     would continue to accept data, eventually running out of memory. We added a circuit breaker to stop
-    accepting new connections when we detect this situation. (#12)
-  - Http: Added new input to receive data via http(s)
+    accepting new connections when we detect this situation. (#12).
+  - Http: Added new input to receive data via http(s).
   - File: Fixed a critical bug where new files being added to a dir being watched would crash LS.
     This issue also happens when using a wildcard to watch files matching a pattern (#3473).
 
 ### output
-  - SNS: Provided support to use codecs for formatting output (#3)
+  - SNS: Provided support to use codecs for formatting output (#3).
   - Elasticsearch: Added path setting for `http` protocol. When ES is running behind a proxy, you can use
-    the path option to specify the exact location of the ES end point (#168)
+    the path option to specify the exact location of the ES end point (#168).
 
 ## 1.5.1 (June 16, 2015)
 ### general
