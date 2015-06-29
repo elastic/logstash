@@ -139,7 +139,9 @@ module LogStash
       /^logstash-output-neo4j$/,
       /^logstash-input-perfmon$/,
       /^logstash-input-http$/,
-      /^logstash-output-webhdfs$/
+      /^logstash-output-webhdfs$/,
+      /^logstash-input-rackspace$/,
+      /^logstash-output-rackspace$/
     ])
 
 
