@@ -151,7 +151,7 @@ GEM
     logstash-codec-rubydebug (1.0.0)
       awesome_print
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-core (1.5.2.1-java)
+    logstash-core (1.5.2.2-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       filesize (= 0.0.4)
@@ -601,7 +601,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 1.5.2.1)
+  logstash-core (= 1.5.2.2)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
