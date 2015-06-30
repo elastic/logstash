@@ -112,7 +112,7 @@ module LogStash
       when Array
         value.join(",")
       when Hash
-        Logstash::Json.dump(value)
+        LogStash::Json.dump(value)
       else
         value
       end
