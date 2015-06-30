@@ -95,6 +95,10 @@ describe LogStash::Event do
       it "should allow to use nested hash from the metadata field" do
         expect(subject.sprintf("%{[@metadata][have-to-go][deeper]}")).to eq("inception")
       end
+
+      it "should return a json string if the key is a hash" do
+        expect(subject.sprintf("%{[j][k3]}")).to eq("{\"4\":\"m\"}")
+      end
     end
 
     context "#[]" do
