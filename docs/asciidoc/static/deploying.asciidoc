@@ -1,0 +1,145 @@
+[[deploying-and-scaling]]
+== Deploying and Scaling Logstash
+
+The requirements for your Logstash installation change according to the scale demanded by your use case. In this 
+section, we will examine a range of Logstash installations in increasing order of complexity, starting from a minimal 
+viable installation and adding elements to the system as we go. The example deployments in this section write to an 
+Elasticsearch cluster, but Logstash can write to a large variety of {logstash}output-plugins.html[endpoints].
+
+// [float]
+[[deploying-minimal-install]]
+=== Getting Started: Minimal Installation
+
+The minimal Logstash installation has one Logstash instance and one Elasticsearch instance. These instances are 
+directly connected, with Logstash using an {logstash}input-plugins.html[_input plugin_] to ingest data and an 
+Elasticsearch {logstash}output-plugins.html[_output plugin_] to index the data in Elasticsearch, following the Logstash 
+{logstash}pipeline.html[_processing pipeline_]. A given Logstash instance has a fixed pipeline constructed at startup, 
+based on the instance’s configuration file. You must specify an input plugin. Output defaults to `stdout`, and the 
+filtering section of the pipeline, which is discussed in the next section, is optional.
+
+image::images/deploy_1.png[]
+
+// [float]
+[[deploying-filter-threads]]
+=== Adding a Filter and Threads
+
+Log data is typically unstructured, often contains extraneous information that isn’t relevant to your use case, and 
+sometimes is missing relevant information that can be derived from the log contents. A 
+{logstash}filter-plugins.html[filter plugin] can handle these situations by parsing the log into fields, removing 
+unnecessary fields, and adding new information derived from the existing fields. As an example, geolocation information 
+can be derived from an IP address and added to the logs, or arbitrary text can be parsed and structured by the 
+{logstash}plugins-filters-grok.html[grok] filter.
+
+Depending on the amount of computation the filter plugin requires, and the volume of the logs being processed, adding a 
+filter plugin can have a significant effect on performance. The grok filter’s regular expression computation is 
+particularly resource-intensive. One way to better address this increased demand for computing resources is to use 
+parallel processing on multicore machines. Use the -w switch to set the number of execution threads for Logstash 
+filtering tasks. For example the bin/logstash -w 8 command uses eight different threads for filter processing.
+
+image::images/deploy_2.png[]
+
+// [float]
+[[deploying-logstash-forwarder]]
+=== Using Logstash Forwarder
+
+The https://github.com/elastic/logstash-forwarder[Logstash Forwarder] is a lightweight, resource-friendly tool written 
+in Go that collects logs from files on the server for processing on other machines. The Logstash Forwarder acts as a 
+client to a centralized Logstash instance, communicating using a secure protocol called Lumberjack. The Logstash 
+instance that acts as a server must be configured to use the {logstash}plugins-inputs-lumberjack.html[Lumberjack 
+input plugin].
+
+The Logstash Forwarder uses the computing resources of the machine hosting the source data, and the Lumberjack input 
+plugin minimizes the resource demands on the Logstash instance, making this architecture attractive for use cases with 
+resource constraints.
+
+image::images/deploy_3.png[]
+
+// [float]
+[[deploying-larger-cluster]]
+=== Scaling to a Larger Elasticsearch Cluster
+
+Typically, Logstash does not communicate with a single Elasticsearch node, but with a cluster made up of several nodes. 
+Logstash can use any of the protocols Elasticsearch makes available to move data into the cluster: 
+{guide}_transport_client_versus_node_client.html[HTTP, transport, or node]. 
+
+You can use the HTTP REST APIs that Elasticsearch provides to index data into the Elasticsearch cluster, transporting 
+the data in a JSON representation. Using the REST APIs does not require the Java client classes or any additional JAR 
+files and has no performance disadvantages compared to the transport or node protocols. You can secure communications 
+that use the HTTP REST APIs with the {shield}[Shield] plugin, which supports SSL and HTTP basic authentication.
+
+You can also use the Java APIs that Elasticsearch provides to serialize the data into a binary representation, using 
+the transport protocol. The transport protocol has the option to sniff the endpoint of the request, selecting an 
+arbitrary client or data node in the Elasticsearch cluster. 
+
+Both the HTTP and transport protocols separate Logstash from the Elasticsearch cluster. The node protocol, by contrast, 
+has the machine running the Logstash instance join the Elasticsearch cluster, running an Elasticsearch instance. The 
+data that needs indexing propagates from this node to the rest of the cluster. Since the machine is part of the 
+cluster, the cluster topology is available, making the node protocol a good fit for use cases that use a relatively 
+small number of persistent connections.
+
+When you use the HTTP protocol, you can configure the Logstash Elasticsearch output plugin to automatically 
+load-balance indexing requests across a 
+{logstash}plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-host[specified set of hosts] in the 
+Elasticsearch cluster. Specifying multiple Elasticsearch nodes also provides high availability for the Elasticsearch 
+cluster by routing traffic to active Elasticsearch nodes.
+You can also use a third-party load balancer, either hardware or software, to handle connections between Logstash and 
+external applications.
+
+NOTE: Make sure that your Logstash configuration does not connect directly to Elasticsearch 
+{ref}modules-node.html[master nodes]. Master nodes tend to have substantial demands on their computing resources. 
+Connect to client or data nodes to maintain cluster performance.
+
+image::images/deploy_4.png[]
+
+// [float]
+[[deploying-message-queueing]]
+=== Managing Throughput Spikes with Message Queueing
+
+When a Logstash pipeline produces data faster than the Elasticsearch cluster can ingest, use a message queue to serve 
+as a buffer. By default, Logstash propagates backpressure to throttle incoming events when indexer consumption rates 
+fall below incoming data rates. Since this throttling can lead to events being buffered at the data source, preventing 
+backpressure with message queues becomes an important part of managing your deployment.
+
+Adding a message queue to your Logstash deployment also provides a level of protection from data loss. When a Logstash 
+instance that has consumed data from the message queue fails, the data can be replayed from the message queue to an 
+active Logstash instance.
+
+Several third-party message queues exist, such as Redis, Kafka, or RabbitMQ. Logstash provides input and output plugins 
+to integrate with several of these third-party message queues. When your Logstash deployment has a message queue 
+configured, Logstash functionally exists in two phases: shipping instances, which handles data ingestion and storage in 
+the message queue, and indexing instances, which retrieve the data from the message queue, apply any configured 
+filtering, and write the filtered data to an Elasticsearch index.
+
+image::images/deploy_5.png[]
+
+// [float]
+[[deploying-logstash-ha]]
+=== Multiple Connections for Logstash High Availability
+
+To make your Logstash setup more resilient to individual instance failures, you can set up a load balancer between your 
+data source machines and the Logstash cluster. The load balancer handles the individual connections to the Logstash 
+instances, ensuring that when an individual instance becomes unavailable, data ingestion and processing can continue.
+
+image::images/deploy_6.png[]
+
+The previous diagram is unable to process input from a specific type, such as an RSS feed or a file, if the Logstash 
+instance dedicated to that input type becomes unavailable. For more robust input processing, configure each Logstash 
+instance for multiple inputs, as in the following diagram:
+
+image::images/deploy_7.png[]
+
+// [float]
+[[deploying-scaling]]
+=== Scaling Logstash
+
+A mature Logstash deployment typically has the following pipeline:
+
+* The _input_ section consumes data from the source, and consists of Logstash instances with the proper input plugins.
+* The _message queue_ serves as a buffer to hold ingested data and serve as failover protection.
+* The _filter_ section applies parsing and other processing to the data consumed from the message queue.
+* The _indexing_ section moves the processed data into Elasticsearch.
+
+Any of these layers can be scaled by adding computing resources. Examine the performance of these components regularly 
+as your use case evolves and add resources as needed. The presence of input throttling or backpressure can indicate the 
+need for more storage at the message queue. Alternately, increasing the rate of data consumption by adding more 
+Logstash instances to index into Elasticsearch can help relieve data backpressure.
