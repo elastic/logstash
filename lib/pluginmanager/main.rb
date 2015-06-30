@@ -11,7 +11,6 @@ module LogStash
 end
 
 require "clamp"
-require "pluginmanager/command"
 require "pluginmanager/util"
 require "pluginmanager/gemfile"
 require "pluginmanager/install"

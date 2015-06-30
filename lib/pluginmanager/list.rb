@@ -1,4 +1,5 @@
 require 'rubygems/spec_fetcher'
+require "pluginmanager/command"
 
 class LogStash::PluginManager::List < LogStash::PluginManager::Command
 
