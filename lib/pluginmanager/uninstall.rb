@@ -1,4 +1,7 @@
+require "pluginmanager/command"
+
 class LogStash::PluginManager::Uninstall < LogStash::PluginManager::Command
+
   parameter "PLUGIN", "plugin name"
 
   def execute
