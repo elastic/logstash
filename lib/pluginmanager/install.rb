@@ -1,3 +1,4 @@
+require "pluginmanager/command"
 require "jar-dependencies"
 require "jar_install_post_install_hook"
 require "file-dependencies/gem"
