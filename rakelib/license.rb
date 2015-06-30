@@ -32,7 +32,7 @@ end
 
 def generate_license_information
   licenses = []
-  all_installed_gems.select {|y| puts y.gem_dir; y.gem_dir.include?('vendor') }.each do |x|
+  all_installed_gems.select {|y| y.gem_dir.include?('vendor') }.each do |x|
     licenses.push(gem_license_info(x))
   end
   puts YAML.dump(licenses.sort{|u, v| u[:name] <=> v[:name] })
