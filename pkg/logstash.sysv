@@ -27,7 +27,6 @@ name=logstash
 pidfile="/var/run/$name.pid"
 
 LS_USER=logstash
-LS_GROUP=logstash
 LS_HOME=/var/lib/logstash
 LS_HEAP_SIZE="500m"
 LS_LOG_DIR=/var/log/logstash
@@ -53,17 +52,18 @@ start() {
   # set ulimit as (root, presumably) first, before we drop privileges
   ulimit -n ${LS_OPEN_FILES}
 
-  # Run the program!
-  nice -n ${LS_NICE} chroot --userspec $LS_USER:$LS_GROUP / sh -c "
+  # Run the program, take note of PID
+  pid=$(nice -n $LS_NICE /usr/bin/sudo -E -u $LS_USER /bin/sh -c "
     cd $LS_HOME
     ulimit -n ${LS_OPEN_FILES}
-    exec \"$program\" $args
-  " > "${LS_LOG_DIR}/$name.stdout" 2> "${LS_LOG_DIR}/$name.err" &
+    \"$program\" $args  > \"${LS_LOG_DIR}/$name.stdout\" 2> \"${LS_LOG_DIR}/$name.err\" &
+    echo \$!
+  ")
 
   # Generate the pidfile from here. If we instead made the forked process
   # generate it there will be a race condition between the pidfile writing
   # and a process possibly asking for status.
-  echo $! > $pidfile
+  echo $pid > $pidfile
 
   echo "$name started."
   return 0
