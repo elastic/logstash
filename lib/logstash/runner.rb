@@ -40,14 +40,6 @@ class LogStash::Runner
   def run(args)
     command = args.shift
     commands = {
-      "version" => lambda do
-        require "logstash/agent"
-        agent_args = ["--version"]
-        if args.include?("--verbose")
-          agent_args << "--verbose"
-        end
-        return LogStash::Agent.run($0, agent_args)
-      end,
       "irb" => lambda do
         require "irb"
         return IRB.start(__FILE__)
