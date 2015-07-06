@@ -59,6 +59,15 @@ start() {
 	EXTRA_GROUPS="--groups $SGROUPS"
   fi
 
+  # chown doesn't grab the suplimental groups when setting the user:group - so we have to do it for it.
+  # Boy, I hope we're root here. 
+  SGROUPS=$(id -Gn "$LS_USER" | tr " " "," | sed 's/,$//'; echo '')
+
+  if [ ! -z $SGROUPS ]
+  then
+	EXTRA_GROUPS="--groups $SGROUPS"
+  fi
+
   # set ulimit as (root, presumably) first, before we drop privileges
   ulimit -n ${LS_OPEN_FILES}
 
