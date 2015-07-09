@@ -157,7 +157,7 @@ GEM
       filesize (= 0.0.4)
       gems (~> 0.8.3)
       i18n (= 0.6.9)
-      jrjackson (~> 0.2.8)
+      jrjackson (~> 0.2.9)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       stud (~> 0.0.19)
