@@ -80,7 +80,7 @@ module LogStash
       LogStash::Bundler.patch!
 
       # force Rubygems sources to our Gemfile sources
-      ::Gem.sources = options[:rubygems_source] if options[:rubygems_source]
+      ::Gem.sources = ::Gem::SourceList.from(options[:rubygems_source]) if options[:rubygems_source]
 
       ::Bundler.settings[:path] = LogStash::Environment::BUNDLE_DIR
       ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
