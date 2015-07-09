@@ -99,6 +99,14 @@ module LogStash
       I18n.reload!
       fail "No locale? This is a bug." if I18n.available_locales.empty?
     end
+
+    # add path for bare/ungemified plugins lookups. the path must be the base path that will include
+    # the dir structure 'logstash/TYPE/NAME.rb' where TYPE is 'inputs' 'filters', 'outputs' or 'codecs'
+    # and NAME is the name of the plugin
+    # @param path [String] plugins path to add
+    def add_plugin_path(path)
+      $LOAD_PATH << path
+    end
   end
 end
 
