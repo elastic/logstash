@@ -39,6 +39,11 @@ class LogStash::Agent < Clamp::Command
   option ["-V", "--version"], :flag,
     I18n.t("logstash.agent.flag.version")
 
+ option ["-p", "--pluginpath"] , "PATH",
+   I18n.t("logstash.agent.flag.pluginpath"),
+   :multivalued => true,
+   :attribute_name => :plugin_paths
+
   option ["-t", "--configtest"], :flag,
     I18n.t("logstash.agent.flag.configtest"),
     :attribute_name => :config_test
@@ -204,6 +209,7 @@ class LogStash::Agent < Clamp::Command
   # Log file stuff, plugin path checking, etc.
   def configure
     configure_logging(log_file)
+    configure_plugin_paths(plugin_paths)
   end # def configure
 
   # Point logging at a specific path.
@@ -229,7 +235,6 @@ class LogStash::Agent < Clamp::Command
       else
         @logger.level = :warn
       end
-
     end
 
     if log_file
@@ -253,6 +258,15 @@ class LogStash::Agent < Clamp::Command
     # TODO(sissel): redirect stdout/stderr to the log as well
     # http://jira.codehaus.org/browse/JRUBY-7003
   end # def configure_logging
+
+  # add the given paths for ungemified/bare plugins lookups
+  # @param paths [String, Array<String>] plugins path string or list of path strings to add
+  def configure_plugin_paths(paths)
+    Array(paths).each do |path|
+      fail(I18n.t("logstash.agent.configuration.plugin_path_missing", :path => path)) unless File.directory?(path)
+      LogStash::Environment.add_plugin_path(path)
+    end
+  end
 
   def load_config(path)
     begin

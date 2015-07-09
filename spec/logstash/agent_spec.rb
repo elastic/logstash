@@ -22,7 +22,7 @@ describe LogStash::Agent do
         end
       end
     end
-    
+
     context "when remote" do
       context 'supported scheme' do
         let(:path) { "http://test.local/superconfig.conf" }
@@ -34,4 +34,28 @@ describe LogStash::Agent do
       end
     end
   end
+
+  context "--pluginpath" do
+    let(:single_path) { "/some/path" }
+    let(:multiple_paths) { ["/some/path1", "/some/path2"] }
+
+    it "should add single valid dir path to the environment" do
+      expect(File).to receive(:directory?).and_return(true)
+      expect(LogStash::Environment).to receive(:add_plugin_path).with(single_path)
+      subject.configure_plugin_paths(single_path)
+    end
+
+    it "should fail with single invalid dir path" do
+      expect(File).to receive(:directory?).and_return(false)
+      expect(LogStash::Environment).not_to receive(:add_plugin_path)
+      expect{subject.configure_plugin_paths(single_path)}.to raise_error(LogStash::ConfigurationError)
+    end
+
+    it "should add multiple valid dir path to the environment" do
+      expect(File).to receive(:directory?).exactly(multiple_paths.size).times.and_return(true)
+      multiple_paths.each{|path| expect(LogStash::Environment).to receive(:add_plugin_path).with(path)}
+      subject.configure_plugin_paths(multiple_paths)
+    end
+  end
 end
+

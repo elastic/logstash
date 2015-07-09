@@ -38,7 +38,18 @@ describe LogStash::Environment do
         allow(Dir).to receive(:glob).and_return([])
         expect { subject.load_runtime_jars! }.to raise_error
       end
+    end
+  end
 
+  context "add_plugin_path" do
+    let(:path) { "/some/path" }
+
+    before(:each) { expect($LOAD_PATH).to_not include(path) }
+    after(:each) { $LOAD_PATH.delete(path) }
+
+    it "should add the path to $LOAD_PATH" do
+      expect{subject.add_plugin_path(path)}.to change{$LOAD_PATH.size}.by(1)
+      expect($LOAD_PATH).to include(path)
     end
   end
 end
