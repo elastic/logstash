@@ -45,10 +45,18 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   # Check if the specified gems contains
   # the logstash `metadata`
   def verify_remote!(gems)
+    options = { :rubygems_source => gemfile.gemset.sources }
     gems.each do |plugin, version|
       puts("Validating #{[plugin, version].compact.join("-")}")
-      signal_error("Installation aborted, verification failed for #{plugin} #{version}") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
+      next if validate_plugin(plugin, version, options)
+      signal_error("Installation aborted, verification failed for #{plugin} #{version}")
     end
+  end
+
+  def validate_plugin(plugin, version, options)
+    LogStash::PluginManager.logstash_plugin?(plugin, version, options)
+  rescue SocketError
+    false
   end
 
   def plugins_development_gems
