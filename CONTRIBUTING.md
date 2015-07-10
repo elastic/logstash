@@ -43,6 +43,10 @@ logstash, and you think it will take more than a few minutes to produce the fix
 (ie; write code), it is worth discussing the change with the Logstash users and developers first! You can reach us via [GitHub](https://github.com/elastic/logstash/issues), the [forum](https://discuss.elastic.co/c/logstash), or via IRC (#logstash on freenode irc)
 Please note that Pull Requests without tests will not be merged. If you would like to contribute but do not have experience with writing tests, please ping us on IRC/forum or create a PR and ask our help.
 
+## Contributing to plugins
+
+Check our [documentation](https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html) on how to contribute to plugins or write your own! It is super easy!
+
 ## Contribution Steps
 
 1. Test your changes! [Run](https://github.com/elastic/logstash#testing) the test suite
