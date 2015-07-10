@@ -161,7 +161,7 @@ Example:
 ==== Hash
 
 A hash is a collection of key value pairs specified in the format `"field1" => "value1"`.
-Note that mutliple key value entries are separated by spaces rather than commas.
+Note that multiple key value entries are separated by spaces rather than commas.
 
 Example:
 
