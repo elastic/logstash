@@ -42,7 +42,7 @@ it with a very simple configuration.
 
 First, download the Logstash tar file.
 
-["source","sh"]
+["source","sh",subs="attributes,callouts"]
 ----------------------------------
 curl -O https://download.elasticsearch.org/logstash/logstash/logstash-{logstash_version}.tar.gz
 ----------------------------------
@@ -119,10 +119,8 @@ cd elasticsearch-{elasticsearch_version}/
 ----------------------------------
 
 NOTE: This tutorial runs Logstash {logstash_version} with Elasticsearch
-{elasticsearch_version}, although you can use it with a cluster running 1.0.0 or
-later. Each release of Logstash has a *recommended* version of Elasticsearch you
-should use. Make sure they match based on the
-http://www.elastic.co/overview/logstash[Logstash version] you're running!
+{elasticsearch_version}, although you can use it with an Elasticsearch cluster running 1.0.0 or
+later.
 
 You can get started with Logstash using the default Elasticsearch installation
 and configuration. See the
