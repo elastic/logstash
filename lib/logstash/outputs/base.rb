@@ -33,6 +33,16 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Note that this setting may not be useful for all outputs.
   config :workers, :validate => :number, :default => 1
 
+  # The number of retries if some exception happens.
+  # Optional.
+  config :retries, :validate => :number, :default => 0
+
+  # The strategy to use when an exception is raised.
+  # Use 'shutdown', default, to terminate logstash.
+  # Use 'ignore' to keep going and ignore and log the error.
+  # Optional.
+  config :on_error_strategy, :validate => :string, :default => "shutdown"
+
   attr_reader :worker_plugins
 
   public
@@ -84,8 +94,23 @@ class LogStash::Outputs::Base < LogStash::Plugin
   end
 
   public
+  def safe_handle(event, attempt = 0)
+    begin
+      receive(event)
+    rescue Exception => e
+      if attempt < retries
+        safe_handle(event, attempt += 1)
+      elsif @on_error_strategy == "ignore"
+        @logger.warn(I18n.t("logstash.pipeline.output-worker-ignore-error", :plugin => self.class.config_name, :event => event, :exception => e))
+      else
+        raise e
+      end
+    end
+  end # def deal
+
+  public
   def handle(event)
-    receive(event)
+    safe_handle(event)
   end # def handle
 
   def handle_worker(event)
