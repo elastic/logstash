@@ -17,7 +17,7 @@ GEM
     aws-sdk-v1 (1.64.0)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
-    backports (3.6.4)
+    backports (3.6.5)
     benchmark-ips (2.2.0)
     bindata (2.1.0)
     buftok (0.2.0)
@@ -151,7 +151,7 @@ GEM
     logstash-codec-rubydebug (1.0.0)
       awesome_print
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-core (1.5.3.snapshot1-java)
+    logstash-core (1.5.3.snapshot2-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       filesize (= 0.0.4)
@@ -601,7 +601,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 1.5.3.snapshot1)
+  logstash-core (= 1.5.3.snapshot2)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
