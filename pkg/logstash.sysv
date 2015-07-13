@@ -98,6 +98,16 @@ stop() {
   fi
 }
 
+config_test() {
+  [ -x $program ] || return 4
+  $program -f ${LS_CONF_DIR} -l ${LS_LOG_FILE} ${LS_OPTS} --configtest
+  RETVAL=$?
+  if [ $RETVAL -eq 0 ]; then
+    echo "Syntax: OK" >&2
+  fi
+  return $RETVAL
+}
+
 status() {
   if [ -f "$pidfile" ] ; then
     pid=`cat "$pidfile"`
@@ -138,6 +148,7 @@ case "$1" in
     ;;
   stop) stop ;;
   force-stop) force_stop ;;
+  configtest) config_test ;;
   status) 
     status
     code=$?
@@ -153,7 +164,7 @@ case "$1" in
     stop && start 
     ;;
   *)
-    echo "Usage: $SCRIPTNAME {start|stop|force-stop|status|restart}" >&2
+    echo "Usage: $SCRIPTNAME {start|stop|force-stop|configtest|status|restart}" >&2
     exit 3
   ;;
 esac
