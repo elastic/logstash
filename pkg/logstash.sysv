@@ -11,7 +11,7 @@
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: 
+# Short-Description:
 # Description:        Starts Logstash as a daemon.
 ### END INIT INFO
 
@@ -51,7 +51,7 @@ start() {
   export PATH HOME LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
 
   # chown doesn't grab the suplimental groups when setting the user:group - so we have to do it for it.
-  # Boy, I hope we're root here. 
+  # Boy, I hope we're root here.
   SGROUPS=$(id -Gn "$LS_USER" | tr " " "," | sed 's/,$//'; echo '')
 
   if [ ! -z $SGROUPS ]
@@ -91,9 +91,15 @@ stop() {
       sleep 1
     done
     if status ; then
-      echo "$name stop failed; still running."
+      if [ "$KILL_ON_STOP_TIMEOUT" -eq 1 ] ; then
+        trace "Timeout reached. Killing $name (pid $pid) with SIGKILL.  This may result in data loss."
+        kill -KILL $pid
+        emit "$name killed with SIGKILL."
+      else
+        emit "$name stop failed; still running."
+      fi
     else
-      echo "$name stopped."
+      emit "$name stopped."
     fi
   fi
 }
@@ -138,7 +144,7 @@ case "$1" in
     ;;
   stop) stop ;;
   force-stop) force_stop ;;
-  status) 
+  status)
     status
     code=$?
     if [ $code -eq 0 ] ; then
@@ -148,9 +154,9 @@ case "$1" in
     fi
     exit $code
     ;;
-  restart) 
-    
-    stop && start 
+  restart)
+
+    stop && start
     ;;
   *)
     echo "Usage: $SCRIPTNAME {start|stop|force-stop|status|restart}" >&2
