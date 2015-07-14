@@ -1,0 +1,98 @@
+[[working-with-plugins]]
+== Working with plugins
+
+Logstash has a rich collection of input, filter, codec and output plugins. Plugins are available as self-contained packages called gems and hosted on RubyGems.org. The plugin manager accesed via `bin/plugin` script is used to manage the lifecycle of plugins in your Logstash deployment. You can install, uninstall and upgrade plugins using these Command Line Interface (CLI) described below.
+
+NOTE: Some sections here are for advanced users
+
+[float]
+[[listing-plugins]]
+=== Listing plugins
+
+Logstash release packages bundle common plugins so you can use them out of the box. To list the plugins currently available in your deployment:
+
+[source,shell]
+----------------------------------
+bin/plugin list <1>
+bin/plugin list --verbose <2>
+bin/plugin list *namefragment* <3>
+bin/plugin list --group output <4>
+----------------------------------
+<1> Will list all installed plugins
+
+<2> Will list installed plugins with version information
+
+<3> Will list all installed plugins containing a namefragment
+
+<4> Will list all installed plugins for a particular group (input, filter, codec, output)
+
+[float]
+[[installing-plugins]]
+=== Adding plugins to your deployment
+
+The most common situation when dealing with plugin installation is when you have access to internet. Using this method, you will be able to retrieve plugins hosted on the public repository (RubyGems.org) and install on top of your Logstash installation.
+
+[source,shell]
+----------------------------------
+bin/plugin install logstash-output-kafka
+----------------------------------
+
+Once the plugin is successfully installed, you can start using it in your configuration file.
+
+[[installing-local-plugins]]
+==== Advanced: Adding a locally built plugin
+
+In some cases, you want to install plugins which have not yet been released and not hosted on RubyGems.org. Logstash provides you the option to install a locally built plugin which is packaged as a ruby gem. Using a file location:
+
+[source,shell]
+----------------------------------
+bin/plugin install /path/to/logstash-output-kafka-1.0.0.gem
+----------------------------------
+
+[[installing-local-plugins-path]]
+==== Advanced: Using `--pluginpath`
+
+Using the `--pluginpath` flag, you can load a plugin source code located on your file system. Typically this is used by developers who are iterating on a custom plugin and want to test it before creating a ruby gem.
+
+[source,shell]
+----------------------------------
+bin/logstash --pluginpath /opt/shared/lib/logstash/input/my-custom-plugin-code.rb
+----------------------------------
+
+[[updating-plugins]]
+=== Updating plugins
+
+Plugins have their own release cycle and are often released independent of Logstash’s core release cycle. Using the update sub-command you can get the latest or update to a particular version of the plugin.
+
+[source,shell]
+----------------------------------
+bin/plugin update <1>
+bin/plugin update logstash-output-kafka <2>
+----------------------------------
+<1> will update all installed plugins
+
+<2> will update only this plugin
+
+[[removing-plugins]]
+=== Removing plugins
+
+If you need to remove plugins from your Logstash installation:
+
+[source,shell]
+----------------------------------
+bin/plugin uninstall logstash-output-kafka
+----------------------------------
+
+[[proxy-plugins]]
+=== Proxy Support
+
+The previous sections relied on Logstash being able to communicate with RubyGems.org. In certain environments, Forwarding Proxy is used to handle HTTP requests. Logstash Plugins can be installed and updated through a Proxy by setting the `HTTP_PROXY` environment variable:
+
+[source,shell]
+----------------------------------
+export HTTP_PROXY=http://127.0.0.1:3128
+
+bin/plugin install logstash-output-kafka
+----------------------------------
+
+Once set, plugin commands install, update can be used through this proxy.
