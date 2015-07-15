@@ -92,14 +92,14 @@ stop() {
     done
     if status ; then
       if [ "$KILL_ON_STOP_TIMEOUT" -eq 1 ] ; then
-        trace "Timeout reached. Killing $name (pid $pid) with SIGKILL.  This may result in data loss."
+        echo "Timeout reached. Killing $name (pid $pid) with SIGKILL. This may result in data loss."
         kill -KILL $pid
-        emit "$name killed with SIGKILL."
+        echo "$name killed with SIGKILL."
       else
-        emit "$name stop failed; still running."
+        echo "$name stop failed; still running."
       fi
     else
-      emit "$name stopped."
+      echo "$name stopped."
     fi
   fi
 }
