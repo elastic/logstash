@@ -1,3 +1,8 @@
+1.4.4 (July 21, 2015)
+  # general
+  - Improved default security for SSL
+  - Update to Elasticsearch 1.7
+
 1.4.3 (June 2, 2015)
   # general
   - Updated to Elasticsearch 1.5.2, Kibana 3.1.2 and JRuby 1.7.17
