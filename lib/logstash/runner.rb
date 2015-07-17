@@ -41,6 +41,7 @@ if ENV["PROFILE_BAD_LOG_CALLS"] || $DEBUGLIST.include?("log")
 end # PROFILE_BAD_LOG_CALLS
 
 require "logstash/monkeypatches-for-debugging"
+require "logstash/patches"
 require "logstash/namespace"
 require "logstash/program"
 require "i18n" # gem 'i18n'
