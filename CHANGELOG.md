@@ -6,7 +6,7 @@
   - For debian and rpm packages added ability to force stop Logstash. This can be enabled by setting
     the environment variable `KILL_ON_STOP_TIMEOUT=1` before stopping. If the Logstash process
     has not stopped within a reasonable time, this will force it to shutdown. 
-    ** Note **: Please be aware that you could lose inflight messages if you force stop
+    **Note**: Please be aware that you could lose inflight messages if you force stop
     Logstash (#3578).
   - Added a periodic report of inflight events during shutdown. This provides feedback to users
     about events being processed while shutdown is being handled (#3484).
