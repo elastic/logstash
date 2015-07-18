@@ -1,3 +1,37 @@
+## 1.5.3 (July 21, 2015)
+### general
+  - Add back `--pluginpath` command line option to `bin/logstash`. This loads plugin source code
+    files from given file location (#3580).
+  - Improve default security configuration for SSL (#3579).
+  - For debian and rpm packages added ability to force stop Logstash. This can be enabled by setting
+    the environment variable `KILL_ON_STOP_TIMEOUT=1` before stopping. If the Logstash process
+    has not stopped within a reasonable time, this will force it to shutdown. 
+    ** Note **: Please be aware that you could lose inflight messages if you force stop
+    Logstash (#3578).
+  - Added a periodic report of inflight events during shutdown. This provides feedback to users
+    about events being processed while shutdown is being handled (#3484).
+  - Added ability to install and use pre-released plugins (beta and RC versions)
+  - Fixed a permission issue in the init script for Debian and RPM packages. While running as 
+    logstash user it was not possible to access files owned by supplemental groups (#1449).
+
+### codec
+  - Added support to handle JSON data with root arrays. Array entries will be split into
+    individual events (#12).
+
+### output
+  - Elasticsearch: 
+    - Added support for sending http indexing requests through a forwarding proxy (#199).
+    - Added support for using PKI/client certificates for authenticating requests to a secure
+      Elasticsearch cluster (#170).
+  - RabbitMQ:
+    - Fixed connection leakage issue (#10).
+    - Properly reconnect on network disconnection (#9).
+
+## 1.4.4 (July 21, 2015)
+### general
+  - Improved default security configuration for SSL
+  - Update to Elasticsearch 1.7    
+
 ## 1.5.2 (July 1, 2015)
 ### general
   - Plugin manager: Added validation and warning when updating plugins between major versions (#3383).
