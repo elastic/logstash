@@ -18,7 +18,7 @@ GEM
       json (~> 1.4)
       nokogiri (>= 1.4.4)
     backports (3.6.5)
-    benchmark-ips (2.2.0)
+    benchmark-ips (2.3.0)
     bindata (2.1.0)
     buftok (0.2.0)
     builder (3.2.2)
@@ -376,7 +376,7 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-filter-json
       logstash-output-file
-    logstash-output-elasticsearch (1.0.4-java)
+    logstash-output-elasticsearch (1.0.5-java)
       cabin (~> 0.6)
       concurrent-ruby
       elasticsearch (~> 1.0, >= 1.0.10)
