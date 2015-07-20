@@ -1,8 +1,8 @@
 ## 1.5.3 (July 21, 2015)
 ### general
-  - Add back `--pluginpath` command line option to `bin/logstash`. This loads plugin source code
+  - Added back `--pluginpath` command line option to `bin/logstash`. This loads plugin source code
     files from given file location (#3580).
-  - Improve default security configuration for SSL (#3579).
+  - Improved default security configuration for SSL (#3579).
   - For debian and rpm packages added ability to force stop Logstash. This can be enabled by setting
     the environment variable `KILL_ON_STOP_TIMEOUT=1` before stopping. If the Logstash process
     has not stopped within a reasonable time, this will force it to shutdown. 
