@@ -8,12 +8,12 @@ GEM
     avl_tree (1.2.1)
       atomic (~> 1.1)
     awesome_print (1.6.1)
-    aws-sdk (2.1.4)
-      aws-sdk-resources (= 2.1.4)
-    aws-sdk-core (2.1.4)
+    aws-sdk (2.1.7)
+      aws-sdk-resources (= 2.1.7)
+    aws-sdk-core (2.1.7)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.1.4)
-      aws-sdk-core (= 2.1.4)
+    aws-sdk-resources (2.1.7)
+      aws-sdk-core (= 2.1.7)
     aws-sdk-v1 (1.64.0)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
@@ -44,7 +44,7 @@ GEM
     docile (1.1.5)
     domain_name (0.5.24)
       unf (>= 0.0.5, < 1.0.0)
-    edn (1.0.7)
+    edn (1.0.8)
     elasticsearch (1.0.12)
       elasticsearch-api (= 1.0.12)
       elasticsearch-transport (= 1.0.12)
@@ -127,7 +127,7 @@ GEM
     logstash-codec-graphite (1.0.0)
       logstash-codec-line
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-codec-json (1.0.0)
+    logstash-codec-json (1.0.1)
       logstash-core (>= 1.4.0, < 2.0.0)
     logstash-codec-json_lines (1.0.0)
       logstash-codec-line
@@ -151,7 +151,7 @@ GEM
     logstash-codec-rubydebug (1.0.0)
       awesome_print
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-core (1.5.3.snapshot2-java)
+    logstash-core (1.5.3-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       filesize (= 0.0.4)
@@ -376,7 +376,7 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-filter-json
       logstash-output-file
-    logstash-output-elasticsearch (1.0.2-java)
+    logstash-output-elasticsearch (1.0.4-java)
       cabin (~> 0.6)
       concurrent-ruby
       elasticsearch (~> 1.0, >= 1.0.10)
@@ -435,7 +435,7 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
     logstash-output-pipe (1.0.0)
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-output-rabbitmq (1.0.0-java)
+    logstash-output-rabbitmq (1.0.1-java)
       logstash-core (>= 1.4.0, < 2.0.0)
       march_hare (~> 2.5.1)
     logstash-output-redis (1.0.0)
@@ -506,9 +506,7 @@ GEM
       method_source (~> 0.8.1)
       slop (~> 3.4)
       spoon (~> 0.0)
-    puma (2.11.3-java)
-      rack (>= 1.1, < 2.0)
-    rack (1.6.4)
+    puma (2.12.2-java)
     rake (10.4.2)
     redis (3.2.1)
     rest-client (1.8.0)
@@ -601,7 +599,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 1.5.3.snapshot2)
+  logstash-core (= 1.5.3)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
