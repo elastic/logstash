@@ -276,10 +276,10 @@ GEM
       logstash-codec-plain
       logstash-core (>= 1.4.0, < 2.0.0)
       stud
-    logstash-input-http (1.0.0)
+    logstash-input-http (1.0.1)
       logstash-codec-plain
       logstash-core (>= 1.4.0, < 2.0.0)
-      puma
+      puma (~> 2.11.3)
       stud
     logstash-input-imap (1.0.0)
       logstash-codec-plain
@@ -506,7 +506,9 @@ GEM
       method_source (~> 0.8.1)
       slop (~> 3.4)
       spoon (~> 0.0)
-    puma (2.12.2-java)
+    puma (2.11.3-java)
+      rack (>= 1.1, < 2.0)
+    rack (1.6.4)
     rake (10.4.2)
     redis (3.2.1)
     rest-client (1.8.0)
