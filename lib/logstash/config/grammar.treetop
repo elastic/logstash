@@ -85,7 +85,7 @@ grammar LogStashConfig
   end
 
   rule regexp
-    ( '/' ( '\/' / !'/' . )* '/'  <LogStash::Config::AST::RegExp>)
+    ( '/' ( '\/' / !'/' . )* '/' 'i'?  <LogStash::Config::AST::RegExp>)
   end
 
   rule number
