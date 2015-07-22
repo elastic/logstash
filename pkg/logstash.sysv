@@ -129,6 +129,27 @@ force_stop() {
   fi
 }
 
+config_test() {
+  # Check if a config file exists
+  if [ ! "$(ls -A $LS_CONF_DIR/*.conf 2> /dev/null)" ]; then
+    log_failure_msg "There aren't any configuration files in $LS_CONF_DIR"
+    exit 1
+  fi
+
+  JAVA_OPTS=${LS_JAVA_OPTS}
+  HOME=${LS_HOME}
+  export PATH HOME JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
+
+  test_args="-f ${LS_CONF_DIR} --configtest ${LS_OPTS}"
+  if [ "$1" = '1' ]; then
+    $program ${test_args} 2>/dev/null >/dev/null
+  else
+    $program ${test_args}
+  fi
+  [ $? -eq 0 ] && return 0
+  # Program not configured
+  return 6
+}
 
 case "$1" in
   start)
@@ -137,8 +158,14 @@ case "$1" in
     if [ $code -eq 0 ]; then
       echo "$name is already running"
     else
-      start
+      config_test 1
       code=$?
+      if [ $code -ne 0 ]; then
+       echo "Invalid config for $name. Re-run with configtest to see what's wrong"
+      else
+       start
+       code=$?
+      fi
     fi
     exit $code
     ;;
@@ -158,8 +185,12 @@ case "$1" in
 
     stop && start
     ;;
+  configtest)
+    config_test
+    exit $?
+    ;;
   *)
-    echo "Usage: $SCRIPTNAME {start|stop|force-stop|status|restart}" >&2
+    echo "Usage: $SCRIPTNAME {start|stop|force-stop|status|restart|configtest}" >&2
     exit 3
   ;;
 esac
