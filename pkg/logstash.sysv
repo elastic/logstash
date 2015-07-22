@@ -129,6 +129,15 @@ force_stop() {
   fi
 }
 
+configtest() {
+
+  # Run the program!
+  nice -n ${LS_NICE} chroot --userspec $LS_USER:$LS_GROUP / sh -c "
+    cd $LS_HOME
+    exec \"$program\" -f ${LS_CONF_DIR} -t 
+  "
+
+}
 
 case "$1" in
   start)
@@ -158,8 +167,11 @@ case "$1" in
 
     stop && start
     ;;
+  configtest)
+    configtest
+    ;;
   *)
-    echo "Usage: $SCRIPTNAME {start|stop|force-stop|status|restart}" >&2
+    echo "Usage: $SCRIPTNAME {start|stop|force-stop|status|restart|configtest}" >&2
     exit 3
   ;;
 esac
