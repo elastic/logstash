@@ -7,12 +7,16 @@ require "net/http"
 LogStash::Environment.load_locale!
 
 class LogStash::Agent < Clamp::Command
+  DEFAULT_INPUT = "input { stdin { type => stdin } }"
+  DEFAULT_OUTPUT = "output { stdout { codec => rubydebug } }"
+
   option ["-f", "--config"], "CONFIG_PATH",
     I18n.t("logstash.agent.flag.config"),
     :attribute_name => :config_path
 
   option "-e", "CONFIG_STRING",
-    I18n.t("logstash.agent.flag.config-string"),
+    I18n.t("logstash.agent.flag.config-string",
+           :default_input => DEFAULT_INPUT, :default_output => DEFAULT_OUTPUT),
     :default => "", :attribute_name => :config_string
 
   option ["-w", "--filterworkers"], "COUNT",
@@ -102,11 +106,11 @@ class LogStash::Agent < Clamp::Command
     else
       # include a default stdin input if no inputs given
       if @config_string !~ /input *{/
-        @config_string += "input { stdin { type => stdin } }"
+        @config_string += DEFAULT_INPUT
       end
       # include a default stdout output if no outputs given
       if @config_string !~ /output *{/
-        @config_string += "output { stdout { codec => rubydebug } }"
+        @config_string += DEFAULT_OUTPUT
       end
     end
 

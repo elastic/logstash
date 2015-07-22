@@ -128,7 +128,7 @@ en:
           This is often a permissions issue, or the wrong 
           path was specified?
       flag:
-        # Note: Wrap these at 45 chars so they display nicely when clamp emits
+        # Note: Wrap these at 55 chars so they display nicely when clamp emits
         # them in an 80-character terminal
         config: |+
           Load the logstash config from a specific file
@@ -141,12 +141,16 @@ en:
         config-string: |+
           Use the given string as the configuration
           data. Same syntax as the config file. If no
-          input is specified, then 'stdin 
-          { type => stdin }' is the default input.
-          If no output is specified, then  'stdout
-          { codec => rubydebug } }' is default output.
+          input is specified, then the following is
+          used as the default input:
+          "%{default_input}"
+          and if no output is specified, then the
+          following is used as the default output:
+          "%{default_output}"
+          If you wish to use both defaults, please use
+          the empty string for the '-e' flag.
         configtest: |+
-          Check configuration, then exit.
+          Check configuration for valid syntax and then exit.
         filterworkers: |+
           Sets the number of filter workers to run.
         watchdog-timeout: |+
