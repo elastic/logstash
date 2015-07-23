@@ -44,6 +44,11 @@ LS_OPTS=""
 program=/opt/logstash/bin/logstash
 args="agent -f ${LS_CONF_DIR} -l ${LS_LOG_FILE} ${LS_OPTS}"
 
+quiet() {
+  "$@" > /dev/null 2>&1
+  return $?
+}
+
 start() {
 
   LS_JAVA_OPTS="${LS_JAVA_OPTS} -Djava.io.tmpdir=${LS_HOME}"
@@ -129,6 +134,23 @@ force_stop() {
   fi
 }
 
+configtest() {
+  # Check if a config file exists
+  if [ ! "$(ls -A ${LS_CONF_DIR}/* 2> /dev/null)" ]; then
+    log_failure_msg "There aren't any configuration files in ${LS_CONF_DIR}"
+    exit 1
+  fi
+
+  JAVA_OPTS=${LS_JAVA_OPTS}
+  HOME=${LS_HOME}
+  export PATH HOME JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
+
+  test_args="-f ${LS_CONF_DIR} --configtest ${LS_OPTS}"
+  $program ${test_args}
+  [ $? -eq 0 ] && return 0
+  # Program not configured
+  return 6
+}
 
 case "$1" in
   start)
@@ -156,10 +178,20 @@ case "$1" in
     ;;
   restart)
 
+    quiet configtest
+    RET=$?
+    if [ ${RET} -ne 0 ]; then
+      echo "Configuration error. Not restarting. Re-run with configtest parameter for details"
+      exit ${RET}
+    fi
     stop && start
     ;;
+  configtest)
+    configtest
+    exit $?
+    ;;
   *)
-    echo "Usage: $SCRIPTNAME {start|stop|force-stop|status|restart}" >&2
+    echo "Usage: $SCRIPTNAME {start|stop|force-stop|status|restart|configtest}" >&2
     exit 3
   ;;
 esac
