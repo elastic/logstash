@@ -95,16 +95,8 @@ class LogStash::Runner
           $stderr.puts "No such command #{command.inspect}"
         end
       end
-      $stderr.puts %q[
-Usage: logstash <command> [command args]
-Run a command with the --help flag to see the arguments.
-For example: logstash agent --help
-
-Available commands:
-  agent - runs the logstash agent
-  version - emits version info about this logstash
-]
-      #$stderr.puts commands.keys.map { |s| "  #{s}" }.join("\n")
+      require "logstash/agent"
+      puts LogStash::Agent.help("bin/logstash")
       return Stud::Task.new { 1 }
     end
   end # def run
