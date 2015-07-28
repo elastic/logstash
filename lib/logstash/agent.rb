@@ -107,7 +107,6 @@ class LogStash::Agent < Clamp::Command
     sigterm_id = Stud::trap("TERM") do
       @logger.warn(I18n.t("logstash.agent.sigterm"))
       pipeline.shutdown if pipeline
-      @logger.warn(I18n.t("logstash.agent.interrupted"))
     end
 
     Stud::trap("HUP") do
