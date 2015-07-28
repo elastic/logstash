@@ -96,7 +96,7 @@ class LogStash::Runner
         end
       end
       require "logstash/agent"
-      puts LogStash::Agent.help("bin/logstash")
+      $stderr.puts LogStash::Agent.help("bin/logstash")
       return Stud::Task.new { 1 }
     end
   end # def run
