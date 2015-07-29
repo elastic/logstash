@@ -103,7 +103,7 @@ Gem::Specification.new do |gem|
   # Development Deps
   gem.add_development_dependency "coveralls"
   gem.add_development_dependency "kramdown"     # pure-ruby markdown parser (MIT license)
-  gem.add_development_dependency "flores", "~>0.0.6"
+  gem.add_runtime_dependency "flores", "~>0.0.6"
 
   # Jenkins Deps
   gem.add_runtime_dependency "ci_reporter"
