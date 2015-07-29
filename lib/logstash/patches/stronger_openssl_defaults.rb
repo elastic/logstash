@@ -1,4 +1,3 @@
-
 require "openssl"
 
 # :nodoc:
@@ -51,12 +50,18 @@ class OpenSSL::SSL::SSLContext
   end
 
   # Overwriting the DEFAULT_PARAMS const idea from here: https://www.ruby-lang.org/en/news/2014/10/27/changing-default-settings-of-ext-openssl/
+  #
+  # This monkeypatch doesn't enforce a `VERIFY_MODE` on the SSLContext,
+  # SSLContext are both used for the client and the server implementation,
+  # If set the `verify_mode` to peer the server wont accept any connection,
+  # because it will try to verify the client certificate, this is a protocol
+  # details implemented at the plugin level.
+  #
+  # For more details see: https://github.com/elastic/logstash/issues/3657
   remove_const(:DEFAULT_PARAMS) if const_defined?(:DEFAULT_PARAMS)
   DEFAULT_PARAMS = {
     :ssl_version => "SSLv23",
-    :verify_mode => OpenSSL::SSL::VERIFY_PEER,
     :ciphers => MOZILLA_INTERMEDIATE_CIPHERS,
     :options => __default_options # Not a constant because it's computed at start-time.
   }
-
 end
