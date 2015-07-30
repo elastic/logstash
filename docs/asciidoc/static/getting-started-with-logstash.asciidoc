@@ -34,6 +34,7 @@ using the environment variable `LS_JAVA_OPTS` and start Logstash
 In some cases, you may want to completely override the default JVM options chosen by Logstash and use
 your own settings. Setting `JAVA_OPTS` before you start Logstash will ignore the defaults in the scripts
 
+The `LS_HEAP_SIZE` environment variable allows to set the maximum heap memory that will be allocated to Logstash java process. By default it is set to `500m`. 
 
 [float]
 === Up and Running!
