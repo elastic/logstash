@@ -1,5 +1,5 @@
-[[complex-pipeline]]
-== Setting Up A Complex Logstash Pipeline
+[[advanced-pipeline]]
+== Setting Up an Advanced Logstash Pipeline
 
 A Logstash pipeline in most use cases has one or more input, filter, and output plugins. The scenarios in this section 
 build Logstash configuration files to specify these plugins and discuss what each plugin is doing.
