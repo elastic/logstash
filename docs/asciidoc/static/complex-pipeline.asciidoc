@@ -1,4 +1,4 @@
-[complex-pipeline]
+[[complex-pipeline]]
 == Setting Up A Complex Logstash Pipeline
 
 A Logstash pipeline in most use cases has one or more input, filter, and output plugins. The scenarios in this section 
@@ -15,18 +15,16 @@ image::static/images/basic_logstash_pipeline.png[]
 
 The following text represents the skeleton of a configuration pipeline:
 
+[source,shell]
 # The # character at the beginning of a line indicates a comment. Use
 # comments to describe your configuration.
 input {
 }
-
 # The filter part of this file is commented out to indicate that it is
 # optional.
-
 # filter {
 # 
 # }
-
 output {
 }
 
@@ -35,7 +33,6 @@ examples in this tutorial build configuration files to address specific use case
 
 Paste the skeleton into a file named `first-pipeline.conf` in your home Logstash directory.
 
-[float]
 [[parsing-into-es]]
 === Parsing Apache Logs into Elasticsearch
 
@@ -88,18 +85,18 @@ The IP address at the beginning of the line is easy to identify, as is the times
 the `%{COMBINEDAPACHELOG}` grok pattern, which structures lines from the Apache log using the following schema:
 
 [horizontal]
-*Information*::*Field Name*
-IP Address::clientip
-User ID::ident
-User Authentication::auth
-timestamp::timestamp
-HTTP Verb::verb
-Request body::request
-HTTP Version::httpversion
-HTTP Status Code::response
-Bytes served::bytes
-Referrer URL::referrer
-User agent::agent
+*Information*:: *Field Name*
+IP Address:: `clientip`
+User ID:: `ident`
+User Authentication:: `auth`
+timestamp:: `timestamp`
+HTTP Verb:: `verb`
+Request body:: `request`
+HTTP Version:: `httpversion`
+HTTP Status Code:: `response`
+Bytes served:: `bytes`
+Referrer URL:: `referrer`
+User agent:: `agent`
 
 Edit the `first-pipeline.conf` file to add the following text:
 
@@ -155,24 +152,48 @@ data. As an example, the {logstash}plugins-filters-geoip.html[`geoip`] plugin lo
 location information from the addresses, and adds that location information to the logs.
 
 Configure your Logstash instance to use the `geoip` filter plugin by adding the following lines to the `filter` section 
-of the  first-pipeline.conf file:
+of the `first-pipeline.conf` file:
 
 [source,json]
 geoip {
-    source => "%clientip"
+    source => "clientip"
 }
 
 The `geoip` plugin configuration requires data that is already defined as separate fields. Make sure that the `geoip` 
 section is after the `grok` section of the configuration file.
 
-Specify the name of the field that contains the IP address to look up. In this tutorial, the field name is `%clientip`.
+Specify the name of the field that contains the IP address to look up. In this tutorial, the field name is `clientip`.
 
 [float]
-[testing-initial-pipeline]
+[[testing-initial-pipeline]]
 ==== Testing Your Initial Pipeline
 
-At this point, your `first-pipeline.conf` file has input, filter, and output sections properly configured. To verify
-your configuration, run the following command:
+At this point, your `first-pipeline.conf` file has input, filter, and output sections properly configured, and looks
+like this:
+
+[source,shell]
+input {
+       file {
+             path => "/Users/palecur/logstash-1.5.2/logstash-tutorial-dataset"
+             start_position => beginning
+       }
+}
+filter {
+       grok {
+             match => { "message" => "%{COMBINEDAPACHELOG}"}
+        }
+       geoip {
+              source => "clientip"
+       }
+}
+output {
+        elasticsearch {
+              protocol => "http"
+        }
+        stdout {}
+}
+
+To verify your configuration, run the following command:
 
 [source,shell]
 bin/logstash -f first-pipeline.conf --configtest
@@ -186,7 +207,9 @@ bin/logstash -f first-pipeline.conf
 Try a test query to Elasticsearch based on the fields created by the `grok` filter plugin:
 
 [source,shell]
-curl -XGET 'localhost:9200/logstash-2015.07.30/_search?q=response=401'
+curl -XGET 'localhost:9200/logstash-$DATE/_search?q=response=401'
+
+Replace $DATE with the current date, in YYYY.MM.DD format.
 
 Since our sample has just one 401 HTTP response, we get one hit back:
 
@@ -213,7 +236,7 @@ Since our sample has just one 401 HTTP response, we get one hit back:
       "timestamp":"04/Jan/2015:05:13:45 +0000",
       "verb":"GET",
       "request":"/presentations/logstash-monitorama-2013/images/frontend-response-codes.png",
-      httpversion":"1.1",
+      "httpversion":"1.1",
       "response":"200",
       "bytes":"52878",
       "referrer":"\"http://semicomplete.com/presentations/logstash-monitorama-2013/\"",
@@ -226,9 +249,64 @@ Since our sample has just one 401 HTTP response, we get one hit back:
 Try another search for the geographic information derived from the IP address:
 
 [source,shell]
-curl -XGET 'localhost:9200/logstash-2015.07.30/_search?q=geo_point=[some geohash]'
+curl -XGET 'localhost:9200/logstash-$DATE/_search?q=geoip.city_name=Buffalo'
 
-[float]
+Replace $DATE with the current date, in YYYY.MM.DD format.
+
+Only one of the log entries comes from Buffalo, so the query produces a single response:
+
+[source,shell]
+{"took":3,
+"timed_out":false,
+"_shards":{
+  "total":5,
+  "successful":5,
+  "failed":0},
+"hits":{"total":1,
+  "max_score":1.03399,
+  "hits":[{"_index":"logstash-2015.07.31",
+    "_type":"logs",
+    "_id":"AU7mK3CVSiMeBsJ0b_EP",
+    "_score":1.03399,
+    "_source":{
+      "message":"108.174.55.234 - - [04/Jan/2015:05:27:45 +0000] \"GET /?flav=rss20 HTTP/1.1\" 200 29941 \"-\" \"-\"",
+      "@version":"1",
+      "@timestamp":"2015-07-31T22:11:22.347Z",
+      "host":"localhost",
+      "path":"/path/to/logstash-tutorial-dataset",
+      "clientip":"108.174.55.234",
+      "ident":"-",
+      "auth":"-",
+      "timestamp":"04/Jan/2015:05:27:45 +0000",
+      "verb":"GET",
+      "request":"/?flav=rss20",
+      "httpversion":"1.1",
+      "response":"200",
+      "bytes":"29941",
+      "referrer":"\"-\"",
+      "agent":"\"-\"",
+      "geoip":{
+        "ip":"108.174.55.234",
+        "country_code2":"US",
+        "country_code3":"USA",
+        "country_name":"United States",
+        "continent_code":"NA",
+        "region_name":"NY",
+        "city_name":"Buffalo",
+        "postal_code":"14221",
+        "latitude":42.9864,
+        "longitude":-78.7279,
+        "dma_code":514,
+        "area_code":716,
+        "timezone":"America/New_York",
+        "real_region_name":"New York",
+        "location":[-78.7279,42.9864]
+      }
+    }
+  }]
+ }
+}
+
 [[multiple-input-output-plugins]]
 === Multiple Input and Output Plugins
 
@@ -269,13 +347,16 @@ twitter {
 [[configuring-lsf]]
 ==== The Logstash Forwarder
 
-
 The https://github.com/elastic/logstash-forwarder[Logstash Forwarder] is a lightweight, resource-friendly tool that 
 collects logs from files on the server and forwards these logs to your Logstash instance for processing. The 
 Logstash Forwarder uses a secure protocol called _lumberjack_ to communicate with your Logstash instance. The 
 lumberjack protocol is designed for reliability and low latency. The Logstash Forwarder uses the computing resources of 
 the machine hosting the source data, and the Lumberjack input plugin minimizes the resource demands on the Logstash 
 instance.
+
+NOTE: In a typical use case, the Logstash Forwarder client runs on a separate machine from the machine running your 
+Logstash instance. For the purposes of this tutorial, both Logstash and the Logstash Forwarder will be running on the
+same machine.
 
 Default Logstash configuration includes the {logstash}plugins-inputs-lumberjack.html[Lumberjack input plugin], which is 
 designed to be resource-friendly. To install the Logstash Forwarder on your data source machine, install the 
@@ -288,20 +369,22 @@ Create a configuration file for the Logstash Forwarder similar to the following 
   "network": {
     "servers": [ "localhost:5043" ],
 
-    "ssl ca": "/path/to/localhost.crt",
+    "ssl ca": "/path/to/localhost.crt", <1>
 
     "timeout": 15
   },
-
   "files": [
     {
       "paths": [
-        "/path/to/sample-log"
+        "/path/to/sample-log" <2>
       ],
       "fields": { "type": "apache" }
     }
   ]
 }
+
+<1> Path to the SSL certificate for the Logstash instance.
+<2> Path to the file or files that the Logstash Forwarder processes.
 
 Save this configuration file as `logstash-forwarder.conf`. 
 
@@ -311,9 +394,12 @@ of the `first-pipeline.conf` file:
 [source,json]
 lumberjack {
     port => "5043"
-    ssl_certificate => "/path/to/ssl-cert"
-    ssl_key => "/path/to/ssl-key"
+    ssl_certificate => "/path/to/ssl-cert" <1>
+    ssl_key => "/path/to/ssl-key" <2>
 }
+
+<1> Path to the SSL certificate that the Logstash instance uses to authenticate itself to Logstash Forwarder.
+<2> Path to the key for the SSL certificate.
 
 [float]
 [[logstash-file-output]]
@@ -347,7 +433,8 @@ output {
         }
 }
 
-Use the IP addresses of three non-master nodes in your Elasticsearch cluster in the host line. 
+Use the IP addresses of three non-master nodes in your Elasticsearch cluster in the host line. When the `host` 
+parameter lists multiple IP addresses, Logstash load-balances requests across the list of addresses.
 
 [float]
 [[testing-second-pipeline]]
@@ -404,6 +491,7 @@ bin/logstash -f first-pipeline.conf
 
 Use the `grep` utility to search in the target file to verify that information is present:
 
+[source,shell]
 grep Mozilla /path/to/target/file
 
 Run an Elasticsearch query to find the same information in the Elasticsearch cluster:

@@ -54,5 +54,5 @@ hello world
 Logstash adds timestamp and IP address information to the message. Exit Logstash by issuing a *CTRL-D* command in the 
 shell where Logstash is running.
 
-The <<logstash-advanced,Advanced Tutorial>> expands the capabilities of your Logstash instance to cover more complex 
+The <<complex-pipeline,Advanced Tutorial>> expands the capabilities of your Logstash instance to cover more complex 
 use cases.
