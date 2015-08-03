@@ -1,4 +1,4 @@
-## 1.5.4 (August 21, 2015)
+## 1.5.4 (August 8, 2015)
 ### general
   - Reverted a change in our stronger ssl patch that prevented logstash-forwarder clients
     to connect to the lumberjack input, the server doesnt enforce `VERIFY_PEER` of clients. (#3657)
