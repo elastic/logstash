@@ -151,7 +151,7 @@ GEM
     logstash-codec-rubydebug (1.0.0)
       awesome_print
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-core (1.5.4.snapshot1-java)
+    logstash-core (1.5.4.snapshot2-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       filesize (= 0.0.4)
@@ -332,7 +332,7 @@ GEM
       logstash-codec-line
       logstash-codec-plain
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-input-syslog (1.0.0)
+    logstash-input-syslog (1.0.1)
       concurrent-ruby
       logstash-codec-plain
       logstash-core (>= 1.4.0, < 2.0.0)
@@ -376,7 +376,7 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-filter-json
       logstash-output-file
-    logstash-output-elasticsearch (1.0.5-java)
+    logstash-output-elasticsearch (1.0.6-java)
       cabin (~> 0.6)
       concurrent-ruby
       elasticsearch (~> 1.0, >= 1.0.10)
@@ -601,7 +601,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 1.5.4.snapshot1)
+  logstash-core (= 1.5.4.snapshot2)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
