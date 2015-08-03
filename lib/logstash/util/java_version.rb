@@ -30,6 +30,9 @@ module LogStash::Util::JavaVersion
     # The regex below parses this all correctly http://rubular.com/r/sInQc3Nc7f
 
     match = version_string.match(/\A(\d+)\.(\d+)\.(\d+)(_(\d+))?(-(.+))?\Z/)
+
+    return nil unless match
+
     major, minor, patch, ufull, update, bfull, build = match.captures
 
     {
