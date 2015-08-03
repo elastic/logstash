@@ -1,3 +1,20 @@
+## 1.5.4 (August 5, 2015)
+### general
+  - Reverted a change in our stronger ssl patch that prevented logstash-forwarder clients
+    to connect to the lumberjack input, the server doesnt enforce `VERIFY_PEER` of clients. (#3657)
+
+### input
+  - Redis: Fixed typo in module name, causing the module to not be loaded ([#15](https://github.com/logstash-plugins/logstash-input-redis/issues/15))
+  - Rabbitmq: Update redis `march hare` library to version 2.11.0 ([#33](https://github.com/logstash-plugins/logstash-input-rabbitmq/pull/33))
+  - Http: Fix for missing `base64` require which was crashing Logstash ([#17](https://github.com/logstash-plugins/logstash-input-http/issues/17))
+
+### output
+  - Lumberjack: For SSL certificate verification, The client now enforces the `VERIFY_PEER` mode when 
+    connecting to the server. ([#4](https://github.com/elastic/ruby-lumberjack/issues/4))
+
+### Mixin
+  - AWS: Correctly configure the proxy when using `V2` version of the mixin. ([#15](https://github.com/logstash-plugins/logstash-mixin-aws/issues/15))
+
 ## 1.5.3 (July 21, 2015)
 ### general
   - Added back `--pluginpath` command line option to `bin/logstash`. This loads plugin source code
