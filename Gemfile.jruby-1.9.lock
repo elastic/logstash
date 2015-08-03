@@ -601,7 +601,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 1.5.3.snapshot1)
+  logstash-core (= 1.5.4.snapshot1)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
