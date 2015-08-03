@@ -2,6 +2,7 @@
 ### general
   - Reverted a change in our stronger ssl patch that prevented logstash-forwarder clients
     to connect to the lumberjack input, the server doesnt enforce `VERIFY_PEER` of clients. (#3657)
+  - Updated `Concurrent-ruby` usage to suppress deprecation warnings (#3662)
 
 ### input
   - Redis: Fixed typo in module name, causing the module to not be loaded ([#15](https://github.com/logstash-plugins/logstash-input-redis/issues/15))
