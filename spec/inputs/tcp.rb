@@ -2,7 +2,6 @@
 require "test_utils"
 require "socket"
 require "timeout"
-require "logstash/json"
 
 describe "inputs/tcp" do
   extend LogStash::RSpec
