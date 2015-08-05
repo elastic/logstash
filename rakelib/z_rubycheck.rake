@@ -31,8 +31,11 @@ if ENV['USE_RUBY'] != '1'
 
     # if required at this point system gems can be installed using the system_gem task, for example:
     # Rake::Task["vendor:system_gem"].invoke(jruby, "ffi", "1.9.6")
-
-    exec(jruby, "-S", rake, *ARGV)
+    require "bootstrap/environment"
+    env       = LogStash::Environment
+    gem_paths = Dir.glob(File.join(env::BUNDLE_DIR, env.ruby_engine, "*")).join(":")
+    ENV['GEM_HOME'] = ENV['GEM_PATH'] = gem_paths
+    exec(ENV, jruby, "-S", rake, *ARGV)
   end
 end
 
