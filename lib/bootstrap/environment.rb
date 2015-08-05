@@ -35,6 +35,10 @@ module LogStash
     def logstash_gem_home
       ::File.join(BUNDLE_DIR, ruby_engine, gem_ruby_version)
     end
+
+    def logstash_gem_paths
+      Dir.glob(File.join(BUNDLE_DIR, ruby_engine, "*")).join(":")
+    end
   end
 end
 
