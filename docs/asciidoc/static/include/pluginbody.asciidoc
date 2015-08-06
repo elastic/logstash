@@ -1,5 +1,7 @@
 pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/asciidoc/static/include/pluginbody.asciidoc ?>]
-== How to write a Logstash {plugintype} plugin
+
+[float]
+=== How to write a Logstash {plugintype} plugin
 
 To develop a new {plugintype} for Logstash, you build a self-contained Ruby gem
 whose source code lives in its own GitHub repository. The Ruby gem can then be
@@ -13,12 +15,12 @@ makes it possible to develop and release plugins separately. In previous
 versions, plugins were part of the core Logstash distribution.
 
 [float]
-== Get started
+==== Get started
 
 {getstarted}
 
 [float]
-=== Create a GitHub repo for your new plugin
+===== Create a GitHub repo for your new plugin
 Each Logstash plugin lives in its own GitHub repository. To create a new repository for your plugin:
 
 . Log in to GitHub.
@@ -31,10 +33,10 @@ Each Logstash plugin lives in its own GitHub repository. To create a new reposit
 . Click **Create Repository**.
 
 [float]
-=== Copy the {plugintype} code
+==== Copy the {plugintype} code
 
 [float]
-==== Build your local repository
+===== Build your local repository
 . **Clone your plugin.** Replace `GITUSERNAME` with your github username, and
 `MYPLUGINNAME` with your plugin name.
 ** `git clone https://github.com/GITUSERNAME/logstash-`+pass:attributes[{plugintype}]-MYPLUGINNAME.git+
@@ -91,7 +93,7 @@ walkthrough of the Ruby gem creation process, see
 http://timelessrepo.com/making-ruby-gems
 
 [float]
-=== See what your plugin looks like
+==== See what your plugin looks like
 Before we dive into the details, open up the plugin file in your favorite text editor
 and take a look.
 
@@ -290,12 +292,12 @@ end # class LogStash::{pluginclass}::{pluginnamecap}
 endif::receive_method[]
 
 [float]
-== Coding {plugintype} plugins
+=== Coding {plugintype} plugins
 
 Now let's take a line-by-line look at the example plugin.
 
 [float]
-=== `encoding`
+==== `encoding`
 
 It seems like a small thing, but remember to specify the encoding at the
 beginning of your plugin code:
@@ -309,7 +311,7 @@ Logstash depends on things being in UTF-8, so we put this here to tell the Ruby
 interpreter that we’re going to be using the UTF-8 encoding.
 
 [float]
-=== `require` Statements
+==== `require` Statements
 
 Logstash {plugintype} plugins require parent classes defined in
 +logstash/pass:attributes[{plugintype}]s/base+ and logstash/namespace:
@@ -325,12 +327,12 @@ Of course, the plugin you build may depend on other code, or even gems. Just put
 them here along with these Logstash dependencies.
 
 [float]
-=== Plugin Body
+==== Plugin Body
 
 Let's go through the various elements of the plugin itself.
 
 [float]
-==== Inline Documentation
+===== Inline Documentation
 Logstash provides infrastructure to automatically generate documentation for
 plugins. We use the asciidoc format to write documentation so _any_ comments in
 the source code will be first converted into asciidoc and then into html.
@@ -375,7 +377,7 @@ TIP: For more asciidoc formatting tips, see the excellent reference at
 https://github.com/elastic/docs#asciidoc-guide
 
 [float]
-=== `class` Declaration
+==== `class` Declaration
 The {plugintype} plugin class should be a subclass of
 +LogStash::pass:attributes[{pluginclass}]::Base+:
 
@@ -393,7 +395,7 @@ LogStash::{pluginclass}::{pluginnamecap}
 ----
 
 [float]
-=== `config_name`
+==== `config_name`
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
@@ -446,7 +448,7 @@ endif::blockinput[]
 endif::encode_method[]
 
 [float]
-=== Configuration Parameters
+==== Configuration Parameters
 [source,ruby]
 ----------------------------------
   config :variable_name, :validate => :variable_type, :default => "Default value", :required => boolean, :deprecated => boolean
@@ -469,7 +471,7 @@ will become a valid boolean in the config.  This coercion works for the
 * `:deprecated` - informational (also a Boolean `true` or `false`)
 
 [float]
-=== Plugin Methods
+==== Plugin Methods
 
 {methodheader}
 
@@ -478,7 +480,7 @@ will become a valid boolean in the config.  This coercion works for the
 // /////////////////////////////////////////////////////////////////////////////
 ifdef::register_method[]
 [float]
-==== `register` Method
+===== `register` Method
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
@@ -507,7 +509,7 @@ endif::register_method[]
 ifdef::filter_method[]
 ifndef::blockfilter[]
 [float]
-==== `filter` Method
+===== `filter` Method
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
@@ -549,7 +551,7 @@ endif::filter_method[]
 ifdef::decode_method[]
 ifndef::blockcodec[]
 [float]
-==== `decode` Method
+===== `decode` Method
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
@@ -578,7 +580,7 @@ endif::decode_method[]
 ifdef::encode_method[]
 ifndef::blockcodec[]
 [float]
-==== `encode` Method
+===== `encode` Method
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
@@ -604,7 +606,7 @@ endif::encode_method[]
 ifdef::run_method[]
 ifndef::blockinput[]
 [float]
-==== `run` Method
+===== `run` Method
 The {pluginname} input plugin has the following `run` Method:
 
 [source,ruby]
@@ -691,7 +693,7 @@ endif::run_method[]
 // /////////////////////////////////////////////////////////////////////////////
 ifdef::receive_method[]
 [float]
-==== `receive` Method
+===== `receive` Method
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
@@ -751,12 +753,12 @@ endif::receive_method[]
 // endif::teardown_method[]
 
 [float]
-== Building the Plugin
+=== Building the Plugin
 At this point in the process you have coded your plugin and are ready to build
 a Ruby Gem from it.  The following steps will help you complete the process.
 
 [float]
-=== External dependencies
+==== External dependencies
 
 A `require` statement in Ruby is used to include necessary code. In some cases
 your plugin may require additional files.  For example, the collectd plugin
@@ -796,7 +798,7 @@ Another kind of external dependency is on jar files.  This will be described
 in the "Add a `gemspec` file" section.
 
 [float]
-=== Add a Gemfile
+==== Add a Gemfile
 Gemfiles allow Ruby's Bundler to maintain the dependencies for your plugin.
 Currently, all we'll need is the Logstash gem, for testing, but if you require
 other gems, you should add them in here.
@@ -812,7 +814,7 @@ gem "logstash", :github => "elastic/logstash", :branch => "{branch}"
 ----------------------------------
 
 [float]
-=== Add a `gemspec` file
+==== Add a `gemspec` file
 Gemspecs define the Ruby gem which will be built and contain your plugin.
 
 TIP: More information can be found on the
@@ -884,7 +886,7 @@ You will no longer see a message indicating potential code immaturity when a
 plugin reaches version 1.0.0
 
 [float]
-==== Runtime & Development Dependencies
+===== Runtime & Development Dependencies
 At the bottom of the `gemspec` file is a section with a comment:
 `Gem dependencies`.  This is where any other needed gems must be mentioned. If
 a gem is necessary for your plugin to function, it is a runtime dependency. If
@@ -912,7 +914,7 @@ IMPORTANT: All plugins have a runtime dependency on the `logstash` core gem, and
 a development dependency on `logstash-devutils`.
 
 [float]
-==== Jar dependencies
+===== Jar dependencies
 In some cases, such as the
 https://github.com/logstash-plugins/logstash-output-elasticsearch/blob/master/logstash-output-elasticsearch.gemspec#L22-L23[Elasticsearch output plugin],
 your code may depend on a jar file.  In cases such as this, the dependency is
@@ -930,7 +932,7 @@ With these both defined, the install process will search for the required jar
 file at http://mvnrepository.com and download the specified version.
 
 [float]
-=== Add Tests
+==== Add Tests
 Logstash loves tests. Lots of tests. If you're using your new {plugintype}
 plugin in a production environment, you'll want to have some tests to ensure you
 are not breaking any existing functionality.
@@ -943,7 +945,7 @@ For help learning about tests and testing, look in the
 plugins.
 
 [float]
-=== Clone and test!
+==== Clone and test!
 Now let's start with a fresh clone of the plugin, build it and run the tests.
 
 * **Clone your plugin into a temporary location** Replace `GITUSERNAME` with
@@ -987,11 +989,11 @@ Hooray! You're almost there! (Unless you saw failures... you should fix those
   first).
 
 [float]
-=== Building and Testing
+==== Building and Testing
 Now you're ready to build your (well-tested) plugin into a Ruby gem.
 
 [float]
-==== Build
+===== Build
 You already have all the necessary ingredients, so let's go ahead and run the
 build command:
 
@@ -1011,7 +1013,7 @@ The `s.version` number from your gemspec file will provide the gem version, in
 this case, `0.1.0`.
 
 [float]
-==== Test installation
+===== Test installation
 You should test install your plugin into a clean installation of Logstash.
 Download the latest version from the
 https://www.elastic.co/downloads/logstash/[Logstash downloads page].
@@ -1193,14 +1195,14 @@ Congratulations! You've built, deployed and successfully run a Logstash
 {plugintype}.
 
 [float]
-== Submitting your plugin to http://rubygems.org[RubyGems.org] and https://github.com/logstash-plugins[logstash-plugins]
+=== Submitting your plugin to http://rubygems.org[RubyGems.org] and https://github.com/logstash-plugins[logstash-plugins]
 
 Logstash uses http://rubygems.org[RubyGems.org] as its repository for all plugin
 artifacts. Once you have developed your new plugin, you can make it available to
 Logstash users by simply publishing it to RubyGems.org.
 
 [float]
-=== Licensing
+==== Licensing
 Logstash and all its plugins are licensed under
 https://github.com/elasticsearch/logstash/blob/master/LICENSE[Apache License, version 2 ("ALv2")].
 If you make your plugin publicly available via http://rubygems.org[RubyGems.org],
@@ -1209,7 +1211,7 @@ please make sure to have this line in your gemspec:
 * `s.licenses = ['Apache License (2.0)']`
 
 [float]
-=== Publishing to http://rubygems.org[RubyGems.org]
+==== Publishing to http://rubygems.org[RubyGems.org]
 
 To begin, you’ll need an account on RubyGems.org
 
@@ -1265,13 +1267,13 @@ bin/plugin install logstash-{plugintype}-mypluginname
 ----------------------------------
 
 [float]
-=== Contributing your source code to https://github.com/logstash-plugins[logstash-plugins]
+==== Contributing your source code to https://github.com/logstash-plugins[logstash-plugins]
 It is not required to contribute your source code to
 https://github.com/logstash-plugins[logstash-plugins] github organization, but
 we always welcome new plugins!
 
 [float]
-==== Benefits
+===== Benefits
 
 Some of the many benefits of having your plugin in the logstash-plugins
 repository are:
@@ -1286,7 +1288,7 @@ have the assurance that if incompatibilities arise, they will be quickly
 discovered and corrected.
 
 [float]
-==== Acceptance Guidelines
+===== Acceptance Guidelines
 
 * **Code Review** Your plugin must be reviewed by members of the community for
 coherence, quality, readability, stability and security.

@@ -26,7 +26,7 @@ bin/logstash -f logstash-simple.conf
 Et voilà! Logstash reads  the specified configuration file and outputs to both Elasticsearch and stdout. Before we
 move on to some <<config-examples,more complex examples>>, let's take a closer look at what's in a config file.
 
-[float]
+[[configuration-file-structure]]
 === Structure of a Config File
 
 A Logstash config file has a separate section for each type of plugin you want to add to the event processing pipeline. For example:
@@ -54,7 +54,7 @@ multiple filters, they are applied in the order of their appearance in the confi
 
 [float]
 [[plugin_configuration]]
-=== Plugins
+=== Plugin Configuration
 
 The configuration of a plugin consists of the plugin name followed
 by a block of settings for that plugin. For example, this input section configures two file inputs:
@@ -79,6 +79,7 @@ In this example, two settings are configured for each of the file inputs: 'path'
 The settings you can configure vary according to the plugin type. For information about each plugin, see <<input-plugins,Input Plugins>>, <<output-plugins, Output Plugins>>, <<filter-plugins,Filter Plugins>>, and <<codec-plugins,Codec Plugins>>.
 
 [float]
+[[plugin-value-types]]
 === Value Types
 
 A plugin can require that the value for a setting be a
@@ -227,6 +228,7 @@ Example:
 ----------------------------------
 
 [float]
+[[comments]]
 === Comments
 
 Comments are the same as in perl, ruby, and python. A comment starts with a '#' character, and does not need to be at the beginning of a line. For example:
@@ -240,7 +242,6 @@ input { # comments can appear at the end of a line, too
 }
 ----------------------------------
 
-[float]
 [[event-dependent-configuration]]
 === Event Dependent Configuration
 
