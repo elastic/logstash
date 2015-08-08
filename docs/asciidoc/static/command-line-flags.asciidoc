@@ -1,11 +1,7 @@
-[command-line-flags]
-== Command-line flags
+[[command-line-flags]]
+=== Command-line flags
 
-[float]
-=== Pipeline
-
-The Logstash pipeline has the following flags. (You can use the `--help` flag to
-display this information.)
+Logstash has the following flags. You can use the `--help` flag to display this information.
 
 [source,shell]
 ----------------------------------
@@ -56,4 +52,3 @@ display this information.)
  *DEPRECATED: see --verbose/debug* Increase verbosity. There are multiple levels
  of verbosity available with '-vv' currently being the highest
 ----------------------------------
-
