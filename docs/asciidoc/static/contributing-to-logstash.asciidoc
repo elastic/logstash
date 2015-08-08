@@ -1,5 +1,5 @@
 [[contributing-to-logstash]]
-== Contributing to Logstash
+=== Contributing to Logstash
 
 Before version 1.5, Logstash included all plugins in each release.  This made it
 easy to make use of any plugin, but it complicated plugin development--a new
@@ -8,23 +8,19 @@ release of Logstash became necessary if a plugin needed patching.  Since version
 input, codec, filter, or output plugins to Logstash much more easily!
 
 [float]
-=== Adding plugins
+==== Adding plugins
 
-Since plugins can now be developed and deployed independently of the Logstash core, the following documents guide you 
-through the process of coding and deploying your own plugins:
+Since plugins can now be developed and deployed independently of the Logstash
+core, there are documents which guide you through the process of coding and
+deploying your own plugins:
 
-* {logstash}_how_to_write_a_logstash_input_plugin.html[How to write a Logstash input plugin]
-* {logstash}_how_to_write_a_logstash_codec_plugin.html[How to write a Logstash codec plugin]
-* {logstash}_how_to_write_a_logstash_filter_plugin.html[How to write a Logstash filter plugin]
-* {logstash}_how_to_write_a_logstash_output_plugin.html[How to write a Logstash output plugin]
-
-include::input.asciidoc[]
-include::codec.asciidoc[]
-include::filter.asciidoc[]
-include::output.asciidoc[]
+* http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_input_plugin.html[How to write a Logstash input plugin]
+* http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_codec_plugin.html[How to write a Logstash codec plugin]
+* http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_filter_plugin.html[How to write a Logstash filter plugin]
+* http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_output_plugin.html[How to write a Logstash output plugin]
 
 [float]
-=== Extending Logstash core
+==== Extending Logstash core
 
 We also welcome contributions and bug fixes to the Logstash core feature set.
 
