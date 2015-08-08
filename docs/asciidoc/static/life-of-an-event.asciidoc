@@ -1,5 +1,5 @@
 [[pipeline]]
-== Logstash Processing Pipeline
+=== Logstash Processing Pipeline
 
 The Logstash event processing pipeline has three stages: inputs -> filters ->
 outputs. Inputs generate events, filters modify them, and outputs ship them
