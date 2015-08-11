@@ -17,9 +17,9 @@ module LogStash
       if template.is_a?(Float) && (template < MIN_FLOAT_BEFORE_SCI_NOT || template >= MAX_FLOAT_BEFORE_SCI_NOT)
         return ("%.15f" % template).sub(/0*$/,"")
       end
-      
+
       template = template.to_s
-      
+
       return template if not_cachable?(template)
 
       compiled = CACHE.get_or_default(template, nil) || CACHE.put(template, compile_template(template))
@@ -108,11 +108,11 @@ module LogStash
 
       case value
       when nil
-        "%{#{@key}}"
+        "%{#{@key}}".encode(Encoding::UTF_8)
       when Array
-        value.join(",")
+        value.join(",").encode(Encoding::UTF_8)
       when Hash
-        LogStash::Json.dump(value)
+        LogStash::Json.dump(value).encode(Encoding::UTF_8)
       else
         value
       end
