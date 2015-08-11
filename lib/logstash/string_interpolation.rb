@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "thread_safe"
 require "forwardable"
 
@@ -108,7 +110,7 @@ module LogStash
 
       case value
       when nil
-        "%{#{@key}}".encode(Encoding::UTF_8)
+        "%{#{@key}}"
       when Array
         value.join(",")
       when Hash
