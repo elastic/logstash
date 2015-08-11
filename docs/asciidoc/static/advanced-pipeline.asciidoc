@@ -52,10 +52,10 @@ Edit the `first-pipeline.conf` file to add the following text:
 
 [source,json]
 input {
-       file {
-             path => "/path/to/groksample.log"
-             start_position => beginning <1>
-       }
+    file {
+        path => "/path/to/groksample.log"
+        start_position => beginning <1>
+    }
 }
 
 <1> The default behavior of the file input plugin is to monitor a file for new information, in a manner similar to the 
@@ -102,9 +102,9 @@ Edit the `first-pipeline.conf` file to add the following text:
 
 [source,json]
 filter {
-       grok {
-             match => { "message" => "%{COMBINEDAPACHELOG}"}
-        }
+    grok {
+        match => { "message" => "%{COMBINEDAPACHELOG}"}
+    }
 }
 
 After processing, the sample line has the following JSON representation:
@@ -133,9 +133,9 @@ Elasticsearch cluster. Edit the `first-pipeline.conf` file to add the following 
 
 [source,json]
 output {
-        elasticsearch {
-         protocol => "http"
-        }
+    elasticsearch {
+        protocol => "http"
+    }
 }
 
 With this configuration, Logstash uses multicast discovery to connect to Elasticsearch. 
@@ -171,26 +171,26 @@ Specify the name of the field that contains the IP address to look up. In this t
 At this point, your `first-pipeline.conf` file has input, filter, and output sections properly configured, and looks
 like this:
 
-[source,shell]
+[source,json]
 input {
-       file {
-             path => "/Users/palecur/logstash-1.5.2/logstash-tutorial-dataset"
-             start_position => beginning
-       }
+    file {
+        path => "/Users/palecur/logstash-1.5.2/logstash-tutorial-dataset"
+        start_position => beginning
+    }
 }
 filter {
-       grok {
-             match => { "message" => "%{COMBINEDAPACHELOG}"}
-        }
-       geoip {
-              source => "clientip"
-       }
+    grok {
+        match => { "message" => "%{COMBINEDAPACHELOG}"}
+    }
+    geoip {
+        source => "clientip"
+    }
 }
 output {
-        elasticsearch {
-              protocol => "http"
-        }
-        stdout {}
+    elasticsearch {
+        protocol => "http"
+    }
+    stdout {}
 }
 
 To verify your configuration, run the following command:
@@ -213,7 +213,7 @@ Replace $DATE with the current date, in YYYY.MM.DD format.
 
 Since our sample has just one 401 HTTP response, we get one hit back:
 
-[source,shell]
+[source,json]
 {"took":2,
 "timed_out":false,
 "_shards":{"total":5,
@@ -255,7 +255,7 @@ Replace $DATE with the current date, in YYYY.MM.DD format.
 
 Only one of the log entries comes from Buffalo, so the query produces a single response:
 
-[source,shell]
+[source,json]
 {"took":3,
 "timed_out":false,
 "_shards":{
@@ -365,23 +365,23 @@ appropriate package from the main Logstash https://www.elastic.co/downloads/logs
 Create a configuration file for the Logstash Forwarder similar to the following example:
 
 [source,json]
+--------------------------------------------------------------------------------
 {
-  "network": {
-    "servers": [ "localhost:5043" ],
-
-    "ssl ca": "/path/to/localhost.crt", <1>
-
-    "timeout": 15
-  },
-  "files": [
-    {
-      "paths": [
-        "/path/to/sample-log" <2>
-      ],
-      "fields": { "type": "apache" }
-    }
-  ]
+    "network": {
+        "servers": [ "localhost:5043" ],
+        "ssl ca": "/path/to/localhost.crt", <1>
+        "timeout": 15
+    },
+    "files": [
+        {
+            "paths": [
+                "/path/to/sample-log" <2>
+            ],
+            "fields": { "type": "apache" }
+        }
+    ]
 }
+--------------------------------------------------------------------------------
 
 <1> Path to the SSL certificate for the Logstash instance.
 <2> Path to the file or files that the Logstash Forwarder processes.
@@ -426,12 +426,14 @@ providing redundant points of entry into the cluster when a particular node is u
 To configure your Logstash instance to write to multiple Elasticsearch nodes, edit the output section of the `first-pipeline.conf` file to read:
 
 [source,json]
+--------------------------------------------------------------------------------
 output {
-       elasticsearch {
-                      protocol => "http"
-                      host => ["IP Address 1", "IP Address 2", "IP Address 3"]
-        }
+    elasticsearch {
+        protocol => "http"
+        host => ["IP Address 1", "IP Address 2", "IP Address 3"]
+    }
 }
+--------------------------------------------------------------------------------
 
 Use the IP addresses of three non-master nodes in your Elasticsearch cluster in the host line. When the `host` 
 parameter lists multiple IP addresses, Logstash load-balances requests across the list of addresses.
@@ -443,29 +445,31 @@ parameter lists multiple IP addresses, Logstash load-balances requests across th
 At this point, your `first-pipeline.conf` file looks like this:
 
 [source,json]
+--------------------------------------------------------------------------------
 input {
-       twitter {
-                consumer_key =>
-                consumer_secret =>
-                keywords =>
-                oauth_token =>
-                oauth_token_secret => 
-               }
-       lumberjack {
-                   port => "5043"
-                   ssl_certificate => "/path/to/ssl-cert"
-                   ssl_key => "/path/to/ssl-key"
-                  }
-      }
+    twitter {
+        consumer_key =>
+        consumer_secret =>
+        keywords =>
+        oauth_token =>
+        oauth_token_secret =>
+    }
+    lumberjack {
+        port => "5043"
+        ssl_certificate => "/path/to/ssl-cert"
+        ssl_key => "/path/to/ssl-key"
+    }
+}
 output {
-        elasticsearch {
-                       protocol => "http"
-                       host => ["IP Address 1", "IP Address 2", "IP Address 3"]
-                      }
-        file {
-              path => /path/to/target/file
-             }
-       }
+    elasticsearch {
+        protocol => "http"
+        host => ["IP Address 1", "IP Address 2", "IP Address 3"]
+    }
+    file {
+        path => /path/to/target/file
+    }
+}
+--------------------------------------------------------------------------------
 
 Logstash is consuming data from the Twitter feed you configured, receiving data from the Logstash Forwarder, and 
 indexing this information to three nodes in an Elasticsearch cluster as well as writing to a file.
