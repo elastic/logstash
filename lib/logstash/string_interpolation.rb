@@ -110,9 +110,9 @@ module LogStash
       when nil
         "%{#{@key}}".encode(Encoding::UTF_8)
       when Array
-        value.join(",").encode(Encoding::UTF_8)
+        value.join(",")
       when Hash
-        LogStash::Json.dump(value).encode(Encoding::UTF_8)
+        LogStash::Json.dump(value)
       else
         value
       end
