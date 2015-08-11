@@ -99,6 +99,16 @@ describe LogStash::Event do
       it "should return a json string if the key is a hash" do
         expect(subject.sprintf("%{[j][k3]}")).to eq("{\"4\":\"m\"}")
       end
+
+      context "#encoding" do
+        it "should return known patterns as UTF-8" do
+          expect(subject.sprintf("%{message}").encoding).to eq(Encoding::UTF_8)
+        end
+
+        it "should return unknown patterns as UTF-8" do
+          expect(subject.sprintf("%{unkown_pattern}").encoding).to eq(Encoding::UTF_8)
+        end
+      end
     end
 
     context "#[]" do
