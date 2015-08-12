@@ -9,11 +9,12 @@ require "logstash/config/file"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
-require "logstash/util/reporter"
 require "logstash/config/cpu_core_strategy"
 require "logstash/util/defaults_printer"
+require "logstash/shutdown_controller"
+require "logstash/dead_letter_post_office"
 
-class LogStash::Pipeline
+module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :input_to_filter, :filter_to_output
 
   def initialize(configstr)
@@ -25,6 +26,7 @@ class LogStash::Pipeline
 
     grammar = LogStashConfigParser.new
     @config = grammar.parse(configstr)
+
     if @config.nil?
       raise LogStash::ConfigurationError, grammar.failure_reason
     end
@@ -266,12 +268,20 @@ class LogStash::Pipeline
     # shutdown method which can be called from another thread at any time
     sleep(0.1) while !ready?
 
+    shutdown_controller = ::LogStash::ShutdownController.new(self)
+    shutdown_controller.logger = @logger
+    shutdown_controller.start
+
     # TODO: should we also check against calling shutdown multiple times concurently?
 
     before_stop.call if block_given?
 
     @inputs.each(&:do_stop)
   end # def shutdown
+
+  def force_exit
+    exit(-1)
+  end
 
   def plugin(plugin_type, name, *args)
     args << {} if args.empty?
@@ -309,4 +319,31 @@ class LogStash::Pipeline
     end
   end # flush_filters_to_output!
 
-end # class Pipeline
+  def inflight_count
+    data = {
+      "input_to_filter" => @input_to_filter.size,
+      "filter_to_output" => @filter_to_output.size,
+      "outputs" => []
+    }
+    @outputs.each do |output|
+      next unless output.worker_queue && output.worker_queue.size > 0
+      data["outputs"] << [output.inspect, output.worker_queue.size]
+    end
+
+    data["total"] = data["input_to_filter"] + data["filter_to_output"] +
+                    data["outputs"].map(&:last).inject(0, :+)
+    data
+  end
+
+  def dump
+    dump = []
+    [@input_to_filter].each do |queue|
+      until queue.empty? do
+        event = queue.pop(true) rescue ThreadError # non-block pop
+        next unless event.is_a?(LogStash::Event)
+        dump << event
+      end
+    end
+    dump
+  end
+end; end

@@ -50,6 +50,11 @@ class LogStash::Agent < Clamp::Command
     I18n.t("logstash.agent.flag.configtest"),
     :attribute_name => :config_test
 
+  option "--[no-]force-shutdown", :flag,
+    I18n.t("logstash.agent.flag.force_shutdown"),
+    :attribute_name => :force_shutdown,
+    :default => false
+
   # Emit a warning message.
   def warn(message)
     # For now, all warnings are fatal.
@@ -74,6 +79,9 @@ class LogStash::Agent < Clamp::Command
     require "cabin" # gem 'cabin'
     require "logstash/plugin"
     @logger = Cabin::Channel.get(LogStash)
+
+    LogStash::ShutdownController.force_shutdown = force_shutdown?
+    LogStash::DeadLetterPostOffice.logger = @logger
 
     if version?
       show_version
@@ -114,6 +122,7 @@ class LogStash::Agent < Clamp::Command
 
     begin
       pipeline = LogStash::Pipeline.new(@config_string)
+      LogStash::DeadLetterPostOffice.destination = LogStash::DeadLetterPostOffice::Destination::File.new
     rescue LoadError => e
       fail("Configuration problem.")
     end
@@ -175,10 +184,7 @@ class LogStash::Agent < Clamp::Command
   end # def execute
 
   def shutdown(pipeline)
-    pipeline.shutdown do
-      InflightEventsReporter.logger = @logger
-      InflightEventsReporter.start(pipeline.input_to_filter, pipeline.filter_to_output, pipeline.outputs)
-    end
+    pipeline.shutdown
   end
 
   def show_version
