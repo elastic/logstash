@@ -1,3 +1,4 @@
+# encoding: utf-8
 # monkey patch RubyGems to silence ffi warnings:
 #
 # WARN: Unresolved specs during Gem::Specification.reset:

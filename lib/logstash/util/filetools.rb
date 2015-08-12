@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "net/http"
 require "uri"
 require "digest/sha1"

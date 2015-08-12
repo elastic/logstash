@@ -1,3 +1,4 @@
+# encoding: utf-8
 module LogStash
   module Retryable
     # execute retryable code block

@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "java"
 
 # this is mainly for usage with JrJackson json parsing in :raw mode which genenerates

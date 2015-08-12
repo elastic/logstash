@@ -1,3 +1,4 @@
+# encoding: utf-8
 $LOAD_PATH.unshift(File.expand_path(File.join(__FILE__, "..", "..")))
 
 require "bootstrap/environment"

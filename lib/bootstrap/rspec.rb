@@ -1,3 +1,4 @@
+# encoding: utf-8
 require_relative "environment"
 LogStash::Bundler.setup!({:without => [:build]})
 require "logstash/environment"
