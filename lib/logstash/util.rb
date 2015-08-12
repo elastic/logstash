@@ -24,6 +24,41 @@ module LogStash::Util
     end
   end # def set_thread_name
 
+  def self.set_thread_plugin(plugin)
+    Thread.current[:plugin] = plugin
+  end
+
+  def self.get_thread_id(thread)
+    if RUBY_ENGINE == "jruby"
+      JRuby.reference(thread).native_thread.id
+    else
+      raise Exception.new("Native thread IDs aren't supported outside of JRuby")
+    end
+  end
+
+  def self.thread_info(thread)
+    backtrace = thread.backtrace.map do |line|
+      line.gsub(LogStash::Environment::LOGSTASH_HOME, "[...]")
+    end
+
+    blocked_on = case backtrace.first
+                 when /in `push'/ then "blocked_on_push"
+                 when /(?:pipeline|base).*pop/ then "waiting_for_events"
+                 else nil
+                 end
+
+    {
+      "thread_id" => get_thread_id(thread),
+      "name" => thread[:name],
+      "plugin" => (thread[:plugin] ? thread[:plugin].debug_info : nil),
+      "backtrace" => backtrace,
+      "blocked_on" => blocked_on,
+      "status" => thread.status,
+      "current_call" => backtrace.first
+    }
+  end
+
+
   # Merge hash 'src' into 'dst' nondestructively
   #
   # Duplicate keys will become array values

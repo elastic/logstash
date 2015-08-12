@@ -50,6 +50,11 @@ class LogStash::Agent < Clamp::Command
     I18n.t("logstash.agent.flag.configtest"),
     :attribute_name => :config_test
 
+  option "--[no-]allow-unsafe-shutdown", :flag,
+    I18n.t("logstash.agent.flag.unsafe_shutdown"),
+    :attribute_name => :unsafe_shutdown,
+    :default => false
+
   # Emit a warning message.
   def warn(message)
     # For now, all warnings are fatal.
@@ -74,6 +79,9 @@ class LogStash::Agent < Clamp::Command
     require "cabin" # gem 'cabin'
     require "logstash/plugin"
     @logger = Cabin::Channel.get(LogStash)
+
+    LogStash::ShutdownController.unsafe_shutdown = unsafe_shutdown?
+    LogStash::ShutdownController.logger = @logger
 
     if version?
       show_version
@@ -176,8 +184,7 @@ class LogStash::Agent < Clamp::Command
 
   def shutdown(pipeline)
     pipeline.shutdown do
-      InflightEventsReporter.logger = @logger
-      InflightEventsReporter.start(pipeline.input_to_filter, pipeline.filter_to_output, pipeline.outputs)
+      ::LogStash::ShutdownController.start(pipeline)
     end
   end
 

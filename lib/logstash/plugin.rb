@@ -59,6 +59,11 @@ class LogStash::Plugin
     end
   end
 
+  public
+  def debug_info
+    [self.class.to_s, original_params]
+  end
+
   # Look up a plugin by type and name.
   public
   def self.lookup(type, name)
