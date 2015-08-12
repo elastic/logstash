@@ -8,7 +8,7 @@ require "logstash/config/file"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
-require "logstash/util/reporter"
+require "logstash/shutdown_controller"
 
 class LogStash::Pipeline
 
@@ -199,7 +199,7 @@ class LogStash::Pipeline
       sleep(1)
       retry
     ensure
-      plugin.close
+      plugin.teardown
     end
   end
 
@@ -226,7 +226,7 @@ class LogStash::Pipeline
   rescue => e
     @logger.error("Exception in filterworker", "exception" => e, "backtrace" => e.backtrace)
   ensure
-   @filters.each(&:teardown)
+    @filters.each(&:teardown)
   end
 
   def outputworker
@@ -248,8 +248,7 @@ class LogStash::Pipeline
   #
   # This method is intended to be called from another thread
   def shutdown
-    InflightEventsReporter.logger = @logger
-    InflightEventsReporter.start(@input_to_filter, @filter_to_output, @outputs)
+    ShutdownController.start(@input_to_filter, @filter_to_output, @outputs)
 
     # sometimes an input is stuck in a blocking I/O so we need to tell it to teardown directly
     @inputs.each do |input|
