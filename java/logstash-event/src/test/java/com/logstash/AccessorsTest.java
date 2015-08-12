@@ -173,4 +173,13 @@ public class AccessorsTest {
         assertEquals(accessors.del("[bar]"), "baz");
         assertEquals(accessors.get("[bar]"), null);
     }
+
+    @Test
+    public void testNilInclude() throws Exception {
+        Map data = new HashMap();
+        data.put("nilfield", null);
+        TestableAccessors accessors = new TestableAccessors(data);
+
+        assertEquals(accessors.includes("nilfield"), true);
+    }
 }

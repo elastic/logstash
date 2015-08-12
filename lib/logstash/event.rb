@@ -24,16 +24,3 @@ module LogStash
   # LogStash::SHUTDOWN is used by plugins
   SHUTDOWN = LogStash::ShutdownEvent.new
 end
-
-class LogStash::Event
-  TIMESTAMP = "@timestamp"
-
-  def append(event)
-    # non-destructively merge that event with ourselves.
-
-    # no need to reset @accessors here because merging will not disrupt any existing field paths
-    # and if new ones are created they will be picked up.
-    LogStash::Util.hash_merge(self.to_hash, event.to_hash)
-  end # append
-end
-

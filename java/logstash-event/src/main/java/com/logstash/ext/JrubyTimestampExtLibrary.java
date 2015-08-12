@@ -134,7 +134,7 @@ public class JrubyTimestampExtLibrary implements Library {
         }
 
         @JRubyMethod(name = "now", meta = true)
-        public static IRubyObject ruby_at(ThreadContext context, IRubyObject recv)
+        public static IRubyObject ruby_now(ThreadContext context, IRubyObject recv)
         {
             return RubyTimestamp.newRubyTimestamp(context.runtime);
         }

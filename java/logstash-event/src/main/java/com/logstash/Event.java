@@ -3,146 +3,184 @@ package com.logstash;
 import com.logstash.ext.JrubyTimestampExtLibrary;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
+import org.jruby.RubyHash;
+import org.jruby.RubySymbol;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
 
-public class EventImpl implements Event, Cloneable, Serializable {
+public class Event implements Cloneable, Serializable {
 
     private boolean cancelled;
     private Map<String, Object> data;
+    private Map<String, Object> metadata;
     private Timestamp timestamp;
     private Accessors accessors;
+    private Accessors metadata_accessors;
 
-    private static final String TIMESTAMP = "@timestamp";
-    private static final String TIMESTAMP_FAILURE_TAG = "_timestampparsefailure";
-    private static final String TIMESTAMP_FAILURE_FIELD = "_@timestamp";
-    private static final String VERSION = "@version";
-    private static final String VERSION_ONE = "1";
+    public static final String METADATA = "@metadata";
+    public static final String METADATA_BRACKETS = "[" + METADATA + "]";
+    public static final String TIMESTAMP = "@timestamp";
+    public static final String TIMESTAMP_FAILURE_TAG = "_timestampparsefailure";
+    public static final String TIMESTAMP_FAILURE_FIELD = "_@timestamp";
+    public static final String VERSION = "@version";
+    public static final String VERSION_ONE = "1";
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
     // TODO: add metadata support
 
-    public EventImpl()
+    public Event()
     {
+        this.metadata = new HashMap<String, Object>();
         this.data = new HashMap<String, Object>();
         this.data.put(VERSION, VERSION_ONE);
         this.cancelled = false;
         this.timestamp = new Timestamp();
         this.data.put(TIMESTAMP, this.timestamp);
         this.accessors = new Accessors(this.data);
+        this.metadata_accessors = new Accessors(this.metadata);
     }
 
-    public EventImpl(Map data)
+    public Event(Map data)
     {
         this.data = data;
         this.data.putIfAbsent(VERSION, VERSION_ONE);
+
+        if (this.data.containsKey(METADATA)) {
+            this.metadata = (HashMap<String, Object>) this.data.remove(METADATA);
+        } else {
+            this.metadata = new HashMap<String, Object>();
+        }
+        this.metadata_accessors = new Accessors(this.metadata);
+
         this.cancelled = false;
         this.timestamp = initTimestamp(data.get(TIMESTAMP));
         this.data.put(TIMESTAMP, this.timestamp);
         this.accessors = new Accessors(this.data);
     }
 
-    @Override
     public Map<String, Object> getData() {
         return this.data;
     }
 
-    @Override
+    public Map<String, Object> getMetadata() {
+        return this.metadata;
+    }
+
     public void setData(Map<String, Object> data) {
         this.data = data;
     }
 
-    @Override
     public Accessors getAccessors() {
         return this.accessors;
     }
 
-    @Override
+    public Accessors getMetadataAccessors() {
+        return this.metadata_accessors;
+    }
+
     public void setAccessors(Accessors accessors) {
         this.accessors = accessors;
     }
 
-    @Override
+    public void setMetadataAccessors(Accessors accessors) {
+        this.metadata_accessors = accessors;
+    }
+
     public void cancel() {
         this.cancelled = true;
     }
 
-    @Override
     public void uncancel() {
         this.cancelled = false;
     }
 
-    @Override
     public boolean isCancelled() {
         return this.cancelled;
     }
 
-    @Override
-    public Timestamp getTimestamp() {
-        return this.timestamp;
+    public Timestamp getTimestamp() throws IOException {
+        if (this.data.containsKey(TIMESTAMP)) {
+            return this.timestamp;
+        } else {
+            throw new IOException("fails");
+        }
     }
 
-    @Override
     public void setTimestamp(Timestamp t) {
         this.timestamp = t;
         this.data.put(TIMESTAMP, this.timestamp);
     }
 
-    @Override
     public Object getField(String reference) {
-        // TODO: add metadata support
-        return this.accessors.get(reference);
+        if (reference.equals(METADATA)) {
+            return this.metadata;
+        } else if (reference.startsWith(METADATA_BRACKETS)) {
+            return this.metadata_accessors.get(reference.substring(METADATA_BRACKETS.length()));
+        } else {
+            return this.accessors.get(reference);
+        }
     }
 
-    @Override
     public void setField(String reference, Object value) {
-        // TODO: add metadata support
-        this.accessors.set(reference, value);
+        if (reference.equals(TIMESTAMP)) {
+            // TODO(talevy): check type of timestamp
+            this.accessors.set(reference, value);
+        } else if (reference.equals(METADATA_BRACKETS) || reference.equals(METADATA)) {
+            this.metadata = (HashMap<String, Object>) value;
+            this.metadata_accessors = new Accessors(this.metadata);
+        } else if (reference.startsWith(METADATA_BRACKETS)) {
+            this.metadata_accessors.set(reference.substring(METADATA_BRACKETS.length()), value);
+        } else {
+            this.accessors.set(reference, value);
+        }
     }
 
-    @Override
     public boolean includes(String reference) {
-        // TODO: add metadata support
-        return this.accessors.includes(reference);
+        if (reference.equals(METADATA_BRACKETS) || reference.equals(METADATA)) {
+            return true;
+        } else if (reference.startsWith(METADATA_BRACKETS)) {
+            return this.metadata_accessors.includes(reference.substring(METADATA_BRACKETS.length()));
+        } else {
+            return this.accessors.includes(reference);
+        }
     }
 
-    @Override
     public String toJson() throws IOException {
         return mapper.writeValueAsString((Map<String, Object>)this.data);
     }
 
-    @Override
     public Map toMap() {
         return this.data;
     }
 
-    @Override
     public Event overwrite(Event e) {
         this.data = e.getData();
         this.accessors = e.getAccessors();
         this.cancelled = e.isCancelled();
-        this.timestamp = e.getTimestamp();
+        try {
+            this.timestamp = e.getTimestamp();
+        } catch (IOException exception) {
+            this.timestamp = new Timestamp();
+        }
 
         return this;
     }
 
 
-    @Override
     public Event append(Event e) {
-        // TODO: implement
-        throw new UnsupportedOperationException("append() not yet implemented");
+        Util.mapMerge(this.data, e.data);
+
+        return this;
     }
 
-    @Override
     public Object remove(String path) {
         return this.accessors.del(path);
     }
 
-    @Override
     public String sprintf(String s) throws IOException {
         return StringInterpolation.getInstance().evaluate(this, s);
     }
@@ -159,7 +197,11 @@ public class EventImpl implements Event, Cloneable, Serializable {
         // TODO: until we have sprintf
         String host = (String)this.data.getOrDefault("host", "%{host}");
         String message = (String)this.data.getOrDefault("message", "%{message}");
-        return getTimestamp().toIso8601() + " " + host + " " + message;
+        try {
+            return getTimestamp().toIso8601() + " " + host + " " + message;
+        } catch (IOException e) {
+            return host + " " + message;
+        }
     }
 
     private Timestamp initTimestamp(Object o) {
@@ -174,22 +216,24 @@ public class EventImpl implements Event, Cloneable, Serializable {
                 return new Timestamp(((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp());
             } else if (o instanceof Timestamp) {
                 return new Timestamp((Timestamp) o);
-            } else if (o instanceof Long) {
-                return new Timestamp((Long) o);
             } else if (o instanceof DateTime) {
                 return new Timestamp((DateTime) o);
             } else if (o instanceof Date) {
                 return new Timestamp((Date) o);
+            } else if (o instanceof RubySymbol) {
+                return new Timestamp(((RubySymbol) o).asJavaString());
             } else {
                 // TODO: add logging
-                return new Timestamp();
+                //return Timestamp.now();
+                throw new IllegalArgumentException();
             }
         } catch (IllegalArgumentException e) {
             // TODO: add error logging
             tag(TIMESTAMP_FAILURE_TAG);
-            this.data.put(TIMESTAMP_FAILURE_FIELD, o.toString());
 
-            return new Timestamp();
+            this.data.put(TIMESTAMP_FAILURE_FIELD, o);
+
+            return Timestamp.now();
         }
     }
 

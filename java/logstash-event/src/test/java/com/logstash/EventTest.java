@@ -1,5 +1,9 @@
 package com.logstash;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import org.jruby.RubyHash;
 import org.jruby.ir.operands.Hash;
 import org.junit.Test;
 
@@ -14,7 +18,7 @@ public class EventTest {
 
     @Test
     public void testBareToJson() throws Exception {
-        Event e = new EventImpl();
+        Event e = new Event();
         assertEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"@version\":\"1\"}", e.toJson());
     }
 
@@ -22,7 +26,7 @@ public class EventTest {
     public void testSimpleStringFieldToJson() throws Exception {
         Map data = new HashMap();
         data.put("foo", "bar");
-        Event e = new EventImpl(data);
+        Event e = new Event(data);
         assertEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":\"bar\",\"@version\":\"1\"}", e.toJson());
     }
 
@@ -30,7 +34,7 @@ public class EventTest {
     public void testSimpleIntegerFieldToJson() throws Exception {
         Map data = new HashMap();
         data.put("foo", 1);
-        Event e = new EventImpl(data);
+        Event e = new Event(data);
         assertEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1,\"@version\":\"1\"}", e.toJson());
     }
 
@@ -38,7 +42,7 @@ public class EventTest {
     public void testSimpleDecimalFieldToJson() throws Exception {
         Map data = new HashMap();
         data.put("foo", 1.0);
-        Event e = new EventImpl(data);
+        Event e = new Event(data);
         assertEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1.0,\"@version\":\"1\"}", e.toJson());
     }
 
@@ -48,17 +52,17 @@ public class EventTest {
         data.put("foo", 1.0);
         data.put("bar", "bar");
         data.put("baz", 1);
-        Event e = new EventImpl(data);
+        Event e = new Event(data);
         assertEquals("{\"bar\":\"bar\",\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1.0,\"@version\":\"1\",\"baz\":1}", e.toJson());
     }
 
     @Test
     public void testDeepMapFieldToJson() throws Exception {
-        Event e = new EventImpl();
+        Event e = new Event();
         e.setField("[foo][bar][baz]", 1);
         assertEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":{\"bar\":{\"baz\":1}},\"@version\":\"1\"}", e.toJson());
 
-        e = new EventImpl();
+        e = new Event();
         e.setField("[foo][0][baz]", 1);
         assertEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":{\"0\":{\"baz\":1}},\"@version\":\"1\"}", e.toJson());
     }
@@ -69,7 +73,7 @@ public class EventTest {
         List l = new ArrayList();
         data.put("foo", l);
         l.add(1);
-        Event e = new EventImpl(data);
+        Event e = new Event(data);
         assertEquals(1, e.getField("[foo][0]"));
     }
 
@@ -81,7 +85,7 @@ public class EventTest {
         Map m = new HashMap();
         m.put("bar", "baz");
         l.add(m);
-        Event e = new EventImpl(data);
+        Event e = new Event(data);
         assertEquals("baz", e.getField("[foo][0][bar]"));
     }
 
@@ -100,10 +104,21 @@ public class EventTest {
         data.put("bar", "bar");
         data.put("baz", 1);
 
-        Event e = new EventImpl(data);
+        Event e = new Event(data);
 
         Event f = e.clone();
         assertEquals("{\"bar\":\"bar\",\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"array\":[{\"foo\":\"bar\"}],\"foo\":1.0,\"@version\":\"1\",\"baz\":1}", f.toJson());
         assertEquals(f.toJson(), e.toJson());
+    }
+
+    @Test
+    public void testAppend() throws Exception {
+        Map  data1 = Maps.newHashMap(ImmutableMap.of("field1", Lists.newArrayList("original1", "original2")));
+        Map  data2 = Maps.newHashMap(ImmutableMap.of("field1", "original1"));
+        Event e = new Event(data1);
+        Event e2 = new Event(data2);
+        e.append(e2);
+
+        assertEquals(Lists.newArrayList("original1", "original2"), e.getField("field1"));
     }
 }
