@@ -189,3 +189,8 @@ en:
         debug: |+
           Most verbose logging. This causes 'debug'
           level logs to be emitted.
+        force_shutdown: |+
+          Force logstash to exit during shutdown even
+          if there are still inflight events in memory.
+          By default, logstash will refuse to quit until all
+          received events have been pushed to the outputs.
