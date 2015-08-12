@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'rubygems/spec_fetcher'
 require "pluginmanager/command"
 

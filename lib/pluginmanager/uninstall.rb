@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "pluginmanager/command"
 
 class LogStash::PluginManager::Uninstall < LogStash::PluginManager::Command
