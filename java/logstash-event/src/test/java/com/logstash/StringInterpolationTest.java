@@ -97,7 +97,7 @@ public class StringInterpolationTest {
         Event event = getTestEvent();
         String path = "%{+%s}";
         StringInterpolation si = StringInterpolation.getInstance();
-        assertEquals("1443672000", si.evaluate(event, path));
+        assertEquals("1443682800", si.evaluate(event, path));
     }
 
     @Test
@@ -135,7 +135,7 @@ public class StringInterpolationTest {
         data.put("@timestamp", new DateTime(2015, 10, 1, 0, 0, 0));
 
 
-        Event event = new EventImpl(data);
+        Event event = new Event(data);
 
         return event;
     }
