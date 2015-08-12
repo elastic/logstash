@@ -1,3 +1,4 @@
+# encoding: utf-8
 class LogStash::PluginManager::Command < Clamp::Command
   def gemfile
     @gemfile ||= LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, 'r+')).load

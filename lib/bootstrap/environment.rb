@@ -1,3 +1,4 @@
+# encoding: utf-8
 # bootstrap.rb contains the minimal code to be able to launch Bundler to eventually be able
 # to retrieve the core code in the logstash-core gem which can live under different paths
 # depending on the launch context (local dev, packaged, etc)

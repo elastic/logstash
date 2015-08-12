@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'cabin'
 
 module LogStash::Util::JavaVersion

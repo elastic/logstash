@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/environment"
 
 if LogStash::Environment.windows? && LogStash::Environment.jruby?

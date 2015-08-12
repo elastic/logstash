@@ -1,3 +1,4 @@
+# encoding: utf-8
 # Useful module to help loading all logstash content when
 # running coverage analysis
 module CoverageHelper

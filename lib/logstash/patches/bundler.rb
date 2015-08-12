@@ -1,3 +1,4 @@
+# encoding: utf-8
 # Bundler monkey patches
 module ::Bundler
   # Patch bundler to write a .lock file specific to the version of ruby.
