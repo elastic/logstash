@@ -32,9 +32,8 @@ Download the https://www.elastic.co/downloads/logstash[Logstash installation fil
 Unpack the file. On supported Linux operating systems, you can <<package-repositories,use a package manager>> to 
 install Logstash.
 
-[float]
 [[first-event]]
-=== Stashing Your First Event
+=== Stashing Your First Event: Basic Logstash Example
 
 To test your Logstash installation, run the most basic Logstash pipeline:
 

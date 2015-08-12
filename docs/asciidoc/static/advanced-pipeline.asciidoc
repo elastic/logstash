@@ -1,5 +1,5 @@
 [[advanced-pipeline]]
-== Setting Up an Advanced Logstash Pipeline
+=== Setting Up an Advanced Logstash Pipeline
 
 A Logstash pipeline in most use cases has one or more input, filter, and output plugins. The scenarios in this section 
 build Logstash configuration files to specify these plugins and discuss what each plugin is doing.
@@ -34,7 +34,7 @@ examples in this tutorial build configuration files to address specific use case
 Paste the skeleton into a file named `first-pipeline.conf` in your home Logstash directory.
 
 [[parsing-into-es]]
-=== Parsing Apache Logs into Elasticsearch
+==== Parsing Apache Logs into Elasticsearch
 
 This example creates a Logstash pipeline that takes Apache web logs as input, parses those logs to create specific, 
 named fields from the logs, and writes the parsed data to an Elasticsearch cluster.
@@ -43,7 +43,7 @@ You can download the sample data set used in this example http://tbd.co/groksamp
 
 [float]
 [[configuring-file-input]]
-==== Configuring Logstash for File Input
+===== Configuring Logstash for File Input
 
 To start your Logstash pipeline, configure the Logstash instance to read from a file using the 
 {logstash}plugins-inputs-file.html[file] input plugin.
@@ -66,7 +66,7 @@ Replace `/path/to/` with the actual path to the location of `groksample.log` in 
 
 [float]
 [[configuring-grok-filter]]
-==== Parsing Web Logs with the Grok Filter Plugin
+===== Parsing Web Logs with the Grok Filter Plugin
 
 The {logstash}plugin-filters-grok[`grok`] filter plugin is one of several plugins that are available by default in 
 Logstash. For details on how to manage Logstash plugins, see the <<working-with-plugins,reference documentation>> for 
@@ -126,7 +126,7 @@ After processing, the sample line has the following JSON representation:
 
 [float]
 [[indexing-parsed-data-into-elasticsearch]]
-==== Indexing Parsed Data into Elasticsearch
+===== Indexing Parsed Data into Elasticsearch
 
 Now that the web logs are broken down into specific fields, the Logstash pipeline can index the data into an 
 Elasticsearch cluster. Edit the `first-pipeline.conf` file to add the following text after the `input` section:
@@ -145,7 +145,7 @@ purposes of this example, however, the default behavior is sufficient.
 
 [float]
 [[configuring-geoip-plugin]]
-==== Enhancing Your Data with the Geoip Filter Plugin
+===== Enhancing Your Data with the Geoip Filter Plugin
 
 In addition to parsing log data for better searches, filter plugins can derive supplementary information from existing 
 data. As an example, the {logstash}plugins-filters-geoip.html[`geoip`] plugin looks up IP addresses, derives geographic 
@@ -166,7 +166,7 @@ Specify the name of the field that contains the IP address to look up. In this t
 
 [float]
 [[testing-initial-pipeline]]
-==== Testing Your Initial Pipeline
+===== Testing Your Initial Pipeline
 
 At this point, your `first-pipeline.conf` file has input, filter, and output sections properly configured, and looks
 like this:
@@ -308,7 +308,7 @@ Only one of the log entries comes from Buffalo, so the query produces a single r
 }
 
 [[multiple-input-output-plugins]]
-=== Multiple Input and Output Plugins
+==== Multiple Input and Output Plugins
 
 The information you need to manage often comes from several disparate sources, and use cases can require multiple 
 destinations for your data. Your Logstash pipeline can use multiple input and output plugins to handle these 
@@ -319,7 +319,7 @@ sends the information to an Elasticsearch cluster as well as writing the informa
 
 [float]
 [[twitter-configuration]]
-==== Reading from a Twitter feed
+===== Reading from a Twitter feed
 
 To add a Twitter feed, you need several pieces of information:
 
@@ -345,7 +345,7 @@ twitter {
 
 [float]
 [[configuring-lsf]]
-==== The Logstash Forwarder
+===== The Logstash Forwarder
 
 The https://github.com/elastic/logstash-forwarder[Logstash Forwarder] is a lightweight, resource-friendly tool that 
 collects logs from files on the server and forwards these logs to your Logstash instance for processing. The 
@@ -403,7 +403,7 @@ lumberjack {
 
 [float]
 [[logstash-file-output]]
-==== Writing Logstash Data to a File
+===== Writing Logstash Data to a File
 
 You can configure your Logstash pipeline to write data directly to a file with the 
 {logstash}plugins-outputs-file.html[`file`] output plugin.
@@ -418,7 +418,7 @@ file {
 
 [float]
 [[multiple-es-nodes]]
-==== Writing to multiple Elasticsearch nodes
+===== Writing to multiple Elasticsearch nodes
 
 Writing to multiple Elasticsearch nodes lightens the resource demands on a given Elasticsearch node, as well as 
 providing redundant points of entry into the cluster when a particular node is unavailable.
@@ -440,7 +440,7 @@ parameter lists multiple IP addresses, Logstash load-balances requests across th
 
 [float]
 [[testing-second-pipeline]]
-==== Testing the Pipeline
+===== Testing the Pipeline
 
 At this point, your `first-pipeline.conf` file looks like this:
 
