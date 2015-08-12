@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 module LogStash
   module Inputs; end
   module Outputs; end

@@ -1,3 +1,4 @@
+# encoding: utf-8
 module LogStash::Util::UnicodeTrimmer
   # The largest possible unicode chars are 4 bytes
   # http://stackoverflow.com/questions/9533258/what-is-the-maximum-number-of-bytes-for-a-utf-8-encoded-character

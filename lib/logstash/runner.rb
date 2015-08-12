@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 Thread.abort_on_exception = true
 Encoding.default_external = Encoding::UTF_8
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")

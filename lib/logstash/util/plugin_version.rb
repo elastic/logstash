@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'logstash/errors'
 require 'rubygems/version'
 require 'forwardable'

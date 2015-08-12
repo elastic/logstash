@@ -1,3 +1,4 @@
+# encoding: utf-8
 class InflightEventsReporter
   def self.logger=(logger)
     @logger = logger
