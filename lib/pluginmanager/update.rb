@@ -107,7 +107,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   # retrieve only the latest spec for all locally installed plugins
   # @return [Hash] result hash {plugin_name.downcase => plugin_spec}
   def find_latest_gem_specs
-    LogStash::PluginManager.find_plugins_gem_specs.inject({}) do |result, spec|
+    LogStash::PluginManager.all_installed_plugins_gem_specs(gemfile).inject({}) do |result, spec|
       previous = result[spec.name.downcase]
       result[spec.name.downcase] = previous ? [previous, spec].max_by{|s| s.version} : spec
       result
