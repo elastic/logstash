@@ -68,7 +68,7 @@ Replace `/path/to/` with the actual path to the location of `groksample.log` in 
 [[configuring-grok-filter]]
 ===== Parsing Web Logs with the Grok Filter Plugin
 
-The {logstash}plugin-filters-grok.html[`grok`] filter plugin is one of several plugins that are available by default in 
+The {logstash}plugins-filters-grok.html[`grok`] filter plugin is one of several plugins that are available by default in 
 Logstash. For details on how to manage Logstash plugins, see the <<working-with-plugins,reference documentation>> for 
 the plugin manager.
 
