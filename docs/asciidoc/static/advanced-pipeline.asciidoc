@@ -39,7 +39,7 @@ Paste the skeleton into a file named `first-pipeline.conf` in your home Logstash
 This example creates a Logstash pipeline that takes Apache web logs as input, parses those logs to create specific, 
 named fields from the logs, and writes the parsed data to an Elasticsearch cluster.
 
-You can download the sample data set used in this example http://tbd.co/groksample.log[here]. Unpack this file.
+// You can download the sample data set used in this example http://tbd.co/groksample.log[here]. Unpack this file.
 
 [float]
 [[configuring-file-input]]
@@ -68,7 +68,7 @@ Replace `/path/to/` with the actual path to the location of `groksample.log` in 
 [[configuring-grok-filter]]
 ===== Parsing Web Logs with the Grok Filter Plugin
 
-The {logstash}plugin-filters-grok[`grok`] filter plugin is one of several plugins that are available by default in 
+The {logstash}plugin-filters-grok.html[`grok`] filter plugin is one of several plugins that are available by default in 
 Logstash. For details on how to manage Logstash plugins, see the <<working-with-plugins,reference documentation>> for 
 the plugin manager.
 
