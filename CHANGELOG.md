@@ -2,15 +2,20 @@
 ### general
   - Reverted a change in our stronger ssl patch that prevented logstash-forwarder clients
     to connect to the lumberjack input, the server doesnt enforce `VERIFY_PEER` of clients. (#3657)
+  - Fix incorrectly returned string encoding when using `Event#sprintf` ([#3723](https://github.com/elastic/logstash/pull/3723))
 
 ### input
+  - Lumberjack: Fixed an incorrectly calculated window size of a payload that would make logstash loses events when dealing with congestion ([#3691](https://github.com/elastic/logstash/issues/3691))
   - Redis: Fixed typo in module name, causing the module to not be loaded ([#15](https://github.com/logstash-plugins/logstash-input-redis/issues/15))
   - Rabbitmq: Update redis `march hare` library to version 2.11.0 ([#33](https://github.com/logstash-plugins/logstash-input-rabbitmq/pull/33))
   - Http: Fix for missing `base64` require which was crashing Logstash ([#17](https://github.com/logstash-plugins/logstash-input-http/issues/17))
+  - File: Fix double ingestion issue when using glob path ([3674](https://github.com/elastic/logstash/issues/3674)
 
 ### output
-  - Lumberjack: For SSL certificate verification, The client now enforces the `VERIFY_PEER` mode when 
-    connecting to the server. ([#4](https://github.com/elastic/ruby-lumberjack/issues/4))
+  - Lumberjack:
+     - For SSL certificate verification, The client now enforces the `VERIFY_PEER` mode when 
+       connecting to the server. ([#4](https://github.com/elastic/ruby-lumberjack/issues/4))
+    - Added better handling of congestion scenario on the output by using a buffered send of events ([#7](https://github.com/logstash-plugins/logstash-output-lumberjack/pull/7))
 
 ### Mixin
   - AWS: Correctly configure the proxy when using `V2` version of the mixin. ([#15](https://github.com/logstash-plugins/logstash-mixin-aws/issues/15))
