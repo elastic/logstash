@@ -9,13 +9,17 @@ require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/shutdown_controller"
+require "logstash/dead_letter_post_office"
 
-class LogStash::Pipeline
+module LogStash; class Pipeline
 
   def initialize(configstr)
     @logger = Cabin::Channel.get(LogStash)
     grammar = LogStashConfigParser.new
     @config = grammar.parse(configstr)
+    DeadLetterPostOffice.logger = @logger
+    DeadLetterPostOffice.destination = DeadLetterPostOffice::Destination::File.new
+
     if @config.nil?
       raise LogStash::ConfigurationError, grammar.failure_reason
     end
@@ -248,7 +252,9 @@ class LogStash::Pipeline
   #
   # This method is intended to be called from another thread
   def shutdown
-    ShutdownController.start(@input_to_filter, @filter_to_output, @outputs)
+    shutdown_controller = ::LogStash::ShutdownController.new(self)
+    shutdown_controller.logger = @logger
+    shutdown_controller.start
 
     # sometimes an input is stuck in a blocking I/O so we need to tell it to teardown directly
     @inputs.each do |input|
@@ -263,6 +269,10 @@ class LogStash::Pipeline
       end
     end
   end # def shutdown
+
+  def force_exit
+    exit(-1)
+  end
 
   def plugin(plugin_type, name, *args)
     args << {} if args.empty?
@@ -300,4 +310,31 @@ class LogStash::Pipeline
     end
   end
 
-end
+  def inflight_count
+    data = {
+      "input_to_filter" => @input_to_filter.size,
+      "filter_to_output" => @filter_to_output.size,
+      "outputs" => []
+    }
+    @outputs.each do |output|
+      next unless output.worker_queue && output.worker_queue.size > 0
+      data["outputs"] << [output.inspect, output.worker_queue.size]
+    end
+
+    data["total"] = data["input_to_filter"] + data["filter_to_output"] +
+                    data["outputs"].map(&:last).inject(0, :+)
+    data
+  end
+
+  def dump
+    dump = []
+    [@input_to_filter].each do |queue|
+      until queue.empty? do
+        event = queue.pop(true) rescue ThreadError # non-block pop
+        next unless event.is_a?(LogStash::Event)
+        dump << event
+      end
+    end
+    dump
+  end
+end; end

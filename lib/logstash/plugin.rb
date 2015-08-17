@@ -57,6 +57,11 @@ class LogStash::Plugin
     end
   end
 
+  def dead_letter(event)
+    return unless event.is_a?(LogStash::Event)
+    LogStash::DeadLetterPostOffice << event
+  end
+
   # Look up a plugin by type and name.
   def self.lookup(type, name)
     path = "logstash/#{type}s/#{name}"
