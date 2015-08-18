@@ -15,7 +15,7 @@ describe LogStash::ShutdownController do
     allow(pipeline).to receive(:force_exit)
     allow(pipeline).to receive(:inflight_count) do
       subject.stop! if return_values.empty?
-      { "total" => return_values.shift }
+      { "total" => (return_values.shift || 0) }
     end
   end
 

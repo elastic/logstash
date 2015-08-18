@@ -43,7 +43,8 @@ module LogStash
     end
 
     def stop!
-      @thread.terminate
+      @thread.terminate if @thread.is_a?(Thread)
+      @thread = nil
     end
 
     def report(report)

@@ -33,16 +33,6 @@ class LogStash::DeadLetterPostOffice
       def <<(event); end
     end
 
-    class Stdout < Base
-      def location
-        STDOUT
-      end
-
-      def <<(event)
-        puts event
-      end
-    end
-
     class File < Base
 
       START_TIME = Time.now
