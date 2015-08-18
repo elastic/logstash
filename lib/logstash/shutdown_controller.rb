@@ -6,12 +6,12 @@ module LogStash
     REPORTS = []
     NUM_REPORTS = 3
 
-    def self.force_exit_on_stall=(boolean)
-      @force_exit_on_stall = boolean
+    def self.force_shutdown=(boolean)
+      @force_shutdown = boolean
     end
 
-    def self.force_exit_on_stall?
-      @force_exit_on_stall
+    def self.force_shutdown?
+      @force_shutdown
     end
 
     def logger=(logger)
@@ -32,7 +32,7 @@ module LogStash
           REPORTS << @pipeline.inflight_count
           REPORTS.delete_at(0) if REPORTS.size > NUM_REPORTS # expire old report
           report(REPORTS.last)
-          if self.class.force_exit_on_stall? && stalled?
+          if self.class.force_shutdown? && stalled?
             logger.fatal("Stalled pipeline detected. Forcefully quitting logstash..")
             DeadLetterPostOffice << @pipeline.dump
             @pipeline.force_exit()

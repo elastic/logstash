@@ -82,7 +82,9 @@ class LogStash::Agent < Clamp::Command
     require "logstash/plugin"
     @logger = Cabin::Channel.get(LogStash)
 
-    ::LogStash::ShutdownController.force_exit_on_stall = force_shutdown?
+    LogStash::ShutdownController.force_shutdown = force_shutdown?
+    LogStash::DeadLetterPostOffice.logger = @logger
+    LogStash::DeadLetterPostOffice.destination = LogStash::DeadLetterPostOffice::Destination::File.new
 
     if version?
       show_version

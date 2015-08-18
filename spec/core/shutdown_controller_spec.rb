@@ -23,10 +23,10 @@ describe LogStash::ShutdownController do
     subject.stop!
   end
 
-  context "when force_exit_on_stall is true" do
+  context "when force_shutdown is true" do
 
     before :each do
-      subject.class.force_exit_on_stall = true
+      subject.class.force_shutdown = true
     end
 
     context "with a non-stalled pipeline" do

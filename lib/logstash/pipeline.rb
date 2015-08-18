@@ -17,8 +17,6 @@ module LogStash; class Pipeline
     @logger = Cabin::Channel.get(LogStash)
     grammar = LogStashConfigParser.new
     @config = grammar.parse(configstr)
-    DeadLetterPostOffice.logger = @logger
-    DeadLetterPostOffice.destination = DeadLetterPostOffice::Destination::File.new
 
     if @config.nil?
       raise LogStash::ConfigurationError, grammar.failure_reason
