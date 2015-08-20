@@ -1,3 +1,11 @@
+1.4.5 (August 20, 2015)
+  # general
+  - Fix a bug introduced in 1.4.4 causing SSL servers within Logstash to reject
+    connections from nearly all clients when they provided certificates.
+
+  # input
+  - tcp: fix connection leak (backport of #1522 from 1.5 branch)
+
 1.4.4 (July 21, 2015)
   # general
   - Improved default security for SSL
