@@ -436,7 +436,7 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
     logstash-output-pipe (1.0.0)
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-output-rabbitmq (1.1.0-java)
+    logstash-output-rabbitmq (1.1.1-java)
       logstash-core (>= 1.4.0, < 2.0.0)
       march_hare (~> 2.11.0)
     logstash-output-redis (1.0.0)
