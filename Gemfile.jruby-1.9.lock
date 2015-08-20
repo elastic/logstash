@@ -151,7 +151,7 @@ GEM
     logstash-codec-rubydebug (1.0.0)
       awesome_print
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-core (1.5.4.snapshot3-java)
+    logstash-core (1.5.4-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       filesize (= 0.0.4)
@@ -480,8 +480,7 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
-    manticore (0.4.3-java)
-      addressable (~> 2.3)
+    manticore (0.4.4-java)
     march_hare (2.11.0-java)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
@@ -602,7 +601,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 1.5.4.snapshot3)
+  logstash-core (= 1.5.4)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
