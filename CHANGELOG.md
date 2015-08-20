@@ -1,4 +1,4 @@
-## 1.5.4 (August 5, 2015)
+## 1.5.4 (August 20, 2015)
 ### general
   - Reverted a change in our stronger ssl patch that prevented logstash-forwarder clients
     to connect to the lumberjack input, the server doesnt enforce `VERIFY_PEER` of clients. (#3657)
@@ -14,9 +14,10 @@
 
 ### output
   - Lumberjack:
-     - For SSL certificate verification, The client now enforces the `VERIFY_PEER` mode when 
+    - For SSL certificate verification, The client now enforces the `VERIFY_PEER` mode when 
        connecting to the server. ([#4](https://github.com/elastic/ruby-lumberjack/issues/4))
     - Added better handling of congestion scenario on the output by using a buffered send of events ([#7](https://github.com/logstash-plugins/logstash-output-lumberjack/pull/7))
+  - Elasticsearch: Added the ability to update existing ES documents and support of upsert  -- if document doesn't exists, create it.([#116](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/116))
 
 ### Mixin
   - AWS: Correctly configure the proxy when using `V2` version of the mixin. ([#15](https://github.com/logstash-plugins/logstash-mixin-aws/issues/15))
