@@ -33,6 +33,19 @@ class LogStash::DeadLetterPostOffice
       def <<(event); end
     end
 
+    class Pipeline
+      def location; end
+
+      def initialize(pipeline)
+        @pipeline = pipeline
+      end
+
+      def <<(event)
+        @pipeline.dead_letters_func(event)
+      end
+
+    end
+
     class File < Base
 
       START_TIME = Time.now

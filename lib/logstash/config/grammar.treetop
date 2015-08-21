@@ -30,7 +30,7 @@ grammar LogStashConfig
   end
 
   rule plugin_type
-    ("input" / "filter" / "output")
+    ("input" / "filter" / "output" / "dead_letters")
   end
 
   rule plugins

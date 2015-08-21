@@ -100,6 +100,8 @@ module LogStash; class Pipeline
     shutdown_outputs
     wait_outputs
 
+    shutdown_dead_letters
+
     @logger.info("Pipeline shutdown complete.")
     @logger.terminal("Logstash shutdown completed")
 
@@ -134,6 +136,10 @@ module LogStash; class Pipeline
   def wait_outputs
     # Wait for the outputs to stop
     @output_threads.each(&:join)
+  end
+
+  def shutdown_dead_letters
+    @dead_letters.each {|plugin| plugin.teardown rescue nil }
   end
 
   def start_inputs

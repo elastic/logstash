@@ -92,6 +92,7 @@ module LogStash; module Config; module AST
         @inputs = []
         @filters = []
         @outputs = []
+        @dead_letters = []
         @periodic_flushers = []
         @shutdown_flushers = []
       CODE
@@ -104,7 +105,7 @@ module LogStash; module Config; module AST
       # start inputs
       definitions = []
 
-      ["filter", "output"].each do |type|
+      ["filter", "output", "dead_letters"].each do |type|
         # defines @filter_func and @output_func
 
         definitions << "def #{type}_func(event)"
@@ -203,7 +204,8 @@ module LogStash; module Config; module AST
       if recursive_select_parent(Plugin).any?
         return "codec"
       else
-        return recursive_select_parent(PluginSection).first.plugin_type.text_value
+        ret = recursive_select_parent(PluginSection).first.plugin_type.text_value
+        ret == "dead_letters" ? "output" : ret
       end
     end
 
@@ -237,6 +239,8 @@ module LogStash; module Config; module AST
           events = #{variable_name}.multi_filter(events)
         CODE
       when "output"
+        return "#{variable_name}.handle(event)\n"
+      when "dead_letters"
         return "#{variable_name}.handle(event)\n"
       when "codec"
         settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)

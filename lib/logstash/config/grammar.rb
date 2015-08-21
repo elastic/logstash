@@ -460,8 +460,19 @@ module LogStashConfig
         if r3
           r0 = r3
         else
-          @index = i0
-          r0 = nil
+          if has_terminal?("dead_letters", false, index)
+            r4 = instantiate_node(SyntaxNode,input, index...(index + 12))
+            @index += 12
+          else
+            terminal_parse_failure("dead_letters")
+            r4 = nil
+          end
+          if r4
+            r0 = r4
+          else
+            @index = i0
+            r0 = nil
+          end
         end
       end
     end
