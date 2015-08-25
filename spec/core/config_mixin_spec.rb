@@ -98,11 +98,11 @@ describe LogStash::Config::Mixin do
     end
   end
 
-  context "when validating :path" do
+  context "when validating :file_or_dir" do
     let(:klass) do
       Class.new(LogStash::Filters::Base) do
         config_name "cake"
-        config :file, :validate => :path, :default => "/foo/bar"
+        config :file, :validate => :file_or_dir, :default => "/foo/bar"
       end
     end
 
@@ -113,6 +113,25 @@ describe LogStash::Config::Mixin do
 
     it "raises an exception if the path does not exist" do
       expect { klass.new({}) }.to raise_error(LogStash::ConfigurationError)
+    end
+  end
+
+  context "when validating :path" do
+    let(:klass) do
+      Class.new(LogStash::Filters::Base) do
+        config_name "cake"
+        config :path, :validate => :path, :default => "foobar"
+      end
+    end
+
+    subject { klass.new({}) }
+
+    it "should be valid and exist" do
+      expect { klass.new({}) }.to_not raise_error
+    end
+
+    it "should be a pathname object" do
+      expect(subject.path).to be_a(Pathname)
     end
   end
 end
