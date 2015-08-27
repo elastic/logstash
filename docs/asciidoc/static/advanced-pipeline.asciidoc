@@ -39,7 +39,8 @@ Paste the skeleton into a file named `first-pipeline.conf` in your home Logstash
 This example creates a Logstash pipeline that takes Apache web logs as input, parses those logs to create specific, 
 named fields from the logs, and writes the parsed data to an Elasticsearch cluster.
 
-// You can download the sample data set used in this example http://tbd.co/groksample.log[here]. Unpack this file.
+You can download the sample data set used in this example 
+https://download.elastic.co/demos/logstash/gettingstarted/logstash-tutorial.log.gz[here]. Unpack this file.
 
 [float]
 [[configuring-file-input]]
