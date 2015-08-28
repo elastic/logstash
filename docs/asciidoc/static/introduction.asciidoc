@@ -58,7 +58,7 @@ Unlock the World Wide Web.
 (https://www.elastic.co/blog/introducing-logstash-input-http-plugin[blog])
 ** Consume from web service firehoses like <<plugins-inputs-twitter,Twitter>> for social sentiment analysis
 ** Webhook support for GitHub, HipChat, JIRA, and countless other applications
-** Enables many https://www.elastic.co/guide/en/watcher/current/logstash-integration[Watcher] alerting use cases
+** Enables many https://www.elastic.co/guide/en/watcher/current/logstash-integration.html[Watcher] alerting use cases
 * Create events by polling <<plugins-inputs-http_poller,HTTP endpoints>> on demand 
 (https://www.elastic.co/blog/introducing-logstash-http-poller[blog])
 ** Universally capture health, performance, metrics, and other types of data from web application interfaces
