@@ -67,6 +67,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   def initialize(params={})
     super
     @threadable = false
+    @stop_called = Concurrent::AtomicBoolean.new(false)
     config_init(params)
     @tags ||= []
 
@@ -99,6 +100,20 @@ class LogStash::Inputs::Base < LogStash::Plugin
   def tag(newtag)
     @tags << newtag
   end # def tag
+
+  # if you override stop, don't forget to call super
+  # as the first action
+  public
+  def stop
+    @logger.debug("stopping", :plugin => self)
+    @stop_called.make_true
+  end
+
+  # stop? should never be overriden
+  private
+  def stop?
+    @stop_called.value
+  end
 
   protected
   def to_event(raw, source)

@@ -175,9 +175,14 @@ class LogStash::Pipeline
     LogStash::Util::set_thread_name("<#{plugin.class.config_name}")
     begin
       plugin.run(@input_to_filter)
-    rescue LogStash::ShutdownSignal
-      # ignore and quit
     rescue => e
+      # if plugin is stopping, ignore uncatched exceptions and exit worker
+      if plugin.stop?
+        @logger.debug("Ignoring stopping plugin exception", :exception => e, "backtrace" => e.backtrace)
+        return
+      end
+
+      # otherwise, report error and restart
       if @logger.debug?
         @logger.error(I18n.t("logstash.pipeline.worker-error-debug",
                              :plugin => plugin.inspect, :error => e.to_s,
@@ -187,23 +192,11 @@ class LogStash::Pipeline
         @logger.error(I18n.t("logstash.pipeline.worker-error",
                              :plugin => plugin.inspect, :error => e))
       end
-      puts e.backtrace if @logger.debug?
-      # input teardown must be synchronized since is can be called concurrently by
-      # the input worker thread and from the pipeline thread shutdown method.
-      # this means that input teardown methods must support multiple calls.
-      @run_mutex.synchronize{plugin.teardown}
-      sleep 1
+
+      sleep(1)
       retry
-    end
-  ensure
-    begin
-      # input teardown must be synchronized since is can be called concurrently by
-      # the input worker thread and from the pipeline thread shutdown method.
-      # this means that input teardown methods must support multiple calls.
-      @run_mutex.synchronize{plugin.teardown}
-    rescue LogStash::ShutdownSignal
-      # teardown could receive the ShutdownSignal, retry it
-      retry
+    ensure
+      plugin.teardown
     end
   end # def inputworker
 
@@ -242,8 +235,8 @@ class LogStash::Pipeline
       event = @filter_to_output.pop
       break if event == LogStash::SHUTDOWN
       output_func(event)
-    end # while true
-
+    end
+  ensure
     @outputs.each do |output|
       output.worker_plugins.each(&:teardown)
     end
@@ -255,21 +248,6 @@ class LogStash::Pipeline
   def shutdown
     InflightEventsReporter.logger = @logger
     InflightEventsReporter.start(@input_to_filter, @filter_to_output, @outputs)
-    @input_threads.each do |thread|
-      # Interrupt all inputs
-      @logger.info("Sending shutdown signal to input thread", :thread => thread)
-
-      # synchronize both ShutdownSignal and teardown below. by synchronizing both
-      # we will avoid potentially sending a shutdown signal when the inputworker is
-      # executing the teardown method.
-      @run_mutex.synchronize do
-        thread.raise(LogStash::ShutdownSignal)
-        begin
-          thread.wakeup # in case it's in blocked IO or sleeping
-        rescue ThreadError
-        end
-      end
-    end
 
     # sometimes an input is stuck in a blocking I/O so we need to tell it to teardown directly
     @inputs.each do |input|
@@ -277,15 +255,12 @@ class LogStash::Pipeline
         # input teardown must be synchronized since is can be called concurrently by
         # the input worker thread and from the pipeline thread shutdown method.
         # this means that input teardown methods must support multiple calls.
-        @run_mutex.synchronize{input.teardown}
+        @run_mutex.synchronize{input.stop}
       rescue LogStash::ShutdownSignal
         # teardown could receive the ShutdownSignal, retry it
         retry
       end
     end
-
-    # No need to send the ShutdownEvent to the filters/outputs nor to wait for
-    # the inputs to finish, because in the #run method we wait for that anyway.
   end # def shutdown
 
   def plugin(plugin_type, name, *args)
