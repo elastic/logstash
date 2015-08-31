@@ -27,6 +27,10 @@ describe "LogStash::Util::JavaVersion" do
     expect(mod.bad_java_version?("1.8.0-beta")).to be_falsey
   end
 
+  it "should not mark non-standard javas as bad (IBM JDK)" do
+    expect(mod.bad_java_version?("pwi3270sr9fp10-20150708_01 (SR9 FP10)")).to be_falsey
+  end
+
   describe "parsing java versions" do
     it "should return nil on a nil version" do
       expect(mod.parse_java_version(nil)).to be_nil
