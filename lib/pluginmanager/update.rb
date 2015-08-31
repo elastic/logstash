@@ -9,6 +9,9 @@ module LogStash
     class Update < Command
       REJECTED_OPTIONS = [:path, :git, :github]
 
+      filter_plugin_with REJECTED_OPTIONS
+      validate_plugin_property_with :version, { :notice => :major }
+
       parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version", :attribute_name => :plugins_arg
 
       def execute
@@ -43,21 +46,21 @@ module LogStash
         # remove any version constrain from the Gemfile so the plugin(s) can be updated to latest version
         # calling update without requiremend will remove any previous requirements
         plugins = plugins_to_update(previous_gem_specs_map)
-        filtered_plugins = plugins.map { |plugin| gemfile.find(plugin) }
-          .compact
-          .reject { |plugin| REJECTED_OPTIONS.any? { |key| plugin.options.has_key?(key) } }
-          .select { |plugin| validate_major_version(plugin.name) }
-          .each   { |plugin| gemfile.update(plugin.name) }
 
-        # force a disk sync before running bundler
-        gemfile.save
+        plugins_to_be_updated = plugins.map { |plugin| gemfile.find(plugin) }
+                                       .compact
+                                       .select { |plugin| filter_plugin(plugin) }
 
-        puts("Updating #{filtered_plugins.collect(&:name).join(", ")}") unless filtered_plugins.empty?
+        update_gemfile(plugins_to_be_updated)
 
-        # any errors will be logged to $stderr by invoke!
-        # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
-        output = LogStash::Bundler.invoke!(:update => plugins)
-        output = LogStash::Bundler.invoke!(:clean => true)
+        puts("Updating #{plugins_to_be_updated.collect(&:name).join(", ")}") unless plugins_to_be_updated.empty?
+
+        if !plugins_to_be_updated.empty?
+          # any errors will be logged to $stderr by invoke!
+          # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
+          output = LogStash::Bundler.invoke!(:update => plugins)
+          output = LogStash::Bundler.invoke!(:clean => true)
+        end
 
         display_updated_plugins(previous_gem_specs_map)
       rescue => exception
@@ -65,6 +68,15 @@ module LogStash
         report_exception("Updated Aborted", exception)
       ensure
         display_bundler_output(output)
+      end
+
+      # update the gemfile with a set of plugins
+      def update_gemfile(plugins)
+        plugins.each do |plugin|
+          gemfile.update(plugin.name)
+        end # update the gemfile in case there are plugins to be updated
+        # force a disk sync before running bundler
+        gemfile.save
       end
 
       # create list of plugins to update

@@ -1,11 +1,13 @@
 # encoding: utf-8
 require "pluginmanager/util"
+require "pluginmanager/validators"
 
 module LogStash
   module PluginManager
     class Command < Clamp::Command
 
       include LogStash::PluginManager::Util
+      include LogStash::PluginManager::Validations
 
       def gemfile
         @gemfile ||= LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, 'r+')).load

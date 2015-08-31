@@ -39,20 +39,10 @@ module LogStash
         end
       end
 
-      # validate if there is any major version update so then we can ask the user if he is
-      # sure to update or not.
-      # @param plugin [String] A plugin name
-      # @return [Boolean] true if updating to a major version is ok, false otherwise
-      def validate_major_version(plugin)
-        require "gems"
-        latest_version  = ::Gems.versions(plugin)[0]['number'].split(".")
-        current_version = ::Gem::Specification.find_by_name(plugin).version.version.split(".")
-        if (latest_version[0].to_i > current_version[0].to_i)
-          ## warn if users want to continue
-          puts("You are updating #{plugin} to a new version #{latest_version.join('.')}, which may not be compatible with #{current_version.join('.')}. are you sure you want to proceed (Y/N)?")
-          return ( "y" == STDIN.gets.strip.downcase ? true : false)
-        end
-        true
+      def filter_plugin(plugin)
+        self.class.validators.map do |validator|
+          validator.call(plugin)
+        end.reduce(true, :&)
       end
 
       # @param spec [Gem::Specification] plugin gem specification
