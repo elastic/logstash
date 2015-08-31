@@ -30,7 +30,7 @@ module LogStash
       def filtered_specs
         @filtered_specs ||= begin
                               # start with all locally installed plugin gems regardless of the Gemfile content
-                              specs = LogStash::PluginManager.find_plugins_gem_specs
+                              specs = find_plugins_gem_specs
 
                               # apply filters
                               specs = specs.select{|spec| gemfile.find(spec.name)} if installed?

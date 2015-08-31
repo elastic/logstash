@@ -8,6 +8,7 @@ require "fileutils"
 module LogStash
   module PluginManager
     class Install < Command
+
       parameter "[PLUGIN] ...", "plugin name(s) or file", :attribute_name => :plugins_arg
       option "--version", "VERSION", "version of the plugin to install"
       option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
@@ -49,7 +50,7 @@ module LogStash
       def verify_remote!(gems)
         gems.each do |plugin, version|
           puts("Validating #{[plugin, version].compact.join("-")}")
-          signal_error("Installation aborted, verification failed for #{plugin} #{version}") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
+          signal_error("Installation aborted, verification failed for #{plugin} #{version}") unless logstash_plugin?(plugin, version)
         end
       end
 
@@ -57,7 +58,7 @@ module LogStash
         # Get currently defined gems and their dev dependencies
         specs = []
 
-        specs = LogStash::PluginManager.all_installed_plugins_gem_specs(gemfile)
+        specs = all_installed_plugins_gem_specs(gemfile)
 
         # Construct the list of dependencies to add to the current gemfile
         specs.each_with_object([]) do |spec, install_list|
@@ -79,7 +80,7 @@ module LogStash
       #
       def install_gems_list!(install_list)
         # If something goes wrong during the installation `LogStash::Gemfile` will restore a backup version.
-        install_list = LogStash::PluginManager.merge_duplicates(install_list)
+        install_list = self.merge_duplicates(install_list)
 
         # Add plugins/gems to the current gemfile
         puts("Installing" + (install_list.empty? ? "..." : " " + install_list.collect(&:first).join(", ")))
@@ -115,7 +116,7 @@ module LogStash
           # We do the verify before extracting the gem so we dont have to deal with unused path
           if verify?
             puts("Validating #{plugin}")
-            signal_error("Installation aborted, verification failed for #{plugin}") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
+            signal_error("Installation aborted, verification failed for #{plugin}") unless logstash_plugin?(plugin, version)
           end
 
           package, path = LogStash::Rubygems.unpack(plugin, LogStash::Environment::LOCAL_GEM_PATH)
