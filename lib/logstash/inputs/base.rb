@@ -110,7 +110,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   end
 
   # stop? should never be overriden
-  private
+  public
   def stop?
     @stop_called.value
   end
