@@ -23,10 +23,6 @@ class LogStash::Agent < Clamp::Command
     I18n.t("logstash.agent.flag.filterworkers"),
     :attribute_name => :filter_workers, :default => 1, &:to_i
 
-  option "--watchdog-timeout", "SECONDS",
-    I18n.t("logstash.agent.flag.watchdog-timeout"),
-    :default => 10, &:to_f
-
   option ["-l", "--log"], "FILE",
     I18n.t("logstash.agent.flag.log"),
     :attribute_name => :log_file
