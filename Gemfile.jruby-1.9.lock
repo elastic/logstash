@@ -66,12 +66,15 @@ GEM
     insist (1.0.0)
     jrjackson (0.2.9)
     json (1.8.2-java)
-    logstash-devutils (0.0.14-java)
+    kramdown (1.8.0)
+    logstash-devutils (0.0.15-java)
       gem_publisher
       insist (= 1.0.0)
+      kramdown
       minitar
       rake
       rspec (~> 3.1.0)
+      stud (>= 0.0.20)
     method_source (0.8.2)
     mime-types (2.5)
     minitar (0.5.4)
@@ -137,7 +140,7 @@ DEPENDENCIES
   fpm (~> 1.3.3)
   gems (~> 0.8.3)
   logstash-core (= 2.0.0.dev)!
-  logstash-devutils (~> 0)
+  logstash-devutils (~> 0.0.15)
   octokit (= 3.8.0)
   rspec (~> 3.1.0)
   rubyzip (~> 1.1.7)
