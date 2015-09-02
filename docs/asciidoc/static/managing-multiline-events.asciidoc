@@ -4,10 +4,10 @@
 Several use cases generate events that span multiple lines of text. In order to correctly handle these multline events, 
 Logstash needs to know how to tell which lines are part of a single event.
 
-Whenever possible, avoid using multiline processing at all. When multiline processing is required, implement the
-processing as early in the pipeline as possible. The preferred tool in the Logstash pipeline is the 
-{logstash}plugins-codecs-multiline.html[multiline codec], which merges lines from a single input using a simple set of 
-rules.
+Multiline event processing is complex and relies on proper event ordering. The best way to guarantee ordered log 
+processing is to implement the processing as early in the pipeline as possible. The preferred tool in the Logstash 
+pipeline is the {logstash}plugins-codecs-multiline.html[multiline codec], which merges lines from a single input using 
+a simple set of rules.
 
 For more complex needs, the {logstash}plugins-filters-multiline.html[multiline filter] performs a similar task at the 
 filter stage of processing, where the Logstash instance aggregates multiple inputs.
