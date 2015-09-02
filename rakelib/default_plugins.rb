@@ -141,7 +141,8 @@ module LogStash
       /^logstash-input-perfmon$/,
       /^logstash-output-webhdfs$/,
       /^logstash-input-rackspace$/,
-      /^logstash-output-rackspace$/
+      /^logstash-output-rackspace$/,
+      /^logstash-input-dynamodb$/
     ])
 
 
