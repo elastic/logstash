@@ -193,6 +193,8 @@ class LogStash::Pipeline
                              :plugin => plugin.inspect, :error => e))
       end
 
+      # Assuming the failure that caused this exception is transient,
+      # let's sleep for a bit and execute #run again
       sleep(1)
       retry
     ensure
