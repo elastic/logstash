@@ -178,7 +178,9 @@ class LogStash::Pipeline
     rescue => e
       # if plugin is stopping, ignore uncatched exceptions and exit worker
       if plugin.stop?
-        @logger.debug("Ignoring stopping plugin exception", :exception => e, "backtrace" => e.backtrace)
+        @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
+                      :plugin => plugin.class.config_name, :exception => e,
+                      :backtrace => e.backtrace)
         return
       end
 
