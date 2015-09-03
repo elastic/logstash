@@ -208,11 +208,11 @@ bin/logstash -f first-pipeline.conf
 Try a test query to Elasticsearch based on the fields created by the `grok` filter plugin:
 
 [source,shell]
-curl -XGET 'localhost:9200/logstash-$DATE/_search?q=response=401'
+curl -XGET 'localhost:9200/logstash-$DATE/_search?q=response=200'
 
 Replace $DATE with the current date, in YYYY.MM.DD format.
 
-Since our sample has just one 401 HTTP response, we get one hit back:
+Since our sample has just one 200 HTTP response, we get one hit back:
 
 [source,json]
 {"took":2,
