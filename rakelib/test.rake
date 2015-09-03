@@ -29,6 +29,11 @@ namespace "test" do
     exit(Spec::Core::Runner.run(["--fail-fast", Rake::FileList["spec/**/*_spec.rb"]]))
   end
 
+  desc "run core specs on a single file"
+  task "core-single-file", [:specfile] => ["setup"] do |t,args|
+    exit(RSpec::Core::Runner.run([Rake::FileList[args.specfile]]))
+  end
+
   desc "run all installed plugins specs"
   task "plugins" => ["setup"] do
     # grab all spec files using the live plugins gem specs. this allows correclty also running the specs
