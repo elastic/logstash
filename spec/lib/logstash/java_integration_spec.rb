@@ -211,6 +211,36 @@ describe "Java integration" do
         end
       end
     end
+
+    context "when compacting" do
+      context "#compact with nils" do
+        let(:initial_array) { [1,2,3,nil,nil,6] }
+        it "should remove nil values from a copy" do
+          expect(subject.compact).to eq([1,2,3,6])
+          expect(subject).to eq([1,2,3,nil,nil,6])
+        end
+      end
+
+      context "#compact! with nils" do
+        let(:initial_array) { [1,2,3,nil,nil,6] }
+        it "should remove nil values" do
+          expect(subject.compact!).to eq([1,2,3,6])
+          expect(subject).to eq([1,2,3,6])
+        end
+
+        it "should return the original" do
+          expect(subject.compact!.object_id).to eq(subject.object_id)
+        end
+      end
+
+      context "#compact! without nils" do
+        let(:initial_array) { [1,2,3,6] }
+        it "should return nil" do
+          expect(subject.compact!).to be nil
+          expect(subject).to eq([1,2,3,6])
+        end
+      end
+    end
   end
 
   context "Enumerable implementation" do
