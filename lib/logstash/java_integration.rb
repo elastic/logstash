@@ -81,11 +81,17 @@ module java::util::Collection
   def compact
     duped = Java::JavaUtil::ArrayList.new(self)
     duped.compact!
+    duped
   end
 
   def compact!
+    size_before = self.size
     self.removeAll(java::util::Collections.singleton(nil))
-    self
+    if size_before == self.size
+      nil
+    else
+      self
+    end
   end
 
   # support the Ruby intersection method on Java Collection
