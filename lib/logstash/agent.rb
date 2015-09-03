@@ -2,6 +2,7 @@
 require "clamp" # gem 'clamp'
 require "logstash/environment"
 require "logstash/errors"
+require "logstash/config/cpu_core_strategy"
 require "uri"
 require "net/http"
 LogStash::Environment.load_locale!
@@ -21,7 +22,8 @@ class LogStash::Agent < Clamp::Command
 
   option ["-w", "--filterworkers"], "COUNT",
     I18n.t("logstash.agent.flag.filterworkers"),
-    :attribute_name => :filter_workers, :default => 1, &:to_i
+    :attribute_name => :filter_workers,
+    :default => LogStash::Config::CpuCoreStrategy.fifty_percent, &:to_i
 
   option ["-l", "--log"], "FILE",
     I18n.t("logstash.agent.flag.log"),
