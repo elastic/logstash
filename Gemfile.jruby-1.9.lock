@@ -20,8 +20,8 @@ GEM
     addressable (2.3.8)
     arr-pm (0.0.10)
       cabin (> 0)
-    backports (3.6.4)
-    benchmark-ips (2.2.0)
+    backports (3.6.6)
+    benchmark-ips (2.3.0)
     builder (3.2.2)
     cabin (0.7.1)
     childprocess (0.5.6)
@@ -33,7 +33,8 @@ GEM
       rspec (>= 2.14, < 4)
     clamp (0.6.5)
     coderay (1.1.0)
-    coveralls (0.8.1)
+    concurrent-ruby (0.9.1-java)
+    coveralls (0.8.2)
       json (~> 1.8)
       rest-client (>= 1.6.8, < 2)
       simplecov (~> 0.10.0)
@@ -45,7 +46,7 @@ GEM
       unf (>= 0.0.5, < 1.0.0)
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
-    ffi (1.9.8-java)
+    ffi (1.9.10-java)
     file-dependencies (0.1.6)
       minitar
     filesize (0.0.4)
@@ -64,9 +65,20 @@ GEM
       domain_name (~> 0.5)
     i18n (0.6.9)
     insist (1.0.0)
+    jls-grok (0.11.2)
+      cabin (>= 0.6.0)
     jrjackson (0.2.9)
-    json (1.8.2-java)
+    json (1.8.3-java)
     kramdown (1.8.0)
+    logstash-codec-json (1.0.1)
+      logstash-core (>= 1.4.0, < 2.0.0)
+    logstash-codec-json_lines (1.0.1)
+      logstash-codec-line
+      logstash-core (>= 1.4.0, < 2.0.0)
+    logstash-codec-line (1.0.0)
+      logstash-core (>= 1.4.0, < 2.0.0)
+    logstash-codec-plain (1.0.0)
+      logstash-core (>= 1.4.0, < 2.0.0)
     logstash-devutils (0.0.15-java)
       gem_publisher
       insist (= 1.0.0)
@@ -75,8 +87,44 @@ GEM
       rake
       rspec (~> 3.1.0)
       stud (>= 0.0.20)
+    logstash-filter-clone (1.0.0)
+      logstash-core (>= 1.4.0, < 2.0.0)
+    logstash-filter-grok (1.0.0)
+      jls-grok (~> 0.11.1)
+      logstash-core (>= 1.4.0, < 2.0.0)
+      logstash-patterns-core
+    logstash-filter-multiline (1.0.0)
+      jls-grok (~> 0.11.0)
+      logstash-core (>= 1.4.0, < 2.0.0)
+      logstash-filter-mutate
+      logstash-patterns-core
+    logstash-filter-mutate (1.0.2)
+      logstash-core (>= 1.4.0, < 2.0.0)
+      logstash-filter-grok
+      logstash-patterns-core
+    logstash-input-generator (1.0.0)
+      logstash-codec-plain
+      logstash-core (>= 1.4.0, < 2.0.0)
+    logstash-input-stdin (1.0.0)
+      concurrent-ruby
+      logstash-codec-json
+      logstash-codec-json_lines
+      logstash-codec-line
+      logstash-codec-plain
+      logstash-core (>= 1.4.0, < 2.0.0)
+    logstash-input-tcp (1.0.0)
+      logstash-codec-json
+      logstash-codec-json_lines
+      logstash-codec-line
+      logstash-codec-plain
+      logstash-core (>= 1.4.0, < 2.0.0)
+    logstash-output-stdout (1.0.0)
+      logstash-codec-line
+      logstash-core (>= 1.4.0, < 2.0.0)
+    logstash-patterns-core (0.3.0)
+      logstash-core (>= 1.4.0, < 2.0.0)
     method_source (0.8.2)
-    mime-types (2.5)
+    mime-types (2.6.1)
     minitar (0.5.4)
     multipart-post (2.0.0)
     netrc (0.10.3)
@@ -118,11 +166,11 @@ GEM
     spoon (0.0.4)
       ffi
     stud (0.0.21)
-    term-ansicolor (1.3.0)
+    term-ansicolor (1.3.2)
       tins (~> 1.0)
     thor (0.19.1)
     thread_safe (0.3.5-java)
-    tins (1.5.1)
+    tins (1.6.0)
     treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
@@ -141,6 +189,13 @@ DEPENDENCIES
   gems (~> 0.8.3)
   logstash-core (= 2.0.0.dev)!
   logstash-devutils (~> 0.0.15)
+  logstash-filter-clone
+  logstash-filter-multiline
+  logstash-filter-mutate
+  logstash-input-generator
+  logstash-input-stdin
+  logstash-input-tcp
+  logstash-output-stdout
   octokit (= 3.8.0)
   rspec (~> 3.1.0)
   rubyzip (~> 1.1.7)
