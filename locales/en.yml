@@ -153,12 +153,6 @@ en:
           Check configuration for valid syntax and then exit.
         filterworkers: |+
           Sets the number of filter workers to run.
-        watchdog-timeout: |+
-          Set the filter watchdog timeout (in seconds).
-          This timeout is used to detect stuck filters;
-          stuck filters usually symptoms of bugs.
-          When a filter takes longer than TIMEOUT
-          seconds, it will cause logstash to abort.
         log: |+
           Write logstash internal logs to the given
           file. Without this flag, logstash will emit
