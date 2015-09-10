@@ -28,12 +28,19 @@ class LogStash::Plugin
     @logger = Cabin::Channel.get(LogStash)
   end
 
-  # Subclasses should implement this teardown method if you need to perform any
-  # special tasks during shutdown (like flushing, etc.)
-  # if you override teardown, don't forget to call super
+  # close is called during shutdown, after the plugin worker
+  # main task terminates
   public
-  def teardown
+  def do_close
     @logger.debug("closing", :plugin => self)
+    close
+  end
+
+  # Subclasses should implement this close method if you need to perform any
+  # special tasks during shutdown (like flushing, etc.)
+  public
+  def close
+    # ..
   end
 
   def to_s
