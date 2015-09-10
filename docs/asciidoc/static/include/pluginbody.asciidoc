@@ -725,24 +725,24 @@ endif::receive_method[]
 
 // Teardown is now in the base class... can be pruned?
 // /////////////////////////////////////////////////////////////////////////////
-// If teardown_method is defined (should only be for input or output plugin page)
+// If close_method is defined (should only be for input or output plugin page)
 // /////////////////////////////////////////////////////////////////////////////
-// ifdef::teardown_method[]
+// ifdef::close_method[]
 // [float]
-// ==== `teardown` Method
+// ==== `close` Method
 // [source,ruby]
 // [subs="attributes"]
 // ----------------------------------
 // public
-// def teardown
+// def close
 //   @udp.close if @udp && !@udp.closed?
 // end
 // ----------------------------------
-// The `teardown` method is not present in all input or output plugins.  It is
+// The `close` method is not present in all input or output plugins.  It is
 // called when a shutdown happens to ensure that sockets, files, connections and
 // threads are all closed down properly.  If your plugin uses these connections,
-// you should include a teardown method.
-// endif::teardown_method[]
+// you should include a close method.
+// endif::close_method[]
 
 ==== Building the Plugin
 

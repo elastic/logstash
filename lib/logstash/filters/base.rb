@@ -235,7 +235,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   end
 
   public
-  def teardown
+  def close
     # Nothing to do by default.
   end
 end # class LogStash::Filters::Base

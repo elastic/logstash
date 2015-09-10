@@ -28,7 +28,7 @@ module LogStash::Codecs; class Base < LogStash::Plugin
   end # def encode
 
   public 
-  def teardown; end;
+  def close; end;
 
   # @param block [Proc(event, data)] the callback proc passing the original event and the encoded event
   public

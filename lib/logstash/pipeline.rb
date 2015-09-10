@@ -99,12 +99,6 @@ class LogStash::Pipeline
 
   def wait_inputs
     @input_threads.each(&:join)
-  rescue Interrupt
-    # rbx does weird things during do SIGINT that I haven't debugged
-    # so we catch Interrupt here and signal a shutdown. For some reason the
-    # signal handler isn't invoked it seems? I dunno, haven't looked much into
-    # it.
-    shutdown
   end
 
   def shutdown_filters
@@ -192,7 +186,7 @@ class LogStash::Pipeline
       sleep(1)
       retry
     ensure
-      plugin.teardown
+      plugin.do_close
     end
   end # def inputworker
 
@@ -220,7 +214,7 @@ class LogStash::Pipeline
       @logger.error("Exception in filterworker", "exception" => e, "backtrace" => e.backtrace)
     end
 
-    @filters.each(&:teardown)
+    @filters.each(&:do_close)
   end # def filterworker
 
   def outputworker
@@ -234,7 +228,7 @@ class LogStash::Pipeline
     end
   ensure
     @outputs.each do |output|
-      output.worker_plugins.each(&:teardown)
+      output.worker_plugins.each(&:do_close)
     end
   end # def outputworker
 
@@ -251,7 +245,7 @@ class LogStash::Pipeline
     InflightEventsReporter.logger = @logger
     InflightEventsReporter.start(@input_to_filter, @filter_to_output, @outputs)
 
-    @inputs.each(&:stop)
+    @inputs.each(&:do_stop)
   end # def shutdown
 
   def plugin(plugin_type, name, *args)
