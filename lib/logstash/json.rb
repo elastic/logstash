@@ -32,7 +32,8 @@ module LogStash
     ### JRuby
 
     def jruby_load(data, options = {})
-      options[:symbolize_keys] ? JrJackson::Raw.parse_sym(data) : JrJackson::Raw.parse_raw(data)
+      # options[:symbolize_keys] ? JrJackson::Raw.parse_sym(data) : JrJackson::Raw.parse_raw(data)
+      JrJackson::Ruby.parse(data, options)
     rescue JrJackson::ParseError => e
       raise LogStash::Json::ParserError.new(e.message)
     end
@@ -40,7 +41,8 @@ module LogStash
     def jruby_dump(o)
       # test for enumerable here to work around an omission in JrJackson::Json.dump to
       # also look for Java::JavaUtil::ArrayList, see TODO submit issue
-      o.is_a?(Enumerable) ? JrJackson::Raw.generate(o) : JrJackson::Json.dump(o)
+      # o.is_a?(Enumerable) ? JrJackson::Raw.generate(o) : JrJackson::Json.dump(o)
+      JrJackson::Base.generate(o, nil)
     rescue => e
       raise LogStash::Json::GeneratorError.new(e.message)
     end

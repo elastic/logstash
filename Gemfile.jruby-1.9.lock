@@ -7,7 +7,7 @@ PATH
       filesize (= 0.0.4)
       gems (~> 0.8.3)
       i18n (= 0.6.9)
-      jrjackson (~> 0.2.9)
+      jrjackson (~> 0.3.2)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       stud (~> 0.0.19)
@@ -67,7 +67,7 @@ GEM
     insist (1.0.0)
     jls-grok (0.11.2)
       cabin (>= 0.6.0)
-    jrjackson (0.2.9)
+    jrjackson (0.3.2)
     json (1.8.3-java)
     kramdown (1.8.0)
     logstash-codec-json (1.0.1)
@@ -89,10 +89,17 @@ GEM
       stud (>= 0.0.20)
     logstash-filter-clone (1.0.0)
       logstash-core (>= 1.4.0, < 2.0.0)
+    logstash-filter-date (1.0.0)
+      logstash-codec-json
+      logstash-core (>= 1.4.0, < 2.0.0)
+      logstash-input-generator
+      logstash-output-null
     logstash-filter-grok (1.0.0)
       jls-grok (~> 0.11.1)
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-patterns-core
+    logstash-filter-json (1.0.1)
+      logstash-core (>= 1.4.0, < 2.0.0)
     logstash-filter-multiline (1.0.0)
       jls-grok (~> 0.11.0)
       logstash-core (>= 1.4.0, < 2.0.0)
@@ -102,6 +109,8 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-filter-grok
       logstash-patterns-core
+    logstash-filter-syslog_pri (1.0.0)
+      logstash-core (>= 1.4.0, < 2.0.0)
     logstash-input-generator (1.0.0)
       logstash-codec-plain
       logstash-core (>= 1.4.0, < 2.0.0)
@@ -116,6 +125,9 @@ GEM
       logstash-codec-json
       logstash-codec-json_lines
       logstash-codec-line
+      logstash-codec-plain
+      logstash-core (>= 1.4.0, < 2.0.0)
+    logstash-output-null (1.0.1)
       logstash-codec-plain
       logstash-core (>= 1.4.0, < 2.0.0)
     logstash-output-stdout (1.0.0)
@@ -190,8 +202,12 @@ DEPENDENCIES
   logstash-core (= 2.0.0.dev)!
   logstash-devutils (~> 0.0.15)
   logstash-filter-clone
+  logstash-filter-date
+  logstash-filter-grok
+  logstash-filter-json
   logstash-filter-multiline
   logstash-filter-mutate
+  logstash-filter-syslog_pri
   logstash-input-generator
   logstash-input-stdin
   logstash-input-tcp
