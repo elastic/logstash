@@ -1,3 +1,15 @@
+## 2.0.0-beta1 (September 15, 2015)
+### output
+  - Elasticsearch: 
+    - Changed the default from node to http protocol.
+    - Backward incompatible config options. Renamed host to hosts
+    - Separate plugins for Java clients: transport and node options are not packaged by default but
+      can be installed using the logstash-output-elasticsearch_java plugin.
+    - Java client defaults to transport protocol  
+  - Kafka: 
+    - Update to new 0.8.2 Java producer API with new producer configuration
+    - Backward incompatible config settings introduced to match Kafka options
+
 ## 1.5.4 (August 20, 2015)
 ### general
   - Reverted a change in our stronger ssl patch that prevented logstash-forwarder clients
