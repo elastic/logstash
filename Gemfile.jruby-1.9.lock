@@ -8,12 +8,12 @@ GEM
     avl_tree (1.2.1)
       atomic (~> 1.1)
     awesome_print (1.6.1)
-    aws-sdk (2.1.20)
-      aws-sdk-resources (= 2.1.20)
-    aws-sdk-core (2.1.20)
+    aws-sdk (2.1.21)
+      aws-sdk-resources (= 2.1.21)
+    aws-sdk-core (2.1.21)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.1.20)
-      aws-sdk-core (= 2.1.20)
+    aws-sdk-resources (2.1.21)
+      aws-sdk-core (= 2.1.21)
     aws-sdk-v1 (1.66.0)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
@@ -151,7 +151,7 @@ GEM
     logstash-codec-rubydebug (1.0.0)
       awesome_print
       logstash-core (>= 1.4.0, < 2.0.0)
-    logstash-core (2.0.0.snapshot1-java)
+    logstash-core (2.0.0.beta1-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       filesize (= 0.0.4)
@@ -605,7 +605,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (~> 2.0.0.beta1)
+  logstash-core (= 2.0.0.beta1)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
