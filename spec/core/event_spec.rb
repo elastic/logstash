@@ -100,6 +100,10 @@ describe LogStash::Event do
         expect(subject.sprintf("%{[j][k3]}")).to eq("{\"4\":\"m\"}")
       end
 
+      it "should not strip last character" do
+        expect(subject.sprintf("%{type}%{message}|")).to eq("sprintfhello world|")
+      end
+
       context "#encoding" do
         it "should return known patterns as UTF-8" do
           expect(subject.sprintf("%{message}").encoding).to eq(Encoding::UTF_8)
