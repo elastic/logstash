@@ -46,7 +46,7 @@ module LogStash
         position = match.offset(0).last
       end
 
-      if position < template.size - 1
+      if position < template.size
         nodes << StaticNode.new(template[position..-1])
       end
 
