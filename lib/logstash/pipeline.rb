@@ -186,7 +186,7 @@ class LogStash::Pipeline
       sleep(1)
       retry
     ensure
-      plugin.close
+      plugin.do_close
     end
   end # def inputworker
 
@@ -214,7 +214,7 @@ class LogStash::Pipeline
       @logger.error("Exception in filterworker", "exception" => e, "backtrace" => e.backtrace)
     end
 
-    @filters.each(&:close)
+    @filters.each(&:do_close)
   end # def filterworker
 
   def outputworker
@@ -228,7 +228,7 @@ class LogStash::Pipeline
     end
   ensure
     @outputs.each do |output|
-      output.worker_plugins.each(&:close)
+      output.worker_plugins.each(&:do_close)
     end
   end # def outputworker
 
@@ -245,7 +245,7 @@ class LogStash::Pipeline
     InflightEventsReporter.logger = @logger
     InflightEventsReporter.start(@input_to_filter, @filter_to_output, @outputs)
 
-    @inputs.each(&:stop)
+    @inputs.each(&:do_stop)
   end # def shutdown
 
   def plugin(plugin_type, name, *args)

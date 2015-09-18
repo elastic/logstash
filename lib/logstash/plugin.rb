@@ -28,12 +28,19 @@ class LogStash::Plugin
     @logger = Cabin::Channel.get(LogStash)
   end
 
+  # close is called during shutdown, after the plugin worker
+  # main task terminates
+  public
+  def do_close
+    @logger.debug("closing", :plugin => self)
+    close
+  end
+
   # Subclasses should implement this close method if you need to perform any
   # special tasks during shutdown (like flushing, etc.)
-  # if you override close, don't forget to call super
   public
   def close
-    @logger.debug("closing", :plugin => self)
+    # ..
   end
 
   def to_s
