@@ -50,6 +50,10 @@ describe LogStash::Event do
         expect(subject.sprintf("%{+%s}")).to eq("1356998400")
       end
 
+      it "should work if there is no fieldref in the string" do
+        expect(subject.sprintf("bonjour")).to eq("bonjour")
+      end
+
       it "should raise error when formatting %{+%s} when @timestamp field is missing" do
         str = "hello-%{+%s}"
         subj = subject.clone
