@@ -80,3 +80,40 @@ class LogStash::Outputs::MockStdout < LogStash::Outputs::Base
   end
 
 end # class LogStash::Outputs::Stdout
+
+# use a dummy NOOP input to test Inputs::Base
+class LogStash::Inputs::NOOP < LogStash::Inputs::Base
+  config_name "noop"
+  milestone 2
+
+  def register; end
+
+end
+
+# use a dummy NOOP filter to test Filters::Base
+class LogStash::Filters::NOOP < LogStash::Filters::Base
+  config_name "noop"
+  milestone 2
+
+  def register; end
+
+  def filter(event)
+    return unless filter?(event)
+    filter_matched(event)
+  end
+end
+
+
+# use a dummy NOOP output to test Outputs::Base
+class LogStash::Outputs::NOOP < LogStash::Outputs::Base
+  config_name "noop"
+  milestone 2
+
+  config :dummy_option, :validate => :string
+
+  def register; end
+
+  def receive(event)
+    return output?(event)
+  end
+end

@@ -1,15 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
 
-# use a dummy NOOP input to test Inputs::Base
-class LogStash::Inputs::NOOP < LogStash::Inputs::Base
-  config_name "noop"
-  milestone 2
-
-  def register; end
-
-end
-
 describe "LogStash::Inputs::Base#decorate" do
   it "should add tag" do
     input = LogStash::Inputs::NOOP.new("tags" => "value")
