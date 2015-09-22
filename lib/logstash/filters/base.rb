@@ -183,40 +183,6 @@ class LogStash::Filters::Base < LogStash::Plugin
     end
   end # def filter_matched
 
-  protected
-  def filter?(event)
-    if !@type.empty?
-      if event["type"] != @type
-        @logger.debug? and @logger.debug("filters/#{self.class.name}: Skipping event because type doesn't match",
-                                         :type=> @type, :event => event)
-        return false
-      end
-    end
-
-    if !@tags.empty?
-      # this filter has only works on events with certain tags,
-      # and this event has no tags.
-      return false if !event["tags"]
-
-      # Is @tags a subset of the event's tags? If not, skip it.
-      if (event["tags"] & @tags).size != @tags.size
-        @logger.debug? and @logger.debug("filters/#{self.class.name}: Skipping event because tags don't match",
-                                         :tags => tags, :event => event)
-        return false
-      end
-    end
-
-    if !@exclude_tags.empty? && event["tags"]
-      if (diff_tags = (event["tags"] & @exclude_tags)).size != 0
-        @logger.debug("filters/#{self.class.name}: Skipping event because tags contains excluded tags:",
-                      :diff_tags => diff_tags, :exclude_tags => @exclude_tags, :event => event)
-        return false
-      end
-    end
-
-    return true
-  end
-
   public
   def close
     # Nothing to do by default.

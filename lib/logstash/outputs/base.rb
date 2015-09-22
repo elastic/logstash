@@ -78,33 +78,4 @@ class LogStash::Outputs::Base < LogStash::Plugin
     @worker_queue.push(event)
   end
 
-  private
-  def output?(event)
-    if !@type.empty?
-      if event["type"] != @type
-        @logger.debug? and @logger.debug("outputs/#{self.class.name}: Dropping event because type doesn't match",
-                                         :type => @type, :event => event)
-        return false
-      end
-    end
-
-    if !@tags.empty?
-      return false if !event["tags"]
-      if (event["tags"] & @tags).size != @tags.size
-        @logger.debug? and @logger.debug("outputs/#{self.class.name}: Dropping event because tags don't match",
-                                         :tags => @tags, :event => event)
-        return false
-      end
-    end
-
-    if !@exclude_tags.empty? && event["tags"]
-      if (diff_tags = (event["tags"] & @exclude_tags)).size != 0
-        @logger.debug? and @logger.debug("outputs/#{self.class.name}: Dropping event because tags contains excluded tags",
-                                         :diff_tags => diff_tags, :exclude_tags => @exclude_tags, :event => event)
-        return false
-      end
-    end
-
-    return true
-  end
 end # class LogStash::Outputs::Base

@@ -47,25 +47,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
     @stop_called = Concurrent::AtomicBoolean.new(false)
     config_init(params)
     @tags ||= []
-
-    if @charset && @codec.class.get_config.include?("charset")
-      # charset is deprecated on inputs, but provide backwards compatibility
-      # by copying the charset setting into the codec.
-
-      @logger.info("Copying input's charset setting into codec", :input => self, :codec => @codec)
-      charset = @charset
-      @codec.instance_eval { @charset = charset }
-    end
-
-    # Backwards compat for the 'format' setting
-    case @format
-      when "plain"; # do nothing
-      when "json"
-        @codec = LogStash::Plugin.lookup("codec", "json").new
-      when "json_event"
-        @codec = LogStash::Plugin.lookup("codec", "oldlogstashjson").new
-    end
-
   end # def initialize
 
   public
