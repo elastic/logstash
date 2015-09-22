@@ -170,7 +170,7 @@ context "close" do
           mock_clone {
             clones => ["mock_clone1", "mock_clone2"]
           }
-          mock_filter {
+          noop {
             add_field => {"foo" => "bar"}
           }
         }

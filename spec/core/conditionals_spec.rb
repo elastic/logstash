@@ -11,9 +11,9 @@ module ConditionalFanciness
       config <<-CONFIG
         filter {
           if #{expression} {
-            mock_filter { add_tag => "success" }
+            noop { add_tag => "success" }
           } else {
-            mock_filter { add_tag => "failure" }
+            noop { add_tag => "failure" }
           }
         }
       CONFIG
@@ -52,13 +52,13 @@ describe "conditionals in filter" do
   describe "simple" do
     config <<-CONFIG
       filter {
-        mock_filter { add_field => { "always" => "awesome" } }
+        noop { add_field => { "always" => "awesome" } }
         if [foo] == "bar" {
-          mock_filter { add_field => { "hello" => "world" } }
+          noop { add_field => { "hello" => "world" } }
         } else if [bar] == "baz" {
-          mock_filter { add_field => { "fancy" => "pants" } }
+          noop { add_field => { "fancy" => "pants" } }
         } else {
-          mock_filter { add_field => { "free" => "hugs" } }
+          noop { add_field => { "free" => "hugs" } }
         }
       }
     CONFIG
@@ -89,13 +89,13 @@ describe "conditionals in filter" do
     config <<-CONFIG
       filter {
         if [nest] == 123 {
-          mock_filter { add_field => { "always" => "awesome" } }
+          noop { add_field => { "always" => "awesome" } }
           if [foo] == "bar" {
-            mock_filter { add_field => { "hello" => "world" } }
+            noop { add_field => { "hello" => "world" } }
           } else if [bar] == "baz" {
-            mock_filter { add_field => { "fancy" => "pants" } }
+            noop { add_field => { "fancy" => "pants" } }
           } else {
-            mock_filter { add_field => { "free" => "hugs" } }
+            noop { add_field => { "free" => "hugs" } }
           }
         }
       }
@@ -134,7 +134,7 @@ describe "conditionals in filter" do
     config <<-CONFIG
       filter {
         if [foo] == [bar] {
-          mock_filter { add_tag => woot }
+          noop { add_tag => woot }
         }
       }
     CONFIG
@@ -148,22 +148,22 @@ describe "conditionals in filter" do
     config <<-CONFIG
       filter {
         if [foo] in [foobar] {
-          mock_filter { add_tag => "field in field" }
+          noop { add_tag => "field in field" }
         }
         if [foo] in "foo" {
-          mock_filter { add_tag => "field in string" }
+          noop { add_tag => "field in string" }
         }
         if "hello" in [greeting] {
-          mock_filter { add_tag => "string in field" }
+          noop { add_tag => "string in field" }
         }
         if [foo] in ["hello", "world", "foo"] {
-          mock_filter { add_tag => "field in list" }
+          noop { add_tag => "field in list" }
         }
         if [missing] in [alsomissing] {
-          mock_filter { add_tag => "shouldnotexist" }
+          noop { add_tag => "shouldnotexist" }
         }
         if !("foo" in ["hello", "world"]) {
-          mock_filter { add_tag => "shouldexist" }
+          noop { add_tag => "shouldexist" }
         }
       }
     CONFIG
@@ -181,12 +181,12 @@ describe "conditionals in filter" do
   describe "the 'not in' operator" do
     config <<-CONFIG
       filter {
-        if "foo" not in "baz" { mock_filter { add_tag => "baz" } }
-        if "foo" not in "foo" { mock_filter { add_tag => "foo" } }
-        if !("foo" not in "foo") { mock_filter { add_tag => "notfoo" } }
-        if "foo" not in [somelist] { mock_filter { add_tag => "notsomelist" } }
-        if "one" not in [somelist] { mock_filter { add_tag => "somelist" } }
-        if "foo" not in [alsomissing] { mock_filter { add_tag => "no string in missing field" } }
+        if "foo" not in "baz" { noop { add_tag => "baz" } }
+        if "foo" not in "foo" { noop { add_tag => "foo" } }
+        if !("foo" not in "foo") { noop { add_tag => "notfoo" } }
+        if "foo" not in [somelist] { noop { add_tag => "notsomelist" } }
+        if "one" not in [somelist] { noop { add_tag => "somelist" } }
+        if "foo" not in [alsomissing] { noop { add_tag => "no string in missing field" } }
       }
     CONFIG
 
@@ -374,9 +374,9 @@ describe "conditionals in filter" do
           }
         }
         if [type] == "original" {
-          mock_filter { add_field => { "cond1" => "true" } }
+          noop { add_field => { "cond1" => "true" } }
         } else {
-          mock_filter { add_field => { "cond2" => "true" } }
+          noop { add_field => { "cond2" => "true" } }
         }
       }
     CONFIG
@@ -404,9 +404,9 @@ describe "conditionals in filter" do
           }
         }
         if [type] == "clone1" {
-          mock_filter { add_field => { "cond1" => "true" } }
+          noop { add_field => { "cond1" => "true" } }
         } else if [type] == "clone2" {
-          mock_filter { add_field => { "cond2" => "true" } }
+          noop { add_field => { "cond2" => "true" } }
         }
       }
     CONFIG

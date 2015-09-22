@@ -30,16 +30,6 @@ class LogStash::Inputs::MockGenerator < LogStash::Inputs::Base
   end
 end
 
-class LogStash::Filters::Mock < LogStash::Filters::Base
-  config_name "mock_filter"
-
-  def register; end
-
-  def filter(event)
-    filter_matched(event)
-  end
-end
-
 class LogStash::Filters::MockClone < LogStash::Filters::Base
 
   config_name "mock_clone"
