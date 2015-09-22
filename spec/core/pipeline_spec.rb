@@ -116,7 +116,8 @@ context "close" do
     end
   end
 
-  context "compiled flush function" do
+  # This test need to be rewriten without the need of multiline
+  context "compiled flush function", :skip => true do
 
     context "cancelled events should not propagate down the filters" do
       config <<-CONFIG
@@ -140,8 +141,8 @@ context "close" do
     context "new events should propagate down the filters" do
       config <<-CONFIG
         filter {
-          clone {
-            clones => ["clone1"]
+          mock_clone {
+            clones => ["mock_clone1"]
           }
           multiline {
             pattern => "bar"
@@ -156,7 +157,7 @@ context "close" do
         expect(subject[0]["message"]).to eq("foo\nbar")
         expect(subject[0]["type"]).to be_nil
         expect(subject[1]["message"]).to eq("foo\nbar")
-        expect(subject[1]["type"]).to eq("clone1")
+        expect(subject[1]["type"]).to eq("mock_clone1")
       end
     end
   end
@@ -166,10 +167,10 @@ context "close" do
     context "new events should propagate down the filters" do
       config <<-CONFIG
         filter {
-          clone {
-            clones => ["clone1", "clone2"]
+          mock_clone {
+            clones => ["mock_clone1", "mock_clone2"]
           }
-          mutate {
+          mock_filter {
             add_field => {"foo" => "bar"}
           }
         }
@@ -183,11 +184,11 @@ context "close" do
         expect(subject[0]["foo"]).to eq("bar")
 
         expect(subject[1]["message"]).to eq("hello")
-        expect(subject[1]["type"]).to eq("clone1")
+        expect(subject[1]["type"]).to eq("mock_clone1")
         expect(subject[1]["foo"]).to eq("bar")
 
         expect(subject[2]["message"]).to eq("hello")
-        expect(subject[2]["type"]).to eq("clone2")
+        expect(subject[2]["type"]).to eq("mock_clone2")
         expect(subject[2]["foo"]).to eq("bar")
       end
     end

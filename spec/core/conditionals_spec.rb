@@ -11,9 +11,9 @@ module ConditionalFanciness
       config <<-CONFIG
         filter {
           if #{expression} {
-            mutate { add_tag => "success" }
+            mock_filter { add_tag => "success" }
           } else {
-            mutate { add_tag => "failure" }
+            mock_filter { add_tag => "failure" }
           }
         }
       CONFIG
@@ -28,14 +28,14 @@ describe "conditionals in output" do
   describe "simple" do
     config <<-CONFIG
       input {
-        generator {
+        mock_generator {
           message => '{"foo":{"bar"},"baz": "quux"}'
           count => 1
         }
       }
       output {
         if [foo] == "bar" {
-          stdout { }
+          mock_stdout { }
         }
       }
     CONFIG
@@ -52,13 +52,13 @@ describe "conditionals in filter" do
   describe "simple" do
     config <<-CONFIG
       filter {
-        mutate { add_field => { "always" => "awesome" } }
+        mock_filter { add_field => { "always" => "awesome" } }
         if [foo] == "bar" {
-          mutate { add_field => { "hello" => "world" } }
+          mock_filter { add_field => { "hello" => "world" } }
         } else if [bar] == "baz" {
-          mutate { add_field => { "fancy" => "pants" } }
+          mock_filter { add_field => { "fancy" => "pants" } }
         } else {
-          mutate { add_field => { "free" => "hugs" } }
+          mock_filter { add_field => { "free" => "hugs" } }
         }
       }
     CONFIG
@@ -89,13 +89,13 @@ describe "conditionals in filter" do
     config <<-CONFIG
       filter {
         if [nest] == 123 {
-          mutate { add_field => { "always" => "awesome" } }
+          mock_filter { add_field => { "always" => "awesome" } }
           if [foo] == "bar" {
-            mutate { add_field => { "hello" => "world" } }
+            mock_filter { add_field => { "hello" => "world" } }
           } else if [bar] == "baz" {
-            mutate { add_field => { "fancy" => "pants" } }
+            mock_filter { add_field => { "fancy" => "pants" } }
           } else {
-            mutate { add_field => { "free" => "hugs" } }
+            mock_filter { add_field => { "free" => "hugs" } }
           }
         }
       }
@@ -134,7 +134,7 @@ describe "conditionals in filter" do
     config <<-CONFIG
       filter {
         if [foo] == [bar] {
-          mutate { add_tag => woot }
+          mock_filter { add_tag => woot }
         }
       }
     CONFIG
@@ -148,22 +148,22 @@ describe "conditionals in filter" do
     config <<-CONFIG
       filter {
         if [foo] in [foobar] {
-          mutate { add_tag => "field in field" }
+          mock_filter { add_tag => "field in field" }
         }
         if [foo] in "foo" {
-          mutate { add_tag => "field in string" }
+          mock_filter { add_tag => "field in string" }
         }
         if "hello" in [greeting] {
-          mutate { add_tag => "string in field" }
+          mock_filter { add_tag => "string in field" }
         }
         if [foo] in ["hello", "world", "foo"] {
-          mutate { add_tag => "field in list" }
+          mock_filter { add_tag => "field in list" }
         }
         if [missing] in [alsomissing] {
-          mutate { add_tag => "shouldnotexist" }
+          mock_filter { add_tag => "shouldnotexist" }
         }
         if !("foo" in ["hello", "world"]) {
-          mutate { add_tag => "shouldexist" }
+          mock_filter { add_tag => "shouldexist" }
         }
       }
     CONFIG
@@ -181,12 +181,12 @@ describe "conditionals in filter" do
   describe "the 'not in' operator" do
     config <<-CONFIG
       filter {
-        if "foo" not in "baz" { mutate { add_tag => "baz" } }
-        if "foo" not in "foo" { mutate { add_tag => "foo" } }
-        if !("foo" not in "foo") { mutate { add_tag => "notfoo" } }
-        if "foo" not in [somelist] { mutate { add_tag => "notsomelist" } }
-        if "one" not in [somelist] { mutate { add_tag => "somelist" } }
-        if "foo" not in [alsomissing] { mutate { add_tag => "no string in missing field" } }
+        if "foo" not in "baz" { mock_filter { add_tag => "baz" } }
+        if "foo" not in "foo" { mock_filter { add_tag => "foo" } }
+        if !("foo" not in "foo") { mock_filter { add_tag => "notfoo" } }
+        if "foo" not in [somelist] { mock_filter { add_tag => "notsomelist" } }
+        if "one" not in [somelist] { mock_filter { add_tag => "somelist" } }
+        if "foo" not in [alsomissing] { mock_filter { add_tag => "no string in missing field" } }
       }
     CONFIG
 
@@ -369,14 +369,14 @@ describe "conditionals in filter" do
     config <<-CONFIG
       filter {
         if [type] == "original" {
-          clone {
+          mock_clone {
             clones => ["clone"]
           }
         }
         if [type] == "original" {
-          mutate { add_field => { "cond1" => "true" } }
+          mock_filter { add_field => { "cond1" => "true" } }
         } else {
-          mutate { add_field => { "cond2" => "true" } }
+          mock_filter { add_field => { "cond2" => "true" } }
         }
       }
     CONFIG
@@ -399,14 +399,14 @@ describe "conditionals in filter" do
     config <<-CONFIG
       filter {
         if [type] == "original" {
-          clone {
+          mock_clone {
             clones => ["clone1", "clone2"]
           }
         }
         if [type] == "clone1" {
-          mutate { add_field => { "cond1" => "true" } }
+          mock_filter { add_field => { "cond1" => "true" } }
         } else if [type] == "clone2" {
-          mutate { add_field => { "cond2" => "true" } }
+          mock_filter { add_field => { "cond2" => "true" } }
         }
       }
     CONFIG
