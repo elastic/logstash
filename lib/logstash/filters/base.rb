@@ -11,23 +11,6 @@ class LogStash::Filters::Base < LogStash::Plugin
 
   config_name "filter"
 
-  # Note that all of the specified routing options (`type`,`tags`,`exclude_tags`,`include_fields`,
-  # `exclude_fields`) must be met in order for the event to be handled by the filter.
-
-  # The type to act on. If a type is given, then this filter will only
-  # act on messages with the same type. See any input plugin's `type`
-  # attribute for more.
-  # Optional.
-  config :type, :validate => :string, :default => "", :deprecated => "You can achieve this same behavior with the new conditionals, like: `if [type] == \"sometype\" { %PLUGIN% { ... } }`."
-
-  # Only handle events with all of these tags.
-  # Optional.
-  config :tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if \"sometag\" in [tags] { %PLUGIN% { ... } }`"
-
-  # Only handle events without any of these tags.
-  # Optional.
-  config :exclude_tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if !(\"sometag\" in [tags]) { %PLUGIN% { ... } }`"
-
   # If this filter is successful, add arbitrary tags to the event.
   # Tags can be dynamic and include parts of the event using the `%{field}`
   # syntax.

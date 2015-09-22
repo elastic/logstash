@@ -12,20 +12,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   config_name "output"
 
-  # The type to act on. If a type is given, then this output will only
-  # act on messages with the same type. See any input plugin's `type`
-  # attribute for more.
-  # Optional.
-  config :type, :validate => :string, :default => "", :deprecated => "You can achieve this same behavior with the new conditionals, like: `if [type] == \"sometype\" { %PLUGIN% { ... } }`."
-
-  # Only handle events with all of these tags.
-  # Optional.
-  config :tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if \"sometag\" in [tags] { %PLUGIN% { ... } }`"
-
-  # Only handle events without any of these tags.
-  # Optional.
-  config :exclude_tags, :validate => :array, :default => [], :deprecated => "You can achieve similar behavior with the new conditionals, like: `if !(\"sometag\" in [tags]) { %PLUGIN% { ... } }`"
-
   # The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output, without needing a separate filter in your Logstash pipeline.
   config :codec, :validate => :codec, :default => "plain"
 
