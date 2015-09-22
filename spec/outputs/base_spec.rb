@@ -24,24 +24,3 @@ describe "LogStash::Outputs::Base#worker_setup" do
     output.worker_setup
   end
 end
-
-describe "LogStash::Outputs::Base#output?" do
-  it "should filter by type" do
-    output = LogStash::Outputs::NOOP.new("type" => "noop")
-    expect(output.receive(LogStash::Event.new({"type" => "noop"}))).to eq(true)
-    expect(output.receive(LogStash::Event.new({"type" => "not_noop"}))).to eq(false)
-  end
-  
-  it "should filter by tags" do
-    output = LogStash::Outputs::NOOP.new("tags" => ["value", "value2"])
-    expect(output.receive(LogStash::Event.new({"tags" => ["value","value2"]}))).to eq(true)
-    expect(output.receive(LogStash::Event.new({"tags" => ["notvalue"]}))).to eq(false)
-    expect(output.receive(LogStash::Event.new({"tags" => ["value"]}))).to eq(false)
-  end
-
-  it "should exclude by tags" do
-    output = LogStash::Outputs::NOOP.new("exclude_tags" => ["value"])
-    expect(output.receive(LogStash::Event.new({"tags" => ["value"]}))).to eq(false)
-    expect(output.receive(LogStash::Event.new({"tags" => ["notvalue"]}))).to eq(true)
-  end
-end
