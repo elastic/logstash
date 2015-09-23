@@ -116,51 +116,59 @@ context "close" do
     end
   end
 
-  # This test need to be rewriten without the need of multiline
-  context "compiled flush function", :skip => true do
+context "compiled flush function" do
 
-    context "cancelled events should not propagate down the filters" do
-      config <<-CONFIG
-        filter {
-          multiline {
-           pattern => "hello"
-           what => next
-          }
-          multiline {
-           pattern => "hello"
-           what => next
-          }
-        }
-      CONFIG
+  let(:count)    { 1 }
+  let(:canceled) { true }
 
-      sample("hello") do
-        expect(subject["message"]).to eq("hello")
+  let(:config) do
+    <<-CONFIG
+       input  {
+          mock_generator {
+            count => #{count}
+            canceled => #{canceled}
+          }
+       }
+       filter { noop {} }
+    CONFIG
+  end
+
+  let(:events) do
+    input(config) do |pipeline, queue|
+      sleep 0.5
+      events = []
+      count.times do
+        begin
+          events << queue.pop(true)
+        rescue
+          # pass
+        end
       end
+      events
+    end
+  end
+
+  context "compiled flush function" do
+
+    context "when events are canceled during the proccess" do
+
+      it "cancelled events should not propagate down the filters" do
+        expect(events).to be_empty
+      end
+
     end
 
-    context "new events should propagate down the filters" do
-      config <<-CONFIG
-        filter {
-          mock_clone {
-            clones => ["mock_clone1"]
-          }
-          multiline {
-            pattern => "bar"
-            what => previous
-          }
-        }
-      CONFIG
+    context "when events are not canceled during the proccess" do
 
-      sample(["foo", "bar"]) do
-        expect(subject.size).to eq(2)
+      let(:canceled) { false }
 
-        expect(subject[0]["message"]).to eq("foo\nbar")
-        expect(subject[0]["type"]).to be_nil
-        expect(subject[1]["message"]).to eq("foo\nbar")
-        expect(subject[1]["type"]).to eq("mock_clone1")
+      it "eents should not propagate down the filters" do
+        expect(events).not_to be_empty
       end
     end
   end
+
+end
 
   context "compiled filter funtions" do
 

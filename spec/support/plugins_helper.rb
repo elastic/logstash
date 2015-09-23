@@ -9,6 +9,7 @@ class LogStash::Inputs::MockGenerator < LogStash::Inputs::Base
   config :message, :validate => :string, :default => "Hello world!"
   config :lines, :validate => :array
   config :count, :validate => :number, :default => 0
+  config :canceled, :validate => :boolean, :default => false
 
   def register
     @count = Array(@count).first
@@ -22,6 +23,7 @@ class LogStash::Inputs::MockGenerator < LogStash::Inputs::Base
         @codec.decode(line.clone) do |event|
           decorate(event)
           event["sequence"] = i
+          event.cancel if @canceled
           queue << event
         end
         i+=1
