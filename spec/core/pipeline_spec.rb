@@ -1,58 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
 
-class DummyInput < LogStash::Inputs::Base
-  config_name "dummyinput"
-  milestone 2
-
-  def register
-  end
-
-  def run(queue)
-  end
-
-  def close
-  end
-end
-
-class DummyCodec < LogStash::Codecs::Base
-  config_name "dummycodec"
-  milestone 2
-
-  def decode(data)
-    data
-  end
-
-  def encode(event)
-    event
-  end
-
-  def close
-  end
-end
-
-class DummyOutput < LogStash::Outputs::Base
-  config_name "dummyoutput"
-  milestone 2
-
-  attr_reader :num_closes
-
-  def initialize(params={})
-    super
-    @num_closes = 0
-  end
-
-  def register
-  end
-
-  def receive(event)
-  end
-
-  def close
-    @num_closes += 1
-  end
-end
-
 class TestPipeline < LogStash::Pipeline
   attr_reader :outputs
 end
