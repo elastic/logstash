@@ -10,6 +10,8 @@ require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/util/reporter"
+require "logstash/config/cpu_core_strategy"
+require "logstash/util/defaults_printer"
 
 class LogStash::Pipeline
 
@@ -38,7 +40,7 @@ class LogStash::Pipeline
     # if no filters, pipe inputs directly to outputs
     @filter_to_output = filters? ? SizedQueue.new(20) : @input_to_filter
     @settings = {
-      "filter-workers" => 1,
+      "filter-workers" => LogStash::Config::CpuCoreStrategy.fifty_percent
     }
 
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
@@ -51,10 +53,10 @@ class LogStash::Pipeline
   end
 
   def configure(setting, value)
-    if setting == "filter-workers"
+    if setting == "filter-workers" && value > 1
       # Abort if we have any filters that aren't threadsafe
-      if value > 1 && @filters.any? { |f| !f.threadsafe? }
-        plugins = @filters.select { |f| !f.threadsafe? }.collect { |f| f.class.config_name }
+      plugins = @filters.select { |f| !f.threadsafe? }.collect { |f| f.class.config_name }
+      if !plugins.size.zero?
         raise LogStash::ConfigurationError, "Cannot use more than 1 filter worker because the following plugins don't work with more than one worker: #{plugins.join(", ")}"
       end
     end
@@ -66,6 +68,8 @@ class LogStash::Pipeline
   end
 
   def run
+    @logger.terminal(LogStash::Util::DefaultsPrinter.print(@settings))
+
     begin
       start_inputs
       start_filters if filters?
@@ -139,10 +143,17 @@ class LogStash::Pipeline
 
   def start_filters
     @filters.each(&:register)
-    @filter_threads = @settings["filter-workers"].times.collect do
+    to_start = @settings["filter-workers"]
+    @filter_threads = to_start.times.collect do
       Thread.new { filterworker }
     end
-
+    actually_started = @filter_threads.select(&:alive?).size
+    msg = "Worker threads expected: #{to_start}, worker threads started: #{actually_started}"
+    if actually_started < to_start
+      @logger.warn(msg)
+    else
+      @logger.info(msg)
+    end
     @flusher_thread = Thread.new { Stud.interval(5) { @input_to_filter.push(LogStash::FLUSH) } }
   end
 
@@ -191,7 +202,7 @@ class LogStash::Pipeline
   end # def inputworker
 
   def filterworker
-    LogStash::Util::set_thread_name("|worker")
+    LogStash::Util.set_thread_name("|worker")
     begin
       while true
         event = @input_to_filter.pop
@@ -218,7 +229,7 @@ class LogStash::Pipeline
   end # def filterworker
 
   def outputworker
-    LogStash::Util::set_thread_name(">output")
+    LogStash::Util.set_thread_name(">output")
     @outputs.each(&:worker_setup)
 
     while true
