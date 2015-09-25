@@ -127,25 +127,9 @@ approaches to implementing HA and load balancing of Logstash instances.
 
 == Logstash Forwarder
 [float]
-=== status: ongoing; v2.x
+=== status: ongoing
 
-Logstash Forwarder uses a different code base from Logstash, and as a result it
-has been a challenge for us to keep feature parity between the two projects. We
-are experimenting with unifying the two code bases to improve ongoing
-maintenance of the Logstash Forwarder. Currently, Logstash Forwarder is written
-in Go and Logstash is written in Ruby and runs on JRuby. We are investigating
-the feasibility of replacing Logstash Forwarder with Logstash Ruby code executed
-on Matz Ruby Interpreter (http://en.wikipedia.org/wiki/Ruby_MRI[MRI]). Important
-criteria for success in this POC is to keep Logstash Forwarder lightweight and
-still distribute it as a binary so it doesn’t introduce language dependencies on
-the servers where it is deployed. You can follow this effort on GitHub through
-the Logstash Forwarder
-https://github.com/elastic/logstash-forwarder/issues[issues list].
-
-While we are working on these enhancements, we are committed to maintaining the
-Logstash Forwarder. We recently delivered
-http://www.elasticsearch.org/blog/logstash-forwarder-0-4-0-released/[Logstash Forwarder 0.4.0],
-which addressed many existing issues our users have been reporting.
+https://github.com/elastic/logstash-forwarder/[Logstash Forwarder] is a lightweight shipper for tailing files and forwarding this data to Logstash for further processing. It is often used in lieu of running Logstash on the servers, because it is lightweight, written in Go, and consumes less resources. It was created before we had the Beats framework for shipping data from servers and is currently maintained separately. We plan to move the Logstash Forwarder functionality to https://github.com/elastic/filebeat/[Filebeat] in the Beats framework, which is also written in Go. The first version of Filebeat will leverage the libbeat infrastructure and preserve existing features. Over time, we plan to enhance Filebeat with capabilities such as multiline and filtering support. Since Filebeat will serve as the direct replacement for Logstash Forwarder, we are not planning additional releases beyond http://www.elasticsearch.org/blog/logstash-forwarder-0-4-0-released/[Logstash Forwarder 0.4.0].
 
 == Performance
 [float]
