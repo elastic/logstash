@@ -183,6 +183,12 @@ class LogStash::Filters::Base < LogStash::Plugin
     end
   end # def filter_matched
 
+  protected
+  def filter?(event)
+    # TODO: noop for now, remove this once we delete this call from all plugins
+    true
+  end # def filter?
+
   public
   def close
     # Nothing to do by default.

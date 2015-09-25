@@ -78,4 +78,9 @@ class LogStash::Outputs::Base < LogStash::Plugin
     @worker_queue.push(event)
   end
 
+  private
+  def output?(event)
+    # TODO: noop for now, remove this once we delete this call from all plugins
+    true
+  end # def output?
 end # class LogStash::Outputs::Base
