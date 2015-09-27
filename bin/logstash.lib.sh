@@ -47,6 +47,13 @@ setup_java() {
     JAVA_OPTS="$JAVA_OPTS -Xmx${LS_HEAP_SIZE}"
   fi
 
+  if [ "$LS_JMX_MONIT_PORT" ] ; then
+    JAVA_OPTS="$JAVA_OPTS -J-Dcom.sun.management.jmxremote"
+    JAVA_OPTS="$JAVA_OPTS -J-Dcom.sun.management.jmxremote.authenticate=false"
+    JAVA_OPTS="$JAVA_OPTS -J-Dcom.sun.management.jmxremote.ssl=false"
+    JAVA_OPTS="$JAVA_OPTS -J-Dcom.sun.management.jmxremote.port=${LS_JMX_MONIT_PORT}"
+  fi
+
   if [ "$LS_USE_GC_LOGGING" ] ; then
     JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDetails"
     JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCTimeStamps"
