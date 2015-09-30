@@ -66,7 +66,7 @@ To verify your environment, run `bin/logstash version` which should look like th
 
 ## Testing
 
-For tesing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below. Note that the `bin/logstash rspec` command has been replaced by `bin/rspec`.
+For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below. Note that the `bin/logstash rspec` command has been replaced by `bin/rspec`.
 
 ### Core tests
 
