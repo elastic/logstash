@@ -77,6 +77,10 @@ en:
         use to validate logstash's configuration before you choose
         to restart a running system.
       configuration:
+        obsolete: >-
+          The setting `%{name}` in plugin `%{plugin}` is obsolete and is no
+          longer available. %{extra} If you have any questions about this, you
+          are invited to visit https://discuss.elastic.co/c/logstash and ask.
         file-not-found: |-
           No config files found: %{path}
           Can you make sure this path is a logstash config file?
