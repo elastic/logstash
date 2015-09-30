@@ -85,6 +85,14 @@ describe "OpenSSL defaults" do
         ssl_client = OpenSSL::SSL::SSLSocket.new(socket, client_context)
         expect { ssl_client.connect }.not_to raise_error
       end
+
+      it "should connect with TLS 1.2" do
+        client_context = OpenSSL::SSL::SSLContext.new(:TLSv1_2)
+        socket = TCPSocket.new(server_address, server_port)
+        ssl_client = OpenSSL::SSL::SSLSocket.new(socket, client_context)
+        ssl_client.connect
+        expect(ssl_client.ssl_version).to eq "TLSv1.2"
+      end
     end
   end
 end
