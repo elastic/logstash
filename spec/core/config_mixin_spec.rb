@@ -97,4 +97,41 @@ describe LogStash::Config::Mixin do
       expect(clone.password.value).to(be == secret)
     end
   end
+
+  context "when validating :file_or_dir" do
+    let(:klass) do
+      Class.new(LogStash::Filters::Base) do
+        config_name "cake"
+        config :file, :validate => :file_or_dir, :default => "/foo/bar"
+      end
+    end
+
+    it "should be valid and exist" do
+      allow(File).to receive(:exists?).with("/foo/bar").and_return(true)
+      expect { klass.new({}) }.to_not raise_error
+    end
+
+    it "raises an exception if the path does not exist" do
+      expect { klass.new({}) }.to raise_error(LogStash::ConfigurationError)
+    end
+  end
+
+  context "when validating :path" do
+    let(:klass) do
+      Class.new(LogStash::Filters::Base) do
+        config_name "cake"
+        config :path, :validate => :path, :default => "foobar"
+      end
+    end
+
+    subject { klass.new({}) }
+
+    it "should be valid and exist" do
+      expect { klass.new({}) }.to_not raise_error
+    end
+
+    it "should be a pathname object" do
+      expect(subject.path).to be_a(Pathname)
+    end
+  end
 end

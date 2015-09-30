@@ -451,21 +451,22 @@ module LogStash::Config::Mixin
             end
 
             result = value.first.is_a?(::LogStash::Util::Password) ? value.first : ::LogStash::Util::Password.new(value.first)
+          when :file_or_dir
+            if value.size > 1 # Only 1 value wanted
+              return false, "Expected file_or_dir (one value), got #{value.size} values?"
+            end
+
+            if !File.exists?(value.first) # Check if the file exists
+              return false, "File or Directory does not exist or cannot be opened #{value.first}"
+            end
+
+            result = value.first
           when :path
             if value.size > 1 # Only 1 value wanted
               return false, "Expected path (one value), got #{value.size} values?"
             end
 
-            # Paths must be absolute
-            #if !Pathname.new(value.first).absolute?
-              #return false, "Require absolute path, got relative path #{value.first}?"
-            #end
-
-            if !File.exists?(value.first) # Check if the file exists
-              return false, "File does not exist or cannot be opened #{value.first}"
-            end
-
-            result = value.first
+            result = value.first.is_a?(::Pathname) ? value.first : ::Pathname.new(value.first)
           when :bytes
             begin
               bytes = Integer(value.first) rescue nil
