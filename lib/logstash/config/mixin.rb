@@ -76,6 +76,13 @@ module LogStash::Config::Mixin
                      "about this, please visit the #logstash channel " +
                      "on freenode irc.", :name => name, :plugin => self)
       end
+      if opts && opts[:obsolete]
+        extra = opts[:obsolete].is_a?(String) ? opts[:obsolete] : ""
+        extra.gsub!("%PLUGIN%", self.class.config_name)
+        raise LogStash::ConfigurationError,
+          I18n.t("logstash.agent.configuration.obsolete", :name => name,
+                 :plugin => self.class.config_name, :extra => extra)
+      end
     end
 
     # Set defaults from 'config :foo, :default => somevalue'
