@@ -462,7 +462,7 @@ GEM
     logstash-output-pipe (2.0.0)
       logstash-codec-plain
       logstash-core (~> 2.0.0.snapshot)
-    logstash-output-rabbitmq (3.0.0-java)
+    logstash-output-rabbitmq (3.0.1-java)
       logstash-core (~> 2.0.0.snapshot)
       logstash-mixin-rabbitmq_connection (>= 1.0.0, < 2.0.0)
     logstash-output-redis (2.0.0)
