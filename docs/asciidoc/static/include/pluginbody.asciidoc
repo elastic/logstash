@@ -439,7 +439,7 @@ endif::encode_method[]
 ==== Configuration Parameters
 [source,ruby]
 ----------------------------------
-  config :variable_name, :validate => :variable_type, :default => "Default value", :required => boolean, :deprecated => boolean
+  config :variable_name, :validate => :variable_type, :default => "Default value", :required => boolean, :deprecated => boolean, :obsolete => string
 ----------------------------------
 The configuration, or `config` section allows you to define as many (or as few)
 parameters as are needed to enable Logstash to process events.
@@ -457,6 +457,7 @@ will become a valid boolean in the config.  This coercion works for the
 * `:required` - whether or not this parameter is mandatory (a Boolean `true` or
 `false`)
 * `:deprecated` - informational (also a Boolean `true` or `false`)
+* `:obsolete` - used to declare that a given setting has been removed and is no longer functioning. The idea is to provide an informed upgrade path to users who are still using a now-removed setting.
 
 ==== Plugin Methods
 

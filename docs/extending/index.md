@@ -46,8 +46,8 @@ so:
 
 The name of the option is specified, here `:host` and then the
 attributes of the option. They can include `:validate`, `:default`,
-`:required` (a Boolean `true` or `false`), and `:deprecated` (also a
-Boolean).  
+`:required` (a Boolean `true` or `false`), `:deprecated` (also a
+Boolean), and `:obsolete` (a String value).  
  
 ## Inputs
 

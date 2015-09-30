@@ -97,4 +97,30 @@ describe LogStash::Config::Mixin do
       expect(clone.password.value).to(be == secret)
     end
   end
+
+  describe "obsolete settings" do
+    let(:plugin_class) do
+      Class.new(LogStash::Inputs::Base) do
+        include LogStash::Config::Mixin
+        config_name "example"
+        config :foo, :validate => :string, :obsolete => "This feature was removed."
+      end
+    end
+
+    context "when using an obsolete setting" do
+      it "should cause a configuration error" do
+        expect {
+          plugin_class.new("foo" => "hello")
+        }.to raise_error(LogStash::ConfigurationError)
+      end
+    end
+
+    context "when not using an obsolete setting" do
+      it "should not cause a configuration error" do
+        expect {
+          plugin_class.new({})
+        }.not_to raise_error
+      end
+    end
+  end
 end
