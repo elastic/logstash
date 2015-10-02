@@ -78,7 +78,6 @@ module LogStash
       logstash-output-cloudwatch
       logstash-output-csv
       logstash-output-elasticsearch
-      logstash-output-elasticsearch_http
       logstash-output-email
       logstash-output-exec
       logstash-output-file
