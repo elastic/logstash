@@ -221,11 +221,19 @@ class LogStash::Pipeline
           break
         end
       end
-    rescue => e
-      @logger.error("Exception in filterworker", "exception" => e, "backtrace" => e.backtrace)
+    rescue Exception => e
+      # Plugins authors should manage their own exceptions in the plugin code. 
+      # But if an exception is raised up to the worker thread their are mostly 
+      # fatal and logstash can't recover from this situation.
+      #
+      # Users need to check their configuration or see if there is a bug in the
+      # plugin.
+      @logger.error("Exception in filterworker, the pipeline stopped processing new events, please check your filter configuration and restart Logstash.",
+                    "exception" => e, "backtrace" => e.backtrace)
+      raise
+    ensure
+      @filters.each(&:do_close)
     end
-
-    @filters.each(&:do_close)
   end # def filterworker
 
   def outputworker
