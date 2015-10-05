@@ -61,7 +61,7 @@ class OpenSSL::SSL::SSLContext
   # For more details see: https://github.com/elastic/logstash/issues/3657
   remove_const(:DEFAULT_PARAMS) if const_defined?(:DEFAULT_PARAMS)
   DEFAULT_PARAMS = {
-    :ssl_version => "SSLv23",
+    :ssl_version => "TLS",
     :ciphers => MOZILLA_INTERMEDIATE_CIPHERS,
     :options => __default_options # Not a constant because it's computed at start-time.
   }
