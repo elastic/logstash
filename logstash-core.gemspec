@@ -24,6 +24,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "filesize", "0.0.4" #(MIT license) for :bytes config validator
   gem.add_runtime_dependency "gems", "~> 0.8.3"  #(MIT license)
   gem.add_runtime_dependency "concurrent-ruby", "~> 0.9.1"
+  gem.add_runtime_dependency "jruby-openssl", ">= 0.9.11" # Required to support TLSv1.2
 
   # TODO(sissel): Treetop 1.5.x doesn't seem to work well, but I haven't
   # investigated what the cause might be. -Jordan
