@@ -11,6 +11,12 @@ class LogStash::Filters::Base < LogStash::Plugin
 
   config_name "filter"
 
+  config :type, :validate => :string, :default => "", :obsolete => "You can achieve this same behavior with the new conditionals, like: `if [type] == \"sometype\" { %PLUGIN% { ... } }`."
+
+  config :tags, :validate => :array, :default => [], :obsolete => "You can achieve similar behavior with the new conditionals, like: `if \"sometag\" in [tags] { %PLUGIN% { ... } }`"
+
+  config :exclude_tags, :validate => :array, :default => [], :obsolete => "You can achieve similar behavior with the new conditionals, like: `if !(\"sometag\" in [tags]) { %PLUGIN% { ... } }`"
+
   # If this filter is successful, add arbitrary tags to the event.
   # Tags can be dynamic and include parts of the event using the `%{field}`
   # syntax.

@@ -26,6 +26,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # when sent to another Logstash server.
   config :type, :validate => :string
 
+  config :debug, :validate => :boolean, :default => false, :obsolete => "This setting no longer has any effect. In past releases, it existed, but almost no plugin made use of it."
+
+  config :format, :validate => ["plain", "json", "json_event", "msgpack_event"], :obsolete => "You should use the newer 'codec' setting instead."
+
+  config :charset, :obsolete => "Use the codec setting instead. For example: input { %PLUGIN% { codec => plain { charset => \"UTF-8\" } }"
+
   # The codec used for input data. Input codecs are a convenient method for decoding your data before it enters the input, without needing a separate filter in your Logstash pipeline.
   config :codec, :validate => :codec, :default => "plain"
 
