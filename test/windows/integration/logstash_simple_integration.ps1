@@ -111,7 +111,7 @@ sleep 30
 # -------------------------------------------
 
 
-$searchresponse = curl "http://localhost:9200/windows_test_index/_search"
+$searchresponse = curl "http://localhost:9200/windows_test_index/_search" -UseBasicParsing
 $json_response = ConvertFrom-Json $searchresponse.Content
 $hit_source = $json_response.hits.hits[0]._source
 
