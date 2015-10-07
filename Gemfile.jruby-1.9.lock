@@ -105,6 +105,7 @@ GEM
     jruby-kafka (1.4.0-java)
       jar-dependencies (~> 0)
       ruby-maven (~> 3.1)
+    jruby-openssl (0.9.12-java)
     jruby-win32ole (0.8.5)
     json (1.8.3-java)
     kramdown (1.9.0)
@@ -152,7 +153,7 @@ GEM
     logstash-codec-rubydebug (2.0.1)
       awesome_print
       logstash-core (>= 2.0.0.snapshot, < 3.0.0)
-    logstash-core (2.0.0.snapshot2-java)
+    logstash-core (2.0.0.snapshot3-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       concurrent-ruby (~> 0.9.1)
@@ -160,6 +161,7 @@ GEM
       gems (~> 0.8.3)
       i18n (= 0.6.9)
       jrjackson (~> 0.2.9)
+      jruby-openssl (>= 0.9.11)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       stud (~> 0.0.19)
@@ -179,7 +181,7 @@ GEM
       murmurhash3
     logstash-filter-checksum (2.0.1)
       logstash-core (>= 2.0.0.snapshot, < 3.0.0)
-    logstash-filter-clone (2.0.1)
+    logstash-filter-clone (2.0.2)
       logstash-core (>= 2.0.0.snapshot, < 3.0.0)
     logstash-filter-csv (2.0.1)
       logstash-core (>= 2.0.0.snapshot, < 3.0.0)
@@ -277,7 +279,7 @@ GEM
     logstash-input-generator (2.0.1)
       logstash-codec-plain
       logstash-core (>= 2.0.0.snapshot, < 3.0.0)
-    logstash-input-graphite (2.0.2)
+    logstash-input-graphite (2.0.3)
       logstash-core (>= 2.0.0.snapshot, < 3.0.0)
       logstash-input-tcp
     logstash-input-heartbeat (2.0.1)
@@ -428,7 +430,7 @@ GEM
       hipchat
       logstash-codec-plain
       logstash-core (>= 2.0.0.snapshot, < 3.0.0)
-    logstash-output-http (2.0.2)
+    logstash-output-http (2.0.3)
       logstash-core (>= 2.0.0.snapshot, < 3.0.0)
       logstash-mixin-http_client (>= 2.0.2, < 3.0.0)
     logstash-output-irc (2.0.1)
@@ -443,7 +445,7 @@ GEM
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 2.0.0.snapshot, < 3.0.0)
-    logstash-output-lumberjack (2.0.1)
+    logstash-output-lumberjack (2.0.2)
       jls-lumberjack (>= 0.0.24)
       logstash-core (>= 2.0.0.snapshot, < 3.0.0)
       stud
@@ -471,7 +473,7 @@ GEM
       logstash-core (>= 2.0.0.snapshot, < 3.0.0)
       redis
       stud
-    logstash-output-s3 (2.0.1)
+    logstash-output-s3 (2.0.2)
       logstash-core (>= 2.0.0.snapshot, < 3.0.0)
       logstash-mixin-aws
       stud (~> 0.0.22)
@@ -634,7 +636,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 2.0.0.snapshot2)
+  logstash-core (= 2.0.0.snapshot3)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
