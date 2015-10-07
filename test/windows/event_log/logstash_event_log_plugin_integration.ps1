@@ -71,10 +71,7 @@ sleep 30
 # -------------------------------------------
 
 
-# Create logstash Configuration and Files
-
-ni "$Logstash_path\logs.txt" -it file
-sc -Path "$Logstash_path\logs.txt" -Encoding ascii -Value "{ ""ismessage"": true, ""day"": 2, ""text"": ""test message"" }"
+# Create logstash Configuration
 
 ni "$Logstash_path\$LS_CONFIG" -it file
 sc -Path "$Logstash_path\$LS_CONFIG" -Encoding ascii -Value "input { 
