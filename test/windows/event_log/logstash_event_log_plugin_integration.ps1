@@ -122,12 +122,12 @@ If (!($hit_source.SourceName -eq "ElasticsearchSource")){
 }
 
 If (!($hit_source.EventCode -eq 1)){
-    echo "ERROR: Wrong expected value. Test unsuccessful"
+    echo "ERROR: Wrong expected value: EventCode. Test unsuccessful"
     exit 1
 }
 
-If (!($hit_source.text -eq "Example log Entry")){
-    echo "ERROR: Wrong expected value. Test unsuccessful"
+If (!($hit_source.message -eq "Example log Entry")){
+    echo "ERROR: Wrong expected value: Message. Text Test unsuccessful"
     exit 1
 }
 
