@@ -1,9 +1,10 @@
 PATH
   remote: .
   specs:
-    logstash-core (2.0.0.dev-java)
+    logstash-core (3.0.0.dev-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
+      concurrent-ruby (~> 0.9.1)
       filesize (= 0.0.4)
       gems (~> 0.8.3)
       i18n (= 0.6.9)
@@ -33,6 +34,7 @@ GEM
       rspec (>= 2.14, < 4)
     clamp (0.6.5)
     coderay (1.1.0)
+    concurrent-ruby (0.9.1-java)
     coveralls (0.8.1)
       json (~> 1.8)
       rest-client (>= 1.6.8, < 2)
@@ -83,7 +85,7 @@ GEM
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
     polyglot (0.3.5)
-    pry (0.10.1-java)
+    pry (0.10.2-java)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
@@ -139,7 +141,7 @@ DEPENDENCIES
   flores (~> 0.0.6)
   fpm (~> 1.3.3)
   gems (~> 0.8.3)
-  logstash-core (= 2.0.0.dev)!
+  logstash-core (= 3.0.0.dev)!
   logstash-devutils (~> 0.0.15)
   octokit (= 3.8.0)
   rspec (~> 3.1.0)
