@@ -1,58 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
 
-class DummyInput < LogStash::Inputs::Base
-  config_name "dummyinput"
-  milestone 2
-
-  def register
-  end
-
-  def run(queue)
-  end
-
-  def close
-  end
-end
-
-class DummyCodec < LogStash::Codecs::Base
-  config_name "dummycodec"
-  milestone 2
-
-  def decode(data)
-    data
-  end
-
-  def encode(event)
-    event
-  end
-
-  def close
-  end
-end
-
-class DummyOutput < LogStash::Outputs::Base
-  config_name "dummyoutput"
-  milestone 2
-
-  attr_reader :num_closes
-
-  def initialize(params={})
-    super
-    @num_closes = 0
-  end
-
-  def register
-  end
-
-  def receive(event)
-  end
-
-  def close
-    @num_closes += 1
-  end
-end
-
 class TestPipeline < LogStash::Pipeline
   attr_reader :outputs
 end
@@ -116,60 +64,69 @@ context "close" do
     end
   end
 
+context "compiled flush function" do
+
+  let(:count)    { 1 }
+  let(:canceled) { true }
+
+  let(:config) do
+    <<-CONFIG
+       input  {
+          mock_generator {
+            count => #{count}
+            canceled => #{canceled}
+          }
+       }
+       filter { noop {} }
+    CONFIG
+  end
+
+  let(:events) do
+    input(config) do |pipeline, queue|
+      sleep 0.5
+      events = []
+      count.times do
+        begin
+          events << queue.pop(true)
+        rescue
+          # pass
+        end
+      end
+      events
+    end
+  end
+
   context "compiled flush function" do
 
-    context "cancelled events should not propagate down the filters" do
-      config <<-CONFIG
-        filter {
-          multiline {
-           pattern => "hello"
-           what => next
-          }
-          multiline {
-           pattern => "hello"
-           what => next
-          }
-        }
-      CONFIG
+    context "when events are canceled during the proccess" do
 
-      sample("hello") do
-        expect(subject["message"]).to eq("hello")
+      it "cancelled events should not propagate down the filters" do
+        expect(events).to be_empty
       end
+
     end
 
-    context "new events should propagate down the filters" do
-      config <<-CONFIG
-        filter {
-          clone {
-            clones => ["clone1"]
-          }
-          multiline {
-            pattern => "bar"
-            what => previous
-          }
-        }
-      CONFIG
+    context "when events are not canceled during the proccess" do
 
-      sample(["foo", "bar"]) do
-        expect(subject.size).to eq(2)
+      let(:canceled) { false }
 
-        expect(subject[0]["message"]).to eq("foo\nbar")
-        expect(subject[0]["type"]).to be_nil
-        expect(subject[1]["message"]).to eq("foo\nbar")
-        expect(subject[1]["type"]).to eq("clone1")
+      it "eents should not propagate down the filters" do
+        expect(events).not_to be_empty
       end
     end
   end
+
+end
 
   context "compiled filter funtions" do
 
     context "new events should propagate down the filters" do
       config <<-CONFIG
         filter {
-          clone {
-            clones => ["clone1", "clone2"]
+          mock_clone {
+            clones => ["mock_clone1", "mock_clone2"]
           }
-          mutate {
+          noop {
             add_field => {"foo" => "bar"}
           }
         }
@@ -183,11 +140,11 @@ context "close" do
         expect(subject[0]["foo"]).to eq("bar")
 
         expect(subject[1]["message"]).to eq("hello")
-        expect(subject[1]["type"]).to eq("clone1")
+        expect(subject[1]["type"]).to eq("mock_clone1")
         expect(subject[1]["foo"]).to eq("bar")
 
         expect(subject[2]["message"]).to eq("hello")
-        expect(subject[2]["type"]).to eq("clone2")
+        expect(subject[2]["type"]).to eq("mock_clone2")
         expect(subject[2]["foo"]).to eq("bar")
       end
     end

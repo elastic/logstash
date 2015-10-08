@@ -110,13 +110,10 @@ module LogStash
 
     # plugins required to run the logstash core specs
     CORE_SPECS_PLUGINS = %w(
-      logstash-filter-clone
-      logstash-filter-mutate
-      logstash-filter-multiline
-      logstash-input-generator
-      logstash-input-stdin
-      logstash-input-tcp
-      logstash-output-stdout
+      logstash-codec-plain
+      logstash-codec-line
+      logstash-codec-json
+      logstash-codec-json_lines
     )
 
     TEST_JAR_DEPENDENCIES_PLUGINS = %w(
