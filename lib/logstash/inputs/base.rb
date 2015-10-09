@@ -32,6 +32,8 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   config :charset, :obsolete => "Use the codec setting instead. For example: input { %PLUGIN% { codec => plain { charset => \"UTF-8\" } }"
 
+  config :message_format, :validate => :string, :obsolete => "Setting is no longer valid."
+
   # The codec used for input data. Input codecs are a convenient method for decoding your data before it enters the input, without needing a separate filter in your Logstash pipeline.
   config :codec, :validate => :codec, :default => "plain"
 
