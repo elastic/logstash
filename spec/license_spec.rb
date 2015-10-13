@@ -16,6 +16,18 @@ describe "Project licenses" do
                    /lgpl/])
   }
 
+  ##
+  # This licenses are skipped from the license test of many reasons, check
+  # the exact dependency for detailed information.
+  ##
+  let(:skipped_dependencies) do
+    [
+      # Skipped because of already included and bundled within JRuby so checking here is redundant.
+      # Need to take action about jruby licenses to enable again or keep skeeping.
+      "jruby-openssl"
+    ]
+  end
+
   shared_examples "runtime license test" do
 
     subject(:gem_name) do |example|
@@ -33,6 +45,7 @@ describe "Project licenses" do
     it "has runtime dependencies with expected licenses" do
       spec.runtime_dependencies.map { |dep| dep.to_spec }.each do |runtime_spec|
         next unless runtime_spec
+        next if skipped_dependencies.include?(runtime_spec.name)
         runtime_spec.licenses.each do |license|
           expect(license.downcase).to match(expected_licenses)
         end
