@@ -128,14 +128,14 @@ class LogStash::Agent < Clamp::Command
         @logger.warn(I18n.t("logstash.agent.sigint"))
         Thread.new(@logger) {|logger| sleep 5; logger.warn(I18n.t("logstash.agent.slow_shutdown")) }
         @interrupted_once = true
-        pipeline.shutdown
+        shutdown(pipeline)
       end
     end
 
     # Make SIGTERM shutdown the pipeline.
     sigterm_id = Stud::trap("TERM") do
       @logger.warn(I18n.t("logstash.agent.sigterm"))
-      pipeline.shutdown
+      shutdown(pipeline)
     end
 
     Stud::trap("HUP") do
@@ -173,6 +173,13 @@ class LogStash::Agent < Clamp::Command
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?
     Stud::untrap("TERM", sigterm_id) unless sigterm_id.nil?
   end # def execute
+
+  def shutdown(pipeline)
+    pipeline.shutdown do
+      InflightEventsReporter.logger = @logger
+      InflightEventsReporter.start(pipeline.input_to_filter, pipeline.filter_to_output, pipeline.outputs)
+    end
+  end
 
   def show_version
     show_version_logstash
