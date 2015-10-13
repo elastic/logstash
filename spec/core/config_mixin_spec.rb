@@ -115,12 +115,40 @@ describe LogStash::Config::Mixin do
       end
     end
 
+    context "when using an obsolete settings from the parent class" do
+      it "should cause a configuration error" do
+        expect {
+          plugin_class.new("debug" => true)
+        }.to raise_error(LogStash::ConfigurationError)
+      end
+    end
+
     context "when not using an obsolete setting" do
       it "should not cause a configuration error" do
         expect {
           plugin_class.new({})
         }.not_to raise_error
       end
+    end
+  end
+
+  context "#params" do
+    let(:plugin_class) do
+      Class.new(LogStash::Filters::Base)  do
+        config_name "fake"
+        config :password, :validate => :password
+        config :bad, :validate => :string, :default => "my default", :obsolete => "not here"
+      end
+    end
+
+    subject { plugin_class.new({ "password" => "secret" }) }
+
+    it "should not return the obsolete options" do
+      expect(subject.params).not_to include("bad")
+    end
+
+    it "should include any other params" do
+      expect(subject.params).to include("password")
     end
   end
 end
