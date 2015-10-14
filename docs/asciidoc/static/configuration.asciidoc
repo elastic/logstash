@@ -150,6 +150,8 @@ Input codecs provide a convenient way to decode your data before it enters the i
 Output codecs provide a convenient way to encode your data before it leaves the output.
 Using an input or output codec eliminates the need for a separate filter in your Logstash pipeline.
 
+A list of available codecs can be found at the <<codec-plugins,Codec Plugins>> page.
+
 Example:
 
 [source,js]
