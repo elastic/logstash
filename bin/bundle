@@ -9,14 +9,19 @@
 Signal.trap("INT") { exit 1 }
 
 require_relative "../lib/bootstrap/environment"
-Gem.clear_paths
-Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = LogStash::Environment.logstash_gem_home
+::Gem.clear_paths
+::Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = LogStash::Environment.logstash_gem_home
+
+ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
 
 require "bundler"
 require "bundler/cli"
 require "bundler/friendly_errors"
 LogStash::Bundler.patch!
 
-Bundler.with_friendly_errors do
-  Bundler::CLI.start(ARGV, :debug => true)
+::Bundler.settings[:path] = LogStash::Environment::BUNDLE_DIR
+::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
+
+::Bundler.with_friendly_errors do
+  ::Bundler::CLI.start(ARGV, :debug => true)
 end
