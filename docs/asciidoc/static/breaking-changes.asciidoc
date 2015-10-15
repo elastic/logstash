@@ -1,0 +1,30 @@
+[[breaking-changes]]
+== Breaking changes
+
+Version 2.0 of Logstash has some changes that are incompatible with previous versions of Logstash. This section discusses 
+what you need to be aware of when migrating to this version.
+
+[float]
+=== Elasticsearch Output Default
+
+Starting with the 2.0 release of Logstash, the default Logstash output for Elasticsearch is HTTP. To use the `node` or
+`transport` protocols, download the {logstash}plugins-outputs-elasticsearch_java.html[Elasticsearch Java plugin]. The 
+Logstash HTTP output to Elasticsearch now supports sniffing.
+
+==== Configuration Changes
+
+The Elasticsearch output plugin configuration has the following changes:
+
+* The `host` configuration option is now `hosts`
+* New options: `bind_host`, `bind_port`, `cluster`, `embedded`, `embedded_http_port`, `port`, `sniffing_delay
+* The `max_inflight_requests` option, which was deprecated in the 1.5 release, is now removed
+* The `node_name` and `protocol` options have been moved to the `elasticsearch_java` plugin
+
+[float]
+=== Kafka Output Configuration Changes
+
+The 2.0 release of Logstash includes a new version of the Kafka output plugin with significant configuration changes.
+Please compare the documentation pages for the 
+https://www.elastic.co/guide/en/logstash/1.5/plugins-outputs-kafka.html[Logstash 1.5] and
+https://www.elastic.co/guide/en/logstash/2.0/plugins-outputs-kafka.html[Logstash 2.0] versions of the Kafka output plugin 
+and update your configuration files accordingly.
