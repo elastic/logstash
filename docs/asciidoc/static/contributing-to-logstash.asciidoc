@@ -32,6 +32,7 @@ exit. The `close` method is a a new name for the method known as `teardown` in p
 The `shutdown`, `finished`, `finished?`, `running?`, and `terminating?` methods are redundant and no longer present in the 
 Plugin Base class.
 
+Sample code for the new plugin shutdown APIs is https://github.com/logstash-plugins/logstash-input-example/blob/master/lib/logstash/inputs/example.rb[available].
 
 [float]
 === Extending Logstash core
