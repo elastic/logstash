@@ -13,7 +13,7 @@ Before upgrading Logstash:
 
 This procedure uses <<package-repositories,package managers>> to upgrade Logstash.
 
-1. Shut down your Logstash pipeline.
+1. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
 2. Using the directions in the _Package Repositories_ section, update your repository links to point to the 2.0 repositories 
 instead of the previous version.
 3. Run the `apt-get update logstash` or `yum update logstash` command as appropriate for your operating system.
@@ -25,8 +25,7 @@ some Logstash plugins have changed in the 2.0 release.
 
 This procedure downloads the relevant Logstash binaries directly from Elastic.
 
-
-1. Shut down your Logstash pipeline.
+1. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
 2. Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment. 
 3. Unpack the installation file into your Logstash directory.
 4. Test your configuration file with the `logstash --configtest -f <configuration-file>` command. Configuration options for 
