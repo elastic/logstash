@@ -4,7 +4,8 @@
 
 | Branch | master   | 2.0 | 1.5
 |---|---|---|---|
-| Status |[![Build Status](http://build-eu-00.elastic.co/view/LS%20Master/job/logstash_regression_master/badge/icon)](http://build-eu-00.elastic.co/view/LS%20Master/job/logstash_regression_master/)   | [![Build Status](http://build-eu-00.elastic.co/view/LS%202.0/job/logstash_regression_20/badge/icon)](http://build-eu-00.elastic.co/view/LS%202.0/job/logstash_regression_20/)  | [![Build Status](http://build-eu-00.elastic.co/view/LS%201.5/job/logstash_regression_15/badge/icon)](http://build-eu-00.elastic.co/view/LS%201.5/job/logstash_regression_15/)   |
+| core |[![Build Status](http://build-eu-00.elastic.co/view/LS%20Master/job/logstash_regression_master/badge/icon)](http://build-eu-00.elastic.co/view/LS%20Master/job/logstash_regression_master/)   | [![Build Status](http://build-eu-00.elastic.co/view/LS%202.0/job/logstash_regression_20/badge/icon)](http://build-eu-00.elastic.co/view/LS%202.0/job/logstash_regression_20/)  | [![Build Status](http://build-eu-00.elastic.co/view/LS%201.5/job/logstash_regression_15/badge/icon)](http://build-eu-00.elastic.co/view/LS%201.5/job/logstash_regression_15/)   |
+| integration | [![Build Status](http://build-eu-00.elastic.co/view/LS%20Master/job/Logstash_Master_Default_Plugins/badge/icon)](http://build-eu-00.elastic.co/view/LS%20Master/job/Logstash_Master_Default_Plugins/) | [![Build Status](http://build-eu-00.elastic.co/view/LS%202.0/job/Logstash_Default_Plugins_20/badge/icon)](http://build-eu-00.elastic.co/view/LS%202.0/job/Logstash_Default_Plugins_20/) | [![Build Status](http://build-eu-00.elastic.co/view/LS%201.5/job/Logstash_15_Default_Plugins/badge/icon)](http://build-eu-00.elastic.co/view/LS%201.5/job/Logstash_15_Default_Plugins/) |
 
 Logstash is a tool for managing events and logs. You can use it to collect
 logs, parse them, and store them for later use (like, for searching).  If you
