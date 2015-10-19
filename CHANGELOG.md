@@ -1,3 +1,11 @@
+## 2.0.0-beta3 (October 19, 2015)
+### general
+ - Fixed bug in JrJackson v0.3.5 when handing shared strings. This manifested into issues when 
+   JrJackson was used in json codec and ES output. (#4048, #4055)
+
+## output
+ - Fixed memory leak in http output with usage of manticore library (#24)    
+
 ## 2.0.0-beta2 (October 14, 2015)
 ### general
  - Better shutdown handling in Logstash core and its plugins. Previously, the shutdown
