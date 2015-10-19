@@ -2,7 +2,7 @@
 # If you modify this file manually all comments and formatting will be lost.
 
 source "https://rubygems.org"
-gem "logstash-core", "2.0.0.beta2"
+gem "logstash-core", "2.0.0.beta3"
 gem "file-dependencies", "0.1.6"
 gem "ci_reporter_rspec", "1.0.0", :group => :development
 gem "simplecov", :group => :development
@@ -59,6 +59,7 @@ gem "logstash-filter-urldecode"
 gem "logstash-filter-useragent"
 gem "logstash-filter-uuid"
 gem "logstash-filter-xml"
+gem "logstash-input-beats"
 gem "logstash-input-couchdb_changes"
 gem "logstash-input-elasticsearch"
 gem "logstash-input-eventlog"

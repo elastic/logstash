@@ -153,14 +153,14 @@ GEM
     logstash-codec-rubydebug (2.0.3)
       awesome_print
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
-    logstash-core (2.0.0.beta2-java)
+    logstash-core (2.0.0.beta3-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       concurrent-ruby (~> 0.9.1)
       filesize (= 0.0.4)
       gems (~> 0.8.3)
       i18n (= 0.6.9)
-      jrjackson (~> 0.3.5)
+      jrjackson (~> 0.3.6)
       jruby-openssl (>= 0.9.11)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
@@ -245,6 +245,11 @@ GEM
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
       nokogiri
       xml-simple
+    logstash-input-beats (0.9)
+      concurrent-ruby
+      jls-lumberjack (>= 0.0.26)
+      logstash-codec-plain
+      logstash-core (>= 1.5.4, < 3.0.0)
     logstash-input-couchdb_changes (2.0.2)
       json
       logstash-codec-plain
@@ -637,7 +642,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 2.0.0.beta2)
+  logstash-core (= 2.0.0.beta3)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
@@ -663,6 +668,7 @@ DEPENDENCIES
   logstash-filter-useragent
   logstash-filter-uuid
   logstash-filter-xml
+  logstash-input-beats
   logstash-input-couchdb_changes
   logstash-input-elasticsearch
   logstash-input-eventlog
