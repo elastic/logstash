@@ -1,8 +1,9 @@
 ## 2.0.0-beta3 (October 19, 2015)
 ### general
  - Fixed bug in JrJackson v0.3.5 when handing shared strings. This manifested into issues when 
-   JrJackson was used in json codec and ES output. (#4048, #4055)
-
+   JrJackson was used in json codec and ES output. (#4048, #4055
+ - Added beats input in the default plugins list
+  
 ## output
  - Fixed memory leak in http output with usage of manticore library (#24)    
 
