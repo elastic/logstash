@@ -43,8 +43,8 @@ namespace "test" do
     test_files = LogStash::PluginManager.find_plugins_gem_specs.map do |spec|
       unless plugins_to_exclude.include? Pathname.new(spec.gem_dir).basename
         Rake::FileList[File.join(spec.gem_dir, "spec/{input,filter,codec,output}s/*_spec.rb")]
+        print Pathname.new(spec.gem_dir).basename
       end
-      print Pathname.new(spec.gem_dir).basename
     end.flatten
 
     # "--format=documentation"
