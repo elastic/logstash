@@ -75,6 +75,7 @@ module LogStash
       logstash-input-xmpp
       logstash-input-zeromq
       logstash-input-kafka
+      logstash-input-beats
       logstash-output-cloudwatch
       logstash-output-csv
       logstash-output-elasticsearch
