@@ -18,6 +18,7 @@ Be sure to specify the correct value for the `--version` option during installat
 * For Elasticsearch versions 2.0 and after, use the command 
 `bin/plugin install --version 2.0.0.beta5 logstash-output-elasticsearch_java`
 
+[float]
 ==== Configuration Changes
 
 The Elasticsearch output plugin configuration has the following changes:
