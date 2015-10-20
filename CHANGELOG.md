@@ -1,3 +1,41 @@
+## 2.0.0-beta3 (October 19, 2015)
+### general
+ - Fixed bug in JrJackson v0.3.5 when handing shared strings. This manifested into issues when 
+   JrJackson was used in json codec and ES output. (#4048, #4055
+ - Added beats input in the default plugins list
+  
+## output
+ - Fixed memory leak in http output with usage of manticore library (#24)    
+
+## 2.0.0-beta2 (October 14, 2015)
+### general
+ - Better shutdown handling in Logstash core and its plugins. Previously, the shutdown
+   handling was through an injected exception which made it non-deterministic. The change
+   introduces cleaner APIs in the core to signal a shutdown event which can be used by
+   the plugins (#3210)
+ - Upgrade to JrJackson version 0.3.5 which fixes numerous bugs and also provides performance
+   boost for JSON handling (#3702)
+ - Better defaults: Out of the box, the default value of the filter_workers (-w) setting will be set
+   to half of the CPU cores of the machine. Increasing the workers provides parallelism in filter
+   execution which is crucial when doing heavier processing like complex grok patterns or the useragent
+   filter. You can still override the default by passing `-w` flag when starting Logstash (#3870)
+ - Improved default security configuration for SSL/TLS. Default is now TLS1.2 (#3955)
+ - Added obsolete setting which will cause a configuration error if a config marked obsolete
+   is used. The purpose of :obsolete is to help inform users when a setting has been completely removed.
+   The lifecycle of a plugin setting is now 4 phases: available, deprecated, obsolete, deleted. (#3977)
+
+### input
+ - Obsolete config settings (which were already deprecated): `debug`, `format`, `charset`, `message_format`.
+   Logstash will not start if you use these settings.
+
+### output
+ - Obsolete config settings (which were already deprecated): `type`, `tags`, `exclude_tags`.
+   Logstash will not start if you use these settings.
+
+### filter
+ - Obsolete config settings (which were already deprecated): `type`, `tags`, `exclude_tags`.
+   Logstash will not start if you use these settings.
+
 ## 2.0.0-beta1 (September 15, 2015)
 ### output
   - Elasticsearch: 

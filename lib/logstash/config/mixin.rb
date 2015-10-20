@@ -110,6 +110,16 @@ module LogStash::Config::Mixin
         I18n.t("logstash.agent.configuration.invalid_plugin_settings")
     end
 
+    # We remove any config options marked as obsolete,
+    # no code should be associated to them and their values should not bleed
+    # to the plugin context.
+    #
+    # This need to be done after fetching the options from the parents classed
+    params.reject! do |name, value|
+      opts = self.class.get_config[name]
+      opts.include?(:obsolete)
+    end
+
     # set instance variables like '@foo'  for each config value given.
     params.each do |key, value|
       next if key[0, 1] == "@"

@@ -26,31 +26,16 @@ class LogStash::Inputs::Base < LogStash::Plugin
   # when sent to another Logstash server.
   config :type, :validate => :string
 
-  config :debug, :validate => :boolean, :default => false, :deprecated => "This setting no longer has any effect. In past releases, it existed, but almost no plugin made use of it."
+  config :debug, :validate => :boolean, :default => false, :obsolete => "This setting no longer has any effect. In past releases, it existed, but almost no plugin made use of it."
 
-  # The format of input data (plain, json, json_event)
-  config :format, :validate => ["plain", "json", "json_event", "msgpack_event"], :deprecated => "You should use the newer 'codec' setting instead."
+  config :format, :validate => ["plain", "json", "json_event", "msgpack_event"], :obsolete => "You should use the newer 'codec' setting instead."
+
+  config :charset, :obsolete => "Use the codec setting instead. For example: input { %PLUGIN% { codec => plain { charset => \"UTF-8\" } }"
+
+  config :message_format, :validate => :string, :obsolete => "Setting is no longer valid."
 
   # The codec used for input data. Input codecs are a convenient method for decoding your data before it enters the input, without needing a separate filter in your Logstash pipeline.
   config :codec, :validate => :codec, :default => "plain"
-
-  # The character encoding used in this input. Examples include `UTF-8`
-  # and `cp1252`
-  #
-  # This setting is useful if your log files are in `Latin-1` (aka `cp1252`)
-  # or in another character set other than `UTF-8`.
-  #
-  # This only affects `plain` format logs since json is `UTF-8` already.
-  config :charset, :deprecated => "Use the codec setting instead. For example: input { %PLUGIN% { codec => plain { charset => \"UTF-8\" } }"
-
-  # If format is `json`, an event `sprintf` string to build what
-  # the display `@message` should be given (defaults to the raw JSON).
-  # `sprintf` format strings look like `%{fieldname}`
-  #
-  # If format is `json_event`, ALL fields except for `@type`
-  # are expected to be present. Not receiving all fields
-  # will cause unexpected results.
-  config :message_format, :validate => :string, :deprecated => true
 
   # Add any number of arbitrary tags to your event.
   #
@@ -70,25 +55,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
     @stop_called = Concurrent::AtomicBoolean.new(false)
     config_init(params)
     @tags ||= []
-
-    if @charset && @codec.class.get_config.include?("charset")
-      # charset is deprecated on inputs, but provide backwards compatibility
-      # by copying the charset setting into the codec.
-
-      @logger.info("Copying input's charset setting into codec", :input => self, :codec => @codec)
-      charset = @charset
-      @codec.instance_eval { @charset = charset }
-    end
-
-    # Backwards compat for the 'format' setting
-    case @format
-      when "plain"; # do nothing
-      when "json"
-        @codec = LogStash::Plugin.lookup("codec", "json").new
-      when "json_event"
-        @codec = LogStash::Plugin.lookup("codec", "oldlogstashjson").new
-    end
-
   end # def initialize
 
   public
