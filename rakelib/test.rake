@@ -50,6 +50,9 @@ namespace "test" do
       end
     end.flatten.compact
 
+	
+	print test_files
+	
     # "--format=documentation"
     exit(RSpec::Core::Runner.run(["--order", "rand", test_files]))
   end
