@@ -8,7 +8,7 @@ what you need to be aware of when migrating to this version.
 === Elasticsearch Output Default
 
 Starting with the 2.0 release of Logstash, the default Logstash output for Elasticsearch is HTTP. To use the `node` or
-`transport` protocols, download the {logstash}plugins-outputs-elasticsearch_java.html[Elasticsearch Java plugin]. The 
+`transport` protocols, download the https://www.elastic.co/guide/en/logstash/2.0/plugins-outputs-elasticsearch_java.html[Elasticsearch Java plugin]. The 
 Logstash HTTP output to Elasticsearch now supports sniffing.
 
 NOTE: The `elasticsearch_java` plugin has two versions specific to the version of the underlying Elasticsearch cluster. 
