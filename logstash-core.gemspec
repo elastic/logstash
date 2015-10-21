@@ -39,7 +39,7 @@ Gem::Specification.new do |gem|
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
-    gem.add_runtime_dependency "jrjackson", "~> 0.2.9" #(Apache 2.0 license)
+    gem.add_runtime_dependency "jrjackson", "~> 0.3.6" #(Apache 2.0 license)
   else
     gem.add_runtime_dependency "oj" #(MIT-style license)
   end
