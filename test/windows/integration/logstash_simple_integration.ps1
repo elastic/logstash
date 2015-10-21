@@ -77,7 +77,7 @@ ni "$Logstash_path\logs.txt" -it file
 sc -Path "$Logstash_path\logs.txt" -Encoding ascii -Value "{ ""ismessage"": true, ""day"": 2, ""text"": ""test message"" }"
 
 ni "$Logstash_path\$LS_CONFIG" -it file
-sc -Path "$Logstash_path\$LS_CONFIG" -Encoding ascii -Value "input { 
+$logstash_config = "input { 
 	file { 
 			path => ['$Logstash_path\logs.txt']
             start_position => 'beginning'
@@ -91,12 +91,21 @@ filter {
 }
 
 output {  
-	elasticsearch { 
-        protocol => http
+	elasticsearch { "
+
+if ( [convert]::ToDouble($LS_BRANCH) -lt 2 ) {
+    $logstash_config = $logstash_config + "
+        protocol => http"
+}
+
+$logstash_config = $logstash_config + "
         index => 'windows_test_index'
     }
     stdout { codec => rubydebug }
 }"
+
+
+sc -Path "$Logstash_path\$LS_CONFIG" -Encoding ascii -Value $logstash_config
 
 # -------------------------------------------
 
