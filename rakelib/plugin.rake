@@ -57,26 +57,40 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end
 
-  task "clean-logstash-core-gem" do
-    Dir["logstash-core*.gem"].each do |gem|
+  task "clean-local-core-gem", [:name, :path] do |task, args|
+    name = args[:name]
+    path = args[:path]
+
+    Dir[File.join(path, "#{name}*.gem")].each do |gem|
+      puts("[plugin:clean-local-core-gem] Cleaning #{gem}")
       rm(gem)
     end
 
     task.reenable # Allow this task to be run again
   end
 
-  task "build-logstash-core-gem" => [ "clean-logstash-core-gem" ] do
-    puts("[plugin:build-logstash-core-gem] Building logstash-core.gemspec")
+  task "build-local-core-gem", [:name, :path]  do |task, args|
+    name = args[:name]
+    path = args[:path]
 
-    system("gem build logstash-core.gemspec")
+    Rake::Task["plugin:clean-local-core-gem"].invoke(name, path)
+
+    puts("[plugin:build-local-core-gem] Building #{File.join(path, name)}.gemspec")
+
+    system("cd #{path}; gem build #{name}.gemspec")
 
     task.reenable # Allow this task to be run again
   end
 
-  task "install-local-logstash-core-gem" => [ "build-logstash-core-gem" ] do
-    gems = Dir["logstash-core*.gem"]
-    abort("ERROR: logstash-core gem not found") if gems.size != 1
-    puts("[plugin:install-local-logstash-core-gem] Installing #{gems.first}")
+  task "install-local-core-gem", [:name, :path] do |task, args|
+    name = args[:name]
+    path = args[:path]
+
+    Rake::Task["plugin:build-local-core-gem"].invoke(name, path)
+
+    gems = Dir[File.join(path, "#{name}*.gem")]
+    abort("ERROR: #{name} gem not found in #{path}") if gems.size != 1
+    puts("[plugin:install-local-core-gem] Installing #{gems.first}")
     install_plugins("--no-verify", gems.first)
 
     task.reenable # Allow this task to be run again
