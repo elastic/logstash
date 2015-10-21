@@ -35,6 +35,15 @@ module LogStash
     def logstash_gem_home
       ::File.join(BUNDLE_DIR, ruby_engine, gem_ruby_version)
     end
+
+    def vendor_path(path)
+      return ::File.join(LOGSTASH_HOME, "vendor", path)
+    end
+
+    def pattern_path(path)
+      return ::File.join(LOGSTASH_HOME, "patterns", path)
+    end
+
   end
 end
 
