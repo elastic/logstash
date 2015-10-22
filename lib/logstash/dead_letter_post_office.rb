@@ -16,10 +16,12 @@ class LogStash::DeadLetterPostOffice
   end
 
   def self.post(event)
-    logger.warn("dead letter received!", :event => event.to_hash)
-    event.tag("_dead_letter")
-    event.cancel
-    @destination.post(event)
+    Thread.exclusive do
+      logger.warn("dead letter received!", :event => event.to_hash)
+      event.tag("_dead_letter")
+      event.cancel
+      @destination.post(event)
+    end
   end
 
   module Destination
