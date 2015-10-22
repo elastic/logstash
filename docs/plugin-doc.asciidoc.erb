@@ -28,6 +28,7 @@ This plugin has no configuration options.
 
 <% sorted_attributes.each do |name, config| -%>
 <%
+     next if config[:obsolete]
      if name.is_a?(Regexp)
        name = "/" + name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
        is_regexp = true
