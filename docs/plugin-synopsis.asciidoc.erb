@@ -27,6 +27,7 @@ Available configuration options:
 |=======================================================================
 |Setting |Input type|Required|Default value
 <% sorted_attributes.each do |name, config|
+   next if config[:obsolete]
    next if config[:deprecated]
    if config[:validate].is_a?(Array)
      annotation = "|<<string,string>>, one of `#{config[:validate].inspect}`"

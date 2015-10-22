@@ -216,7 +216,6 @@ class LogStashConfigAsciiDocGenerator
     description = @class_description
 
     klass.get_config.each do |name, settings|
-      next if settings[:obsolete]
       @attributes[name].merge!(settings)
       default = klass.get_default(name)
       unless default.nil?
