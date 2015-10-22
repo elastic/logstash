@@ -59,10 +59,7 @@ image::static/images/deploy_3.png[]
 ==== Scaling to a Larger Elasticsearch Cluster
 
 Typically, Logstash does not communicate with a single Elasticsearch node, but with a cluster that comprises several 
-nodes. Logstash can use any of the protocols that Elasticsearch supports to move data into the cluster: 
-{guide}_transport_client_versus_node_client.html[HTTP, transport, or node]. You can configure Logstash for each of 
-these communication modes by changing the value of the 
-{logstash}plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-protocol[`protocol`] setting.
+nodes. By default, Logstash uses the HTTP protocol to move data into the cluster.
 
 You can use the Elasticsearch HTTP REST APIs to index data into the Elasticsearch cluster. These APIs represent the 
 indexed data in JSON. Using the REST APIs does not require the Java client classes or any additional JAR 
@@ -71,7 +68,7 @@ that use the HTTP REST APIs with the {shield}[Shield] plugin, which supports SSL
 
 When you use the HTTP protocol, you can configure the Logstash Elasticsearch output plugin to automatically 
 load-balance indexing requests across a 
-{logstash}plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-host[specified set of hosts] in the 
+{logstash}plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-hosts[specified set of hosts] in the 
 Elasticsearch cluster. Specifying multiple Elasticsearch nodes also provides high availability for the Elasticsearch 
 cluster by routing traffic to active Elasticsearch nodes.
 
