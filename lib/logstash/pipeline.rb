@@ -336,14 +336,14 @@ module LogStash; class Pipeline
   end
 
   def dump
-    dump = []
+    event_dump = []
     [@input_to_filter].each do |queue|
       until queue.empty? do
         event = queue.pop(true) rescue ThreadError # non-block pop
         next unless event.is_a?(LogStash::Event)
-        dump << event
+        event_dump << event
       end
     end
-    dump
+    event_dump
   end
 end; end

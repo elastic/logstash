@@ -61,7 +61,7 @@ class LogStash::Plugin
 
   def dead_letter(event)
     return unless event.is_a?(LogStash::Event)
-    LogStash::DeadLetterPostOffice << event
+    LogStash::DeadLetterPostOffice.post(event)
   end
 
   # Look up a plugin by type and name.

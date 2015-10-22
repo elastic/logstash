@@ -15,22 +15,18 @@ class LogStash::DeadLetterPostOffice
     @destination = destination
   end
 
-  def self.<<(events)
-    events = [events] unless events.is_a?(Array)
-
-    events.each do |event|
-      logger.warn("dead letter received!", :event => event.to_hash)
-      event.tag("_dead_letter")
-      event.cancel
-      @destination << event
-    end
+  def self.post(event)
+    logger.warn("dead letter received!", :event => event.to_hash)
+    event.tag("_dead_letter")
+    event.cancel
+    @destination.post(event)
   end
 
   module Destination
 
     class Base
       def location; end
-      def <<(event); end
+      def post(event); end
     end
 
     class File < Base
@@ -47,7 +43,7 @@ class LogStash::DeadLetterPostOffice
         @path
       end
 
-      def <<(event)
+      def post(event)
         @file.puts(event.to_json)
       end
     end

@@ -34,7 +34,7 @@ module LogStash
           report(REPORTS.last)
           if self.class.force_shutdown? && stalled?
             logger.fatal("Stalled pipeline detected. Forcefully quitting logstash..")
-            DeadLetterPostOffice << @pipeline.dump
+            @pipeline.dump.each {|e| DeadLetterPostOffice.post(e) }
             @pipeline.force_exit()
             break
           end

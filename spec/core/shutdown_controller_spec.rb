@@ -10,8 +10,8 @@ describe LogStash::ShutdownController do
 
   before :each do
     LogStash::ShutdownController::REPORTS.clear
-    allow(LogStash::DeadLetterPostOffice).to receive(:<<)
-    allow(pipeline).to receive(:dump)
+    allow(LogStash::DeadLetterPostOffice).to receive(:post)
+    allow(pipeline).to receive(:dump) { [] }
     allow(pipeline).to receive(:force_exit)
     allow(pipeline).to receive(:inflight_count) do
       subject.stop! if return_values.empty?
@@ -62,7 +62,9 @@ describe LogStash::ShutdownController do
       end
 
       it "should post pipeline contents to DeadLetterPostOffice" do
-        expect(LogStash::DeadLetterPostOffice).to receive(:<<).once
+        stalled_events = [LogStash::Event.new("message" => "test")]*2
+        allow(pipeline).to receive(:dump) { stalled_events }
+        expect(LogStash::DeadLetterPostOffice).to receive(:post).twice
         subject.start(0).join
       end
     end
