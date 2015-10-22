@@ -68,7 +68,7 @@ that use the HTTP REST APIs with the {shield}[Shield] plugin, which supports SSL
 
 When you use the HTTP protocol, you can configure the Logstash Elasticsearch output plugin to automatically 
 load-balance indexing requests across a 
-{logstash}plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-hosts[specified set of hosts] in the 
+{logstash}plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-host[specified set of hosts] in the 
 Elasticsearch cluster. Specifying multiple Elasticsearch nodes also provides high availability for the Elasticsearch 
 cluster by routing traffic to active Elasticsearch nodes.
 
