@@ -11,7 +11,7 @@ class LogStash::DeadLetterPostOffice
   end
 
   def self.destination=(destination)
-    logger.info("Dead letter events will be sent to \"#{destination.location}\".")
+    logger.info("Setting dead letter path", :path => destination.location)
     @destination = destination
   end
 
