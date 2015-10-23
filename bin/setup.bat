@@ -18,15 +18,11 @@ REM setup_java()
 if not defined JAVA_HOME goto missing_java_home
 REM ***** JAVA options *****
 
-if "%LS_MIN_MEM%" == "" (
-set LS_MIN_MEM=256m
+if "%LS_HEAP_SIZE%" == "" (
+set LS_HEAP_SIZE=1g
 )
 
-if "%LS_MAX_MEM%" == "" (
-set LS_MAX_MEM=1g
-)
-
-set JAVA_OPTS=%JAVA_OPTS% -Xms%LS_MIN_MEM% -Xmx%LS_MAX_MEM%
+set JAVA_OPTS=%JAVA_OPTS% -Xmx%LS_HEAP_SIZE%
 
 REM Enable aggressive optimizations in the JVM
 REM    - Disabled by default as it might cause the JVM to crash

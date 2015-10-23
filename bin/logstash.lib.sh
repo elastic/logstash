@@ -3,7 +3,7 @@ LOGSTASH_HOME=$(cd `dirname $0`/..; pwd)
 export LOGSTASH_HOME
 
 # Defaults you can override with environment variables
-LS_HEAP_SIZE="${LS_HEAP_SIZE:=500m}"
+LS_HEAP_SIZE="${LS_HEAP_SIZE:=1g}"
 
 setup_java() {
   if [ -z "$JAVACMD" ] ; then
