@@ -2,6 +2,9 @@
 
 $: << File.join(File.dirname(__FILE__), "lib")
 
+# TODO: (colin) temporary fix to access logstash-core
+$: << File.join(File.dirname(__FILE__), "logstash-core/lib")
+
 task "default" => "help"
 
 task "help" do
