@@ -16,7 +16,7 @@ Be sure to specify the correct value for the `--version` option during installat
 * For Elasticsearch versions before 2.0, use the command 
 `bin/plugin install --version 1.5.x logstash-output-elasticsearch_java`
 * For Elasticsearch versions 2.0 and after, use the command 
-`bin/plugin install --version 2.0.0.beta5 logstash-output-elasticsearch_java`
+`bin/plugin install --version 2.0.0 logstash-output-elasticsearch_java`
 
 [float]
 ==== Configuration Changes
@@ -46,6 +46,11 @@ Please compare the documentation pages for the
 https://www.elastic.co/guide/en/logstash/1.5/plugins-outputs-kafka.html[Logstash 1.5] and
 https://www.elastic.co/guide/en/logstash/2.0/plugins-outputs-kafka.html[Logstash 2.0] versions of the Kafka output plugin 
 and update your configuration files accordingly.
+
+[float]
+=== Metrics Filter Changes
+Prior implementations of the metrics filter plugin used dotted field names. Elasticsearch does not allow field names to have dots, beginning with version 2.0, so a change was made to use sub-fields instead of dots in this plugin. Please note that these changes make version 3.0.0 of the metrics filter plugin incompatible with previous releases.
+
 
 [float]
 === Filter Worker Default Change
