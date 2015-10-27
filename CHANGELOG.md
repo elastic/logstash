@@ -1,7 +1,10 @@
+## 2.0.0 (Oct 28, 2015)
+No additional changes from RC1 release. Please see below for changes in individual
+pre-releases.
+
 ## 2.0.0-rc1 (October 22, 2015)
 ### filter
  - Fixed metrics filter to work with ES 2.0 changes which does not allow dots in field names
-
 
 ## 2.0.0-beta3 (October 19, 2015)
 ### general
