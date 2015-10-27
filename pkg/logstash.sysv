@@ -41,7 +41,7 @@ LS_PROG=/opt/logstash/bin/logstash
 [ -r /etc/default/$name ] && . /etc/default/$name
 [ -r /etc/sysconfig/$name ] && . /etc/sysconfig/$name
 
-program=$LS_PROG
+program="$LS_PROG"
 args="agent -f ${LS_CONF_DIR} -l ${LS_LOG_FILE} ${LS_OPTS}"
 
 start() {
