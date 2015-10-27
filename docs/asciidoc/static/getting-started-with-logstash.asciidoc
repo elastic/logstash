@@ -38,7 +38,7 @@ install Logstash.
 To test your Logstash installation, run the most basic Logstash pipeline:
 
 [source,shell]
-cd logstash-1.5.2
+cd logstash-{logstash_version}
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 
 The `-e` flag enables you to specify a configuration directly from the command line. Specifying configurations at the 

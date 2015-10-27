@@ -135,14 +135,12 @@ Elasticsearch cluster. Edit the `first-pipeline.conf` file to add the following 
 [source,json]
 output {
     elasticsearch {
-        protocol => "http"
     }
 }
 
-With this configuration, Logstash uses multicast discovery to connect to Elasticsearch. 
-
-NOTE: Multicast discovery is acceptable for development work, but unsuited for production environments. For the 
-purposes of this example, however, the default behavior is sufficient.
+With this configuration, Logstash uses http protocol to connect to Elasticsearch. The above example assumes Logstash
+and Elasticsearch to be running on the same instance. You can specify a remote Elasticsearch instance using `hosts`
+configuration like `hosts => "es-machine:9092"`. 
 
 [float]
 [[configuring-geoip-plugin]]
@@ -188,9 +186,7 @@ filter {
     }
 }
 output {
-    elasticsearch {
-        protocol => "http"
-    }
+    elasticsearch {}
     stdout {}
 }
 
@@ -430,14 +426,14 @@ To configure your Logstash instance to write to multiple Elasticsearch nodes, ed
 --------------------------------------------------------------------------------
 output {
     elasticsearch {
-        protocol => "http"
-        host => ["IP Address 1", "IP Address 2", "IP Address 3"]
+        hosts => ["IP Address 1:port1", "IP Address 2:port2", "IP Address 3"]
     }
 }
 --------------------------------------------------------------------------------
 
-Use the IP addresses of three non-master nodes in your Elasticsearch cluster in the host line. When the `host` 
-parameter lists multiple IP addresses, Logstash load-balances requests across the list of addresses.
+Use the IP addresses of three non-master nodes in your Elasticsearch cluster in the host line. When the `hosts` 
+parameter lists multiple IP addresses, Logstash load-balances requests across the list of addresses. Also note that
+default port for Elasticsearch is `9200` and can be omitted in the configuration above.
 
 [float]
 [[testing-second-pipeline]]
@@ -463,8 +459,7 @@ input {
 }
 output {
     elasticsearch {
-        protocol => "http"
-        host => ["IP Address 1", "IP Address 2", "IP Address 3"]
+        hosts => ["IP Address 1:port1", "IP Address 2:port2", "IP Address 3"]
     }
     file {
         path => /path/to/target/file
