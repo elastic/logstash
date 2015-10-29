@@ -35,12 +35,6 @@ module LogStash::Config::Mixin
   attr_accessor :config
   attr_accessor :original_params
 
-  CONFIGSORT = {
-    Symbol => 0,
-    String => 0,
-    Regexp => 100,
-  }
-
   PLUGIN_VERSION_1_0_0 = LogStash::Util::PluginVersion.new(1, 0, 0)
   PLUGIN_VERSION_0_9_0 = LogStash::Util::PluginVersion.new(0, 9, 0)
 
