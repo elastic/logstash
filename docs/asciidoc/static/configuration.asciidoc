@@ -11,7 +11,7 @@ Let's step through creating a simple config file and using it to run Logstash. C
 ----------------------------------
 input { stdin { } }
 output {
-  elasticsearch { host => localhost }
+  elasticsearch { host => localhost port => 9200 protocol => http }
   stdout { codec => rubydebug }
 }
 ----------------------------------
