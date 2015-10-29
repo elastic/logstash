@@ -26,7 +26,7 @@ module LogStash
     class Main < Clamp::Command
       subcommand "install", "Install a plugin", LogStash::PluginManager::Install
       subcommand "uninstall", "Uninstall a plugin", LogStash::PluginManager::Uninstall
-      subcommand "update", "Install a plugin", LogStash::PluginManager::Update
+      subcommand "update", "Update a plugin", LogStash::PluginManager::Update
       subcommand "list", "List all installed plugins", LogStash::PluginManager::List
     end
   end
