@@ -8,7 +8,9 @@ end
 
 namespace "compile" do
   desc "Compile the config grammar"
-  task "grammar" => "lib/logstash/config/grammar.rb"
+
+  # TODO: (colin) temporary fix for logstash-core
+  task "grammar" => "logstash-core/lib/logstash/config/grammar.rb"
 
   desc "Build everything"
   task "all" => "grammar"
