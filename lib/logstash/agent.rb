@@ -261,7 +261,8 @@ class LogStash::Agent < Clamp::Command
       @logger.unsubscribe(@logger_subscription) if @logger_subscription
       @logger_subscription = @logger.subscribe(@log_fd)
     else
-      @logger.subscribe(STDOUT)
+      @logger.unsubscribe(@logger_subscription) if @logger_subscription
+      @logger_subscription = @logger.subscribe(STDOUT) 
     end
 
     # TODO(sissel): redirect stdout/stderr to the log as well
