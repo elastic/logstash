@@ -22,7 +22,7 @@ GEM
     bindata (2.1.0)
     buftok (0.2.0)
     builder (3.2.2)
-    cabin (0.7.1)
+    cabin (0.7.2)
     childprocess (0.5.7)
       ffi (~> 1.0, >= 1.0.11)
     ci_reporter (2.0.0)
@@ -463,7 +463,7 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
       redis
       stud
-    logstash-output-s3 (1.0.0)
+    logstash-output-s3 (1.0.1)
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-mixin-aws
       stud (~> 0.0.18)
