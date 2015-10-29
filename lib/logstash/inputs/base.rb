@@ -90,11 +90,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
   end
 
   protected
-  def to_event(raw, source)
-    raise LogStash::ThisMethodWasRemoved("LogStash::Inputs::Base#to_event - you should use codecs now instead of to_event. Not sure what this means? Get help on https://discuss.elastic.co/c/logstash")
-  end # def to_event
-
-  protected
   def decorate(event)
     # Only set 'type' if not already set. This is backwards-compatible behavior
     event["type"] = @type if @type && !event.include?("type")
