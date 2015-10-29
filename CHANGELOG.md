@@ -1,3 +1,18 @@
+## 1.5.5 (Oct 29, 2015)
+### general
+ - Update to JRuby 1.7.22
+ - Improved default security configuration for SSL/TLS. Default is now TLS1.2 (#3955)
+ - Fixed bug in JrJackson v0.3.5 when handing shared strings. This manifested into issues when 
+   JrJackson was used in json codec and ES output. (#4048, #4055
+ - Added beats input in the default plugins list
+
+ ## output
+ - HTTP: Fixed memory leak in http output with usage of manticore library (#24) 
+
+## 2.0.0 (Oct 28, 2015)
+No additional changes from RC1 release. Please see below for changes in individual
+pre-releases.
+
 ## 2.0.0-rc1 (October 22, 2015)
 ### filter
  - Fixed metrics filter to work with ES 2.0 changes which does not allow dots in field names
