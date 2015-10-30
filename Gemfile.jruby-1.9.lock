@@ -463,7 +463,7 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
       redis
       stud
-    logstash-output-s3 (1.0.1)
+    logstash-output-s3 (1.0.2)
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-mixin-aws
       stud (~> 0.0.18)
@@ -476,7 +476,7 @@ GEM
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-mixin-aws
       stud
-    logstash-output-statsd (1.1.0)
+    logstash-output-statsd (1.1.1)
       logstash-core (>= 1.4.0, < 2.0.0)
       logstash-input-generator
       statsd-ruby (= 1.2.0)
@@ -518,7 +518,7 @@ GEM
     multipart-post (2.0.0)
     murmurhash3 (0.1.6-java)
     naught (1.1.0)
-    netrc (0.10.3)
+    netrc (0.11.0)
     nokogiri (1.6.6.2-java)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
