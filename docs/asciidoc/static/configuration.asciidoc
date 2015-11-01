@@ -11,7 +11,7 @@ Let's step through creating a simple config file and using it to run Logstash. C
 ----------------------------------
 input { stdin { } }
 output {
-  elasticsearch { host => localhost }
+  elasticsearch { hosts => ["localhost:9200"] }
   stdout { codec => rubydebug }
 }
 ----------------------------------
@@ -592,7 +592,7 @@ output {
   elasticsearch {
     action => "%{[@metadata][action]}"
     document_id => "%{[@metadata][_id]}"
-    host => "example.com"
+    hosts => ["example.com"]
     index => "index_name"
     protocol => "http"
   }
@@ -622,7 +622,7 @@ filter {
 }
 
 output {
-  elasticsearch { host => localhost }
+  elasticsearch { hosts => ["localhost:9200"] }
   stdout { codec => rubydebug }
 }
 ----------------------------------
@@ -694,7 +694,7 @@ filter {
 
 output {
   elasticsearch {
-    host => localhost
+    hosts => ["localhost:9200"]
   }
   stdout { codec => rubydebug }
 }
@@ -763,7 +763,7 @@ filter {
 }
 
 output {
-  elasticsearch { host => localhost }
+  elasticsearch { hosts => ["localhost:9200"] }
   stdout { codec => rubydebug }
 }
 ----------------------------------
@@ -830,7 +830,7 @@ filter {
 }
 
 output {
-  elasticsearch { host => localhost }
+  elasticsearch { hosts => ["localhost:9200"] }
   stdout { codec => rubydebug }
 }
 ----------------------------------
