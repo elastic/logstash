@@ -1,12 +1,14 @@
 # encoding: utf-8
-require "concurrent/array"
+require "thread"
+
 module LogStash module Instrument
   class Collector
+    # pub/sub async, we batch event to the reporters
     def initialize
-      events = Concurrent::Array.new
+      events = []
     end
     
-    def insert(metric)
+    def push(metric)
       events << metric
     end
   end
