@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/instrument/metric"
 require "logstash/instrument/collector"
+require "spec_helper"
 
 describe LogStash::Instrument::Metric do
   let(:collector) { [] }
