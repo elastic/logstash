@@ -2,38 +2,42 @@
 module LogStash module Instrument
   class MetricNoKeyProvided < Exception; end
 
+  # TODO: Investigate what could be deferred here,
+  # is the Array#join slow? pushing could be done in a future?
   class Metric
-    attr_reader :base_key, :collector
+    attr_reader :collector, :base_key
 
-    def initialize(base_key = "", collector)
-      @base_key = base_key
+    def initialize(collector, base_key = "")
       @collector = collector
+      @base_key = base_key
     end
 
+    # wrap this into a future?
     def increment(key, value = 1)
-      collector.insert([:counter_increment, Time.now, merge_keys(key), value])
+      collector.push([:counter_increment, Time.now, merge_keys(key), value])
     end
 
     def decrement(key, value = 1)
-      collector.insert([:counter_decrement, Time.now, merge_keys(key), value])
+      collector.push([:counter_decrement, Time.now, merge_keys(key), value])
     end
 
+    # might be worth to create a block interface for time based gauge
     def gauge(key, value)
-      collector.insert([:gauge, Time.now, merge_keys(key), value])
+      collector.push([:gauge, Time.now, merge_keys(key), value])
     end
 
-    # TODO: Create a NOOP merge if the base key is an empty string
+    def namespace(key)
+      Metric.new(collector, merge_keys(key))
+    end
+
+    private
     def merge_keys(key)
       valid_key!(key)
-      [@base_key, key).join("-")
+      [@base_key, key].join("-")
     end
 
     def valid_key!(key)
       raise MetricNoKeyProvided if key.nil? || key == ""
     end
-
-    def namespace(key)
-      return Metric.new(merge_keys(key), collector)
-    end
   end
-end
+end; end
