@@ -5,6 +5,7 @@ require_relative 'coverage_helper'
 CoverageHelper.eager_load if ENV['COVERAGE']
 
 require "logstash/devutils/rspec/spec_helper"
+require_relative "./support/matchers"
 
 def installed_plugins
   Gem::Specification.find_all.select { |spec| spec.metadata["logstash_plugin"] }.map { |plugin| plugin.name }
