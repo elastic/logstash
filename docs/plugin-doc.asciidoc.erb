@@ -55,6 +55,9 @@ This plugin has no configuration options.
 <% elsif config[:validate].is_a?(Array) -%>
   * Value can be any of: `<%= config[:validate].join('`, `') %>`
 <% end -%>
+<% if config[:allow_dynamic] -%>
+  * This configuration item allows usage of dynamic value with <<_sprintf_format,sprintf format>>
+<% end -%>
 <% if config.include?(:default) -%>
   * Default value is `<%= config[:default].inspect %>`
 <% else -%>

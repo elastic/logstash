@@ -308,7 +308,7 @@ module LogStash::Config::Mixin
                       || (config_key.is_a?(String) && key == config_key)
           config_val = @config[config_key][:validate]
           #puts "  Key matches."
-          success, result = validate_value(value, config_val)
+          success, result = validate_value(value, config_val, @config[config_key][:allow_dynamic])
           if success 
             # Accept coerced value if success
             # Used for converting values in the config to proper objects.
@@ -340,7 +340,7 @@ module LogStash::Config::Mixin
       return nil
     end
 
-    def validate_value(value, validator)
+    def validate_value(value, validator, allow_dynamic)
       # Validator comes from the 'config' pieces of plugins.
       # They look like this
       #   config :mykey => lambda do |value| ... end
@@ -403,6 +403,11 @@ module LogStash::Config::Mixin
               return false, "Expected string, got #{value.inspect}"
             end
             result = value.first
+            #TODO It would be better to include the nil case by doing if !allow_dynamic
+            #but this could break existing config, so let's be prudent
+            if allow_dynamic == false && result =~ /%{.*}/
+              return false, "This setting does not support dynamic value, got #{result.inspect}"
+            end
           when :number
             if value.size > 1 # only one value wanted
               return false, "Expected number, got #{value.inspect} (type #{value.class})"

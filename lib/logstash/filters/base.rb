@@ -18,8 +18,6 @@ class LogStash::Filters::Base < LogStash::Plugin
   config :exclude_tags, :validate => :array, :default => [], :obsolete => "You can achieve similar behavior with the new conditionals, like: `if (\"sometag\" not in [tags]) { %PLUGIN% { ... } }`"
 
   # If this filter is successful, add arbitrary tags to the event.
-  # Tags can be dynamic and include parts of the event using the `%{field}`
-  # syntax.
   #
   # Example:
   # [source,ruby]
@@ -38,11 +36,9 @@ class LogStash::Filters::Base < LogStash::Plugin
   #
   # If the event has field `"somefield" == "hello"` this filter, on success,
   # would add a tag `foo_hello` (and the second example would of course add a `taggedy_tag` tag).
-  config :add_tag, :validate => :array, :default => []
+  config :add_tag, :validate => :array, :allow_dynamic => true, :default => []
 
   # If this filter is successful, remove arbitrary tags from the event.
-  # Tags can be dynamic and include parts of the event using the `%{field}`
-  # syntax.
   #
   # Example:
   # [source,ruby]
@@ -62,10 +58,9 @@ class LogStash::Filters::Base < LogStash::Plugin
   # If the event has field `"somefield" == "hello"` this filter, on success,
   # would remove the tag `foo_hello` if it is present. The second example
   # would remove a sad, unwanted tag as well.
-  config :remove_tag, :validate => :array, :default => []
+  config :remove_tag, :validate => :array, :allow_dynamic => true, :default => []
 
   # If this filter is successful, add any arbitrary fields to this event.
-  # Field names can be dynamic and include parts of the event using the `%{field}`.
   #
   # Example:
   # [source,ruby]
@@ -89,10 +84,10 @@ class LogStash::Filters::Base < LogStash::Plugin
   # would add field `foo_hello` if it is present, with the
   # value above and the `%{host}` piece replaced with that value from the
   # event. The second example would also add a hardcoded field.
-  config :add_field, :validate => :hash, :default => {}
+  config :add_field, :validate => :hash, :allow_dynamic => true, :default => {}
 
   # If this filter is successful, remove arbitrary fields from this event.
-  # Fields names can be dynamic and include parts of the event using the %{field}
+  #
   # Example:
   # [source,ruby]
   #     filter {

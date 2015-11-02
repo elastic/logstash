@@ -21,7 +21,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   # The number of workers to use for this output.
   # Note that this setting may not be useful for all outputs.
-  config :workers, :validate => :number, :default => 1
+  config :workers, :validate => :number, :allow_dynamic => false, :default => 1
 
   attr_reader :worker_plugins, :worker_queue
 
