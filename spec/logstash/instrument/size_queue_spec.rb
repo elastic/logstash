@@ -9,7 +9,8 @@ describe LogStash::Instrument::SizeQueue do
   let(:event) { LogStash::Event.new }
   let(:collector) { [] }
   let(:queue) { Queue.new }
-  let(:metric) { LogStash::Instrument::Metric.new(collector, "size_queue") }
+  let(:base_key) { :size_queue }
+  let(:metric) { LogStash::Instrument::Metric.new(collector, base_key) }
 
   subject { LogStash::Instrument::SizeQueue.new(queue, metric) }
 
@@ -19,7 +20,7 @@ describe LogStash::Instrument::SizeQueue do
       [:push, :<<, :enq].each do |method|
         it "collect metric when calling #{method}" do
           subject.send(method, event)
-          expect(collector.pop).to be_a_metric_event(:counter_increment, "size_queue-in", 1)
+          expect(collector.pop).to be_a_metric_event(:counter_increment, [:size_queue, :in], 1)
         end
       end
     end
@@ -30,7 +31,7 @@ describe LogStash::Instrument::SizeQueue do
       [:pop, :shift, :deq].each do |method|
         it "collect metric when calling #{method}" do
           subject.send(method)
-          expect(collector.pop).to be_a_metric_event(:counter_increment, "size_queue-out", 1)
+          expect(collector.pop).to be_a_metric_event(:counter_increment, [:size_queue, :out], 1)
         end
       end
     end
