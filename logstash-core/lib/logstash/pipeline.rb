@@ -71,6 +71,10 @@ module LogStash; class Pipeline
     settings.each {|setting, value| configure(setting, value) }
   end # def initialize
 
+  def create_sizedqueue(name)
+    SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE)
+  end
+
   def ready?
     @ready.value
   end
