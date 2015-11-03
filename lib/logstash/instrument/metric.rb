@@ -7,7 +7,7 @@ module LogStash module Instrument
   class Metric
     attr_reader :collector, :base_key
 
-    def initialize(collector, base_key = "")
+    def initialize(collector, base_key = nil)
       @collector = collector
       @base_key = base_key
     end
@@ -33,7 +33,7 @@ module LogStash module Instrument
     private
     def merge_keys(key)
       valid_key!(key)
-      [@base_key, key].join("-")
+      [@base_key, key].compact
     end
 
     def valid_key!(key)
