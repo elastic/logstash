@@ -76,6 +76,10 @@ module LogStash; class Pipeline
     start_flusher
   end # def initialize
 
+  def create_sizedqueue(name)
+    SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE)
+  end
+
   def ready?
     @ready.value
   end
