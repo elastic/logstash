@@ -15,7 +15,7 @@ module LogStash module Instrument
 
     def push(item)
       @size_queue.push(item)
-      metric.increment("in")
+      metric.increment(:in)
     end
 
     alias_method :<<, :push
@@ -23,7 +23,7 @@ module LogStash module Instrument
 
     def pop(non_block = false)
       @size_queue.pop(non_block)
-      metric.increment("out")
+      metric.increment(:out)
     end
 
     alias_method :deq, :pop
