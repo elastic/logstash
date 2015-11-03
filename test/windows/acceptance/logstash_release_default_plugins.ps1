@@ -11,8 +11,6 @@
 
 $ruby = $env:RUBY_HOME  + "\jruby.exe"
 
-$env:SPEC_OPTS="--format documentation"
-
 sleep 30
 
 cd rakelib

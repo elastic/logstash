@@ -23,16 +23,16 @@ md -Path $Download_path
 ## Logstash variables
 
 $LS_CONFIG="test.conf"
-$LS_BRANCH="2.0"
+$LS_BRANCH=$env:LS_BRANCH
 $Logstash_path = "$Main_path\logstash"
 $Logstash_zip_file = "$Download_path\logstash.zip"
-$Logstas_URL = "https://s3-eu-west-1.amazonaws.com/build-eu.elasticsearch.org/logstash/$LS_BRANCH/nightly/JDK7/logstash-latest-SNAPSHOT.zip"
+$Logstash_URL = "https://s3-eu-west-1.amazonaws.com/build-eu.elasticsearch.org/logstash/$LS_BRANCH/nightly/JDK7/logstash-latest-SNAPSHOT.zip"
 
 ## ----------------------------------------
 
 ## Elasticsearch variables
 
-$ES_Version = "1.7.2"
+$ES_Version = $env:ES_VERSION
 $ES_path = "$Main_path\elasticsearch"
 $ES_zip_file = "$Main_path\download\elasticsearch.zip"
 $ES_URL = "https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-$ES_Version.zip"
@@ -42,7 +42,7 @@ $ES_URL = "https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch
 ## Download and unzip Logstash
 
 md -Path $Logstash_path
-(New-Object System.Net.WebClient).DownloadFile($Logstas_URL, $Logstash_zip_file)
+(New-Object System.Net.WebClient).DownloadFile($Logstash_URL, $Logstash_zip_file)
 [System.IO.Compression.ZipFile]::ExtractToDirectory($Logstash_zip_file, $Download_path)
 ri $Logstash_zip_file
 mv "$Download_path\log*\*" $Logstash_path
@@ -117,17 +117,17 @@ $json_response = ConvertFrom-Json $searchresponse.Content
 $hit_source = $json_response.hits.hits[0]._source
 
 If (!($hit_source.SourceName -eq "ElasticsearchSource")){
-    echo "ERROR: Message was not indexed. Test unsuccessful"
+    echo "ERROR: Message was not indexed. Wrong Source Name. Test unsuccessful. Expected 'ElasticsearchSource' Received " + $hit_source.SourceName
     exit 1
 }
 
 If (!($hit_source.EventCode -eq 1)){
-    echo "ERROR: Wrong expected value: EventCode. Test unsuccessful"
+    echo "ERROR: Wrong expected value: EventCode. Test unsuccessful. Expected 1 Received " + $hit_source.EventCode
     exit 1
 }
 
 If (!($hit_source.message -eq "Example log Entry")){
-    echo "ERROR: Wrong expected value: Message. Text Test unsuccessful"
+    echo "ERROR: Wrong expected value: Message. Text Test unsuccessful. Expected 'Example log Entry' Received " + $hit_source.message
     exit 1
 }
 

@@ -9,17 +9,17 @@
 # - Java 7 or newer
 
 $LS_CONFIG="test.conf"
-$LS_BRANCH="1.5"
+$LS_BRANCH=$env:LS_BRANCH
 $Logstash_path = "C:\logstash"
 $Logstash_Snapshot_Directory = "$Logstash_path\logstash-latest-SNAPSHOT.zip"
-$Logstas_URL = "https://s3-eu-west-1.amazonaws.com/build-eu.elasticsearch.org/logstash/$LS_BRANCH/nightly/JDK7/logstash-latest-SNAPSHOT.zip"
+$Logstash_URL = "https://s3-eu-west-1.amazonaws.com/build-eu.elasticsearch.org/logstash/$LS_BRANCH/nightly/JDK7/logstash-latest-SNAPSHOT.zip"
 
 If (Test-Path $Logstash_path){
 	ri -Recurse -Force $Logstash_path
 }
 
 md -Path $Logstash_path
-(New-Object System.Net.WebClient).DownloadFile($Logstas_URL, $Logstash_Snapshot_Directory)
+(New-Object System.Net.WebClient).DownloadFile($Logstash_URL, $Logstash_Snapshot_Directory)
 
 #Unzip file
 $Destination = "$Logstash_path\logstash_" + $LS_BRANCH
@@ -38,7 +38,7 @@ cd logstash
 ni $LS_CONFIG -it file
 sc -Path $LS_CONFIG -Encoding ascii -Value "input { 
 	tcp { 
-			port => 2000 
+			port => "+ (Get-Random -minimum 2000 -maximum 3000) +" 
 		} 
 	} 
 

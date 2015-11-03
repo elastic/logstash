@@ -23,7 +23,7 @@ md -Path $Download_path
 ## Logstash variables
 
 $LS_CONFIG="test.conf"
-$LS_BRANCH="2.0"
+$LS_BRANCH=$env:LS_BRANCH
 $Logstash_path = "$Main_path\logstash"
 $Logstash_zip_file = "$Download_path\logstash.zip"
 $Logstas_URL = "https://s3-eu-west-1.amazonaws.com/build-eu.elasticsearch.org/logstash/$LS_BRANCH/nightly/JDK7/logstash-latest-SNAPSHOT.zip"
@@ -32,7 +32,7 @@ $Logstas_URL = "https://s3-eu-west-1.amazonaws.com/build-eu.elasticsearch.org/lo
 
 ## Elasticsearch variables
 
-$ES_Version = "1.7.2"
+$ES_Version =$env:ES_VERSION
 $ES_path = "$Main_path\elasticsearch"
 $ES_zip_file = "$Main_path\download\elasticsearch.zip"
 $ES_URL = "https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-$ES_Version.zip"
@@ -125,17 +125,17 @@ $json_response = ConvertFrom-Json $searchresponse.Content
 $hit_source = $json_response.hits.hits[0]._source
 
 If (!$hit_source.ismessage){
-    echo "ERROR: Message was not indexed. Test unsuccessful"
+    echo "ERROR: Message was not indexed. Test unsuccessful. Expected true, got false".
     exit 1
 }
 
 If (!($hit_source.day -eq 2)){
-    echo "ERROR: Wrong expected value. Test unsuccessful"
+    echo "ERROR: Wrong expected value. Test unsuccessful. Expected 2, got " + $hit_source.day
     exit 1
 }
 
 If (!($hit_source.text -eq "test message")){
-    echo "ERROR: Wrong expected value. Test unsuccessful"
+    echo "ERROR: Wrong expected value. Test unsuccessful. Expected 'test message', got " + $hit_source.text
     exit 1
 }
 
