@@ -3,7 +3,6 @@ module LogStash module Instrument
   class MetricNoKeyProvided < Exception; end
 
   # TODO: Investigate what could be deferred here,
-  # is the Array#join slow? pushing could be done in a future?
   class Metric
     attr_reader :collector, :base_key
 
@@ -12,7 +11,6 @@ module LogStash module Instrument
       @base_key = base_key
     end
 
-    # wrap this into a future?
     def increment(key, value = 1)
       collector.push([:counter_increment, Time.now, merge_keys(key), value])
     end
