@@ -16,7 +16,7 @@ Logstash has the following flags. You can use the `--help` flag to display this 
  is specified, 'stdout { codec => rubydebug }}' is default.
 
 -w, --filterworkers COUNT
- Sets the number of filter workers to run (default: 1)
+ Sets the number of filter workers to run (default: half the number of cores)
 
 -l, --log FILE
  Log to a given path. Default is to log to stdout

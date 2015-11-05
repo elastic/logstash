@@ -38,7 +38,7 @@ If you are using Elasticsearch as an output, and wish to upgrade to Elasticsearc
 aware of https://www.elastic.co/guide/en/elasticsearch/reference/2.0/breaking-changes-2.0.html[breaking changes]
 before you upgrade. In addition, the following steps needs to be performed after upgrading to Elasticsearch 2.0:
 
-1. **Mapping changes:** Users may have custom template changes, so by default a Logstash upgrade will
+**Mapping changes:** Users may have custom template changes, so by default a Logstash upgrade will
 leave the template as is. Even if you don't have a custom template, Logstash will not overwrite an existing
 template by default. 
 
@@ -47,13 +47,13 @@ There is one known issue (removal of https://www.elastic.co/guide/en/elasticsear
 Note: If you have custom template changes, please make sure to save it and merge any changes. You can 
 get the existing template by running:
 
-```
+[source,shell]
 curl -XGET localhost:9200/_template/logstash
-```
+
 
 Add the following option to your Logstash config:
 
-```
+[source,json]
 output {
 	elasticsearch {
 		template_overwrite => true
@@ -62,12 +62,19 @@ output {
 
 Restart Logstash.
 
-2. **Dots in fields:** Elasticsearch 2.0 does not allow field names to contain the `.` character.
+**Dots in fields:** Elasticsearch 2.0 does not allow field names to contain the `.` character.
 Further details about this change https://www.elastic.co/guide/en/elasticsearch/reference/2.0/_mapping_changes.html#_field_names_may_not_contain_dots[here]. Some plugins already have been updated to compensate 
 for this breaking change, including logstash-filter-metrics and logstash-filter-elapsed. 
 These plugin updates are available for Logstash 2.0. To upgrade to the latest version of these
 plugins, the command is:
 
-```
+[source,shell]
 bin/plugin update <plugin_name>
-```
+
+**Multiline Filter:** If you are using the Multiline Filter in your configuration and upgrade to Logstash 2.0,
+you will get an error. Make sure to explicitly set the number of filter workers (`-w`) to `1`. You can set the number
+of workers by passing a command line flag such as:
+
+[source,shell]
+bin/logstash `-w 1`
+
