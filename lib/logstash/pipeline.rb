@@ -43,6 +43,7 @@ class LogStash::Pipeline
     end
 
     @input_queue = LogStash::Util::WrappedSynchronousQueue.new
+    @input_threads = []
 
     @settings = {
       "filter-workers" => LogStash::Config::CpuCoreStrategy.fifty_percent
@@ -50,7 +51,6 @@ class LogStash::Pipeline
 
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
-    @input_threads = []
   end # def initialize
 
   def ready?
@@ -77,10 +77,13 @@ class LogStash::Pipeline
 
     begin
       start_inputs
+      @outputs.each {|o| o.register }
+      @filters.each {|f| f.register}
 
       @settings["filter-workers"].times do |t|
         Thread.new do
           LogStash::Util.set_thread_name(">worker#{t}")
+          #outputs = @outputs.map {|o| o.class.new(o.original_params) }
           while true
             input_batch = take_event_batch
             filtered_batch = filter_event_batch(input_batch)
@@ -189,25 +192,11 @@ class LogStash::Pipeline
 
   def start_filters
     @filters.each(&:register)
-    to_start = @settings["filter-workers"]
-    @filter_threads = to_start.times.collect do
-      Thread.new { filterworker }
-    end
-    actually_started = @filter_threads.select(&:alive?).size
-    msg = "Worker threads expected: #{to_start}, worker threads started: #{actually_started}"
-    if actually_started < to_start
-      @logger.warn(msg)
-    else
-      @logger.info(msg)
-    end
-    @flusher_thread = Thread.new { Stud.interval(5) { @input_to_filter.push(LogStash::FLUSH) } }
+
   end
 
   def start_outputs
     @outputs.each(&:register)
-    @output_threads = [
-      Thread.new { outputworker }
-    ]
   end
 
   def start_input(plugin)
