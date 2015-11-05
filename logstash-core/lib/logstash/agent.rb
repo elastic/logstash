@@ -2,6 +2,8 @@
 require "logstash/environment"
 require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
+require "logstash/instrument/collector"
+require "logstash/instrument/metric"
 require "logstash/pipeline"
 require "uri"
 require "stud/trap"

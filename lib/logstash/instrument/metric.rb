@@ -1,4 +1,6 @@
 # encoding: utf-8
+require "logstash/instrument/collector"
+
 module LogStash module Instrument
   class MetricNoKeyProvided < Exception; end
 
@@ -25,22 +27,21 @@ module LogStash module Instrument
     end
 
     def namespace(key)
-      Metric.new(collector, merge_keys(key))
+      Metric.new(collector, merge_keys(key.to_sym))
     end
 
     private
     def merge_keys(key)
       valid_key!(key)
-      [@base_key, key].compact
+      [@base_key, key.to_sym].compact
     end
 
     def valid_key!(key)
       raise MetricNoKeyProvided if key.nil? || key == ""
     end
 
-
-    def create_node_metric
-
+    def self.create_root(name, collector = LogStash::Instrument::Collector.new)
+      LogStash::Instrument::Metric.new(collector, name)
     end
   end
 end; end
