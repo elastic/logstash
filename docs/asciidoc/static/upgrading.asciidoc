@@ -31,3 +31,43 @@ This procedure downloads the relevant Logstash binaries directly from Elastic.
 4. Test your configuration file with the `logstash --configtest -f <configuration-file>` command. Configuration options for 
 some Logstash plugins have changed in the 2.0 release.
 5. Restart your Logstash pipeline after updating your configuration file.
+
+=== Upgrading Logstash and Elasticsearch to 2.0
+
+If you are using Elasticsearch as an output, and wish to upgrade to Elasticsearch 2.0, please be
+aware of https://www.elastic.co/guide/en/elasticsearch/reference/2.0/breaking-changes-2.0.html[breaking changes]
+before you upgrade. In addition, the following steps needs to be performed after upgrading to Elasticsearch 2.0:
+
+1. **Mapping changes:** Users may have custom template changes, so by default a Logstash upgrade will
+leave the template as is. Even if you don't have a custom template, Logstash will not overwrite an existing
+template by default. 
+
+There is one known issue (removal of https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-object-type.html#_path_3[path]) with using GeoIP filter that needs a manual update to the template.
+
+Note: If you have custom template changes, please make sure to save it and merge any changes. You can 
+get the existing template by running:
+
+```
+curl -XGET localhost:9200/_template/logstash
+```
+
+Add the following option to your Logstash config:
+
+```
+output {
+	elasticsearch {
+		template_overwrite => true
+	}
+}
+
+Restart Logstash.
+
+2. **Dots in fields:** Elasticsearch 2.0 does not allow field names to contain the `.` character.
+Further details about this change https://www.elastic.co/guide/en/elasticsearch/reference/2.0/_mapping_changes.html#_field_names_may_not_contain_dots[here]. Some plugins already have been updated to compensate 
+for this breaking change, including logstash-filter-metrics and logstash-filter-elapsed. 
+These plugin updates are available for Logstash 2.0. To upgrade to the latest version of these
+plugins, the command is:
+
+```
+bin/plugin update <plugin_name>
+```
