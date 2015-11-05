@@ -107,6 +107,7 @@ class LogStash::Pipeline
             set_current_thread_inflight_batch(input_batch)
             filtered_batch = filter_event_batch(input_batch)
             output_event_batch(filtered_batch)
+            set_current_thread_inflight_batch(nil)
           end
         end
       end
@@ -140,7 +141,7 @@ class LogStash::Pipeline
     batch = [@input_queue.take]
     19.times do
       event = @input_queue.poll(50)
-      break if event.nil?
+      next if event.nil?
       batch << event
     end
     batch
