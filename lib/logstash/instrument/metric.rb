@@ -37,5 +37,10 @@ module LogStash module Instrument
     def valid_key!(key)
       raise MetricNoKeyProvided if key.nil? || key == ""
     end
+
+
+    def create_node_metric
+
+    end
   end
 end; end
