@@ -30,7 +30,7 @@ describe LogStash::Instrument::SizeQueue do
 
       [:pop, :shift, :deq].each do |method|
         it "collect metric when calling #{method}" do
-          subject.send(method)
+          expect(subject.send(method)).to eq(event)
           expect(collector.pop).to be_a_metric_event(:counter_increment, [:size_queue, :out], 1)
         end
       end

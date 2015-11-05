@@ -15,6 +15,9 @@ require "logstash/util/defaults_printer"
 require "logstash/shutdown_controller"
 require "logstash/util/wrapped_synchronous_queue"
 require "logstash/pipeline_reporter"
+require "logstash/instrument/size_queue"
+require "logstash/instrument/metric"
+require "logstash/instrument/collector"
 
 module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id
@@ -72,7 +75,8 @@ module LogStash; class Pipeline
   end # def initialize
 
   def create_sizedqueue(name)
-    SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE)
+    LogStash::Instrument::SizeQueue.new(SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE),
+                                        metric.namespace(name))
   end
 
   def ready?
