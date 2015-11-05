@@ -64,17 +64,14 @@ class LogStash::Outputs::Base < LogStash::Plugin
       @worker_plugins = [self]
     else
       define_singleton_method(:handle_batch, method(:handle_worker))
-      @worker_queue = LogStash::Util::WrappedSynchronousQueue.new
+
+      @available_workers = SizedQueue.new(@worker_plugins.length)
+
       @worker_plugins = @workers.times.map { self.class.new(@original_params.merge("workers" => 1)) }
-      @worker_plugins.map.with_index do |plugin, i|
-        Thread.new(original_params, @worker_queue) do |params, queue|
-          LogStash::Util::set_thread_name(">#{self.class.config_name}.#{i}")
-          plugin.register
-          while true
-            events = queue.take
-            plugin.handle_batch(events)
-          end
-        end
+
+      @worker_plugins.each do |wp|
+        wp.register
+        @available_workers << wp
       end
     end
   end
@@ -98,7 +95,12 @@ class LogStash::Outputs::Base < LogStash::Plugin
   end
 
   def handle_worker(events)
-    @worker_queue.push(events)
+    worker = @available_workers.pop
+    begin
+      worker.handle_batch(events)
+    ensure
+      @available_workers.push(worker)
+    end
   end
 
   private
