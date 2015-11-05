@@ -12,6 +12,7 @@ require "logstash/outputs/base"
 require "logstash/util/reporter"
 require "logstash/config/cpu_core_strategy"
 require "logstash/util/defaults_printer"
+require "logstash/util/wrapped_synchronous_queue"
 
 class LogStash::Pipeline
   attr_reader :inputs, :filters, :outputs, :input_to_filter, :filter_to_output
@@ -41,9 +42,7 @@ class LogStash::Pipeline
       raise
     end
 
-    @input_to_filter = SizedQueue.new(20)
-    # if no filters, pipe inputs directly to outputs
-    @filter_to_output = filters? ? SizedQueue.new(20) : @input_to_filter
+    @input_queue = LogStash::Util::WrappedSynchronousQueue.new
 
     @settings = {
       "filter-workers" => LogStash::Config::CpuCoreStrategy.fifty_percent
@@ -78,8 +77,20 @@ class LogStash::Pipeline
 
     begin
       start_inputs
-      start_filters if filters?
-      start_outputs
+
+      @settings["filter-workers"].times do |t|
+        Thread.new do
+          LogStash::Util.set_thread_name(">worker#{t}")
+          while true
+            input_batch = take_event_batch
+            filtered_batch = filter_event_batch(input_batch)
+            output_event_batch(filtered_batch)
+          end
+        end
+      end
+
+      #start_filters if filters?
+      #start_outputs
     ensure
       # it is important to garantee @ready to be true after the startup sequence has been completed
       # to potentially unblock the shutdown method which may be waiting on @ready to proceed
@@ -106,6 +117,35 @@ class LogStash::Pipeline
     # exit code
     return 0
   end # def run
+
+  def take_event_batch()
+    batch = [@input_queue.take]
+    19.times do
+      event = @input_queue.poll(50)
+      break if event.nil?
+      batch << event
+    end
+    batch
+  end
+
+  def filter_event_batch(batch)
+    filterable = batch.select {|e| e.is_a?LogStash::Event}
+    filter_func(filterable).select {|e| !e.cancelled?}
+  rescue Exception => e
+    # Plugins authors should manage their own exceptions in the plugin code
+    # but if an exception is raised up to the worker thread they are considered
+    # fatal and logstash will not recover from this situation.
+    #
+    # Users need to check their configuration or see if there is a bug in the
+    # plugin.
+    @logger.error("Exception in filterworker, the pipeline stopped processing new events, please check your filter configuration and restart Logstash.",
+                  "exception" => e, "backtrace" => e.backtrace)
+    raise
+  end
+
+  def output_event_batch(batch)
+    output_func(batch)
+  end
 
   def wait_inputs
     @input_threads.each(&:join)
@@ -177,7 +217,7 @@ class LogStash::Pipeline
   def inputworker(plugin)
     LogStash::Util::set_thread_name("<#{plugin.class.config_name}")
     begin
-      plugin.run(@input_to_filter)
+      plugin.run(@input_queue)
     rescue => e
       # if plugin is stopping, ignore uncatched exceptions and exit worker
       if plugin.stop?

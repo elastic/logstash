@@ -78,6 +78,14 @@ class LogStash::Outputs::Base < LogStash::Plugin
     receive(event)
   end # def handle
 
+  # To be overriden in implementations
+  def handle_batch(events)
+    
+    events.each {|event|
+      receive(event)
+    }
+  end
+
   def handle_worker(event)
     @worker_queue.push(event)
   end
