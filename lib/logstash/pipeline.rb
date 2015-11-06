@@ -226,15 +226,6 @@ class LogStash::Pipeline
     end
   end
 
-  def start_filters
-    @filters.each(&:register)
-
-  end
-
-  def start_outputs
-    @outputs.each(&:register)
-  end
-
   def start_input(plugin)
     @input_threads << Thread.new { inputworker(plugin) }
   end
@@ -292,12 +283,5 @@ class LogStash::Pipeline
     args << {} if args.empty?
     klass = LogStash::Plugin.lookup(plugin_type, name)
     return klass.new(*args)
-  end
-
-  # for backward compatibility in devutils for the rspec helpers, this method is not used
-  # in the pipeline anymore.
-  def filter(event, &block)
-    # filter_func returns all filtered events, including cancelled ones
-    filter_func(event).each { |e| block.call(e) }
   end
 end # class Pipeline
