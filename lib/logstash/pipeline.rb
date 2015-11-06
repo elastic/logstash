@@ -84,6 +84,16 @@ class LogStash::Pipeline
 
     shutdown_workers
 
+    @worker_threads.each do |t|
+      puts "Waiting for thread #{t}"
+      t.join
+    end
+
+    @filters.each(&:do_close)
+    @outputs.each(&:do_close)
+
+    dump_inflight("/tmp/ls_current_batches_post_close")
+
     @logger.info("Pipeline shutdown complete.")
     @logger.terminal("Logstash shutdown completed")
 
@@ -94,16 +104,20 @@ class LogStash::Pipeline
   def start_workers
     @inflight_batches = {}
     @inflight_batches_mutex = Mutex.new
+
+    @worker_threads = []
     begin
       start_inputs
       @outputs.each {|o| o.register }
       @filters.each {|f| f.register}
 
       @settings["filter-workers"].times do |t|
-        Thread.new do
+        @worker_threads << Thread.new do
           LogStash::Util.set_thread_name(">worker#{t}")
-          while true
+          running = true
+          while running
             input_batch = take_event_batch
+            running = !input_batch.include?(LogStash::SHUTDOWN)
             set_current_thread_inflight_batch(input_batch)
             filtered_batch = filter_event_batch(input_batch)
             output_event_batch(filtered_batch)
@@ -118,11 +132,26 @@ class LogStash::Pipeline
     end
   end
 
-  def shutdown_workers
+  def dump_inflight(file_path)
     inflight_batches_synchronize do |batches|
-      puts "Current batches! #{batches.values.inspect}"
+      File.open(file_path, "w") do |f|
+        batches.values.each do |batch|
+          next unless batch
+          batch.each do |e|
+            f.write(LogStash::Json.dump(e))
+          end
+        end
+      end
     end
-    100.times { @input_queue.push(LogStash::SHUTDOWN) }
+  end
+
+  def shutdown_workers
+    dump_inflight("/tmp/ls_current_batches")
+    # Each worker will receive this exactly once!
+    @worker_threads.each do
+      puts "Pushing shutdown"
+      @input_queue.push(LogStash::SHUTDOWN)
+    end
   end
 
   def set_current_thread_inflight_batch(batch)
@@ -138,11 +167,14 @@ class LogStash::Pipeline
   end
 
   def take_event_batch()
-    batch = [@input_queue.take]
-    19.times do
-      event = @input_queue.poll(50)
+    batch = []
+    19.times do |t|
+      event = t==0 ? @input_queue.take : @input_queue.poll(50)
+      # Exit early so each thread only gets one copy of this
+      # This is necessary to ensure proper shutdown!
       next if event.nil?
       batch << event
+      break if event == LogStash::SHUTDOWN
     end
     batch
   end
