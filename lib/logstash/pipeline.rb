@@ -91,7 +91,7 @@ class LogStash::Pipeline
     shutdown_workers
 
     @worker_threads.each do |t|
-      puts "Waiting for thread #{t}"
+      @logger.debug("Shutdown waiting for worker thread #{t}")
       t.join
     end
 
@@ -155,7 +155,7 @@ class LogStash::Pipeline
     dump_inflight("/tmp/ls_current_batches")
     # Each worker will receive this exactly once!
     @worker_threads.each do
-      puts "Pushing shutdown"
+      @logger.debug("Pushing shutdown")
       @input_queue.push(LogStash::SHUTDOWN)
     end
   end
