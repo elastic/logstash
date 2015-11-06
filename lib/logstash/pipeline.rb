@@ -43,6 +43,12 @@ class LogStash::Pipeline
     end
 
     @input_queue = LogStash::Util::WrappedSynchronousQueue.new
+
+    # We generally only want one thread at a time able to access pop/take/poll operations
+    # from this queue. We also depend on this to be able to block consumers while we snapshot
+    # in-flight buffers
+    @input_queue_pop_mutex = Mutex.new
+
     @input_threads = []
 
     @settings = {
@@ -103,7 +109,6 @@ class LogStash::Pipeline
 
   def start_workers
     @inflight_batches = {}
-    @inflight_batches_mutex = Mutex.new
 
     @worker_threads = []
     begin
@@ -116,12 +121,13 @@ class LogStash::Pipeline
           LogStash::Util.set_thread_name(">worker#{t}")
           running = true
           while running
-            input_batch = take_event_batch
+            # We synchronize this access to ensure that we can snapshot even partially consumed
+            # queues
+            input_batch = @input_queue_pop_mutex.synchronize { take_event_batch }
             running = !input_batch.include?(LogStash::SHUTDOWN)
-            set_current_thread_inflight_batch(input_batch)
             filtered_batch = filter_event_batch(input_batch)
             output_event_batch(filtered_batch)
-            set_current_thread_inflight_batch(nil)
+            inflight_batches_synchronize { set_current_thread_inflight_batch(nil) }
           end
         end
       end
@@ -155,19 +161,20 @@ class LogStash::Pipeline
   end
 
   def set_current_thread_inflight_batch(batch)
-    inflight_batches_synchronize do
-      @inflight_batches[Thread.current] = batch
-    end
+    @inflight_batches[Thread.current] = batch
   end
 
   def inflight_batches_synchronize
-    @inflight_batches_mutex.synchronize do
+    @input_queue_pop_mutex.synchronize do
       yield(@inflight_batches)
     end
   end
 
   def take_event_batch()
     batch = []
+    # Doing this here lets us guarantee that once a 'push' onto the synchronized queue succeeds
+    # it can be saved to disk in a fast shutdown
+    set_current_thread_inflight_batch(batch)
     19.times do |t|
       event = t==0 ? @input_queue.take : @input_queue.poll(50)
       # Exit early so each thread only gets one copy of this
