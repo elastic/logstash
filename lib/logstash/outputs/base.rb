@@ -63,7 +63,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
     if @workers == 1
       @worker_plugins = [self]
     else
-      define_singleton_method(:handle_batch, method(:handle_worker))
+      define_singleton_method(:handle_multi, method(:handle_worker))
 
       @available_workers = SizedQueue.new(@worker_plugins.length)
 
@@ -83,21 +83,21 @@ class LogStash::Outputs::Base < LogStash::Plugin
   end # def handle
 
   # To be overriden in implementations
-  def receive_batch(events)
+  def receive_multi(events)
     events.each {|event|
       receive(event)
     }
   end
 
   # Not to be overriden by plugin authors!
-  def handle_batch(events)
-    @single_worker_mutex.synchronize { receive_batch(events) }
+  def handle_multi(events)
+    @single_worker_mutex.synchronize { receive_multi(events) }
   end
 
   def handle_worker(events)
     worker = @available_workers.pop
     begin
-      worker.handle_batch(events)
+      worker.handle_multi(events)
     ensure
       @available_workers.push(worker)
     end

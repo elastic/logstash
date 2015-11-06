@@ -239,7 +239,7 @@ module LogStash; module Config; module AST
           events = #{variable_name}.multi_filter(events)
         CODE
       when "output"
-        return "#{variable_name}.handle_batch(events)\n"
+        return "#{variable_name}.handle_multi(events)\n"
       when "codec"
         settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
         attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
