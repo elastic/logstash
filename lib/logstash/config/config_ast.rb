@@ -110,7 +110,6 @@ module LogStash; module Config; module AST
         sections.select { |s| s.plugin_type.text_value == type }
 
         definitions << "def #{type}_func(events)"
-        #definitions << "  events = [event]" if type == "filter"
         definitions << "  @logger.debug? && @logger.debug(\"#{type} received\", :events => LogStash::Json.dump(events))"
 
         sections.select { |s| s.plugin_type.text_value == type }.each do |s|
