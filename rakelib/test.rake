@@ -26,7 +26,7 @@ namespace "test" do
 
   desc "run core specs in fail-fast mode"
   task "core-fail-fast" => ["setup"] do
-    exit(Spec::Core::Runner.run(["--fail-fast", Rake::FileList["spec/**/*_spec.rb"]]))
+    exit(RSpec::Core::Runner.run(["--fail-fast", Rake::FileList["spec/**/*_spec.rb"]]))
   end
 
   desc "run core specs on a single file"
@@ -87,6 +87,28 @@ namespace "test" do
     task.reenable
   end
 
+  task "integration" => ["setup"] do
+    require "fileutils" 
+
+    source = File.expand_path(File.join(File.dirname(__FILE__), ".."))
+    integration_path = File.join(source, "integration_run")
+    FileUtils.rm_rf(integration_path)
+
+    exit(RSpec::Core::Runner.run([Rake::FileList["integration/**/*_spec.rb"]]))
+  end
+
+  namespace "integration" do
+    task "local" => ["setup"] do
+      require "fileutils"
+
+      source = File.expand_path(File.join(File.dirname(__FILE__), ".."))
+      integration_path = File.join(source, "integration_run")
+      FileUtils.mkdir_p(integration_path)
+
+      puts "[integration_spec] configuring local environment for running test in #{integration_path}, if you want to change this behavior delete the directory."
+      exit(RSpec::Core::Runner.run([Rake::FileList["integration/**/*_spec.rb"]]))
+    end
+  end
 end
 
 task "test" => [ "test:core" ]
