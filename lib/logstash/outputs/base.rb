@@ -103,6 +103,15 @@ class LogStash::Outputs::Base < LogStash::Plugin
     end
   end
 
+  def do_close
+    if @worker_plugins
+      @worker_plugins.each do |wp|
+        wp.do_close
+      end
+    end
+    super
+  end
+
   private
   def output?(event)
     # TODO: noop for now, remove this once we delete this call from all plugins
