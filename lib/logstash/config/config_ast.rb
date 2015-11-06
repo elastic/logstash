@@ -385,7 +385,7 @@ module LogStash; module Config; module AST
 
       type = recursive_select_parent(PluginSection).first.plugin_type.text_value
 
-      if true || type == "filter"
+      if type == "filter"
         i = LogStash::Config::AST.defered_conditionals_index += 1
         source = <<-CODE
           def cond_func_#{i}(input_events)
