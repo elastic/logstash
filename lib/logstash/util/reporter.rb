@@ -5,6 +5,7 @@ class InflightEventsReporter
   end
 
   def self.start(input_to_filter, filter_to_output, outputs)
+    return #TODO: Fix this class to work with new queues
     Thread.new do
       loop do
         sleep 5

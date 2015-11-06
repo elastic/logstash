@@ -12,6 +12,7 @@ require "logstash/outputs/base"
 require "logstash/util/reporter"
 require "logstash/config/cpu_core_strategy"
 require "logstash/util/defaults_printer"
+require "logstash/util/wrapped_synchronous_queue"
 
 class LogStash::Pipeline
   attr_reader :inputs, :filters, :outputs, :input_to_filter, :filter_to_output
@@ -41,9 +42,14 @@ class LogStash::Pipeline
       raise
     end
 
-    @input_to_filter = SizedQueue.new(20)
-    # if no filters, pipe inputs directly to outputs
-    @filter_to_output = filters? ? SizedQueue.new(20) : @input_to_filter
+    @input_queue = LogStash::Util::WrappedSynchronousQueue.new
+
+    # We generally only want one thread at a time able to access pop/take/poll operations
+    # from this queue. We also depend on this to be able to block consumers while we snapshot
+    # in-flight buffers
+    @input_queue_pop_mutex = Mutex.new
+
+    @input_threads = []
 
     @settings = {
       "filter-workers" => LogStash::Config::CpuCoreStrategy.fifty_percent
@@ -51,7 +57,6 @@ class LogStash::Pipeline
 
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
-    @input_threads = []
   end # def initialize
 
   def ready?
@@ -76,29 +81,24 @@ class LogStash::Pipeline
   def run
     @logger.terminal(LogStash::Util::DefaultsPrinter.print(@settings))
 
-    begin
-      start_inputs
-      start_filters if filters?
-      start_outputs
-    ensure
-      # it is important to garantee @ready to be true after the startup sequence has been completed
-      # to potentially unblock the shutdown method which may be waiting on @ready to proceed
-      @ready.make_true
-    end
+    start_workers
 
     @logger.info("Pipeline started")
     @logger.terminal("Logstash startup completed")
 
     wait_inputs
 
-    if filters?
-      shutdown_filters
-      wait_filters
-      flush_filters_to_output!(:final => true)
+    shutdown_workers
+
+    @worker_threads.each do |t|
+      @logger.debug("Shutdown waiting for worker thread #{t}")
+      t.join
     end
 
-    shutdown_outputs
-    wait_outputs
+    @filters.each(&:do_close)
+    @outputs.each(&:do_close)
+
+    dump_inflight("/tmp/ls_current_batches_post_close")
 
     @logger.info("Pipeline shutdown complete.")
     @logger.terminal("Logstash shutdown completed")
@@ -107,27 +107,106 @@ class LogStash::Pipeline
     return 0
   end # def run
 
+  def start_workers
+    @inflight_batches = {}
+
+    @worker_threads = []
+    begin
+      start_inputs
+      @outputs.each {|o| o.register }
+      @filters.each {|f| f.register}
+
+      @settings["filter-workers"].times do |t|
+        @worker_threads << Thread.new do
+          LogStash::Util.set_thread_name(">worker#{t}")
+          running = true
+          while running
+            # We synchronize this access to ensure that we can snapshot even partially consumed
+            # queues
+            input_batch = @input_queue_pop_mutex.synchronize { take_event_batch }
+            running = !input_batch.include?(LogStash::SHUTDOWN)
+            filtered_batch = filter_event_batch(input_batch)
+            output_event_batch(filtered_batch)
+            inflight_batches_synchronize { set_current_thread_inflight_batch(nil) }
+          end
+        end
+      end
+    ensure
+      # it is important to garantee @ready to be true after the startup sequence has been completed
+      # to potentially unblock the shutdown method which may be waiting on @ready to proceed
+      @ready.make_true
+    end
+  end
+
+  def dump_inflight(file_path)
+    inflight_batches_synchronize do |batches|
+      File.open(file_path, "w") do |f|
+        batches.values.each do |batch|
+          next unless batch
+          batch.each do |e|
+            f.write(LogStash::Json.dump(e))
+          end
+        end
+      end
+    end
+  end
+
+  def shutdown_workers
+    dump_inflight("/tmp/ls_current_batches")
+    # Each worker will receive this exactly once!
+    @worker_threads.each do
+      @logger.debug("Pushing shutdown")
+      @input_queue.push(LogStash::SHUTDOWN)
+    end
+  end
+
+  def set_current_thread_inflight_batch(batch)
+    @inflight_batches[Thread.current] = batch
+  end
+
+  def inflight_batches_synchronize
+    @input_queue_pop_mutex.synchronize do
+      yield(@inflight_batches)
+    end
+  end
+
+  def take_event_batch()
+    batch = []
+    # Doing this here lets us guarantee that once a 'push' onto the synchronized queue succeeds
+    # it can be saved to disk in a fast shutdown
+    set_current_thread_inflight_batch(batch)
+    19.times do |t|
+      event = t==0 ? @input_queue.take : @input_queue.poll(50)
+      # Exit early so each thread only gets one copy of this
+      # This is necessary to ensure proper shutdown!
+      next if event.nil?
+      batch << event
+      break if event == LogStash::SHUTDOWN
+    end
+    batch
+  end
+
+  def filter_event_batch(batch)
+    filterable = batch.select {|e| e.is_a?LogStash::Event}
+    filter_func(filterable).select {|e| !e.cancelled?}
+  rescue Exception => e
+    # Plugins authors should manage their own exceptions in the plugin code
+    # but if an exception is raised up to the worker thread they are considered
+    # fatal and logstash will not recover from this situation.
+    #
+    # Users need to check their configuration or see if there is a bug in the
+    # plugin.
+    @logger.error("Exception in filterworker, the pipeline stopped processing new events, please check your filter configuration and restart Logstash.",
+                  "exception" => e, "backtrace" => e.backtrace)
+    raise
+  end
+
+  def output_event_batch(batch)
+    output_func(batch)
+  end
+
   def wait_inputs
     @input_threads.each(&:join)
-  end
-
-  def shutdown_filters
-    @flusher_thread.kill
-    @input_to_filter.push(LogStash::SHUTDOWN)
-  end
-
-  def wait_filters
-    @filter_threads.each(&:join) if @filter_threads
-  end
-
-  def shutdown_outputs
-    # nothing, filters will do this
-    @filter_to_output.push(LogStash::SHUTDOWN)
-  end
-
-  def wait_outputs
-    # Wait for the outputs to stop
-    @output_threads.each(&:join)
   end
 
   def start_inputs
@@ -147,29 +226,6 @@ class LogStash::Pipeline
     end
   end
 
-  def start_filters
-    @filters.each(&:register)
-    to_start = @settings["filter-workers"]
-    @filter_threads = to_start.times.collect do
-      Thread.new { filterworker }
-    end
-    actually_started = @filter_threads.select(&:alive?).size
-    msg = "Worker threads expected: #{to_start}, worker threads started: #{actually_started}"
-    if actually_started < to_start
-      @logger.warn(msg)
-    else
-      @logger.info(msg)
-    end
-    @flusher_thread = Thread.new { Stud.interval(5) { @input_to_filter.push(LogStash::FLUSH) } }
-  end
-
-  def start_outputs
-    @outputs.each(&:register)
-    @output_threads = [
-      Thread.new { outputworker }
-    ]
-  end
-
   def start_input(plugin)
     @input_threads << Thread.new { inputworker(plugin) }
   end
@@ -177,7 +233,7 @@ class LogStash::Pipeline
   def inputworker(plugin)
     LogStash::Util::set_thread_name("<#{plugin.class.config_name}")
     begin
-      plugin.run(@input_to_filter)
+      plugin.run(@input_queue)
     rescue => e
       # if plugin is stopping, ignore uncatched exceptions and exit worker
       if plugin.stop?
@@ -207,56 +263,6 @@ class LogStash::Pipeline
     end
   end # def inputworker
 
-  def filterworker
-    LogStash::Util.set_thread_name("|worker")
-    begin
-      while true
-        event = @input_to_filter.pop
-
-        case event
-        when LogStash::Event
-          # filter_func returns all filtered events, including cancelled ones
-          filter_func(event).each { |e| @filter_to_output.push(e) unless e.cancelled? }
-        when LogStash::FlushEvent
-          # handle filter flushing here so that non threadsafe filters (thus only running one filterworker)
-          # don't have to deal with thread safety implementing the flush method
-          flush_filters_to_output!
-        when LogStash::ShutdownEvent
-          # pass it down to any other filterworker and stop this worker
-          @input_to_filter.push(event)
-          break
-        end
-      end
-    rescue Exception => e
-      # Plugins authors should manage their own exceptions in the plugin code
-      # but if an exception is raised up to the worker thread they are considered
-      # fatal and logstash will not recover from this situation.
-      #
-      # Users need to check their configuration or see if there is a bug in the
-      # plugin.
-      @logger.error("Exception in filterworker, the pipeline stopped processing new events, please check your filter configuration and restart Logstash.",
-                    "exception" => e, "backtrace" => e.backtrace)
-      raise
-    ensure
-      @filters.each(&:do_close)
-    end
-  end # def filterworker
-
-  def outputworker
-    LogStash::Util.set_thread_name(">output")
-    @outputs.each(&:worker_setup)
-
-    while true
-      event = @filter_to_output.pop
-      break if event == LogStash::SHUTDOWN
-      output_func(event)
-    end
-  ensure
-    @outputs.each do |output|
-      output.worker_plugins.each(&:do_close)
-    end
-  end # def outputworker
-
   # initiate the pipeline shutdown sequence
   # this method is intended to be called from outside the pipeline thread
   # @param before_stop [Proc] code block called before performing stop operation on input plugins
@@ -278,35 +284,4 @@ class LogStash::Pipeline
     klass = LogStash::Plugin.lookup(plugin_type, name)
     return klass.new(*args)
   end
-
-  # for backward compatibility in devutils for the rspec helpers, this method is not used
-  # in the pipeline anymore.
-  def filter(event, &block)
-    # filter_func returns all filtered events, including cancelled ones
-    filter_func(event).each { |e| block.call(e) }
-  end
-
-  # perform filters flush and yeild flushed event to the passed block
-  # @param options [Hash]
-  # @option options [Boolean] :final => true to signal a final shutdown flush
-  def flush_filters(options = {}, &block)
-    flushers = options[:final] ? @shutdown_flushers : @periodic_flushers
-
-    flushers.each do |flusher|
-      flusher.call(options, &block)
-    end
-  end
-
-  # perform filters flush into the output queue
-  # @param options [Hash]
-  # @option options [Boolean] :final => true to signal a final shutdown flush
-  def flush_filters_to_output!(options = {})
-    flush_filters(options) do |event|
-      unless event.cancelled?
-        @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
-        @filter_to_output.push(event)
-      end
-    end
-  end # flush_filters_to_output!
-
 end # class Pipeline

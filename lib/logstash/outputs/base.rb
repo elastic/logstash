@@ -4,6 +4,7 @@ require "logstash/logging"
 require "logstash/plugin"
 require "logstash/namespace"
 require "logstash/config/mixin"
+require "logstash/util/wrapped_synchronous_queue"
 
 class LogStash::Outputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
@@ -40,6 +41,10 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def initialize(params={})
     super
     config_init(params)
+
+    # If we're running with a single thread we must enforce single-threaded concurrency by default
+    # Maybe in a future version we'll assume output plugins are threadsafe
+    @single_worker_mutex = Mutex.new
   end
 
   public
@@ -54,32 +59,57 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   public
   def worker_setup
+    # TODO: Remove this branch, delete this function
     if @workers == 1
       @worker_plugins = [self]
     else
-      define_singleton_method(:handle, method(:handle_worker))
-      @worker_queue = SizedQueue.new(20)
+      define_singleton_method(:handle_multi, method(:handle_worker))
+
+      @available_workers = SizedQueue.new(@worker_plugins.length)
+
       @worker_plugins = @workers.times.map { self.class.new(@original_params.merge("workers" => 1)) }
-      @worker_plugins.map.with_index do |plugin, i|
-        Thread.new(original_params, @worker_queue) do |params, queue|
-          LogStash::Util::set_thread_name(">#{self.class.config_name}.#{i}")
-          plugin.register
-          while true
-            event = queue.pop
-            plugin.handle(event)
-          end
-        end
+
+      @worker_plugins.each do |wp|
+        wp.register
+        @available_workers << wp
       end
     end
   end
 
   public
+  # Not to be overriden by plugin authors!
   def handle(event)
-    receive(event)
+    @single_worker_mutex.synchronize { receive(event) }
   end # def handle
 
-  def handle_worker(event)
-    @worker_queue.push(event)
+  # To be overriden in implementations
+  def receive_multi(events)
+    events.each {|event|
+      receive(event)
+    }
+  end
+
+  # Not to be overriden by plugin authors!
+  def handle_multi(events)
+    @single_worker_mutex.synchronize { receive_multi(events) }
+  end
+
+  def handle_worker(events)
+    worker = @available_workers.pop
+    begin
+      worker.handle_multi(events)
+    ensure
+      @available_workers.push(worker)
+    end
+  end
+
+  def do_close
+    if @worker_plugins
+      @worker_plugins.each do |wp|
+        wp.do_close
+      end
+    end
+    super
   end
 
   private
