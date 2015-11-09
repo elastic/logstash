@@ -46,7 +46,7 @@ class LogStash::Pipeline
     @filter_to_output = filters? ? SizedQueue.new(20) : @input_to_filter
 
     @settings = {
-      "filter-workers" => LogStash::Config::CpuCoreStrategy.fifty_percent
+      "default-filter-workers" => LogStash::Config::CpuCoreStrategy.fifty_percent
     }
 
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
@@ -59,14 +59,32 @@ class LogStash::Pipeline
   end
 
   def configure(setting, value)
-    if setting == "filter-workers" && value > 1
-      # Abort if we have any filters that aren't threadsafe
-      plugins = @filters.select { |f| !f.threadsafe? }.collect { |f| f.class.config_name }
-      if !plugins.size.zero?
-        raise LogStash::ConfigurationError, "Cannot use more than 1 filter worker because the following plugins don't work with more than one worker: #{plugins.join(", ")}"
-      end
-    end
     @settings[setting] = value
+  end
+
+  def safe_filter_worker_count
+    default = @settings["default-filter-workers"]
+    thread_count = @settings["filter-workers"] #override from args "-w 8" or config
+    safe_filters, unsafe_filters = @filters.partition(&:threadsafe?)
+    if unsafe_filters.any?
+      plugins = unsafe_filters.collect { |f| f.class.config_name }
+      case thread_count
+      when nil
+        # user did not specify a worker thread count
+        # warn if the default is multiple
+        @logger.warn("Defaulting filter worker threads to 1 because there are some filters that might not work with multiple worker threads",
+          :count_was => default, :filters => plugins) if default > 1
+        1 # can't allow the default value to propagate if there are unsafe filters
+      when 0, 1
+        1
+      else
+        @logger.warn("Warning: Manual override - there are filters that might not work with multiple worker threads",
+          :worker_threads => thread_count, :filters => plugins)
+        thread_count # allow user to force this even if there are unsafe filters
+      end
+    else
+      thread_count || default
+    end
   end
 
   def filters?
@@ -149,7 +167,9 @@ class LogStash::Pipeline
 
   def start_filters
     @filters.each(&:register)
-    to_start = @settings["filter-workers"]
+    # dynamically get thread count based on filter threadsafety
+    # moved this test to here to allow for future config reloading
+    to_start = safe_filter_worker_count
     @filter_threads = to_start.times.collect do
       Thread.new { filterworker }
     end

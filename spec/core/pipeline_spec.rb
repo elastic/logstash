@@ -53,19 +53,126 @@ class DummyOutput < LogStash::Outputs::Base
   end
 end
 
+class DummyFilter < LogStash::Filters::Base
+  config_name "dummyfilter"
+  milestone 2
+
+  def register() end
+
+  def filter(event) end
+
+  def threadsafe?() false; end
+
+  def close() end
+end
+
+class DummySafeFilter < LogStash::Filters::Base
+  config_name "dummysafefilter"
+  milestone 2
+
+  def register() end
+
+  def filter(event) end
+
+  def threadsafe?() true; end
+
+  def close() end
+end
+
 class TestPipeline < LogStash::Pipeline
-  attr_reader :outputs
+  attr_reader :outputs, :filter_threads, :settings, :logger
 end
 
 describe LogStash::Pipeline do
+  let(:worker_thread_count)     { 8 }
+  let(:safe_thread_count)       { 1 }
+  let(:override_thread_count)   { 42 }
 
-context "close" do
+  describe "defaulting the filter workers based on thread safety" do
+    before(:each) do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummysafefilter").and_return(DummySafeFilter)
+      allow(LogStash::Config::CpuCoreStrategy).to receive(:fifty_percent).and_return(worker_thread_count)
+    end
 
-  before(:each) do
-    allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
-    allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
-    allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+    context "when there are some not threadsafe filters" do
+      let(:test_config_with_filters) {
+        <<-eos
+        input {
+          dummyinput {}
+        }
+
+        filter {
+          dummyfilter {}
+        }
+
+        output {
+          dummyoutput {}
+        }
+        eos
+      }
+
+      context "when there is no command line -w N set" do
+        it "starts one filter thread" do
+          msg = "Defaulting filter worker threads to 1 because there are some" +
+                " filters that might not work with multiple worker threads"
+          pipeline = TestPipeline.new(test_config_with_filters)
+          expect(pipeline.logger).to receive(:warn).with(msg,
+            {:count_was=>worker_thread_count, :filters=>["dummyfilter"]})
+          pipeline.run
+          expect(pipeline.filter_threads.size).to eq(safe_thread_count)
+        end
+      end
+
+      context "when there is command line -w N set" do
+        it "starts multiple filter thread" do
+          msg = "Warning: Manual override - there are filters that might" +
+                " not work with multiple worker threads"
+          pipeline = TestPipeline.new(test_config_with_filters)
+          expect(pipeline.logger).to receive(:warn).with(msg,
+            {:worker_threads=> override_thread_count, :filters=>["dummyfilter"]})
+          pipeline.configure("filter-workers", override_thread_count)
+          pipeline.run
+          expect(pipeline.filter_threads.size).to eq(override_thread_count)
+        end
+      end
+    end
+
+    context "when there are threadsafe filters only" do
+      let(:test_config_with_filters) {
+        <<-eos
+        input {
+          dummyinput {}
+        }
+
+        filter {
+          dummysafefilter {}
+        }
+
+        output {
+          dummyoutput {}
+        }
+        eos
+      }
+
+      it "starts multiple filter threads" do
+        pipeline = TestPipeline.new(test_config_with_filters)
+        pipeline.run
+        expect(pipeline.filter_threads.size).to eq(worker_thread_count)
+      end
+    end
   end
+
+  context "close" do
+    before(:each) do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+    end
+
 
     let(:test_config_without_output_workers) {
       <<-eos
@@ -191,6 +298,5 @@ context "close" do
         expect(subject[2]["foo"]).to eq("bar")
       end
     end
-
   end
 end

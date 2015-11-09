@@ -23,7 +23,7 @@ class LogStash::Agent < Clamp::Command
   option ["-w", "--filterworkers"], "COUNT",
     I18n.t("logstash.agent.flag.filterworkers"),
     :attribute_name => :filter_workers,
-    :default => LogStash::Config::CpuCoreStrategy.fifty_percent, &:to_i
+    :default => 0, &:to_i
 
   option ["-l", "--log"], "FILE",
     I18n.t("logstash.agent.flag.log"),
@@ -143,7 +143,7 @@ class LogStash::Agent < Clamp::Command
       configure_logging(log_file)
     end
 
-    pipeline.configure("filter-workers", filter_workers)
+    pipeline.configure("filter-workers", filter_workers) if filter_workers > 0
 
     # Stop now if we are only asking for a config test.
     if config_test?

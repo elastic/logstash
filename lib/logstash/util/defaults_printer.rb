@@ -20,7 +20,7 @@ module LogStash module Util class DefaultsPrinter
     @printers.each do |printer|
       printer.visit(collector)
     end
-    "Default settings used: " + collector.join(', ')
+    "Settings: " + collector.join(', ')
   end
 
   private
