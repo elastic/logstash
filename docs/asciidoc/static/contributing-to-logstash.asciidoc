@@ -19,6 +19,7 @@ deploying your own plugins:
 * http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_filter_plugin.html[How to write a Logstash filter plugin]
 * http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_output_plugin.html[How to write a Logstash output plugin]
 
+[float]
 ==== Plugin API Changes added[2.0]
 
 The 2.0 release of Logstash changes how input plugins shut down to increase shutdown reliability. There are three methods
@@ -44,3 +45,5 @@ https://github.com/elastic/logstash/blob/master/CONTRIBUTING.md[contribution]
 guide, and the Logstash
 https://github.com/elastic/logstash/blob/master/README.md[readme]
 document.
+
+include::maintainer-guide.asciidoc[]
