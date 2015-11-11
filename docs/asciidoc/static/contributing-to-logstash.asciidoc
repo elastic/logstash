@@ -45,5 +45,3 @@ https://github.com/elastic/logstash/blob/master/CONTRIBUTING.md[contribution]
 guide, and the Logstash
 https://github.com/elastic/logstash/blob/master/README.md[readme]
 document.
-
-include::maintainer-guide.asciidoc[]
