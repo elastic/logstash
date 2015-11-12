@@ -1,10 +1,13 @@
 # encoding: utf-8
+require 'pp'
+
 module LogStash
   class ShutdownController
 
-    REPORT_CYCLE = 5 # seconds
+    CHECK_EVERY = 1 # second
+    REPORT_EVERY = 5 # checks
+    ABORT_AFTER = 3 # stalled reports
     REPORTS = []
-    NUM_REPORTS = 3
 
     def self.force_shutdown=(boolean)
       @force_shutdown = boolean
@@ -26,18 +29,31 @@ module LogStash
       @pipeline = pipeline
     end
 
-    def start(cycle=REPORT_CYCLE)
+    def start(cycle_period=CHECK_EVERY, report_every=REPORT_EVERY, abort_threshold=ABORT_AFTER)
       @thread ||= Thread.new do
-        Stud.interval(cycle) do
-          REPORTS << @pipeline.inflight_count
-          REPORTS.delete_at(0) if REPORTS.size > NUM_REPORTS # expire old report
-          report(REPORTS.last)
-          if self.class.force_shutdown? && stalled?
-            logger.fatal("Stalled pipeline detected. Forcefully quitting logstash..")
-            @pipeline.dump.each {|e| DeadLetterPostOffice.post(e) }
-            @pipeline.force_exit()
-            break
+        sleep(cycle_period)
+        cycle_number = 0
+        stalled_count = 0
+        Stud.interval(cycle_period) do
+          REPORTS << generate_report(@pipeline)
+          REPORTS.delete_at(0) if REPORTS.size > REPORT_EVERY # expire old report
+          if cycle_number == (REPORT_EVERY - 1) # it's report time!
+            logger.warn(REPORTS.last)
+
+            if stalled?
+              logger.error("The shutdown process appears to be stalled due to busy or blocked plugins. Check the logs for more information.") if stalled_count == 0
+              stalled_count += 1
+
+              if self.class.force_shutdown? && abort_threshold == stalled_count
+                logger.fatal("Forcefully quitting logstash..")
+                @pipeline.force_exit()
+                break
+              end
+            else
+              stalled_count = 0
+            end
           end
+          cycle_number = (cycle_number + 1) % report_every
         end
       end
     end
@@ -47,16 +63,36 @@ module LogStash
       @thread = nil
     end
 
-    def report(report)
-      logger.warn ["INFLIGHT_EVENTS_REPORT", Time.now.iso8601, report]
+    def stalled?
+      return false unless REPORTS.size == REPORT_EVERY
+      # is stalled if inflight count is either constant or increasing
+      stalled_event_count = REPORTS.each_cons(2).all? do |prev_report, next_report|
+        prev_report["INFLIGHT_EVENT_COUNT"]["total"] <= next_report["INFLIGHT_EVENT_COUNT"]["total"]
+      end
+      if stalled_event_count
+        REPORTS.each_cons(2).all? do |prev_report, next_report|
+          prev_report["STALLING_THREADS"] == next_report["STALLING_THREADS"]
+        end
+      else
+        false
+      end
     end
 
-    def stalled?
-      return false unless REPORTS.size == NUM_REPORTS
-      # is stalled if inflight count is either constant or increasing
-      REPORTS.each_cons(2).all? do |prev_report, next_report|
-        prev_report["total"] <= next_report["total"]
+    def generate_report(pipeline)
+      {
+        "INFLIGHT_EVENT_COUNT" => pipeline.inflight_count,
+        "STALLING_THREADS" => format_threads_by_plugin(pipeline.stalling_threads)
+      }
+    end
+
+    def format_threads_by_plugin(threads)
+      stalled_plugins = {}
+      threads.each do |thr|
+        key = (thr.delete("plugin") || "other")
+        stalled_plugins[key] ||= []
+        stalled_plugins[key] << thr
       end
+      stalled_plugins
     end
   end
 end
