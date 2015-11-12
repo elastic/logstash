@@ -42,6 +42,8 @@ Now let's run it:
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 ----
 
+At this point Logstash should be running - note however that Logstash will not indicate it is waiting for your input.
+
 Now type something into your command prompt, and you will see it output by Logstash:
 ----
 hello world
