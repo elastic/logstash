@@ -72,8 +72,7 @@ https://github.com/elastic/logstash/labels/resiliency[resiliency] tag.
 
 *Known unknowns.* If we don’t know it’s happening, it’s hard for us to fix it!
 Please report your issues in GitHub, under the
-https://github.com/elastic/logstash/issues[Logstash],
-https://github.com/elastic/logstash-forwarder/issues[Logstash Forwarder], or
+https://github.com/elastic/logstash/issues[Logstash] or
 individual https://github.com/logstash-plugins/[Logstash plugin] repositories.
 
 == Manageability
@@ -124,12 +123,6 @@ instances. In a clustered deployment, we have the option of automatically
 distributing the load between instances based on the latest cluster state. This
 is a complex use case that will require input from the community on current
 approaches to implementing HA and load balancing of Logstash instances.
-
-== Logstash Forwarder
-[float]
-=== status: ongoing
-
-https://github.com/elastic/logstash-forwarder/[Logstash Forwarder] is a lightweight shipper for tailing files and forwarding this data to Logstash for further processing. It is often used in lieu of running Logstash on the servers, because it is lightweight, written in Go, and consumes less resources. It was created before we had the Beats framework for shipping data from servers and is currently maintained separately. We plan to move the Logstash Forwarder functionality to https://github.com/elastic/filebeat/[Filebeat] in the Beats framework, which is also written in Go. The first version of Filebeat will leverage the libbeat infrastructure and preserve existing features. Over time, we plan to enhance Filebeat with capabilities such as multiline and filtering support. Since Filebeat will serve as the direct replacement for Logstash Forwarder, we are not planning additional releases beyond http://www.elasticsearch.org/blog/logstash-forwarder-0-4-0-released/[Logstash Forwarder 0.4.0].
 
 == Performance
 [float]
