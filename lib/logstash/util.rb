@@ -42,7 +42,7 @@ module LogStash::Util
     end
     state = case backtrace.first
             when /in `push'/ then "blocked_on_push"
-            when /pipeline.*pop/ then "waiting_for_events"
+            when /(?:pipeline|base).*pop/ then "waiting_for_events"
             else "running"
             end
     {
