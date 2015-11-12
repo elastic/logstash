@@ -151,8 +151,11 @@ module LogStash; class Pipeline
   def start_filters
     @filters.each(&:register)
     to_start = @settings["filter-workers"]
-    @filter_threads = to_start.times.collect do
-      Thread.new { filterworker }
+    @filter_threads = to_start.times.collect do |i|
+      Thread.new do
+        LogStash::Util.set_thread_name("|filterworker.#{i}")
+        filterworker
+      end
     end
     actually_started = @filter_threads.select(&:alive?).size
     msg = "Worker threads expected: #{to_start}, worker threads started: #{actually_started}"
@@ -176,7 +179,8 @@ module LogStash; class Pipeline
   end
 
   def inputworker(plugin)
-    LogStash::Util::set_thread_name("<#{plugin.class.config_name}")
+    LogStash::Util.set_thread_name("<#{plugin.class.config_name}")
+    LogStash::Util.set_thread_plugin(plugin)
     begin
       plugin.run(@input_to_filter)
     rescue => e
@@ -209,7 +213,6 @@ module LogStash; class Pipeline
   end # def inputworker
 
   def filterworker
-    LogStash::Util.set_thread_name("|worker")
     begin
       while true
         event = @input_to_filter.pop
@@ -251,6 +254,7 @@ module LogStash; class Pipeline
       event = @filter_to_output.pop
       break if event == LogStash::SHUTDOWN
       output_func(event)
+      LogStash::Util.set_thread_plugin(nil)
     end
   ensure
     @outputs.each do |output|
