@@ -12,7 +12,6 @@ require "logstash/outputs/base"
 require "logstash/config/cpu_core_strategy"
 require "logstash/util/defaults_printer"
 require "logstash/shutdown_controller"
-require "logstash/dead_letter_post_office"
 
 module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :input_to_filter, :filter_to_output

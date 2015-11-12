@@ -10,8 +10,6 @@ describe LogStash::ShutdownController do
 
   before :each do
     LogStash::ShutdownController::REPORTS.clear
-    allow(LogStash::DeadLetterPostOffice).to receive(:post)
-    allow(pipeline).to receive(:dump) { [] }
     allow(pipeline).to receive(:force_exit)
     allow(pipeline).to receive(:inflight_count) do
       subject.stop! if return_values.empty?
@@ -41,11 +39,6 @@ describe LogStash::ShutdownController do
         expect(pipeline).to_not receive(:force_exit)
         subject.start(0).join
       end
-
-      it "shouldn't dump the pipeline" do
-        expect(pipeline).to_not receive(:dump)
-        subject.start(0).join
-      end
     end
 
     context "with a stalled pipeline" do
@@ -53,18 +46,6 @@ describe LogStash::ShutdownController do
 
       it "should force exit after NUM_REPORTS cycles" do
         expect(pipeline).to receive(:force_exit).once 
-        subject.start(0).join
-      end
-
-      it "should dump all contents " do
-        expect(pipeline).to receive(:dump).once
-        subject.start(0).join
-      end
-
-      it "should post pipeline contents to DeadLetterPostOffice" do
-        stalled_events = [LogStash::Event.new("message" => "test")]*2
-        allow(pipeline).to receive(:dump) { stalled_events }
-        expect(LogStash::DeadLetterPostOffice).to receive(:post).twice
         subject.start(0).join
       end
     end

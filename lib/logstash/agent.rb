@@ -81,7 +81,6 @@ class LogStash::Agent < Clamp::Command
     @logger = Cabin::Channel.get(LogStash)
 
     LogStash::ShutdownController.force_shutdown = force_shutdown?
-    LogStash::DeadLetterPostOffice.logger = @logger
 
     if version?
       show_version
@@ -122,7 +121,6 @@ class LogStash::Agent < Clamp::Command
 
     begin
       pipeline = LogStash::Pipeline.new(@config_string)
-      LogStash::DeadLetterPostOffice.destination = LogStash::DeadLetterPostOffice::Destination::File.new
     rescue LoadError => e
       fail("Configuration problem.")
     end
