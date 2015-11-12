@@ -23,7 +23,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Note that this setting may not be useful for all outputs.
   config :workers, :validate => :number, :default => 1
 
-  attr_reader :worker_plugins, :worker_queue
+  attr_reader :worker_plugins, :worker_queue, :worker_threads
 
   public
   def workers_not_supported(message=nil)
@@ -56,6 +56,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def worker_setup
     if @workers == 1
       @worker_plugins = [self]
+      @worker_threads = []
     else
       define_singleton_method(:handle, method(:handle_worker))
       @worker_queue = SizedQueue.new(20)

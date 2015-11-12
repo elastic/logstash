@@ -323,30 +323,53 @@ module LogStash; class Pipeline
   end # flush_filters_to_output!
 
   def inflight_count
-    data = {
-      "input_to_filter" => @input_to_filter.size,
-      "filter_to_output" => @filter_to_output.size,
-      "outputs" => []
-    }
+    data = {}
+    total = 0
+
+    input_to_filter = @input_to_filter.size
+    total += input_to_filter
+    filter_to_output = @filter_to_output.size
+    total += filter_to_output
+
+    data["input_to_filter"] = input_to_filter if input_to_filter > 0
+    data["filter_to_output"] = filter_to_output if filter_to_output > 0
+
+    output_worker_queues = []
     @outputs.each do |output|
       next unless output.worker_queue && output.worker_queue.size > 0
-      data["outputs"] << [output.inspect, output.worker_queue.size]
+      plugin_info = format_plugin_info(output)
+      size = output.worker_queue.size
+      total += size
+      plugin_info << size
+      output_worker_queues << plugin_info
     end
-
-    data["total"] = data["input_to_filter"] + data["filter_to_output"] +
-                    data["outputs"].map(&:last).inject(0, :+)
+    data["output_worker_queues"] = output_worker_queues unless output_worker_queues.empty?
+    data["total"] = total
     data
   end
 
-  def dump
-    event_dump = []
-    [@input_to_filter].each do |queue|
-      until queue.empty? do
-        event = queue.pop(true) rescue ThreadError # non-block pop
-        next unless event.is_a?(LogStash::Event)
-        event_dump << event
-      end
-    end
-    event_dump
+  def stalling_threads
+    plugin_threads.select {|t| t["state"] == "running" }.each {|t| t.delete("state") }
+  end
+
+  def plugin_threads
+    input_threads = @input_threads.select {|t| t.alive? }.map {|t| thread_info(t) }
+    filter_threads = @filter_threads.select {|t| t.alive? }.map {|t| thread_info(t) }
+    output_threads = @output_threads.select {|t| t.alive? }.map {|t| thread_info(t) }
+    output_worker_threads = @outputs.flat_map {|output| output.worker_threads }.map {|t| thread_info(t) }
+    input_threads + filter_threads + output_threads + output_worker_threads
+  end
+
+  def thread_info(thread)
+    info = LogStash::Util.thread_info(thread)
+    info["current_call"] = info["backtrace"].first
+    info.delete("backtrace")
+    info["plugin"] = format_plugin_info(info["plugin"])
+    info
+  end
+
+  def format_plugin_info(plugin)
+    return unless plugin.kind_of?(LogStash::Plugin)
+    [plugin.class.to_s, plugin.original_params]
   end
 end; end
