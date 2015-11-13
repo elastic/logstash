@@ -88,7 +88,7 @@ GEM
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
     polyglot (0.3.5)
-    pry (0.10.2-java)
+    pry (0.10.3-java)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
