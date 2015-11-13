@@ -4,6 +4,7 @@ require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
 require "logstash/pipeline"
 require "stud/trap"
+require "logstash/config/loader"
 require "uri"
 require "socket"
 require "securerandom"
@@ -11,14 +12,25 @@ require "securerandom"
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
+  attr_reader :logger
 
   attr_writer :logger
   attr_reader :node_name
 
-  def initialize(options = {})
+  def initialize(logger, options = {})
+    @logger = logger
     @pipelines = {}
      
     @node_name = options[:node_name] || Socket.gethostname
+  end
+
+  def config_valid?(config_str)
+    begin
+      # There should be a better way to test this ideally
+      LogStash::Pipeline.new(config_str)
+    rescue Exception => e
+      e
+    end
   end
 
   def execute

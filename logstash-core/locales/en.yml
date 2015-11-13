@@ -212,3 +212,5 @@ en:
         node_name: |+
           Specify the name of this logstash instance, if no value is given
           it will default to the current hostname.
+        agent: |+
+          Specify an alternate agent plugin name.
