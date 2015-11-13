@@ -17,6 +17,7 @@ describe LogStash::ShutdownWatcher do
     LogStash::ShutdownWatcher.logger = channel
 
     allow(pipeline).to receive(:reporter).and_return(reporter)
+    allow(pipeline).to receive(:thread).and_return(Thread.current)
     allow(reporter).to receive(:snapshot).and_return(reporter_snapshot)
     allow(reporter_snapshot).to receive(:o_simple_hash).and_return({})
 

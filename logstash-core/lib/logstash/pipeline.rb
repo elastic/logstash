@@ -17,7 +17,7 @@ require "logstash/pipeline_reporter"
 require "logstash/output_delegator"
 
 module LogStash; class Pipeline
-  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :logger
+  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :logger, :thread, :config_str, :original_settings
 
   DEFAULT_SETTINGS = {
     :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.maximum,
@@ -28,9 +28,20 @@ module LogStash; class Pipeline
   }
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
+  def self.validate_config(config_str, settings = {})
+    begin
+      # There should be a better way to test this
+      self.new(config_str, settings)
+    rescue => e
+      e.message
+    end
+  end
+
   def initialize(config_str, settings = {})
-    @pipeline_id = settings[:pipeline_id] || self.object_id
+    @config_str = config_str
+    @original_settings = settings
     @logger = Cabin::Channel.get(LogStash)
+    @pipeline_id = settings[:pipeline_id] || self.object_id
     @settings = DEFAULT_SETTINGS.clone
     settings.each {|setting, value| configure(setting, value) }
     @reporter = LogStash::PipelineReporter.new(@logger, self)
@@ -117,13 +128,12 @@ module LogStash; class Pipeline
   end
 
   def run
-    LogStash::Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
     @logger.terminal(LogStash::Util::DefaultsPrinter.print(@settings))
+    @thread = Thread.current
 
     start_workers
 
-    @logger.info("Pipeline started")
-    @logger.terminal("Logstash startup completed")
+    @logger.log("Pipeline #{@pipeline_id} started")
 
     # Block until all inputs have stopped
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
@@ -138,8 +148,7 @@ module LogStash; class Pipeline
     shutdown_flusher
     shutdown_workers
 
-    @logger.info("Pipeline shutdown complete.")
-    @logger.terminal("Logstash shutdown completed")
+    @logger.log("Pipeline #{@pipeline_id} has been shutdown")
 
     # exit code
     return 0
