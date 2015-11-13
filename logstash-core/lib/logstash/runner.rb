@@ -10,6 +10,7 @@ require "logstash/environment"
 LogStash::Environment.load_locale!
 
 require "logstash/namespace"
+require "logstash/agent_plugin_manager"
 require "logstash/agent"
 
 class LogStash::Runner < Clamp::Command
@@ -65,10 +66,14 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.rubyshell"),
     :attribute_name => :ruby_shell
 
+  option ["-a", "--agent"], "AGENT",
+    I18n.t("logstash.runner.flag.agent"),
+    :attribute_name => :agent_name, :default => LogStash::AgentPluginManager::DEFAULT_AGENT_NAME
+
   attr_reader :agent
 
   def initialize(*args)
-    @agent = LogStash::Agent.new
+    @logger = Cabin::Channel.get(LogStash)
     super(*args)
   end
 
@@ -77,8 +82,6 @@ class LogStash::Runner < Clamp::Command
     require "logstash/util/java_version"
     require "stud/task"
     require "cabin" # gem 'cabin'
-
-    @logger = Cabin::Channel.get(LogStash)
 
     LogStash::Util::set_thread_name(self.class.name)
 
@@ -105,6 +108,8 @@ class LogStash::Runner < Clamp::Command
     if @config_string.nil? && @config_path.nil?
       fail(I18n.t("logstash.runner.missing-configuration"))
     end
+
+    @agent = create_agent
 
     @agent.logger = @logger
 
@@ -134,6 +139,11 @@ class LogStash::Runner < Clamp::Command
   ensure
     @log_fd.close if @log_fd
   end # def self.main
+
+  def create_agent
+    @logger.info("Loading agent", :class => agent_class)
+    agent_class.new
+  end
 
   def show_version
     show_version_logstash
@@ -181,6 +191,20 @@ class LogStash::Runner < Clamp::Command
     Array(paths).each do |path|
       fail(I18n.t("logstash.runner.configuration.plugin_path_missing", :path => path)) unless File.directory?(path)
       LogStash::Environment.add_plugin_path(path)
+    end
+  end
+
+  def agent_class
+    return @agent_class if @agent_class # We don't want to load these things twice
+
+    LogStash::AgentPluginManager.load_all
+    @agent_class = LogStash::AgentPluginManager.lookup(agent_name)
+
+    if !@agent_class
+      @logger.fatal("Could not load specified agent",
+                    :agent_name => agent_name,
+                    :valid_agent_names => LogStash::AgentPluginManager.available.map(&:to_s))
+      exit(1)
     end
   end
 

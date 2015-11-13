@@ -18,14 +18,26 @@ describe LogStash::Runner do
 
   describe "argument parsing" do
 
+    before do
+      #subject.configure # setup_agent requires this to give it logging
+      #subject.setup_agent
+    end
+
     subject { LogStash::Runner.new("") }
     context "when -e is given" do
 
       let(:args) { ["-e", ""] }
+      let(:agent) { double("agent") }
+      let(:agent_logger) { double("agent logger") }
+
+      before do
+        allow(agent).to receive(:logger=).with(anything)
+      end
 
       it "should execute the agent" do
-        expect(subject.agent).to receive(:add_pipeline).once
-        expect(subject.agent).to receive(:execute).once
+        expect(subject).to receive(:create_agent).and_return(agent)
+        expect(agent).to receive(:add_pipeline).once
+        expect(agent).to receive(:execute).once
         subject.run(args)
       end
     end
@@ -72,6 +84,22 @@ describe LogStash::Runner do
         end
       end
     end
+  end
+
+  context "--agent" do
+    # class DummyAgent < LogStash::Agent; end
+    #
+    # let(:agent_name) { "testagent" }
+    # let(:dummy_agent_class) { DummyAgentClass }
+    # subject { LogStash::Runner.new("-a testagent") }
+    #
+    # before do
+    #   LogStash::AgentPluginManager.register(agent_name, DummyAgent)
+    # end
+    #
+    # it "should set the proper agent" do
+    #   expect(subject.agent_class).to eql(DummyAgent)
+    # end
   end
 
   context "--pluginpath" do

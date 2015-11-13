@@ -204,3 +204,5 @@ en:
         rubyshell: |+
           Drop to shell instead of running as normal.
           Valid shells are "irb" and "pry"
+        agent: |+
+          Specify an alternate agent plugin name.
