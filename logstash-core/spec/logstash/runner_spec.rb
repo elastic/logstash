@@ -10,6 +10,13 @@ end
 
 describe LogStash::Runner do
 
+  let(:channel) { Cabin::Channel.new }
+
+  before :each do
+    allow(Cabin::Channel).to receive(:get).with(LogStash).and_return(channel)
+  end
+
+
   context "argument parsing" do
     it "should run agent" do
       expect(Stud::Task).to receive(:new).once.and_return(nil)
@@ -38,31 +45,15 @@ describe LogStash::Runner do
     end
   end
 
-  describe "pipeline settings" do
-    let(:pipeline_string) { "input { stdin {} } output { stdout {} }" }
-    let(:base_pipeline_settings) { { :pipeline_id => "base" } }
-    let(:pipeline) { double("pipeline") }
+  context "--auto-reload" do
+    context "when -f is not given" do
 
-    before(:each) do
-      task = Stud::Task.new { 1 }
-      allow(pipeline).to receive(:run).and_return(task)
-    end
+      let(:args) { ["agent", "-r", "-e", "input {} output {}"] }
 
-    context "when pipeline workers is not defined by the user" do
-      it "should not pass the value to the pipeline" do
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, base_pipeline_settings).and_return(pipeline)
-        args = ["agent", "-e", pipeline_string]
-        subject.run(args).wait
-      end
-    end
-
-    context "when pipeline workers is defined by the user" do
-      it "should pass the value to the pipeline" do
-        base_pipeline_settings[:pipeline_workers] = 2
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, base_pipeline_settings).and_return(pipeline)
-        args = ["agent", "-w", "2", "-e", pipeline_string]
-        subject.run(args).wait
+      it "should exit immediately" do
+        expect(subject.run(args).wait).to eq(1)
       end
     end
   end
+
 end

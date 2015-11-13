@@ -3,12 +3,16 @@ require "clamp" # gem 'clamp'
 require "logstash/environment"
 require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
+require "stud/trap"
+require "logstash/config/loader"
 require "uri"
 require "net/http"
 require "logstash/pipeline"
-LogStash::Environment.load_locale!
 
 class LogStash::Agent < Clamp::Command
+
+  attr_reader :pipelines
+
   DEFAULT_INPUT = "input { stdin { type => stdin } }"
   DEFAULT_OUTPUT = "output { stdout { codec => rubydebug } }"
 
@@ -22,18 +26,18 @@ class LogStash::Agent < Clamp::Command
     :default => "", :attribute_name => :config_string
 
   option ["-w", "--pipeline-workers"], "COUNT",
-         I18n.t("logstash.runner.flag.pipeline-workers"),
+         I18n.t("logstash.agent.flag.pipeline-workers"),
          :attribute_name => :pipeline_workers,
          :default => LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers]
 
 
   option ["-b", "--pipeline-batch-size"], "SIZE",
-         I18n.t("logstash.runner.flag.pipeline-batch-size"),
+         I18n.t("logstash.agent.flag.pipeline-batch-size"),
          :attribute_name => :pipeline_batch_size,
          :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_size]
 
   option ["-u", "--pipeline-batch-delay"], "DELAY_IN_MS",
-         I18n.t("logstash.runner.flag.pipeline-batch-delay"),
+         I18n.t("logstash.agent.flag.pipeline-batch-delay"),
          :attribute_name => :pipeline_batch_delay,
          :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_delay]
 
@@ -71,9 +75,25 @@ class LogStash::Agent < Clamp::Command
     :attribute_name => :unsafe_shutdown,
     :default => false
 
-  def initialize(*args)
-    super(*args)
-    @pipeline_settings ||= { :pipeline_id => "base" }
+  option ["-r", "--[no-]auto-reload"], :flag,
+    I18n.t("logstash.agent.flag.auto_reload"),
+    :attribute_name => :auto_reload, :default => false
+
+  option ["--reload-interval"], "RELOAD_INTERVAL",
+    I18n.t("logstash.agent.flag.reload_interval"),
+    :attribute_name => :reload_interval, :default => 3, &:to_i
+
+  option ["-n", "--node-name"], "NAME",
+    I18n.t("logstash.runner.flag.node_name"),
+    :attribute_name => :node_name, :default => Socket.gethostname
+
+  def initialize(*params)
+    super(*params)
+    @logger = Cabin::Channel.get(LogStash)
+    @pipelines = {}
+    @pipeline_settings ||= { :pipeline_id => "main" }
+    @upgrade_mutex = Mutex.new
+    @config_loader = LogStash::Config::Loader.new(@logger)
   end
 
   def pipeline_workers=(pipeline_workers_value)
@@ -103,7 +123,6 @@ class LogStash::Agent < Clamp::Command
     raise LogStash::ConfigurationError, message
   end # def warn
 
-  # Emit a failure message and abort.
   def fail(message)
     raise LogStash::ConfigurationError, message
   end # def fail
@@ -114,7 +133,6 @@ class LogStash::Agent < Clamp::Command
     require "logstash/pipeline"
     require "cabin" # gem 'cabin'
     require "logstash/plugin"
-    @logger = Cabin::Channel.get(LogStash)
 
     LogStash::ShutdownWatcher.unsafe_shutdown = unsafe_shutdown?
     LogStash::ShutdownWatcher.logger = @logger
@@ -140,70 +158,63 @@ class LogStash::Agent < Clamp::Command
     end
 
     # You must specify a config_string or config_path
-    if @config_string.nil? && @config_path.nil?
-      fail(help + "\n" + I18n.t("logstash.agent.missing-configuration"))
+    if config_string.nil? && config_path.nil?
+      fail(I18n.t("logstash.agent.missing-configuration"))
     end
 
-    @config_string = @config_string.to_s
-
-    if @config_path
-      # Append the config string.
-      # This allows users to provide both -f and -e flags. The combination
-      # is rare, but useful for debugging.
-      @config_string = @config_string + load_config(@config_path)
-    else
-      # include a default stdin input if no inputs given
-      if @config_string !~ /input *{/
-        @config_string += DEFAULT_INPUT
-      end
-      # include a default stdout output if no outputs given
-      if @config_string !~ /output *{/
-        @config_string += DEFAULT_OUTPUT
-      end
+    if auto_reload? && config_path.nil?
+      # there's nothing to reload
+      fail(I18n.t("logstash.agent.reload-without-config-path"))
     end
 
-
-    begin
-      pipeline = LogStash::Pipeline.new(@config_string, @pipeline_settings)
-    rescue LoadError => e
-      fail("Configuration problem.")
-    end
-
-    # Make SIGINT shutdown the pipeline.
-    sigint_id = Stud::trap("INT") do
-
-      if @interrupted_once
-        @logger.fatal(I18n.t("logstash.agent.forced_sigint"))
-        exit
-      else
-        @logger.warn(I18n.t("logstash.agent.sigint"))
-        Thread.new(@logger) {|logger| sleep 5; logger.warn(I18n.t("logstash.agent.slow_shutdown")) }
-        @interrupted_once = true
-        shutdown(pipeline)
-      end
-    end
-
-    # Make SIGTERM shutdown the pipeline.
-    sigterm_id = Stud::trap("TERM") do
-      @logger.warn(I18n.t("logstash.agent.sigterm"))
-      shutdown(pipeline)
-    end
-
-    Stud::trap("HUP") do
-      @logger.info(I18n.t("logstash.agent.sighup"))
-      configure_logging(log_file)
-    end
-
-    # Stop now if we are only asking for a config test.
     if config_test?
-      @logger.terminal "Configuration OK"
-      return
+      config_loader = LogStash::Config::Loader.new(@logger)
+      config_str = config_loader.format_config(config_path, config_string)
+      config_error = LogStash::Pipeline.config_valid?(config_str)
+      if config_error == true
+        @logger.terminal "Configuration OK"
+        return 0
+      else
+        @logger.fatal I18n.t("logstash.error", :error => config_error)
+        return 1
+      end
     end
+
+    register_pipeline("main", @pipeline_settings.merge({
+                          :config_string => config_string,
+                          :config_path => config_path
+                          }))
+
+    sigint_id = trap_sigint()
+    sigterm_id = trap_sigterm()
+    sighup_id = trap_sighup()
 
     @logger.unsubscribe(stdout_logs) if show_startup_errors
 
-    # TODO(sissel): Get pipeline completion status.
-    pipeline.run
+    @logger.info("starting agent")
+
+    start_pipelines
+
+    return 1 if clean_state?
+
+    @thread = Thread.current # this var is implicilty used by Stud.stop?
+
+    Stud.stoppable_sleep(reload_interval) # sleep before looping
+
+    if auto_reload?
+      Stud.interval(reload_interval) { reload_state! }
+    else
+      while !Stud.stop?
+        if clean_state? || running_pipelines?
+          sleep 0.5
+        else
+          break
+        end
+      end
+    end
+
+    shutdown
+
     return 0
   rescue LogStash::ConfigurationError => e
     @logger.unsubscribe(stdout_logs) if show_startup_errors
@@ -220,45 +231,9 @@ class LogStash::Agent < Clamp::Command
     @log_fd.close if @log_fd
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?
     Stud::untrap("TERM", sigterm_id) unless sigterm_id.nil?
+    Stud::untrap("HUP", sighup_id) unless sighup_id.nil?
   end # def execute
 
-  def shutdown(pipeline)
-    pipeline.shutdown do
-      ::LogStash::ShutdownWatcher.start(pipeline)
-    end
-  end
-
-  def show_version
-    show_version_logstash
-
-    if [:info, :debug].include?(verbosity?) || debug? || verbose?
-      show_version_ruby
-      show_version_java if LogStash::Environment.jruby?
-      show_gems if [:debug].include?(verbosity?) || debug?
-    end
-  end # def show_version
-
-  def show_version_logstash
-    require "logstash/version"
-    puts "logstash #{LOGSTASH_VERSION}"
-  end # def show_version_logstash
-
-  def show_version_ruby
-    puts RUBY_DESCRIPTION
-  end # def show_version_ruby
-
-  def show_version_java
-    properties = java.lang.System.getProperties
-    puts "java #{properties["java.version"]} (#{properties["java.vendor"]})"
-    puts "jvm #{properties["java.vm.name"]} / #{properties["java.vm.version"]}"
-  end # def show_version_java
-
-  def show_gems
-    require "rubygems"
-    Gem::Specification.each do |spec|
-      puts "gem #{spec.name} #{spec.version}"
-    end
-  end # def show_gems
 
   # Do any start-time configuration.
   #
@@ -324,63 +299,195 @@ class LogStash::Agent < Clamp::Command
     end
   end
 
-  def load_config(path)
-    begin
-      uri = URI.parse(path)
-
-      case uri.scheme
-      when nil then
-        local_config(path)
-      when /http/ then
-        fetch_config(uri)
-      when "file" then
-        local_config(uri.path)
+  ## Signal Trapping ##
+  def trap_sigint
+    Stud::trap("INT") do
+      if @interrupted_once
+        @logger.fatal(I18n.t("logstash.agent.forced_sigint"))
+        exit
       else
-        fail(I18n.t("logstash.agent.configuration.scheme-not-supported", :path => path))
+        @logger.warn(I18n.t("logstash.agent.sigint"))
+        Thread.new(@logger) {|logger| sleep 5; logger.warn(I18n.t("logstash.agent.slow_shutdown")) }
+        @interrupted_once = true
+        Stud.stop!(@thread)
       end
-    rescue URI::InvalidURIError
-      # fallback for windows.
-      # if the parsing of the file failed we assume we can reach it locally.
-      # some relative path on windows arent parsed correctly (.\logstash.conf)
-      local_config(path)
     end
   end
 
-  def local_config(path)
-    path = File.expand_path(path)
-    path = File.join(path, "*") if File.directory?(path)
-
-    if Dir.glob(path).length == 0
-      fail(I18n.t("logstash.agent.configuration.file-not-found", :path => path))
+  def trap_sigterm
+    Stud::trap("TERM") do
+      @logger.warn(I18n.t("logstash.agent.sigterm"))
+      Stud.stop!(@thread)
     end
+  end
 
-    config = ""
-    encoding_issue_files = []
-    Dir.glob(path).sort.each do |file|
-      next unless File.file?(file)
-      if file.match(/~$/)
-        @logger.debug("NOT reading config file because it is a temp file", :file => file)
-        next
+  def trap_sighup
+    Stud::trap("HUP") do
+      @logger.warn(I18n.t("logstash.agent.sighup"))
+      reload_state!
+    end
+  end
+
+  ## Pipeline CRUD ##
+  def shutdown(pipeline)
+    pipeline.shutdown do
+      ::LogStash::ShutdownWatcher.start(pipeline)
+    end
+  end
+  #
+  # register_pipeline - adds a pipeline to the agent's state
+  # @param pipeline_id [String] pipeline string identifier
+  # @param settings [Hash] settings that will be passed when creating the pipeline.
+  #   keys should be symbols such as :pipeline_workers and :pipeline_batch_delay
+  def register_pipeline(pipeline_id, settings)
+    pipeline = create_pipeline(settings.merge(:pipeline_id => pipeline_id))
+    return unless pipeline.is_a?(LogStash::Pipeline)
+    @pipelines[pipeline_id] = pipeline
+  end
+
+  def reload_state!
+    @upgrade_mutex.synchronize do
+      @pipelines.each do |pipeline_id, _|
+        begin
+          reload_pipeline!(pipeline_id)
+        rescue => e
+          @logger.error(I18n.t("oops"), :error => e, :backtrace => e.backtrace)
+        end
       end
-      @logger.debug("Reading config file", :file => file)
-      cfg = File.read(file)
-      if !cfg.ascii_only? && !cfg.valid_encoding?
-        encoding_issue_files << file
-      end
-      config << cfg + "\n"
     end
-    if (encoding_issue_files.any?)
-      fail("The following config files contains non-ascii characters but are not UTF-8 encoded #{encoding_issue_files}")
-    end
-    return config
-  end # def load_config
+  end
 
-  def fetch_config(uri)
+  def create_pipeline(settings)
     begin
-      Net::HTTP.get(uri) + "\n"
-    rescue Exception => e
-      fail(I18n.t("logstash.agent.configuration.fetch-failed", :path => uri.to_s, :message => e.message))
+      config = fetch_config(settings)
+    rescue => e
+      @logger.error("failed to fetch pipeline configuration", :message => e.message)
+      return
+    end
+
+    begin
+      LogStash::Pipeline.new(config, settings)
+    rescue => e
+      @logger.error("fetched an invalid config", :config => config, :reason => e.message)
+      return
     end
   end
+
+  def start_pipelines
+    @pipelines.each { |id, _| start_pipeline(id) }
+  end
+
+  def shutdown
+    shutdown_pipelines
+  end
+
+  def shutdown_pipelines
+    @pipelines.each { |id, _| stop_pipeline(id) }
+  end
+
+  def stop_pipeline(id)
+    pipeline = @pipelines[id]
+    return unless pipeline
+    @logger.log("stopping pipeline", :id => id)
+    pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
+    @pipelines[id].thread.join
+  end
+
+  def running_pipelines?
+    @upgrade_mutex.synchronize do
+      @pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }.any?
+    end
+  end
+
+  def running_pipeline?(pipeline_id)
+    thread = @pipelines[pipeline_id].thread
+    thread.is_a?(Thread) && thread.alive?
+  end
+
+  def upgrade_pipeline(pipeline_id, new_pipeline)
+    stop_pipeline(pipeline_id)
+    @pipelines[pipeline_id] = new_pipeline
+    start_pipeline(pipeline_id)
+  end
+
+  def clean_state?
+    @pipelines.empty?
+  end
+
+  # since this method modifies the @pipelines hash it is
+  # wrapped in @upgrade_mutex in the parent call `reload_state!`
+  def reload_pipeline!(id)
+    old_pipeline = @pipelines[id]
+    new_pipeline = create_pipeline(old_pipeline.original_settings)
+    return if new_pipeline.nil?
+
+    if old_pipeline.config_str == new_pipeline.config_str
+      @logger.debug("no configuration change for pipeline",
+                    :pipeline => id, :config => old_pipeline.config_str)
+    else
+      @logger.log("fetched new config for pipeline. upgrading..",
+                   :pipeline => id, :config => new_pipeline.config_str)
+      upgrade_pipeline(id, new_pipeline)
+    end
+  end
+
+  def start_pipeline(id)
+    pipeline = @pipelines[id]
+    return unless pipeline.is_a?(LogStash::Pipeline)
+    return if pipeline.ready?
+    @logger.info("starting pipeline", :id => id)
+    Thread.new do
+      LogStash::Util.set_thread_name("pipeline.#{id}")
+      begin
+        pipeline.run
+      rescue => e
+        @logger.error("Pipeline aborted due to error", :exception => e, :backtrace => e.backtrace)
+      end
+    end
+    sleep 0.01 until pipeline.ready?
+  end
+
+  ## Pipeline Aux methods ##
+  def fetch_config(settings)
+    @config_loader.format_config(settings[:config_path], settings[:config_string])
+  end
+
+  private
+  def node_uuid
+    @node_uuid ||= SecureRandom.uuid
+  end
+
+  ### Version actions ###
+  def show_version
+    show_version_logstash
+
+    if [:info, :debug].include?(verbosity?) || debug? || verbose?
+      show_version_ruby
+      show_version_java if LogStash::Environment.jruby?
+      show_gems if [:debug].include?(verbosity?) || debug?
+    end
+  end # def show_version
+
+  def show_version_logstash
+    require "logstash/version"
+    puts "logstash #{LOGSTASH_VERSION}"
+  end # def show_version_logstash
+
+  def show_version_ruby
+    puts RUBY_DESCRIPTION
+  end # def show_version_ruby
+
+  def show_version_java
+    properties = java.lang.System.getProperties
+    puts "java #{properties["java.version"]} (#{properties["java.vendor"]})"
+    puts "jvm #{properties["java.vm.name"]} / #{properties["java.vm.version"]}"
+  end # def show_version_java
+
+  def show_gems
+    require "rubygems"
+    Gem::Specification.each do |spec|
+      puts "gem #{spec.name} #{spec.version}"
+    end
+  end # def show_gems
 
 end # class LogStash::Agent

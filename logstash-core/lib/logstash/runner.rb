@@ -9,11 +9,15 @@ LogStash::Environment.load_locale!
 
 require "logstash/namespace"
 require "logstash/program"
+require "logstash/config/defaults"
 
 class LogStash::Runner
   include LogStash::Program
 
+  attr_reader :agent
+
   def main(args)
+
     require "logstash/util"
     require "logstash/util/java_version"
     require "stud/trap"
@@ -121,4 +125,5 @@ Available commands:
   def show_help(command)
     puts command.help
   end
+
 end # class LogStash::Runner
