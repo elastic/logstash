@@ -9,8 +9,8 @@
 
 Logstash is a tool for managing events and logs. You can use it to collect
 logs, parse them, and store them for later use (like, for searching).  If you
-store them in [Elasticsearch](http://www.elastic.co/guide/en/elasticsearch/reference/current/index.html),
-you can view and analyze them with [Kibana](http://www.elastic.co/guide/en/kibana/current/index.html).
+store them in [Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html),
+you can view and analyze them with [Kibana](https://www.elastic.co/guide/en/kibana/current/index.html).
 
 It is fully free and fully open source. The license is Apache 2.0, meaning you
 are pretty much free to use it however you want in whatever way.
@@ -25,7 +25,7 @@ repositories under the [logstash-plugins](https://github.com/logstash-plugins) g
 gets published to RubyGems.org. Logstash has added plugin infrastructure to easily maintain the lifecyle of the plugin.
 For more details and rationale behind these changes, see our [blogpost](https://www.elastic.co/blog/plugin-ecosystem-changes/).
 
-[Elasticsearch logstash-contrib repo](https://github.com/elasticsearch/logstash-contrib) is deprecated. We
+[Elasticsearch logstash-contrib repo](https://github.com/elastic/logstash-contrib) is deprecated. We
 have moved all of the plugins that existed there into their own repositories. We are migrating all of the pull requests
 and issues from logstash-contrib to the new repositories.
 
@@ -43,7 +43,7 @@ Logstash core will continue to exist under this repository and all related issue
 
 - [#logstash on freenode IRC](https://webchat.freenode.net/?channels=logstash)
 - [logstash-users on Google Groups](https://groups.google.com/d/forum/logstash-users)
-- [Logstash Documentation](http://www.elastic.co/guide/en/logstash/current/index.html)
+- [Logstash Documentation](https://www.elastic.co/guide/en/logstash/current/index.html)
 - [Logstash Product Information](https://www.elastic.co/products/logstash)
 - [Elastic Support](https://www.elastic.co/subscriptions)
 
