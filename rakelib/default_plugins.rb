@@ -58,6 +58,7 @@ module LogStash
       logstash-input-http
       logstash-input-imap
       logstash-input-irc
+      logstash-input-jdbc
       logstash-input-log4j
       logstash-input-lumberjack
       logstash-input-pipe
