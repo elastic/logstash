@@ -1317,6 +1317,21 @@ module LogStashConfig
           r9 = nil
         end
         s0 << r9
+        if r9
+          if has_terminal?('i', false, index)
+            r11 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            @index += 1
+          else
+            terminal_parse_failure('i')
+            r11 = nil
+          end
+          if r11
+            r10 = r11
+          else
+            r10 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s0 << r10
+        end
       end
     end
     if s0.last

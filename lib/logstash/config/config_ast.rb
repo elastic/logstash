@@ -320,7 +320,12 @@ module LogStash; module Config; module AST
   end
   class RegExp < Value
     def compile
-      return "Regexp.new(" + Unicode.wrap(text_value[1...-1]) + ")"
+      if text_value[-1, 1] != '/'
+        right_slash = text_value.rindex('/')
+        return "Regexp.new(#{Unicode.wrap(text_value[1...right_slash])}, #{text_value[-1, 1] == 'i'})"
+      else
+        return "Regexp.new(#{Unicode.wrap(text_value[1...-1])})"
+      end
     end
   end
   class Number < Value
