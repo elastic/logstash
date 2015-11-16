@@ -9,11 +9,11 @@ require "logstash/config/file"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
-require "logstash/util/reporter"
 require "logstash/config/cpu_core_strategy"
 require "logstash/util/defaults_printer"
+require "logstash/shutdown_controller"
 
-class LogStash::Pipeline
+module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :input_to_filter, :filter_to_output
 
   def initialize(configstr)
@@ -25,6 +25,7 @@ class LogStash::Pipeline
 
     grammar = LogStashConfigParser.new
     @config = grammar.parse(configstr)
+
     if @config.nil?
       raise LogStash::ConfigurationError, grammar.failure_reason
     end
@@ -150,8 +151,11 @@ class LogStash::Pipeline
   def start_filters
     @filters.each(&:register)
     to_start = @settings["filter-workers"]
-    @filter_threads = to_start.times.collect do
-      Thread.new { filterworker }
+    @filter_threads = to_start.times.collect do |i|
+      Thread.new do
+        LogStash::Util.set_thread_name("|filterworker.#{i}")
+        filterworker
+      end
     end
     actually_started = @filter_threads.select(&:alive?).size
     msg = "Worker threads expected: #{to_start}, worker threads started: #{actually_started}"
@@ -175,7 +179,8 @@ class LogStash::Pipeline
   end
 
   def inputworker(plugin)
-    LogStash::Util::set_thread_name("<#{plugin.class.config_name}")
+    LogStash::Util.set_thread_name("<#{plugin.class.config_name}")
+    LogStash::Util.set_thread_plugin(plugin)
     begin
       plugin.run(@input_to_filter)
     rescue => e
@@ -208,7 +213,6 @@ class LogStash::Pipeline
   end # def inputworker
 
   def filterworker
-    LogStash::Util.set_thread_name("|worker")
     begin
       while true
         event = @input_to_filter.pop
@@ -250,6 +254,7 @@ class LogStash::Pipeline
       event = @filter_to_output.pop
       break if event == LogStash::SHUTDOWN
       output_func(event)
+      LogStash::Util.set_thread_plugin(nil)
     end
   ensure
     @outputs.each do |output|
@@ -266,12 +271,20 @@ class LogStash::Pipeline
     # shutdown method which can be called from another thread at any time
     sleep(0.1) while !ready?
 
+    shutdown_controller = ::LogStash::ShutdownController.new(self)
+    shutdown_controller.logger = @logger
+    shutdown_controller.start
+
     # TODO: should we also check against calling shutdown multiple times concurently?
 
     before_stop.call if block_given?
 
     @inputs.each(&:do_stop)
   end # def shutdown
+
+  def force_exit
+    exit(-1)
+  end
 
   def plugin(plugin_type, name, *args)
     args << {} if args.empty?
@@ -309,4 +322,54 @@ class LogStash::Pipeline
     end
   end # flush_filters_to_output!
 
-end # class Pipeline
+  def inflight_count
+    data = {}
+    total = 0
+
+    input_to_filter = @input_to_filter.size
+    total += input_to_filter
+    filter_to_output = @filter_to_output.size
+    total += filter_to_output
+
+    data["input_to_filter"] = input_to_filter if input_to_filter > 0
+    data["filter_to_output"] = filter_to_output if filter_to_output > 0
+
+    output_worker_queues = []
+    @outputs.each do |output|
+      next unless output.worker_queue && output.worker_queue.size > 0
+      plugin_info = format_plugin_info(output)
+      size = output.worker_queue.size
+      total += size
+      plugin_info << size
+      output_worker_queues << plugin_info
+    end
+    data["output_worker_queues"] = output_worker_queues unless output_worker_queues.empty?
+    data["total"] = total
+    data
+  end
+
+  def stalling_threads
+    plugin_threads.select {|t| t["state"] == "running" }.each {|t| t.delete("state") }
+  end
+
+  def plugin_threads
+    input_threads = @input_threads.select {|t| t.alive? }.map {|t| thread_info(t) }
+    filter_threads = @filter_threads.select {|t| t.alive? }.map {|t| thread_info(t) }
+    output_threads = @output_threads.select {|t| t.alive? }.map {|t| thread_info(t) }
+    output_worker_threads = @outputs.flat_map {|output| output.worker_threads }.map {|t| thread_info(t) }
+    input_threads + filter_threads + output_threads + output_worker_threads
+  end
+
+  def thread_info(thread)
+    info = LogStash::Util.thread_info(thread)
+    info["current_call"] = info["backtrace"].first
+    info.delete("backtrace")
+    info["plugin"] = format_plugin_info(info["plugin"])
+    info
+  end
+
+  def format_plugin_info(plugin)
+    return unless plugin.kind_of?(LogStash::Plugin)
+    [plugin.class.to_s, plugin.original_params]
+  end
+end; end
