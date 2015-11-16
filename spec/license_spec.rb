@@ -12,6 +12,7 @@ describe "Project licenses" do
     Regexp.union([ /mit/,
                    /apache*/,
                    /bsd/,
+                   /artistic 2.*/,
                    /ruby/,
                    /lgpl/])
   }
