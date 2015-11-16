@@ -39,14 +39,6 @@ class LogStash::Runner
   def run(args)
     command = args.shift
     commands = {
-      "version" => lambda do
-        require "logstash/agent"
-        agent_args = ["--version"]
-        if args.include?("--verbose")
-          agent_args << "--verbose"
-        end
-        return LogStash::Agent.run($0, agent_args)
-      end,
       "irb" => lambda do
         require "irb"
         return IRB.start(__FILE__)
@@ -102,16 +94,8 @@ class LogStash::Runner
           $stderr.puts "No such command #{command.inspect}"
         end
       end
-      $stderr.puts %q[
-Usage: logstash <command> [command args]
-Run a command with the --help flag to see the arguments.
-For example: logstash agent --help
-
-Available commands:
-  agent - runs the logstash agent
-  version - emits version info about this logstash
-]
-      #$stderr.puts commands.keys.map { |s| "  #{s}" }.join("\n")
+      require "logstash/agent"
+      $stderr.puts LogStash::Agent.help("bin/logstash")
       return Stud::Task.new { 1 }
     end
   end # def run

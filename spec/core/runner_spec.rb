@@ -2,6 +2,7 @@
 require "spec_helper"
 require "logstash/runner"
 require "stud/task"
+require "logstash/agent"
 
 class NullRunner
   def run(args); end
@@ -22,19 +23,24 @@ describe LogStash::Runner do
       expect(subject.run(args).wait).to eq(0)
     end
 
-    it "should show help with no arguments" do
-      expect($stderr).to receive(:puts).once.and_return("No command given")
-      expect($stderr).to receive(:puts).once
+    context "empty arguments" do
       args = []
-      expect(subject.run(args).wait).to eq(1)
+      it "should show agent help" do
+        expect(LogStash::Agent).to receive(:help).once
+        expect($stderr).to receive(:puts).once.with("No command given")
+        expect($stderr).to receive(:puts).once
+        expect(subject.run(args).wait).to eq(1)
+      end
     end
 
-    it "should show help for unknown commands" do
-      expect($stderr).to receive(:puts).once.and_return("No such command welp")
-      expect($stderr).to receive(:puts).once
+    context "unknown command" do
       args = ["welp"]
-      expect(subject.run(args).wait).to eq(1)
+      it "should show agent help" do
+        expect(LogStash::Agent).to receive(:help).once
+        expect($stderr).to receive(:puts).once.with("No such command \"welp\"")
+        expect($stderr).to receive(:puts).once
+        expect(subject.run(args).wait).to eq(1)
+      end
     end
-
   end
 end
