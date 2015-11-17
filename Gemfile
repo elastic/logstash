@@ -2,14 +2,11 @@
 # If you modify this file manually all comments and formatting will be lost.
 
 source "https://rubygems.org"
-gem "logstash-core", "2.0.0.beta3"
+gem "logstash-core", "2.1.0.snapshot1"
 gem "file-dependencies", "0.1.6"
 gem "ci_reporter_rspec", "1.0.0", :group => :development
 gem "simplecov", :group => :development
 gem "coveralls", :group => :development
-# Tins 1.7 requires the ruby 2.0 platform to install,
-# this gem is a dependency of term-ansi-color which is a dependency of coveralls.
-# 1.6 is the last supported version on jruby.
 gem "tins", "1.6", :group => :development
 gem "rspec", "~> 3.1.0", :group => :development
 gem "logstash-devutils", "~> 0", :group => :development
@@ -123,3 +120,4 @@ gem "logstash-output-stdout"
 gem "logstash-output-tcp"
 gem "logstash-output-udp"
 gem "logstash-output-kafka"
+gem "logstash-input-jdbc"
