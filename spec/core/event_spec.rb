@@ -496,4 +496,17 @@ describe LogStash::Event do
       subject{LogStash::Event.new(LogStash::Json.load(LogStash::Json.dump(event_hash)))}
     end
   end
+
+
+  describe "#to_s" do
+    let(:event1) { LogStash::Event.new({ "host" => "foo", "message" => "bar"}) }
+    let(:event2) { LogStash::Event.new({ "host" => "bar", "message" => "foo"}) }
+
+    it "should cache only one template" do
+      expect {
+        event1.to_s
+        event2.to_s
+      }.to change { LogStash::StringInterpolation::CACHE.size }.by(1)
+    end
+  end
 end
