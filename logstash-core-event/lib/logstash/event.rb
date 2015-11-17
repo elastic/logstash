@@ -106,7 +106,7 @@ class LogStash::Event
 
   public
   def to_s
-    self.sprintf("#{timestamp.to_iso8601} %{host} %{message}")
+    "#{timestamp.to_iso8601} #{self.sprintf("%{host} %{message}")}"
   end # def to_s
 
   public
