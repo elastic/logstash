@@ -41,7 +41,7 @@ LS_CONF_DIR=/etc/logstash/conf.d
 LS_OPEN_FILES=16384
 LS_NICE=19
 LS_OPTS=""
-LS_PIDFILE=/var/run/$NAME/$NAME.pid
+LS_PIDFILE=/var/run/$NAME.pid
 
 # End of variables that can be overwritten in $DEFAULT
 
@@ -85,9 +85,13 @@ do_start()
   # runuser forks rather than execing our process.
   usleep 500000
   JAVA_PID=$(ps axo ppid,pid | awk -v "ppid=$PID" '$1==ppid {print $2}')
+  if [ -z "$JAVA_PID" ]; then
+    failure
+    exit 1
+  fi
   PID=${JAVA_PID:-$PID}
   echo $PID > $PID_FILE
-  [ "$PID" = "$JAVA_PID" ] && success
+  [ "$PID" = "$JAVA_PID" ] && success || failure
 }
 
 #
@@ -97,22 +101,19 @@ do_stop()
 {
     killproc -p $PID_FILE $DAEMON
     RETVAL=$?
-    echo
-    [ $RETVAL = 0 ] && rm -f ${PID_FILE}
+    [ $RETVAL = 0 ] && rm -f ${PID_FILE}; success || failure
 }
 
 case "$1" in
   start)
     echo -n "Starting $DESC: "
     do_start
-    touch /var/run/logstash/$NAME
     ;;
   stop)
     echo -n "Stopping $DESC: "
     do_stop
-    rm /var/run/logstash/$NAME
     ;;
-  restart|reload)
+  restart)
     echo -n "Restarting $DESC: "
     do_stop
     do_start
