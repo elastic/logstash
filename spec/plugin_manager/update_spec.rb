@@ -8,7 +8,7 @@ describe LogStash::PluginManager::Update do
 
   before(:each) do
     expect(cmd).to receive(:find_latest_gem_specs).and_return({})
-    expect(cmd).to receive(:warn_local_gems).and_return(nil)
+    allow(cmd).to receive(:warn_local_gems).and_return(nil)
     expect(cmd).to receive(:display_updated_plugins).and_return(nil)
     expect_any_instance_of(LogStash::Bundler).to receive(:invoke!).with(:clean => true)
   end
