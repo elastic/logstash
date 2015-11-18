@@ -311,7 +311,7 @@ The information you need to manage often comes from several disparate sources, a
 destinations for your data. Your Logstash pipeline can use multiple input and output plugins to handle these 
 requirements.
 
-This example creates a Logstash pipeline that takes input from a Twitter feed and the Logstash Forwarder client, then 
+This example creates a Logstash pipeline that takes input from a Twitter feed and the Filebeat client, then 
 sends the information to an Elasticsearch cluster as well as writing the information directly to a file.
 
 [float]
@@ -342,60 +342,60 @@ twitter {
 
 [float]
 [[configuring-lsf]]
-===== The Logstash Forwarder
+===== The Filebeat Client
 
-The https://github.com/elastic/logstash-forwarder[Logstash Forwarder] is a lightweight, resource-friendly tool that 
+The https://github.com/elastic/filebeat[filebeat] client is a lightweight, resource-friendly tool that 
 collects logs from files on the server and forwards these logs to your Logstash instance for processing. The 
-Logstash Forwarder uses a secure protocol called _lumberjack_ to communicate with your Logstash instance. The 
-lumberjack protocol is designed for reliability and low latency. The Logstash Forwarder uses the computing resources of 
-the machine hosting the source data, and the Lumberjack input plugin minimizes the resource demands on the Logstash 
-instance.
+Filebeat client uses the secure Beats protocol to communicate with your Logstash instance. The 
+lumberjack protocol is designed for reliability and low latency. Filebeat uses the computing resources of 
+the machine hosting the source data, and the {logstash}plugins-inputs-beats.html[Beats input] plugin minimizes the 
+resource demands on the Logstash instance.
 
-NOTE: In a typical use case, the Logstash Forwarder client runs on a separate machine from the machine running your 
-Logstash instance. For the purposes of this tutorial, both Logstash and the Logstash Forwarder will be running on the
+NOTE: In a typical use case, Filebeat runs on a separate machine from the machine running your 
+Logstash instance. For the purposes of this tutorial, Logstash and Filebeat are running on the
 same machine.
 
-Default Logstash configuration includes the {logstash}plugins-inputs-lumberjack.html[Lumberjack input plugin], which is 
-designed to be resource-friendly. To install the Logstash Forwarder on your data source machine, install the 
-appropriate package from the main Logstash https://www.elastic.co/downloads/logstash[product page].
+Default Logstash configuration includes the {logstash}plugins-inputs-beats.html[Beats input plugin], which is 
+designed to be resource-friendly. To install Filebeat on your data source machine, download the 
+appropriate package from the Filebeat https://www.elastic.co/downloads/beats/filebeat[product page].
 
-Create a configuration file for the Logstash Forwarder similar to the following example:
+Create a configuration file for Filebeat similar to the following example:
 
-[source,json]
---------------------------------------------------------------------------------
-{
-    "network": {
-        "servers": [ "localhost:5043" ],
-        "ssl ca": "/path/to/localhost.crt", <1>
-        "timeout": 15
-    },
-    "files": [
-        {
-            "paths": [
-                "/path/to/sample-log" <2>
-            ],
-            "fields": { "type": "apache" }
-        }
-    ]
-}
---------------------------------------------------------------------------------
+[source,yaml]
+filebeat:
+  prospectors:
+    -
+      paths:
+        - "/path/to/sample-log" <2>
+      fields:
+        type: syslog
+output:
+  elasticsearch:
+    enabled: true
+    hosts: ["http://localhost:5043"]
+  tls:
+    certificate: /path/to/ssl-certificate.crt <2>
+    certificate_key: /path/to/ssl-certificate.key
+    certificate_authorities: /path/to/ssl-certificate.crt
+    timeout: 15
 
-<1> Path to the SSL certificate for the Logstash instance.
-<2> Path to the file or files that the Logstash Forwarder processes.
+<1> Path to the file or files that Filebeat processes.
+<2> Path to the SSL certificate for the Logstash instance.
 
-Save this configuration file as `logstash-forwarder.conf`. 
+Save this configuration file as `filebeat.yml`. 
 
-Configure your Logstash instance to use the Lumberjack input plugin by adding the following lines to the `input` section 
+Configure your Logstash instance to use the Filebeat input plugin by adding the following lines to the `input` section 
 of the `first-pipeline.conf` file:
 
 [source,json]
-lumberjack {
+beats {
     port => "5043"
+    ssl => true
     ssl_certificate => "/path/to/ssl-cert" <1>
     ssl_key => "/path/to/ssl-key" <2>
 }
 
-<1> Path to the SSL certificate that the Logstash instance uses to authenticate itself to Logstash Forwarder.
+<1> Path to the SSL certificate that the Logstash instance uses to authenticate itself to Filebeat.
 <2> Path to the key for the SSL certificate.
 
 [float]
@@ -451,8 +451,9 @@ input {
         oauth_token =>
         oauth_token_secret =>
     }
-    lumberjack {
+    beats {
         port => "5043"
+        ssl => true
         ssl_certificate => "/path/to/ssl-cert"
         ssl_key => "/path/to/ssl-key"
     }
@@ -467,15 +468,15 @@ output {
 }
 --------------------------------------------------------------------------------
 
-Logstash is consuming data from the Twitter feed you configured, receiving data from the Logstash Forwarder, and 
+Logstash is consuming data from the Twitter feed you configured, receiving data from Filebeat, and 
 indexing this information to three nodes in an Elasticsearch cluster as well as writing to a file.
 
-At the data source machine, run the Logstash Forwarder with the following command:
+At the data source machine, run Filebeat with the following command:
 
 [source,shell]
-logstash-forwarder -config logstash-forwarder.conf
+sudo ./filebeat -e -c filebeat.yml -d "publish"
 
-Logstash Forwarder will attempt to connect on port 5403. Until Logstash starts with an active Lumberjack plugin, there 
+Filebeat will attempt to connect on port 5403. Until Logstash starts with an active Beats plugin, there 
 won’t be any answer on that port, so any messages you see regarding failure to connect on that port are normal for now.
 
 To verify your configuration, run the following command:

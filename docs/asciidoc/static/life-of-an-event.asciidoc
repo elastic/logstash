@@ -19,8 +19,7 @@ according to the RFC3164 format
 * *redis*: reads from a redis server, using both redis channels and redis lists.
 Redis is often used as a "broker" in a centralized Logstash installation, which
 queues Logstash events from remote Logstash "shippers".
-* *lumberjack*: processes events sent in the lumberjack protocol. Now called
-https://github.com/elastic/logstash-forwarder[logstash-forwarder].
+* *beats*: processes events sent by https://www.elastic.co/downloads/beats/filebeat[Filebeat].
 
 For more information about the available inputs, see
 <<input-plugins,Input Plugins>>.
