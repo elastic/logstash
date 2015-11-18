@@ -499,7 +499,8 @@ describe LogStash::Event do
 
 
   describe "#to_s" do
-    let(:event1) { LogStash::Event.new({ "host" => "foo", "message" => "bar"}) }
+    let(:timestamp) { LogStash::Timestamp.new }
+    let(:event1) { LogStash::Event.new({ "@timestamp" => timestamp, "host" => "foo", "message" => "bar"}) }
     let(:event2) { LogStash::Event.new({ "host" => "bar", "message" => "foo"}) }
 
     it "should cache only one template" do
@@ -507,6 +508,10 @@ describe LogStash::Event do
         event1.to_s
         event2.to_s
       }.to change { LogStash::StringInterpolation::CACHE.size }.by(1)
+    end
+
+    it "return the string containing the timestamp, the host and the message" do
+      expect(event1.to_s).to eq("#{timestamp.to_iso8601} #{event1["host"]} #{event1["message"]}")
     end
   end
 end
