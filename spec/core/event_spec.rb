@@ -504,6 +504,7 @@ describe LogStash::Event do
     let(:event2) { LogStash::Event.new({ "host" => "bar", "message" => "foo"}) }
 
     it "should cache only one template" do
+      LogStash::StringInterpolation::CACHE.clear
       expect {
         event1.to_s
         event2.to_s
