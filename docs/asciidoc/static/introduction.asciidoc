@@ -1,15 +1,3 @@
-[[introduction]]
-== Logstash Introduction
-
-Logstash is an open source data collection engine with real-time pipelining capabilities. Logstash can dynamically 
-unify data from disparate sources and normalize the data into destinations of your choice. Cleanse and democratize all 
-your data for diverse advanced downstream analytics and visualization use cases.
-
-While Logstash originally drove innovation in log collection, its capabilities extend well beyond that use case. Any 
-type of event can be enriched and transformed with a broad array of input, filter, and output plugins, with many 
-native codecs further simplifying the ingestion process. Logstash accelerates your insights by harnessing a greater 
-volume and variety of data.
-
 [float]
 [[power-of-logstash]]
 == The Power of Logstash
@@ -43,8 +31,7 @@ Where it all started.
 logs like <<plugins-inputs-log4j,log4j>> for Java
 ** Capture many other log formats like <<plugins-inputs-syslog,syslog>>, 
 <<plugins-inputs-eventlog,Windows event logs>>, networking and firewall logs, and more
-* Enjoy complementary secure log forwarding capabilities with https://github.com/elastic/logstash-forwarder[Logstash 
-Forwarder]
+* Enjoy complementary secure log forwarding capabilities with https://github.com/elastic/filebeat[Filebeat]
 * Collect metrics from <<plugins-inputs-ganglia,Ganglia>>, <<plugins-codecs-collectd,collectd>>, 
 <<plugins-codecs-netflow,NetFlow>>, <<plugins-inputs-jmx,JMX>>, and many other infrastructure 
 and application platforms over <<plugins-inputs-tcp,TCP>> and <<plugins-inputs-udp,UDP>>

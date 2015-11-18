@@ -39,18 +39,17 @@ filtering tasks. For example the `bin/logstash -w 8` command uses eight differen
 image::static/images/deploy_2.png[]
 
 [float]
-[[deploying-logstash-forwarder]]
-==== Using Logstash Forwarder
+[[deploying-filebeat]]
+==== Using Filebeat
 
-The https://github.com/elastic/logstash-forwarder[Logstash Forwarder] is a lightweight, resource-friendly tool written 
-in Go that collects logs from files on the server and forwards these logs to other machines for processing. The 
-Logstash Forwarder uses a secure protocol called Lumberjack to communicate with a centralized Logstash instance. 
-Configure the Logstash instances that receive Lumberjack data to use the 
-{logstash}plugins-inputs-lumberjack.html[Lumberjack input plugin].
+https://www.elastic.co/guide/en/beats/filebeat/current/index.html[Filebeat] is a lightweight, resource-friendly tool
+written in Go that collects logs from files on the server and forwards these logs to other machines for processing. 
+Filebeat uses the https://www.elastic.co/guide/en/beats/libbeat/current/index.html[Beats] protocol to communicate with a 
+centralized Logstash instance. Configure the Logstash instances that receive Beats data to use the 
+{logstash}plugins-inputs-beats.html[Beats input plugin].
 
-The Logstash Forwarder uses the computing resources of the machine hosting the source data, and the Lumberjack input 
-plugin minimizes the resource demands on the Logstash instance, making this architecture attractive for use cases with 
-resource constraints.
+Filebeat uses the computing resources of the machine hosting the source data, and the Beats input plugin minimizes the
+resource demands on the Logstash instance, making this architecture attractive for use cases with resource constraints.
 
 image::static/images/deploy_3.png[]
 
