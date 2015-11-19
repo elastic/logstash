@@ -4,25 +4,30 @@
 The Logstash <<working-with-plugins,plugin manager>> was introduced in the 1.5 release. This section discusses setting up
 local repositories of plugins for use on systems without access to the Internet.
 
-The procedures in this section require a machine running Logstash that has access to a public or private Rubygems server.
-See the <<private-rubygem,Private Gem Repositories>> section for information on setting up your own private Rubygems 
-server.
+The procedures in this section require a staging machine running Logstash that has access to a public or private Rubygems 
+server. This staging machine downloads and packages the files used for offline installation.
+
+See the <<private-rubygem,Private Gem Repositories>> section for information on setting up your own private 
+Rubygems server.
 
 [float]
-=== Using the Offline Pack
+=== Building the Offline Package
 
-Working with offline plugins requires you to create an _offline pack_, which is a compressed file that contains all of the
-plugins your offline Logstash installation requires, along with the dependencies for those plugins. You create the
-offline pack with the `bin/plugin pack` subcommand.
+Working with offline plugins requires you to create an _offline package_, which is a compressed file that contains all of 
+the plugins your offline Logstash installation requires, along with the dependencies for those plugins.
 
+. Create the offline package with the `bin/plugin pack` subcommand.
++
 When you run the `bin/plugin pack` subcommand, Logstash creates a compressed bundle that contains all of the currently
 installed plugins and the dependencies for those plugins. By default, the compressed bundle is a GZipped TAR file when you 
 run the `bin/plugin pack` subcommand on a UNIX machine. By default, when you run the `bin/plugin pack` subcommand on a 
 Windows machine, the compressed bundle is a ZIP file. See <<managing-packs,Managing Plugin Packs>> for details on changing 
 these default behaviors.
++
+NOTE: Downloading all dependencies for the specified plugins may take some time, depending on the plugins listed.
 
-Move the compressed bundle to the offline Logstash machine and use the `bin/plugin unpack` subcommand to make the
-packaged plugins available to Logstash.
+. Move the compressed bundle to the offline machines that are the source for offline plugin installation, then use the
+`bin/plugin unpack` subcommand to make the packaged plugins available.
 
 [float]
 === Install or Update a local plugin
@@ -47,7 +52,7 @@ examples:
 The `pack` and `unpack` subcommands for `bin/plugin` take the following options:
 
 [horizontal]
-`--tgz`:: Generate the offline pack as a GZipped TAR file. The default behavior on UNIX systems.
-`--zip`:: Generate the offline pack as a ZIP file. The default behavior on Windows systems.
-`[packname] --override`:: Generates a new offline pack that overwrites an existing offline with the specified name.
-`[packname] --[no-]clean`: Deletes offline packs matching the specified name.
+`--tgz`:: Generate the offline package as a GZipped TAR file. The default behavior on UNIX systems.
+`--zip`:: Generate the offline package as a ZIP file. The default behavior on Windows systems.
+`[packname] --override`:: Generates a new offline package that overwrites an existing offline with the specified name.
+`[packname] --[no-]clean`: Deletes offline packages matching the specified name.
