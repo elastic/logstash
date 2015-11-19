@@ -153,7 +153,7 @@ GEM
     logstash-codec-rubydebug (2.0.4)
       awesome_print
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
-    logstash-core (2.1.0.snapshot2-java)
+    logstash-core (2.1.0.snapshot3-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       concurrent-ruby (= 0.9.2)
@@ -246,10 +246,11 @@ GEM
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
       nokogiri
       xml-simple
-    logstash-input-beats (0.9.4)
-      concurrent-ruby
+    logstash-input-beats (2.0.2)
+      concurrent-ruby (~> 0.9.2)
+      logstash-codec-multiline (~> 2.0.3)
       logstash-codec-plain
-      logstash-core (>= 1.5.4, < 3.0.0)
+      logstash-core (>= 2.0.0, < 3.0.0)
     logstash-input-couchdb_changes (2.0.2)
       json
       logstash-codec-plain
@@ -339,7 +340,7 @@ GEM
       logstash-codec-json
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
       redis
-    logstash-input-s3 (2.0.2)
+    logstash-input-s3 (2.0.3)
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
       logstash-mixin-aws
       stud (~> 0.0.18)
@@ -413,11 +414,11 @@ GEM
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
       logstash-filter-json
       logstash-output-file
-    logstash-output-elasticsearch (2.1.2-java)
+    logstash-output-elasticsearch (2.1.4-java)
       cabin (~> 0.6)
       concurrent-ruby
       elasticsearch (~> 1.0, >= 1.0.13)
-      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+      logstash-core (>= 2.0.0, < 3.0.0)
       manticore (~> 0.4.2)
       stud (~> 0.0, >= 0.0.17)
     logstash-output-email (3.0.2)
@@ -425,7 +426,7 @@ GEM
       mail (~> 2.6.0, >= 2.6.3)
     logstash-output-exec (2.0.2)
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
-    logstash-output-file (2.0.2)
+    logstash-output-file (2.1.0)
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
       logstash-input-generator
     logstash-output-ganglia (2.0.2)
@@ -543,7 +544,7 @@ GEM
     murmurhash3 (0.1.6-java)
     naught (1.1.0)
     netrc (0.11.0)
-    nokogiri (1.6.6.3-java)
+    nokogiri (1.6.6.4-java)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
     polyglot (0.3.5)
@@ -652,7 +653,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 2.1.0.snapshot2)
+  logstash-core (= 2.1.0.snapshot3)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
