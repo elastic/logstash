@@ -1,13 +1,40 @@
-## 1.5.5 (Oct 29, 2015)
+## 2.1.0 (Nov 24, 2015)
 ### general
- - Update to JRuby 1.7.22
- - Improved default security configuration for SSL/TLS. Default is now TLS1.2 (#3955)
- - Fixed bug in JrJackson v0.3.5 when handing shared strings. This manifested into issues when 
-   JrJackson was used in json codec and ES output. (#4048, #4055
- - Added beats input in the default plugins list
+ - Added ability to install and upgrade Logstash plugins without requiring internet connectivity (#2376). 
+ - Support alternate or private Ruby gems server to install and update plugins (#3576).
+ - Added ability to reliably shutdown Logstash when there is a stall in event processing. This option 
+   can be enabled by passing `--allow-unsafe-shutdown` flag while starting Logstash. Please be aware that
+   any in-flight events will be lost when shutdown happens (#3451)
+ - Fixed a memory leak which could be triggered when events having a date were serialized to string (#4222).
+ - Added JDBC input to default package.
+ - Adding --debug to --configtest now shows the configuration in blocks annotated by source config file. Very
+   useful when using multiple config files in a directory. (#3243)
+ - Reset default worker threads to 1 when using non thread-safe filters like multiline (#4130).
+ - Fixed file permissions for the logrotate configuration file.
+ - Changed the default heap size from 500MB to 1GB (#3861)
+ - Fixed config check option when starting Logstash through init scripts (#3645)
 
- ## output
- - HTTP: Fixed memory leak in http output with usage of manticore library (#24) 
+### input
+  Twitter
+    - Added an option to fetch data from the sample Twitter streaming endpoint (#21).
+    - Added hashtags, symbols and user_mentions as data for the non extended tweet event (#22).
+    - Added an option to filter per location and language (#20).
+    - Added an option to stream data from a list of users (#11).
+  Beats
+    - Properly handle multiline events from multiple sources, originating from Filebeat (#10).
+
+  File
+    - Properly handle multiline events from multiple sources (#44).
+
+  Eventlog
+    - Change the underlying library to capture Event Logs from Windows more reliably (#11). 
+
+### output
+  Elasticsearch
+    - Improved the default template to use doc_values wherever possible.
+    - Improved the default template to disable fielddata on analyzed string fields.
+    - Added New setting: timeout. This lets you control the behavior of a slow/stuck request to Elasticsearch
+      that could be, for example, caused by network, firewall, or load balancer issues (#260).
 
 ## 2.0.0 (Oct 28, 2015)
 No additional changes from RC1 release. Please see below for changes in individual
@@ -16,7 +43,6 @@ pre-releases.
 ## 2.0.0-rc1 (October 22, 2015)
 ### filter
  - Fixed metrics filter to work with ES 2.0 changes which does not allow dots in field names
-
 
 ## 2.0.0-beta3 (October 19, 2015)
 ### general
