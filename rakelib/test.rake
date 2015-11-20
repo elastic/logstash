@@ -1,6 +1,11 @@
 # we need to call exit explicity  in order to set the proper exit code, otherwise
 # most common CI systems can not know whats up with this tests.
 
+# the tasks launching rspec will use environment var RSPEC_OPTIONS to pass
+# options to rspec and will ignore the tasks own default options.
+# Ex.: $ RSPEC_OPTIONS="-fp" rake test:core
+# will use progress format (dots)
+
 require "pluginmanager/util"
 
 namespace "test" do
@@ -37,19 +42,26 @@ namespace "test" do
     Rake::FileList[*specs]
   end
 
+  DEFAULT_RSPEC_FORMAT = "--format=documentation"
+
+  def rspec_options(options = [])
+    env_options = ENV["RSPEC_OPTIONS"] ? ENV["RSPEC_OPTIONS"].to_s.split(/\s+/) : nil
+    env_options || ([DEFAULT_RSPEC_FORMAT] + Array(options))
+  end
+
   desc "run core specs"
   task "core" => ["setup"] do
-    exit(RSpec::Core::Runner.run([core_specs]))
+    exit(RSpec::Core::Runner.run([*rspec_options, core_specs]))
   end
 
   desc "run core specs in fail-fast mode"
   task "core-fail-fast" => ["setup"] do
-    exit(RSpec::Core::Runner.run(["--fail-fast", core_specs]))
+    exit(RSpec::Core::Runner.run([*rspec_options("--fail-fast"), core_specs]))
   end
 
   desc "run core specs on a single file"
   task "core-single-file", [:specfile] => ["setup"] do |t, args|
-    exit(RSpec::Core::Runner.run([Rake::FileList[args.specfile]]))
+    exit(RSpec::Core::Runner.run([*rspec_options, Rake::FileList[args.specfile]]))
   end
 
   desc "run all installed plugins specs"
@@ -68,8 +80,7 @@ namespace "test" do
       end
     end.flatten.compact
 
-    # "--format=documentation"
-    exit(RSpec::Core::Runner.run(["--order", "rand", test_files]))
+    exit(RSpec::Core::Runner.run([*rspec_options(["--order", "rand"]), test_files]))
   end
 
   task "install-core" => ["bootstrap", "plugin:install-core", "plugin:install-development-dependencies"]
@@ -112,7 +123,7 @@ namespace "test" do
     integration_path = File.join(source, "integration_run")
     FileUtils.rm_rf(integration_path)
 
-    exit(RSpec::Core::Runner.run([Rake::FileList["integration/**/*_spec.rb"]]))
+    exit(RSpec::Core::Runner.run([*rspec_options, Rake::FileList["integration/**/*_spec.rb"]]))
   end
 
   namespace "integration" do
@@ -124,7 +135,7 @@ namespace "test" do
       FileUtils.mkdir_p(integration_path)
 
       puts "[integration_spec] configuring local environment for running test in #{integration_path}, if you want to change this behavior delete the directory."
-      exit(RSpec::Core::Runner.run([Rake::FileList["integration/**/*_spec.rb"]]))
+      exit(RSpec::Core::Runner.run([*rspec_options, Rake::FileList["integration/**/*_spec.rb"]]))
     end
   end
 end
