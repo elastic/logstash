@@ -1,38 +1,40 @@
-## 2.1.0 (October 20, 2015)
+## 2.1.0 (Nov 24, 2015)
 ### general
  - Added ability to install and upgrade Logstash plugins without requiring internet connectivity (#2376). 
  - Support alternate or private Ruby gems server to install and update plugins (#3576).
+ - Added ability to reliably shutdown Logstash when there is a stall in event processing. This option 
+   can be enabled by passing `--allow-unsafe-shutdown` flag while starting Logstash. Please be aware that
+   any in-flight events will be lost when shutdown happens (#3451)
  - Fixed a memory leak which could be triggered when events having a date were serialized to string (#4222).
  - Added JDBC input to default package.
- - Logstash can read multiple config files from a directory. If you combine --config_test CLI flag with 
-   `--debug`, Logstash will log the combined config file, annotating the individual config blocks
-   with the source file it came from (#3243)
- - Reset default worker threads to 1 when using non thread-safe filter like multiline (#4130).
+ - Adding --debug to --configtest now shows the configuration in blocks annotated by source config file. Very
+   useful when using multiple config files in a directory. (#3243)
+ - Reset default worker threads to 1 when using non thread-safe filters like multiline (#4130).
  - Fixed file permissions for the logrotate configuration file.
  - Changed the default heap size from 500MB to 1GB (#3861)
  - Fixed config check option when starting Logstash through init scripts (#3645)
 
- ### input
-   Twitter
-     - Added an option to fetch data from the sample Twitter streaming endpoint (#21).
-     - Added hashtags, symbols and user_mentions as data for the non extended tweet event (#22).
-     - Added an option to filter per location and language (#20).
-     - Added an option to stream data from a list of users (#11).
-   Beats
-     - Properly handle multiline events from multiple sources, originating from Filebeat (#10).
+### input
+  Twitter
+    - Added an option to fetch data from the sample Twitter streaming endpoint (#21).
+    - Added hashtags, symbols and user_mentions as data for the non extended tweet event (#22).
+    - Added an option to filter per location and language (#20).
+    - Added an option to stream data from a list of users (#11).
+  Beats
+    - Properly handle multiline events from multiple sources, originating from Filebeat (#10).
 
-   File
-     - Properly handle multiline events from multiple sources.
+  File
+    - Properly handle multiline events from multiple sources (#44).
 
-   Eventlog
-     - Change the underlying library to capture Event Logs from Windows more reliably. 
+  Eventlog
+    - Change the underlying library to capture Event Logs from Windows more reliably (#11). 
 
- ### output
-   Elasticsearch
-     - Improved the default template to use doc_values wherever possible.
-     - Improved the default template to disable fielddata on analyzed string fields.
-     - Added New setting: timeout. This lets you control the behavior of a slow/stuck request to Elasticsearch
-       that could be, for example, caused by network, firewall, or load balancer issues (#260).
+### output
+  Elasticsearch
+    - Improved the default template to use doc_values wherever possible.
+    - Improved the default template to disable fielddata on analyzed string fields.
+    - Added New setting: timeout. This lets you control the behavior of a slow/stuck request to Elasticsearch
+      that could be, for example, caused by network, firewall, or load balancer issues (#260).
 
 ## 2.0.0-beta2 (October 14, 2015)
 ### general
