@@ -5,12 +5,14 @@ This document, to be read by new Maintainers, should explain their responsibilit
 http://rfc.zeromq.org/spec:22[C4] document from the ZeroMQ project.  This document is subject to change and suggestions 
 through Pull Requests and issues are strongly encouraged.
 
-=== Contribution Guidelines
+[float]
+== Contribution Guidelines
 
 For general guidance around contributing to Logstash Plugins, see the 
 https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html[_Contributing to Logstash_] section.
 
-=== Document Goals
+[float]
+== Document Goals
 
 To help make the Logstash plugins community  participation easy with positive feedback.
 
@@ -24,7 +26,8 @@ To support the natural life cycle of a plugin.
 To codify the roles and responsibilities of: Maintainers and Contributors with specific focus on patch testing, code 
 review, merging and release.
 
-=== Development Workflow
+[float]
+== Development Workflow
 
 All Issues and Pull Requests must be tracked using the Github issue tracker.
 
@@ -32,7 +35,8 @@ The plugin uses the http://www.apache.org/licenses/LICENSE-2.0[Apache 2.0 licens
 patch introduces code which has an incompatible license. Patch ownership and copyright is defined in the Elastic 
 https://www.elastic.co/contributor-agreement[Contributor License Agreement] (CLA).
 
-==== Terminology
+[float]
+=== Terminology
 
 A "Contributor" is a role a person assumes when providing a patch. Contributors will not have commit access to the 
 repository. They need to sign the Elastic https://www.elastic.co/contributor-agreement[Contributor License Agreement] 
@@ -41,7 +45,8 @@ before a patch can be reviewed. Contributors can add themselves to the plugin Co
 A "Maintainer" is a role a person assumes when maintaining a plugin and keeping it healthy, including triaging issues, and 
 reviewing and merging patches.
 
-==== Patch Requirements
+[float]
+=== Patch Requirements
 
 A patch is a minimal and accurate answer to exactly one identified and agreed upon problem. It must conform to the code 
 style guidelines and must include RSpec tests that verify the fitness of the solution.
@@ -56,7 +61,8 @@ and any additional lines as necessary for change explanation and rationale.
 A patch is mergeable when it satisfies the above requirements and has been reviewed positively by at least one other 
 person.
 
-==== Development Process
+[float]
+=== Development Process
 
 A user will log an issue on the issue tracker describing the problem they face or observe with as much detail as possible.
 
@@ -78,12 +84,14 @@ Maintainers should involve the core team if help is needed to reach consensus.
 
 Review non-source changes such as documentation in the same way as source code changes.
 
-==== Branch Management
+[float]
+=== Branch Management
 
 The plugin has a master branch that always holds the latest in-progress version and should always build.  Topic branches 
 should kept to the minimum.
 
-=== Versioning Plugins
+[float]
+== Versioning Plugins
 
 Logstash core and its plugins have separate product development lifecycles. Hence the versioning and release strategy for 
 the core and plugins do not have to be aligned. In fact, this was one of our goals during the great separation of plugins 
@@ -99,12 +107,14 @@ Plugin releases follows a three-placed numbering scheme X.Y.Z. where X denotes a
 compatibility with existing configuration or functionality. Y denotes releases which includes features which are backward 
 compatible. Z denotes releases which includes bug fixes and patches. 
 
-==== Changing the version
+[float]
+=== Changing the version
 
 Version can be changed in the Gemspec, which needs to be associated with a changelog entry. Following this, we can publish 
 the gem to RubyGem.org manually. At this point only the core developers can publish a gem.
 
-==== Labeling
+[float]
+=== Labeling
 
 Labeling is a critical aspect of maintaining plugins. All issues in GitHub should be labeled correctly so it can: 
 
@@ -123,7 +133,8 @@ details.
 * `needs tests`: Patch has no tests, and cannot be accepted without unit/integration tests
 * `docs`: Documentation related issue/PR
 
-=== Logging
+[float]
+== Logging
 
 Although it’s important not to bog down performance with excessive logging, debug level logs can be immensely helpful when 
 diagnosing and troubleshooting issues with Logstash.  Please remember to liberally add debug logs wherever it makes sense 
@@ -132,7 +143,8 @@ as users will be forever gracious.
 [source,shell]
 @logger.debug("Logstash loves debug logs!", :actions => actions)
 
-=== Contributor License Agreement (CLA) Guidance
+[float]
+== Contributor License Agreement (CLA) Guidance
 
 [qanda]
 Why is a https://www.elastic.co/contributor-agreement[CLA] required?::
@@ -145,11 +157,12 @@ Please make sure the CLA is signed by every Contributor prior to reviewing PRs a
      signs the CLA after a PR is submitted, they can refresh the automated CLA checker by pushing another 
      comment on the PR after 5 minutes of signing.
 
-=== Community Administration
+[float]
+== Community Administration
 
 The core team is there to support the plugin Maintainers and overall ecosystem.
 
 Maintainers should propose Contributors to become a Maintainer.
 
 Contributors and Maintainers should follow the Elastic Community https://www.elastic.co/community/codeofconduct[Code of 
-Conduct].  The core team should block or ban "bad actors".
+Conduct].  The core team should block or ban bad actors.
