@@ -1,5 +1,7 @@
 # encoding: utf-8
 require "spec_helper"
+require "logstash/inputs/generator"
+require "logstash/filters/multiline"
 
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"
@@ -35,17 +37,19 @@ class DummyOutput < LogStash::Outputs::Base
   config_name "dummyoutput"
   milestone 2
 
-  attr_reader :num_closes
+  attr_reader :num_closes, :events
 
   def initialize(params={})
     super
     @num_closes = 0
+    @events = []
   end
 
   def register
   end
 
   def receive(event)
+    @events << event
   end
 
   def close
@@ -80,22 +84,21 @@ class DummySafeFilter < LogStash::Filters::Base
 end
 
 class TestPipeline < LogStash::Pipeline
-  attr_reader :outputs, :filter_threads, :settings, :logger
+  attr_reader :outputs, :settings, :logger
 end
 
 describe LogStash::Pipeline do
-  let(:worker_thread_count)     { 8 }
+  let(:worker_thread_count)     { LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers] }
   let(:safe_thread_count)       { 1 }
   let(:override_thread_count)   { 42 }
 
-  describe "defaulting the filter workers based on thread safety" do
+  describe "defaulting the pipeline workers based on thread safety" do
     before(:each) do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummysafefilter").and_return(DummySafeFilter)
-      allow(LogStash::Config::CpuCoreStrategy).to receive(:fifty_percent).and_return(worker_thread_count)
     end
 
     context "when there are some not threadsafe filters" do
@@ -117,13 +120,13 @@ describe LogStash::Pipeline do
 
       context "when there is no command line -w N set" do
         it "starts one filter thread" do
-          msg = "Defaulting filter worker threads to 1 because there are some" +
+          msg = "Defaulting pipeline worker threads to 1 because there are some" +
                 " filters that might not work with multiple worker threads"
           pipeline = TestPipeline.new(test_config_with_filters)
           expect(pipeline.logger).to receive(:warn).with(msg,
             {:count_was=>worker_thread_count, :filters=>["dummyfilter"]})
           pipeline.run
-          expect(pipeline.filter_threads.size).to eq(safe_thread_count)
+          expect(pipeline.worker_threads.size).to eq(safe_thread_count)
         end
       end
 
@@ -134,9 +137,9 @@ describe LogStash::Pipeline do
           pipeline = TestPipeline.new(test_config_with_filters)
           expect(pipeline.logger).to receive(:warn).with(msg,
             {:worker_threads=> override_thread_count, :filters=>["dummyfilter"]})
-          pipeline.configure("filter-workers", override_thread_count)
+          pipeline.configure(:pipeline_workers, override_thread_count)
           pipeline.run
-          expect(pipeline.filter_threads.size).to eq(override_thread_count)
+          expect(pipeline.worker_threads.size).to eq(override_thread_count)
         end
       end
     end
@@ -161,7 +164,7 @@ describe LogStash::Pipeline do
       it "starts multiple filter threads" do
         pipeline = TestPipeline.new(test_config_with_filters)
         pipeline.run
-        expect(pipeline.filter_threads.size).to eq(worker_thread_count)
+        expect(pipeline.worker_threads.size).to eq(worker_thread_count)
       end
     end
   end
@@ -206,8 +209,8 @@ describe LogStash::Pipeline do
         pipeline.run
 
         expect(pipeline.outputs.size ).to eq(1)
-        expect(pipeline.outputs.first.worker_plugins.size ).to eq(1)
-        expect(pipeline.outputs.first.worker_plugins.first.num_closes ).to eq(1)
+        expect(pipeline.outputs.first.workers.size ).to eq(1)
+        expect(pipeline.outputs.first.workers.first.num_closes ).to eq(1)
       end
 
       it "should call output close correctly with output workers" do
@@ -215,8 +218,13 @@ describe LogStash::Pipeline do
         pipeline.run
 
         expect(pipeline.outputs.size ).to eq(1)
-        expect(pipeline.outputs.first.num_closes).to eq(0)
-        pipeline.outputs.first.worker_plugins.each do |plugin|
+        # We even close the parent output worker, even though it doesn't receive messages
+
+        output_delegator = pipeline.outputs.first
+        output = output_delegator.workers.first
+
+        expect(output.num_closes).to eq(1)
+        output_delegator.workers.each do |plugin|
           expect(plugin.num_closes ).to eq(1)
         end
       end
@@ -297,6 +305,48 @@ describe LogStash::Pipeline do
         expect(subject[2]["type"]).to eq("clone2")
         expect(subject[2]["foo"]).to eq("bar")
       end
+    end
+  end
+
+  context "Periodic Flush" do
+    let(:number_of_events) { 100 }
+    let(:config) do
+      <<-EOS
+      input {
+        generator {
+          count => #{number_of_events}
+        }
+      }
+      filter {
+        multiline { 
+          pattern => "^NeverMatch"
+          negate => true
+          what => "previous"
+        }
+      }
+      output {
+        dummyoutput {}
+      }
+      EOS
+    end
+    let(:output) { DummyOutput.new }
+    
+    before do
+      allow(DummyOutput).to receive(:new).with(any_args).and_return(output)
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "multiline").and_return(LogStash::Filters::Multiline)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+    end
+
+    it "flushes the buffered contents of the filter" do
+      Thread.abort_on_exception = true
+      pipeline = LogStash::Pipeline.new(config, { :flush_interval => 1 })
+      Thread.new { pipeline.run }
+      sleep 0.1 while !pipeline.ready?
+      # give us a bit of time to flush the events
+      wait(5).for { output.events.first["message"].split("\n").count }.to eq(number_of_events)
+      pipeline.shutdown
     end
   end
 end
