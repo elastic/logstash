@@ -47,10 +47,10 @@ module LogStash
       cycle_number = 0
       stalled_count = 0
       Stud.interval(@cycle_period) do
-        @reports << Report.from_pipeline(@pipeline)
+        @reports << pipeline_report_snapshot
         @reports.delete_at(0) if @reports.size > @report_every # expire old report
         if cycle_number == (@report_every - 1) # it's report time!
-          logger.warn(@reports.last.to_hash)
+          logger.warn(@reports.last)
 
           if shutdown_stalled?
             logger.error("The shutdown process appears to be stalled due to busy or blocked plugins. Check the logs for more information.") if stalled_count == 0
@@ -69,6 +69,10 @@ module LogStash
       end
     end
 
+    def pipeline_report_snapshot
+      @pipeline.reporter.snapshot
+    end
+
     # A pipeline shutdown is stalled if
     # * at least REPORT_EVERY reports have been created
     # * the inflight event count is in monotonically increasing
@@ -78,7 +82,7 @@ module LogStash
       return false unless @reports.size == @report_every #
       # is stalled if inflight count is either constant or increasing
       stalled_event_count = @reports.each_cons(2).all? do |prev_report, next_report|
-        prev_report.inflight_count["total"] <= next_report.inflight_count["total"]
+        prev_report.inflight_count <= next_report.inflight_count
       end
       if stalled_event_count
         @reports.each_cons(2).all? do |prev_report, next_report|
@@ -91,37 +95,6 @@ module LogStash
 
     def force_exit
       exit(-1)
-    end
-  end
-
-  class Report
-
-    attr_reader :inflight_count, :stalling_threads
-
-    def self.from_pipeline(pipeline)
-      new(pipeline.inflight_count, pipeline.stalling_threads)
-    end
-
-    def initialize(inflight_count, stalling_threads)
-      @inflight_count = inflight_count
-      @stalling_threads = format_threads_by_plugin(stalling_threads)
-    end
-
-    def to_hash
-      {
-        "INFLIGHT_EVENT_COUNT" => @inflight_count,
-        "STALLING_THREADS" => @stalling_threads
-      }
-    end
-
-    def format_threads_by_plugin(stalling_threads)
-      stalled_plugins = {}
-      stalling_threads.each do |thr|
-        key = (thr.delete("plugin") || "other")
-        stalled_plugins[key] ||= []
-        stalled_plugins[key] << thr
-      end
-      stalled_plugins
     end
   end
 end
