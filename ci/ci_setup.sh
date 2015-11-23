@@ -16,7 +16,10 @@ rm -rf spec/reports # no stale spec reports from previous executions
 # Setup the environment
 rake bootstrap # Bootstrap your logstash instance
 
+
 # Set up some general options for the rspec runner
-echo "--order rand" > .rspec
-echo "--format progress" >> .rspec
-echo "--format CI::Reporter::RSpecFormatter" >> .rspec
+#echo "--order rand" > .rspec
+#echo "--format progress" >> .rspec
+#echo "--format CI::Reporter::RSpecFormatter" >> .rspec
+
+export RSPEC_OPTIONS="--order rand --format documentation --format CI::Reporter::RSpecFormatter"
