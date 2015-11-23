@@ -4,6 +4,8 @@ require "logstash/logging"
 require "logstash/plugin"
 require "logstash/namespace"
 require "logstash/config/mixin"
+require "logstash/util/wrapped_synchronous_queue"
+require "concurrent/atomic/atomic_fixnum"
 
 class LogStash::Outputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
@@ -23,7 +25,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Note that this setting may not be useful for all outputs.
   config :workers, :validate => :number, :default => 1
 
-  attr_reader :worker_plugins, :worker_queue, :worker_threads
+  attr_reader :worker_plugins, :available_workers, :workers, :worker_plugins
 
   public
   def workers_not_supported(message=nil)
@@ -40,6 +42,10 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def initialize(params={})
     super
     config_init(params)
+
+    # If we're running with a single thread we must enforce single-threaded concurrency by default
+    # Maybe in a future version we'll assume output plugins are threadsafe
+    @single_worker_mutex = Mutex.new
   end
 
   public
@@ -53,37 +59,9 @@ class LogStash::Outputs::Base < LogStash::Plugin
   end # def receive
 
   public
-  def worker_setup
-    if @workers == 1
-      @worker_plugins = [self]
-      @worker_threads = []
-    else
-      define_singleton_method(:handle, method(:handle_worker))
-      @worker_queue = SizedQueue.new(20)
-      @worker_plugins = @workers.times.map { self.class.new(@original_params.merge("workers" => 1)) }
-      @worker_threads = @worker_plugins.map.with_index do |plugin, i|
-        Thread.new(original_params, @worker_queue) do |params, queue|
-          LogStash::Util.set_thread_name(">#{self.class.config_name}.#{i}")
-          LogStash::Util.set_thread_plugin(self)
-          plugin.register
-          while true
-            event = queue.pop
-            plugin.handle(event)
-          end
-        end
-      end
-    end
-  end
-
-  public
-  def handle(event)
-    LogStash::Util.set_thread_plugin(self)
-    receive(event)
-  end # def handle
-
-  def handle_worker(event)
-    LogStash::Util.set_thread_plugin(self)
-    @worker_queue.push(event)
+  # To be overriden in implementations
+  def multi_receive(events)
+    events.each {|event| receive(event) }
   end
 
   private
