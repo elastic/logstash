@@ -153,7 +153,7 @@ GEM
     logstash-codec-rubydebug (2.0.4)
       awesome_print
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
-    logstash-core (2.1.0.snapshot4-java)
+    logstash-core (2.1.0-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       concurrent-ruby (= 0.9.2)
@@ -653,7 +653,7 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 2.1.0.snapshot4)
+  logstash-core (= 2.1.0)
   logstash-devutils (~> 0)
   logstash-filter-anonymize
   logstash-filter-checksum
