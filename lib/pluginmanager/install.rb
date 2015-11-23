@@ -10,6 +10,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   option "--version", "VERSION", "version of the plugin to install"
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
   option "--development", :flag, "install all development dependencies of currently installed plugins", :default => false
+  option "--local", :flag, "force local-only plugin installation. see bin/plugin package|unpack", :default => false
 
   # the install logic below support installing multiple plugins with each a version specification
   # but the argument parsing does not support it for now so currently if specifying --version only
@@ -23,7 +24,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
       gems = plugins_development_gems
     else
       gems = plugins_gems
-      verify_remote!(gems) if verify?
+      verify_remote!(gems) if !local? && verify?
     end
 
     install_gems_list!(gems)
@@ -45,10 +46,18 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   # Check if the specified gems contains
   # the logstash `metadata`
   def verify_remote!(gems)
+    options = { :rubygems_source => gemfile.gemset.sources }
     gems.each do |plugin, version|
       puts("Validating #{[plugin, version].compact.join("-")}")
-      signal_error("Installation aborted, verification failed for #{plugin} #{version}") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
+      next if validate_plugin(plugin, version, options)
+      signal_error("Installation aborted, verification failed for #{plugin} #{version}")
     end
+  end
+
+  def validate_plugin(plugin, version, options)
+    LogStash::PluginManager.logstash_plugin?(plugin, version, options)
+  rescue SocketError
+    false
   end
 
   def plugins_development_gems
@@ -89,6 +98,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     bundler_options = {:install => true}
     bundler_options[:without] = [] if development?
     bundler_options[:rubygems_source] = gemfile.gemset.sources
+    bundler_options[:local] = true if local?
 
     output = LogStash::Bundler.invoke!(bundler_options)
 

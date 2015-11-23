@@ -33,9 +33,6 @@ For more info on developing and testing these plugins, please see the [README](h
 
 ### Plugin Issues and Pull Requests
 
-We are migrating all of the existing pull requests to their respective repositories. Rest assured, we will maintain
-all of the git history for these requests.
-
 **Please open new issues and pull requests for plugins under its own repository**
 
 For example, if you have to report an issue/enhancement for the Elasticsearch output, please do so [here](https://github.com/logstash-plugins/logstash-output-elasticsearch/issues).

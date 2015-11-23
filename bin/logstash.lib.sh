@@ -35,6 +35,10 @@ setup_java() {
 
     JAVA_OPTS="$JAVA_OPTS -XX:CMSInitiatingOccupancyFraction=75"
     JAVA_OPTS="$JAVA_OPTS -XX:+UseCMSInitiatingOccupancyOnly"
+    # Causes the JVM to dump its heap on OutOfMemory.
+    JAVA_OPTS="$JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError"
+    # The path to the heap dump location
+    JAVA_OPTS="$JAVA_OPTS -XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof"
   fi
 
   if [ "$LS_JAVA_OPTS" ] ; then

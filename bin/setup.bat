@@ -48,7 +48,7 @@ REM Causes the JVM to dump its heap on OutOfMemory.
 set JAVA_OPTS=%JAVA_OPTS% -XX:+HeapDumpOnOutOfMemoryError
 REM The path to the heap dump location, note directory must exists and have enough
 REM space for a full heap dump.
-REM JAVA_OPTS=%JAVA_OPTS% -XX:HeapDumpPath="$LS_HOME/logs/heapdump.hprof"
+set JAVA_OPTS=%JAVA_OPTS% -XX:HeapDumpPath="$LS_HOME/heapdump.hprof"
 
 REM setup_vendored_jruby()
 set JRUBY_BIN="%LS_HOME%\vendor\jruby\bin\jruby"
