@@ -1,11 +1,6 @@
 # we need to call exit explicity  in order to set the proper exit code, otherwise
 # most common CI systems can not know whats up with this tests.
 
-# the tasks launching rspec will use environment var RSPEC_OPTIONS to pass
-# options to rspec and will ignore the tasks own default options.
-# Ex.: $ RSPEC_OPTIONS="-fp" rake test:core
-# will use progress format (dots)
-
 require "pluginmanager/util"
 
 namespace "test" do
@@ -44,11 +39,10 @@ namespace "test" do
 
   DEFAULT_RSPEC_FORMAT = "--format=documentation"
 
-  # @param options [Array<String> | String] default options to use if no options are in RSPEC_OPTIONS env var
+  # @param options [Array<String> | String] default options to use
   # @return [Array<String>] options as strings array to use by RSpec::Core::Runner.run
   def rspec_options(options = [])
-    env_options = ENV["RSPEC_OPTIONS"] ? ENV["RSPEC_OPTIONS"].to_s.split(/\s+/) : nil
-    env_options || ([DEFAULT_RSPEC_FORMAT] + Array(options))
+    [DEFAULT_RSPEC_FORMAT] + Array(options)
   end
 
   desc "run core specs"
