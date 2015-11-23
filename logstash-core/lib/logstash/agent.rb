@@ -20,9 +20,9 @@ class LogStash::Agent < Clamp::Command
            :default_input => DEFAULT_INPUT, :default_output => DEFAULT_OUTPUT),
     :default => "", :attribute_name => :config_string
 
-  option ["-w", "--filterworkers"], "COUNT",
-    I18n.t("logstash.agent.flag.filterworkers"),
-    :attribute_name => :filter_workers,
+  option ["-w", "--pipelineworkers"], "COUNT",
+    I18n.t("logstash.agent.flag.pipelineworkers"),
+    :attribute_name => :pipeline_workers,
     :default => 0, &:to_i
 
   option ["-l", "--log"], "FILE",
@@ -151,7 +151,7 @@ class LogStash::Agent < Clamp::Command
       configure_logging(log_file)
     end
 
-    pipeline.configure("filter-workers", filter_workers) if filter_workers > 0
+    pipeline.configure("pipeline-workers", pipeline_workers) if pipeline_workers > 0
 
     # Stop now if we are only asking for a config test.
     if config_test?

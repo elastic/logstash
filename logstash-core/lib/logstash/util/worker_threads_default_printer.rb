@@ -6,8 +6,8 @@ require "logstash/util"
 module LogStash module Util class WorkerThreadsDefaultPrinter
 
   def initialize(settings)
-    @setting = settings.fetch('filter-workers', 0)
-    @default = settings.fetch('default-filter-workers', 0)
+    @setting = settings.fetch('pipeline-workers', 0)
+    @default = settings.fetch('default-pipeline-workers', 0)
   end
 
   def visit(collector)
@@ -17,12 +17,12 @@ module LogStash module Util class WorkerThreadsDefaultPrinter
 
   def visit_setting(collector)
     return if @setting == 0
-    collector.push("User set filter workers: #{@setting}")
+    collector.push("User set pipeline workers: #{@setting}")
   end
 
   def visit_default(collector)
     return if @default == 0
-    collector.push "Default filter workers: #{@default}"
+    collector.push "Default pipeline workers: #{@default}"
   end
 
 end end end

@@ -80,7 +80,7 @@ class DummySafeFilter < LogStash::Filters::Base
 end
 
 class TestPipeline < LogStash::Pipeline
-  attr_reader :outputs, :filter_threads, :settings, :logger
+  attr_reader :outputs, :settings, :logger
 end
 
 describe LogStash::Pipeline do
@@ -88,7 +88,7 @@ describe LogStash::Pipeline do
   let(:safe_thread_count)       { 1 }
   let(:override_thread_count)   { 42 }
 
-  describe "defaulting the filter workers based on thread safety" do
+  describe "defaulting the pipeline workers based on thread safety" do
     before(:each) do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
@@ -117,13 +117,13 @@ describe LogStash::Pipeline do
 
       context "when there is no command line -w N set" do
         it "starts one filter thread" do
-          msg = "Defaulting filter worker threads to 1 because there are some" +
+          msg = "Defaulting pipeline worker threads to 1 because there are some" +
                 " filters that might not work with multiple worker threads"
           pipeline = TestPipeline.new(test_config_with_filters)
           expect(pipeline.logger).to receive(:warn).with(msg,
             {:count_was=>worker_thread_count, :filters=>["dummyfilter"]})
           pipeline.run
-          expect(pipeline.filter_threads.size).to eq(safe_thread_count)
+          expect(pipeline.worker_threads.size).to eq(safe_thread_count)
         end
       end
 
@@ -134,9 +134,9 @@ describe LogStash::Pipeline do
           pipeline = TestPipeline.new(test_config_with_filters)
           expect(pipeline.logger).to receive(:warn).with(msg,
             {:worker_threads=> override_thread_count, :filters=>["dummyfilter"]})
-          pipeline.configure("filter-workers", override_thread_count)
+          pipeline.configure("pipeline-workers", override_thread_count)
           pipeline.run
-          expect(pipeline.filter_threads.size).to eq(override_thread_count)
+          expect(pipeline.worker_threads.size).to eq(override_thread_count)
         end
       end
     end
@@ -161,7 +161,7 @@ describe LogStash::Pipeline do
       it "starts multiple filter threads" do
         pipeline = TestPipeline.new(test_config_with_filters)
         pipeline.run
-        expect(pipeline.filter_threads.size).to eq(worker_thread_count)
+        expect(pipeline.worker_threads.size).to eq(worker_thread_count)
       end
     end
   end
@@ -215,7 +215,8 @@ describe LogStash::Pipeline do
         pipeline.run
 
         expect(pipeline.outputs.size ).to eq(1)
-        expect(pipeline.outputs.first.num_closes).to eq(0)
+        # We even close the parent output worker, even though it doesn't receive messages
+        expect(pipeline.outputs.first.num_closes).to eq(1)
         pipeline.outputs.first.worker_plugins.each do |plugin|
           expect(plugin.num_closes ).to eq(1)
         end

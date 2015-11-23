@@ -19,26 +19,26 @@ describe LogStash::Util::WorkerThreadsDefaultPrinter do
     end
 
     context 'when the settings hash has both user and default content' do
-      let(:settings) { {'filter-workers' => 42, 'default-filter-workers' => 5} }
+      let(:settings) { {'pipeline-workers' => 42, 'default-pipeline-workers' => 5} }
 
       it 'adds two strings' do
-        expect(collector).to eq(["User set filter workers: 42", "Default filter workers: 5"])
+        expect(collector).to eq(["User set pipeline workers: 42", "Default pipeline workers: 5"])
       end
     end
 
     context 'when the settings hash has only user content' do
-      let(:settings) { {'filter-workers' => 42} }
+      let(:settings) { {'pipeline-workers' => 42} }
 
-      it 'adds a string with user set filter workers' do
-        expect(collector.first).to eq("User set filter workers: 42")
+      it 'adds a string with user set pipeline workers' do
+        expect(collector.first).to eq("User set pipeline workers: 42")
       end
     end
 
     context 'when the settings hash has only default content' do
-      let(:settings) { {'default-filter-workers' => 5} }
+      let(:settings) { {'default-pipeline-workers' => 5} }
 
-      it 'adds a string with default filter workers' do
-        expect(collector.first).to eq("Default filter workers: 5")
+      it 'adds a string with default pipeline workers' do
+        expect(collector.first).to eq("Default pipeline workers: 5")
       end
     end
   end
