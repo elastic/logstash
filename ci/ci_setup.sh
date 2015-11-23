@@ -21,5 +21,3 @@ rake bootstrap # Bootstrap your logstash instance
 #echo "--order rand" > .rspec
 #echo "--format progress" >> .rspec
 #echo "--format CI::Reporter::RSpecFormatter" >> .rspec
-
-export RSPEC_OPTIONS="--order rand --format documentation --format CI::Reporter::RSpecFormatter"
