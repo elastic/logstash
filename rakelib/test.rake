@@ -44,6 +44,8 @@ namespace "test" do
 
   DEFAULT_RSPEC_FORMAT = "--format=documentation"
 
+  # @param options [Array<String> | String] default options to use if no options are in RSPEC_OPTIONS env var
+  # @return [Array<String>] options as strings array to use by RSpec::Core::Runner.run
   def rspec_options(options = [])
     env_options = ENV["RSPEC_OPTIONS"] ? ENV["RSPEC_OPTIONS"].to_s.split(/\s+/) : nil
     env_options || ([DEFAULT_RSPEC_FORMAT] + Array(options))
@@ -56,7 +58,7 @@ namespace "test" do
 
   desc "run core specs in fail-fast mode"
   task "core-fail-fast" => ["setup"] do
-    exit(RSpec::Core::Runner.run([*rspec_options("--fail-fast"), core_specs]))
+    exit(RSpec::Core::Runner.run([*rspec_options, "--fail-fast", core_specs]))
   end
 
   desc "run core specs on a single file"
