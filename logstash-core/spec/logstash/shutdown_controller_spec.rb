@@ -8,10 +8,16 @@ describe LogStash::ShutdownController do
   let(:check_threshold) { 100 }
   subject { LogStash::ShutdownController.new(pipeline, check_every) }
   let(:pipeline) { double("pipeline") }
+  let(:reporter) { double("reporter") }
+  let(:reporter_snapshot) { double("reporter snapshot") }
   report_count = 0
 
   before :each do
-    allow(LogStash::Report).to receive(:from_pipeline).and_wrap_original do |m, *args|
+    allow(pipeline).to receive(:reporter).and_return(reporter)
+    allow(reporter).to receive(:snapshot).and_return(reporter_snapshot)
+    allow(reporter_snapshot).to receive(:to_simple_hash).and_return({})
+
+    allow(subject).to receive(:pipeline_report_snapshot).and_wrap_original do |m, *args|
       report_count += 1
       m.call(*args)
     end
@@ -22,10 +28,10 @@ describe LogStash::ShutdownController do
   end
 
   context "when pipeline is stalled" do
-    let(:increasing_count) { (1..5000).to_a.map {|i| { "total" => i } } }
+    let(:increasing_count) { (1..5000).to_a }
     before :each do
-      allow(pipeline).to receive(:inflight_count).and_return(*increasing_count)
-      allow(pipeline).to receive(:stalling_threads) { { } }
+      allow(reporter_snapshot).to receive(:inflight_count).and_return(*increasing_count)
+      allow(reporter_snapshot).to receive(:stalling_threads) { { } }
     end
 
     describe ".unsafe_shutdown = true" do
@@ -49,7 +55,7 @@ describe LogStash::ShutdownController do
 
       it "should do exactly \"abort_threshold\"*\"report_every\" stall checks" do
         allow(subject).to receive(:force_exit)
-        expect(LogStash::Report).to receive(:from_pipeline).exactly(abort_threshold*report_every).times.and_call_original
+        expect(subject).to receive(:pipeline_report_snapshot).exactly(abort_threshold*report_every).times.and_call_original
         subject.start
       end
     end
@@ -70,10 +76,10 @@ describe LogStash::ShutdownController do
   end
 
   context "when pipeline is not stalled" do
-    let(:decreasing_count) { (1..5000).to_a.reverse.map {|i| { "total" => i } } }
+    let(:decreasing_count) { (1..5000).to_a.reverse }
     before :each do
-      allow(pipeline).to receive(:inflight_count).and_return(*decreasing_count)
-      allow(pipeline).to receive(:stalling_threads) { { } }
+      allow(reporter_snapshot).to receive(:inflight_count).and_return(*decreasing_count)
+      allow(reporter_snapshot).to receive(:stalling_threads) { { } }
     end
 
     describe ".unsafe_shutdown = true" do

@@ -10,7 +10,7 @@ describe LogStash::Util::DefaultsPrinter do
   end
 
   let(:workers)  { 1 }
-  let(:expected) { "Settings: User set filter workers: #{workers}" }
+  let(:expected) { "Settings: User set pipeline workers: #{workers}" }
   let(:settings) { {} }
 
   describe 'class methods API' do
@@ -25,7 +25,7 @@ describe LogStash::Util::DefaultsPrinter do
 
     context 'when the settings hash has content' do
       let(:workers) { 42 }
-      let(:settings) { {'filter-workers' => workers} }
+      let(:settings) { {'pipeline-workers' => workers} }
       it_behaves_like "a defaults printer"
     end
   end
@@ -42,7 +42,7 @@ describe LogStash::Util::DefaultsPrinter do
 
     context 'when the settings hash has content' do
       let(:workers) { 13 }
-      let(:settings) { {'filter-workers' => workers} }
+      let(:settings) { {'pipeline-workers' => workers} }
 
       it_behaves_like "a defaults printer"
     end

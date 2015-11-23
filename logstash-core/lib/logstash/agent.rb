@@ -33,7 +33,7 @@ class LogStash::Agent
   end # def execute
 
   def add_pipeline(pipeline_id, config_str, settings = {})
-    @pipelines[pipeline_id] = LogStash::Pipeline.new(config_str, settings)
+    @pipelines[pipeline_id] = LogStash::Pipeline.new(config_str, settings.merge(:pipeline_id => pipeline_id))
   end
 
   private
