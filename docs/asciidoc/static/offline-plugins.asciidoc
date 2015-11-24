@@ -10,6 +10,10 @@ server. This staging machine downloads and packages the files used for offline i
 See the <<private-rubygem,Private Gem Repositories>> section for information on setting up your own private 
 Rubygems server.
 
+Users who can work with a larger Logstash artifact size can use the *Logstash (All Plugins)* download link from the
+https://www.elastic.co/downloads/logstash[Logstash product page] to download Logstash bundled with the latest version of
+all available plugins. You can distribute this bundle to all nodes without further plugin staging.
+
 [float]
 === Building the Offline Package
 
