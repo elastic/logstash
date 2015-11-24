@@ -35,7 +35,7 @@ module LogStash module Instrument
       valid_key!(key)
       [@base_key, key.to_sym].compact
     end
-
+    
     def valid_key!(key)
       raise MetricNoKeyProvided if key.nil? || key == ""
     end
