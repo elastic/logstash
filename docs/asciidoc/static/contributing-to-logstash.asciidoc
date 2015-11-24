@@ -35,6 +35,7 @@ Plugin Base class.
 
 Sample code for the new plugin shutdown APIs is https://github.com/logstash-plugins/logstash-input-example/blob/master/lib/logstash/inputs/example.rb[available].
 
+
 [float]
 === Extending Logstash core
 
