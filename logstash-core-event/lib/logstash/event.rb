@@ -65,7 +65,6 @@ class LogStash::Event
 
   LOGGER = Cabin::Channel.get(LogStash)
 
-  public
   def initialize(data = {})
     @cancelled = false
     @data = data
@@ -76,52 +75,43 @@ class LogStash::Event
 
     @metadata = @data.delete(METADATA) || {}
     @metadata_accessors = LogStash::Util::Accessors.new(@metadata)
-  end # def initialize
+  end
 
-  public
   def cancel
     @cancelled = true
-  end # def cancel
+  end
 
-  public
   def uncancel
     @cancelled = false
-  end # def uncancel
+  end
 
-  public
   def cancelled?
-    return @cancelled
-  end # def cancelled?
+    @cancelled
+  end
 
   # Create a deep-ish copy of this event.
-  public
   def clone
     copy = {}
     @data.each do |k,v|
       # TODO(sissel): Recurse if this is a hash/array?
       copy[k] = begin v.clone rescue v end
     end
-    return self.class.new(copy)
-  end # def clone
 
-  public
+    self.class.new(copy)
+  end
+
   def to_s
     "#{timestamp.to_iso8601} #{self.sprintf("%{host} %{message}")}"
-  end # def to_s
+  end
 
-  public
-  def timestamp; return @data[TIMESTAMP]; end # def timestamp
-  def timestamp=(val); return @data[TIMESTAMP] = val; end # def timestamp=
+  def timestamp
+    @data[TIMESTAMP]
+  end
 
-  def unix_timestamp
-    raise DeprecatedMethod
-  end # def unix_timestamp
+  def timestamp=(val)
+    @data[TIMESTAMP] = val
+  end
 
-  def ruby_timestamp
-    raise DeprecatedMethod
-  end # def unix_timestamp
-
-  public
   def [](fieldref)
     if fieldref.start_with?(METADATA_BRACKETS)
       @metadata_accessors.get(fieldref[METADATA_BRACKETS.length .. -1])
@@ -130,9 +120,8 @@ class LogStash::Event
     else
       @accessors.get(fieldref)
     end
-  end # def []
+  end
 
-  public
   def []=(fieldref, value)
     if fieldref == TIMESTAMP && !value.is_a?(LogStash::Timestamp)
       raise TypeError, "The field '@timestamp' must be a (LogStash::Timestamp, not a #{value.class} (#{value})"
@@ -145,25 +134,17 @@ class LogStash::Event
     else
       @accessors.set(fieldref, value)
     end
-  end # def []=
-
-  public
-  def fields
-    raise DeprecatedMethod
   end
 
-  public
   def to_json(*args)
     # ignore arguments to respect accepted to_json method signature
     LogStash::Json.dump(@data)
-  end # def to_json
+  end
 
-  public
   def to_hash
     @data
-  end # def to_hash
+  end
 
-  public
   def overwrite(event)
     # pickup new event @data and also pickup @accessors
     # otherwise it will be pointing on previous data
@@ -176,7 +157,6 @@ class LogStash::Event
     end
   end
 
-  public
   def include?(fieldref)
     if fieldref.start_with?(METADATA_BRACKETS)
       @metadata_accessors.include?(fieldref[METADATA_BRACKETS.length .. -1])
@@ -185,24 +165,21 @@ class LogStash::Event
     else
       @accessors.include?(fieldref)
     end
-  end # def include?
+  end
 
   # Append an event to this one.
-  public
   def append(event)
     # non-destructively merge that event with ourselves.
 
     # no need to reset @accessors here because merging will not disrupt any existing field paths
     # and if new ones are created they will be picked up.
     LogStash::Util.hash_merge(@data, event.to_hash)
-  end # append
+  end
 
-  # Remove a field or field reference. Returns the value of that field when
-  # deleted
-  public
+  # Remove a field or field reference. Returns the value of that field when deleted
   def remove(fieldref)
     @accessors.del(fieldref)
-  end # def remove
+  end
 
   # sprintf. This could use a better method name.
   # The idea is to take an event and convert it to a string based on
@@ -217,7 +194,6 @@ class LogStash::Event
   #
   # If a %{name} value is an array, then we will join by ','
   # If a %{name} value does not exist, then no substitution occurs.
-  public
   def sprintf(format)
     LogStash::StringInterpolation.evaluate(self, format)
   end
@@ -226,6 +202,47 @@ class LogStash::Event
     # Generalize this method for more usability
     self["tags"] ||= []
     self["tags"] << value unless self["tags"].include?(value)
+  end
+
+  def to_hash_with_metadata
+    @metadata.empty? ? to_hash : to_hash.merge(METADATA => @metadata)
+  end
+
+  def to_json_with_metadata(*args)
+    # ignore arguments to respect accepted to_json method signature
+    LogStash::Json.dump(to_hash_with_metadata)
+  end
+
+  # this is used by logstash-devutils spec_helper.rb to monkey patch the Event field setter []=
+  # and add systematic encoding validation on every field set in specs.
+  # TODO: (colin) this should be moved, probably in logstash-devutils ?
+  def self.validate_value(value)
+    case value
+    when String
+      raise("expected UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.encoding == Encoding::UTF_8
+      raise("invalid UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.valid_encoding?
+      value
+    when Array
+      value.each{|v| validate_value(v)} # don't map, return original object
+      value
+    else
+      value
+    end
+  end
+
+  # depracated public methods
+  # TODO: (colin) since these depracated mothods are still exposed in 2.x we should remove them in 3.0
+
+  def unix_timestamp
+    raise DeprecatedMethod
+  end
+
+  def ruby_timestamp
+    raise DeprecatedMethod
+  end
+
+  def fields
+    raise DeprecatedMethod
   end
 
   private
@@ -246,30 +263,4 @@ class LogStash::Event
 
     LogStash::Timestamp.now
   end
-
-  public
-  def to_hash_with_metadata
-    @metadata.empty? ? to_hash : to_hash.merge(METADATA => @metadata)
-  end
-
-  public
-  def to_json_with_metadata(*args)
-    # ignore arguments to respect accepted to_json method signature
-    LogStash::Json.dump(to_hash_with_metadata)
-  end # def to_json
-
-  def self.validate_value(value)
-    case value
-    when String
-      raise("expected UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.encoding == Encoding::UTF_8
-      raise("invalid UTF-8 encoding for value=#{value}, encoding=#{value.encoding.inspect}") unless value.valid_encoding?
-      value
-    when Array
-      value.each{|v| validate_value(v)} # don't map, return original object
-      value
-    else
-      value
-    end
-  end
-
-end # class LogStash::Event
+end
