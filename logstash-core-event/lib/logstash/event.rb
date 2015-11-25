@@ -63,8 +63,6 @@ class LogStash::Event
   MIN_FLOAT_BEFORE_SCI_NOT = 0.0001
   MAX_FLOAT_BEFORE_SCI_NOT = 1000000000000000.0
 
-  LOGGER = Cabin::Channel.get(LogStash)
-
   def initialize(data = {})
     @cancelled = false
     @data = data
@@ -245,16 +243,24 @@ class LogStash::Event
     raise DeprecatedMethod
   end
 
+  def self.logger=(logger)
+    @@logger = logger
+  end
+
   private
+
+  def logger
+    @@logger ||= Cabin::Channel.get(LogStash)
+  end
 
   def init_timestamp(o)
     begin
       timestamp = LogStash::Timestamp.coerce(o)
       return timestamp if timestamp
 
-      LOGGER.warn("Unrecognized #{TIMESTAMP} value, setting current time to #{TIMESTAMP}, original in #{TIMESTAMP_FAILURE_FIELD}field", :value => o.inspect)
+      logger.warn("Unrecognized #{TIMESTAMP} value, setting current time to #{TIMESTAMP}, original in #{TIMESTAMP_FAILURE_FIELD}field", :value => o.inspect)
     rescue LogStash::TimestampParserError => e
-      LOGGER.warn("Error parsing #{TIMESTAMP} string, setting current time to #{TIMESTAMP}, original in #{TIMESTAMP_FAILURE_FIELD} field", :value => o.inspect, :exception => e.message)
+      logger.warn("Error parsing #{TIMESTAMP} string, setting current time to #{TIMESTAMP}, original in #{TIMESTAMP_FAILURE_FIELD} field", :value => o.inspect, :exception => e.message)
     end
 
     @data["tags"] ||= []
