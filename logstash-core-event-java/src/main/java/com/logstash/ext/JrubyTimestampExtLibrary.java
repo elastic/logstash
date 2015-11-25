@@ -110,6 +110,12 @@ public class JrubyTimestampExtLibrary implements Library {
             return RubyFixnum.newFixnum(context.runtime, this.timestamp.getTime().getMillis() / 1000);
         }
 
+        @JRubyMethod(name = "to_f")
+        public IRubyObject ruby_to_f(ThreadContext context)
+        {
+            return RubyFloat.newFloat(context.runtime, this.timestamp.getTime().getMillis() / 1000.0d);
+        }
+
         @JRubyMethod(name = "to_s")
         public IRubyObject ruby_to_s(ThreadContext context)
         {
@@ -203,6 +209,18 @@ public class JrubyTimestampExtLibrary implements Library {
         public static IRubyObject ruby_now(ThreadContext context, IRubyObject recv)
         {
             return RubyTimestamp.newRubyTimestamp(context.runtime);
+        }
+
+        @JRubyMethod(name = "utc")
+        public IRubyObject ruby_utc(ThreadContext context)
+        {
+            return this;
+        }
+
+        @JRubyMethod(name = "gmtime")
+        public IRubyObject ruby_gmtime(ThreadContext context)
+        {
+            return this;
         }
     }
 }
