@@ -300,4 +300,17 @@ describe LogStash::Pipeline do
       end
     end
   end
+
+  context "metrics" do
+    config <<-CONFIG
+    input { }
+    filter { }
+    output { }
+    CONFIG
+
+    it "uses a `NullMetric` object if no metric is given" do
+      pipeline = LogStash::Pipeline.new(config)
+      expect(pipeline.metric).to be_kind_of(LogStash::Instrument::NullMetric)
+    end
+  end
 end

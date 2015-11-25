@@ -19,7 +19,7 @@ require "logstash/instrument/metric"
 require "logstash/instrument/collector"
 
 module LogStash; class Pipeline
-  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id
+  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :metric
 
   def initialize(config_str, settings = {})
     @pipeline_id = settings[:pipeline_id] || self.object_id
@@ -49,6 +49,11 @@ module LogStash; class Pipeline
     rescue => e
       raise
     end
+
+    # Metric object should be passed upstream, multiple pipeline share the same metric
+    # and collector only the namespace will changes.
+    # If no metric is given, we use a `NullMetric` for all internal calls.
+    @metric = settings.fetch(:metric, Instrument::NullMetric.new)
 
     @input_queue = LogStash::Util::WrappedSynchronousQueue.new
     @events_filtered = Concurrent::AtomicFixnum.new(0)
