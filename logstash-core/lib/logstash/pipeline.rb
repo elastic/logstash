@@ -21,7 +21,7 @@ require "concurrent/timer_task"
 require "logstash/output_delegator"
 
 module LogStash; class Pipeline
-  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id
+  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :metric
 
   DEFAULT_SETTINGS = {
     :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.fifty_percent,
@@ -59,6 +59,11 @@ module LogStash; class Pipeline
     rescue => e
       raise
     end
+
+    # Metric object should be passed upstream, multiple pipeline share the same metric
+    # and collector only the namespace will changes.
+    # If no metric is given, we use a `NullMetric` for all internal calls.
+    @metric = settings.fetch(:metric, Instrument::NullMetric.new)
 
     @input_queue = LogStash::Util::WrappedSynchronousQueue.new
     @events_filtered = Concurrent::AtomicFixnum.new(0)
