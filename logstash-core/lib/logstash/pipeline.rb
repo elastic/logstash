@@ -9,7 +9,6 @@ require "logstash/config/file"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
-require "logstash/util/reporter"
 require "logstash/config/cpu_core_strategy"
 require "logstash/util/defaults_printer"
 require "logstash/shutdown_controller"
@@ -78,14 +77,6 @@ module LogStash; class Pipeline
 
     start_flusher
   end # def initialize
-
-  def create_sizedqueue(name)
-    LogStash::Instrument::SizeQueue.new(SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE),
-                                        metric.namespace(name))
-
-    LogStash::Instrument::SizeQueue.new(SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE),
-                                        metric.namespace(name))
-  end
 
   def ready?
     @ready.value
