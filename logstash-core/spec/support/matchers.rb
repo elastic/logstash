@@ -24,7 +24,7 @@ RSpec::Matchers.define :implement_interface_of do |type, key, value|
     missing_methods.empty?
   end
 
-  failure_message_for_should do
+  failure_message do
     "Expecting `#{expected}` to implements instance methods of `#{actual}`, missing methods: #{missing_methods.join(",")}"
   end
 end
