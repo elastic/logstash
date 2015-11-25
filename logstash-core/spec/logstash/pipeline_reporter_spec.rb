@@ -8,7 +8,7 @@ require "logstash/pipeline_reporter"
 describe LogStash::PipelineReporter do
   let(:generator_count) { 5 }
   let(:config) do
-    "input { generator { count => #{generator_count} } } output { null {} } "
+    "input { generator { count => #{generator_count} } } output { } "
   end
   let(:pipeline) { LogStash::Pipeline.new(config)}
   let(:reporter) { pipeline.reporter }
