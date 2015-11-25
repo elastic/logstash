@@ -44,6 +44,11 @@ describe LogStash::Event do
         subject["@metadata"] = { "action" => "index" }
         expect(subject["[@metadata][action]"]).to eq("index")
       end
+
+      it "should add key when setting nil value" do
+        subject["[baz]"] = nil
+        expect(subject.to_hash).to include("baz" => nil)
+      end
     end
 
     context "#sprintf" do
