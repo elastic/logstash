@@ -340,10 +340,15 @@ describe LogStash::Event do
       end
 
       it "should warn for invalid value" do
-        expect(LogStash::Event::LOGGER).to receive(:warn).twice
+        logger_mock = double("logger")
+        LogStash::Event.logger = logger_mock
+
+        expect(logger_mock).to receive(:warn).twice
 
         LogStash::Event.new("@timestamp" => :foo)
         LogStash::Event.new("@timestamp" => 666)
+
+        LogStash::Event.logger = nil
       end
 
       it "should tag for invalid string format" do
@@ -354,8 +359,13 @@ describe LogStash::Event do
       end
 
       it "should warn for invalid string format" do
-        expect(LogStash::Event::LOGGER).to receive(:warn)
+        logger_mock = double("logger")
+        LogStash::Event.logger = logger_mock
+
+        expect(logger_mock).to receive(:warn)
         LogStash::Event.new("@timestamp" => "foo")
+
+        LogStash::Event.logger = nil
       end
     end
 
