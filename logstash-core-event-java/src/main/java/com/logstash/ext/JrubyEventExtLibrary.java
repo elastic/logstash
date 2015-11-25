@@ -1,15 +1,10 @@
 package com.logstash.ext;
 
-import com.logstash.Event;
-import com.logstash.PathCache;
-import com.logstash.RubyToJavaConverter;
-import com.logstash.Timestamp;
+import com.logstash.*;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
-import org.jruby.anno.JRubyConstant;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
-import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.ObjectAllocator;
@@ -25,13 +20,13 @@ public class JrubyEventExtLibrary implements Library {
 
     public void load(Ruby runtime, boolean wrap) throws IOException {
         RubyModule module = runtime.defineModule("LogStash");
+
         RubyClass clazz = runtime.defineClassUnder("Event", runtime.getObject(), new ObjectAllocator() {
             public IRubyObject allocate(Ruby runtime, RubyClass rubyClass) {
                 return new RubyEvent(runtime, rubyClass);
             }
         }, module);
-        clazz.setConstant("LOGGER", runtime.getModule("Cabin").getClass("Channel")
-                .callMethod("get", runtime.getModule("LogStash")));
+
         clazz.setConstant("TIMESTAMP", runtime.newString(Event.TIMESTAMP));
         clazz.setConstant("TIMESTAMP_FAILURE_TAG", runtime.newString(Event.TIMESTAMP_FAILURE_TAG));
         clazz.setConstant("TIMESTAMP_FAILURE_FIELD", runtime.newString(Event.TIMESTAMP_FAILURE_FIELD));
@@ -39,9 +34,24 @@ public class JrubyEventExtLibrary implements Library {
         clazz.defineAnnotatedConstants(RubyEvent.class);
     }
 
+    public static class ProxyLogger implements Logger {
+        private RubyObject logger;
+
+        public ProxyLogger(RubyObject logger) {
+             this.logger = logger;
+        }
+
+        // TODO: (colin) complete implementation beyond warn when needed
+
+        public void warn(String message) {
+            logger.callMethod("warn", RubyString.newString(logger.getRuntime(), message));
+        }
+    }
+
     @JRubyClass(name = "Event", parent = "Object")
     public static class RubyEvent extends RubyObject {
         private Event event;
+        private static RubyObject logger;
 
         public RubyEvent(Ruby runtime, RubyClass klass) {
             super(runtime, klass);
@@ -206,9 +216,11 @@ public class JrubyEventExtLibrary implements Library {
             try {
                 return RubyString.newString(context.runtime, event.sprintf(format.toString()));
             } catch (IOException e) {
-                throw new RaiseException(getRuntime(),
-                        (RubyClass) getRuntime().getModule("LogStash").getClass("Error"),
-                        "timestamp field is missing", true);
+                throw new RaiseException(
+                    getRuntime(),
+                    (RubyClass) getRuntime().getModule("LogStash").getClass("Error"),
+                    "timestamp field is missing", true
+                );
             }
         }
 
@@ -273,6 +285,13 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "timestamp")
         public IRubyObject ruby_timestamp(ThreadContext context) throws IOException {
             return new JrubyTimestampExtLibrary.RubyTimestamp(context.getRuntime(), this.event.getTimestamp());
+        }
+
+        @JRubyMethod(name = "logger=", required = 1, meta = true)
+        public static IRubyObject ruby_set_logger(ThreadContext context, IRubyObject recv, IRubyObject value)
+        {
+            Event.setLogger(value.isNil() ? null : new ProxyLogger((RubyObject)value));
+            return value;
         }
     }
 }
