@@ -144,7 +144,7 @@ module LogStash; module Config; module AST
 
 
         code << <<-CODE
-#{name} = #{plugin.compile_initializer}
+          #{name} = #{plugin.compile_initializer}
           @#{plugin.plugin_type}s << #{name}
         CODE
 
@@ -152,7 +152,7 @@ module LogStash; module Config; module AST
         if plugin.plugin_type == "filter"
 
           code << <<-CODE
-#{name}_flush = lambda do |options, &block|
+            #{name}_flush = lambda do |options, &block|
               @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name})
 
               events = #{name}.flush(options)
@@ -232,18 +232,18 @@ module LogStash; module Config; module AST
 
     def compile
       case plugin_type
-        when "input"
-          return "start_input(#{variable_name})"
-        when "filter"
-          return <<-CODE
+      when "input"
+        return "start_input(#{variable_name})"
+      when "filter"
+        return <<-CODE
           events = #{variable_name}.multi_filter(events)
-          CODE
-        when "output"
-          return "targeted_outputs << #{variable_name}\n"
-        when "codec"
-          settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
-          attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
-          return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})"
+        CODE
+      when "output"
+        return "targeted_outputs << #{variable_name}\n"
+      when "codec"
+        settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
+        attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})"
       end
     end
 
@@ -347,7 +347,7 @@ module LogStash; module Config; module AST
                  :column => input.column_of(interval.first),
                  :byte => interval.first + 1,
                  :after => input[0..interval.first]
-          )
+                )
         )
       end
     end
@@ -406,7 +406,7 @@ module LogStash; module Config; module AST
         CODE
       else # Output
         <<-CODE
-#{super}
+          #{super}
           end
         CODE
       end
@@ -527,7 +527,7 @@ class Treetop::Runtime::SyntaxNode
     tv = "...#{tv[-20..-1]}" if tv.size > 20
 
     indent +
-      self.class.to_s.sub(/.*:/,'') +
+    self.class.to_s.sub(/.*:/,'') +
       em.map{|m| "+"+m.to_s.sub(/.*:/,'')}*"" +
       " offset=#{interval.first}" +
       ", #{tv.inspect}" +
@@ -535,11 +535,11 @@ class Treetop::Runtime::SyntaxNode
       (elements && elements.size > 0 ?
         ":" +
           (elements.select { |e| !e.is_a?(LogStash::Config::AST::Whitespace) && e.elements && e.elements.size > 0 }||[]).map{|e|
-            begin
-              "\n"+e.inspect(indent+"  ")
-            rescue  # Defend against inspect not taking a parameter
-              "\n"+indent+" "+e.inspect
-            end
+      begin
+        "\n"+e.inspect(indent+"  ")
+      rescue  # Defend against inspect not taking a parameter
+        "\n"+indent+" "+e.inspect
+      end
           }.join("") :
         ""
       )
