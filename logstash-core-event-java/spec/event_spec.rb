@@ -173,7 +173,7 @@ describe LogStash::Event do
     end
 
 
-    it "should warn on parsing errort" do
+    it "should warn on parsing error" do
       LogStash::Event.logger = logger
       expect(logger).to receive(:warn).once.with(/^Error parsing/)
       LogStash::Event.new(TIMESTAMP => "invalid timestamp")
