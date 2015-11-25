@@ -136,6 +136,10 @@ describe LogStash::Event do
     end
   end
 
+
+  # noop logger used to test the injectable logger in Event
+  # this implementation is not complete because only the warn
+  # method is used in Event.
   module DummyLogger
     def self.warn(message)
       # do nothing
@@ -146,6 +150,10 @@ describe LogStash::Event do
 
     let(:logger) { double("Logger") }
     after(:each) {  LogStash::Event.logger = nil }
+
+    # the following 2 specs are using both a real module (DummyLogger)
+    # and a mock. both tests are needed to make sure the implementation
+    # supports both types of objects.
 
     it "should set logger using a module" do
       LogStash::Event.logger = DummyLogger
