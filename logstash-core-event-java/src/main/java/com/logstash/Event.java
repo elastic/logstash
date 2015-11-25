@@ -28,9 +28,9 @@ public class Event implements Cloneable, Serializable {
     public static final String VERSION = "@version";
     public static final String VERSION_ONE = "1";
 
-    private static final ObjectMapper mapper = new ObjectMapper();
-
-    // TODO: add metadata support
+    private static final Logger DEFAULT_LOGGER = new StdioLogger();
+    private transient final ObjectMapper mapper = new ObjectMapper();
+    private transient static Logger logger = DEFAULT_LOGGER;
 
     public Event()
     {
@@ -225,18 +225,16 @@ public class Event implements Cloneable, Serializable {
             } else if (o instanceof RubySymbol) {
                 return new Timestamp(((RubySymbol) o).asJavaString());
             } else {
-                // TODO: add logging
-                //return Timestamp.now();
-                throw new IllegalArgumentException();
+                Event.logger.warn("Unrecognized " + TIMESTAMP + " value type=" + o.getClass().toString());
             }
         } catch (IllegalArgumentException e) {
-            // TODO: add error logging
-            tag(TIMESTAMP_FAILURE_TAG);
-
-            this.data.put(TIMESTAMP_FAILURE_FIELD, o);
-
-            return Timestamp.now();
+            Event.logger.warn("Error parsing " + TIMESTAMP + " string value=" + o.toString());
         }
+
+        tag(TIMESTAMP_FAILURE_TAG);
+        this.data.put(TIMESTAMP_FAILURE_FIELD, o);
+
+        return Timestamp.now();
     }
 
     public void tag(String tag) {
@@ -249,5 +247,9 @@ public class Event implements Cloneable, Serializable {
         if (!tags.contains(tag)) {
             tags.add(tag);
         }
+    }
+
+    public static void setLogger(Logger logger) {
+        Event.logger = (logger == null) ? DEFAULT_LOGGER : logger;
     }
 }
