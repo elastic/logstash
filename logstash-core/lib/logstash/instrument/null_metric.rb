@@ -2,9 +2,7 @@
 module LogStash module Instrument
  class NullMetric
    attr_reader :collector, :base_key
-   def initialize(collector, base_key = nil)
-     @collector = collector
-     @base_key = base_key
+   def initialize
    end
 
    def increment(key, value = 1)
@@ -18,7 +16,7 @@ module LogStash module Instrument
    end
 
    def namespace(key)
-     NullMetric.new(collector, "#{base_key}-#{key}")
+     NullMetric.new
    end
 
    def time(key, &block)
