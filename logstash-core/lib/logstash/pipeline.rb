@@ -18,6 +18,13 @@ require "logstash/pipeline_reporter"
 module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id
 
+  DEFAULT_SETTINGS = {
+    # We don't set pipeline workers defaults here, but rather in safe_pipeline_workers
+    :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.fifty_percent,
+    :pipeline_batch_size => 125,
+    :pipeline_batch_delay => 5 # in milliseconds
+  }
+
   def initialize(config_str, settings = {})
     @pipeline_id = settings[:pipeline_id] || self.object_id
     @logger = Cabin::Channel.get(LogStash)
@@ -58,11 +65,7 @@ module LogStash; class Pipeline
 
     @input_threads = []
 
-    @settings = {
-      # We don't set pipeline workers defaults here, but rather in safe_pipeline_workers
-      :pipeline_batch_size => 125,
-      :pipeline_batch_delay => 50 # in milliseconds
-    }
+    @settings = DEFAULT_SETTINGS.clone
 
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
@@ -79,7 +82,7 @@ module LogStash; class Pipeline
   end
 
   def safe_pipeline_worker_count
-    default = LogStash::Config::CpuCoreStrategy.fifty_percent
+    default = DEFAULT_SETTINGS[:default_pipeline_workers]
     thread_count = @settings[:pipeline_workers] #override from args "-w 8" or config
     safe_filters, unsafe_filters = @filters.partition(&:threadsafe?)
 

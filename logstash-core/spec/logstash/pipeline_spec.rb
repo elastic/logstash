@@ -84,7 +84,7 @@ class TestPipeline < LogStash::Pipeline
 end
 
 describe LogStash::Pipeline do
-  let(:worker_thread_count)     { 8 }
+  let(:worker_thread_count)     { LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers] }
   let(:safe_thread_count)       { 1 }
   let(:override_thread_count)   { 42 }
 
@@ -95,7 +95,6 @@ describe LogStash::Pipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummysafefilter").and_return(DummySafeFilter)
-      allow(LogStash::Config::CpuCoreStrategy).to receive(:fifty_percent).and_return(worker_thread_count)
     end
 
     context "when there are some not threadsafe filters" do
