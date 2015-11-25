@@ -75,6 +75,11 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.rubyshell"),
     :attribute_name => :ruby_shell
 
+  option ["-m", "--metric"], :flag,
+    I18n.t("logstash.runner.flag.metric"),
+           :attribute_name => :metric,
+           :default => false
+
   attr_reader :agent
 
   def initialize(*args)
@@ -123,9 +128,16 @@ class LogStash::Runner < Clamp::Command
     pipeline_settings = {
       :pipeline_workers => pipeline_workers,
       :pipeline_batch_size => pipeline_batch_size,
-      :pipeline_batch_delay => pipeline_batch_delay
+      :pipeline_batch_delay => pipeline_batch_delay,
     }
-    @agent.add_pipeline("base", config_string, pipeline_settings)
+
+    pipeline_id = "base"
+
+    if metric?
+      pipeline_settings.merge({ :metric =>  LogStash::Instrument::Metric.create_root(pipeline_id) })
+    end
+
+    @agent.add_pipeline(pipeline_id, config_string, pipeline_settings)
 
     if config_test?
       puts "Configuration OK"
