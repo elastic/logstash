@@ -155,6 +155,8 @@ public class JrubyEventExtLibrary implements Library {
                     this.event.setField(r, RubyToJavaConverter.convertToList((RubyArray) value));
                 } else if (value instanceof RubyHash) {
                     this.event.setField(r, RubyToJavaConverter.convertToMap((RubyHash) value));
+                } else if (value.isNil()) {
+                    this.event.setField(r, null);
                 } else {
                     throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass());
                 }
