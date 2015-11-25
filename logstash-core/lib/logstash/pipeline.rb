@@ -194,7 +194,7 @@ module LogStash; class Pipeline
 
   def take_batch(batch_size, batch_delay)
     batch = []
-    # Since this is externally synchronized in `worker_look` wec can guarantee that the visibility of an insight batch
+    # Since this is externally synchronized in `worker_loop` we can guarantee that the visibility of an insight batch
     # guaranteed to be a full batch not a partial batch
     set_current_thread_inflight_batch(batch)
 
