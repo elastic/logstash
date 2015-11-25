@@ -135,4 +135,54 @@ describe LogStash::Event do
       expect(event["tags"]).to eq(["foo"])
     end
   end
+
+  module DummyLogger
+    def self.warn(message)
+      # do nothing
+    end
+  end
+
+  context "logger" do
+
+    let(:logger) { double("Logger") }
+    after(:each) {  LogStash::Event.logger = nil }
+
+    it "should set logger using a module" do
+      LogStash::Event.logger = DummyLogger
+      expect(DummyLogger).to receive(:warn).once
+      LogStash::Event.new(TIMESTAMP => "invalid timestamp")
+    end
+
+    it "should set logger using a mock" do
+      LogStash::Event.logger = logger
+      expect(logger).to receive(:warn)
+      LogStash::Event.new(TIMESTAMP => "invalid timestamp")
+    end
+
+    it "should unset logger" do
+      # first set
+      LogStash::Event.logger = logger
+      expect(logger).to receive(:warn).once
+      LogStash::Event.new(TIMESTAMP => "invalid timestamp")
+
+      # then unset
+      LogStash::Event.logger = nil
+      expect(logger).to receive(:warn).never
+      # this will produce a log line in stdout by the Java Event
+      LogStash::Event.new(TIMESTAMP => "ignore this log")
+    end
+
+
+    it "should warn on parsing errort" do
+      LogStash::Event.logger = logger
+      expect(logger).to receive(:warn).once.with(/^Error parsing/)
+      LogStash::Event.new(TIMESTAMP => "invalid timestamp")
+    end
+
+    it "should warn on invalid timestamp object" do
+      LogStash::Event.logger = logger
+      expect(logger).to receive(:warn).once.with(/^Unrecognized/)
+      LogStash::Event.new(TIMESTAMP => Object.new)
+    end
+  end
 end
