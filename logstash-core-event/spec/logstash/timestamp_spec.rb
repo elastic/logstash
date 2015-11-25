@@ -81,4 +81,29 @@ describe LogStash::Timestamp do
       expect(t - 10).to eq(current)
     end
   end
+
+  context "identity methods" do
+    subject { LogStash::Timestamp.new }
+
+    it "should support utc" do
+      expect(subject.utc).to eq(subject)
+    end
+
+    it "should support gmtime" do
+      expect(subject.gmtime).to eq(subject)
+    end
+  end
+
+  context "numeric casting methods" do
+    let (:now) {Time.now}
+    subject { LogStash::Timestamp.new(now) }
+
+    it "should support to_i" do
+      expect(subject.to_i).to eq(now.to_i)
+    end
+
+    it "should support to_f" do
+      expect(subject.to_f).to eq(now.to_f)
+    end
+  end
 end

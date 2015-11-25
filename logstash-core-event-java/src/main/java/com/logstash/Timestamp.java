@@ -13,7 +13,9 @@ import java.util.Date;
 @JsonSerialize(using = TimestampSerializer.class)
 public class Timestamp implements Cloneable {
 
+    // all methods setting the time object must set it in the UTC timezone
     private DateTime time;
+
     // TODO: is this DateTimeFormatter thread safe?
     private static DateTimeFormatter iso8601Formatter = ISODateTimeFormat.dateTime();
 
@@ -50,7 +52,7 @@ public class Timestamp implements Cloneable {
     }
 
     public void setTime(DateTime time) {
-        this.time = time;
+        this.time = time.toDateTime(DateTimeZone.UTC);
     }
 
     public static Timestamp now() {
