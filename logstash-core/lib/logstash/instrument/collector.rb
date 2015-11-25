@@ -1,37 +1,90 @@
 # encoding: utf-8
-require "thread"
+require "logstash/instrument/concurrent_linked_queue"
+# require "concurrent/timer/task"
+require "cabin"
 
 module LogStash module Instrument
-  class Snapshot
-    def initialize(head, tail)
+  module Logger
+
+    @logger = Cabin::Channel.get(LogStash)
+    def self.logger=(new_logger)
+      @logger = new_logger
     end
 
-    # when a snapshot is deleted we can free the underlying structure
-    # A snapshot represent a `bucket of data` and its only a reference to the main structure
-    # this should be a matter of changing the head to a specifc item
+    def self.logger
+      @logger
+    end
   end
 
-  class Collector
-    attr_reader :collected_metrics
+  class Bucket
+    attr_reader :metrics
 
-    # pub/sub async, we batch event to the reporters
-    # we do not copy data we give a reference from the snapshot
-    # use `concurrent-linked` list
     def initialize
-      @collected_metrics = []
-      @snapshots = []
+      # This will be called by multiples threads
+      # and need to be thread safe
+      @metrics = ConcurrentLinkedQueue.new
     end
 
     def push(metric)
-      collected_metrics << metric
+      @metrics.offer(metric)
+    end
+
+    # When we summarize we could still be writting in the object
+    def summarize
+      # implement
     end
   end
 
-  class SnapShotInterval
-    def initialize(collector, interval)
+
+  class Collector
+    include Logger
+    DEFAULT_BUCKET_RESOLUTION = 1 # in seconds
+
+    attr_reader :buckets
+
+    def initialize(options = {})
+      @buckets = []
+      @bucket_lock = Mutex.new
+      @bucket_resolution = options.fetch(:bucket_window, DEFAULT_BUCKET_RESOLUTION)
+      @last_bucket_rollover = Time.now
+      buckets << Bucket.new
+    end
+
+    # This part of the code is called from multiple thread
+    def push(type, time, value)
+      # bucket.push([type, time, keys, value])
+    end
+
+    def bucket
+      # Fair thread rollover of the bucket
+      # Only one thread should can change the content of the buckets
+      # Can we roll the carpet under our feets?
+      if rollover? && @bucket_lock.try_lock
+        @last_bucket_rollover = Time.now
+        @buckets << Bucket.new
+      end
+
+      @buckets.last
+    end
+
+    def rollover?
+      Time.now - @last_bucket_rollover
     end
 
     def monitor
+      Concurrent::TimerTask.new(:execution_interval => 10) do
+        reset_buckets
+      end.execute
+    end
+
+    def reset_buckets
+      @buckets = []
+    end
+  end
+
+  # contain multiples buckets
+  class SnapShot
+    def initialize(buckets)
     end
   end
 end; end

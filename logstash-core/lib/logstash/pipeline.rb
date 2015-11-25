@@ -77,6 +77,9 @@ module LogStash; class Pipeline
   def create_sizedqueue(name)
     LogStash::Instrument::SizeQueue.new(SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE),
                                         metric.namespace(name))
+
+    LogStash::Instrument::SizeQueue.new(SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE),
+                                        metric.namespace(name))
   end
 
   def ready?
