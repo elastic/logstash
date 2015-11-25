@@ -16,6 +16,7 @@ require "logstash/util/wrapped_synchronous_queue"
 require "logstash/pipeline_reporter"
 require "logstash/instrument/size_queue"
 require "logstash/instrument/metric"
+require "logstash/instrument/null_metric"
 require "logstash/instrument/collector"
 require "concurrent/timer_task"
 require "logstash/output_delegator"
@@ -186,6 +187,7 @@ module LogStash; class Pipeline
       input_batch, signal = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
       running = false if signal == LogStash::SHUTDOWN
 
+	  @metric.increment(:events_in, input_batch.size)
       @events_consumed.increment(input_batch.size)
 
       filtered_batch = filter_batch(input_batch)
@@ -195,6 +197,7 @@ module LogStash; class Pipeline
         flush_filters_to_batch(filtered_batch, flush_options)
       end
 
+	  @metric.increment(:events_filtered, filtered.size)
       @events_filtered.increment(filtered_batch.size)
 
       output_batch(filtered_batch)
