@@ -6,7 +6,6 @@ module LogStash module Instrument
   class MetricNoKeyProvided < Exception; end
   class MetricNoBlockProvided < Exception; end
 
-  # TODO: Investigate what could be deferred here,
   class Metric
     attr_reader :collector, :base_key
 
@@ -44,6 +43,10 @@ module LogStash module Instrument
       end
     end
 
+    def self.create_root(name, collector = LogStash::Instrument::Collector.new)
+      Metric.new(collector, name)
+    end
+
     private
     def merge_keys(key)
       valid_key!(key)
@@ -52,10 +55,6 @@ module LogStash module Instrument
     
     def valid_key!(key)
       raise MetricNoKeyProvided if key.nil? || key == ""
-    end
-
-    def self.create_root(name, collector = LogStash::Instrument::Collector.new)
-      LogStash::Instrument::Metric.new(collector, name)
     end
   end
 end; end
