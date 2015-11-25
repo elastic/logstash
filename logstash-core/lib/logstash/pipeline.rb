@@ -16,6 +16,7 @@ require "logstash/util/wrapped_synchronous_queue"
 require "logstash/pipeline_reporter"
 require "logstash/instrument/size_queue"
 require "logstash/instrument/metric"
+require "logstash/instrument/null_metric"
 require "logstash/instrument/collector"
 
 module LogStash; class Pipeline
@@ -181,10 +182,14 @@ module LogStash; class Pipeline
       # To understand the purpose behind this synchronize please read the body of take_batch
       input_batch, shutdown_received = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
       running = false if shutdown_received
+
+      metric.increment(:events_in, input_batch.size)
       @events_consumed.increment(input_batch.size)
 
       filtered = filter_batch(input_batch)
+
       @events_filtered.increment(filtered.size)
+      @metric.increment(:events_filtered, filtered.size)
 
       output_batch(filtered)
 
