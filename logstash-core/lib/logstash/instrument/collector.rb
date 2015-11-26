@@ -41,7 +41,7 @@ module LogStash module Instrument
         # writing, if we don't receive any events for 5 secs we wont send it.
         # This might be a problem, for time correlation.
         logger.debug("Rotating snapshot", :last_rotation => @last_rotation) if logger.debug?
-l
+
         publish_snapshot
         rotate_snapshot
         @snapshot_rotation_mutex.unlock
