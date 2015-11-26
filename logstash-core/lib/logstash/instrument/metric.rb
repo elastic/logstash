@@ -15,22 +15,23 @@ module LogStash module Instrument
     end
 
     def increment(key, value = 1)
-      collector.push(:counter_increment, Concurrent.monotonic_time, value)
+      collector.push(:counter, merge_keys(key), :increment, Concurrent.monotonic_time, value)
     end
 
     def decrement(key, value = 1)
-      collector.push(:counter_decrement, Concurrent.monotonic_time, value)
+      collector.push(:counter, merge_keys(key), :decrement, Concurrent.monotonic_time, value)
     end
 
     # might be worth to create a block interface for time based gauge
     def gauge(key, value)
-      collector.push(:gauge, Concurrent.monotonic_time, value)
+      collector.push(:gauge, merge_keys(key), Concurrent.monotonic_time, value)
     end
 
     def namespace(key)
       Metric.new(collector, merge_keys(key.to_sym))
     end
 
+    # I think this should have his own values.
     def time(key, &block)
       if block_given?
         start_time = Concurrent.monotonic_time
@@ -44,13 +45,14 @@ module LogStash module Instrument
     end
 
     def self.create_root(name, collector = LogStash::Instrument::Collector.new)
+      reporter = Reporter.new(collector)
       Metric.new(collector, name)
     end
 
     private
     def merge_keys(key)
       valid_key!(key)
-      [@base_key, key.to_sym].compact
+      [@base_key, key.to_sym]
     end
     
     def valid_key!(key)
