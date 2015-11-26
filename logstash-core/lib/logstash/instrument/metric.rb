@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/instrument/collector"
+require "logstash/instrument/reporter/stdout"
 require "concurrent"
 
 module LogStash module Instrument
@@ -45,7 +46,8 @@ module LogStash module Instrument
     end
 
     def self.create_root(name, collector = LogStash::Instrument::Collector.new)
-      reporter = Reporter.new(collector)
+      # reporter =  LogStash::Instrument::Reporter::File.new(collector)
+      reporter = LogStash::Instrument::Reporter::Stdout.new(collector)
       Metric.new(collector, name)
     end
 
