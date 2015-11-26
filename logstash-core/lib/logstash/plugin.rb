@@ -20,6 +20,14 @@ class LogStash::Plugin
   # by default only the core pipeline metrics will be recorded.
   config :enable_metric, :validate => :boolean, :default => false
 
+  # Under which name you want to collect metric for this plugin?
+  # This will allow you to compare the performance of the configuration change, this
+  # name need to be unique per plugin configuration.
+  #
+  # If you don't explicitely set this variable Logstash will generate a unique name.
+  # This name will be valid until the configuration change.
+  config :metric_identifier, :validate => :string, :default => ""
+
   public
   def hash
     params.hash ^
@@ -103,7 +111,7 @@ class LogStash::Plugin
   end
 
   def identifier_name
-    @identifier_name ||= @identifier.nil? || @identifier.empty? ? "#{self.class.config_name}-#{params_hash_code}".to_sym : @identifier
+    @identifier_name ||= (@metric_identifier.nil? || @metric_identifier.empty?) ? "#{self.class.config_name}-#{params_hash_code}".to_sym : @identifier
   end
 
   def params_hash_code
