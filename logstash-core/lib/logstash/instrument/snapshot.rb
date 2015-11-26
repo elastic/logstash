@@ -14,19 +14,23 @@ module LogStash module Instrument
 
     def push(*args)
       type, key, _ = args
-      metric = @metrics.fetch_or_store(key, concrete_class(type))
+      metric = @metrics.fetch_or_store(key, concrete_class(type, key))
       metric.execute(*args)
     end
 
-    def concrete_class(type)
+    def concrete_class(type, key)
       # TODO, benchmark, I think this is faster than using constantize
       case type
-      when :counter then MetricType::Counter.new
+      when :counter then MetricType::Counter.new(key)
       end
     end
 
     def size
       @metrics.size
+    end
+
+    def inspect
+      "#{self.class.name} - metrics: #{@metrics.values.map(&:inspect)}"
     end
   end
 end; end
