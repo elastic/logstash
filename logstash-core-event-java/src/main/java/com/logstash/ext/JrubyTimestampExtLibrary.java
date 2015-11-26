@@ -222,5 +222,17 @@ public class JrubyTimestampExtLibrary implements Library {
         {
             return this;
         }
+
+        @JRubyMethod(name = {"usec", "tv_usec"})
+        public IRubyObject ruby_usec(ThreadContext context)
+        {
+            return RubyFixnum.newFixnum(context.runtime, this.timestamp.usec());
+        }
+
+        @JRubyMethod(name = "year")
+        public IRubyObject ruby_year(ThreadContext context)
+        {
+            return RubyFixnum.newFixnum(context.runtime, this.timestamp.getTime().getYear());
+        }
     }
 }
