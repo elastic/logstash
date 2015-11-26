@@ -35,7 +35,6 @@ module LogStash module Instrument
     end
   end
 
-
   class Collector
     include Logger
     DEFAULT_BUCKET_RESOLUTION = 1 # in seconds
