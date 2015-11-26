@@ -1,11 +1,12 @@
 # encoding: utf-8
 require "logstash/instrument/concurrent_linked_queue"
-# require "concurrent/timer/task"
 require "cabin"
+require "concurrent/map"
+require "observer"
+require "thread"
 
 module LogStash module Instrument
-  module Logger
-
+  module Loggable
     @logger = Cabin::Channel.get(LogStash)
     def self.logger=(new_logger)
       @logger = new_logger
@@ -16,74 +17,116 @@ module LogStash module Instrument
     end
   end
 
-  class Bucket
-    attr_reader :metrics
-
-    def initialize
-      # This will be called by multiples threads
-      # and need to be thread safe
-      @metrics = ConcurrentLinkedQueue.new
-    end
-
-    def push(metric)
-      @metrics.offer(metric)
-    end
-
-    # When we summarize we could still be writting in the object
-    def summarize
-      # implement
-    end
-  end
-
   class Collector
-    include Logger
-    DEFAULT_BUCKET_RESOLUTION = 1 # in seconds
+    include Observable
+    include Loggable
 
-    attr_reader :buckets
+    SNAPSHOT_ROTATION_TIME = 1 #seconds
 
     def initialize(options = {})
-      @buckets = []
-      @bucket_lock = Mutex.new
-      @bucket_resolution = options.fetch(:bucket_window, DEFAULT_BUCKET_RESOLUTION)
-      @last_bucket_rollover = Time.now
-      buckets << Bucket.new
+      @snapshot_rotation_time = options.fetch(:snapshot_rotation_time, SNAPSHOT_ROTATION_TIME)
+      @snapshot_rotation_mutex = Mutex.new
+      rotate_snapshot
+    end
+
+    def roll_over?
+      Concurrent.monotonic_time - @last_rotation >= @snapshot_rotation_time
     end
 
     # This part of the code is called from multiple thread
-    def push(type, time, value)
-      # bucket.push([type, time, keys, value])
+    # TODO: rename to record?
+    def push(*args)
+      snapshot.push(*args)
     end
 
-    def bucket
-      # Fair thread rollover of the bucket
-      # Only one thread should can change the content of the buckets
-      # Can we roll the carpet under our feets?
-      if rollover? && @bucket_lock.try_lock
-        @last_bucket_rollover = Time.now
-        @buckets << Bucket.new
+    def snapshot
+      if roll_over? && @snapshot_rotation_mutex.try_lock 
+        # fair rotation of the snapshot done by the winning thread
+        # metric could be written in the previous snapshot.
+        # Since the snapshot isn't written right away
+        # the view of the snapshot should be consistent at the time of
+        # writing, if we don't receive any events for 5 secs we wont send it.
+        # This might be a problem, for time correlation.
+        publish_snapshot
+        rotate_snapshot
+        @snapshot_rotation_mutex.unlock
       end
 
-      @buckets.last
+      @current_snapshot
     end
 
-    def rollover?
-      Time.now - @last_bucket_rollover
+    def rotate_snapshot
+      @current_snapshot = Snapshot.new
+      update_last_rotation
     end
 
-    def monitor
-      Concurrent::TimerTask.new(:execution_interval => 10) do
-        reset_buckets
-      end.execute
+    def publish_snapshot
+      notify_observers(Concurrent.monotonic_time, @current_snapshot) 
     end
 
-    def reset_buckets
-      @buckets = []
+    private
+    def update_last_rotation
+      @last_rotation = Concurrent.monotonic_time
     end
   end
 
-  # contain multiples buckets
-  class SnapShot
-    def initialize(buckets)
+  class Reporter
+    include Loggable
+
+    def initialize(collector)
+      collector.add_observer(self)
+    end
+
+    def update(time, snapshot)
+      logger.warn("Received a new Snapshot", :metrics_size => snapshot.size)
+    end
+  end
+
+  class Snapshot
+    def initialize
+      # The Map doesn't respect the order of insertion
+      # we have to track the time another way
+      @metrics = Concurrent::Map.new
+    end
+    
+    def push(*args)
+      type, key, _ = args
+      metric = @metrics.fetch_or_store(key, concrete_class(type))
+      metric.execute(*args)
+    end
+
+    def concrete_class(type)
+      # TODO, benchmark, I think this is faster than using constantize
+      case type
+      when :counter then Counter.new
+      end
+    end
+
+    def size
+      @metrics.size
+    end
+  end
+
+  class Counter
+    def initialize(value = 0)
+      # This should be a `LongAdder`,
+      # will have to create a rubyext for it and support jdk7
+      # look at the elasticsearch source code.
+      # LongAdder only support decrement of one?
+      # Most of the time we will be adding
+      @counter = Concurrent::AtomicFixnum.new(value)
+    end
+
+    def increment(value = 1)
+      @counter.increment(value)
+    end
+
+    def decrement(value = 1)
+      @counter.decrement(value)
+    end
+
+    def execute(type, key, action, time, value)
+      @counter.send(action, value)
     end
   end
 end; end
