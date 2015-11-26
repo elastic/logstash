@@ -16,7 +16,8 @@ module LogStash module Instrument
     SNAPSHOT_ROTATION_TIME = 1 #seconds
 
     def initialize(options = {})
-      @snapshot_rotation_time = options.fetch(:snapshot_rotation_time, SNAPSHOT_ROTATION_TIME)
+      @snapshot_rotation_time = options.fetch(:snapshot_rotation_time,
+                                              SNAPSHOT_ROTATION_TIME)
       @snapshot_rotation_mutex = Mutex.new
       rotate_snapshot
     end
@@ -56,6 +57,7 @@ module LogStash module Instrument
     end
 
     def publish_snapshot
+      changed
       notify_observers(Concurrent.monotonic_time, @current_snapshot) 
     end
 

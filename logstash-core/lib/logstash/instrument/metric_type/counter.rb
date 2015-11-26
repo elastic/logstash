@@ -2,7 +2,10 @@
 require "concurrent"
 module LogStash module Instrument module MetricType
   class Counter
-    def initialize(value = 0)
+    attr_reader :key
+    def initialize(key, value = 0)
+      @key = key
+
       # This should be a `LongAdder`,
       # will have to create a rubyext for it and support jdk7
       # look at the elasticsearch source code.
@@ -21,6 +24,10 @@ module LogStash module Instrument module MetricType
 
     def execute(type, key, action, time, value)
       @counter.send(action, value)
+    end
+
+    def inspect
+      "#{self.class.name} - key: #{key} value: #{@counter.value}"
     end
   end
 end; end; end
