@@ -81,6 +81,22 @@ class LogStash::Plugin
     [self.class.to_s, original_params]
   end
 
+  def metric=(new_metric)
+    @metric = new_metric.namespace(identifier_name)
+  end
+
+  def metric
+    @metric_plugin ||= enable_metric ? @metric : LogStash::Instrument::NullMetric.new
+  end
+
+  def identifier_name
+    @identifier_name ||= (@metric_identifier.nil? || @metric_identifier.empty?) ? "#{self.class.config_name}-#{params_hash_code}".to_sym : @identifier.to_sym
+  end
+
+  def params_hash_code
+    Digest::MD5.hexdigest(params.to_s)
+  end
+
   # Look up a plugin by type and name.
   public
   def self.lookup(type, name)
@@ -100,22 +116,6 @@ class LogStash::Plugin
     namespace_lookup(type, name)
   rescue LoadError, NameError => e
     raise(LogStash::PluginLoadingError, I18n.t("logstash.pipeline.plugin-loading-error", :type => type, :name => name, :path => path, :error => e.to_s))
-  end
-
-  def metric=(new_metric)
-    @metric = new_metric.namespace(identifier_name)
-  end
-
-  def metric
-    @metric_plugin ||= enable_metric ? @metric : LogStash::Instrument::NullMetric.new
-  end
-
-  def identifier_name
-    @identifier_name ||= (@metric_identifier.nil? || @metric_identifier.empty?) ? "#{self.class.config_name}-#{params_hash_code}".to_sym : @identifier
-  end
-
-  def params_hash_code
-    Digest::MD5.digest(params.to_s)
   end
 
   private
