@@ -45,6 +45,7 @@ module LogStash module Instrument
 
         publish_snapshot
         rotate_snapshot
+
         @snapshot_rotation_mutex.unlock
       end
 

@@ -45,6 +45,8 @@ module LogStash module Instrument
       end
     end
 
+    # TODO
+    # Externalize this
     def self.create_root(name, collector = LogStash::Instrument::Collector.new)
       # reporter =  LogStash::Instrument::Reporter::File.new(collector)
       reporter = LogStash::Instrument::Reporter::Stdout.new(collector)
