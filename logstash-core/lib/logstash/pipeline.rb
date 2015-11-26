@@ -42,6 +42,14 @@ module LogStash; class Pipeline
 
     @worker_threads = []
 
+    # Metric object should be passed upstream, multiple pipeline share the same metric
+    # and collector only the namespace will changes.
+    # If no metric is given, we use a `NullMetric` for all internal calls.
+    #
+    # This need to be configured before we evaluate the code to make
+    # sure the metric instance is correctly send to the plugin.
+    @metric = settings.fetch(:metric, Instrument::NullMetric.new)
+
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
     if @config.nil?
@@ -59,11 +67,6 @@ module LogStash; class Pipeline
     rescue => e
       raise
     end
-
-    # Metric object should be passed upstream, multiple pipeline share the same metric
-    # and collector only the namespace will changes.
-    # If no metric is given, we use a `NullMetric` for all internal calls.
-    @metric = settings.fetch(:metric, Instrument::NullMetric.new)
 
     @input_queue = LogStash::Util::WrappedSynchronousQueue.new
     @events_filtered = Concurrent::AtomicFixnum.new(0)
@@ -377,11 +380,14 @@ module LogStash; class Pipeline
 
     klass = LogStash::Plugin.lookup(plugin_type, name)
 
-    if plugin_type == "output"
+    plugin = if plugin_type == "output"
       LogStash::OutputDelegator.new(@logger, klass, *args)
     else
       klass.new(*args)
     end
+	
+	plugin.metric = metric
+	plugin
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used

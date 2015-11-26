@@ -5,12 +5,16 @@ require "logstash/config/mixin"
 require "logstash/instrument/null_metric"
 require "cabin"
 require "concurrent"
+require "digest/md5"
 
 class LogStash::Plugin
+
   attr_accessor :params
   attr_accessor :logger
 
   NL = "\n"
+
+  include LogStash::Config::Mixin
 
   # Disable or enable metric logging for this specific plugin instance
   # by default only the core pipeline metrics will be recorded.
@@ -90,8 +94,20 @@ class LogStash::Plugin
     raise(LogStash::PluginLoadingError, I18n.t("logstash.pipeline.plugin-loading-error", :type => type, :name => name, :path => path, :error => e.to_s))
   end
 
+  def metric=(new_metric)
+    @metric = new_metric.namespace(identifier_name)
+  end
+
   def metric
     @metric_plugin ||= enable_metric ? @metric : LogStash::Instrument::NullMetric.new
+  end
+
+  def identifier_name
+    @identifier_name ||= @identifier.nil? || @identifier.empty? ? "#{self.class.config_name}-#{params_hash_code}".to_sym : @identifier
+  end
+
+  def params_hash_code
+    Digest::MD5.digest(params.to_s)
   end
 
   private
