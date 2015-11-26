@@ -2,6 +2,7 @@
 require "logstash/namespace"
 require "logstash/logging"
 require "logstash/config/mixin"
+require "logstash/instrument/null_metric"
 require "cabin"
 require "concurrent"
 
@@ -10,6 +11,10 @@ class LogStash::Plugin
   attr_accessor :logger
 
   NL = "\n"
+
+  # Disable or enable metric logging for this specific plugin instance
+  # by default only the core pipeline metrics will be recorded.
+  config :enable_metric, :validate => :boolean, :default => false
 
   public
   def hash
@@ -83,6 +88,10 @@ class LogStash::Plugin
     namespace_lookup(type, name)
   rescue LoadError, NameError => e
     raise(LogStash::PluginLoadingError, I18n.t("logstash.pipeline.plugin-loading-error", :type => type, :name => name, :path => path, :error => e.to_s))
+  end
+
+  def metric
+    @metric_plugin ||= enable_metric ? @metric : LogStash::Instrument::NullMetric.new
   end
 
   private
