@@ -4,7 +4,6 @@ require "cabin"
 
 module LogStash module Util
   module Loggable
-
     class << self
       def logger=(new_logger)
         @logger = new_logger
