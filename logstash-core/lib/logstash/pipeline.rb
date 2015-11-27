@@ -53,6 +53,7 @@ module LogStash; class Pipeline
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
     @input_threads = []
+    @filter_threads = []
   end # def initialize
 
   def ready?
@@ -136,7 +137,7 @@ module LogStash; class Pipeline
   end
 
   def wait_filters
-    @filter_threads.each(&:join) if @filter_threads
+    @filter_threads.each(&:join)
   end
 
   def shutdown_outputs

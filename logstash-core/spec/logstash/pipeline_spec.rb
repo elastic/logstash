@@ -299,4 +299,27 @@ describe LogStash::Pipeline do
       end
     end
   end
+
+  describe "stalling_threads" do
+    before(:each) do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+    end
+
+    context "when the pipeline doesn't have filters" do
+      let(:pipeline_with_no_filters) do
+        <<-eos
+        input { dummyinput {} }
+        output { dummyoutput {} }
+        eos
+      end
+
+      it "doesn't raise an error" do
+        pipeline = TestPipeline.new(pipeline_with_no_filters)
+        pipeline.run
+        expect { pipeline.stalling_threads }.to_not raise_error
+      end
+    end
+  end
 end
