@@ -1,6 +1,6 @@
 # encoding: utf-8
 require_relative "support/integration_test_helpers"
-require_relative "../lib/logstash/environment"
+require_relative "../logstash-core/lib/logstash/environment"
 require "fileutils"
 
 if LogStash::Environment.windows?
