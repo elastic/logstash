@@ -14,6 +14,7 @@ end
 require "clamp"
 require "pluginmanager/util"
 require "pluginmanager/gemfile"
+require "pluginmanager/gemfilelock"
 require "pluginmanager/install"
 require "pluginmanager/uninstall"
 require "pluginmanager/list"
