@@ -47,6 +47,8 @@ module LogStash module Instrument
 
     # TODO
     # Externalize this
+    # Since  we need periodic poller and everything
+    # I think this should be a factory
     def self.create_root(name, collector = LogStash::Instrument::Collector.new)
       # reporter =  LogStash::Instrument::Reporter::File.new(collector)
       reporter = LogStash::Instrument::Reporter::Stdout.new(collector)
