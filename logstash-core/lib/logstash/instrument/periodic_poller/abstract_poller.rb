@@ -23,13 +23,13 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     def start
-      logger.debug("Starting PeriodicPoller", :poller => self,
+      logger.debug("PeriodicPoller: Starting", :poller => self,
                    :interval => @interval) if logger.debug?
       @task.execute
     end
 
     def stop
-      logger.debug("Stopping PeriodicPoller", :poller => self)
+      logger.debug("PeriodicPoller: Stopping", :poller => self)
       @task.shutdown
     end
   end
