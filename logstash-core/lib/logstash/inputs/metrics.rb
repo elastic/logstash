@@ -1,7 +1,9 @@
 # encoding: utf-8
+require "logstash/inputs/base"
 require "logstash/instrument/collector"
+
 module LogStash module Inputs
-  class Metrics
+  class Metrics < LogStash::Inputs::Base
     def register
       @condition = ConditionVariable.new
     end
