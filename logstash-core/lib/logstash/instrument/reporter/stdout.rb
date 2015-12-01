@@ -3,11 +3,11 @@ require "logstash/instrument/reporter/base"
 require "logstash/util/loggable"
 
 module LogStash module Instrument module Reporter
-  class Stdout < Base
+  class Stdout
     include LogStash::Util::Loggable
 
     def initialize(collector)
-      super(collector)
+      collector.add_observer(self)
     end
 
     def update(time, snapshot)
