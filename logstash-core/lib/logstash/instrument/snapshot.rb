@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/instrument/metric_type/counter"
 require "logstash/util/loggable"
+require "logstash/event"
 
 module LogStash module Instrument
   class Snapshot
@@ -27,6 +28,10 @@ module LogStash module Instrument
 
     def size
       @metrics.size
+    end
+
+    def to_event
+      Logstash::Event.new(@metrics.to_hash)
     end
 
     def inspect
