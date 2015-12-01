@@ -3,20 +3,45 @@ require "logstash/environment"
 require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
 require "logstash/pipeline"
+require "logstash/config/loader"
 require "uri"
 require "stud/trap"
 
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
+  attr_reader :logger, :runner
 
-  attr_writer :logger
-
-  def initialize
+  def initialize(logger, runner)
+    @logger = logger
+    @runner = runner
     @pipelines = {}
   end
 
   def execute
+    add_pipelines
+    run_pipelines
+  end
+
+  def config_valid?
+    begin
+      add_pipelines
+    rescue Exception => e
+      e
+    end
+  end
+
+  def add_pipelines
+    if (runner.config_string.nil? || runner.config_string.empty?) && runner.config_path.nil?
+      fail(I18n.t("logstash.runner.missing-configuration"))
+    end
+
+    config_string = LogStash::Config::Loader.format_config(runner.config_path, runner.config_string)
+
+    add_pipeline("base", config_string, :filter_workers => runner.filter_workers)
+  end
+
+  def run_pipelines
     # Make SIGINT/SIGTERM shutdown the pipeline.
     sigint_id = trap_sigint()
     sigterm_id = trap_sigterm()

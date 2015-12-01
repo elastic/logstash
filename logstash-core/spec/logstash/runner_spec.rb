@@ -36,7 +36,6 @@ describe LogStash::Runner do
 
       it "should execute the agent" do
         expect(subject).to receive(:create_agent).and_return(agent)
-        expect(agent).to receive(:add_pipeline).once
         expect(agent).to receive(:execute).once
         subject.run(args)
       end
@@ -45,43 +44,10 @@ describe LogStash::Runner do
     context "with no arguments" do
       let(:args) { [] }
       it "should show help" do
-        expect(subject).to receive(:show_short_help).once
-        expect(channel).to receive(:fatal).once
         expect(channel).to receive(:warn).once
+        expect(channel).to receive(:fatal).once
+        expect(subject).to receive(:show_short_help).once
         subject.run(args)
-      end
-    end
-  end
-
-  context "when loading the configuration" do
-    subject { LogStash::Runner.new("") }
-    context "when local" do
-      before { expect(subject).to receive(:local_config).with(path) }
-
-      context "unix" do
-        let(:path) { './test.conf' }
-        it 'works with relative path' do
-          subject.load_config(path)
-        end
-      end
-
-      context "windows" do
-        let(:path) { '.\test.conf' }
-        it 'work with relative windows path' do
-          subject.load_config(path)
-        end
-      end
-    end
-
-    context "when remote" do
-      context 'supported scheme' do
-        let(:path) { "http://test.local/superconfig.conf" }
-        let(:dummy_config) { 'input {}' }
-
-        before { expect(Net::HTTP).to receive(:get) { dummy_config } }
-        it 'works with http' do
-          expect(subject.load_config(path)).to eq("#{dummy_config}\n")
-        end
       end
     end
   end
