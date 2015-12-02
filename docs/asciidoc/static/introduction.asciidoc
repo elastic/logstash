@@ -31,7 +31,7 @@ Where it all started.
 logs like <<plugins-inputs-log4j,log4j>> for Java
 ** Capture many other log formats like <<plugins-inputs-syslog,syslog>>, 
 <<plugins-inputs-eventlog,Windows event logs>>, networking and firewall logs, and more
-* Enjoy complementary secure log forwarding capabilities with https://github.com/elastic/filebeat[Filebeat]
+* Enjoy complementary secure log forwarding capabilities with https://github.com/elastic/beats/tree/master/filebeat[Filebeat]
 * Collect metrics from <<plugins-inputs-ganglia,Ganglia>>, <<plugins-codecs-collectd,collectd>>, 
 <<plugins-codecs-netflow,NetFlow>>, <<plugins-inputs-jmx,JMX>>, and many other infrastructure 
 and application platforms over <<plugins-inputs-tcp,TCP>> and <<plugins-inputs-udp,UDP>>
