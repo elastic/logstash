@@ -36,9 +36,31 @@ class LogStash::Agent
 
   def add_pipeline(pipeline_id, config_str, settings = {})
     @pipelines[pipeline_id] = LogStash::Pipeline.new(config_str, settings.merge(:pipeline_id => pipeline_id))
+    add_metric_pipeline if settings.fetch(:metric, false)
   end
 
   private
+  def add_metric_pipeline
+    metric_pipeline_config =<<-EOS
+    input {
+      metrics {}
+    }
+    
+    output {
+      elasticsearch {
+        host => "127.0.0.1"
+        index => "metrics-%dd-%mm-%YY"
+      }
+    }
+    EOS
+
+    add_pipeline(:metric, metric_pipeline_config, { :metric => false }) unless pipeline_exist?(:metric)
+  end
+
+  def pipeline_exist?(pipeline_id)
+    !@pipelines[pipeline_id].nil?
+  end
+
   # Emit a warning message.
   def warn(message)
     # For now, all warnings are fatal.

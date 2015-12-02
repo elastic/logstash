@@ -4,6 +4,8 @@ require "logstash/instrument/collector"
 
 module LogStash module Inputs
   class Metrics < LogStash::Inputs::Base
+    config_name "metrics"
+
     def register
       @condition = ConditionVariable.new
     end
