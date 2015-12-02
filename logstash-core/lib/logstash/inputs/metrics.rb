@@ -17,6 +17,7 @@ module LogStash module Inputs
     end
 
     def update(time, snapshot)
+      @logger.error("Metrics input received a new snaptop")
       # TODO: 
       # - Obviously the format here is wrong and we need to
       # transform it from Snapshot to an event
