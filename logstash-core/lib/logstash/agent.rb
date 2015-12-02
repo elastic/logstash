@@ -41,20 +41,24 @@ class LogStash::Agent
 
   private
   def add_metric_pipeline
-    metric_pipeline_config =<<-EOS
-    input {
-      metrics {}
-    }
-    
-    output {
-      elasticsearch {
-        host => "127.0.0.1"
-        index => "metrics-%dd-%mm-%YY"
-      }
-    }
-    EOS
+    if !pipeline_exist?(:metric)
+      @logger.debug("Agent: Adding a pipeline to send metric")
 
-    add_pipeline(:metric, metric_pipeline_config, { :metric => false }) unless pipeline_exist?(:metric)
+      metric_pipeline_config =<<-EOS
+      input {
+        metrics {}
+      }
+
+      output {
+        elasticsearch {
+          hosts => "127.0.0.1"
+          index => "metrics-%{+YYYY.MM.dd}"
+        }
+      }
+      EOS
+
+      add_pipeline(:metric, metric_pipeline_config)
+    end
   end
 
   def pipeline_exist?(pipeline_id)

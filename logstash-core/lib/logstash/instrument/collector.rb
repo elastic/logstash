@@ -38,7 +38,7 @@ module LogStash module Instrument
 
     private
     def roll_over?
-      Concurrent.monotonic_time - @last_rotation >= snapshot_rotation_time
+      Concurrent.monotonic_time - @last_rotation >= self.class.snapshot_rotation_time
     end
 
     def snapshot
