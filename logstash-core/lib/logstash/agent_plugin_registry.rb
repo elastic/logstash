@@ -1,9 +1,9 @@
 # encoding: utf-8
 require "logstash/agent"
 
-module LogStash module AgentPluginManager
+module LogStash module AgentPluginRegistry
   DEFAULT_AGENT_NAME = :default
-  class DuplicatePluginNameError < Error; end
+  class DuplicatePluginError < Error; end
 
   REGISTRY = {}
 
@@ -31,10 +31,10 @@ module LogStash module AgentPluginManager
   # To be called by a plugin when its class is first loaded
   # Plugins should call this with the following code:
   #
-  # require 'lib/logstash/agent_plugin_manager'
+  # require 'lib/logstash/agent_plugin_registry'
   #
   # class MyLogStashAgent < LogStash::Agent
-  #   LogStash::AgentPluginManager.register(:my_logstash_agent, self)
+  #   LogStash::AgentPluginRegistry.register(:my_logstash_agent, self)
   #
   #   # ...
   # end
@@ -42,7 +42,8 @@ module LogStash module AgentPluginManager
     name_sym = name.to_sym
 
     if (conflicting_class = registry[name_sym])
-      raise DuplicatePluginNameError, "Could not register plugin '#{plugin_class}' as '#{name}', this name is already taken by '#{conflicting_class}'"
+      raise DuplicatePluginError, "Could not register plugin '#{plugin_class}'" <<
+        " as '#{name}', this name is already taken by '#{conflicting_class}'"
     end
 
     registry[name_sym] = plugin_class

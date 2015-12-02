@@ -60,7 +60,7 @@ describe LogStash::Runner do
     subject { LogStash::Runner.new("") }
 
     before do
-      LogStash::AgentPluginManager.register(agent_name, DummyAgent)
+      LogStash::AgentPluginRegistry.register(agent_name, DummyAgent)
       allow(subject).to receive(:execute) # stub this out to reduce test work/output
       subject.run(["-a", "testagent", "-e" "input {} output {}"])
     end

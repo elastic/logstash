@@ -3,19 +3,19 @@ require "spec_helper"
 require "logstash/runner"
 require "stud/task"
 
-describe LogStash::AgentPluginManager do
+describe LogStash::AgentPluginRegistry do
   class TestAgent < LogStash::Agent; end
   class TestAgent2 < LogStash::Agent; end
 
   subject { described_class }
 
   after(:each) do
-    LogStash::AgentPluginManager.reset!
+    LogStash::AgentPluginRegistry.reset!
   end
 
   describe "the default registry with no registered plugins" do
     it "should have the default agent" do
-      expect(subject.lookup(LogStash::AgentPluginManager::DEFAULT_AGENT_NAME)).to eql(LogStash::Agent)
+      expect(subject.lookup(LogStash::AgentPluginRegistry::DEFAULT_AGENT_NAME)).to eql(LogStash::Agent)
     end
 
     it "should only have one plugin registered" do
@@ -29,7 +29,7 @@ describe LogStash::AgentPluginManager do
 
     it "should not allow two plugins to be registered under the same name" do
       subject.register(:foo, TestAgent)
-      expect { subject.register(:foo, TestAgent2) }.to raise_error(LogStash::AgentPluginManager::DuplicatePluginNameError)
+      expect { subject.register(:foo, TestAgent2) }.to raise_error(LogStash::AgentPluginRegistry::DuplicatePluginError)
     end
   end
 

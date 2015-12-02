@@ -10,7 +10,7 @@ require "logstash/environment"
 LogStash::Environment.load_locale!
 
 require "logstash/namespace"
-require "logstash/agent_plugin_manager"
+require "logstash/agent_plugin_registry"
 require "logstash/agent"
 require "logstash/config/defaults"
 
@@ -66,7 +66,7 @@ class LogStash::Runner < Clamp::Command
 
   option ["-a", "--agent"], "AGENT",
     I18n.t("logstash.runner.flag.agent"),
-    :attribute_name => :agent_name, :default => LogStash::AgentPluginManager::DEFAULT_AGENT_NAME
+    :attribute_name => :agent_name, :default => LogStash::AgentPluginRegistry::DEFAULT_AGENT_NAME
 
   attr_reader :agent
 
@@ -189,13 +189,13 @@ class LogStash::Runner < Clamp::Command
   def agent_class
     return @agent_class if @agent_class # We don't want to load these things twice
 
-    LogStash::AgentPluginManager.load_all
-    @agent_class = LogStash::AgentPluginManager.lookup(agent_name)
+    LogStash::AgentPluginRegistry.load_all
+    @agent_class = LogStash::AgentPluginRegistry.lookup(agent_name)
 
     if !@agent_class
       @logger.fatal("Could not load specified agent",
                     :agent_name => agent_name,
-                    :valid_agent_names => LogStash::AgentPluginManager.available.map(&:to_s))
+                    :valid_agent_names => LogStash::AgentPluginRegistry.available.map(&:to_s))
       exit(1)
     end
 
