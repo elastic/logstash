@@ -27,9 +27,16 @@ describe LogStash::AgentPluginRegistry do
       expect(subject.lookup(:foo)).to eql(TestAgent)
     end
 
-    it "should not allow two plugins to be registered under the same name" do
-      subject.register(:foo, TestAgent)
-      expect { subject.register(:foo, TestAgent2) }.to raise_error(LogStash::AgentPluginRegistry::DuplicatePluginError)
+    context "with two plugins under the same name" do
+      before do
+        subject.register(:foo, TestAgent)
+      end
+
+      it "should not allow the second plugin to be registered" do
+        expect do
+          subject.register(:foo, TestAgent2)
+        end.to raise_error(LogStash::AgentPluginRegistry::DuplicatePluginError)
+      end
     end
   end
 
