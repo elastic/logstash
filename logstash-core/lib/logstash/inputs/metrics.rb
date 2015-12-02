@@ -7,7 +7,6 @@ module LogStash module Inputs
     config_name "metrics"
 
     def register
-      @condition = ConditionVariable.new
     end
 
     def run(queue)
