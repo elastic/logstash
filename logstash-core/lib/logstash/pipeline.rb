@@ -49,6 +49,7 @@ module LogStash; class Pipeline
     # The code will initialize all the plugins and define the
     # filter and output methods.
     code = @config.compile
+    @code = code
     # The config code is hard to represent as a log message...
     # So just print it.
     @logger.debug? && @logger.debug("Compiled pipeline code:\n#{code}")
@@ -245,13 +246,17 @@ module LogStash; class Pipeline
 
   # Take an array of events and send them to the correct output
   def output_batch(batch)
-    batch.reduce(Hash.new { |h, k| h[k] = [] }) do |outputs_events, event|
+    outputs_events = batch.reduce(Hash.new { |h, k| h[k] = [] }) do |outputs_events, event|
       # We ask the AST to tell us which outputs to send each event to
+
       output_func(event).each do |output|
         outputs_events[output] << event
       end
+
       outputs_events
-    end.each do |output, events|
+    end
+
+    outputs_events.each do |output, events|
       # Once we have a mapping of outputs => [events] we can execute them
       output.multi_handle(events)
     end
@@ -378,7 +383,7 @@ module LogStash; class Pipeline
   def plugin(plugin_type, name, *args)
     args << {} if args.empty?
     klass = LogStash::Plugin.lookup(plugin_type, name)
-
+    
     # Backward compatible way of adding code to 
     plugin = klass.new(*args)
     plugin.metric = metric
@@ -391,7 +396,6 @@ module LogStash; class Pipeline
     # filter_func returns all filtered events, including cancelled ones
     filter_func(event).each { |e| block.call(e) }
   end
-
 
   # perform filters flush and yeild flushed event to the passed block
   # @param options [Hash]

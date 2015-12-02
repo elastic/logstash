@@ -40,15 +40,16 @@ class LogStash::Agent
   end
 
   private
+  # Add a new pipeline sitting next to the main pipeline,
+  # This pipeline should only contains one input: the `metrics`
+  # and multiple shippers.
   def add_metric_pipeline
     if !pipeline_exist?(:metric)
       @logger.debug("Agent: Adding a pipeline to send metric")
-
       metric_pipeline_config =<<-EOS
       input {
         metrics {}
       }
-
       output {
         elasticsearch {
           hosts => "127.0.0.1"
@@ -57,7 +58,7 @@ class LogStash::Agent
       }
       EOS
 
-      add_pipeline(:metric, metric_pipeline_config)
+      @pipelines[:metric] = LogStash::Pipeline.new(metric_pipeline_config, { :pipeline_id => :metric })
     end
   end
 
