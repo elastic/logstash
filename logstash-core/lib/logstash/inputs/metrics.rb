@@ -6,9 +6,6 @@ module LogStash module Inputs
   class Metrics < LogStash::Inputs::Base
     config_name "metrics"
 
-    def register
-    end
-
     def run(queue)
       LogStash::Instrument::Collector.instance.add_observer(self)
 
