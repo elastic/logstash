@@ -132,6 +132,7 @@ class LogStash::Runner < Clamp::Command
     }
 
     pipeline_id = :base
+
     if metric?
       pipeline_settings.merge!({ :metric =>  LogStash::Instrument::Metric.create_root(pipeline_id) })
     end
