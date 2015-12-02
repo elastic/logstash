@@ -23,7 +23,8 @@ class LogStash::Agent
     sigint_id = trap_sigint()
     sigterm_id = trap_sigterm()
 
-    @pipelines.each {|_, p| p.run } # blocking operation. works now because size <= 1
+    @pipelines.each { |_, p| Thread.new { p.run } }
+    sleep(1) while true
     return 0
   rescue => e
     @logger.fatal I18n.t("oops", :error => e)
@@ -52,6 +53,7 @@ class LogStash::Agent
       }
       output {
         elasticsearch {
+          flush_size => 1
           hosts => "127.0.0.1"
           index => "metrics-%{+YYYY.MM.dd}"
         }

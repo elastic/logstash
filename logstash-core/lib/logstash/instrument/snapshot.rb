@@ -31,7 +31,7 @@ module LogStash module Instrument
     end
 
     def to_event
-      Logstash::Event.new(@metrics.to_hash)
+      Logstash::Event.new({ "message" => "HELLO MEtrics"})
     end
 
     def inspect
