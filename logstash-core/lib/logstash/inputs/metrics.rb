@@ -10,6 +10,8 @@ module LogStash module Inputs
     end
 
     def run(queue)
+      @logger.debug("Metric input started")
+
       LogStash::Instrument::Collector.instance.add_observer(self)
 
       @queue = queue
