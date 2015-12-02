@@ -107,7 +107,10 @@ module LogStash; module Config; module AST
       ["filter", "output"].each do |type|
         # defines @filter_func and @output_func
 
-        definitions << "def #{type}_func(event)"
+        # This need to be defined as a singleton method
+        # so each instance of the pipeline has his own implementation
+        # of the output/filter function
+        definitions << "define_singleton_method :#{type}_func do |event|"
         definitions << "  targeted_outputs = []" if type == "output"
         definitions << "  events = [event]" if type == "filter"
         definitions << "  @logger.debug? && @logger.debug(\"#{type} received\", :event => event.to_hash)"
