@@ -198,6 +198,8 @@ class LogStash::Runner < Clamp::Command
                     :valid_agent_names => LogStash::AgentPluginManager.available.map(&:to_s))
       exit(1)
     end
+
+    @agent_class
   end
 
   # Point logging at a specific path.

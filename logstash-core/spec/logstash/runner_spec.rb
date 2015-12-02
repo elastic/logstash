@@ -53,19 +53,21 @@ describe LogStash::Runner do
   end
 
   context "--agent" do
-    # class DummyAgent < LogStash::Agent; end
-    #
-    # let(:agent_name) { "testagent" }
-    # let(:dummy_agent_class) { DummyAgentClass }
-    # subject { LogStash::Runner.new("-a testagent") }
-    #
-    # before do
-    #   LogStash::AgentPluginManager.register(agent_name, DummyAgent)
-    # end
-    #
-    # it "should set the proper agent" do
-    #   expect(subject.agent_class).to eql(DummyAgent)
-    # end
+    class DummyAgent < LogStash::Agent; end
+
+    let(:agent_name) { "testagent" }
+    let(:dummy_agent_class) { DummyAgentClass }
+    subject { LogStash::Runner.new("") }
+
+    before do
+      LogStash::AgentPluginManager.register(agent_name, DummyAgent)
+      allow(subject).to receive(:execute) # stub this out to reduce test work/output
+      subject.run(["-a", "testagent", "-e" "input {} output {}"])
+    end
+
+    it "should set the proper agent" do
+      expect(subject.agent_class).to eql(DummyAgent)
+    end
   end
 
   context "--pluginpath" do
