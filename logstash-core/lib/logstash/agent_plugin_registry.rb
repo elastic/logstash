@@ -25,7 +25,7 @@ module LogStash module AgentPluginRegistry
 
   # Return a list of Gem::Specification s that start with logstash-agent-
   def self.find_plugins
-    Gem::Specification.find_all{|spec| spec.name =~ /logstash-agent-/ }
+    ::Gem::Specification.find_all{|spec| spec.name =~ /logstash-agent-/ }
   end
 
   # To be called by a plugin when its class is first loaded
