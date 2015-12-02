@@ -70,8 +70,6 @@ module LogStash module Instrument module Probe
       end
 
       def initialize(os_mxbean)
-        require "pry"
-        binding.pry
         @os_mxbean = os_mxbean
       end
 

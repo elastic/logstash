@@ -6,6 +6,9 @@ module LogStash module Inputs
   class Metrics < LogStash::Inputs::Base
     config_name "metrics"
 
+    def register
+    end
+
     def run(queue)
       LogStash::Instrument::Collector.instance.add_observer(self)
 
@@ -16,8 +19,12 @@ module LogStash module Inputs
       sleep(1) while !stop
     end
 
+    def stop
+      LogStash::Instrument::Collector.instance.delete_observer(self)
+    end
+
     def update(time, snapshot)
-      @logger.error("Metrics input received a new snaptop")
+      @logger.debug("Metrics input: received a new snaptop") if @logger.debug?
       # TODO: 
       # - Obviously the format here is wrong and we need to
       # transform it from Snapshot to an event
@@ -26,6 +33,7 @@ module LogStash module Inputs
       #   - We can use a future
       #   - We can use a synchronization mechanism between the called thread (update method)
       #   and the plugin thread (run method)
+      #   - How we handle back pressure here?
       @queue << Logstash::Event.new(snapshot.to_event)
     end
   end

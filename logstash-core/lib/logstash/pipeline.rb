@@ -59,6 +59,7 @@ module LogStash; class Pipeline
     # The code will initialize all the plugins and define the
     # filter and output methods.
     code = @config.compile
+    @code = code
     # The config code is hard to represent as a log message...
     # So just print it.
     @logger.debug? && @logger.debug("Compiled pipeline code:\n#{code}")
@@ -396,7 +397,6 @@ module LogStash; class Pipeline
     # filter_func returns all filtered events, including cancelled ones
     filter_func(event).each { |e| block.call(e) }
   end
-
 
   # perform filters flush and yeild flushed event to the passed block
   # @param options [Hash]
