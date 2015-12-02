@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/instrument/reporter/base"
 require "logstash/util/loggable"
 
 module LogStash module Instrument module Reporter
