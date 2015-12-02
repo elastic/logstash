@@ -17,6 +17,21 @@ class DummyInput < LogStash::Inputs::Base
   end
 end
 
+class DummyInputGenerator < LogStash::Inputs::Base
+  config_name "dummyinputgenerator"
+  milestone 2
+
+  def register
+  end
+
+  def run(queue)
+    queue << Logstash::Event.new while !stop?
+  end
+
+  def close
+  end
+end
+
 class DummyCodec < LogStash::Codecs::Base
   config_name "dummycodec"
   milestone 2
@@ -47,6 +62,10 @@ class DummyOutput < LogStash::Outputs::Base
 
   def register
   end
+  
+  def threadsafe?
+    false
+  end
 
   def receive(event)
     @events << event
@@ -55,6 +74,10 @@ class DummyOutput < LogStash::Outputs::Base
   def close
     @num_closes += 1
   end
+end
+
+class DummyOutputMore < DummyOutput
+  config_name "dummyoutputmore"
 end
 
 class DummyFilter < LogStash::Filters::Base
@@ -360,6 +383,26 @@ describe LogStash::Pipeline do
       # give us a bit of time to flush the events
       wait(5).for { output.events.first["message"].split("\n").count }.to eq(number_of_events)
       pipeline.shutdown
+    end
+  end
+
+  context "Multiples pipelines" do
+    before do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinputgenerator").and_return(DummyInputGenerator)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutputmore").and_return(DummyOutputMore)
+    end
+
+    let(:pipeline1) { LogStash::Pipeline.new("input { dummyinputgenerator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
+    let(:pipeline2) { LogStash::Pipeline.new("input { dummyinputgenerator {} } filter { dummyfilter {} } output { dummyoutputmore {}}") }
+
+    it "should handle evaluating different config" do
+      expect(pipeline1.output_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
     end
   end
 end
