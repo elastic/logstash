@@ -50,7 +50,7 @@ module LogStash
         @reports << pipeline_report_snapshot
         @reports.delete_at(0) if @reports.size > @report_every # expire old report
         if cycle_number == (@report_every - 1) # it's report time!
-          logger.warn(@reports.last.to_simple_hash)
+          logger.warn(@reports.last)
 
           if shutdown_stalled?
             logger.error("The shutdown process appears to be stalled due to busy or blocked plugins. Check the logs for more information.") if stalled_count == 0

@@ -262,19 +262,6 @@ module LogStash; class Pipeline
     end
   end
 
-  def dump_inflight(file_path)
-    inflight_batches_synchronize do |batches|
-      File.open(file_path, "w") do |f|
-        batches.values.each do |batch|
-          next unless batch
-          batch.each do |e|
-            f.write(LogStash::Json.dump(e))
-          end
-        end
-      end
-    end
-  end
-
   def wait_inputs
     @input_threads.each(&:join)
   end

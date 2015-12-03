@@ -19,6 +19,11 @@ module LogStash; class PipelineReporter
       {"inflight_count" => inflight_count, "stalling_thread_info" => format_threads_by_plugin}
     end
 
+    def to_str
+      to_simple_hash.to_s
+    end
+    alias_method :to_s, :to_str
+
     def method_missing(meth)
       @data[meth]
     end
