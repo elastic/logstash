@@ -19,7 +19,6 @@ module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id
 
   DEFAULT_SETTINGS = {
-    # We don't set pipeline workers defaults here, but rather in safe_pipeline_workers
     :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.fifty_percent,
     :pipeline_batch_size => 125,
     :pipeline_batch_delay => 5 # in milliseconds
@@ -62,14 +61,10 @@ module LogStash; class Pipeline
     # from this queue. We also depend on this to be able to block consumers while we snapshot
     # in-flight buffers
     @input_queue_pop_mutex = Mutex.new
-
     @input_threads = []
-
     @settings = DEFAULT_SETTINGS.clone
-
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
-    @input_threads = []
     settings.each {|setting, value| configure(setting, value) }
   end # def initialize
 
@@ -89,18 +84,18 @@ module LogStash; class Pipeline
     if unsafe_filters.any?
       plugins = unsafe_filters.collect { |f| f.class.config_name }
       case thread_count
-        when nil
-          # user did not specify a worker thread count
-          # warn if the default is multiple
-          @logger.warn("Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads",
-                       :count_was => default, :filters => plugins) if default > 1
-          1 # can't allow the default value to propagate if there are unsafe filters
-        when 0, 1
-          1
-        else
-          @logger.warn("Warning: Manual override - there are filters that might not work with multiple worker threads",
-                       :worker_threads => thread_count, :filters => plugins)
-          thread_count # allow user to force this even if there are unsafe filters
+      when nil
+        # user did not specify a worker thread count
+        # warn if the default is multiple
+        @logger.warn("Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads",
+                     :count_was => default, :filters => plugins) if default > 1
+        1 # can't allow the default value to propagate if there are unsafe filters
+      when 0, 1
+        1
+      else
+        @logger.warn("Warning: Manual override - there are filters that might not work with multiple worker threads",
+                     :worker_threads => thread_count, :filters => plugins)
+        thread_count # allow user to force this even if there are unsafe filters
       end
     else
       thread_count || default
@@ -120,12 +115,10 @@ module LogStash; class Pipeline
     @logger.info("Pipeline started")
     @logger.terminal("Logstash startup completed")
 
-    @logger.info("Will run till input threads stopped")
-
     # Block until all inputs have stopped
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
     wait_inputs
-    @logger.info("Inputs stopped")
+    @logger.info("Input plugins stopped! Will shutdown filter/output workers.")
 
     shutdown_workers
 

@@ -25,7 +25,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Note that this setting may not be useful for all outputs.
   config :workers, :validate => :number, :default => 1
 
-  attr_reader :worker_plugins, :available_workers, :workers, :single_worker_mutex, :is_multi_worker, :worker_plugins
+  attr_reader :worker_plugins, :available_workers, :workers, :single_worker_mutex, :worker_plugins
 
   public
   def workers_not_supported(message=nil)
@@ -61,12 +61,9 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   public
   def worker_setup
-    # TODO: Remove this branch, delete this function
     if @workers == 1
-      @is_multi_worker = false
       @worker_plugins = [self]
     else
-      @is_multi_worker = true
       define_singleton_method(:multi_handle, method(:handle_worker))
 
       @worker_plugins = @workers.times.map { self.class.new(@original_params.merge("workers" => 1)) }
@@ -88,9 +85,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   # To be overriden in implementations
   def multi_receive(events)
-    events.each {|event|
-      receive(event)
-    }
+    events.each {|event| receive(event) }
   end
 
   # Not to be overriden by plugin authors!
@@ -108,11 +103,10 @@ class LogStash::Outputs::Base < LogStash::Plugin
   end
 
   def do_close
-    if @worker_plugins
-      @worker_plugins.each do |wp|
-        wp.do_close unless wp === self
-      end
+    @worker_plugins.each do |wp|
+      wp.do_close unless wp === self
     end
+
     super
   end
 
