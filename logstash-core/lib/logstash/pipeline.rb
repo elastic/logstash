@@ -189,16 +189,17 @@ module LogStash; class Pipeline
     shutdown_received = false
     batch_size.times do |t|
       event = t==0 ? @input_queue.take : @input_queue.poll(batch_delay)
-      # Exit early so each thread only gets one copy of this
-      # This is necessary to ensure proper shutdown!
-      next if event.nil?
-
-      if event == LogStash::SHUTDOWN
+      if event.nil?
+        next
+      elsif event == LogStash::SHUTDOWN
         shutdown_received = true
+        # We MUST break here. If a batch consumes two SHUTDOWN events
+        # then another worker may have its SHUTDOWN 'stolen', thus blocking
+        # the pipeline
         break
+      else
+        batch << event
       end
-
-      batch << event
     end
 
     [batch, shutdown_received]
