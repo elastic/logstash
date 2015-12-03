@@ -14,6 +14,7 @@ require "logstash/util/defaults_printer"
 require "logstash/shutdown_controller"
 require "logstash/util/wrapped_synchronous_queue"
 require "logstash/pipeline_reporter"
+require "concurrent/timer_task"
 
 module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id
@@ -21,7 +22,9 @@ module LogStash; class Pipeline
   DEFAULT_SETTINGS = {
     :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.fifty_percent,
     :pipeline_batch_size => 125,
-    :pipeline_batch_delay => 5 # in milliseconds
+    :pipeline_batch_delay => 5, # in milliseconds
+    :flush_interval => 5, # in seconds
+    :flush_timeout_interval => 60 # in seconds
   }
 
   def initialize(config_str, settings = {})
@@ -65,7 +68,10 @@ module LogStash; class Pipeline
     @settings = DEFAULT_SETTINGS.clone
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
+    @flushing = Concurrent::AtomicReference.new(false)
     settings.each {|setting, value| configure(setting, value) }
+
+    start_flusher
   end # def initialize
 
   def ready?
@@ -120,6 +126,7 @@ module LogStash; class Pipeline
     wait_inputs
     @logger.info("Input plugins stopped! Will shutdown filter/output workers.")
 
+    shutdown_flusher
     shutdown_workers
 
     @logger.info("Pipeline shutdown complete.")
@@ -167,14 +174,20 @@ module LogStash; class Pipeline
 
     while running
       # To understand the purpose behind this synchronize please read the body of take_batch
-      input_batch, shutdown_received = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
-      running = false if shutdown_received
+      input_batch, signal = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
+      running = false if signal == LogStash::SHUTDOWN
+
       @events_consumed.increment(input_batch.size)
 
-      filtered = filter_batch(input_batch)
-      @events_filtered.increment(filtered.size)
+      filtered_batch = filter_batch(input_batch)
 
-      output_batch(filtered)
+      if signal == LogStash::FLUSH
+        flush_filters_to_batch(filtered_batch)
+      end
+
+      @events_filtered.increment(filtered_batch.size)
+
+      output_batch(filtered_batch)
 
       inflight_batches_synchronize { set_current_thread_inflight_batch(nil) }
     end
@@ -186,23 +199,23 @@ module LogStash; class Pipeline
     # guaranteed to be a full batch not a partial batch
     set_current_thread_inflight_batch(batch)
 
-    shutdown_received = false
+    signal = false
     batch_size.times do |t|
       event = t==0 ? @input_queue.take : @input_queue.poll(batch_delay)
       if event.nil?
         next
-      elsif event == LogStash::SHUTDOWN
-        shutdown_received = true
+      elsif event == LogStash::SHUTDOWN || event == LogStash::FLUSH
         # We MUST break here. If a batch consumes two SHUTDOWN events
         # then another worker may have its SHUTDOWN 'stolen', thus blocking
-        # the pipeline
+        # the pipeline. We should stop doing work after flush as well.
+        signal = event
         break
       else
         batch << event
       end
     end
 
-    [batch, shutdown_received]
+    [batch, signal]
   end
 
   def filter_batch(batch)
@@ -380,6 +393,53 @@ module LogStash; class Pipeline
       flusher.call(options, &block)
     end
   end
+
+  class FlusherObserver
+    def initialize(logger)
+      @logger = logger
+    end
+
+    def update(time, result, exception)
+      return unless exception
+      @logger.warn("Error during flush!",
+                   :message => exception.message,
+                   :class => exception.class.name,
+                   :backtrace => exception.backtrace)
+    end
+  end
+
+  def start_flusher
+    @flusher_task = Concurrent::TimerTask.new { flush }
+    @flusher_task.execution_interval = @settings[:flush_interval]
+    @flusher_task.timeout_interval = @settings[:flush_timeout_interval]
+    @flusher_task.add_observer(FlusherObserver.new(@logger))
+    @flusher_task.execute
+  end
+
+  def shutdown_flusher
+    @flusher_task.shutdown
+  end
+
+  def flush
+    if @flushing.compare_and_set(false, true)
+      @logger.debug? && @logger.debug("Pushing flush onto pipeline")
+      @input_queue.push(LogStash::FLUSH)
+    end
+  end
+
+  # perform filters flush into the output queue
+  # @param options [Hash]
+  # @option options [Boolean] :final => true to signal a final shutdown flush
+  def flush_filters_to_batch(batch, options = {})
+    flush_filters(options) do |event|
+      unless event.cancelled?
+        @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
+        batch << event
+      end
+    end
+
+    @flushing.set(false)
+  end # flush_filters_to_output!
 
   def plugin_threads_info
     input_threads = @input_threads.select {|t| t.alive? }
