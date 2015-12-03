@@ -38,7 +38,7 @@ module LogStash; class PipelineReporter
     @logger = logger
     @pipeline = pipeline
   end
-  
+
   # The main way of accessing data from the reporter,,
   # this provides a (more or less) consistent snapshot of what's going on in the
   # pipeline with some extra decoration

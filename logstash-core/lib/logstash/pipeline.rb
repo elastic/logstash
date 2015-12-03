@@ -160,7 +160,7 @@ module LogStash; class Pipeline
     end
   end
 
-  # Main body of what a worker threda does
+  # Main body of what a worker thread does
   # Repeatedly takes batches off the queu, filters, then outputs them
   def worker_loop(batch_size, batch_delay)
     running = true
@@ -292,7 +292,6 @@ module LogStash; class Pipeline
     begin
       plugin.run(@input_queue)
     rescue => e
-      # if plugin is stop
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
                       :plugin => plugin.class.config_name, :exception => e,
