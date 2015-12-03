@@ -15,6 +15,8 @@ module LogStash module Instrument module PeriodicPoller
       @task = Concurrent::TimerTask.new { collect }
       @task.execution_interval = interval
       @task.timeout_interval = interval # Fetching statistic should be almost instant
+      # No need to create a special Observer here just use this classe and add the update to the abstract class?
+      # TODO
       @task.add_observer(PeriodicPollerObserver.new(self))
     end
 
