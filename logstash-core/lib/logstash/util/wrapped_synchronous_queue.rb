@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module LogStash; module Util
   class WrappedSynchronousQueue
     java_import java.util.concurrent.SynchronousQueue

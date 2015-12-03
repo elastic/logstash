@@ -1,6 +1,6 @@
+# encoding: utf-8
 require 'ostruct'
 
-# encoding: utf-8
 module LogStash; class PipelineReporter
   attr_reader :logger, :pipeline
 
@@ -38,11 +38,7 @@ module LogStash; class PipelineReporter
     @logger = logger
     @pipeline = pipeline
   end
-
-  def report
-    @logger.warn ["INFLIGHT_EVENTS_REPORT", Time.now.iso8601, report]
-  end
-
+  
   # The main way of accessing data from the reporter,,
   # this provides a (more or less) consistent snapshot of what's going on in the
   # pipeline with some extra decoration
@@ -53,7 +49,7 @@ module LogStash; class PipelineReporter
   def to_hash
     pipeline.inflight_batches_synchronize do |batch_map|
       worker_states_snap = worker_states(batch_map) # We only want to run this once
-      inflight_count = worker_states_snap.map {|s| s[:inflight_count] }.reduce(:+) || 0
+      inflight_count = worker_states_snap.map {|s| s[:inflight_count] }.reduce(0, :+)
       {
         :events_filtered => events_filtered,
         :events_consumed => events_consumed,
