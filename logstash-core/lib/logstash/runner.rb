@@ -111,7 +111,7 @@ class LogStash::Runner < Clamp::Command
         @logger.fatal I18n.t("logstash.error", :error => config_error)
         return 1
       else
-        puts "Configuration OK"
+        @logger.terminal "Configuration OK"
       end
     else
       task = Stud::Task.new { @agent.execute }

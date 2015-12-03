@@ -17,12 +17,6 @@ describe LogStash::Runner do
   end
 
   describe "argument parsing" do
-
-    before do
-      #subject.configure # setup_agent requires this to give it logging
-      #subject.setup_agent
-    end
-
     subject { LogStash::Runner.new("") }
     context "when -e is given" do
 
@@ -56,7 +50,6 @@ describe LogStash::Runner do
     class DummyAgent < LogStash::Agent; end
 
     let(:agent_name) { "testagent" }
-    let(:dummy_agent_class) { DummyAgentClass }
     subject { LogStash::Runner.new("") }
 
     before do
