@@ -15,6 +15,8 @@ require "logstash/agent"
 require "logstash/config/defaults"
 
 class LogStash::Runner < Clamp::Command
+  class MissingAgentError < StandardError; end # Raised when the user asks for an agent plugin that doesn't exist
+
   option ["-f", "--config"], "CONFIG_PATH",
     I18n.t("logstash.runner.flag.config"),
     :attribute_name => :config_path
@@ -118,6 +120,8 @@ class LogStash::Runner < Clamp::Command
       return task.wait
     end
 
+  rescue MissingAgentError => e
+    return 1
   rescue LoadError => e
     fail("Configuration problem.")
   rescue LogStash::ConfigurationError => e
@@ -196,7 +200,7 @@ class LogStash::Runner < Clamp::Command
       @logger.fatal("Could not load specified agent",
                     :agent_name => agent_name,
                     :valid_agent_names => LogStash::AgentPluginRegistry.available.map(&:to_s))
-      exit(1)
+      raise MissingAgentError, "Could not load specified agent"
     end
 
     @agent_class
