@@ -78,11 +78,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
   end
 
   public
-  # Not to be overriden by plugin authors!
-  def handle(event)
-    @single_worker_mutex.synchronize { receive(event) }
-  end # def handle
-
   # To be overriden in implementations
   def multi_receive(events)
     events.each {|event| receive(event) }
