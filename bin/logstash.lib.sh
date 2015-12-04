@@ -38,7 +38,8 @@ setup_java() {
     # Causes the JVM to dump its heap on OutOfMemory.
     JAVA_OPTS="$JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError"
     # The path to the heap dump location
-    JAVA_OPTS="$JAVA_OPTS -XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof"
+    # This variable needs to be isolated since it may contain spaces
+    HEAP_DUMP_PATH="-XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof"
   fi
 
   if [ "$LS_JAVA_OPTS" ] ; then
@@ -151,8 +152,8 @@ ruby_exec() {
     # $VENDORED_JRUBY is non-empty so use the vendored JRuby
 
     if [ "$DEBUG" ] ; then
-      echo "DEBUG: exec ${JRUBY_BIN} $(jruby_opts) $@"
+      echo "DEBUG: exec ${JRUBY_BIN} $(jruby_opts) "-J$HEAP_DUMP_PATH" $@"
     fi
-    exec "${JRUBY_BIN}" $(jruby_opts) "$@"
+    exec "${JRUBY_BIN}" $(jruby_opts) "-J$HEAP_DUMP_PATH" "$@"
   fi
 }
