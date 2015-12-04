@@ -386,11 +386,17 @@ module LogStash; class Pipeline
   end
 
   class FlusherObserver
-    def initialize(logger)
+    def initialize(logger, flushing)
       @logger = logger
+      @flushing = flushing
     end
 
     def update(time, result, exception)
+      # This is a safeguard in the event that the timer task somehow times out
+      # We still need to call it in the original (in case someone decides to call it directly)
+      # but this is the safeguard for timer related issues causing @flushing not to be reset to false
+      @flushing.set(false)
+
       return unless exception
       @logger.warn("Error during flush!",
                    :message => exception.message,
@@ -403,7 +409,7 @@ module LogStash; class Pipeline
     @flusher_task = Concurrent::TimerTask.new { flush }
     @flusher_task.execution_interval = @settings[:flush_interval]
     @flusher_task.timeout_interval = @settings[:flush_timeout_interval]
-    @flusher_task.add_observer(FlusherObserver.new(@logger))
+    @flusher_task.add_observer(FlusherObserver.new(@logger, @flushing))
     @flusher_task.execute
   end
 
