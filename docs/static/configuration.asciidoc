@@ -323,10 +323,10 @@ output {
 }
 ----------------------------------
 
-You can also format times using this sprintf format. Instead of specifying a field name, use the `+FORMAT` syntax where `FORMAT` is a http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html[time format].
+Similarly, you can convert the timestamp in the `@timestamp` field into a string. Instead of specifying a field name inside the curly braces, use the `+FORMAT` syntax where `FORMAT` is a http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html[time format].
 
 For example, if you want to use the file output to write to logs based on the
-hour and the 'type' field:
+event's date and hour and the `type` field:
 
 [source,js]
 ----------------------------------
