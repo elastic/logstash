@@ -1,3 +1,20 @@
+## 2.1.1 (Dec 8, 2015)
+### general
+ - This release bundles a new version of JRuby - [1.7.23](http://jruby.org/2015/11/24/jruby-1-7-23.html), which fixes a memory leak issue reported on Windows when using the file input ([#3754](https://github.com/elastic/logstash/issues/3754)).
+ - Fixed Logstash fails to start if the parent directory contains a space ([#4283](https://github.com/elastic/logstash/issues/4283)).
+ - Allow Logstash to be launched from a symlink ([#4291](https://github.com/elastic/logstash/issues/4291)).
+
+### input
+  - File:
+    - Properly release file handles for older files which allows users to keep old files in the watched directory without having to delete/rename them ([#31](https://github.com/logstash-plugins/logstash-input-file/issues/31)).
+    - Clean up resource usage when the pipeline restarts an instance of the file input plugin ([#77](https://github.com/logstash-plugins/logstash-input-file/issues/77)).
+  - Twitter: Added proxy support ([#7](https://github.com/logstash-plugins/logstash-input-twitter/issues/7)).  
+
+### output
+  - Elasticsearch:
+    - Added option to set `_parent` in order to properly handle parent-child relationships ([#297](https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/297)).
+    - Fixed a defect which caused Logstash to exhaust file handles when sniffing was used in http protocol ([#306](https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/306)).   
+
 ## 2.1.0 (Nov 24, 2015)
 ### general
  - Added ability to install and upgrade Logstash plugins without requiring internet connectivity (#2376). 
