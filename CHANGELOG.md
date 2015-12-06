@@ -1,13 +1,22 @@
+### 1.5.6 (Dec 8, 2015)
+### general
+  - This release bundles a new version of JRuby - [1.7.23](http://jruby.org/2015/11/24/jruby-1-7-23.html), which fixes a memory leak issue reported on Windows when using the file input ([#3754](https://github.com/elastic/logstash/issues/3754)).
+
+### input
+  - File:
+    - Properly release file handles for older files which allows users to keep old files in the watched directory without having to delete/rename them ([#31](https://github.com/logstash-plugins/logstash-input-file/issues/31)).
+    - Clean up resource usage when the pipeline restarts an instance of the file input plugin ([#77](https://github.com/logstash-plugins/logstash-input-file/issues/77)).
+
 ## 1.5.5 (Oct 29, 2015)
 ### general
- - Update to JRuby 1.7.22
- - Improved default security configuration for SSL/TLS. Default is now TLS1.2 (#3955)
- - Fixed bug in JrJackson v0.3.5 when handing shared strings. This manifested into issues when 
+  - Update to JRuby 1.7.22
+  - Improved default security configuration for SSL/TLS. Default is now TLS1.2 (#3955)
+  - Fixed bug in JrJackson v0.3.5 when handing shared strings. This manifested into issues when 
    JrJackson was used in json codec and ES output. (#4048, #4055
- - Added beats input in the default plugins list
+  - Added beats input in the default plugins list
 
- ## output
- - HTTP: Fixed memory leak in http output with usage of manticore library (#24)
+### output
+  - HTTP: Fixed memory leak in http output with usage of manticore library (#24)
 
 ## 1.5.4 (August 20, 2015)
 ### general
