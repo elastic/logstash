@@ -112,7 +112,7 @@ namespace "test" do
     integration_path = File.join(source, "integration_run")
     FileUtils.rm_rf(integration_path)
 
-    exit(RSpec::Core::Runner.run([Rake::FileList["integration/**/*_spec.rb"]]))
+    exit(RSpec::Core::Runner.run([Rake::FileList["spec/integration/**/*_spec.rb"]]))
   end
 
   namespace "integration" do
@@ -124,7 +124,7 @@ namespace "test" do
       FileUtils.mkdir_p(integration_path)
 
       puts "[integration_spec] configuring local environment for running test in #{integration_path}, if you want to change this behavior delete the directory."
-      exit(RSpec::Core::Runner.run([Rake::FileList["integration/**/*_spec.rb"]]))
+      exit(RSpec::Core::Runner.run([Rake::FileList["spec/integration/**/*_spec.rb"]]))
     end
   end
 end
