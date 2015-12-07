@@ -8,6 +8,8 @@ require "logstash/instrument/periodic_pollers"
 require "logstash/instrument/collector"
 require "logstash/instrument/metric"
 require "logstash/pipeline"
+require "logstash/webserver"
+require "logstash/webservers/puma"
 require "uri"
 require "stud/trap"
 
@@ -34,6 +36,10 @@ class LogStash::Agent
     start_background_services
 
     @pipelines.each { |_, p| Thread.new { p.run } }
+    @web_agent = Thread.new do
+      LogStash::WebServer::Puma.new(@logger).run
+    end
+
     sleep(1) while true
     return 0
   rescue => e
