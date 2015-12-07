@@ -24,7 +24,7 @@ describe LogStash::Util::DefaultsPrinter do
     end
 
     context 'when the settings hash has content' do
-      let(:workers) { 42 }
+      let(:worker_queue) { 42 }
       let(:settings) { {'pipeline-workers' => workers} }
       it_behaves_like "a defaults printer"
     end

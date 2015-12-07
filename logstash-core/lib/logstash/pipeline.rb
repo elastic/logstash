@@ -15,6 +15,7 @@ require "logstash/shutdown_controller"
 require "logstash/util/wrapped_synchronous_queue"
 require "logstash/pipeline_reporter"
 require "concurrent/timer_task"
+require "logstash/output_delegator"
 
 module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id
@@ -252,7 +253,7 @@ module LogStash; class Pipeline
     # Now that we have our output to event mapping we can just invoke each output
     # once with its list of events
     outputs_events.each do |output, events|
-      output.multi_handle(events)
+      output.multi_receive(events)
     end
   end
 
@@ -362,8 +363,14 @@ module LogStash; class Pipeline
 
   def plugin(plugin_type, name, *args)
     args << {} if args.empty?
+
     klass = LogStash::Plugin.lookup(plugin_type, name)
-    return klass.new(*args)
+
+    if plugin_type == "output"
+      LogStash::OutputDelegator.new(@logger, klass, *args)
+    else
+      klass.new(*args)
+    end
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used

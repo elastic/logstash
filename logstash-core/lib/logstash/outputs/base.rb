@@ -25,7 +25,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Note that this setting may not be useful for all outputs.
   config :workers, :validate => :number, :default => 1
 
-  attr_reader :worker_plugins, :available_workers, :workers, :single_worker_mutex, :worker_plugins
+  attr_reader :worker_plugins, :available_workers, :workers, :worker_plugins
 
   public
   def workers_not_supported(message=nil)
@@ -46,7 +46,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
     # If we're running with a single thread we must enforce single-threaded concurrency by default
     # Maybe in a future version we'll assume output plugins are threadsafe
     @single_worker_mutex = Mutex.new
-    worker_setup
   end
 
   public
@@ -60,49 +59,9 @@ class LogStash::Outputs::Base < LogStash::Plugin
   end # def receive
 
   public
-  def worker_setup
-    if @workers == 1
-      @worker_plugins = [self]
-    else
-      define_singleton_method(:multi_handle, method(:handle_worker))
-
-      @worker_plugins = @workers.times.map { self.class.new(@original_params.merge("workers" => 1)) }
-
-      @available_workers = SizedQueue.new(@worker_plugins.length)
-
-      @worker_plugins.each do |wp|
-        wp.register
-        @available_workers << wp
-      end
-    end
-  end
-
-  public
   # To be overriden in implementations
   def multi_receive(events)
     events.each {|event| receive(event) }
-  end
-
-  # Not to be overriden by plugin authors!
-  def multi_handle(events)
-    @single_worker_mutex.synchronize { multi_receive(events) }
-  end
-
-  def handle_worker(events)
-    worker = @available_workers.pop
-    begin
-      worker.multi_receive(events)
-    ensure
-      @available_workers.push(worker)
-    end
-  end
-
-  def do_close
-    @worker_plugins.each do |wp|
-      wp.do_close unless wp === self
-    end
-
-    super
   end
 
   private

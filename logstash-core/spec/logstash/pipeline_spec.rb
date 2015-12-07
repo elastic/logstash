@@ -205,8 +205,8 @@ describe LogStash::Pipeline do
         pipeline.run
 
         expect(pipeline.outputs.size ).to eq(1)
-        expect(pipeline.outputs.first.worker_plugins.size ).to eq(1)
-        expect(pipeline.outputs.first.worker_plugins.first.num_closes ).to eq(1)
+        expect(pipeline.outputs.first.workers.size ).to eq(1)
+        expect(pipeline.outputs.first.workers.first.num_closes ).to eq(1)
       end
 
       it "should call output close correctly with output workers" do
@@ -215,8 +215,12 @@ describe LogStash::Pipeline do
 
         expect(pipeline.outputs.size ).to eq(1)
         # We even close the parent output worker, even though it doesn't receive messages
-        expect(pipeline.outputs.first.num_closes).to eq(1)
-        pipeline.outputs.first.worker_plugins.each do |plugin|
+
+        output_delegator = pipeline.outputs.first
+        output = output_delegator.workers.first
+
+        expect(output.num_closes).to eq(1)
+        output_delegator.workers.each do |plugin|
           expect(plugin.num_closes ).to eq(1)
         end
       end
