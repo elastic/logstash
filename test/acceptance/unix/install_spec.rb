@@ -1,4 +1,4 @@
-require_relative '../spec_helper_acceptance'
+require_relative 'spec_helper_acceptance'
 
 branch = ENV['LS_BRANCH'] || 'master'
 build_url = 'https://s3-eu-west-1.amazonaws.com/build-eu.elasticsearch.org/logstash'
