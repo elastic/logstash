@@ -10,38 +10,23 @@ require "stud/trap"
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
-  attr_reader :logger, :runner
+  attr_reader :logger
 
-  def initialize(logger, runner)
+  def initialize(logger)
     @logger = logger
-    @runner = runner
     @pipelines = {}
   end
 
-  def execute
-    add_pipelines
-    run_pipelines
-  end
-
-  def config_valid?
+  def config_valid?(config_str)
     begin
-      add_pipelines
+      # There should be a better way to test this ideally
+      LogStash::Pipeline.new(config_str)
     rescue Exception => e
       e
     end
   end
 
-  def add_pipelines
-    if (runner.config_string.nil? || runner.config_string.empty?) && runner.config_path.nil?
-      fail(I18n.t("logstash.runner.missing-configuration"))
-    end
-
-    config_string = LogStash::Config::Loader.format_config(runner.config_path, runner.config_string)
-
-    add_pipeline("base", config_string, :filter_workers => runner.filter_workers)
-  end
-
-  def run_pipelines
+  def execute
     # Make SIGINT/SIGTERM shutdown the pipeline.
     sigint_id = trap_sigint()
     sigterm_id = trap_sigterm()

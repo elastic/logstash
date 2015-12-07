@@ -73,6 +73,7 @@ class LogStash::Runner < Clamp::Command
   attr_reader :agent
 
   def initialize(*args)
+    LogStash::AgentPluginRegistry.load_all
     @logger = Cabin::Channel.get(LogStash)
     super(*args)
   end
@@ -107,8 +108,14 @@ class LogStash::Runner < Clamp::Command
 
     @agent = create_agent
 
+    if (config_string.nil? || config_string.empty?) && config_path.nil?
+      fail(I18n.t("logstash.runner.missing-configuration"))
+    end
+
+    config_str = LogStash::Config::Loader.format_config(config_path, config_string)
+
     if config_test?
-      config_error = @agent.config_valid?
+      config_error = @agent.config_valid?(config_str)
       if config_error
         @logger.fatal I18n.t("logstash.error", :error => config_error)
         return 1
@@ -116,6 +123,7 @@ class LogStash::Runner < Clamp::Command
         @logger.terminal "Configuration OK"
       end
     else
+      @agent.add_pipeline("base", config_str, :filter_workers => filter_workers)
       task = Stud::Task.new { @agent.execute }
       return task.wait
     end
@@ -138,7 +146,7 @@ class LogStash::Runner < Clamp::Command
 
   def create_agent
     @logger.info("Loading agent", :class => agent_class)
-    agent_class.new(@logger, self)
+    agent_class.new(@logger)
   end
 
   def show_version
@@ -193,7 +201,6 @@ class LogStash::Runner < Clamp::Command
   def agent_class
     return @agent_class if @agent_class # We don't want to load these things twice
 
-    LogStash::AgentPluginRegistry.load_all
     @agent_class = LogStash::AgentPluginRegistry.lookup(agent_name)
 
     if !@agent_class

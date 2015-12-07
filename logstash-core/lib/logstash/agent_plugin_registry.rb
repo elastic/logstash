@@ -12,7 +12,7 @@ module LogStash module AgentPluginRegistry
     REGISTRY.clear
     REGISTRY[DEFAULT_AGENT_NAME] = LogStash::Agent
   end
-
+  # Just have the defaults when the process starts
   reset!
 
   # Search gems for available plugins and load their libs

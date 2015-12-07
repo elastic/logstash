@@ -20,7 +20,7 @@ describe LogStash::Runner do
     subject { LogStash::Runner.new("") }
     context "when -e is given" do
 
-      let(:args) { ["-e", ""] }
+      let(:args) { ["-e", "input {} output {}"] }
       let(:agent) { double("agent") }
       let(:agent_logger) { double("agent logger") }
 
@@ -30,6 +30,7 @@ describe LogStash::Runner do
 
       it "should execute the agent" do
         expect(subject).to receive(:create_agent).and_return(agent)
+        expect(agent).to receive(:add_pipeline).once
         expect(agent).to receive(:execute).once
         subject.run(args)
       end
