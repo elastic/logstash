@@ -1,5 +1,7 @@
 # encoding: utf-8
 require "spec_helper"
+require "logstash/inputs/generator"
+require "logstash/filters/multiline"
 
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"
@@ -35,17 +37,19 @@ class DummyOutput < LogStash::Outputs::Base
   config_name "dummyoutput"
   milestone 2
 
-  attr_reader :num_closes
+  attr_reader :num_closes, :events
 
   def initialize(params={})
     super
     @num_closes = 0
+    @events = []
   end
 
   def register
   end
 
   def receive(event)
+    @events << events
   end
 
   def close
@@ -301,6 +305,48 @@ describe LogStash::Pipeline do
         expect(subject[2]["type"]).to eq("clone2")
         expect(subject[2]["foo"]).to eq("bar")
       end
+    end
+  end
+
+  context "Periodic Flush" do
+    let(:number_of_events) { 100 }
+    let(:config) do
+      <<-EOS
+      input {
+        generator {
+          count => #{number_of_events}
+        }
+      }
+      filter {
+        multiline { 
+          pattern => "^NeverMatch"
+          negate => true
+          what => "previous"
+        }
+      }
+      output {
+        dummyoutput {}
+      }
+      EOS
+    end
+    let(:output) { DummyOutput.new }
+    
+    before do
+      allow(DummyOutput).to receive(:new).with(any_args).and_return(output)
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "multiline").and_return(LogStash::Filters::Multiline)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+    end
+
+    it "flushes the buffered contents of the filter" do
+      Thread.abort_on_exception = true
+      pipeline = LogStash::Pipeline.new(config, { :flush_interval => 1 })
+      Thread.new { pipeline.run }
+      sleep 0.1 while !pipeline.ready?
+      # give us a bit of time to flush the events
+      wait(5).for { output.events.size }.to eq(number_of_events)
+      pipeline.shutdown
     end
   end
 end
