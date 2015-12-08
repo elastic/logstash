@@ -3,8 +3,8 @@ require "logstash/instrument/periodic_poller/abstract_poller"
 
 module LogStash module Instrument module PeriodicPoller
   class JVM < AbstractPoller
-    def initialize(interval = AbstractPoller::DEFAULT_POLLING_INTERVAL)
-      super(interval)
+    def initialize(metric, options = {})
+      super(metric, options)
     end
 
     def collect
