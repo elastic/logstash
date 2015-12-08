@@ -8,13 +8,13 @@ require "concurrent/atomic/atomic_fixnum"
 #
 # This plugin also records some basic statistics
 module LogStash; class OutputDelegator
-  attr_reader :options, :workers
+  attr_reader :workers, :config, :worker_count
 
   def initialize(logger, klass, *args)
     @logger = logger
-    @options = args.reduce({}, :merge)
+    @config = args.reduce({}, :merge)
     @klass = klass
-    @worker_count = @options["workers"] || 1
+    @worker_count = @config["workers"] || 1
 
     @worker_queue = SizedQueue.new(@worker_count)
 
@@ -26,6 +26,10 @@ module LogStash; class OutputDelegator
     end
 
     @events_received = Concurrent::AtomicFixnum.new(0)
+  end
+
+  def config_name
+    @klass.config_name
   end
 
   def register
@@ -54,5 +58,9 @@ module LogStash; class OutputDelegator
 
   def events_received
     @events_received.value
+  end
+
+  def busy_workers
+    @worker_queue.size
   end
 end end

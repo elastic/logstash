@@ -55,13 +55,14 @@ module LogStash; class PipelineReporter
     pipeline.inflight_batches_synchronize do |batch_map|
       worker_states_snap = worker_states(batch_map) # We only want to run this once
       inflight_count = worker_states_snap.map {|s| s[:inflight_count] }.reduce(0, :+)
+
       {
         :events_filtered => events_filtered,
         :events_consumed => events_consumed,
         :worker_count => pipeline.worker_threads.size,
         :inflight_count => inflight_count,
         :worker_states => worker_states_snap,
-        :output_info => output_states,
+        :output_info => output_info,
         :thread_info => pipeline.plugin_threads_info,
         :stalling_threads_info => pipeline.stalling_threads_info
       }
@@ -96,24 +97,17 @@ module LogStash; class PipelineReporter
     end
   end
 
-  def output_states
-    pipeline.outputs.map do |output|
-      is_multi_worker = output.workers > 1
-
-      idle, busy = if is_multi_worker
-                     aw_size = output.available_workers.size
-                     [aw_size, output.workers - aw_size]
-                   else
-                     output.single_worker_mutex.locked? ? [0,1] : [1,0]
-                   end
+  def output_info
+    pipeline.outputs.map do |output_delegator|
+      is_multi_worker = output_delegator.worker_count > 1
 
       {
-        :type => output.class.config_name,
-        :config => output.config,
+        :type => output_delegator.config_name,
+        :config => output_delegator.config,
         :is_multi_worker => is_multi_worker,
-        :workers => output.workers,
-        :busy_workers => busy,
-        :idle_workers => idle
+        :events_received => output_delegator.events_received,
+        :workers => output_delegator.workers,
+        :busy_workers => output_delegator.busy_workers
       }
     end
   end
