@@ -182,8 +182,9 @@ module LogStash; class Pipeline
 
       filtered_batch = filter_batch(input_batch)
 
-      if signal == LogStash::FLUSH
-        flush_filters_to_batch(filtered_batch)
+      if signal # Flush on SHUTDOWN or FLUSH
+        flush_options = (signal == LogStash::SHUTDOWN) ? {:final => true} : {}
+        flush_filters_to_batch(filtered_batch, flush_options)
       end
 
       @events_filtered.increment(filtered_batch.size)
