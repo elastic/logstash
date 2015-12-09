@@ -107,12 +107,19 @@ class LogStash::Runner < Clamp::Command
     return start_shell(@ruby_shell, binding) if @ruby_shell
 
     @agent = create_agent
+    if !@agent
+      @logger.fatal("Could not load specified agent",
+                    :agent_name => agent_name,
+                    :valid_agent_names => LogStash::AgentPluginRegistry.available.map(&:to_s))
+      return 1
+    end
 
     if (config_string.nil? || config_string.empty?) && config_path.nil?
       fail(I18n.t("logstash.runner.missing-configuration"))
     end
 
-    config_str = LogStash::Config::Loader.format_config(config_path, config_string)
+    config_loader = LogStash::Config::Loader.new(@logger, config_test?)
+    config_str = config_loader.format_config(config_path, config_string)
 
     if config_test?
       config_error = @agent.config_valid?(config_str)
@@ -128,8 +135,6 @@ class LogStash::Runner < Clamp::Command
       return task.wait
     end
 
-  rescue MissingAgentError => e
-    return 1
   rescue LoadError => e
     fail("Configuration problem.")
   rescue LogStash::ConfigurationError => e
@@ -143,11 +148,6 @@ class LogStash::Runner < Clamp::Command
   ensure
     @log_fd.close if @log_fd
   end # def self.main
-
-  def create_agent
-    @logger.info("Loading agent", :class => agent_class)
-    agent_class.new(@logger)
-  end
 
   def show_version
     show_version_logstash
@@ -198,19 +198,12 @@ class LogStash::Runner < Clamp::Command
     end
   end
 
-  def agent_class
-    return @agent_class if @agent_class # We don't want to load these things twice
+  def create_agent
+    agent_class = LogStash::AgentPluginRegistry.lookup(agent_name)
 
-    @agent_class = LogStash::AgentPluginRegistry.lookup(agent_name)
 
-    if !@agent_class
-      @logger.fatal("Could not load specified agent",
-                    :agent_name => agent_name,
-                    :valid_agent_names => LogStash::AgentPluginRegistry.available.map(&:to_s))
-      raise MissingAgentError, "Could not load specified agent"
-    end
-
-    @agent_class
+    @logger.info("Creating new agent", :class => agent_class)
+    agent_class ? agent_class.new(@logger) : nil
   end
 
   # Point logging at a specific path.

@@ -1,7 +1,16 @@
 require "logstash/config/defaults"
 
-module LogStash; module Config; module Loader
-  def self.format_config(config_path, config_string)
+module LogStash; module Config; class Loader
+  def initialize(logger, is_config_test)
+    @logger = logger
+    @is_config_test = is_config_test
+  end
+
+  def config_test?
+    !!@is_config_test
+  end
+
+  def format_config(config_path, config_string)
     config_string = config_string.to_s
     if config_path
       # Append the config string.
@@ -21,19 +30,19 @@ module LogStash; module Config; module Loader
     config_string
   end
 
-  def self.load_config(path)
+  def load_config(path)
     begin
       uri = URI.parse(path)
 
       case uri.scheme
-        when nil then
-          local_config(path)
-        when /http/ then
-          fetch_config(uri)
-        when "file" then
-          local_config(uri.path)
-        else
-          fail(I18n.t("logstash.runner.configuration.scheme-not-supported", :path => path))
+      when nil then
+        local_config(path)
+      when /http/ then
+        fetch_config(uri)
+      when "file" then
+        local_config(uri.path)
+      else
+        fail(I18n.t("logstash.runner.configuration.scheme-not-supported", :path => path))
       end
     rescue URI::InvalidURIError
       # fallback for windows.
@@ -43,9 +52,9 @@ module LogStash; module Config; module Loader
     end
   end
 
-  def self.local_config(path)
-    path = File.expand_path(path)
-    path = File.join(path, "*") if File.directory?(path)
+  def local_config(path)
+    path = ::File.expand_path(path)
+    path = ::File.join(path, "*") if ::File.directory?(path)
 
     if Dir.glob(path).length == 0
       fail(I18n.t("logstash.runner.configuration.file-not-found", :path => path))
@@ -54,13 +63,13 @@ module LogStash; module Config; module Loader
     config = ""
     encoding_issue_files = []
     Dir.glob(path).sort.each do |file|
-      next unless File.file?(file)
+      next unless ::File.file?(file)
       if file.match(/~$/)
         @logger.debug("NOT reading config file because it is a temp file", :config_file => file)
         next
       end
       @logger.debug("Reading config file", :config_file => file)
-      cfg = File.read(file)
+      cfg = ::File.read(file)
       if !cfg.ascii_only? && !cfg.valid_encoding?
         encoding_issue_files << file
       end
@@ -80,7 +89,7 @@ module LogStash; module Config; module Loader
     return config
   end # def load_config
 
-  def self.fetch_config(uri)
+  def fetch_config(uri)
     begin
       Net::HTTP.get(uri) + "\n"
     rescue Exception => e

@@ -60,7 +60,7 @@ describe LogStash::Runner do
     end
 
     it "should set the proper agent" do
-      expect(subject.agent_class).to eql(DummyAgent)
+      expect(subject.create_agent.class).to eql(DummyAgent)
     end
   end
 
