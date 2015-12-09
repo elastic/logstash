@@ -120,8 +120,6 @@ class LogStash::Runner < Clamp::Command
       fail(I18n.t("logstash.runner.missing-configuration"))
     end
 
-    @agent.logger = @logger
-
     config_string = format_config(@config_path, @config_string)
 
     pipeline_settings = {
