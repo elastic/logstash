@@ -348,7 +348,7 @@ describe LogStash::Event do
         LogStash::Event.new("@timestamp" => 666)
 
         # reset logger to default
-        LogStash::Event.logger = nil
+        LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER
       end
 
       it "should tag for invalid string format" do
@@ -365,7 +365,7 @@ describe LogStash::Event do
         LogStash::Event.new("@timestamp" => "foo")
 
         # reset logger to default
-        LogStash::Event.logger = nil
+        LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER
       end
     end
 

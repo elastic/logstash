@@ -149,7 +149,7 @@ describe LogStash::Event do
   context "logger" do
 
     let(:logger) { double("Logger") }
-    after(:each) {  LogStash::Event.logger = nil }
+    after(:each) {  LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER }
 
     # the following 2 specs are using both a real module (DummyLogger)
     # and a mock. both tests are needed to make sure the implementation
@@ -163,7 +163,7 @@ describe LogStash::Event do
 
     it "should set logger using a mock" do
       LogStash::Event.logger = logger
-      expect(logger).to receive(:warn)
+      expect(logger).to receive(:warn).once
       LogStash::Event.new(TIMESTAMP => "invalid timestamp")
     end
 
@@ -174,7 +174,7 @@ describe LogStash::Event do
       LogStash::Event.new(TIMESTAMP => "invalid timestamp")
 
       # then unset
-      LogStash::Event.logger = nil
+      LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER
       expect(logger).to receive(:warn).never
       # this will produce a log line in stdout by the Java Event
       LogStash::Event.new(TIMESTAMP => "ignore this log")
