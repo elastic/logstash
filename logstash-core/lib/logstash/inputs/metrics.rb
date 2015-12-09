@@ -26,7 +26,7 @@ module LogStash module Inputs
     end
 
     def update(time, snapshot)
-      @logger.debug("Metrics input: received a new snaptop") if @logger.debug?
+      @logger.debug("Metrics input: received a new snapshot") if @logger.debug?
       # TODO: 
       # - Obviously the format here is wrong and we need to
       # transform it from Snapshot to an event

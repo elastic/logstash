@@ -90,9 +90,8 @@ class LogStash::Runner < Clamp::Command
 
     # Agent need to be instantiated in the execute method to make sure the metric?
     # return true.
-    @agent = LogStash::Agent.new({ :collect_metric => metric? })
-
     @logger = Cabin::Channel.get(LogStash)
+    @agent = LogStash::Agent.new({ :collect_metric => metric?, :logger => @logger })
 
     LogStash::Util::set_thread_name(self.class.name)
 

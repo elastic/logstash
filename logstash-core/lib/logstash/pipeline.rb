@@ -35,6 +35,8 @@ module LogStash; class Pipeline
     # Metric object should be passed upstream, multiple pipeline share the same metric
     # and collector only the namespace will changes.
     # If no metric is given, we use a `NullMetric` for all internal calls.
+    # We also do this to make the changes backward compatible with previous testing of the 
+    # pipeline.
     #
     # This need to be configured before we evaluate the code to make
     # sure the metric instance is correctly send to the plugin.
@@ -50,9 +52,11 @@ module LogStash; class Pipeline
     # filter and output methods.
     code = @config.compile
     @code = code
+
     # The config code is hard to represent as a log message...
     # So just print it.
     @logger.debug? && @logger.debug("Compiled pipeline code:\n#{code}")
+
     begin
       eval(code)
     rescue => e

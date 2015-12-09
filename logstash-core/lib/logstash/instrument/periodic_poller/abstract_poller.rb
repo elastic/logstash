@@ -1,6 +1,6 @@
 # encoding: utf-8
-require "logstash/instrument/periodic_poller_observer"
 require "logstash/util/loggable"
+require "logstash/util"
 require "concurrent"
 
 module LogStash module Instrument module PeriodicPoller
@@ -35,7 +35,8 @@ module LogStash module Instrument module PeriodicPoller
 
     def start
       logger.debug("PeriodicPoller: Starting", :poller => self,
-                   :polling_interval => @options[:polling_interval]) if logger.debug?
+                   :polling_interval => @options[:polling_interval],
+                   :polling_timeout => @options[:polling_timeout]) if logger.debug?
       @task.execute
     end
 
