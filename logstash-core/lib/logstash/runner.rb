@@ -89,7 +89,7 @@ class LogStash::Runner < Clamp::Command
     require "cabin" # gem 'cabin'
 
     # Configure Logstash logging facility, this need to be done before everything else to
-    # make sure the logger has the correct settings of the log level is correctly defined.
+    # make sure the logger has the correct settings and the log level is correctly defined.
     configure_logging(log_file)
 
     @agent = LogStash::Agent.new({ :collect_metric => metric?, :logger => @logger })

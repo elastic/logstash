@@ -10,12 +10,10 @@ module LogStash module Inputs
     end
 
     def run(queue)
-      @logger.debug("Metric input started")
-
-      LogStash::Instrument::Collector.instance.add_observer(self)
-
+      @logger.debug("Metric: input started")
       @queue = queue
 
+      LogStash::Instrument::Collector.instance.add_observer(self)
       # Keep this plugin thread alive,
       # until we shutdown the metric pipeline
       sleep(1) while !stop
@@ -27,6 +25,7 @@ module LogStash module Inputs
 
     def update(time, snapshot)
       @logger.debug("Metrics input: received a new snapshot") if @logger.debug?
+
       # TODO: 
       # - Obviously the format here is wrong and we need to
       # transform it from Snapshot to an event
