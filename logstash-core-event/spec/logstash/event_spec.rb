@@ -316,6 +316,10 @@ describe LogStash::Event do
     context "timestamp initialization" do
       let(:logger_mock) { double("logger") }
 
+      after(:each) do
+        LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER
+      end
+
       it "should coerce timestamp" do
         t = Time.iso8601("2014-06-12T00:12:17.114Z")
         expect(LogStash::Event.new("@timestamp" => t).timestamp.to_i).to eq(t.to_i)
@@ -346,9 +350,6 @@ describe LogStash::Event do
 
         LogStash::Event.new("@timestamp" => :foo)
         LogStash::Event.new("@timestamp" => 666)
-
-        # reset logger to default
-        LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER
       end
 
       it "should tag for invalid string format" do
@@ -363,9 +364,6 @@ describe LogStash::Event do
 
         expect(logger_mock).to receive(:warn)
         LogStash::Event.new("@timestamp" => "foo")
-
-        # reset logger to default
-        LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER
       end
     end
 
