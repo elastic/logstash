@@ -196,13 +196,13 @@ public class Event implements Cloneable, Serializable {
     }
 
     public String toString() {
-        // TODO: until we have sprintf
-        String host = (String)this.data.getOrDefault("host", "%{host}");
-        String message = (String)this.data.getOrDefault("message", "%{message}");
+        // TODO: (colin) clean this IOException handling, not sure why we bubble IOException here
         try {
-            return getTimestamp().toIso8601() + " " + host + " " + message;
+            return (getTimestamp().toIso8601() + " " + this.sprintf("%{host} %{message}"));
         } catch (IOException e) {
-            return host + " " + message;
+            String host = (String)this.data.getOrDefault("host", "%{host}");
+            String message = (String)this.data.getOrDefault("message", "%{message}");
+            return (host + " " + message);
         }
     }
 
