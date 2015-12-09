@@ -30,6 +30,7 @@ public class JrubyEventExtLibrary implements Library {
         clazz.setConstant("TIMESTAMP", runtime.newString(Event.TIMESTAMP));
         clazz.setConstant("TIMESTAMP_FAILURE_TAG", runtime.newString(Event.TIMESTAMP_FAILURE_TAG));
         clazz.setConstant("TIMESTAMP_FAILURE_FIELD", runtime.newString(Event.TIMESTAMP_FAILURE_FIELD));
+        clazz.setConstant("DEFAULT_LOGGER", runtime.getModule("Cabin").getClass("Channel").callMethod("get", runtime.getModule("LogStash")));
         clazz.defineAnnotatedMethods(RubyEvent.class);
         clazz.defineAnnotatedConstants(RubyEvent.class);
     }
@@ -287,10 +288,12 @@ public class JrubyEventExtLibrary implements Library {
             return new JrubyTimestampExtLibrary.RubyTimestamp(context.getRuntime(), this.event.getTimestamp());
         }
 
+        // set a new logger for all Event instances
+        // there is no point in changing it at runtime for other reasons than in tests/specs.
         @JRubyMethod(name = "logger=", required = 1, meta = true)
         public static IRubyObject ruby_set_logger(ThreadContext context, IRubyObject recv, IRubyObject value)
         {
-            Event.setLogger(value.isNil() ? null : new ProxyLogger((RubyObject)value));
+            Event.setLogger(new ProxyLogger((RubyObject)value));
             return value;
         }
     }

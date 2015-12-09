@@ -63,6 +63,9 @@ class LogStash::Event
   MIN_FLOAT_BEFORE_SCI_NOT = 0.0001
   MAX_FLOAT_BEFORE_SCI_NOT = 1000000000000000.0
 
+  DEFAULT_LOGGER = Cabin::Channel.get(LogStash)
+  @@logger = DEFAULT_LOGGER
+
   def initialize(data = {})
     @cancelled = false
     @data = data
@@ -243,6 +246,9 @@ class LogStash::Event
     raise DeprecatedMethod
   end
 
+  # set a new logger for all Event instances
+  # there is no point in changing it at runtime for other reasons than in tests/specs.
+  # @param logger [Cabin::Channel] logger instance that will be used by all Event instances
   def self.logger=(logger)
     @@logger = logger
   end
@@ -250,7 +256,7 @@ class LogStash::Event
   private
 
   def logger
-    @@logger ||= Cabin::Channel.get(LogStash)
+    @@logger
   end
 
   def init_timestamp(o)
