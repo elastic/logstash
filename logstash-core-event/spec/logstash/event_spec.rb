@@ -506,11 +506,11 @@ describe LogStash::Event do
     let(:event2) { LogStash::Event.new({ "host" => "bar", "message" => "foo"}) }
 
     it "should cache only one template" do
-      LogStash::StringInterpolation::CACHE.clear
+      LogStash::StringInterpolation.clear_cache
       expect {
         event1.to_s
         event2.to_s
-      }.to change { LogStash::StringInterpolation::CACHE.size }.by(1)
+      }.to change { LogStash::StringInterpolation.cache_size }.by(1)
     end
 
     it "return the string containing the timestamp, the host and the message" do
