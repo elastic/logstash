@@ -137,8 +137,8 @@ force_stop() {
 configtest() {
   # Check if a config file exists
   if [ ! "$(ls -A ${LS_CONF_DIR}/* 2> /dev/null)" ]; then
-    log_failure_msg "There aren't any configuration files in ${LS_CONF_DIR}"
-    exit 1
+    echo "There aren't any configuration files in ${LS_CONF_DIR}"
+    return 1
   fi
 
   JAVA_OPTS=${LS_JAVA_OPTS}
