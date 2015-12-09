@@ -29,6 +29,14 @@ public class StringInterpolation {
         this.cache = new ConcurrentHashMap<>();
     }
 
+    public void clearCache() {
+        this.cache.clear();
+    }
+
+    public int cacheSize() {
+        return this.cache.size();
+    }
+
     public String evaluate(Event event, String template) throws IOException {
         TemplateNode compiledTemplate = (TemplateNode) this.cache.get(template);
 
