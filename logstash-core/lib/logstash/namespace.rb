@@ -10,5 +10,5 @@ module LogStash
   module Util; end
   module PluginMixins; end
   module PluginManager; end
-  module WebServer; end
+  module Api; end
 end # module LogStash

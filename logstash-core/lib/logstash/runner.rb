@@ -92,7 +92,7 @@ class LogStash::Runner < Clamp::Command
     # make sure the logger has the correct settings and the log level is correctly defined.
     configure_logging(log_file)
 
-    @agent = LogStash::Agent.new({ :collect_metric => metric?, :logger => @logger })
+    @agent = LogStash::Agent.new({ :collect_metric => metric?, :logger => @logger, :debug => debug? })
 
     LogStash::Util::set_thread_name(self.class.name)
 
