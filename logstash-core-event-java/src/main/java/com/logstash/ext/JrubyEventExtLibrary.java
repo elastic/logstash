@@ -1,7 +1,20 @@
 package com.logstash.ext;
 
-import com.logstash.*;
-import org.jruby.*;
+import com.logstash.Logger;
+import com.logstash.Event;
+import com.logstash.PathCache;
+import com.logstash.RubyToJavaConverter;
+import com.logstash.Timestamp;
+import org.jruby.Ruby;
+import org.jruby.RubyObject;
+import org.jruby.RubyClass;
+import org.jruby.RubyModule;
+import org.jruby.RubyString;
+import org.jruby.RubyHash;
+import org.jruby.RubyBoolean;
+import org.jruby.RubyArray;
+import org.jruby.RubyFloat;
+import org.jruby.RubyInteger;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
@@ -11,9 +24,10 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
-
 import java.io.IOException;
-import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
 
 
 public class JrubyEventExtLibrary implements Library {
