@@ -11,10 +11,10 @@ Gem::Specification.new do |gem|
   gem.homepage      = "http://www.elastic.co/guide/en/logstash/current/index.html"
   gem.license       = "Apache License (2.0)"
 
-  gem.files         = Dir.glob(["logstash-core.gemspec", "lib/**/*.rb", "spec/**/*.rb", "locales/*"])
+  gem.files         = Dir.glob(["logstash-core.gemspec", "api/**/*" "lib/**/*.rb", "spec/**/*.rb", "locales/*"])
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "logstash-core"
-  gem.require_paths = ["lib"]
+  gem.require_paths = ["lib", "api"]
   gem.version       = LOGSTASH_CORE_VERSION
 
   gem.add_runtime_dependency "logstash-core-event", "~> 3.0.0.dev"

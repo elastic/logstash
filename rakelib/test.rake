@@ -52,6 +52,11 @@ namespace "test" do
     exit(RSpec::Core::Runner.run([Rake::FileList[args.specfile]]))
   end
 
+  desc "run api specs"
+  task "api" => ["setup"] do
+    exit(RSpec::Core::Runner.run(Rake::FileList["logstash-core/api/spec/**/*_spec.rb"]))
+  end
+
   desc "run all installed plugins specs"
   task "plugins" => ["setup"] do
     plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")

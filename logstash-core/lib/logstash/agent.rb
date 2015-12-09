@@ -9,7 +9,6 @@ require "logstash/instrument/collector"
 require "logstash/instrument/metric"
 require "logstash/pipeline"
 require "logstash/webserver"
-require "logstash/webservers/puma"
 require "uri"
 require "stud/trap"
 
@@ -18,13 +17,13 @@ LogStash::Environment.load_locale!
 class LogStash::Agent
 
   attr_writer :logger
-  attr_reader :metric
+  attr_reader :metric, :debug
 
   def initialize(options = {})
     @pipelines = {}
     @collect_metric = options.fetch(:collect_metric, false)
     @logger = options[:logger]
-
+    @debug  = options.fetch(:debug, false)
     configure_metric
   end
 
@@ -36,9 +35,7 @@ class LogStash::Agent
     start_background_services
 
     @pipelines.each { |_, p| Thread.new { p.run } }
-    @web_agent = Thread.new do
-      LogStash::WebServer::Puma.new(@logger).run
-    end
+    start_webserver
 
     sleep(1) while true
     return 0
@@ -61,6 +58,19 @@ class LogStash::Agent
   end
 
   private
+
+  def start_webserver
+    options = { :debug => debug }
+    @webserver = LogStash::WebServer.new(@logger, options)
+    Thread.new(@webserver) do |webserver|
+      webserver.run
+    end
+  end
+
+  def stop_webserver
+    @webserver.stop(:graceful => true)
+  end
+
   def start_background_services
     if collect_metric?
       @logger.debug("Agent: Starting metric periodic pollers")
@@ -140,6 +150,7 @@ class LogStash::Agent
     Stud::trap("TERM") do
       @logger.warn(I18n.t("logstash.agent.sigterm"))
       shutdown_pipelines
+      stop_webserver
     end
   end
 
@@ -153,6 +164,7 @@ class LogStash::Agent
         Thread.new(@logger) {|logger| sleep 5; logger.warn(I18n.t("logstash.agent.slow_shutdown")) }
         @interrupted_once = true
         shutdown_pipelines
+        stop_webserver
       end
     end
   end
