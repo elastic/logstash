@@ -82,16 +82,15 @@ class LogStash::Runner < Clamp::Command
 
   attr_reader :agent
 
-  def initialize(*args)
-    @agent = LogStash::Agent.new
-    super(*args)
-  end
-
   def execute
     require "logstash/util"
     require "logstash/util/java_version"
     require "stud/task"
     require "cabin" # gem 'cabin'
+
+    # Agent need to be instantiated in the execute method to make sure the metric?
+    # return true.
+    @agent = LogStash::Agent.new({ :collect_metric => metric? })
 
     @logger = Cabin::Channel.get(LogStash)
 
@@ -132,10 +131,6 @@ class LogStash::Runner < Clamp::Command
     }
 
     pipeline_id = :base
-
-    if metric?
-      pipeline_settings.merge!({ :metric =>  LogStash::Instrument::Metric.create_root(pipeline_id) })
-    end
 
     @agent.add_pipeline(pipeline_id, config_string, pipeline_settings)
 
