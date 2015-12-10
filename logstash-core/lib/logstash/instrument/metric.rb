@@ -4,9 +4,10 @@ require "logstash/instrument/reporter/stdout"
 require "concurrent"
 
 module LogStash module Instrument
-  class MetricNoKeyProvided < Exception; end
-  class MetricNoBlockProvided < Exception; end
-  class MetricNoNamespaceProvided < Exception; end
+  class MetricException < Exception; end
+  class MetricNoKeyProvided < MetricException; end
+  class MetricNoBlockProvided < MetricException; end
+  class MetricNoNamespaceProvided < MetricException; end
 
   class Metric
     attr_reader :collector, :namespace
