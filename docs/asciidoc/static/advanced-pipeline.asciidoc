@@ -116,6 +116,14 @@ filter {
 }
 --------------------------------------------------------------------------------
 
+To set the stdout output to json format:
+[source,json]
+--------------------------------------------------------------------------------
+output {
+    stdout {codec=>rubydebug} 
+}
+--------------------------------------------------------------------------------
+
 After processing, the sample line has the following JSON representation:
 
 [source,json]
