@@ -94,8 +94,12 @@ module LogStash; class Pipeline
       when nil
         # user did not specify a worker thread count
         # warn if the default is multiple
-        @logger.warn("Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads",
-                     :count_was => default, :filters => plugins) if default > 1
+
+        if default > 1
+          @logger.warn("Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads",
+                       :count_was => default, :filters => plugins)
+        end
+
         1 # can't allow the default value to propagate if there are unsafe filters
       when 0, 1
         1

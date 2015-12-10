@@ -13,6 +13,7 @@ PATH
       logstash-core-event (~> 3.0.0.dev)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
+      rubyzip (~> 1.1.7)
       stud (~> 0.0.19)
       thread_safe (~> 0.3.5)
       treetop (< 1.5.0)
@@ -74,10 +75,21 @@ GEM
       domain_name (~> 0.5)
     i18n (0.6.9)
     insist (1.0.0)
+    jls-grok (0.11.2)
+      cabin (>= 0.6.0)
     jrjackson (0.3.7)
     jruby-openssl (0.9.12-java)
     json (1.8.3-java)
     kramdown (1.9.0)
+    logstash-codec-json (2.0.2)
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+    logstash-codec-json_lines (2.0.2)
+      logstash-codec-line
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+    logstash-codec-line (2.0.2)
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+    logstash-codec-plain (2.0.2)
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
     logstash-devutils (0.0.18-java)
       gem_publisher
       insist (= 1.0.0)
@@ -87,6 +99,42 @@ GEM
       rspec (~> 3.1.0)
       rspec-wait
       stud (>= 0.0.20)
+    logstash-filter-clone (2.0.3)
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+    logstash-filter-grok (2.0.2)
+      jls-grok (~> 0.11.1)
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+      logstash-patterns-core
+    logstash-filter-multiline (2.0.2)
+      jls-grok (~> 0.11.0)
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+      logstash-filter-mutate
+      logstash-patterns-core
+    logstash-filter-mutate (2.0.2)
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+      logstash-filter-grok
+      logstash-patterns-core
+    logstash-input-generator (2.0.2)
+      logstash-codec-plain
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+    logstash-input-stdin (2.0.2)
+      concurrent-ruby
+      logstash-codec-json
+      logstash-codec-json_lines
+      logstash-codec-line
+      logstash-codec-plain
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+    logstash-input-tcp (2.0.4)
+      logstash-codec-json
+      logstash-codec-json_lines
+      logstash-codec-line
+      logstash-codec-plain
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+    logstash-output-stdout (2.0.2)
+      logstash-codec-line
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+    logstash-patterns-core (2.0.2)
+      logstash-core (>= 2.0.0.beta2, < 3.0.0)
     method_source (0.8.2)
     mime-types (2.6.2)
     minitar (0.5.4)
@@ -155,7 +203,14 @@ DEPENDENCIES
   gems (~> 0.8.3)
   logstash-core (= 3.0.0.dev)!
   logstash-core-event (= 3.0.0.dev)!
-  logstash-devutils (~> 0.0.15)
+  logstash-devutils
+  logstash-filter-clone
+  logstash-filter-multiline
+  logstash-filter-mutate
+  logstash-input-generator
+  logstash-input-stdin
+  logstash-input-tcp
+  logstash-output-stdout
   octokit (= 3.8.0)
   rspec (~> 3.1.0)
   rubyzip (~> 1.1.7)
