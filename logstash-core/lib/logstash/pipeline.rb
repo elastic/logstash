@@ -207,7 +207,8 @@ module LogStash; class Pipeline
 
     signal = false
     batch_size.times do |t|
-      event = t==0 ? @input_queue.take : @input_queue.poll(batch_delay)
+      event = (t == 0) ? @input_queue.take : @input_queue.poll(batch_delay)
+      
       if event.nil?
         next
       elsif event == LogStash::SHUTDOWN || event == LogStash::FLUSH
