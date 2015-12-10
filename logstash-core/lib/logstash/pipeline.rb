@@ -182,31 +182,26 @@ module LogStash; class Pipeline
     end
   end
 
-  # Main body of what a worker thread does
-  # Repeatedly takes batches off the queu, filters, then outputs them
-  def worker_loop(batch_size, batch_delay)
+ def worker_loop(batch_size, batch_delay)
     running = true
 
     while running
       # To understand the purpose behind this synchronize please read the body of take_batch
-      input_batch, shutdown_received = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
-      running = false if shutdown_received
+      input_batch, signal = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
+      running = false if signal == LogStash::SHUTDOWN
 
       metric.increment(:events_in, input_batch.size)
       @events_consumed.increment(input_batch.size)
 
-      filtered = filter_batch(input_batch)
-
-      @events_filtered.increment(filtered.size)
-      @metric.increment(:events_filtered, filtered.size)
+      filtered_batch = filter_batch(input_batch)
 
       if signal # Flush on SHUTDOWN or FLUSH
         flush_options = (signal == LogStash::SHUTDOWN) ? {:final => true} : {}
         flush_filters_to_batch(filtered_batch, flush_options)
       end
 
-	    @metric.increment(:events_filtered, filtered_batch.size)
       @events_filtered.increment(filtered_batch.size)
+	    metric.increment(:events_filtered, filtered_batch.size)
 
       output_batch(filtered_batch)
 
