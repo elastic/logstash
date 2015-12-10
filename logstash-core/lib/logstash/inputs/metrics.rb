@@ -4,6 +4,11 @@ require "logstash/inputs/base"
 require "logstash/instrument/collector"
 
 module LogStash module Inputs
+  # The Metrics inputs is responable of registring itself to the collector.
+  # The collector class will periodically emits new snapshot of the system,
+  # The metrics need to take that information and transform it into
+  # a `Logstash::Event`, which can be consumed by the shipper and send to
+  # Elasticsearch
   class Metrics < LogStash::Inputs::Base
     config_name "metrics"
 
@@ -27,8 +32,8 @@ module LogStash module Inputs
       LogStash::Instrument::Collector.instance.delete_observer(self)
     end
 
-    def update(time, snapshot)
-      @logger.debug("Metrics input: received a new snapshot", :snapshot => snapshot, :event => snapshot.to_event) if @logger.debug?
+    def update(snapshot)
+      @logger.debug("Metrics input: received a new snapshot", :created_at => snapshot.created_at, :snapshot => snapshot, :event => snapshot.metric_store.to_event) if @logger.debug?
 
       # TODO: (ph)
       # - Obviously the format here is wrong and we need to
@@ -39,7 +44,10 @@ module LogStash module Inputs
       #   - We can use a synchronization mechanism between the called thread (update method)
       #   and the plugin thread (run method)
       #   - How we handle back pressure here?
-      @queue << snapshot.to_event
+      #   - one snashot should be only one event
+      snapshot.metric_store.to_events.each do |event|
+        @queue << event
+      end
     end
   end
 end;end

@@ -9,8 +9,8 @@ module LogStash module Instrument module Reporter
       collector.add_observer(self)
     end
 
-    def update(time, snapshot)
-      logger.error("Reporter Stdout", :time => time, :snapshot_size => snapshot.size, :snapshot => snapshot.inspect)
+    def update(snapshot)
+      logger.error("Reporter Stdout", :time => snapshot.created_at, :snapshot => snapshot.inspect)
     end
   end
 end; end; end

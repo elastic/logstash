@@ -2,15 +2,15 @@
 require "rspec"
 require "rspec/expectations"
 
-RSpec::Matchers.define :be_a_metric_event do |type, key, value|
+RSpec::Matchers.define :be_a_metric_event do |namespace, type, *args|
   match do
-    actual.first == type &&
-      actual[1].kind_of?(Time) &&
-      actual[2] == key &&
-      actual.last == value
+    namespace == actual[0] << actual[1] && 
+      type == actual[2] &&
+      args == actual[3..-1]
   end
 end
 
+# Match to test `NullObject` pattern
 RSpec::Matchers.define :implement_interface_of do |type, key, value|
   match do |actual|
     all_instance_methods_implemented?
