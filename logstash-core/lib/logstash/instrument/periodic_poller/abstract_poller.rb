@@ -1,23 +1,32 @@
 # encoding: utf-8
-require "logstash/instrument/periodic_poller_observer"
 require "logstash/util/loggable"
+require "logstash/util"
 require "concurrent"
 
 module LogStash module Instrument module PeriodicPoller
   class AbstractPoller
     include LogStash::Util::Loggable
 
-    DEFAULT_POLLING_INTERVAL = 5
+    DEFAULT_OPTIONS = {
+      :polling_interval => 1,
+      :polling_timeout => 60
+    }
 
-    def initialize(interval = DEFAULT_POLLING_INTERVAL)
-      @interval = interval
+    public
+    def initialize(metric, options = {})
+      @metric = metric
+      @options = DEFAULT_OPTIONS.merge(options)
+      configure_task
+    end
 
-      @task = Concurrent::TimerTask.new { collect }
-      @task.execution_interval = interval
-      @task.timeout_interval = interval # Fetching statistic should be almost instant
-      # No need to create a special Observer here just use this classe and add the update to the abstract class?
-      # TODO
-      @task.add_observer(PeriodicPollerObserver.new(self))
+    def update(time, result, exception)
+      return unless exception
+
+      logger.error("PeriodicPoller: exception",
+                   :poller => self,
+                   :result => result,
+                   :exception => exception,
+                   :executed_at => time)
     end
 
     def collect
@@ -26,7 +35,8 @@ module LogStash module Instrument module PeriodicPoller
 
     def start
       logger.debug("PeriodicPoller: Starting", :poller => self,
-                   :interval => @interval) if logger.debug?
+                   :polling_interval => @options[:polling_interval],
+                   :polling_timeout => @options[:polling_timeout]) if logger.debug?
       @task.execute
     end
 
@@ -34,6 +44,14 @@ module LogStash module Instrument module PeriodicPoller
       logger.debug("PeriodicPoller: Stopping", :poller => self)
       @task.shutdown
     end
+
+    protected
+    def configure_task
+      @task = Concurrent::TimerTask.new { collect }
+      @task.execution_interval = @options[:polling_interval]
+      @task.timeout_interval = @options[:polling_timeout]
+      @task.add_observer(self)
+    end
   end
 end
-end; end; end
+end; end

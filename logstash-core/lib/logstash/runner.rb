@@ -82,18 +82,17 @@ class LogStash::Runner < Clamp::Command
 
   attr_reader :agent
 
-  def initialize(*args)
-    @agent = LogStash::Agent.new
-    super(*args)
-  end
-
   def execute
     require "logstash/util"
     require "logstash/util/java_version"
     require "stud/task"
     require "cabin" # gem 'cabin'
 
-    @logger = Cabin::Channel.get(LogStash)
+    # Configure Logstash logging facility, this need to be done before everything else to
+    # make sure the logger has the correct settings and the log level is correctly defined.
+    configure_logging(log_file)
+
+    @agent = LogStash::Agent.new({ :collect_metric => metric?, :logger => @logger })
 
     LogStash::Util::set_thread_name(self.class.name)
 
@@ -121,8 +120,6 @@ class LogStash::Runner < Clamp::Command
       fail(I18n.t("logstash.runner.missing-configuration"))
     end
 
-    @agent.logger = @logger
-
     config_string = format_config(@config_path, @config_string)
 
     pipeline_settings = {
@@ -132,10 +129,6 @@ class LogStash::Runner < Clamp::Command
     }
 
     pipeline_id = :base
-
-    if metric?
-      pipeline_settings.merge!({ :metric =>  LogStash::Instrument::Metric.create_root(pipeline_id) })
-    end
 
     @agent.add_pipeline(pipeline_id, config_string, pipeline_settings)
 
@@ -198,7 +191,6 @@ class LogStash::Runner < Clamp::Command
   #
   # Log file stuff, plugin path checking, etc.
   def configure
-    configure_logging(log_file)
     configure_plugin_paths(plugin_paths)
   end # def configure
 
@@ -213,6 +205,7 @@ class LogStash::Runner < Clamp::Command
 
   # Point logging at a specific path.
   def configure_logging(path)
+    @logger = Cabin::Channel.get(LogStash)
     # Set with the -v (or -vv...) flag
     if quiet?
       @logger.level = :error

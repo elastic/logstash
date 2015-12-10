@@ -17,8 +17,6 @@ require "logstash/pipeline_reporter"
 require "logstash/instrument/metric"
 require "logstash/instrument/null_metric"
 require "logstash/instrument/collector"
-require "concurrent/timer_task"
-require "logstash/output_delegator"
 
 module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :metric
@@ -45,6 +43,8 @@ module LogStash; class Pipeline
     # Metric object should be passed upstream, multiple pipeline share the same metric
     # and collector only the namespace will changes.
     # If no metric is given, we use a `NullMetric` for all internal calls.
+    # We also do this to make the changes backward compatible with previous testing of the 
+    # pipeline.
     #
     # This need to be configured before we evaluate the code to make
     # sure the metric instance is correctly send to the plugin.
@@ -60,9 +60,11 @@ module LogStash; class Pipeline
     # filter and output methods.
     code = @config.compile
     @code = code
+
     # The config code is hard to represent as a log message...
     # So just print it.
     @logger.debug? && @logger.debug("Compiled pipeline code:\n#{code}")
+
     begin
       eval(code)
     rescue => e
@@ -187,13 +189,16 @@ module LogStash; class Pipeline
 
     while running
       # To understand the purpose behind this synchronize please read the body of take_batch
-      input_batch, signal = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
-      running = false if signal == LogStash::SHUTDOWN
+      input_batch, shutdown_received = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
+      running = false if shutdown_received
 
-      @metric.increment(:events_in, input_batch.size)
+      metric.increment(:events_in, input_batch.size)
       @events_consumed.increment(input_batch.size)
 
-      filtered_batch = filter_batch(input_batch)
+      filtered = filter_batch(input_batch)
+
+      @events_filtered.increment(filtered.size)
+      @metric.increment(:events_filtered, filtered.size)
 
       if signal # Flush on SHUTDOWN or FLUSH
         flush_options = (signal == LogStash::SHUTDOWN) ? {:final => true} : {}
@@ -256,14 +261,19 @@ module LogStash; class Pipeline
 
   # Take an array of events and send them to the correct output
   def output_batch(batch)
-    # Build a mapping of { output_plugin => [events...]}
-    outputs_events = batch.reduce(Hash.new { |h, k| h[k] = [] }) do |acc, event|
+    outputs_events = batch.reduce(Hash.new { |h, k| h[k] = [] }) do |outputs_events, event|
       # We ask the AST to tell us which outputs to send each event to
-      # Then, we stick it in the correct bin
+
       output_func(event).each do |output|
         acc[output] << event
       end
-      acc
+
+      outputs_events
+    end
+
+    outputs_events.each do |output, events|
+      # Once we have a mapping of outputs => [events] we can execute them
+      output.multi_handle(events)
     end
     # Now that we have our output to event mapping we can just invoke each output
     # once with its list of events
@@ -380,13 +390,10 @@ module LogStash; class Pipeline
     args << {} if args.empty?
 
     klass = LogStash::Plugin.lookup(plugin_type, name)
-
-    plugin = if plugin_type == "output"
-      LogStash::OutputDelegator.new(@logger, klass, *args)
-    else
-      klass.new(*args)
-    end
-	
+    
+    # Backward compatible way of adding code to 
+    plugin = klass.new(*args)
+    plugin.metric = metric
     plugin
   end
 

@@ -344,48 +344,6 @@ describe LogStash::Pipeline do
     end
   end
 
-  context "Periodic Flush" do
-    let(:number_of_events) { 100 }
-    let(:config) do
-      <<-EOS
-      input {
-        generator {
-          count => #{number_of_events}
-        }
-      }
-      filter {
-        multiline { 
-          pattern => "^NeverMatch"
-          negate => true
-          what => "previous"
-        }
-      }
-      output {
-        dummyoutput {}
-      }
-      EOS
-    end
-    let(:output) { DummyOutput.new }
-    
-    before do
-      allow(DummyOutput).to receive(:new).with(any_args).and_return(output)
-      allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
-      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
-      allow(LogStash::Plugin).to receive(:lookup).with("filter", "multiline").and_return(LogStash::Filters::Multiline)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
-    end
-
-    it "flushes the buffered contents of the filter" do
-      Thread.abort_on_exception = true
-      pipeline = LogStash::Pipeline.new(config, { :flush_interval => 1 })
-      Thread.new { pipeline.run }
-      sleep 0.1 while !pipeline.ready?
-      # give us a bit of time to flush the events
-      wait(5).for { output.events.first["message"].split("\n").count }.to eq(number_of_events)
-      pipeline.shutdown
-    end
-  end
-
   context "Multiples pipelines" do
     before do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinputgenerator").and_return(DummyInputGenerator)
