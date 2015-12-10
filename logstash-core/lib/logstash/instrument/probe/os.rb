@@ -59,7 +59,6 @@ module LogStash module Instrument module Probe
         str.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
         str.tr!("-", "_")
         str.downcase!
-        puts str
         str
       end
 

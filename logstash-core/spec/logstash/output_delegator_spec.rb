@@ -1,8 +1,7 @@
 # encoding: utf-8
 require 'spec_helper'
 
-
-
+require "logstash/output_delegator"
 describe LogStash::OutputDelegator do
   let(:logger) { double("logger") }
   let(:out_klass) { double("output klass") }

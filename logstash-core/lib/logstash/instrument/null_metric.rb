@@ -1,7 +1,7 @@
 # encoding: utf-8
 module LogStash module Instrument
  class NullMetric
-   attr_reader :collector, :base_key
+   attr_reader :collector, :namespace_information
    def initialize
    end
 

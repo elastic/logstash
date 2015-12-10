@@ -10,32 +10,37 @@ module LogStash module Instrument
   class MetricNoNamespaceProvided < MetricException; end
 
   class Metric
-    attr_reader :collector, :namespace
+    attr_reader :collector, :namespace_information
 
+    public
     def initialize(collector, namespace = nil)
       @collector = collector
-      @namespace = Array(namespace).map(&:to_sym)
+      @namespace_information = Array(namespace).map(&:to_sym)
     end
 
     def increment(key, value = 1)
       validate_key!(key)
-      collector.push(namespace, key, :counter, :increment, Concurrent.monotonic_time, value)
+      collector.push(namespace_information, key, :counter, :increment, value)
     end
 
     def decrement(key, value = 1)
       validate_key!(key)
-      collector.push(namespace, key, :counter, :decrement, Concurrent.monotonic_time, value)
+      collector.push(namespace_information, key, :counter, :decrement, value)
     end
 
     # might be worth to create a block interface for time based gauge
     def gauge(key, value)
       validate_key!(key)
-      collector.push(namespace, key, :gauge, Concurrent.monotonic_time, value)
+      collector.push(namespace_information, key, :gauge, value)
     end
 
     def namespace(sub_namespace)
       raise MetricNoNamespaceProvided if sub_namespace.nil? || sub_namespace.empty?
-      Metric.new(collector, merge_keys(sub_namespace))
+
+      new_namespace = namespace_information.dup
+      new_namespace << sub_namespace
+
+      Metric.new(collector, new_namespace)
     end
 
     # I think this should have his own values.
@@ -58,11 +63,6 @@ module LogStash module Instrument
     end
 
     private
-    def merge_keys(key)
-      validate_key!(key)
-      @namespace + key.to_sym
-    end
-    
     def validate_key!(key)
       raise MetricNoKeyProvided if key.nil? || key.empty?
     end
