@@ -29,7 +29,7 @@ module LogStash module Instrument
     end
 
     def self.snapshot_rotation_time=(time)
-      @snapsho_rotation_time = ime
+      @snapshot_rotation_time = time
     end
 
     def self.snapshot_rotation_time

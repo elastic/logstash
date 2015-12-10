@@ -14,8 +14,8 @@ module LogStash module Instrument
     end
 
     def push(*args)
-      type, key, _ = args
-      metric = @metrics.fetch_or_store(key, concrete_class(type, key))
+      namespace, key, type, _ = args
+      metric = @metrics.fetch_or_store([namespace, key].join('-'), concrete_class(type, key))
       metric.execute(*args)
     end
 

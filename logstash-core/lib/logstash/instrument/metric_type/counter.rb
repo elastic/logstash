@@ -22,7 +22,7 @@ module LogStash module Instrument module MetricType
       @counter.decrement(value)
     end
 
-    def execute(type, key, action, time, value)
+    def execute(namespace, key, type, action, value)
       @counter.send(action, value)
     end
 
