@@ -23,7 +23,7 @@ module LogStash module Inputs
     end
 
     def stop
-      @logger.debug?("Metrics input: stopped")
+      @logger.debug("Metrics input: stopped")
       LogStash::Instrument::Collector.instance.delete_observer(self)
     end
 
