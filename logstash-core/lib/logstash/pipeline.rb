@@ -256,19 +256,14 @@ module LogStash; class Pipeline
 
   # Take an array of events and send them to the correct output
   def output_batch(batch)
-    outputs_events = batch.reduce(Hash.new { |h, k| h[k] = [] }) do |outputs_events, event|
+    # Build a mapping of { output_plugin => [events...]}
+    outputs_events = batch.reduce(Hash.new { |h, k| h[k] = [] }) do |acc, event|
       # We ask the AST to tell us which outputs to send each event to
-
+      # Then, we stick it in the correct bin
       output_func(event).each do |output|
         acc[output] << event
       end
-
-      outputs_events
-    end
-
-    outputs_events.each do |output, events|
-      # Once we have a mapping of outputs => [events] we can execute them
-      output.multi_handle(events)
+      acc
     end
     # Now that we have our output to event mapping we can just invoke each output
     # once with its list of events
