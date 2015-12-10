@@ -4,7 +4,7 @@ require "logstash/util"
 require "concurrent"
 
 module LogStash module Instrument module PeriodicPoller
-  class AbstractPoller
+  class Base
     include LogStash::Util::Loggable
 
     DEFAULT_OPTIONS = {

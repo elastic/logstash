@@ -1,8 +1,8 @@
 # encoding: utf-8
-require "logstash/instrument/periodic_poller/abstract_poller"
+require "logstash/instrument/periodic_poller/base"
 
 module LogStash module Instrument module PeriodicPoller
-  class JVM < AbstractPoller
+  class JVM < Base
     def initialize(metric, options = {})
       super(metric, options)
     end

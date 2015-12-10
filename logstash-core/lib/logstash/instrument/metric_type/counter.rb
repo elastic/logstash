@@ -1,11 +1,13 @@
 # encoding: utf-8
+require "logstash/instrument/metric_type/base"
 require "concurrent"
-module LogStash module Instrument module MetricType
-  class Counter
-    attr_reader :key
-    def initialize(key, value = 0)
-      @key = key
 
+module LogStash module Instrument module MetricType
+  class Counter < Base
+    def initialize(namespaces, key, value = 0)
+      super(namespaces, key)
+
+      # TODO
       # This should be a `LongAdder`,
       # will have to create a rubyext for it and support jdk7
       # look at the elasticsearch source code.
@@ -22,12 +24,29 @@ module LogStash module Instrument module MetricType
       @counter.decrement(value)
     end
 
-    def execute(type, key, action, time, value)
+    def execute(action, value = 1)
       @counter.send(action, value)
     end
 
+    def value
+      @counter.value
+    end
+
+    def to_hash
+      { 
+        "namespaces" => @namespaces,
+        "key" => @key,
+        "type" => type,
+        "value" => value 
+      }
+    end
+    
+    def to_event(created_at = Time.now)
+      LogStash::Event.new(to_hash.merge({ "@timestamp" => created_at }))
+    end
+
     def inspect
-      "#{self.class.name} - key: #{key} value: #{@counter.value}"
+      "#{self.class.name} - namespaces: #{namespaces} key: #{@key} value: #{value}"
     end
   end
 end; end; end
