@@ -24,7 +24,7 @@ namespace "test" do
     # logstash-core-event specs since currently this is the most complete Event and Timestamp specs
     # which actually defines the Event contract and should pass regardless of the actuall underlying
     # implementation.
-    specs = ["spec/**/*_spec.rb", "logstash-core/spec/**/*_spec.rb", "logstash-core-event/spec/**/*_spec.rb"]
+    specs = ["spec/unit/**/*_spec.rb"]
 
     # figure if the logstash-core-event-java gem is loaded and if so add its specific specs in the core specs to run
     begin
@@ -34,7 +34,7 @@ namespace "test" do
       # logstash-core-event-java gem is not live, ignore and skip specs
     end
 
-    Rake::FileList[*specs]
+    Rake::FileList["spec/unit/**/*_spec.rb"]
   end
 
   desc "run core specs"
@@ -112,7 +112,7 @@ namespace "test" do
     integration_path = File.join(source, "integration_run")
     FileUtils.rm_rf(integration_path)
 
-    exit(RSpec::Core::Runner.run([Rake::FileList["integration/**/*_spec.rb"]]))
+    exit(RSpec::Core::Runner.run([Rake::FileList["spec/integration/**/*_spec.rb"]]))
   end
 
   namespace "integration" do
@@ -124,7 +124,7 @@ namespace "test" do
       FileUtils.mkdir_p(integration_path)
 
       puts "[integration_spec] configuring local environment for running test in #{integration_path}, if you want to change this behavior delete the directory."
-      exit(RSpec::Core::Runner.run([Rake::FileList["integration/**/*_spec.rb"]]))
+      exit(RSpec::Core::Runner.run([Rake::FileList["spec/integration/**/*_spec.rb"]]))
     end
   end
 end
