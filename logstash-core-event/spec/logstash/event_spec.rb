@@ -337,10 +337,10 @@ describe LogStash::Event do
       end
 
       it "should tag for invalid value" do
-        event = LogStash::Event.new("@timestamp" => :foo)
+        event = LogStash::Event.new("@timestamp" => "foo")
         expect(event.timestamp.to_i).to be_within(1).of Time.now.to_i
         expect(event["tags"]).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
-        expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq(:foo)
+        expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq("foo")
 
         event = LogStash::Event.new("@timestamp" => 666)
         expect(event.timestamp.to_i).to be_within(1).of Time.now.to_i
