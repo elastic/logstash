@@ -68,7 +68,7 @@ class LogStash::Agent
   end
 
   def stop_webserver
-    @webserver.stop(:graceful => true)
+    @webserver.stop
   end
 
   def start_background_services
