@@ -1,7 +1,11 @@
 #!/bin/sh
 
 unset CDPATH
-. "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
+DIR=`dirname "$0"`
+cd "${DIR}/.."
+LOGSTASH_ROOT=$(pwd)
+
+. "${LOGSTASH_ROOT}/bin/logstash.lib.sh"
 setup
 
 # bin/plugin is a short lived ruby script thus we can use aggressive "faster starting JRuby options"

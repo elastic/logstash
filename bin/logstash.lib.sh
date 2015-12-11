@@ -1,7 +1,7 @@
 unset CDPATH
 # This unwieldy bit of scripting is to try to catch instances where Logstash
 # was launched from a symlink, rather than a full path to the Logstash binary
-if [ -L $0 ]; then
+if [ -L "$0" ]; then
   # Launched from a symlink
   # --Test for the readlink binary
   RL=$(which readlink)
@@ -23,7 +23,10 @@ else
   SOURCEPATH=$0
 fi
 
-LOGSTASH_HOME=$(cd `dirname $SOURCEPATH`/..; pwd)
+#LOGSTASH_HOME=$(cd `dirname $SOURCEPATH`/..; pwd)
+DIR=`dirname "$SOURCEPATH"`
+cd "${DIR}/.."
+LOGSTASH_HOME="$(pwd)"
 export LOGSTASH_HOME
 
 # Defaults you can override with environment variables
