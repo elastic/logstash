@@ -16,6 +16,16 @@ require "logstash/shutdown_controller"
 module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :input_to_filter, :filter_to_output
 
+  def self.config_valid?(config_str)
+    begin
+      # There should be a better way to test this ideally
+      self.new(config_str)
+      true
+    rescue Exception => e
+      e
+    end
+  end
+
   def initialize(config_str, settings = {})
     @logger = Cabin::Channel.get(LogStash)
 

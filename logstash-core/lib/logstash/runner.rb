@@ -25,7 +25,7 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.config-string",
            :default_input => LogStash::Config::Defaults.input,
            :default_output => LogStash::Config::Defaults.output),
-    :default => "", :attribute_name => :config_string
+    :default => nil, :attribute_name => :config_string
 
   option ["-w", "--filterworkers"], "COUNT",
     I18n.t("logstash.runner.flag.filterworkers"),
@@ -106,34 +106,26 @@ class LogStash::Runner < Clamp::Command
 
     return start_shell(@ruby_shell, binding) if @ruby_shell
 
-    @agent = create_agent
-    if !@agent
-      @logger.fatal("Could not load specified agent",
-                    :agent_name => agent_name,
-                    :valid_agent_names => LogStash::AgentPluginRegistry.available.map(&:to_s))
-      return 1
-    end
-
-    if (config_string.nil? || config_string.empty?) && config_path.nil?
+    if config_string.nil? && config_path.nil?
       fail(I18n.t("logstash.runner.missing-configuration"))
     end
 
-    config_loader = LogStash::Config::Loader.new(@logger, config_test?)
-    config_str = config_loader.format_config(config_path, config_string)
-
     if config_test?
-      config_error = @agent.config_valid?(config_str)
-      if config_error
+      config_loader = LogStash::Config::Loader.new(@logger, config_test?)
+      config_str = config_loader.format_config(config_path, config_string)
+      config_error = LogStash::Pipeline.config_valid?(config_str)
+      if config_error == true
+        @logger.terminal "Configuration OK"
+        return 0
+      else
         @logger.fatal I18n.t("logstash.error", :error => config_error)
         return 1
-      else
-        @logger.terminal "Configuration OK"
       end
-    else
-      @agent.add_pipeline("base", config_str, :filter_workers => filter_workers)
-      task = Stud::Task.new { @agent.execute }
-      return task.wait
     end
+
+    @agent = create_agent(@logger, config_string, config_path)
+    task = Stud::Task.new { @agent.execute }
+    return task.wait
 
   rescue LoadError => e
     fail("Configuration problem.")
@@ -141,6 +133,11 @@ class LogStash::Runner < Clamp::Command
     @logger.warn I18n.t("logstash.runner.configtest-flag-information")
     @logger.fatal I18n.t("logstash.error", :error => e)
     show_short_help
+    return 1
+  rescue MissingAgentError => e
+    @logger.fatal("Could not load specified agent",
+                  :agent_name => agent_name,
+                  :valid_agent_names => LogStash::AgentPluginRegistry.available.map(&:to_s))
     return 1
   rescue => e
     @logger.fatal I18n.t("oops", :error => e)
@@ -198,12 +195,10 @@ class LogStash::Runner < Clamp::Command
     end
   end
 
-  def create_agent
+  def create_agent(*args)
     agent_class = LogStash::AgentPluginRegistry.lookup(agent_name)
-
-
     @logger.info("Creating new agent", :class => agent_class)
-    agent_class ? agent_class.new(@logger) : nil
+    agent_class.new(*args)
   end
 
   # Point logging at a specific path.

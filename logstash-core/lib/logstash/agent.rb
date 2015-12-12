@@ -12,26 +12,35 @@ LogStash::Environment.load_locale!
 class LogStash::Agent
   attr_reader :logger
 
-  def initialize(logger)
+  def initialize(logger, config_string, config_path)
     @logger = logger
     @pipelines = {}
-  end
-
-  def config_valid?(config_str)
-    begin
-      # There should be a better way to test this ideally
-      LogStash::Pipeline.new(config_str)
-    rescue Exception => e
-      e
-    end
+    @pipeline_threads = {}
+    @state = ""
+    @config_loader = LogStash::Config::Loader.new(@logger, false)
+    @config_str = config_string
+    @config_path = config_path
   end
 
   def execute
-    # Make SIGINT/SIGTERM shutdown the pipeline.
     sigint_id = trap_sigint()
     sigterm_id = trap_sigterm()
 
-    @pipelines.each {|_, p| p.run } # blocking operation. works now because size <= 1
+    @logger.info "starting agent"
+    loop do
+      new_state = fetch_state
+      if valid_state?(new_state)
+        if new_state?(@state, new_state)
+          @logger.info "new state: #{new_state}"
+          upgrade_state(new_state)
+        else
+          @logger.debug("same state, ignoring..")
+        end
+      else
+        @logger.error("invalid state #{new_state}")
+      end
+      sleep 10
+    end
     return 0
   rescue => e
     @logger.fatal I18n.t("oops", :error => e)
@@ -40,10 +49,44 @@ class LogStash::Agent
   ensure
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?
     Stud::untrap("TERM", sigterm_id) unless sigterm_id.nil?
-  end # def execute
+  end
 
   def add_pipeline(pipeline_id, config_str, settings = {})
     @pipelines[pipeline_id] = LogStash::Pipeline.new(config_str, settings)
+  end
+
+  def start_pipeline(id)
+    return unless @pipelines[id]
+    @logger.info("starting pipeline", :id => id)
+    @pipeline_threads[id] = Thread.new do
+      LogStash::Util.set_thread_name("pipeline.#{id}")
+      @pipelines[id].run
+    end
+  end
+
+  def stop_pipeline(id)
+    return unless @pipelines[id]
+    @logger.info("stopping pipeline", :id => id)
+    @pipelines[id].shutdown do
+      # TODO uncomment once shutdown controller can be stopped
+      #LogStash::ShutdownController.start(@pipelines[id])
+    end
+    @pipeline_threads[id].join
+  end
+
+  def shutdown_pipeline(id)
+    return unless @pipelines[id]
+    @pipelines[id].shutdown do
+      ::LogStash::ShutdownController.start(@pipelines[id])
+    end
+  end
+
+  def shutdown_pipelines
+    @pipelines.each do |_, pipeline|
+      pipeline.shutdown do
+        ::LogStash::ShutdownController.start(pipeline)
+      end
+    end
   end
 
   private
@@ -58,12 +101,30 @@ class LogStash::Agent
     raise LogStash::ConfigurationError, message
   end # def fail
 
-  def shutdown_pipelines
-    @pipelines.each do |_, pipeline|
-      pipeline.shutdown do
-        ::LogStash::ShutdownController.start(pipeline)
-      end
-    end
+  def fetch_state
+    @config_loader.format_config(@config_path, @config_string)
+  end
+
+  def valid_state?(new_state)
+    new_state.is_a?(String)
+  end
+
+  def new_state?(old_state, new_state)
+    old_state != new_state
+  end
+
+  def upgrade_state(new_state)
+    stop_pipeline("base")
+    add_pipeline("base", new_state)
+  rescue Exception => e
+    @logger.error("failed to update state", :new_state => new_state, :message => e.message, :backtrace => e.backtrace)
+    @logger.warn("reverting to previous state", :state => @state)
+    add_pipeline("base", @state) unless @state.empty?
+    @state
+  else
+    @state = new_state
+  ensure
+    start_pipeline("base")
   end
 
   def trap_sigterm
