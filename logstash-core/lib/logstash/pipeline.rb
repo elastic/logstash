@@ -27,6 +27,16 @@ module LogStash; class Pipeline
     :flush_timeout_interval => 60 # in seconds
   }
 
+  def self.config_valid?(config_str)
+    begin
+      # There should be a better way to test this ideally
+      self.new(config_str)
+      true
+    rescue Exception => e
+      e
+    end
+  end
+
   def initialize(config_str, settings = {})
     @pipeline_id = settings[:pipeline_id] || self.object_id
     @logger = Cabin::Channel.get(LogStash)
