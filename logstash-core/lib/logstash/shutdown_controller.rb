@@ -35,7 +35,10 @@ module LogStash
 
     def self.start(pipeline, cycle_period=CHECK_EVERY, report_every=REPORT_EVERY, abort_threshold=ABORT_AFTER)
       controller = self.new(pipeline, cycle_period, report_every, abort_threshold)
-      Thread.new(controller) { |controller| controller.start }
+
+      thread = Thread.new(controller) { |controller| controller.start }
+
+      [thread, controller]
     end
 
     def logger
@@ -43,6 +46,8 @@ module LogStash
     end
 
     def start
+      sleep 0.1 while !@pipeline.ready?
+
       sleep(@cycle_period)
       cycle_number = 0
       stalled_count = 0
