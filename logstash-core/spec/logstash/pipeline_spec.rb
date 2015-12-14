@@ -345,7 +345,10 @@ describe LogStash::Pipeline do
       Thread.new { pipeline.run }
       sleep 0.1 while !pipeline.ready?
       # give us a bit of time to flush the events
-      wait(5).for { output.events.first["message"].split("\n").count }.to eq(number_of_events)
+      wait(5).for do
+        next unless output && output.events && output.events.first
+        output.events.first["message"].split("\n").count
+      end.to eq(number_of_events)
       pipeline.shutdown
     end
   end
