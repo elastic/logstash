@@ -82,19 +82,13 @@ class LogStash::Agent
     return unless @pipelines[id]
     @logger.warn("stopping pipeline", :id => id)
     @pipelines[id].shutdown do
-      # TODO uncomment once shutdown controller can be stopped
-      #LogStash::ShutdownController.start(@pipelines[id])
+      LogStash::ShutdownController.start(@pipelines[id], @pipeline_threads[id])
     end
     @pipeline_threads[id].join
   end
 
   def shutdown_pipelines
-    @pipelines.each do |id, pipeline|
-      stop_pipeline(id)
-      #pipeline.shutdown do
-      #  ::LogStash::ShutdownController.start(pipeline)
-      #end
-    end
+    @pipelines.each { |id, _| stop_pipeline(id) }
   end
 
   def running_pipelines?

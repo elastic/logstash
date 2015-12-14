@@ -104,6 +104,7 @@ module LogStash; class Pipeline
   end
 
   def run
+    @thread = Thread.current
     @logger.terminal(LogStash::Util::DefaultsPrinter.print(@settings))
 
     begin
@@ -295,15 +296,7 @@ module LogStash; class Pipeline
 
   # initiate the pipeline shutdown sequence
   # this method is intended to be called from outside the pipeline thread
-  # @param before_stop [Proc] code block called before performing stop operation on input plugins
   def shutdown(&before_stop)
-    # shutdown can only start once the pipeline has completed its startup.
-    # avoid potential race conditoon between the startup sequence and this
-    # shutdown method which can be called from another thread at any time
-    sleep(0.1) while !ready?
-
-    # TODO: should we also check against calling shutdown multiple times concurently?
-
     before_stop.call if block_given?
 
     @inputs.each(&:do_stop)
