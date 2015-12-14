@@ -166,6 +166,10 @@ en:
           Check configuration for valid syntax and then exit.
         filterworkers: |+
           Sets the number of filter workers to run.
+        auto_reload: |+
+          Monitor configuration changes and reload
+          whenever it is changed.
+          NOTE: use SIGHUP to manually reload the config
         log: |+
           Write logstash internal logs to the given
           file. Without this flag, logstash will emit
