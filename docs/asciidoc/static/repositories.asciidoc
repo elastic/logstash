@@ -74,7 +74,7 @@ in a file with a `.repo` suffix, for example `logstash.repo`
 name=Logstash repository for {branch}.x packages
 baseurl=http://packages.elastic.co/logstash/{branch}/centos
 gpgcheck=1
-gpgkey=http://packages.elastic.co/GPG-KEY-elasticsearch
+gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
 enabled=1
 --------------------------------------------------
 
