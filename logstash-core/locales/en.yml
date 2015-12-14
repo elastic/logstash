@@ -171,6 +171,10 @@ en:
         pipeline-batch-delay: |+
           When creating pipeline batches, how long to wait while polling
           for the next event.
+        auto_reload: |+
+          Monitor configuration changes and reload
+          whenever it is changed.
+          NOTE: use SIGHUP to manually reload the config
         log: |+
           Write logstash internal logs to the given
           file. Without this flag, logstash will emit
