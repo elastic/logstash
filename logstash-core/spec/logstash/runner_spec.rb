@@ -27,6 +27,7 @@ describe LogStash::Runner do
 
       before do
         allow(agent).to receive(:logger=).with(anything)
+        allow(agent).to receive(:shutdown)
       end
 
       it "should execute the agent" do
