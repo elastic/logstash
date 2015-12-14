@@ -84,6 +84,10 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.agent"),
     :attribute_name => :agent_name, :default => LogStash::AgentPluginRegistry::DEFAULT_AGENT_NAME
 
+  option ["-r", "--[no-]auto-reload"], :flag,
+    I18n.t("logstash.runner.flag.auto_reload"),
+    :attribute_name => :auto_reload, :default => false
+
   def initialize(*args)
     super(*args)
     @pipeline_settings ||= { :pipeline_id => "main" }
@@ -163,9 +167,24 @@ class LogStash::Runner < Clamp::Command
       end
     end
 
-    @agent = create_agent(@logger, config_string, config_path)
-    task = Stud::Task.new { @agent.execute }
-    return task.wait
+    @agent = create_agent(:logger => @logger,
+                          :config_string => config_string,
+                          :config_path => config_path,
+                          :auto_reload => @auto_reload)
+
+    # enable sigint/sigterm before starting the agent
+    # to properly handle a stalled agent
+    sigint_id = trap_sigint()
+    sigterm_id = trap_sigterm()
+
+    @agent_task = Stud::Task.new { @agent.execute }
+
+    # no point in enabling config reloading before the agent starts
+    sighup_id = trap_sighup()
+
+    @agent_task.wait
+
+    @agent.shutdown
 
   rescue LoadError => e
     fail("Configuration problem.")
@@ -183,6 +202,9 @@ class LogStash::Runner < Clamp::Command
     @logger.fatal I18n.t("oops", :error => e)
     @logger.debug e.backtrace if $DEBUGLIST.include?("stacktrace")
   ensure
+    Stud::untrap("INT", sigint_id) unless sigint_id.nil?
+    Stud::untrap("TERM", sigterm_id) unless sigterm_id.nil?
+    Stud::untrap("HUP", sighup_id) unless sighup_id.nil?
     @log_fd.close if @log_fd
   end # def self.main
 
@@ -312,4 +334,33 @@ class LogStash::Runner < Clamp::Command
       fail(I18n.t("logstash.runner.invalid-shell"))
     end
   end
+
+  def trap_sighup
+    Stud::trap("HUP") do
+      @logger.warn(I18n.t("logstash.agent.sighup"))
+      @agent.reload_state
+    end
+  end
+
+  def trap_sigterm
+    Stud::trap("TERM") do
+      @logger.warn(I18n.t("logstash.agent.sigterm"))
+      @agent_task.stop!
+    end
+  end
+
+  def trap_sigint
+    Stud::trap("INT") do
+      if @interrupted_once
+        @logger.fatal(I18n.t("logstash.agent.forced_sigint"))
+        exit
+      else
+        @logger.warn(I18n.t("logstash.agent.sigint"))
+        Thread.new(@logger) {|logger| sleep 5; logger.warn(I18n.t("logstash.agent.slow_shutdown")) }
+        @interrupted_once = true
+        @agent_task.stop!
+      end
+    end
+  end
+
 end # class LogStash::Runner

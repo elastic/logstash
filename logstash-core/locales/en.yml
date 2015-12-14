@@ -60,9 +60,9 @@ en:
       sighup: >-
         SIGHUP received.
       sigint: >-
-        SIGINT received. Shutting down the pipeline.
+        SIGINT received. Shutting down the agent.
       sigterm: >-
-        SIGTERM received. Shutting down the pipeline.
+        SIGTERM received. Shutting down the agent.
       slow_shutdown: |-
         Received shutdown signal, but pipeline is still waiting for in-flight events
         to be processed. Sending another ^C will force quit Logstash, but this may cause
@@ -171,6 +171,10 @@ en:
         pipeline-batch-delay: |+
           When creating pipeline batches, how long to wait while polling
           for the next event.
+        auto_reload: |+
+          Monitor configuration changes and reload
+          whenever it is changed.
+          NOTE: use SIGHUP to manually reload the config
         log: |+
           Write logstash internal logs to the given
           file. Without this flag, logstash will emit
