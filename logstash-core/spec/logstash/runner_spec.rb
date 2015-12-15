@@ -17,15 +17,21 @@ describe LogStash::Runner do
   end
 
   describe "argument parsing" do
-
     subject { LogStash::Runner.new("") }
     context "when -e is given" do
 
-      let(:args) { ["-e", ""] }
+      let(:args) { ["-e", "input {} output {}"] }
+      let(:agent) { double("agent") }
+      let(:agent_logger) { double("agent logger") }
+
+      before do
+        allow(agent).to receive(:logger=).with(anything)
+      end
 
       it "should execute the agent" do
-        expect(subject.agent).to receive(:add_pipeline).once
-        expect(subject.agent).to receive(:execute).once
+        expect(subject).to receive(:create_agent).and_return(agent)
+        expect(agent).to receive(:add_pipeline).once
+        expect(agent).to receive(:execute).once
         subject.run(args)
       end
     end
@@ -33,44 +39,28 @@ describe LogStash::Runner do
     context "with no arguments" do
       let(:args) { [] }
       it "should show help" do
-        expect(subject).to receive(:show_short_help).once
-        expect(channel).to receive(:fatal).once
         expect(channel).to receive(:warn).once
+        expect(channel).to receive(:fatal).once
+        expect(subject).to receive(:show_short_help).once
         subject.run(args)
       end
     end
   end
 
-  context "when loading the configuration" do
+  context "--agent" do
+    class DummyAgent < LogStash::Agent; end
+
+    let(:agent_name) { "testagent" }
     subject { LogStash::Runner.new("") }
-    context "when local" do
-      before { expect(subject).to receive(:local_config).with(path) }
 
-      context "unix" do
-        let(:path) { './test.conf' }
-        it 'works with relative path' do
-          subject.load_config(path)
-        end
-      end
-
-      context "windows" do
-        let(:path) { '.\test.conf' }
-        it 'work with relative windows path' do
-          subject.load_config(path)
-        end
-      end
+    before do
+      LogStash::AgentPluginRegistry.register(agent_name, DummyAgent)
+      allow(subject).to receive(:execute) # stub this out to reduce test work/output
+      subject.run(["-a", "testagent", "-e" "input {} output {}"])
     end
 
-    context "when remote" do
-      context 'supported scheme' do
-        let(:path) { "http://test.local/superconfig.conf" }
-        let(:dummy_config) { 'input {}' }
-
-        before { expect(Net::HTTP).to receive(:get) { dummy_config } }
-        it 'works with http' do
-          expect(subject.load_config(path)).to eq("#{dummy_config}\n")
-        end
-      end
+    it "should set the proper agent" do
+      expect(subject.create_agent.class).to eql(DummyAgent)
     end
   end
 

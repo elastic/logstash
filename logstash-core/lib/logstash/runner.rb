@@ -10,12 +10,12 @@ require "logstash/environment"
 LogStash::Environment.load_locale!
 
 require "logstash/namespace"
+require "logstash/agent_plugin_registry"
 require "logstash/agent"
+require "logstash/config/defaults"
 
 class LogStash::Runner < Clamp::Command
-
-  DEFAULT_INPUT = "input { stdin { type => stdin } }"
-  DEFAULT_OUTPUT = "output { stdout { codec => rubydebug } }"
+  class MissingAgentError < StandardError; end # Raised when the user asks for an agent plugin that doesn't exist
 
   option ["-f", "--config"], "CONFIG_PATH",
     I18n.t("logstash.runner.flag.config"),
@@ -23,7 +23,8 @@ class LogStash::Runner < Clamp::Command
 
   option "-e", "CONFIG_STRING",
     I18n.t("logstash.runner.flag.config-string",
-           :default_input => DEFAULT_INPUT, :default_output => DEFAULT_OUTPUT),
+           :default_input => LogStash::Config::Defaults.input,
+           :default_output => LogStash::Config::Defaults.output),
     :default => "", :attribute_name => :config_string
 
   option ["-w", "--filterworkers"], "COUNT",
@@ -65,10 +66,15 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.rubyshell"),
     :attribute_name => :ruby_shell
 
+  option ["-a", "--agent"], "AGENT",
+    I18n.t("logstash.runner.flag.agent"),
+    :attribute_name => :agent_name, :default => LogStash::AgentPluginRegistry::DEFAULT_AGENT_NAME
+
   attr_reader :agent
 
   def initialize(*args)
-    @agent = LogStash::Agent.new
+    LogStash::AgentPluginRegistry.load_all
+    @logger = Cabin::Channel.get(LogStash)
     super(*args)
   end
 
@@ -77,8 +83,6 @@ class LogStash::Runner < Clamp::Command
     require "logstash/util/java_version"
     require "stud/task"
     require "cabin" # gem 'cabin'
-
-    @logger = Cabin::Channel.get(LogStash)
 
     LogStash::Util::set_thread_name(self.class.name)
 
@@ -102,19 +106,31 @@ class LogStash::Runner < Clamp::Command
 
     return start_shell(@ruby_shell, binding) if @ruby_shell
 
-    if @config_string.nil? && @config_path.nil?
+    @agent = create_agent
+    if !@agent
+      @logger.fatal("Could not load specified agent",
+                    :agent_name => agent_name,
+                    :valid_agent_names => LogStash::AgentPluginRegistry.available.map(&:to_s))
+      return 1
+    end
+
+    if (config_string.nil? || config_string.empty?) && config_path.nil?
       fail(I18n.t("logstash.runner.missing-configuration"))
     end
 
-    @agent.logger = @logger
-
-    config_string = format_config(@config_path, @config_string)
-
-    @agent.add_pipeline("base", config_string, :filter_workers => filter_workers)
+    config_loader = LogStash::Config::Loader.new(@logger, config_test?)
+    config_str = config_loader.format_config(config_path, config_string)
 
     if config_test?
-      puts "Configuration OK"
+      config_error = @agent.config_valid?(config_str)
+      if config_error
+        @logger.fatal I18n.t("logstash.error", :error => config_error)
+        return 1
+      else
+        @logger.terminal "Configuration OK"
+      end
     else
+      @agent.add_pipeline("base", config_str, :filter_workers => filter_workers)
       task = Stud::Task.new { @agent.execute }
       return task.wait
     end
@@ -122,10 +138,8 @@ class LogStash::Runner < Clamp::Command
   rescue LoadError => e
     fail("Configuration problem.")
   rescue LogStash::ConfigurationError => e
+    @logger.warn I18n.t("logstash.runner.configtest-flag-information")
     @logger.fatal I18n.t("logstash.error", :error => e)
-    if !config_test?
-      @logger.warn I18n.t("logstash.runner.configtest-flag-information")
-    end
     show_short_help
     return 1
   rescue => e
@@ -184,6 +198,14 @@ class LogStash::Runner < Clamp::Command
     end
   end
 
+  def create_agent
+    agent_class = LogStash::AgentPluginRegistry.lookup(agent_name)
+
+
+    @logger.info("Creating new agent", :class => agent_class)
+    agent_class ? agent_class.new(@logger) : nil
+  end
+
   # Point logging at a specific path.
   def configure_logging(path)
     # Set with the -v (or -vv...) flag
@@ -230,93 +252,6 @@ class LogStash::Runner < Clamp::Command
     # TODO(sissel): redirect stdout/stderr to the log as well
     # http://jira.codehaus.org/browse/JRUBY-7003
   end # def configure_logging
-
-  def format_config(config_path, config_string)
-    config_string = config_string.to_s
-    if config_path
-      # Append the config string.
-      # This allows users to provide both -f and -e flags. The combination
-      # is rare, but useful for debugging.
-      config_string = config_string + load_config(config_path)
-    else
-      # include a default stdin input if no inputs given
-      if config_string !~ /input *{/
-        config_string += DEFAULT_INPUT
-      end
-      # include a default stdout output if no outputs given
-      if config_string !~ /output *{/
-        config_string += DEFAULT_OUTPUT
-      end
-    end
-    config_string
-  end
-
-  def load_config(path)
-    begin
-      uri = URI.parse(path)
-
-      case uri.scheme
-      when nil then
-        local_config(path)
-      when /http/ then
-        fetch_config(uri)
-      when "file" then
-        local_config(uri.path)
-      else
-        fail(I18n.t("logstash.runner.configuration.scheme-not-supported", :path => path))
-      end
-    rescue URI::InvalidURIError
-      # fallback for windows.
-      # if the parsing of the file failed we assume we can reach it locally.
-      # some relative path on windows arent parsed correctly (.\logstash.conf)
-      local_config(path)
-    end
-  end
-
-  def local_config(path)
-    path = File.expand_path(path)
-    path = File.join(path, "*") if File.directory?(path)
-
-    if Dir.glob(path).length == 0
-      fail(I18n.t("logstash.runner.configuration.file-not-found", :path => path))
-    end
-
-    config = ""
-    encoding_issue_files = []
-    Dir.glob(path).sort.each do |file|
-      next unless File.file?(file)
-      if file.match(/~$/)
-        @logger.debug("NOT reading config file because it is a temp file", :config_file => file)
-        next
-      end
-      @logger.debug("Reading config file", :config_file => file)
-      cfg = File.read(file)
-      if !cfg.ascii_only? && !cfg.valid_encoding?
-        encoding_issue_files << file
-      end
-      config << cfg + "\n"
-      if config_test?
-        @logger.debug? && @logger.debug("\nThe following is the content of a file", :config_file => file.to_s)
-        @logger.debug? && @logger.debug("\n" + cfg + "\n\n")
-      end
-    end
-    if (encoding_issue_files.any?)
-      fail("The following config files contains non-ascii characters but are not UTF-8 encoded #{encoding_issue_files}")
-    end
-    if config_test?
-      @logger.debug? && @logger.debug("\nThe following is the merged configuration")
-      @logger.debug? && @logger.debug("\n" + config + "\n\n")
-    end
-    return config
-  end # def load_config
-
-  def fetch_config(uri)
-    begin
-      Net::HTTP.get(uri) + "\n"
-    rescue Exception => e
-      fail(I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => e.message))
-    end
-  end
 
   # Emit a failure message and abort.
   def fail(message)

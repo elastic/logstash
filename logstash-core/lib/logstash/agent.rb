@@ -3,17 +3,27 @@ require "logstash/environment"
 require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
 require "logstash/pipeline"
+require "logstash/config/loader"
 require "uri"
 require "stud/trap"
 
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
+  attr_reader :logger
 
-  attr_writer :logger
-
-  def initialize
+  def initialize(logger)
+    @logger = logger
     @pipelines = {}
+  end
+
+  def config_valid?(config_str)
+    begin
+      # There should be a better way to test this ideally
+      LogStash::Pipeline.new(config_str)
+    rescue Exception => e
+      e
+    end
   end
 
   def execute
