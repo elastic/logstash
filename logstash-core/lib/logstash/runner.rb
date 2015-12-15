@@ -67,7 +67,7 @@ class LogStash::Runner < Clamp::Command
     :attribute_name => :config_test
 
   option "--[no-]allow-unsafe-shutdown", :flag,
-    I18n.t("logstash.agent.flag.unsafe_shutdown"),
+    I18n.t("logstash.runner.flag.unsafe_shutdown"),
     :attribute_name => :unsafe_shutdown,
     :default => false
 
