@@ -3,17 +3,22 @@ require "logstash/environment"
 require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
 require "logstash/pipeline"
-require "uri"
 require "stud/trap"
+require "uri"
+require "socket"
+require "securerandom"
 
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
 
   attr_writer :logger
+  attr_reader :node_name
 
-  def initialize
+  def initialize(options = {})
     @pipelines = {}
+     
+    @node_name = options[:node_name] || Socket.gethostname
   end
 
   def execute
@@ -34,6 +39,10 @@ class LogStash::Agent
 
   def add_pipeline(pipeline_id, config_str, settings = {})
     @pipelines[pipeline_id] = LogStash::Pipeline.new(config_str, settings.merge(:pipeline_id => pipeline_id))
+  end
+
+  def node_uuid
+    @node_uuid ||= SecureRandom.uuid
   end
 
   private
