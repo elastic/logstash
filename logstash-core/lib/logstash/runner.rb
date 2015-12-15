@@ -75,18 +75,19 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.rubyshell"),
     :attribute_name => :ruby_shell
 
-  attr_reader :agent
+  option ["-n", "--node-name"], "NAME", 
+    I18n.t("logstash.runner.flag.node_name"),
+    :attribute_name => :node_name
 
-  def initialize(*args)
-    @agent = LogStash::Agent.new
-    super(*args)
-  end
+  attr_reader :agent
 
   def execute
     require "logstash/util"
     require "logstash/util/java_version"
     require "stud/task"
     require "cabin" # gem 'cabin'
+
+    @agent = LogStash::Agent.new({ :node_name => node_name })
 
     @logger = Cabin::Channel.get(LogStash)
 
