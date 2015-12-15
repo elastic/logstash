@@ -46,12 +46,14 @@ module LogStash
     end
 
     def start
-      sleep 0.1 while !@pipeline.ready?
+      sleep 0.1 until @pipeline.ready?
 
       sleep(@cycle_period)
       cycle_number = 0
       stalled_count = 0
-      Stud.interval(@cycle_period) do
+      while Stud.stoppable_sleep(@cycle_period, 0.1) { @pipeline.ready? } do
+        break unless @pipeline.ready?
+
         @reports << pipeline_report_snapshot
         @reports.delete_at(0) if @reports.size > @report_every # expire old report
         if cycle_number == (@report_every - 1) # it's report time!

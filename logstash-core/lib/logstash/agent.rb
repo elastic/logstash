@@ -49,12 +49,12 @@ class LogStash::Agent
   end # def fail
 
   def shutdown_pipelines
-    @pipelines.each do |_, pipeline|
-      thread, shutdown_controller = ::LogStash::ShutdownController.start(pipeline)
+    @pipelines.map do |_, pipeline|
+      sc_thread, shutdown_controller = ::LogStash::ShutdownController.start(pipeline)
       pipeline.shutdown
-      shutdown_controller.stop
-      thread.join
-    end
+      sc_thread
+    end.each(&:join)
+    @logger.warn("Pipeline Shutdown controllers shut down")
   end
 
   def trap_sigterm

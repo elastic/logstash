@@ -14,6 +14,7 @@ describe LogStash::ShutdownController do
 
   before :each do
     allow(pipeline).to receive(:reporter).and_return(reporter)
+    allow(pipeline).to receive(:ready?).and_return(true)
     allow(reporter).to receive(:snapshot).and_return(reporter_snapshot)
     allow(reporter_snapshot).to receive(:o_simple_hash).and_return({})
 

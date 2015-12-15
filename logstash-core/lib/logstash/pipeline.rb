@@ -79,6 +79,10 @@ module LogStash; class Pipeline
     @ready.value
   end
 
+  def running?
+    @running.value
+  end
+
   def configure(setting, value)
     @settings[setting] = value
   end
@@ -118,28 +122,36 @@ module LogStash; class Pipeline
   end
 
   def run
-    LogStash::Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
-    @logger.terminal(LogStash::Util::DefaultsPrinter.print(@settings))
+    begin
+      LogStash::Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
+      @logger.terminal(LogStash::Util::DefaultsPrinter.print(@settings))
 
-    start_workers
+      start_workers
 
-    @logger.info("Pipeline started")
-    @logger.terminal("Logstash startup completed")
+      @logger.info("Pipeline started")
+      @logger.terminal("Logstash startup completed")
 
-    # Block until all inputs have stopped
-    # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
+      # Block until all inputs have stopped
+      # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
 
-    @running.make_true
-    wait_inputs
-    @running.make_false
+      @running.make_true
+      wait_inputs
+      @running.make_false
 
-    @logger.info("Input plugins stopped! Will shutdown filter/output workers.")
+      @logger.info("Input plugins stopped! Will shutdown filter/output workers.")
 
-    shutdown_flusher
-    shutdown_workers
+      shutdown_flusher
+      shutdown_workers
 
-    @logger.info("Pipeline shutdown complete.")
-    @logger.terminal("Logstash shutdown completed")
+      @logger.info("Pipeline shutdown complete.")
+      @logger.terminal("Logstash shutdown completed")
+
+      # Exit code
+      return 0
+    rescue Exception => e
+      @running.make_false
+      @ready.make_false
+    end
 
     # exit code
     return 0
