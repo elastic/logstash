@@ -10,7 +10,7 @@ require "stud/trap"
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
-  attr_reader :logger
+  attr_reader :logger, :state
 
   def initialize(params)
     @logger = params[:logger]
@@ -18,19 +18,27 @@ class LogStash::Agent
     @pipeline_threads = {}
     @state = clean_state
     @config_loader = LogStash::Config::Loader.new(@logger, false)
-    @config_str = params[:config_string]
+    @config_string = params[:config_string]
     @config_path = params[:config_path]
     @auto_reload = params[:auto_reload]
+    @reload_interval = params[:reload_interval] || 5 # seconds
   end
 
   def execute
     @thread = Thread.current
     @logger.info("starting agent", :state => @state)
-    reload_state!
+
     if @auto_reload
-      Stud.interval(5) { reload_state! }
+      Stud.interval(@reload_interval) do
+        break unless clean_state? || running_pipelines?
+        reload_state!
+      end
     else
-      sleep 0.5 until Stud.stop?
+      reload_state!
+      while !Stud.stop?
+        break unless clean_state? || running_pipelines?
+        sleep 0.5
+      end
     end
   end
 
@@ -89,11 +97,15 @@ class LogStash::Agent
     end
   end
 
+  def running_pipelines?
+    @pipeline_threads.select {|_, pipeline| pipeline.alive? }.any?
+  end
+
   # Override the methods below if you're implementing your own agent
   def upgrade_state(new_state)
     stop_pipeline("base")
     add_pipeline("base", new_state)
-  rescue Exception => e
+  rescue => e
     @logger.error("failed to update state", :new_state => new_state, :message => e.message, :backtrace => e.backtrace)
     @logger.warn("reverting to previous state", :state => @state)
     add_pipeline("base", @state) unless clean_state?
