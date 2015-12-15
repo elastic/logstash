@@ -70,6 +70,10 @@ module LogStash; class Pipeline
     @ready.value
   end
 
+  def running?
+    @running.value
+  end
+
   def configure(setting, value)
     @settings[setting] = value
   end
