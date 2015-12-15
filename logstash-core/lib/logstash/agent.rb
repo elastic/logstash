@@ -26,9 +26,9 @@ class LogStash::Agent
   def execute
     @thread = Thread.current
     @logger.info("starting agent", :state => @state)
-    reload_state
+    reload_state!
     if @auto_reload
-      Stud.interval(5) { reload_state }
+      Stud.interval(5) { reload_state! }
     else
       sleep 0.5 until Stud.stop?
     end
@@ -38,7 +38,7 @@ class LogStash::Agent
     shutdown_pipelines
   end
 
-  def reload_state
+  def reload_state!
     new_state = fetch_state
     if valid_state?(new_state)
       if new_state?(@state, new_state)
