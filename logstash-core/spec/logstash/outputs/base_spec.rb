@@ -15,12 +15,13 @@ class LogStash::Outputs::NOOP < LogStash::Outputs::Base
   end
 end
 
-describe "LogStash::Outputs::Base#worker_setup" do
-  it "should create workers using original parameters except workers = 1" do
+describe "LogStash::Outputs::Base#new" do
+  it "should instantiate cleanly" do
     params = { "dummy_option" => "potatoes", "codec" => "json", "workers" => 2 }
     worker_params = params.dup; worker_params["workers"] = 1
-    output = LogStash::Outputs::NOOP.new(params.dup)
-    expect(LogStash::Outputs::NOOP).to receive(:new).twice.with(worker_params).and_call_original
-    output.worker_setup
+
+    expect do
+      LogStash::Outputs::NOOP.new(params.dup)
+    end.not_to raise_error
   end
 end

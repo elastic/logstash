@@ -26,10 +26,20 @@ class LogStash::Runner < Clamp::Command
            :default_input => DEFAULT_INPUT, :default_output => DEFAULT_OUTPUT),
     :default => "", :attribute_name => :config_string
 
-  option ["-w", "--filterworkers"], "COUNT",
-    I18n.t("logstash.runner.flag.filterworkers"),
-    :attribute_name => :filter_workers,
-    :default => LogStash::Config::CpuCoreStrategy.fifty_percent, &:to_i
+  option ["-w", "--pipeline-workers"], "COUNT",
+    I18n.t("logstash.runner.flag.pipeline-workers"),
+    :attribute_name => :pipeline_workers,
+    :default => LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers], &:to_i
+
+  option ["-b", "--pipeline-batch-size"], "SIZE",
+         I18n.t("logstash.runner.flag.pipeline-batch-size"),
+         :attribute_name => :pipeline_batch_size,
+         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_size], &:to_i
+
+  option ["-u", "--pipeline-batch-delay"], "DELAY_IN_MS",
+         I18n.t("logstash.runner.flag.pipeline-batch-delay"),
+         :attribute_name => :pipeline_batch_delay,
+         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_delay], &:to_i
 
   option ["-l", "--log"], "FILE",
     I18n.t("logstash.runner.flag.log"),
@@ -110,7 +120,12 @@ class LogStash::Runner < Clamp::Command
 
     config_string = format_config(@config_path, @config_string)
 
-    @agent.add_pipeline("base", config_string, :filter_workers => filter_workers)
+    pipeline_settings = {
+      :pipeline_workers => pipeline_workers,
+      :pipeline_batch_size => pipeline_batch_size,
+      :pipeline_batch_delay => pipeline_batch_delay
+    }
+    @agent.add_pipeline("base", config_string, pipeline_settings)
 
     if config_test?
       puts "Configuration OK"

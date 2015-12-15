@@ -108,6 +108,7 @@ module LogStash; module Config; module AST
         # defines @filter_func and @output_func
 
         definitions << "def #{type}_func(event)"
+        definitions << "  targeted_outputs = []" if type == "output"
         definitions << "  events = [event]" if type == "filter"
         definitions << "  @logger.debug? && @logger.debug(\"#{type} received\", :event => event.to_hash)"
 
@@ -116,6 +117,7 @@ module LogStash; module Config; module AST
         end
 
         definitions << "  events" if type == "filter"
+        definitions << "  targeted_outputs" if type == "output"
         definitions << "end"
       end
 
@@ -237,7 +239,7 @@ module LogStash; module Config; module AST
           events = #{variable_name}.multi_filter(events)
         CODE
       when "output"
-        return "#{variable_name}.handle(event)\n"
+        return "targeted_outputs << #{variable_name}\n"
       when "codec"
         settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
         attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
@@ -402,7 +404,7 @@ module LogStash; module Config; module AST
         <<-CODE
           events = cond_func_#{i}(events)
         CODE
-      else
+      else # Output
         <<-CODE
           #{super}
           end

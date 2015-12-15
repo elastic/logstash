@@ -33,7 +33,7 @@ class LogStash::Agent
   end # def execute
 
   def add_pipeline(pipeline_id, config_str, settings = {})
-    @pipelines[pipeline_id] = LogStash::Pipeline.new(config_str, settings)
+    @pipelines[pipeline_id] = LogStash::Pipeline.new(config_str, settings.merge(:pipeline_id => pipeline_id))
   end
 
   private
@@ -49,11 +49,12 @@ class LogStash::Agent
   end # def fail
 
   def shutdown_pipelines
-    @pipelines.each do |_, pipeline|
-      pipeline.shutdown do
-        ::LogStash::ShutdownController.start(pipeline)
-      end
-    end
+    @pipelines.map do |_, pipeline|
+      sc_thread, shutdown_controller = ::LogStash::ShutdownController.start(pipeline)
+      pipeline.shutdown
+      sc_thread
+    end.each(&:join)
+    @logger.warn("Pipeline Shutdown controllers shut down")
   end
 
   def trap_sigterm
