@@ -14,6 +14,24 @@ describe LogStash::Agent do
     end
   end
 
+  context "when passing :pipeline_settings" do
+    let(:config_string) { "input { } filter { drop { } } output { }" }
+    let(:pipeline_settings) { { :filter_workers => 4 } }
+    let(:agent_args) do
+      {
+        :logger => logger,
+        :auto_reload => true,
+        :reload_interval => 0.01,
+        :config_string => config_string,
+        :pipeline_settings => pipeline_settings
+      }
+    end
+    it "should delegate pipeline_settings to new pipelines" do
+      expect(subject).to receive(:add_pipeline).with("base", config_string, pipeline_settings)
+      subject.execute
+    end
+  end
+
   describe "#execute" do
     context "when auto_reload is false" do
       let(:agent_args) { { :logger => logger, :auto_reload => false, :reload_interval => 0.01 } }
@@ -113,31 +131,5 @@ describe LogStash::Agent do
       expect(subject.send(:fetch_state).strip).to eq(cli_config + IO.read(tmp_config_path))
     end
 
-  end
-
-  def make_agent(options={})
-    LogStash::Agent.new(Cabin::Channel.get(), options)
-  end
-
-  context "#node_name" do
-    let(:hostname) { "the-logstash" }
-
-    before do
-      allow(Socket).to receive(:gethostname).and_return(hostname)
-    end
-
-    it "fallback to hostname when no name is provided" do
-      expect(make_agent.node_name).to be(hostname)
-    end
-
-    it "uses the user provided name" do
-      expect(make_agent({ :node_name => "a-name" }).node_name).to eq("a-name")
-    end
-  end
-
-  context "#node_uuid" do
-    it "create a unique uuid between agent instances" do
-      expect(make_agent.node_uuid).not_to be(make_agent.node_uuid)
-    end
   end
 end
