@@ -44,8 +44,6 @@ module LogStash
     end
 
     def start
-      sleep 0.1 until @pipeline.ready?
-
       sleep(@cycle_period)
       cycle_number = 0
       stalled_count = 0
