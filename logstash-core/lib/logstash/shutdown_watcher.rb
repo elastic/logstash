@@ -9,9 +9,8 @@ module LogStash
 
     attr_reader :cycle_period, :report_every, :abort_threshold
 
-    def initialize(pipeline, pipeline_thread, cycle_period=CHECK_EVERY, report_every=REPORT_EVERY, abort_threshold=ABORT_AFTER)
+    def initialize(pipeline, cycle_period=CHECK_EVERY, report_every=REPORT_EVERY, abort_threshold=ABORT_AFTER)
       @pipeline = pipeline
-      @pipeline_thread = pipeline_thread
       @cycle_period = cycle_period
       @report_every = report_every
       @abort_threshold = abort_threshold
@@ -34,8 +33,8 @@ module LogStash
       @logger ||= Cabin::Channel.get(LogStash)
     end
 
-    def self.start(pipeline, pipeline_thread, cycle_period=CHECK_EVERY, report_every=REPORT_EVERY, abort_threshold=ABORT_AFTER)
-      controller = self.new(pipeline, pipeline_thread, cycle_period, report_every, abort_threshold)
+    def self.start(pipeline, cycle_period=CHECK_EVERY, report_every=REPORT_EVERY, abort_threshold=ABORT_AFTER)
+      controller = self.new(pipeline, cycle_period, report_every, abort_threshold)
       Thread.new(controller) { |controller| controller.start }
     end
 
@@ -44,14 +43,12 @@ module LogStash
     end
 
     def start
-      sleep 0.1 until @pipeline.ready?
-
       sleep(@cycle_period)
       cycle_number = 0
       stalled_count = 0
       Stud.interval(@cycle_period) do
-        break unless @pipeline_thread.alive?
-        @reports << Report.from_pipeline(@pipeline)
+        break unless @pipeline.thread.alive?
+        @reports << pipeline_report_snapshot
         @reports.delete_at(0) if @reports.size > @report_every # expire old report
         if cycle_number == (@report_every - 1) # it's report time!
           logger.warn(@reports.last)

@@ -5,7 +5,7 @@
 en:
   oops: |-
     The error reported is: 
-      %{error}
+      %{error} %{backtrace}
   logstash:
     error: >-
       Error: %{error}
@@ -72,7 +72,7 @@ en:
     runner:
       short-help: |-
         usage:
-          bin/logstash -f CONFIG_FILE [-t] [--quiet|verbose|debug] [-w COUNT] [-l LOG]
+          bin/logstash -f CONFIG_PATH [-t] [-r] [--quiet|verbose|debug] [-w COUNT] [-l LOG]
           bin/logstash -e CONFIG_STR [-t] [--quiet|verbose|debug] [-w COUNT] [-l LOG]
           bin/logstash -i SHELL [--quiet|verbose|debug]
           bin/logstash -V [--verbose|debug]
@@ -80,6 +80,8 @@ en:
       missing-configuration: >-
         No configuration file was specified. Perhaps you forgot to provide
         the '-f yourlogstash.conf' flag?
+      reload-without-config-path: >-
+        Configuration reloading also requires passing a configuration path with '-f yourlogstash.conf'
       invalid-shell: >-
         Invalid option for interactive Ruby shell. Use either "irb" or "pry"
       configtest-flag-information: |-

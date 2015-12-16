@@ -10,12 +10,10 @@ require "logstash/environment"
 LogStash::Environment.load_locale!
 
 require "logstash/namespace"
-require "logstash/agent_plugin_registry"
 require "logstash/agent"
 require "logstash/config/defaults"
 
 class LogStash::Runner < Clamp::Command
-  class MissingAgentError < StandardError; end # Raised when the user asks for an agent plugin that doesn't exist
 
   option ["-f", "--config"], "CONFIG_PATH",
     I18n.t("logstash.runner.flag.config"),
@@ -80,18 +78,9 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.node_name"),
     :attribute_name => :node_name
 
-  option ["-a", "--agent"], "AGENT",
-    I18n.t("logstash.runner.flag.agent"),
-    :attribute_name => :agent_name, :default => LogStash::AgentPluginRegistry::DEFAULT_AGENT_NAME
-
   option ["-r", "--[no-]auto-reload"], :flag,
     I18n.t("logstash.runner.flag.auto_reload"),
     :attribute_name => :auto_reload, :default => false
-
-  def initialize(*args)
-    super(*args)
-    @pipeline_settings ||= { :pipeline_id => "main" }
-  end
 
   def pipeline_workers=(pipeline_workers_value)
     @pipeline_settings[:pipeline_workers] = validate_positive_integer(pipeline_workers_value)
@@ -117,8 +106,8 @@ class LogStash::Runner < Clamp::Command
   attr_reader :agent
 
   def initialize(*args)
-    LogStash::AgentPluginRegistry.load_all
     @logger = Cabin::Channel.get(LogStash)
+    @pipeline_settings ||= { :pipeline_id => "main" }
     super(*args)
   end
 
@@ -154,6 +143,11 @@ class LogStash::Runner < Clamp::Command
       fail(I18n.t("logstash.runner.missing-configuration"))
     end
 
+    if @auto_reload && config_path.nil?
+      # there's nothing to reload
+      signal_usage_error(I18n.t("logstash.runner.reload-without-config-path"))
+    end
+
     if config_test?
       config_loader = LogStash::Config::Loader.new(@logger, config_test?)
       config_str = config_loader.format_config(config_path, config_string)
@@ -168,9 +162,12 @@ class LogStash::Runner < Clamp::Command
     end
 
     @agent = create_agent(:logger => @logger,
-                          :config_string => config_string,
-                          :config_path => config_path,
                           :auto_reload => @auto_reload)
+
+    @agent.register_pipeline("main", @pipeline_settings.merge({
+                          :config_string => config_string,
+                          :config_path => config_path
+                          }))
 
     # enable sigint/sigterm before starting the agent
     # to properly handle a stalled agent
@@ -182,25 +179,20 @@ class LogStash::Runner < Clamp::Command
     # no point in enabling config reloading before the agent starts
     sighup_id = trap_sighup()
 
-    @agent_task.wait
+    agent_return = @agent_task.wait
 
     @agent.shutdown
 
-  rescue LoadError => e
-    fail("Configuration problem.")
-  rescue LogStash::ConfigurationError => e
-    @logger.warn I18n.t("logstash.runner.configtest-flag-information")
-    @logger.fatal I18n.t("logstash.error", :error => e)
+    agent_return
+
+  rescue Clamp::UsageError => e
+    $stderr.puts "ERROR: #{e.message}"
     show_short_help
     return 1
-  rescue MissingAgentError => e
-    @logger.fatal("Could not load specified agent",
-                  :agent_name => agent_name,
-                  :valid_agent_names => LogStash::AgentPluginRegistry.available.map(&:to_s))
-    return 1
   rescue => e
-    @logger.fatal I18n.t("oops", :error => e)
-    @logger.debug e.backtrace if $DEBUGLIST.include?("stacktrace")
+    @logger.fatal I18n.t("oops", :error => e, :backtrace => e.backtrace)
+    show_short_help
+    return 1
   ensure
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?
     Stud::untrap("TERM", sigterm_id) unless sigterm_id.nil?
@@ -258,9 +250,7 @@ class LogStash::Runner < Clamp::Command
   end
 
   def create_agent(*args)
-    agent_class = LogStash::AgentPluginRegistry.lookup(agent_name)
-    @logger.info("Creating new agent", :class => agent_class)
-    agent_class.new(*args)
+    LogStash::Agent.new(*args)
   end
 
   # Point logging at a specific path.
@@ -312,7 +302,7 @@ class LogStash::Runner < Clamp::Command
 
   # Emit a failure message and abort.
   def fail(message)
-    raise LogStash::ConfigurationError, message
+    signal_usage_error(message)
   end # def fail
 
   def show_short_help
@@ -338,7 +328,7 @@ class LogStash::Runner < Clamp::Command
   def trap_sighup
     Stud::trap("HUP") do
       @logger.warn(I18n.t("logstash.agent.sighup"))
-      @agent.reload_state
+      @agent.reload_state!
     end
   end
 
