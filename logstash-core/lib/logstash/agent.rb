@@ -21,6 +21,7 @@ class LogStash::Agent
     @config_string = params[:config_string]
     @config_path = params[:config_path]
     @auto_reload = params[:auto_reload]
+    @pipeline_settings = params[:pipeline_settings]
     @reload_interval = params[:reload_interval] || 5 # seconds
   end
 
@@ -98,11 +99,11 @@ class LogStash::Agent
   # Override the methods below if you're implementing your own agent
   def upgrade_state(new_state)
     stop_pipeline("base")
-    add_pipeline("base", new_state)
+    add_pipeline("base", new_state, @pipeline_settings)
   rescue => e
     @logger.error("failed to update state", :new_state => new_state, :message => e.message, :backtrace => e.backtrace)
     @logger.warn("reverting to previous state", :state => @state)
-    add_pipeline("base", @state) unless clean_state?
+    add_pipeline("base", @state, @pipeline_settings) unless clean_state?
     @state
   else
     @state = new_state

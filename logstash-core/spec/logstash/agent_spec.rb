@@ -14,6 +14,24 @@ describe LogStash::Agent do
     end
   end
 
+  context "when passing :pipeline_settings" do
+    let(:config_string) { "input { } filter { drop { } } output { }" }
+    let(:pipeline_settings) { { :filter_workers => 4 } }
+    let(:agent_args) do
+      {
+        :logger => logger,
+        :auto_reload => true,
+        :reload_interval => 0.01,
+        :config_string => config_string,
+        :pipeline_settings => pipeline_settings
+      }
+    end
+    it "should delegate pipeline_settings to new pipelines" do
+      expect(subject).to receive(:add_pipeline).with("base", config_string, pipeline_settings)
+      subject.execute
+    end
+  end
+
   describe "#execute" do
     context "when auto_reload is false" do
       let(:agent_args) { { :logger => logger, :auto_reload => false, :reload_interval => 0.01 } }
@@ -114,5 +132,4 @@ describe LogStash::Agent do
     end
 
   end
-
 end

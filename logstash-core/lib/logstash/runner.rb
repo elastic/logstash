@@ -127,10 +127,15 @@ class LogStash::Runner < Clamp::Command
       end
     end
 
+    pipeline_settings = {
+      :filter_workers => filter_workers
+    }
+
     @agent = create_agent(:logger => @logger,
                           :config_string => config_string,
                           :config_path => config_path,
-                          :auto_reload => @auto_reload)
+                          :auto_reload => @auto_reload,
+                          :pipeline_settings => pipeline_settings)
 
     # enable sigint/sigterm before starting the agent
     # to properly handle a stalled agent
