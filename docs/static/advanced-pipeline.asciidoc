@@ -1,14 +1,14 @@
 [[advanced-pipeline]]
 === Setting Up an Advanced Logstash Pipeline
 
-A Logstash pipeline in most use cases has one or more input, filter, and output plugins. The scenarios in this section 
+A Logstash pipeline in most use cases has one or more input, filter, and output plugins. The scenarios in this section
 build Logstash configuration files to specify these plugins and discuss what each plugin is doing.
 
-The Logstash configuration file defines your _Logstash pipeline_. When you start a Logstash instance, use the 
+The Logstash configuration file defines your _Logstash pipeline_. When you start a Logstash instance, use the
 `-f <path/to/file>` option to specify the configuration file that defines that instance’s pipeline.
 
-A Logstash pipeline has two required elements, `input` and `output`, and one optional element, `filter`. The input 
-plugins consume data from a source, the filter plugins modify the data as you specify, and the output plugins write 
+A Logstash pipeline has two required elements, `input` and `output`, and one optional element, `filter`. The input
+plugins consume data from a source, the filter plugins modify the data as you specify, and the output plugins write
 the data to a destination.
 
 image::static/images/basic_logstash_pipeline.png[]
@@ -24,13 +24,13 @@ input {
 # The filter part of this file is commented out to indicate that it is
 # optional.
 # filter {
-# 
+#
 # }
 output {
 }
 --------------------------------------------------------------------------------
 
-This skeleton is non-functional, because the input and output sections don’t have any valid options defined. The 
+This skeleton is non-functional, because the input and output sections don’t have any valid options defined. The
 examples in this tutorial build configuration files to address specific use cases.
 
 Paste the skeleton into a file named `first-pipeline.conf` in your home Logstash directory.
@@ -38,17 +38,17 @@ Paste the skeleton into a file named `first-pipeline.conf` in your home Logstash
 [[parsing-into-es]]
 ==== Parsing Apache Logs into Elasticsearch
 
-This example creates a Logstash pipeline that takes Apache web logs as input, parses those logs to create specific, 
+This example creates a Logstash pipeline that takes Apache web logs as input, parses those logs to create specific,
 named fields from the logs, and writes the parsed data to an Elasticsearch cluster.
 
-You can download the sample data set used in this example 
+You can download the sample data set used in this example
 https://download.elastic.co/demos/logstash/gettingstarted/logstash-tutorial.log.gz[here]. Unpack this file.
 
 [float]
 [[configuring-file-input]]
 ==== Configuring Logstash for File Input
 
-To start your Logstash pipeline, configure the Logstash instance to read from a file using the 
+To start your Logstash pipeline, configure the Logstash instance to read from a file using the
 {logstash}plugins-inputs-file.html[file] input plugin.
 
 Edit the `first-pipeline.conf` file to add the following text:
@@ -63,8 +63,8 @@ input {
 }
 --------------------------------------------------------------------------------
 
-<1> The default behavior of the file input plugin is to monitor a file for new information, in a manner similar to the 
-UNIX `tail -f` command. To change this default behavior and process the entire file, we need to specify the position 
+<1> The default behavior of the file input plugin is to monitor a file for new information, in a manner similar to the
+UNIX `tail -f` command. To change this default behavior and process the entire file, we need to specify the position
 where Logstash starts processing the file.
 
 Replace `/path/to/` with the actual path to the location of `logstash-tutorial.log` in your file system.
@@ -73,22 +73,22 @@ Replace `/path/to/` with the actual path to the location of `logstash-tutorial.l
 [[configuring-grok-filter]]
 ===== Parsing Web Logs with the Grok Filter Plugin
 
-The {logstash}plugins-filters-grok.html[`grok`] filter plugin is one of several plugins that are available by default in 
-Logstash. For details on how to manage Logstash plugins, see the <<working-with-plugins,reference documentation>> for 
+The {logstash}plugins-filters-grok.html[`grok`] filter plugin is one of several plugins that are available by default in
+Logstash. For details on how to manage Logstash plugins, see the <<working-with-plugins,reference documentation>> for
 the plugin manager.
 
-Because the `grok` filter plugin looks for patterns in the incoming log data, configuration requires you to make 
-decisions about how to identify the patterns that are of interest to your use case. A representative line from the web 
+Because the `grok` filter plugin looks for patterns in the incoming log data, configuration requires you to make
+decisions about how to identify the patterns that are of interest to your use case. A representative line from the web
 server log sample looks like this:
 
 [source,shell]
 --------------------------------------------------------------------------------
-83.149.9.216 - - [04/Jan/2015:05:13:42 +0000] "GET /presentations/logstash-monitorama-2013/images/kibana-search.png 
-HTTP/1.1" 200 203023 "http://semicomplete.com/presentations/logstash-monitorama-2013/" "Mozilla/5.0 (Macintosh; Intel 
+83.149.9.216 - - [04/Jan/2015:05:13:42 +0000] "GET /presentations/logstash-monitorama-2013/images/kibana-search.png
+HTTP/1.1" 200 203023 "http://semicomplete.com/presentations/logstash-monitorama-2013/" "Mozilla/5.0 (Macintosh; Intel
 Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
 --------------------------------------------------------------------------------
 
-The IP address at the beginning of the line is easy to identify, as is the timestamp in brackets. In this tutorial, use 
+The IP address at the beginning of the line is easy to identify, as is the timestamp in brackets. In this tutorial, use
 the `%{COMBINEDAPACHELOG}` grok pattern, which structures lines from the Apache log using the following schema:
 
 [horizontal]
@@ -123,7 +123,7 @@ After processing, the sample line has the following JSON representation:
 {
 "clientip" : "83.149.9.216",
 "ident" : ,
-"auth" : , 
+"auth" : ,
 "timestamp" : "04/Jan/2015:05:13:42 +0000",
 "verb" : "GET",
 "request" : "/presentations/logstash-monitorama-2013/images/kibana-search.png",
@@ -139,7 +139,7 @@ After processing, the sample line has the following JSON representation:
 [[indexing-parsed-data-into-elasticsearch]]
 ===== Indexing Parsed Data into Elasticsearch
 
-Now that the web logs are broken down into specific fields, the Logstash pipeline can index the data into an 
+Now that the web logs are broken down into specific fields, the Logstash pipeline can index the data into an
 Elasticsearch cluster. Edit the `first-pipeline.conf` file to add the following text after the `input` section:
 
 [source,json]
@@ -152,17 +152,17 @@ output {
 
 With this configuration, Logstash uses http protocol to connect to Elasticsearch. The above example assumes Logstash
 and Elasticsearch to be running on the same instance. You can specify a remote Elasticsearch instance using `hosts`
-configuration like `hosts => "es-machine:9092"`. 
+configuration like `hosts => "es-machine:9092"`.
 
 [float]
 [[configuring-geoip-plugin]]
 ===== Enhancing Your Data with the Geoip Filter Plugin
 
-In addition to parsing log data for better searches, filter plugins can derive supplementary information from existing 
-data. As an example, the {logstash}plugins-filters-geoip.html[`geoip`] plugin looks up IP addresses, derives geographic 
+In addition to parsing log data for better searches, filter plugins can derive supplementary information from existing
+data. As an example, the {logstash}plugins-filters-geoip.html[`geoip`] plugin looks up IP addresses, derives geographic
 location information from the addresses, and adds that location information to the logs.
 
-Configure your Logstash instance to use the `geoip` filter plugin by adding the following lines to the `filter` section 
+Configure your Logstash instance to use the `geoip` filter plugin by adding the following lines to the `filter` section
 of the `first-pipeline.conf` file:
 
 [source,json]
@@ -172,7 +172,7 @@ geoip {
 }
 --------------------------------------------------------------------------------
 
-The `geoip` plugin configuration requires data that is already defined as separate fields. Make sure that the `geoip` 
+The `geoip` plugin configuration requires data that is already defined as separate fields. Make sure that the `geoip`
 section is after the `grok` section of the configuration file.
 
 Specify the name of the field that contains the IP address to look up. In this tutorial, the field name is `clientip`.
@@ -335,11 +335,11 @@ Only one of the log entries comes from Buffalo, so the query produces a single r
 [[multiple-input-output-plugins]]
 ==== Multiple Input and Output Plugins
 
-The information you need to manage often comes from several disparate sources, and use cases can require multiple 
-destinations for your data. Your Logstash pipeline can use multiple input and output plugins to handle these 
+The information you need to manage often comes from several disparate sources, and use cases can require multiple
+destinations for your data. Your Logstash pipeline can use multiple input and output plugins to handle these
 requirements.
 
-This example creates a Logstash pipeline that takes input from a Twitter feed and the Filebeat client, then 
+This example creates a Logstash pipeline that takes input from a Twitter feed and the Filebeat client, then
 sends the information to an Elasticsearch cluster as well as writing the information directly to a file.
 
 [float]
@@ -354,7 +354,7 @@ To add a Twitter feed, you need several pieces of information:
 * An _oauth token_, which identifies the Twitter account using this app.
 * An _oauth token secret_, which serves as the password of the Twitter account.
 
-Visit https://dev.twitter.com/apps to set up a Twitter account and generate your consumer key and secret, as well as 
+Visit https://dev.twitter.com/apps to set up a Twitter account and generate your consumer key and secret, as well as
 your OAuth token and secret.
 
 Use this information to add the following lines to the `input` section of the `first-pipeline.conf` file:
@@ -366,7 +366,7 @@ twitter {
     consumer_secret =>
     keywords =>
     oauth_token =>
-    oauth_token_secret => 
+    oauth_token_secret =>
 }
 --------------------------------------------------------------------------------
 
@@ -374,19 +374,19 @@ twitter {
 [[configuring-lsf]]
 ==== The Filebeat Client
 
-The https://github.com/elastic/beats/tree/master/filebeat[filebeat] client is a lightweight, resource-friendly tool that 
-collects logs from files on the server and forwards these logs to your Logstash instance for processing. The 
-Filebeat client uses the secure Beats protocol to communicate with your Logstash instance. The 
-lumberjack protocol is designed for reliability and low latency. Filebeat uses the computing resources of 
-the machine hosting the source data, and the {logstash}plugins-inputs-beats.html[Beats input] plugin minimizes the 
+The https://github.com/elastic/beats/tree/master/filebeat[filebeat] client is a lightweight, resource-friendly tool that
+collects logs from files on the server and forwards these logs to your Logstash instance for processing. The
+Filebeat client uses the secure Beats protocol to communicate with your Logstash instance. The
+lumberjack protocol is designed for reliability and low latency. Filebeat uses the computing resources of
+the machine hosting the source data, and the {logstash}plugins-inputs-beats.html[Beats input] plugin minimizes the
 resource demands on the Logstash instance.
 
-NOTE: In a typical use case, Filebeat runs on a separate machine from the machine running your 
+NOTE: In a typical use case, Filebeat runs on a separate machine from the machine running your
 Logstash instance. For the purposes of this tutorial, Logstash and Filebeat are running on the
 same machine.
 
-Default Logstash configuration includes the {logstash}plugins-inputs-beats.html[Beats input plugin], which is 
-designed to be resource-friendly. To install Filebeat on your data source machine, download the 
+Default Logstash configuration includes the {logstash}plugins-inputs-beats.html[Beats input plugin], which is
+designed to be resource-friendly. To install Filebeat on your data source machine, download the
 appropriate package from the Filebeat https://www.elastic.co/downloads/beats/filebeat[product page].
 
 Create a configuration file for Filebeat similar to the following example:
@@ -414,9 +414,9 @@ output:
 <2> Path to the SSL certificate for the Logstash instance.
 --------------------------------------------------------------------------------
 
-Save this configuration file as `filebeat.yml`. 
+Save this configuration file as `filebeat.yml`.
 
-Configure your Logstash instance to use the Filebeat input plugin by adding the following lines to the `input` section 
+Configure your Logstash instance to use the Filebeat input plugin by adding the following lines to the `input` section
 of the `first-pipeline.conf` file:
 
 [source,json]
@@ -436,10 +436,10 @@ beats {
 [[logstash-file-output]]
 ==== Writing Logstash Data to a File
 
-You can configure your Logstash pipeline to write data directly to a file with the 
+You can configure your Logstash pipeline to write data directly to a file with the
 {logstash}plugins-outputs-file.html[`file`] output plugin.
 
-Configure your Logstash instance to use the `file` output plugin by adding the following lines to the `output` section 
+Configure your Logstash instance to use the `file` output plugin by adding the following lines to the `output` section
 of the `first-pipeline.conf` file:
 
 [source,json]
@@ -453,7 +453,7 @@ file {
 [[multiple-es-nodes]]
 ==== Writing to multiple Elasticsearch nodes
 
-Writing to multiple Elasticsearch nodes lightens the resource demands on a given Elasticsearch node, as well as 
+Writing to multiple Elasticsearch nodes lightens the resource demands on a given Elasticsearch node, as well as
 providing redundant points of entry into the cluster when a particular node is unavailable.
 
 To configure your Logstash instance to write to multiple Elasticsearch nodes, edit the output section of the `first-pipeline.conf` file to read:
@@ -467,7 +467,7 @@ output {
 }
 --------------------------------------------------------------------------------
 
-Use the IP addresses of three non-master nodes in your Elasticsearch cluster in the host line. When the `hosts` 
+Use the IP addresses of three non-master nodes in your Elasticsearch cluster in the host line. When the `hosts`
 parameter lists multiple IP addresses, Logstash load-balances requests across the list of addresses. Also note that
 default port for Elasticsearch is `9200` and can be omitted in the configuration above.
 
@@ -504,7 +504,7 @@ output {
 }
 --------------------------------------------------------------------------------
 
-Logstash is consuming data from the Twitter feed you configured, receiving data from Filebeat, and 
+Logstash is consuming data from the Twitter feed you configured, receiving data from Filebeat, and
 indexing this information to three nodes in an Elasticsearch cluster as well as writing to a file.
 
 At the data source machine, run Filebeat with the following command:
@@ -514,7 +514,7 @@ At the data source machine, run Filebeat with the following command:
 sudo ./filebeat -e -c filebeat.yml -d "publish"
 --------------------------------------------------------------------------------
 
-Filebeat will attempt to connect on port 5403. Until Logstash starts with an active Beats plugin, there 
+Filebeat will attempt to connect on port 5403. Until Logstash starts with an active Beats plugin, there
 won’t be any answer on that port, so any messages you see regarding failure to connect on that port are normal for now.
 
 To verify your configuration, run the following command:
@@ -558,17 +558,17 @@ Shutting down a running Logstash instance involves the following steps:
 The following conditions affect the shutdown process:
 
 * An input plugin receiving data at a slow pace.
-* A slow filter, like a Ruby filter executing `sleep(10000)` or an Elasticsearch filter that is executing a very heavy 
+* A slow filter, like a Ruby filter executing `sleep(10000)` or an Elasticsearch filter that is executing a very heavy
 query.
 * A disconnected output plugin that is waiting to reconnect to flush in-flight events.
 
 These situations make the duration and success of the shutdown process unpredictable.
 
 Logstash has a stall detection mechanism that analyzes the behavior of the pipeline and plugins during shutdown.
-This mechanism produces periodic information about the count of inflight events in internal queues and a list of busy 
+This mechanism produces periodic information about the count of inflight events in internal queues and a list of busy
 worker threads.
 
-To enable Logstash to forcibly terminate in the case of a stalled shutdown, use the `--allow-unsafe-shutdown` flag when 
+To enable Logstash to forcibly terminate in the case of a stalled shutdown, use the `--allow-unsafe-shutdown` flag when
 you start Logstash.
 
 [[shutdown-stall-example]]
@@ -587,22 +587,22 @@ Logstash startup completed
 Received shutdown signal, but pipeline is still waiting for in-flight events
 to be processed. Sending another ^C will force quit Logstash, but this may cause
 data loss. {:level=>:warn}
- {:level=>:warn, "INFLIGHT_EVENT_COUNT"=>{"input_to_filter"=>20, "total"=>20}, 
+ {:level=>:warn, "INFLIGHT_EVENT_COUNT"=>{"input_to_filter"=>20, "total"=>20},
  "STALLING_THREADS"=>
- {["LogStash::Filters::Ruby", {"code"=>"sleep 10000"}]=>[{"thread_id"=>15, 
+ {["LogStash::Filters::Ruby", {"code"=>"sleep 10000"}]=>[{"thread_id"=>15,
  "name"=>"|filterworker.0", "current_call"=>"
  (ruby filter code):1:in `sleep'"}]}}
-The shutdown process appears to be stalled due to busy or blocked plugins. Check 
-    the logs for more information. 
+The shutdown process appears to be stalled due to busy or blocked plugins. Check
+    the logs for more information.
 {:level=>:error}
- {:level=>:warn, "INFLIGHT_EVENT_COUNT"=>{"input_to_filter"=>20, "total"=>20}, 
+ {:level=>:warn, "INFLIGHT_EVENT_COUNT"=>{"input_to_filter"=>20, "total"=>20},
  "STALLING_THREADS"=>
- {["LogStash::Filters::Ruby", {"code"=>"sleep 10000"}]=>[{"thread_id"=>15, 
+ {["LogStash::Filters::Ruby", {"code"=>"sleep 10000"}]=>[{"thread_id"=>15,
  "name"=>"|filterworker.0", "current_call"=>"
  (ruby filter code):1:in `sleep'"}]}}
- {:level=>:warn, "INFLIGHT_EVENT_COUNT"=>{"input_to_filter"=>20, "total"=>20}, 
+ {:level=>:warn, "INFLIGHT_EVENT_COUNT"=>{"input_to_filter"=>20, "total"=>20},
  "STALLING_THREADS"=>
- {["LogStash::Filters::Ruby", {"code"=>"sleep 10000"}]=>[{"thread_id"=>15, 
+ {["LogStash::Filters::Ruby", {"code"=>"sleep 10000"}]=>[{"thread_id"=>15,
  "name"=>"|filterworker.0", "current_call"=>"
  (ruby filter code):1:in `sleep'"}]}}
 Forcefully quitting logstash.. {:level=>:fatal}

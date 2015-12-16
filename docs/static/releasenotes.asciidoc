@@ -1,0 +1,61 @@
+[[releasenotes]]
+== Logstash 2.1 Release Notes
+
+[float]
+== General
+
+* {lsissue}2376[Issue 2376]: Added ability to install and upgrade Logstash plugins without requiring internet
+connectivity.
+* {lsissue}3576[Issue 3576]: Support alternate or private Ruby gems server to install and update plugins.
+* {lsissue}3451[Issue 3451]: Added ability to reliably shutdown Logstash when there is a stall in event processing. This
+option can be enabled by passing `--allow-unsafe-shutdown` flag while starting Logstash. Please be aware that any in-
+flight events will be lost when shutdown happens.
+* {lsissue}4222[Issue 4222]: Fixed a memory leak which could be triggered when events having a date were serialized to
+string.
+* Added JDBC input to default package.
+* {lsissue}3243[Issue 3243]: Adding `--debug` to `--configtest` now shows the configuration in blocks annotated by source
+config file. Very useful when using multiple config files in a directory.
+* {lsissue}4130[Issue 4130]: Reset default worker threads to 1 when using non thread-safe filters like multiline.
+* Fixed file permissions for the `logrotate` configuration file.
+* {lsissue}3861[Issue 3861]: Changed the default heap size from 500MB to 1GB.
+* {lsissue}3645[Issue 3645]: Fixed config check option when starting Logstash through init scripts.
+
+[float]
+== Input Plugins
+
+[float]
+=== Twitter
+* https://github.com/logstash-plugins/logstash-input-twitter/issues/21[Issue 21]: Added an option to fetch data from the
+sample Twitter streaming endpoint.
+* https://github.com/logstash-plugins/logstash-input-twitter/issues/22[Issue 22]: Added hashtags, symbols and
+user_mentions as data for the non extended tweet event.
+* https://github.com/logstash-plugins/logstash-input-twitter/issues/20[Issue 20]: Added an option to filter per location
+and language.
+* https://github.com/logstash-plugins/logstash-input-twitter/issues/11[Issue 11]: Added an option to stream data from a
+list of users.
+
+[float]
+=== Beats
+* https://github.com/logstash-plugins/logstash-input-beats/issues/10[Issue 10]: Properly handle multiline events from
+multiple sources, originating from Filebeat.
+
+[float]
+=== File
+* https://github.com/logstash-plugins/logstash-input-file/issues/44[Issue 44]: Properly handle multiline events from
+multiple sources.
+
+[float]
+=== Eventlog
+* https://github.com/logstash-plugins/logstash-input-eventlog/issues/11[Issue 11]: Change the underlying library to
+capture Event Logs from Windows more reliably.
+
+[float]
+== Output
+
+[float]
+=== Elasticsearch
+* Improved the default template to use doc_values wherever possible.
+* Improved the default template to disable fielddata on analyzed string fields.
+* https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/260[Issue 260]: Added New setting: timeout.
+This lets you control the behavior of a slow/stuck request to Elasticsearch that could be, for example, caused by network,
+firewall, or load balancer issues.

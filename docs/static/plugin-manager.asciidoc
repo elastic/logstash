@@ -1,15 +1,27 @@
 [[working-with-plugins]]
 == Working with plugins
 
+<<<<<<< HEAD:docs/asciidoc/static/plugin-manager.asciidoc
 Logstash has a rich collection of input, filter, codec and output plugins. Plugins are available as self-contained packages called gems and hosted on RubyGems.org. The plugin manager accesed via `bin/plugin` script is used to manage the lifecycle of plugins in your Logstash deployment. You can install, uninstall and upgrade plugins using these Command Line Interface (CLI) described below.
 
 NOTE: Some sections here are for advanced users
+=======
+Logstash has a rich collection of input, filter, codec and output plugins. Plugins are available as self-contained
+packages called gems and hosted on RubyGems.org. The plugin manager accesed via `bin/plugin` script is used to manage the
+lifecycle of plugins in your Logstash deployment. You can install, uninstall and upgrade plugins using these Command Line
+Interface (CLI) described below.
+>>>>>>> 9477db2... Cleanup docs directory:docs/static/plugin-manager.asciidoc
 
 [float]
 [[listing-plugins]]
 === Listing plugins
 
+<<<<<<< HEAD:docs/asciidoc/static/plugin-manager.asciidoc
 Logstash release packages bundle common plugins so you can use them out of the box. To list the plugins currently available in your deployment:
+=======
+Logstash release packages bundle common plugins so you can use them out of the box. To list the plugins currently
+available in your deployment:
+>>>>>>> 9477db2... Cleanup docs directory:docs/static/plugin-manager.asciidoc
 
 [source,shell]
 ----------------------------------
@@ -30,7 +42,13 @@ bin/plugin list --group output <4>
 [[installing-plugins]]
 === Adding plugins to your deployment
 
+<<<<<<< HEAD:docs/asciidoc/static/plugin-manager.asciidoc
 The most common situation when dealing with plugin installation is when you have access to internet. Using this method, you will be able to retrieve plugins hosted on the public repository (RubyGems.org) and install on top of your Logstash installation.
+=======
+The most common situation when dealing with plugin installation is when you have access to internet. Using this method,
+you will be able to retrieve plugins hosted on the public repository (RubyGems.org) and install on top of your Logstash
+installation.
+>>>>>>> 9477db2... Cleanup docs directory:docs/static/plugin-manager.asciidoc
 
 [source,shell]
 ----------------------------------
@@ -43,7 +61,12 @@ Once the plugin is successfully installed, you can start using it in your config
 [float]
 ==== Advanced: Adding a locally built plugin
 
+<<<<<<< HEAD:docs/asciidoc/static/plugin-manager.asciidoc
 In some cases, you want to install plugins which have not yet been released and not hosted on RubyGems.org. Logstash provides you the option to install a locally built plugin which is packaged as a ruby gem. Using a file location:
+=======
+In some cases, you want to install plugins which have not yet been released and not hosted on RubyGems.org. Logstash
+provides you the option to install a locally built plugin which is packaged as a ruby gem. Using a file location:
+>>>>>>> 9477db2... Cleanup docs directory:docs/static/plugin-manager.asciidoc
 
 [source,shell]
 ----------------------------------
@@ -54,7 +77,12 @@ bin/plugin install /path/to/logstash-output-kafka-1.0.0.gem
 [float]
 ==== Advanced: Using `--pluginpath`
 
+<<<<<<< HEAD:docs/asciidoc/static/plugin-manager.asciidoc
 Using the `--pluginpath` flag, you can load a plugin source code located on your file system. Typically this is used by developers who are iterating on a custom plugin and want to test it before creating a ruby gem.
+=======
+Using the `--pluginpath` flag, you can load a plugin source code located on your file system. Typically this is used by
+developers who are iterating on a custom plugin and want to test it before creating a ruby gem.
+>>>>>>> 9477db2... Cleanup docs directory:docs/static/plugin-manager.asciidoc
 
 [source,shell]
 ----------------------------------
@@ -65,7 +93,12 @@ bin/logstash --pluginpath /opt/shared/lib/logstash/input/my-custom-plugin-code.r
 [float]
 === Updating plugins
 
+<<<<<<< HEAD:docs/asciidoc/static/plugin-manager.asciidoc
 Plugins have their own release cycle and are often released independent of Logstash’s core release cycle. Using the update sub-command you can get the latest or update to a particular version of the plugin.
+=======
+Plugins have their own release cycle and are often released independent of Logstash’s core release cycle. Using the update
+subcommand you can get the latest or update to a particular version of the plugin.
+>>>>>>> 9477db2... Cleanup docs directory:docs/static/plugin-manager.asciidoc
 
 [source,shell]
 ----------------------------------
@@ -91,7 +124,13 @@ bin/plugin uninstall logstash-output-kafka
 [float]
 === Proxy Support
 
+<<<<<<< HEAD:docs/asciidoc/static/plugin-manager.asciidoc
 The previous sections relied on Logstash being able to communicate with RubyGems.org. In certain environments, Forwarding Proxy is used to handle HTTP requests. Logstash Plugins can be installed and updated through a Proxy by setting the `HTTP_PROXY` environment variable:
+=======
+The previous sections relied on Logstash being able to communicate with RubyGems.org. In certain environments, Forwarding
+Proxy is used to handle HTTP requests. Logstash Plugins can be installed and updated through a Proxy by setting the
+`HTTP_PROXY` environment variable:
+>>>>>>> 9477db2... Cleanup docs directory:docs/static/plugin-manager.asciidoc
 
 [source,shell]
 ----------------------------------
