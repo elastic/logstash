@@ -17,7 +17,7 @@ require "logstash/pipeline_reporter"
 require "logstash/output_delegator"
 
 module LogStash; class Pipeline
-  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :logger
+  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :logger, :thread, :config_str, :original_settings
 
   DEFAULT_SETTINGS = {
     :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.maximum,
@@ -28,19 +28,20 @@ module LogStash; class Pipeline
   }
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
-  def self.config_valid?(config_str)
+  def self.validate_config(config_str, settings = {})
     begin
-      # There should be a better way to test this ideally
-      self.new(config_str)
-      true
-    rescue Exception => e
-      e
+      # There should be a better way to test this
+      self.new(config_str, settings)
+    rescue => e
+      e.message
     end
   end
 
   def initialize(config_str, settings = {})
-    @pipeline_id = settings[:pipeline_id] || self.object_id
+    @config_str = config_str
+    @original_settings = settings
     @logger = Cabin::Channel.get(LogStash)
+    @pipeline_id = settings[:pipeline_id] || self.object_id
     @settings = DEFAULT_SETTINGS.clone
     settings.each {|setting, value| configure(setting, value) }
     @reporter = LogStash::PipelineReporter.new(@logger, self)
@@ -88,10 +89,6 @@ module LogStash; class Pipeline
     @ready.value
   end
 
-  def running?
-    @running.value
-  end
-
   def configure(setting, value)
     @settings[setting] = value
   end
@@ -131,8 +128,8 @@ module LogStash; class Pipeline
   end
 
   def run
-    @thread = Thread.current
     @logger.terminal(LogStash::Util::DefaultsPrinter.print(@settings))
+    @thread = Thread.current
 
     start_workers
 
@@ -373,7 +370,15 @@ module LogStash; class Pipeline
 
   # initiate the pipeline shutdown sequence
   # this method is intended to be called from outside the pipeline thread
+  # @param before_stop [Proc] code block called before performing stop operation on input plugins
   def shutdown(&before_stop)
+    # shutdown can only start once the pipeline has completed its startup.
+    # avoid potential race conditoon between the startup sequence and this
+    # shutdown method which can be called from another thread at any time
+    sleep(0.1) while !ready?
+
+    # TODO: should we also check against calling shutdown multiple times concurently?
+
     before_stop.call if block_given?
 
     @logger.info "Closing inputs"

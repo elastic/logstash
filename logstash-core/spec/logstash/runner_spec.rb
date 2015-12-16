@@ -28,6 +28,7 @@ describe LogStash::Runner do
       before do
         allow(agent).to receive(:logger=).with(anything)
         allow(agent).to receive(:shutdown)
+        allow(agent).to receive(:register_pipeline)
       end
 
       it "should execute the agent" do
@@ -40,30 +41,11 @@ describe LogStash::Runner do
     context "with no arguments" do
       let(:args) { [] }
       it "should show help" do
-        expect(channel).to receive(:warn).once
-        expect(channel).to receive(:fatal).once
+        expect($stderr).to receive(:puts).once
+        expect(subject).to receive(:signal_usage_error).once.and_call_original
         expect(subject).to receive(:show_short_help).once
         subject.run(args)
       end
-    end
-  end
-
-  context "--agent" do
-    class DummyAgent < LogStash::Agent
-      def initialize; end
-    end
-
-    let(:agent_name) { "testagent" }
-    subject { LogStash::Runner.new("") }
-
-    before do
-      LogStash::AgentPluginRegistry.register(agent_name, DummyAgent)
-      allow(subject).to receive(:execute) # stub this out to reduce test work/output
-      subject.run(["-a", "testagent", "-e" "input {} output {}"])
-    end
-
-    it "should set the proper agent" do
-      expect(subject.create_agent.class).to eql(DummyAgent)
     end
   end
 
@@ -81,7 +63,7 @@ describe LogStash::Runner do
     it "should fail with single invalid dir path" do
       expect(File).to receive(:directory?).and_return(false)
       expect(LogStash::Environment).not_to receive(:add_plugin_path)
-      expect{subject.configure_plugin_paths(single_path)}.to raise_error(LogStash::ConfigurationError)
+      expect{subject.configure_plugin_paths(single_path)}.to raise_error(Clamp::UsageError)
     end
 
     it "should add multiple valid dir path to the environment" do
@@ -91,28 +73,43 @@ describe LogStash::Runner do
     end
   end
 
+  context "--auto-reload" do
+    subject { LogStash::Runner.new("") }
+    context "when -f is not given" do
+
+      let(:args) { ["-r", "-e", "input {} output {}"] }
+
+      it "should exit immediately" do
+        expect(subject).to receive(:signal_usage_error).and_call_original
+        expect(subject).to receive(:show_short_help)
+        expect(subject.run(args)).to eq(1)
+      end
+    end
+  end
+
   describe "pipeline settings" do
     let(:pipeline_string) { "input { stdin {} } output { stdout {} }" }
-    let(:base_pipeline_settings) { { :pipeline_id => "base" } }
+    let(:main_pipeline_settings) { { :pipeline_id => "main" } }
     let(:pipeline) { double("pipeline") }
 
     before(:each) do
       task = Stud::Task.new { 1 }
       allow(pipeline).to receive(:run).and_return(task)
+      allow(pipeline).to receive(:shutdown)
     end
 
-    context "when pipeline workers is not defined by the user" do
+    context "when :pipeline_workers is not defined by the user" do
       it "should not pass the value to the pipeline" do
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, base_pipeline_settings).and_return(pipeline)
+        expect(LogStash::Pipeline).to receive(:new).once.with(pipeline_string, hash_excluding(:pipeline_workers)).and_return(pipeline)
         args = ["-e", pipeline_string]
         subject.run("bin/logstash", args)
       end
     end
 
-    context "when pipeline workers is defined by the user" do
+    context "when :pipeline_workers is defined by the user" do
       it "should pass the value to the pipeline" do
-        base_pipeline_settings[:pipeline_workers] = 2
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, base_pipeline_settings).and_return(pipeline)
+        main_pipeline_settings[:pipeline_workers] = 2
+        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(main_pipeline_settings)).and_return(pipeline)
         args = ["-w", "2", "-e", pipeline_string]
         subject.run("bin/logstash", args)
       end

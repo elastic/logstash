@@ -67,8 +67,9 @@ if $0 == __FILE__
   # TODO deprecate these arguments in the next major version. use -i only
   if ARGV == ["irb"] || ARGV == ["pry"]
     puts "Warn: option \"#{ARGV.first}\" is deprecated, use \"-i #{ARGV.first}\" or \"--interactive=#{ARGV.first}\" instead"
-    LogStash::Runner.run("bin/logstash", ["--interactive", ARGV.first])
+    exit_status = LogStash::Runner.run("bin/logstash", ["--interactive", ARGV.first])
   else
-    LogStash::Runner.run("bin/logstash", ARGV)
+    exit_status = LogStash::Runner.run("bin/logstash", ARGV)
   end
+  exit(exit_status || 0)
 end
