@@ -6,7 +6,7 @@ describe LogStash::ShutdownController do
 
   let(:check_every) { 0.01 }
   let(:check_threshold) { 100 }
-  subject { LogStash::ShutdownController.new(pipeline, check_every) }
+  subject { LogStash::ShutdownController.new(pipeline, Thread.current, check_every) }
   let(:pipeline) { double("pipeline") }
   let(:reporter) { double("reporter") }
   let(:reporter_snapshot) { double("reporter snapshot") }
