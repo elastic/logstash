@@ -1,15 +1,15 @@
 [[getting-started-with-logstash]]
 == Getting Started with Logstash
 
-This section guides you through the process of installing Logstash and verifying that everything is running properly. 
+This section guides you through the process of installing Logstash and verifying that everything is running properly.
 Later sections deal with increasingly complex configurations to address selected use cases.
 
 [float]
 [[installing-logstash]]
 === Install Logstash
 
-NOTE: Logstash requires Java 7 or later. Use the 
-http://www.oracle.com/technetwork/java/javase/downloads/index.html[official Oracle distribution] or an open-source 
+NOTE: Logstash requires Java 7 or later. Use the
+http://www.oracle.com/technetwork/java/javase/downloads/index.html[official Oracle distribution] or an open-source
 distribution such as http://openjdk.java.net/[OpenJDK].
 
 To check your Java version, run the following command:
@@ -28,8 +28,8 @@ Java HotSpot(TM) 64-Bit Server VM (build 24.45-b08, mixed mode)
 [[installing-binary]]
 ==== Installing from a downloaded binary
 
-Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment. 
-Unpack the file. On supported Linux operating systems, you can <<package-repositories,use a package manager>> to 
+Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
+Unpack the file. On supported Linux operating systems, you can <<package-repositories,use a package manager>> to
 install Logstash.
 
 [[first-event]]
@@ -41,17 +41,17 @@ To test your Logstash installation, run the most basic Logstash pipeline:
 cd logstash-{logstash_version}
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 
-The `-e` flag enables you to specify a configuration directly from the command line. Specifying configurations at the 
+The `-e` flag enables you to specify a configuration directly from the command line. Specifying configurations at the
 command line lets you quickly test configurations without having to edit a file between iterations.
-This pipeline takes input from the standard input, `stdin`, and moves that input to the standard output, `stdout`, in a 
+This pipeline takes input from the standard input, `stdin`, and moves that input to the standard output, `stdout`, in a
 structured format. Type hello world at the command prompt to see Logstash respond:
 
 [source,shell]
 hello world
 2013-11-21T01:22:14.405+0000 0.0.0.0 hello world
 
-Logstash adds timestamp and IP address information to the message. Exit Logstash by issuing a *CTRL-D* command in the 
+Logstash adds timestamp and IP address information to the message. Exit Logstash by issuing a *CTRL-D* command in the
 shell where Logstash is running.
 
-The <<advanced-pipeline,Advanced Tutorial>> expands the capabilities of your Logstash instance to cover broader 
+The <<advanced-pipeline,Advanced Tutorial>> expands the capabilities of your Logstash instance to cover broader
 use cases.
