@@ -77,4 +77,3 @@ of workers by passing a command line flag such as:
 
 [source,shell]
 bin/logstash `-w 1`
-

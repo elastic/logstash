@@ -27,10 +27,10 @@ for plugin shutdown: `stop`, `stop?`, and `close`.
 
 * Call the `stop` method from outside the plugin thread. This method signals the plugin to stop.
 * The `stop?` method returns `true` when the `stop` method has already been called for that plugin.
-* The `close` method performs final bookkeeping and cleanup after the plugin's `run` method and the plugin's thread both 
+* The `close` method performs final bookkeeping and cleanup after the plugin's `run` method and the plugin's thread both
 exit. The `close` method is a a new name for the method known as `teardown` in previous versions of Logstash.
 
-The `shutdown`, `finished`, `finished?`, `running?`, and `terminating?` methods are redundant and no longer present in the 
+The `shutdown`, `finished`, `finished?`, `running?`, and `terminating?` methods are redundant and no longer present in the
 Plugin Base class.
 
 Sample code for the new plugin shutdown APIs is https://github.com/logstash-plugins/logstash-input-example/blob/master/lib/logstash/inputs/example.rb[available].

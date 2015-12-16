@@ -4,10 +4,10 @@
 The Logstash <<working-with-plugins,plugin manager>> was introduced in the 1.5 release. This section discusses setting up
 local repositories of plugins for use on systems without access to the Internet.
 
-The procedures in this section require a staging machine running Logstash that has access to a public or private Rubygems 
+The procedures in this section require a staging machine running Logstash that has access to a public or private Rubygems
 server. This staging machine downloads and packages the files used for offline installation.
 
-See the <<private-rubygem,Private Gem Repositories>> section for information on setting up your own private 
+See the <<private-rubygem,Private Gem Repositories>> section for information on setting up your own private
 Rubygems server.
 
 Users who can work with a larger Logstash artifact size can use the *Logstash (All Plugins)* download link from the
@@ -17,15 +17,15 @@ all available plugins. You can distribute this bundle to all nodes without furth
 [float]
 === Building the Offline Package
 
-Working with offline plugins requires you to create an _offline package_, which is a compressed file that contains all of 
+Working with offline plugins requires you to create an _offline package_, which is a compressed file that contains all of
 the plugins your offline Logstash installation requires, along with the dependencies for those plugins.
 
 . Create the offline package with the `bin/plugin pack` subcommand.
 +
 When you run the `bin/plugin pack` subcommand, Logstash creates a compressed bundle that contains all of the currently
-installed plugins and the dependencies for those plugins. By default, the compressed bundle is a GZipped TAR file when you 
-run the `bin/plugin pack` subcommand on a UNIX machine. By default, when you run the `bin/plugin pack` subcommand on a 
-Windows machine, the compressed bundle is a ZIP file. See <<managing-packs,Managing Plugin Packs>> for details on changing 
+installed plugins and the dependencies for those plugins. By default, the compressed bundle is a GZipped TAR file when you
+run the `bin/plugin pack` subcommand on a UNIX machine. By default, when you run the `bin/plugin pack` subcommand on a
+Windows machine, the compressed bundle is a ZIP file. See <<managing-packs,Managing Plugin Packs>> for details on changing
 these default behaviors.
 +
 NOTE: Downloading all dependencies for the specified plugins may take some time, depending on the plugins listed.
@@ -36,7 +36,7 @@ NOTE: Downloading all dependencies for the specified plugins may take some time,
 [float]
 === Install or Update a local plugin
 
-To install or update a local plugin, use the `--local` option with the install and update commands, as in the following 
+To install or update a local plugin, use the `--local` option with the install and update commands, as in the following
 examples:
 
 .Installing a local plugin

@@ -27,3 +27,4 @@ rspec.xml
 .install-done
 .vendor
 integration_run
+.mvn/
