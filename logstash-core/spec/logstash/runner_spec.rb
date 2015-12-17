@@ -26,11 +26,11 @@ describe LogStash::Runner do
 
       before do
         allow(agent).to receive(:logger=).with(anything)
+        allow(agent).to receive(:shutdown)
       end
 
       it "should execute the agent" do
         expect(subject).to receive(:create_agent).and_return(agent)
-        expect(agent).to receive(:add_pipeline).once
         expect(agent).to receive(:execute).once
         subject.run(args)
       end
@@ -48,7 +48,9 @@ describe LogStash::Runner do
   end
 
   context "--agent" do
-    class DummyAgent < LogStash::Agent; end
+    class DummyAgent < LogStash::Agent
+      def initialize; end
+    end
 
     let(:agent_name) { "testagent" }
     subject { LogStash::Runner.new("") }
