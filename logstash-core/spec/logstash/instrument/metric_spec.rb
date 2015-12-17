@@ -3,7 +3,7 @@ require "logstash/instrument/metric"
 require "logstash/instrument/collector"
 require "spec_helper"
 
-describe LogStash::Instrument::Metric do
+xdescribe LogStash::Instrument::Metric do
   let(:collector) { [] }
   let(:base_key) { :root }
 

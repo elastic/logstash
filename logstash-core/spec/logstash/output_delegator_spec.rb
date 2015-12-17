@@ -1,6 +1,6 @@
 # encoding: utf-8
+require "logstash/output_delegator"
 require 'spec_helper'
-
 
 
 describe LogStash::OutputDelegator do
