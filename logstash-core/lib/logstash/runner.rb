@@ -127,9 +127,7 @@ class LogStash::Runner < Clamp::Command
       end
     end
 
-    pipeline_settings = {
-      :filter_workers => filter_workers
-    }
+    pipeline_settings = { "filter-workers" => filter_workers }
 
     @agent = create_agent(:logger => @logger,
                           :config_string => config_string,

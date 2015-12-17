@@ -16,7 +16,6 @@ class LogStash::Agent
     @logger = params[:logger]
     @pipelines = {}
     @pipeline_threads = {}
-    @state = clean_state
     @config_loader = LogStash::Config::Loader.new(@logger, false)
     @config_string = params[:config_string]
     @config_path = params[:config_path]
@@ -24,6 +23,14 @@ class LogStash::Agent
     @pipeline_settings = params[:pipeline_settings]
     @reload_interval = params[:reload_interval] || 5 # seconds
     @upgrade_mutex = Mutex.new
+    # @state represents the necessary information for the agent's lifecycle.
+    # this base implementation uses the configuration string itself as state.
+    # if fetch_state returns a different string, it is regarded as new state
+    # and upgrade_state will take care of stopping the previous pipeline and
+    # starting a new one
+    # a subclass of this base Agent could use more complex state objects such
+    # as a hash map containing versioning, update_at timestamp, etc.
+    @state = clean_state
   end
 
   def execute
@@ -32,14 +39,20 @@ class LogStash::Agent
 
     if @auto_reload
       Stud.interval(@reload_interval) do
-        break unless clean_state? || running_pipelines?
-        reload_state!
+        if clean_state? || running_pipelines?
+          reload_state!
+        else
+          break
+        end
       end
     else
       reload_state!
       while !Stud.stop?
-        break unless clean_state? || running_pipelines?
-        sleep 0.5
+        if clean_state? || running_pipelines?
+          sleep 0.5
+        else
+          break
+        end
       end
     end
   end
