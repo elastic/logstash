@@ -128,7 +128,6 @@ module LogStash; class Pipeline
   end
 
   def run
-    @thread = Thread.current
     @logger.terminal(LogStash::Util::DefaultsPrinter.print(@settings))
 
     start_workers
