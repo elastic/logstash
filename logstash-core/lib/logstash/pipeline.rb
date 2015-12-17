@@ -39,6 +39,16 @@ module LogStash; class Pipeline
     @outputs = nil
 
     @worker_threads = []
+    
+    # Metric object should be passed upstream, multiple pipeline share the same metric
+    # and collector only the namespace will changes.
+    # If no metric is given, we use a `NullMetric` for all internal calls.
+    # We also do this to make the changes backward compatible with previous testing of the 
+    # pipeline.
+    #
+    # This need to be configured before we evaluate the code to make
+    # sure the metric instance is correctly send to the plugin.
+    @metric = settings.fetch(:metric, Instrument::NullMetric.new)
 
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
@@ -191,6 +201,7 @@ module LogStash; class Pipeline
       running = false if signal == LogStash::SHUTDOWN
 
       @events_consumed.increment(input_batch.size)
+      metric.increment(:events_in, input_batch.size)
 
       filtered_batch = filter_batch(input_batch)
 
@@ -200,6 +211,7 @@ module LogStash; class Pipeline
       end
 
       @events_filtered.increment(filtered_batch.size)
+      metric.increment(:events_filtered, filtered_batch.size)
 
       output_batch(filtered_batch)
 

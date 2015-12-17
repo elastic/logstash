@@ -24,8 +24,8 @@ describe LogStash::Runner do
       let(:args) { ["-e", ""] }
 
       it "should execute the agent" do
-        expect(subject.agent).to receive(:add_pipeline).once
-        expect(subject.agent).to receive(:execute).once
+        expect_any_instance_of(LogStash::Agent).to receive(:add_pipeline).once
+        expect_any_instance_of(LogStash::Agent).to receive(:execute).once
         subject.run(args)
       end
     end
