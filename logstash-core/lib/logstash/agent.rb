@@ -27,6 +27,7 @@ class LogStash::Agent
     @auto_reload = params[:auto_reload]
     @pipeline_settings = params[:pipeline_settings]
     @reload_interval = params[:reload_interval] || 5 # seconds
+    @upgrade_mutex = Mutex.new
   end
 
   def execute
@@ -56,7 +57,7 @@ class LogStash::Agent
     if valid_state?(new_state)
       if new_state?(@state, new_state)
         @logger.warn("fetched new state. upgrading..", :state => new_state)
-        upgrade_state(new_state)
+        @upgrade_mutex.synchronize { upgrade_state(new_state) }
       else
         @logger.debug("same state, ignoring..")
       end
@@ -101,7 +102,9 @@ class LogStash::Agent
   end
 
   def running_pipelines?
-    @pipeline_threads.select {|_, pipeline| pipeline.alive? }.any?
+    @upgrade_mutex.synchronize do
+      @pipeline_threads.select {|_, pipeline| pipeline.alive? }.any?
+    end
   end
 
   # Override the methods below if you're implementing your own agent
