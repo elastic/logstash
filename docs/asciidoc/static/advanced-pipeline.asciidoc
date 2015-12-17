@@ -374,7 +374,7 @@ twitter {
 [[configuring-lsf]]
 ==== The Filebeat Client
 
-The https://github.com/elastic/filebeat[filebeat] client is a lightweight, resource-friendly tool that 
+The https://github.com/elastic/beats/tree/master/filebeat[filebeat] client is a lightweight, resource-friendly tool that 
 collects logs from files on the server and forwards these logs to your Logstash instance for processing. The 
 Filebeat client uses the secure Beats protocol to communicate with your Logstash instance. The 
 lumberjack protocol is designed for reliability and low latency. Filebeat uses the computing resources of 

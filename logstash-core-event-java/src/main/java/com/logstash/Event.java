@@ -28,9 +28,12 @@ public class Event implements Cloneable, Serializable {
     public static final String VERSION = "@version";
     public static final String VERSION_ONE = "1";
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final Logger DEFAULT_LOGGER = new StdioLogger();
+    private transient final ObjectMapper mapper = new ObjectMapper();
 
-    // TODO: add metadata support
+    // logger is static since once set there is no point in changing it at runtime
+    // for other reasons than in tests/specs.
+    private transient static Logger logger = DEFAULT_LOGGER;
 
     public Event()
     {
@@ -196,13 +199,13 @@ public class Event implements Cloneable, Serializable {
     }
 
     public String toString() {
-        // TODO: until we have sprintf
-        String host = (String)this.data.getOrDefault("host", "%{host}");
-        String message = (String)this.data.getOrDefault("message", "%{message}");
+        // TODO: (colin) clean this IOException handling, not sure why we bubble IOException here
         try {
-            return getTimestamp().toIso8601() + " " + host + " " + message;
+            return (getTimestamp().toIso8601() + " " + this.sprintf("%{host} %{message}"));
         } catch (IOException e) {
-            return host + " " + message;
+            String host = (String)this.data.getOrDefault("host", "%{host}");
+            String message = (String)this.data.getOrDefault("message", "%{message}");
+            return (host + " " + message);
         }
     }
 
@@ -225,18 +228,16 @@ public class Event implements Cloneable, Serializable {
             } else if (o instanceof RubySymbol) {
                 return new Timestamp(((RubySymbol) o).asJavaString());
             } else {
-                // TODO: add logging
-                //return Timestamp.now();
-                throw new IllegalArgumentException();
+                Event.logger.warn("Unrecognized " + TIMESTAMP + " value type=" + o.getClass().toString());
             }
         } catch (IllegalArgumentException e) {
-            // TODO: add error logging
-            tag(TIMESTAMP_FAILURE_TAG);
-
-            this.data.put(TIMESTAMP_FAILURE_FIELD, o);
-
-            return Timestamp.now();
+            Event.logger.warn("Error parsing " + TIMESTAMP + " string value=" + o.toString());
         }
+
+        tag(TIMESTAMP_FAILURE_TAG);
+        this.data.put(TIMESTAMP_FAILURE_FIELD, o);
+
+        return Timestamp.now();
     }
 
     public void tag(String tag) {
@@ -249,5 +250,11 @@ public class Event implements Cloneable, Serializable {
         if (!tags.contains(tag)) {
             tags.add(tag);
         }
+    }
+
+    // Event.logger is static since once set there is no point in changing it at runtime
+    // for other reasons than in tests/specs.
+    public static void setLogger(Logger logger) {
+        Event.logger = logger;
     }
 }

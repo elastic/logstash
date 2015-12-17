@@ -90,6 +90,12 @@ describe LogStash::Event do
       expect(e["[foo][2]"]).to eq(1.0)
       expect(e["[foo][3]"]).to be_nil
     end
+
+    it "should add key when setting nil value" do
+      e = LogStash::Event.new()
+      e["[foo]"] = nil
+      expect(e.to_hash).to include("foo" => nil)
+    end
   end
 
   context "timestamp" do
@@ -133,6 +139,98 @@ describe LogStash::Event do
       expect(event["tags"]).to be_nil
       event["tags"] = ["foo"]
       expect(event["tags"]).to eq(["foo"])
+    end
+  end
+
+
+  # noop logger used to test the injectable logger in Event
+  # this implementation is not complete because only the warn
+  # method is used in Event.
+  module DummyLogger
+    def self.warn(message)
+      # do nothing
+    end
+  end
+
+  context "logger" do
+
+    let(:logger) { double("Logger") }
+    after(:each) {  LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER }
+
+    # the following 2 specs are using both a real module (DummyLogger)
+    # and a mock. both tests are needed to make sure the implementation
+    # supports both types of objects.
+
+    it "should set logger using a module" do
+      LogStash::Event.logger = DummyLogger
+      expect(DummyLogger).to receive(:warn).once
+      LogStash::Event.new(TIMESTAMP => "invalid timestamp")
+    end
+
+    it "should set logger using a mock" do
+      LogStash::Event.logger = logger
+      expect(logger).to receive(:warn).once
+      LogStash::Event.new(TIMESTAMP => "invalid timestamp")
+    end
+
+    it "should unset logger" do
+      # first set
+      LogStash::Event.logger = logger
+      expect(logger).to receive(:warn).once
+      LogStash::Event.new(TIMESTAMP => "invalid timestamp")
+
+      # then unset
+      LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER
+      expect(logger).to receive(:warn).never
+      # this will produce a log line in stdout by the Java Event
+      LogStash::Event.new(TIMESTAMP => "ignore this log")
+    end
+
+
+    it "should warn on parsing error" do
+      LogStash::Event.logger = logger
+      expect(logger).to receive(:warn).once.with(/^Error parsing/)
+      LogStash::Event.new(TIMESTAMP => "invalid timestamp")
+    end
+
+    it "should warn on invalid timestamp object" do
+      LogStash::Event.logger = logger
+      expect(logger).to receive(:warn).once.with(/^Unrecognized/)
+      LogStash::Event.new(TIMESTAMP => Array.new)
+    end
+  end
+
+  context "to_hash" do
+    let (:source_hash) {  {"a" => 1, "b" => [1, 2, 3, {"h" => 1, "i" => "baz"}], "c" => {"d" => "foo", "e" => "bar", "f" => [4, 5, "six"]}} }
+    let (:source_hash_with_matada) {  source_hash.merge({"@metadata" => {"a" => 1, "b" => 2}}) }
+    subject { LogStash::Event.new(source_hash_with_matada) }
+
+    it "should include @timestamp and @version" do
+      h = subject.to_hash
+      expect(h).to include("@timestamp")
+      expect(h).to include("@version")
+      expect(h).not_to include("@metadata")
+    end
+
+    it "should include @timestamp and @version and @metadata" do
+      h = subject.to_hash_with_metadata
+      expect(h).to include("@timestamp")
+      expect(h).to include("@version")
+      expect(h).to include("@metadata")
+    end
+
+    it "should produce valid deep Ruby hash without metadata" do
+      h = subject.to_hash
+      h.delete("@timestamp")
+      h.delete("@version")
+      expect(h).to eq(source_hash)
+    end
+
+    it "should produce valid deep Ruby hash with metadata" do
+      h = subject.to_hash_with_metadata
+      h.delete("@timestamp")
+      h.delete("@version")
+      expect(h).to eq(source_hash_with_matada)
     end
   end
 end

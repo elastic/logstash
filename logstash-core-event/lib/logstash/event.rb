@@ -63,9 +63,9 @@ class LogStash::Event
   MIN_FLOAT_BEFORE_SCI_NOT = 0.0001
   MAX_FLOAT_BEFORE_SCI_NOT = 1000000000000000.0
 
-  LOGGER = Cabin::Channel.get(LogStash)
+  DEFAULT_LOGGER = Cabin::Channel.get(LogStash)
+  @@logger = DEFAULT_LOGGER
 
-  public
   def initialize(data = {})
     @cancelled = false
     @data = data
@@ -76,52 +76,43 @@ class LogStash::Event
 
     @metadata = @data.delete(METADATA) || {}
     @metadata_accessors = LogStash::Util::Accessors.new(@metadata)
-  end # def initialize
+  end
 
-  public
   def cancel
     @cancelled = true
-  end # def cancel
+  end
 
-  public
   def uncancel
     @cancelled = false
-  end # def uncancel
+  end
 
-  public
   def cancelled?
-    return @cancelled
-  end # def cancelled?
+    @cancelled
+  end
 
   # Create a deep-ish copy of this event.
-  public
   def clone
     copy = {}
     @data.each do |k,v|
       # TODO(sissel): Recurse if this is a hash/array?
       copy[k] = begin v.clone rescue v end
     end
-    return self.class.new(copy)
-  end # def clone
 
-  public
+    self.class.new(copy)
+  end
+
   def to_s
     "#{timestamp.to_iso8601} #{self.sprintf("%{host} %{message}")}"
-  end # def to_s
+  end
 
-  public
-  def timestamp; return @data[TIMESTAMP]; end # def timestamp
-  def timestamp=(val); return @data[TIMESTAMP] = val; end # def timestamp=
+  def timestamp
+    @data[TIMESTAMP]
+  end
 
-  def unix_timestamp
-    raise DeprecatedMethod
-  end # def unix_timestamp
+  def timestamp=(val)
+    @data[TIMESTAMP] = val
+  end
 
-  def ruby_timestamp
-    raise DeprecatedMethod
-  end # def unix_timestamp
-
-  public
   def [](fieldref)
     if fieldref.start_with?(METADATA_BRACKETS)
       @metadata_accessors.get(fieldref[METADATA_BRACKETS.length .. -1])
@@ -130,9 +121,8 @@ class LogStash::Event
     else
       @accessors.get(fieldref)
     end
-  end # def []
+  end
 
-  public
   def []=(fieldref, value)
     if fieldref == TIMESTAMP && !value.is_a?(LogStash::Timestamp)
       raise TypeError, "The field '@timestamp' must be a (LogStash::Timestamp, not a #{value.class} (#{value})"
@@ -145,25 +135,17 @@ class LogStash::Event
     else
       @accessors.set(fieldref, value)
     end
-  end # def []=
-
-  public
-  def fields
-    raise DeprecatedMethod
   end
 
-  public
   def to_json(*args)
     # ignore arguments to respect accepted to_json method signature
     LogStash::Json.dump(@data)
-  end # def to_json
+  end
 
-  public
   def to_hash
     @data
-  end # def to_hash
+  end
 
-  public
   def overwrite(event)
     # pickup new event @data and also pickup @accessors
     # otherwise it will be pointing on previous data
@@ -176,7 +158,6 @@ class LogStash::Event
     end
   end
 
-  public
   def include?(fieldref)
     if fieldref.start_with?(METADATA_BRACKETS)
       @metadata_accessors.include?(fieldref[METADATA_BRACKETS.length .. -1])
@@ -185,24 +166,21 @@ class LogStash::Event
     else
       @accessors.include?(fieldref)
     end
-  end # def include?
+  end
 
   # Append an event to this one.
-  public
   def append(event)
     # non-destructively merge that event with ourselves.
 
     # no need to reset @accessors here because merging will not disrupt any existing field paths
     # and if new ones are created they will be picked up.
     LogStash::Util.hash_merge(@data, event.to_hash)
-  end # append
+  end
 
-  # Remove a field or field reference. Returns the value of that field when
-  # deleted
-  public
+  # Remove a field or field reference. Returns the value of that field when deleted
   def remove(fieldref)
     @accessors.del(fieldref)
-  end # def remove
+  end
 
   # sprintf. This could use a better method name.
   # The idea is to take an event and convert it to a string based on
@@ -217,7 +195,6 @@ class LogStash::Event
   #
   # If a %{name} value is an array, then we will join by ','
   # If a %{name} value does not exist, then no substitution occurs.
-  public
   def sprintf(format)
     LogStash::StringInterpolation.evaluate(self, format)
   end
@@ -228,36 +205,18 @@ class LogStash::Event
     self["tags"] << value unless self["tags"].include?(value)
   end
 
-  private
-
-  def init_timestamp(o)
-    begin
-      timestamp = LogStash::Timestamp.coerce(o)
-      return timestamp if timestamp
-
-      LOGGER.warn("Unrecognized #{TIMESTAMP} value, setting current time to #{TIMESTAMP}, original in #{TIMESTAMP_FAILURE_FIELD}field", :value => o.inspect)
-    rescue LogStash::TimestampParserError => e
-      LOGGER.warn("Error parsing #{TIMESTAMP} string, setting current time to #{TIMESTAMP}, original in #{TIMESTAMP_FAILURE_FIELD} field", :value => o.inspect, :exception => e.message)
-    end
-
-    @data["tags"] ||= []
-    @data["tags"] << TIMESTAMP_FAILURE_TAG unless @data["tags"].include?(TIMESTAMP_FAILURE_TAG)
-    @data[TIMESTAMP_FAILURE_FIELD] = o
-
-    LogStash::Timestamp.now
-  end
-
-  public
   def to_hash_with_metadata
     @metadata.empty? ? to_hash : to_hash.merge(METADATA => @metadata)
   end
 
-  public
   def to_json_with_metadata(*args)
     # ignore arguments to respect accepted to_json method signature
     LogStash::Json.dump(to_hash_with_metadata)
-  end # def to_json
+  end
 
+  # this is used by logstash-devutils spec_helper.rb to monkey patch the Event field setter []=
+  # and add systematic encoding validation on every field set in specs.
+  # TODO: (colin) this should be moved, probably in logstash-devutils ?
   def self.validate_value(value)
     case value
     when String
@@ -272,4 +231,48 @@ class LogStash::Event
     end
   end
 
-end # class LogStash::Event
+  # depracated public methods
+  # TODO: (colin) since these depracated mothods are still exposed in 2.x we should remove them in 3.0
+
+  def unix_timestamp
+    raise DeprecatedMethod
+  end
+
+  def ruby_timestamp
+    raise DeprecatedMethod
+  end
+
+  def fields
+    raise DeprecatedMethod
+  end
+
+  # set a new logger for all Event instances
+  # there is no point in changing it at runtime for other reasons than in tests/specs.
+  # @param logger [Cabin::Channel] logger instance that will be used by all Event instances
+  def self.logger=(logger)
+    @@logger = logger
+  end
+
+  private
+
+  def logger
+    @@logger
+  end
+
+  def init_timestamp(o)
+    begin
+      timestamp = LogStash::Timestamp.coerce(o)
+      return timestamp if timestamp
+
+      logger.warn("Unrecognized #{TIMESTAMP} value, setting current time to #{TIMESTAMP}, original in #{TIMESTAMP_FAILURE_FIELD}field", :value => o.inspect)
+    rescue LogStash::TimestampParserError => e
+      logger.warn("Error parsing #{TIMESTAMP} string, setting current time to #{TIMESTAMP}, original in #{TIMESTAMP_FAILURE_FIELD} field", :value => o.inspect, :exception => e.message)
+    end
+
+    @data["tags"] ||= []
+    @data["tags"] << TIMESTAMP_FAILURE_TAG unless @data["tags"].include?(TIMESTAMP_FAILURE_TAG)
+    @data[TIMESTAMP_FAILURE_FIELD] = o
+
+    LogStash::Timestamp.now
+  end
+end

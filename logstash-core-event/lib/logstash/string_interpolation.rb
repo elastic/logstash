@@ -4,7 +4,7 @@ require "forwardable"
 
 module LogStash
   module StringInterpolation
-    extend self 
+    extend self
 
     # Floats outside of these upper and lower bounds are forcibly converted
     # to scientific notation by Float#to_s
@@ -25,6 +25,16 @@ module LogStash
 
       compiled = CACHE.get_or_default(template, nil) || CACHE.put(template, compile_template(template))
       compiled.evaluate(event)
+    end
+
+    # clear the global compiled templates cache
+    def clear_cache
+      CACHE.clear
+    end
+
+    # @return [Fixnum] the compiled templates cache size
+    def cache_size
+      CACHE.size
     end
 
     private

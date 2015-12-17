@@ -19,7 +19,7 @@ require "logstash/instrument/null_metric"
 require "logstash/instrument/collector"
 
 module LogStash; class Pipeline
-  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :metric
+  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id
 
   DEFAULT_SETTINGS = {
     :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.fifty_percent,
@@ -39,16 +39,6 @@ module LogStash; class Pipeline
     @outputs = nil
 
     @worker_threads = []
-
-    # Metric object should be passed upstream, multiple pipeline share the same metric
-    # and collector only the namespace will changes.
-    # If no metric is given, we use a `NullMetric` for all internal calls.
-    # We also do this to make the changes backward compatible with previous testing of the 
-    # pipeline.
-    #
-    # This need to be configured before we evaluate the code to make
-    # sure the metric instance is correctly send to the plugin.
-    @metric = settings.fetch(:metric, Instrument::NullMetric.new)
 
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
@@ -83,6 +73,7 @@ module LogStash; class Pipeline
     @settings = DEFAULT_SETTINGS.clone
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
+    @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
     settings.each {|setting, value| configure(setting, value) }
 
@@ -108,8 +99,12 @@ module LogStash; class Pipeline
       when nil
         # user did not specify a worker thread count
         # warn if the default is multiple
-        @logger.warn("Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads",
-                     :count_was => default, :filters => plugins) if default > 1
+
+        if default > 1
+          @logger.warn("Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads",
+                       :count_was => default, :filters => plugins)
+        end
+
         1 # can't allow the default value to propagate if there are unsafe filters
       when 0, 1
         1
@@ -133,12 +128,15 @@ module LogStash; class Pipeline
 
     start_workers
 
-    @logger.info("Pipeline started")
-    @logger.terminal("Logstash startup completed")
+    running = true
 
     # Block until all inputs have stopped
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
+
+    @running.make_true
     wait_inputs
+    @running.make_false
+
     @logger.info("Input plugins stopped! Will shutdown filter/output workers.")
 
     shutdown_flusher
@@ -149,7 +147,7 @@ module LogStash; class Pipeline
 
     # exit code
     return 0
-  end # def run
+  end
 
   def start_workers
     @inflight_batches = {}
@@ -182,7 +180,9 @@ module LogStash; class Pipeline
     end
   end
 
- def worker_loop(batch_size, batch_delay)
+  # Main body of what a worker thread does
+  # Repeatedly takes batches off the queu, filters, then outputs them
+  def worker_loop(batch_size, batch_delay)
     running = true
 
     while running
@@ -190,7 +190,6 @@ module LogStash; class Pipeline
       input_batch, signal = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
       running = false if signal == LogStash::SHUTDOWN
 
-      metric.increment(:events_in, input_batch.size)
       @events_consumed.increment(input_batch.size)
 
       filtered_batch = filter_batch(input_batch)
@@ -201,7 +200,6 @@ module LogStash; class Pipeline
       end
 
       @events_filtered.increment(filtered_batch.size)
-	    metric.increment(:events_filtered, filtered_batch.size)
 
       output_batch(filtered_batch)
 
@@ -211,13 +209,14 @@ module LogStash; class Pipeline
 
   def take_batch(batch_size, batch_delay)
     batch = []
-    # Since this is externally synchronized in `worker_loop` we can guarantee that the visibility of an insight batch
+    # Since this is externally synchronized in `worker_look` wec can guarantee that the visibility of an insight batch
     # guaranteed to be a full batch not a partial batch
     set_current_thread_inflight_batch(batch)
 
     signal = false
     batch_size.times do |t|
-      event = t==0 ? @input_queue.take : @input_queue.poll(batch_delay)
+      event = (t == 0) ? @input_queue.take : @input_queue.poll(batch_delay)
+      
       if event.nil?
         next
       elsif event == LogStash::SHUTDOWN || event == LogStash::FLUSH
@@ -380,11 +379,12 @@ module LogStash; class Pipeline
     args << {} if args.empty?
 
     klass = LogStash::Plugin.lookup(plugin_type, name)
-    
-    # Backward compatible way of adding code to 
-    plugin = klass.new(*args)
-    plugin.metric = metric
-    plugin
+
+    if plugin_type == "output"
+      LogStash::OutputDelegator.new(@logger, klass, *args)
+    else
+      klass.new(*args)
+    end
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used
@@ -393,6 +393,7 @@ module LogStash; class Pipeline
     # filter_func returns all filtered events, including cancelled ones
     filter_func(event).each { |e| block.call(e) }
   end
+
 
   # perform filters flush and yeild flushed event to the passed block
   # @param options [Hash]
@@ -405,36 +406,17 @@ module LogStash; class Pipeline
     end
   end
 
-  class FlusherObserver
-    def initialize(logger, flushing)
-      @logger = logger
-      @flushing = flushing
-    end
-
-    def update(time, result, exception)
-      # This is a safeguard in the event that the timer task somehow times out
-      # We still need to call it in the original (in case someone decides to call it directly)
-      # but this is the safeguard for timer related issues causing @flushing not to be reset to false
-      @flushing.set(false)
-
-      return unless exception
-      @logger.warn("Error during flush!",
-                   :message => exception.message,
-                   :class => exception.class.name,
-                   :backtrace => exception.backtrace)
-    end
-  end
-
   def start_flusher
-    @flusher_task = Concurrent::TimerTask.new { flush }
-    @flusher_task.execution_interval = @settings[:flush_interval]
-    @flusher_task.timeout_interval = @settings[:flush_timeout_interval]
-    @flusher_task.add_observer(FlusherObserver.new(@logger, @flushing))
-    @flusher_task.execute
+    @flusher_thread = Thread.new do
+      while Stud.stoppable_sleep(5, 0.1) { @running.false? }
+        flush
+        break if @running.false?
+      end
+    end
   end
 
   def shutdown_flusher
-    @flusher_task.shutdown
+    @flusher_thread.join
   end
 
   def flush

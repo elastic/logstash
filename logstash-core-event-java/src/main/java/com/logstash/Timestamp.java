@@ -3,6 +3,8 @@ package com.logstash;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDateTime;
+import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.jruby.Ruby;
@@ -13,9 +15,13 @@ import java.util.Date;
 @JsonSerialize(using = TimestampSerializer.class)
 public class Timestamp implements Cloneable {
 
+    // all methods setting the time object must set it in the UTC timezone
     private DateTime time;
+
     // TODO: is this DateTimeFormatter thread safe?
     private static DateTimeFormatter iso8601Formatter = ISODateTimeFormat.dateTime();
+
+    private static final LocalDateTime JAN_1_1970 = new LocalDateTime(1970, 1, 1, 0, 0);
 
     public Timestamp() {
         this.time = new DateTime(DateTimeZone.UTC);
@@ -50,7 +56,7 @@ public class Timestamp implements Cloneable {
     }
 
     public void setTime(DateTime time) {
-        this.time = time;
+        this.time = time.toDateTime(DateTimeZone.UTC);
     }
 
     public static Timestamp now() {
@@ -63,6 +69,10 @@ public class Timestamp implements Cloneable {
 
     public String toString() {
         return toIso8601();
+    }
+
+    public long usec() {
+        return new Duration(JAN_1_1970.toDateTime(DateTimeZone.UTC), this.time).getMillis();
     }
 
     @Override

@@ -44,6 +44,11 @@ describe LogStash::Event do
         subject["@metadata"] = { "action" => "index" }
         expect(subject["[@metadata][action]"]).to eq("index")
       end
+
+      it "should add key when setting nil value" do
+        subject["[baz]"] = nil
+        expect(subject.to_hash).to include("baz" => nil)
+      end
     end
 
     context "#sprintf" do
@@ -314,7 +319,11 @@ describe LogStash::Event do
     end
 
     context "timestamp initialization" do
-      let(:logger) { double("logger") }
+      let(:logger_mock) { double("logger") }
+
+      after(:each) do
+        LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER
+      end
 
       it "should coerce timestamp" do
         t = Time.iso8601("2014-06-12T00:12:17.114Z")
@@ -328,10 +337,10 @@ describe LogStash::Event do
       end
 
       it "should tag for invalid value" do
-        event = LogStash::Event.new("@timestamp" => :foo)
+        event = LogStash::Event.new("@timestamp" => "foo")
         expect(event.timestamp.to_i).to be_within(1).of Time.now.to_i
         expect(event["tags"]).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
-        expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq(:foo)
+        expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq("foo")
 
         event = LogStash::Event.new("@timestamp" => 666)
         expect(event.timestamp.to_i).to be_within(1).of Time.now.to_i
@@ -340,7 +349,9 @@ describe LogStash::Event do
       end
 
       it "should warn for invalid value" do
-        expect(LogStash::Event::LOGGER).to receive(:warn).twice
+        LogStash::Event.logger = logger_mock
+
+        expect(logger_mock).to receive(:warn).twice
 
         LogStash::Event.new("@timestamp" => :foo)
         LogStash::Event.new("@timestamp" => 666)
@@ -354,7 +365,9 @@ describe LogStash::Event do
       end
 
       it "should warn for invalid string format" do
-        expect(LogStash::Event::LOGGER).to receive(:warn)
+        LogStash::Event.logger = logger_mock
+
+        expect(logger_mock).to receive(:warn)
         LogStash::Event.new("@timestamp" => "foo")
       end
     end
@@ -506,11 +519,11 @@ describe LogStash::Event do
     let(:event2) { LogStash::Event.new({ "host" => "bar", "message" => "foo"}) }
 
     it "should cache only one template" do
-      LogStash::StringInterpolation::CACHE.clear
+      LogStash::StringInterpolation.clear_cache
       expect {
         event1.to_s
         event2.to_s
-      }.to change { LogStash::StringInterpolation::CACHE.size }.by(1)
+      }.to change { LogStash::StringInterpolation.cache_size }.by(1)
     end
 
     it "return the string containing the timestamp, the host and the message" do

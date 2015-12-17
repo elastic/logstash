@@ -10,6 +10,8 @@ require "concurrent/atomic/atomic_fixnum"
 module LogStash; class OutputDelegator
   attr_reader :workers, :config, :worker_count
 
+  # The *args this takes are the same format that a Outputs::Base takes. A list of hashes with parameters in them
+  # Internally these just get merged together into a single hash
   def initialize(logger, klass, *args)
     @logger = logger
     @config = args.reduce({}, :merge)
