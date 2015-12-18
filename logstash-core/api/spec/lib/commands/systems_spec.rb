@@ -20,7 +20,7 @@ describe LogStash::Api::SystemInfoCommand do
     end
 
     it "include hostname information" do
-      expect(report).to include("host_name" => a_kind_of(String))
+      expect(report).to include("hostname" => a_kind_of(String))
     end
 
   end
