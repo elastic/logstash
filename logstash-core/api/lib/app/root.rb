@@ -6,7 +6,7 @@ module LogStash::Api
 
     get "/" do
       content = { "name" => "Logstash API",
-                  "version" => { "number" => "0.1.0" },
+                  "version" => { "number" => LOGSTASH_CORE_VERSION },
                 }
       respond_with content
     end
