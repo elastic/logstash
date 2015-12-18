@@ -18,45 +18,36 @@ class LogStash::Agent
     @logger = params[:logger]
     @pipelines = {}
      
-    @node_name = params[:node_name] || Socket.gethostname
+    @node_name = options[:node_name] || Socket.gethostname
     @pipeline_threads = {}
+    @state = clean_state
     @config_loader = LogStash::Config::Loader.new(@logger, false)
     @config_string = params[:config_string]
     @config_path = params[:config_path]
     @auto_reload = params[:auto_reload]
-    @pipeline_settings = params[:pipeline_settings]
     @reload_interval = params[:reload_interval] || 5 # seconds
-    @upgrade_mutex = Mutex.new
-    # @state represents the necessary information for the agent's lifecycle.
-    # this base implementation uses the configuration string itself as state.
-    # if fetch_state returns a different string, it is regarded as new state
-    # and upgrade_state will take care of stopping the previous pipeline and
-    # starting a new one
-    # a subclass of this base Agent could use more complex state objects such
-    # as a hash map containing versioning, update_at timestamp, etc.
-    @state = clean_state
   end
 
   def execute
     @thread = Thread.current
     @logger.info("starting agent", :state => @state)
+<<<<<<< HEAD
+    reload_state
+    if @auto_reload
+      Stud.interval(5) { reload_state }
+=======
 
     if @auto_reload
       Stud.interval(@reload_interval) do
-        if clean_state? || running_pipelines?
-          reload_state!
-        else
-          break
-        end
+        break unless clean_state? || running_pipelines?
+        reload_state!
       end
+>>>>>>> d1c7f1a... add tests to agent. stop agent if pipeline terminates
     else
       reload_state!
       while !Stud.stop?
-        if clean_state? || running_pipelines?
-          sleep 0.5
-        else
-          break
-        end
+        break unless clean_state? || running_pipelines?
+        sleep 0.5
       end
     end
   end
@@ -65,12 +56,12 @@ class LogStash::Agent
     shutdown_pipelines
   end
 
-  def reload_state!
+  def reload_state
     new_state = fetch_state
     if valid_state?(new_state)
       if new_state?(@state, new_state)
         @logger.warn("fetched new state. upgrading..", :state => new_state)
-        @upgrade_mutex.synchronize { upgrade_state(new_state) }
+        upgrade_state(new_state)
       else
         @logger.debug("same state, ignoring..")
       end
@@ -105,29 +96,33 @@ class LogStash::Agent
     return unless @pipelines[id]
     @logger.warn("stopping pipeline", :id => id)
     @pipelines[id].shutdown do
-      LogStash::ShutdownController.start(@pipelines[id], @pipeline_threads[id])
+      # TODO uncomment once shutdown controller can be stopped
+      #LogStash::ShutdownController.start(@pipelines[id])
     end
     @pipeline_threads[id].join
   end
 
   def shutdown_pipelines
-    @pipelines.each { |id, _| stop_pipeline(id) }
+    @pipelines.each do |id, pipeline|
+      stop_pipeline(id)
+      #pipeline.shutdown do
+      #  ::LogStash::ShutdownController.start(pipeline)
+      #end
+    end
   end
 
   def running_pipelines?
-    @upgrade_mutex.synchronize do
-      @pipeline_threads.select {|_, pipeline| pipeline.alive? }.any?
-    end
+    @pipeline_threads.select {|_, pipeline| pipeline.alive? }.any?
   end
 
   # Override the methods below if you're implementing your own agent
   def upgrade_state(new_state)
     stop_pipeline("base")
-    add_pipeline("base", new_state, @pipeline_settings)
+    add_pipeline("base", new_state)
   rescue => e
     @logger.error("failed to update state", :new_state => new_state, :message => e.message, :backtrace => e.backtrace)
     @logger.warn("reverting to previous state", :state => @state)
-    add_pipeline("base", @state, @pipeline_settings) unless clean_state?
+    add_pipeline("base", @state) unless clean_state?
     @state
   else
     @state = new_state

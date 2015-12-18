@@ -1,0 +1,219 @@
+# YAML notes
+#   |- means 'scalar block' useful for formatted text
+#   > means 'scalar block' but it chomps all newlines. Useful 
+#     for unformatted text.
+en:
+  oops: |-
+    The error reported is: 
+      %{error}
+  logstash:
+    error: >-
+      Error: %{error}
+    environment:
+      jruby-required:  >-
+        JRuby is required
+      missing-jars: >-
+        Could not find jar files under %{pattern}
+    pipeline:
+      worker-error: |-
+        A plugin had an unrecoverable error. Will restart this plugin.
+          Plugin: %{plugin}
+          Error: %{error}
+      worker-error-debug: |-
+        A plugin had an unrecoverable error. Will restart this plugin.
+          Plugin: %{plugin}
+          Error: %{error}
+          Exception: %{exception}
+          Stack: %{stacktrace}
+      plugin-loading-error: >-
+        Couldn't find any %{type} plugin named '%{name}'. Are you
+        sure this is correct? Trying to load the %{name} %{type} plugin
+        resulted in this error: %{error}
+      plugin-type-loading-error: >-
+        Could not find any plugin type named '%{type}'. Check for typos.
+        Valid plugin types are 'input' 'filter' and 'output'
+      output-worker-unsupported: >-
+        %{plugin} output plugin: setting 'workers => %{worker_count}' is not
+        supported by this plugin. I will continue working as if you had not set
+        this setting.
+      output-worker-unsupported-with-message: >-
+        %{plugin} output plugin: setting 'workers => %{worker_count}' is not
+        supported by this plugin. I will continue working as if you had not set
+        this setting.
+    plugin:
+      deprecated_milestone: >-
+        %{plugin} plugin is using the 'milestone' method to declare the version
+        of the plugin this method is deprecated in favor of declaring the
+        version inside the gemspec.
+      no_version: >-
+        %{name} plugin doesn't have a version. This plugin isn't well
+         supported by the community and likely has no maintainer.
+      version:
+        0-9-x:
+         Using version 0.9.x %{type} plugin '%{name}'. This plugin should work but
+         would benefit from use by folks like you. Please let us know if you
+         find bugs or have suggestions on how to improve this plugin.
+        0-1-x: >-
+         Using version 0.1.x %{type} plugin '%{name}'. This plugin isn't well
+         supported by the community and likely has no maintainer.
+    agent:
+      sighup: >-
+        SIGHUP received.
+      sigint: >-
+        SIGINT received. Shutting down the pipeline.
+      sigterm: >-
+        SIGTERM received. Shutting down the pipeline.
+      slow_shutdown: |-
+        Received shutdown signal, but pipeline is still waiting for in-flight events
+        to be processed. Sending another ^C will force quit Logstash, but this may cause
+        data loss.
+      forced_sigint: >-
+        SIGINT received. Terminating immediately..
+    runner:
+      short-help: |-
+        usage:
+          bin/logstash -f CONFIG_FILE [-t] [--quiet|verbose|debug] [-w COUNT] [-l LOG]
+          bin/logstash -e CONFIG_STR [-t] [--quiet|verbose|debug] [-w COUNT] [-l LOG]
+          bin/logstash -i SHELL [--quiet|verbose|debug]
+          bin/logstash -V [--verbose|debug]
+          bin/logstash --help
+      missing-configuration: >-
+        No configuration file was specified. Perhaps you forgot to provide
+        the '-f yourlogstash.conf' flag?
+      invalid-shell: >-
+        Invalid option for interactive Ruby shell. Use either "irb" or "pry"
+      configtest-flag-information: |-
+        You may be interested in the '--configtest' flag which you can use to validate
+        logstash's configuration before you choose to restart a running system.
+      configuration:
+        obsolete: >-
+          The setting `%{name}` in plugin `%{plugin}` is obsolete and is no
+          longer available. %{extra} If you have any questions about this, you
+          are invited to visit https://discuss.elastic.co/c/logstash and ask.
+        file-not-found: |-
+          No config files found: %{path}
+          Can you make sure this path is a logstash config file?
+        scheme-not-supported: |-
+          URI scheme not supported: %{path}
+          Either pass a local file path or "file|http://" URI
+        fetch-failed: |-
+          Unable to fetch config from: %{path}
+          Reason: %{message}
+        setting_missing: |-
+          Missing a required setting for the %{plugin} %{type} plugin:
+
+            %{type} {
+              %{plugin} {
+                %{setting} => # SETTING MISSING
+                ...
+              }
+            }
+        setting_invalid: |-
+          Invalid setting for %{plugin} %{type} plugin:
+
+            %{type} {
+              %{plugin} {
+                # This setting must be a %{value_type}
+                # %{note}
+                %{setting} => %{value}
+                ...
+              }
+            }
+        invalid_plugin_settings: >-
+          Something is wrong with your configuration.
+        invalid_plugin_settings_duplicate_keys: |-
+          Duplicate keys found in your configuration: [%{keys}]
+          At line: %{line}, column %{column} (byte %{byte})
+          after %{after}
+        invalid_plugin_register: >-
+          Cannot register %{plugin} %{type} plugin.
+          The error reported is: 
+            %{error}
+        plugin_path_missing: >-
+          You specified a plugin path that does not exist: %{path}
+        no_plugins_found: |-
+          Could not find any plugins in "%{path}"
+          I tried to find files matching the following, but found none: 
+            %{plugin_glob}
+        log_file_failed: |-
+          Failed to open %{path} for writing: %{error}
+
+          This is often a permissions issue, or the wrong 
+          path was specified?
+      flag:
+        # Note: Wrap these at 55 chars so they display nicely when clamp emits
+        # them in an 80-character terminal
+        config: |+
+          Load the logstash config from a specific file
+          or directory.  If a directory is given, all
+          files in that directory will be concatenated
+          in lexicographical order and then parsed as a
+          single config file. You can also specify
+          wildcards (globs) and any matched files will
+          be loaded in the order described above.
+        config-string: |+
+          Use the given string as the configuration
+          data. Same syntax as the config file. If no
+          input is specified, then the following is
+          used as the default input:
+          "%{default_input}"
+          and if no output is specified, then the
+          following is used as the default output:
+          "%{default_output}"
+          If you wish to use both defaults, please use
+          the empty string for the '-e' flag.
+        configtest: |+
+          Check configuration for valid syntax and then exit.
+        pipeline-workers: |+
+          Sets the number of pipeline workers to run.
+        pipeline-batch-size: |+
+          Size of batches the pipeline is to work in.
+        pipeline-batch-delay: |+
+          When creating pipeline batches, how long to wait while polling
+          for the next event.
+        log: |+
+          Write logstash internal logs to the given
+          file. Without this flag, logstash will emit
+          logs to standard output.
+        verbosity: |+
+          Increase verbosity of logstash internal logs.
+          Specifying once will show 'informational'
+          logs. Specifying twice will show 'debug'
+          logs. This flag is deprecated. You should use
+          --verbose or --debug instead.
+        version: |+
+          Emit the version of logstash and its friends,
+          then exit.
+        pluginpath: |+
+          A path of where to find plugins. This flag
+          can be given multiple times to include
+          multiple paths. Plugins are expected to be
+          in a specific directory hierarchy:
+          'PATH/logstash/TYPE/NAME.rb' where TYPE is
+          'inputs' 'filters', 'outputs' or 'codecs'
+          and NAME is the name of the plugin.
+        quiet: |+
+          Quieter logstash logging. This causes only 
+          errors to be emitted.
+        verbose: |+
+          More verbose logging. This causes 'info' 
+          level logs to be emitted.
+        debug: |+
+          Most verbose logging. This causes 'debug'
+          level logs to be emitted.
+        unsafe_shutdown: |+
+          Force logstash to exit during shutdown even
+          if there are still inflight events in memory.
+          By default, logstash will refuse to quit until all
+          received events have been pushed to the outputs.
+        rubyshell: |+
+          Drop to shell instead of running as normal.
+          Valid shells are "irb" and "pry"
+<<<<<<< 25b8d151177c0104ce6d229403458689b841482b
+        node_name: |+
+          Specify the name of this logstash instance, if no value is given
+          it will default to the current hostname.
+=======
+>>>>>>> Pluggable agents
+        agent: |+
+          Specify an alternate agent plugin name.
