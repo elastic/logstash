@@ -17,6 +17,7 @@ require "logstash/pipeline_reporter"
 require "logstash/instrument/metric"
 require "logstash/instrument/null_metric"
 require "logstash/instrument/collector"
+require "logstash/output_delegator"
 
 module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :metric
