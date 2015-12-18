@@ -255,7 +255,12 @@ module LogStash; class Pipeline
     outputs_events = batch.reduce(Hash.new { |h, k| h[k] = [] }) do |acc, event|
       # We ask the AST to tell us which outputs to send each event to
       # Then, we stick it in the correct bin
-      output_func(event).each do |output|
+      outputs_for_event = output_func(event)
+      # While output_func will never return anything other than an Array '[]', we have lots of legacy specs
+      # That monkeypatch it and return nil :(. At some point we can deprecate this after
+      # mass updating plugins
+      break if outputs_for_event.nil?
+      outputs_for_event.each do |output|
         acc[output] << event
       end
       acc
