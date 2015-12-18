@@ -67,7 +67,7 @@ class LogStash::Runner < Clamp::Command
     :attribute_name => :config_test
 
   option "--[no-]allow-unsafe-shutdown", :flag,
-    I18n.t("logstash.agent.flag.unsafe_shutdown"),
+    I18n.t("logstash.runner.flag.unsafe_shutdown"),
     :attribute_name => :unsafe_shutdown,
     :default => false
 
@@ -80,6 +80,10 @@ class LogStash::Runner < Clamp::Command
            :attribute_name => :metric,
            :default => false
 
+  option ["-n", "--node-name"], "NAME", 
+    I18n.t("logstash.runner.flag.node_name"),
+    :attribute_name => :node_name
+
   attr_reader :agent
 
   def execute
@@ -91,8 +95,8 @@ class LogStash::Runner < Clamp::Command
     # Configure Logstash logging facility, this need to be done before everything else to
     # make sure the logger has the correct settings and the log level is correctly defined.
     configure_logging(log_file)
-
-    @agent = LogStash::Agent.new({ :collect_metric => metric?, :logger => @logger, :debug => debug? })
+ 
+    @agent = LogStash::Agent.new({ :collect_metric => metric?, :logger => @logger, :debug => debug?, :node_name => node_name })
 
     LogStash::Util::set_thread_name(self.class.name)
 

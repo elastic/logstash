@@ -9,18 +9,22 @@ require "logstash/instrument/collector"
 require "logstash/instrument/metric"
 require "logstash/pipeline"
 require "logstash/webserver"
-require "uri"
 require "stud/trap"
+require "uri"
+require "socket"
+require "securerandom"
 
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
 
   attr_writer :logger
-  attr_reader :metric, :debug
+  attr_reader :metric, :debug, :node_name
 
   def initialize(options = {})
     @pipelines = {}
+     
+    @node_name = options[:node_name] || Socket.gethostname
     @collect_metric = options.fetch(:collect_metric, false)
     @logger = options[:logger]
     @debug  = options.fetch(:debug, false)
@@ -55,6 +59,10 @@ class LogStash::Agent
                     :metric => metric.namespace(pipeline_id))
 
     @pipelines[pipeline_id] = LogStash::Pipeline.new(config_str, settings)
+  end
+
+  def node_uuid
+    @node_uuid ||= SecureRandom.uuid
   end
 
   private
