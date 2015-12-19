@@ -21,11 +21,11 @@ Be sure to specify the correct value for the `--version` option during installat
 [float]
 === Configuration Changes
 
-The Elasticsearch output plugin configuration has the following changes:
+The [Elasticsearch output plugin](https://www.elastic.co/guide/en/logstash/2.0/plugins-outputs-elasticsearch.html) configuration has the following changes:
 
 * The `host` configuration option is now `hosts`, allowing you to specify multiple hosts and associated ports in the 
 `myhost:9200` format
-* New options: `bind_host`, `bind_port`, `cluster`, `embedded`, `embedded_http_port`, `port`, `sniffing_delay`
+* New options: `sniffing_delay`
 * The `max_inflight_requests` option, which was deprecated in the 1.5 release, is now removed
 * Since the `hosts` option allows specification of ports for the hosts, the redundant `port` option is now removed
 * The `node_name` and `protocol` options have been moved to the `elasticsearch_java` plugin
