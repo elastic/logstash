@@ -38,8 +38,8 @@ module LogStash module Instrument
       if block_given?
         start_time = Time.now
         content = block.call
-        duration = Time.now - start_time
-        gauge(key, duration)
+        duration = (Time.now - start_time) * 1000 # Records in Milliseconds
+        collector.push(namespace_information, key, :mean, :increment, duration)
         return content
       else
         raise MetricNoBlockProvided
