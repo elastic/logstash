@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/instrument/metric"
 require "logstash/instrument/collector"
+require_relative "../../support/matchers"
 require "spec_helper"
 
 describe LogStash::Instrument::Metric do
@@ -61,6 +62,24 @@ describe LogStash::Instrument::Metric do
 
     it "raise an exception if the key is nil" do
       expect { subject.gauge(nil, 20) }.to raise_error(LogStash::Instrument::MetricNoKeyProvided)
+    end
+  end
+
+  context "#time" do
+    let(:sleep_time) { 2 }
+    let(:sleep_time_ms) { sleep_time * 1000 }
+      
+    it "records the duration" do
+      subject.time(:duration_ms) { sleep(sleep_time) }
+      expect(collector.last).to be_within(sleep_time_ms).of(sleep_time_ms + 0.1)
+      expect(collector[0]).to match([:root])
+      expect(collector[1]).to be(:duration_ms)
+      expect(collector[2]).to be(:mean)
+    end
+
+    it "returns the value of the executed block" do
+      x = 1
+      expect(subject.time(:testing) { x + 1 }).to eq(2)
     end
   end
 

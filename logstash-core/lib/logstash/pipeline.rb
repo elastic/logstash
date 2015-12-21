@@ -18,6 +18,7 @@ require "logstash/instrument/metric"
 require "logstash/instrument/null_metric"
 require "logstash/instrument/collector"
 require "logstash/output_delegator"
+require "logstash/filter_delegator"
 
 module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :metric, :logger
@@ -106,7 +107,7 @@ module LogStash; class Pipeline
     safe_filters, unsafe_filters = @filters.partition(&:threadsafe?)
 
     if unsafe_filters.any?
-      plugins = unsafe_filters.collect { |f| f.class.config_name }
+      plugins = unsafe_filters.collect { |f| f.config_name }
       case thread_count
       when nil
         # user did not specify a worker thread count
@@ -403,6 +404,8 @@ module LogStash; class Pipeline
 
     if plugin_type == "output"
       LogStash::OutputDelegator.new(@logger, klass, default_output_workers, *args)
+    elsif plugin_type == "filter"
+      LogStash::FilterDelegator.new(@logger, klass, metric, *args)
     else
       klass.new(*args)
     end

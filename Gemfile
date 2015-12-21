@@ -17,7 +17,7 @@ gem "stud", "~> 0.0.22"
 gem "fpm", "~> 1.3.3", :group => :build
 gem "rubyzip", "~> 1.1.7", :group => :build
 gem "gems", "~> 0.8.3", :group => :build
-gem "rack-test", require: "rack/test", :group => :development
+gem "rack-test", :require => "rack/test", :group => :development
 gem "flores", "~> 0.0.6"
 gem "logstash-output-elasticsearch"
 gem "logstash-codec-plain", ">= 0"
