@@ -31,6 +31,8 @@ module LogStash; class Pipeline
   def initialize(config_str, settings = {})
     @pipeline_id = settings[:pipeline_id] || self.object_id
     @logger = Cabin::Channel.get(LogStash)
+    @settings = DEFAULT_SETTINGS.clone
+    settings.each {|setting, value| configure(setting, value) }
     @reporter = LogStash::PipelineReporter.new(@logger, self)
 
     @inputs = nil
@@ -66,12 +68,10 @@ module LogStash; class Pipeline
     # in-flight buffers
     @input_queue_pop_mutex = Mutex.new
     @input_threads = []
-    @settings = DEFAULT_SETTINGS.clone
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
-    settings.each {|setting, value| configure(setting, value) }
 
     start_flusher
   end # def initialize
@@ -385,10 +385,14 @@ module LogStash; class Pipeline
     klass = LogStash::Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      LogStash::OutputDelegator.new(@logger, klass, *args)
+      LogStash::OutputDelegator.new(@logger, klass, default_output_workers, *args)
     else
       klass.new(*args)
     end
+  end
+
+  def default_output_workers
+    @settings[:pipeline_workers] || @settings[:default_pipeline_workers]
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used

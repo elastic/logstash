@@ -8,18 +8,23 @@ require "concurrent/atomic/atomic_fixnum"
 #
 # This plugin also records some basic statistics
 module LogStash; class OutputDelegator
-  attr_reader :workers, :config, :worker_count
+  attr_reader :workers, :config, :worker_count, :threadsafe
 
   # The *args this takes are the same format that a Outputs::Base takes. A list of hashes with parameters in them
   # Internally these just get merged together into a single hash
-  def initialize(logger, klass, *args)
+  def initialize(logger, klass, default_worker_count, *args)
     @logger = logger
+    @threadsafe = klass.threadsafe?
     @config = args.reduce({}, :merge)
     @klass = klass
-    @worker_count = @config["workers"] || 1
+    @worker_count = calculate_worker_count(default_worker_count)
+
+    warn_on_worker_override!
 
     @worker_queue = SizedQueue.new(@worker_count)
 
+    # We define this as an array regardless of threadsafety
+    # to make reporting simpler
     @workers = @worker_count.times.map do
       w = @klass.new(*args)
       w.register
@@ -27,7 +32,35 @@ module LogStash; class OutputDelegator
       w
     end
 
+
     @events_received = Concurrent::AtomicFixnum.new(0)
+
+    if threadsafe
+      @threadsafe_worker = @workers.first
+      self.define_singleton_method(:multi_receive, method(:threadsafe_multi_receive))
+    else
+      self.define_singleton_method(:multi_receive, method(:worker_multi_receive))
+    end
+  end
+
+  def warn_on_worker_override!
+    # The user has configured extra workers, but this plugin doesn't support it :(
+    if @config["workers"] && @config["workers"] > 1 && @klass.workers_not_supported?
+      message = @workers_not_supported_message
+      if message
+        @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported-with-message", :plugin => self.class.config_name, :worker_count => @workers, :message => message))
+      else
+        @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported", :plugin => self.class.config_name, :worker_count => @workers))
+      end
+    end
+  end
+
+  def calculate_worker_count(default_worker_count)
+    if @threadsafe || @klass.workers_not_supported?
+      1
+    else
+      @config["workers"] || default_worker_count
+    end
   end
 
   def config_name
@@ -38,7 +71,14 @@ module LogStash; class OutputDelegator
     @workers.each {|w| w.register}
   end
 
-  def multi_receive(events)
+  # Threadsafe outputs have a much simpler
+  def threadsafe_multi_receive(events)
+    @events_received.increment(events.length)
+
+    @threadsafe_worker.multi_receive(events)
+  end
+
+  def worker_multi_receive(events)
     @events_received.increment(events.length)
 
     worker = @worker_queue.pop
@@ -62,7 +102,12 @@ module LogStash; class OutputDelegator
     @events_received.value
   end
 
+  # There's no concept of 'busy' workers for a threadsafe plugin!
   def busy_workers
-    @worker_queue.size
+    if @threadsafe
+      0
+    else
+      @workers.size - @worker_queue.size
+    end
   end
 end end
