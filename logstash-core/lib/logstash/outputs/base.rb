@@ -27,15 +27,28 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   attr_reader :worker_plugins, :available_workers, :workers, :worker_plugins
 
+  def self.declare_threadsafe!
+    declare_workers_not_supported!
+    @threadsafe = true
+  end
+
+  def self.threadsafe?
+    @threadsafe == true
+  end
+
+  def self.declare_workers_not_supported!(message=nil)
+    @workers_not_supported_message = message
+    @workers_not_supported = true
+  end
+
+  def self.workers_not_supported?
+    @workers_not_supported == true
+  end
+
   public
+  # TODO: Remove this in the next major version after Logstash 2.x
   def workers_not_supported(message=nil)
-    return if @workers == 1
-    if message
-      @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported-with-message", :plugin => self.class.config_name, :worker_count => @workers, :message => message))
-    else
-      @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported", :plugin => self.class.config_name, :worker_count => @workers))
-    end
-    @workers = 1
+    raise ArgumentError, "Outputs::Base#workers_not_supported is no longer a valid part of the logstash API, please use the class method Outputs::Base.declare_workers_not_supported!"
   end
 
   public
