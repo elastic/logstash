@@ -5,7 +5,7 @@ require 'puma/binder'
 require 'puma/configuration'
 require 'puma/commonlogger'
 
-module LogStash
+module LogStash 
   class WebServer
 
   extend Forwardable
@@ -81,6 +81,4 @@ module LogStash
     @config.load
     @options = @config.options
   end
-
-  end
-end
+end; end

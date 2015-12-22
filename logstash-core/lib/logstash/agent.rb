@@ -17,9 +17,8 @@ require "securerandom"
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
-
   attr_writer :logger
-  attr_reader :metric, :debug, :node_name
+  attr_reader :metric, :debug, :node_name, :started_at, :pipelines
 
   def initialize(options = {})
     @pipelines = {}
@@ -28,10 +27,14 @@ class LogStash::Agent
     @collect_metric = options.fetch(:collect_metric, false)
     @logger = options[:logger]
     @debug  = options.fetch(:debug, false)
+
+    @started_at = Time.now
+
     configure_metric
   end
 
   def execute
+
     # Make SIGINT/SIGTERM shutdown the pipeline.
     sigint_id = trap_sigint()
     sigterm_id = trap_sigterm()
@@ -63,6 +66,13 @@ class LogStash::Agent
 
   def node_uuid
     @node_uuid ||= SecureRandom.uuid
+  end
+
+  # Calculate the Logstash uptime in milliseconds
+  # 
+  # @return [Fixnum] Uptime in milliseconds
+  def uptime
+    ((Time.now.to_f - started_at.to_f) * 1000.0).to_i
   end
 
   private
@@ -121,7 +131,7 @@ class LogStash::Agent
       }
       output {
         elasticsearch {
-          flush_size => 1
+          flush_size => 10
           hosts => "127.0.0.1"
           index => "metrics-%{+YYYY.MM.dd}"
         }

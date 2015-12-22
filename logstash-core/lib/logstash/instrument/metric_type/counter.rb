@@ -7,12 +7,6 @@ module LogStash module Instrument module MetricType
     def initialize(namespaces, key, value = 0)
       super(namespaces, key)
 
-      # TODO
-      # This should be a `LongAdder`,
-      # will have to create a rubyext for it and support jdk7
-      # look at the elasticsearch source code.
-      # LongAdder only support decrement of one?
-      # Most of the time we will be adding
       @counter = Concurrent::AtomicFixnum.new(value)
     end
 
