@@ -3,7 +3,7 @@ require "logstash/instrument/metric_type/base"
 require "concurrent"
 
 module LogStash module Instrument module MetricType
-  class Mean < LogStash::Instrument::MetricType::Base
+  class Mean < Base
     def initialize(namespaces, key)
       super(namespaces, key)
 
@@ -13,7 +13,7 @@ module LogStash module Instrument module MetricType
 
     def increment(value = 1)
       @counter.increment
-      @sum.increment(value = 1)
+      @sum.increment(value)
     end
 
     def decrement(value = 1)
@@ -22,7 +22,11 @@ module LogStash module Instrument module MetricType
     end
 
     def mean
-      @sum.value / @counter.value
+      if @counter > 0 
+        @sum.value / @counter.value
+      else
+        0
+      end
     end
 
     def to_hash

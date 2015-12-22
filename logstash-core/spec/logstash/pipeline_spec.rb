@@ -62,7 +62,7 @@ class DummyOutput < LogStash::Outputs::Base
 
   def register
   end
-  
+
   def receive(event)
     @events << event
   end
@@ -400,7 +400,7 @@ describe LogStash::Pipeline do
         }
       }
       filter {
-        multiline { 
+        multiline {
           pattern => "^NeverMatch"
           negate => true
           what => "previous"
@@ -412,7 +412,7 @@ describe LogStash::Pipeline do
       EOS
     end
     let(:output) { DummyOutput.new }
-    
+
     before do
       allow(DummyOutput).to receive(:new).with(any_args).and_return(output)
       allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
@@ -448,8 +448,8 @@ describe LogStash::Pipeline do
 
     it "should handle evaluating different config" do
       # When the functions are compiled from the AST it will generate instance
-      # variables that are unique to the actual config, the intance are pointing
-      # to conditionals/plugins.
+      # variables that are unique to the actual config, the instances are pointing
+      # to conditionals and/or plugins.
       #
       # Before the `defined_singleton_method`, the definition of the method was
       # not unique per class, but the `instance variables` were unique per class.
@@ -461,6 +461,55 @@ describe LogStash::Pipeline do
       expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
       expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
       expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+    end
+  end
+
+  context "#started_at" do
+    let(:config) do
+      <<-EOS
+      input {
+        generator {}
+      }
+      EOS
+    end
+
+    subject { described_class.new(config) }
+
+    it "returns nil when the pipeline isnt started" do
+      expect(subject.started_at).to be_nil
+    end
+
+    it "return when the pipeline started working" do
+      t = Thread.new { subject.run }
+      sleep(0.1)
+      expect(subject.started_at).to be < Time.now
+      t.kill rescue nil
+    end
+  end
+
+  context "#uptime" do
+    let(:config) do
+      <<-EOS
+      input {
+        generator {}
+      }
+      EOS
+    end
+    subject { described_class.new(config) }
+
+    context "when the pipeline is not started" do
+      it "returns 0" do
+        expect(subject.uptime).to eq(0)
+      end
+    end
+
+    context "when the pipeline is started" do
+      it "return the duration in milliseconds" do
+        t = Thread.new { subject.run }
+        sleep(0.1)
+        expect(subject.uptime).to be > 0
+        t.kill rescue nil
+      end
     end
   end
 end

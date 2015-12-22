@@ -19,13 +19,15 @@ module LogStash module Instrument
     include Observable
     include Singleton
 
-    SNAPSHOT_ROTATION_TIME_SECS = 1 # seconds
+    SNAPSHOT_ROTATION_TIME_SECS = 10 # seconds
     SNAPSHOT_ROTATION_TIMEOUT_INTERVAL_SECS = 10 * 60 # seconds
 
     def initialize
       @metric_store = MetricStore.new
 
       start_periodic_snapshotting
+
+      @async_worker_pool
     end
 
     # The metric library will call this unique interface
@@ -35,14 +37,14 @@ module LogStash module Instrument
     # If there is a problem with the key or the type of metric we will record an error 
     # but we wont stop processing events, theses errors are not considered fatal.
     # 
-    def push(*args)
-      namespaces_path, key, type, metric_type_params = args
-
+    def push(namespaces_path, key, type, *metric_type_params)
       begin
         metric = @metric_store.fetch_or_store(namespaces_path, key) do
           LogStash::Instrument::MetricType.create(type, namespaces_path, key)
         end
+
         metric.execute(*metric_type_params)
+
         changed # we had changes coming in so we can notify the observers
       rescue MetricStore::NamespacesExpectedError => e
         logger.error("Collector: Cannot record metric", :exception => e)
@@ -51,9 +53,12 @@ module LogStash module Instrument
                      :type => type,
                      :namespaces_path => namespaces_path,
                      :key => key,
+                     :metrics_params => metric_type_params,
+                     :exception => e,
                      :stacktrace => e.backtrace)
       end
     end
+
 
     # Monitor the `Concurrent::TimerTask` this update is triggered on every successful or not
     # run of the task, TimerTask implement Observable and the collector acts as

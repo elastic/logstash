@@ -21,7 +21,17 @@ require "logstash/output_delegator"
 require "logstash/filter_delegator"
 
 module LogStash; class Pipeline
-  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :metric, :logger
+  attr_reader :inputs,
+    :filters,
+    :outputs,
+    :worker_threads,
+    :events_consumed,
+    :events_filtered,
+    :reporter,
+    :pipeline_id,
+    :metric,
+    :logger,
+    :started_at
 
   DEFAULT_SETTINGS = {
     :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.maximum,
@@ -136,6 +146,8 @@ module LogStash; class Pipeline
   end
 
   def run
+    @started_at = Time.now
+
     LogStash::Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
     @logger.terminal(LogStash::Util::DefaultsPrinter.print(@settings))
 
@@ -403,7 +415,7 @@ module LogStash; class Pipeline
     klass = LogStash::Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      LogStash::OutputDelegator.new(@logger, klass, default_output_workers, *args)
+      LogStash::OutputDelegator.new(@logger, klass, default_output_workers, metric, *args)
     elsif plugin_type == "filter"
       LogStash::FilterDelegator.new(@logger, klass, metric, *args)
     else
@@ -452,6 +464,14 @@ module LogStash; class Pipeline
       @logger.debug? && @logger.debug("Pushing flush onto pipeline")
       @input_queue.push(LogStash::FLUSH)
     end
+  end
+
+  # Calculate the uptime in milliseconds
+  # 
+  # @return [Fixnum] Uptime in milliseconds, 0 if the pipeline is not started
+  def uptime
+    return 0 if started_at.nil?
+    ((Time.now.to_f - started_at.to_f) * 1000.0).to_i
   end
 
   # perform filters flush into the output queue

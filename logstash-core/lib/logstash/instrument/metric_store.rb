@@ -11,6 +11,8 @@ module LogStash module Instrument
     class NamespacesExpectedError < Exception; end
 
     def initialize
+      # We keep the structured cache to allow
+      # the api to search the content of the differents nodes
       @store = Concurrent::Map.new
     end
 
@@ -34,11 +36,11 @@ module LogStash module Instrument
       get_recursively(key_paths, @store)
     end
 
-    # Take all the individuals `MetricType` and convert them to `Logstash::Event`
+    # Return all the individuals Metric
     #
     # @return [Array] An array of all metric transformed in `Logstash::Event`
-    def to_events
-      to_events_recursively(@store).flatten
+    def each
+      all_metrics_recursively(@store).flatten
     end
 
     private
@@ -58,13 +60,13 @@ module LogStash module Instrument
       end
     end
 
-    def to_events_recursively(values)
+    def each_recursively(values)
       events = []
       values.each_value do |value|
         if value.is_a?(Concurrent::Map)
-          events << to_events_recursively(value) 
+          events << each_recursively(value) 
         else
-          events << value.to_event
+          events << value
         end
       end
       return events

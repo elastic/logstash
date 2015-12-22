@@ -7,7 +7,6 @@ module LogStash
     def_delegators :@filter,
       :register,
       :close,
-      :multi_filter,
       :threadsafe?,
       :do_close,
       :do_stop,
@@ -18,18 +17,30 @@ module LogStash
 
       @logger = logger
       @klass = klass
-      @metric = metric
       @filter = klass.new(options)
 
-      define_flush if @filter.respond_to?(:flush)
+      # Scope the metrics to the plugin
+      @metric = metric.namespace(@filter.identifier_name)
+      @filter.metric = @metric
+
+      define_flush_method if @filter.respond_to?(:flush)
     end
 
     def config_name
       @klass.config_name
     end
 
+    def multi_filter(events)
+      @metric.increment(:events_in, events.size)
+
+      new_events = @filter.multi_filter(events)
+
+      @metric.increment(:events_out, new_events.size)
+      return new_events
+    end
+
     private
-    def define_flush
+    def define_flush_method
       define_singleton_method(:flush) do |options = {}|
         @filter.flush(options)
       end

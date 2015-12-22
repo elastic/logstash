@@ -9,6 +9,29 @@ module LogStash module Instrument
   class MetricNoNamespaceProvided < MetricException; end
 
   class Metric
+    class TimedExecution
+      MILLISECONDS = 1_000_000.0.freeze
+
+      def initialize(metric, key)
+        @metric = metric
+        @key = key
+        start
+      end
+
+      def start
+        @start_time = current_time
+      end
+
+      def stop
+        @metric.report_time(@key, (MILLISECONDS * (current_time - @start_time)).to_i)
+      end
+
+      private
+      def current_time
+        Time.now
+      end
+    end
+
     attr_reader :collector, :namespace_information
 
     public
@@ -33,17 +56,21 @@ module LogStash module Instrument
       collector.push(namespace_information, key, :gauge, :set, value)
     end
 
-    def time(key, &block)
+    def time(key)
       validate_key!(key)
+
       if block_given?
-        start_time = Time.now
-        content = block.call
-        duration = (Time.now - start_time) * 1000 # Records in Milliseconds
-        collector.push(namespace_information, key, :mean, :increment, duration)
+        timer = TimedExecution.new(self, key)
+        content = yield
+        timer.stop
         return content
       else
-        raise MetricNoBlockProvided
+        TimedExecution.new(self, key)
       end
+    end
+
+    def report_time(key, duration)
+      collector.push(namespace_information, key, :mean, :increment, duration)
     end
 
     def namespace(sub_namespace)
