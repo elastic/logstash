@@ -8,10 +8,12 @@ describe LogStash::OutputDelegator do
   let(:out_klass) { double("output klass") }
   let(:out_inst) { double("output instance") }
 
-  subject { described_class.new(logger, out_klass) }
+  subject { described_class.new(logger, out_klass, 1) }
 
   before do
     allow(out_klass).to receive(:new).with(any_args).and_return(out_inst)
+    allow(out_klass).to receive(:threadsafe?).and_return(false)
+    allow(out_klass).to receive(:workers_not_supported?).and_return(false)
     allow(out_inst).to receive(:register)
     allow(logger).to receive(:debug).with(any_args)
   end
