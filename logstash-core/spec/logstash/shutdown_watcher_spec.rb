@@ -1,12 +1,12 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/shutdown_controller"
+require "logstash/shutdown_watcher"
 
-describe LogStash::ShutdownController do
+describe LogStash::ShutdownWatcher do
 
   let(:check_every) { 0.01 }
   let(:check_threshold) { 100 }
-  subject { LogStash::ShutdownController.new(pipeline, check_every) }
+  subject { LogStash::ShutdownWatcher.new(pipeline, check_every) }
   let(:pipeline) { double("pipeline") }
   let(:reporter) { double("reporter") }
   let(:reporter_snapshot) { double("reporter snapshot") }

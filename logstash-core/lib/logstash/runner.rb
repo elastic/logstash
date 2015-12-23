@@ -101,8 +101,8 @@ class LogStash::Runner < Clamp::Command
     # Print a warning to STDERR for bad java versions
     LogStash::Util::JavaVersion.warn_on_bad_java_version
 
-    LogStash::ShutdownController.unsafe_shutdown = unsafe_shutdown?
-    LogStash::ShutdownController.logger = @logger
+    LogStash::ShutdownWatcher.unsafe_shutdown = unsafe_shutdown?
+    LogStash::ShutdownWatcher.logger = @logger
 
     configure
 
