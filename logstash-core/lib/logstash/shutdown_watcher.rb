@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 module LogStash
-  class ShutdownController
+  class ShutdownWatcher
 
     CHECK_EVERY = 1 # second
     REPORT_EVERY = 5 # checks
@@ -34,8 +34,8 @@ module LogStash
     end
 
     def self.start(pipeline, cycle_period=CHECK_EVERY, report_every=REPORT_EVERY, abort_threshold=ABORT_AFTER)
-      controller = self.new(pipeline, cycle_period, report_every, abort_threshold)
-      Thread.new(controller) { |controller| controller.start }
+      watcher = self.new(pipeline, cycle_period, report_every, abort_threshold)
+      Thread.new(watcher) { |watcher| watcher.start }
     end
 
     def logger
