@@ -60,7 +60,7 @@ class LogStash::Agent
   def shutdown_pipelines
     @pipelines.each do |_, pipeline|
       pipeline.shutdown do
-        ::LogStash::ShutdownController.start(pipeline)
+        ::LogStash::ShutdownWatcher.start(pipeline)
       end
     end
   end
