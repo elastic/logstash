@@ -91,8 +91,8 @@ class LogStash::Agent < Clamp::Command
     require "logstash/plugin"
     @logger = Cabin::Channel.get(LogStash)
 
-    LogStash::ShutdownController.unsafe_shutdown = unsafe_shutdown?
-    LogStash::ShutdownController.logger = @logger
+    LogStash::ShutdownWatcher.unsafe_shutdown = unsafe_shutdown?
+    LogStash::ShutdownWatcher.logger = @logger
 
     if version?
       show_version
@@ -198,7 +198,7 @@ class LogStash::Agent < Clamp::Command
 
   def shutdown(pipeline)
     pipeline.shutdown do
-      ::LogStash::ShutdownController.start(pipeline)
+      ::LogStash::ShutdownWatcher.start(pipeline)
     end
   end
 
