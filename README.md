@@ -119,7 +119,7 @@ The documentation for developing plugins can be found in the plugins README, see
 
 ## Drip Launcher
 
-[Drip](https://github.com/ninjudd/drip) is a tool which help solve the slow JVM startup problem. The drip script is intended to be a drop-in replacement for the java command. We recommend using drip during development, in particular for running tests. Using drip, the first invokation of a command will not be faster but the subsequent commands will be swift.
+[Drip](https://github.com/ninjudd/drip) is a tool that solves the slow JVM startup problem. The drip script is intended to be a drop-in replacement for the java command. We recommend using drip during development, in particular for running tests. Using drip, the first invocation of a command will not be faster but the subsequent commands will be swift.
 
 To tell logstash to use drip, either set the `USE_DRIP=1` environment variable or set `` JAVACMD=`which drip` ``.
 
@@ -130,7 +130,7 @@ Examples:
 
 **Caveats**
 
-Drip does not work with STDIN. You cannot use drip for running configs which uses the stdin plugin.
+Drip does not work with STDIN. You cannot use drip for running configs which use the stdin plugin.
 
 
 ## Building
