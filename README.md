@@ -130,7 +130,7 @@ Examples:
 
 **Caveats**
 
-Drip does not work with STDIN. You cannot use drip for running configs which uses the stdin plugin.
+Drip does not work with STDIN. You cannot use drip for running configs which use the stdin plugin.
 
 
 ## Building
