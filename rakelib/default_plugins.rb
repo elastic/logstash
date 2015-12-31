@@ -56,6 +56,7 @@ module LogStash
       logstash-input-generator
       logstash-input-graphite
       logstash-input-http
+      logstash-input-http_poller
       logstash-input-imap
       logstash-input-irc
       logstash-input-jdbc
