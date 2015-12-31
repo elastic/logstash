@@ -276,6 +276,36 @@ describe LogStash::Pipeline do
     end
   end
 
+  describe "max inflight warning" do
+    let(:config) { "input { dummyinput {} } output { dummyoutput {} }" }
+    let(:batch_size) { 1 }
+    let(:pipeline) { LogStash::Pipeline.new(config, :pipeline_batch_size => batch_size, :pipeline_workers => 1) }
+    let(:logger) { pipeline.logger }
+    let(:warning_prefix) { /CAUTION: Recommended inflight events max exceeded!/ }
+
+    before(:each) do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(logger).to receive(:warn)
+      thread = Thread.new { pipeline.run }
+      pipeline.shutdown
+      thread.join
+    end
+
+    it "should not raise a max inflight warning if the max_inflight count isn't exceeded" do
+      expect(logger).not_to have_received(:warn).with(warning_prefix)
+    end
+
+    context "with a too large inflight count" do
+      let(:batch_size) { LogStash::Pipeline::MAX_INFLIGHT_WARN_THRESHOLD + 1 }
+
+      it "should raise a max inflight warning if the max_inflight count is exceeded" do
+        expect(logger).to have_received(:warn).with(warning_prefix)
+      end
+    end
+  end
+
   context "compiled filter funtions" do
 
     context "new events should propagate down the filters" do

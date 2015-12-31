@@ -17,7 +17,7 @@ require "logstash/pipeline_reporter"
 require "logstash/output_delegator"
 
 module LogStash; class Pipeline
-  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id
+  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :logger
 
   DEFAULT_SETTINGS = {
     :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.fifty_percent,
@@ -26,6 +26,7 @@ module LogStash; class Pipeline
     :flush_interval => 5, # in seconds
     :flush_timeout_interval => 60 # in seconds
   }
+  MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   def initialize(config_str, settings = {})
     @pipeline_id = settings[:pipeline_id] || self.object_id
@@ -157,11 +158,16 @@ module LogStash; class Pipeline
       pipeline_workers = safe_pipeline_worker_count
       batch_size = @settings[:pipeline_batch_size]
       batch_delay = @settings[:pipeline_batch_delay]
+      max_inflight = batch_size * pipeline_workers
       @logger.info("Starting pipeline",
                    :id => self.pipeline_id,
                    :pipeline_workers => pipeline_workers,
                    :batch_size => batch_size,
-                   :batch_delay => batch_delay)
+                   :batch_delay => batch_delay,
+                   :max_inflight => max_inflight)
+      if max_inflight > MAX_INFLIGHT_WARN_THRESHOLD
+        @logger.warn "CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})"
+      end
 
       pipeline_workers.times do |t|
         @worker_threads << Thread.new do
