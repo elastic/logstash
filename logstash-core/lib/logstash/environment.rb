@@ -1,7 +1,37 @@
 # encoding: utf-8
 require "logstash/errors"
+require "logstash/config/cpu_core_strategy"
+require "logstash/settings"
 
 module LogStash
+
+  [
+            Setting::String.new("node.name", Socket.gethostname),
+            Setting::String.new("path.config", nil, false),
+            Setting::String.new("config.string", nil, false),
+           Setting::Boolean.new("config.test_and_exit", false),
+           Setting::Boolean.new("config.reload.automatic", false),
+           Setting::Numeric.new("config.reload.interval", 3),
+           Setting::Boolean.new("metric.collect", true) {|v| v == true }, # metric collection cannot be disabled
+            Setting::String.new("path.settings", ::File.join(Environment::LOGSTASH_HOME, "config")),
+            Setting::String.new("pipeline.id", "main"),
+           Setting::Numeric.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
+           Setting::Numeric.new("pipeline.output.workers", 1),
+           Setting::Numeric.new("pipeline.batch.size", 125),
+           Setting::Numeric.new("pipeline.batch.delay", 5), # in milliseconds
+           Setting::Boolean.new("pipeline.unsafe_shutdown", false),
+                    Setting.new("path.plugins", Array, []),
+            Setting::String.new("interactive", nil, false),
+           Setting::Boolean.new("config.debug", false),
+            Setting::String.new("log.level", "warn", true, ["quiet", "verbose", "warn", "debug"]),
+           Setting::Boolean.new("version", false),
+           Setting::Boolean.new("help", false),
+            Setting::String.new("path.log", nil, false),
+            Setting::String.new("log.format", "plain", true, ["json", "plain"]),
+            Setting::String.new("http.host", "127.0.0.1"),
+              Setting::Port.new("http.port", 9600),
+  ].each {|setting| SETTINGS.register(setting) }
+
   module Environment
     extend self
 

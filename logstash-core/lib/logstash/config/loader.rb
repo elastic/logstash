@@ -1,9 +1,9 @@
 require "logstash/config/defaults"
 
 module LogStash; module Config; class Loader
-  def initialize(logger, debug_config=false)
+  def initialize(logger)
     @logger = logger
-    @debug_config = debug_config
+    @config_debug = LogStash::SETTINGS.get_value("config.debug")
   end
 
   def format_config(config_path, config_string)
@@ -70,7 +70,7 @@ module LogStash; module Config; class Loader
         encoding_issue_files << file
       end
       config << cfg + "\n"
-      if @debug_config
+      if @config_debug
         @logger.debug? && @logger.debug("\nThe following is the content of a file", :config_file => file.to_s)
         @logger.debug? && @logger.debug("\n" + cfg + "\n\n")
       end
@@ -78,7 +78,7 @@ module LogStash; module Config; class Loader
     if encoding_issue_files.any?
       fail("The following config files contains non-ascii characters but are not UTF-8 encoded #{encoding_issue_files}")
     end
-    if @debug_config
+    if @config_debug
       @logger.debug? && @logger.debug("\nThe following is the merged configuration")
       @logger.debug? && @logger.debug("\n" + config + "\n\n")
     end
