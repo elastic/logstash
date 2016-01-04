@@ -56,6 +56,31 @@ module LogStash
   end
 end
 
+def flatten_hash(h,f="",g={})
+  return g.update({ f => h }) unless h.is_a? Hash
+  if f.empty?
+    h.each { |k,r| flatten_hash(r,k,g) }
+  else
+    h.each { |k,r| flatten_hash(r,"#{f}.#{k}",g) }
+  end
+  g
+end
+
+def flatten_arguments(hash)
+  args = []
+  hash.each do |key, value|
+    next if value.nil?
+    if value == true
+      args << "--#{key}"
+    elsif value == false
+      args << "--no-#{key}"
+    else
+      args << "--#{key}"
+      args << value
+    end
+  end
+  args
+end
 
 # when launched as a script, not require'd, (currently from bin/logstash and bin/logstash-plugin) the first
 # argument is the path of a Ruby file to require and a LogStash::Runner class is expected to be
@@ -64,12 +89,26 @@ end
 if $0 == __FILE__
   LogStash::Bundler.setup!({:without => [:build, :development]})
   require ARGV.shift
+
+  if settings = YAML.parse(IO.read("settings.yml"))
+    settings = settings.to_ruby
+    flat_settings_hash = flatten_hash(settings)
+    settings_array = flatten_arguments(flat_settings_hash)
+  else
+    settings_array = []
+  end
+
   # TODO deprecate these arguments in the next major version. use -i only
   if ARGV == ["irb"] || ARGV == ["pry"]
     puts "Warn: option \"#{ARGV.first}\" is deprecated, use \"-i #{ARGV.first}\" or \"--interactive=#{ARGV.first}\" instead"
     exit_status = LogStash::Runner.run("bin/logstash", ["--interactive", ARGV.first])
   else
-    exit_status = LogStash::Runner.run("bin/logstash", ARGV)
+    puts "Arguments from \'settings.yml\' file: #{settings_array}"
+    puts "Arguments from command line: #{ARGV}"
+    # The Clamp library supports specifying the same argument multiple times
+    # and it keeps the   in an array. So in order for cli args to override
+    # the settings.yml args we can do `settings_array + ARGV`
+    exit_status = LogStash::Runner.run("bin/logstash", settings_array + ARGV)
   end
   exit(exit_status || 0)
 end
