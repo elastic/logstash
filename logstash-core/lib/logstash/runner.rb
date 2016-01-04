@@ -3,7 +3,8 @@ Thread.abort_on_exception = true
 Encoding.default_external = Encoding::UTF_8
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
-require "clamp" # gem 'clamp'
+require "clamp"
+require "cabin"
 require "net/http"
 require "logstash/environment"
 
@@ -12,123 +13,125 @@ LogStash::Environment.load_locale!
 require "logstash/namespace"
 require "logstash/agent"
 require "logstash/config/defaults"
+require "logstash/shutdown_watcher"
+require "logstash/patches/clamp"
 
-class LogStash::Runner < Clamp::Command
+class LogStash::Runner < Clamp::StrictCommand
 
-  option ["-f", "--config"], "CONFIG_PATH",
+  # Node Settings
+  option ["-n", "--node.name"], "NAME",
+    I18n.t("logstash.runner.flag.node_name"),
+    :attribute_name => "node.name",
+    :default => LogStash::SETTINGS.get_default("node.name")
+
+  # Config Settings
+  option ["-f", "--path.config"], "CONFIG_PATH",
     I18n.t("logstash.runner.flag.config"),
-    :attribute_name => :config_path
+    :attribute_name => "path.config"
 
-  option "-e", "CONFIG_STRING",
+  option ["-e", "--config.string"], "CONFIG_STRING",
     I18n.t("logstash.runner.flag.config-string",
-           :default_input => LogStash::Config::Defaults.input,
-           :default_output => LogStash::Config::Defaults.output),
-    :default => nil, :attribute_name => :config_string
+      :default_input => LogStash::Config::Defaults.input,
+      :default_output => LogStash::Config::Defaults.output),
+    :default => LogStash::SETTINGS.get_default("config.string"),
+    :attribute_name => "config.string"
 
-  option ["-w", "--pipeline-workers"], "COUNT",
+  # Pipeline settings
+  option ["-w", "--pipeline.workers"], "COUNT",
     I18n.t("logstash.runner.flag.pipeline-workers"),
-    :attribute_name => :pipeline_workers,
-    :default => LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers]
+    :attribute_name => "pipeline.workers",
+    :default => LogStash::SETTINGS.get_default("pipeline.workers"), &:to_i
 
-  option ["-b", "--pipeline-batch-size"], "SIZE",
-         I18n.t("logstash.runner.flag.pipeline-batch-size"),
-         :attribute_name => :pipeline_batch_size,
-         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_size]
+  option ["-b", "--pipeline.batch.size"], "SIZE",
+    I18n.t("logstash.runner.flag.pipeline-batch-size"),
+    :attribute_name => "pipeline.batch.size",
+    :default => LogStash::SETTINGS.get_default("pipeline.batch.size"), &:to_i
 
-  option ["-u", "--pipeline-batch-delay"], "DELAY_IN_MS",
-         I18n.t("logstash.runner.flag.pipeline-batch-delay"),
-         :attribute_name => :pipeline_batch_delay,
-         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_delay]
+  option ["-u", "--pipeline.batch.delay"], "DELAY_IN_MS",
+    I18n.t("logstash.runner.flag.pipeline-batch-delay"),
+    :attribute_name => "pipeline.batch.delay",
+    :default => LogStash::SETTINGS.get_default("pipeline.batch.delay"), &:to_i
 
-  option ["-l", "--log"], "FILE",
+  option ["--pipeline.unsafe_shutdown"], :flag,
+    I18n.t("logstash.runner.flag.unsafe_shutdown"),
+    :attribute_name => "pipeline.unsafe_shutdown",
+    :default => LogStash::SETTINGS.get_default("pipeline.unsafe_shutdown")
+
+  # Plugins Settings
+  option ["-p", "--path.plugins"] , "PATH",
+    I18n.t("logstash.runner.flag.pluginpath"),
+    :multivalued => true, :attribute_name => "path.plugins",
+    :default => LogStash::SETTINGS.get_default("path.plugins")
+
+  # Logging Settings
+  option ["-l", "--path.log"], "FILE",
     I18n.t("logstash.runner.flag.log"),
-    :attribute_name => :log_file
+    :attribute_name => "path.log"
 
-  # Old support for the '-v' flag'
-  option "-v", :flag,
-    I18n.t("logstash.runner.flag.verbosity"),
-    :attribute_name => :verbosity, :multivalued => true
+  option "--log.level", "LEVEL", I18n.t("logstash.runner.flag.log_level"),
+    :default => LogStash::SETTINGS.get_default("log.level")
 
-  option "--quiet", :flag, I18n.t("logstash.runner.flag.quiet")
-  option "--verbose", :flag, I18n.t("logstash.runner.flag.verbose")
-  option "--debug", :flag, I18n.t("logstash.runner.flag.debug")
+  option "--config.debug", :flag,
+    I18n.t("logstash.runner.flag.config_debug"),
+    :default => LogStash::SETTINGS.get_default("config.debug"),
+    :attribute_name => "config.debug"
 
-  option ["--debug-config"], :flag,
-         I18n.t("logstash.runner.flag.debug_config"),
-         :attribute_name => :debug_config, :default => false
+  # Other settings
+  option ["-i", "--interactive"], "SHELL",
+    I18n.t("logstash.runner.flag.rubyshell"),
+    :attribute_name => "interactive"
 
   option ["-V", "--version"], :flag,
     I18n.t("logstash.runner.flag.version")
 
-  option ["-p", "--pluginpath"] , "PATH",
-    I18n.t("logstash.runner.flag.pluginpath"),
-    :multivalued => true,
-    :attribute_name => :plugin_paths
-
-  option ["-t", "--configtest"], :flag,
+  option ["-t", "--config.test_and_exit"], :flag,
     I18n.t("logstash.runner.flag.configtest"),
-    :attribute_name => :config_test
+    :attribute_name => "config.test_and_exit",
+    :default => LogStash::SETTINGS.get_default("config.test_and_exit")
 
-  option "--[no-]allow-unsafe-shutdown", :flag,
-    I18n.t("logstash.runner.flag.unsafe_shutdown"),
-    :attribute_name => :unsafe_shutdown,
-    :default => false
-
-  option ["-i", "--interactive"], "SHELL",
-    I18n.t("logstash.runner.flag.rubyshell"),
-    :attribute_name => :ruby_shell
-
-  option ["-n", "--node-name"], "NAME",
-    I18n.t("logstash.runner.flag.node_name"),
-    :attribute_name => :node_name
-
-  option ["-r", "--[no-]auto-reload"], :flag,
+  option ["-r", "--config.reload.automatic"], :flag,
     I18n.t("logstash.runner.flag.auto_reload"),
-    :attribute_name => :auto_reload, :default => false
+    :attribute_name => "config.reload.automatic",
+    :default => LogStash::SETTINGS.get_default("config.reload.automatic")
 
-  option ["--reload-interval"], "RELOAD_INTERVAL",
+  option ["--config.reload.interval"], "RELOAD_INTERVAL",
     I18n.t("logstash.runner.flag.reload_interval"),
-    :attribute_name => :reload_interval, :default => 3, &:to_i
+    :attribute_name => "config.reload.interval",
+    :default => LogStash::SETTINGS.get_default("config.reload.interval"), &:to_i
 
-  option ["--http-host"], "WEB_API_HTTP_HOST",
-    I18n.t("logstash.web_api.flag.http_host"),
-    :attribute_name => :web_api_http_host, :default => "127.0.0.1"
+  option ["--http.host"], "HTTP_HOST",
+    I18n.t("logstash.runner.flag.http_host"),
+    :attribute_name => "http.host",
+    :default => LogStash::SETTINGS.get_default("http.host")
 
-  option ["--http-port"], "WEB_API_HTTP_PORT",
-    I18n.t("logstash.web_api.flag.http_port"),
-    :attribute_name => :web_api_http_port, :default => 9600
+  option ["--http.port"], "HTTP_PORT",
+    I18n.t("logstash.runner.flag.http_port"),
+    :attribute_name => "http.port",
+    :default => LogStash::SETTINGS.get_default("http.port"), &:to_i
 
-  option ["--[no-]log-in-json"], :flag,
-    I18n.t("logstash.runner.flag.log-in-json"),
-    :default => false
+  option ["--log.format"], "FORMAT",
+    I18n.t("logstash.runner.flag.log_format"),
+    :attribute_name => "log.format",
+    :default => LogStash::SETTINGS.get_default("log.format")
 
-  def pipeline_workers=(pipeline_workers_value)
-    @pipeline_settings[:pipeline_workers] = validate_positive_integer(pipeline_workers_value)
-  end
-
-  def pipeline_batch_size=(pipeline_batch_size_value)
-    @pipeline_settings[:pipeline_batch_size] = validate_positive_integer(pipeline_batch_size_value)
-  end
-
-  def pipeline_batch_delay=(pipeline_batch_delay_value)
-    @pipeline_settings[:pipeline_batch_delay] = validate_positive_integer(pipeline_batch_delay_value)
-  end
-
-  def validate_positive_integer(str_arg)
-    int_arg = str_arg.to_i
-    if str_arg !~ /^\d+$/ || int_arg < 1
-      raise ArgumentError, "Expected a positive integer, got '#{str_arg}'"
-    end
-
-    int_arg
-  end
+  option ["--path.settings"], "SETTINGS_DIR",
+    I18n.t("logstash.runner.flag.path_settings"),
+    :attribute_name => "path.settings",
+    :default => LogStash::SETTINGS.get_default("path.settings")
 
   attr_reader :agent
 
   def initialize(*args)
     @logger = Cabin::Channel.get(LogStash)
-    @pipeline_settings ||= { :pipeline_id => "main" }
+    @settings = LogStash::SETTINGS
     super(*args)
+  end
+
+  def run(args)
+    settings_path = fetch_settings_path(args)
+    @settings.set("path.settings", settings_path) if settings_path
+    LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("path.settings"))
+    super(*[args])
   end
 
   def execute
@@ -140,7 +143,7 @@ class LogStash::Runner < Clamp::Command
 
     # Configure Logstash logging facility, this need to be done before everything else to
     # make sure the logger has the correct settings and the log level is correctly defined.
-    configure_logging(log_file)
+    configure_logging(setting("path.log"), setting("log.level"))
 
     LogStash::Util::set_thread_name(self.class.name)
 
@@ -154,32 +157,34 @@ class LogStash::Runner < Clamp::Command
     if LogStash::Util::JavaVersion.bad_java_version?(java_version)
       $stderr.puts "Java version 1.8.0 or later is required. (You are running: #{java_version})"
       return 1
-    end  
+    end
 
-    LogStash::ShutdownWatcher.unsafe_shutdown = unsafe_shutdown?
+    LogStash::ShutdownWatcher.unsafe_shutdown = setting("pipeline.unsafe_shutdown")
     LogStash::ShutdownWatcher.logger = @logger
 
-    configure
+    configure_plugin_paths(setting("path.plugins"))
 
     if version?
       show_version
       return 0
     end
 
-    return start_shell(@ruby_shell, binding) if @ruby_shell
+    return start_shell(setting("interactive"), binding) if setting("interactive")
 
-    if config_string.nil? && config_path.nil?
+    @settings.format_settings.each {|line| @logger.info(line) }
+
+    if setting("config.string").nil? && setting("path.config").nil?
       fail(I18n.t("logstash.runner.missing-configuration"))
     end
 
-    if @auto_reload && config_path.nil?
+    if setting("config.reload.automatic") && setting("path.config").nil?
       # there's nothing to reload
       signal_usage_error(I18n.t("logstash.runner.reload-without-config-path"))
     end
 
-    if config_test?
-      config_loader = LogStash::Config::Loader.new(@logger, @debug_config)
-      config_str = config_loader.format_config(config_path, config_string)
+    if setting("config.test_and_exit")
+      config_loader = LogStash::Config::Loader.new(@logger)
+      config_str = config_loader.format_config(setting("path.config"), setting("config.string"))
       begin
         LogStash::Pipeline.new(config_str)
         @logger.terminal "Configuration OK"
@@ -190,21 +195,9 @@ class LogStash::Runner < Clamp::Command
       end
     end
 
-    @agent = create_agent(:logger => @logger,
-                          :auto_reload => @auto_reload,
-                          :reload_interval => @reload_interval,
-                          :collect_metric => true,
-                          :debug => debug?,
-                          :node_name => node_name,
-                          :debug_config => debug_config?,
-                          :web_api_http_host => @web_api_http_host,
-                          :web_api_http_port => @web_api_http_port)
+    @agent = create_agent(@settings)
 
-    @agent.register_pipeline("main", @pipeline_settings.merge({
-                          :config_string => config_string,
-                          :config_path => config_path,
-                          :debug_config => debug_config?
-                          }))
+    @agent.register_pipeline("main", @settings)
 
     # enable sigint/sigterm before starting the agent
     # to properly handle a stalled agent
@@ -239,10 +232,10 @@ class LogStash::Runner < Clamp::Command
   def show_version
     show_version_logstash
 
-    if [:info, :debug].include?(verbosity?) || debug? || verbose?
+    if @logger.debug? || @logger.info?
       show_version_ruby
       show_version_java if LogStash::Environment.jruby?
-      show_gems if [:debug].include?(verbosity?) || debug?
+      show_gems if @logger.debug?
     end
   end # def show_version
 
@@ -268,13 +261,6 @@ class LogStash::Runner < Clamp::Command
     end
   end # def show_gems
 
-  # Do any start-time configuration.
-  #
-  # Log file stuff, plugin path checking, etc.
-  def configure
-    configure_plugin_paths(plugin_paths)
-  end # def configure
-
   # add the given paths for ungemified/bare plugins lookups
   # @param paths [String, Array<String>] plugins path string or list of path strings to add
   def configure_plugin_paths(paths)
@@ -289,32 +275,21 @@ class LogStash::Runner < Clamp::Command
   end
 
   # Point logging at a specific path.
-  def configure_logging(path)
+  def configure_logging(path, level)
     @logger = Cabin::Channel.get(LogStash)
     # Set with the -v (or -vv...) flag
-    if quiet?
+    case level
+    when "quiet"
       @logger.level = :error
-    elsif verbose?
+    when "verbose"
       @logger.level = :info
-    elsif debug?
+    when "debug"
       @logger.level = :debug
     else
-      # Old support for the -v and -vv stuff.
-      if verbosity? && verbosity?.any?
-        # this is an array with length of how many times the flag is given
-        if verbosity?.length == 1
-          @logger.warn("The -v flag is deprecated and will be removed in a future release. You should use --verbose instead.")
-          @logger.level = :info
-        else
-          @logger.warn("The -vv flag is deprecated and will be removed in a future release. You should use --debug instead.")
-          @logger.level = :debug
-        end
-      else
-        @logger.level = :warn
-      end
+      @logger.level = :warn
     end
 
-    if log_file
+    if path
       # TODO(sissel): Implement file output/rotation in Cabin.
       # TODO(sissel): Catch exceptions, report sane errors.
       begin
@@ -325,7 +300,7 @@ class LogStash::Runner < Clamp::Command
                     :path => path, :error => e))
       end
 
-      if log_in_json?
+      if setting("log.format") == "json"
         @logger.subscribe(LogStash::Logging::JSON.new(STDOUT), :level => :fatal)
         @logger.subscribe(LogStash::Logging::JSON.new(@log_fd))
       else
@@ -334,15 +309,15 @@ class LogStash::Runner < Clamp::Command
       end
       @logger.terminal "Sending logstash logs to #{path}."
     else
-      if log_in_json?
+      if setting("log.format") == "json"
         @logger.subscribe(LogStash::Logging::JSON.new(STDOUT))
       else
         @logger.subscribe(STDOUT)
       end
     end
 
-    if debug_config? && @logger.level != :debug
-      @logger.warn("--debug-config was specified, but log level was not set to --debug! No config info will be logged.")
+    if setting("config.debug") && @logger.level != :debug
+      @logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
 
     # TODO(sissel): redirect stdout/stderr to the log as well
@@ -402,4 +377,26 @@ class LogStash::Runner < Clamp::Command
     end
   end
 
-end # class LogStash::Runner
+  def setting(key)
+    @settings.get_value(key)
+  end
+
+  # where can I find the logstash.yml file?
+  # 1. look for a "--path.settings path"
+  # 2. look for a "--path.settings=path"
+  # 3. check if the LS_SETTINGS_DIR environment variable is set
+  # 4. return nil if not found
+  def fetch_settings_path(cli_args)
+    if i=cli_args.find_index("--path.settings")
+      cli_args[i+1]
+    elsif settings_arg = cli_args.find {|v| v.match(/--path.settings=/) }
+      match = settings_arg.match(/--path.settings=(.*)/)
+      match[1]
+    elsif ENV['LS_SETTINGS_DIR']
+      ENV['LS_SETTINGS_DIR']
+    else
+      nil
+    end
+  end
+
+end

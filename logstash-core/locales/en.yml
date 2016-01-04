@@ -73,9 +73,6 @@ en:
       non_reloadable_config_register: |-
         Logstash is not able to start since configuration auto reloading was enabled but the configuration contains plugins that don't support it. Quitting...
     web_api:
-      flag:
-        http_host: Web API binding host
-        http_port: Web API http port
       hot_threads:
         title: |-
           ::: {%{hostname}}
@@ -181,6 +178,8 @@ en:
           the empty string for the '-e' flag.
         configtest: |+
           Check configuration for valid syntax and then exit.
+        http_host: Web API binding host
+        http_port: Web API http port
         pipeline-workers: |+
           Sets the number of pipeline workers to run.
         pipeline-batch-size: |+
@@ -188,6 +187,9 @@ en:
         pipeline-batch-delay: |+
           When creating pipeline batches, how long to wait while polling
           for the next event.
+        path_settings: |+
+          Directory containing logstash.yml file. This can also be
+          set through the LS_SETTINGS_DIR environment variable.
         auto_reload: |+
           Monitor configuration changes and reload
           whenever it is changed.
@@ -216,15 +218,12 @@ en:
           'PATH/logstash/TYPE/NAME.rb' where TYPE is
           'inputs' 'filters', 'outputs' or 'codecs'
           and NAME is the name of the plugin.
-        quiet: |+
-          Quieter logstash logging. This causes only 
-          errors to be emitted.
-        verbose: |+
-          More verbose logging. This causes 'info' 
-          level logs to be emitted.
-        debug: |+
-          Most verbose logging. This causes 'debug'
-          level logs to be emitted.
+        log_level: |+
+          Set the log level for logstash. Possible values are:
+            - quiet => :error
+            - verbose => :info
+            - debug => :debug
+            - warn => :warn
         unsafe_shutdown: |+
           Force logstash to exit during shutdown even
           if there are still inflight events in memory.
@@ -238,11 +237,10 @@ en:
           it will default to the current hostname.
         agent: |+
           Specify an alternate agent plugin name.
-        debug_config: |+
+        config_debug: |+
           Print the compiled config ruby code out as a debug log (you must also have --debug enabled).
           WARNING: This will include any 'password' options passed to plugin configs as plaintext, and may result
           in plaintext passwords appearing in your logs!
-        log-in-json: |+
-          Specify that Logstash should write its own logs in JSON form - one
-          event per line. If false, Logstash will log using Ruby's
-          Object#inspect (not easy to machine-parse)
+        log_format: |+
+          Specify if Logstash should write its own logs in JSON form (one
+          event per line) or in plain text (using Ruby's Object#inspect)

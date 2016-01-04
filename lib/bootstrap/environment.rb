@@ -56,7 +56,6 @@ module LogStash
   end
 end
 
-
 # when launched as a script, not require'd, (currently from bin/logstash and bin/logstash-plugin) the first
 # argument is the path of a Ruby file to require and a LogStash::Runner class is expected to be
 # defined and exposing the LogStash::Runner#main instance method which will be called with the current ARGV
@@ -64,12 +63,6 @@ end
 if $0 == __FILE__
   LogStash::Bundler.setup!({:without => [:build, :development]})
   require ARGV.shift
-  # TODO deprecate these arguments in the next major version. use -i only
-  if ARGV == ["irb"] || ARGV == ["pry"]
-    puts "Warn: option \"#{ARGV.first}\" is deprecated, use \"-i #{ARGV.first}\" or \"--interactive=#{ARGV.first}\" instead"
-    exit_status = LogStash::Runner.run("bin/logstash", ["--interactive", ARGV.first])
-  else
-    exit_status = LogStash::Runner.run("bin/logstash", ARGV)
-  end
+  exit_status = LogStash::Runner.run("bin/logstash", ARGV)
   exit(exit_status || 0)
 end

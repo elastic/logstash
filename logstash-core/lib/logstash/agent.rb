@@ -20,7 +20,8 @@ LogStash::Environment.load_locale!
 class LogStash::Agent
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :node_name, :pipelines, :logger
+  attr_reader :metric, :node_name, :pipelines, :settings
+  attr_accessor :logger
 
   # initialize method for LogStash::Agent
   # @param params [Hash] potential parameters are:
@@ -28,21 +29,23 @@ class LogStash::Agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
   #   :logger [Cabin::Channel] - logger instance
-  def initialize(params)
-    @logger = params[:logger]
-    @auto_reload = params[:auto_reload]
+  def initialize(settings = LogStash::SETTINGS)
+    @settings = settings
+    @logger = Cabin::Channel.get(LogStash)
+    @auto_reload = setting("config.reload.automatic")
 
     @pipelines = {}
-    @node_name = params[:node_name] || Socket.gethostname
-    @web_api_http_host = params[:web_api_http_host]
-    @web_api_http_port = params[:web_api_http_port]
+    @node_name = setting("node.name")
+    @http_host = setting("http.host")
+    @http_port = setting("http.port")
 
-    @config_loader = LogStash::Config::Loader.new(@logger, params[:debug_config])
-    @reload_interval = params[:reload_interval] || 3 # seconds
+    @config_loader = LogStash::Config::Loader.new(@logger)
+    @reload_interval = setting("config.reload.interval")
     @upgrade_mutex = Mutex.new
 
-    @collect_metric = params.fetch(:collect_metric, false)
-    setup_metric_collection
+    @collect_metric = setting("metric.collect")
+    @metric = create_metric_collector
+    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(metric)
   end
 
   def execute
@@ -74,9 +77,13 @@ class LogStash::Agent
   # @param pipeline_id [String] pipeline string identifier
   # @param settings [Hash] settings that will be passed when creating the pipeline.
   #   keys should be symbols such as :pipeline_workers and :pipeline_batch_delay
-  def register_pipeline(pipeline_id, settings)
-    pipeline = create_pipeline(settings.merge(:pipeline_id => pipeline_id, :metric => metric))
+  def register_pipeline(pipeline_id, settings = @settings)
+    pipeline_settings = settings.clone
+    pipeline_settings.set("pipeline.id", pipeline_id)
+
+    pipeline = create_pipeline(pipeline_settings)
     return unless pipeline.is_a?(LogStash::Pipeline)
+    pipeline.metric = @metric
     if @auto_reload && pipeline.non_reloadable_plugins.any?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_register"),
                     :pipeline_id => pipeline_id,
@@ -123,7 +130,7 @@ class LogStash::Agent
 
   private
   def start_webserver
-    options = {:http_host => @web_api_http_host, :http_port => @web_api_http_port }
+    options = {:http_host => @http_host, :http_port => @http_port }
     @webserver = LogStash::WebServer.new(@logger, options)
     Thread.new(@webserver) do |webserver|
       LogStash::Util.set_thread_name("Api Webserver")
@@ -149,16 +156,14 @@ class LogStash::Agent
     end
   end
 
-  def setup_metric_collection
+  def create_metric_collector
     if collect_metrics?
       @logger.debug("Agent: Configuring metric collection")
       LogStash::Instrument::Collector.instance.agent = self
-      @metric = LogStash::Instrument::Metric.new
+      LogStash::Instrument::Metric.new
     else
-      @metric = LogStash::Instrument::NullMetric.new
+      LogStash::Instrument::NullMetric.new
     end
-
-    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(metric)
   end
 
   def collect_metrics?
@@ -185,21 +190,22 @@ class LogStash::Agent
   end
 
   def fetch_config(settings)
-    @config_loader.format_config(settings[:config_path], settings[:config_string])
+    @config_loader.format_config(settings.get("path.config"), settings.get("config.string"))
   end
 
   # since this method modifies the @pipelines hash it is
   # wrapped in @upgrade_mutex in the parent call `reload_state!`
   def reload_pipeline!(id)
     old_pipeline = @pipelines[id]
-    new_config = fetch_config(old_pipeline.original_settings)
+    new_config = fetch_config(old_pipeline.settings)
     if old_pipeline.config_str == new_config
       @logger.debug("no configuration change for pipeline",
                     :pipeline => id, :config => new_config)
       return
     end
 
-    new_pipeline = create_pipeline(old_pipeline.original_settings, new_config)
+    new_pipeline = create_pipeline(old_pipeline.settings, new_config)
+
     return if new_pipeline.nil?
 
     if new_pipeline.non_reloadable_plugins.any?
@@ -269,5 +275,9 @@ class LogStash::Agent
 
   def reset_collector
     LogStash::Instrument::Collector.instance.clear
+  end
+
+  def setting(key)
+    @settings.get(key)
   end
 end # class LogStash::Agent
