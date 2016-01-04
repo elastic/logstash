@@ -16,7 +16,19 @@ Logstash has the following flags. You can use the `--help` flag to display this 
  is specified, 'stdout { codec => rubydebug }}' is default.
 
 -w, --filterworkers COUNT
- Sets the number of filter workers to run (default: half the number of cores)
+ Sets the number of pipeline workers (threads) to run for filter and output
+ processing (default: half the number of cores).
+ If you find that events are backing up, or that the CPU is not saturated, consider increasing
+ this number to better utilize machine processing power.
+
+-b, --pipeline-batch-size SIZE
+ This parameter defines the maximum number of events an individual worker thread will collect
+ before attempting to execute its filters and outputs. Larger batch sizes are generally more 
+ efficient, but come at the cost of increased memory overhead. You may have to increase the 
+ JVM heap size by setting the `LS_HEAP_SIZE` variable to effectively use the option.
+
+-u, --pipeline-batch-delay DELAY_IN_MS
+ When creating pipeline event batches, how long to wait while polling for the next event. 
 
 -l, --log FILE
  Log to a given path. Default is to log to stdout
@@ -45,8 +57,4 @@ Logstash has the following flags. You can use the `--help` flag to display this 
 
 -h, --help
   Print help
-
--v
- *DEPRECATED: see --verbose/debug* Increase verbosity. There are multiple levels
- of verbosity available with '-vv' currently being the highest
 ----------------------------------
