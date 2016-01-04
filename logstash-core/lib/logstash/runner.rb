@@ -15,68 +15,69 @@ require "logstash/config/defaults"
 
 class LogStash::Runner < Clamp::Command
 
-  option ["-f", "--config"], "CONFIG_PATH",
-    I18n.t("logstash.runner.flag.config"),
-    :attribute_name => :config_path
+  # Node Settings
+  option ["-n", "--node.name"], "NAME",
+         I18n.t("logstash.runner.flag.node_name"),
+         :attribute_name => :node_name
 
-  option "-e", "CONFIG_STRING",
-    I18n.t("logstash.runner.flag.config-string",
+  # Config Settings
+  option ["-f", "--config", "--config.path"], "CONFIG_PATH",
+         I18n.t("logstash.runner.flag.config"),
+         :attribute_name => :config_path
+
+  option ["-e", "--config.string"], "CONFIG_STRING",
+         I18n.t("logstash.runner.flag.config-string",
            :default_input => LogStash::Config::Defaults.input,
            :default_output => LogStash::Config::Defaults.output),
-    :default => nil, :attribute_name => :config_string
+         :default => "", :attribute_name => :config_string
 
-  option ["-w", "--pipeline-workers"], "COUNT",
-    I18n.t("logstash.runner.flag.pipeline-workers"),
-    :attribute_name => :pipeline_workers,
-    :default => LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers]
+  # Pipeline settings
+  option ["-w", "--pipeline.workers"], "COUNT",
+         I18n.t("logstash.runner.flag.pipeline-workers"),
+         :attribute_name => :pipeline_workers,
+         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers]
 
-  option ["-b", "--pipeline-batch-size"], "SIZE",
+  option ["--pipeline.batch.size"], "SIZE",
          I18n.t("logstash.runner.flag.pipeline-batch-size"),
          :attribute_name => :pipeline_batch_size,
          :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_size]
 
-  option ["-u", "--pipeline-batch-delay"], "DELAY_IN_MS",
+  option ["--pipeline.batch.delay"], "DELAY_IN_MS",
          I18n.t("logstash.runner.flag.pipeline-batch-delay"),
          :attribute_name => :pipeline_batch_delay,
          :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_delay]
 
-  option ["-l", "--log"], "FILE",
-    I18n.t("logstash.runner.flag.log"),
-    :attribute_name => :log_file
+  option ["--[no-]pipeline.unsafe_shutdown"], :flag,
+         I18n.t("logstash.runner.flag.unsafe_shutdown"),
+         :attribute_name => :unsafe_shutdown,
+         :default => false
 
-  # Old support for the '-v' flag'
-  option "-v", :flag,
-    I18n.t("logstash.runner.flag.verbosity"),
-    :attribute_name => :verbosity, :multivalued => true
+  # Plugins Settings
+  option ["-p", "--plugin.path"] , "PATH",
+         I18n.t("logstash.runner.flag.pluginpath"),
+         :multivalued => true,
+         :attribute_name => :plugin_paths
+
+  # Logging Settings
+  option ["-l", "--log"], "FILE",
+         I18n.t("logstash.runner.flag.log"),
+         :attribute_name => :log_file
 
   option "--quiet", :flag, I18n.t("logstash.runner.flag.quiet")
   option "--verbose", :flag, I18n.t("logstash.runner.flag.verbose")
   option "--debug", :flag, I18n.t("logstash.runner.flag.debug")
 
-  option ["-V", "--version"], :flag,
-    I18n.t("logstash.runner.flag.version")
+  # Other settings
+  option ["-i", "--interactive"], "SHELL",
+         I18n.t("logstash.runner.flag.rubyshell"),
+         :attribute_name => :ruby_shell
 
-  option ["-p", "--pluginpath"] , "PATH",
-    I18n.t("logstash.runner.flag.pluginpath"),
-    :multivalued => true,
-    :attribute_name => :plugin_paths
+  option ["-V", "--version"], :flag,
+         I18n.t("logstash.runner.flag.version")
 
   option ["-t", "--configtest"], :flag,
-    I18n.t("logstash.runner.flag.configtest"),
-    :attribute_name => :config_test
-
-  option "--[no-]allow-unsafe-shutdown", :flag,
-    I18n.t("logstash.runner.flag.unsafe_shutdown"),
-    :attribute_name => :unsafe_shutdown,
-    :default => false
-
-  option ["-i", "--interactive"], "SHELL",
-    I18n.t("logstash.runner.flag.rubyshell"),
-    :attribute_name => :ruby_shell
-
-  option ["-n", "--node-name"], "NAME",
-    I18n.t("logstash.runner.flag.node_name"),
-    :attribute_name => :node_name
+         I18n.t("logstash.runner.flag.configtest"),
+         :attribute_name => :config_test
 
   option ["-r", "--[no-]auto-reload"], :flag,
     I18n.t("logstash.runner.flag.auto_reload"),
@@ -285,19 +286,7 @@ class LogStash::Runner < Clamp::Command
     elsif debug?
       @logger.level = :debug
     else
-      # Old support for the -v and -vv stuff.
-      if verbosity? && verbosity?.any?
-        # this is an array with length of how many times the flag is given
-        if verbosity?.length == 1
-          @logger.warn("The -v flag is deprecated and will be removed in a future release. You should use --verbose instead.")
-          @logger.level = :info
-        else
-          @logger.warn("The -vv flag is deprecated and will be removed in a future release. You should use --debug instead.")
-          @logger.level = :debug
-        end
-      else
-        @logger.level = :warn
-      end
+      @logger.level = :warn
     end
 
     if log_file

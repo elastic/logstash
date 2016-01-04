@@ -1,0 +1,47 @@
+# Settings file in YAML
+#
+# Settings can be specified either in hierarchical form, e.g.:
+#
+#   pipeline:
+#     batch:
+#       size: 125
+#       delay: 5
+#
+# Or as flat keys:
+#
+#   pipeline.batch.size: 125
+#   pipeline.batch.delay: 5
+#
+# ------------  Node identity ------------
+#
+# Use a descriptive name for the node:
+#
+# node.name: test
+#
+# If omitted the node name will default to the machine's host name
+#
+# ------------ Pipeline Settings --------------
+#
+# Set the number of workers that will, in parallel, execute the filters+outputs
+# stage of the pipeline.
+#
+# This defaults to half the number of the host's CPU cores.
+#
+# pipeline.workers: 2
+#
+# How many events to retrieve from inputs before sending to filters+workers
+# 
+# pipeline.batch.size: 125
+#
+# How long to wait before dispatching an undersized batch to filters+workers
+# Value is in seconds.
+#
+# pipeline.batch.delay: 5
+#
+# Force Logstash to exit during shutdown even if there are still inflight
+# events in memory. By default, logstash will refuse to quit until all
+# received events have been pushed to the outputs.
+#
+# WARNING: enabling this can lead to data loss during shutdown
+#
+# pipeline.unsafe_shutdown: false
