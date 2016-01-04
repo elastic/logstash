@@ -7,8 +7,14 @@ require_relative "../support/mocks_classes"
 describe LogStash::Agent do
 
   let(:logger) { double("logger") }
-  let(:agent_args) { { :logger => logger } }
-  subject { LogStash::Agent.new(agent_args) }
+  let(:agent_settings) { LogStash::SETTINGS }
+  let(:agent_args) { {} }
+  let(:pipeline_settings) { agent_settings.clone }
+  let(:pipeline_args) { {} }
+  let(:config_file) { Stud::Temporary.pathname }
+  let(:config_file_txt) { "input { generator { count => 100000 } } output { }" }
+
+  subject { LogStash::Agent.new(agent_settings) }
 
   before :each do
     [:info, :warn, :error, :fatal, :debug].each do |level|
@@ -17,46 +23,63 @@ describe LogStash::Agent do
     [:info?, :warn?, :error?, :fatal?, :debug?].each do |level|
       allow(logger).to receive(level)
     end
+    File.open(config_file, "w") { |f| f.puts config_file_txt }
+    agent_args.each do |key, value|
+      agent_settings.set(key, value)
+      pipeline_settings.set(key, value)
+    end
+    pipeline_args.each do |key, value|
+      pipeline_settings.set(key, value)
+    end
+    #subject.logger = logger
+  end
+
+  after :each do
+    LogStash::SETTINGS.reset
+    File.unlink(config_file)
+  end
+
+  it "fallback to hostname when no name is provided" do
+    expect(LogStash::Agent.new.node_name).to eq(Socket.gethostname)
   end
 
   describe "register_pipeline" do
     let(:pipeline_id) { "main" }
     let(:config_string) { "input { } filter { } output { }" }
-    let(:settings) { {
-      :config_string => config_string,
-      :pipeline_workers => 4
-    } }
-
-    let(:agent_args) { {
-      :logger => logger,
-      :auto_reload => false,
-      :reload_interval => 0.01
-    } }
+    let(:agent_args) do
+      { 
+        "config.string" => config_string,
+        "config.reload.automatic" => true,
+        "config.reload.interval" => 0.01,
+	"pipeline.workers" => 4,
+      }
+    end
 
     it "should delegate settings to new pipeline" do
-      expect(LogStash::Pipeline).to receive(:new).with(settings[:config_string], hash_including(settings))
-      subject.register_pipeline(pipeline_id, settings)
+      expect(LogStash::Pipeline).to receive(:new) do |arg1, arg2|
+        expect(arg1).to eq(config_string)
+	expect(arg2.to_hash).to include(agent_args)
+      end
+      subject.register_pipeline(pipeline_id, agent_settings)
     end
   end
 
   describe "#execute" do
-    let(:sample_config) { "input { generator { count => 100000 } } output { }" }
-    let(:config_file) { Stud::Temporary.pathname }
+    let(:config_file_txt) { "input { generator { count => 100000 } } output { }" }
 
     before :each do
       allow(subject).to receive(:start_webserver).and_return(false)
       allow(subject).to receive(:stop_webserver).and_return(false)
-      File.open(config_file, "w") { |f| f.puts sample_config }
-    end
-
-    after :each do
-      File.unlink(config_file)
     end
 
     context "when auto_reload is false" do
-      let(:agent_args) { { :logger => logger, :auto_reload => false } }
+      let(:agent_args) do
+        {
+          "config.reload.automatic" => false,
+          "path.config" => config_file
+        }
+      end
       let(:pipeline_id) { "main" }
-      let(:pipeline_settings) { { :config_path => config_file } }
 
       before(:each) do
         subject.register_pipeline(pipeline_id, pipeline_settings)
@@ -112,9 +135,14 @@ describe LogStash::Agent do
     end
 
     context "when auto_reload is true" do
-      let(:agent_args) { { :logger => logger, :auto_reload => true, :reload_interval => 0.01 } }
+      let(:agent_args) do
+        {
+          "config.reload.automatic" => true,
+          "config.reload.interval" => 0.01,
+          "path.config" => config_file,
+        }
+      end
       let(:pipeline_id) { "main" }
-      let(:pipeline_settings) { { :config_path => config_file } }
 
       before(:each) do
         subject.register_pipeline(pipeline_id, pipeline_settings)
@@ -168,9 +196,9 @@ describe LogStash::Agent do
     let(:pipeline_id) { "main" }
     let(:first_pipeline_config) { "input { } filter { } output { }" }
     let(:second_pipeline_config) { "input { generator {} } filter { } output { }" }
-    let(:pipeline_settings) { {
-      :config_string => first_pipeline_config,
-      :pipeline_workers => 4
+    let(:pipeline_args) { {
+      "config.string" => first_pipeline_config,
+      "pipeline.workers" => 4
     } }
 
     before(:each) do
@@ -194,16 +222,13 @@ describe LogStash::Agent do
   end
 
   describe "Environment Variables In Configs" do
+    let(:pipeline_config) { "input { generator { message => '${FOO}-bar' } } filter { } output { }" }
     let(:agent_args) { {
-      :logger => logger,
-      :auto_reload => false,
-      :reload_interval => 0.01
+      "config.reload.automatic" => false,
+      "config.reload.interval" => 0.01,
+      "config.string" => pipeline_config
     } }
     let(:pipeline_id) { "main" }
-    let(:pipeline_config) { "input { generator { message => '${FOO}-bar' } } filter { } output { }" }
-    let(:pipeline_settings) { {
-      :config_string => pipeline_config,
-    } }
 
     context "environment variable templating" do
       before :each do
@@ -216,7 +241,7 @@ describe LogStash::Agent do
       end
 
       it "doesn't upgrade the state" do
-        expect(subject).to receive(:fetch_config).and_return(pipeline_config)
+        allow(subject).to receive(:fetch_config).and_return(pipeline_config)
         subject.register_pipeline(pipeline_id, pipeline_settings)
         expect(subject.pipelines[pipeline_id].inputs.first.message).to eq("foo-bar")
       end
@@ -226,9 +251,9 @@ describe LogStash::Agent do
   describe "#upgrade_pipeline" do
     let(:pipeline_id) { "main" }
     let(:pipeline_config) { "input { } filter { } output { }" }
-    let(:pipeline_settings) { {
-      :config_string => pipeline_config,
-      :pipeline_workers => 4
+    let(:pipeline_args) { {
+      "config.string" => pipeline_config,
+      "pipeline.workers" => 4
     } }
     let(:new_pipeline_config) { "input { generator {} } output { }" }
 
@@ -275,23 +300,12 @@ describe LogStash::Agent do
   end
 
   describe "#fetch_config" do
-    let(:file_config) { "input { generator { count => 100 } } output { }" }
     let(:cli_config) { "filter { drop { } } " }
-    let(:tmp_config_path) { Stud::Temporary.pathname }
-    let(:agent_args) { { :logger => logger, :config_string => "filter { drop { } } ", :config_path => tmp_config_path } }
-
-    before :each do
-      IO.write(tmp_config_path, file_config)
-    end
-
-    after :each do
-      File.unlink(tmp_config_path)
-    end
+    let(:agent_args) { { "config.string" => cli_config, "path.config" => config_file } }
 
     it "should join the config string and config path content" do
-      settings = { :config_path => tmp_config_path, :config_string => cli_config }
-      fetched_config = subject.send(:fetch_config, settings)
-      expect(fetched_config.strip).to eq(cli_config + IO.read(tmp_config_path))
+      fetched_config = subject.send(:fetch_config, agent_settings)
+      expect(fetched_config.strip).to eq(cli_config + IO.read(config_file).strip)
     end
   end
 
@@ -319,13 +333,17 @@ describe LogStash::Agent do
       f.path
     end
     let(:interval) { 0.2 }
-    let(:pipeline_settings) { { :pipeline_workers => 4,
-                                :config_path => config_path } }
+    let(:pipeline_args) do
+      {
+        "pipeline.workers" => 4,
+        "path.config" => config_path
+      }
+    end
 
     let(:agent_args) do
-      super.merge({ :auto_reload => true,
-                    :reload_interval => interval,
-                    :collect_metric => true })
+      super.merge({ "config.reload.automatic" => true,
+                    "config.reload.interval" => interval,
+                    "metric.collect" => true })
     end 
 
     before :each do
