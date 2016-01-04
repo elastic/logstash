@@ -20,7 +20,7 @@ module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :logger
 
   DEFAULT_SETTINGS = {
-    :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.fifty_percent,
+    :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.maximum,
     :pipeline_batch_size => 125,
     :pipeline_batch_delay => 5, # in milliseconds
     :flush_interval => 5, # in seconds
