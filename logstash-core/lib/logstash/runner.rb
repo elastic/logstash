@@ -11,6 +11,7 @@ LogStash::Environment.load_locale!
 
 require "logstash/namespace"
 require "logstash/agent"
+require "logstash/util/loggable"
 
 class LogStash::Runner < Clamp::Command
 
@@ -267,6 +268,8 @@ class LogStash::Runner < Clamp::Command
     else
       @logger.subscribe(STDOUT)
     end
+
+    LogStash::Util::Loggable.logger = @logger
 
     # TODO(sissel): redirect stdout/stderr to the log as well
     # http://jira.codehaus.org/browse/JRUBY-7003
