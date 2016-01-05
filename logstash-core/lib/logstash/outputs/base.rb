@@ -25,7 +25,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Note that this setting may not be useful for all outputs.
   config :workers, :validate => :number, :default => 1
 
-  attr_reader :worker_plugins, :available_workers, :workers, :worker_plugins
+  attr_reader :worker_plugins, :available_workers, :workers, :worker_plugins, :workers_not_supported
 
   def self.declare_threadsafe!
     declare_workers_not_supported!
@@ -41,14 +41,20 @@ class LogStash::Outputs::Base < LogStash::Plugin
     @workers_not_supported = true
   end
 
+  def self.workers_not_supported_message
+    @workers_not_supported_message
+  end
+
   def self.workers_not_supported?
-    @workers_not_supported == true
+    !!@workers_not_supported
   end
 
   public
   # TODO: Remove this in the next major version after Logstash 2.x
+  # Post 2.x it should raise an error and tell people to use the class level
+  # declaration
   def workers_not_supported(message=nil)
-    raise ArgumentError, "Outputs::Base#workers_not_supported is no longer a valid part of the logstash API, please use the class method Outputs::Base.declare_workers_not_supported!"
+    self.class.declare_workers_not_supported!(message)
   end
 
   public
