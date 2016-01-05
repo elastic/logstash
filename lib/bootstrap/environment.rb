@@ -103,8 +103,6 @@ if $0 == __FILE__
     puts "Warn: option \"#{ARGV.first}\" is deprecated, use \"-i #{ARGV.first}\" or \"--interactive=#{ARGV.first}\" instead"
     exit_status = LogStash::Runner.run("bin/logstash", ["--interactive", ARGV.first])
   else
-    puts "Arguments from \'settings.yml\' file: #{settings_array}"
-    puts "Arguments from command line: #{ARGV}"
     # The Clamp library supports specifying the same argument multiple times
     # and it keeps the   in an array. So in order for cli args to override
     # the settings.yml args we can do `settings_array + ARGV`
