@@ -110,8 +110,12 @@ module LogStash
   end
 
   class KeyNode
+    KEY_NODE_DEFAULT_DELIMITER = ":-"
+
     def initialize(key)
-      @key = key
+      key_default = key.split(KEY_NODE_DEFAULT_DELIMITER, 2)
+      @key = key_default[0]
+      @default = key_default[1]
     end
 
     def evaluate(event)
@@ -119,7 +123,11 @@ module LogStash
 
       case value
       when nil
-        "%{#{@key}}"
+        if @default.nil?
+          return "%{#{@key}}"
+        else
+          return @default
+        end
       when Array
         value.join(",")
       when Hash

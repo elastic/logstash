@@ -123,6 +123,20 @@ describe LogStash::Event do
           expect(subject.sprintf("%{unkown_pattern}").encoding).to eq(Encoding::UTF_8)
         end
       end
+
+      context "default value" do
+        it "should not evaluate without default value" do
+          expect(subject.sprintf("%{undefined-field}")).to eq("%{undefined-field}")
+        end
+
+        it "should use default value, if field is not found" do
+          expect(subject.sprintf("%{undefined-field:-na}")).to eq("na")
+        end
+
+        it "should use empty default value, if field is not found" do
+          expect(subject.sprintf("%{undefined-field:-}")).to eq("")
+        end
+      end
     end
 
     context "#[]" do
