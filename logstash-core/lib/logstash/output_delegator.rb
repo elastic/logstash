@@ -17,25 +17,35 @@ module LogStash; class OutputDelegator
     @threadsafe = klass.threadsafe?
     @config = args.reduce({}, :merge)
     @klass = klass
-    @worker_count = calculate_worker_count(default_worker_count)
-
-    warn_on_worker_override!
-
-    @worker_queue = SizedQueue.new(@worker_count)
 
     # We define this as an array regardless of threadsafety
-    # to make reporting simpler
-    @workers = @worker_count.times.map do
-      w = @klass.new(*args)
-      w.register
-      @worker_queue << w
-      w
+    # to make reporting simpler, even though a threadsafe plugin will just have
+    # a single instance
+    #
+    # Older plugins invoke the instance method Outputs::Base#workers_not_supported
+    # To detect these we need an instance to be created first :()
+    # TODO: In the next major version after 2.x remove support for this
+    @workers = [@klass.new(*args)]
+    @workers.first.register # Needed in case register calls `workers_not_supported`
+
+    # DO NOT move this statement before the instantiation of the first single instance
+    # Read the note above to understand why
+    @worker_count = calculate_worker_count(default_worker_count)
+    warn_on_worker_override!
+    # This queue is used to manage sharing across threads
+    @worker_queue = SizedQueue.new(@worker_count)
+
+    @workers += (@worker_count - 1).times.map do
+      inst = @klass.new(*args)
+      inst.register
+      inst
     end
 
+    @workers.each { |w| @worker_queue << w }
 
     @events_received = Concurrent::AtomicFixnum.new(0)
 
-    if threadsafe
+    if threadsafe?
       @threadsafe_worker = @workers.first
       self.define_singleton_method(:multi_receive, method(:threadsafe_multi_receive))
     else
@@ -43,16 +53,24 @@ module LogStash; class OutputDelegator
     end
   end
 
+  def threadsafe?
+    !!@threadsafe
+  end
+
   def warn_on_worker_override!
     # The user has configured extra workers, but this plugin doesn't support it :(
-    if @config["workers"] && @config["workers"] > 1 && @klass.workers_not_supported?
-      message = @workers_not_supported_message
+    if worker_limits_overriden?
+      message = @klass.workers_not_supported_message
       if message
-        @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported-with-message", :plugin => self.class.config_name, :worker_count => @workers, :message => message))
+        @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported-with-message", :plugin => @klass.config_name, :worker_count => @config["workers"], :message => message))
       else
-        @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported", :plugin => self.class.config_name, :worker_count => @workers))
+        @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported", :plugin => @klass.config_name, :worker_count => @config["workers"], :message => message))
       end
     end
+  end
+
+  def worker_limits_overriden?
+    @config["workers"] && @config["workers"] > 1 && @klass.workers_not_supported?
   end
 
   def calculate_worker_count(default_worker_count)
@@ -71,7 +89,6 @@ module LogStash; class OutputDelegator
     @workers.each {|w| w.register}
   end
 
-  # Threadsafe outputs have a much simpler
   def threadsafe_multi_receive(events)
     @events_received.increment(events.length)
 
@@ -81,6 +98,7 @@ module LogStash; class OutputDelegator
   def worker_multi_receive(events)
     @events_received.increment(events.length)
 
+    @logger.debug("worker queue pop")
     worker = @worker_queue.pop
     begin
       worker.multi_receive(events)
@@ -109,5 +127,17 @@ module LogStash; class OutputDelegator
     else
       @workers.size - @worker_queue.size
     end
+  end
+
+  private
+
+  # Needed for tests
+  def threadsafe_worker
+    @threadsafe_worker
+  end
+
+  # Needed for tests
+  def worker_queue
+    @worker_queue
   end
 end end

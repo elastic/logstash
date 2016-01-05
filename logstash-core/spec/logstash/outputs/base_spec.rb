@@ -15,6 +15,14 @@ class LogStash::Outputs::NOOP < LogStash::Outputs::Base
   end
 end
 
+class LogStash::Outputs::NOOPLegacyNoWorkers < ::LogStash::Outputs::Base
+  LEGACY_WORKERS_NOT_SUPPORTED_REASON = "legacy reason"
+
+  def register
+    workers_not_supported(LEGACY_WORKERS_NOT_SUPPORTED_REASON)
+  end
+end
+
 describe "LogStash::Outputs::Base#new" do
   it "should instantiate cleanly" do
     params = { "dummy_option" => "potatoes", "codec" => "json", "workers" => 2 }
@@ -23,5 +31,10 @@ describe "LogStash::Outputs::Base#new" do
     expect do
       LogStash::Outputs::NOOP.new(params.dup)
     end.not_to raise_error
+  end
+
+  it "should move workers_not_supported declarations up to the class level" do
+    LogStash::Outputs::NOOPLegacyNoWorkers.new.register
+    expect(LogStash::Outputs::NOOPLegacyNoWorkers.workers_not_supported?).to eql(true)
   end
 end
