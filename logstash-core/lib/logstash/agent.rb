@@ -31,7 +31,6 @@ class LogStash::Agent
   def initialize(params)
     @logger = params[:logger]
     @auto_reload = params[:auto_reload]
-
     @pipelines = {}
     @node_name = params[:node_name] || Socket.gethostname
     @web_api_http_host = params[:web_api_http_host]
