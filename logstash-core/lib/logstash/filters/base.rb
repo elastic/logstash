@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "logstash/namespace"
 require "logstash/event"
-require "logstash/logging"
 require "logstash/plugin"
 require "logstash/config/mixin"
 require "logstash/util/decorators"
