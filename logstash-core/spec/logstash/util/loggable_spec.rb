@@ -33,11 +33,11 @@ describe LogStash::Util::Loggable do
   let(:global_logger_tracer) { LoggerTracer.new }
   subject { DummyLoggerUseCase.new }
 
-  before do
+  before :each do
     LogStash::Util::Loggable.logger = global_logger_tracer
   end
 
-  after do
+  after :each do
     LogStash::Util::Loggable.logger = nil
   end
     
@@ -60,8 +60,12 @@ describe LogStash::Util::Loggable do
   context "Configuring a logger for a specific class" do
     let(:local_logger_tracer) { LoggerTracer.new }
 
-    before do
+    before :each do
       DummyLoggerUseCase.logger = local_logger_tracer
+    end
+
+    after :each do
+      DummyLoggerUseCase.logger = nil
     end
 
     it "doesn't change the global logger" do
