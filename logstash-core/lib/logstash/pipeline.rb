@@ -37,16 +37,16 @@ module LogStash; class Pipeline
     :config_str,
     :original_settings
 
-  DEFAULT_OUTPUT_WORKERS = 1
-
   DEFAULT_SETTINGS = {
     :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.maximum,
+    :default_output_workers => 1,
     :pipeline_batch_size => 125,
     :pipeline_batch_delay => 5, # in milliseconds
     :flush_interval => 5, # in seconds
     :flush_timeout_interval => 60, # in seconds
     :debug_config => false
   }
+
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   RELOAD_INCOMPATIBLE_PLUGINS = [
@@ -111,6 +111,7 @@ module LogStash; class Pipeline
     # in-flight buffers
     @input_queue_pop_mutex = Mutex.new
     @input_threads = []
+    @settings = LogStash::DEFAULT_SETTINGS.clone
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
     @running = Concurrent::AtomicBoolean.new(false)
@@ -126,7 +127,7 @@ module LogStash; class Pipeline
   end
 
   def safe_pipeline_worker_count
-    default = DEFAULT_SETTINGS[:default_pipeline_workers]
+    default = LogStash::DEFAULT_SETTINGS[:default_pipeline_workers]
     thread_count = @settings[:pipeline_workers] #override from args "-w 8" or config
     safe_filters, unsafe_filters = @filters.partition(&:threadsafe?)
 
@@ -457,7 +458,7 @@ module LogStash; class Pipeline
     klass = LogStash::Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      LogStash::OutputDelegator.new(@logger, klass, DEFAULT_OUTPUT_WORKERS, pipeline_scoped_metric.namespace(:outputs), *args)
+      LogStash::OutputDelegator.new(@logger, klass, DEFAULT_SETTINGS[:default_output_workers], pipeline_scoped_metric.namespace(:outputs), *args)
     elsif plugin_type == "filter"
       LogStash::FilterDelegator.new(@logger, klass, pipeline_scoped_metric.namespace(:filters), *args)
     else
