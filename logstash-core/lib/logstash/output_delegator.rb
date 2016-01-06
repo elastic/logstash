@@ -45,11 +45,22 @@ module LogStash; class OutputDelegator
 
     @events_received = Concurrent::AtomicFixnum.new(0)
 
+
+    # One might wonder why we don't use something like
+    # define_singleton_method(:multi_receive, method(:threadsafe_multi_receive)
+    # and the answer is this is buggy on Jruby 1.7.x . It works 98% of the time!
+    # The other 2% you get weird errors about rebinding to the same object
+    # Until we switch to Jruby 9.x keep the define_singleton_method parts
+    # the way they are, with a block
     if threadsafe?
       @threadsafe_worker = @workers.first
-      self.define_singleton_method(:multi_receive, method(:threadsafe_multi_receive))
+      define_singleton_method(:multi_receive) do |events|
+        threadsafe_multi_receive(events)
+      end
     else
-      self.define_singleton_method(:multi_receive, method(:worker_multi_receive))
+      define_singleton_method(:multi_receive) do |events|
+        worker_multi_receive(events)
+      end
     end
   end
 
