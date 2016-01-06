@@ -154,7 +154,6 @@ class LogStash::Runner < Clamp::Command
     require "stud/task"
     require "cabin" # gem 'cabin'
 
-
     # Configure Logstash logging facility, this need to be done before everything else to
     # make sure the logger has the correct settings and the log level is correctly defined.
     configure_logging(log_file)
@@ -172,7 +171,7 @@ class LogStash::Runner < Clamp::Command
     LogStash::ShutdownWatcher.unsafe_shutdown = unsafe_shutdown?
     LogStash::ShutdownWatcher.logger = @logger
 
-    configure
+    configure_plugin_paths(plugin_paths)
 
     if version?
       show_version
@@ -394,7 +393,7 @@ class LogStash::Runner < Clamp::Command
   def build_settings_hash
     hash = {}
     self.class.declared_options.each do |opt|
-      option_name = opt.long_switch.sub("--", "")
+      option_name = opt.long_switch.sub("--", "").sub("[no-]", "")
       value = self.send(opt.read_method)
       if opt.flag?
         hash[option_name] = value ? value : false
@@ -407,7 +406,7 @@ class LogStash::Runner < Clamp::Command
 
   def print_settings(settings)
     pretty_hash = {}
-    @logger.terminal("--------------- # SETTINGS # -------------------")
+    @logger.terminal("--------------- Logstash Settings -------------------")
     settings.each do |setting, value|
       next if setting == "version" || setting == "help"
       default_value = LogStash::DEFAULT_SETTINGS[setting]
@@ -419,6 +418,6 @@ class LogStash::Runner < Clamp::Command
         @logger.terminal("*#{setting}: #{value.inspect} (default: #{default_value.inspect})")
       end
     end
-    @logger.terminal("--------------- # SETTINGS # -------------------")
+    @logger.terminal("--------------- Logstash Settings -------------------")
   end
 end
