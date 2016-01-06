@@ -179,6 +179,9 @@ class LogStash::Event
 
   # Remove a field or field reference. Returns the value of that field when deleted
   def remove(fieldref)
+    if fieldref == TIMESTAMP || fieldref == "[#{TIMESTAMP}]"
+      raise TypeError, "The field '@timestamp' must not be removed"
+    end
     @accessors.del(fieldref)
   end
 
