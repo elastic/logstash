@@ -101,7 +101,7 @@ describe LogStash::Event do
       it "should raise error when formatting %{+%s} when @timestamp field is missing" do
         str = "hello-%{+%s}"
         subj = subject.clone
-        subj.remove("[@timestamp]")
+        subj.instance_variable_get(:@accessors).del("[@timestamp]")
         expect{ subj.sprintf(str) }.to raise_error(LogStash::Error)
       end
 
@@ -118,7 +118,7 @@ describe LogStash::Event do
       it "should raise error with %{+format} syntax when @timestamp field is missing", :if => RUBY_ENGINE == "jruby" do
         str = "logstash-%{+YYYY}"
         subj = subject.clone
-        subj.remove("[@timestamp]")
+        subj.instance_variable_get(:@accessors).del("[@timestamp]")
         expect{ subj.sprintf(str) }.to raise_error(LogStash::Error)
       end
 
@@ -331,6 +331,12 @@ describe LogStash::Event do
         it "should join array, removing duplicates" do
           subject.append(LogStash::Event.new({"field1" => [ "append1","original1" ]}))
           expect(subject[ "field1" ]).to eq([ "original1", "original2", "append1" ])
+        end
+      end
+
+      context "remove" do
+        it "should raise an exception if you attempt to remove @timestamp" do
+          expect{subject.remove("@timestamp")}.to raise_error(TypeError)
         end
       end
     end
