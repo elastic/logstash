@@ -25,7 +25,7 @@ describe LogStash::Util::DefaultsPrinter do
 
     context 'when the settings hash has content' do
       let(:worker_queue) { 42 }
-      let(:settings) { {'pipeline-workers' => workers} }
+      let(:settings) { {:pipeline_workers => workers} }
       it_behaves_like "a defaults printer"
     end
   end
@@ -42,7 +42,7 @@ describe LogStash::Util::DefaultsPrinter do
 
     context 'when the settings hash has content' do
       let(:workers) { 13 }
-      let(:settings) { {'pipeline-workers' => workers} }
+      let(:settings) { {:pipeline_workers => workers} }
 
       it_behaves_like "a defaults printer"
     end
