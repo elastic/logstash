@@ -7,7 +7,7 @@ require "concurrent/atomic/atomic_fixnum"
 # of 'workers' the output plugin is configured with.
 #
 # This plugin also records some basic statistics
-module LogStash; class OutputDelegator
+module LogStash class OutputDelegator
   attr_reader :workers, :config, :worker_count, :threadsafe
 
   # The *args this takes are the same format that a Outputs::Base takes. A list of hashes with parameters in them
@@ -145,14 +145,6 @@ module LogStash; class OutputDelegator
   end
 
   private
-
-  # Needed for tests
-  def threadsafe_worker
-    @threadsafe_worker
-  end
-
-  # Needed for tests
-  def worker_queue
-    @worker_queue
-  end
+  # Needed for testing, so private
+  attr_reader :threadsafe_worker, :worker_queue
 end end
