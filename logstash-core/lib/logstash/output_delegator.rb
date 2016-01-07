@@ -74,10 +74,12 @@ module LogStash; class OutputDelegator
     # The user has configured extra workers, but this plugin doesn't support it :(
     if worker_limits_overriden?
       message = @klass.workers_not_supported_message
+      warning_meta = {:plugin => @klass.config_name, :worker_count => @config["workers"]}
       if message
-        @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported-with-message", :plugin => @klass.config_name, :worker_count => @config["workers"], :message => message))
+        warning_meta[:message] = message
+        @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported-with-message", warning_meta))
       else
-        @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported", :plugin => @klass.config_name, :worker_count => @config["workers"], :message => message))
+        @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported", warning_meta))
       end
     end
   end
