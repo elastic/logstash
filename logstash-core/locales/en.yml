@@ -37,7 +37,7 @@ en:
       output-worker-unsupported-with-message: >-
         %{plugin} output plugin: setting 'workers => %{worker_count}' is not
         supported by this plugin. I will continue working as if you had not set
-        this setting.
+        this setting. Reason: %{message}
     plugin:
       deprecated_milestone: >-
         %{plugin} plugin is using the 'milestone' method to declare the version
