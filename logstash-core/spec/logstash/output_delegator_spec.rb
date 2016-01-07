@@ -115,6 +115,10 @@ describe LogStash::OutputDelegator do
     let(:default_worker_count) { 2 }
     let(:out_klass) { LogStash::Outputs::NOOPDelLegacyNoWorkers }
 
+    before do
+      allow(logger).to receive(:debug).with(any_args)
+    end
+
     it "should only setup one worker" do
       expect(subject.worker_count).to eql(1)
     end
