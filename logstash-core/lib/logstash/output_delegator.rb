@@ -31,6 +31,8 @@ module LogStash; class OutputDelegator
     # DO NOT move this statement before the instantiation of the first single instance
     # Read the note above to understand why
     @worker_count = calculate_worker_count(default_worker_count)
+    @logger.debug("Will start workers for output", :worker_count => @worker_count, :class => klass)
+
     warn_on_worker_override!
     # This queue is used to manage sharing across threads
     @worker_queue = SizedQueue.new(@worker_count)
