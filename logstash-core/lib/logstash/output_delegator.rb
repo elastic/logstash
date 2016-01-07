@@ -113,7 +113,6 @@ module LogStash; class OutputDelegator
   def worker_multi_receive(events)
     @events_received.increment(events.length)
 
-    @logger.debug("worker queue pop")
     worker = @worker_queue.pop
     begin
       worker.multi_receive(events)
