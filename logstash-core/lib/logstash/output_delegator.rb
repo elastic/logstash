@@ -54,6 +54,7 @@ module LogStash; class OutputDelegator
     # The other 2% you get weird errors about rebinding to the same object
     # Until we switch to Jruby 9.x keep the define_singleton_method parts
     # the way they are, with a block
+    # See https://github.com/jruby/jruby/issues/3582
     if threadsafe?
       @threadsafe_worker = @workers.first
       define_singleton_method(:multi_receive) do |events|
