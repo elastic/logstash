@@ -1,0 +1,63 @@
+[[breaking-changes]]
+== Breaking changes
+
+Version 2.0 of Logstash has some changes that are incompatible with previous versions of Logstash. This section discusses
+what you need to be aware of when migrating to this version.
+
+[float]
+== Elasticsearch Output Default
+
+Starting with the 2.0 release of Logstash, the default Logstash output for Elasticsearch is HTTP. To use the `node` or
+`transport` protocols, download the https://www.elastic.co/guide/en/logstash/2.0/plugins-outputs-elasticsearch_java.html[Elasticsearch Java plugin]. The
+Logstash HTTP output to Elasticsearch now supports sniffing.
+
+NOTE: The `elasticsearch_java` plugin has two versions specific to the version of the underlying Elasticsearch cluster.
+Be sure to specify the correct value for the `--version` option during installation:
+* For Elasticsearch versions before 2.0, use the command
+`bin/plugin install --version 1.5.x logstash-output-elasticsearch_java`
+* For Elasticsearch versions 2.0 and after, use the command
+`bin/plugin install --version 2.0.0 logstash-output-elasticsearch_java`
+
+[float]
+=== Configuration Changes
+
+The Elasticsearch output plugin configuration has the following changes:
+
+* The `host` configuration option is now `hosts`, allowing you to specify multiple hosts and associated ports in the
+`myhost:9200` format
+* New options: `bind_host`, `bind_port`, `cluster`, `embedded`, `embedded_http_port`, `port`, `sniffing_delay`
+* The `max_inflight_requests` option, which was deprecated in the 1.5 release, is now removed
+* Since the `hosts` option allows specification of ports for the hosts, the redundant `port` option is now removed
+* The `node_name` and `protocol` options have been moved to the `elasticsearch_java` plugin
+
+The following deprecated configuration settings are removed in this release:
+
+* input plugin configuration settings: `debug`, `format`, `charset`, `message_format`
+* output plugin configuration settings: `type`, `tags`, `exclude_tags`.
+* filter plugin configuration settings: `type`, `tags`, `exclude_tags`.
+
+Configuration files with these settings present are invalid and prevent Logstash from starting.
+
+[float]
+=== Kafka Output Configuration Changes
+
+The 2.0 release of Logstash includes a new version of the Kafka output plugin with significant configuration changes.
+Please compare the documentation pages for the
+https://www.elastic.co/guide/en/logstash/1.5/plugins-outputs-kafka.html[Logstash 1.5] and
+https://www.elastic.co/guide/en/logstash/2.0/plugins-outputs-kafka.html[Logstash 2.0] versions of the Kafka output plugin
+and update your configuration files accordingly.
+
+[float]
+=== Metrics Filter Changes
+Prior implementations of the metrics filter plugin used dotted field names. Elasticsearch does not allow field names to
+have dots, beginning with version 2.0, so a change was made to use sub-fields instead of dots in this plugin. Please note
+that these changes make version 3.0.0 of the metrics filter plugin incompatible with previous releases.
+
+
+[float]
+=== Filter Worker Default Change
+
+Starting with the 2.0 release of Logstash, the default value of the `filter_workers` configuration option for filter
+plugins is half of the available CPU cores, instead of 1. This change increases parallelism in filter execution for
+resource-intensive filtering operations. You can continue to use the `-w` flag to manually set the value for this option,
+as in previous releases.

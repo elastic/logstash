@@ -63,10 +63,6 @@ class DummyOutput < LogStash::Outputs::Base
   def register
   end
   
-  def threadsafe?
-    false
-  end
-
   def receive(event)
     @events << event
   end
@@ -232,7 +228,7 @@ describe LogStash::Pipeline do
         pipeline.run
 
         expect(pipeline.outputs.size ).to eq(1)
-        expect(pipeline.outputs.first.workers.size ).to eq(1)
+        expect(pipeline.outputs.first.workers.size ).to eq(pipeline.default_output_workers)
         expect(pipeline.outputs.first.workers.first.num_closes ).to eq(1)
       end
 
@@ -295,6 +291,36 @@ describe LogStash::Pipeline do
         expect(subject[0]["type"]).to be_nil
         expect(subject[1]["message"]).to eq("foo\nbar")
         expect(subject[1]["type"]).to eq("clone1")
+      end
+    end
+  end
+
+  describe "max inflight warning" do
+    let(:config) { "input { dummyinput {} } output { dummyoutput {} }" }
+    let(:batch_size) { 1 }
+    let(:pipeline) { LogStash::Pipeline.new(config, :pipeline_batch_size => batch_size, :pipeline_workers => 1) }
+    let(:logger) { pipeline.logger }
+    let(:warning_prefix) { /CAUTION: Recommended inflight events max exceeded!/ }
+
+    before(:each) do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(logger).to receive(:warn)
+      thread = Thread.new { pipeline.run }
+      pipeline.shutdown
+      thread.join
+    end
+
+    it "should not raise a max inflight warning if the max_inflight count isn't exceeded" do
+      expect(logger).not_to have_received(:warn).with(warning_prefix)
+    end
+
+    context "with a too large inflight count" do
+      let(:batch_size) { LogStash::Pipeline::MAX_INFLIGHT_WARN_THRESHOLD + 1 }
+
+      it "should raise a max inflight warning if the max_inflight count is exceeded" do
+        expect(logger).to have_received(:warn).with(warning_prefix)
       end
     end
   end
@@ -406,6 +432,35 @@ describe LogStash::Pipeline do
         output.events.first["message"].split("\n").count
       end.to eq(number_of_events)
       pipeline.shutdown
+    end
+  end
+
+  context "Multiple pipelines" do
+    before do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+    end
+
+    let(:pipeline1) { LogStash::Pipeline.new("input { generator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
+    let(:pipeline2) { LogStash::Pipeline.new("input { generator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
+
+    it "should handle evaluating different config" do
+      # When the functions are compiled from the AST it will generate instance
+      # variables that are unique to the actual config, the intance are pointing
+      # to conditionals/plugins.
+      #
+      # Before the `defined_singleton_method`, the definition of the method was
+      # not unique per class, but the `instance variables` were unique per class.
+      #
+      # So the methods were trying to access instance variables that did not exist
+      # in the current instance and was returning an array containing nil values for
+      # the match.
+      expect(pipeline1.output_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
     end
   end
 end

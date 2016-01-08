@@ -1,0 +1,132 @@
+== Glossary
+Logstash Glossary
+
+apache ::
+	A very common open source web server application, which produces logs easily consumed by Logstash (Apache Common/Combined Log Format).
+
+agent ::
+	An invocation of Logstash with a particular configuration, allowing it to operate as a "shipper", a "collector", or a combination of functionalities.
+
+
+broker ::
+	An intermediary used in a multi-tiered Logstash deployment which allows a queueing mechanism to be used. Examples of brokers are Redis, RabbitMQ, and Apache Kafka. This pattern is a common method of building fault-tolerance into a Logstash architecture.
+
+buffer::
+	Within Logstash, a temporary storage area where events can queue up, waiting to be processed. The default queue size is 20 events, but it is not recommended to increase this, as Logstash is not designed to operate as a queueing mechanism.
+
+centralized::
+	A configuration of Logstash in which the Logstash agent, input and output sources live on multiple machines, and the pipeline passes through these tiers.
+
+codec::
+	A Logstash plugin which works within an input or output plugin, and usually aims to serialize or deserialize data flowing through the Logstash pipeline. A common example is the JSON codec, which allows Logstash inputs to receive data which arrives in JSON format, or output event data in JSON format.
+
+collector::
+	An instance of Logstash which receives external events from another instance of Logstash, or perhaps some other client, either remote or local.
+
+conditional::
+	In a computer programming context, a control flow which executes certain actions based on true/false values of a statement (called the condition). Often expressed in the form of "if ... then ... (elseif ...) else". Logstash has built-in conditionals to allow users control of the plugin pipeline.
+
+elasticsearch::
+	An open-source, Lucene-based, RESTful search and analytics engine written in Java, with supported clients in various languages such as Perl, Python, Ruby, Java, etc.
+
+event::
+	In Logstash parlance, a single unit of information, containing a timestamp plus additional data. An event arrives via an input, and is subsequently parsed, timestamped, and passed through the Logstash pipeline.
+
+field::
+	A data point (often a key-value pair) within a full Logstash event, e.g. "timestamp", "message", "hostname", "ipaddress". Also used to describe a key-value pair in Elasticsearch.
+
+file::
+	A resource storing binary data (which might be text, image, application, etc.) on a physical storage media. In the Logstash context, a common input source which monitors a growing collection of text-based log lines.
+
+filter:
+	An intermediary processing mechanism in the Lostash pipeline. Typically, filters act upon event data after it has been ingested via inputs, by mutating, enriching, and/or modifying the data according to configuration rules. The second phase of the typical Logstash pipeline (inputs->filters->outputs).
+
+fluentd::
+	Like Logstash, another open-source tool for collecting logs and events, with plugins to extend functionality.
+
+ganglia::
+	A scalable, distributed monitoring system suitable for large clusters. Logstash features both an input and an output to enable reading from, and writing to Ganglia.
+
+graphite::
+	A highly-scalable realtime graphing application, which presents graphs through web interfaces. Logstash provides an output which ships event data to Graphite for visualization.
+
+heka::
+	An open-source event processing system developed by Mozilla and often compared to Logstash.
+
+index::
+	An index can be seen as a named collection of documents in Elasticsearch which are available for searching and querying. It is a logical namespace which maps to one or more primary shards and can have zero or more replica shards.
+
+indexer::
+	Refers to a Logstash instance which is tasked with interfacing with an Elasticsearch cluster in order to index event data.
+
+input::
+	The means for ingesting data into Logstash. Inputs allow users to pull data from files, network sockets, other applications, etc. The initial phase of the typical Logstash pipeline (inputs->filters->outputs).
+
+jar / jarfile::
+	A packaging method for Java libraries. Since Logstash runs on the JRuby runtime environment, it is possible to use these Java libraries to provide extra functionality to Logstash.
+
+java::
+	An object-oriented programming language popular for its flexibility, extendability and portability.
+
+jRuby:
+	JRuby is a 100% Java implementation of the Ruby programming language, which allows Ruby to run in the JVM. Logstash typically runs in JRuby, which provides it with a fast, extensible runtime environment.
+
+kibana::
+	A visual tool for viewing time-based data which has been stored in Elasticsearch. Kibana features a powerful set of functionality based on panels which query Elasticsearch in different ways.
+
+log::
+	A snippet of textual information emitted by a device, ostensibly with some pertinent information about the status of said device.
+
+log4j::
+	A very common Java-based logging utility.
+
+Logstash::
+	An application which offers a powerful data processing pipeline, allowing users to consume information from various sources, enrich the data, and output it to any number of other sources.
+
+lumberjack::
+	A protocol for shipping logs from one location to another, in a secure and optimized manner. Also the (deprecated) name of a software application, now known as Logstash Forwarder (LSF).
+
+output::
+	The means for passing event data out of Logstash into other applications, network endpoints, files, etc. The last phase of the typical Logstash pipeline (inputs->filters->outputs).
+
+pipeline::
+	A term used to describe the flow of events through the Logstash workflow. The pipeline typically consists of a series of inputs, filters, and outputs.
+
+plugin::
+	A generic term referring to an input, codec, filter, or output which extends basic Logstash functionality.
+
+redis::
+	An open-source key-value store and cache which is often used in conjunction with Logstash as a message broker.
+
+ruby::
+	A popular, open-source, object-oriented programming language in which Logstash is implemented.
+
+shell::
+	A command-line interface to an operating system.
+
+shipper::
+	An instance of Logstash which send events to another instance of Logstash, or some other application.
+
+statsd::
+	A network daemon for aggregating statistics, such as counters and timers, and shipping over UDP to backend services, such as Graphite or Datadog. Logstash provides an output to statsd.
+
+stdin::
+	An I/O stream providing input to a software application. In Logstash, an input which receives data from this stream.
+
+stdout::
+	An I/O stream producing output from a software application. In Logstash, an output which produces data from this stream.
+
+syslog::
+	A popular method for logging messages from a computer. The standard is somewhat loose, but Logstash has tools (input, grok patterns) to make this simpler.
+
+standalone::
+	A configuration of Logstash in which the Logstash agent, input and output sources typically live on the same host machine.
+
+thread::
+	Parallel sequences of execution within a process which allow a computer to perform several tasks simultaneously, in a multi-processor environment. Logstash takes advantage of this functionality, by specifying the "-w" flag
+
+type::
+	In Elasticsearch type, a type can be compared to a table in a relational database. Each type has a list of fields that can be specified for documents of that type. The mapping defines how each field in the document is analyzed. To index documents, it is required to specify both an index and a type.
+
+worker::
+	The filter thread model used by Logstash, where each worker receives an event and applies all filters, in order, before emitting the event to the output queue. This allows scalability across CPUs because many filters are CPU intensive (permitting that we have thread safety).

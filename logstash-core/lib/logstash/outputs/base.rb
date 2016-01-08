@@ -25,17 +25,36 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # Note that this setting may not be useful for all outputs.
   config :workers, :validate => :number, :default => 1
 
-  attr_reader :worker_plugins, :available_workers, :workers, :worker_plugins
+  attr_reader :worker_plugins, :available_workers, :workers, :worker_plugins, :workers_not_supported
+
+  def self.declare_threadsafe!
+    declare_workers_not_supported!
+    @threadsafe = true
+  end
+
+  def self.threadsafe?
+    @threadsafe == true
+  end
+
+  def self.declare_workers_not_supported!(message=nil)
+    @workers_not_supported_message = message
+    @workers_not_supported = true
+  end
+
+  def self.workers_not_supported_message
+    @workers_not_supported_message
+  end
+
+  def self.workers_not_supported?
+    !!@workers_not_supported
+  end
 
   public
+  # TODO: Remove this in the next major version after Logstash 2.x
+  # Post 2.x it should raise an error and tell people to use the class level
+  # declaration
   def workers_not_supported(message=nil)
-    return if @workers == 1
-    if message
-      @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported-with-message", :plugin => self.class.config_name, :worker_count => @workers, :message => message))
-    else
-      @logger.warn(I18n.t("logstash.pipeline.output-worker-unsupported", :plugin => self.class.config_name, :worker_count => @workers))
-    end
-    @workers = 1
+    self.class.declare_workers_not_supported!(message)
   end
 
   public

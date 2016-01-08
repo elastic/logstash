@@ -11,7 +11,7 @@ require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/config/cpu_core_strategy"
 require "logstash/util/defaults_printer"
-require "logstash/shutdown_controller"
+require "logstash/shutdown_watcher"
 require "logstash/util/wrapped_synchronous_queue"
 require "logstash/pipeline_reporter"
 require "logstash/instrument/metric"
@@ -20,19 +20,22 @@ require "logstash/instrument/collector"
 require "logstash/output_delegator"
 
 module LogStash; class Pipeline
-  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :metric
+  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :metric, :logger
 
   DEFAULT_SETTINGS = {
-    :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.fifty_percent,
+    :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.maximum,
     :pipeline_batch_size => 125,
     :pipeline_batch_delay => 5, # in milliseconds
     :flush_interval => 5, # in seconds
     :flush_timeout_interval => 60 # in seconds
   }
+  MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   def initialize(config_str, settings = {})
     @pipeline_id = settings[:pipeline_id] || self.object_id
     @logger = Cabin::Channel.get(LogStash)
+    @settings = DEFAULT_SETTINGS.clone
+    settings.each {|setting, value| configure(setting, value) }
     @reporter = LogStash::PipelineReporter.new(@logger, self)
 
     @inputs = nil
@@ -81,12 +84,10 @@ module LogStash; class Pipeline
     # in-flight buffers
     @input_queue_pop_mutex = Mutex.new
     @input_threads = []
-    @settings = DEFAULT_SETTINGS.clone
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
-    settings.each {|setting, value| configure(setting, value) }
 
     start_flusher
   end # def initialize
@@ -172,11 +173,16 @@ module LogStash; class Pipeline
       pipeline_workers = safe_pipeline_worker_count
       batch_size = @settings[:pipeline_batch_size]
       batch_delay = @settings[:pipeline_batch_delay]
+      max_inflight = batch_size * pipeline_workers
       @logger.info("Starting pipeline",
                    :id => self.pipeline_id,
                    :pipeline_workers => pipeline_workers,
                    :batch_size => batch_size,
-                   :batch_delay => batch_delay)
+                   :batch_delay => batch_delay,
+                   :max_inflight => max_inflight)
+      if max_inflight > MAX_INFLIGHT_WARN_THRESHOLD
+        @logger.warn "CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})"
+      end
 
       pipeline_workers.times do |t|
         @worker_threads << Thread.new do
@@ -229,7 +235,7 @@ module LogStash; class Pipeline
     signal = false
     batch_size.times do |t|
       event = (t == 0) ? @input_queue.take : @input_queue.poll(batch_delay)
-      
+
       if event.nil?
         next
       elsif event == LogStash::SHUTDOWN || event == LogStash::FLUSH
@@ -272,16 +278,18 @@ module LogStash; class Pipeline
     outputs_events = batch.reduce(Hash.new { |h, k| h[k] = [] }) do |acc, event|
       # We ask the AST to tell us which outputs to send each event to
       # Then, we stick it in the correct bin
-      output_func(event).each do |output|
-        acc[output] << event
-      end
+
+      # output_func should never return anything other than an Array but we have lots of legacy specs
+      # that monkeypatch it and return nil. We can deprecate  "|| []" after fixing these specs
+      outputs_for_event = output_func(event) || []
+
+      outputs_for_event.each { |output| acc[output] << event }
       acc
     end
+
     # Now that we have our output to event mapping we can just invoke each output
     # once with its list of events
-    outputs_events.each do |output, events|
-      output.multi_receive(events)
-    end
+    outputs_events.each { |output, events| output.multi_receive(events) }
   end
 
   def set_current_thread_inflight_batch(batch)
@@ -394,10 +402,14 @@ module LogStash; class Pipeline
     klass = LogStash::Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      LogStash::OutputDelegator.new(@logger, klass, *args)
+      LogStash::OutputDelegator.new(@logger, klass, default_output_workers, *args)
     else
       klass.new(*args)
     end
+  end
+
+  def default_output_workers
+    @settings[:pipeline_workers] || @settings[:default_pipeline_workers]
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used
