@@ -105,14 +105,14 @@ namespace "artifact" do
   desc "Build a tar.gz of all logstash plugins from logstash-plugins github repo"
   task "tar-all-plugins" => ["prepare-all"] do
     puts("[artifact:tar] Building tar.gz of all plugins")
-    build_tar "all-plugins"
+    build_tar "-all-plugins"
   end
 
-  def build_tar(tar_suffix = "")
+  def build_tar(tar_suffix = nil)
     require "zlib"
     require "archive/tar/minitar"
     require "logstash/version"
-    tarpath = "build/logstash-#{tar_suffix}-#{LOGSTASH_VERSION}.tar.gz"
+    tarpath = "build/logstash#{tar_suffix}-#{LOGSTASH_VERSION}.tar.gz"
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
@@ -153,12 +153,12 @@ namespace "artifact" do
   desc "Build a zip of all logstash plugins from logstash-plugins github repo"
   task "zip-all-plugins" => ["prepare-all"] do
     puts("[artifact:zip] Building zip of all plugins")
-    build_zip "all-plugins"
+    build_zip "-all-plugins"
   end
 
   def build_zip(zip_suffix = "")
     require 'zip'
-    zippath = "build/logstash-#{zip_suffix}-#{LOGSTASH_VERSION}.zip"
+    zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}.zip"
     puts("[artifact:zip] building #{zippath}")
     File.unlink(zippath) if File.exists?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
