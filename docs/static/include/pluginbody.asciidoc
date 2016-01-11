@@ -281,7 +281,7 @@ class LogStash::{pluginclass}::{pluginnamecap} < LogStash::{pluginclass}::Base
   # File would only cause problems.
   #
   # respond_to? check needed for backwards compatibility with < 2.2 Logstashes
-  declare_workers_not_supported! if self.respond_to?(:workers_not_supported!)
+  declare_workers_not_supported! if self.respond_to?(:declare_workers_not_supported!)
 
   # If declared threadsafe logstash will only ever create one
   # instance of this plugin per pipeline.
