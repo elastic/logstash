@@ -1,14 +1,13 @@
 # encoding: utf-8
 require "app"
+require "app/system/basicinfo_command"
 
 module LogStash::Api
   class Root < BaseApp
 
     get "/" do
-      content = { "name" => "Logstash API",
-                  "version" => { "number" => LOGSTASH_CORE_VERSION },
-                }
-      respond_with content
+      command = factory.build(:system_basic_info)
+      respond_with command.run
     end
 
   end

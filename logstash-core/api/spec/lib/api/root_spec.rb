@@ -23,11 +23,11 @@ describe LogStash::Api::Root do
   end
 
   it "contain a hostname" do
-    expect(body).to include("name" => a_kind_of(String))
+    expect(body).to include("hostname" => a_kind_of(String))
   end
 
   it "contain a version number" do
-    expect(body).to include("version" => { "number" => a_kind_of(String) } )
+    expect(body).to include("version" => a_kind_of(String) )
   end
 
 end

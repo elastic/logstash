@@ -1,7 +1,8 @@
 # encoding: utf-8
 require "app/service"
 require "app/system/info_command"
-require "app/pipeline/stats_command"
+require "app/system/basicinfo_command"
+require "app/stats/events_command"
 
 module LogStash::Api
   class CommandFactory
@@ -11,8 +12,9 @@ module LogStash::Api
     def initialize(service)
       @service = service
       @factory = {}.merge(
+        :system_basic_info => SystemBasicInfoCommand,
         :system_info => SystemInfoCommand,
-        :stats_command => PipelineStatsCommand
+        :events_command => StatsEventsCommand
       )
     end
 
