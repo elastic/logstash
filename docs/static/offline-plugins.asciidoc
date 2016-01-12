@@ -49,6 +49,11 @@ examples:
 `bin/plugin update --local logstash-input-jdbc`
 ============
 
+.Updating all local plugins in one command
+============
+`bin/plugin update --local`
+============
+
 [float]
 [[managing-packs]]
 === Managing Plugin Packs

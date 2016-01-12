@@ -94,13 +94,25 @@ namespace "artifact" do
   end
 
   task "prepare" => ["bootstrap", "plugin:install-default", "install-logstash-core", "install-logstash-core-event", "clean-bundle-config"]
+  task "prepare-all" => ["bootstrap", "plugin:install-all", "install-logstash-core", "install-logstash-core-event", "clean-bundle-config"]
 
-  desc "Build a tar.gz of logstash with all dependencies"
+  desc "Build a tar.gz of default logstash plugins with all dependencies"
   task "tar" => ["prepare"] do
+    puts("[artifact:tar] Building tar.gz of default plugins")
+    build_tar
+  end
+
+  desc "Build a tar.gz of all logstash plugins from logstash-plugins github repo"
+  task "tar-all-plugins" => ["prepare-all"] do
+    puts("[artifact:tar] Building tar.gz of all plugins")
+    build_tar "-all-plugins"
+  end
+
+  def build_tar(tar_suffix = nil)
     require "zlib"
     require "archive/tar/minitar"
     require "logstash/version"
-    tarpath = "build/logstash-#{LOGSTASH_VERSION}.tar.gz"
+    tarpath = "build/logstash#{tar_suffix}-#{LOGSTASH_VERSION}.tar.gz"
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
@@ -132,9 +144,21 @@ namespace "artifact" do
     puts "Complete: #{tarpath}"
   end
 
+  desc "Build a zip of default logstash plugins with all dependencies"
   task "zip" => ["prepare"] do
+    puts("[artifact:zip] Building zip of default plugins")
+    build_zip
+  end
+
+  desc "Build a zip of all logstash plugins from logstash-plugins github repo"
+  task "zip-all-plugins" => ["prepare-all"] do
+    puts("[artifact:zip] Building zip of all plugins")
+    build_zip "-all-plugins"
+  end
+
+  def build_zip(zip_suffix = "")
     require 'zip'
-    zippath = "build/logstash-#{LOGSTASH_VERSION}.zip"
+    zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}.zip"
     puts("[artifact:zip] building #{zippath}")
     File.unlink(zippath) if File.exists?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
@@ -279,4 +303,3 @@ namespace "artifact" do
     package("ubuntu", "12.04")
   end
 end
-

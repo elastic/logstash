@@ -29,17 +29,17 @@ class LogStash::Runner < Clamp::Command
   option ["-w", "--pipeline-workers"], "COUNT",
     I18n.t("logstash.runner.flag.pipeline-workers"),
     :attribute_name => :pipeline_workers,
-    :default => LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers], &:to_i
+    :default => LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers] {|s| validate_positive_integer(s) }
 
   option ["-b", "--pipeline-batch-size"], "SIZE",
          I18n.t("logstash.runner.flag.pipeline-batch-size"),
          :attribute_name => :pipeline_batch_size,
-         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_size], &:to_i
+         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_size] {|s| validate_positive_integer(s) }
 
   option ["-u", "--pipeline-batch-delay"], "DELAY_IN_MS",
          I18n.t("logstash.runner.flag.pipeline-batch-delay"),
          :attribute_name => :pipeline_batch_delay,
-         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_delay], &:to_i
+         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_delay] {|s| validate_positive_integer(s) }
 
   option ["-l", "--log"], "FILE",
     I18n.t("logstash.runner.flag.log"),
@@ -83,6 +83,15 @@ class LogStash::Runner < Clamp::Command
   option ["-n", "--node-name"], "NAME", 
     I18n.t("logstash.runner.flag.node_name"),
     :attribute_name => :node_name
+
+  def validate_positive_integer(str_arg)
+    int_arg = str_arg.to_i
+    if str_arg !~ /^\d+$/ || int_arg < 1
+      raise ArgumentError, "Expected a positive integer, got '#{str_arg}'"
+    end
+
+    int_arg
+  end
 
   attr_reader :agent
 
