@@ -21,7 +21,7 @@ describe LogStash::Api::StatsEventsCommand do
     let(:report) { subject.run }
 
     it "return events information" do
-      expect(report).to include({"in" => 100, "filtered" => 200 })
+      expect(report).to include({:in => 100, :filtered => 200 })
     end
 
   end

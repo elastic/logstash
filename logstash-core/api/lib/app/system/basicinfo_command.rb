@@ -5,7 +5,7 @@ class LogStash::Api::SystemBasicInfoCommand < LogStash::Api::Command
 
   def run
     {
-      "version"   => LOGSTASH_CORE_VERSION,
+      "version"   => LOGSTASH_VERSION,
       "hostname" => hostname,
       "pipeline" => pipeline
     }
