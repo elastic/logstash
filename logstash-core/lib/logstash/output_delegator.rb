@@ -25,7 +25,9 @@ module LogStash class OutputDelegator
     # Older plugins invoke the instance method Outputs::Base#workers_not_supported
     # To detect these we need an instance to be created first :()
     # TODO: In the next major version after 2.x remove support for this
-    @workers = [@klass.new(*args)]
+
+    # deep_clone because the output constructor mutates args in-place
+    @workers = [@klass.new(*deep_clone(args))]
     @workers.first.register # Needed in case register calls `workers_not_supported`
 
     # DO NOT move this statement before the instantiation of the first single instance
@@ -38,7 +40,8 @@ module LogStash class OutputDelegator
     @worker_queue = SizedQueue.new(@worker_count)
 
     @workers += (@worker_count - 1).times.map do
-      inst = @klass.new(*args)
+      # deep_clone because the output constructor mutates args in-place
+      inst = @klass.new(*deep_clone(args))
       inst.register
       inst
     end
@@ -147,4 +150,11 @@ module LogStash class OutputDelegator
   private
   # Needed for testing, so private
   attr_reader :threadsafe_worker, :worker_queue
+
+  def deep_clone(object)
+    # this is quite an expensive operation
+    # so its going here instead of in LogStash::Util
+    # otherwise we could be tempted to use it in performance sensitive code
+    Marshal.load(Marshal.dump(object))
+  end
 end end
