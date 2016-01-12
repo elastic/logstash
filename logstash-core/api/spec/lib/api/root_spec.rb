@@ -1,8 +1,8 @@
 # encoding: utf-8
 require_relative "../../spec_helper"
-require "json"
 require "sinatra"
 require "app/root"
+require "logstash/json"
 
 describe LogStash::Api::Root do
 
@@ -12,7 +12,7 @@ describe LogStash::Api::Root do
     described_class
   end
 
-  let(:body) { JSON.parse(last_response.body) }
+  let(:body) { LogStash::Json.load(last_response.body) }
 
   before(:each) do
     get "/"
