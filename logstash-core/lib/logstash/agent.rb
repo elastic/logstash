@@ -24,17 +24,18 @@ class LogStash::Agent < Clamp::Command
   option ["-w", "--pipeline-workers"], "COUNT",
          I18n.t("logstash.runner.flag.pipeline-workers"),
          :attribute_name => :pipeline_workers,
-         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers] {|s| validate_positive_integer(s) }
+         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers]
+
 
   option ["-b", "--pipeline-batch-size"], "SIZE",
          I18n.t("logstash.runner.flag.pipeline-batch-size"),
          :attribute_name => :pipeline_batch_size,
-         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_size] {|s| validate_positive_integer(s) }
+         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_size]
 
   option ["-u", "--pipeline-batch-delay"], "DELAY_IN_MS",
          I18n.t("logstash.runner.flag.pipeline-batch-delay"),
          :attribute_name => :pipeline_batch_delay,
-         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_delay] {|s| validate_positive_integer(s) }
+         :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_delay]
 
   option ["-l", "--log"], "FILE",
     I18n.t("logstash.agent.flag.log"),
@@ -65,6 +66,23 @@ class LogStash::Agent < Clamp::Command
     I18n.t("logstash.agent.flag.unsafe_shutdown"),
     :attribute_name => :unsafe_shutdown,
     :default => false
+
+  def initialize(*args)
+    super(*args)
+    @pipeline_settings ||= { :pipeline_id => "base" }
+  end
+
+  def pipeline_workers=(pipeline_workers_value)
+    @pipeline_settings[:pipeline_workers] = validate_positive_integer(pipeline_workers_value)
+  end
+
+  def pipeline_batch_size=(pipeline_batch_size_value)
+    @pipeline_settings[:pipeline_batch_size] = validate_positive_integer(pipeline_batch_size_value)
+  end
+
+  def pipeline_batch_delay=(pipeline_batch_delay_value)
+    @pipeline_settings[:pipeline_batch_delay] = validate_positive_integer(pipeline_batch_delay_value)
+  end
 
   def validate_positive_integer(str_arg)
     int_arg = str_arg.to_i
@@ -141,12 +159,7 @@ class LogStash::Agent < Clamp::Command
     end
 
     begin
-      pipeline = LogStash::Pipeline.new(@config_string, {
-        :pipeline_workers => pipeline_workers,
-        :pipeline_batch_size => pipeline_batch_size,
-        :pipeline_batch_delay => pipeline_batch_delay,
-        :pipeline_id => "base"
-      })
+      pipeline = LogStash::Pipeline.new(@config_string, @pipeline_settings)
     rescue LoadError => e
       fail("Configuration problem.")
     end
