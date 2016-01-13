@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/instrument/collector"
-require "logstash/instrument/reporter/stdout"
 require "concurrent"
 
 module LogStash module Instrument
@@ -57,7 +56,6 @@ module LogStash module Instrument
     end
 
     def self.create(namespace, collector = LogStash::Instrument::Collector.instance)
-      reporter = LogStash::Instrument::Reporter::Stdout.new(collector)
       Metric.new(collector, namespace)
     end
 
