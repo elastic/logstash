@@ -60,7 +60,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   public
   def initialize(params={})
     super
-    config_init(params)
+    config_init(@params)
 
     # If we're running with a single thread we must enforce single-threaded concurrency by default
     # Maybe in a future version we'll assume output plugins are threadsafe
