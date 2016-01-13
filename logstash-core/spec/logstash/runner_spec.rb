@@ -2,6 +2,7 @@
 require "spec_helper"
 require "logstash/runner"
 require "stud/task"
+require "stud/trap"
 
 class NullRunner
   def run(args); end
@@ -95,6 +96,34 @@ describe LogStash::Runner do
       expect(File).to receive(:directory?).exactly(multiple_paths.size).times.and_return(true)
       multiple_paths.each{|path| expect(LogStash::Environment).to receive(:add_plugin_path).with(path)}
       subject.configure_plugin_paths(multiple_paths)
+    end
+  end
+
+  describe "pipeline settings" do
+    let(:pipeline_string) { "input { stdin {} } output { stdout {} }" }
+    let(:base_pipeline_settings) { { :pipeline_id => "base" } }
+    let(:pipeline) { double("pipeline") }
+
+    before(:each) do
+      task = Stud::Task.new { 1 }
+      allow(pipeline).to receive(:run).and_return(task)
+    end
+
+    context "when pipeline workers is not defined by the user" do
+      it "should not pass the value to the pipeline" do
+        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, base_pipeline_settings).and_return(pipeline)
+        args = ["-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+    end
+
+    context "when pipeline workers is defined by the user" do
+      it "should pass the value to the pipeline" do
+        base_pipeline_settings[:pipeline_workers] = 2
+        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, base_pipeline_settings).and_return(pipeline)
+        args = ["-w", "2", "-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
     end
   end
 end
