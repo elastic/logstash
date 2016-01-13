@@ -21,9 +21,15 @@ module LogStash::Api
       respond_with command.run
     end
 
-    # return hot threeds information
+    # return hot threads information
     get "/jvm/hot_threads" do
       command = factory.build(:hot_threads_command)
+      respond_with command.run
+    end
+
+    # return hot threads information
+    get "/jvm/memory" do
+      command = factory.build(:memory_command)
       respond_with command.run
     end
 
