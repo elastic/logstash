@@ -25,7 +25,7 @@ module LogStash class OutputDelegator
     # Older plugins invoke the instance method Outputs::Base#workers_not_supported
     # To detect these we need an instance to be created first :()
     # TODO: In the next major version after 2.x remove support for this
-    @workers = [@klass.new(*args)]
+    @workers = [make_worker]
     @workers.first.register # Needed in case register calls `workers_not_supported`
 
     # DO NOT move this statement before the instantiation of the first single instance
@@ -38,7 +38,7 @@ module LogStash class OutputDelegator
     @worker_queue = SizedQueue.new(@worker_count)
 
     @workers += (@worker_count - 1).times.map do
-      inst = @klass.new(*args)
+      inst = make_worker
       inst.register
       inst
     end
@@ -65,6 +65,13 @@ module LogStash class OutputDelegator
         worker_multi_receive(events)
       end
     end
+  end
+
+  # Makes a single worker instance
+  # This uses a clone of the config arguments
+  # since these params get mutated by the validator
+  def make_worker
+    @klass.new(@config.clone)
   end
 
   def threadsafe?
