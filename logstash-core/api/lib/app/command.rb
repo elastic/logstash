@@ -6,7 +6,7 @@ module LogStash::Api
 
     attr_reader :service
 
-    def initialize(service = LogStash::Api::Service.instane)
+    def initialize(service = LogStash::Api::Service.instance)
       @service = service
     end
 

@@ -16,4 +16,12 @@ describe LogStash::Api::Stats do
     expect(last_response).to be_ok
   end
 
+  context "jvm" do
+    let(:type) { "jvm" }
+    it "respond to the hot_threads resource" do
+      get "#{type}/hot_threads"
+      expect(last_response).to be_ok
+    end
+  end
+
 end
