@@ -41,6 +41,13 @@ $ bin/bundle
 $ rake test:install-core
 ```
 
+- or install default plugins for tests
+
+```
+$ rake test:install-default
+```
+
+
 ## specs
 
 ```
@@ -60,4 +67,46 @@ also
 
 ```
 $ rake test:plugins
+```
+
+## plugins development against logstash-core-event-java
+
+There are basically 2 strategies for running specs on local plugins: launching specs from the local plugin directory or launching specs from the logstash directory.
+
+#### specs from the plugin directory
+
+- Update the local plugin `Gemfile` to use the local core gems
+
+```
+gem "logstash-core", :path => "/path/to/logstash/logstash-core"
+gem "logstash-core-event-java", :path => "/path/to/logstash/logstash-core-event-java"
+```
+
+- Update the local `logstash-core` gemspec to use `logstash-core-event-java`, same as item #3 in the top **dev install** section.
+
+```
+# gem.add_runtime_dependency "logstash-core-event", "x.y.z"
+gem.add_runtime_dependency "logstash-core-event-java", "x.y.z"
+```
+
+- install gems and run specs
+
+```
+$ bundle
+$ bundle exec rspec
+```
+
+#### specs from the logstash directory
+
+- first do the same **dev install** steps above
+- add or update the logstash `Gemfile` to point to the local plugin
+
+```
+gem "logstash-input-foo", :path => "/path/to/logstash-input-foo"
+```
+
+- run plugin specs
+
+```
+$ bin/rspec /path/to/logstash-input-foo/spec
 ```
