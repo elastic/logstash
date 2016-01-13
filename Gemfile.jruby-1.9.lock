@@ -10,6 +10,7 @@ PATH
       gems (~> 0.8.3)
       i18n (= 0.6.9)
       jrjackson (~> 0.3.7)
+      jruby-monitoring (~> 0.1.0)
       jruby-openssl (= 0.9.13)
       logstash-core-event (~> 3.0.0.dev)
       minitar (~> 0.5.4)
@@ -48,7 +49,7 @@ GEM
     clamp (0.6.5)
     coderay (1.1.0)
     concurrent-ruby (1.0.0-java)
-    coveralls (0.8.9)
+    coveralls (0.8.10)
       json (~> 1.8)
       rest-client (>= 1.6.8, < 2)
       simplecov (~> 0.11.0)
@@ -57,7 +58,7 @@ GEM
       tins (~> 1.6.0)
     diff-lcs (1.2.5)
     docile (1.1.5)
-    docker-api (1.24.1)
+    docker-api (1.25.0)
       excon (>= 0.38.0)
       json
     domain_name (0.5.25)
@@ -98,9 +99,11 @@ GEM
     http_parser.rb (0.6.0-java)
     i18n (0.6.9)
     insist (1.0.0)
+    jar-dependencies (0.3.1)
     jls-grok (0.11.2)
       cabin (>= 0.6.0)
     jrjackson (0.3.8)
+    jruby-monitoring (0.1.0)
     jruby-openssl (0.9.13-java)
     json (1.8.3-java)
     kramdown (1.9.0)
@@ -146,27 +149,28 @@ GEM
       logstash-codec-line
       logstash-codec-plain
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
-    logstash-input-tcp (3.0.0)
+    logstash-input-tcp (3.0.1)
       logstash-codec-json
       logstash-codec-json_lines
       logstash-codec-line
       logstash-codec-plain
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
-    logstash-output-elasticsearch (2.2.0-java)
+    logstash-output-elasticsearch (2.4.0-java)
       cabin (~> 0.6)
       concurrent-ruby
       elasticsearch (~> 1.0, >= 1.0.13)
       logstash-core (>= 2.0.0, < 3.0.0)
-      manticore (~> 0.4.2)
+      manticore (>= 0.5.2, < 1.0.0)
       stud (~> 0.0, >= 0.0.17)
-    logstash-output-stdout (2.0.3)
+    logstash-output-stdout (2.0.4)
       logstash-codec-line
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
     logstash-patterns-core (2.0.2)
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
     longshoreman (0.0.7)
       docker-api (~> 1.0, >= 1.21.4)
-    manticore (0.4.4-java)
+    manticore (0.5.2-java)
+      jar-dependencies
     method_source (0.8.2)
     mime-types (2.99)
     minitar (0.5.4)
@@ -188,7 +192,7 @@ GEM
       rack
     rack-test (0.6.3)
       rack (>= 1.0)
-    rake (10.4.2)
+    rake (10.5.0)
     rest-client (1.8.0)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)

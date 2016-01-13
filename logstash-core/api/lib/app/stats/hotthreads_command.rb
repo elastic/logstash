@@ -8,7 +8,10 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
     generate
   end
 
+  private
+
   def generate
     JRMonitor.threads.generate
   end
+
 end

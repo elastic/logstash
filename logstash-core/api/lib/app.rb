@@ -22,13 +22,13 @@ module LogStash::Api
       error_logger  = ::File.new(::File.join(::File.dirname(::File.expand_path(__FILE__)),'../../..','error.log'),"a+")
       error_logger.sync = true
 
-      #configure do
-      #  use ::Rack::CommonLogger, access_logger
-      #end
+      configure do
+        use ::Rack::CommonLogger, access_logger
+      end
 
-      #before do
-      #  env["rack.errors"] =  error_logger
-      #end
+      before do
+        env["rack.errors"] =  error_logger
+      end
     else
       set :show_exceptions, :after_handler
     end

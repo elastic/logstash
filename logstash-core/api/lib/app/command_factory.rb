@@ -3,6 +3,7 @@ require "app/service"
 require "app/system/basicinfo_command"
 require "app/stats/events_command"
 require "app/stats/hotthreads_command"
+require "app/stats/memory_command"
 
 module LogStash::Api
   class CommandFactory
@@ -14,7 +15,8 @@ module LogStash::Api
       @factory = {}.merge(
         :system_basic_info => SystemBasicInfoCommand,
         :events_command => StatsEventsCommand,
-        :hot_threads_command => HotThreadsCommand
+        :hot_threads_command => HotThreadsCommand,
+        :memory_command => JvmMemoryCommand
       )
     end
 
