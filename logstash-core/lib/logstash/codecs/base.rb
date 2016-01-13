@@ -11,7 +11,7 @@ module LogStash::Codecs; class Base < LogStash::Plugin
 
   def initialize(params={})
     super
-    config_init(params)
+    config_init(@params)
     register if respond_to?(:register)
   end
 
@@ -27,7 +27,7 @@ module LogStash::Codecs; class Base < LogStash::Plugin
     raise "#{self.class}#encode must be overidden"
   end # def encode
 
-  public 
+  public
   def close; end;
 
   # @param block [Proc(event, data)] the callback proc passing the original event and the encoded event
