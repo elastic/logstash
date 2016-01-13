@@ -183,4 +183,21 @@ module LogStash::Util
       o
     end
   end
+
+  def self.deep_clone(o)
+    case o
+    when Hash
+      o.inject({}) {|h, (k,v)| h[k] = deep_clone(v); h }
+    when Array
+      o.map {|v| deep_clone(v) }
+    when Fixnum, Symbol, IO, TrueClass, FalseClass, NilClass
+      o
+    when LogStash::Codecs::Base
+      o.clone.tap {|c| c.register }
+    when String
+      o.clone #need to keep internal state e.g. frozen
+    else
+      Marshal.load(Marshal.dump(o))
+    end
+  end
 end # module LogStash::Util

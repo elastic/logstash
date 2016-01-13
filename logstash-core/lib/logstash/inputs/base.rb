@@ -53,7 +53,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
     super
     @threadable = false
     @stop_called = Concurrent::AtomicBoolean.new(false)
-    config_init(params)
+    config_init(@params)
     @tags ||= []
   end # def initialize
 
