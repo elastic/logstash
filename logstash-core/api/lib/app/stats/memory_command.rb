@@ -5,11 +5,7 @@ require 'monitoring'
 class LogStash::Api::JvmMemoryCommand < LogStash::Api::Command
 
   def run
-    { :memory => build }
-  end
-
-  def build
-    raw      = JRMonitor.memory.generate
+    raw = JRMonitor.memory.generate
     { :heap => build_heap_metrics(raw),
       :non_heap => build_non_heap_metrics(raw),
       :pools => build_pools_metrics(raw) }

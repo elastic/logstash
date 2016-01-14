@@ -8,6 +8,19 @@ module LogStash::Api
 
     helpers AppHelpers
 
+
+    # Global _stats resource where all information is 
+    # retrieved and show
+    get "/" do
+      events_command = factory.build(:events_command)
+      memory_command = factory.build(:memory_command)
+      payload = {
+        :events => events_command.run,
+        :jvm => { :memory => memory_command.run }
+      }
+      respond_with payload
+    end
+
     # Show all events stats information
     # (for ingested, emitted, dropped)
     # - #events since startup
@@ -18,19 +31,19 @@ module LogStash::Api
     # - events in the pipeline
     get "/events" do
       command = factory.build(:events_command)
-      respond_with command.run
+      respond_with({ :events => command.run })
     end
 
     # return hot threads information
     get "/jvm/hot_threads" do
       command = factory.build(:hot_threads_command)
-      respond_with command.run
+      respond_with({ :hot_threads => command.run })
     end
 
     # return hot threads information
     get "/jvm/memory" do
       command = factory.build(:memory_command)
-      respond_with command.run
+      respond_with({ :memory => command.run })
     end
 
   end

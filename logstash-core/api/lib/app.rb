@@ -10,26 +10,7 @@ module LogStash::Api
 
     attr_reader :factory
 
-    if settings.environment == :production
-
-      ::Cabin::Outputs::IO.class_eval { alias :write :'<<' }
-      ::Cabin::Outputs::StdlibLogger.class_eval { alias :write :'<<' }
-
-      access_logger = Cabin::Channel.get(LogStash::Api)
-      access_logger.subscribe(STDOUT)
-      access_logger.level = :debug
-
-      error_logger  = ::File.new(::File.join(::File.dirname(::File.expand_path(__FILE__)),'../../..','error.log'),"a+")
-      error_logger.sync = true
-
-      configure do
-        use ::Rack::CommonLogger, access_logger
-      end
-
-      before do
-        env["rack.errors"] =  error_logger
-      end
-    else
+    if settings.environment != :production
       set :show_exceptions, :after_handler
     end
 

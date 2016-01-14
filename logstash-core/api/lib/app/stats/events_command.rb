@@ -7,7 +7,11 @@ class LogStash::Api::StatsEventsCommand < LogStash::Api::Command
     #return whatever is comming out of the snapshot event, this obvoiusly
     #need to be tailored to the right metrics for this command.
     stats = service.get(:events_stats)
-    { :in => stats[:base][:events_in].value, :filtered => stats[:base][:events_filtered].value } 
+    {
+      :in => stats[:base][:events_in].value,
+      :out => 0,
+      :dropped => stats[:base][:events_filtered].value
+    }
   rescue
     {}
   end
