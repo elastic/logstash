@@ -17,7 +17,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = LOGSTASH_CORE_VERSION
 
-  gem.add_runtime_dependency "logstash-core-event", "~> 2.2.0.snapshot2"
+  gem.add_runtime_dependency "logstash-core-event", "~> 2.2.0.snapshot3"
 
   gem.add_runtime_dependency "cabin", "~> 0.7.0" #(Apache 2.0 license)
   gem.add_runtime_dependency "pry", "~> 0.10.1"  #(Ruby license)
@@ -26,7 +26,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "filesize", "0.0.4" #(MIT license) for :bytes config validator
   gem.add_runtime_dependency "gems", "~> 0.8.3"  #(MIT license)
   gem.add_runtime_dependency "concurrent-ruby", "0.9.2"
-  gem.add_runtime_dependency "jruby-openssl", "0.9.13" # Required to support TLSv1.2
+  gem.add_runtime_dependency "jruby-openssl", "0.9.14" # Required to support TLSv1.2
 
   # TODO(sissel): Treetop 1.5.x doesn't seem to work well, but I haven't
   # investigated what the cause might be. -Jordan
