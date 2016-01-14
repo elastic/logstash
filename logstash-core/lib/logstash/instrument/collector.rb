@@ -32,7 +32,7 @@ module LogStash module Instrument
 
     # The metric library will call this unique interface
     # its the job of the collector to update the store with new metric
-    # of update the metric
+    # of update the metric.
     #
     # If there is a problem with the key or the type of metric we will record an error 
     # but we wont stop processing events, theses errors are not considered fatal.
