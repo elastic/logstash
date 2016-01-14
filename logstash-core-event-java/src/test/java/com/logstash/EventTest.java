@@ -1,21 +1,10 @@
 package com.logstash;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import org.jruby.RubyHash;
-import org.jruby.ir.operands.Hash;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 import static org.junit.Assert.*;
 
 public class EventTest {
-
     @Test
     public void testBareToJson() throws Exception {
         Event e = new Event();
@@ -113,12 +102,16 @@ public class EventTest {
 
     @Test
     public void testAppend() throws Exception {
-        Map  data1 = Maps.newHashMap(ImmutableMap.of("field1", Lists.newArrayList("original1", "original2")));
-        Map  data2 = Maps.newHashMap(ImmutableMap.of("field1", "original1"));
+        Map data1 = new HashMap();
+        data1.put("field1", new ArrayList(Arrays.asList("original1", "original2")));
+
+        Map data2 = new HashMap();
+        data2.put("field1", "original1");
+
         Event e = new Event(data1);
         Event e2 = new Event(data2);
         e.append(e2);
 
-        assertEquals(Lists.newArrayList("original1", "original2"), e.getField("field1"));
+        assertEquals(Arrays.asList("original1", "original2"), e.getField("field1"));
     }
 }

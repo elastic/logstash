@@ -3,7 +3,6 @@ package com.logstash;
 import com.logstash.ext.JrubyTimestampExtLibrary;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
-import org.jruby.RubyHash;
 import org.jruby.RubySymbol;
 
 import java.io.IOException;

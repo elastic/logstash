@@ -1,8 +1,5 @@
 package com.logstash;
 
-import com.google.common.collect.Lists;
-import org.jruby.RubyHash;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -24,7 +21,8 @@ public class Util {
                         target.put(e.getKey(), new ArrayList<Object>(new LinkedHashSet<Object>(targetList)));
                     } else {
                         Object targetValue = target.get(e.getKey());
-                        List targetValueList = Lists.newArrayList(targetValue);
+                        List targetValueList = new ArrayList();
+                        targetValueList.add(targetValue);
                         for (Object o : (List) e.getValue()) {
                             if (!targetValue.equals(o)) {
                                 targetValueList.add(o);
@@ -38,8 +36,8 @@ public class Util {
                         t.add(e.getValue());
                     }
                 } else if (!target.get(e.getKey()).equals(e.getValue())) {
-                    Object targetValue = target.get(e.getKey());
-                    targetValue = Lists.newArrayList(targetValue);
+                    List targetValue = new ArrayList();
+                    targetValue.add(target.get(e.getKey()));
                     ((List) targetValue).add(e.getValue());
                     target.put(e.getKey(), targetValue);
                 }
