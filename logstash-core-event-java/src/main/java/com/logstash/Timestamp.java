@@ -7,8 +7,6 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.jruby.Ruby;
-import org.jruby.RubyString;
 
 import java.util.Date;
 

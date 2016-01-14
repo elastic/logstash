@@ -5,14 +5,7 @@ require "java"
 module LogStash
 end
 
-# TODO: (colin) integrate jar loading with gradle and verify dev vs prod environment setups
-
-# insert all jars in this directory into CLASSPATH
-Dir.glob(File.join(File.expand_path("..", __FILE__), "*.jar")).each do |jar|
-  $CLASSPATH << jar unless $CLASSPATH.include?(jar)
-end
-
-# TODO: (colin) correctly handle dev env build/ dir and local jar
+require "logstash-core-event-java_jars"
 
 # local dev setup
 classes_dir = File.expand_path("../../../build/classes/main", __FILE__)
@@ -22,7 +15,13 @@ if File.directory?(classes_dir)
   $CLASSPATH << classes_dir unless $CLASSPATH.include?(classes_dir)
 else
   # otherwise use included jar
-  raise("TODO build dir not found and no jar file")
+  begin
+    jar = Dir[File.dirname(__FILE__) + "/logstash-core-event-java*.jar"].first
+    raise("No logstash-core-event-java jar file found") unless jar
+    require jar
+  rescue Exception => e
+    raise("Error loading logstash-core-event-java jar file, cause: #{e.message}")
+  end
 end
 
 require "jruby_event_ext"

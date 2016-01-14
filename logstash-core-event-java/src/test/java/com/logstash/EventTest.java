@@ -1,25 +1,15 @@
 package com.logstash;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import org.jruby.RubyHash;
-import org.jruby.ir.operands.Hash;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 import static org.junit.Assert.*;
+import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 
 public class EventTest {
-
     @Test
     public void testBareToJson() throws Exception {
         Event e = new Event();
-        assertEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"@version\":\"1\"}", e.toJson());
     }
 
     @Test
@@ -27,7 +17,7 @@ public class EventTest {
         Map data = new HashMap();
         data.put("foo", "bar");
         Event e = new Event(data);
-        assertEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":\"bar\",\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":\"bar\",\"@version\":\"1\"}", e.toJson());
     }
 
     @Test
@@ -35,7 +25,7 @@ public class EventTest {
         Map data = new HashMap();
         data.put("foo", 1);
         Event e = new Event(data);
-        assertEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1,\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1,\"@version\":\"1\"}", e.toJson());
     }
 
     @Test
@@ -43,7 +33,7 @@ public class EventTest {
         Map data = new HashMap();
         data.put("foo", 1.0);
         Event e = new Event(data);
-        assertEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1.0,\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1.0,\"@version\":\"1\"}", e.toJson());
     }
 
     @Test
@@ -53,18 +43,18 @@ public class EventTest {
         data.put("bar", "bar");
         data.put("baz", 1);
         Event e = new Event(data);
-        assertEquals("{\"bar\":\"bar\",\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1.0,\"@version\":\"1\",\"baz\":1}", e.toJson());
+        assertJsonEquals("{\"bar\":\"bar\",\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1.0,\"@version\":\"1\",\"baz\":1}", e.toJson());
     }
 
     @Test
     public void testDeepMapFieldToJson() throws Exception {
         Event e = new Event();
         e.setField("[foo][bar][baz]", 1);
-        assertEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":{\"bar\":{\"baz\":1}},\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":{\"bar\":{\"baz\":1}},\"@version\":\"1\"}", e.toJson());
 
         e = new Event();
         e.setField("[foo][0][baz]", 1);
-        assertEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":{\"0\":{\"baz\":1}},\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":{\"0\":{\"baz\":1}},\"@version\":\"1\"}", e.toJson());
     }
 
     @Test
@@ -107,18 +97,23 @@ public class EventTest {
         Event e = new Event(data);
 
         Event f = e.clone();
-        assertEquals("{\"bar\":\"bar\",\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"array\":[{\"foo\":\"bar\"}],\"foo\":1.0,\"@version\":\"1\",\"baz\":1}", f.toJson());
-        assertEquals(f.toJson(), e.toJson());
+
+        assertJsonEquals("{\"bar\":\"bar\",\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"array\":[{\"foo\":\"bar\"}],\"foo\":1.0,\"@version\":\"1\",\"baz\":1}", f.toJson());
+        assertJsonEquals(f.toJson(), e.toJson());
     }
 
     @Test
     public void testAppend() throws Exception {
-        Map  data1 = Maps.newHashMap(ImmutableMap.of("field1", Lists.newArrayList("original1", "original2")));
-        Map  data2 = Maps.newHashMap(ImmutableMap.of("field1", "original1"));
+        Map data1 = new HashMap();
+        data1.put("field1", Arrays.asList("original1", "original2"));
+
+        Map data2 = new HashMap();
+        data2.put("field1", "original1");
+
         Event e = new Event(data1);
         Event e2 = new Event(data2);
         e.append(e2);
 
-        assertEquals(Lists.newArrayList("original1", "original2"), e.getField("field1"));
+        assertEquals(Arrays.asList("original1", "original2"), e.getField("field1"));
     }
 }

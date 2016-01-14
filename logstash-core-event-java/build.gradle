@@ -1,104 +1,107 @@
 buildscript {
-  repositories {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath 'net.saliman:gradle-cobertura-plugin:2.2.8'
+    }
+}
+
+repositories {
     mavenLocal()
     mavenCentral()
     jcenter()
-  }
-  dependencies {
-    classpath 'net.saliman:gradle-cobertura-plugin:2.2.8'
-    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.2'
-  }
 }
 
-//allprojects {
-
-  repositories {
-    mavenLocal()
-    mavenCentral()
-  }
-
-  gradle.projectsEvaluated {
+gradle.projectsEvaluated {
     tasks.withType(JavaCompile) {
-      options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        options.compilerArgs << "-Xlint:deprecation"
+//        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     }
-  }
+}
 
-//}
+apply plugin: 'java'
+apply plugin: 'idea'
 
-//subprojects { project ->
+group = 'org.logstash'
 
-  apply plugin: 'java'
-  apply plugin: 'idea'
-  apply plugin: 'com.github.johnrengelman.shadow'
+project.sourceCompatibility = 1.7
 
-  group = 'org.logstash'
-
-  project.sourceCompatibility = 1.7
-
-  task sourcesJar(type: Jar, dependsOn:classes) {
+task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
     classifier 'sources'
     extension 'jar'
-  }
+}
 
-  task javadocJar(type: Jar, dependsOn:javadoc) {
+task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
     classifier 'javadoc'
     extension 'jar'
-  }
+}
 
-  configurations.create('sources')
-  configurations.create('javadoc')
-  configurations.archives {
+task copyGemjar(type: Copy, dependsOn: sourcesJar) {
+    from project.jar
+    into project.file('lib/')
+}
+
+task cleanGemjar {
+    delete fileTree(project.file('lib/')) {
+        include '*.jar'
+    }
+}
+
+clean.dependsOn(cleanGemjar)
+build.finalizedBy(copyGemjar)
+
+configurations.create('sources')
+configurations.create('javadoc')
+configurations.archives {
     extendsFrom configurations.sources
     extendsFrom configurations.javadoc
-  }
+}
 
-  artifacts {
+artifacts {
     sources(sourcesJar) {
-      // Weird Gradle quirk where type will be used for the extension, but only for sources
-      type 'jar'
+        // Weird Gradle quirk where type will be used for the extension, but only for sources
+        type 'jar'
     }
 
     javadoc(javadocJar) {
-      type 'javadoc'
+        type 'javadoc'
     }
-  }
+}
 
-  configurations {
+configurations {
     provided
-  }
+}
 
-  project.sourceSets {
+project.sourceSets {
     main.compileClasspath += project.configurations.provided
     main.runtimeClasspath += project.configurations.provided
     test.compileClasspath += project.configurations.provided
     test.runtimeClasspath += project.configurations.provided
-  }
-  project.javadoc.classpath += project.configurations.provided
+}
+project.javadoc.classpath += project.configurations.provided
 
-  idea {
+idea {
     module {
-      scopes.PROVIDED.plus += [ project.configurations.provided ]
+        scopes.PROVIDED.plus += [project.configurations.provided]
     }
-  }
+}
 
-  dependencies {
-    compile     'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
-    compile     'org.codehaus.jackson:jackson-core-asl:1.9.13'
-    compile     'joda-time:joda-time:2.8.2'
-    compile     'com.google.guava:guava:18.0'
-    compile     'org.slf4j:slf4j-api:1.7.12'
-    provided    'org.jruby:jruby-core:1.7.22'
-    testCompile 'org.testng:testng:6.9.6'
-    testCompile 'org.mockito:mockito-core:1.10.19'
-  }
-
-//}
+dependencies {
+    compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
+    compile 'org.codehaus.jackson:jackson-core-asl:1.9.13'
+    provided 'org.jruby:jruby-core:1.7.22'
+    testCompile 'junit:junit:4.12'
+    testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
+}
 
 // See http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
 task wrapper(type: Wrapper) {
-  description = 'Install Gradle wrapper'
-  gradleVersion = '2.7'
+    description = 'Install Gradle wrapper'
+    gradleVersion = '2.8'
 }
 

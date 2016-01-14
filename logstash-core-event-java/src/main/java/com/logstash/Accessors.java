@@ -143,8 +143,19 @@ public class Accessors {
             ((Map<String, Object>) target).put(key, value);
         } else if (target instanceof List) {
             int i = Integer.parseInt(key);
-            // TODO: what about index out of bound?
-            ((List<Object>) target).set(i, value);
+            int size = ((List<Object>) target).size();
+            if (i >= size) {
+                // grow array by adding trailing null items
+                // this strategy reflects legacy Ruby impl behaviour and is backed by specs
+                // TODO: (colin) this is potentially dangerous, and could produce OOM using arbritary big numbers
+                // TODO: (colin) should be guard against this?
+                for (int j = size; j < i; j++) {
+                    ((List<Object>) target).add(null);
+                }
+                ((List<Object>) target).add(value);
+            } else {
+                ((List<Object>) target).set(i, value);
+            }
         } else {
             throw new ClassCastException("expecting List or Map");
         }

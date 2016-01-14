@@ -40,10 +40,9 @@ public class StringInterpolation {
     public String evaluate(Event event, String template) throws IOException {
         TemplateNode compiledTemplate = (TemplateNode) this.cache.get(template);
 
-        if(compiledTemplate == null) {
+        if (compiledTemplate == null) {
             compiledTemplate = this.compile(template);
-            TemplateNode set = (TemplateNode) this.cache.putIfAbsent(template, compiledTemplate);
-            compiledTemplate = (set != null) ? set : compiledTemplate;
+            this.cache.put(template, compiledTemplate);
         }
 
         return compiledTemplate.evaluate(event);
