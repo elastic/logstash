@@ -37,7 +37,7 @@ module LogStash::Api
     # return hot threads information
     get "/jvm/hot_threads" do
       command = factory.build(:hot_threads_command)
-      respond_with({ :hot_threads => command.run })
+      respond_with(command.run, :string)
     end
 
     # return hot threads information
