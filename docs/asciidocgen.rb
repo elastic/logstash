@@ -3,7 +3,7 @@ require "erb"
 require "optparse"
 
 $: << Dir.pwd
-$: << File.join(File.dirname(__FILE__), "..", "lib")
+$: << File.join(File.dirname(__FILE__), "..", "logstash-core/lib")
 $: << File.join(File.dirname(__FILE__), "..", "rakelib")
 
 require "logstash/config/mixin"
@@ -161,7 +161,7 @@ class LogStashConfigAsciiDocGenerator
     load file
 
     # Get the correct base path
-    base = File.join(::LogStash::Environment::LOGSTASH_HOME,'lib/logstash', file.split("/")[-2])
+    base = File.join(::LogStash::Environment::LOGSTASH_HOME,'logstash-core/lib/logstash', file.split("/")[-2])
 
     # parse base first
     parse(File.new(File.join(base, "base.rb"), "r").read)
