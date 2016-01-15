@@ -17,7 +17,11 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = LOGSTASH_CORE_EVENT_JAVA_VERSION
 
-  if RUBY_PLATFORM == 'java'
-    gem.platform = RUBY_PLATFORM
-  end
+  gem.platform = "java"
+
+  gem.add_runtime_dependency "jar-dependencies"
+
+  gem.requirements << "jar org.codehaus.jackson:jackson-mapper-asl, 1.9.13"
+  gem.requirements << "jar org.codehaus.jackson:jackson-core-asl, 1.9.13"
 end
+
