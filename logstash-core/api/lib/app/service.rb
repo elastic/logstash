@@ -27,10 +27,14 @@ class LogStash::Api::Service
     end
   end
 
-  def get(key=:service_metrics)
+  def get(key)
     metric_store = @snapshot.metric_store
-    { :base => metric_store.get(:root, :base) }
-    rescue
+    if key == :jvm_memory_stats
+      metric_store.get(:root, :jvm, :memory)
+    else
+      { :base => metric_store.get(:root, :base) }
+    end
+  rescue
     {}
   end
 end
