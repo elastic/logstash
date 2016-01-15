@@ -1,4 +1,4 @@
-## 2.1.2 (Jan 19)
+## 2.1.2 (Jan 19, 2016)
 ### general
  - Fixed an issue with configtest switch in sysv init script ([#4321](https://github.com/elastic/logstash/pull/4321))
  - Update jruby-openssl library to 0.9.13
@@ -14,7 +14,7 @@
  - Kafka:
    - Fixed a CPU load issue when no new messages were available in Kafka broker ([#59](https://github.com/logstash-plugins/logstash-input-kafka/issues/59))
  - http:
-   - Support compressed and gzip POST requests ([#33]https://github.com/logstash-plugins/logstash-input-http/issues/33)  
+   - Support compressed and gzip POST requests ([#33](https://github.com/logstash-plugins/logstash-input-http/issues/33))  
 
 ### filter
  - Date:
