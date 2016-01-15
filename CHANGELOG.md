@@ -1,3 +1,42 @@
+## 2.1.2 (Jan 19)
+### general
+ - Fixed an issue with configtest switch in sysv init script ([#4321](https://github.com/elastic/logstash/pull/4321))
+ - Update jruby-openssl library to 0.9.13
+
+### input
+ - File:
+   - Added config option `close_older` which closes any files that remain unmodified for longer
+     than the specified timespan in seconds ([#44](https://github.com/logstash-plugins/logstash-input-file/issues/81))
+   - Added config option `ignore_older` which monitors if a file that was last modified before
+     the specified timespan in seconds, then its contents are ignored.([#44](https://github.com/logstash-plugins/logstash-input-file/issues/81)) ([#44](https://github.com/logstash-plugins/logstash-input-file/issues/81))
+ - Beats:
+   - Refactored beats input to fix thread synchronization issues under high data volume.([#14](https://github.com/logstash-plugins/logstash-input-beats/issues/14))
+ - Kafka:
+   - Fixed a CPU load issue when no new messages were available in Kafka broker ([#59](https://github.com/logstash-plugins/logstash-input-kafka/issues/59))
+ - http:
+   - Support compressed and gzip POST requests ([#33]https://github.com/logstash-plugins/logstash-input-http/issues/33)  
+
+### filter
+ - Date:
+   - The `timezone` setting now supports sprintf format ([#23](https://github.com/logstash-plugins/logstash-filter-date/issues/23))
+   - New year rollover should be handled better now when a year is not present in the time format.
+     If local time is December, and event time is January, the year will be set to next year. Similar
+     for if local time is January and Event time is December, the year will be set to the previous year.
+     This should help keep times correct in the upcoming year rollover ([#33](https://github.com/logstash-plugins/logstash-filter-date/issues/33))
+
+### output
+ - Elasticsearch:
+   - Added scripted update support ([#235](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/235))
+   - Changed retry behavior: too busy and service unavailable errors from ES are retried infinitely.
+     Never retry conflict errors ([#321](https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/321))
+ - File:
+   - Added config setting to set dir and file permmission ([#18](https://github.com/logstash-plugins/logstash-output-file/issues/18))
+
+### codec
+  - Multiline: Added `auto_flush` config option, with no default. If not set, no auto_flush is done.
+    This feature flushes events buffered as part of a multiline event when used with
+    file input, for example ([#18](https://github.com/logstash-plugins/logstash-codec-multiline/pull/18)).
+
 ## 2.1.1 (Dec 8, 2015)
 ### general
  - This release bundles a new version of JRuby - [1.7.23](http://jruby.org/2015/11/24/jruby-1-7-23.html), which fixes a memory leak issue reported on Windows when using the file input ([#3754](https://github.com/elastic/logstash/issues/3754)).
@@ -17,9 +56,9 @@
 
 ## 2.1.0 (Nov 24, 2015)
 ### general
- - Added ability to install and upgrade Logstash plugins without requiring internet connectivity (#2376). 
+ - Added ability to install and upgrade Logstash plugins without requiring internet connectivity (#2376).
  - Support alternate or private Ruby gems server to install and update plugins (#3576).
- - Added ability to reliably shutdown Logstash when there is a stall in event processing. This option 
+ - Added ability to reliably shutdown Logstash when there is a stall in event processing. This option
    can be enabled by passing `--allow-unsafe-shutdown` flag while starting Logstash. Please be aware that
    any in-flight events will be lost when shutdown happens (#3451)
  - Fixed a memory leak which could be triggered when events having a date were serialized to string (#4222).
@@ -44,7 +83,7 @@
     - Properly handle multiline events from multiple sources (#44).
 
   Eventlog
-    - Change the underlying library to capture Event Logs from Windows more reliably (#11). 
+    - Change the underlying library to capture Event Logs from Windows more reliably (#11).
 
 ### output
   Elasticsearch
@@ -84,13 +123,13 @@
 
 ## 2.0.0-beta1 (September 15, 2015)
 ### output
-  - Elasticsearch: 
+  - Elasticsearch:
     - Changed the default from node to http protocol.
     - Backward incompatible config options. Renamed host to hosts
     - Separate plugins for Java clients: transport and node options are not packaged by default but
       can be installed using the logstash-output-elasticsearch_java plugin.
     - Java client defaults to transport protocol  
-  - Kafka: 
+  - Kafka:
     - Update to new 0.8.2 Java producer API with new producer configuration
     - Backward incompatible config settings introduced to match Kafka options
 
@@ -109,7 +148,7 @@
 
 ### output
   - Lumberjack:
-    - For SSL certificate verification, The client now enforces the `VERIFY_PEER` mode when 
+    - For SSL certificate verification, The client now enforces the `VERIFY_PEER` mode when
        connecting to the server. ([#4](https://github.com/elastic/ruby-lumberjack/issues/4))
     - Added better handling of congestion scenario on the output by using a buffered send of events ([#7](https://github.com/logstash-plugins/logstash-output-lumberjack/pull/7))
   - Elasticsearch: Added the ability to update existing ES documents and support of upsert  -- if document doesn't exists, create it.([#116](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/116))
@@ -124,13 +163,13 @@
   - Improved default security configuration for SSL (#3579).
   - For debian and rpm packages added ability to force stop Logstash. This can be enabled by setting
     the environment variable `KILL_ON_STOP_TIMEOUT=1` before stopping. If the Logstash process
-    has not stopped within a reasonable time, this will force it to shutdown. 
+    has not stopped within a reasonable time, this will force it to shutdown.
     **Note**: Please be aware that you could lose inflight messages if you force stop
     Logstash (#3578).
   - Added a periodic report of inflight events during shutdown. This provides feedback to users
     about events being processed while shutdown is being handled (#3484).
   - Added ability to install and use pre-released plugins (beta and RC versions)
-  - Fixed a permission issue in the init script for Debian and RPM packages. While running as 
+  - Fixed a permission issue in the init script for Debian and RPM packages. While running as
     logstash user it was not possible to access files owned by supplemental groups (#1449).
 
 ### codec
@@ -138,7 +177,7 @@
     individual events (#12).
 
 ### output
-  - Elasticsearch: 
+  - Elasticsearch:
     - Added support for sending http indexing requests through a forwarding proxy (#199).
     - Added support for using PKI/client certificates for authenticating requests to a secure
       Elasticsearch cluster (#170).
@@ -156,7 +195,7 @@
   - Plugin manager: Added validation and warning when updating plugins between major versions (#3383).
   - Performance improvements: String interpolation is widely used in LS to create keys combining dynamic
     values from extracted fields. Added a caching mechanism where we compile this template on first use
-    and reuse them subsequently, giving us a good performance gain in configs that do a lot of date 
+    and reuse them subsequently, giving us a good performance gain in configs that do a lot of date
     processing, sprintf, and use field reference syntax (#3425).
   - Added warning when LS is running on a JVM version which has known issues/bugs (#2547).  
   - Updated AWS based plugins to v2 of AWS ruby SDK. This involves an update to s3-input, s3-output,
@@ -165,7 +204,7 @@
 ### input
   - Lumberjack: This input was not handling backpressure properly from downstream plugins and
     would continue to accept data, eventually running out of memory. We added a circuit breaker to stop
-    accepting new connections when we detect this situation. Please note that `max_clients` setting 
+    accepting new connections when we detect this situation. Please note that `max_clients` setting
     intoduced in v0.1.9 has been deprecated. This setting temporarily solved the problem by configuring
     an upper limit to the number of LSF connections (#12).
   - Http: Added new input to receive data via http(s).
@@ -179,29 +218,29 @@
 
 ## 1.5.1 (June 16, 2015)
 ### general
-  - Fixed an issue which caused Logstash to hang when used with single worker (`-w 1`) configuration. 
+  - Fixed an issue which caused Logstash to hang when used with single worker (`-w 1`) configuration.
     This issue was caused by a deadlock in the internal queue when the filter worker was trying to
     exclusively remove elements which conflicted with the periodic flushing in filters (#3361).
-  - Fixed performance regression when using field reference syntax in config like `[tweet][username]`. 
+  - Fixed performance regression when using field reference syntax in config like `[tweet][username]`.
     This fix increases throughput in certain configs by 30% (#3238)
   - Windows: Added support to launch Logstash from a path with spaces (#2904)
   - Update to jruby-1.7.20 which brings in numerous fixes. This will also make file input work
     properly on FreeBSD.
   - Fixed regression in 1.5.0 where conditionals spread over multiple lines in a config was not
     working properly (#2850)
-  - Fixed a permission issue in rpm and debian repos. When Logstash was installed using these 
+  - Fixed a permission issue in rpm and debian repos. When Logstash was installed using these
     repos, only the logstash user was able to run commands like `bin/logstash version` (#3249)
 
 ### filter
   - GeoIP: Logstash no longer crashes when IPv6 addresses are used in lookup (#8)
 
 ### output
-  - Elasticsearch: 
+  - Elasticsearch:
     - Added an option to disable SSL certificate verification (#160)
     - Bulk requests were timing out because of aggressive timeout setting in the HTTP client.
       Restored this to 1.4.2 behavior where there are no timeouts by default. As a follow up
       to this, we will be exposing an option to control timeouts in the HTTP client (#103)
-  - JIRA: 
+  - JIRA:
     - Newly created issues now have description set (#3)
     - Summary field now expands variables in events
     - API authentication method changed from cookie to basic
@@ -216,45 +255,45 @@
 
 ## 1.5.0 (May 14, 2015)
 ### general
-  - Performance improvements: Logstash 1.5.0 is much faster -- we have improved the throughput 
+  - Performance improvements: Logstash 1.5.0 is much faster -- we have improved the throughput
     of grok filter in some cases by 100%. In our benchmark testing, using only grok filter and
-    ingesting apache logs, throughput increased from 34K eps to 50K eps. 
-    JSON serialization/deserialization are now implemented using JrJackson library which 
+    ingesting apache logs, throughput increased from 34K eps to 50K eps.
+    JSON serialization/deserialization are now implemented using JrJackson library which
     improved performance significantly. Ingesting JSON events 1.3KB in size measured a throughput
-    increase from 16Keps to 30K eps. With events 45KB in size, throughput increased from 
+    increase from 16Keps to 30K eps. With events 45KB in size, throughput increased from
     850 eps to 3.5K eps
-  - Fixed performance regressions from 1.4.2 especially for configurations which have 
+  - Fixed performance regressions from 1.4.2 especially for configurations which have
     conditionals in filter and output. Throughput numbers are either inline with 1.4.2
     or improved for certain configurations (#2870)  
-  - Add Plugin manager functionality to Logstash which allows to install, delete and 
+  - Add Plugin manager functionality to Logstash which allows to install, delete and
     update Logstash plugins. Plugins are separated from core and published to RubyGems.org
-  - Added the ability to install plugin gems built locally on top of Logstash. This will 
+  - Added the ability to install plugin gems built locally on top of Logstash. This will
     help plugin developers iterate and test locally without having to publish plugins (#2779)  
-  - With the release of Kibana 4, we have removed the `bin/logstash web` command and any reference 
+  - With the release of Kibana 4, we have removed the `bin/logstash web` command and any reference
     to Kibana from Logstash (#2661)
-  - Windows: Significantly improved the initial user experience with Windows platform (#2504, #1426). 
-    Fixed many issues related to File input. Added support for using the plugin 
+  - Windows: Significantly improved the initial user experience with Windows platform (#2504, #1426).
+    Fixed many issues related to File input. Added support for using the plugin
     framework (installing, upgrading, removing)  
   - Deprecated elasticsearch_http output plugin: All functionality is ported to
     logstash-output-elasticsearch plugin using http protocol (#1757). If you try to use
     the elasticsearch_http plugin, it will log a deprecated notice now.   
   - Fixed issue in core which was causing Logstash to not shutdown properly (#2796)    
-  - Added ability to add extra JVM options while running LS. You can use the LS_JAVA_OPTS 
+  - Added ability to add extra JVM options while running LS. You can use the LS_JAVA_OPTS
     environment variable to add to the default JVM options set out of the box. You could also
     completely overwrite all the default options if you wish by setting JAVA_OPTS before
     starting Logstash (#2942)
   - Fixed a regression from 1.4.2 where removing a tag in filter fails if the input event is
     JSON formatted (#2261)
   - Fixed issue where setting workers > 1 would trigger messages like
-    "You are using a deprecated config setting ..." (#2865) 
-  - Remove ability to run multiple subcommands from bin/logstash like 
+    "You are using a deprecated config setting ..." (#2865)
+  - Remove ability to run multiple subcommands from bin/logstash like
     bin/logstash agent -f something.conf -- web (#1747)  
   - Fixed Logstash crashing on converting from ASCII to UTF-8. This was caused by charset
     conversion issues in input codec (LOGSTASH-1789)
   - Allow storing 'metadata' to an event which is not sent/encoded on output. This eliminates
     the need for intermediate fields for example, while using date filter. (#1834)
   - Accept file and http uri in -f command line option for specifying config files (#1873)
-  - Filters that generated events (multiline, clone, split, metrics) now propagate those events 
+  - Filters that generated events (multiline, clone, split, metrics) now propagate those events
     correctly to future conditionals (#1431)
   - Fixed file descriptor leaks when using HTTP. The fix prevents Logstash from stalling, and
     in some cases crashing from out-of-memory errors (#1604, LOGSTASH-892)
@@ -269,31 +308,31 @@
   - Allow spaces in field references like [hello world] (#1513)    
 
 ### input
-  - Lumberjack: 
+  - Lumberjack:
     - Fixed Logstash crashes with Java Out Of Memory because of TCP thread leaks (#LOGSTASH-2168)
     - Created a temporary fix to handle out of memory and eventual Logstash crash resulting from
-      pipeline backpressure. With this fix, you can create an upper limit on the number of 
+      pipeline backpressure. With this fix, you can create an upper limit on the number of
       Lumberjack connections after which no new connections will be accepted. This is defaulted
       to 1000 connections, but can be changed using the config (#3003)
-    - Resolved issue where unrelated events were getting merged into a single event while using 
+    - Resolved issue where unrelated events were getting merged into a single event while using
       this input with with the multiline codec (#2016)
     - Fixed Logstash crashing because it was using old jls-lumberjack version (#7)  
-  - TCP: 
+  - TCP:
     - Fixed connection threads leak (#1509)
     - Fixed input host field also contains source port (LOGSTASH-1849)
   - Stdin: prevent overwrite of host field if already present in Event (#1668)
-  - Kafka: 
+  - Kafka:
     - Merged @joekiller's plugin to Logstash to get events from Kafka (#1472)
     - Added support for whitelisting and blacklisting topics in the input.
-  - S3: 
+  - S3:
     - Added IAM roles support so you can securely read and write events from S3 without providing your
-      AWS credentials (#1575). 
+      AWS credentials (#1575).
     - Added support for using temporary credentials obtained from AWS STS (#1946)
     - AWS credentials can be specfied through environment variables (#1619)  
-  - RabbitMQ: 
+  - RabbitMQ:
     - Fixed march_hare client uses incorrect connection url (LOGSTASH-2276)
     - Use Bunny 1.5.0+ (#1894)
-  - Twitter: added improvements, robustness, fixes. full_tweet option now works, we handle 
+  - Twitter: added improvements, robustness, fixes. full_tweet option now works, we handle
     Twitter rate limiting errors (#1471)
   - Syslog: if input does not match syslog format, add tag _grokparsefailure_sysloginputplugin
     which can be used to debug (#1593)
@@ -309,31 +348,31 @@
     in sync with any output like Elasticsearch by using this input  
   - EventLog: For Windows, this input gracefully shutsdown if there is a timeout while receiving events
     This also prevents Logstash from being stuck (#1672)
-  - Heartbeat: We created a new input plugin for generating heartbeat messages at periodic intervals. 
-    Use this to monitor Logstash -- you can measure the latency of the pipeline using these heartbeat 
+  - Heartbeat: We created a new input plugin for generating heartbeat messages at periodic intervals.
+    Use this to monitor Logstash -- you can measure the latency of the pipeline using these heartbeat
     events, and also check for availability
 
 ### filter
-  - Multiline: 
+  - Multiline:
     - Fixed an issue where Logstash would crash while processing JSON formatted events on
       Java 8 (#10)
     - Handled cases where we unintentionally deduplicated lines, such as repeated lines in
-      xml messages (#3) 
-  - Grok: 
+      xml messages (#3)
+  - Grok:
     - "break_on_match => false" option now works correctly (#1547)
     - allow user@hostname in commonapache log pattern (#1500 #1736)
     - use optimized ruby-grok library which improves throughput in some cases by 50% (#1657)
-  - Date: 
+  - Date:
     - Fixed match defaults to 1970-01-01 when none of the formats matches and UNIX format is present
       in the list (#1236, LOGSTASH-1597)
     - support parsing almost-ISO8601 patterns like 2001-11-06 20:45:45.123-0000 (without a T)
       which does not match %{TIMESTAMP_ISO8601}
-  - KV: allows dynamic include/exclude keys. For example, if an event has a key field and the user 
-    wants to parse out a value using the kv filter, the user should be able to 
+  - KV: allows dynamic include/exclude keys. For example, if an event has a key field and the user
+    wants to parse out a value using the kv filter, the user should be able to
     include_keys: [ "%{key}" ]
   - DNS: fixed add_tag adds tags even if filter was unsuccessful (#1785)
   - XML: fixed UndefinedConversionError with UTF-8 encoding (LOGSTASH-2246)
-  - Mutate: 
+  - Mutate:
     - Fixed nested field notation for convert option like 'convert => [ "[a][0]", "float" ]' (#1401)
     - Fixed issue where you can safely delete/rename fields which can have nil values (#2977)  
     - gsub evaluates variables like %{format} in the replacement text (#1529)
@@ -349,23 +388,23 @@
       requests (#1453)
     - Added support to be more resilient to transient errors in Elasticsearch. Previously, partial
       failures from the bulk indexing functionality were not handled properly. With this fix, we added
-      the ability to capture failed requests from Elasticsearch and retry them. Error codes like 
+      the ability to capture failed requests from Elasticsearch and retry them. Error codes like
       429 (too many requests) will now be retried by default for 3 times. The number of retries and the
       interval between consecutive retries can be configured (#1631)
     - Logstash does not create a "message.raw" by default whic is usually not_analyzed; this
       helps save disk space (#11)
-    - Added sniffing config to be able to list machines in the cluster while using the transport client (#22) 
+    - Added sniffing config to be able to list machines in the cluster while using the transport client (#22)
     - Deprecate the usage of index_type configuration. Added document_type to be consistent
       with document_id (#102)
     - Added warning when used with config embedded => true. Starting an embedded Elasticsearch
-      node is only recommended while prototyping. This should never be used in 
+      node is only recommended while prototyping. This should never be used in
       production setting (#99)
     - Added support for multiple hosts in configuration and enhanced stability
     - Logstash will not create a message.raw field by default now. Message field is not_analyzed
       by Elasticsearch and adding a multi-field was essentially doubling the disk space required,
       with no benefit
 
-  - S3: 
+  - S3:
     - Fixed a critical problem in the S3 Output plugin when using the size_file option. This could cause
       data loss and data corruption of old logs ()
     - Added IAM roles support so you can securely read and write events from S3 without providing your AWS
@@ -378,14 +417,14 @@
     dynamic string like /%{myfield}/, /test-%{myfield}/
   - RabbitMQ: fixed crash while running Logstash for longer periods, typically when there's no
     traffic on the logstash<->rabbitmq socket (LOGSTASH-1886)
-  - Statsd: fixed issue of converting very small float numbers to scientific notation 
+  - Statsd: fixed issue of converting very small float numbers to scientific notation
     like 9.3e-05 (#1670)
   - Fixed undefined method error when conditional on an output (#LOGSTASH-2288)
-  
+
 ### codec
   - Netflow: Fixed a JSON serialization issue while using this codec (#2945)
-  - Added new Elasticsearch bulk codec which can be used to read data formatted in the Elasticsearch 
-    Bulk API (multiline json) format. For example, this codec can be used in combination with RabbitMQ 
+  - Added new Elasticsearch bulk codec which can be used to read data formatted in the Elasticsearch
+    Bulk API (multiline json) format. For example, this codec can be used in combination with RabbitMQ
     input to mirror the functionality of the RabbitMQ Elasticsearch river
   - Cloudfront: Added support for handling Amazon CloudFront events
   - Avro: We added a new codec for data serialization (#1566)
