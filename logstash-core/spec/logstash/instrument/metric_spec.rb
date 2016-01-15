@@ -52,7 +52,7 @@ describe LogStash::Instrument::Metric do
   context "#gauge" do
     it "set the value of a key" do
       metric = subject.gauge(:size_queue, 20)
-      expect(collector).to be_a_metric_event([:root, :size_queue], :gauge, 20)
+      expect(collector).to be_a_metric_event([:root, :size_queue], :gauge, :set, 20)
     end
 
     it "raises an exception if the key is an empty string" do

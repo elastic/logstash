@@ -1,12 +1,14 @@
 # encoding: utf-8
 require "logstash/instrument/metric_type/counter"
 require "logstash/instrument/metric_type/mean"
+require "logstash/instrument/metric_type/gauge"
 
 module LogStash module Instrument
   module MetricType
     METRIC_TYPE_LIST = {
       :counter => LogStash::Instrument::MetricType::Counter,
-      :mean => LogStash::Instrument::MetricType::Mean
+      :mean => LogStash::Instrument::MetricType::Mean,
+      :gauge => LogStash::Instrument::MetricType::Gauge
     }.freeze
 
     # Use the string to generate a concrete class for this metrics
