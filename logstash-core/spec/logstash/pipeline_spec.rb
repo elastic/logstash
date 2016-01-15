@@ -84,7 +84,7 @@ class TestPipeline < LogStash::Pipeline
 end
 
 describe LogStash::Pipeline do
-  let(:worker_thread_count)     { LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers] }
+  let(:worker_thread_count)     { LogStash::DEFAULT_SETTINGS["pipeline.workers"] }
   let(:safe_thread_count)       { 1 }
   let(:override_thread_count)   { 42 }
 
@@ -145,12 +145,13 @@ describe LogStash::Pipeline do
       end
 
       context "when there is command line -w N set" do
+        let(:pipeline_settings) { {"pipeline.workers" => override_thread_count } }
         it "starts multiple filter thread" do
-          msg = "Warning: Manual override - there are filters that might not work with multiple worker threads"
-          pipeline = TestPipeline.new(test_config_with_filters)
+          msg = "Warning: Manual override - there are filters that might" +
+                " not work with multiple worker threads"
+          pipeline = TestPipeline.new(test_config_with_filters, pipeline_settings)
           expect(pipeline.logger).to receive(:warn).with(msg,
             {:worker_threads=> override_thread_count, :filters=>["dummyfilter"]})
-          pipeline.configure(:pipeline_workers, override_thread_count)
           pipeline.run
           expect(pipeline.worker_threads.size).to eq(override_thread_count)
         end
@@ -310,7 +311,7 @@ describe LogStash::Pipeline do
   describe "max inflight warning" do
     let(:config) { "input { dummyinput {} } output { dummyoutput {} }" }
     let(:batch_size) { 1 }
-    let(:pipeline) { LogStash::Pipeline.new(config, :pipeline_batch_size => batch_size, :pipeline_workers => 1) }
+    let(:pipeline) { LogStash::Pipeline.new(config, "pipeline.batch.size" => batch_size, "pipeline.workers" => 1) }
     let(:logger) { pipeline.logger }
     let(:warning_prefix) { /CAUTION: Recommended inflight events max exceeded!/ }
 

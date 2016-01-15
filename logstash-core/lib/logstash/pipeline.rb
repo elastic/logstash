@@ -9,8 +9,6 @@ require "logstash/config/file"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
-require "logstash/config/cpu_core_strategy"
-require "logstash/util/defaults_printer"
 require "logstash/shutdown_watcher"
 require "logstash/util/wrapped_synchronous_queue"
 require "logstash/pipeline_reporter"
@@ -58,8 +56,7 @@ module LogStash; class Pipeline
     @original_settings = settings
     @logger = Cabin::Channel.get(LogStash)
     @pipeline_id = settings[:pipeline_id] || self.object_id
-    @settings = DEFAULT_SETTINGS.clone
-    settings.each {|setting, value| configure(setting, value) }
+    @settings = LogStash::DEFAULT_SETTINGS.merge(settings)
     @reporter = LogStash::PipelineReporter.new(@logger, self)
 
     @inputs = nil
@@ -111,7 +108,6 @@ module LogStash; class Pipeline
     # in-flight buffers
     @input_queue_pop_mutex = Mutex.new
     @input_threads = []
-    @settings = LogStash::DEFAULT_SETTINGS.clone
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
     @running = Concurrent::AtomicBoolean.new(false)
@@ -122,13 +118,9 @@ module LogStash; class Pipeline
     @ready.value
   end
 
-  def configure(setting, value)
-    @settings[setting] = value
-  end
-
   def safe_pipeline_worker_count
-    default = LogStash::DEFAULT_SETTINGS[:default_pipeline_workers]
-    thread_count = @settings[:pipeline_workers] #override from args "-w 8" or config
+    default = @settings["pipeline.workers"]
+    thread_count = @original_settings["pipeline.workers"] #override from args "-w 8" or config
     safe_filters, unsafe_filters = @filters.partition(&:threadsafe?)
 
     if unsafe_filters.any?
@@ -166,6 +158,7 @@ module LogStash; class Pipeline
     LogStash::Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
     @logger.terminal(LogStash::Util::DefaultsPrinter.print(@settings))
     @thread = Thread.current
+    LogStash::Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
 
     start_workers
 
@@ -216,15 +209,15 @@ module LogStash; class Pipeline
       @filters.each {|f| f.register }
 
       pipeline_workers = safe_pipeline_worker_count
-      batch_size = @settings[:pipeline_batch_size]
-      batch_delay = @settings[:pipeline_batch_delay]
+      batch_size = @settings["pipeline.batch.size"]
+      batch_delay = @settings["pipeline.batch.delay"]
       max_inflight = batch_size * pipeline_workers
       @logger.info("Starting pipeline",
-                   :id => self.pipeline_id,
-                   :pipeline_workers => pipeline_workers,
-                   :batch_size => batch_size,
-                   :batch_delay => batch_delay,
-                   :max_inflight => max_inflight)
+                   "id" => self.pipeline_id,
+                   "pipeline.workers" => pipeline_workers,
+                   "pipeline.batch.size" => batch_size,
+                   "pipeline.batch.delay" => batch_delay,
+                   "pipeline.max_inflight" => max_inflight)
       if max_inflight > MAX_INFLIGHT_WARN_THRESHOLD
         @logger.warn "CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})"
       end
@@ -464,6 +457,10 @@ module LogStash; class Pipeline
     else
       klass.new(*args)
     end
+  end
+
+  def default_output_workers
+    @settings["pipeline.workers"] || LogStash::DEFAULT_SETTINGS["pipeline.workers"]
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used

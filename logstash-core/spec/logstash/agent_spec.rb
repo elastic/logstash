@@ -19,6 +19,10 @@ describe LogStash::Agent do
     end
   end
 
+  it "fallback to hostname when no name is provided" do
+    expect(LogStash::Agent.new.node_name).to eq(Socket.gethostname)
+  end
+
   describe "register_pipeline" do
     let(:pipeline_id) { "main" }
     let(:config_string) { "input { } filter { } output { }" }
