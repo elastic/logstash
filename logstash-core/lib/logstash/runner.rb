@@ -13,25 +13,6 @@ require "logstash/namespace"
 require "logstash/agent"
 require "logstash/config/defaults"
 
-module LogStash
-
-  DEFAULT_SETTINGS = {
-    "node.name" => Socket.gethostname,
-    "pipeline.workers" => LogStash::Config::CpuCoreStrategy.fifty_percent,
-    "pipeline.batch.size" => 125,
-    "pipeline.batch.delay" => 5, # in milliseconds
-    "pipeline.flush_interval" => 5, # in seconds
-    "pipeline.flush_timeout_interval" => 60, # in seconds
-    "pipeline.unsafe_shutdown" => false,
-    "plugin.paths" => [],
-    "debug" => false,
-    "verbose" => false,
-    "quiet" => false,
-    "configtest" => false,
-  }
-
-end
-
 class LogStash::Runner < Clamp::Command
 
   # Node Settings
@@ -57,20 +38,20 @@ class LogStash::Runner < Clamp::Command
     :attribute_name => :pipeline_workers,
     :default => LogStash::DEFAULT_SETTINGS["pipeline.workers"]
 
-  option ["--pipeline.batch.size"], "SIZE",
+  option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
     :attribute_name => :pipeline_batch_size,
     :default => LogStash::DEFAULT_SETTINGS["pipeline.batch.size"]
 
-  option ["--pipeline.batch.delay"], "DELAY_IN_MS",
+  option ["-u", "--pipeline.batch.delay"], "DELAY_IN_MS",
     I18n.t("logstash.runner.flag.pipeline-batch-delay"),
     :attribute_name => :pipeline_batch_delay,
     :default => LogStash::DEFAULT_SETTINGS["pipeline.batch.delay"]
 
-  option ["--pipeline.unsafe_shutdown"], :flag,
+  option ["--[no-]pipeline.unsafe_shutdown"], :flag,
     I18n.t("logstash.runner.flag.unsafe_shutdown"),
-    :attribute_name => :unsafe_shutdown,
-    :default => LogStash::DEFAULT_SETTINGS["pipeline.unsafe_shutdown"]
+    :attribute_name => :unsafe_shutdown
+  #  :default => LogStash::DEFAULT_SETTINGS["pipeline.unsafe_shutdown"]
 
   # Plugins Settings
   option ["-p", "--plugin.paths"] , "PATH",
@@ -83,11 +64,11 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.log"),
     :attribute_name => :log_file
 
-  option "--debug", :flag, I18n.t("logstash.runner.flag.debug"),
+  option "--[no-]debug", :flag, I18n.t("logstash.runner.flag.debug"),
     :default => LogStash::DEFAULT_SETTINGS["debug"]
-  option "--quiet", :flag, I18n.t("logstash.runner.flag.quiet"),
+  option "--[no-]quiet", :flag, I18n.t("logstash.runner.flag.quiet"),
     :default => LogStash::DEFAULT_SETTINGS["quiet"]
-  option "--verbose", :flag, I18n.t("logstash.runner.flag.verbose"),
+  option "--[no-]verbose", :flag, I18n.t("logstash.runner.flag.verbose"),
     :default => LogStash::DEFAULT_SETTINGS["verbose"]
 
   # Other settings
@@ -98,10 +79,10 @@ class LogStash::Runner < Clamp::Command
   option ["-V", "--version"], :flag,
     I18n.t("logstash.runner.flag.version")
 
-  option ["-t", "--configtest"], :flag,
+  option ["-t", "--[no-]config.test"], :flag,
     I18n.t("logstash.runner.flag.configtest"),
     :attribute_name => :config_test,
-    :default => LogStash::DEFAULT_SETTINGS["configtest"]
+    :default => LogStash::DEFAULT_SETTINGS["config.test"]
 
   option ["-r", "--[no-]auto-reload"], :flag,
     I18n.t("logstash.runner.flag.auto_reload"),
@@ -120,21 +101,22 @@ class LogStash::Runner < Clamp::Command
     :attribute_name => :web_api_http_port, :default => 9600
 
   def pipeline_workers=(pipeline_workers_value)
-    @pipeline_settings[:pipeline_workers] = validate_positive_integer(pipeline_workers_value)
+    @pipeline_settings["pipeline.workers"] = validate_positive_integer(pipeline_workers_value)
   end
 
   def pipeline_batch_size=(pipeline_batch_size_value)
-    @pipeline_settings[:pipeline_batch_size] = validate_positive_integer(pipeline_batch_size_value)
+    @pipeline_settings["pipeline.batch.size"] = validate_positive_integer(pipeline_batch_size_value)
   end
 
   def pipeline_batch_delay=(pipeline_batch_delay_value)
-    @pipeline_settings[:pipeline_batch_delay] = validate_positive_integer(pipeline_batch_delay_value)
+    @pipeline_settings["pipeline.batch.delay"] = validate_positive_integer(pipeline_batch_delay_value)
   end
 
-  def validate_positive_integer(str_arg)
-    int_arg = str_arg.to_i
+  def validate_positive_integer(arg)
+    int_arg = arg.to_i
+    str_arg = arg.to_s
     if str_arg !~ /^\d+$/ || int_arg < 1
-      raise ArgumentError, "Expected a positive integer, got '#{str_arg}'"
+      raise ArgumentError, "Expected a positive integer, got '#{arg}'"
     end
 
     int_arg
@@ -181,7 +163,8 @@ class LogStash::Runner < Clamp::Command
     return start_shell(@ruby_shell, binding) if @ruby_shell
 
     settings = build_settings_hash
-    print_settings(settings)
+    settings.merge!(@pipeline_settings)
+    format_settings(settings).each {|line| @logger.log(line) }
 
     if config_string.nil? && config_path.nil?
       fail(I18n.t("logstash.runner.missing-configuration"))
@@ -197,7 +180,7 @@ class LogStash::Runner < Clamp::Command
       config_str = config_loader.format_config(config_path, config_string)
       config_error = LogStash::Pipeline.config_valid?(config_str)
       if config_error == true
-        @logger.terminal "Configuration OK"
+        @logger.log "Configuration OK"
         return 0
       else
         @logger.fatal I18n.t("logstash.error", :error => config_error)
@@ -404,20 +387,22 @@ class LogStash::Runner < Clamp::Command
     hash
   end
 
-  def print_settings(settings)
-    pretty_hash = {}
-    @logger.terminal("--------------- Logstash Settings -------------------")
-    settings.each do |setting, value|
-      next if setting == "version" || setting == "help"
-      default_value = LogStash::DEFAULT_SETTINGS[setting]
+  def format_settings(settings)
+    output = []
+    output << "-------- Logstash Settings (* means modified) ---------"
+    LogStash::DEFAULT_SETTINGS.each do |setting, default_value|
+      value = settings[setting]
       if default_value == value # print setting and its default value
-        @logger.terminal("#{setting}: #{value.inspect}")
+        output << "#{setting}: #{value.inspect}" unless value.nil?
       elsif default_value.nil? # print setting and warn it has been set
-        @logger.terminal("*#{setting}: #{value.inspect}")
+        output << "*#{setting}: #{value.inspect}"
+      elsif value.nil? # default setting not set by user
+        output << "#{setting}: #{default_value.inspect}"
       else # print setting, warn it has been set, and show default value
-        @logger.terminal("*#{setting}: #{value.inspect} (default: #{default_value.inspect})")
+        output << "*#{setting}: #{value.inspect} (default: #{default_value.inspect})"
       end
     end
-    @logger.terminal("--------------- Logstash Settings -------------------")
+    output << "--------------- Logstash Settings -------------------"
+    output
   end
 end

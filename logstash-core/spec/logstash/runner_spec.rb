@@ -118,7 +118,7 @@ describe LogStash::Runner do
 
     context "when :pipeline_workers is defined by the user" do
       it "should pass the value to the pipeline" do
-        main_pipeline_settings[:pipeline_workers] = 2
+        main_pipeline_settings["pipeline.workers"] = 2
         expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(main_pipeline_settings)).and_return(pipeline)
 
         args = ["-w", "2", "-e", pipeline_string]
