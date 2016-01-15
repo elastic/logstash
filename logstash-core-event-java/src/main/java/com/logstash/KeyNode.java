@@ -27,7 +27,7 @@ public class KeyNode implements TemplateNode {
 
         if (value != null) {
             if (value instanceof List) {
-                return String.join(",", (List) value);
+                return join((List)value, ",");
             } else if (value instanceof Map) {
                 ObjectMapper mapper = new ObjectMapper();
                 return mapper.writeValueAsString((Map<String, Object>)value);
@@ -38,5 +38,21 @@ public class KeyNode implements TemplateNode {
         } else {
             return "%{" + this.key + "}";
         }
+    }
+
+    // TODO: (colin) this should be moved somewhere else to make it reusable
+    //   this is a quick fix to compile on JDK7 a not use String.join that is
+    //   only available in JDK8
+    public static String join(List<?> list, String delim) {
+        int len = list.size();
+
+        if (len == 0) return "";
+
+        StringBuilder result = new StringBuilder(list.get(0).toString());
+        for (int i = 1; i < len; i++) {
+            result.append(delim);
+            result.append(list.get(i).toString());
+        }
+        return result.toString();
     }
 }

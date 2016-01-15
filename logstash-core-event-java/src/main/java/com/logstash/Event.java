@@ -49,7 +49,9 @@ public class Event implements Cloneable, Serializable {
     public Event(Map data)
     {
         this.data = data;
-        this.data.putIfAbsent(VERSION, VERSION_ONE);
+        if (!this.data.containsKey(VERSION)) {
+            this.data.put(VERSION, VERSION_ONE);
+        }
 
         if (this.data.containsKey(METADATA)) {
             this.metadata = (HashMap<String, Object>) this.data.remove(METADATA);
@@ -202,8 +204,12 @@ public class Event implements Cloneable, Serializable {
         try {
             return (getTimestamp().toIso8601() + " " + this.sprintf("%{host} %{message}"));
         } catch (IOException e) {
-            String host = (String)this.data.getOrDefault("host", "%{host}");
-            String message = (String)this.data.getOrDefault("message", "%{message}");
+            String host = (String)this.data.get("host");
+            host = (host != null ? host : "%{host}");
+
+            String message = (String)this.data.get("message");
+            message = (message != null ? message : "%{message}");
+
             return (host + " " + message);
         }
     }
