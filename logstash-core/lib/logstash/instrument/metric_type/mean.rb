@@ -33,9 +33,5 @@ module LogStash module Instrument module MetricType
         "value" => mean
       }
     end
-
-    def inspect
-      "#{self.class.name} - namespaces: #{@namespaces} key: #{@key} value: #{value}"
-    end
   end
 end; end; end

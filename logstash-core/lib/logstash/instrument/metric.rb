@@ -30,7 +30,7 @@ module LogStash module Instrument
     # might be worth to create a block interface for time based gauge
     def gauge(key, value)
       validate_key!(key)
-      collector.push(namespace_information, key, :gauge, value)
+      collector.push(namespace_information, key, :gauge, :set, value)
     end
 
     def time(key, &block)
