@@ -35,14 +35,14 @@ module LogStash module Instrument module PeriodicPoller
       heap[:used_percent] = (heap[:used_in_bytes] / heap[:max_in_bytes].to_f)*100.0
 
       heap.each_pair do |key, value|
-        heap_metrics.increment(key, value.to_i)
+        heap_metrics.gauge(key, value.to_i)
       end
     end
 
     def collect_non_heap_metrics(data)
       non_heap = aggregate_information_for(data["non_heap"].values)
       non_heap.each_pair do |key, value|
-        non_heap_metrics.increment(key, value.to_i)
+        non_heap_metrics.gauge(key, value.to_i)
       end
     end
 
@@ -51,7 +51,7 @@ module LogStash module Instrument module PeriodicPoller
       metrics.each_pair do |key, hash|
         metric = pools_metrics.namespace(key.to_sym)
         hash.each_pair do |p,v|
-          metric.increment(p, v)
+          metric.gauge(p, v)
         end
       end
     end
