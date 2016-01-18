@@ -92,10 +92,10 @@ if $0 == __FILE__
 
   if settings = YAML.parse(IO.read("settings.yml"))
     settings = settings.to_ruby
-    flat_settings_hash = flatten_hash(settings)
-    settings_array = flatten_arguments(flat_settings_hash)
+    flat_settings_hash = LogStash::Util.flatten_hash(settings)
+    settings_from_yml = LogStash::Util.flatten_arguments(flat_settings_hash)
   else
-    settings_array = []
+    settings_from_yml = []
   end
 
   # TODO deprecate these arguments in the next major version. use -i only
@@ -105,8 +105,8 @@ if $0 == __FILE__
   else
     # The Clamp library supports specifying the same argument multiple times
     # and it keeps the   in an array. So in order for cli args to override
-    # the settings.yml args we can do `settings_array + ARGV`
-    exit_status = LogStash::Runner.run("bin/logstash", settings_array + ARGV)
+    # the settings.yml args we can do `settings_from_yml + ARGV`
+    exit_status = LogStash::Runner.run("bin/logstash", settings_from_yml + ARGV)
   end
   exit(exit_status || 0)
 end
