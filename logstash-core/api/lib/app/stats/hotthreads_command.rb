@@ -11,7 +11,7 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
     top_count = options.fetch(:threads, 3)
     ignore    = options.fetch(:ignore_idle_threads, true)
     hash = JRMonitor.threads.generate
-    report = "::: {#{hostname}} <br/> Hot threads at #{Time.now}, busiestThreads=#{top_count}:"
+    report = "::: {#{hostname}} \n Hot threads at #{Time.now}, busiestThreads=#{top_count}:\n"
     i = 0
     hash.each_pair do |thread_name, container|
       break if i >= top_count
@@ -19,7 +19,7 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
         next if SKIPPED_THREADS.include?(thread_name)
         next if thread_name.match(/Ruby-\d+-JIT-\d+/)
       end
-      report << "<p> #{build_report(container)} </p>"
+      report << "#{build_report(container)} \n"
       i += 1
     end
     report
@@ -32,7 +32,7 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
     report = <<-REPORT
        0.1% (#{hash["cpu.time"]}micros out of 500ms) cpu usage by #{hash["thread.state"]} thread named '#{thread_name}'
     REPORT
-    report << "<br/> #{thread_path}<br/>" if thread_path
+    report << "\n #{thread_path}<br/>" if thread_path
     report
   end
 
