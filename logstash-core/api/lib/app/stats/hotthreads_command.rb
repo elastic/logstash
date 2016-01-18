@@ -7,12 +7,20 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
 
   SKIPPED_THREADS = [ "Finalizer", "Reference Handler", "Signal Dispatcher" ]
 
-  def run
+  def run(options)
+    top_count = options.fetch(:threads, 3)
+    ignore    = options.fetch(:ignore_idle_threads, true)
     hash = JRMonitor.threads.generate
-    report = "::: {#{hostname}} <br/> Hot threads at #{Time.now}, busiestThreads=#{hash.count}:"
+    report = "::: {#{hostname}} <br/> Hot threads at #{Time.now}, busiestThreads=#{top_count}:"
+    i = 0
     hash.each_pair do |thread_name, container|
-      next if SKIPPED_THREADS.include?(thread_name)
+      break if i >= top_count
+      if ignore
+        next if SKIPPED_THREADS.include?(thread_name)
+        next if thread_name.match(/Ruby-\d+-JIT-\d+/)
+      end
       report << "<p> #{build_report(container)} </p>"
+      i += 1
     end
     report
   end
