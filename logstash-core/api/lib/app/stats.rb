@@ -39,7 +39,7 @@ module LogStash::Api
       top_threads_count = params["threads"] || 3
       ignore_idle_threads = params["ignore_idle_threads"] || true
       options = {
-        :threads => top_threads_count,
+        :threads => top_threads_count.to_i,
         :ignore_idle_threads => as_boolean(ignore_idle_threads)
       }
       command = factory.build(:hot_threads_command)

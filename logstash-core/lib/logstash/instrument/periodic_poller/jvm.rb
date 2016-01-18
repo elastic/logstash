@@ -25,11 +25,6 @@ module LogStash module Instrument module PeriodicPoller
 
     private
 
-    ##
-    #  (TODO) usage of increment need to be changed to gauge as soon as this
-    #  type is implemented. This for all the metrics collectors in this class.
-    ##
-
     def collect_heap_metrics(data)
       heap = aggregate_information_for(data["heap"].values)
       heap[:used_percent] = (heap[:used_in_bytes] / heap[:max_in_bytes].to_f)*100.0

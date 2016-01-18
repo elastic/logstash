@@ -21,18 +21,34 @@ describe "JVM stats" do
 
 
     context "#schema" do
-      let(:report) { subject.run }
+
+      let(:service) { double("snapshot-service") }
+
+      subject { described_class.new(service) }
+
+      let(:stats) do
+        read_fixture("memory.json")
+      end
+
+      before(:each) do
+        allow(service).to receive(:get).with(:jvm_memory_stats).and_return(stats)
+      end
+
+
+      let(:report) do
+        subject.run
+      end
 
       it "return hot threads information" do
         expect(report).not_to be_empty
       end
 
       it "return heap information" do
-        expect(report.keys).to include("heap")
+        expect(report.keys).to include(:heap)
       end
 
       it "return non heap information" do
-        expect(report.keys).to include("non_heap")
+        expect(report.keys).to include(:non_heap)
       end
 
     end
