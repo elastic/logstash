@@ -5,8 +5,10 @@ module LogStash::Api::AppHelpers
 
   def respond_with(data, as=:json)
     if as == :json
+      content_type "application/json"
       LogStash::Json.dump(data)
     else
+      content_type "text/plain"
       data.to_s
     end
   end
