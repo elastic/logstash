@@ -19,11 +19,20 @@ describe LogStash::Runner do
 
   before :each do
     allow(Cabin::Channel).to receive(:get).with(LogStash).and_return(channel)
-    allow(channel).to receive(:subscribe).with(any_args).and_call_original
+    allow(channel).to receive(:subscribe).with(any_args)
+    allow(channel).to receive(:log) {}
+    allow(LogStash::ShutdownWatcher).to receive(:logger).and_return(channel)
+  end
+
+  after :all do
+    LogStash::ShutdownWatcher.logger = nil
   end
 
   describe "argument parsing" do
     subject { LogStash::Runner.new("") }
+    before :each do
+      allow(Cabin::Channel.get(LogStash)).to receive(:terminal)
+    end
     context "when -e is given" do
 
       let(:args) { ["-e", "input {} output {}"] }
