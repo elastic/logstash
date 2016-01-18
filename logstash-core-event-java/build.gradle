@@ -42,6 +42,13 @@ task javadocJar(type: Jar, dependsOn:javadoc) {
   extension 'jar'
 }
 
+task copyJars(type: Copy, dependsOn: sourcesJar) {
+    from(allprojects.jar)
+    into project.file('lib')
+}
+
+build.finalizedBy(copyJars)
+
 configurations.create('sources')
 configurations.create('javadoc')
 configurations.archives {
