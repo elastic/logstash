@@ -36,8 +36,14 @@ module LogStash::Api
 
     # return hot threads information
     get "/jvm/hot_threads" do
+      top_threads_count = params["threads"] || 3
+      ignore_idle_threads = params["ignore_idle_threads"] || true
+      options = {
+        :threads => top_threads_count,
+        :ignore_idle_threads => as_boolean(ignore_idle_threads)
+      }
       command = factory.build(:hot_threads_command)
-      respond_with(command.run, :string)
+      respond_with(command.run(options), :string)
     end
 
     # return hot threads information
