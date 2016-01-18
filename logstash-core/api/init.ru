@@ -5,13 +5,18 @@ Dir.glob('lib/**').each{ |d| $LOAD_PATH.unshift(File.join(ROOT, d)) }
 require 'sinatra'
 require 'app/root'
 require 'app/stats'
+require 'app/nodes'
 
 env = ENV["RACK_ENV"].to_sym
 set :environment, env
 
 run LogStash::Api::Root
 
-namespaces = { "/_stats" => LogStash::Api::Stats }
+namespaces = {
+  "/_stats" => LogStash::Api::Stats,
+  "/_nodes" => LogStash::Api::Nodes
+
+}
 
 namespaces.each_pair do |namespace, app|
   map(namespace) do
