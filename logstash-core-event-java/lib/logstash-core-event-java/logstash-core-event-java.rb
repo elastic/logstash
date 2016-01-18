@@ -5,6 +5,8 @@ require "java"
 module LogStash
 end
 
+require "logstash-core-event-java_jars"
+
 # local dev setup
 classes_dir = File.expand_path("../../../build/classes/main", __FILE__)
 
@@ -13,10 +15,14 @@ if File.directory?(classes_dir)
   $CLASSPATH << classes_dir unless $CLASSPATH.include?(classes_dir)
 else
   # otherwise use included jar
-  raise("TODO build dir not found and no jar file")
+  begin
+    jar = Dir[File.dirname(__FILE__) + "/logstash-core-event-java*.jar"].first
+    raise("No logstash-core-event-java jar file found") unless jar
+    require jar
+  rescue Exception => e
+    raise("Error loading logstash-core-event-java jar file, cause: #{e.message}")
+  end
 end
-
-require "logstash-core-event-java_jars"
 
 require "jruby_event_ext"
 require "jruby_timestamp_ext"
