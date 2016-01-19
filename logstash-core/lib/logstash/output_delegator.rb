@@ -17,12 +17,12 @@ module LogStash class OutputDelegator
     @threadsafe = klass.threadsafe?
     @config = args.reduce({}, :merge)
     @klass = klass
-    
+
     # Create an instance of the input so we can fetch the identifier
     output = @klass.new(*args)
-    
+
     # Scope the metrics to the plugin
-    @metric = metric.namespace(output.identifier_name)
+    @metric = metric.namespace(output.id.to_sym)
 
     # We define this as an array regardless of threadsafety
     # to make reporting simpler, even though a threadsafe plugin will just have
