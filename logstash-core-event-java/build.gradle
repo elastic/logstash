@@ -42,16 +42,15 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     extension 'jar'
 }
 
-// destination of gem embedded jar
-def gemjar = project.file('lib/' + jar.baseName + '.jar')
-
 task copyGemjar(type: Copy, dependsOn: sourcesJar) {
     from project.jar
-    into gemjar
+    into project.file('lib/')
 }
 
 task cleanGemjar {
-    delete gemjar
+    delete fileTree(project.file('lib/')) {
+        include '*.jar'
+    }
 }
 
 clean.dependsOn(cleanGemjar)
