@@ -20,7 +20,7 @@ module LogStash
       @filter = klass.new(options)
 
       # Scope the metrics to the plugin
-      @metric = metric.namespace(@filter.identifier_name)
+      @metric = metric.namespace(@filter.id.to_sym)
       @filter.metric = @metric
 
       define_flush_method if @filter.respond_to?(:flush)

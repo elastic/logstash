@@ -5,7 +5,7 @@ require "logstash/config/mixin"
 require "logstash/instrument/null_metric"
 require "cabin"
 require "concurrent"
-require "digest/md5"
+require "securerandom"
 
 class LogStash::Plugin
 
@@ -21,13 +21,19 @@ class LogStash::Plugin
   # for a specific plugin.
   config :enable_metric, :validate => :boolean, :default => true
 
-  # Under which name you want to collect metric for this plugin?
-  # This will allow you to compare the performance of the configuration change, this
-  # name need to be unique per plugin configuration.
+  # Add a unique `ID` to the plugin instance, this `ID` is used for tracking
+  # information for a specific configuration of the plugin.
+  #
+  # ```
+  # output {
+  #  stdout {
+  #    id => "ABC"
+  #  }
+  # }
+  # ```
   #
   # If you don't explicitely set this variable Logstash will generate a unique name.
-  # This name will be valid until the configuration change.
-  config :metric_identifier, :validate => :string, :default => ""
+  config :id, :validate => :string, :default => ""
 
   public
   def hash
@@ -44,6 +50,16 @@ class LogStash::Plugin
   def initialize(params=nil)
     @params = LogStash::Util.deep_clone(params)
     @logger = Cabin::Channel.get(LogStash)
+  end
+
+  # Return a uniq ID for this plugin configuration, by default
+  # we will generate a UUID
+  #
+  # If the user defines a `id => 'ABC'` in the configuration we will return
+  #
+  # @return [String] A plugin ID
+  def id
+    (@params["id"].nil? || @params["id"].empty?) ? SecureRandom.uuid : @params["id"]
   end
 
   # close is called during shutdown, after the plugin worker
@@ -83,19 +99,11 @@ class LogStash::Plugin
   end
 
   def metric=(new_metric)
-    @metric = new_metric.namespace(identifier_name)
+    @metric = new_metric.namespace(@id)
   end
 
   def metric
     @metric_plugin ||= enable_metric ? @metric : LogStash::Instrument::NullMetric.new
-  end
-
-  def identifier_name
-    @identifier_name ||= (@metric_identifier.nil? || @metric_identifier.empty?) ? "#{self.class.config_name}-#{params_hash_code}".to_sym : @identifier.to_sym
-  end
-
-  def params_hash_code
-    Digest::MD5.hexdigest(params.to_s)
   end
 
   # Look up a plugin by type and name.
@@ -120,7 +128,6 @@ class LogStash::Plugin
   end
 
   private
-
   # lookup a plugin by type and name in the existing LogStash module namespace
   # ex.: namespace_lookup("filter", "grok") looks for LogStash::Filters::Grok
   # @param type [String] plugin type, "input", "ouput", "filter"

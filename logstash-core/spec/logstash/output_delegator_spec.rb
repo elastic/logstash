@@ -20,7 +20,7 @@ describe LogStash::OutputDelegator do
       allow(out_inst).to receive(:register)
       allow(out_inst).to receive(:multi_receive)
       allow(out_inst).to receive(:metric=).with(any_args)
-      allow(out_inst).to receive(:identifier_name).and_return("a-simple-plugin")
+      allow(out_inst).to receive(:id).and_return("a-simple-plugin")
       allow(logger).to receive(:debug).with(any_args)
     end
 
@@ -60,7 +60,7 @@ describe LogStash::OutputDelegator do
           allow(out_klass).to receive(:threadsafe?).and_return(false)
           allow(out_klass).to receive(:workers_not_supported?).and_return(false)
           allow(out_inst).to receive(:metric=).with(any_args)
-          allow(out_inst).to receive(:identifier_name).and_return("a-simple-plugin")
+          allow(out_inst).to receive(:id).and_return("a-simple-plugin")
         end
 
         it "should instantiate multiple workers" do
@@ -77,7 +77,7 @@ describe LogStash::OutputDelegator do
         before do
           allow(out_klass).to receive(:threadsafe?).and_return(true)
           allow(out_inst).to receive(:metric=).with(any_args)
-          allow(out_inst).to receive(:identifier_name).and_return("a-simple-plugin")
+          allow(out_inst).to receive(:id).and_return("a-simple-plugin")
           allow(out_klass).to receive(:workers_not_supported?).and_return(false)
         end
 
