@@ -6,6 +6,7 @@ require "logstash/instrument/null_metric"
 require "cabin"
 require "concurrent"
 require "securerandom"
+require "logstash/plugins/registry"
 
 class LogStash::Plugin
   attr_accessor :params
@@ -117,21 +118,19 @@ class LogStash::Plugin
   # Look up a plugin by type and name.
   def self.lookup(type, name)
     path = "logstash/#{type}s/#{name}"
-
-    # first check if plugin already exists in namespace and continue to next step if not
-    begin
-      return namespace_lookup(type, name)
-    rescue NameError
-      logger.debug("Plugin not defined in namespace, checking for plugin file", :type => type, :name => name, :path => path)
+    LogStash::Registry.instance.lookup(type ,name) do |plugin_klass, plugin_name|
+      is_a_plugin?(plugin_klass, plugin_name)
     end
-
-    # try to load the plugin file. ex.: lookup("filter", "grok") will require logstash/filters/grok
-    require(path)
-
-    # check again if plugin is now defined in namespace after the require
-    namespace_lookup(type, name)
   rescue LoadError, NameError => e
+    logger.debug("Problems loading the plugin with", :type => type, :name => name, :path => path)
     raise(LogStash::PluginLoadingError, I18n.t("logstash.pipeline.plugin-loading-error", :type => type, :name => name, :path => path, :error => e.to_s))
+  end
+
+  public
+  def self.declare_plugin(type, name)
+    path = "logstash/#{type}s/#{name}"
+    registry = LogStash::Registry.instance
+    registry.register(path, self)
   end
 
   private
@@ -165,4 +164,5 @@ class LogStash::Plugin
   def self.logger
     @logger ||= Cabin::Channel.get(LogStash)
   end
+
 end # class LogStash::Plugin
