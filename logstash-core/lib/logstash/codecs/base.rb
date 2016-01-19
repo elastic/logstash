@@ -7,7 +7,12 @@ require "logstash/logging"
 # This is the base class for logstash codecs.
 module LogStash::Codecs; class Base < LogStash::Plugin
   include LogStash::Config::Mixin
+
   config_name "codec"
+
+  def self.plugin_type
+    "codec"
+  end
 
   def initialize(params={})
     super

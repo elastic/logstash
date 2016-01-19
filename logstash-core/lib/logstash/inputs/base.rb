@@ -10,6 +10,7 @@ require "logstash/util/decorators"
 # This is the base class for Logstash inputs.
 class LogStash::Inputs::Base < LogStash::Plugin
   include LogStash::Config::Mixin
+
   config_name "input"
 
   # Add a `type` field to all events handled by this input.
@@ -47,6 +48,10 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   attr_accessor :params
   attr_accessor :threadable
+
+  def self.plugin_type
+    "input"
+  end
 
   public
   def initialize(params={})

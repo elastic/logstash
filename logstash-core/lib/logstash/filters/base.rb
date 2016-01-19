@@ -117,6 +117,10 @@ class LogStash::Filters::Base < LogStash::Plugin
   # Optional.
   config :periodic_flush, :validate => :boolean, :default => false
 
+  def self.plugin_type
+    "filter"
+  end
+
   public
   def initialize(params)
     super

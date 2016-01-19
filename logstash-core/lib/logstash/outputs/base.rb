@@ -57,6 +57,10 @@ class LogStash::Outputs::Base < LogStash::Plugin
     self.class.declare_workers_not_supported!(message)
   end
 
+  def self.plugin_type
+    "output"
+  end
+
   public
   def initialize(params={})
     super

@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/namespace"
 require "logstash/config/registry"
+require "logstash/plugins/registry"
 require "logstash/logging"
 require "logstash/util/password"
 require "logstash/version"
@@ -191,8 +192,12 @@ module LogStash::Config::Mixin
     def config_name(name = nil)
       @config_name = name if !name.nil?
       LogStash::Config::Registry.registry[@config_name] = self
+      if self.respond_to?("plugin_type")
+        declare_plugin(self.plugin_type, @config_name)
+      end
       return @config_name
     end
+    alias_method :config_plugin, :config_name
 
     # Deprecated: Declare the version of the plugin
     # inside the gemspec.
