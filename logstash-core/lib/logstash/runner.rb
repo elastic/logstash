@@ -81,7 +81,7 @@ class LogStash::Runner < Clamp::Command
 
   def initialize(*args)
     super(*args)
-    @pipeline_settings ||= { :pipeline_id => "base" }
+    @pipeline_settings ||= { :pipeline_id => "main" }
   end
 
   def pipeline_workers=(pipeline_workers_value)
