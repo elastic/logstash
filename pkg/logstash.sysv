@@ -141,7 +141,6 @@ configtest() {
     return 1
   fi
 
-  JAVA_OPTS=${LS_JAVA_OPTS}
   HOME=${LS_HOME}
   export PATH HOME JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
 
