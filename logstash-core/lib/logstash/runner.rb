@@ -75,11 +75,6 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.rubyshell"),
     :attribute_name => :ruby_shell
 
-  option ["-m", "--metric"], :flag,
-    I18n.t("logstash.runner.flag.metric"),
-           :attribute_name => :metric,
-           :default => false
-
   option ["-n", "--node-name"], "NAME",
     I18n.t("logstash.runner.flag.node_name"),
     :attribute_name => :node_name
@@ -122,7 +117,8 @@ class LogStash::Runner < Clamp::Command
     # make sure the logger has the correct settings and the log level is correctly defined.
     configure_logging(log_file)
 
-    @agent = LogStash::Agent.new({ :collect_metric => metric?, :logger => @logger, :debug => debug?, :node_name => node_name })
+    @agent = LogStash::Agent.new({ :collect_metric => true,
+       :logger => @logger, :debug => debug?, :node_name => node_name })
 
     LogStash::Util::set_thread_name(self.class.name)
 

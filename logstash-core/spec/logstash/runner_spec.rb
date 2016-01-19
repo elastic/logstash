@@ -112,6 +112,8 @@ describe LogStash::Runner do
     context "when pipeline workers is not defined by the user" do
       it "should not pass the value to the pipeline" do
         expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:pipeline_id => "base", :metric => anything)).and_return(pipeline)
+        expect(LogStash::Pipeline).to receive(:new).with(anything, hash_including(:pipeline_id => :metric)).and_return(pipeline)
+
         args = ["-e", pipeline_string]
         subject.run("bin/logstash", args)
       end
@@ -121,6 +123,7 @@ describe LogStash::Runner do
       it "should pass the value to the pipeline" do
         base_pipeline_settings[:pipeline_workers] = 2
         expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:pipeline_id => "base", :pipeline_workers => 2, :metric => anything)).and_return(pipeline)
+        expect(LogStash::Pipeline).to receive(:new).with(anything, hash_including(:pipeline_id => :metric)).and_return(pipeline)
         args = ["-w", "2", "-e", pipeline_string]
         subject.run("bin/logstash", args)
       end

@@ -17,8 +17,9 @@ class LogStash::Plugin
   include LogStash::Config::Mixin
 
   # Disable or enable metric logging for this specific plugin instance
-  # by default only the core pipeline metrics will be recorded.
-  config :enable_metric, :validate => :boolean, :default => false
+  # by default we record all the metrics we can, but you can disable metrics collection
+  # for a specific plugin.
+  config :enable_metric, :validate => :boolean, :default => true
 
   # Under which name you want to collect metric for this plugin?
   # This will allow you to compare the performance of the configuration change, this
