@@ -152,7 +152,7 @@ class LogStash::Runner < Clamp::Command
 
     config_string = format_config(@config_path, @config_string)
 
-    @agent.add_pipeline(:base, config_string, @pipeline_settings)
+    @agent.add_pipeline("base", config_string, @pipeline_settings)
 
     if config_test?
       puts "Configuration OK"
