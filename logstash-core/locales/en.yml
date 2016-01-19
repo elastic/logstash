@@ -1,10 +1,10 @@
 # YAML notes
 #   |- means 'scalar block' useful for formatted text
-#   > means 'scalar block' but it chomps all newlines. Useful 
+#   > means 'scalar block' but it chomps all newlines. Useful
 #     for unformatted text.
 en:
   oops: |-
-    The error reported is: 
+    The error reported is:
       %{error}
   logstash:
     error: >-
@@ -127,18 +127,18 @@ en:
           after %{after}
         invalid_plugin_register: >-
           Cannot register %{plugin} %{type} plugin.
-          The error reported is: 
+          The error reported is:
             %{error}
         plugin_path_missing: >-
           You specified a plugin path that does not exist: %{path}
         no_plugins_found: |-
           Could not find any plugins in "%{path}"
-          I tried to find files matching the following, but found none: 
+          I tried to find files matching the following, but found none:
             %{plugin_glob}
         log_file_failed: |-
           Failed to open %{path} for writing: %{error}
 
-          This is often a permissions issue, or the wrong 
+          This is often a permissions issue, or the wrong
           path was specified?
       flag:
         # Note: Wrap these at 55 chars so they display nicely when clamp emits
@@ -193,10 +193,10 @@ en:
           'inputs' 'filters', 'outputs' or 'codecs'
           and NAME is the name of the plugin.
         quiet: |+
-          Quieter logstash logging. This causes only 
+          Quieter logstash logging. This causes only
           errors to be emitted.
         verbose: |+
-          More verbose logging. This causes 'info' 
+          More verbose logging. This causes 'info'
           level logs to be emitted.
         debug: |+
           Most verbose logging. This causes 'debug'
@@ -209,8 +209,6 @@ en:
         rubyshell: |+
           Drop to shell instead of running as normal.
           Valid shells are "irb" and "pry"
-        metric: |+
-          Record pipeline metrics
         node_name: |+
           Specify the name of this logstash instance, if no value is given
           it will default to the current hostname.
