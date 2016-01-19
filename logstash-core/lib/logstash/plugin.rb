@@ -35,18 +35,15 @@ class LogStash::Plugin
   # If you don't explicitely set this variable Logstash will generate a unique name.
   config :id, :validate => :string, :default => ""
 
-  public
   def hash
     params.hash ^
     self.class.name.hash
   end
 
-  public
   def eql?(other)
     self.class.name == other.class.name && @params == other.params
   end
 
-  public
   def initialize(params=nil)
     @params = LogStash::Util.deep_clone(params)
     @logger = Cabin::Channel.get(LogStash)
@@ -64,7 +61,6 @@ class LogStash::Plugin
 
   # close is called during shutdown, after the plugin worker
   # main task terminates
-  public
   def do_close
     @logger.debug("closing", :plugin => self)
     close
@@ -72,7 +68,6 @@ class LogStash::Plugin
 
   # Subclasses should implement this close method if you need to perform any
   # special tasks during shutdown (like flushing, etc.)
-  public
   def close
     # ..
   end
@@ -81,7 +76,6 @@ class LogStash::Plugin
     return "#{self.class.name}: #{@params}"
   end
 
-  public
   def inspect
     if !@params.nil?
       description = @params
@@ -93,7 +87,6 @@ class LogStash::Plugin
     end
   end
 
-  public
   def debug_info
     [self.class.to_s, original_params]
   end
@@ -107,7 +100,6 @@ class LogStash::Plugin
   end
 
   # Look up a plugin by type and name.
-  public
   def self.lookup(type, name)
     path = "logstash/#{type}s/#{name}"
 
