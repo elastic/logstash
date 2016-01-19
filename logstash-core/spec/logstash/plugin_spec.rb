@@ -108,7 +108,7 @@ describe LogStash::Plugin do
 
       subject.validate({})
     end
-    
+
 
     it 'logs a warning if the plugin use the milestone option' do
       expect_any_instance_of(Cabin::Channel).to receive(:warn)
@@ -117,6 +117,35 @@ describe LogStash::Plugin do
       class LogStash::Filters::Stromae < LogStash::Filters::Base
         config_name "stromae"
         milestone 2
+      end
+    end
+  end
+
+  describe "subclass initialize" do
+    let(:args) { Hash.new }
+
+    [
+      StromaeCodec = Class.new(LogStash::Codecs::Base) do
+        config_name "stromae"
+        config :foo_tag, :validate => :string, :default => "bar"
+      end,
+      StromaeFilter = Class.new(LogStash::Filters::Base) do
+        config_name "stromae"
+        config :foo_tag, :validate => :string, :default => "bar"
+      end,
+      StromaeInput = Class.new(LogStash::Inputs::Base) do
+        config_name "stromae"
+        config :foo_tag, :validate => :string, :default => "bar"
+      end,
+      StromaeOutput = Class.new(LogStash::Outputs::Base) do
+        config_name "stromae"
+        config :foo_tag, :validate => :string, :default => "bar"
+      end
+    ].each do |klass|
+
+      it "subclass #{klass.name} does not modify params" do
+        instance = klass.new(args)
+        expect(args).to be_empty
       end
     end
   end

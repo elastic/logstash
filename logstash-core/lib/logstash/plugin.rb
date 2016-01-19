@@ -41,7 +41,7 @@ class LogStash::Plugin
 
   public
   def initialize(params=nil)
-    @params = params
+    @params = LogStash::Util.deep_clone(params)
     @logger = Cabin::Channel.get(LogStash)
   end
 

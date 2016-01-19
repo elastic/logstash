@@ -80,9 +80,26 @@ class LogStash::Runner < Clamp::Command
            :attribute_name => :metric,
            :default => false
 
-  option ["-n", "--node-name"], "NAME", 
+  option ["-n", "--node-name"], "NAME",
     I18n.t("logstash.runner.flag.node_name"),
     :attribute_name => :node_name
+
+  def initialize(*args)
+    super(*args)
+    @pipeline_settings ||= { :pipeline_id => "base" }
+  end
+
+  def pipeline_workers=(pipeline_workers_value)
+    @pipeline_settings[:pipeline_workers] = validate_positive_integer(pipeline_workers_value)
+  end
+
+  def pipeline_batch_size=(pipeline_batch_size_value)
+    @pipeline_settings[:pipeline_batch_size] = validate_positive_integer(pipeline_batch_size_value)
+  end
+
+  def pipeline_batch_delay=(pipeline_batch_delay_value)
+    @pipeline_settings[:pipeline_batch_delay] = validate_positive_integer(pipeline_batch_delay_value)
+  end
 
   def validate_positive_integer(str_arg)
     int_arg = str_arg.to_i
@@ -104,7 +121,7 @@ class LogStash::Runner < Clamp::Command
     # Configure Logstash logging facility, this need to be done before everything else to
     # make sure the logger has the correct settings and the log level is correctly defined.
     configure_logging(log_file)
- 
+
     @agent = LogStash::Agent.new({ :collect_metric => metric?, :logger => @logger, :debug => debug?, :node_name => node_name })
 
     LogStash::Util::set_thread_name(self.class.name)
@@ -135,15 +152,7 @@ class LogStash::Runner < Clamp::Command
 
     config_string = format_config(@config_path, @config_string)
 
-    pipeline_settings = {
-      :pipeline_workers => pipeline_workers,
-      :pipeline_batch_size => pipeline_batch_size,
-      :pipeline_batch_delay => pipeline_batch_delay,
-    }
-
-    pipeline_id = :base
-
-    @agent.add_pipeline(pipeline_id, config_string, pipeline_settings)
+    @agent.add_pipeline(:base, config_string, @pipeline_settings)
 
     if config_test?
       puts "Configuration OK"
