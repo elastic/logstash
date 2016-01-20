@@ -193,7 +193,7 @@ module LogStash::Util
     when Fixnum, Symbol, IO, TrueClass, FalseClass, NilClass
       o
     when LogStash::Codecs::Base
-      o.clone.tap {|c| c.register }
+      o.clone
     when String
       o.clone #need to keep internal state e.g. frozen
     else
