@@ -2,41 +2,38 @@
 require "logstash/instrument/metric"
 
 module LogStash module Instrument
+ # This class is used in the context when we disable the metric collection
+ # for specific plugin to replace the `NamespacedMetric` class with this one
+ # which doesn't produce any metric to the collector.
  class NullMetric
-   class NullTimedExecution
-     def self.stop
+   # Get only the instance methods defined in the class
+   # and not the whole hierarchy of methods.
+   LogStash::Instrument::Metric.public_instance_methods(false).each do |method|
+      define_method method do |key, *args|
+        metric.send(method, namespace, args)
+      end
+   end
+
+   # We have to manually redefine this method since it can return an
+   # object this object also has to be implemented as a NullObject
+   def time(key)
+     if block_given?
+       yield
+     else
+       NullTimedExecution
      end
    end
 
-   # Allow to reuse the same variable when creating subnamespace
-   NULL_METRIC_INSTANCE = NullMetric.new
-
-   attr_reader :collector, :namespace_information
-   def initialize
-   end
-
-   def increment(key, value = 1)
-   end
-
-   def decrement(key, value = 1)
-   end
-
-   # might be worth to create a block interface for time based gauge
-   def gauge(key, value)
-   end
-
    def namespace(key)
-     NULL_METRIC_INSTANCE
+      self.class.new
    end
 
-   def report_time(key, duration)
-   end
-
-   def time(key)
-     if block_given?
-       yield 
-     else
-       NullTimedExecution
+   private
+   # Null implementation of the internal timer class
+   #
+   # @see LogStash::Instrument::TimedExecution`
+   class NullTimedExecution
+     def self.stop
      end
    end
  end

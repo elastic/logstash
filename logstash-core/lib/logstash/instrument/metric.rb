@@ -8,80 +8,70 @@ module LogStash module Instrument
   class MetricNoBlockProvided < MetricException; end
   class MetricNoNamespaceProvided < MetricException; end
 
+  # This class provide the interface between the code, the collector and the format
+  # of the recorded metric.
   class Metric
-    class TimedExecution
-      MILLISECONDS = 1_000_000.0.freeze
+    attr_reader :collector
 
-      def initialize(metric, key)
-        @metric = metric
-        @key = key
-        start
-      end
-
-      def start
-        @start_time = current_time
-      end
-
-      def stop
-        @metric.report_time(@key, (MILLISECONDS * (current_time - @start_time)).to_i)
-      end
-
-      private
-      def current_time
-        Time.now
-      end
-    end
-
-    attr_reader :collector, :namespace_information
-
-    public
-    def initialize(collector, namespace = nil)
+    def initialize(collector)
       @collector = collector
-      @namespace_information = Array(namespace).map(&:to_sym)
     end
 
-    def increment(key, value = 1)
+    def increment(namespace, key, value = 1)
       validate_key!(key)
-      collector.push(namespace_information, key, :counter, :increment, value)
+      collector.push(namespace, key, :counter, :increment, value)
     end
 
-    def decrement(key, value = 1)
+    def decrement(namespace, key, value = 1)
       validate_key!(key)
-      collector.push(namespace_information, key, :counter, :decrement, value)
+      collector.push(namespace, key, :counter, :decrement, value)
     end
 
-    # might be worth to create a block interface for time based gauge
-    def gauge(key, value)
+    def gauge(namespace, key, value)
       validate_key!(key)
-      collector.push(namespace_information, key, :gauge, :set, value)
+      collector.push(namespace, key, :gauge, :set, value)
     end
 
-    def time(key)
+    def time(namespace, key)
       validate_key!(key)
 
       if block_given?
-        timer = TimedExecution.new(self, key)
+        timer = TimedExecution.new(self, namespace, key)
         content = yield
         timer.stop
         return content
       else
-        TimedExecution.new(self, key)
+        TimedExecution.new(self, namespace, key)
       end
     end
 
-    def report_time(key, duration)
-      collector.push(namespace_information, key, :mean, :increment, duration)
+    def report_time(namespace, key, duration)
+      collector.push(namespace, key, :mean, :increment, duration)
     end
 
-    def namespace(sub_namespace)
-      raise MetricNoNamespaceProvided if sub_namespace.nil? || sub_namespace.empty?
+    # This method return a metric instance tied to a specific namespace
+    # so instead of specifying the namespace on every call.
+    #
+    # Example:
+    #   metric.increment(:namespace, :mykey, 200)
+    #   metric.increment(:namespace, :mykey_2, 200)
+    #
+    #   namespaced_metric = metric.namespace(:namespace)
+    #   namespaced_metric.increment(:mykey, 200)
+    #   namespaced_metric.increment(:mykey_2, 200)
+    # ```
+    #
+    # @param name [Array<String>] Name of the namespace
+    # @param name [String] Name of the namespace
+    def namespace(name)
+      raise MetricNoNamespaceProvided if name.nil? || name.empty?
 
-      new_namespace = namespace_information.clone
-      new_namespace << sub_namespace
-
-      Metric.new(collector, new_namespace)
+      NamespacedMetric.new(self, name)
     end
 
+    # Create a Metric instrance using the default Collector singleton reference
+    #
+    #
     def self.create(namespace, collector = LogStash::Instrument::Collector.instance)
       Metric.new(collector, namespace)
     end
@@ -89,6 +79,31 @@ module LogStash module Instrument
     private
     def validate_key!(key)
       raise MetricNoKeyProvided if key.nil? || key.empty?
+    end
+
+    # Allow to calculate the execution of a block of code.
+    # This class support 2 differents syntax a block or the return of
+    # the object itself, but in the later case the metric wont be recorded
+    # Until we call `#stop`.
+    #
+    # @see LogStash::Instrument::Metric#time
+    class TimedExecution
+      MILLISECONDS = 1_000_000.0.freeze
+
+      def initialize(metric, namespace, key)
+        @metric = metric
+        @namespace = namespace
+        @key = key
+        start
+      end
+
+      def start
+        @start_time = Time.now
+      end
+
+      def stop
+        @metric.report_time(@namespace, @key, (MILLISECONDS * (Time.now - @start_time)).to_i)
+      end
     end
   end
 end; end
