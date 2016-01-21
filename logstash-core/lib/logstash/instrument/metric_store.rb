@@ -36,7 +36,8 @@ module LogStash module Instrument
       get_recursively(key_paths, @store)
     end
 
-    # Return all the individuals Metric
+    # Return all the individuals Metric,
+    # This call mimic a Enum's each if a block is provided
     #
     # @return [Array] An array of all metric transformed in `Logstash::Event`, or in case of passing a block it yields
     # the expected value as other Enumerable implementations.
@@ -48,6 +49,7 @@ module LogStash module Instrument
         return data
       end
     end
+    alias_method :all, :each
 
     private
     def get_recursively(key_paths, map)

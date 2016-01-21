@@ -75,9 +75,7 @@ describe LogStash::Instrument::MetricStore do
       end
 
       it "returns metric types" do
-        subject.each do |metric_type|
-          expect(metric_type).be kind_of(LogStash::Instrument::MetricType::Base)
-        end
+        expect { |b| subject.each(&b) }.to yield_successive_args(LogStash::Instrument::MetricType::Base, LogStash::Instrument::MetricType::Base, LogStash::Instrument::MetricType::Base)
       end
     end
   end
