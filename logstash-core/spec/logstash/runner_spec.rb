@@ -105,6 +105,7 @@ describe LogStash::Runner do
     let(:pipeline) { double("pipeline") }
 
     before(:each) do
+      allow_any_instance_of(LogStash::Agent).to receive(:execute).and_return(true)
       task = Stud::Task.new { 1 }
       allow(pipeline).to receive(:run).and_return(task)
     end
