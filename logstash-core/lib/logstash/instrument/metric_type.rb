@@ -12,7 +12,7 @@ module LogStash module Instrument
     }.freeze
 
     # Use the string to generate a concrete class for this metrics
-    # 
+    #
     # @param [String] The name of the class
     # @param [Array] Namespaces list
     # @param [String] The metric key

@@ -68,7 +68,7 @@ describe LogStash::Instrument::Metric do
   context "#time" do
     let(:sleep_time) { 2 }
     let(:sleep_time_ms) { sleep_time * 1_000_000 }
-      
+
     it "records the duration" do
       subject.time(:duration_ms) { sleep(sleep_time) }
 

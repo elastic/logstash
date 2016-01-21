@@ -23,6 +23,7 @@ module LogStash
       @metric = metric.namespace(@filter.id.to_sym)
       @filter.metric = @metric
 
+      # Not all the filters will do bufferings
       define_flush_method if @filter.respond_to?(:flush)
     end
 
@@ -31,18 +32,26 @@ module LogStash
     end
 
     def multi_filter(events)
-      @metric.increment(:events_in, events.size)
+      @metric.increment(:in, events.size)
 
       new_events = @filter.multi_filter(events)
 
-      @metric.increment(:events_out, new_events.size)
+      # There is no garantee in the context of filter
+      # that EVENTS_INT == EVENTS_OUT, see the aggregates and
+      # the split filter.
+      @metric.increment(:out, new_events.size)
+
       return new_events
     end
 
     private
     def define_flush_method
       define_singleton_method(:flush) do |options = {}|
-        @filter.flush(options)
+        # we also need to trace the number of events
+        # coming from a specific filters.
+        new_events = @filter.flush(options)
+        @metric.increment(:out, new_events.size) unless new_events.nil? # Logstash-filter-aggregates return nil.
+        new_events
       end
     end
   end
