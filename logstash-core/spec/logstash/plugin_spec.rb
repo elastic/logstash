@@ -144,9 +144,26 @@ describe LogStash::Plugin do
     ].each do |klass|
 
       it "subclass #{klass.name} does not modify params" do
-        instance = klass.new(args)
+        klass.new(args)
         expect(args).to be_empty
       end
+    end
+
+    context "codec initialization" do
+
+      class LogStash::Codecs::Noop < LogStash::Codecs::Base
+        config_name "noop"
+
+        config :format, :validate => :string
+        def register; end
+      end
+
+      it "should only register once" do
+        args   = { "codec" => LogStash::Codecs::Noop.new("format" => ".") }
+        expect_any_instance_of(LogStash::Codecs::Noop).to receive(:register).once
+        LogStash::Plugin.new(args)
+      end
+
     end
   end
 end
