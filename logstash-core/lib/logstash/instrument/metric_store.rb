@@ -55,7 +55,7 @@ module LogStash module Instrument
 
       if key_paths.empty?
         return map[key_candidate]
-      else 
+      else
         next_map = map[key_candidate]
 
         if next_map.is_a?(Concurrent::Map)
@@ -70,7 +70,7 @@ module LogStash module Instrument
       events = []
       values.each_value do |value|
         if value.is_a?(Concurrent::Map)
-          events << each_recursively(value) 
+          events << each_recursively(value)
         else
           events << value
         end
@@ -78,8 +78,8 @@ module LogStash module Instrument
       return events
     end
 
-    # This method iterate through the namespace path and try to find the corresponding 
-    # value for the path, if the any part of the path is not found it will 
+    # This method iterate through the namespace path and try to find the corresponding
+    # value for the path, if the any part of the path is not found it will
     # create it.
     #
     # @param [Array] The path where values should be located
@@ -107,7 +107,7 @@ module LogStash module Instrument
     #
     def fetch_or_store_namespace_recursively(map, namespaces_path, idx = 0)
       current = namespaces_path[idx]
-      
+
       # we are at the end of the namespace path, break out of the recursion
       return map if current.nil?
 
