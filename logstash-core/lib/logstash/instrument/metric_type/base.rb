@@ -15,7 +15,7 @@ module LogStash module Instrument module MetricType
     end
 
     def inspect
-      "#{self.class.name} - namespaces: #{namespaces} key: #{@key} value: #{value}"
+      "#{self.class.name} - namespaces: #{@namespaces} key: #{@key} value: #{value}"
     end
 
     protected
