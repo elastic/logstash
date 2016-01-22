@@ -45,7 +45,7 @@ module LogStash module Inputs
       #   and the plugin thread (run method)
       #   - How we handle back pressure here?
       #   - one snashot should be only one event ?
-      snapshot.metric_store.all.each do |metric|
+      snapshot.metric_store.each do |metric|
         @queue << LogStash::Event.new({ "@timestamp" => snapshot.created_at }.merge(metric.to_hash))
       end
     end

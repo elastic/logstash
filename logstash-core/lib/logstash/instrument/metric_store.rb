@@ -40,7 +40,7 @@ module LogStash module Instrument
     #
     # @return [Array] An array of all metric transformed in `Logstash::Event`
     def each
-      all_metrics_recursively(@store).flatten
+      each_recursively(@store).flatten
     end
 
     private
