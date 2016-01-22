@@ -23,12 +23,14 @@ Logstash has the following flags. You can use the `--help` flag to display this 
 
 -b, --pipeline-batch-size SIZE
  This parameter defines the maximum number of events an individual worker thread will collect
- before attempting to execute its filters and outputs. Larger batch sizes are generally more 
- efficient, but come at the cost of increased memory overhead. You may have to increase the 
- JVM heap size by setting the `LS_HEAP_SIZE` variable to effectively use the option.
+ before attempting to execute its filters and outputs. Default is 125 events.
+ Larger batch sizes are generally more efficient, but come at the cost of increased memory
+ overhead. You may have to increase the JVM heap size by setting the `LS_HEAP_SIZE`
+ variable to effectively use the option.
 
 -u, --pipeline-batch-delay DELAY_IN_MS
- When creating pipeline event batches, how long to wait while polling for the next event. 
+ When creating pipeline event batches, how long to wait while polling for the next event.
+ Default is 5ms.
 
 -l, --log FILE
  Log to a given path. Default is to log to stdout
