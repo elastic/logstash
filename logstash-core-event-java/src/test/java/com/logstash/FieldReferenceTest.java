@@ -27,14 +27,14 @@ public class FieldReferenceTest {
     @Test
     public void testParse2FieldsPath() throws Exception {
         FieldReference f = FieldReference.parse("[foo][bar]");
-        assertEquals(f.getPath().toArray(), new String[]{"foo"});
+        assertArrayEquals(f.getPath().toArray(), new String[]{"foo"});
         assertEquals(f.getKey(), "bar");
     }
 
     @Test
     public void testParse3FieldsPath() throws Exception {
         FieldReference f = FieldReference.parse("[foo][bar]]baz]");
-        assertEquals(f.getPath().toArray(), new String[]{"foo", "bar"});
+        assertArrayEquals(f.getPath().toArray(), new String[]{"foo", "bar"});
         assertEquals(f.getKey(), "baz");
     }
 }
