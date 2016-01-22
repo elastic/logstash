@@ -105,7 +105,7 @@ public class EventTest {
     @Test
     public void testAppend() throws Exception {
         Map data1 = new HashMap();
-        data1.put("field1", new ArrayList(Arrays.asList("original1", "original2")));
+        data1.put("field1", Arrays.asList("original1", "original2"));
 
         Map data2 = new HashMap();
         data2.put("field1", "original1");
