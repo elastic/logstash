@@ -11,7 +11,7 @@ public class FieldReference {
     private List<String> path;
     private String key;
     private String reference;
-    private static List<String> EMPTY_STRINGS = Arrays.asList(new String[]{""});
+    private static List<String> EMPTY_STRINGS = Arrays.asList("");
 
     public FieldReference(List<String> path, String key, String reference) {
         this.path = path;
