@@ -22,7 +22,7 @@ script
   # Defaults
   PATH=/bin:/usr/bin
   LS_HOME=/var/lib/logstash
-  LS_HEAP_SIZE="500m"
+  LS_HEAP_SIZE="1g"
   LS_LOG_FILE=/var/log/logstash/logstash.log
   LS_USE_GC_LOGGING=""
   LS_CONF_DIR=/etc/logstash/conf.d

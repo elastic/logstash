@@ -12,7 +12,7 @@
 #LS_OPTS=""
 
 # Arguments to pass to java
-#LS_HEAP_SIZE="500m"
+#LS_HEAP_SIZE="1g"
 #LS_JAVA_OPTS="-Djava.io.tmpdir=$HOME"
 
 # pidfiles aren't used for upstart; this is for sysv users.
