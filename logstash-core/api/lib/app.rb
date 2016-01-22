@@ -18,8 +18,7 @@ module LogStash::Api
 
     def initialize(app=nil)
       super(app)
-      @service = LogStash::Api::Service.instance
-      @factory = CommandFactory.new(@service)
+      @factory = CommandFactory.new(settings.service)
     end
 
   end

@@ -9,6 +9,8 @@ require 'app/stats'
 env = ENV["RACK_ENV"].to_sym
 set :environment, env
 
+set :service, LogStash::Api::Service.instance
+
 run LogStash::Api::Root
 
 namespaces = { "/_stats" => LogStash::Api::Stats }
