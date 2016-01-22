@@ -26,7 +26,7 @@ module LogStash module Instrument
     def fetch_or_store(namespaces, key, default_value = nil)
       fetch_or_store_namespaces(namespaces).fetch_or_store(key, block_given? ? yield(key) : default_value)
     end
-    
+
     # This method allow to retrieve values for a specific path,
     #
     #
@@ -38,9 +38,15 @@ module LogStash module Instrument
 
     # Return all the individuals Metric
     #
-    # @return [Array] An array of all metric transformed in `Logstash::Event`
-    def each
-      each_recursively(@store).flatten
+    # @return [Array] An array of all metric transformed in `Logstash::Event`, or in case of passing a block it yields
+    # the expected value as other Enumerable implementations.
+    def each(&block)
+      data = each_recursively(@store).flatten
+      if block_given?
+        data.each(&block)
+      else
+        return data
+      end
     end
 
     private
@@ -81,7 +87,7 @@ module LogStash module Instrument
     # @return [Concurrent::Map] Map where the metrics should be saved
     def fetch_or_store_namespaces(namespaces_path)
       path_map = fetch_or_store_namespace_recursively(@store, namespaces_path)
-      
+
       # This mean one of the namespace and key are colliding
       # and we have to deal it upstream.
       unless path_map.is_a?(Concurrent::Map)
