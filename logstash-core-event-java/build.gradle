@@ -6,7 +6,6 @@ buildscript {
     }
     dependencies {
         classpath 'net.saliman:gradle-cobertura-plugin:2.2.8'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.2'
     }
 }
 
@@ -18,13 +17,13 @@ repositories {
 
 gradle.projectsEvaluated {
     tasks.withType(JavaCompile) {
-        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        options.compilerArgs << "-Xlint:deprecation"
+//        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'idea'
-apply plugin: 'com.github.johnrengelman.shadow'
 
 group = 'org.logstash'
 
