@@ -49,6 +49,27 @@ describe LogStash::Event do
         subject["[baz]"] = nil
         expect(subject.to_hash).to include("baz" => nil)
       end
+
+      it "should set nil element within existing array value" do
+        subject["[foo]"] = ["bar", "baz"]
+
+        expect(subject["[foo][0]"] = nil).to eq(nil)
+        expect(subject["[foo]"]).to eq([nil, "baz"])
+      end
+
+      it "should set nil in first element within empty array" do
+        subject["[foo]"] = []
+
+        expect(subject["[foo][0]"] = nil).to eq(nil)
+        expect(subject["[foo]"]).to eq([nil])
+      end
+
+      it "should set nil in second element within empty array" do
+        subject["[foo]"] = []
+
+        expect(subject["[foo][1]"] = nil).to eq(nil)
+        expect(subject["[foo]"]).to eq([nil, nil])
+      end
     end
 
     context "#sprintf" do
@@ -112,6 +133,39 @@ describe LogStash::Event do
 
       it "should not strip last character" do
         expect(subject.sprintf("%{type}%{message}|")).to eq("sprintfhello world|")
+      end
+
+      it "should render nil array values as leading empty string" do
+        expect(subject["foo"] = [nil, "baz"]).to eq([nil, "baz"])
+
+        expect(subject["[foo][0]"]).to be_nil
+        expect(subject["[foo][1]"]).to eq("baz")
+
+        expect(subject.sprintf("%{[foo]}")).to eq(",baz")
+      end
+
+      it "should render nil array values as middle empty string" do
+        expect(subject["foo"] = ["bar", nil, "baz"]).to eq(["bar", nil, "baz"])
+
+        expect(subject["[foo][0]"]).to eq("bar")
+        expect(subject["[foo][1]"]).to be_nil
+        expect(subject["[foo][2]"]).to eq("baz")
+
+        expect(subject.sprintf("%{[foo]}")).to eq("bar,,baz")
+      end
+
+     it "should render nil array values as trailing empty string" do
+        expect(subject["foo"] = ["bar", nil]).to eq(["bar", nil])
+
+        expect(subject["[foo][0]"]).to eq("bar")
+        expect(subject["[foo][1]"]).to be_nil
+
+        expect(subject.sprintf("%{[foo]}")).to eq("bar,")
+     end
+
+      it "should render deep arrays with nil value" do
+        subject["[foo]"] = [[12, nil], 56]
+        expect(subject.sprintf("%{[foo]}")).to eq("12,,56")
       end
 
       context "#encoding" do
