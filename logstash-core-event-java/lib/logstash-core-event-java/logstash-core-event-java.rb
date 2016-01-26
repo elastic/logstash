@@ -16,11 +16,9 @@ if File.directory?(classes_dir)
 else
   # otherwise use included jar
   begin
-    jar = Dir[File.dirname(__FILE__) + "/logstash-core-event-java*.jar"].first
-    raise("No logstash-core-event-java jar file found") unless jar
-    require jar
+    require "logstash-core-event-java/logstash-core-event-java.jar"
   rescue Exception => e
-    raise("Error loading logstash-core-event-java jar file, cause: #{e.message}")
+    raise("Error loading logstash-core-event-java/logstash-core-event-java.jar file, cause: #{e.message}")
   end
 end
 
