@@ -256,7 +256,6 @@ class LogStash::Runner < Clamp::StrictCommand
   end # def show_version
 
   def show_version_logstash
-    require "logstash/version"
     puts "logstash #{LOGSTASH_VERSION}"
   end # def show_version_logstash
 

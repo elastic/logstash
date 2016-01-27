@@ -4,8 +4,11 @@ require "jar-dependencies"
 require "jar_install_post_install_hook"
 require "file-dependencies/gem"
 require "fileutils"
+require "uri"
+require "pluginmanager/commands/install_command"
 
-class LogStash::PluginManager::Install < LogStash::PluginManager::Command
+
+class LogStash::PluginManager::Install < LogStash::PluginManager::InstallCommand
   parameter "[PLUGIN] ...", "plugin name(s) or file", :attribute_name => :plugins_arg
   option "--version", "VERSION", "version of the plugin to install"
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
@@ -17,7 +20,24 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   # but the argument parsing does not support it for now so currently if specifying --version only
   # one plugin name can be also specified.
   def execute
+
     validate_cli_options!
+
+    packs = find_packs(plugins_arg).each do |pack|
+      # Verify each selected pack to be valid
+      verify_pack!(pack)
+    end.select do |pack|
+      # This is necessary because a package installed by name could be also a
+      # plugin name, so if not exist, we still need to validate if it's a plugin.
+      pack.exist?
+    end
+
+    pack_plugins = fetch_and_copy_packs(packs) do |pack, temp_dir|
+      pack_file = fetch_pack(pack, temp_dir)
+      extract_pack(pack_file)
+    end
+
+    merge_into_plugin_list(pack_plugins)
 
     if local_gems?
       gems = extract_local_gems_plugins
@@ -33,6 +53,12 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   end
 
   private
+
+  def merge_into_plugin_list(packs)
+    plugins_arg.concat(packs).flatten!
+    plugins_arg.compact!
+  end
+
   def validate_cli_options!
     if development?
       signal_usage_error("Cannot specify plugin(s) with --development, it will add the development dependencies of the currently installed plugins") unless plugins_arg.empty?

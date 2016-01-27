@@ -10,6 +10,7 @@ namespace "artifact" do
       "CONTRIBUTORS",
       "bin/**/*",
       "config/**/*",
+      "lib/logstash/**/*",
       "lib/bootstrap/**/*",
       "lib/pluginmanager/**/*",
       "lib/systeminstall/**/*",
