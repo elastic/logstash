@@ -3,6 +3,7 @@ require "spec_helper"
 require "logstash/shutdown_watcher"
 
 describe LogStash::ShutdownWatcher do
+  let(:channel) { Cabin::Channel.new }
 
   let(:check_every) { 0.01 }
   let(:check_threshold) { 100 }
@@ -13,6 +14,8 @@ describe LogStash::ShutdownWatcher do
   report_count = 0
 
   before :each do
+    LogStash::ShutdownWatcher.logger = channel
+
     allow(pipeline).to receive(:reporter).and_return(reporter)
     allow(reporter).to receive(:snapshot).and_return(reporter_snapshot)
     allow(reporter_snapshot).to receive(:o_simple_hash).and_return({})
