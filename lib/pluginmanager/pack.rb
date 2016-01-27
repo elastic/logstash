@@ -1,5 +1,5 @@
 # encoding: utf-8
-require_relative "pack_command"
+require "pluginmanager/commands/pack_command"
 
 class LogStash::PluginManager::Pack < LogStash::PluginManager::PackCommand
   option "--tgz", :flag, "compress package as a tar.gz file", :default => !LogStash::Environment.windows?

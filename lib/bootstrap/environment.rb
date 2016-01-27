@@ -5,6 +5,7 @@
 
 require_relative "bundler"
 require_relative "rubygems"
+require_relative "../logstash/version"
 
 module LogStash
   module Environment
