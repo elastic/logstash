@@ -24,6 +24,18 @@ describe LogStash::Runner do
     LogStash::ShutdownWatcher.logger = nil
   end
 
+  describe "argument precedence" do
+    let(:config) { "input {} output {}" }
+    let(:cli_args) { ["-e", config, "-w", 20] }
+    let(:settings_yml) { ["--pipeline.workers", 2] }
+
+    it "favors the last occurence of an option" do
+      expect(LogStash::Pipeline).to receive(:new).
+        with(config, hash_including("pipeline.workers" => 20)).and_call_original
+      subject.run("bin/logstash", settings_yml + cli_args)
+    end
+  end
+
   describe "argument parsing" do
     subject { LogStash::Runner.new("") }
     before :each do
