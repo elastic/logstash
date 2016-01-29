@@ -14,11 +14,17 @@ LogStash::Environment.load_locale!
 class LogStash::Agent
   attr_reader :logger, :pipelines
 
+  # initialize method for LogStash::Agent
+  # @param params [Hash] potential parameters are:
+  #   :node_name [String] - identifier for the agent
+  #   :auto_reload [Boolean] - enable reloading of pipelines
+  #   :reload_interval [Integer] - reload pipelines every X seconds
+  #   :logger [Cabin::Channel] - logger instance
   def initialize(params)
     @logger = params[:logger]
     @auto_reload = params[:auto_reload]
     @pipelines = {}
-     
+
     @node_name = params[:node_name] || Socket.gethostname
     @config_loader = LogStash::Config::Loader.new(@logger)
     @reload_interval = params[:reload_interval] || 3 # seconds
@@ -48,10 +54,10 @@ class LogStash::Agent
     end
   end
 
-  # register_pipeline adds a pipeline to the agent's state
+  # register_pipeline - adds a pipeline to the agent's state
   # @param pipeline_id [String] pipeline string identifier
-  # @param settings [Hash] settings for the pipeline. keys should be symbols
-  # such as :pipeline_workers and :pipeline_batch_delay
+  # @param settings [Hash] settings that will be passed when creating the pipeline.
+  #   keys should be symbols such as :pipeline_workers and :pipeline_batch_delay
   def register_pipeline(pipeline_id, settings)
     pipeline = create_pipeline(settings.merge(:pipeline_id => pipeline_id))
     return unless pipeline.is_a?(LogStash::Pipeline)
@@ -60,11 +66,14 @@ class LogStash::Agent
 
   def reload_state!
     @upgrade_mutex.synchronize do
-      @pipelines.each { |pipeline_id, _| reload_pipeline!(pipeline_id) }
+      @pipelines.each do |pipeline_id, _|
+        begin
+          reload_pipeline!(pipeline_id)
+        rescue => e
+          @logger.error I18n.t("oops", :error => e, :backtrace => e.backtrace)
+        end
+      end
     end
-  rescue => e
-    @logger.error I18n.t("oops", :error => e, :backtrace => e.backtrace)
-    return 1
   end
 
   def shutdown
@@ -78,7 +87,7 @@ class LogStash::Agent
 
   def create_pipeline(settings)
     begin
-      config = fetch_config(settings[:config_path], settings[:config_string])
+      config = fetch_config(settings)
     rescue => e
       @logger.error("failed to fetch pipeline configuration", :message => e.message)
       return
@@ -92,10 +101,12 @@ class LogStash::Agent
     end
   end
 
-  def fetch_config(config_path, config_string)
-    @config_loader.format_config(config_path, config_string)
+  def fetch_config(settings)
+    @config_loader.format_config(settings[:config_path], settings[:config_string])
   end
 
+  # since this method modifies the @pipelines hash it is
+  # wrapped in @upgrade_mutex in the parent call `reload_state!`
   def reload_pipeline!(id)
     old_pipeline = @pipelines[id]
     new_pipeline = create_pipeline(old_pipeline.original_settings)
