@@ -28,7 +28,7 @@ public class Event implements Cloneable, Serializable {
     public static final String VERSION_ONE = "1";
 
     private static final Logger DEFAULT_LOGGER = new StdioLogger();
-    private transient final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     // logger is static since once set there is no point in changing it at runtime
     // for other reasons than in tests/specs.
