@@ -191,7 +191,6 @@ class LogStash::Runner < Clamp::Command
     return 1
   rescue => e
     @logger.fatal I18n.t("oops", :error => e, :backtrace => e.backtrace)
-    show_short_help
     return 1
   ensure
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?

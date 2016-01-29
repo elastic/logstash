@@ -178,7 +178,8 @@ describe LogStash::Agent do
     end
 
     it "should join the config string and config path content" do
-      fetched_config = subject.send(:fetch_config, tmp_config_path, cli_config)
+      settings = { :config_path => tmp_config_path, :config_string => cli_config }
+      fetched_config = subject.send(:fetch_config, settings)
       expect(fetched_config.strip).to eq(cli_config + IO.read(tmp_config_path))
     end
 
