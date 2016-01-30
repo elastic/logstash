@@ -1,7 +1,5 @@
 package com.logstash;
 
-import org.codehaus.jackson.JsonGenerationException;
-
 import java.io.IOException;
 
 /**

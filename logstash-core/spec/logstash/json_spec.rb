@@ -18,6 +18,9 @@ describe "LogStash::Json" do
   let(:multi) {
     [
       {:ruby => "foo bar baz", :json => "\"foo bar baz\""},
+      {:ruby => "foo   ", :json => "\"foo   \""},
+      {:ruby => " ", :json => "\" \""},
+      {:ruby => "   ", :json => "\"   \""},
       {:ruby => "1", :json => "\"1\""},
       {:ruby => {"a" => true}, :json => "{\"a\":true}"},
       {:ruby => {"a" => nil}, :json => "{\"a\":null}"},
@@ -92,5 +95,17 @@ describe "LogStash::Json" do
 
   it "should raise Json::ParserError on invalid json" do
     expect{LogStash::Json.load("abc")}.to raise_error LogStash::Json::ParserError
+  end
+
+  it "should return nil on empty string" do
+    o = LogStash::Json.load("")
+    expect(o).to be_nil
+  end
+
+  it "should return nil on blank string" do
+    o = LogStash::Json.load(" ")
+    expect(o).to be_nil
+    o = LogStash::Json.load("  ")
+    expect(o).to be_nil
   end
 end

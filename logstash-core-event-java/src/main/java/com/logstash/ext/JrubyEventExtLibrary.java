@@ -35,6 +35,10 @@ import java.util.List;
 
 public class JrubyEventExtLibrary implements Library {
 
+    private static RubyClass PARSER_ERROR = null;
+    private static RubyClass GENERATOR_ERROR = null;
+    private static RubyClass LOGSTASH_ERROR = null;
+
     public void load(Ruby runtime, boolean wrap) throws IOException {
         RubyModule module = runtime.defineModule("LogStash");
 
@@ -54,6 +58,19 @@ public class JrubyEventExtLibrary implements Library {
         clazz.setConstant("VERSION_ONE", runtime.newString(Event.VERSION_ONE));
         clazz.defineAnnotatedMethods(RubyEvent.class);
         clazz.defineAnnotatedConstants(RubyEvent.class);
+
+        PARSER_ERROR = runtime.getModule("LogStash").defineOrGetModuleUnder("Json").getClass("ParserError");
+        if (PARSER_ERROR == null) {
+            throw new RaiseException(runtime, runtime.getClass("StandardError"), "Could not find LogStash::Json::ParserError class", true);
+        }
+        GENERATOR_ERROR = runtime.getModule("LogStash").defineOrGetModuleUnder("Json").getClass("GeneratorError");
+        if (GENERATOR_ERROR == null) {
+            throw new RaiseException(runtime, runtime.getClass("StandardError"), "Could not find LogStash::Json::GeneratorError class", true);
+        }
+        LOGSTASH_ERROR = runtime.getModule("LogStash").getClass("Error");
+        if (LOGSTASH_ERROR == null) {
+            throw new RaiseException(runtime, runtime.getClass("StandardError"), "Could not find LogStash::Error class", true);
+        }
     }
 
     public static class ProxyLogger implements Logger {
@@ -107,7 +124,7 @@ public class JrubyEventExtLibrary implements Library {
             args = Arity.scanArgs(context.runtime, args, 0, 1);
             IRubyObject data = args[0];
 
-            if (data.isNil()) {
+            if (data == null || data.isNil()) {
                 this.event = new Event();
             } else if (data instanceof RubyHash) {
                 HashMap<String, Object>  newObj = Javafier.deep((RubyHash) data);
@@ -215,7 +232,7 @@ public class JrubyEventExtLibrary implements Library {
             try {
                 return RubyString.newString(context.runtime, event.sprintf(format.toString()));
             } catch (IOException e) {
-                throw new RaiseException(getRuntime(), (RubyClass)getRuntime().getModule("LogStash").getClass("Error"), "timestamp field is missing", true);
+                throw new RaiseException(getRuntime(), LOGSTASH_ERROR, "timestamp field is missing", true);
             }
         }
 
@@ -251,9 +268,38 @@ public class JrubyEventExtLibrary implements Library {
 
         @JRubyMethod(name = "to_json", rest = true)
         public IRubyObject ruby_to_json(ThreadContext context, IRubyObject[] args)
-            throws IOException
         {
-            return RubyString.newString(context.runtime, event.toJson());
+            try {
+                return RubyString.newString(context.runtime, event.toJson());
+            } catch (Exception e) {
+                throw new RaiseException(context.runtime, GENERATOR_ERROR, e.getMessage(), true);
+            }
+        }
+
+        // @param value [String] the json string. A json object/map will convert to an array containing a single Event.
+        // and a json array will convert each element into individual Event
+        // @return Array<Event> array of events
+        @JRubyMethod(name = "from_json", required = 1, meta = true)
+        public static IRubyObject ruby_from_json(ThreadContext context, IRubyObject recv, RubyString value)
+        {
+            Event[] events;
+            try {
+                events = Event.fromJson(value.asJavaString());
+            } catch (Exception e) {
+                throw new RaiseException(context.runtime, PARSER_ERROR, e.getMessage(), true);
+            }
+
+            RubyArray result = RubyArray.newArray(context.runtime, events.length);
+
+            if (events.length == 1) {
+                // micro optimization for the 1 event more common use-case.
+                result.set(0, RubyEvent.newRubyEvent(context.runtime, events[0]));
+            } else {
+                for (int i = 0; i < events.length; i++) {
+                    result.set(i, RubyEvent.newRubyEvent(context.runtime, events[i]));
+                }
+            }
+            return result;
         }
 
         @JRubyMethod(name = "validate_value", required = 1, meta = true)

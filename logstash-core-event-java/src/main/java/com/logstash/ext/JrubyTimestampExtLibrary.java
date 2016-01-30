@@ -1,7 +1,6 @@
 package com.logstash.ext;
 
 import com.logstash.*;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
