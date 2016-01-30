@@ -1,7 +1,7 @@
 package com.logstash;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.logstash.ext.JrubyTimestampExtLibrary;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.jruby.RubySymbol;
 
@@ -153,8 +153,38 @@ public class Event implements Cloneable, Serializable {
         }
     }
 
-    public String toJson() throws IOException {
+    public String toJson()
+            throws IOException
+    {
         return mapper.writeValueAsString((Map<String, Object>)this.data);
+    }
+
+    public static Event[] fromJson(String json)
+            throws IOException
+    {
+        Event[] result;
+
+        if (json == null || json.trim().isEmpty()) {
+            return new Event[]{ new Event() };
+        }
+
+        Object o = mapper.readValue(json, Object.class);
+        // we currently only support Map or Array json objects
+        if (o instanceof Map) {
+            result = new Event[]{ new Event((Map)o) };
+        } else if (o instanceof List) {
+            result = new Event[((List) o).size()];
+            int i = 0;
+            for (Object e : (List)o) {
+                if (!(e instanceof Map)) {
+                    throw new IOException("incompatible inner json array object type=" + e.getClass().getName() + " , only hash map is suppoted");
+                }
+                result[i++] = new Event((Map)e);
+            }
+        } else {
+            throw new IOException("incompatible json object type=" + o.getClass().getName() + " , only hash map or arrays are suppoted");
+        }
+        return result;
     }
 
     public Map toMap() {

@@ -1,6 +1,8 @@
 package com.logstash;
 
 import org.junit.Test;
+
+import java.io.IOException;
 import java.util.*;
 import static org.junit.Assert.*;
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
@@ -115,5 +117,85 @@ public class EventTest {
         e.append(e2);
 
         assertEquals(Arrays.asList("original1", "original2"), e.getField("field1"));
+    }
+
+    @Test
+    public void testFromJsonWithNull() throws Exception {
+        Map data1 = Event.fromJson(null)[0].toMap();
+        data1.remove("@timestamp");
+        Map data2 = new Event().toMap();
+        data2.remove("@timestamp");
+
+        assertEquals(data1, data2);
+    }
+
+    @Test
+    public void testFromJsonWithEmptyString() throws Exception {
+        Map data1 = Event.fromJson("")[0].toMap();
+        data1.remove("@timestamp");
+        Map data2 = new Event().toMap();
+        data2.remove("@timestamp");
+
+        assertEquals(data1, data2);
+    }
+
+    @Test
+    public void testFromJsonWithBlankString() throws Exception {
+        Map data1 = Event.fromJson("   ")[0].toMap();
+        data1.remove("@timestamp");
+        Map data2 = new Event().toMap();
+        data2.remove("@timestamp");
+
+        assertEquals(data1, data2);
+    }
+
+    @Test
+    public void testFromJsonWithValidJsonMap() throws Exception {
+        Event e = Event.fromJson("{\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"foo\":\"bar\"}")[0];
+
+        assertEquals("bar", e.getField("[foo]"));
+        assertEquals("2015-05-28T23:02:05.350Z", e.getTimestamp().toIso8601());
+    }
+
+    @Test
+    public void testFromJsonWithValidJsonArrayOfMap() throws Exception {
+        Event[] l = Event.fromJson("[{\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"foo\":\"bar\"}]");
+
+        assertEquals(1, l.length);
+        assertEquals("bar", l[0].getField("[foo]"));
+        assertEquals("2015-05-28T23:02:05.350Z", l[0].getTimestamp().toIso8601());
+
+        l = Event.fromJson("[{}]");
+
+        assertEquals(1, l.length);
+        assertEquals(null, l[0].getField("[foo]"));
+
+        l = Event.fromJson("[{\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"foo\":\"bar\"}, {\"@timestamp\":\"2016-05-28T23:02:05.350Z\",\"foo\":\"baz\"}]");
+
+        assertEquals(2, l.length);
+        assertEquals("bar", l[0].getField("[foo]"));
+        assertEquals("2015-05-28T23:02:05.350Z", l[0].getTimestamp().toIso8601());
+        assertEquals("baz", l[1].getField("[foo]"));
+        assertEquals("2016-05-28T23:02:05.350Z", l[1].getTimestamp().toIso8601());
+    }
+
+    @Test(expected=IOException.class)
+    public void testFromJsonWithInvalidJsonString() throws Exception {
+        Event.fromJson("gabeutch");
+    }
+
+    @Test(expected=IOException.class)
+    public void testFromJsonWithInvalidJsonArray1() throws Exception {
+        Event.fromJson("[1,2]");
+    }
+
+    @Test(expected=IOException.class)
+    public void testFromJsonWithInvalidJsonArray2() throws Exception {
+        Event.fromJson("[\"gabeutch\"]");
+    }
+
+    @Test(expected=IOException.class)
+    public void testFromJsonWithPartialInvalidJsonArray() throws Exception {
+        Event.fromJson("[{\"foo\":\"bar\"}, 1]");
     }
 }

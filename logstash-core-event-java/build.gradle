@@ -92,8 +92,8 @@ idea {
 }
 
 dependencies {
-    compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
-    compile 'org.codehaus.jackson:jackson-core-asl:1.9.13'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.7.1'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.1-1'
     provided 'org.jruby:jruby-core:1.7.22'
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'

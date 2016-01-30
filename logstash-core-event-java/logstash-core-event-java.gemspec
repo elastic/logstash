@@ -26,7 +26,6 @@ Gem::Specification.new do |gem|
   # which does not have this problem.
   gem.add_runtime_dependency "ruby-maven", "~> 3.3.9"
 
-  gem.requirements << "jar org.codehaus.jackson:jackson-mapper-asl, 1.9.13"
-  gem.requirements << "jar org.codehaus.jackson:jackson-core-asl, 1.9.13"
+  gem.requirements << "jar com.fasterxml.jackson.core:jackson-core, 2.7.1"
+  gem.requirements << "jar com.fasterxml.jackson.core:jackson-databind, 2.7.1-1"
 end
-

@@ -233,4 +233,46 @@ describe LogStash::Event do
       expect(h).to eq(source_hash_with_matada)
     end
   end
+
+  context "from_json" do
+    let (:source_json) { "{\"foo\":1, \"bar\":\"baz\"}" }
+    let (:blank_strings) {["", "  ",  "   "]}
+    let (:bare_strings) {["aa", "  aa", "aa  "]}
+
+    it "should produce a new event from json" do
+      expect(LogStash::Event.from_json(source_json).size).to eq(1)
+
+      event = LogStash::Event.from_json(source_json)[0]
+      expect(event["[foo]"]).to eq(1)
+      expect(event["[bar]"]).to eq("baz")
+    end
+
+    it "should consistently handle blank string" do
+      blank_strings.each do |s|
+        t = LogStash::Timestamp.new
+        expect(LogStash::Event.from_json(s).size).to eq(1)
+
+        event1 = LogStash::Event.from_json(s)[0]
+        event2 = LogStash::Event.new(LogStash::Json.load(s))
+        event1.timestamp = t
+        event2.timestamp = t
+
+        expect(event1.to_hash).to eq(event2.to_hash)
+      end
+    end
+
+    it "should consistently handle nil" do
+      blank_strings.each do |s|
+        expect{LogStash::Event.from_json(nil)}.to raise_error
+        expect{LogStash::Event.new(LogStash::Json.load(nil))}.to raise_error
+      end
+    end
+
+    it "should consistently handle bare string" do
+      bare_strings.each do |s|
+        expect{LogStash::Event.from_json(s)}.to raise_error LogStash::Json::ParserError
+        expect{LogStash::Event.new(LogStash::Json.load(s))}.to raise_error LogStash::Json::ParserError
+       end
+    end
+  end
 end
