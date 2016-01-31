@@ -83,6 +83,21 @@ Review non-source changes such as documentation in the same way as source code c
 The plugin has a master branch that always holds the latest in-progress version and should always build.  Topic branches
 should kept to the minimum.
 
+==== Changelog Management
+
+Every plugin should have a changelog (CHANGELOG.md).  If not, please create one.  When changes are made to a plugin, make sure to include a changelog entry under the respective version to document the change.  The changelog should be easily understood from a user point of view.  As we iterate and release plugins rapidly, users use the changelog as a mechanism for deciding whether to update.
+
+Changes that are not user facing should be tagged as “Internal: ”.  For example:
+
+* "Internal: Refactored specs for better testing"
+* "Default timeout configuration changed from 10s to 5s"
+
+==== Continuous Integration
+
+Plugins are setup with automated continuous integration (CI) environments and there should be a corresponding badge on each Github page.  If it’s missing, please contact the Logstash core team.
+
+Every Pull Request opened automatically triggers a CI run.  To conduct a manual run, comment “Jenkins, please test this.” on the Pull Request.
+
 === Versioning Plugins
 
 Logstash core and its plugins have separate product development lifecycles. Hence the versioning and release strategy for
@@ -144,6 +159,10 @@ Please make sure the CLA is signed by every Contributor prior to reviewing PRs a
      Contributors only need to sign the CLA once and should sign with the same email as used in Github. If a Contributor
      signs the CLA after a PR is submitted, they can refresh the automated CLA checker by pushing another
      comment on the PR after 5 minutes of signing.
+
+=== Need Help?
+
+Ping @logstash-core on Github to get the attention of the Logstash core team.
 
 === Community Administration
 
