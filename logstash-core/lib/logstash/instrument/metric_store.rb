@@ -67,13 +67,22 @@ module LogStash module Instrument
 
     # Return all the individuals Metric,
     # This call mimic a Enum's each if a block is provided
-    def each(&block)
-      metrics = each_recursively(@store).flatten
+    def each(path = nil, &block)
+      metrics = if path.nil?
+        get_all
+      else
+        transform_to_array(get_with_path(path))
+      end
+
       block_given? ? metrics.each(&block) : metrics
     end
     alias_method :all, :each
 
     private
+    def get_all
+      each_recursively(@store).flatten
+    end
+
     def get_recursively(key_paths, map, new_hash)
       key_candidates = extract_filter_keys(key_paths.shift)
 
@@ -101,11 +110,17 @@ module LogStash module Instrument
       key.to_s.strip.split(FILTER_KEYS_SEPARATOR).map(&:to_sym)
     end
 
+    def transform_to_array(map)
+      map.values.collect do |value|
+        value.is_a?(Hash) ? transform_to_array(value) : value
+      end.flatten
+    end
+
     def transform_to_hash(map, new_hash = Hash.new({}))
       map.each_pair do |key, value|
         if value.is_a?(Concurrent::Map)
           new_hash[key] = {}
-          transform_to_hash(value)
+          transform_to_hash(value, new_hash[key])
         else
           new_hash[key] = value
         end
@@ -114,7 +129,7 @@ module LogStash module Instrument
       return new_hash
     end
 
-    # Recursively fetch only the leaf node that should be an instranc
+    # Recursively fetch only the leaf node that should be an instance
     # of the `MetricType`
     def each_recursively(values)
       events = []
