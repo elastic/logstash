@@ -22,20 +22,12 @@ module LogStash module Instrument module MetricType
     end
 
     def mean
-      if @counter > 0 
+      if @counter > 0
         @sum.value / @counter.value
       else
         0
       end
     end
-
-    def to_hash
-      { 
-        "namespaces" => @namespaces,
-        "key" => @key,
-        "type" => type,
-        "value" => mean
-      }
-    end
+    alias_method :value, :mean
   end
 end; end; end

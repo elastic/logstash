@@ -41,6 +41,7 @@ describe LogStash::Instrument::MetricStore do
         [[:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch"], :event_in, :increment],
         [[:node, :sashimi, :pipelines, :pipeline01], :processed_events_in, :increment],
         [[:node, :sashimi, :pipelines, :pipeline01], :processed_events_out, :increment],
+        [[:node, :sashimi, :pipelines, :pipeline02], :processed_events_out, :increment],
       ]
     }
 
@@ -53,19 +54,91 @@ describe LogStash::Instrument::MetricStore do
     end
 
     describe "#get" do
-      it "retrieves end of of a branch" do
-        metrics = subject.get(:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch")
-        expect(metrics).to be_kind_of(Concurrent::Map)
+      context "when the path exist" do
+        it "retrieves end of of a branch" do
+          metrics = subject.get(:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch")
+          expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => anything)))))))
+        end
+
+        it "retrieves branch" do
+          metrics = subject.get(:node, :sashimi, :pipelines, :pipeline01)
+          expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => anything)))))
+        end
+
+        it "allow to retrieve a specific metrics" do
+          metrics = subject.get(:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch", :event_in)
+          expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => a_hash_including(:event_in => be_kind_of(LogStash::Instrument::MetricType::Base)))))))))
+        end
+
+        context "with filtered keys" do
+          it "allows to retrieve multiple keys on the same level" do
+            metrics = subject.get(:node, :sashimi, :pipelines, :"pipeline01,pipeline02")
+            expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => anything, :pipeline02 => anything)))))
+          end
+
+          it "supports space in the keys" do
+            metrics = subject.get(:node, :sashimi, :pipelines, :"pipeline01, pipeline02 ")
+            expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => anything, :pipeline02 => anything)))))
+          end
+
+          it "retrieves only the requested keys" do
+            metrics = subject.get(:node, :sashimi, :pipelines, :"pipeline01,pipeline02", :processed_events_in)
+            expect(metrics[:node][:sashimi][:pipelines].keys).to include(:pipeline01, :pipeline02)
+          end
+        end
+
+        context "when the path doesnt exist" do
+          it "raise an exception" do
+            expect { subject.get(:node, :sashimi, :dontexist) }.to raise_error(LogStash::Instrument::MetricStore::MetricNotFound, /dontexist/)
+          end
+        end
       end
 
-      it "retrieves branch" do
-        metrics = subject.get(:node, :sashimi, :pipelines, :pipeline01)
-        expect(metrics).to be_kind_of(Concurrent::Map)
+      describe "#get_with_path" do
+        context "when the path exist" do
+          it "removes the first `/`" do
+            metrics = subject.get_with_path("/node/sashimi/")
+            expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => anything)))
+          end
+
+          it "retrieves end of of a branch" do
+            metrics = subject.get_with_path("node/sashimi/pipelines/pipeline01/plugins/logstash-output-elasticsearch")
+            expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => anything)))))))
+          end
+
+          it "retrieves branch" do
+            metrics = subject.get_with_path("node/sashimi/pipelines/pipeline01")
+            expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => anything)))))
+          end
+
+          it "allow to retrieve a specific metrics" do
+            metrics = subject.get_with_path("node/sashimi/pipelines/pipeline01/plugins/logstash-output-elasticsearch/event_in")
+            expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => a_hash_including(:event_in => be_kind_of(LogStash::Instrument::MetricType::Base)))))))))
+          end
+
+          context "with filtered keys" do
+            it "allows to retrieve multiple keys on the same level" do
+              metrics = subject.get_with_path("node/sashimi/pipelines/pipeline01,pipeline02/plugins/logstash-output-elasticsearch/event_in")
+              expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => anything, :pipeline02 => anything)))))
+            end
+
+            it "supports space in the keys" do
+              metrics = subject.get_with_path("node/sashimi/pipelines/pipeline01, pipeline02 /plugins/logstash-output-elasticsearch/event_in")
+              expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => anything, :pipeline02 => anything)))))
+            end
+
+            it "retrieves only the requested keys" do
+              metrics = subject.get(:node, :sashimi, :pipelines, :"pipeline01,pipeline02", :processed_events_in)
+              expect(metrics[:node][:sashimi][:pipelines].keys).to include(:pipeline01, :pipeline02)
+            end
+          end
+        end
       end
 
-      it "allow to retrieve a specific metrics" do
-        metrics = subject.get(:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch", :event_in)
-        expect(metrics).to be_kind_of(LogStash::Instrument::MetricType::Base)
+      context "when the path doesnt exist" do
+        it "raise an exception" do
+          expect { subject.get_with_path("node/sashimi/dontexist, pipeline02 /plugins/logstash-output-elasticsearch/event_in") }.to raise_error(LogStash::Instrument::MetricStore::MetricNotFound, /dontexist/)
+        end
       end
     end
 
@@ -75,7 +148,9 @@ describe LogStash::Instrument::MetricStore do
       end
 
       it "returns metric types" do
-        expect { |b| subject.each(&b) }.to yield_successive_args(LogStash::Instrument::MetricType::Base, LogStash::Instrument::MetricType::Base, LogStash::Instrument::MetricType::Base)
+        metrics = []
+        subject.each { |i| metrics << i }
+        expect(metrics.size).to eq(metric_events.size)
       end
     end
   end

@@ -1,21 +1,22 @@
 # encoding: utf-8
-require "logstash/instrument/metric_type/counter"
 require "logstash/event"
 require "logstash/util"
 
 module LogStash module Instrument module MetricType
   class Base
+    attr_reader :namespaces, :key
+
     def initialize(namespaces, key)
       @namespaces = namespaces
       @key = key
     end
 
-    def to_event(created_at = Time.now)
-      LogStash::Event.new(to_hash.merge({ "@timestamp" => created_at }))
+    def inspect
+      "#{self.class.name} - namespaces: #{namespaces} key: #{key} value: #{value}"
     end
 
-    def inspect
-      "#{self.class.name} - namespaces: #{@namespaces} key: #{@key} value: #{value}"
+    def to_json
+      LogStash::Json.dump(value)
     end
 
     protected

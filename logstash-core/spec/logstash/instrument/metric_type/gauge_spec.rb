@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/instrument/metric_type/gauge"
+require "logstash/json"
 require "spec_helper"
 
 describe LogStash::Instrument::MetricType::Gauge do
@@ -19,13 +20,9 @@ describe LogStash::Instrument::MetricType::Gauge do
     end
   end
 
-  describe "#to_hash" do
-
-    it "return the details of the gauge" do
-      expect(subject.to_hash).to include({ "namespaces" => namespaces,
-                                           "key" => key,
-                                           "value" => value,
-                                           "type" => "gauge" })
+  context "When serializing to JSON" do
+    it "serializes the value" do
+      expect(LogStash::Json.dump(subject)).to eq("\"#{value}\"")
     end
   end
 end

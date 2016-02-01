@@ -22,7 +22,7 @@ class LogStash::Agent
 
   def initialize(options = {})
     @pipelines = {}
-     
+
     @node_name = options[:node_name] || Socket.gethostname
     @collect_metric = options.fetch(:collect_metric, false)
     @logger = options[:logger]
@@ -59,7 +59,7 @@ class LogStash::Agent
 
   def add_pipeline(pipeline_id, config_str, settings = {})
     settings.merge!(:pipeline_id => pipeline_id,
-                    :metric => metric.namespace(pipeline_id))
+                    :metric => metric)
 
     @pipelines[pipeline_id] = LogStash::Pipeline.new(config_str, settings)
   end
@@ -69,7 +69,7 @@ class LogStash::Agent
   end
 
   # Calculate the Logstash uptime in milliseconds
-  # 
+  #
   # @return [Fixnum] Uptime in milliseconds
   def uptime
     ((Time.now.to_f - started_at.to_f) * 1000.0).to_i
@@ -92,7 +92,7 @@ class LogStash::Agent
   def start_background_services
     if collect_metric?
       @logger.debug("Agent: Starting metric periodic pollers")
-      @periodic_pollers.start 
+      @periodic_pollers.start
     end
   end
 
@@ -106,7 +106,7 @@ class LogStash::Agent
   def configure_metric
     if collect_metric?
       @logger.debug("Agent: Configuring metric collection")
-      @metric = LogStash::Instrument::Metric.create(:root)
+      @metric = LogStash::Instrument::Metric.create
       add_metric_pipeline
     else
       @metric = LogStash::Instrument::NullMetric.new
@@ -131,7 +131,7 @@ class LogStash::Agent
       }
       output {
         elasticsearch {
-          flush_size => 10
+          flush_size => 1
           hosts => "127.0.0.1"
           index => "metrics-%{+YYYY.MM.dd}"
         }

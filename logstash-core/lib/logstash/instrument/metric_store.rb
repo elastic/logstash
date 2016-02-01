@@ -8,7 +8,14 @@ module LogStash module Instrument
   # saved in a retrievable way, this is a wrapper around multiples ConcurrentHashMap
   # acting as a tree like structure.
   class MetricStore
-    class NamespacesExpectedError < Exception; end
+    class NamespacesExpectedError < StandardError; end
+    class MetricNotFound < StandardError; end
+
+    KEY_PATH_SEPARATOR = "/"
+
+    # Lets me a bit flexible on the coma usage in the path
+    # definition
+    FILTER_KEYS_SEPARATOR = /\s?*,\s*/
 
     def initialize
       # We keep the structured cache to allow
@@ -28,46 +35,87 @@ module LogStash module Instrument
     end
 
     # This method allow to retrieve values for a specific path,
+    # This method support the following queries
     #
+    # stats/pipelines/pipeline_X
+    # stats/pipelines/pipeline_X,pipeline_2
+    # stats/os,jvm
+    #
+    # If you use the `,` on a key the metric store will return the both values at that level
+    #
+    # The returned hash will keep the same structure as it had in the `Concurrent::Map`
+    # but will be a normal ruby hash. This will allow the api to easily seriliaze the content
+    # of the map
     #
     # @param [Array] The path where values should be located
     # @return nil if the values are not found
+    def get_with_path(path)
+      key_paths = path.gsub(/^#{KEY_PATH_SEPARATOR}+/, "").split(KEY_PATH_SEPARATOR)
+      get(*key_paths)
+    end
+
+    # Use an array of symbols instead of path
     def get(*key_paths)
-      get_recursively(key_paths, @store)
+      # Normalize the symbols access
+      key_paths.map(&:to_sym)
+      new_hash = Hash.new({})
+
+      get_recursively(key_paths, @store, new_hash)
+
+      new_hash
     end
 
     # Return all the individuals Metric,
     # This call mimic a Enum's each if a block is provided
-    #
-    # @return [Array] An array of all metric transformed in `Logstash::Event`, or in case of passing a block it yields
-    # the expected value as other Enumerable implementations.
     def each(&block)
-      data = each_recursively(@store).flatten
-      if block_given?
-        data.each(&block)
-      else
-        return data
-      end
+      metrics = each_recursively(@store).flatten
+      block_given? ? metrics.each(&block) : metrics
     end
     alias_method :all, :each
 
     private
-    def get_recursively(key_paths, map)
-      key_candidate = key_paths.shift
+    def get_recursively(key_paths, map, new_hash)
+      key_candidates = extract_filter_keys(key_paths.shift)
 
-      if key_paths.empty?
-        return map[key_candidate]
-      else
-        next_map = map[key_candidate]
+      key_candidates.each do |key_candidate|
+        raise MetricNotFound, "For path: #{key_candidate}" if map[key_candidate].nil?
 
-        if next_map.is_a?(Concurrent::Map)
-          return get_recursively(key_paths, next_map)
+        if key_paths.empty? # End of the user requested path
+          if map[key_candidate].is_a?(Concurrent::Map)
+            new_hash[key_candidate] = transform_to_hash(map[key_candidate])
+          else
+            new_hash[key_candidate] = map[key_candidate]
+          end
         else
-          return nil
+          if map[key_candidate].is_a?(Concurrent::Map)
+            new_hash[key_candidate] = get_recursively(key_paths, map[key_candidate], {})
+          else
+            new_hash[key_candidate] = map[key_candidate]
+          end
         end
       end
+      return new_hash
     end
 
+    def extract_filter_keys(key)
+      key.to_s.strip.split(FILTER_KEYS_SEPARATOR).map(&:to_sym)
+    end
+
+    def transform_to_hash(map, new_hash = Hash.new({}))
+      map.each_pair do |key, value|
+        if value.is_a?(Concurrent::Map)
+          new_hash[key] = {}
+          transform_to_hash(value)
+        else
+          new_hash[key] = value
+        end
+      end
+
+      return new_hash
+    end
+
+    # Recursively fetch only the leaf node that should be an instranc
+    # of the `MetricType`
     def each_recursively(values)
       events = []
       values.each_value do |value|
@@ -81,7 +129,7 @@ module LogStash module Instrument
     end
 
     # This method iterate through the namespace path and try to find the corresponding
-    # value for the path, if the any part of the path is not found it will
+    # value for the path, if any part of the path is not found it will
     # create it.
     #
     # @param [Array] The path where values should be located

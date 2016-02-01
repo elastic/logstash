@@ -6,11 +6,12 @@ module LogStash module Instrument
  # for specific plugin to replace the `NamespacedMetric` class with this one
  # which doesn't produce any metric to the collector.
  class NullMetric
+    attr_reader :namespace_name
+
    # Get only the instance methods defined in the class
    # and not the whole hierarchy of methods.
    LogStash::Instrument::Metric.public_instance_methods(false).each do |method|
       define_method method do |key, *args|
-        metric.send(method, namespace, args)
       end
    end
 

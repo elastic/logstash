@@ -92,7 +92,7 @@ class LogStash::Plugin
   end
 
   def metric=(new_metric)
-    @metric = new_metric.namespace(@id)
+    @metric = new_metric
   end
 
   def metric
