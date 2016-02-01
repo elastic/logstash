@@ -297,7 +297,7 @@ namespace "artifact" do
     package("centos", "5")
   end
 
-  desc "Build an RPM of logstash with all dependencies"
+  desc "Build a DEB of logstash with all dependencies"
   task "deb" => ["prepare"] do
     puts("[artifact:deb] building deb package")
     package("ubuntu", "12.04")
