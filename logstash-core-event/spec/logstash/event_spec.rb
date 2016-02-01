@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
+require "logstash/util/decorators"
 require "json"
 
 describe LogStash::Event do
@@ -73,6 +74,22 @@ describe LogStash::Event do
     end
 
     context "#sprintf" do
+      it "should not return a String reference" do
+        data = "NOT-A-REFERENCE"
+        event = LogStash::Event.new({ "reference" => data })
+        LogStash::Util::Decorators.add_fields({"reference_test" => "%{reference}"}, event, "dummy-plugin")
+        data.downcase!
+        expect(event["reference_test"]).not_to eq(data)
+      end
+
+      it "should not return a Fixnum reference" do
+        data = 1
+        event = LogStash::Event.new({ "reference" => data })
+        LogStash::Util::Decorators.add_fields({"reference_test" => "%{reference}"}, event, "dummy-plugin")
+        data += 41
+        expect(event["reference_test"]).to eq("1")
+      end
+
       it "should report a unix timestamp for %{+%s}" do
         expect(subject.sprintf("%{+%s}")).to eq("1356998400")
       end
