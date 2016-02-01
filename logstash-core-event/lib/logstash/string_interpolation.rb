@@ -125,7 +125,9 @@ module LogStash
       when Hash
         LogStash::Json.dump(value)
       else
-        value
+        # Make sure we dont work on the refence of the value
+        # The Java Event implementation was always returning a string.
+        "#{value}"
       end
     end
   end
