@@ -48,7 +48,7 @@ describe LogStash::Instrument::MetricStore do
     before :each do
       # Lets add a few metrics in the store before trying to find them
       metric_events.each do |namespaces, metric_key, action|
-        metric = subject.fetch_or_store(namespaces, metric_key, LogStash::Instrument::MetricType::Counter.new(namespaces, key))
+        metric = subject.fetch_or_store(namespaces, metric_key, LogStash::Instrument::MetricType::Counter.new(namespaces, metric_key))
         metric.execute(action)
       end
     end
@@ -151,6 +151,12 @@ describe LogStash::Instrument::MetricStore do
         metrics = []
         subject.each { |i| metrics << i }
         expect(metrics.size).to eq(metric_events.size)
+      end
+
+      it "retrieves all the metrics from a specific branch" do
+        metrics = []
+        subject.each("node/sashimi/pipelines/pipeline01") { |i| metrics << i }
+        expect(metrics.size).to eq(3)
       end
     end
   end
