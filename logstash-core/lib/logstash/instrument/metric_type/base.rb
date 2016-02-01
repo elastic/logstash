@@ -19,7 +19,6 @@ module LogStash module Instrument module MetricType
       LogStash::Json.dump(value)
     end
 
-    protected
     def type
       @type ||= LogStash::Util.class_name(self).downcase
     end
