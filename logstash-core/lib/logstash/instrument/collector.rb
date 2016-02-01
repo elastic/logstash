@@ -19,7 +19,7 @@ module LogStash module Instrument
     include Observable
     include Singleton
 
-    SNAPSHOT_ROTATION_TIME_SECS = 10 # seconds
+    SNAPSHOT_ROTATION_TIME_SECS = 1 # seconds
     SNAPSHOT_ROTATION_TIMEOUT_INTERVAL_SECS = 10 * 60 # seconds
 
     def initialize
@@ -34,9 +34,9 @@ module LogStash module Instrument
     # its the job of the collector to update the store with new metric
     # of update the metric
     #
-    # If there is a problem with the key or the type of metric we will record an error 
+    # If there is a problem with the key or the type of metric we will record an error
     # but we wont stop processing events, theses errors are not considered fatal.
-    # 
+    #
     def push(namespaces_path, key, type, *metric_type_params)
       begin
         metric = @metric_store.fetch_or_store(namespaces_path, key) do
@@ -69,7 +69,7 @@ module LogStash module Instrument
     # @param [Exception] Exception
     def update(time_of_execution, result, exception)
       return true if exception.nil?
-      logger.error("Collector: Something went wrong went sending data to the observers", 
+      logger.error("Collector: Something went wrong went sending data to the observers",
                    :execution_time => time_of_execution,
                    :result => result,
                    :exception => exception)
@@ -78,7 +78,7 @@ module LogStash module Instrument
     # Snapshot the current Metric Store and return it immediately,
     # This is useful if you want to get access to the current metric store without
     # waiting for a periodic call.
-    # 
+    #
     # @return [LogStash::Instrument::MetricStore]
     def snapshot_metric
       Snapshot.new(@metric_store)

@@ -20,12 +20,9 @@ describe LogStash::Instrument::MetricType::Counter do
     end
   end
 
-  describe "#to_hash" do
-    it "return the details of the counter" do
-      expect(subject.to_hash).to include({ "namespaces" => namespaces,
-                                           "key" => key,
-                                           "value" => 0,
-                                           "type" => "counter" })
+  context "When serializing to JSON" do
+    it "serializes the value" do
+      expect(LogStash::Json.dump(subject)).to eq("0")
     end
   end
 end

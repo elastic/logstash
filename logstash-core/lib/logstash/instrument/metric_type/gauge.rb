@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/instrument/metric_type/base"
 require "concurrent/atomic_reference/mutex_atomic"
+require "logstash/json"
 
 module LogStash module Instrument module MetricType
   class Gauge < Base
@@ -16,15 +17,6 @@ module LogStash module Instrument module MetricType
 
     def value
       @gauge.get
-    end
-
-    def to_hash
-      { 
-        "namespaces" => @namespaces,
-        "key" => @key,
-        "type" => type,
-        "value" => value 
-      }
     end
   end
 end; end; end

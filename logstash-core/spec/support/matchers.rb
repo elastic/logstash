@@ -4,7 +4,7 @@ require "rspec/expectations"
 
 RSpec::Matchers.define :be_a_metric_event do |namespace, type, *args|
   match do
-    namespace == actual[0] << actual[1] && 
+    namespace == Array(actual[0]).concat(Array(actual[1])) &&
       type == actual[2] &&
       args == actual[3..-1]
   end
@@ -17,11 +17,11 @@ RSpec::Matchers.define :implement_interface_of do |type, key, value|
   end
 
   def missing_methods
-    expected.instance_methods - actual.instance_methods 
+    expected.instance_methods.select { |method| !actual.instance_methods.include?(method) }
   end
 
   def all_instance_methods_implemented?
-    missing_methods.empty?
+    expected.instance_methods.all? { |method| actual.instance_methods.include?(method) }
   end
 
   failure_message do

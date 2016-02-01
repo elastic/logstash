@@ -25,14 +25,5 @@ module LogStash module Instrument module MetricType
     def value
       @counter.value
     end
-
-    def to_hash
-      { 
-        "namespaces" => @namespaces,
-        "key" => @key,
-        "type" => type,
-        "value" => value 
-      }
-    end
   end
 end; end; end

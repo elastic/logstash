@@ -11,6 +11,7 @@ module LogStash module Inputs
   # Elasticsearch
   class Metrics < LogStash::Inputs::Base
     config_name "metrics"
+    milestone 3
 
     def register
     end
@@ -35,19 +36,22 @@ module LogStash module Inputs
     def update(snapshot)
       @logger.debug("Metrics input: received a new snapshot", :created_at => snapshot.created_at, :snapshot => snapshot, :event => snapshot.metric_store.to_event) if @logger.debug?
 
-      # TODO: (ph)
-      # - Obviously the format here is wrong and we need to
-      # transform it from Snapshot to an event
-      # - There is another problem, if the queue is full this could block the snapshot thread.
-      # There is a few possible solution for this problem:
-      #   - We can use a future
-      #   - We can use a synchronization mechanism between the called thread (update method)
-      #   and the plugin thread (run method)
-      #   - How we handle back pressure here?
-      #   - one snashot should be only one event ?
+      # The back pressure is handled in the collector's
+      # scheduled task (running into his own thread) if something append to one of the listener it will
+      # will timeout. In a sane pipeline, with a low traffic of events it shouldn't be a problems.
       snapshot.metric_store.each do |metric|
-        @queue << LogStash::Event.new({ "@timestamp" => snapshot.created_at }.merge(metric.to_hash))
+        @queue << LogStash::Event.new({ "@timestamp" => snapshot.created_at }.merge(convert_to_hash(metric)))
       end
+    end
+
+    # Transform the MetricType into a hash to create a new event
+    def convert_to_hash(metric)
+      {
+        "namespaces" => metric.namespaces,
+        "key" => metric.key,
+        "type" => metric.type,
+        "value" => metric.value
+      }
     end
   end
 end;end

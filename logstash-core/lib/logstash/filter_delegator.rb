@@ -20,8 +20,10 @@ module LogStash
       @filter = klass.new(options)
 
       # Scope the metrics to the plugin
-      @metric = metric.namespace(@filter.id.to_sym)
-      @filter.metric = @metric
+      namespaced_metric = metric.namespace(@filter.id.to_sym)
+      @filter.metric = metric
+
+      @metric_events = namespaced_metric.namespace(:events)
 
       # Not all the filters will do bufferings
       define_flush_method if @filter.respond_to?(:flush)
@@ -32,14 +34,14 @@ module LogStash
     end
 
     def multi_filter(events)
-      @metric.increment(:in, events.size)
+      @metric_events.increment(:in, events.size)
 
       new_events = @filter.multi_filter(events)
 
       # There is no garantee in the context of filter
       # that EVENTS_INT == EVENTS_OUT, see the aggregates and
-      # the split filter.
-      @metric.increment(:out, new_events.size)
+      # the split filter
+      @metric_events.increment(:out, new_events.size) unless new_events.nil?
 
       return new_events
     end
@@ -50,7 +52,7 @@ module LogStash
         # we also need to trace the number of events
         # coming from a specific filters.
         new_events = @filter.flush(options)
-        @metric.increment(:out, new_events.size) unless new_events.nil? # Logstash-filter-aggregates return nil.
+        @metric_events.increment(:out, new_events.size) unless new_events.nil? # Logstash-filter-aggregates return nil.
         new_events
       end
     end

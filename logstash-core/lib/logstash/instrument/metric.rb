@@ -72,8 +72,8 @@ module LogStash module Instrument
     # Create a Metric instrance using the default Collector singleton reference
     #
     #
-    def self.create(namespace, collector = LogStash::Instrument::Collector.instance)
-      Metric.new(collector, namespace)
+    def self.create(collector = LogStash::Instrument::Collector.instance)
+      Metric.new(collector)
     end
 
     private
