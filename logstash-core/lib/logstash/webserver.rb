@@ -17,7 +17,7 @@ module LogStash
   def initialize(logger, options={})
     @logger      = logger
     @options     = {}
-    @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "../..", "api", "init.ru")  })
+    @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru")  })
     @status      = nil
 
     parse_options
