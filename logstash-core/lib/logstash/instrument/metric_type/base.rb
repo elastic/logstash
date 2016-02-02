@@ -15,8 +15,17 @@ module LogStash module Instrument module MetricType
       "#{self.class.name} - namespaces: #{namespaces} key: #{key} value: #{value}"
     end
 
-    def to_json
-      LogStash::Json.dump(value)
+    def to_hash
+      {
+        "namespaces" => namespaces,
+        "key" => key,
+        "type" => type,
+        "value" => value
+      }
+    end
+
+    def to_json_data
+      value
     end
 
     def type

@@ -25,4 +25,16 @@ describe LogStash::Instrument::MetricType::Counter do
       expect(LogStash::Json.dump(subject)).to eq("0")
     end
   end
+
+  context "When creating a hash " do
+    it "creates the hash from all the values" do
+      metric_hash = {
+        "key" => key,
+        "namespaces" => namespaces,
+        "value" => 0,
+        "type" => "counter"
+      }
+      expect(subject.to_hash).to match(metric_hash)
+    end
+  end
 end
