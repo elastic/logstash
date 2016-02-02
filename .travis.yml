@@ -1,0 +1,16 @@
+sudo: false
+language: ruby
+cache:
+  directories:
+    - vendor/bundle
+    - ~/.gradle/
+rvm:
+  - jruby-1.7.25
+  - jruby-9.0.5.0
+jdk:
+  - oraclejdk8
+before_script:
+  - rake test:install-core
+  - echo "--order rand" > .rspec
+  - echo "--format documentation" >> .rspec
+script: rake test:core
