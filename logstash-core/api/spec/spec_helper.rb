@@ -11,6 +11,8 @@ require "json"
 
 ENV['RACK_ENV'] = 'test'
 
+Rack::Builder.parse_file(File.join(ROOT, 'init.ru'))
+
 def read_fixture(name)
   path = File.join(File.dirname(__FILE__), "fixtures", name)
   HashWithIndifferentAccess.new(JSON.parse(File.read(path)))
