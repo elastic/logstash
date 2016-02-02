@@ -20,12 +20,28 @@ module LogStash module Instrument
       @namespace_name = Array(namespace_name)
     end
 
-    # Get only the instance methods defined in the class
-    # and not the whole hierarchy of methods.
-    LogStash::Instrument::Metric.public_instance_methods(false).each do |method|
-      define_method method do |key, *args|
-        metric.send(method, namespace_name, key, *args)
-      end
+    def increment(key, value = 1)
+      @metric.increment(namespace_name, key, value)
+    end
+
+    def decrement(namespace, key, value = 1)
+      @metric.decrement(namespace_name, key, value)
+    end
+
+    def gauge(key, value)
+      @metric.gauge(namespace_name, key, value)
+    end
+
+    def report_time(key, duration)
+      @metric.report_time(namespace_name, key, duration)
+    end
+
+    def time(key, &block)
+      @metric.time(namespace_name, key, &block)
+    end
+
+    def collector
+      @metric.collector
     end
 
     def namespace(name)
