@@ -19,7 +19,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "logstash-core-event-java", "~> 3.0.0.dev"
 
-  gem.add_runtime_dependency "cabin", "~> 0.7.0" #(Apache 2.0 license)
+  gem.add_runtime_dependency "cabin", "~> 0.8.0" #(Apache 2.0 license)
   gem.add_runtime_dependency "pry", "~> 0.10.1"  #(Ruby license)
   gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
   gem.add_runtime_dependency "clamp", "~> 0.6.5" #(MIT license) for command line args/flags
