@@ -52,7 +52,10 @@ module LogStash
         # we also need to trace the number of events
         # coming from a specific filters.
         new_events = @filter.flush(options)
-        @metric_events.increment(:out, new_events.size) unless new_events.nil? # Logstash-filter-aggregates return nil.
+
+        # Filter plugins that does buffering or spooling of events like the
+        # `Logstash-filter-aggregates` can return `NIL` and will flush on the next flush ticks.
+        @metric_events.increment(:out, new_events.size) unless new_events.nil?
         new_events
       end
     end
