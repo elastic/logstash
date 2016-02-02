@@ -1,12 +1,79 @@
 [[releasenotes]]
 == Logstash 2.2 Release Notes
 
-This release of Logstash includes support for offline plugin installation from storage media.
-The pipeline has been substantially reëngineered, adding new <<command-line-flags,command line flags>>.
-The <<plugin-filters-multiline,multiline filter plugin>> is deprecated in favor of the multiline codec plugin. Support for 
-the multiline filter plugin will be removed completely in a future release of Logstash.
+* This release of Logstash includes support for offline plugin installation from storage media.
+* The `jruby-openssl` library version is now 0.9.13
+* The <<plugin-filters-multiline,multiline filter plugin>> is deprecated in favor of the multiline codec plugin. Support 
+for the multiline filter plugin will be removed completely in a future release of Logstash.
+* The `http_poller` plugin is now installed by default.
 
 [float]
 == General
 
+* {lsissue}3693[Issue 3693]: The pipeline has been substantially reëngineered, adding new <<command-line-flags,command 
+line flags>>. Filter and output stages are now a single stage that consumes messages from an in-memory queue. This change 
 * {lsissue}4291[Issue 4291]: Logstash can be launched from a symbolic link.
+* {lsissue}4321[Issue 4321]: Fixes an issue with the `--configtest` switch and the SysV init script.
+
+[float]
+== Input Plugins
+
+*`file`*:
+* https://github.com/logstash-plugins/logstash-input-file/issues/81[Issue 81]: Adds the `close_older` configuration option 
+to close files that remain unmodified for longer than the specified timespan in seconds.
+* https://github.com/logstash-plugins/logstash-input-file/issues/81[Issue 81]: Adds the `ignore_older` configuration 
+option to ignore the contents of files that have remained unmodified for longer than the specified timespan in seconds.
+
+*'jdbc`*:
+* https://github.com/logstash-plugins/logstash-input-jdbc/issues/57[Issue 57]: Allows tracking by a column value rather 
+than by last run time. This is a breaking change, as users may be required to change from using `sql_last_start` to use 
+`sql_last_value` in their queries. Time-based queries require no other changes.
+* https://github.com/logstash-plugins/logstash-input-jdbc/issues/44[Issue 44]: Adds an option to control lowercasing of
+column names.
+
+*`beats`*:
+* https://github.com/logstash-plugins/logstash-input-beats/issues/14[Issue 14]: Refactored beats input to fix thread 
+synchronization issues under high data volume.
+
+*`kafka`*:
+* https://github.com/logstash-plugins/logstash-input-kafka/issues/59[Issue 59]: Fixes a CPU load issue when no new
+messages are available in the Kafka broker.
+
+*`http`*:
+* https://github.com/logstash-plugins/logstash-input-http/issues/33[Issue 33]: Adds support for compressed and gzip POST 
+requests.
+
+[float]
+== Filter Plugins
+
+*`multiline`*: This filter is now deprecated. Use the multiline codec plugin instead.
+
+*`date`*:
+* https://github.com/logstash-plugins/logstash-filter-date/issues/23[Issue 23]: The `timezone` setting now supports the 
+`sprintf` format.
+* https://github.com/logstash-plugins/logstash-filter-date/issues/33[Issue 33]: Improves handling for new year rollovers 
+when the year is not present in the time format. When the local timestamp is December and the event time is January, the 
+year is set to the following year. When the local time is January and the event time is December, the year is set to the 
+previous year.
+
+[float]
+== Output Plugins
+
+*`elasticsearch`*:
+* https://github.com/elastic/logstash/issues/4433[Issue 4433]: Node protocol is now discouraged and will not be actively 
+maintained. Use the `http` or `transport` protocols instead.
+* https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/235[Issue 235]: Adds scripted update support.    
+* https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/321[Issue 321]: Changes retry behavior. "Too 
+busy" and "service unavailable" errors from ES are retried indefinitely. Conflict errors are neve retried.
+
+*`file`*:
+* https://github.com/logstash-plugins/logstash-output-file/issues/18[Issue 18] Adds configuration setting to set directory
+and file permission.
+
+[float]
+== Codec Plugins
+
+*`multiline`*:
+* https://github.com/logstash-plugins/logstash-codec-multiline/pull/18[Issue 18]: Adds the `auto_flush` configuration 
+option, with no default. Auto flushes are not performed if the value of `auto_flush` is not `true`. This feature flushes 
+events buffered as part of a multiline event when used with the `file` input plugin, for example.
