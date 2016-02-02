@@ -40,18 +40,8 @@ module LogStash module Inputs
       # scheduled task (running into his own thread) if something append to one of the listener it will
       # will timeout. In a sane pipeline, with a low traffic of events it shouldn't be a problems.
       snapshot.metric_store.each do |metric|
-        @queue << LogStash::Event.new({ "@timestamp" => snapshot.created_at }.merge(convert_to_hash(metric)))
+        @queue << LogStash::Event.new({ "@timestamp" => snapshot.created_at }.merge(metric.to_hash))
       end
-    end
-
-    # Transform the MetricType into a hash to create a new event
-    def convert_to_hash(metric)
-      {
-        "namespaces" => metric.namespaces,
-        "key" => metric.key,
-        "type" => metric.type,
-        "value" => metric.value
-      }
     end
   end
 end;end

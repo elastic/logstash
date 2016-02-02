@@ -11,11 +11,11 @@ module LogStash module Instrument
     class NamespacesExpectedError < StandardError; end
     class MetricNotFound < StandardError; end
 
-    KEY_PATH_SEPARATOR = "/"
+    KEY_PATH_SEPARATOR = "/".freeze
 
     # Lets me a bit flexible on the coma usage in the path
     # definition
-    FILTER_KEYS_SEPARATOR = /\s?*,\s*/
+    FILTER_KEYS_SEPARATOR = /\s?*,\s*/.freeze
 
     def initialize
       # We keep the structured cache to allow
@@ -58,7 +58,7 @@ module LogStash module Instrument
     def get(*key_paths)
       # Normalize the symbols access
       key_paths.map(&:to_sym)
-      new_hash = Hash.new({})
+      new_hash = Hash.new
 
       get_recursively(key_paths, @store, new_hash)
 
@@ -116,7 +116,7 @@ module LogStash module Instrument
       end.flatten
     end
 
-    def transform_to_hash(map, new_hash = Hash.new({}))
+    def transform_to_hash(map, new_hash = Hash.new)
       map.each_pair do |key, value|
         if value.is_a?(Concurrent::Map)
           new_hash[key] = {}
