@@ -11,6 +11,9 @@ set :environment, env
 
 set :service, LogStash::Api::Service.instance
 
+configure do
+  enable :logging
+end
 run LogStash::Api::Root
 
 namespaces = { "/_stats" => LogStash::Api::Stats }
