@@ -10,8 +10,9 @@ for the multiline filter plugin will be removed completely in a future release o
 [float]
 == General
 
-* {lsissue}3693[Issue 3693]: The pipeline has been substantially reëngineered, adding new <<command-line-flags,command 
-line flags>>. Filter and output stages are now a single stage that consumes messages from an in-memory queue. This change 
+* {lsissue}3693[Issue 3693]: The pipeline has been substantially reëngineered, adding new 
+<<command-line-flags,command line flags>>. Filter and output stages are now a single stage that consumes messages from an 
+in-memory queue. 
 * {lsissue}4291[Issue 4291]: Logstash can be launched from a symbolic link.
 * {lsissue}4321[Issue 4321]: Fixes an issue with the `--configtest` switch and the SysV init script.
 
