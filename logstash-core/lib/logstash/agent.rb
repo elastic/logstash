@@ -97,6 +97,8 @@ class LogStash::Agent
   end
 
   def shutdown
+    stop_background_services
+    stop_webserver
     shutdown_pipelines
   end
 
@@ -105,11 +107,11 @@ class LogStash::Agent
   end
 
   private
-
   def start_webserver
     options = { :debug => debug }
     @webserver = LogStash::WebServer.new(@logger, options)
     Thread.new(@webserver) do |webserver|
+      LogStash::Util.set_thread_name("Api Webserver")
       webserver.run
     end
   end
@@ -132,22 +134,10 @@ class LogStash::Agent
     end
   end
 
-  def shutdown
-    stop_background_services
-    stop_webserver
-    shutdown_pipelines
-  end
-
-  private
-  def node_uuid
-    @node_uuid ||= SecureRandom.uuid
-  end
-
   def configure_metric
     if collect_metric?
       @logger.debug("Agent: Configuring metric collection")
       @metric = LogStash::Instrument::Metric.create
-      add_metric_pipeline
     else
       @metric = LogStash::Instrument::NullMetric.new
     end
@@ -157,28 +147,6 @@ class LogStash::Agent
 
   def collect_metric?
     @collect_metric
-  end
-
-  # Add a new pipeline sitting next to the main pipeline,
-  # This pipeline should only contains one input: the `metrics`
-  # and multiple shippers.
-  def add_metric_pipeline
-    @logger.debug("Agent: Adding metric pipeline")
-
-    metric_pipeline_config =<<-EOS
-      input {
-        metrics {}
-      }
-      output {
-        elasticsearch {
-          flush_size => 1
-          hosts => "127.0.0.1"
-          index => "metrics-%{+YYYY.MM.dd}"
-        }
-      }
-    EOS
-
-    @pipelines[:metric] = LogStash::Pipeline.new(metric_pipeline_config, { :pipeline_id => :metric })
   end
 
   def create_pipeline(settings)
@@ -271,4 +239,3 @@ class LogStash::Agent
     @pipelines.empty?
   end
 end # class LogStash::Agent
-
