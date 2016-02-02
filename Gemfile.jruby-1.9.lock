@@ -2,7 +2,7 @@ PATH
   remote: ./logstash-core
   specs:
     logstash-core (3.0.0.dev-java)
-      cabin (~> 0.7.0)
+      cabin (~> 0.8.0)
       clamp (~> 0.6.5)
       concurrent-ruby (= 0.9.2)
       filesize (= 0.0.4)
@@ -32,7 +32,7 @@ GEM
     backports (3.6.7)
     benchmark-ips (2.3.0)
     builder (3.2.2)
-    cabin (0.7.2)
+    cabin (0.8.1)
     childprocess (0.5.9)
       ffi (~> 1.0, >= 1.0.11)
     ci_reporter (2.0.0)
