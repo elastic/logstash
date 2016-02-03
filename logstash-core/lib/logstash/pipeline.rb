@@ -128,10 +128,10 @@ module LogStash; class Pipeline
     # Block until all inputs have stopped
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
 
-    @running.make_true
+    transition_to_running
     start_flusher # Launches a non-blocking thread for flush events
     wait_inputs
-    @running.make_false
+    transition_to_stopped
 
     @logger.info("Input plugins stopped! Will shutdown filter/output workers.")
 
@@ -144,6 +144,22 @@ module LogStash; class Pipeline
     # exit code
     return 0
   end # def run
+
+  def transition_to_running
+    @running.make_true
+  end
+
+  def transition_to_stopped
+    @running.make_false
+  end
+
+  def running?
+    @running.true?
+  end
+
+  def stopped?
+    @running.false?
+  end
 
   def start_workers
     @inflight_batches = {}
@@ -415,12 +431,12 @@ module LogStash; class Pipeline
 
   def start_flusher
     # Invariant to help detect improper initialization
-    raise "Attempted to start flusher on a stopped pipeline!" if @running.false?
+    raise "Attempted to start flusher on a stopped pipeline!" if stopped?
 
     @flusher_thread = Thread.new do
-      while Stud.stoppable_sleep(5, 0.1) { @running.false? }
+      while Stud.stoppable_sleep(5, 0.1) { stopped? }
         flush
-        break if @running.false?
+        break if stopped?
       end
     end
   end
