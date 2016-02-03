@@ -232,6 +232,24 @@ describe LogStash::Pipeline do
   end
 
   context "compiled flush function" do
+    describe "flusher thread" do
+      before(:each) do
+        allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
+        allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+        allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      end
+
+      let(:config) { "input { dummyinput {} } output { dummyoutput {} }"}
+
+      it "should start the flusher thread only after the pipeline is running" do
+        pipeline = TestPipeline.new(config)
+
+        expect(pipeline).to receive(:transition_to_running).ordered.and_call_original
+        expect(pipeline).to receive(:start_flusher).ordered.and_call_original
+
+        pipeline.run
+      end
+    end
 
     context "cancelled events should not propagate down the filters" do
       config <<-CONFIG
