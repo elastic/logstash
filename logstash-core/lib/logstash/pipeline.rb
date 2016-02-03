@@ -72,8 +72,6 @@ module LogStash; class Pipeline
     @ready = Concurrent::AtomicBoolean.new(false)
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
-
-    start_flusher
   end # def initialize
 
   def ready?
@@ -131,6 +129,7 @@ module LogStash; class Pipeline
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
 
     @running.make_true
+    start_flusher # Launches a non-blocking thread for flush events
     wait_inputs
     @running.make_false
 
@@ -415,6 +414,9 @@ module LogStash; class Pipeline
   end
 
   def start_flusher
+    # Invariant to help detect improper initialization
+    raise "Attempted to start flusher on a stopped pipeline!" if @running.false?
+
     @flusher_thread = Thread.new do
       while Stud.stoppable_sleep(5, 0.1) { @running.false? }
         flush
