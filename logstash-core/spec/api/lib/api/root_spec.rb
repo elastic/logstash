@@ -12,22 +12,16 @@ describe LogStash::Api::Root do
     described_class
   end
 
-  let(:body) { LogStash::Json.load(last_response.body) }
+  let(:agent) { double("agent") }
 
   before(:each) do
-    get "/"
+    allow(agent).to receive(:node_name).and_return("foo")
+    expect_any_instance_of(LogStash::Api::Service).to receive(:agent).and_return(agent)
   end
 
   it "should respond to root resource" do
+    get "/"
     expect(last_response).to be_ok
-  end
-
-  it "contain a hostname" do
-    expect(body).to include("hostname" => a_kind_of(String))
-  end
-
-  it "contain a version number" do
-    expect(body).to include("version" => a_kind_of(String) )
   end
 
 end
