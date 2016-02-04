@@ -3,6 +3,7 @@ require "spec_helper"
 require "logstash/runner"
 require "stud/task"
 require "stud/trap"
+require "logstash/util/java_version"
 
 class NullRunner
   def run(args); end
@@ -33,6 +34,13 @@ describe LogStash::Runner do
 
     context "with no arguments" do
       let(:args) { [] }
+      let(:agent) { double("agent") }
+
+      before(:each) do
+        allow(LogStash::Agent).to receive(:new).and_return(agent)
+        allow(LogStash::Util::JavaVersion).to receive(:warn_on_bad_java_version)
+      end
+
       it "should show help" do
         expect(subject).to receive(:show_short_help).once
         expect(channel).to receive(:fatal).once
@@ -105,13 +113,16 @@ describe LogStash::Runner do
     let(:pipeline) { double("pipeline") }
 
     before(:each) do
+      allow_any_instance_of(LogStash::Agent).to receive(:execute).and_return(true)
       task = Stud::Task.new { 1 }
       allow(pipeline).to receive(:run).and_return(task)
     end
 
     context "when pipeline workers is not defined by the user" do
       it "should not pass the value to the pipeline" do
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, base_pipeline_settings).and_return(pipeline)
+        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:pipeline_id => "base", :metric => anything)).and_return(pipeline)
+        expect(LogStash::Pipeline).to receive(:new).with(anything, hash_including(:pipeline_id => :metric)).and_return(pipeline)
+
         args = ["-e", pipeline_string]
         subject.run("bin/logstash", args)
       end
@@ -120,7 +131,9 @@ describe LogStash::Runner do
     context "when pipeline workers is defined by the user" do
       it "should pass the value to the pipeline" do
         base_pipeline_settings[:pipeline_workers] = 2
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, base_pipeline_settings).and_return(pipeline)
+        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:pipeline_id => "base", :pipeline_workers => 2, :metric => anything)).and_return(pipeline)
+        expect(LogStash::Pipeline).to receive(:new).with(anything, hash_including(:pipeline_id => :metric)).and_return(pipeline)
+
         args = ["-w", "2", "-e", pipeline_string]
         subject.run("bin/logstash", args)
       end

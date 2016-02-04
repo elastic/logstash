@@ -113,9 +113,12 @@ class LogStash::Runner < Clamp::Command
     require "stud/task"
     require "cabin" # gem 'cabin'
 
-    @agent = LogStash::Agent.new({ :node_name => node_name })
+    # Configure Logstash logging facility, this need to be done before everything else to
+    # make sure the logger has the correct settings and the log level is correctly defined.
+    configure_logging(log_file)
 
-    @logger = Cabin::Channel.get(LogStash)
+    @agent = LogStash::Agent.new({ :collect_metric => true,
+                                   :logger => @logger, :debug => debug?, :node_name => node_name })
 
     LogStash::Util::set_thread_name(self.class.name)
 
@@ -142,8 +145,6 @@ class LogStash::Runner < Clamp::Command
     if @config_string.nil? && @config_path.nil?
       fail(I18n.t("logstash.runner.missing-configuration"))
     end
-
-    @agent.logger = @logger
 
     config_string = format_config(@config_path, @config_string)
 
@@ -208,7 +209,6 @@ class LogStash::Runner < Clamp::Command
   #
   # Log file stuff, plugin path checking, etc.
   def configure
-    configure_logging(log_file)
     configure_plugin_paths(plugin_paths)
   end # def configure
 
@@ -223,6 +223,7 @@ class LogStash::Runner < Clamp::Command
 
   # Point logging at a specific path.
   def configure_logging(path)
+    @logger = Cabin::Channel.get(LogStash)
     # Set with the -v (or -vv...) flag
     if quiet?
       @logger.level = :error
