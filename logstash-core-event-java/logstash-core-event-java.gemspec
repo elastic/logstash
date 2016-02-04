@@ -21,6 +21,11 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "jar-dependencies"
 
+  # as of Feb 3rd 2016, the ruby-maven gem is resolved to version 3.3.3 and that version
+  # has an rdoc problem that causes a bundler exception. 3.3.9 is the current latest version
+  # which does not have this problem.
+  gem.add_runtime_dependency "ruby-maven", "~> 3.3.9"
+
   gem.requirements << "jar org.codehaus.jackson:jackson-mapper-asl, 1.9.13"
   gem.requirements << "jar org.codehaus.jackson:jackson-core-asl, 1.9.13"
 end
