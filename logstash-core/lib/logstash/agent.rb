@@ -117,7 +117,7 @@ class LogStash::Agent
   end
 
   def stop_webserver
-    @webserver.stop
+    @webserver.stop if @webserver
   end
 
   def start_background_services
@@ -137,6 +137,7 @@ class LogStash::Agent
   def configure_metric
     if collect_metric?
       @logger.debug("Agent: Configuring metric collection")
+      LogStash::Instrument::Collector.instance.agent = self
       @metric = LogStash::Instrument::Metric.create
     else
       @metric = LogStash::Instrument::NullMetric.new
